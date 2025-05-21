@@ -1,25 +1,20 @@
 {
-  "name": "@openpassport/contracts",
-  "version": "0.0.7",
+  "name": "@selfxyz/contracts",
+  "version": "0.0.8",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zk-passport/openpassport"
+    "url": "https://github.com/selfxyz/self"
   },
   "license": "MIT",
   "author": "motemotech <i.am.nicoshark@gmail.com>",
   "files": [
-    "contracts/constants/*",
     "contracts/interfaces/*",
+    "contracts/constants/*",
     "contracts/libraries/*",
-    "contracts/proxy/*",
-    "contracts/registry/*",
-    "contracts/verifiers/*",
-    "contracts/IdentityVerificationHub.sol",
-    "contracts/IdentityVerificationHubImplV1.sol",
-    "contracts/utils/PCR0Manager.sol"
+    "contracts/abstract/*"
   ],
   "scripts": {
-    "compile": "npx hardhat clean && npx hardhat compile",
+    "build": "npx hardhat clean && npx hardhat compile",
     "deploy:all:localhost": "npm run deploy:verifiers:localhost && npm run deploy:registry:localhost && npm run deploy:hub:localhost",
     "deploy:hub:localhost": "npx hardhat ignition deploy ignition/modules/deployHub.ts --network localhost --verify",
     "deploy:registry:localhost": "npx hardhat ignition deploy ignition/modules/deployRegistry.ts --network localhost --verify",
@@ -118,4 +113,5 @@
     "ts-node": "^10.9.1",
     "typechain": "^8.3.2",
     "typescript": "^5.1.6"
-  }}
+  }
+}

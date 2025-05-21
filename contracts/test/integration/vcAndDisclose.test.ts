@@ -12,6 +12,8 @@ import { BigNumberish } from "ethers";
 import { generateRandomFieldElement, getStartOfDayTimestamp, splitHexFromBack } from "../utils/utils";
 import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
 import { formatCountriesList, reverseBytes, reverseCountryBytes } from '../../../common/src/utils/circuits/formatInputs';
+import { getPackedForbiddenCountries } from "../../../common/src/utils/contracts/forbiddenCountries";
+import { countries } from "../../../common/src/constants/countries";
 import fs from 'fs';
 import path from 'path';
 
@@ -46,13 +48,13 @@ describe("VC and Disclose", () => {
         imt = new LeanIMT<bigint>(hashFunction);
         await imt.insert(BigInt(commitment));
 
-        forbiddenCountriesList = ['AAA', 'ABC', 'CBA', 'AAA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA'];
-        const wholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
-        forbiddenCountriesListPacked = splitHexFromBack(wholePacked);
+        forbiddenCountriesList = [countries.AFGHANISTAN, 'ABC', 'CBA', 'AAA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA'];
+        forbiddenCountriesListPacked = getPackedForbiddenCountries(forbiddenCountriesList);
 
         invalidForbiddenCountriesList = ['AAA', 'ABC', 'CBA', 'CBA'];
-        const invalidWholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(invalidForbiddenCountriesList))));
-        invalidForbiddenCountriesListPacked = splitHexFromBack(invalidWholePacked);
+        // const invalidWholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(invalidForbiddenCountriesList))));
+        // invalidForbiddenCountriesListPacked = splitHexFromBack(invalidWholePacked);
+        invalidForbiddenCountriesListPacked = getPackedForbiddenCountries(invalidForbiddenCountriesList);
 
         baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,

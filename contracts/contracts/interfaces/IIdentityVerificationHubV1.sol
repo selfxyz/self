@@ -26,8 +26,8 @@ interface IIdentityVerificationHubV1 {
         EXPIRY_DATE,       // The passport expiry date.
         OLDER_THAN,        // The "older than" age verification value.
         PASSPORT_NO_OFAC,  // The passport number OFAC status.
-        NAME_AND_DOB_OFAC, // The name and date of birth OFAC status.
-        NAME_AND_YOB_OFAC  // The name and year of birth OFAC status.
+        NAME_AND_DOB_OFAC, // The name and date of birth OFAC verification result.
+        NAME_AND_YOB_OFAC  // The name and year of birth OFAC verification result.
     }
 
     /**

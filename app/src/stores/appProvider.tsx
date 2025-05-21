@@ -28,7 +28,12 @@ interface IAppContext {
    * @param sessionId - The session ID from the scanned QR code.
    * @param success - Whether the proof was verified successfully.
    */
-  handleProofResult: (sessionId: string, success: boolean) => void;
+  handleProofResult: (
+    sessionId: string,
+    success: boolean,
+    error_code?: string,
+    reason?: string,
+  ) => void;
 }
 
 const AppContext = createContext<IAppContext>({
@@ -120,7 +125,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const handleProofResult = (sessionId: string, proof_verified: boolean) => {
+  const handleProofResult = (
+    sessionId: string,
+    proof_verified: boolean,
+    error_code?: string,
+    reason?: string,
+  ) => {
     console.log(
       '[AppProvider] handleProofResult called with sessionId:',
       sessionId,
@@ -143,11 +153,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         '[AppProvider] Emitting proof_generation_failed event with data:',
         {
           session_id: sessionId,
+          error_code,
+          reason,
         },
       );
 
       socketRef.current.emit('proof_generation_failed', {
         session_id: sessionId,
+        error_code,
+        reason,
       });
     }
   };

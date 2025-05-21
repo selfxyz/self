@@ -4,13 +4,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { Button } from 'tamagui';
 
-import ActivityIcon from '../images/icons/activity.svg';
-import SettingsIcon from '../images/icons/settings.svg';
-import { black, neutral400, white } from '../utils/colors';
-import { buttonTap } from '../utils/haptic';
-import { NavBar } from './NavBar';
+import ActivityIcon from '../../images/icons/activity.svg';
+import SettingsIcon from '../../images/icons/settings.svg';
+import { black, neutral400, white } from '../../utils/colors';
+import { buttonTap } from '../../utils/haptic';
+import { NavBar } from './BaseNavBar';
 
-const HomeNavBar = (props: NativeStackHeaderProps) => {
+export const HomeNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();
   return (
     <NavBar.Container
@@ -61,5 +61,3 @@ const HomeNavBar = (props: NativeStackHeaderProps) => {
     </NavBar.Container>
   );
 };
-
-export default HomeNavBar;

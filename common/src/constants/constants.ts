@@ -18,8 +18,8 @@ export const IDENTITY_TREE_URL = 'https://tree.self.xyz/identity';
 export const IDENTITY_TREE_URL_STAGING = 'https://tree.staging.self.xyz/identity';
 
 export const PASSPORT_ATTESTATION_ID = '1'; //"8518753152044246090169372947057357973469996808638122125210848696986717482788"
+export const ID_CARD_ATTESTATION_ID = '2';
 export const AADHAAR_ATTESTATION_ID = '3';
-
 export const CHAIN_NAME = 'celo';
 export const RPC_URL = 'https://forno.celo.org';
 export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8';
@@ -29,8 +29,17 @@ export const DEVELOPMENT_MODE = true;
 export const DEFAULT_MAJORITY = '18';
 
 export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
+export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
 export const saltLengths = [64, 48, 32];
 
+export type document_type = 'passport' | 'id_card';
+
+/**
+ * Maximum number of countries in the forbidden countries list.
+ * 
+ * IMPORTANT: This value must match in both backend and frontend SDK.
+ * Any mismatch will result in an INVALID_FORBIDDEN_COUNTRIES error.
+ */
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 40;
 
 export const DEPLOYED_CIRCUITS_REGISTER = [
@@ -214,6 +223,17 @@ export const attributeToPosition = {
   expiry_date: [65, 70],
   older_than: [88, 89],
   ofac: [90, 90],
+};
+export const attributeToPosition_ID = {
+  issuing_state: [2, 4],
+  name: [60, 89],
+  passport_number: [5, 13],
+  nationality: [45, 47],
+  date_of_birth: [30, 35],
+  gender: [37, 37],
+  expiry_date: [38, 43],
+  older_than: [90, 91],
+  ofac: [92, 92],
 };
 
 export const circuitToSelectorMode = {

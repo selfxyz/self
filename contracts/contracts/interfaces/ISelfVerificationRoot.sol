@@ -12,9 +12,20 @@ interface ISelfVerificationRoot {
         uint256[4] forbiddenCountriesListPacked;
         bool[3] ofacEnabled;
     }
+
+    struct DiscloseCircuitProof {
+        uint256[2] a;
+        uint256[2][2] b;
+        uint256[2] c;
+        uint256[21] pubSignals;
+    }
     
+    /**
+     * @notice Verifies a self-proof
+     * @param proof The proof data for verification and disclosure
+     */
     function verifySelfProof(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        DiscloseCircuitProof memory proof
     ) external;
 
 }

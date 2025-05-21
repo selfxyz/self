@@ -120,7 +120,7 @@ async function checkIdPassportDscIsInTree(
       circuitDNSMapping,
       endpointType,
     );
-    if (dscStatus !== ProofStatusEnum.SUCCESS) {
+    if (dscStatus.status !== ProofStatusEnum.SUCCESS) {
       console.log('DSC proof failed');
       return false;
     }
@@ -140,9 +140,9 @@ export async function sendDscPayload(
   passportData: PassportData,
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
-): Promise<ProofStatusEnum | false> {
+): Promise<{ status: ProofStatusEnum; error_code?: string; reason?: string }> {
   if (!passportData) {
-    return false;
+    return { status: ProofStatusEnum.FAILURE };
   }
   // const isSupported = checkPassportSupported(passportData);
   // if (!isSupported) {

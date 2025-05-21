@@ -3,6 +3,7 @@ import { StyleSheet, ViewStyle } from 'react-native';
 
 import { Button, Text, ViewProps } from 'tamagui';
 
+import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
 import { dinot } from '../../utils/fonts';
 import { pressedStyle } from './pressedStyle';
 
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexGrow: 0,
     flexShrink: 0,
-    width: '100%',
+    width: shouldShowAesopRedesign() ? '48%' : '100%',
     display: 'flex',
     alignItems: 'center',
     rowGap: 12,

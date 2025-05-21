@@ -101,12 +101,13 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
   console.log('eContent Hash Algorithm:', eContentHashAlgo);
   console.log('Signed Attributes Hash Algorithm:', signedAttrHashAlgo);
   console.log('Signature Algorithm:', sigAlg);
+  const prefix = passportData.documentType === 'id_card' || passportData.documentType === 'mock_id_card' ? 'register_id' : 'register';
 
   if (parsedDsc.signatureAlgorithm === 'ecdsa') {
     console.log('Processing ECDSA signature...');
     const { curveOrExponent } = passportMetadata;
     console.log('ECDSA curve:', curveOrExponent);
-    const circuitName = `register_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}`;
+    const circuitName = `${prefix}_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}`;
     console.log('Generated circuit name:', circuitName);
     return circuitName;
   } else if (parsedDsc.signatureAlgorithm === 'rsa') {
@@ -116,7 +117,8 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
     console.log('RSA bits:', signatureAlgorithmBits);
 
     if (signatureAlgorithmBits <= 4096) {
-      const circuitName = `register_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${4096}`;
+
+      const circuitName = `${prefix}_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${4096}`;
       console.log('Generated circuit name:', circuitName);
       return circuitName;
     } else {
@@ -131,7 +133,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
     console.log('RSA-PSS bits:', signatureAlgorithmBits);
 
     if (signatureAlgorithmBits <= 4096) {
-      const circuitName = `register_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${saltLength}_${signatureAlgorithmBits}`;
+      const circuitName = `${prefix}_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${saltLength}_${signatureAlgorithmBits}`;
       console.log('Generated circuit name:', circuitName);
       return circuitName;
     } else {

@@ -19,6 +19,9 @@ import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/
 import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
 import { hashEndpointWithScope } from '../../../common/src/utils/scope';
 
+const CELO_MAINNET_RPC_URL = "https://forno.celo.org";
+const CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org";
+
 export class SelfBackendVerifier {
   protected scope: string;
   protected attestationId: number = 1;
@@ -55,12 +58,12 @@ export class SelfBackendVerifier {
   protected mockPassport: boolean;
 
   constructor(
-    rpcUrl: string,
     scope: string,
     endpoint: string,
     user_identifier_type: UserIdType = 'uuid',
     mockPassport: boolean = false
   ) {
+    const rpcUrl = mockPassport ? CELO_TESTNET_RPC_URL : CELO_MAINNET_RPC_URL;
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const registryAddress = mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
     const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
@@ -135,7 +138,13 @@ export class SelfBackendVerifier {
     let result: any;
     try {
       result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
-    } catch (error) {
+    } catch (error: any) {
+      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      if (error && typeof error === 'object' && error.message && error.message.includes('INVALID_FORBIDDEN_COUNTRIES')) {
+        errorMessage = 'The forbidden countries list in the backend does not match the list provided in the frontend SDK. Please ensure both lists are identical.';
+      }
+
       return {
         isValid: false,
         isValidDetails: {
@@ -154,7 +163,7 @@ export class SelfBackendVerifier {
             publicSignals: publicSignals,
           },
         },
-        error: error,
+        error: errorMessage,
       };
     }
 
@@ -221,10 +230,35 @@ export class SelfBackendVerifier {
     return this;
   }
 
+  /**
+   * Sets the list of countries to be excluded in the verification.
+   * This list must exactly match the list configured in the backend.
+   * 
+   * @param countries Array of 3-letter country codes to exclude
+   * @returns This instance for method chaining
+   * @throws Error if more than 40 countries are provided or if any country code is invalid
+   */
   excludeCountries(...countries: Country3LetterCode[]): this {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
+    
+    // Validate country codes
+    for (const country of countries) {
+      if (!country || country.length !== 3) {
+        throw new Error(`Invalid country code: "${country}". Country codes must be exactly 3 characters long.`);
+      }
+      
+      // Check if the country code exists in the list of valid codes (additional check)
+      const isValidCountry = Object.values(commonNames).some(
+        name => name === country || country in commonNames
+      );
+      
+      if (!isValidCountry) {
+        throw new Error(`Unknown country code: "${country}". Please use valid 3-letter ISO country codes.`);
+      }
+    }
+    
     this.excludedCountries = { enabled: true, value: countries };
     return this;
   }

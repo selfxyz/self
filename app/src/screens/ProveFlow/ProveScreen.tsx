@@ -168,7 +168,9 @@ const ProveScreen: React.FC = () => {
         );
         handleProofResult(
           currentApp.sessionId,
-          status === ProofStatusEnum.SUCCESS,
+          status?.status === ProofStatusEnum.SUCCESS,
+          status?.error_code,
+          status?.reason,
         );
       } catch (e) {
         console.log('Error in verification process');

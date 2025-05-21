@@ -1,0 +1,87 @@
+name: Push Build Version Changes
+
+description: "Commits and pushes build version changes for mobile platforms"
+
+inputs:
+  commit_message:
+    description: "Commit message"
+    required: true
+  commit_paths:
+    description: "Space-separated list of paths to check for changes (e.g. 'ios/file.txt android/another/file.xml')"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure Git
+      shell: bash
+      run: |
+        set -e
+        git config --global user.email "action@github.com"
+        git config --global user.name "Self GitHub Actions"
+
+    - name: Commit Changes
+      shell: bash
+      run: |
+        set -e
+        set -x
+
+        # Restore the logic for checking specific paths existence
+        commit_paths_input="${{ inputs.commit_paths }}"
+        paths_to_commit=""
+
+        for path in $commit_paths_input; do
+          if [ ! -e "$path" ]; then
+            echo "Error: Path $path does not exist"
+            exit 1
+          fi
+          paths_to_commit="$paths_to_commit $path"
+        done
+
+        if [ -z "$paths_to_commit" ]; then
+          echo "No valid paths provided."
+          exit 1
+        fi
+
+        # Remove leading space if present
+        paths_to_commit=$(echo "$paths_to_commit" | sed 's/^ *//')
+
+        # Stage ONLY the specified paths
+        git add $paths_to_commit
+
+        # Check if there are staged changes ONLY in the specified paths
+        if git diff --staged --quiet -- $paths_to_commit; then
+          echo "No changes to commit in the specified paths: $paths_to_commit"
+        else
+          echo "Changes to be committed in paths: $paths_to_commit"
+          # Show the staged diff for the specified paths
+          git diff --cached -- $paths_to_commit
+          git commit -m "chore: ${{ inputs.commit_message }} [github action]"
+        fi
+
+    - name: Push Changes
+      shell: bash
+      run: |
+        set -e
+        set -x
+
+        if git rev-parse --verify HEAD >/dev/null 2>&1; then
+          if [[ ${{ github.ref }} == refs/pull/* ]]; then
+            CURRENT_BRANCH=${{ github.head_ref }}
+          else
+            CURRENT_BRANCH=$(echo ${{ github.ref }} | sed 's|refs/heads/||')
+          fi
+
+          echo "Pushing changes to branch: $CURRENT_BRANCH"
+          # Add --autostash to handle potential unstaged changes gracefully
+          git pull --rebase --autostash origin $CURRENT_BRANCH || {
+            echo "Failed to pull from $CURRENT_BRANCH"
+            exit 1
+          }
+          git push origin HEAD:$CURRENT_BRANCH || {
+            echo "Failed to push to $CURRENT_BRANCH"
+            exit 1
+          }
+        else
+          echo "No new commits to push"
+        fi

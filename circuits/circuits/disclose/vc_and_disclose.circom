@@ -42,9 +42,11 @@ template VC_AND_DISCLOSE(
     namedobTreeLevels,
     nameyobTreeLevels
 ) {
+    var DG1_LEN = 93;
+
     signal input secret;
     signal input attestation_id;
-    signal input dg1[93];
+    signal input dg1[DG1_LEN];
     signal input eContent_shaBytes_packed_hash;
     signal input dsc_tree_leaf;
 
@@ -79,7 +81,7 @@ template VC_AND_DISCLOSE(
     signal input user_identifier;
 
     // verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(nLevels)(
+    VERIFY_COMMITMENT(nLevels, DG1_LEN)(
         secret,
         attestation_id,
         dg1,

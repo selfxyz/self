@@ -1,0 +1,56 @@
+name: Setup Mobile Environment
+
+description: "Sets up the environment for mobile app builds"
+
+inputs:
+  app_path:
+    description: "Path to the app directory"
+    required: true
+  node_version:
+    description: "Node version"
+    required: true
+  ruby_version:
+    description: "Ruby version"
+    required: true
+  workspace:
+    description: "Workspace directory path"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install locales and dialog for local development
+      if: ${{ env.ACT }}
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y locales dialog unzip
+
+    # for fastlane
+    - name: Install locales and dialog
+      if: runner.os != 'macOS'
+      shell: bash
+      run: |
+        sudo locale-gen en_US.UTF-8
+        sudo update-locale LANG=en_US.UTF-8
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Ruby environment
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby_version }}
+
+    - name: Setup Node.js environment
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node_version }}
+
+    - name: Install app dependencies
+      shell: bash
+      run: |
+        cd ${{ inputs.app_path }}
+        corepack enable
+        yarn install
+        yarn install-app:deploy

@@ -10,6 +10,7 @@ import {
 } from '../../../../common/src/constants/constants';
 import { EndpointType } from '../../../../common/src/utils/appType';
 import {
+  DiscloseError,
   ProofStatusEnum,
   globalSetDisclosureStatus,
   globalSetRegistrationStatus,
@@ -67,7 +68,7 @@ export async function sendPayload(
     updateGlobalOnFailure?: boolean;
     flow?: 'registration' | 'disclosure';
   },
-): Promise<ProofStatusEnum> {
+): Promise<{ status: ProofStatusEnum; error_code?: string; reason?: string }> {
   const opts = {
     updateGlobalOnSuccess: true,
     updateGlobalOnFailure: true,
@@ -75,7 +76,11 @@ export async function sendPayload(
   };
   return new Promise(resolve => {
     let finalized = false;
-    function finalize(status: ProofStatusEnum) {
+    function finalize(
+      status: ProofStatusEnum,
+      error_code?: string,
+      reason?: string,
+    ) {
       if (!finalized) {
         finalized = true;
         clearTimeout(timer);
@@ -84,12 +89,15 @@ export async function sendPayload(
           (status !== ProofStatusEnum.SUCCESS && opts.updateGlobalOnFailure)
         ) {
           if (options?.flow === 'disclosure') {
-            globalSetDisclosureStatus && globalSetDisclosureStatus(status);
+            let discloseError: DiscloseError | undefined =
+              error_code || reason ? { error_code, reason } : undefined;
+            globalSetDisclosureStatus &&
+              globalSetDisclosureStatus(status, discloseError);
           } else {
             globalSetRegistrationStatus && globalSetRegistrationStatus(status);
           }
         }
-        resolve(status);
+        resolve({ status, error_code, reason });
       }
     }
     const uuid = v4();
@@ -201,7 +209,7 @@ export async function sendPayload(
                 if (ws.readyState === WebSocket.OPEN) {
                   ws.close();
                 }
-                finalize(ProofStatusEnum.FAILURE);
+                finalize(ProofStatusEnum.FAILURE, data.error_code, data.reason);
               }
             });
             socket.on('disconnect', reason => {

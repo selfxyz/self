@@ -21,6 +21,7 @@ import {
   getAttributeFromUnpackedReveal,
 } from '../../../common/src/utils/circuits/formatOutputs';
 import { generateCommitment } from '../../../common/src/utils/passports/passport';
+import { hashEndpointWithScope } from '../../../common/src/utils/scope';
 
 describe('Disclose', function () {
   this.timeout(0);
@@ -42,7 +43,9 @@ describe('Disclose', function () {
   const user_identifier = crypto.randomUUID();
   const selector_dg1 = Array(88).fill('1');
   const selector_older_than = '1';
-  const scope = '@coboyApp';
+  const endpoint = 'https://example.com';
+  const scope = 'scope';
+  const fullScope = hashEndpointWithScope(endpoint, scope);
   const attestation_id = PASSPORT_ATTESTATION_ID;
 
   // compute the commitment and insert it in the tree
@@ -78,7 +81,7 @@ describe('Disclose', function () {
       secret,
       PASSPORT_ATTESTATION_ID,
       passportData,
-      scope,
+      fullScope,
       selector_dg1,
       selector_older_than,
       tree,
@@ -153,7 +156,7 @@ describe('Disclose', function () {
 
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
 
         for (let i = 0; i < 88; i++) {
           if (selector_dg1[i] == '1') {
@@ -165,7 +168,7 @@ describe('Disclose', function () {
         }
 
         const forbidden_countries_list_packed = await circuit.getOutput(w, [
-          'forbidden_countries_list_packed[1]',
+          'forbidden_countries_list_packed[4]',
         ]);
         const forbidden_countries_list_unpacked = formatAndUnpackForbiddenCountriesList(
           forbidden_countries_list_packed
@@ -184,8 +187,8 @@ describe('Disclose', function () {
     });
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
-    const older_than = getAttributeFromUnpackedReveal(reveal_unpacked, 'older_than');
+    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
+    const older_than = getAttributeFromUnpackedReveal(reveal_unpacked, 'older_than', 'passport');
     expect(older_than).to.equal('18');
   });
 
@@ -200,7 +203,7 @@ describe('Disclose', function () {
 
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
     expect(reveal_unpacked[88]).to.equal('\x00');
     expect(reveal_unpacked[89]).to.equal('\x00');
   });
@@ -210,7 +213,7 @@ describe('Disclose', function () {
       w = await circuit.calculateWitness(inputs);
 
       const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
-      const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+      const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
 
       console.log('reveal_unpacked', reveal_unpacked);
       // OFAC result is stored at index 90 in the revealed data
@@ -232,7 +235,7 @@ describe('Disclose', function () {
       });
 
       const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
-      const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+      const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
 
       // OFAC result should be hidden (null byte)
       const ofac_result = reveal_unpacked[90];
@@ -364,7 +367,7 @@ describe('Disclose', function () {
           secret,
           PASSPORT_ATTESTATION_ID,
           passportData,
-          scope,
+          fullScope,
           Array(88).fill('0'), // selector_dg1
           selector_older_than,
           tree,
@@ -379,7 +382,7 @@ describe('Disclose', function () {
 
         w = await circuit.calculateWitness(testInputs);
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
-        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
         const ofac_results = reveal_unpacked.slice(90, 93);
 
         console.log(`${testCase.desc} - OFAC bits:`, ofac_results);

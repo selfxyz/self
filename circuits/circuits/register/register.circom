@@ -25,7 +25,7 @@ include "../utils/passport/checkPubkeyPosition.circom";
 /// @input raw_dsc_actual_length Actual length of DSC certificate
 /// @input dsc_pubKey_offset Offset of DSC public key in certificate
 /// @input dsc_pubKey_actual_size Actual size of DSC public key
-/// @input dg1 Document Group 1 data (93 bytes)
+/// @input dg1 Document Group 1 data (DG1_LEN bytes)
 /// @input dg1_hash_offset Offset for DG1 hash
 /// @input eContent eContent data - contains all DG hashes
 /// @input eContent_padded_length Padded length of eContent
@@ -68,12 +68,14 @@ template REGISTER(
 
     var MAX_DSC_PUBKEY_LENGTH = n * kScaled / 8;
 
+    var DG1_LEN = 93;
+
     signal input raw_dsc[MAX_DSC_LENGTH];
     signal input raw_dsc_actual_length;
     signal input dsc_pubKey_offset;
     signal input dsc_pubKey_actual_size;
 
-    signal input dg1[93];
+    signal input dg1[DG1_LEN];
     signal input dg1_hash_offset;
     signal input eContent[MAX_ECONTENT_PADDED_LEN];
     signal input eContent_padded_length;
@@ -147,6 +149,7 @@ template REGISTER(
 
     // verify passport signature
     component passportVerifier = PassportVerifier(
+        DG1_LEN,
         DG_HASH_ALGO,
         ECONTENT_HASH_ALGO,
         signatureAlgorithm,
@@ -169,7 +172,7 @@ template REGISTER(
     signal output nullifier <== PackBytesAndPoseidon(HASH_LEN_BYTES)(passportVerifier.signedAttrShaBytes);
 
     // generate commitment
-    signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
+    signal dg1_packed_hash <== PackBytesAndPoseidon(DG1_LEN)(dg1);
     signal eContent_shaBytes_packed_hash <== PackBytesAndPoseidon(ECONTENT_HASH_ALGO_BYTES)(passportVerifier.eContentShaBytes);
     
     signal output commitment <== Poseidon(5)([

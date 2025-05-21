@@ -5,10 +5,7 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
-import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
-import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
 /**
  * @title Airdrop (Experimental)
@@ -77,6 +74,12 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     event ClaimClose();
 
     event UserIdentifierRegistered(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
+    /// @notice Emitted when the scope is updated.
+    event ScopeUpdated(uint256 newScope);
+    /// @notice Emitted when a new attestation ID is added.
+    event AttestationIdAdded(uint256 attestationId);
+    /// @notice Emitted when an attestation ID is removed.
+    event AttestationIdRemoved(uint256 attestationId);
 
     // ====================================================
     // Constructor
@@ -88,34 +91,19 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      *      and sets the ERC20 token to be distributed.
      * @param _identityVerificationHub The address of the Identity Verification Hub.
      * @param _scope The expected proof scope for user registration.
-     * @param _attestationId The expected attestation identifier required in proofs.
+     * @param _attestationIds The expected attestation identifiers required in proofs.
      * @param _token The address of the ERC20 token for airdrop.
-     * @param _olderThanEnabled Flag indicating if 'olderThan' verification is enabled.
-     * @param _olderThan Value for 'olderThan' verification.
-     * @param _forbiddenCountriesEnabled Flag indicating if forbidden countries verification is enabled.
-     * @param _forbiddenCountriesListPacked Packed list of forbidden countries.
-     * @param _ofacEnabled Array of flags indicating which OFAC checks are enabled. [passportNo, nameAndDob, nameAndYob]
      */
     constructor(
         address _identityVerificationHub, 
         uint256 _scope, 
-        uint256 _attestationId,
-        address _token,
-        bool _olderThanEnabled,
-        uint256 _olderThan,
-        bool _forbiddenCountriesEnabled,
-        uint256[4] memory _forbiddenCountriesListPacked,
-        bool[3] memory _ofacEnabled
+        uint256[] memory _attestationIds,
+        address _token
     ) 
         SelfVerificationRoot(
             _identityVerificationHub, 
             _scope, 
-            _attestationId, 
-            _olderThanEnabled,
-            _olderThan,
-            _forbiddenCountriesEnabled,
-            _forbiddenCountriesListPacked,
-            _ofacEnabled
+            _attestationIds
         )
         Ownable(_msgSender())
     {
@@ -143,7 +131,37 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     function setVerificationConfig(
         ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
     ) external onlyOwner {
-        _verificationConfig = newVerificationConfig;
+        _setVerificationConfig(newVerificationConfig);
+    }
+
+    /**
+     * @notice Updates the scope used for verification.
+     * @dev Only callable by the contract owner.
+     * @param newScope The new scope to set.
+     */
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
+        emit ScopeUpdated(newScope);
+    }
+
+    /**
+     * @notice Adds a new attestation ID to the allowed list.
+     * @dev Only callable by the contract owner.
+     * @param attestationId The attestation ID to add.
+     */
+    function addAttestationId(uint256 attestationId) external onlyOwner {
+        _addAttestationId(attestationId);
+        emit AttestationIdAdded(attestationId);
+    }
+
+    /**
+     * @notice Removes an attestation ID from the allowed list.
+     * @dev Only callable by the contract owner.
+     * @param attestationId The attestation ID to remove.
+     */
+    function removeAttestationId(uint256 attestationId) external onlyOwner {
+        _removeAttestationId(attestationId);
+        emit AttestationIdRemoved(attestationId);
     }
 
     /**
@@ -188,7 +206,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param proof The VC and Disclose proof data used to verify and register the user.
      */
     function verifySelfProof(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        ISelfVerificationRoot.DiscloseCircuitProof memory proof
     ) 
         public 
         override 
@@ -197,38 +215,21 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         if (!isRegistrationOpen) {
             revert RegistrationNotOpen();
         }
-        
-        if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
-            revert InvalidScope();
-        }
 
-        if (_attestationId != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
-            revert InvalidAttestationId();
-        }
-
-        if (_nullifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != 0) {
+        if (_nullifiers[proof.pubSignals[NULLIFIER_INDEX]] != 0) {
             revert RegisteredNullifier();
         }
         
-        if (proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX] == 0) {
+        if (proof.pubSignals[USER_IDENTIFIER_INDEX] == 0) {
             revert InvalidUserIdentifier();
         }
 
-        IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub.verifyVcAndDisclose(
-            IIdentityVerificationHubV1.VcAndDiscloseHubProof({
-                olderThanEnabled: _verificationConfig.olderThanEnabled,
-                olderThan: _verificationConfig.olderThan,
-                forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
-                forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
-                ofacEnabled: _verificationConfig.ofacEnabled,
-                vcAndDiscloseProof: proof
-            })
-        );
+        super.verifySelfProof(proof);
 
-        _nullifiers[result.nullifier] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
-        _registeredUserIdentifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]] = true;
+        _nullifiers[proof.pubSignals[NULLIFIER_INDEX]] = proof.pubSignals[USER_IDENTIFIER_INDEX];
+        _registeredUserIdentifiers[proof.pubSignals[USER_IDENTIFIER_INDEX]] = true;
 
-        emit UserIdentifierRegistered(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX], result.nullifier);
+        emit UserIdentifierRegistered(proof.pubSignals[USER_IDENTIFIER_INDEX], proof.pubSignals[NULLIFIER_INDEX]);
     }
 
     /**
@@ -240,11 +241,12 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     }
 
     /**
-     * @notice Retrieves the expected attestation identifier.
-     * @return The attestation identifier.
+     * @notice Checks if the specified attestation ID is allowed.
+     * @param attestationId The attestation ID to check.
+     * @return True if the attestation ID is allowed, false otherwise.
      */
-    function getAttestationId() external view returns (uint256) {
-        return _attestationId;
+    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
+        return _attestationIds[attestationId];
     }
 
     /**
@@ -261,7 +263,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @return The verification configuration used for registration.
      */
     function getVerificationConfig() external view returns (ISelfVerificationRoot.VerificationConfig memory) {
-        return _verificationConfig;
+        return _getVerificationConfig();
     }
 
     /**
