@@ -25,10 +25,8 @@ import {
   extractPhoto,
   timestampToUTCUnix,
 } from '@anon-aadhaar/core';
-
-
-import { generateCommitment } from '../../../common/src/utils/passports/passport';
-import { prepareTestDataDisclosure } from '../../../common/src/utils/aadhaar/aadhaar';
+ 
+// import { prepareTestDataDisclosure } from '../../../common/src/utils/aadhaar/aadhaar';
 
 
 dotenv.config();

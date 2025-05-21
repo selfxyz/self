@@ -141,9 +141,6 @@ template DiscloseAadhaar(
         ofac_nameyob_smt_siblings
     );
 
-    // TODO
-    // convert timetamp to bytes 
-
     // DataRevealed in packed version 
     // 1 -> Timestamp
     // 2 -> AgeOlderThan
