@@ -113,7 +113,7 @@ const AccountRecoveryChoiceScreen: React.FC<
 
           <YStack gap="$2.5" width="100%" pt="$6">
             <PrimaryButton
-              trackEvent="Restore From Cloud"
+              trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}
               disabled={restoring || !biometricsAvailable}
             >
@@ -126,7 +126,7 @@ const AccountRecoveryChoiceScreen: React.FC<
               <Separator flexGrow={1} />
             </XStack>
             <SecondaryButton
-              trackEvent="Enter Recovery Phrase"
+              trackEvent={BackupEvents.MANUAL_RECOVERY_SELECTED}
               onPress={handleManualRecoveryPress}
               disabled={restoring}
             >

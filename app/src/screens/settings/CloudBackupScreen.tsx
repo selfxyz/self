@@ -137,7 +137,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               <SecondaryButton
                 onPress={disableCloudBackups}
                 disabled={pending || !biometricsAvailable}
-                trackEvent="Disable Cloud Backup"
+                trackEvent={BackupEvents.CLOUD_BACKUP_DISABLE_STARTED}
               >
                 {pending ? 'Disabling' : 'Disable'} {STORAGE_NAME} backups
                 {pending ? '…' : ''}
@@ -146,7 +146,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               <PrimaryButton
                 onPress={enableCloudBackups}
                 disabled={pending || !biometricsAvailable}
-                trackEvent="Enable Cloud Backup"
+                trackEvent={BackupEvents.CLOUD_BACKUP_ENABLE_STARTED}
               >
                 {pending ? 'Enabling' : 'Enable'} {STORAGE_NAME} backups
                 {pending ? '…' : ''}
@@ -185,7 +185,7 @@ function BottomButton({
           confirmTap();
           navigation.navigate(nextScreen);
         }}
-        trackEvent="Cloud Backup Continue"
+        trackEvent={BackupEvents.CLOUD_BACKUP_CONTINUE}
       >
         Continue
       </PrimaryButton>
@@ -197,20 +197,26 @@ function BottomButton({
           confirmTap();
           navigation.navigate(nextScreen);
         }}
-        trackEvent="Cloud Backup Manual"
+        trackEvent={BackupEvents.MANUAL_RECOVERY_SELECTED}
       >
         Back up manually
       </SecondaryButton>
     );
   } else if (cloudBackupEnabled) {
     return (
-      <PrimaryButton onPress={goBack} trackEvent="Cloud Backup Cancel">
+      <PrimaryButton
+        onPress={goBack}
+        trackEvent={BackupEvents.CLOUD_BACKUP_CANCELLED}
+      >
         Nevermind
       </PrimaryButton>
     );
   } else {
     return (
-      <SecondaryButton onPress={goBack} trackEvent="Cloud Backup Cancel">
+      <SecondaryButton
+        onPress={goBack}
+        trackEvent={BackupEvents.CLOUD_BACKUP_CANCELLED}
+      >
         Nevermind
       </SecondaryButton>
     );

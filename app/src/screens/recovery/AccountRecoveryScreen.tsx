@@ -5,6 +5,7 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { BackupEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
@@ -37,13 +38,13 @@ const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
 
           <YStack gap="$2.5" width="100%" pt="$6">
             <PrimaryButton
-              trackEvent="Start Account Recovery"
+              trackEvent={BackupEvents.ACCOUNT_RECOVERY_STARTED}
               onPress={onRestoreAccountPress}
             >
               Restore my account
             </PrimaryButton>
             <SecondaryButton
-              trackEvent="Start New Account"
+              trackEvent={BackupEvents.CREATE_NEW_ACCOUNT}
               onPress={onCreateAccountPress}
             >
               Create new account

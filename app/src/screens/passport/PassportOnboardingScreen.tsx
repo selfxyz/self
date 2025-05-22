@@ -10,10 +10,10 @@ import TextsContainer from '../../components/TextsContainer';
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '../../utils/colors';
-
 interface PassportOnboardingScreenProps {}
 
 const PassportOnboardingScreen: React.FC<
@@ -58,11 +58,14 @@ const PassportOnboardingScreen: React.FC<
           </Additional>
         </TextsContainer>
         <ButtonsContainer>
-          <PrimaryButton trackEvent="Open Camera" onPress={handleCameraPress}>
+          <PrimaryButton
+            trackEvent={PassportEvents.CAMERA_SCAN_STARTED}
+            onPress={handleCameraPress}
+          >
             Open Camera
           </PrimaryButton>
           <SecondaryButton
-            trackEvent="Cancel Open Camera"
+            trackEvent={PassportEvents.CAMERA_SCAN_CANCELLED}
             onPress={onCancelPress}
           >
             Cancel

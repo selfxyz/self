@@ -28,106 +28,97 @@
  * - cloud_service_unavailable: Cloud service unavailable
  */
 
-import { EventCategory } from '../utils/analytics';
+export const AppEvents = {
+  DISMISS_PRIVACY_DISCLAIMER: 'App: Dismiss Privacy Disclaimer',
+  GET_STARTED: 'App: Get Started',
+  UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
+  UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
+  UPDATE_STARTED: 'App: Update Started',
+};
 
-/**
- * Creates event names by prefixing each event name with its category.
- *
- * @example
- * createEventNames(EventCategory.APP, {
- *   UPDATE_AVAILABLE: 'Update Available'
- * })
- * // Returns: { UPDATE_AVAILABLE: 'App: Update Available' }
- */
-const createEventNames = (
-  category: EventCategory,
-  events: Record<string, string>,
-) =>
-  Object.fromEntries(
-    Object.entries(events).map(([key, value]) => [
-      key,
-      `${category}: ${value}`,
-    ]),
-  );
+export const AuthEvents = {
+  AUTHENTICATION_TIMEOUT: 'Auth: Authentication Timeout',
+  BIOMETRIC_AUTH_FAILED: 'Auth: Biometric Auth Failed',
+  BIOMETRIC_AUTH_SUCCESS: 'Auth: Biometric Auth Success',
+  BIOMETRIC_CHECK: 'Auth: Biometrics Check',
+  BIOMETRIC_LOGIN_ATTEMPT: 'Auth: Biometric Login Attempt',
+  BIOMETRIC_LOGIN_CANCELLED: 'Auth: Biometric Login Cancelled',
+  BIOMETRIC_LOGIN_FAILED: 'Auth: Biometric Login Failed',
+  BIOMETRIC_LOGIN_SUCCESS: 'Auth: Biometric Login Success',
+  MNEMONIC_CREATED: 'Auth: Mnemonic Created',
+  MNEMONIC_LOADED: 'Auth: Mnemonic Loaded',
+  MNEMONIC_RESTORE_FAILED: 'Auth: Mnemonic Restore Failed',
+  MNEMONIC_RESTORE_SUCCESS: 'Auth: Mnemonic Restore Success',
+};
 
-export const AppEvents = createEventNames(EventCategory.APP, {
-  UPDATE_STARTED: 'Update Started',
-  UPDATE_MODAL_OPENED: 'Update Modal Opened',
-  UPDATE_MODAL_CLOSED: 'Update Modal Closed',
-});
+export const PassportEvents = {
+  CAMERA_SCAN_CANCELLED: 'Passport: Camera Scan Cancelled',
+  CAMERA_SCREEN_CLOSED: 'Passport: Camera View Closed',
+  CAMERA_SCAN_FAILED: 'Passport: Camera Scan Failed',
+  CAMERA_SCAN_STARTED: 'Passport: Camera Scan Started',
+  CAMERA_SCAN_SUCCESS: 'Passport: Camera Scan Success',
+  CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
+  DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
+  DISMISS_UNSUPPORTED_PASSPORT: 'Passport: Dismiss Unsupported Passport',
+  NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
+  NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
+  NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',
+  OPEN_NFC_SETTINGS: 'Passport: Open NFC Settings',
+  OWNERSHIP_CONFIRMED: 'Passport: Passport Ownership Confirmed',
+  PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
+  PASSPORT_PARSED: 'Passport: Passport Parsed',
+  START_PASSPORT_NFC: 'Passport: Start Passport NFC',
+};
 
-export const AuthEvents = createEventNames(EventCategory.AUTH, {
-  BIOMETRIC_AUTH_SUCCESS: 'Biometric Auth Success',
-  BIOMETRIC_AUTH_FAILED: 'Biometric Auth Failed',
-  BIOMETRIC_CHECK: 'Biometrics Check',
-  BIOMETRIC_LOGIN_ATTEMPT: 'Biometric Login Attempt',
-  BIOMETRIC_LOGIN_SUCCESS: 'Biometric Login Success',
-  BIOMETRIC_LOGIN_FAILED: 'Biometric Login Failed',
-  BIOMETRIC_LOGIN_CANCELLED: 'Biometric Login Cancelled',
-  AUTHENTICATION_TIMEOUT: 'Authentication Timeout',
-  MNEMONIC_LOADED: 'Mnemonic Loaded',
-  MNEMONIC_CREATED: 'Mnemonic Created',
-  MNEMONIC_RESTORE_SUCCESS: 'Mnemonic Restore Success',
-  MNEMONIC_RESTORE_FAILED: 'Mnemonic Restore Failed',
-});
+export const ProofEvents = {
+  FCM_TOKEN_STORED: 'Proof: FCM Token Stored Successfully',
+  NOTIFICATION_PERMISSION_REQUESTED: 'Proof: Notification Permission Requested',
+  PROOF_COMPLETED: 'Proof: Proof Completed',
+  PROOF_DISCLOSURES_SCROLLED: 'Proof: Proof Disclosures Scrolled',
+  PROOF_FAILED: 'Proof: Proof Failed',
+  PROOF_RESULT_ACKNOWLEDGED: 'Proof: Proof Result Acknowledged',
+  PROOF_VERIFICATION_STARTED: 'Proof: Proof Verification Started',
+  PROVING_PROCESS_ERROR: 'Proof: Proving Process Error',
+  PROVING_STATE_CHANGE: 'Proof: Proving State Change',
+  QR_SCAN_CANCELLED: 'Proof: QR Scan Cancelled',
+  QR_SCAN_FAILED: 'Proof: QR Scan Failed',
+  QR_SCAN_SUCCESS: 'Proof: QR Scan Success',
+};
 
-export const PassportEvents = createEventNames(EventCategory.PASSPORT, {
-  CAMERA_SCAN_SUCCESS: 'Camera Scan Success',
-  CAMERA_SCAN_FAILED: 'Camera Scan Failed',
-  NFC_SCAN_SUCCESS: 'NFC Scan Success',
-  NFC_SCAN_FAILED: 'NFC Scan Failed',
-  PASSPORT_PARSED: 'Passport Parsed',
-  PASSPORT_PARSE_FAILED: 'Passport Parse Failed',
-  OWNERSHIP_CONFIRMED: 'Passport Ownership Confirmed',
-  DATA_LOAD_ERROR: 'Passport Data Load Error',
-  NFC_RESPONSE_PARSE_FAILED: 'Parsing NFC Response Unsuccessful',
-  START_PASSPORT_NFC: 'Start Passport NFC',
-  OPEN_NFC_SETTINGS: 'Open NFC Settings',
-  CANCEL_PASSPORT_NFC: 'Cancel Passport NFC',
-});
+export const SettingsEvents = {
+  CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
+  CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
+  CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
+};
 
-export const ProofEvents = createEventNames(EventCategory.PROOF, {
-  QR_SCAN_SUCCESS: 'QR Scan Success',
-  QR_SCAN_FAILED: 'QR Scan Failed',
-  NOTIFICATION_PERMISSION_REQUESTED: 'Notification Permission Requested',
-  FCM_TOKEN_STORED: 'FCM Token Stored Successfully',
-  PROVING_STATE_CHANGE: 'Proving State Change',
-  PROVING_PROCESS_ERROR: 'Proving Process Error',
-  PROOF_COMPLETED: 'Proof Completed',
-  PROOF_FAILED: 'Proof Failed',
-  PROOF_RESULT_ACKNOWLEDGED: 'Proof Result Acknowledged',
-  PROOF_VERIFICATION_STARTED: 'Proof Verification Started',
-  PROOF_DISCLOSURES_SCROLLED: 'Proof Disclosures Scrolled',
-});
-
-export const SettingsEvents = createEventNames(EventCategory.SETTINGS, {
-  CONNECTION_SETTINGS_OPENED: 'Connection Settings Opened',
-  CONNECTION_MODAL_OPENED: 'Connection Modal Opened',
-  CONNECTION_MODAL_CLOSED: 'Connection Modal Closed',
-});
-
-export const BackupEvents = createEventNames(EventCategory.BACKUP, {
-  CLOUD_BACKUP_ENABLE_STARTED: 'Cloud Backup Enable Started',
-  CLOUD_BACKUP_DISABLE_STARTED: 'Cloud Backup Disable Started',
-  CLOUD_BACKUP_CANCELLED: 'Cloud Backup Cancelled',
-  CLOUD_RESTORE_SUCCESS: 'Cloud Restore Success',
-  CLOUD_RESTORE_FAILED_UNKNOWN: 'Cloud Restore Failed: Unknown Error',
+export const BackupEvents = {
+  ACCOUNT_RECOVERY_STARTED: 'Backup: Account Recovery Started',
+  ACCOUNT_VERIFICATION_COMPLETED: 'Backup: Account Verification Completed',
+  CLOUD_BACKUP_CONTINUE: 'Backup: Cloud Backup Continue',
+  CLOUD_BACKUP_STARTED: 'Backup: Cloud Backup Started',
+  CLOUD_BACKUP_CANCELLED: 'Backup: Cloud Backup Cancelled',
+  CLOUD_BACKUP_DISABLED_DONE: 'Backup: Cloud Backup Disabled Done',
+  CLOUD_BACKUP_DISABLE_STARTED: 'Backup: Cloud Backup Disable Started',
+  CLOUD_BACKUP_ENABLED_DONE: 'Backup: Cloud Backup Enabled Done',
+  CLOUD_BACKUP_ENABLE_STARTED: 'Backup: Cloud Backup Enable Started',
   CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED:
-    'Cloud Restore Failed: Passport Not Registered',
-  MANUAL_RECOVERY_SELECTED: 'Manual Recovery Selected',
-  CLOUD_BACKUP_DISABLED_DONE: 'Cloud Backup Disabled Done',
-  CLOUD_BACKUP_ENABLED_DONE: 'Cloud Backup Enabled Done',
-});
+    'Backup: Cloud Restore Failed: Passport Not Registered',
+  CLOUD_RESTORE_FAILED_UNKNOWN: 'Backup: Cloud Restore Failed: Unknown Error',
+  CLOUD_RESTORE_SUCCESS: 'Backup: Cloud Restore Success',
+  MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
+  CREATE_NEW_ACCOUNT: 'Backup: Create New Account',
+};
 
-export const MockDataEvents = createEventNames(EventCategory.MOCK_DATA, {
-  ENABLE_ADVANCED_MODE: 'Enable Advanced Mode',
-  OPEN_ALGORITHM_SELECTION: 'Open Algorithm Selection',
-  OPEN_COUNTRY_SELECTION: 'Open Country Selection',
-  DECREASE_EXPIRY_YEARS: 'Decrease Expiry Years',
-  INCREASE_EXPIRY_YEARS: 'Increase Expiry Years',
-  TOGGLE_OFAC_LIST: 'Toggle OFAC List',
-  SELECT_COUNTRY: 'Select Country',
-  SELECT_ALGORITHM: 'Select Algorithm',
-  GENERATE_DATA: 'Generate Data',
-  CANCEL_GENERATION: 'Cancel Generation',
-});
+export const MockDataEvents = {
+  CANCEL_GENERATION: 'Mock Data: Cancel Generation',
+  CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
+  DECREASE_EXPIRY_YEARS: 'Mock Data: Decrease Expiry Years',
+  ENABLE_ADVANCED_MODE: 'Mock Data: Enable Advanced Mode',
+  GENERATE_DATA: 'Mock Data: Generate Data',
+  INCREASE_EXPIRY_YEARS: 'Mock Data: Increase Expiry Years',
+  OPEN_ALGORITHM_SELECTION: 'Mock Data: Open Algorithm Selection',
+  OPEN_COUNTRY_SELECTION: 'Mock Data: Open Country Selection',
+  SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
+  SELECT_COUNTRY: 'Mock Data: Select Country',
+  TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
+};

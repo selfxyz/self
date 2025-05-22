@@ -155,7 +155,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
             </YStack>
 
             <SecondaryButton
-              trackEvent="QR Scan Canceled"
+              trackEvent={ProofEvents.QR_SCAN_CANCELLED}
               onPress={onCancelPress}
             >
               Cancel

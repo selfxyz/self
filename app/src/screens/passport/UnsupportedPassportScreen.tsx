@@ -6,6 +6,7 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
@@ -44,7 +45,10 @@ const UnsupportedPassportScreen: React.FC = () => {
           <Caption size="small" textAlign="center" textBreakStrategy="balanced">
             Don't panic, we're working hard to extend support to more regions.
           </Caption>
-          <PrimaryButton trackEvent="Dismiss Error" onPress={onPress}>
+          <PrimaryButton
+            trackEvent={PassportEvents.DISMISS_UNSUPPORTED_PASSPORT}
+            onPress={onPress}
+          >
             Dismiss
           </PrimaryButton>
         </ExpandableBottomLayout.BottomSection>

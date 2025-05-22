@@ -7,17 +7,6 @@ export interface EventParams {
   [key: string]: any;
 }
 
-// Event Categories
-export enum EventCategory {
-  AUTH = 'Auth',
-  PASSPORT = 'Passport',
-  PROOF = 'Proof',
-  SETTINGS = 'Settings',
-  BACKUP = 'Backup',
-  APP = 'App',
-  MOCK_DATA = 'Mock Data',
-}
-
 const segmentClient = createSegmentClient();
 
 function cleanParams(params: Record<string, any>) {
