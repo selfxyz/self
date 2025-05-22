@@ -51,7 +51,7 @@ export const createSegmentClient = () => {
     writeKey: SEGMENT_KEY,
     trackAppLifecycleEvents: true,
     trackDeepLinks: true,
-    debug: true,
+    debug: __DEV__,
     collectDeviceId: false,
     defaultSettings: {
       integrations: {
