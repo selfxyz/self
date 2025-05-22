@@ -575,8 +575,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           } else {
             wsRpcUrl = circuitsMapping?.REGISTER_ID?.[circuitName];
           }
-        } else {
-          wsRpcUrl = circuitsMapping?.DSC?.[circuitName];
+        } else{
+          if (passportData.documentType === 'passport' || passportData.documentType === 'mock_passport') {
+            wsRpcUrl = circuitsMapping?.DSC?.[circuitName];
+          } else {
+            wsRpcUrl = circuitsMapping?.DSC_ID?.[circuitName];
+          }
         }
       }
       if (!circuitName) {
