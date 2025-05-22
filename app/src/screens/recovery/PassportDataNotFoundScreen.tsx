@@ -5,10 +5,16 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import analytics from '../../utils/analytics';
 import { black, slate200, white } from '../../utils/colors';
 
 const PassportDataNotFound: React.FC = () => {
   const onPress = useHapticNavigation('Launch');
+
+  // error screen, flush analytics
+  React.useEffect(() => {
+    analytics().flush();
+  }, []);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
