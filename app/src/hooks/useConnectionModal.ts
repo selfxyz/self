@@ -3,13 +3,17 @@ import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
 import { navigationRef } from '../navigation';
+import analytics from '../utils/analytics';
 import { useModal } from './useModal';
+
+const { trackEvent } = analytics();
 
 const connectionModalParams = {
   titleText: 'Internet connection error',
   bodyText: 'In order to use SELF, you must have access to the internet.',
   buttonText: 'Open settings',
   onButtonPress: async () => {
+    trackEvent('Connection Settings Opened');
     return Platform.OS === 'ios'
       ? Linking.openURL('prefs://MOBILE_DATA_SETTINGS_ID')
       : Linking.sendIntent('android.settings.WIRELESS_SETTINGS');
@@ -33,8 +37,10 @@ export default function useConnectionModal() {
 
       if (!hasConnection && !visible) {
         showModal();
+        trackEvent('Connection Modal Opened');
       } else if (visible && hasConnection) {
         dismissModal();
+        trackEvent('Connection Modal Closed');
       }
       // Add a small delay to allow app initialization
     }, 2000);

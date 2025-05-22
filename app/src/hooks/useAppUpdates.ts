@@ -3,6 +3,10 @@ import { useEffect, useState } from 'react';
 import { Linking } from 'react-native';
 import { checkVersion } from 'react-native-check-version';
 
+import analytics from '../utils/analytics';
+
+const { trackEvent } = analytics();
+
 export const useAppUpdates = (): [boolean, () => void, boolean] => {
   const navigation = useNavigation();
   const [newVersionUrl, setNewVersionUrl] = useState<string | null>(null);
@@ -24,14 +28,17 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
       buttonText: 'Update and restart',
       onButtonPress: async () => {
         if (newVersionUrl !== null) {
+          trackEvent('App Update Started');
           // TODO or use: `Platform.OS === 'ios' ? appStoreUrl : playStoreUrl`
           await Linking.openURL(newVersionUrl);
         }
       },
       onModalDismiss: () => {
         setIsModalDismissed(true);
+        trackEvent('App Update Modal Closed');
       },
     });
+    trackEvent('App Update Modal Opened');
   };
 
   return [newVersionUrl !== null, showAppUpdateModal, isModalDismissed];

@@ -14,9 +14,12 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { RootStackParamList } from '../../Navigation';
 import { useAuth } from '../../stores/authProvider';
 import { useSettingStore } from '../../stores/settingStore';
+import analytics from '../../utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, white } from '../../utils/colors';
 import { buttonTap, confirmTap } from '../../utils/haptic';
+
+const { trackEvent } = analytics();
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 
@@ -46,9 +49,11 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         buttonText: 'I understand the risks',
         onButtonPress: async () => {
           try {
+            trackEvent('Cloud Backup Disable Started');
             await loginWithBiometrics();
             await disableBackup();
             toggleCloudBackupEnabled();
+            trackEvent('Cloud Backup Disabled Done');
           } finally {
             setPending(false);
           }
@@ -67,6 +72,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
       return;
     }
 
+    trackEvent('Cloud Backup Enable Started');
+
     setPending(true);
 
     const storedMnemonic = await getOrCreateMnemonic();
@@ -76,6 +83,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     }
     await upload(storedMnemonic.data);
     toggleCloudBackupEnabled();
+    trackEvent('Cloud Backup Enabled Done');
     setPending(false);
   }, [
     cloudBackupEnabled,
@@ -128,6 +136,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               <SecondaryButton
                 onPress={disableCloudBackups}
                 disabled={pending || !biometricsAvailable}
+                trackEvent="Disable Cloud Backup"
               >
                 {pending ? 'Disabling' : 'Disable'} {STORAGE_NAME} backups
                 {pending ? '…' : ''}
@@ -136,6 +145,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               <PrimaryButton
                 onPress={enableCloudBackups}
                 disabled={pending || !biometricsAvailable}
+                trackEvent="Enable Cloud Backup"
               >
                 {pending ? 'Enabling' : 'Enable'} {STORAGE_NAME} backups
                 {pending ? '…' : ''}
@@ -163,6 +173,7 @@ function BottomButton({
 
   const goBack = () => {
     confirmTap();
+    trackEvent('Cloud Backup Cancelled');
     navigation.goBack();
   };
 
@@ -173,6 +184,7 @@ function BottomButton({
           confirmTap();
           navigation.navigate(nextScreen);
         }}
+        trackEvent="Cloud Backup Continue"
       >
         Continue
       </PrimaryButton>
@@ -184,16 +196,23 @@ function BottomButton({
           confirmTap();
           navigation.navigate(nextScreen);
         }}
+        trackEvent="Cloud Backup Manual"
       >
         Back up manually
       </SecondaryButton>
     );
-
-    // if no next screen probably came from settings. Go back to settings
   } else if (cloudBackupEnabled) {
-    return <PrimaryButton onPress={goBack}>Nevermind</PrimaryButton>;
+    return (
+      <PrimaryButton onPress={goBack} trackEvent="Cloud Backup Cancel">
+        Nevermind
+      </PrimaryButton>
+    );
   } else {
-    return <SecondaryButton onPress={goBack}>Nevermind</SecondaryButton>;
+    return (
+      <SecondaryButton onPress={goBack} trackEvent="Cloud Backup Cancel">
+        Nevermind
+      </SecondaryButton>
+    );
   }
 }
 
