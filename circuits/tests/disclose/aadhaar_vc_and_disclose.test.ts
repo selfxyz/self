@@ -1,55 +1,83 @@
-// // eslint-disable-next-line @typescript-eslint/no-var-requires
-// const circom_tester = require('circom_tester/wasm/tester');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const circom_tester = require('circom_tester/wasm/tester');
 
-// import fs from 'fs';
-// import crypto from 'crypto';
-// import path from 'path';
-// import dotenv from 'dotenv';
-// import { describe } from 'mocha';
-// import { assert, expect } from 'chai';
+import fs from 'fs';
+import crypto from 'crypto';
+import path from 'path';
+import dotenv from 'dotenv';
+import { describe } from 'mocha';
+import { assert, expect } from 'chai';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
+import { poseidon1, poseidon2 } from 'poseidon-lite';
+import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT_Aadhaar.json';
+import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT_Aadhaar.json'
 
-// import { buildPoseidon } from 'circomlibjs';
 
-// import { sha256Pad } from '@zk-email/helpers/dist/sha-utils';
-// import {
-//   bigIntToChunkedBytes,
-//   bufferToHex,
-//   Uint8ArrayToCharArray,
-// } from '@zk-email/helpers/dist/binary-format';
+import { generateCircuitInputsAadhaarVCandDisclose, generateCommitmentAadhaar, prepareTestData } from '../../../common/src/utils/aadhaar/aadhaar';
 
-// import {
-//   convertBigIntToByteArray,
-//   decompressByteArray,
-//   splitToWords,
-//   extractPhoto,
-//   timestampToUTCUnix,
-// } from '@anon-aadhaar/core';
+dotenv.config();
 
-// // import { prepareTestDataDisclosure } from '../../../common/src/utils/aadhaar/aadhaar';
+describe('Disclose_aadhaar', function () {
+  this.timeout(0);
 
-// dotenv.config();
+  let circuit: any;
+  before(async () => {
+    circuit = await circom_tester(
+      path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
+  });
 
-// describe('Disclose_aadhaar', function () {
-//   this.timeout(0);
+  it('should compile and load the circuit', async function () {
+    const secret = BigInt(0);
+    const attestationId = BigInt(3); //for aadhaar
 
-//   let circuit: any;
-//   before(async () => {
-//     circuit = await circom_tester(
-//       path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
-//       {
-//         include: [
-//           'node_modules',
-//           './node_modules/@zk-kit/binary-merkle-root.circom/src',
-//           './node_modules/circomlib/circuits',
-//         ],
-//       }
-//     );
-//   });
+    const {
+      inputs: regInputs,
+      qrDataPadded,
+      qrDataPaddedLen,
+      delimiterIndices,
+    } = prepareTestData();
+    const tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
+    const commitment = await generateCommitmentAadhaar(secret, attestationId, qrDataPadded);
+    tree.insert(commitment);
 
-//   it('should compile and load the circuit', async function () {
-//     const { inputs } = prepareTestDataDisclosure();
-//     await circuit.calculateWitness(inputs);
-//   });
+    const nameDobSMT = new SMT(poseidon2, true);
+
+    nameDobSMT.import(nameAndDobjson);
+
+    const nameYobSMT = new SMT(poseidon2, true);
+
+    nameYobSMT.import(nameAndYobjson);
+    const userId = crypto.randomUUID();
+    const inputs = await generateCircuitInputsAadhaarVCandDisclose(
+      tree,
+      nameDobSMT,
+      nameYobSMT,
+      userId,
+      {
+        selectors: {
+          revealAge: true,
+          revealGender: true,
+          revealPin: true,
+          revealState: true,
+          selectorOfac: true,
+        },
+        majorityYears: 18,
+        scope: '1',
+        userIdentifier: userId,
+        // now: new Date("2025-12-01T00:00:00Z"), // override date if you like
+      }
+    );
+    // await circuit.calculateWitness(inputs);
+  });
 
 //   it('should have nullifier == poseidon(secret, scope)', async function () {
 //     // w = await circuit.calculateWitness(inputs);
@@ -181,5 +209,5 @@
 //   //   expect(ofac_result).to.equal('\x00', 'OFAC result should not be revealed');
 //   // });
 
-//   // it('should show different levels of OFAC matching', async function () {})
-// });
+  // it('should show different levels of OFAC matching', async function () {})
+});

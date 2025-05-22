@@ -122,7 +122,7 @@ for item in "${allowed_circuits[@]}"; do
         -l "circuits/node_modules" \
         -l "circuits/node_modules/@zk-kit/binary-merkle-root.circom/src" \
         -l "circuits/node_modules/circomlib/circuits" \
-        --O1 -c --output $output && \
+        --O1 --r1cs --wasm -c --output $output && \
         cd $output/${circuit_name}_cpp && \
         make 
     ) & 

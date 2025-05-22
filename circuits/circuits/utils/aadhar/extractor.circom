@@ -90,7 +90,7 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     signal output gender;
     signal output state;
     signal output pinCode;
-    // signal output photo[photoPackSize()];
+    signal output photo[photoPackSize()];
 
 
     // Create `nDelimitedData` - same as `data` but each delimiter is replaced with n * 255
@@ -186,10 +186,10 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     state <== stateExtractor.out;
     log(state);
 
-    // // Extract photo
-    // component photoExtractor = PhotoExtractor(maxDataLength);
-    // photoExtractor.nDelimitedData <== nDelimitedData;
-    // photoExtractor.startDelimiterIndex <== delimiterIndices[photoPosition() - 1];
-    // photoExtractor.endIndex <== qrDataPaddedLength - 1;
-    // photo <== photoExtractor.out;
+    // Extract photo
+    component photoExtractor = PhotoExtractor(maxDataLength);
+    photoExtractor.nDelimitedData <== nDelimitedData;
+    photoExtractor.startDelimiterIndex <== delimiterIndices[photoPosition() - 1];
+    photoExtractor.endIndex <== qrDataPaddedLength - 1;
+    photo <== photoExtractor.out;
 }

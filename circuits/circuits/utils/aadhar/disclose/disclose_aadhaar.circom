@@ -73,10 +73,10 @@ template DiscloseAadhaar(
     signal output DataPacked[1];
 
     signal output timestamp;
-    // signal output Ageolderthan;
-    // signal output gender;
-    // signal output state;
-    // signal output pinCode;
+    signal output Ageolderthan;
+    signal output gender;
+    signal output state;
+    signal output pinCode;
     signal output ofacCheckResultNameDob;
     signal output ofacCheckResultNameYob;
 
@@ -121,7 +121,7 @@ template DiscloseAadhaar(
     // component timestamp2bytes=FeToByteArray(31);
     // timestamp2bytes.fe <== timestamp;
 
-    signal timestampBytes[31] <== timestamp2bytes.out;
+    // signal timestampBytes[31] <== timestamp2bytes.out;
 
     ofacCheckResultNameDob <== OFAC_NAME_DOB_AADHAAR(namedobTreeLevels)(
         nameHash,
@@ -140,7 +140,11 @@ template DiscloseAadhaar(
         ofac_nameyob_smt_root,
         ofac_nameyob_smt_siblings
     );
+    //Test
+    signal ofacCheckResultNameDobDummy <== 1;
+    signal ofacCheckResultNameYobDummy <== 1
 
+    
     // DataRevealed in packed version 
     // 1 -> AgeOlderThan
     // 2 -> gender
@@ -153,11 +157,11 @@ template DiscloseAadhaar(
     dataReveal[1] <== gender;
     dataReveal[2] <== state;
     dataReveal[3] <== pinCode;
-    dataReveal[4] <== ofacCheckResultNameDob;
-    dataReveal[5] <== ofacCheckResultNameYob ;
+    dataReveal[4] <== ofacCheckResultNameDobDummy;
+    dataReveal[5] <== ofacCheckResultNameYobDummy;
     // output 1 datapacked +1 timestamp 
     // Timestamp takes 31 bytes so better to just output and later come back to it
-    DataPacked <== PackBytes(7)(dataReveal);
+    DataPacked <== PackBytes(6)(dataReveal);
 
 }
 
