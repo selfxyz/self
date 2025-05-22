@@ -36,7 +36,7 @@ export type document_type = 'passport' | 'id_card';
 
 /**
  * Maximum number of countries in the forbidden countries list.
- * 
+ *
  * IMPORTANT: This value must match in both backend and frontend SDK.
  * Any mismatch will result in an INVALID_FORBIDDEN_COUNTRIES error.
  */

@@ -101,7 +101,10 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
   console.log('eContent Hash Algorithm:', eContentHashAlgo);
   console.log('Signed Attributes Hash Algorithm:', signedAttrHashAlgo);
   console.log('Signature Algorithm:', sigAlg);
-  const prefix = passportData.documentType === 'id_card' || passportData.documentType === 'mock_id_card' ? 'register_id' : 'register';
+  const prefix =
+    passportData.documentType === 'id_card' || passportData.documentType === 'mock_id_card'
+      ? 'register_id'
+      : 'register';
 
   if (parsedDsc.signatureAlgorithm === 'ecdsa') {
     console.log('Processing ECDSA signature...');
@@ -117,7 +120,6 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
     console.log('RSA bits:', signatureAlgorithmBits);
 
     if (signatureAlgorithmBits <= 4096) {
-
       const circuitName = `${prefix}_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${4096}`;
       console.log('Generated circuit name:', circuitName);
       return circuitName;

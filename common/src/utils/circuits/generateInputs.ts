@@ -234,7 +234,7 @@ export function generateCircuitInputsVCandDisclose(
   // Generate Passport Number proof only if it's a passport type and SMT is provided
   if (isPassportType) {
     if (!passportNo_smt) {
-      console.warn("Document type is passport, but passportNo_smt tree was not provided.");
+      console.warn('Document type is passport, but passportNo_smt tree was not provided.');
     } else {
       const passportNo_leaf = getPassportNumberAndNationalityLeaf(passNoSlice, nationalitySlice);
       const proofResult = generateSMTProof(passportNo_smt, passportNo_leaf);
@@ -242,7 +242,7 @@ export function generateCircuitInputsVCandDisclose(
       passportNoProof = {
         root: BigInt(proofResult.root),
         closestleaf: BigInt(proofResult.closestleaf),
-        siblings: proofResult.siblings
+        siblings: proofResult.siblings,
       };
     }
   }
@@ -285,7 +285,7 @@ export function generateCircuitInputsVCandDisclose(
       ofac_passportno_smt_root: formatInput(passportNoProof.root),
       ofac_passportno_smt_leaf_key: formatInput(passportNoProof.closestleaf),
       ofac_passportno_smt_siblings: formatInput(passportNoProof.siblings),
-    })
+    }),
   };
 
   return finalInputs;
@@ -296,22 +296,33 @@ export function generateCircuitInputsOfac(
   sparsemerkletree: SMT,
   proofLevel: number
 ) {
-
   const { mrz, documentType } = passportData;
   const isPassportType = documentType === 'passport' || documentType === 'mock_passport';
 
   const mrz_bytes = formatMrz(mrz); // Assume formatMrz handles basic formatting
-  const nameSlice = isPassportType ? mrz_bytes.slice(5 + 5, 44 + 5) : mrz_bytes.slice(60 + 5, 90 + 5);
-  const dobSlice = isPassportType ? mrz_bytes.slice(57 + 5, 63 + 5) : mrz_bytes.slice(30 + 5, 36 + 5);
-  const yobSlice = isPassportType ? mrz_bytes.slice(57 + 5, 59 + 5) : mrz_bytes.slice(30 + 5, 32 + 5);
-  const nationalitySlice = isPassportType ? mrz_bytes.slice(54 + 5, 57 + 5) : mrz_bytes.slice(45 + 5, 48 + 5);
-  const passNoSlice = isPassportType ? mrz_bytes.slice(44 + 5, 53 + 5) : mrz_bytes.slice(5 + 5, 14 + 5);
+  const nameSlice = isPassportType
+    ? mrz_bytes.slice(5 + 5, 44 + 5)
+    : mrz_bytes.slice(60 + 5, 90 + 5);
+  const dobSlice = isPassportType
+    ? mrz_bytes.slice(57 + 5, 63 + 5)
+    : mrz_bytes.slice(30 + 5, 36 + 5);
+  const yobSlice = isPassportType
+    ? mrz_bytes.slice(57 + 5, 59 + 5)
+    : mrz_bytes.slice(30 + 5, 32 + 5);
+  const nationalitySlice = isPassportType
+    ? mrz_bytes.slice(54 + 5, 57 + 5)
+    : mrz_bytes.slice(45 + 5, 48 + 5);
+  const passNoSlice = isPassportType
+    ? mrz_bytes.slice(44 + 5, 53 + 5)
+    : mrz_bytes.slice(5 + 5, 14 + 5);
 
   let leafToProve: bigint;
 
   if (proofLevel == 3) {
     if (!isPassportType) {
-      throw new Error('Proof level 3 (Passport Number) is only applicable to passport document types.');
+      throw new Error(
+        'Proof level 3 (Passport Number) is only applicable to passport document types.'
+      );
     }
     leafToProve = getPassportNumberAndNationalityLeaf(passNoSlice, nationalitySlice);
   } else if (proofLevel == 2) {

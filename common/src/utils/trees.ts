@@ -1,4 +1,12 @@
-import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13, poseidon12, poseidon10 } from 'poseidon-lite';
+import {
+  poseidon9,
+  poseidon3,
+  poseidon2,
+  poseidon6,
+  poseidon13,
+  poseidon12,
+  poseidon10,
+} from 'poseidon-lite';
 import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
 import { stringToAsciiBigIntArray } from './circuits/uuid';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
@@ -266,12 +274,13 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
       leaf = processNameAndDob(entry, i, 'passport'); // Explicitly passport
     } else if (treetype == 'name_and_yob') {
       leaf = processNameAndYob(entry, i, 'passport'); // Explicitly passport
-    } else if (treetype == 'name_and_dob_id_card') { // New ID card type
+    } else if (treetype == 'name_and_dob_id_card') {
+      // New ID card type
       leaf = processNameAndDob(entry, i, 'id_card');
-    } else if (treetype == 'name_and_yob_id_card') { // New ID card type
+    } else if (treetype == 'name_and_yob_id_card') {
+      // New ID card type
       leaf = processNameAndYob(entry, i, 'id_card');
-    }
-    else if (treetype == 'country') {
+    } else if (treetype == 'country') {
       const keys = Object.keys(entry);
       leaf = processCountry(keys[0], entry[keys[0]], i);
     }
@@ -359,7 +368,8 @@ function processNameAndDob(entry: any, i: number, docType: 'passport' | 'id_card
   const day = entry.day;
   const month = entry.month;
   const year = entry.year;
-  if (day == null || month == null || year == null || !firstName || !lastName) { // Added checks for name presence
+  if (day == null || month == null || year == null || !firstName || !lastName) {
+    // Added checks for name presence
     // console.log('Name or DOB data missing for name_and_dob', i, entry); // Optional: log missing data
     return BigInt(0);
   }
@@ -376,7 +386,8 @@ function processNameAndYob(entry: any, i: number, docType: 'passport' | 'id_card
   const firstName = entry.First_Name;
   const lastName = entry.Last_Name;
   const year = entry.year;
-  if (year == null || !firstName || !lastName) { // Added checks for name presence
+  if (year == null || !firstName || !lastName) {
+    // Added checks for name presence
     // console.log('Name or YOB data missing for name_and_yob', i, entry); // Optional: log missing data
     return BigInt(0);
   }
@@ -412,11 +423,22 @@ function getYearLeaf(yearArr: (bigint | number)[]): bigint {
   }
 }
 
-function processName(firstName: string, lastName: string, targetLength: 30 | 39, i: number): bigint {
+function processName(
+  firstName: string,
+  lastName: string,
+  targetLength: 30 | 39,
+  i: number
+): bigint {
   // LASTNAME<<FIRSTNAME<MIDDLENAME<<<...
   // Ensure names are strings before processing
-  const cleanFirstName = typeof firstName === 'string' ? firstName.replace(/'/g, '').replace(/\./g, '').replace(/[- ]/g, '<') : '';
-  const cleanLastName = typeof lastName === 'string' ? lastName.replace(/'/g, '').replace(/[- ]/g, '<').replace(/\./g, '') : '';
+  const cleanFirstName =
+    typeof firstName === 'string'
+      ? firstName.replace(/'/g, '').replace(/\./g, '').replace(/[- ]/g, '<')
+      : '';
+  const cleanLastName =
+    typeof lastName === 'string'
+      ? lastName.replace(/'/g, '').replace(/[- ]/g, '<').replace(/\./g, '')
+      : '';
 
   // Handle cases where one name might be missing
   let arr = (cleanLastName ? cleanLastName + '<<' : '') + cleanFirstName;
@@ -442,18 +464,35 @@ function processName(firstName: string, lastName: string, targetLength: 30 | 39,
   return getNameLeaf(nameArr, i);
 }
 
-
 function processDob(day: string, month: string, year: string, i: number): bigint {
   // YYMMDD
   const monthMap: { [key: string]: string } = {
-    jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
-    jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+    jan: '01',
+    feb: '02',
+    mar: '03',
+    apr: '04',
+    may: '05',
+    jun: '06',
+    jul: '07',
+    aug: '08',
+    sep: '09',
+    oct: '10',
+    nov: '11',
+    dec: '12',
   };
 
   const lowerMonth = typeof month === 'string' ? month.toLowerCase() : '';
   const mappedMonth = monthMap[lowerMonth];
 
-  if (!mappedMonth || !day || typeof day !== 'string' || day.length !== 2 || !year || typeof year !== 'string' || year.length < 2) {
+  if (
+    !mappedMonth ||
+    !day ||
+    typeof day !== 'string' ||
+    day.length !== 2 ||
+    !year ||
+    typeof year !== 'string' ||
+    year.length < 2
+  ) {
     // console.log('Invalid DOB component format for processDob', i, {day, month, year}); // Optional: log error
     return BigInt(0);
   }
@@ -533,24 +572,30 @@ export function getNameYobLeaf(
 export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
   let middleChunks: bigint[] = [];
   let chunks: (number | bigint)[][] = [];
-  try { // Add try-catch block
-    if (nameMrz.length == 39) { // passport
+  try {
+    // Add try-catch block
+    if (nameMrz.length == 39) {
+      // passport
       chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39));
       for (const chunk of chunks) {
-        if (chunk.length !== 13) throw new Error(`Invalid chunk length for Poseidon13: ${chunk.length}`);
+        if (chunk.length !== 13)
+          throw new Error(`Invalid chunk length for Poseidon13: ${chunk.length}`);
         middleChunks.push(poseidon13(chunk));
       }
-    } else if (nameMrz.length == 30) { // id_card
+    } else if (nameMrz.length == 30) {
+      // id_card
       chunks.push(nameMrz.slice(0, 10), nameMrz.slice(10, 20), nameMrz.slice(20, 30)); // Corrected comment: 30/3 for poseidon10
       for (const chunk of chunks) {
-        if (chunk.length !== 10) throw new Error(`Invalid chunk length for Poseidon10: ${chunk.length}`);
+        if (chunk.length !== 10)
+          throw new Error(`Invalid chunk length for Poseidon10: ${chunk.length}`);
         middleChunks.push(poseidon10(chunk));
       }
     } else {
       throw new Error(`Unsupported name MRZ length: ${nameMrz.length}`); // Handle unexpected lengths
     }
 
-    if (middleChunks.length !== 3) throw new Error(`Invalid number of middle chunks: ${middleChunks.length}`);
+    if (middleChunks.length !== 3)
+      throw new Error(`Invalid number of middle chunks: ${middleChunks.length}`);
     return poseidon3(middleChunks);
   } catch (err) {
     console.error('Error in getNameLeaf:', err, 'Index:', i, 'MRZ Length:', nameMrz.length); // Use console.error for errors
