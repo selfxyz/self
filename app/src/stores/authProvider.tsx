@@ -66,10 +66,10 @@ async function checkBiometricsAvailable(): Promise<boolean> {
   }
 }
 
-async function restoreFromMnemonic(mnemonic: string) {
+async function restoreFromMnemonic(mnemonic: string): Promise<string | false> {
   if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
     trackEvent('Mnemonic Restore Failed', { reason: 'invalid_mnemonic' });
-    throw new Error('Invalid mnemonic');
+    return false;
   }
 
   try {
@@ -85,10 +85,11 @@ async function restoreFromMnemonic(mnemonic: string) {
       reason: 'restore_error',
       error: error.message,
     });
+    return false;
   }
 }
 
-async function loadOrCreateMnemonic() {
+async function loadOrCreateMnemonic(): Promise<string | false> {
   const storedMnemonic = await Keychain.getGenericPassword({
     service: SERVICE_NAME,
   });
@@ -121,6 +122,7 @@ async function loadOrCreateMnemonic() {
     return data;
   } catch (error: any) {
     trackEvent('Mnemonic Creation Failed', { error: error.message });
+    return false;
   }
 }
 
