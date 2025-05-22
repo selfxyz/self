@@ -3,18 +3,20 @@ pragma solidity 0.8.28;
 
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
-import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
+
+import {SelfVerificationConsumer} from "../abstract/SelfVerificationConsumer.sol";
 
 /**
  * @title Airdrop (Experimental)
  * @notice This contract manages an airdrop campaign by verifying user registrations with zero‐knowledge proofs
  *         and distributing ERC20 tokens. It is provided for testing and demonstration purposes only.
  *         **WARNING:** This contract has not been audited and is NOT intended for production use.
- * @dev Inherits from PassportAirdropRoot for registration logic and Ownable for administrative control.
+ * @dev Inherits from SelfVerificationConsumer for registration logic and Ownable for administrative control.
  */
-contract Airdrop is SelfVerificationRoot, Ownable {
+contract Airdrop is SelfVerificationConsumer, Ownable {
     using SafeERC20 for IERC20;
 
     // ====================================================
@@ -32,8 +34,11 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     /// @notice Indicates whether the claim phase is active.
     bool public isClaimOpen;
 
-    mapping(uint256 => uint256) internal _nullifiers;
-    mapping(uint256 => bool) internal _registeredUserIdentifiers;
+    /// @notice Maps nullifiers to user identifiers (extends the base _nullifiers mapping)
+    mapping(uint256 nullifier => uint256 userIdentifier) internal _userIdentifiers;
+
+    /// @notice Maps user identifiers to registration status
+    mapping(uint256 userIdentifier => bool registered) internal _registeredUserIdentifiers;
 
     // ====================================================
     // Errors
@@ -51,9 +56,10 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     error RegistrationNotClosed();
     /// @notice Reverts when a claim is attempted while claiming is not enabled.
     error ClaimNotOpen();
-
-    error RegisteredNullifier();
+    /// @notice Reverts when an invalid user identifier is provided.
     error InvalidUserIdentifier();
+    /// @notice Reverts when a nullifier has already been used
+    error RegisteredNullifier();
 
     // ====================================================
     // Events
@@ -99,7 +105,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         uint256 _scope,
         uint256[] memory _attestationIds,
         address _token
-    ) SelfVerificationRoot(_identityVerificationHub, _scope, _attestationIds) Ownable(_msgSender()) {
+    ) SelfVerificationConsumer(_identityVerificationHub, _scope, _attestationIds) Ownable(_msgSender()) {
         token = IERC20(_token);
     }
 
@@ -119,42 +125,42 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     /**
      * @notice Updates the verification configuration for address registration.
      * @dev Only callable by the contract owner.
-     * @param newVerificationConfig The new verification configuration.
+     * @param _newVerificationConfig The new verification configuration.
      */
     function setVerificationConfig(
-        ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
+        ISelfVerificationRoot.VerificationConfig memory _newVerificationConfig
     ) external onlyOwner {
-        _setVerificationConfig(newVerificationConfig);
+        _setVerificationConfig(_newVerificationConfig);
     }
 
     /**
      * @notice Updates the scope used for verification.
      * @dev Only callable by the contract owner.
-     * @param newScope The new scope to set.
+     * @param _newScope The new scope to set.
      */
-    function setScope(uint256 newScope) external onlyOwner {
-        _setScope(newScope);
-        emit ScopeUpdated(newScope);
+    function setScope(uint256 _newScope) external onlyOwner {
+        _setScope(_newScope);
+        emit ScopeUpdated(_newScope);
     }
 
     /**
      * @notice Adds a new attestation ID to the allowed list.
      * @dev Only callable by the contract owner.
-     * @param attestationId The attestation ID to add.
+     * @param _attestationId The attestation ID to add.
      */
-    function addAttestationId(uint256 attestationId) external onlyOwner {
-        _addAttestationId(attestationId);
-        emit AttestationIdAdded(attestationId);
+    function addAttestationId(uint256 _attestationId) external onlyOwner {
+        _addAttestationId(_attestationId);
+        emit AttestationIdAdded(_attestationId);
     }
 
     /**
      * @notice Removes an attestation ID from the allowed list.
      * @dev Only callable by the contract owner.
-     * @param attestationId The attestation ID to remove.
+     * @param _attestationId The attestation ID to remove.
      */
-    function removeAttestationId(uint256 attestationId) external onlyOwner {
-        _removeAttestationId(attestationId);
-        emit AttestationIdRemoved(attestationId);
+    function removeAttestationId(uint256 _attestationId) external onlyOwner {
+        _removeAttestationId(_attestationId);
+        emit AttestationIdRemoved(_attestationId);
     }
 
     /**
@@ -194,32 +200,6 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     }
 
     /**
-     * @notice Registers a user's address by verifying a provided zero-knowledge proof.
-     * @dev Reverts if the registration phase is not open.
-     * @param proof The VC and Disclose proof data used to verify and register the user.
-     */
-    function verifySelfProof(ISelfVerificationRoot.DiscloseCircuitProof memory proof) public override {
-        if (!isRegistrationOpen) {
-            revert RegistrationNotOpen();
-        }
-
-        if (_nullifiers[proof.pubSignals[NULLIFIER_INDEX]] != 0) {
-            revert RegisteredNullifier();
-        }
-
-        if (proof.pubSignals[USER_IDENTIFIER_INDEX] == 0) {
-            revert InvalidUserIdentifier();
-        }
-
-        super.verifySelfProof(proof);
-
-        _nullifiers[proof.pubSignals[NULLIFIER_INDEX]] = proof.pubSignals[USER_IDENTIFIER_INDEX];
-        _registeredUserIdentifiers[proof.pubSignals[USER_IDENTIFIER_INDEX]] = true;
-
-        emit UserIdentifierRegistered(proof.pubSignals[USER_IDENTIFIER_INDEX], proof.pubSignals[NULLIFIER_INDEX]);
-    }
-
-    /**
      * @notice Retrieves the expected proof scope.
      * @return The scope value used for registration verification.
      */
@@ -229,20 +209,20 @@ contract Airdrop is SelfVerificationRoot, Ownable {
 
     /**
      * @notice Checks if the specified attestation ID is allowed.
-     * @param attestationId The attestation ID to check.
+     * @param _attestationId The attestation ID to check.
      * @return True if the attestation ID is allowed, false otherwise.
      */
-    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
-        return _attestationIds[attestationId];
+    function isAttestationIdAllowed(uint256 _attestationId) external view returns (bool) {
+        return _attestationIds[_attestationId];
     }
 
     /**
-     * @notice Retrieves the stored nullifier for a given key.
-     * @param nullifier The nullifier to query.
+     * @notice Retrieves the stored user identifier for a given nullifier.
+     * @param _nullifier The nullifier to query.
      * @return The user identifier associated with the nullifier.
      */
-    function getNullifier(uint256 nullifier) external view returns (uint256) {
-        return _nullifiers[nullifier];
+    function getNullifier(uint256 _nullifier) external view returns (uint256) {
+        return _userIdentifiers[_nullifier];
     }
 
     /**
@@ -255,22 +235,22 @@ contract Airdrop is SelfVerificationRoot, Ownable {
 
     /**
      * @notice Checks if a given address is registered.
-     * @param registeredAddress The address to check.
+     * @param _registeredAddress The address to check.
      * @return True if the address is registered, false otherwise.
      */
-    function isRegistered(address registeredAddress) external view returns (bool) {
-        return _registeredUserIdentifiers[uint256(uint160(registeredAddress))];
+    function isRegistered(address _registeredAddress) external view returns (bool) {
+        return _registeredUserIdentifiers[uint256(uint160(_registeredAddress))];
     }
 
     /**
      * @notice Allows a registered user to claim their tokens.
      * @dev Reverts if registration is still open, if claiming is disabled, if already claimed,
      *      or if the sender is not registered. Also validates the claim using a Merkle proof.
-     * @param index The index of the claim in the Merkle tree.
-     * @param amount The amount of tokens to be claimed.
-     * @param merkleProof The Merkle proof verifying the claim.
+     * @param _index The index of the claim in the Merkle tree.
+     * @param _amount The amount of tokens to be claimed.
+     * @param _merkleProof The Merkle proof verifying the claim.
      */
-    function claim(uint256 index, uint256 amount, bytes32[] memory merkleProof) external {
+    function claim(uint256 _index, uint256 _amount, bytes32[] memory _merkleProof) external {
         if (isRegistrationOpen) {
             revert RegistrationNotClosed();
         }
@@ -285,14 +265,81 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         }
 
         // Verify the Merkle proof.
-        bytes32 node = keccak256(abi.encodePacked(index, msg.sender, amount));
-        if (!MerkleProof.verify(merkleProof, merkleRoot, node)) revert InvalidProof();
+        bytes32 node = keccak256(abi.encodePacked(_index, msg.sender, _amount));
+        if (!MerkleProof.verify(_merkleProof, merkleRoot, node)) revert InvalidProof();
 
         // Mark as claimed and transfer tokens.
         _setClaimed();
-        IERC20(token).safeTransfer(msg.sender, amount);
+        token.safeTransfer(msg.sender, _amount);
 
-        emit Claimed(index, msg.sender, amount);
+        emit Claimed(_index, msg.sender, _amount);
+    }
+
+    // ====================================================
+    // Override Functions from SelfVerificationConsumer
+    // ====================================================
+
+    /**
+     * @notice Validates if a nullifier can be used
+     * @dev Overrides the base implementation to check registration phase and previous use
+     * @param _nullifier The nullifier to validate
+     * @param _proof The complete proof data
+     * @return valid True if the nullifier is valid to use, false otherwise
+     */
+    function validateNullifier(
+        uint256 _nullifier,
+        ISelfVerificationRoot.DiscloseCircuitProof memory _proof
+    ) internal override returns (bool) {
+        // Check if registration is open
+        if (!isRegistrationOpen) {
+            revert RegistrationNotOpen();
+        }
+
+        // Check if nullifier has been used
+        if (_nullifiers[_nullifier]) {
+            revert RegisteredNullifier();
+        }
+
+        // Check if user identifier is valid
+        if (_proof.pubSignals[USER_IDENTIFIER_INDEX] == 0) {
+            revert InvalidUserIdentifier();
+        }
+
+        return true;
+    }
+
+    /**
+     * @notice Updates the state for a nullifier after successful verification
+     * @dev Overrides the base implementation to store the user identifier and emit event
+     * @param _nullifier The nullifier to update
+     * @param _proof The complete proof data
+     */
+    function updateNullifier(
+        uint256 _nullifier,
+        ISelfVerificationRoot.DiscloseCircuitProof memory _proof
+    ) internal override {
+        // Get user identifier from proof
+        uint256 _userIdentifier = _proof.pubSignals[USER_IDENTIFIER_INDEX];
+
+        // Mark nullifier as used (parent functionality)
+        _nullifiers[_nullifier] = true;
+
+        // Store user identifier mapping (extended functionality)
+        _userIdentifiers[_nullifier] = _userIdentifier;
+        _registeredUserIdentifiers[_userIdentifier] = true;
+
+        // Emit registration event directly from here instead of onVerificationSuccess
+        emit UserIdentifierRegistered(_userIdentifier, _nullifier);
+    }
+
+    /**
+     * @notice Hook called after successful verification
+     * @dev No additional logic needed as everything is handled in updateNullifier
+     * @param _revealedDataPacked The packed revealed data from the proof
+     * @param _userIdentifier The user identifier from the proof
+     */
+    function onVerificationSuccess(uint256[3] memory _revealedDataPacked, uint256 _userIdentifier) internal override {
+        // No additional logic needed - event is emitted in updateNullifier
     }
 
     // ====================================================
