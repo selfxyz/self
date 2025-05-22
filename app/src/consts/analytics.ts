@@ -105,8 +105,8 @@ export const BackupEvents = {
     'Backup: Cloud Restore Failed: Passport Not Registered',
   CLOUD_RESTORE_FAILED_UNKNOWN: 'Backup: Cloud Restore Failed: Unknown Error',
   CLOUD_RESTORE_SUCCESS: 'Backup: Cloud Restore Success',
-  MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
   CREATE_NEW_ACCOUNT: 'Backup: Create New Account',
+  MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
 };
 
 export const MockDataEvents = {
