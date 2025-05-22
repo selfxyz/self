@@ -32,6 +32,7 @@ import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';
 import { Title } from '../../components/typography/Title';
 import { storePassportData } from '../../stores/passportDataProvider';
+import analytics from '../../utils/analytics';
 import {
   borderColor,
   separatorColor,
@@ -39,6 +40,8 @@ import {
   white,
 } from '../../utils/colors';
 import { buttonTap, selectionChange } from '../../utils/haptic';
+
+const { trackEvent } = analytics();
 
 interface MockDataScreenProps {}
 
@@ -262,6 +265,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     .onStart(() => {
       setAdvancedMode(true);
       buttonTap();
+      trackEvent('Enable Advanced Mode');
     });
 
   const { top, bottom } = useSafeAreaInsets();
@@ -285,6 +289,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 onPress={() => {
                   buttonTap();
                   setAlgorithmSheetOpen(true);
+                  trackEvent('Open Algorithm Selection');
                 }}
                 p="$2"
                 px="$3"
@@ -307,6 +312,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               onPress={() => {
                 buttonTap();
                 setCountrySheetOpen(true);
+                trackEvent('Open Country Selection');
               }}
               p="$2"
               px="$3"
@@ -358,6 +364,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 onPress={() => {
                   buttonTap();
                   setExpiryYears(expiryYears - 1);
+                  trackEvent('Decrease Expiry Years');
                 }}
                 disabled={expiryYears <= 0}
               >
@@ -377,6 +384,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 onPress={() => {
                   buttonTap();
                   setExpiryYears(expiryYears + 1);
+                  trackEvent('Increase Expiry Years');
                 }}
               >
                 <Plus />
@@ -392,6 +400,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               onCheckedChange={() => {
                 buttonTap();
                 setIsInOfacList(!isInOfacList);
+                trackEvent('Toggle OFAC List');
               }}
               bg={isInOfacList ? '$green7Light' : '$gray4'}
             >
@@ -466,6 +475,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                     buttonTap();
                     handleCountrySelect(countryCode);
                     setCountrySheetOpen(false);
+                    trackEvent('Select Country');
                   }}
                 >
                   <XStack py="$3" px="$2">
@@ -519,6 +529,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                         buttonTap();
                         handleAlgorithmSelect(algorithm);
                         setAlgorithmSheetOpen(false);
+                        trackEvent('Select Algorithm');
                       }}
                     >
                       <XStack py="$3" px="$2">

@@ -11,6 +11,9 @@ import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
 
 import { Mnemonic } from '../types/mnemonic';
+import analytics from '../utils/analytics';
+
+const { trackEvent } = analytics();
 
 const SERVICE_NAME = 'secret';
 
@@ -35,15 +38,18 @@ const _getSecurely = async function <T>(
     });
 
     if (!simpleCheck.success) {
+      trackEvent('Biometric Auth Failed');
       throw new Error('Authentication failed');
     }
 
+    trackEvent('Biometric Auth Success');
     return {
       signature: 'authenticated',
       data: formatter(dataString),
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in _getSecurely:', error);
+    trackEvent('Biometric Auth Error', { error: error.message });
     throw error;
   }
 };
@@ -51,24 +57,35 @@ const _getSecurely = async function <T>(
 async function checkBiometricsAvailable(): Promise<boolean> {
   try {
     const { available } = await biometrics.isSensorAvailable();
+    trackEvent('Biometrics Check', { available });
     return available;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error checking biometric availability:', error);
+    trackEvent('Biometrics Check Error', { error: error.message });
     return false;
   }
 }
 
 async function restoreFromMnemonic(mnemonic: string) {
   if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+    trackEvent('Mnemonic Restore Failed', { reason: 'invalid_mnemonic' });
     throw new Error('Invalid mnemonic');
   }
 
-  const restoredWallet = ethers.Wallet.fromPhrase(mnemonic);
-  const data = JSON.stringify(restoredWallet.mnemonic);
-  await Keychain.setGenericPassword('secret', data, {
-    service: SERVICE_NAME,
-  });
-  return data;
+  try {
+    const restoredWallet = ethers.Wallet.fromPhrase(mnemonic);
+    const data = JSON.stringify(restoredWallet.mnemonic);
+    await Keychain.setGenericPassword('secret', data, {
+      service: SERVICE_NAME,
+    });
+    trackEvent('Mnemonic Restore Success');
+    return data;
+  } catch (error: any) {
+    trackEvent('Mnemonic Restore Failed', {
+      reason: 'restore_error',
+      error: error.message,
+    });
+  }
 }
 
 async function loadOrCreateMnemonic() {
@@ -79,25 +96,32 @@ async function loadOrCreateMnemonic() {
     try {
       JSON.parse(storedMnemonic.password);
       console.log('Stored mnemonic parsed successfully');
+      trackEvent('Mnemonic Loaded');
       return storedMnemonic.password;
-    } catch (e) {
+    } catch (e: any) {
       console.log(
         'Error parsing stored mnemonic, old secret format was used',
         e,
       );
       console.log('Creating a new one');
+      trackEvent('Mnemonic Parse Error', { error: e.message });
     }
   }
 
   console.log('No secret found, creating one');
-  const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
-    ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),
-  );
-  const data = JSON.stringify(mnemonic);
-  await Keychain.setGenericPassword('secret', data, {
-    service: SERVICE_NAME,
-  });
-  return data;
+  try {
+    const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
+      ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),
+    );
+    const data = JSON.stringify(mnemonic);
+    await Keychain.setGenericPassword('secret', data, {
+      service: SERVICE_NAME,
+    });
+    trackEvent('New Mnemonic Created');
+    return data;
+  } catch (error: any) {
+    trackEvent('Mnemonic Creation Failed', { error: error.message });
+  }
 }
 
 const biometrics = new ReactNativeBiometrics({
@@ -143,6 +167,7 @@ export const AuthProvider = ({
       return;
     }
 
+    trackEvent('Biometric Login Attempt');
     const promise = biometrics.simplePrompt({
       promptMessage: 'Confirm your identity to access the stored secret',
     });
@@ -150,24 +175,26 @@ export const AuthProvider = ({
     const { success, error } = await promise;
     if (error) {
       setIsAuthenticatingPromise(null);
-      // handle error
+      trackEvent('Biometric Login Failed', { error });
       throw error;
     }
     if (!success) {
-      // user canceled
+      setIsAuthenticatingPromise(null);
+      trackEvent('Biometric Login Cancelled');
       throw new Error('Canceled by user');
     }
 
     setIsAuthenticatingPromise(null);
     setIsAuthenticated(true);
+    trackEvent('Biometric Login Success');
     setAuthenticatedTimeout(previousTimeout => {
       if (previousTimeout) {
         clearTimeout(previousTimeout);
       }
-      return setTimeout(
-        () => setIsAuthenticated(false),
-        authenticationTimeoutinMs,
-      );
+      return setTimeout(() => {
+        setIsAuthenticated(false);
+        trackEvent('Authentication Timeout');
+      }, authenticationTimeoutinMs);
     });
   }, [isAuthenticatingPromise]);
 
@@ -215,7 +242,11 @@ export async function hasSecretStored() {
  * to access both the privatekey and the passport data with the user only authenticating once
  */
 export async function unsafe_getPrivateKey() {
-  const mnemonic = JSON.parse(await loadOrCreateMnemonic()) as Mnemonic;
+  const foundMnemonic = await loadOrCreateMnemonic();
+  if (!foundMnemonic) {
+    return null;
+  }
+  const mnemonic = JSON.parse(foundMnemonic) as Mnemonic;
   const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase);
   return wallet.privateKey;
 }

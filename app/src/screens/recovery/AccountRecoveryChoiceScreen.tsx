@@ -14,9 +14,12 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useAuth } from '../../stores/authProvider';
 import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
+import analytics from '../../utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
 import { isUserRegistered } from '../../utils/proving/validateDocument';
+
+const { trackEvent } = analytics();
 
 interface AccountRecoveryChoiceScreenProps {}
 
@@ -41,6 +44,7 @@ const AccountRecoveryChoiceScreen: React.FC<
 
       if (!result) {
         console.warn('Failed to restore account');
+        trackEvent('Cloud Restore Failed: Unknown Error');
         navigation.navigate('Launch');
         setRestoring(false);
         return;
@@ -55,6 +59,7 @@ const AccountRecoveryChoiceScreen: React.FC<
         console.log(
           'Secret provided did not match a registered passport. Please try again.',
         );
+        trackEvent('Cloud Restore Failed: Passport Not Registered');
         navigation.navigate('Launch');
         setRestoring(false);
         return;
@@ -63,10 +68,12 @@ const AccountRecoveryChoiceScreen: React.FC<
       if (!cloudBackupEnabled) {
         toggleCloudBackupEnabled();
       }
+      trackEvent('Cloud Restore Success');
       onRestoreFromCloudNext();
       setRestoring(false);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      trackEvent('Cloud Restore Failed: Unknown Error');
       setRestoring(false);
       throw new Error('Something wrong happened during cloud recovery');
     }
@@ -76,6 +83,11 @@ const AccountRecoveryChoiceScreen: React.FC<
     restoreAccountFromMnemonic,
     onRestoreFromCloudNext,
   ]);
+
+  const handleManualRecoveryPress = useCallback(() => {
+    trackEvent('Manual Recovery Selected');
+    onEnterRecoveryPress();
+  }, [onEnterRecoveryPress]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
@@ -114,7 +126,7 @@ const AccountRecoveryChoiceScreen: React.FC<
             </XStack>
             <SecondaryButton
               trackEvent="Enter Recovery Phrase"
-              onPress={onEnterRecoveryPress}
+              onPress={handleManualRecoveryPress}
               disabled={restoring}
             >
               <XStack alignItems="center" justifyContent="center">
