@@ -19,6 +19,7 @@ import {
   useProofHistoryStore,
 } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
+import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
 import {
   buttonTap,
@@ -27,6 +28,8 @@ import {
 } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
+const { trackEvent } = analytics();
+
 const SuccessScreen: React.FC = () => {
   const { selfApp, cleanSelfApp } = useSelfAppStore();
   const appName = selfApp?.appName;
@@ -34,7 +37,7 @@ const SuccessScreen: React.FC = () => {
 
   const { updateProofStatus } = useProofHistoryStore();
 
-  const currentState = useProvingStore(state => state.currentState);
+  const currentState = useProvingStore(state => state.currentState) ?? '';
   const reason = useProvingStore(state => state.reason);
   const sessionId = useProvingStore(state => state.uuid);
   const errorCode = useProvingStore(state => state.error_code);
@@ -62,6 +65,10 @@ const SuccessScreen: React.FC = () => {
       notificationSuccess();
       setAnimationSource(succesAnimation);
       updateProofStatus(sessionId!, ProofStatus.SUCCESS);
+      trackEvent('Proof Completed', {
+        sessionId,
+        appName,
+      });
     } else if (currentState === 'failure' || currentState === 'error') {
       notificationError();
       setAnimationSource(failAnimation);
@@ -71,6 +78,13 @@ const SuccessScreen: React.FC = () => {
         errorCode ?? undefined,
         reason ?? undefined,
       );
+      trackEvent('Proof Failed', {
+        sessionId,
+        appName,
+        errorCode,
+        reason,
+        state: currentState,
+      });
     } else {
       setAnimationSource(loadingAnimation);
     }
@@ -108,6 +122,7 @@ const SuccessScreen: React.FC = () => {
           />
         </View>
         <PrimaryButton
+          trackEvent="Proof Result Acknowledged"
           disabled={
             currentState !== 'completed' &&
             currentState !== 'error' &&

@@ -9,6 +9,7 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import {
@@ -19,6 +20,8 @@ import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from './ProofRequestStatusScreen';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
+
+const { trackEvent } = analytics();
 
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   const navigate = useHapticNavigation('LoadingScreen', {
@@ -37,6 +40,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   const onOkPress = async () => {
     try {
       setRequestingPermission(true);
+      trackEvent('Notification Permission Requested');
 
       // Request notification permission
       const permissionGranted = await requestNotificationPermission();
@@ -44,6 +48,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
         const token = await getFCMToken();
         if (token) {
           provingStore.setFcmToken(token);
+          trackEvent('FCM Token Stored Successfully');
           console.log('FCM token stored in proving store');
         }
       }
@@ -53,8 +58,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
 
       // Navigate to loading screen
       navigate();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initializing proving process:', error);
+      trackEvent('Proving Process Error', {
+        error: error?.message || 'Unknown error',
+      });
     } finally {
       setRequestingPermission(false);
     }
@@ -87,7 +95,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
             not stolen or forged.
           </Description>
           <PrimaryButton
-            trackEvent="Confirm Passport Ownership"
+            trackEvent="Passport Ownership Confirmed"
             onPress={onOkPress}
             disabled={!isReadyToProve}
           >
