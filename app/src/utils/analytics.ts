@@ -13,7 +13,8 @@ function cleanParams(params: Record<string, any>) {
 }
 
 /*
-  Recoreds analytics events and screen views
+  Records analytics events and screen views
+  In development mode, events are logged to console instead of being sent to Segment
  */
 const analytics = () => {
   function _track(
@@ -21,6 +22,14 @@ const analytics = () => {
     eventName: string,
     properties?: Record<string, any>,
   ) {
+    if (__DEV__) {
+      console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
+        name: eventName,
+        properties: properties ? cleanParams(properties) : undefined,
+      });
+      return;
+    }
+
     if (!segmentClient) {
       return;
     }
@@ -48,6 +57,11 @@ const analytics = () => {
     },
     trackScreenView: (screenName: string, properties?: Record<string, any>) => {
       _track('screen', screenName, properties);
+    },
+    flush: () => {
+      if (!__DEV__ && segmentClient) {
+        segmentClient.flush();
+      }
     },
   };
 };

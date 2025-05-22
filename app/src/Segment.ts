@@ -2,13 +2,17 @@ import '@ethersproject/shims';
 
 import { SEGMENT_KEY } from '@env';
 import {
+  BackgroundFlushPolicy,
   createClient,
   EventPlugin,
   PluginType,
   SegmentEvent,
+  StartupFlushPolicy,
 } from '@segment/analytics-react-native';
 
 let segmentClient: ReturnType<typeof createClient> | null = null;
+
+const flushPolicies = [new StartupFlushPolicy(), new BackgroundFlushPolicy()];
 
 class DisableTrackingPlugin extends EventPlugin {
   type = PluginType.before;
@@ -46,6 +50,7 @@ export const createSegmentClient = () => {
   const client = createClient({
     writeKey: SEGMENT_KEY,
     trackAppLifecycleEvents: true,
+    trackDeepLinks: true,
     debug: true,
     collectDeviceId: false,
     defaultSettings: {
@@ -55,6 +60,7 @@ export const createSegmentClient = () => {
         },
       },
     },
+    flushPolicies,
   });
 
   client.add({ plugin: new DisableTrackingPlugin() });
