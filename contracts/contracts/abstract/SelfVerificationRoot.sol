@@ -69,6 +69,22 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Triggered in verifySelfProof when attestation ID validation fails
     error InvalidAttestationId();
 
+    // ====================================================
+    // Events
+    // ====================================================
+
+    /// @notice Emitted when the verification configuration is updated
+    event VerificationConfigUpdated(ISelfVerificationRoot.VerificationConfig verificationConfig);
+
+    /// @notice Emitted when the scope is updated
+    event ScopeUpdated(uint256 newScope);
+
+    /// @notice Emitted when a new attestation ID is added
+    event AttestationIdAdded(uint256 attestationId);
+
+    /// @notice Emitted when an attestation ID is removed
+    event AttestationIdRemoved(uint256 attestationId);
+
     /**
      * @notice Initializes the SelfVerificationRoot contract.
      * @param identityVerificationHub The address of the Identity Verification Hub.
@@ -90,6 +106,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     function _setVerificationConfig(ISelfVerificationRoot.VerificationConfig memory verificationConfig) internal {
         _verificationConfig = verificationConfig;
+        emit VerificationConfigUpdated(verificationConfig);
     }
 
     /**
@@ -108,6 +125,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     function _setScope(uint256 newScope) internal {
         _scope = newScope;
+        emit ScopeUpdated(newScope);
     }
 
     /**
@@ -117,6 +135,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     function _addAttestationId(uint256 attestationId) internal {
         _attestationIds[attestationId] = true;
+        emit AttestationIdAdded(attestationId);
     }
 
     /**
@@ -126,6 +145,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     function _removeAttestationId(uint256 attestationId) internal {
         _attestationIds[attestationId] = false;
+        emit AttestationIdRemoved(attestationId);
     }
 
     /**

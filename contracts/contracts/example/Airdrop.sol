@@ -79,13 +79,11 @@ contract Airdrop is SelfVerificationConsumer, Ownable {
     /// @notice Emitted when the claim phase is closed.
     event ClaimClose();
 
+    /// @notice Emitted when a user identifier is registered.
     event UserIdentifierRegistered(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
-    /// @notice Emitted when the scope is updated.
-    event ScopeUpdated(uint256 newScope);
-    /// @notice Emitted when a new attestation ID is added.
-    event AttestationIdAdded(uint256 attestationId);
-    /// @notice Emitted when an attestation ID is removed.
-    event AttestationIdRemoved(uint256 attestationId);
+
+    /// @notice Emitted when the Merkle root is updated.
+    event MerkleRootUpdated(bytes32 newMerkleRoot);
 
     // ====================================================
     // Constructor
@@ -120,6 +118,7 @@ contract Airdrop is SelfVerificationConsumer, Ownable {
      */
     function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
         merkleRoot = _merkleRoot;
+        emit MerkleRootUpdated(_merkleRoot);
     }
 
     /**
