@@ -1,3 +1,4 @@
+import { EventName, EventParams } from '../consts/analytics';
 import { createSegmentClient } from '../Segment';
 
 const segmentClient = createSegmentClient();
@@ -12,6 +13,33 @@ function cleanParams(params: Record<string, any>) {
   return newParams;
 }
 
+/**
+ * Validates event parameters to ensure they follow standards
+ * - Ensures numeric values are properly formatted
+ */
+function validateParams(
+  properties?: Record<string, any>,
+): Record<string, any> | undefined {
+  if (!properties) return undefined;
+
+  const validatedProps = { ...properties };
+
+  // Ensure duration is formatted as a number with at most 2 decimal places
+  if (validatedProps.duration_seconds !== undefined) {
+    if (typeof validatedProps.duration_seconds === 'string') {
+      validatedProps.duration_seconds = parseFloat(
+        validatedProps.duration_seconds,
+      );
+    }
+    // Format to 2 decimal places
+    validatedProps.duration_seconds = parseFloat(
+      validatedProps.duration_seconds.toFixed(2),
+    );
+  }
+
+  return cleanParams(validatedProps);
+}
+
 /*
   Records analytics events and screen views
   In development mode, events are logged to console instead of being sent to Segment
@@ -22,10 +50,13 @@ const analytics = () => {
     eventName: string,
     properties?: Record<string, any>,
   ) {
+    // Validate and clean properties
+    const validatedProps = validateParams(properties);
+
     if (__DEV__) {
       console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
         name: eventName,
-        properties: properties ? cleanParams(properties) : undefined,
+        properties: validatedProps,
       });
       return;
     }
@@ -38,21 +69,17 @@ const analytics = () => {
         ? segmentClient.screen(e, p)
         : segmentClient.track(e, p);
 
-    if (!properties) {
+    if (!validatedProps) {
       // you may need to remove the catch when debugging
       return trackMethod(eventName).catch(console.info);
     }
 
-    if (properties.params) {
-      const newParams = cleanParams(properties.params);
-      properties.params = newParams;
-    }
     // you may need to remove the catch when debugging
-    trackMethod(eventName, properties).catch(console.info);
+    trackMethod(eventName, validatedProps).catch(console.info);
   }
 
   return {
-    trackEvent: (eventName: string, properties?: Record<string, any>) => {
+    trackEvent: (eventName: EventName, properties?: EventParams) => {
       _track('event', eventName, properties);
     },
     trackScreenView: (screenName: string, properties?: Record<string, any>) => {

@@ -17,6 +17,7 @@ import {
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { ProofEvents } from '../../consts/analytics';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
@@ -67,7 +68,8 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
         return;
       }
       if (error) {
-        trackEvent('QR Scan Error', {
+        trackEvent(ProofEvents.QR_SCAN_FAILED, {
+          reason: 'scan_error',
           error: error.message || error.toString(),
         });
         console.error(error);
@@ -78,7 +80,9 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
         const sessionId = encodedData.get('sessionId');
         const selfApp = encodedData.get('selfApp');
         if (selfApp) {
-          trackEvent('QR Scan Success: selfApp');
+          trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
+            scan_type: 'selfApp',
+          });
           const selfAppJson = JSON.parse(selfApp);
           useSelfAppStore.getState().setSelfApp(selfAppJson);
           useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
@@ -86,14 +90,19 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
             navigateToProveScreen();
           }, 100);
         } else if (sessionId) {
-          trackEvent('QR Scan Success: sessionId');
+          trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
+            scan_type: 'sessionId',
+          });
           useSelfAppStore.getState().cleanSelfApp();
           useSelfAppStore.getState().startAppListener(sessionId);
           setTimeout(() => {
             navigateToProveScreen();
           }, 100);
         } else {
-          trackEvent('QR Scan Failure', { reason: 'No sessionId or selfApp' });
+          trackEvent(ProofEvents.QR_SCAN_FAILED, {
+            reason: 'missing_fields',
+            details: 'No sessionId or selfApp',
+          });
           console.error('No sessionId or selfApp found in QR code');
           setDoneScanningQR(false); // Reset to allow another scan attempt
           navigation.navigate('QRCodeTrouble');

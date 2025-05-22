@@ -10,6 +10,7 @@ import React, {
 import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
 
+import { AuthEvents } from '../consts/analytics';
 import { Mnemonic } from '../types/mnemonic';
 import analytics from '../utils/analytics';
 
@@ -38,18 +39,24 @@ const _getSecurely = async function <T>(
     });
 
     if (!simpleCheck.success) {
-      trackEvent('Biometric Auth Failed');
+      trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
+        reason: 'unknown_error',
+        error: 'Authentication failed',
+      });
       throw new Error('Authentication failed');
     }
 
-    trackEvent('Biometric Auth Success');
+    trackEvent(AuthEvents.BIOMETRIC_AUTH_SUCCESS);
     return {
       signature: 'authenticated',
       data: formatter(dataString),
     };
   } catch (error: any) {
     console.error('Error in _getSecurely:', error);
-    trackEvent('Biometric Auth Error', { error: error.message });
+    trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
+      reason: 'unknown_error',
+      error: error.message,
+    });
     throw error;
   }
 };
@@ -57,18 +64,23 @@ const _getSecurely = async function <T>(
 async function checkBiometricsAvailable(): Promise<boolean> {
   try {
     const { available } = await biometrics.isSensorAvailable();
-    trackEvent('Biometrics Check', { available });
+    trackEvent(AuthEvents.BIOMETRIC_CHECK, { available });
     return available;
   } catch (error: any) {
     console.error('Error checking biometric availability:', error);
-    trackEvent('Biometrics Check Error', { error: error.message });
+    trackEvent(AuthEvents.BIOMETRIC_CHECK, {
+      reason: 'unknown_error',
+      error: error.message,
+    });
     return false;
   }
 }
 
 async function restoreFromMnemonic(mnemonic: string): Promise<string | false> {
   if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
-    trackEvent('Mnemonic Restore Failed', { reason: 'invalid_mnemonic' });
+    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+      reason: 'invalid_mnemonic',
+    });
     return false;
   }
 
@@ -78,11 +90,11 @@ async function restoreFromMnemonic(mnemonic: string): Promise<string | false> {
     await Keychain.setGenericPassword('secret', data, {
       service: SERVICE_NAME,
     });
-    trackEvent('Mnemonic Restore Success');
+    trackEvent(AuthEvents.MNEMONIC_RESTORE_SUCCESS);
     return data;
   } catch (error: any) {
-    trackEvent('Mnemonic Restore Failed', {
-      reason: 'restore_error',
+    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+      reason: 'unknown_error',
       error: error.message,
     });
     return false;
@@ -97,7 +109,7 @@ async function loadOrCreateMnemonic(): Promise<string | false> {
     try {
       JSON.parse(storedMnemonic.password);
       console.log('Stored mnemonic parsed successfully');
-      trackEvent('Mnemonic Loaded');
+      trackEvent(AuthEvents.MNEMONIC_LOADED);
       return storedMnemonic.password;
     } catch (e: any) {
       console.log(
@@ -105,7 +117,10 @@ async function loadOrCreateMnemonic(): Promise<string | false> {
         e,
       );
       console.log('Creating a new one');
-      trackEvent('Mnemonic Parse Error', { error: e.message });
+      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+        reason: 'unknown_error',
+        error: e.message,
+      });
     }
   }
 
@@ -118,10 +133,13 @@ async function loadOrCreateMnemonic(): Promise<string | false> {
     await Keychain.setGenericPassword('secret', data, {
       service: SERVICE_NAME,
     });
-    trackEvent('New Mnemonic Created');
+    trackEvent(AuthEvents.MNEMONIC_CREATED);
     return data;
   } catch (error: any) {
-    trackEvent('Mnemonic Creation Failed', { error: error.message });
+    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+      reason: 'unknown_error',
+      error: error.message,
+    });
     return false;
   }
 }
@@ -169,7 +187,7 @@ export const AuthProvider = ({
       return;
     }
 
-    trackEvent('Biometric Login Attempt');
+    trackEvent(AuthEvents.BIOMETRIC_LOGIN_ATTEMPT);
     const promise = biometrics.simplePrompt({
       promptMessage: 'Confirm your identity to access the stored secret',
     });
@@ -177,25 +195,25 @@ export const AuthProvider = ({
     const { success, error } = await promise;
     if (error) {
       setIsAuthenticatingPromise(null);
-      trackEvent('Biometric Login Failed', { error });
+      trackEvent(AuthEvents.BIOMETRIC_LOGIN_FAILED, { error });
       throw error;
     }
     if (!success) {
       setIsAuthenticatingPromise(null);
-      trackEvent('Biometric Login Cancelled');
+      trackEvent(AuthEvents.BIOMETRIC_LOGIN_CANCELLED);
       throw new Error('Canceled by user');
     }
 
     setIsAuthenticatingPromise(null);
     setIsAuthenticated(true);
-    trackEvent('Biometric Login Success');
+    trackEvent(AuthEvents.BIOMETRIC_LOGIN_SUCCESS);
     setAuthenticatedTimeout(previousTimeout => {
       if (previousTimeout) {
         clearTimeout(previousTimeout);
       }
       return setTimeout(() => {
         setIsAuthenticated(false);
-        trackEvent('Authentication Timeout');
+        trackEvent(AuthEvents.AUTHENTICATION_TIMEOUT);
       }, authenticationTimeoutinMs);
     });
   }, [isAuthenticatingPromise]);
