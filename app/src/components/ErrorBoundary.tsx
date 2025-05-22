@@ -3,6 +3,8 @@ import { Text, View } from 'react-native';
 
 import analytics from '../utils/analytics';
 
+const { flush: flushAnalytics } = analytics();
+
 interface Props {
   children: React.ReactNode;
 }
@@ -23,7 +25,7 @@ class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch() {
     // Flush analytics before the app crashes
-    analytics().flush();
+    flushAnalytics();
   }
 
   render() {

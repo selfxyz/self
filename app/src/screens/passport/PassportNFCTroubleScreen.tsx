@@ -7,6 +7,8 @@ import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
 import analytics from '../../utils/analytics';
 import { slate500 } from '../../utils/colors';
 
+const { flush: flushAnalytics } = analytics();
+
 const tips: TipProps[] = [
   {
     title: 'Know Your Chip Location',
@@ -39,7 +41,7 @@ const PassportNFCTrouble: React.FC = () => {
 
   // error screen, flush analytics
   React.useEffect(() => {
-    analytics().flush();
+    flushAnalytics();
   }, []);
 
   return (

@@ -13,12 +13,14 @@ import { black, white } from '../../utils/colors';
 import { notificationError } from '../../utils/haptic';
 import { styles } from '../prove/ProofRequestStatusScreen';
 
+const { flush: flushAnalytics } = analytics();
+
 const UnsupportedPassportScreen: React.FC = () => {
   const onPress = useHapticNavigation('Launch');
   useEffect(() => {
     notificationError();
     // error screen, flush analytics
-    analytics().flush();
+    flushAnalytics();
   }, []);
 
   return (

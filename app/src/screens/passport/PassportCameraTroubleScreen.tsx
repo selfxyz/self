@@ -7,6 +7,8 @@ import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
 import analytics from '../../utils/analytics';
 import { slate500 } from '../../utils/colors';
 
+const { flush: flushAnalytics } = analytics();
+
 const tips: TipProps[] = [
   {
     title: 'Use Good Lighting',
@@ -35,7 +37,7 @@ const PassportCameraTrouble: React.FC = () => {
 
   // error screen, flush analytics
   React.useEffect(() => {
-    analytics().flush();
+    flushAnalytics();
   }, []);
 
   return (

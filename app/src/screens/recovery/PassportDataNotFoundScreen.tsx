@@ -8,12 +8,14 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
 import { black, slate200, white } from '../../utils/colors';
 
+const { flush: flushAnalytics } = analytics();
+
 const PassportDataNotFound: React.FC = () => {
   const onPress = useHapticNavigation('Launch');
 
   // error screen, flush analytics
   React.useEffect(() => {
-    analytics().flush();
+    flushAnalytics();
   }, []);
 
   return (

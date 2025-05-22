@@ -7,6 +7,8 @@ import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
 import analytics from '../../utils/analytics';
 import { slate500 } from '../../utils/colors';
 
+const { flush: flushAnalytics } = analytics();
+
 const tips: TipProps[] = [
   {
     title: 'Ensure Valid QR Code',
@@ -42,7 +44,7 @@ const QRCodeTrouble: React.FC = () => {
 
   // error screen, flush analytics
   React.useEffect(() => {
-    analytics().flush();
+    flushAnalytics();
   }, []);
 
   return (

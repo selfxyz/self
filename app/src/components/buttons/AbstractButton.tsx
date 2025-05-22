@@ -40,12 +40,7 @@ export default function AbstractButton({
   const hasBorder = borderColor ? true : false;
 
   if (trackEvent) {
-    // prefix event with click_ and format it for analytics
-    const niceTrackEvent = `click_${trackEvent
-      .replace(/ /g, '_')
-      .toLowerCase()
-      .trim()}`;
-    analyticsTrackEvent(niceTrackEvent);
+    analyticsTrackEvent(`Click: ${trackEvent}`);
   }
 
   return (
