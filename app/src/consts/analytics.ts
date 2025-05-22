@@ -1,23 +1,4 @@
 /**
- * Analytics Event Constants
- *
- * This file contains all analytics event names used in the app.
- * Always use these constants instead of string literals when tracking events.
- */
-
-// Event Categories
-export enum EventCategory {
-  AUTH = 'Auth',
-  PASSPORT = 'Passport',
-  PROOF = 'Proof',
-  SETTINGS = 'Settings',
-  BACKUP = 'Backup',
-  APP = 'App',
-}
-
-// Suggested common reason codes for error events
-// Use these strings for the 'reason' parameter in error events for consistency
-/**
  * Generic reasons:
  * - network_error: Network connectivity issues
  * - user_cancelled: User cancelled the operation
@@ -47,89 +28,106 @@ export enum EventCategory {
  * - cloud_service_unavailable: Cloud service unavailable
  */
 
-export const AppEvents = {
-  UPDATE_AVAILABLE: `${EventCategory.APP}: Update Available`,
-  UPDATE_STARTED: `${EventCategory.APP}: Update Started`,
-  UPDATE_MODAL_OPENED: `${EventCategory.APP}: Update Modal Opened`,
-  UPDATE_MODAL_CLOSED: `${EventCategory.APP}: Update Modal Closed`,
-  DISCLAIMER_DISMISSED: `${EventCategory.APP}: Disclaimer Dismissed`,
-};
+import { EventCategory } from '../utils/analytics';
 
-export const AuthEvents = {
-  LOGIN_SUCCESS: `${EventCategory.AUTH}: Login Success`,
-  LOGIN_FAILED: `${EventCategory.AUTH}: Login Failed`,
-  BIOMETRIC_AUTH_SUCCESS: `${EventCategory.AUTH}: Biometric Auth Success`,
-  BIOMETRIC_AUTH_FAILED: `${EventCategory.AUTH}: Biometric Auth Failed`,
-  BIOMETRIC_CHECK: `${EventCategory.AUTH}: Biometrics Check`,
-  BIOMETRIC_LOGIN_ATTEMPT: `${EventCategory.AUTH}: Biometric Login Attempt`,
-  BIOMETRIC_LOGIN_SUCCESS: `${EventCategory.AUTH}: Biometric Login Success`,
-  BIOMETRIC_LOGIN_FAILED: `${EventCategory.AUTH}: Biometric Login Failed`,
-  BIOMETRIC_LOGIN_CANCELLED: `${EventCategory.AUTH}: Biometric Login Cancelled`,
-  AUTHENTICATION_TIMEOUT: `${EventCategory.AUTH}: Authentication Timeout`,
-  MNEMONIC_LOADED: `${EventCategory.AUTH}: Mnemonic Loaded`,
-  MNEMONIC_CREATED: `${EventCategory.AUTH}: Mnemonic Created`,
-  MNEMONIC_RESTORE_SUCCESS: `${EventCategory.AUTH}: Mnemonic Restore Success`,
-  MNEMONIC_RESTORE_FAILED: `${EventCategory.AUTH}: Mnemonic Restore Failed`,
-};
+/**
+ * Creates event names by prefixing each event name with its category.
+ *
+ * @example
+ * createEventNames(EventCategory.APP, {
+ *   UPDATE_AVAILABLE: 'Update Available'
+ * })
+ * // Returns: { UPDATE_AVAILABLE: 'App: Update Available' }
+ */
+const createEventNames = (
+  category: EventCategory,
+  events: Record<string, string>,
+) =>
+  Object.fromEntries(
+    Object.entries(events).map(([key, value]) => [
+      key,
+      `${category}: ${value}`,
+    ]),
+  );
 
-export const PassportEvents = {
-  SCAN_STARTED: `${EventCategory.PASSPORT}: Scan Started`,
-  CAMERA_SCAN_SUCCESS: `${EventCategory.PASSPORT}: Camera Scan Success`,
-  CAMERA_SCAN_FAILED: `${EventCategory.PASSPORT}: Camera Scan Failed`,
-  NFC_SCAN_SUCCESS: `${EventCategory.PASSPORT}: NFC Scan Success`,
-  NFC_SCAN_FAILED: `${EventCategory.PASSPORT}: NFC Scan Failed`,
-  PASSPORT_PARSED: `${EventCategory.PASSPORT}: Passport Parsed`,
-  PARSE_FAILED: `${EventCategory.PASSPORT}: Parse Failed`,
-  OWNERSHIP_CONFIRMED: `${EventCategory.PASSPORT}: Ownership Confirmed`,
-};
+export const AppEvents = createEventNames(EventCategory.APP, {
+  UPDATE_STARTED: 'Update Started',
+  UPDATE_MODAL_OPENED: 'Update Modal Opened',
+  UPDATE_MODAL_CLOSED: 'Update Modal Closed',
+});
 
-export const ProofEvents = {
-  VERIFICATION_STARTED: `${EventCategory.PROOF}: Verification Started`,
-  VERIFICATION_COMPLETED: `${EventCategory.PROOF}: Verification Completed`,
-  VERIFICATION_FAILED: `${EventCategory.PROOF}: Verification Failed`,
-  QR_SCAN_SUCCESS: `${EventCategory.PROOF}: QR Scan Success`,
-  QR_SCAN_FAILED: `${EventCategory.PROOF}: QR Scan Failed`,
-  DISCLOSURES_VIEWED: `${EventCategory.PROOF}: Disclosures Viewed`,
-  NOTIFICATION_PERMISSION_REQUESTED: `${EventCategory.PROOF}: Notification Permission Requested`,
-  FCM_TOKEN_STORED: `${EventCategory.PROOF}: FCM Token Stored`,
-};
+export const AuthEvents = createEventNames(EventCategory.AUTH, {
+  BIOMETRIC_AUTH_SUCCESS: 'Biometric Auth Success',
+  BIOMETRIC_AUTH_FAILED: 'Biometric Auth Failed',
+  BIOMETRIC_CHECK: 'Biometrics Check',
+  BIOMETRIC_LOGIN_ATTEMPT: 'Biometric Login Attempt',
+  BIOMETRIC_LOGIN_SUCCESS: 'Biometric Login Success',
+  BIOMETRIC_LOGIN_FAILED: 'Biometric Login Failed',
+  BIOMETRIC_LOGIN_CANCELLED: 'Biometric Login Cancelled',
+  AUTHENTICATION_TIMEOUT: 'Authentication Timeout',
+  MNEMONIC_LOADED: 'Mnemonic Loaded',
+  MNEMONIC_CREATED: 'Mnemonic Created',
+  MNEMONIC_RESTORE_SUCCESS: 'Mnemonic Restore Success',
+  MNEMONIC_RESTORE_FAILED: 'Mnemonic Restore Failed',
+});
 
-export const SettingsEvents = {
-  CONNECTION_SETTINGS_OPENED: `${EventCategory.SETTINGS}: Connection Settings Opened`,
-  CONNECTION_MODAL_OPENED: `${EventCategory.SETTINGS}: Connection Modal Opened`,
-  CONNECTION_MODAL_CLOSED: `${EventCategory.SETTINGS}: Connection Modal Closed`,
-};
+export const PassportEvents = createEventNames(EventCategory.PASSPORT, {
+  CAMERA_SCAN_SUCCESS: 'Camera Scan Success',
+  CAMERA_SCAN_FAILED: 'Camera Scan Failed',
+  NFC_SCAN_SUCCESS: 'NFC Scan Success',
+  NFC_SCAN_FAILED: 'NFC Scan Failed',
+  PASSPORT_PARSED: 'Passport Parsed',
+  PASSPORT_PARSE_FAILED: 'Passport Parse Failed',
+  OWNERSHIP_CONFIRMED: 'Passport Ownership Confirmed',
+  DATA_LOAD_ERROR: 'Passport Data Load Error',
+  NFC_RESPONSE_PARSE_FAILED: 'Parsing NFC Response Unsuccessful',
+  START_PASSPORT_NFC: 'Start Passport NFC',
+  OPEN_NFC_SETTINGS: 'Open NFC Settings',
+  CANCEL_PASSPORT_NFC: 'Cancel Passport NFC',
+});
 
-export const BackupEvents = {
-  CLOUD_BACKUP_ENABLE_STARTED: `${EventCategory.BACKUP}: Cloud Backup Enable Started`,
-  CLOUD_BACKUP_ENABLED: `${EventCategory.BACKUP}: Cloud Backup Enabled`,
-  CLOUD_BACKUP_DISABLE_STARTED: `${EventCategory.BACKUP}: Cloud Backup Disable Started`,
-  CLOUD_BACKUP_DISABLED: `${EventCategory.BACKUP}: Cloud Backup Disabled`,
-  CLOUD_BACKUP_CANCELLED: `${EventCategory.BACKUP}: Cloud Backup Cancelled`,
+export const ProofEvents = createEventNames(EventCategory.PROOF, {
+  QR_SCAN_SUCCESS: 'QR Scan Success',
+  QR_SCAN_FAILED: 'QR Scan Failed',
+  NOTIFICATION_PERMISSION_REQUESTED: 'Notification Permission Requested',
+  FCM_TOKEN_STORED: 'FCM Token Stored Successfully',
+  PROVING_STATE_CHANGE: 'Proving State Change',
+  PROVING_PROCESS_ERROR: 'Proving Process Error',
+  PROOF_COMPLETED: 'Proof Completed',
+  PROOF_FAILED: 'Proof Failed',
+  PROOF_RESULT_ACKNOWLEDGED: 'Proof Result Acknowledged',
+  PROOF_VERIFICATION_STARTED: 'Proof Verification Started',
+  PROOF_DISCLOSURES_SCROLLED: 'Proof Disclosures Scrolled',
+});
 
-  CLOUD_RESTORE_SUCCESS: `${EventCategory.BACKUP}: Cloud Restore Success`,
-  CLOUD_RESTORE_FAILED: `${EventCategory.BACKUP}: Cloud Restore Failed`,
+export const SettingsEvents = createEventNames(EventCategory.SETTINGS, {
+  CONNECTION_SETTINGS_OPENED: 'Connection Settings Opened',
+  CONNECTION_MODAL_OPENED: 'Connection Modal Opened',
+  CONNECTION_MODAL_CLOSED: 'Connection Modal Closed',
+});
 
-  MANUAL_RECOVERY_SELECTED: `${EventCategory.BACKUP}: Manual Recovery Selected`,
-};
+export const BackupEvents = createEventNames(EventCategory.BACKUP, {
+  CLOUD_BACKUP_ENABLE_STARTED: 'Cloud Backup Enable Started',
+  CLOUD_BACKUP_DISABLE_STARTED: 'Cloud Backup Disable Started',
+  CLOUD_BACKUP_CANCELLED: 'Cloud Backup Cancelled',
+  CLOUD_RESTORE_SUCCESS: 'Cloud Restore Success',
+  CLOUD_RESTORE_FAILED_UNKNOWN: 'Cloud Restore Failed: Unknown Error',
+  CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED:
+    'Cloud Restore Failed: Passport Not Registered',
+  MANUAL_RECOVERY_SELECTED: 'Manual Recovery Selected',
+  CLOUD_BACKUP_DISABLED_DONE: 'Cloud Backup Disabled Done',
+  CLOUD_BACKUP_ENABLED_DONE: 'Cloud Backup Enabled Done',
+});
 
-export const createButtonClickEvent = (buttonName: string): string => {
-  return `Click: ${buttonName}`;
-};
-
-export type EventName =
-  | (typeof AuthEvents)[keyof typeof AuthEvents]
-  | (typeof PassportEvents)[keyof typeof PassportEvents]
-  | (typeof ProofEvents)[keyof typeof ProofEvents]
-  | (typeof SettingsEvents)[keyof typeof SettingsEvents]
-  | (typeof BackupEvents)[keyof typeof BackupEvents]
-  | (typeof AppEvents)[keyof typeof AppEvents]
-  | ReturnType<typeof createButtonClickEvent>;
-
-// Helper function to create event with params
-export interface EventParams {
-  reason?: string | null;
-  duration_seconds?: number;
-  attempt_count?: number;
-  [key: string]: any;
-}
+export const MockDataEvents = createEventNames(EventCategory.MOCK_DATA, {
+  ENABLE_ADVANCED_MODE: 'Enable Advanced Mode',
+  OPEN_ALGORITHM_SELECTION: 'Open Algorithm Selection',
+  OPEN_COUNTRY_SELECTION: 'Open Country Selection',
+  DECREASE_EXPIRY_YEARS: 'Decrease Expiry Years',
+  INCREASE_EXPIRY_YEARS: 'Increase Expiry Years',
+  TOGGLE_OFAC_LIST: 'Toggle OFAC List',
+  SELECT_COUNTRY: 'Select Country',
+  SELECT_ALGORITHM: 'Select Algorithm',
+  GENERATE_DATA: 'Generate Data',
+  CANCEL_GENERATION: 'Cancel Generation',
+});

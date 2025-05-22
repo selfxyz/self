@@ -7,6 +7,7 @@ import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { PassportEvents, ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
@@ -40,7 +41,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   const onOkPress = async () => {
     try {
       setRequestingPermission(true);
-      trackEvent('Notification Permission Requested');
+      trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
 
       // Request notification permission
       const permissionGranted = await requestNotificationPermission();
@@ -48,7 +49,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
         const token = await getFCMToken();
         if (token) {
           provingStore.setFcmToken(token);
-          trackEvent('FCM Token Stored Successfully');
+          trackEvent(ProofEvents.FCM_TOKEN_STORED);
           console.log('FCM token stored in proving store');
         }
       }
@@ -60,7 +61,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
       navigate();
     } catch (error: any) {
       console.error('Error initializing proving process:', error);
-      trackEvent('Proving Process Error', {
+      trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
         error: error?.message || 'Unknown error',
       });
     } finally {
@@ -95,7 +96,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
             not stolen or forged.
           </Description>
           <PrimaryButton
-            trackEvent="Passport Ownership Confirmed"
+            trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}
             onPress={onOkPress}
             disabled={!isReadyToProve}
           >

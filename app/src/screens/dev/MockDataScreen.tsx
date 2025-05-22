@@ -31,6 +31,7 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';
 import { Title } from '../../components/typography/Title';
+import { MockDataEvents } from '../../consts/analytics';
 import { storePassportData } from '../../stores/passportDataProvider';
 import analytics from '../../utils/analytics';
 import {
@@ -265,7 +266,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     .onStart(() => {
       setAdvancedMode(true);
       buttonTap();
-      trackEvent('Enable Advanced Mode');
+      trackEvent(MockDataEvents.ENABLE_ADVANCED_MODE);
     });
 
   const { top, bottom } = useSafeAreaInsets();
@@ -289,7 +290,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 onPress={() => {
                   buttonTap();
                   setAlgorithmSheetOpen(true);
-                  trackEvent('Open Algorithm Selection');
+                  trackEvent(MockDataEvents.OPEN_ALGORITHM_SELECTION);
                 }}
                 p="$2"
                 px="$3"
@@ -312,7 +313,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               onPress={() => {
                 buttonTap();
                 setCountrySheetOpen(true);
-                trackEvent('Open Country Selection');
+                trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
               }}
               p="$2"
               px="$3"
@@ -364,7 +365,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 onPress={() => {
                   buttonTap();
                   setExpiryYears(expiryYears - 1);
-                  trackEvent('Decrease Expiry Years');
+                  trackEvent(MockDataEvents.DECREASE_EXPIRY_YEARS);
                 }}
                 disabled={expiryYears <= 0}
               >
@@ -384,7 +385,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 onPress={() => {
                   buttonTap();
                   setExpiryYears(expiryYears + 1);
-                  trackEvent('Increase Expiry Years');
+                  trackEvent(MockDataEvents.INCREASE_EXPIRY_YEARS);
                 }}
               >
                 <Plus />
@@ -400,7 +401,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               onCheckedChange={() => {
                 buttonTap();
                 setIsInOfacList(!isInOfacList);
-                trackEvent('Toggle OFAC List');
+                trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
               }}
               bg={isInOfacList ? '$green7Light' : '$gray4'}
             >
@@ -420,7 +421,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       <YStack px="$4" pb="$4">
         <ButtonsContainer>
           <PrimaryButton
-            trackEvent="Generate Data"
+            trackEvent={MockDataEvents.GENERATE_DATA}
             onPress={handleGenerate}
             disabled={isGenerating}
           >
@@ -431,7 +432,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             )}
           </PrimaryButton>
           <SecondaryButton
-            trackEvent="Cancel Generation"
+            trackEvent={MockDataEvents.CANCEL_GENERATION}
             onPress={() => navigation.goBack()}
           >
             Cancel
@@ -475,7 +476,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                     buttonTap();
                     handleCountrySelect(countryCode);
                     setCountrySheetOpen(false);
-                    trackEvent('Select Country');
+                    trackEvent(MockDataEvents.SELECT_COUNTRY);
                   }}
                 >
                   <XStack py="$3" px="$2">
@@ -529,7 +530,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                         buttonTap();
                         handleAlgorithmSelect(algorithm);
                         setAlgorithmSheetOpen(false);
-                        trackEvent('Select Algorithm');
+                        trackEvent(MockDataEvents.SELECT_ALGORITHM);
                       }}
                     >
                       <XStack py="$3" px="$2">

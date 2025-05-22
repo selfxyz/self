@@ -8,6 +8,7 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { BackupEvents } from '../../consts/analytics';
 import { useModal } from '../../hooks/useModal';
 import Cloud from '../../images/icons/logo_cloud_backup.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
@@ -49,11 +50,11 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         buttonText: 'I understand the risks',
         onButtonPress: async () => {
           try {
-            trackEvent('Cloud Backup Disable Started');
+            trackEvent(BackupEvents.CLOUD_BACKUP_DISABLE_STARTED);
             await loginWithBiometrics();
             await disableBackup();
             toggleCloudBackupEnabled();
-            trackEvent('Cloud Backup Disabled Done');
+            trackEvent(BackupEvents.CLOUD_BACKUP_DISABLED_DONE);
           } finally {
             setPending(false);
           }
@@ -72,7 +73,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
       return;
     }
 
-    trackEvent('Cloud Backup Enable Started');
+    trackEvent(BackupEvents.CLOUD_BACKUP_ENABLE_STARTED);
 
     setPending(true);
 
@@ -83,7 +84,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     }
     await upload(storedMnemonic.data);
     toggleCloudBackupEnabled();
-    trackEvent('Cloud Backup Enabled Done');
+    trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
     setPending(false);
   }, [
     cloudBackupEnabled,
@@ -173,7 +174,7 @@ function BottomButton({
 
   const goBack = () => {
     confirmTap();
-    trackEvent('Cloud Backup Cancelled');
+    trackEvent(BackupEvents.CLOUD_BACKUP_CANCELLED);
     navigation.goBack();
   };
 

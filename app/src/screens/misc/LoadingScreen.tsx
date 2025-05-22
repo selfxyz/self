@@ -9,6 +9,7 @@ import { PassportData } from '../../../../common/src/utils/types';
 import failAnimation from '../../assets/animations/loading/fail.json';
 import proveLoadingAnimation from '../../assets/animations/loading/prove.json';
 import successAnimation from '../../assets/animations/loading/success.json';
+import { PassportEvents, ProofEvents } from '../../consts/analytics';
 import CloseWarningIcon from '../../images/icons/close-warning.svg';
 import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
 import analytics from '../../utils/analytics';
@@ -84,7 +85,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
           }
         } catch (error: any) {
           console.error('Error loading passport data:', error);
-          trackEvent('Passport Data Load Error', {
+          trackEvent(PassportEvents.DATA_LOAD_ERROR, {
             error: error?.message || 'Unknown error',
           });
         }
@@ -115,7 +116,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     console.log('[LoadingScreen] Current proving state:', currentState);
     console.log('[LoadingScreen] FCM token available:', !!fcmToken);
 
-    trackEvent(`Proving state: ${currentState}`, {
+    trackEvent(ProofEvents.PROVING_STATE_CHANGE, {
+      state: currentState,
       fcmTokenAvailable: !!fcmToken,
       passportDataAvailable: !!passportData,
     });

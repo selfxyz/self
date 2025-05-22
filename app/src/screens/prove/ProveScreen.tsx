@@ -23,6 +23,7 @@ import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrima
 import Disclosures from '../../components/Disclosures';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
+import { ProofEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import {
   ProofStatus,
@@ -132,7 +133,7 @@ const ProveScreen: React.FC = () => {
   function onVerify() {
     provingStore.setUserConfirmed();
     buttonTap();
-    trackEvent('Proof Verification Started', {
+    trackEvent(ProofEvents.PROOF_VERIFICATION_STARTED, {
       appName: selectedApp?.appName,
       sessionId: provingStore.uuid,
       endpointType: selectedApp?.endpointType,
@@ -157,7 +158,7 @@ const ProveScreen: React.FC = () => {
       if (isCloseToBottom && !hasScrolledToBottom) {
         setHasScrolledToBottom(true);
         buttonTap();
-        trackEvent('Proof Disclosures Scrolled', {
+        trackEvent(ProofEvents.PROOF_DISCLOSURES_SCROLLED, {
           appName: selectedApp?.appName,
           sessionId: provingStore.uuid,
         });

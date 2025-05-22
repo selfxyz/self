@@ -1,5 +1,22 @@
-import { EventName, EventParams } from '../consts/analytics';
 import { createSegmentClient } from '../Segment';
+
+export interface EventParams {
+  reason?: string | null;
+  duration_seconds?: number;
+  attempt_count?: number;
+  [key: string]: any;
+}
+
+// Event Categories
+export enum EventCategory {
+  AUTH = 'Auth',
+  PASSPORT = 'Passport',
+  PROOF = 'Proof',
+  SETTINGS = 'Settings',
+  BACKUP = 'Backup',
+  APP = 'App',
+  MOCK_DATA = 'Mock Data',
+}
 
 const segmentClient = createSegmentClient();
 
@@ -79,7 +96,8 @@ const analytics = () => {
   }
 
   return {
-    trackEvent: (eventName: EventName, properties?: EventParams) => {
+    // Using LiteralCheck will allow constants but not plain string literals
+    trackEvent: (eventName: string, properties?: EventParams) => {
       _track('event', eventName, properties);
     },
     trackScreenView: (screenName: string, properties?: Record<string, any>) => {

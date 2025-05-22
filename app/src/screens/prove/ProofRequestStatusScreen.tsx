@@ -12,6 +12,7 @@ import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { typography } from '../../components/typography/styles';
 import { Title } from '../../components/typography/Title';
+import { ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import {
@@ -65,7 +66,7 @@ const SuccessScreen: React.FC = () => {
       notificationSuccess();
       setAnimationSource(succesAnimation);
       updateProofStatus(sessionId!, ProofStatus.SUCCESS);
-      trackEvent('Proof Completed', {
+      trackEvent(ProofEvents.PROOF_COMPLETED, {
         sessionId,
         appName,
       });
@@ -78,7 +79,7 @@ const SuccessScreen: React.FC = () => {
         errorCode ?? undefined,
         reason ?? undefined,
       );
-      trackEvent('Proof Failed', {
+      trackEvent(ProofEvents.PROOF_FAILED, {
         sessionId,
         appName,
         errorCode,
@@ -122,7 +123,7 @@ const SuccessScreen: React.FC = () => {
           />
         </View>
         <PrimaryButton
-          trackEvent="Proof Result Acknowledged"
+          trackEvent={ProofEvents.PROOF_RESULT_ACKNOWLEDGED}
           disabled={
             currentState !== 'completed' &&
             currentState !== 'error' &&

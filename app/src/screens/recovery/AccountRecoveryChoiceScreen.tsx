@@ -7,6 +7,7 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { BackupEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Keyboard from '../../images/icons/keyboard.svg';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
@@ -44,7 +45,7 @@ const AccountRecoveryChoiceScreen: React.FC<
 
       if (!result) {
         console.warn('Failed to restore account');
-        trackEvent('Cloud Restore Failed: Unknown Error');
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
         navigation.navigate('Launch');
         setRestoring(false);
         return;
@@ -59,7 +60,7 @@ const AccountRecoveryChoiceScreen: React.FC<
         console.log(
           'Secret provided did not match a registered passport. Please try again.',
         );
-        trackEvent('Cloud Restore Failed: Passport Not Registered');
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);
         navigation.navigate('Launch');
         setRestoring(false);
         return;
@@ -68,12 +69,12 @@ const AccountRecoveryChoiceScreen: React.FC<
       if (!cloudBackupEnabled) {
         toggleCloudBackupEnabled();
       }
-      trackEvent('Cloud Restore Success');
+      trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
       onRestoreFromCloudNext();
       setRestoring(false);
     } catch (e: any) {
       console.error(e);
-      trackEvent('Cloud Restore Failed: Unknown Error');
+      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
       setRestoring(false);
       throw new Error('Something wrong happened during cloud recovery');
     }
@@ -85,7 +86,7 @@ const AccountRecoveryChoiceScreen: React.FC<
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {
-    trackEvent('Manual Recovery Selected');
+    trackEvent(BackupEvents.MANUAL_RECOVERY_SELECTED);
     onEnterRecoveryPress();
   }, [onEnterRecoveryPress]);
 
