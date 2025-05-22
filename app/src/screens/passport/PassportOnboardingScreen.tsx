@@ -58,8 +58,15 @@ const PassportOnboardingScreen: React.FC<
           </Additional>
         </TextsContainer>
         <ButtonsContainer>
-          <PrimaryButton onPress={handleCameraPress}>Open Camera</PrimaryButton>
-          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+          <PrimaryButton trackEvent="Open Camera" onPress={handleCameraPress}>
+            Open Camera
+          </PrimaryButton>
+          <SecondaryButton
+            trackEvent="Cancel Open Camera"
+            onPress={onCancelPress}
+          >
+            Cancel
+          </SecondaryButton>
         </ButtonsContainer>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

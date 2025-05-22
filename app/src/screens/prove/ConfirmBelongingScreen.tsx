@@ -86,7 +86,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
           </Description>
-          <PrimaryButton onPress={onOkPress} disabled={!isReadyToProve}>
+          <PrimaryButton
+            trackEvent="Confirm Passport Ownership"
+            onPress={onOkPress}
+            disabled={!isReadyToProve}
+          >
             {isReadyToProve ? (
               'Confirm'
             ) : (

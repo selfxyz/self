@@ -253,6 +253,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<
 
   return (
     <HeldPrimaryButton
+      trackEvent="Start Identity Verification"
       onLongPress={() => {
         if (state.matches('ready')) {
           send({ type: 'VERIFY' });

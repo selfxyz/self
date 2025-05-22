@@ -3,12 +3,14 @@ import { StyleSheet, ViewStyle } from 'react-native';
 import { Button, Text, ViewProps } from 'tamagui';
 
 import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
+import analytics from '../../utils/analytics';
 import { dinot } from '../../utils/fonts';
 import { pressedStyle } from './pressedStyle';
 
 export interface ButtonProps extends ViewProps {
   children: React.ReactNode;
   animatedComponent?: React.ReactNode;
+  trackEvent?: string;
 }
 
 interface AbstractButtonProps extends ButtonProps {
@@ -16,6 +18,8 @@ interface AbstractButtonProps extends ButtonProps {
   borderColor?: string;
   color: string;
 }
+
+const { trackEvent: analyticsTrackEvent } = analytics();
 
 /*
     Base Button component that can be used to create different types of buttons
@@ -30,9 +34,20 @@ export default function AbstractButton({
   borderColor,
   style,
   animatedComponent,
+  trackEvent,
   ...props
 }: AbstractButtonProps) {
   const hasBorder = borderColor ? true : false;
+
+  if (trackEvent) {
+    // prefix event with click_ and format it for analytics
+    const niceTrackEvent = `click_${trackEvent
+      .replace(/ /g, '_')
+      .toLowerCase()
+      .trim()}`;
+    analyticsTrackEvent(niceTrackEvent);
+  }
+
   return (
     <Button
       unstyled

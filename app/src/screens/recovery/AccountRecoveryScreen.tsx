@@ -36,10 +36,16 @@ const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
           </Description>
 
           <YStack gap="$2.5" width="100%" pt="$6">
-            <PrimaryButton onPress={onRestoreAccountPress}>
+            <PrimaryButton
+              trackEvent="Start Account Recovery"
+              onPress={onRestoreAccountPress}
+            >
               Restore my account
             </PrimaryButton>
-            <SecondaryButton onPress={onCreateAccountPress}>
+            <SecondaryButton
+              trackEvent="Start New Account"
+              onPress={onCreateAccountPress}
+            >
               Create new account
             </SecondaryButton>
           </YStack>

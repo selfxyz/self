@@ -47,6 +47,7 @@ const DisclaimerScreen: React.FC = () => {
             Always verify an app's legitimacy before sharing your data.
           </Caution>
           <PrimaryButton
+            trackEvent="Dismiss Disclaimer"
             style={{ marginVertical: 30 }}
             onPress={() => {
               confirmTap();

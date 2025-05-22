@@ -289,12 +289,25 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               />
             </TextsContainer>
             <ButtonsContainer>
-              <PrimaryButton onPress={onVerifyPress} disabled={!isNfcSupported}>
+              <PrimaryButton
+                trackEvent={
+                  isNfcEnabled || !isNfcSupported
+                    ? 'Start Passport NFC'
+                    : 'Open NFC Settings'
+                }
+                onPress={onVerifyPress}
+                disabled={!isNfcSupported}
+              >
                 {isNfcEnabled || !isNfcSupported
                   ? 'Start Scan'
                   : 'Open settings'}
               </PrimaryButton>
-              <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+              <SecondaryButton
+                trackEvent="Cancel Passport NFC"
+                onPress={onCancelPress}
+              >
+                Cancel
+              </SecondaryButton>
             </ButtonsContainer>
           </>
         )}

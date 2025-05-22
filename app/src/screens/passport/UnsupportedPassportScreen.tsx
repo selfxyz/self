@@ -42,7 +42,9 @@ const UnsupportedPassportScreen: React.FC = () => {
           <Caption size="small" textAlign="center" textBreakStrategy="balanced">
             Don't panic, we're working hard to extend support to more regions.
           </Caption>
-          <PrimaryButton onPress={onPress}>Dismiss</PrimaryButton>
+          <PrimaryButton trackEvent="Dismiss Error" onPress={onPress}>
+            Dismiss
+          </PrimaryButton>
         </ExpandableBottomLayout.BottomSection>
       </ExpandableBottomLayout.Layout>
     </>

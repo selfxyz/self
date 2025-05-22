@@ -410,14 +410,21 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
       <YStack px="$4" pb="$4">
         <ButtonsContainer>
-          <PrimaryButton onPress={handleGenerate} disabled={isGenerating}>
+          <PrimaryButton
+            trackEvent="Generate Data"
+            onPress={handleGenerate}
+            disabled={isGenerating}
+          >
             {isGenerating ? (
               <Spinner color="gray" size="small" />
             ) : (
               'Generate Passport Data'
             )}
           </PrimaryButton>
-          <SecondaryButton onPress={() => navigation.goBack()}>
+          <SecondaryButton
+            trackEvent="Cancel Generation"
+            onPress={() => navigation.goBack()}
+          >
             Cancel
           </SecondaryButton>
         </ButtonsContainer>

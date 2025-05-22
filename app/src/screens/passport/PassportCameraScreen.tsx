@@ -154,7 +154,9 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
             </XStack>
           </YStack>
 
-          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+          <SecondaryButton trackEvent="Cancel Camera" onPress={onCancelPress}>
+            Cancel
+          </SecondaryButton>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

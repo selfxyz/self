@@ -44,6 +44,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
           </Description>
         </YStack>
         <PrimaryButton
+          trackEvent="Complete Verification"
           onPress={() => {
             buttonTap();
             navigation.navigate('Home');
