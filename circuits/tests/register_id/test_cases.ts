@@ -16,7 +16,7 @@ export const sigAlgs: TestCase[] = [
     hashFunction: 'sha256',
     sigAlg: 'rsa',
     domainParameter: '65537',
-    keyLength: '2048'
+    keyLength: '2048',
   },
 ];
 

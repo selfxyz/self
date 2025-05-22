@@ -147,6 +147,43 @@ export function prepareTestData() {
   };
 }
 
+export function prepareTestDataExtractor() {
+  const qrDataBytes = convertBigIntToByteArray(BigInt(QRData));
+  const decodedData = decompressByteArray(qrDataBytes);
+
+  // last 256 bytes
+  const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
+  const signedData = decodedData.slice(0, decodedData.length - 256);
+
+  const [qrDataPadded, qrDataPaddedLen] = sha256Pad(signedData, 512 * 3);
+
+  const delimiterIndices: number[] = [];
+  for (let i = 0; i < qrDataPadded.length; i++) {
+    if (qrDataPadded[i] === 255) {
+      delimiterIndices.push(i);
+    }
+    if (delimiterIndices.length === 18) {
+      break;
+    }
+  }
+
+  const inputs = {
+    data: Uint8ArrayToCharArray(qrDataPadded),
+    qrDataPaddedLength: qrDataPaddedLen,
+    delimiterIndices: delimiterIndices,
+    current_date: current_date,
+  };
+  console.log(qrDataPadded.length);
+  return {
+    inputs,
+    qrDataPadded,
+    signedData,
+    decodedData,
+    qrDataPaddedLen,
+    delimiterIndices,
+  };
+}
+
 export async function generateCircuitInputsAadhaarVCandDisclose(
   commitmentTree: LeanIMT,
   nameDobSMT: SMT,

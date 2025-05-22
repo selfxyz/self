@@ -21,80 +21,6 @@ import { DocumentType } from '../types';
 
 countries.registerLocale(en);
 
-export function formatRoot(root: string): string {
-  let rootHex = BigInt(root).toString(16);
-  return rootHex.length % 2 === 0 ? '0x' + rootHex : '0x0' + rootHex;
-}
-
-export function generateSMTProof(smt: SMT, leaf: bigint) {
-  const { entry, matchingEntry, siblings, root, membership } = smt.createProof(leaf);
-  const leaf_depth = siblings.length;
-
-  let closestleaf;
-  if (!matchingEntry) {
-    // we got the 0 leaf or membership
-    // then check if entry[1] exists
-    if (!entry[1]) {
-      // non membership proof
-      closestleaf = BigInt(0); // 0 leaf
-    } else {
-      closestleaf = BigInt(entry[0]); // leaf itself (memb proof)
-    }
-  } else {
-    // non membership proof
-    closestleaf = BigInt(matchingEntry[0]); // actual closest
-  }
-
-  // PATH, SIBLINGS manipulation as per binary tree in the circuit
-  siblings.reverse();
-  while (siblings.length < OFAC_TREE_LEVELS) siblings.push(BigInt(0));
-
-  // ----- Useful for debugging hence leaving as comments -----
-  // const binary = entry[0].toString(2)
-  // const bits = binary.slice(-leaf_depth);
-  // let indices = bits.padEnd(256, "0").split("").map(Number)
-  // const pathToMatch = num2Bits(256,BigInt(entry[0]))
-  // while(indices.length < 256) indices.push(0);
-  // // CALCULATED ROOT FOR TESTING
-  // // closestleaf, leaf_depth, siblings, indices, root : needed
-  // let calculatedNode = poseidon3([closestleaf,1,1]);
-  // console.log("Initial node while calculating",calculatedNode)
-  // console.log(smt.verifyProof(smt.createProof(leaf)))
-  // for (let i= 0; i < leaf_depth ; i++) {
-  //   const childNodes: any = indices[i] ? [siblings[i], calculatedNode] : [calculatedNode, siblings[i]]
-  //   console.log(indices[i],childNodes)
-  //   calculatedNode = poseidon2(childNodes)
-  // }
-  // console.log("Actual node", root)
-  // console.log("calculated node", calculatedNode)
-  // -----------------------------------------------------------
-
-  return {
-    root,
-    leaf_depth,
-    closestleaf,
-    siblings,
-  };
-}
-
-export function generateMerkleProof(imt: LeanIMT, _index: number, maxleaf_depth: number) {
-  const { siblings: siblings, index } = imt.generateProof(_index);
-  const leaf_depth = siblings.length;
-  // The index must be converted to a list of indices, 1 for each tree level.
-  // The circuit tree leaf_depth is 20, so the number of siblings must be 20, even if
-  // the tree leaf_depth is actually 3. The missing siblings can be set to 0, as they
-  // won't be used to calculate the root in the circuit.
-  const path: number[] = [];
-
-  for (let i = 0; i < maxleaf_depth; i += 1) {
-    path.push((index >> i) & 1);
-    if (siblings[i] === undefined) {
-      siblings[i] = BigInt(0);
-    }
-  }
-  return { siblings, path, leaf_depth };
-}
-
 // SMT trees for 3 levels of matching :
 // 1. Passport Number and Nationality tree : level 3 (Absolute Match)
 // 2. Name and date of birth combo tree : level 2 (High Probability Match)
@@ -153,10 +79,6 @@ const normalizeCountryName = (country: string): string => {
   return mapping[country.toLowerCase()] || country;
 };
 
-const getCountryCode = (countryName: string): string | undefined => {
-  return countries.getAlpha3Code(normalizeCountryName(countryName), 'en');
-};
-
 function generateSmallKey(input: bigint): bigint {
   return input % (BigInt(1) << BigInt(OFAC_TREE_LEVELS));
 }
@@ -171,8 +93,10 @@ function processNameAndDob(entry: any, i: number): bigint {
     console.log('dob is null', i, entry);
     return BigInt(0);
   }
-  const nameHash = processName(firstName, lastName, i);
+  const nameHash = processNameAadhaar(firstName, lastName, i);
+  console.log(nameHash);
   const dobHash = processDob(day, month, year, i);
+
   return generateSmallKey(poseidon2([dobHash, nameHash]));
 }
 
@@ -184,7 +108,7 @@ function processNameAndYob(entry: any, i: number): bigint {
     console.log('year is null', i, entry);
     return BigInt(0);
   }
-  const nameHash = processName(firstName, lastName, i);
+  const nameHash = processNameAadhaar(firstName, lastName, i);
   const yearHash = processYear(year, i);
   return generateSmallKey(poseidon2([yearHash, nameHash]));
 }
@@ -199,7 +123,7 @@ function getYearLeaf(yearArr: (bigint | number)[]): bigint {
   return poseidon2(yearArr);
 }
 
-function processName(firstName: string, lastName: string, i: number): bigint {
+function processNameAadhaar(firstName: string, lastName: string, i: number): bigint {
   // LASTNAME<<FIRSTNAME<MIDDLENAME<<<... (6-44)
   firstName = firstName.replace(/'/g, '');
   firstName = firstName.replace(/\./g, '');

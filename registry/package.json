@@ -9,7 +9,8 @@
     "extract-masterlist": "ts-node src/extractMasterList.ts",
     "install-registry": "cd ../common && yarn && cd ../registry && yarn",
     "mapJson": "ts-node src/buildMapJson.ts",
-    "parse-data": "ts-node src/parseData.ts"
+    "parse-data": "ts-node src/parseData.ts",
+    "ofac":"ts-node src/aadhaar/build_ofac_smt.ts"
   },
   "dependencies": {
     "@openpassport/zk-kit-imt": "^0.0.5",

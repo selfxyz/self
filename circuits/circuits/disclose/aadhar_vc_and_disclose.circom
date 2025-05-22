@@ -126,7 +126,7 @@ template AADHAAR_VC_AND_DISCLOSE(
     DiscloseAadhaar.ofac_nameyob_smt_siblings <== ofac_nameyob_smt_siblings;
 
     RevealDataPacked <==  DiscloseAadhaar.DataPacked[0];
-    // action nullifier
+    
     nullifier <== Poseidon(2)([secret, scope]);
 }
 

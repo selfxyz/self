@@ -14,33 +14,30 @@ import { genMockIdDoc } from '../../../common/src/utils/passports/genMockIdDoc';
 let circuit: any;
 
 // Mock passport not added in ofac list
-const passportData = genMockIdDoc(
-  { 'idType': 'mock_passport' }
-);
+const passportData = genMockIdDoc({ idType: 'mock_passport' });
 
 const passportDataInOfac = genMockIdDoc({
-  'idType': 'mock_passport',
-  'nationality': 'FRA',
-  'birthDate': '541007',
-  'lastName': 'HENAO MONTOYA',
-  'passportNumber': '98lh90556',
-  'firstName': 'ARCANGEL DE JESUS'
-})
+  idType: 'mock_passport',
+  nationality: 'FRA',
+  birthDate: '541007',
+  lastName: 'HENAO MONTOYA',
+  passportNumber: '98lh90556',
+  firstName: 'ARCANGEL DE JESUS',
+});
 
 // Mock ID Card not in OFAC list
 const idCardData = genMockIdDoc({
-  'idType': 'mock_id_card'
-})
+  idType: 'mock_id_card',
+});
 
 // Mock ID Card in OFAC list
 const idCardDataInOfac = genMockIdDoc({
-  'idType': 'mock_id_card',
-  'nationality': 'FRA',
-  'birthDate': '541007',
-  'firstName': 'ARCANGEL DE JESUS',
-  'lastName': 'HENAO MONTOYA'
-})
-
+  idType: 'mock_id_card',
+  nationality: 'FRA',
+  birthDate: '541007',
+  firstName: 'ARCANGEL DE JESUS',
+  lastName: 'HENAO MONTOYA',
+});
 
 // POSSIBLE TESTS (for each of 3 circuits):
 // 0. Cicuits compiles and loads
@@ -467,4 +464,3 @@ describe('OFAC - ID Card - Name and YOB match', function () {
     expect(ofacCheckResult).to.equal('0'); // Fails because root won't match
   });
 });
-

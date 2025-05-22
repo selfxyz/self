@@ -78,7 +78,7 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     signal input delimiterIndices[18];
     signal input current_date[6];
 
-    signal output Name[packedLength];
+    // signal output Name[packedLength];
     signal output NameHash;
     signal output RefID;
     signal output timestamp;
@@ -90,7 +90,7 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     signal output gender;
     signal output state;
     signal output pinCode;
-    signal output photo[photoPackSize()];
+    // signal output photo[photoPackSize()];
 
 
     // Create `nDelimitedData` - same as `data` but each delimiter is replaced with n * 255
@@ -121,16 +121,30 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
         nDelimitedData[i] <== is255AndIndexBeforePhoto[i] * n255Filter[i] + data[i];
     }
 
+    // Extract Name
+    component nameExtractor =NameExtractor(maxDataLength,nameMaxBytes);
+    nameExtractor.nDelimitedData      <== nDelimitedData;
+    nameExtractor.startDelimiterIndex <== delimiterIndices[namePosition() - 1];
+    nameExtractor.endIndex            <== delimiterIndices[namePosition()];
+
+    // Name <== nameExtractor.namepacked;
+    NameHash   <== nameExtractor.namehash;
+    log(NameHash);
+
+
     // Extract RefID
     component refIdExt = RefIdExtractor(maxDataLength);
     refIdExt.nDelimitedData   <== nDelimitedData;
     RefID <== refIdExt.RefId;
+    log(RefID);
 
     // Extract timestamp
     component timestampExtractor = TimestampExtractor(maxDataLength);
     timestampExtractor.nDelimitedData <== nDelimitedData;
     timestamp <== timestampExtractor.timestamp;
-   
+    log(timestamp);
+
+    //TODO Change
     // Extract age
     // We use the year, month, day from the timestamp as the current time to calculate the age
     // This wont be precise but avoid the need for additional `currentTime` input
@@ -143,19 +157,12 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     ageExtractor.currentDay <== timestampExtractor.day;
 
     age <== ageExtractor.age;
-
+    log(age);
     yearofbirth <== ageExtractor.year2;
     monthofbirth <== ageExtractor.month;
     dayofbirth <== ageExtractor.day;
     DobHash <== ageExtractor.DOBHash;
 
-    // Extract Name
-    component nameExtractor =NameExtractor(maxDataLength,nameMaxBytes);
-    nameExtractor.nDelimitedData      <== nDelimitedData;
-    nameExtractor.startDelimiterIndex <== delimiterIndices[namePosition() - 1];
-    nameExtractor.endIndex            <== delimiterIndices[namePosition()];
-    // Name <== nameExtractor.namepacked;
-    NameHash   <== nameExtractor.namehash;
 
     // Extract gender
     // Age extractor returns data shifted till DOB. Since size for DOB data is fixed,
@@ -163,6 +170,7 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     component genderExtractor = GenderExtractor(maxDataLength);
     genderExtractor.nDelimitedDataShiftedToDob <== ageExtractor.nDelimitedDataShiftedToDob;
     gender <== genderExtractor.out;
+    log(gender);
 
     // Extract PIN code
     component pinCodeExtractor = PinCodeExtractor(maxDataLength);
@@ -170,17 +178,18 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     pinCodeExtractor.startDelimiterIndex <== delimiterIndices[pinCodePosition() - 1];
     pinCodeExtractor.endDelimiterIndex <== delimiterIndices[pinCodePosition()];
     pinCode <== pinCodeExtractor.out;
-
+    log(pinCode);
     // Extract state
     component stateExtractor = ExtractAndPackAsInt(maxDataLength, statePosition());
     stateExtractor.nDelimitedData <== nDelimitedData;
     stateExtractor.delimiterIndices <== delimiterIndices;
     state <== stateExtractor.out;
+    log(state);
 
-    // Extract photo
-    component photoExtractor = PhotoExtractor(maxDataLength);
-    photoExtractor.nDelimitedData <== nDelimitedData;
-    photoExtractor.startDelimiterIndex <== delimiterIndices[photoPosition() - 1];
-    photoExtractor.endIndex <== qrDataPaddedLength - 1;
-    photo <== photoExtractor.out;
+    // // Extract photo
+    // component photoExtractor = PhotoExtractor(maxDataLength);
+    // photoExtractor.nDelimitedData <== nDelimitedData;
+    // photoExtractor.startDelimiterIndex <== delimiterIndices[photoPosition() - 1];
+    // photoExtractor.endIndex <== qrDataPaddedLength - 1;
+    // photo <== photoExtractor.out;
 }

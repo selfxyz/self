@@ -73,10 +73,10 @@ template DiscloseAadhaar(
     signal output DataPacked[1];
 
     signal output timestamp;
-    signal output Ageolderthan;
-    signal output gender;
-    signal output state;
-    signal output pinCode;
+    // signal output Ageolderthan;
+    // signal output gender;
+    // signal output state;
+    // signal output pinCode;
     signal output ofacCheckResultNameDob;
     signal output ofacCheckResultNameYob;
 
@@ -118,8 +118,8 @@ template DiscloseAadhaar(
     timestamp <== qrDataExtractor.timestamp;
     Ageolderthan <==  revealAgeolderthan * AgeComperasion; // Note: 0 does not necessarily mean age is below 18
 
-    component timestamp2bytes=FeToByteArray(31);
-    timestamp2bytes.fe <== timestamp;
+    // component timestamp2bytes=FeToByteArray(31);
+    // timestamp2bytes.fe <== timestamp;
 
     signal timestampBytes[31] <== timestamp2bytes.out;
 
@@ -142,22 +142,22 @@ template DiscloseAadhaar(
     );
 
     // DataRevealed in packed version 
-    // 1 -> Timestamp
-    // 2 -> AgeOlderThan
-    // 3 -> gender
-    // 4 -> state
-    // 5 -> pincode
-    // 6 -> ofacCheckResultNameDo
-    // 7 -> ofacCheckResultNameYob
-    signal dataReveal[7];
-    dataReveal[0] <== timestamp;
-    dataReveal[1] <== Ageolderthan;
-    dataReveal[2] <== gender;
-    dataReveal[3] <== state;
-    dataReveal[4] <== pinCode;
-    dataReveal[5] <== ofacCheckResultNameDob;
-    dataReveal[6] <== ofacCheckResultNameYob ;
-
+    // 1 -> AgeOlderThan
+    // 2 -> gender
+    // 3 -> state
+    // 4 -> pincode
+    // 5 -> ofacCheckResultNameDo
+    // 6 -> ofacCheckResultNameYob
+    signal dataReveal[6];
+    dataReveal[0] <== Ageolderthan;
+    dataReveal[1] <== gender;
+    dataReveal[2] <== state;
+    dataReveal[3] <== pinCode;
+    dataReveal[4] <== ofacCheckResultNameDob;
+    dataReveal[5] <== ofacCheckResultNameYob ;
+    // output 1 datapacked +1 timestamp 
+    // Timestamp takes 31 bytes so better to just output and later come back to it
     DataPacked <== PackBytes(7)(dataReveal);
+
 }
 

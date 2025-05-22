@@ -2,7 +2,7 @@
 
 # run from root
 # first argument should register | dsc | disclose
-if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" ]]; then
+if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" && $1 != "Test" ]]; then
     echo "first argument should be register | dsc | disclose"
     exit 1
 fi
@@ -63,6 +63,10 @@ DSC_CIRCUITS=(
     # "dsc_sha512_rsapss_65537_64_4096:true"
 )
 
+TEST_CIRCUITS=(
+    "aadhaar/extractor:test"
+)
+
 if [[ $1 == "register" ]]; then
     allowed_circuits=("${REGISTER_CIRCUITS[@]}")
     output="output/register"
@@ -78,6 +82,12 @@ elif [[ $1 == "disclose" ]]; then
     output="output/disclose"
     mkdir -p $output
     basepath="./circuits/circuits/disclose"
+elif [[ $1 == "Test" ]]; then
+    allowed_circuits=("${TEST_CIRCUITS[@]}")
+    output="output/Test"
+    mkdir -p $output
+    basepath="./circuits/circuits/tests"
+
 fi
 
 pids=() 

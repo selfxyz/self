@@ -1,14 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const circom_tester = require('circom_tester/wasm/tester');
-import { sha256Pad } from '@zk-email/helpers/dist/sha-utils';
-import { Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format';
-import { convertBigIntToByteArray, decompressByteArray, extractPhoto } from '@anon-aadhaar/core';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import path from 'path';
 import assert from 'assert';
-import { testQRData as QRData } from '../../../common/tests/aadhaar/dataInput.json';
-import { bigIntsToString, bigIntChunksToByteArray } from '../../../common/src/utils/aadhaar/utils';
-import { prepareTestData, splitTestData } from '../../../common/src/utils/aadhaar/aadhaar';
+import {
+  prepareTestDataExtractor,
+} from '../../../common/src/utils/aadhaar/aadhaar';
 
 describe('Extractor', function () {
   this.timeout(0);
@@ -17,7 +15,7 @@ describe('Extractor', function () {
 
   this.beforeAll(async () => {
     circuit = await circom_tester(
-      path.join(__dirname, '../../circuits/register/instances/register_aadhaar.circom'),
+      path.join(__dirname, '../../circuits/tests/aadhaar/extractor.circom'),
       {
         include: [
           'node_modules',
@@ -28,65 +26,51 @@ describe('Extractor', function () {
     );
   });
 
-  // figure oput some way to get rid of this weird stuff
   it('should generate witness for circuit', async () => {
-    const { inputs, decodedData, qrDataPadded, delimiterIndices } = prepareTestData();
-    // console.log(decodedData.length);
-    const output = splitTestData(qrDataPadded, delimiterIndices);
-    // console.log(output)
-    // await circuit.calculateWitness(inputs)
+    const { inputs } = prepareTestDataExtractor();
+    // console.log(inputs);
+    // console.log(inputs.qrDataPadded.length);
+    await circuit.calculateWitness(inputs);
   });
 
-  //   it('should extract data', async () => {
-  //     const QRDataBytes = convertBigIntToByteArray(BigInt(QRData))
-  //     const QRDataDecode = decompressByteArray(QRDataBytes)
+  it('should extract data', async () => {
+    const { inputs } = prepareTestDataExtractor();
+    const witness: any[] = await circuit.calculateWitness(inputs);
+    // console.log(witness, witness.length);
 
-  //     const signedData = QRDataDecode.slice(0, QRDataDecode.length - 256)
+    //NameHash
+    const value = BigInt(
+      '948855446484890256796791120157965939898937470990304708559398895582336127482'
+    );
+    assert((witness[1]) == value);
 
-  //     const [qrDataPadded, qrDataPaddedLen] = sha256Pad(signedData, 512 * 3)
+    //RefID
+    assert(Number(witness[2]) == 2697);
 
-  //     const delimiterIndices: number[] = []
-  //     for (let i = 0; i < qrDataPadded.length; i++) {
-  //       if (qrDataPadded[i] === 255) {
-  //         delimiterIndices.push(i)
-  //       }
-  //       if (delimiterIndices.length === 18) {
-  //         break
-  //       }
-  //     }
+    // // Timestamp
+    // console.log(witness[4]);
+    // assert(
+    //   new Date(Number(witness[1]) * 1000).getTime() ===
+    //     new Date('2019-03-08T05:30:00.000Z').getTime()
+    // );
 
-  //     const witness: any[] = await circuit.calculateWitness({
-  //       data: Uint8ArrayToCharArray(qrDataPadded),
-  //       qrDataPaddedLength: qrDataPaddedLen,
-  //       delimiterIndices: delimiterIndices,
-  //     })
-
-  //     // Timestamp
-  //     assert(
-  //       new Date(Number(witness[1]) * 1000).getTime() ===
-  //         new Date('2019-03-08T05:30:00.000Z').getTime(),
-  //     )
-
-  //     // Age above 18
-  //     assert(Number(witness[2]) === 1)
-
-  //     // Gender
-  //     assert(bigIntsToString([witness[3]]) === 'M')
-
-  //     // Pin code
-  //     assert(Number(witness[5]) === 110051)
-
-  //     // State
-  //     assert(bigIntsToString([witness[4]]) === 'Delhi')
-
-  //     // Photo
-  //     // Reconstruction of the photo bytes from packed ints and compare each byte
-  //     const photo = extractPhoto(Array.from(qrDataPadded), qrDataPaddedLen)
-  //     const photoWitness = bigIntChunksToByteArray(witness.slice(6, 6 + 32))
-
-  //     assert(photoWitness.length === photo.bytes.length)
-  //     for (let i = 0; i < photoWitness.length; i++) {
-  //       assert(photoWitness[i] === photo.bytes[i])
-  //     }
-  //   })
+    //TODO-change
+    // Age
+    assert(Number(witness[4]) == (35));
+    // year Of Birth
+    assert(Number(witness[5]) == 84);
+    // monthofbirth
+    assert(Number(witness[6]) == 1);
+    // dayofbirth;
+    assert(Number(witness[7]) == 1);
+    // DobHash;
+    assert((witness[8]) == BigInt('124042181534158974680486158040584178760834524593809439015791333757793339013')
+    );
+    // Gender
+    assert(Number(witness[9]) == 77);
+    // TDOD
+    // Yeah theres state
+    // pinCode;
+    assert(Number(witness[11]) == 110051);
+  });
 });

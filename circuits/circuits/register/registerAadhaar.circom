@@ -80,7 +80,7 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     signal gender <== qrDataExtractor.gender;
     signal state <== qrDataExtractor.state;
     signal pinCode <== qrDataExtractor.pinCode;
-    signal photo[photoPackSize()] <== qrDataExtractor.photo;
+    // signal photo[photoPackSize()] <== qrDataExtractor.photo;
     signal DobHash <== qrDataExtractor.DobHash;
 
     component dataCommit = PackBytesAndPoseidon(maxDataLength);

@@ -13,6 +13,7 @@ import {
   DobHash,
   generateNullifier,
   generateCircuitInputsAadhaarVCandDisclose,
+  prepareTestDataExtractor,
 } from '../../src/utils/aadhaar/aadhaar';
 import nameAndDobjson from '../../ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobjson from '../../ofacdata/outputs/nameAndYobSMT.json';
@@ -25,6 +26,11 @@ describe('utils', function () {
     assert.strictEqual(last4Digits, '2697');
   });
 
+  it('genertaes inputs for extractor', async function () {
+    const { inputs } = prepareTestDataExtractor();
+    const values = inputs;
+  });
+  
   it('encodes "name" and calculate namehash', async function () {
     const maxBytes = 256;
     const result = convertStringToByteArrayPad('Sumit Kumar', maxBytes);

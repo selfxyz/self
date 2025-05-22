@@ -35,6 +35,7 @@ include "../utils/passport/date/isValid.circom";
 /// @output revealedData_packed Packed revealed data
 /// @output forbidden_countries_list_packed Packed forbidden countries list
 /// @output nullifier Scope nullifier - not deterministic on the passport data
+
 template VC_AND_DISCLOSE_ID(
     nLevels,
     MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH,
