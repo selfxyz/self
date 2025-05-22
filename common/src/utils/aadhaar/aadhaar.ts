@@ -20,13 +20,12 @@ import { generateMerkleProof, generateSMTProof } from '../trees';
 import { findIndexInTree, formatInput } from './utils';
 import { castFromUUID, stringToAsciiBigIntArray } from '../circuits/uuid';
 import { AADHAAR_ATTESTATION_ID, COMMITMENT_TREE_DEPTH } from '../../../src/constants/constants';
-import nameAndDobjson from '../../../ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobjson from '../../../ofacdata/outputs/nameAndYobSMT.json';
+
 
 dotenv.config();
 
 interface AadhaarQRFields {
-  undefined: string; // actually "V2"
+  undefined: string; // "V2"
   Email_mobile_present_bit_indicator_value: string;
   ReferenceId: string;
   Name: string;
@@ -323,11 +322,8 @@ export function splitTestData(qrDataPadded: Uint8Array, delimiterIdx: number[]):
 }
 
 /**
- * Compute the Aadhaar commitment exactly as
- *   `commitment <== Poseidon(3)([secret, attestation_id, Datacommitment])`
- * in your Circom circuit.
  *
- * @param secret          small field element (BigInt or number)
+ * @param secret          
  * @param attestationId   full ReferenceId as a BigInt
  * @param qrDataPadded    the padded QR‐data buffer (Uint8Array)
  * @returns               the Poseidon commitment as a BigInt
