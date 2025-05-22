@@ -12,8 +12,6 @@ import {
 
 let segmentClient: ReturnType<typeof createClient> | null = null;
 
-const flushPolicies = [new StartupFlushPolicy(), new BackgroundFlushPolicy()];
-
 class DisableTrackingPlugin extends EventPlugin {
   type = PluginType.before;
 
@@ -46,6 +44,8 @@ export const createSegmentClient = () => {
   if (segmentClient) {
     return segmentClient;
   }
+
+  const flushPolicies = [new StartupFlushPolicy(), new BackgroundFlushPolicy()];
 
   const client = createClient({
     writeKey: SEGMENT_KEY,
