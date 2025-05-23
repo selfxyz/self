@@ -27,6 +27,7 @@ export async function checkPassportSupported(
   details: string;
 }> {
   const passportMetadata = passportData.passportMetadata;
+  const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
   if (!passportMetadata) {
     console.log('Passport metadata is null');
     return { status: 'passport_metadata_missing', details: passportData.dsc };
@@ -40,8 +41,7 @@ export async function checkPassportSupported(
     'register',
   );
   const deployedCircuits =
-    useProtocolStore.getState().passport.deployed_circuits;
-  console.log('circuitNameRegister', circuitNameRegister);
+    useProtocolStore.getState()[document].deployed_circuits; // change this to the document type
   if (
     !circuitNameRegister ||
     !(
@@ -81,7 +81,8 @@ export async function isUserRegistered(
     PASSPORT_ATTESTATION_ID,
     passportData,
   );
-  const serializedTree = useProtocolStore.getState().passport.commitment_tree;
+  const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
+  const serializedTree = useProtocolStore.getState()[document].commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   const index = tree.indexOf(BigInt(commitment));
   return index !== -1;
