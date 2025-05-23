@@ -61,7 +61,11 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
         uint256[] memory _attestationIdsList,
         string memory _name,
         string memory _symbol
-    ) SelfVerificationRoot(_identityVerificationHubAddress, _scopeValue, _attestationIdsList) ERC721(_name, _symbol) Ownable(_msgSender()) {}
+    )
+        SelfVerificationRoot(_identityVerificationHubAddress, _scopeValue, _attestationIdsList)
+        ERC721(_name, _symbol)
+        Ownable(_msgSender())
+    {}
 
     // ====================================================
     // External/Public Functions
