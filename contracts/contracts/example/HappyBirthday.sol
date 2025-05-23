@@ -7,48 +7,66 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 
 import {SelfCircuitLibrary} from "../libraries/SelfCircuitLibrary.sol";
-import {SelfVerificationConsumer} from "../abstract/SelfVerificationConsumer.sol";
+import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 
 /**
  * @title SelfHappyBirthday
  * @notice A contract that gives out USDC to users on their birthday
- * @dev Uses SelfVerificationConsumer to handle nullifier tracking and verification
+ * @dev Uses SelfVerificationRoot to handle verification with nullifier management for birthday claims
  */
-contract SelfHappyBirthday is SelfVerificationConsumer, Ownable {
+contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
     using SafeERC20 for IERC20;
 
-    // USDC token contract
+    // ====================================================
+    // Storage Variables
+    // ====================================================
+
+    /// @notice USDC token contract
     IERC20 public immutable usdc;
 
-    // Default: 1 dollar (6 decimals for USDC)
-    uint256 public claimableAmount = 1000000;
+    /// @notice Default: 1 dollar (6 decimals for USDC)
+    uint256 public claimableAmount = 1e6;
 
-    // Default: 1 day window around birthday
+    /// @notice Default: 1 day window around birthday
     uint256 public claimableWindow = 1 days;
 
+    /// @notice Tracks users who have claimed to prevent double claims
+    mapping(uint256 nullifier => bool hasClaimed) public hasClaimed;
+
+    // ====================================================
     // Events
+    // ====================================================
+
     event USDCClaimed(address indexed claimer, uint256 amount);
     event ClaimableAmountUpdated(uint256 oldAmount, uint256 newAmount);
     event ClaimableWindowUpdated(uint256 oldWindow, uint256 newWindow);
 
+    // ====================================================
     // Errors
+    // ====================================================
+
     error NotWithinBirthdayWindow();
+    error AlreadyClaimed();
 
     /**
      * @notice Initializes the HappyBirthday contract
-     * @param _identityVerificationHub The address of the Identity Verification Hub
-     * @param _scope The expected proof scope for user registration
+     * @param _identityVerificationHubAddress The address of the Identity Verification Hub
+     * @param _scopeValue The expected proof scope for user registration
      * @param _attestationIds Array of allowed attestation identifiers
      * @param _token The USDC token address
      */
     constructor(
-        address _identityVerificationHub,
-        uint256 _scope,
+        address _identityVerificationHubAddress,
+        uint256 _scopeValue,
         uint256[] memory _attestationIds,
         address _token
-    ) SelfVerificationConsumer(_identityVerificationHub, _scope, _attestationIds) Ownable(_msgSender()) {
+    ) SelfVerificationRoot(_identityVerificationHubAddress, _scopeValue, _attestationIds) Ownable(_msgSender()) {
         usdc = IERC20(_token);
     }
+
+    // ====================================================
+    // External/Public Functions
+    // ====================================================
 
     /**
      * @notice Sets the verification configuration
@@ -81,15 +99,41 @@ contract SelfHappyBirthday is SelfVerificationConsumer, Ownable {
     }
 
     /**
+     * @notice Allows the owner to withdraw USDC from the contract
+     * @param _to The address to withdraw to
+     * @param _amount The amount to withdraw
+     */
+    function withdrawUSDC(address _to, uint256 _amount) external onlyOwner {
+        usdc.safeTransfer(_to, _amount);
+    }
+
+    // ====================================================
+    // Override Functions from SelfVerificationRoot
+    // ====================================================
+
+    /**
      * @notice Hook called after successful verification
-     * @dev Checks if user's birthday is within the claimable window and transfers USDC if eligible
+     * @dev Checks user hasn't claimed, validates birthday window, and transfers USDC if eligible
      * @param _revealedDataPacked The packed revealed data from the proof
      * @param _userIdentifier The user identifier from the proof
      */
-    function onVerificationSuccess(uint256[3] memory _revealedDataPacked, uint256 _userIdentifier) internal override {
+    function onBasicVerificationSuccess(
+        uint256[3] memory _revealedDataPacked,
+        uint256 _userIdentifier,
+        uint256 _nullifier
+    ) internal override {
+        // Get user address from the proof's user identifier
+
+        // Check if user has already claimed
+        if (hasClaimed[_nullifier]) {
+            revert AlreadyClaimed();
+        }
+
         // Check if within birthday window
         if (_isWithinBirthdayWindow(_revealedDataPacked)) {
-            // Get user address from the proof's user identifier
+            // Mark user as claimed
+            hasClaimed[_nullifier] = true;
+
             address _recipient = address(uint160(_userIdentifier));
 
             // Transfer USDC to the user
@@ -101,6 +145,10 @@ contract SelfHappyBirthday is SelfVerificationConsumer, Ownable {
             revert NotWithinBirthdayWindow();
         }
     }
+
+    // ====================================================
+    // Internal Functions
+    // ====================================================
 
     /**
      * @notice Checks if the current date is within the user's birthday window
@@ -136,14 +184,5 @@ contract SelfHappyBirthday is SelfVerificationConsumer, Ownable {
         }
 
         return _timeDifference <= claimableWindow;
-    }
-
-    /**
-     * @notice Allows the owner to withdraw USDC from the contract
-     * @param _to The address to withdraw to
-     * @param _amount The amount to withdraw
-     */
-    function withdrawUSDC(address _to, uint256 _amount) external onlyOwner {
-        usdc.safeTransfer(_to, _amount);
     }
 }

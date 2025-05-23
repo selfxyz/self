@@ -23,7 +23,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
     /// @notice The attestation ID that proofs must match
     /// @dev Used to validate that submitted proofs is generated with allowed attestation IDs
-    mapping(uint256 => bool) internal _attestationIds;
+    mapping(uint256 attestationId => bool attestationIdEnabled) internal _attestationIdToEnabled;
 
     /// @notice Configuration settings for the verification process
     /// @dev Contains settings for age verification, country restrictions, and OFAC checks
@@ -74,39 +74,48 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // ====================================================
 
     /// @notice Emitted when the verification configuration is updated
-    event VerificationConfigUpdated(ISelfVerificationRoot.VerificationConfig verificationConfig);
+    event VerificationConfigUpdated(ISelfVerificationRoot.VerificationConfig indexed verificationConfig);
+
+    /// @notice Emitted when the verification is successful
+    event VerificationSuccess(uint256[3] revealedDataPacked, uint256 indexed userIdentifier, uint256 indexed nullifier);
 
     /// @notice Emitted when the scope is updated
-    event ScopeUpdated(uint256 newScope);
+    event ScopeUpdated(uint256 indexed newScope);
 
     /// @notice Emitted when a new attestation ID is added
-    event AttestationIdAdded(uint256 attestationId);
+    event AttestationIdAdded(uint256 indexed attestationId);
 
     /// @notice Emitted when an attestation ID is removed
-    event AttestationIdRemoved(uint256 attestationId);
+    event AttestationIdRemoved(uint256 indexed attestationId);
 
     /**
      * @notice Initializes the SelfVerificationRoot contract.
-     * @param identityVerificationHub The address of the Identity Verification Hub.
-     * @param scope The expected proof scope for user registration.
-     * @param attestationIds The expected attestation identifiers required in proofs.
+     * @param _identityVerificationHubAddress The address of the Identity Verification Hub.
+     * @param _scopeValue The expected proof scope for user registration.
+     * @param _attestationIds The expected attestation identifiers required in proofs.
      */
-    constructor(address identityVerificationHub, uint256 scope, uint256[] memory attestationIds) {
-        _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHub);
-        _scope = scope;
-        for (uint256 i = 0; i < attestationIds.length; i++) {
-            _attestationIds[attestationIds[i]] = true;
+    constructor(address _identityVerificationHubAddress, uint256 _scopeValue, uint256[] memory _attestationIds) {
+        _identityVerificationHub = IIdentityVerificationHubV1(_identityVerificationHubAddress);
+        _scope = _scopeValue;
+
+        // Cache array length for gas optimization
+        uint256 length = _attestationIds.length;
+        for (uint256 i; i < length; ) {
+            _attestationIdToEnabled[_attestationIds[i]] = true;
+            unchecked {
+                ++i;
+            }
         }
     }
 
     /**
      * @notice Updates the verification configuration
      * @dev Used to set or update verification parameters after contract deployment
-     * @param verificationConfig The new verification configuration to apply
+     * @param _newVerificationConfig The new verification configuration to apply
      */
-    function _setVerificationConfig(ISelfVerificationRoot.VerificationConfig memory verificationConfig) internal {
-        _verificationConfig = verificationConfig;
-        emit VerificationConfigUpdated(verificationConfig);
+    function _setVerificationConfig(ISelfVerificationRoot.VerificationConfig memory _newVerificationConfig) internal {
+        _verificationConfig = _newVerificationConfig;
+        emit VerificationConfigUpdated(_newVerificationConfig);
     }
 
     /**
@@ -121,76 +130,102 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /**
      * @notice Updates the scope value
      * @dev Used to change the expected scope for proofs
-     * @param newScope The new scope value to set
+     * @param _newScope The new scope value to set
      */
-    function _setScope(uint256 newScope) internal {
-        _scope = newScope;
-        emit ScopeUpdated(newScope);
+    function _setScope(uint256 _newScope) internal {
+        _scope = _newScope;
+        emit ScopeUpdated(_newScope);
     }
 
     /**
      * @notice Adds a new attestation ID to the allowed list
      * @dev Used to add support for additional attestation types
-     * @param attestationId The attestation ID to add
+     * @param _attestationId The attestation ID to add
      */
-    function _addAttestationId(uint256 attestationId) internal {
-        _attestationIds[attestationId] = true;
-        emit AttestationIdAdded(attestationId);
+    function _addAttestationId(uint256 _attestationId) internal {
+        _attestationIdToEnabled[_attestationId] = true;
+        emit AttestationIdAdded(_attestationId);
     }
 
     /**
      * @notice Removes an attestation ID from the allowed list
      * @dev Used to revoke support for specific attestation types
-     * @param attestationId The attestation ID to remove
+     * @param _attestationId The attestation ID to remove
      */
-    function _removeAttestationId(uint256 attestationId) internal {
-        _attestationIds[attestationId] = false;
-        emit AttestationIdRemoved(attestationId);
+    function _removeAttestationId(uint256 _attestationId) internal {
+        _attestationIdToEnabled[_attestationId] = false;
+        emit AttestationIdRemoved(_attestationId);
     }
 
     /**
      * @notice Helper function to get an array of revealed data values from proof signals
      * @dev Returns an array of the three packed revealed data values
-     * @param pubSignals The proof's public signals
+     * @param _pubSignals The proof's public signals
      * @return revealedDataPacked Array of the three packed revealed data values
      */
     function getRevealedDataPacked(
-        uint256[21] memory pubSignals
+        uint256[21] calldata _pubSignals
     ) internal pure returns (uint256[3] memory revealedDataPacked) {
-        revealedDataPacked[0] = pubSignals[REVEALED_DATA_PACKED_INDEX];
-        revealedDataPacked[1] = pubSignals[REVEALED_DATA_PACKED_INDEX + 1];
-        revealedDataPacked[2] = pubSignals[REVEALED_DATA_PACKED_INDEX + 2];
+        revealedDataPacked[0] = _pubSignals[REVEALED_DATA_PACKED_INDEX];
+        revealedDataPacked[1] = _pubSignals[REVEALED_DATA_PACKED_INDEX + 1];
+        revealedDataPacked[2] = _pubSignals[REVEALED_DATA_PACKED_INDEX + 2];
         return revealedDataPacked;
     }
 
     /**
      * @notice Verifies a self-proof
      * @dev Validates scope and attestation ID before performing verification through the identity hub
-     * @param proof The proof data for verification and disclosure
+     * @param _proof The proof data for verification and disclosure
      */
-    function verifySelfProof(ISelfVerificationRoot.DiscloseCircuitProof memory proof) public virtual {
-        if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
+    function verifySelfProof(ISelfVerificationRoot.DiscloseCircuitProof calldata _proof) public {
+        // Cache storage reads for gas optimization
+        uint256 cachedScope = _scope;
+
+        if (cachedScope != _proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
             revert InvalidScope();
         }
 
-        if (!_attestationIds[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]]) {
+        if (!_attestationIdToEnabled[_proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]]) {
             revert InvalidAttestationId();
         }
 
+        // Cache verification config to avoid multiple storage reads
+        ISelfVerificationRoot.VerificationConfig memory config = _verificationConfig;
+
         _identityVerificationHub.verifyVcAndDisclose(
             IIdentityVerificationHubV1.VcAndDiscloseHubProof({
-                olderThanEnabled: _verificationConfig.olderThanEnabled,
-                olderThan: _verificationConfig.olderThan,
-                forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
-                forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
-                ofacEnabled: _verificationConfig.ofacEnabled,
+                olderThanEnabled: config.olderThanEnabled,
+                olderThan: config.olderThan,
+                forbiddenCountriesEnabled: config.forbiddenCountriesEnabled,
+                forbiddenCountriesListPacked: config.forbiddenCountriesListPacked,
+                ofacEnabled: config.ofacEnabled,
                 vcAndDiscloseProof: IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof({
-                    a: proof.a,
-                    b: proof.b,
-                    c: proof.c,
-                    pubSignals: proof.pubSignals
+                    a: _proof.a,
+                    b: _proof.b,
+                    c: _proof.c,
+                    pubSignals: _proof.pubSignals
                 })
             })
         );
+
+        uint256[3] memory revealedDataPacked = getRevealedDataPacked(_proof.pubSignals);
+        uint256 userIdentifier = _proof.pubSignals[USER_IDENTIFIER_INDEX];
+        uint256 nullifier = _proof.pubSignals[NULLIFIER_INDEX];
+
+        emit VerificationSuccess(revealedDataPacked, userIdentifier, nullifier);
+        onBasicVerificationSuccess(revealedDataPacked, userIdentifier, nullifier);
     }
+
+    /**
+     * @notice Hook called after successful verification
+     * @dev Virtual function to be overridden by derived contracts for custom business logic
+     * @param _revealedDataPacked The packed revealed data from the proof
+     * @param _userIdentifier The user identifier from the proof
+     * @param _nullifier The nullifier from the proof
+     */
+    function onBasicVerificationSuccess(
+        uint256[3] memory _revealedDataPacked,
+        uint256 _userIdentifier,
+        uint256 _nullifier
+    ) internal virtual;
 }

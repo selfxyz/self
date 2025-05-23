@@ -7,16 +7,16 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 
-import {SelfVerificationConsumer} from "../abstract/SelfVerificationConsumer.sol";
+import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 
 /**
  * @title Airdrop (Experimental)
  * @notice This contract manages an airdrop campaign by verifying user registrations with zero‐knowledge proofs
  *         and distributing ERC20 tokens. It is provided for testing and demonstration purposes only.
  *         **WARNING:** This contract has not been audited and is NOT intended for production use.
- * @dev Inherits from SelfVerificationConsumer for registration logic and Ownable for administrative control.
+ * @dev Inherits from SelfVerificationRoot for registration logic and Ownable for administrative control.
  */
-contract Airdrop is SelfVerificationConsumer, Ownable {
+contract Airdrop is SelfVerificationRoot, Ownable {
     using SafeERC20 for IERC20;
 
     // ====================================================
@@ -34,8 +34,8 @@ contract Airdrop is SelfVerificationConsumer, Ownable {
     /// @notice Indicates whether the claim phase is active.
     bool public isClaimOpen;
 
-    /// @notice Maps nullifiers to user identifiers (extends the base _nullifiers mapping)
-    mapping(uint256 nullifier => uint256 userIdentifier) internal _userIdentifiers;
+    /// @notice Maps nullifiers to user identifiers for registration tracking
+    mapping(uint256 nullifier => uint256 userIdentifier) internal _nullifierToUserIdentifier;
 
     /// @notice Maps user identifiers to registration status
     mapping(uint256 userIdentifier => bool registered) internal _registeredUserIdentifiers;
@@ -58,7 +58,9 @@ contract Airdrop is SelfVerificationConsumer, Ownable {
     error ClaimNotOpen();
     /// @notice Reverts when an invalid user identifier is provided.
     error InvalidUserIdentifier();
-    /// @notice Reverts when a nullifier has already been used
+    /// @notice Reverts when a user identifier has already been registered
+    error UserIdentifierAlreadyRegistered();
+    /// @notice Reverts when a nullifier has already been registered
     error RegisteredNullifier();
 
     // ====================================================
@@ -93,17 +95,17 @@ contract Airdrop is SelfVerificationConsumer, Ownable {
      * @notice Constructor for the experimental Airdrop contract.
      * @dev Initializes the airdrop parameters, zero-knowledge verification configuration,
      *      and sets the ERC20 token to be distributed.
-     * @param _identityVerificationHub The address of the Identity Verification Hub.
-     * @param _scope The expected proof scope for user registration.
+     * @param _identityVerificationHubAddress The address of the Identity Verification Hub.
+     * @param _scopeValue The expected proof scope for user registration.
      * @param _attestationIds The expected attestation identifiers required in proofs.
      * @param _token The address of the ERC20 token for airdrop.
      */
     constructor(
-        address _identityVerificationHub,
-        uint256 _scope,
+        address _identityVerificationHubAddress,
+        uint256 _scopeValue,
         uint256[] memory _attestationIds,
         address _token
-    ) SelfVerificationConsumer(_identityVerificationHub, _scope, _attestationIds) Ownable(_msgSender()) {
+    ) SelfVerificationRoot(_identityVerificationHubAddress, _scopeValue, _attestationIds) Ownable(_msgSender()) {
         token = IERC20(_token);
     }
 
@@ -212,16 +214,7 @@ contract Airdrop is SelfVerificationConsumer, Ownable {
      * @return True if the attestation ID is allowed, false otherwise.
      */
     function isAttestationIdAllowed(uint256 _attestationId) external view returns (bool) {
-        return _attestationIds[_attestationId];
-    }
-
-    /**
-     * @notice Retrieves the stored user identifier for a given nullifier.
-     * @param _nullifier The nullifier to query.
-     * @return The user identifier associated with the nullifier.
-     */
-    function getNullifier(uint256 _nullifier) external view returns (uint256) {
-        return _userIdentifiers[_nullifier];
+        return _attestationIdToEnabled[_attestationId];
     }
 
     /**
@@ -275,70 +268,46 @@ contract Airdrop is SelfVerificationConsumer, Ownable {
     }
 
     // ====================================================
-    // Override Functions from SelfVerificationConsumer
+    // Override Functions from SelfVerificationRoot
     // ====================================================
 
     /**
-     * @notice Validates if a nullifier can be used
-     * @dev Overrides the base implementation to check registration phase and previous use
-     * @param _nullifier The nullifier to validate
-     * @param _proof The complete proof data
-     * @return valid True if the nullifier is valid to use, false otherwise
+     * @notice Hook called after successful verification - handles user registration
+     * @dev Validates registration conditions and registers the user
+     * @param _revealedDataPacked The packed revealed data from the proof
+     * @param _userIdentifier The user identifier from the proof
+     * @param _nullifier The nullifier from the proof
      */
-    function validateNullifier(
-        uint256 _nullifier,
-        ISelfVerificationRoot.DiscloseCircuitProof memory _proof
-    ) internal override returns (bool) {
+    function onBasicVerificationSuccess(
+        uint256[3] memory _revealedDataPacked,
+        uint256 _userIdentifier,
+        uint256 _nullifier
+    ) internal override {
         // Check if registration is open
         if (!isRegistrationOpen) {
             revert RegistrationNotOpen();
         }
 
-        // Check if nullifier has been used
-        if (_nullifiers[_nullifier]) {
+        // Check if nullifier has already been registered
+        if (_nullifierToUserIdentifier[_nullifier] != 0) {
             revert RegisteredNullifier();
         }
 
         // Check if user identifier is valid
-        if (_proof.pubSignals[USER_IDENTIFIER_INDEX] == 0) {
+        if (_userIdentifier == 0) {
             revert InvalidUserIdentifier();
         }
 
-        return true;
-    }
+        // Check if user identifier has already been registered
+        if (_registeredUserIdentifiers[_userIdentifier]) {
+            revert UserIdentifierAlreadyRegistered();
+        }
 
-    /**
-     * @notice Updates the state for a nullifier after successful verification
-     * @dev Overrides the base implementation to store the user identifier and emit event
-     * @param _nullifier The nullifier to update
-     * @param _proof The complete proof data
-     */
-    function updateNullifier(
-        uint256 _nullifier,
-        ISelfVerificationRoot.DiscloseCircuitProof memory _proof
-    ) internal override {
-        // Get user identifier from proof
-        uint256 _userIdentifier = _proof.pubSignals[USER_IDENTIFIER_INDEX];
-
-        // Mark nullifier as used (parent functionality)
-        _nullifiers[_nullifier] = true;
-
-        // Store user identifier mapping (extended functionality)
-        _userIdentifiers[_nullifier] = _userIdentifier;
+        _nullifierToUserIdentifier[_nullifier] = _userIdentifier;
         _registeredUserIdentifiers[_userIdentifier] = true;
 
-        // Emit registration event directly from here instead of onVerificationSuccess
+        // Emit registration event
         emit UserIdentifierRegistered(_userIdentifier, _nullifier);
-    }
-
-    /**
-     * @notice Hook called after successful verification
-     * @dev No additional logic needed as everything is handled in updateNullifier
-     * @param _revealedDataPacked The packed revealed data from the proof
-     * @param _userIdentifier The user identifier from the proof
-     */
-    function onVerificationSuccess(uint256[3] memory _revealedDataPacked, uint256 _userIdentifier) internal override {
-        // No additional logic needed - event is emitted in updateNullifier
     }
 
     // ====================================================
