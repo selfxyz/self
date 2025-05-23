@@ -51,7 +51,7 @@ const SplashScreen: React.FC = ({}) => {
             (passportData as PassportData).documentType !== 'passport'
               ? 'stg'
               : 'prod';
-          await useProtocolStore.getState().passport.fetch_all(environment);
+          await useProtocolStore.getState().passport.fetch_all(environment); // TODO: change this to the document type
           const isRegistered = await isUserRegistered(passportData, secret);
           console.log('User is registered:', isRegistered);
           if (isRegistered) {
