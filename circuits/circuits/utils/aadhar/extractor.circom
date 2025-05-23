@@ -152,15 +152,13 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     component ageExtractor = AgeExtractor(maxDataLength);
     ageExtractor.nDelimitedData <== nDelimitedData;
     ageExtractor.startDelimiterIndex <== delimiterIndices[dobPosition() - 1];
-    ageExtractor.currentYear <== timestampExtractor.year;
-    ageExtractor.currentMonth <== timestampExtractor.month;
-    ageExtractor.currentDay <== timestampExtractor.day;
+    ageExtractor.currentdate <== current_date;
 
     age <== ageExtractor.age;
     log(age);
-    yearofbirth <== ageExtractor.year2;
-    monthofbirth <== ageExtractor.month;
-    dayofbirth <== ageExtractor.day;
+    yearofbirth <== ageExtractor.DOBYY;
+    monthofbirth <== ageExtractor.DOBMM;
+    dayofbirth <== ageExtractor.DOBDD;
     DobHash <== ageExtractor.DOBHash;
 
 

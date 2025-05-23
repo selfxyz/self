@@ -203,7 +203,7 @@ export async function generateCircuitInputsAadhaarVCandDisclose(
     userIdentifier = crypto.randomUUID(),
     now = new Date(),
   } = opts;
-  const { inputs, qrDataPadded, qrDataPaddedLen, delimiterIndices } = prepareTestData();
+  const {inputs,qrDataPadded, qrDataPaddedLen, delimiterIndices } = prepareTestData();
 
   const secret = BigInt(0);
   const commitment = await generateCommitmentAadhaar(secret, BigInt(3), qrDataPadded);
@@ -223,15 +223,18 @@ export async function generateCircuitInputsAadhaarVCandDisclose(
   const mm = (now.getUTCMonth() + 1).toString().padStart(2, '0');
   const dd = now.getUTCDate().toString().padStart(2, '0');
   const currentDateYYMMDD = [yy, mm, dd].join('').split('');
+  console.log(currentDateYYMMDD);
 
   return {
-    qrDataPadded: qrDataPadded,
-    qrDataPaddedLength: qrDataPaddedLen,
-    delimiterIndices: delimiterIndices,
-    Signature: inputs.signature,
-    pubKey: inputs.pubKey,
     secret,
     attestation_id: AADHAAR_ATTESTATION_ID.toString(),
+    qrDataPadded: inputs.qrDataPadded,
+    qrDataPaddedLength: qrDataPaddedLen,
+    delimiterIndices: delimiterIndices,
+    merkle_root: formatInput(commitmentTree.root),
+    leaf_depth: formatInput(leaf_depth),
+    path: formatInput(path),
+    siblings: formatInput(siblings),
     scope: formatInput(opts.scope),
     user_identifier: formatInput(castFromUUID(user_identifier)),
     majority: majorityAscii,
@@ -242,12 +245,6 @@ export async function generateCircuitInputsAadhaarVCandDisclose(
     revealPinCode: revealPin ? '1' : '0',
     revealState: revealState ? '1' : '0',
     selector_ofac: selectorOfac ? '1' : '0',
-
-    merkle_root: formatInput(commitmentTree.root),
-    leaf_depth: formatInput(leaf_depth),
-    path: formatInput(path),
-    siblings: formatInput(siblings),
-
     ofac_namedob_smt_root: formatInput(ndRoot),
     ofac_namedob_smt_leaf_key: formatInput(ndLeaf),
     ofac_namedob_smt_siblings: formatInput(ndSib),

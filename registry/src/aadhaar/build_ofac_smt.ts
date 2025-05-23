@@ -24,8 +24,8 @@ async function build_ofac_smt() {
     const nameAndDobOfacJSON = nameAndDobTree[2].export()
     const nameAndYobOfacJSON = nameAndYobTree[2].export()
   
-  fs.writeFileSync(path.join(outputsDir, 'nameAndDobAadhaarSMT.json'),JSON.stringify(nameAndDobOfacJSON));
-  fs.writeFileSync(path.join(outputsDir, 'nameAndYobAadhaarSMT.json'),JSON.stringify(nameAndYobOfacJSON));
+  fs.writeFileSync(path.join(outputsDir, 'nameAndDobSMT_Aadhaar.json'),JSON.stringify(nameAndDobOfacJSON));
+  fs.writeFileSync(path.join(outputsDir, 'nameAndYobSMT_Aadhaar.json'),JSON.stringify(nameAndYobOfacJSON));
 }
 
 build_ofac_smt()

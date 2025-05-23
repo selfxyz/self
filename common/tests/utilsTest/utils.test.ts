@@ -15,8 +15,8 @@ import {
   generateCircuitInputsAadhaarVCandDisclose,
   prepareTestDataExtractor,
 } from '../../src/utils/aadhaar/aadhaar';
-import nameAndDobjson from '../../ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobjson from '../../ofacdata/outputs/nameAndYobSMT.json';
+import nameAndDobjson from '../../ofacdata/outputs/nameAndDobSMT_Aadhaar.json';
+import nameAndYobjson from '../../ofacdata/outputs/nameAndYobSMT_Aadhaar.json';
 
 //Test the util functions
 describe('utils', function () {
@@ -30,7 +30,7 @@ describe('utils', function () {
     const { inputs } = prepareTestDataExtractor();
     const values = inputs;
   });
-  
+
   it('encodes "name" and calculate namehash', async function () {
     const maxBytes = 256;
     const result = convertStringToByteArrayPad('Sumit Kumar', maxBytes);

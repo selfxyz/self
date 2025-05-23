@@ -1,6 +1,50 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 
+export enum IdFields {
+  'Email_mobile_present_bit_indicator_value',
+  'ReferenceId',
+  'Name',
+  'DOB',
+  'Gender',
+  'CareOf',
+  'District',
+  'Landmark',
+  'House',
+  'Location',
+  'PinCode',
+  'PostOffice',
+  'State',
+  'Street',
+  'SubDistrict',
+  'VTC',
+  'PhoneNumberLast4',
+}
+
+
+// Extract photo from startIndex (18th delimiter) to end including the padding
+export function extractPhoto(qrDataPadded: number[], dataLength: number) {
+  let begin = 0
+  for (let i = 0; i < 18; ++i) {
+    begin = qrDataPadded.indexOf(255, begin + 1)
+  }
+
+  return {
+    begin,
+    dataLength,
+    bytes: qrDataPadded.slice(begin + 1, dataLength),
+  }
+}
+// This funtion is not cryptographically secure
+// It is only used to generate fake photo when updating test data
+export function getRandomBytes(length: number): Uint8Array {
+  const array = new Uint8Array(length)
+  for (let i = 0; i < length; i++) {
+    array[i] = Math.floor(Math.random() * 256)
+  }
+  return array
+}
+
 export function bytesToIntChunks(bytes: Uint8Array, maxBytesInField: number): bigint[] {
   const numChunks = Math.ceil(bytes.length / maxBytesInField);
   const ints: bigint[] = new Array(numChunks).fill(BigInt(0));

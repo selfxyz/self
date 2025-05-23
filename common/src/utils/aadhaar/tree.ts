@@ -25,6 +25,7 @@ countries.registerLocale(en);
 // 1. Passport Number and Nationality tree : level 3 (Absolute Match)
 // 2. Name and date of birth combo tree : level 2 (High Probability Match)
 // 3. Name and year of birth combo tree : level 1 (Partial Match)
+
 export function buildSMT(field: any[], treetype: string): [number, number, SMT] {
   let count = 0;
   let startTime = performance.now();

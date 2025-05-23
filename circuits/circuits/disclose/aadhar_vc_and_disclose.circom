@@ -47,7 +47,8 @@ template AADHAAR_VC_AND_DISCLOSE(
 ) {
 
     signal input secret;
-    signal input attestation_id;// == 3,
+    // Aadhaar == 3
+    signal input attestation_id;
 
     // data inputs
     signal input qrDataPadded[maxDataLength];

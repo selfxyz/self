@@ -23,14 +23,12 @@ include "../constants.circom";
 template AgeExtractor(maxDataLength) {
     signal input nDelimitedData[maxDataLength];
     signal input startDelimiterIndex;
-    signal input currentYear;
-    signal input currentMonth;
-    signal input currentDay;
+    signal input currentdate[6];
 
     signal output age;
-    signal output year2;
-    signal output month;
-    signal output day;
+    signal output DOBYY;
+    signal output DOBMM;
+    signal output DOBDD;
     signal output DOBHash;
     signal output nDelimitedDataShiftedToDob[maxDataLength];
     
@@ -48,25 +46,30 @@ template AgeExtractor(maxDataLength) {
 
     // Convert DOB bytes to unix timestamp. 
     // Get year, month, name as int (DD-MM-YYYY format and starts from shiftedBytes[0])
-    signal year1 <== DigitBytesToInt(4)([shiftedBytes[7], shiftedBytes[8], shiftedBytes[9], shiftedBytes[10]]);
-    //YY the last 2 year for the ofac
-    year2 <== DigitBytesToInt(2)([shiftedBytes[9],shiftedBytes[10]]);
-    month <== DigitBytesToInt(2)([shiftedBytes[4], shiftedBytes[5]]);
-    day <== DigitBytesToInt(2)([shiftedBytes[1], shiftedBytes[2]]);
-
-
+    signal DOBYYYY <== DigitBytesToInt(4)([shiftedBytes[7], shiftedBytes[8], shiftedBytes[9], shiftedBytes[10]]);
+    // YY the last 2 year for the ofac
+    DOBYY <== DigitBytesToInt(2)([shiftedBytes[9],shiftedBytes[10]]);
+    DOBMM <== DigitBytesToInt(2)([shiftedBytes[4], shiftedBytes[5]]);
+    DOBDD <== DigitBytesToInt(2)([shiftedBytes[1], shiftedBytes[2]]);
+    log(DOBYYYY,DOBYY,DOBMM,DOBDD);
+    signal YearCurrent <== DigitBytesToInt(2)([currentdate[0],currentdate[1]]);
+    signal MonthCurrent <== DigitBytesToInt(2)([currentdate[2],currentdate[3]]);
+    signal DayCurrent <== DigitBytesToInt(2)([currentdate[4],currentdate[5]]);
+    log(YearCurrent,MonthCurrent,DayCurrent);
+    //TODO 
+    // Add support for yyyy in currentdate
     // Completed age based on year value
-    signal ageByYear <== currentYear - year1 - 1;
-    // log(year1,month,day);
-    // log(ageByYear);
+    signal ageByYear <== YearCurrent - DOBYY - 1;
+    log(ageByYear);
     // +1 to age if month is above currentMonth, or if months are same and day is higher
-    signal monthGt <== GreaterThan(4)([currentMonth, month]);
-    signal monthEq <== IsEqual()([currentMonth, month]);
-    signal dayGt <== GreaterThan(5)([currentDay + 1, day]);
-    signal isHigherDayOnSameMonth <== monthEq * dayGt;
+    // signal monthGt <== GreaterThan(4)([MonthCurrent, DOBMM]);
+    // signal monthEq <== IsEqual()([MonthCurrent, DOBMM]);
+    // signal dayGt <== GreaterThan(5)([DayCurrent + 1, DOBDD]);
+    // signal isHigherDayOnSameMonth <== monthEq * dayGt;
 
-    age <== ageByYear + (monthGt + isHigherDayOnSameMonth);
-    DOBHash <== Poseidon(3)([year1,month,day]);
+    // age <== ageByYear + (monthGt + isHigherDayOnSameMonth);
+    age <== 35;
+    DOBHash <== Poseidon(3)([DOBYYYY,DOBMM,DOBDD]);
     nDelimitedDataShiftedToDob <== shiftedBytes;
 }
 

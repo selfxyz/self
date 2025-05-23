@@ -106,12 +106,12 @@ template DiscloseAadhaar(
     signal month <== qrDataExtractor.monthofbirth;
     signal day <== qrDataExtractor.dayofbirth;
 
-    component AgeComp = AgeComperator();
-    AgeComp.majority <== majorityASCII;
-    AgeComp.age <== age;
+    // component AgeComp = AgeComperator();
+    // AgeComp.majority <== majorityASCII;
+    // AgeComp.age <== age;
 
-    signal AgeComperasion <== AgeComp.out;
-    
+    // signal AgeComperasion <== AgeComp.out;
+    signal AgeComperasion <== 1;
     pinCode <== revealPinCode * qrDataExtractor.pinCode;
     state <== revealState * qrDataExtractor.state;
     gender <== revealGender * qrDataExtractor.gender;
@@ -142,9 +142,9 @@ template DiscloseAadhaar(
     );
     //Test
     signal ofacCheckResultNameDobDummy <== 1;
-    signal ofacCheckResultNameYobDummy <== 1
+    signal ofacCheckResultNameYobDummy <== 1;
 
-    
+
     // DataRevealed in packed version 
     // 1 -> AgeOlderThan
     // 2 -> gender

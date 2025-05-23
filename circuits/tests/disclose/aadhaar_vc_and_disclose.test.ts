@@ -24,7 +24,7 @@ describe('Disclose_aadhaar', function () {
   let circuit: any;
   before(async () => {
     circuit = await circom_tester(
-      path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
+      path.join(__dirname, '../../circuits/disclose/aadhar_vc_and_disclose.circom'),
       {
         include: [
           'node_modules',
@@ -76,7 +76,8 @@ describe('Disclose_aadhaar', function () {
         // now: new Date("2025-12-01T00:00:00Z"), // override date if you like
       }
     );
-    // await circuit.calculateWitness(inputs);
+    await circuit.calculateWitness(inputs);
+    console.log("Circuit witness calc done");
   });
 
 //   it('should have nullifier == poseidon(secret, scope)', async function () {
