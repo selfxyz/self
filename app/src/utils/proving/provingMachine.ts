@@ -701,6 +701,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _generatePayload: async () => {
       const { circuitType, passportData, secret, uuid, sharedKey } = get();
+      const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
       let inputs, circuitName, endpointType, endpoint;
@@ -711,14 +712,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             generateTEEInputsRegister(
               secret as string,
               passportData,
-              protocolStore.passport.dsc_tree,
+              protocolStore[document].dsc_tree,
             ));
           break;
         case 'dsc':
           ({ inputs, circuitName, endpointType, endpoint } =
             generateTEEInputsDSC(
               passportData,
-              protocolStore.passport.csca_tree as string[][],
+              protocolStore[document].csca_tree as string[][],
             ));
           break;
         case 'disclose':
@@ -733,7 +734,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);
       }
-      const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
       let circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
       const payload = getPayload(
         inputs,
