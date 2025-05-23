@@ -1,5 +1,5 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { poseidon2 } from 'poseidon-lite';
+import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import {
   API_URL,
@@ -7,12 +7,15 @@ import {
 } from '../../../../common/src/constants/constants';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import {
-  generateCommitment,
   generateNullifier,
+  generateCommitment,
 } from '../../../../common/src/utils/passports/passport';
 import { getLeafDscTree } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { useProtocolStore } from '../../stores/protocolStore';
+import { formatMrz } from '../../../../common/src/utils/passports/format';
+import { hash, packBytesAndPoseidon } from '../../../../common/src/utils/hash';
+import { parseCertificateSimple } from '../../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 
 export type PassportSupportStatus =
   | 'passport_metadata_missing'
@@ -78,6 +81,34 @@ export async function isUserRegistered(
   return index !== -1;
 }
 
+export async function isUserRegisteredWithAlternativeCSCA(
+  passportData: PassportData,
+  secret: string,
+) : Promise<{ isRegistered: boolean, csca: string | null }> {
+  if (!passportData) {
+    console.error('Passport data is null');
+    return { isRegistered: false, csca: null };
+  }
+  const alternativeCSCA = useProtocolStore.getState().passport.alternative_csca;
+  console.log('alternativeCSCA: ', alternativeCSCA);
+  const { commitment_list, csca_list } = generateCommitmentInApp(
+    secret,
+    PASSPORT_ATTESTATION_ID,
+    passportData,
+    alternativeCSCA,
+  );
+  const serializedTree = useProtocolStore.getState().passport.commitment_tree;
+  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
+  for (const commitment of commitment_list) {
+    const index = tree.indexOf(BigInt(commitment));
+    if (index !== -1) {
+      return { isRegistered: true, csca: csca_list[index] };
+    }
+  }
+  console.error('None of the following CSCA correspond to the commitment:', csca_list);
+  return { isRegistered: false, csca: null };
+}
+
 export async function isPassportNullified(passportData: PassportData) {
   const nullifier = generateNullifier(passportData);
   const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
@@ -113,4 +144,35 @@ export async function checkIfPassportDscIsInTree(
     console.log('DSC found in the tree');
     return true;
   }
+}
+
+export function generateCommitmentInApp(
+  secret: string,
+  attestation_id: string,
+  passportData: PassportData,
+  alternativeCSCA: Record<string, string>,
+) {
+  const dg1_packed_hash = packBytesAndPoseidon(formatMrz(passportData.mrz));
+  const eContent_packed_hash = packBytesAndPoseidon(
+    (hash(passportData.passportMetadata!.eContentHashFunction, Array.from(passportData.eContent), 'bytes') as number[])
+      .map((byte) => byte & 0xff)
+  );
+  const csca_list = Object.keys(alternativeCSCA);
+  const commitment_list = Object.values(alternativeCSCA).map(cscaValue =>
+    poseidon5([
+      secret,
+      attestation_id,
+      dg1_packed_hash,
+      eContent_packed_hash,
+      getLeafDscTree(passportData.dsc_parsed!, parseCertificateSimple(formatCSCAPem(cscaValue))),
+    ]).toString()
+  );
+  return { commitment_list, csca_list };
+}
+
+function formatCSCAPem(cscaPem: string) {
+  if (!cscaPem.includes('-----BEGIN CERTIFICATE-----')) {
+    cscaPem = `-----BEGIN CERTIFICATE-----\n${cscaPem}\n-----END CERTIFICATE-----`;
+  }
+  return cscaPem;
 }
