@@ -52,7 +52,7 @@ struct MRZScanner {
                             break
                         }
                     } else {
-                        print("Did not match MRZ pattern: \(text)")
+                        // print("Did not match MRZ pattern: \(text)")
                     }
                 }
             }
@@ -71,13 +71,13 @@ struct MRZScanner {
         
         // Use provided ROI. If not use as bottom 20%
         if let roi = roi {
-            print("[MRZScanner] Using provided ROI: \(roi) (image size: \(cgImage.width)x\(cgImage.height))")
+            // print("[MRZScanner] Using provided ROI: \(roi) (image size: \(cgImage.width)x\(cgImage.height))")
             request.regionOfInterest = roi
         } else {
             let imageHeight = CGFloat(cgImage.height)
             let roiHeight = imageHeight * 0.2 // Bottom 20%
             let defaultRoi = CGRect(x: 0, y: 0, width: 1.0, height: roiHeight / imageHeight)
-            print("[MRZScanner] Using default ROI: \(defaultRoi) (image size: \(cgImage.width)x\(cgImage.height), roi height: \(roiHeight))")
+            // print("[MRZScanner] Using default ROI: \(defaultRoi) (image size: \(cgImage.width)x\(cgImage.height), roi height: \(roiHeight))")
             request.regionOfInterest = defaultRoi
         }
         
