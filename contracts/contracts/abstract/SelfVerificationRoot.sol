@@ -13,7 +13,6 @@ import {AttestationId} from "../constants/AttestationId.sol";
  * @dev Provides base functionality for verifying and disclosing identity credentials
  */
 abstract contract SelfVerificationRoot is ISelfVerificationRoot {
-
     // ====================================================
     // Storage Variables
     // ====================================================
@@ -40,7 +39,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
     // Make CircuitConstants available to inheriting contracts
     uint256 internal constant REVEALED_DATA_PACKED_INDEX = CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX;
-    uint256 internal constant FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX = CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX;
+    uint256 internal constant FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX =
+        CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX;
     uint256 internal constant NULLIFIER_INDEX = CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX;
     uint256 internal constant ATTESTATION_ID_INDEX = CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX;
     uint256 internal constant MERKLE_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX;
@@ -75,11 +75,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param scope The expected proof scope for user registration.
      * @param attestationIds The expected attestation identifiers required in proofs.
      */
-    constructor(
-        address identityVerificationHub,
-        uint256 scope,
-        uint256[] memory attestationIds
-    ) {
+    constructor(address identityVerificationHub, uint256 scope, uint256[] memory attestationIds) {
         _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHub);
         _scope = scope;
         for (uint256 i = 0; i < attestationIds.length; i++) {
@@ -92,12 +88,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @dev Used to set or update verification parameters after contract deployment
      * @param verificationConfig The new verification configuration to apply
      */
-    function _setVerificationConfig(
-        ISelfVerificationRoot.VerificationConfig memory verificationConfig
-    ) internal {
+    function _setVerificationConfig(ISelfVerificationRoot.VerificationConfig memory verificationConfig) internal {
         _verificationConfig = verificationConfig;
     }
-    
+
     /**
      * @notice Returns the current verification configuration
      * @dev Used to retrieve the current verification settings
@@ -140,7 +134,9 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param pubSignals The proof's public signals
      * @return revealedDataPacked Array of the three packed revealed data values
      */
-    function getRevealedDataPacked(uint256[21] memory pubSignals) internal pure returns (uint256[3] memory revealedDataPacked) {
+    function getRevealedDataPacked(
+        uint256[21] memory pubSignals
+    ) internal pure returns (uint256[3] memory revealedDataPacked) {
         revealedDataPacked[0] = pubSignals[REVEALED_DATA_PACKED_INDEX];
         revealedDataPacked[1] = pubSignals[REVEALED_DATA_PACKED_INDEX + 1];
         revealedDataPacked[2] = pubSignals[REVEALED_DATA_PACKED_INDEX + 2];
@@ -152,12 +148,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @dev Validates scope and attestation ID before performing verification through the identity hub
      * @param proof The proof data for verification and disclosure
      */
-    function verifySelfProof(
-        ISelfVerificationRoot.DiscloseCircuitProof memory proof
-    ) 
-        public
-        virtual
-    {
+    function verifySelfProof(ISelfVerificationRoot.DiscloseCircuitProof memory proof) public virtual {
         if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
             revert InvalidScope();
         }

@@ -4,34 +4,34 @@ pragma solidity 0.8.28;
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import { InternalLeanIMT, LeanIMTData } from "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
+import {InternalLeanIMT, LeanIMTData} from "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
 import {IIdentityRegistryV1} from "../interfaces/IIdentityRegistryV1.sol";
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {ImplRoot} from "../upgradeable/ImplRoot.sol";
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️
  * =============================================
- * 
+ *
  * This contract uses the UUPS upgradeable pattern which makes storage layout EXTREMELY SENSITIVE.
- * 
+ *
  * 🚫 NEVER MODIFY OR REORDER existing storage variables
  * 🚫 NEVER INSERT new variables between existing ones
  * 🚫 NEVER CHANGE THE TYPE of existing variables
- * 
+ *
  * ✅ New storage variables MUST be added in one of these two ways ONLY:
  *    1. At the END of the storage layout
  *    2. In a new V2 contract that inherits from this V1
  * ✅ It is safe to rename variables (e.g., changing 'variable' to 'oldVariable')
  *    as long as the type and order remain the same
- * 
+ *
  * Examples of forbidden changes:
  * - Changing uint256 to uint128
  * - Changing bytes32 to bytes
  * - Changing array type to mapping
- * 
+ *
  * For more detailed information about forbidden changes, please refer to:
  * https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable#modifying-your-contracts
- * 
+ *
  * ⚠️ VIOLATION OF THESE RULES WILL CAUSE CATASTROPHIC STORAGE COLLISIONS IN FUTURE UPGRADES ⚠️
  * =============================================
  */
@@ -41,9 +41,7 @@ import {ImplRoot} from "../upgradeable/ImplRoot.sol";
  * @dev Abstract contract for storage layout of IdentityRegistryImplV1.
  * Inherits from ImplRoot to provide upgradeable functionality.
  */
-abstract contract IdentityRegistryStorageV1 is
-    ImplRoot
-{
+abstract contract IdentityRegistryStorageV1 is ImplRoot {
     // ====================================================
     // Storage Variables
     // ====================================================
@@ -85,10 +83,7 @@ abstract contract IdentityRegistryStorageV1 is
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryStorageV1 and implements IIdentityRegistryV1.
  */
-contract IdentityRegistryImplV1 is 
-    IdentityRegistryStorageV1,  
-    IIdentityRegistryV1 
-{
+contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV1 {
     using InternalLeanIMT for LeanIMTData;
 
     // ====================================================
@@ -108,11 +103,25 @@ contract IdentityRegistryImplV1 is
     /// @notice Emitted when the name and year of birth OFAC root is updated.
     event NameAndYobOfacRootUpdated(uint256 nameAndYobOfacRoot);
     /// @notice Emitted when an identity commitment is successfully registered.
-    event CommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
+    event CommitmentRegistered(
+        bytes32 indexed attestationId,
+        uint256 indexed nullifier,
+        uint256 indexed commitment,
+        uint256 timestamp,
+        uint256 imtRoot,
+        uint256 imtIndex
+    );
     /// @notice Emitted when a DSC key commitment is successfully registered.
     event DscKeyCommitmentRegistered(uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
     /// @notice Emitted when a identity commitment is added by dev team.
-    event DevCommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
+    event DevCommitmentRegistered(
+        bytes32 indexed attestationId,
+        uint256 indexed nullifier,
+        uint256 indexed commitment,
+        uint256 timestamp,
+        uint256 imtRoot,
+        uint256 imtIndex
+    );
     /// @notice Emitted when a identity commitment is updated by dev team.
     event DevCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
     /// @notice Emitted when a identity commitment is removed by dev team.
@@ -138,7 +147,7 @@ contract IdentityRegistryImplV1 is
     error ONLY_HUB_CAN_ACCESS();
     /// @notice Thrown when attempting to register a commitment that has already been registered.
     error REGISTERED_COMMITMENT();
-    
+
     // ====================================================
     // Modifiers
     // ====================================================
@@ -164,7 +173,7 @@ contract IdentityRegistryImplV1 is
     constructor() {
         _disableInitializers();
     }
-    
+
     // ====================================================
     // Initializer
     // ====================================================
@@ -173,12 +182,7 @@ contract IdentityRegistryImplV1 is
      * @dev Sets the hub address and initializes the UUPS upgradeable feature.
      * @param _hub The address of the identity verification hub.
      */
-    function initialize(
-        address _hub
-    ) 
-        external
-        initializer 
-    {
+    function initialize(address _hub) external initializer {
         __ImplRoot_init();
         _hub = _hub;
         emit RegistryInitialized(_hub);
@@ -192,13 +196,7 @@ contract IdentityRegistryImplV1 is
      * @notice Retrieves the hub address.
      * @return The current identity verification hub address.
      */
-    function hub() 
-        external
-        virtual
-        onlyProxy
-        view 
-        returns (address) 
-    {
+    function hub() external view virtual onlyProxy returns (address) {
         return _hub;
     }
 
@@ -208,16 +206,7 @@ contract IdentityRegistryImplV1 is
      * @param nullifier The nullifier to be checked.
      * @return True if the nullifier has been registered, false otherwise.
      */
-    function nullifiers(
-        bytes32 attestationId,
-        uint256 nullifier
-    ) 
-        external
-        virtual
-        onlyProxy
-        view 
-        returns (bool) 
-    {
+    function nullifiers(bytes32 attestationId, uint256 nullifier) external view virtual onlyProxy returns (bool) {
         return _nullifiers[attestationId][nullifier];
     }
 
@@ -226,15 +215,7 @@ contract IdentityRegistryImplV1 is
      * @param commitment The DSC key commitment.
      * @return True if the DSC key commitment is registered, false otherwise.
      */
-    function isRegisteredDscKeyCommitment(
-        uint256 commitment
-    ) 
-        external
-        virtual
-        onlyProxy
-        view 
-        returns (bool) 
-    {
+    function isRegisteredDscKeyCommitment(uint256 commitment) external view virtual onlyProxy returns (bool) {
         return _isRegisteredDscKeyCommitment[commitment];
     }
 
@@ -243,15 +224,7 @@ contract IdentityRegistryImplV1 is
      * @param root The Merkle tree root.
      * @return The timestamp corresponding to the given root.
      */
-    function rootTimestamps(
-        uint256 root
-    ) 
-        external
-        virtual
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function rootTimestamps(uint256 root) external view virtual onlyProxy returns (uint256) {
         return _rootTimestamps[root];
     }
 
@@ -260,14 +233,7 @@ contract IdentityRegistryImplV1 is
      * @param root The Merkle tree root.
      * @return True if the root exists, false otherwise.
      */
-    function checkIdentityCommitmentRoot(
-        uint256 root
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (bool) 
-    {
+    function checkIdentityCommitmentRoot(uint256 root) external view onlyProxy returns (bool) {
         return _rootTimestamps[root] != 0;
     }
 
@@ -275,12 +241,7 @@ contract IdentityRegistryImplV1 is
      * @notice Retrieves the number of identity commitments in the Merkle tree.
      * @return The size of the identity commitment Merkle tree.
      */
-    function getIdentityCommitmentMerkleTreeSize() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getIdentityCommitmentMerkleTreeSize() external view onlyProxy returns (uint256) {
         return _identityCommitmentIMT.size;
     }
 
@@ -288,12 +249,7 @@ contract IdentityRegistryImplV1 is
      * @notice Retrieves the current Merkle root of the identity commitments.
      * @return The current identity commitment Merkle root.
      */
-    function getIdentityCommitmentMerkleRoot() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getIdentityCommitmentMerkleRoot() external view onlyProxy returns (uint256) {
         return _identityCommitmentIMT._root();
     }
 
@@ -302,14 +258,7 @@ contract IdentityRegistryImplV1 is
      * @param commitment The identity commitment to locate.
      * @return The index of the provided commitment within the Merkle tree.
      */
-    function getIdentityCommitmentIndex(
-        uint256 commitment
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getIdentityCommitmentIndex(uint256 commitment) external view onlyProxy returns (uint256) {
         return _identityCommitmentIMT._indexOf(commitment);
     }
 
@@ -317,12 +266,7 @@ contract IdentityRegistryImplV1 is
      * @notice Retrieves the current passport number OFAC root.
      * @return The stored passport number OFAC root.
      */
-    function getPassportNoOfacRoot() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getPassportNoOfacRoot() external view onlyProxy returns (uint256) {
         return _passportNoOfacRoot;
     }
 
@@ -330,12 +274,7 @@ contract IdentityRegistryImplV1 is
      * @notice Retrieves the current name and date of birth OFAC root.
      * @return The stored name and date of birth OFAC root.
      */
-    function getNameAndDobOfacRoot() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getNameAndDobOfacRoot() external view onlyProxy returns (uint256) {
         return _nameAndDobOfacRoot;
     }
 
@@ -343,12 +282,7 @@ contract IdentityRegistryImplV1 is
      * @notice Retrieves the current name and year of birth OFAC root.
      * @return The stored name and year of birth OFAC root.
      */
-    function getNameAndYobOfacRoot() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getNameAndYobOfacRoot() external view onlyProxy returns (uint256) {
         return _nameAndYobOfacRoot;
     }
 
@@ -363,27 +297,18 @@ contract IdentityRegistryImplV1 is
         uint256 passportNoRoot,
         uint256 nameAndDobRoot,
         uint256 nameAndYobRoot
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (bool) 
-    {
-        return _passportNoOfacRoot == passportNoRoot
-            && _nameAndDobOfacRoot == nameAndDobRoot
-            && _nameAndYobOfacRoot == nameAndYobRoot;
+    ) external view onlyProxy returns (bool) {
+        return
+            _passportNoOfacRoot == passportNoRoot &&
+            _nameAndDobOfacRoot == nameAndDobRoot &&
+            _nameAndYobOfacRoot == nameAndYobRoot;
     }
 
     /**
      * @notice Retrieves the current CSCA root.
      * @return The stored CSCA root.
      */
-    function getCscaRoot() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getCscaRoot() external view onlyProxy returns (uint256) {
         return _cscaRoot;
     }
 
@@ -392,14 +317,7 @@ contract IdentityRegistryImplV1 is
      * @param root The CSCA root to validate.
      * @return True if the provided root is equal to the stored CSCA root, false otherwise.
      */
-    function checkCscaRoot(
-        uint256 root
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (bool) 
-    {
+    function checkCscaRoot(uint256 root) external view onlyProxy returns (bool) {
         return _cscaRoot == root;
     }
 
@@ -407,12 +325,7 @@ contract IdentityRegistryImplV1 is
      * @notice Retrieves the current Merkle root of the DSC key commitments.
      * @return The current DSC key commitment Merkle root.
      */
-    function getDscKeyCommitmentMerkleRoot() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getDscKeyCommitmentMerkleRoot() external view onlyProxy returns (uint256) {
         return _dscKeyCommitmentIMT._root();
     }
 
@@ -421,14 +334,7 @@ contract IdentityRegistryImplV1 is
      * @param root The root to validate.
      * @return True if the roots match, false otherwise.
      */
-    function checkDscKeyCommitmentMerkleRoot(
-        uint256 root
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (bool) 
-    {
+    function checkDscKeyCommitmentMerkleRoot(uint256 root) external view onlyProxy returns (bool) {
         return _dscKeyCommitmentIMT._root() == root;
     }
 
@@ -436,12 +342,7 @@ contract IdentityRegistryImplV1 is
      * @notice Retrieves the number of DSC key commitments in the Merkle tree.
      * @return The DSC key commitment Merkle tree size.
      */
-    function getDscKeyCommitmentTreeSize() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
+    function getDscKeyCommitmentTreeSize() external view onlyProxy returns (uint256) {
         return _dscKeyCommitmentIMT.size;
     }
 
@@ -450,14 +351,7 @@ contract IdentityRegistryImplV1 is
      * @param commitment The DSC key commitment to locate.
      * @return The index of the provided commitment within the DSC key commitment Merkle tree.
      */
-    function getDscKeyCommitmentIndex(
-        uint256 commitment
-    )
-        external
-        onlyProxy
-        view
-        returns (uint256)
-    {
+    function getDscKeyCommitmentIndex(uint256 commitment) external view onlyProxy returns (uint256) {
         return _dscKeyCommitmentIMT._indexOf(commitment);
     }
 
@@ -476,11 +370,7 @@ contract IdentityRegistryImplV1 is
         bytes32 attestationId,
         uint256 nullifier,
         uint256 commitment
-    ) 
-        external
-        onlyProxy
-        onlyHub
-    {
+    ) external onlyProxy onlyHub {
         if (_nullifiers[attestationId][nullifier]) revert REGISTERED_COMMITMENT();
 
         _nullifiers[attestationId][nullifier] = true;
@@ -495,13 +385,7 @@ contract IdentityRegistryImplV1 is
      * @dev Caller must be the hub. Reverts if the commitment has already been registered.
      * @param dscCommitment The DSC key commitment to register.
      */
-    function registerDscKeyCommitment(
-        uint256 dscCommitment
-    )
-        external
-        onlyProxy
-        onlyHub
-    {
+    function registerDscKeyCommitment(uint256 dscCommitment) external onlyProxy onlyHub {
         if (_isRegisteredDscKeyCommitment[dscCommitment]) revert REGISTERED_COMMITMENT();
 
         _isRegisteredDscKeyCommitment[dscCommitment] = true;
@@ -509,7 +393,7 @@ contract IdentityRegistryImplV1 is
         uint256 imt_root = _addCommitment(_dscKeyCommitmentIMT, dscCommitment);
         emit DscKeyCommitmentRegistered(dscCommitment, block.timestamp, imt_root, index);
     }
-    
+
     // ====================================================
     // External Functions - Only Owner
     // ====================================================
@@ -519,13 +403,7 @@ contract IdentityRegistryImplV1 is
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newHubAddress The new address of the hub.
      */
-    function updateHub(
-        address newHubAddress
-    )
-        external
-        onlyProxy
-        onlyOwner 
-    { 
+    function updateHub(address newHubAddress) external onlyProxy onlyOwner {
         _hub = newHubAddress;
         emit HubUpdated(newHubAddress);
     }
@@ -535,13 +413,7 @@ contract IdentityRegistryImplV1 is
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newPassportNoOfacRoot The new passport number OFAC root value.
      */
-    function updatePassportNoOfacRoot(
-        uint256 newPassportNoOfacRoot
-    ) 
-        external
-        onlyProxy
-        onlyOwner 
-    {
+    function updatePassportNoOfacRoot(uint256 newPassportNoOfacRoot) external onlyProxy onlyOwner {
         _passportNoOfacRoot = newPassportNoOfacRoot;
         emit PassportNoOfacRootUpdated(newPassportNoOfacRoot);
     }
@@ -551,13 +423,7 @@ contract IdentityRegistryImplV1 is
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newNameAndDobOfacRoot The new name and date of birth OFAC root value.
      */
-    function updateNameAndDobOfacRoot(
-        uint256 newNameAndDobOfacRoot
-    ) 
-        external
-        onlyProxy
-        onlyOwner 
-    {
+    function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyOwner {
         _nameAndDobOfacRoot = newNameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(newNameAndDobOfacRoot);
     }
@@ -567,13 +433,7 @@ contract IdentityRegistryImplV1 is
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newNameAndYobOfacRoot The new name and year of birth OFAC root value.
      */
-    function updateNameAndYobOfacRoot(
-        uint256 newNameAndYobOfacRoot
-    ) 
-        external
-        onlyProxy
-        onlyOwner 
-    {
+    function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyOwner {
         _nameAndYobOfacRoot = newNameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(newNameAndYobOfacRoot);
     }
@@ -583,17 +443,10 @@ contract IdentityRegistryImplV1 is
      * @dev Callable only via a proxy and restricted to the contract owner.
      * @param newCscaRoot The new CSCA root value.
      */
-    function updateCscaRoot(
-        uint256 newCscaRoot
-    ) 
-        external
-        onlyProxy
-        onlyOwner 
-    {
+    function updateCscaRoot(uint256 newCscaRoot) external onlyProxy onlyOwner {
         _cscaRoot = newCscaRoot;
         emit CscaRootUpdated(newCscaRoot);
     }
-
 
     /**
      * @notice (DEV) Force-adds an identity commitment.
@@ -606,11 +459,7 @@ contract IdentityRegistryImplV1 is
         bytes32 attestationId,
         uint256 nullifier,
         uint256 commitment
-    ) 
-        external 
-        onlyProxy
-        onlyOwner 
-    {
+    ) external onlyProxy onlyOwner {
         _nullifiers[attestationId][nullifier] = true;
         uint256 imt_root = _addCommitment(_identityCommitmentIMT, commitment);
         _rootTimestamps[imt_root] = block.timestamp;
@@ -629,11 +478,7 @@ contract IdentityRegistryImplV1 is
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes
-    )
-        external
-        onlyProxy
-        onlyOwner
-    {
+    ) external onlyProxy onlyOwner {
         uint256 imt_root = _updateCommitment(_identityCommitmentIMT, oldLeaf, newLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
@@ -645,31 +490,18 @@ contract IdentityRegistryImplV1 is
      * @param oldLeaf The identity commitment to remove.
      * @param siblingNodes An array of sibling nodes for Merkle proof generation.
      */
-    function devRemoveCommitment(
-        uint256 oldLeaf,
-        uint256[] calldata siblingNodes
-    )
-        external
-        onlyProxy
-        onlyOwner
-    {
+    function devRemoveCommitment(uint256 oldLeaf, uint256[] calldata siblingNodes) external onlyProxy onlyOwner {
         uint256 imt_root = _removeCommitment(_identityCommitmentIMT, oldLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
     }
-    
+
     /**
      * @notice (DEV) Force-adds a DSC key commitment.
      * @dev Callable only by the owner for testing or administration.
      * @param dscCommitment The DSC key commitment to add.
      */
-    function devAddDscKeyCommitment(
-        uint256 dscCommitment
-    )
-        external
-        onlyProxy
-        onlyOwner
-    {
+    function devAddDscKeyCommitment(uint256 dscCommitment) external onlyProxy onlyOwner {
         _isRegisteredDscKeyCommitment[dscCommitment] = true;
         uint256 imt_root = _addCommitment(_dscKeyCommitmentIMT, dscCommitment);
         uint256 index = _dscKeyCommitmentIMT._indexOf(dscCommitment);
@@ -687,11 +519,7 @@ contract IdentityRegistryImplV1 is
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes
-    )
-        external
-        onlyProxy
-        onlyOwner
-    {
+    ) external onlyProxy onlyOwner {
         uint256 imt_root = _updateCommitment(_dscKeyCommitmentIMT, oldLeaf, newLeaf, siblingNodes);
         emit DevDscKeyCommitmentUpdated(oldLeaf, newLeaf, imt_root);
     }
@@ -702,14 +530,7 @@ contract IdentityRegistryImplV1 is
      * @param oldLeaf The DSC key commitment to remove.
      * @param siblingNodes An array of sibling nodes for Merkle proof generation.
      */
-    function devRemoveDscKeyCommitment(
-        uint256 oldLeaf,
-        uint256[] calldata siblingNodes
-    )
-        external
-        onlyProxy
-        onlyOwner
-    {
+    function devRemoveDscKeyCommitment(uint256 oldLeaf, uint256[] calldata siblingNodes) external onlyProxy onlyOwner {
         uint256 imt_root = _removeCommitment(_dscKeyCommitmentIMT, oldLeaf, siblingNodes);
         emit DevDscKeyCommitmentRemoved(oldLeaf, imt_root);
     }
@@ -725,11 +546,7 @@ contract IdentityRegistryImplV1 is
         bytes32 attestationId,
         uint256 nullifier,
         bool state
-    ) 
-        external
-        onlyProxy
-        onlyOwner
-    {
+    ) external onlyProxy onlyOwner {
         _nullifiers[attestationId][nullifier] = state;
         emit DevNullifierStateChanged(attestationId, nullifier, state);
     }
@@ -740,14 +557,7 @@ contract IdentityRegistryImplV1 is
      * @param dscCommitment The DSC key commitment.
      * @param state The new state of the DSC key commitment (true for registered, false for not registered).
      */
-    function devChangeDscKeyCommitmentState(
-        uint256 dscCommitment,
-        bool state
-    )
-        external
-        onlyProxy
-        onlyOwner
-    {
+    function devChangeDscKeyCommitmentState(uint256 dscCommitment, bool state) external onlyProxy onlyOwner {
         _isRegisteredDscKeyCommitment[dscCommitment] = state;
         emit DevDscKeyCommitmentStateChanged(dscCommitment, state);
     }
@@ -763,13 +573,7 @@ contract IdentityRegistryImplV1 is
      * @param commitment The commitment to add.
      * @return imt_root The new Merkle tree root after insertion.
      */
-    function _addCommitment(
-        LeanIMTData storage imt,
-        uint256 commitment
-    ) 
-        internal
-        returns(uint256 imt_root)
-    {
+    function _addCommitment(LeanIMTData storage imt, uint256 commitment) internal returns (uint256 imt_root) {
         imt_root = imt._insert(commitment);
     }
 
@@ -787,10 +591,7 @@ contract IdentityRegistryImplV1 is
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes
-    )
-        internal
-        returns(uint256 imt_root)
-    {
+    ) internal returns (uint256 imt_root) {
         imt_root = imt._update(oldLeaf, newLeaf, siblingNodes);
     }
 
@@ -806,10 +607,7 @@ contract IdentityRegistryImplV1 is
         LeanIMTData storage imt,
         uint256 oldLeaf,
         uint256[] calldata siblingNodes
-    )
-        internal
-        returns(uint256 imt_root)
-    {
+    ) internal returns (uint256 imt_root) {
         imt_root = imt._remove(oldLeaf, siblingNodes);
     }
 }

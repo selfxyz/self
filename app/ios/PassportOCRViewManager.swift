@@ -1,5 +1,4 @@
 import Foundation
-import QKMRZScanner
 import React
 import SwiftUI
 import UIKit
@@ -19,8 +18,7 @@ class PassportOCRView: UIView {
     @objc var onPassportRead: RCTDirectEventBlock?
     @objc var onError: RCTDirectEventBlock?
 
-    private var scannerView: QKMRZScannerViewRepresentable?
-    private var hostingController: UIHostingController<QKMRZScannerViewRepresentable>?
+    private var hostingController: UIHostingController<LiveMRZScannerView>?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -33,22 +31,20 @@ class PassportOCRView: UIView {
     }
 
     private func initializeScanner() {
-        var scannerView = QKMRZScannerViewRepresentable()
-        scannerView.onScanResult = { [weak self] scanResult in
-            let resultDict: [String: Any] = [
-                "documentNumber": scanResult.documentNumber,
-                "expiryDate": scanResult.expiryDate?.description ?? "",
-                "birthDate": scanResult.birthdate?.description ?? "",
-            ]
-            self?.onPassportRead?(["data": resultDict])
-        }
-
+        let scannerView = LiveMRZScannerView(
+            onScanResultAsDict: { [weak self] resultDict in
+              self?.onPassportRead?([
+                "data": [
+                  "documentNumber": resultDict["documentNumber"] as? String ?? "",
+                  "expiryDate": resultDict["expiryDate"] as? String ?? "",
+                  "birthDate": resultDict["dateOfBirth"] as? String ?? ""
+                ]])
+            }
+        )
         let hostingController = UIHostingController(rootView: scannerView)
         hostingController.view.backgroundColor = .clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(hostingController.view)
-
-        self.scannerView = scannerView
         self.hostingController = hostingController
     }
 

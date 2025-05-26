@@ -130,22 +130,11 @@ export function formatDg2Hash(dg2Hash: number[]) {
 export function formatDG1Attribute(index: number[], value: string) {
     const max_length = index[1] - index[0] + 1;
     if (value.length > max_length) {
-        console.log(`Value is too long for index ${index[0]}-${index[1]}: ${value}, length: ${value.length}, max_length: ${max_length}`);
         throw new Error(`Value is too long for index ${index[0]}-${index[1]}`);
     }
     return value.padEnd(max_length, '<');
 }
 
-export function formatName(firstName: string, lastName: string, idType: string) {
-    const cleanLastName = lastName.toUpperCase().replace(/ /g, '<');
-    const cleanFirstName = firstName.toUpperCase().replace(/ /g, '<');
-    const combinedName = `${cleanLastName}<<${cleanFirstName}`;
-    let maxLength = 100; // Default large length
-    if (idType === 'mock_passport' || idType === 'passport') {
-        maxLength = 39;
-    } else if (idType === 'mock_id_card' || idType === 'id_card') {
-        maxLength = 30;
-    }
-    const truncatedName = combinedName.length > maxLength ? combinedName.substring(0, maxLength) : combinedName;
-    return truncatedName;
+export function formatName(firstName: string, lastName: string) {
+    return `${lastName.toUpperCase()}<<${firstName.toUpperCase()}`;
 }

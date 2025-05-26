@@ -44,6 +44,8 @@ on:
 
 jobs:
   build-ios:
+    # disable for now, will fix soon
+    if: false
     runs-on: macos-latest
     steps:
       - name: Set up Xcode
@@ -309,41 +311,41 @@ jobs:
       - name: Remove project.pbxproj updates we don't want to commit
         run: |
           PBXPROJ_FILE="app/ios/Self.xcodeproj/project.pbxproj"
-          
+
           # Create a temporary file to store version info
           echo "Extracting version information..."
           rm -f versions.txt
           grep -E 'CURRENT_PROJECT_VERSION = [0-9]+;|MARKETING_VERSION = [0-9]+\.[0-9]+\.[0-9]+;' "${PBXPROJ_FILE}" > versions.txt
-          
+
           # Check if we have version information
           if [ -s versions.txt ]; then
             echo "Found version information. Resetting file and re-applying versions..."
-            
+
             # Store the version values
             CURRENT_VERSION=$(grep 'CURRENT_PROJECT_VERSION' versions.txt | head -1 | sed 's/.*CURRENT_PROJECT_VERSION = \([0-9]*\);.*/\1/')
             MARKETING_VERSION=$(grep 'MARKETING_VERSION' versions.txt | head -1 | sed 's/.*MARKETING_VERSION = \([0-9]*\.[0-9]*\.[0-9]*\);.*/\1/')
-            
+
             echo "Current version: $CURRENT_VERSION"
             echo "Marketing version: $MARKETING_VERSION"
-            
+
             # Reset the file to HEAD
             git checkout HEAD -- "${PBXPROJ_FILE}"
-            
+
             # Update the versions if they exist
             if [ ! -z "$CURRENT_VERSION" ]; then
               sed -i '' "s/\(CURRENT_PROJECT_VERSION = \)[0-9]*;/\1$CURRENT_VERSION;/g" "${PBXPROJ_FILE}"
             fi
-            
+
             if [ ! -z "$MARKETING_VERSION" ]; then
               sed -i '' "s/\(MARKETING_VERSION = \)[0-9]*\.[0-9]*\.[0-9]*;/\1$MARKETING_VERSION;/g" "${PBXPROJ_FILE}"
             fi
-            
+
             echo "Version information successfully applied."
           else
             echo "No version information found. Resetting file..."
             git checkout HEAD -- "${PBXPROJ_FILE}"
           fi
-          
+
           # Clean up
           rm -f versions.txt
 
@@ -361,6 +363,8 @@ jobs:
           commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
 
   build-android:
+    # disable for now, will fix soon
+    if: false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
