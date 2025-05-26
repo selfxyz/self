@@ -38,6 +38,7 @@ export const PassportEvents = {
   PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
   PASSPORT_PARSED: 'Passport: Passport Parsed',
   START_PASSPORT_NFC: 'Passport: Start Passport NFC',
+  UNSUPPORTED_PASSPORT: 'Passport: Passport Not Supported',
 };
 
 export const ProofEvents = {

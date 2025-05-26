@@ -10,8 +10,12 @@ import failAnimation from '../../assets/animations/loading/fail.json';
 import proveLoadingAnimation from '../../assets/animations/loading/prove.json';
 import successAnimation from '../../assets/animations/loading/success.json';
 import { PassportEvents, ProofEvents } from '../../consts/analytics';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import CloseWarningIcon from '../../images/icons/close-warning.svg';
-import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
+import {
+  clearPassportData,
+  loadPassportDataAndSecret,
+} from '../../stores/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
 import { advercase, dinot } from '../../utils/fonts';
@@ -22,6 +26,7 @@ import {
   ProvingStateType,
   useProvingStore,
 } from '../../utils/proving/provingMachine';
+import { checkPassportSupported } from '../../utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 
@@ -50,6 +55,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const fcmToken = useProvingStore(state => state.fcmToken);
   const isFocused = useIsFocused();
   const { bottom } = useSafeAreaInsets();
+  const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
 
   // Define all terminal states that should stop animations and haptics
   const terminalStates: ProvingStateType[] = [
@@ -64,6 +70,17 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   // States where it's safe to close the app
   const safeToCloseStates = ['proving', 'post_proving', 'completed'];
   const canCloseApp = safeToCloseStates.includes(currentState);
+
+  const handleUnsupportedPassport = async (_passportData: PassportData) => {
+    const isSupported = await checkPassportSupported(_passportData);
+    trackEvent(PassportEvents.UNSUPPORTED_PASSPORT, {
+      reason: isSupported.status,
+      details: isSupported.details,
+    });
+    console.log('Passport not supported');
+    clearPassportData();
+    goToUnsupportedScreen();
+  };
 
   // Initialize notifications and load passport data
   useEffect(() => {
@@ -139,6 +156,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
         case 'error':
         case 'failure':
         case 'passport_not_supported':
+          handleUnsupportedPassport(passportData);
+          return;
         case 'account_recovery_choice':
         case 'passport_data_not_found':
           setAnimationSource(failAnimation);
