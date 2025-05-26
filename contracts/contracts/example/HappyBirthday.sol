@@ -157,33 +157,33 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
      * @return isWithinWindow True if within the birthday window
      */
     function _isWithinBirthdayWindow(uint256[3] memory revealedDataPacked) internal view returns (bool) {
-        string memory _dob = SelfCircuitLibrary.getDateOfBirth(revealedDataPacked);
+        string memory dob = SelfCircuitLibrary.getDateOfBirth(revealedDataPacked);
 
-        bytes memory _dobBytes = bytes(_dob);
-        bytes memory _dayBytes = new bytes(2);
-        bytes memory _monthBytes = new bytes(2);
+        bytes memory dobBytes = bytes(dob);
+        bytes memory dayBytes = new bytes(2);
+        bytes memory monthBytes = new bytes(2);
 
-        _dayBytes[0] = _dobBytes[0];
-        _dayBytes[1] = _dobBytes[1];
+        dayBytes[0] = dobBytes[0];
+        dayBytes[1] = dobBytes[1];
 
-        _monthBytes[0] = _dobBytes[3];
-        _monthBytes[1] = _dobBytes[4];
+        monthBytes[0] = dobBytes[3];
+        monthBytes[1] = dobBytes[4];
 
-        string memory _day = string(_dayBytes);
-        string memory _month = string(_monthBytes);
-        string memory _dobInThisYear = string(abi.encodePacked("25", _month, _day));
+        string memory day = string(dayBytes);
+        string memory month = string(monthBytes);
+        string memory dobInThisYear = string(abi.encodePacked("25", month, day));
 
-        uint256 _dobInThisYearTimestamp = SelfCircuitLibrary.dateToTimestamp(_dobInThisYear);
+        uint256 dobInThisYearTimestamp = SelfCircuitLibrary.dateToTimestamp(dobInThisYear);
 
-        uint256 _currentTime = block.timestamp;
-        uint256 _timeDifference;
+        uint256 currentTime = block.timestamp;
+        uint256 timeDifference;
 
-        if (_currentTime > _dobInThisYearTimestamp) {
-            _timeDifference = _currentTime - _dobInThisYearTimestamp;
+        if (currentTime > dobInThisYearTimestamp) {
+            timeDifference = currentTime - dobInThisYearTimestamp;
         } else {
-            _timeDifference = _dobInThisYearTimestamp - _currentTime;
+            timeDifference = dobInThisYearTimestamp - currentTime;
         }
 
-        return _timeDifference <= claimableWindow;
+        return timeDifference <= claimableWindow;
     }
 }

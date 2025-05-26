@@ -95,18 +95,18 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @notice Constructor for the experimental Airdrop contract.
      * @dev Initializes the airdrop parameters, zero-knowledge verification configuration,
      *      and sets the ERC20 token to be distributed.
-     * @param _identityVerificationHubAddress The address of the Identity Verification Hub.
-     * @param _scopeValue The expected proof scope for user registration.
-     * @param _attestationIds The expected attestation identifiers required in proofs.
-     * @param _token The address of the ERC20 token for airdrop.
+     * @param identityVerificationHubAddress The address of the Identity Verification Hub.
+     * @param scopeValue The expected proof scope for user registration.
+     * @param attestationIds The expected attestation identifiers required in proofs.
+     * @param tokenAddress The address of the ERC20 token for airdrop.
      */
     constructor(
-        address _identityVerificationHubAddress,
-        uint256 _scopeValue,
-        uint256[] memory _attestationIds,
-        address _token
-    ) SelfVerificationRoot(_identityVerificationHubAddress, _scopeValue, _attestationIds) Ownable(_msgSender()) {
-        token = IERC20(_token);
+        address identityVerificationHubAddress,
+        uint256 scopeValue,
+        uint256[] memory attestationIds,
+        address tokenAddress
+    ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue, attestationIds) Ownable(_msgSender()) {
+        token = IERC20(tokenAddress);
     }
 
     // ====================================================
