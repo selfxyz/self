@@ -12,11 +12,14 @@ import Keyboard from '../../images/icons/keyboard.svg';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useAuth } from '../../stores/authProvider';
-import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
+import {
+  loadPassportDataAndSecret,
+  reStorePassportDataWithRightCSCA,
+} from '../../stores/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
-import { isUserRegistered } from '../../utils/proving/validateDocument';
+import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
 
 interface AccountRecoveryChoiceScreenProps {}
 
@@ -49,7 +52,10 @@ const AccountRecoveryChoiceScreen: React.FC<
       const passportDataAndSecret =
         (await loadPassportDataAndSecret()) as string;
       const { passportData, secret } = JSON.parse(passportDataAndSecret);
-      const isRegistered = await isUserRegistered(passportData, secret);
+      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
+        passportData,
+        secret,
+      );
       console.log('User is registered:', isRegistered);
       if (!isRegistered) {
         console.log(
@@ -65,6 +71,7 @@ const AccountRecoveryChoiceScreen: React.FC<
       }
       onRestoreFromCloudNext();
       setRestoring(false);
+      reStorePassportDataWithRightCSCA(passportData, csca as string);
     } catch (e) {
       console.error(e);
       setRestoring(false);

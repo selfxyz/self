@@ -24,8 +24,11 @@ interface ProtocolState {
     fetch_csca_tree: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_dsc_tree: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_identity_tree: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_alternative_csca: (environment: 'prod' | 'stg', ski: string) => Promise<void>;
-    fetch_all: (environment: 'prod' | 'stg') => Promise<void>;
+    fetch_alternative_csca: (
+      environment: 'prod' | 'stg',
+      ski: string,
+    ) => Promise<void>;
+    fetch_all: (environment: 'prod' | 'stg', ski: string) => Promise<void>;
   };
 }
 
@@ -37,16 +40,20 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     deployed_circuits: null,
     circuits_dns_mapping: null,
     alternative_csca: {},
-    fetch_all: async (environment: 'prod' | 'stg') => {
+    fetch_all: async (environment: 'prod' | 'stg', ski: string) => {
       await Promise.all([
         get().passport.fetch_deployed_circuits(environment),
         get().passport.fetch_circuits_dns_mapping(environment),
         get().passport.fetch_csca_tree(environment),
         get().passport.fetch_dsc_tree(environment),
         get().passport.fetch_identity_tree(environment),
+        get().passport.fetch_alternative_csca(environment, ski),
       ]);
     },
-    fetch_alternative_csca: async (environment: 'prod' | 'stg', ski: string) => {
+    fetch_alternative_csca: async (
+      environment: 'prod' | 'stg',
+      ski: string,
+    ) => {
       const url = `${environment === 'prod' && false ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`; // TODO: remove false once we have the endpoint in production
       try {
         const response = await fetch(url, {

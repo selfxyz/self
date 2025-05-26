@@ -5,17 +5,17 @@ import {
   API_URL,
   PASSPORT_ATTESTATION_ID,
 } from '../../../../common/src/constants/constants';
+import { parseCertificateSimple } from '../../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
+import { hash, packBytesAndPoseidon } from '../../../../common/src/utils/hash';
+import { formatMrz } from '../../../../common/src/utils/passports/format';
 import {
-  generateNullifier,
   generateCommitment,
+  generateNullifier,
 } from '../../../../common/src/utils/passports/passport';
 import { getLeafDscTree } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { useProtocolStore } from '../../stores/protocolStore';
-import { formatMrz } from '../../../../common/src/utils/passports/format';
-import { hash, packBytesAndPoseidon } from '../../../../common/src/utils/hash';
-import { parseCertificateSimple } from '../../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 
 export type PassportSupportStatus =
   | 'passport_metadata_missing'
@@ -84,7 +84,7 @@ export async function isUserRegistered(
 export async function isUserRegisteredWithAlternativeCSCA(
   passportData: PassportData,
   secret: string,
-) : Promise<{ isRegistered: boolean, csca: string | null }> {
+): Promise<{ isRegistered: boolean; csca: string | null }> {
   if (!passportData) {
     console.error('Passport data is null');
     return { isRegistered: false, csca: null };
@@ -105,7 +105,10 @@ export async function isUserRegisteredWithAlternativeCSCA(
       return { isRegistered: true, csca: csca_list[index] };
     }
   }
-  console.error('None of the following CSCA correspond to the commitment:', csca_list);
+  console.error(
+    'None of the following CSCA correspond to the commitment:',
+    csca_list,
+  );
   return { isRegistered: false, csca: null };
 }
 
@@ -154,8 +157,13 @@ export function generateCommitmentInApp(
 ) {
   const dg1_packed_hash = packBytesAndPoseidon(formatMrz(passportData.mrz));
   const eContent_packed_hash = packBytesAndPoseidon(
-    (hash(passportData.passportMetadata!.eContentHashFunction, Array.from(passportData.eContent), 'bytes') as number[])
-      .map((byte) => byte & 0xff)
+    (
+      hash(
+        passportData.passportMetadata!.eContentHashFunction,
+        Array.from(passportData.eContent),
+        'bytes',
+      ) as number[]
+    ).map(byte => byte % 256),
   );
   const csca_list = Object.keys(alternativeCSCA);
   const commitment_list = Object.values(alternativeCSCA).map(cscaValue =>
@@ -164,8 +172,11 @@ export function generateCommitmentInApp(
       attestation_id,
       dg1_packed_hash,
       eContent_packed_hash,
-      getLeafDscTree(passportData.dsc_parsed!, parseCertificateSimple(formatCSCAPem(cscaValue))),
-    ]).toString()
+      getLeafDscTree(
+        passportData.dsc_parsed!,
+        parseCertificateSimple(formatCSCAPem(cscaValue)),
+      ),
+    ]).toString(),
   );
   return { commitment_list, csca_list };
 }
