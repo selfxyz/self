@@ -31,11 +31,21 @@ extension Dictionary {
 
 @available(iOS 15, *)
 @objc(PassportReader)
-class PassportReader: NSObject{
-  
-  private let passportReader = NFCPassportReader.PassportReader()
-  
-  func getMRZKey(passportNumber: String, dateOfBirth: String, dateOfExpiry: String ) -> String {
+class PassportReader: NSObject {
+    private var passportReader: NFCPassportReader.PassportReader
+    
+    override init() {
+        self.passportReader = NFCPassportReader.PassportReader()
+        super.init()
+    }
+    
+    @objc(configure:)
+    func configure(token: String) {
+        let analytics = Analytics(token: token)
+        self.passportReader = NFCPassportReader.PassportReader(analytics: analytics)
+    }
+    
+    func getMRZKey(passportNumber: String, dateOfBirth: String, dateOfExpiry: String ) -> String {
     
     // Pad fields if necessary
     let pptNr = pad( passportNumber, fieldLength:9)
@@ -97,7 +107,7 @@ class PassportReader: NSObject{
         // let masterListURL = Bundle.main.url(forResource: "masterList", withExtension: ".pem")
         // passportReader.setMasterListURL( masterListURL! )
 
-        let passport = try await passportReader.readPassport( mrzKey: mrzKey, tags: [.COM, .DG1, .SOD], customDisplayMessage: customMessageHandler)
+        let passport = try await self.passportReader.readPassport( mrzKey: mrzKey, tags: [.COM, .DG1, .SOD], customDisplayMessage: customMessageHandler)
 
         var ret = [String:String]()
         //print("documentType", passport.documentType)

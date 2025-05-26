@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { MIXPANEL_PROJECT_TOKEN } from '@env';
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
@@ -12,6 +13,13 @@ interface Inputs {
 }
 
 export const scan = async (inputs: Inputs) => {
+  if (MIXPANEL_PROJECT_TOKEN) {
+    if (Platform.OS === 'ios') {
+      NativeModules.PassportReader.configure(MIXPANEL_PROJECT_TOKEN);
+    } else {
+    }
+  }
+
   return Platform.OS === 'android'
     ? await scanAndroid(inputs)
     : await scanIOS(inputs);
