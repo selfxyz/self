@@ -50,18 +50,18 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
 
     /**
      * @notice Initializes the HappyBirthday contract
-     * @param _identityVerificationHubAddress The address of the Identity Verification Hub
-     * @param _scopeValue The expected proof scope for user registration
-     * @param _attestationIds Array of allowed attestation identifiers
-     * @param _token The USDC token address
+     * @param identityVerificationHubAddress The address of the Identity Verification Hub
+     * @param scopeValue The expected proof scope for user registration
+     * @param attestationIds Array of allowed attestation identifiers
+     * @param token The USDC token address
      */
     constructor(
-        address _identityVerificationHubAddress,
-        uint256 _scopeValue,
-        uint256[] memory _attestationIds,
-        address _token
-    ) SelfVerificationRoot(_identityVerificationHubAddress, _scopeValue, _attestationIds) Ownable(_msgSender()) {
-        usdc = IERC20(_token);
+        address identityVerificationHubAddress,
+        uint256 scopeValue,
+        uint256[] memory attestationIds,
+        address token
+    ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue, attestationIds) Ownable(_msgSender()) {
+        usdc = IERC20(token);
     }
 
     // ====================================================
@@ -70,41 +70,41 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
 
     /**
      * @notice Sets the verification configuration
-     * @param _newVerificationConfig The new verification settings
+     * @param newVerificationConfig The new verification settings
      */
     function setVerificationConfig(
-        ISelfVerificationRoot.VerificationConfig memory _newVerificationConfig
+        ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
     ) external onlyOwner {
-        _setVerificationConfig(_newVerificationConfig);
+        _setVerificationConfig(newVerificationConfig);
     }
 
     /**
      * @notice Sets the claimable USDC amount
-     * @param _newAmount The new claimable amount
+     * @param newAmount The new claimable amount
      */
-    function setClaimableAmount(uint256 _newAmount) external onlyOwner {
-        uint256 _oldAmount = claimableAmount;
-        claimableAmount = _newAmount;
-        emit ClaimableAmountUpdated(_oldAmount, _newAmount);
+    function setClaimableAmount(uint256 newAmount) external onlyOwner {
+        uint256 oldAmount = claimableAmount;
+        claimableAmount = newAmount;
+        emit ClaimableAmountUpdated(oldAmount, newAmount);
     }
 
     /**
      * @notice Sets the claimable window around birthdays
-     * @param _newWindow The new claimable window in seconds
+     * @param newWindow The new claimable window in seconds
      */
-    function setClaimableWindow(uint256 _newWindow) external onlyOwner {
-        uint256 _oldWindow = claimableWindow;
-        claimableWindow = _newWindow;
-        emit ClaimableWindowUpdated(_oldWindow, _newWindow);
+    function setClaimableWindow(uint256 newWindow) external onlyOwner {
+        uint256 oldWindow = claimableWindow;
+        claimableWindow = newWindow;
+        emit ClaimableWindowUpdated(oldWindow, newWindow);
     }
 
     /**
      * @notice Allows the owner to withdraw USDC from the contract
-     * @param _to The address to withdraw to
-     * @param _amount The amount to withdraw
+     * @param to The address to withdraw to
+     * @param amount The amount to withdraw
      */
-    function withdrawUSDC(address _to, uint256 _amount) external onlyOwner {
-        usdc.safeTransfer(_to, _amount);
+    function withdrawUSDC(address to, uint256 amount) external onlyOwner {
+        usdc.safeTransfer(to, amount);
     }
 
     // ====================================================
@@ -114,33 +114,34 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
     /**
      * @notice Hook called after successful verification
      * @dev Checks user hasn't claimed, validates birthday window, and transfers USDC if eligible
-     * @param _revealedDataPacked The packed revealed data from the proof
-     * @param _userIdentifier The user identifier from the proof
+     * @param revealedDataPacked The packed revealed data from the proof
+     * @param userIdentifier The user identifier from the proof
+     * @param nullifier The nullifier from the proof
      */
     function onBasicVerificationSuccess(
-        uint256[3] memory _revealedDataPacked,
-        uint256 _userIdentifier,
-        uint256 _nullifier
+        uint256[3] memory revealedDataPacked,
+        uint256 userIdentifier,
+        uint256 nullifier
     ) internal override {
         // Get user address from the proof's user identifier
 
         // Check if user has already claimed
-        if (hasClaimed[_nullifier]) {
+        if (hasClaimed[nullifier]) {
             revert AlreadyClaimed();
         }
 
         // Check if within birthday window
-        if (_isWithinBirthdayWindow(_revealedDataPacked)) {
+        if (_isWithinBirthdayWindow(revealedDataPacked)) {
             // Mark user as claimed
-            hasClaimed[_nullifier] = true;
+            hasClaimed[nullifier] = true;
 
-            address _recipient = address(uint160(_userIdentifier));
+            address recipient = address(uint160(userIdentifier));
 
             // Transfer USDC to the user
-            usdc.safeTransfer(_recipient, claimableAmount);
+            usdc.safeTransfer(recipient, claimableAmount);
 
             // Emit success event
-            emit USDCClaimed(_recipient, claimableAmount);
+            emit USDCClaimed(recipient, claimableAmount);
         } else {
             revert NotWithinBirthdayWindow();
         }
@@ -152,11 +153,11 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
 
     /**
      * @notice Checks if the current date is within the user's birthday window
-     * @param _revealedDataPacked The packed revealed data containing DOB information
+     * @param revealedDataPacked The packed revealed data containing DOB information
      * @return isWithinWindow True if within the birthday window
      */
-    function _isWithinBirthdayWindow(uint256[3] memory _revealedDataPacked) internal view returns (bool) {
-        string memory _dob = SelfCircuitLibrary.getDateOfBirth(_revealedDataPacked);
+    function _isWithinBirthdayWindow(uint256[3] memory revealedDataPacked) internal view returns (bool) {
+        string memory _dob = SelfCircuitLibrary.getDateOfBirth(revealedDataPacked);
 
         bytes memory _dobBytes = bytes(_dob);
         bytes memory _dayBytes = new bytes(2);

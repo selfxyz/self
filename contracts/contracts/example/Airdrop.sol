@@ -116,52 +116,52 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     /**
      * @notice Sets the Merkle root for claim validation.
      * @dev Only callable by the contract owner.
-     * @param _merkleRoot The new Merkle root.
+     * @param newMerkleRoot The new Merkle root.
      */
-    function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
-        merkleRoot = _merkleRoot;
-        emit MerkleRootUpdated(_merkleRoot);
+    function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
+        merkleRoot = newMerkleRoot;
+        emit MerkleRootUpdated(newMerkleRoot);
     }
 
     /**
      * @notice Updates the verification configuration for address registration.
      * @dev Only callable by the contract owner.
-     * @param _newVerificationConfig The new verification configuration.
+     * @param newVerificationConfig The new verification configuration.
      */
     function setVerificationConfig(
-        ISelfVerificationRoot.VerificationConfig memory _newVerificationConfig
+        ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
     ) external onlyOwner {
-        _setVerificationConfig(_newVerificationConfig);
+        _setVerificationConfig(newVerificationConfig);
     }
 
     /**
      * @notice Updates the scope used for verification.
      * @dev Only callable by the contract owner.
-     * @param _newScope The new scope to set.
+     * @param newScope The new scope to set.
      */
-    function setScope(uint256 _newScope) external onlyOwner {
-        _setScope(_newScope);
-        emit ScopeUpdated(_newScope);
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
+        emit ScopeUpdated(newScope);
     }
 
     /**
      * @notice Adds a new attestation ID to the allowed list.
      * @dev Only callable by the contract owner.
-     * @param _attestationId The attestation ID to add.
+     * @param attestationId The attestation ID to add.
      */
-    function addAttestationId(uint256 _attestationId) external onlyOwner {
-        _addAttestationId(_attestationId);
-        emit AttestationIdAdded(_attestationId);
+    function addAttestationId(uint256 attestationId) external onlyOwner {
+        _addAttestationId(attestationId);
+        emit AttestationIdAdded(attestationId);
     }
 
     /**
      * @notice Removes an attestation ID from the allowed list.
      * @dev Only callable by the contract owner.
-     * @param _attestationId The attestation ID to remove.
+     * @param attestationId The attestation ID to remove.
      */
-    function removeAttestationId(uint256 _attestationId) external onlyOwner {
-        _removeAttestationId(_attestationId);
-        emit AttestationIdRemoved(_attestationId);
+    function removeAttestationId(uint256 attestationId) external onlyOwner {
+        _removeAttestationId(attestationId);
+        emit AttestationIdRemoved(attestationId);
     }
 
     /**
@@ -210,11 +210,11 @@ contract Airdrop is SelfVerificationRoot, Ownable {
 
     /**
      * @notice Checks if the specified attestation ID is allowed.
-     * @param _attestationId The attestation ID to check.
+     * @param attestationId The attestation ID to check.
      * @return True if the attestation ID is allowed, false otherwise.
      */
-    function isAttestationIdAllowed(uint256 _attestationId) external view returns (bool) {
-        return _attestationIdToEnabled[_attestationId];
+    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
+        return _attestationIdToEnabled[attestationId];
     }
 
     /**
@@ -227,22 +227,22 @@ contract Airdrop is SelfVerificationRoot, Ownable {
 
     /**
      * @notice Checks if a given address is registered.
-     * @param _registeredAddress The address to check.
+     * @param registeredAddress The address to check.
      * @return True if the address is registered, false otherwise.
      */
-    function isRegistered(address _registeredAddress) external view returns (bool) {
-        return _registeredUserIdentifiers[uint256(uint160(_registeredAddress))];
+    function isRegistered(address registeredAddress) external view returns (bool) {
+        return _registeredUserIdentifiers[uint256(uint160(registeredAddress))];
     }
 
     /**
      * @notice Allows a registered user to claim their tokens.
      * @dev Reverts if registration is still open, if claiming is disabled, if already claimed,
      *      or if the sender is not registered. Also validates the claim using a Merkle proof.
-     * @param _index The index of the claim in the Merkle tree.
-     * @param _amount The amount of tokens to be claimed.
-     * @param _merkleProof The Merkle proof verifying the claim.
+     * @param index The index of the claim in the Merkle tree.
+     * @param amount The amount of tokens to be claimed.
+     * @param merkleProof The Merkle proof verifying the claim.
      */
-    function claim(uint256 _index, uint256 _amount, bytes32[] memory _merkleProof) external {
+    function claim(uint256 index, uint256 amount, bytes32[] memory merkleProof) external {
         if (isRegistrationOpen) {
             revert RegistrationNotClosed();
         }
@@ -257,14 +257,14 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         }
 
         // Verify the Merkle proof.
-        bytes32 node = keccak256(abi.encodePacked(_index, msg.sender, _amount));
-        if (!MerkleProof.verify(_merkleProof, merkleRoot, node)) revert InvalidProof();
+        bytes32 node = keccak256(abi.encodePacked(index, msg.sender, amount));
+        if (!MerkleProof.verify(merkleProof, merkleRoot, node)) revert InvalidProof();
 
         // Mark as claimed and transfer tokens.
         _setClaimed();
-        token.safeTransfer(msg.sender, _amount);
+        token.safeTransfer(msg.sender, amount);
 
-        emit Claimed(_index, msg.sender, _amount);
+        emit Claimed(index, msg.sender, amount);
     }
 
     // ====================================================
@@ -274,14 +274,13 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     /**
      * @notice Hook called after successful verification - handles user registration
      * @dev Validates registration conditions and registers the user
-     * @param _revealedDataPacked The packed revealed data from the proof
-     * @param _userIdentifier The user identifier from the proof
-     * @param _nullifier The nullifier from the proof
+     * @param userIdentifier The user identifier from the proof
+     * @param nullifier The nullifier from the proof
      */
     function onBasicVerificationSuccess(
-        uint256[3] memory _revealedDataPacked,
-        uint256 _userIdentifier,
-        uint256 _nullifier
+        uint256[3] memory /* revealedDataPacked */,
+        uint256 userIdentifier,
+        uint256 nullifier
     ) internal override {
         // Check if registration is open
         if (!isRegistrationOpen) {
@@ -289,25 +288,25 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         }
 
         // Check if nullifier has already been registered
-        if (_nullifierToUserIdentifier[_nullifier] != 0) {
+        if (_nullifierToUserIdentifier[nullifier] != 0) {
             revert RegisteredNullifier();
         }
 
         // Check if user identifier is valid
-        if (_userIdentifier == 0) {
+        if (userIdentifier == 0) {
             revert InvalidUserIdentifier();
         }
 
         // Check if user identifier has already been registered
-        if (_registeredUserIdentifiers[_userIdentifier]) {
+        if (_registeredUserIdentifiers[userIdentifier]) {
             revert UserIdentifierAlreadyRegistered();
         }
 
-        _nullifierToUserIdentifier[_nullifier] = _userIdentifier;
-        _registeredUserIdentifiers[_userIdentifier] = true;
+        _nullifierToUserIdentifier[nullifier] = userIdentifier;
+        _registeredUserIdentifiers[userIdentifier] = true;
 
         // Emit registration event
-        emit UserIdentifierRegistered(_userIdentifier, _nullifier);
+        emit UserIdentifierRegistered(userIdentifier, nullifier);
     }
 
     // ====================================================

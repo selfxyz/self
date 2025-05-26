@@ -49,21 +49,21 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
 
     /**
      * @notice Constructor for the SelfPassportERC721 contract
-     * @param _identityVerificationHubAddress The address of the Identity Verification Hub
-     * @param _scopeValue The expected proof scope for user registration
-     * @param _attestationIdsList The expected attestation identifiers required in proofs
-     * @param _name The name of the NFT collection
-     * @param _symbol The symbol of the NFT collection
+     * @param identityVerificationHubAddress The address of the Identity Verification Hub
+     * @param scopeValue The expected proof scope for user registration
+     * @param attestationIdsList The expected attestation identifiers required in proofs
+     * @param name The name of the NFT collection
+     * @param symbol The symbol of the NFT collection
      */
     constructor(
-        address _identityVerificationHubAddress,
-        uint256 _scopeValue,
-        uint256[] memory _attestationIdsList,
-        string memory _name,
-        string memory _symbol
+        address identityVerificationHubAddress,
+        uint256 scopeValue,
+        uint256[] memory attestationIdsList,
+        string memory name,
+        string memory symbol
     )
-        SelfVerificationRoot(_identityVerificationHubAddress, _scopeValue, _attestationIdsList)
-        ERC721(_name, _symbol)
+        SelfVerificationRoot(identityVerificationHubAddress, scopeValue, attestationIdsList)
+        ERC721(name, symbol)
         Ownable(_msgSender())
     {}
 
@@ -74,67 +74,67 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     /**
      * @notice Updates the scope used for verification
      * @dev Only callable by the contract owner
-     * @param _newScope The new scope to set
+     * @param newScope The new scope to set
      */
-    function setScope(uint256 _newScope) external onlyOwner {
-        _setScope(_newScope);
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
     }
 
     /**
      * @notice Adds a new attestation ID to the allowed list
      * @dev Only callable by the contract owner
-     * @param _attestationId The attestation ID to add
+     * @param attestationId The attestation ID to add
      */
-    function addAttestationId(uint256 _attestationId) external onlyOwner {
-        _addAttestationId(_attestationId);
+    function addAttestationId(uint256 attestationId) external onlyOwner {
+        _addAttestationId(attestationId);
     }
 
     /**
      * @notice Removes an attestation ID from the allowed list
      * @dev Only callable by the contract owner
-     * @param _attestationId The attestation ID to remove
+     * @param attestationId The attestation ID to remove
      */
-    function removeAttestationId(uint256 _attestationId) external onlyOwner {
-        _removeAttestationId(_attestationId);
+    function removeAttestationId(uint256 attestationId) external onlyOwner {
+        _removeAttestationId(attestationId);
     }
 
     /**
      * @notice Updates the verification configuration
      * @dev Only callable by the contract owner
-     * @param _newVerificationConfig The new verification configuration
+     * @param newVerificationConfig The new verification configuration
      */
     function setVerificationConfig(
-        ISelfVerificationRoot.VerificationConfig memory _newVerificationConfig
+        ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
     ) external onlyOwner {
-        _setVerificationConfig(_newVerificationConfig);
+        _setVerificationConfig(newVerificationConfig);
     }
 
     /**
      * @notice Get passport attributes for a specific token ID
-     * @param _tokenId The token ID to query
+     * @param tokenId The token ID to query
      * @return The passport attributes associated with the token
      */
-    function getPassportAttributes(uint256 _tokenId) external view returns (SelfCircuitLibrary.PassportData memory) {
-        require(_exists(_tokenId), "Token does not exist");
-        return _passportAttributes[_tokenId];
+    function getPassportAttributes(uint256 tokenId) external view returns (SelfCircuitLibrary.PassportData memory) {
+        require(_exists(tokenId), "Token does not exist");
+        return _passportAttributes[tokenId];
     }
 
     /**
      * @notice Check if a user identifier has already minted an NFT
-     * @param _userIdentifier The user identifier to check
+     * @param userIdentifier The user identifier to check
      * @return True if the user identifier has already minted, false otherwise
      */
-    function isUserIdentifierMinted(uint256 _userIdentifier) external view returns (bool) {
-        return _mintedUserIdentifiers[_userIdentifier];
+    function isUserIdentifierMinted(uint256 userIdentifier) external view returns (bool) {
+        return _mintedUserIdentifiers[userIdentifier];
     }
 
     /**
      * @notice Check if the specified attestation ID is allowed
-     * @param _attestationId The attestation ID to check
+     * @param attestationId The attestation ID to check
      * @return True if the attestation ID is allowed, false otherwise
      */
-    function isAttestationIdAllowed(uint256 _attestationId) external view returns (bool) {
-        return _attestationIdToEnabled[_attestationId];
+    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
+        return _attestationIdToEnabled[attestationId];
     }
 
     /**
@@ -160,33 +160,32 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     /**
      * @notice Hook called after successful verification - handles NFT minting
      * @dev Validates user identifier and mints passport NFT with extracted attributes
-     * @param _revealedDataPacked The packed revealed data from the proof
-     * @param _userIdentifier The user identifier from the proof
-     * @param _nullifier The nullifier from the proof (unused in this implementation)
+     * @param revealedDataPacked The packed revealed data from the proof
+     * @param userIdentifier The user identifier from the proof
      */
     function onBasicVerificationSuccess(
-        uint256[3] memory _revealedDataPacked,
-        uint256 _userIdentifier,
-        uint256 _nullifier
+        uint256[3] memory revealedDataPacked,
+        uint256 userIdentifier,
+        uint256 /* nullifier */
     ) internal override {
         // Check if user identifier is valid
-        if (_userIdentifier == 0) {
+        if (userIdentifier == 0) {
             revert InvalidUserIdentifier();
         }
 
         // Check if user identifier has already minted an NFT
-        if (_mintedUserIdentifiers[_userIdentifier]) {
+        if (_mintedUserIdentifiers[userIdentifier]) {
             revert UserIdentifierAlreadyMinted();
         }
 
         // Extract passport data using SelfCircuitLibrary
-        SelfCircuitLibrary.PassportData memory attributes = SelfCircuitLibrary.extractPassportData(_revealedDataPacked);
+        SelfCircuitLibrary.PassportData memory attributes = SelfCircuitLibrary.extractPassportData(revealedDataPacked);
 
         // Mint NFT
         uint256 tokenId = _tokenIdCounter++;
         _mint(msg.sender, tokenId);
         _passportAttributes[tokenId] = attributes;
-        _mintedUserIdentifiers[_userIdentifier] = true;
+        _mintedUserIdentifiers[userIdentifier] = true;
 
         emit PassportNFTMinted(tokenId, msg.sender, attributes);
     }
@@ -197,10 +196,10 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
 
     /**
      * @notice Check if a token exists
-     * @param _tokenId The token ID to check
+     * @param tokenId The token ID to check
      * @return True if the token exists, false otherwise
      */
-    function _exists(uint256 _tokenId) internal view returns (bool) {
-        return _ownerOf(_tokenId) != address(0);
+    function _exists(uint256 tokenId) internal view returns (bool) {
+        return _ownerOf(tokenId) != address(0);
     }
 }
