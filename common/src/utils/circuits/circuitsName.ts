@@ -89,8 +89,6 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
     throw new Error("CSCA not found");
   }
 
-  const parsedDsc = passportData.dsc_parsed;
-
   const dgHashAlgo = passportMetadata.dg1HashFunction;
   const eContentHashAlgo = passportMetadata.eContentHashFunction;
   const signedAttrHashAlgo = passportMetadata.signedAttrHashFunction;
@@ -149,7 +147,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
       throw new Error(`Unsupported key length: ${signatureAlgorithmBits}`);
     }
   } else {
-    console.error('Unsupported signature algorithm:', parsedDsc.signatureAlgorithm);
+    console.error('Unsupported signature algorithm:', sigAlg);
     throw new Error('Unsupported signature algorithm');
   }
 }
