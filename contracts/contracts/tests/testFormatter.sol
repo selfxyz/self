@@ -20,11 +20,9 @@ contract TestFormatter {
         return Formatter.fieldElementsToBytes(publicSignals);
     }
 
-    function testExtractForbiddenCountriesFromPacked(uint256[4] memory publicSignals) 
-        external 
-        pure 
-        returns (string[40] memory) 
-    {
+    function testExtractForbiddenCountriesFromPacked(
+        uint256[4] memory publicSignals
+    ) external pure returns (string[40] memory) {
         return Formatter.extractForbiddenCountriesFromPacked(publicSignals);
     }
 

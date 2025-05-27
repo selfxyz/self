@@ -1,10 +1,10 @@
+import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { TextStyle, ViewStyle } from 'tamagui';
 
 import { white } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 import { buttonTap } from '../../utils/haptic';
 import { NavBar } from './BaseNavBar';
 
@@ -17,7 +17,7 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
     <NavBar.Container
       gap={14}
       paddingHorizontal={20}
-      paddingTop={Math.max(insets.top, 12)}
+      paddingTop={Math.max(insets.top, 15) + extraYPadding}
       paddingBottom={20}
       backgroundColor={headerStyle.backgroundColor as string}
       barStyle={

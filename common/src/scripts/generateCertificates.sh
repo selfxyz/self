@@ -204,7 +204,7 @@ generate_certificate() {
                 -out "$dir_name/$crt_file"
         fi
 
-        
+
         # Clean up
         rm -f "$csr_file" "$signer/mock_csca.srl"
         echo "[OK] Created DSC in $dir_name => $key_file, $crt_file (signed by $signer)"
@@ -244,7 +244,7 @@ generate_certificate csca sha1 rsa 65537 4096
 generate_certificate dsc sha1 rsa 65537 2048 --signer sha1_rsa_65537_4096
 generate_certificate dsc sha1 rsa 65537 4096 --signer sha1_rsa_65537_4096
 generate_certificate csca sha256 rsa 65537 4096
-generate_certificate dsc sha256 rsa 65537 2048 --signer sha256_rsa_65537_4096
+generate_certificate dsc sha256 rsa 65537 2048 --signer sha256_rsa_65537_4096 --force
 generate_certificate dsc sha256 rsa 65537 3072 --signer sha256_rsa_65537_4096
 generate_certificate dsc sha256 rsa 65537 4096 --signer sha256_rsa_65537_4096
 generate_certificate csca sha384 rsa 65537 4096
@@ -348,10 +348,10 @@ if [ "$CSCA_FLAG" = true ]; then
 fi
 
 
-cd ../registry
-    ts-node src/dsc/build_dsc_merkle_tree.ts
-    echo -e "\033[32mDSC Merkle tree updated\033[0m"
-cd ../common
+# cd ../registry
+#     ts-node src/dsc/build_dsc_merkle_tree.ts
+#     echo -e "\033[32mDSC Merkle tree updated\033[0m"
+# cd ../common
 
 
 if [ "$CSCA_FLAG" = true ]; then

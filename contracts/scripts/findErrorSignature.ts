@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
 // Error Signatures and their Selectors:
 // =====================================
@@ -68,9 +68,9 @@ const errorSignatures = [
     'INVALID_ATTESTATION_ID()'
 ];
 
-errorSignatures.forEach(sig => {
+errorSignatures.forEach((sig) => {
   // Pls input the error code
-  const errorCode = '0x22cbc6a2';
+  const errorCode = "0x22cbc6a2";
   const selector = ethers.id(sig).slice(0, 10);
   console.log("selector: ", selector);
   if (selector === errorCode) {

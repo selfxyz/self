@@ -11,10 +11,9 @@ import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/acces
  * Serves as a base for upgradeable implementations.
  */
 abstract contract ImplRoot is UUPSUpgradeable, Ownable2StepUpgradeable {
-
     // Reserved storage space to allow for layout changes in the future.
     uint256[50] private __gap;
-    
+
     /**
      * @dev Initializes the contract by setting the deployer as the initial owner and initializing
      * the UUPS proxy functionality.
@@ -27,18 +26,12 @@ abstract contract ImplRoot is UUPSUpgradeable, Ownable2StepUpgradeable {
     }
 
     /**
-     * @dev Authorizes an upgrade to a new implementation. 
+     * @dev Authorizes an upgrade to a new implementation.
      * Requirements:
      *   - Must be called through a proxy.
      *   - Caller must be the contract owner.
      *
      * @param newImplementation The address of the new implementation contract.
      */
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        virtual
-        override
-        onlyProxy
-        onlyOwner 
-    {}
+    function _authorizeUpgrade(address newImplementation) internal virtual override onlyProxy onlyOwner {}
 }

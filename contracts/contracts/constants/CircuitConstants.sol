@@ -8,7 +8,6 @@ pragma solidity 0.8.28;
  * @dev These indices map directly to specific data fields in the corresponding circuits proofs.
  */
 library CircuitConstants {
-
     // ---------------------------
     // Register Circuit Constants
     // ---------------------------

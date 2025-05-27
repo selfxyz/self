@@ -1,23 +1,22 @@
-import dotenv from 'dotenv';
-import { assert, expect } from 'chai';
-import path from 'path';
+import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
-import { generateCircuitInputsDSC } from '../../../common/src/utils/circuits/generateInputs';
-
-import { fullSigAlgs, sigAlgs } from './test_cases';
-import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { SignatureAlgorithm } from '../../../common/src/utils/types';
-import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
-import { getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/trees';
-import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { parseDscCertificateData } from '../../../common/src/utils/passports/passport_parsing/parseDscCertificateData';
+import dotenv from 'dotenv';
+import path from 'path';
 import serialized_csca_tree from '../../../common/pubkeys/serialized_csca_tree.json';
+import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
+import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
+import { generateCircuitInputsDSC } from '../../../common/src/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import { parseDscCertificateData } from '../../../common/src/utils/passports/passport_parsing/parseDscCertificateData';
+import { getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/trees';
+import { SignatureAlgorithm } from '../../../common/src/utils/types';
+import { fullSigAlgs, sigAlgs } from './test_cases';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
 testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
-  const passportData = genMockPassportData(
+  const passportData = genAndInitMockPassportData(
     hashFunction,
     hashFunction,
     `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
@@ -33,7 +32,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
     this.timeout(0); // Disable timeout
     let circuit;
 
-    const inputs = generateCircuitInputsDSC(passportData.dsc, serialized_csca_tree);
+    const inputs = generateCircuitInputsDSC(passportData, serialized_csca_tree);
 
     before(async () => {
       circuit = await wasm_tester(

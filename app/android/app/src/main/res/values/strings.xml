@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Self</string>
+    <string name="default_notification_channel_id">self_notifications</string>
+    <string name="default_notification_channel_name">Self Notifications</string>
 </resources>

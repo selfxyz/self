@@ -1,9 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { groth16 } from 'snarkjs';
+import { genAndInitMockPassportData } from '../../common/src/utils/genMockPassportData';
+import {
+  buildAttestation,
+  OpenPassportDynamicAttestation,
+} from '../../common/src/utils/openPassportAttestation';
 import { OpenPassportVerifier } from '../src/OpenPassportVerifier';
-import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { OpenPassportVerifierReport } from '../src/OpenPassportVerifierReport';
+import { generateCircuitInputsInSdk } from './utils/generateInputsInSdk';
 import {
   alphaCode,
   dateOfBirth,
@@ -14,15 +19,10 @@ import {
   TestCase,
   testCases,
 } from './utils/testCases';
-import { generateCircuitInputsInSdk } from './utils/generateInputsInSdk';
-import {
-  buildAttestation,
-  OpenPassportDynamicAttestation,
-} from '../../common/src/utils/openPassportAttestation';
 
 const runTest = async (testCase: TestCase) => {
   const { circuitType, algorithm, wasmPath, zkeyPath } = testCase;
-  const passportData = genMockPassportData(algorithm, alphaCode, dateOfBirth, dateOfExpiry);
+  const passportData = genAndInitMockPassportData(algorithm, alphaCode, dateOfBirth, dateOfExpiry);
   const inputs = generateCircuitInputsInSdk(passportData, circuitType);
   const { proof, publicSignals } = await groth16.fullProve(inputs, wasmPath, zkeyPath);
   const openPassportVerifier = new OpenPassportVerifier({

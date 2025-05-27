@@ -5,7 +5,6 @@ import path from "path";
 import { getSMTs } from "../../../test/utils/generateProof";
 
 module.exports = buildModule("UpdateRegistryOfacRoot", (m) => {
-
   const networkName = hre.network.config.chainId;
 
   const deployedAddressesPath = path.join(__dirname, `../../deployments/chain-${networkName}/deployed_addresses.json`);
@@ -15,12 +14,8 @@ module.exports = buildModule("UpdateRegistryOfacRoot", (m) => {
 
   const deployedRegistryInstance = m.contractAt("IdentityRegistryImplV1", registryAddress);
   console.log("Deployed registry instance", deployedRegistryInstance);
-  
-  const {
-      passportNo_smt,
-      nameAndDob_smt,
-      nameAndYob_smt
-  } = getSMTs();
+
+  const { passportNo_smt, nameAndDob_smt, nameAndYob_smt } = getSMTs();
 
   m.call(deployedRegistryInstance, "updatePassportNoOfacRoot", [passportNo_smt.root]);
   m.call(deployedRegistryInstance, "updateNameAndDobOfacRoot", [nameAndDob_smt.root]);

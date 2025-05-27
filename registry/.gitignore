@@ -1,5 +1,0 @@
-.env
-.env.local
-outputs/
-src/passport_data/passport_data/
-inputs/icao_download_section/

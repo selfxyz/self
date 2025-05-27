@@ -35,7 +35,7 @@ runs:
         sudo update-locale LANG=en_US.UTF-8
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup Ruby environment
       uses: ruby/setup-ruby@v1

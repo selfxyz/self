@@ -1,17 +1,16 @@
-import { PassportData } from '../../types';
-import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple';
+import { hashAlgos } from '../../../constants/constants';
+import { findSubarrayIndex } from '../../arrays';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from '../../certificate_parsing/dataStructure';
-import { hashAlgos } from '../../../constants/constants';
-import { DscCertificateMetaData, parseDscCertificateData } from './parseDscCertificateData';
-import { brutforceSignatureAlgorithm } from './brutForcePassportSignature';
-import { findSubarrayIndex } from '../../arrays';
+import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple';
+import { getHashLen, hash } from '../../hash';
+import { PassportData } from '../../types';
 import { formatMrz } from '../format';
-import { getHashLen } from '../../hash';
-import { hash } from '../../hash';
+import { brutforceSignatureAlgorithm } from './brutForcePassportSignature';
+import { DscCertificateMetaData, parseDscCertificateData } from './parseDscCertificateData';
 
 export interface PassportMetadata {
   dataGroups: string;
@@ -90,7 +89,7 @@ export function getCurveOrExponent(certData: CertificateData): string {
   return (certData.publicKeyDetails as PublicKeyDetailsECDSA).curve;
 }
 
-export function parsePassportData(passportData: PassportData): PassportMetadata {
+export function parsePassportData(passportData: PassportData, skiPem: any = null): PassportMetadata {
   const dg1HashInfo = passportData.mrz
     ? findDG1HashInEContent(passportData.mrz, passportData.eContent)
     : null;
@@ -119,7 +118,7 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
     parsedDsc = parseCertificateSimple(passportData.dsc);
     dscSignatureAlgorithmBits = parseInt(parsedDsc.publicKeyDetails?.bits || '0');
 
-    dscMetaData = parseDscCertificateData(parsedDsc);
+    dscMetaData = parseDscCertificateData(parsedDsc, skiPem);
   }
 
   return {
