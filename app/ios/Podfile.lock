@@ -1714,8 +1714,27 @@ PODS:
   - RNGoogleSignin (13.2.0):
     - GoogleSignIn (~> 7.1)
     - React-Core
-  - RNKeychain (8.2.0):
+  - RNKeychain (10.0.0):
+    - DoubleConversion
+    - glog
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNLocalize (3.4.1):
     - React-Core
   - RNReactNativeHapticFeedback (2.3.3):
@@ -2206,7 +2225,7 @@ SPEC CHECKSUMS:
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
   RNGestureHandler: 9c3877d98d4584891b69d16ebca855ac46507f4d
   RNGoogleSignin: b8760528f2a7cbe157ecfdcc13bdb7d2745c9389
-  RNKeychain: bbe2f6d5cc008920324acb49ef86ccc03d3b38e4
+  RNKeychain: 4990d9be2916c60f9ed4f8c484fcd7ced4828b86
   RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
   RNReactNativeHapticFeedback: e19b9b2e2ecf5593de8c4ef1496e1e31ae227514
   RNScreens: b7e8d29c6be98f478bc3fb4a97cc770aa9ba7509
