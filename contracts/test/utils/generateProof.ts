@@ -3,20 +3,20 @@ const YELLOW = "\x1b[33m";
 const GREEN = "\x1b[32m";
 const RESET = "\x1b[0m";
 
-import type { PublicSignals, Groth16Proof, CircuitSignals } from "snarkjs";
-import { groth16 } from "snarkjs";
-import fs from "fs";
-import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
-import { poseidon2, poseidon3 } from "poseidon-lite";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import { ChildNodes, SMT } from "@openpassport/zk-kit-smt";
+import fs from "fs";
 import path from "path";
-import { RegisterCircuitProof, DscCircuitProof, CircuitArtifacts, VcAndDiscloseProof } from "./types";
+import { poseidon2, poseidon3 } from "poseidon-lite";
+import type { CircuitSignals, Groth16Proof, PublicSignals } from "snarkjs";
+import { groth16 } from "snarkjs";
 import { PassportData } from "../../../common/src/utils/types";
+import { CircuitArtifacts, DscCircuitProof, RegisterCircuitProof, VcAndDiscloseProof } from "./types";
 
 import { BigNumberish } from "ethers";
 import {
-  generateCircuitInputsRegister,
   generateCircuitInputsDSC,
+  generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
 } from "../../../common/src/utils/circuits/generateInputs";
 import serialized_csca_tree from "./pubkeys/serialized_csca_tree.json";
@@ -86,10 +86,10 @@ export async function generateRegisterProof(secret: string, passportData: Passpo
   return fixedProof;
 }
 
-export async function generateDscProof(dscCertificate: string): Promise<DscCircuitProof> {
+export async function generateDscProof(passportData: PassportData): Promise<DscCircuitProof> {
   console.log(CYAN, "=== Start generateDscProof ===", RESET);
 
-  const dscCircuitInputs: CircuitSignals = await generateCircuitInputsDSC(dscCertificate, serialized_csca_tree);
+  const dscCircuitInputs: CircuitSignals = await generateCircuitInputsDSC(passportData, serialized_csca_tree);
 
   const startTime = performance.now();
   const dscProof = await groth16.fullProve(

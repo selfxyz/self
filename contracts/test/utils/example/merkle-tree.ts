@@ -12,9 +12,7 @@ export default class MerkleTree {
     // Deduplicate elements
     this.elements = MerkleTree.bufDedup(this.elements);
 
-    this.bufferElementPositionIndex = this.elements.reduce<{
-      [hexElement: string]: number;
-    }>((memo, el, index) => {
+    this.bufferElementPositionIndex = this.elements.reduce<{ [hexElement: string]: number }>((memo, el, index) => {
       memo[bufferToHex(el)] = index;
       return memo;
     }, {});

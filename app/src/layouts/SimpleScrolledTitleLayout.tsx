@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { ScrollView, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';

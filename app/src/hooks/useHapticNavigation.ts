@@ -1,7 +1,6 @@
-import { useCallback } from 'react';
-
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useCallback } from 'react';
 
 import type { RootStackParamList } from '../Navigation';
 import { impactLight, impactMedium, selectionChange } from '../utils/haptic';

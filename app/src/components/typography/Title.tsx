@@ -1,6 +1,5 @@
 import { StyleProp, TextStyle } from 'react-native';
-
-import { Text, styled } from 'tamagui';
+import { styled, Text } from 'tamagui';
 
 import { advercase } from '../../utils/fonts';
 

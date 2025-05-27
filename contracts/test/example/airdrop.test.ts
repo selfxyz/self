@@ -398,12 +398,7 @@ describe("Airdrop", () => {
     await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
     await airdrop.connect(owner).closeRegistration();
 
-    const tree = new BalanceTree([
-      {
-        account: await user1.getAddress(),
-        amount: BigInt(1000000000000000000),
-      },
-    ]);
+    const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const root = tree.getHexRoot();
 
     await airdrop.connect(owner).setMerkleRoot(root);
@@ -433,12 +428,7 @@ describe("Airdrop", () => {
     await airdrop.connect(owner).openRegistration();
     await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
 
-    const tree = new BalanceTree([
-      {
-        account: await user1.getAddress(),
-        amount: BigInt(1000000000000000000),
-      },
-    ]);
+    const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const root = tree.getHexRoot();
 
     await airdrop.connect(owner).setMerkleRoot(root);
@@ -460,12 +450,7 @@ describe("Airdrop", () => {
     await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
     await airdrop.connect(owner).closeRegistration();
 
-    const tree = new BalanceTree([
-      {
-        account: await user1.getAddress(),
-        amount: BigInt(1000000000000000000),
-      },
-    ]);
+    const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const root = tree.getHexRoot();
 
     await airdrop.connect(owner).setMerkleRoot(root);
@@ -485,12 +470,7 @@ describe("Airdrop", () => {
     await airdrop.connect(owner).openRegistration();
     await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
     await airdrop.connect(owner).closeRegistration();
-    const tree = new BalanceTree([
-      {
-        account: await user1.getAddress(),
-        amount: BigInt(1000000000000000000),
-      },
-    ]);
+    const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const root = tree.getHexRoot();
 
     await airdrop.connect(owner).setMerkleRoot(root);
@@ -515,12 +495,7 @@ describe("Airdrop", () => {
     await airdrop.connect(owner).openRegistration();
     await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
     await airdrop.connect(owner).closeRegistration();
-    const tree = new BalanceTree([
-      {
-        account: await user1.getAddress(),
-        amount: BigInt(1000000000000000000),
-      },
-    ]);
+    const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const root = tree.getHexRoot();
 
     await airdrop.connect(owner).setMerkleRoot(root);
@@ -544,14 +519,8 @@ describe("Airdrop", () => {
     await airdrop.connect(owner).closeRegistration();
 
     const tree = new BalanceTree([
-      {
-        account: await user1.getAddress(),
-        amount: BigInt(1000000000000000000),
-      },
-      {
-        account: await user2.getAddress(),
-        amount: BigInt(1000000000000000000),
-      },
+      { account: await user1.getAddress(), amount: BigInt(1000000000000000000) },
+      { account: await user2.getAddress(), amount: BigInt(1000000000000000000) },
     ]);
     const root = tree.getHexRoot();
 

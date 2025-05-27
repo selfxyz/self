@@ -1,4 +1,4 @@
-import { Text, styled } from 'tamagui';
+import { styled, Text } from 'tamagui';
 
 import { dinot } from '../../utils/fonts';
 

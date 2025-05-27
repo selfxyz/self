@@ -1,15 +1,15 @@
-import { expect } from "chai";
-import { deploySystemFixtures } from "../utils/deployment";
-import { DeployedActors } from "../utils/types";
-import { ethers } from "hardhat";
-import { RegisterVerifierId, DscVerifierId, CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
-import { ATTESTATION_ID } from "../utils/constants";
-import { generateRegisterProof, generateDscProof } from "../utils/generateProof";
-import { generateRandomFieldElement } from "../utils/utils";
-import { TransactionReceipt, ZeroAddress } from "ethers";
-import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import { expect } from "chai";
+import { TransactionReceipt, ZeroAddress } from "ethers";
+import { ethers } from "hardhat";
 import { poseidon2 } from "poseidon-lite";
+import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
+import { ATTESTATION_ID } from "../utils/constants";
+import { deploySystemFixtures } from "../utils/deployment";
+import { generateDscProof, generateRegisterProof } from "../utils/generateProof";
+import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
+import { DeployedActors } from "../utils/types";
+import { generateRandomFieldElement } from "../utils/utils";
 
 describe("Commitment Registration Tests", function () {
   this.timeout(0);
@@ -25,7 +25,7 @@ describe("Commitment Registration Tests", function () {
   before(async () => {
     deployedActors = await deploySystemFixtures();
     registerSecret = generateRandomFieldElement();
-    baseDscProof = await generateDscProof(deployedActors.mockPassport.dsc);
+    baseDscProof = await generateDscProof(deployedActors.mockPassport);
     baseRegisterProof = await generateRegisterProof(registerSecret, deployedActors.mockPassport);
     snapshotId = await ethers.provider.send("evm_snapshot", []);
   });

@@ -73,7 +73,7 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.13'
 
     //Camera
-    implementation 'io.fotoapparat:fotoapparat:2.7.0'
+    implementation "com.github.RedApparat:Fotoapparat:2.7.0"
 
     implementation 'androidx.multidex:multidex:2.0.1'
 

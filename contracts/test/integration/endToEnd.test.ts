@@ -1,19 +1,19 @@
-import { expect } from "chai";
-import { deploySystemFixtures } from "../utils/deployment";
-import { DeployedActors } from "../utils/types";
-import { ethers } from "hardhat";
-import { RegisterVerifierId, DscVerifierId, CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
-import { ATTESTATION_ID } from "../utils/constants";
-import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "../utils/generateProof";
-import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
-import { BigNumberish, TransactionReceipt, ZeroAddress } from "ethers";
-import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import { expect } from "chai";
+import { BigNumberish, TransactionReceipt } from "ethers";
+import { ethers } from "hardhat";
 import { poseidon2 } from "poseidon-lite";
-import { castFromScope } from "../../../common/src/utils/circuits/uuid";
-import BalanceTree from "../utils/example/balance-tree";
+import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
 import { formatCountriesList, reverseBytes } from "../../../common/src/utils/circuits/formatInputs";
+import { castFromScope } from "../../../common/src/utils/circuits/uuid";
+import { ATTESTATION_ID } from "../utils/constants";
+import { deploySystemFixtures } from "../utils/deployment";
+import BalanceTree from "../utils/example/balance-tree";
 import { Formatter } from "../utils/formatter";
+import { generateDscProof, generateRegisterProof, generateVcAndDiscloseProof } from "../utils/generateProof";
+import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
+import { DeployedActors } from "../utils/types";
+import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 
 describe("End to End Tests", function () {
   this.timeout(0);
@@ -39,7 +39,7 @@ describe("End to End Tests", function () {
     // Other commitments are registered by dev function
     const dscKeys = JSON.parse(serialized_dsc_tree);
     let registerDscTx;
-    const dscProof = await generateDscProof(mockPassport.dsc);
+    const dscProof = await generateDscProof(mockPassport);
     const registerSecret = generateRandomFieldElement();
     for (let i = 0; i < dscKeys[0].length; i++) {
       if (BigInt(dscKeys[0][i]) == dscProof.pubSignals[CIRCUIT_CONSTANTS.DSC_TREE_LEAF_INDEX]) {
@@ -202,12 +202,7 @@ describe("End to End Tests", function () {
     await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
     await airdrop.connect(owner).closeRegistration();
 
-    const tree = new BalanceTree([
-      {
-        account: await user1.getAddress(),
-        amount: BigInt(1000000000000000000),
-      },
-    ]);
+    const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
     const merkleRoot = tree.getHexRoot();
     await airdrop.connect(owner).setMerkleRoot(merkleRoot);
     await airdrop.connect(owner).openClaim();

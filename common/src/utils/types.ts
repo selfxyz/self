@@ -1,6 +1,12 @@
 import { CertificateData } from "./certificate_parsing/dataStructure";
 import { PassportMetadata } from "./passports/passport_parsing/parsePassportData";
 
+export type ID = {
+  documentType: DocumentType;
+  mock: boolean;
+  data: PassportData;
+}
+
 export type PassportData = {
   mrz: string;
   dg1Hash?: number[];
