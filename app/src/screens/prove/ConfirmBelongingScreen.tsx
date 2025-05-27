@@ -7,8 +7,10 @@ import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { PassportEvents, ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import {
@@ -19,6 +21,8 @@ import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from './ProofRequestStatusScreen';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
+
+const { trackEvent } = analytics();
 
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   const navigate = useHapticNavigation('LoadingScreen', {
@@ -37,6 +41,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   const onOkPress = async () => {
     try {
       setRequestingPermission(true);
+      trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
 
       // Request notification permission
       const permissionGranted = await requestNotificationPermission();
@@ -44,6 +49,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
         const token = await getFCMToken();
         if (token) {
           provingStore.setFcmToken(token);
+          trackEvent(ProofEvents.FCM_TOKEN_STORED);
           console.log('FCM token stored in proving store');
         }
       }
@@ -53,8 +59,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
 
       // Navigate to loading screen
       navigate();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initializing proving process:', error);
+      trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
+        error: error?.message || 'Unknown error',
+      });
     } finally {
       setRequestingPermission(false);
     }
@@ -86,7 +95,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
           </Description>
-          <PrimaryButton onPress={onOkPress} disabled={!isReadyToProve}>
+          <PrimaryButton
+            trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}
+            onPress={onOkPress}
+            disabled={!isReadyToProve}
+          >
             {isReadyToProve ? (
               'Confirm'
             ) : (

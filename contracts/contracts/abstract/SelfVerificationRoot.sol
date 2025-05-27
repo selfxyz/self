@@ -13,7 +13,6 @@ import {AttestationId} from "../constants/AttestationId.sol";
  * @dev Provides base functionality for verifying and disclosing identity credentials
  */
 abstract contract SelfVerificationRoot is ISelfVerificationRoot {
-
     // ====================================================
     // Storage Variables
     // ====================================================
@@ -24,7 +23,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
     /// @notice The attestation ID that proofs must match
     /// @dev Used to validate that submitted proofs is generated with allowed attestation IDs
-    mapping(uint256 => bool) internal _attestationIds;
+    mapping(uint256 attestationId => bool attestationIdEnabled) internal _attestationIdToEnabled;
 
     /// @notice Configuration settings for the verification process
     /// @dev Contains settings for age verification, country restrictions, and OFAC checks
@@ -40,7 +39,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
     // Make CircuitConstants available to inheriting contracts
     uint256 internal constant REVEALED_DATA_PACKED_INDEX = CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX;
-    uint256 internal constant FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX = CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX;
+    uint256 internal constant FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX =
+        CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX;
     uint256 internal constant NULLIFIER_INDEX = CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX;
     uint256 internal constant ATTESTATION_ID_INDEX = CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX;
     uint256 internal constant MERKLE_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX;
@@ -69,35 +69,55 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Triggered in verifySelfProof when attestation ID validation fails
     error InvalidAttestationId();
 
+    // ====================================================
+    // Events
+    // ====================================================
+
+    /// @notice Emitted when the verification configuration is updated
+    event VerificationConfigUpdated(ISelfVerificationRoot.VerificationConfig indexed verificationConfig);
+
+    /// @notice Emitted when the verification is successful
+    event VerificationSuccess(uint256[3] revealedDataPacked, uint256 indexed userIdentifier, uint256 indexed nullifier);
+
+    /// @notice Emitted when the scope is updated
+    event ScopeUpdated(uint256 indexed newScope);
+
+    /// @notice Emitted when a new attestation ID is added
+    event AttestationIdAdded(uint256 indexed attestationId);
+
+    /// @notice Emitted when an attestation ID is removed
+    event AttestationIdRemoved(uint256 indexed attestationId);
+
     /**
      * @notice Initializes the SelfVerificationRoot contract.
-     * @param identityVerificationHub The address of the Identity Verification Hub.
-     * @param scope The expected proof scope for user registration.
+     * @param identityVerificationHubAddress The address of the Identity Verification Hub.
+     * @param scopeValue The expected proof scope for user registration.
      * @param attestationIds The expected attestation identifiers required in proofs.
      */
-    constructor(
-        address identityVerificationHub,
-        uint256 scope,
-        uint256[] memory attestationIds
-    ) {
-        _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHub);
-        _scope = scope;
-        for (uint256 i = 0; i < attestationIds.length; i++) {
-            _attestationIds[attestationIds[i]] = true;
+    constructor(address identityVerificationHubAddress, uint256 scopeValue, uint256[] memory attestationIds) {
+        _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHubAddress);
+        _scope = scopeValue;
+
+        // Cache array length for gas optimization
+        uint256 length = attestationIds.length;
+        for (uint256 i; i < length; ) {
+            _attestationIdToEnabled[attestationIds[i]] = true;
+            unchecked {
+                ++i;
+            }
         }
     }
 
     /**
      * @notice Updates the verification configuration
      * @dev Used to set or update verification parameters after contract deployment
-     * @param verificationConfig The new verification configuration to apply
+     * @param newVerificationConfig The new verification configuration to apply
      */
-    function _setVerificationConfig(
-        ISelfVerificationRoot.VerificationConfig memory verificationConfig
-    ) internal {
-        _verificationConfig = verificationConfig;
+    function _setVerificationConfig(ISelfVerificationRoot.VerificationConfig memory newVerificationConfig) internal {
+        _verificationConfig = newVerificationConfig;
+        emit VerificationConfigUpdated(newVerificationConfig);
     }
-    
+
     /**
      * @notice Returns the current verification configuration
      * @dev Used to retrieve the current verification settings
@@ -114,6 +134,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     function _setScope(uint256 newScope) internal {
         _scope = newScope;
+        emit ScopeUpdated(newScope);
     }
 
     /**
@@ -122,7 +143,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param attestationId The attestation ID to add
      */
     function _addAttestationId(uint256 attestationId) internal {
-        _attestationIds[attestationId] = true;
+        _attestationIdToEnabled[attestationId] = true;
+        emit AttestationIdAdded(attestationId);
     }
 
     /**
@@ -131,7 +153,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param attestationId The attestation ID to remove
      */
     function _removeAttestationId(uint256 attestationId) internal {
-        _attestationIds[attestationId] = false;
+        _attestationIdToEnabled[attestationId] = false;
+        emit AttestationIdRemoved(attestationId);
     }
 
     /**
@@ -140,7 +163,9 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param pubSignals The proof's public signals
      * @return revealedDataPacked Array of the three packed revealed data values
      */
-    function getRevealedDataPacked(uint256[21] memory pubSignals) internal pure returns (uint256[3] memory revealedDataPacked) {
+    function _getRevealedDataPacked(
+        uint256[21] calldata pubSignals
+    ) internal pure returns (uint256[3] memory revealedDataPacked) {
         revealedDataPacked[0] = pubSignals[REVEALED_DATA_PACKED_INDEX];
         revealedDataPacked[1] = pubSignals[REVEALED_DATA_PACKED_INDEX + 1];
         revealedDataPacked[2] = pubSignals[REVEALED_DATA_PACKED_INDEX + 2];
@@ -152,27 +177,28 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @dev Validates scope and attestation ID before performing verification through the identity hub
      * @param proof The proof data for verification and disclosure
      */
-    function verifySelfProof(
-        ISelfVerificationRoot.DiscloseCircuitProof memory proof
-    ) 
-        public
-        virtual
-    {
-        if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
+    function verifySelfProof(ISelfVerificationRoot.DiscloseCircuitProof calldata proof) public {
+        // Cache storage reads for gas optimization
+        uint256 cachedScope = _scope;
+
+        if (cachedScope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
             revert InvalidScope();
         }
 
-        if (!_attestationIds[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]]) {
+        if (!_attestationIdToEnabled[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]]) {
             revert InvalidAttestationId();
         }
 
+        // Cache verification config to avoid multiple storage reads
+        ISelfVerificationRoot.VerificationConfig memory config = _verificationConfig;
+
         _identityVerificationHub.verifyVcAndDisclose(
             IIdentityVerificationHubV1.VcAndDiscloseHubProof({
-                olderThanEnabled: _verificationConfig.olderThanEnabled,
-                olderThan: _verificationConfig.olderThan,
-                forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
-                forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
-                ofacEnabled: _verificationConfig.ofacEnabled,
+                olderThanEnabled: config.olderThanEnabled,
+                olderThan: config.olderThan,
+                forbiddenCountriesEnabled: config.forbiddenCountriesEnabled,
+                forbiddenCountriesListPacked: config.forbiddenCountriesListPacked,
+                ofacEnabled: config.ofacEnabled,
                 vcAndDiscloseProof: IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof({
                     a: proof.a,
                     b: proof.b,
@@ -181,5 +207,25 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
                 })
             })
         );
+
+        uint256[3] memory revealedDataPacked = _getRevealedDataPacked(proof.pubSignals);
+        uint256 userIdentifier = proof.pubSignals[USER_IDENTIFIER_INDEX];
+        uint256 nullifier = proof.pubSignals[NULLIFIER_INDEX];
+
+        emit VerificationSuccess(revealedDataPacked, userIdentifier, nullifier);
+        onBasicVerificationSuccess(revealedDataPacked, userIdentifier, nullifier);
     }
+
+    /**
+     * @notice Hook called after successful verification
+     * @dev Virtual function to be overridden by derived contracts for custom business logic
+     * @param revealedDataPacked The packed revealed data from the proof
+     * @param userIdentifier The user identifier from the proof
+     * @param nullifier The nullifier from the proof
+     */
+    function onBasicVerificationSuccess(
+        uint256[3] memory revealedDataPacked,
+        uint256 userIdentifier,
+        uint256 nullifier
+    ) internal virtual;
 }

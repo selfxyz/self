@@ -8,6 +8,7 @@ import warningAnimation from '../../assets/animations/warning.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Caution from '../../components/typography/Caution';
 import { SubHeader } from '../../components/typography/SubHeader';
+import { AppEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useSettingStore } from '../../stores/settingStore';
 import { black, white } from '../../utils/colors';
@@ -47,6 +48,7 @@ const DisclaimerScreen: React.FC = () => {
             Always verify an app's legitimacy before sharing your data.
           </Caution>
           <PrimaryButton
+            trackEvent={AppEvents.DISMISS_PRIVACY_DISCLAIMER}
             style={{ marginVertical: 30 }}
             onPress={() => {
               confirmTap();

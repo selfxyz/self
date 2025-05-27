@@ -3,19 +3,24 @@ import { StyleSheet, ViewStyle } from 'react-native';
 import { Button, Text, ViewProps } from 'tamagui';
 
 import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
+import analytics from '../../utils/analytics';
 import { dinot } from '../../utils/fonts';
 import { pressedStyle } from './pressedStyle';
 
 export interface ButtonProps extends ViewProps {
   children: React.ReactNode;
   animatedComponent?: React.ReactNode;
+  trackEvent?: string;
 }
 
 interface AbstractButtonProps extends ButtonProps {
   bgColor: string;
   borderColor?: string;
   color: string;
+  onPress?: ((e: any) => void) | null | undefined;
 }
+
+const { trackEvent: analyticsTrackEvent } = analytics();
 
 /*
     Base Button component that can be used to create different types of buttons
@@ -30,13 +35,28 @@ export default function AbstractButton({
   borderColor,
   style,
   animatedComponent,
+  trackEvent,
+  onPress,
   ...props
 }: AbstractButtonProps) {
   const hasBorder = borderColor ? true : false;
+
+  const handlePress = (e: any) => {
+    if (trackEvent) {
+      // attempt to hide the event category
+      trackEvent = trackEvent.split(':')[1].trim() ?? trackEvent;
+      analyticsTrackEvent(`Click: ${trackEvent}`);
+    }
+    if (onPress) {
+      onPress(e);
+    }
+  };
+
   return (
     <Button
       unstyled
       {...props}
+      onPress={handlePress}
       style={[
         styles.container,
         { backgroundColor: bgColor, borderColor: borderColor },

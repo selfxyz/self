@@ -22,6 +22,7 @@ import TextsContainer from '../../components/TextsContainer';
 import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
@@ -97,7 +98,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           scanDurationSeconds,
           'seconds',
         );
-        trackEvent('NFC Scan Successful', {
+        trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
           duration_seconds: parseFloat(scanDurationSeconds),
         });
         let passportData: PassportData | null = null;
@@ -106,7 +107,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           passportData = parseScanResponse(scanResponse);
         } catch (e: any) {
           console.error('Parsing NFC Response Unsuccessful');
-          trackEvent('Parsing NFC Response Unsuccessful', {
+          trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
             error: e.message,
           });
           return;
@@ -123,7 +124,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
             dscObject = {};
           }
 
-          trackEvent('Passport Parsed', {
+          trackEvent(PassportEvents.PASSPORT_PARSED, {
             success: true,
             data_groups: passportMetadata.dataGroups,
             dg1_size: passportMetadata.dg1Size,
@@ -155,10 +156,10 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           await storePassportData(parsedPassportData);
           // Feels better somehow
           await new Promise(resolve => setTimeout(resolve, 1000));
-          navigation.navigate('ConfirmBelongingScreen');
+          navigation.navigate('ConfirmBelongingScreen', {});
         } catch (e: any) {
           console.error('Passport Parsed Failed:', e);
-          trackEvent('Passport Parsed Failed', {
+          trackEvent(PassportEvents.PASSPORT_PARSE_FAILED, {
             error: e.message,
           });
           return;
@@ -169,7 +170,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           1000
         ).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
-        trackEvent('NFC Scan Unsuccessful', {
+        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
           error: e.message,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
@@ -289,12 +290,25 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               />
             </TextsContainer>
             <ButtonsContainer>
-              <PrimaryButton onPress={onVerifyPress} disabled={!isNfcSupported}>
+              <PrimaryButton
+                trackEvent={
+                  isNfcEnabled || !isNfcSupported
+                    ? PassportEvents.START_PASSPORT_NFC
+                    : PassportEvents.OPEN_NFC_SETTINGS
+                }
+                onPress={onVerifyPress}
+                disabled={!isNfcSupported}
+              >
                 {isNfcEnabled || !isNfcSupported
                   ? 'Start Scan'
                   : 'Open settings'}
               </PrimaryButton>
-              <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+              <SecondaryButton
+                trackEvent={PassportEvents.CANCEL_PASSPORT_NFC}
+                onPress={onCancelPress}
+              >
+                Cancel
+              </SecondaryButton>
             </ButtonsContainer>
           </>
         )}

@@ -10,17 +10,13 @@ import {CircuitConstants} from "../constants/CircuitConstants.sol";
 /// @notice A contract for verifying identity proofs and revealing selected data
 /// @dev This contract interacts with IdentityVerificationHub and IdentityRegistry
 contract VerifyAll is Ownable {
-
     IIdentityVerificationHubV1 public hub;
     IIdentityRegistryV1 public registry;
 
     /// @notice Initializes the contract with hub and registry addresses
     /// @param hubAddress The address of the IdentityVerificationHub contract
     /// @param registryAddress The address of the IdentityRegistry contract
-    constructor(
-        address hubAddress,
-        address registryAddress
-    ) Ownable(msg.sender) {
+    constructor(address hubAddress, address registryAddress) Ownable(msg.sender) {
         hub = IIdentityVerificationHubV1(hubAddress);
         registry = IIdentityRegistryV1(registryAddress);
     }
@@ -31,22 +27,15 @@ contract VerifyAll is Ownable {
     /// @param types Array of data types to reveal
     /// @return readableData The revealed data in readable format
     /// @return success Whether the verification was successful
-    function verifyAll (
+    function verifyAll(
         uint256 targetRootTimestamp,
         IIdentityVerificationHubV1.VcAndDiscloseHubProof memory proof,
         IIdentityVerificationHubV1.RevealedDataType[] memory types
-    )
-        external
-        view
-        returns (
-            IIdentityVerificationHubV1.ReadableRevealedData memory,
-            bool,
-            string memory
-        )
-    {
-
+    ) external view returns (IIdentityVerificationHubV1.ReadableRevealedData memory, bool, string memory) {
         IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result;
-        try hub.verifyVcAndDisclose(proof) returns (IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory _result) {
+        try hub.verifyVcAndDisclose(proof) returns (
+            IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory _result
+        ) {
             result = _result;
         } catch (bytes memory lowLevelData) {
             string memory errorCode;
@@ -71,25 +60,8 @@ contract VerifyAll is Ownable {
                     errorCode = "INVALID_VC_AND_DISCLOSE_PROOF";
                 }
             }
-            IIdentityVerificationHubV1.ReadableRevealedData memory emptyData = IIdentityVerificationHubV1.ReadableRevealedData({
-                issuingState: "",
-                name: new string[](0),
-                passportNumber: "",
-                nationality: "",
-                dateOfBirth: "",
-                gender: "",
-                expiryDate: "",
-                olderThan: 0,
-                passportNoOfac: 1,
-                nameAndDobOfac: 1,
-                nameAndYobOfac: 1
-            });
-            return (emptyData, false, errorCode);
-        }
-
-        if (targetRootTimestamp != 0) {
-            if (registry.rootTimestamps(result.identityCommitmentRoot) != targetRootTimestamp) {
-                IIdentityVerificationHubV1.ReadableRevealedData memory emptyData = IIdentityVerificationHubV1.ReadableRevealedData({
+            IIdentityVerificationHubV1.ReadableRevealedData memory emptyData = IIdentityVerificationHubV1
+                .ReadableRevealedData({
                     issuingState: "",
                     name: new string[](0),
                     passportNumber: "",
@@ -102,12 +74,33 @@ contract VerifyAll is Ownable {
                     nameAndDobOfac: 1,
                     nameAndYobOfac: 1
                 });
+            return (emptyData, false, errorCode);
+        }
+        if (targetRootTimestamp != 0) {
+            if (registry.rootTimestamps(result.identityCommitmentRoot) != targetRootTimestamp) {
+                IIdentityVerificationHubV1.ReadableRevealedData memory emptyData = IIdentityVerificationHubV1
+                    .ReadableRevealedData({
+                        issuingState: "",
+                        name: new string[](0),
+                        passportNumber: "",
+                        nationality: "",
+                        dateOfBirth: "",
+                        gender: "",
+                        expiryDate: "",
+                        olderThan: 0,
+                        passportNoOfac: 1,
+                        nameAndDobOfac: 1,
+                        nameAndYobOfac: 1
+                    });
                 return (emptyData, false, "INVALID_TIMESTAMP");
             }
         }
 
         uint256[3] memory revealedDataPacked = result.revealedDataPacked;
-        IIdentityVerificationHubV1.ReadableRevealedData memory readableData = hub.getReadableRevealedData(revealedDataPacked, types);
+        IIdentityVerificationHubV1.ReadableRevealedData memory readableData = hub.getReadableRevealedData(
+            revealedDataPacked,
+            types
+        );
 
         return (readableData, true, "");
     }
@@ -125,5 +118,4 @@ contract VerifyAll is Ownable {
     function setRegistry(address registryAddress) external onlyOwner {
         registry = IIdentityRegistryV1(registryAddress);
     }
-
 }
