@@ -1,9 +1,13 @@
 {
   "name": "openpassport-common",
   "version": "0.0.1",
+  "description": "interal constants and utils",
   "license": "MIT",
   "author": "",
+  "private": true,
+  "main": "dist/index.js",
   "scripts": {
+    "build": "tsc",
     "format": "prettier --write .",
     "lint": "prettier --check .",
     "test": "yarn ts-mocha tests/**/*.test.ts --exit",
@@ -41,6 +45,7 @@
   },
   "devDependencies": {
     "@types/node-forge": "^1.3.10",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "typescript": "^5.8.3"
   }
 }

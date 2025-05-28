@@ -1,0 +1,16 @@
+{
+  "name": "self",
+  "scripts": {
+    "build": "yarn workspaces foreach --topological-dev --parallel -i --all run build"
+  },
+  "workspaces": [
+    "app",
+    "common",
+    "circuits",
+    "contracts",
+    "sdk/*",
+    "sdk/tests/*",
+    "prover/tests"
+  ],
+  "packageManager": "yarn@4.6.0"
+}

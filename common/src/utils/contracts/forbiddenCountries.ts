@@ -2,7 +2,7 @@ import {Country3LetterCode} from "../../constants/countries";
 import { MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH } from "../../constants/constants";
 
 export function getPackedForbiddenCountries(
-    forbiddenCountriesList: Country3LetterCode[]
+    forbiddenCountriesList: Array<Country3LetterCode | ''>
 ): string[] {
     if (forbiddenCountriesList.length > MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
         throw new Error(`Countries list must be less than or equal to ${MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH}`);
@@ -28,7 +28,7 @@ export function getPackedForbiddenCountries(
     for (let i = 0; i < countryBytes.length; i++) {
         hexString += countryBytes[i].toString(16).padStart(2, '0');
     }
-    
+
     // Step 4: Reverse the bytes (2 characters per byte)
     const hex = hexString.slice(2);
     const bytes = hex.match(/.{2}/g) || [];
@@ -39,14 +39,14 @@ export function getPackedForbiddenCountries(
     const result: string[] = [];
     let remaining = reversedHex.slice(2); // Remove '0x'
     const chunkSizeHex = 31 * 2; // 31 bytes = 62 hex chars
-    
+
     while (remaining.length > 0) {
         const chunk = remaining.slice(-chunkSizeHex);
         remaining = remaining.slice(0, -chunkSizeHex);
-        
+
         const paddedChunk = chunk.padStart(64, "0");
         result.push("0x" + paddedChunk);
     }
-    
+
     return result;
 }

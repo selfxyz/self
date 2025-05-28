@@ -1,8 +1,23 @@
 {
   "compilerOptions": {
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
     "target": "ES2020",
-    "moduleResolution": "node"
-  }
+    "module": "commonjs",
+    "declaration": true,
+    "declarationDir": "./dist",
+    "outDir": "./dist",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "baseUrl": "./src",
+  },
+  "include": [
+    "src/**/*",
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }

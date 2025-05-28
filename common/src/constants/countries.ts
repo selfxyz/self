@@ -511,6 +511,6 @@ export const countries = {
     COUNCIL_OF_EUROPE: 'XCE',
     INTERPOL: "XPO",
     SMOM: "XOM",
-};
+} as const;
 
 export type Country3LetterCode = typeof countries[keyof typeof countries];

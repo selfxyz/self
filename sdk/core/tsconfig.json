@@ -13,9 +13,6 @@
     "jsx": "react",
     "moduleResolution": "node",
     "baseUrl": ".",
-    "paths": {
-      "@common/*": ["../../common/src/*"]
-    }
   },
   "include": [
     "index.ts",

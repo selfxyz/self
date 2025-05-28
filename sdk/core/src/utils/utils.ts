@@ -1,4 +1,4 @@
-import { CIRCUIT_CONSTANTS } from '../../../../common/src/constants/constants';
+import { CIRCUIT_CONSTANTS } from 'openpassport-common';
 import { castToUserIdentifier, UserIdType } from '../../../../common/src/utils/circuits/uuid';
 import { BigNumberish } from 'ethers';
 import { PublicSignals } from 'snarkjs';

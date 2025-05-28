@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@elysiajs/swagger": "^1.2.0",
-    "@selfxyz/core": "^0.0.3",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
+    "@selfxyz/core": "^0.0.3",
     "dotenv": "^16.4.7",
     "elysia": "latest",
     "logixlysia": "^4.1.1",

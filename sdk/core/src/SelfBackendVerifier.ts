@@ -14,9 +14,9 @@ import {
   castToUserIdentifier,
   UserIdType,
 } from '../../../common/src/utils/circuits/uuid';
-import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
+import { CIRCUIT_CONSTANTS, revealedDataTypes } from 'openpassport-common';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
-import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
+import { Country3LetterCode, commonNames } from 'openpassport-common';
 import { hashEndpointWithScope } from '../../../common/src/utils/scope';
 
 const CELO_MAINNET_RPC_URL = "https://forno.celo.org";
@@ -140,7 +140,7 @@ export class SelfBackendVerifier {
       result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
     } catch (error: any) {
       let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+
       if (error && typeof error === 'object' && error.message && error.message.includes('INVALID_FORBIDDEN_COUNTRIES')) {
         errorMessage = 'The forbidden countries list in the backend does not match the list provided in the frontend SDK. Please ensure both lists are identical.';
       }
@@ -233,7 +233,7 @@ export class SelfBackendVerifier {
   /**
    * Sets the list of countries to be excluded in the verification.
    * This list must exactly match the list configured in the backend.
-   * 
+   *
    * @param countries Array of 3-letter country codes to exclude
    * @returns This instance for method chaining
    * @throws Error if more than 40 countries are provided or if any country code is invalid
@@ -242,23 +242,23 @@ export class SelfBackendVerifier {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
-    
+
     // Validate country codes
     for (const country of countries) {
       if (!country || country.length !== 3) {
         throw new Error(`Invalid country code: "${country}". Country codes must be exactly 3 characters long.`);
       }
-      
+
       // Check if the country code exists in the list of valid codes (additional check)
       const isValidCountry = Object.values(commonNames).some(
         name => name === country || country in commonNames
       );
-      
+
       if (!isValidCountry) {
         throw new Error(`Unknown country code: "${country}". Please use valid 3-letter ISO country codes.`);
       }
     }
-    
+
     this.excludedCountries = { enabled: true, value: countries };
     return this;
   }
