@@ -44,7 +44,7 @@ export default function AbstractButton({
   const handlePress = (e: any) => {
     if (trackEvent) {
       // attempt to hide the event category
-      trackEvent = trackEvent.split(':')[1].trim() ?? trackEvent;
+      trackEvent = trackEvent?.split(':')?.[1]?.trim() ?? trackEvent;
       analyticsTrackEvent(`Click: ${trackEvent}`);
     }
     if (onPress) {
