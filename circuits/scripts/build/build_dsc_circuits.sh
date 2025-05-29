@@ -2,6 +2,12 @@
 
 source "scripts/build/common.sh"
 
+# Set environment (change this value as needed)
+# ENV="prod"
+ENV="staging"
+
+echo -e "${GREEN}Building DSC circuits for $ENV environment${NC}"
+
 # Circuit-specific configurations
 CIRCUIT_TYPE="dsc"
 OUTPUT_DIR="build/${CIRCUIT_TYPE}"
@@ -33,4 +39,7 @@ CIRCUITS=(
     "dsc_sha512_rsapss_65537_64_4096:22:false"
 )
 
-build_circuits "$CIRCUIT_TYPE" "$OUTPUT_DIR" "${CIRCUITS[@]}" 
+build_circuits "$CIRCUIT_TYPE" "$OUTPUT_DIR" "${CIRCUITS[@]}"
+
+echo -e "${GREEN}DSC circuits build completed for $ENV environment!${NC}"
+echo -e "${YELLOW}Generated files are located in: contracts/verifiers/local/${ENV}/${CIRCUIT_TYPE}/${NC}"

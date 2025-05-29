@@ -7,6 +7,24 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Environment validation
+validate_environment() {
+    if [ -z "$ENV" ]; then
+        echo -e "${RED}Error: ENV variable is not set${NC}"
+        echo -e "${YELLOW}Please set ENV to 'prod' or 'staging' in your build script${NC}"
+        echo -e "${YELLOW}Example: ENV=\"prod\"${NC}"
+        exit 1
+    fi
+
+    if [ "$ENV" != "prod" ] && [ "$ENV" != "staging" ]; then
+        echo -e "${RED}Error: ENV must be 'prod' or 'staging'${NC}"
+        echo -e "${YELLOW}Current value: $ENV${NC}"
+        exit 1
+    fi
+
+    echo -e "${GREEN}Environment set to: $ENV${NC}"
+}
+
 download_ptau() {
     local POWEROFTAU=$1
     mkdir -p build
@@ -15,7 +33,7 @@ download_ptau() {
         echo -e "${YELLOW}Download power of tau....${NC}"
         wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_${POWEROFTAU}.ptau
         echo -e "${GREEN}Finished download!${NC}"
-    else 
+    else
         echo -e "${YELLOW}Powers of tau file already downloaded${NC}"
     fi
     cd ..
@@ -36,11 +54,14 @@ build_circuit() {
     local OUTPUT_DIR=$4
     local START_TIME=$(date +%s)
 
-    echo -e "${BLUE}Compiling circuit: $CIRCUIT_NAME${NC}"
-    
+    # Validate environment before building
+    validate_environment
+
+    echo -e "${BLUE}Compiling circuit: $CIRCUIT_NAME for $ENV environment${NC}"
+
     # Create output directory
     mkdir -p ${OUTPUT_DIR}/${CIRCUIT_NAME}/
-    
+
     # Set circuit path based on CIRCUIT_TYPE
     local CIRCUIT_PATH
     if [ "$CIRCUIT_TYPE" = "register" ] || [ "$CIRCUIT_TYPE" = "dsc" ] || [ "$CIRCUIT_TYPE" = "register_id" ]; then
@@ -48,7 +69,7 @@ build_circuit() {
     else
         CIRCUIT_PATH="circuits/${CIRCUIT_TYPE}/${CIRCUIT_NAME}.circom"
     fi
-    
+
     # Compile circuit
     circom ${CIRCUIT_PATH} \
         -l node_modules \
@@ -74,10 +95,21 @@ build_circuit() {
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_vkey.json
 
-    # Generate and copy Solidity verifier
+    # Generate Solidity verifier with environment-specific naming
+    local VERIFIER_CONTRACT_NAME
+    local VERIFIER_FILE_NAME
+
+    if [ "$ENV" = "staging" ]; then
+        VERIFIER_CONTRACT_NAME="Verifier_${CIRCUIT_NAME}_${ENV}"
+        VERIFIER_FILE_NAME="Verifier_${CIRCUIT_NAME}_${ENV}.sol"
+    else
+        VERIFIER_CONTRACT_NAME="Verifier_${CIRCUIT_NAME}"
+        VERIFIER_FILE_NAME="Verifier_${CIRCUIT_NAME}.sol"
+    fi
+
     yarn snarkjs zkey export solidityverifier \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey \
-        ${OUTPUT_DIR}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
+        ${OUTPUT_DIR}/${CIRCUIT_NAME}/${VERIFIER_FILE_NAME}
 
     OS=""
 
@@ -94,23 +126,27 @@ build_circuit() {
         ;;
     esac
 
+    # Replace contract name with environment-specific name
     if [ "$OS" = 'Mac' ]; then
-        sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" \
-            ${OUTPUT_DIR}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
+        sed -i '' "s/Groth16Verifier/${VERIFIER_CONTRACT_NAME}/g" \
+            ${OUTPUT_DIR}/${CIRCUIT_NAME}/${VERIFIER_FILE_NAME}
     elif [ "$OS" = 'Linux' ]; then
-        sed -i "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" \
-            ${OUTPUT_DIR}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
+        sed -i "s/Groth16Verifier/${VERIFIER_CONTRACT_NAME}/g" \
+            ${OUTPUT_DIR}/${CIRCUIT_NAME}/${VERIFIER_FILE_NAME}
     fi
 
-    # Copy verifier to contracts directory
-    mkdir -p ../contracts/contracts/verifiers/local/${CIRCUIT_TYPE}/
-    cp ${OUTPUT_DIR}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol \
-        ../contracts/contracts/verifiers/local/${CIRCUIT_TYPE}/Verifier_${CIRCUIT_NAME}.sol
-    
-    echo -e "${BLUE}Copied Verifier_${CIRCUIT_NAME}.sol to contracts${NC}"
+    # Copy verifier to environment-specific contracts directory
+    local CONTRACTS_OUTPUT_DIR="../contracts/contracts/verifiers/local/${ENV}/${CIRCUIT_TYPE}/"
+    mkdir -p ${CONTRACTS_OUTPUT_DIR}
+    cp ${OUTPUT_DIR}/${CIRCUIT_NAME}/${VERIFIER_FILE_NAME} \
+        ${CONTRACTS_OUTPUT_DIR}${VERIFIER_FILE_NAME}
+
+    echo -e "${BLUE}Copied ${VERIFIER_FILE_NAME} to contracts/${ENV}/${CIRCUIT_TYPE}/${NC}"
 
     # Print build statistics
-    echo -e "${GREEN}Build of $CIRCUIT_NAME completed in $(($(date +%s) - START_TIME)) seconds${NC}"
+    echo -e "${GREEN}Build of $CIRCUIT_NAME for $ENV completed in $(($(date +%s) - START_TIME)) seconds${NC}"
+    echo -e "${BLUE}Contract name: ${VERIFIER_CONTRACT_NAME}${NC}"
+    echo -e "${BLUE}Output path: ${CONTRACTS_OUTPUT_DIR}${VERIFIER_FILE_NAME}${NC}"
     echo -e "${BLUE}Size of ${CIRCUIT_NAME}.r1cs: $(wc -c < ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs) bytes${NC}"
     echo -e "${BLUE}Size of ${CIRCUIT_NAME}.wasm: $(wc -c < ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_js/${CIRCUIT_NAME}.wasm) bytes${NC}"
     echo -e "${BLUE}Size of ${CIRCUIT_NAME}_final.zkey: $(wc -c < ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey) bytes${NC}"
@@ -120,7 +156,7 @@ build_circuits() {
     local CIRCUITS=("$@")
     local CIRCUIT_TYPE="$1"
     local OUTPUT_DIR="$2"
-    shift 2 
+    shift 2
     local TOTAL_START_TIME=$(date +%s)
 
     # Build circuits
