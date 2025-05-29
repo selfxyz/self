@@ -6,6 +6,25 @@ import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/co
 
 dotenv.config();
 
+// Environment configuration
+const NETWORK = process.env.NETWORK || "localhost"; // Default to staging
+const RPC_URL_KEY = NETWORK === "celo" ? "CELO_RPC_URL" : "CELO_ALFAJORES_RPC_URL";
+const PRIVATE_KEY = process.env.CELO_KEY;
+
+// Network to Chain ID mapping
+const NETWORK_TO_CHAIN_ID: Record<string, string> = {
+  "localhost": "31337",
+  "celoAlfajores": "44787",
+  "celo": "42220",
+};
+
+// Get chain ID from network name
+const getChainId = (network: string): string => {
+  return NETWORK_TO_CHAIN_ID[network] || NETWORK_TO_CHAIN_ID["staging"];
+};
+
+const CHAIN_ID = getChainId(NETWORK);
+
 // Define AttestationId constants directly based on values from AttestationId.sol
 const AttestationId = {
   // Pad with zeros to create full 32 bytes length
@@ -13,31 +32,26 @@ const AttestationId = {
   EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002",
 };
 
+// Dynamic paths based on chain ID
+const deployedAddressesPath = path.join(__dirname, `../ignition/deployments/chain-${CHAIN_ID}/deployed_addresses.json`);
+const contractAbiPath = path.join(__dirname, `../ignition/deployments/chain-${CHAIN_ID}/artifacts/DeployHubV2#IdentityVerificationHubImplV2.json`);
+
 // Debug logs for paths and files
+console.log("Network:", NETWORK);
+console.log("Chain ID:", CHAIN_ID);
 console.log("Current directory:", __dirname);
-console.log(
-  "Deployed addresses path:",
-  path.join(__dirname, "../ignition/deployments/staging/deployed_addresses.json"),
-);
-console.log(
-  "Contract ABI path:",
-  path.join(__dirname, "../ignition/deployments/staging/artifacts/DeployV2#IdentityVerificationHubImplV2.json"),
-);
+console.log("Deployed addresses path:", deployedAddressesPath);
+console.log("Contract ABI path:", contractAbiPath);
 
 // Debug logs for environment variables (redacted for security)
-console.log("CELO_RPC_URL configured:", !!process.env.CELO_ALFAJORES_RPC_URL);
-console.log("CELO_KEY configured:", !!process.env.CELO_KEY);
+console.log(`${RPC_URL_KEY} configured:`, !!process.env[RPC_URL_KEY]);
+console.log("CELO_KEY configured:", !!PRIVATE_KEY);
 
 try {
-  const deployedAddresses = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "../ignition/deployments/staging/deployed_addresses.json"), "utf-8"),
-  );
+  const deployedAddresses = JSON.parse(fs.readFileSync(deployedAddressesPath, "utf-8"));
   console.log("Deployed addresses loaded:", deployedAddresses);
 
-  const identityVerificationHubAbiFile = fs.readFileSync(
-    path.join(__dirname, "../ignition/deployments/staging/artifacts/DeployV2#IdentityVerificationHubImplV2.json"),
-    "utf-8",
-  );
+  const identityVerificationHubAbiFile = fs.readFileSync(contractAbiPath, "utf-8");
   console.log("ABI file loaded");
 
   const identityVerificationHubAbi = JSON.parse(identityVerificationHubAbiFile).abi;
@@ -64,10 +78,10 @@ try {
   }
 
   async function main() {
-    const provider = new ethers.JsonRpcProvider(process.env.CELO_ALFAJORES_RPC_URL as string);
+    const provider = new ethers.JsonRpcProvider(process.env[RPC_URL_KEY] as string);
     console.log("Provider created");
 
-    const wallet = new ethers.Wallet(process.env.CELO_KEY as string, provider);
+    const wallet = new ethers.Wallet(PRIVATE_KEY as string, provider);
     console.log("Wallet created");
 
     // const hubAddress = deployedAddresses["DeployHub#IdentityVerificationHub"];
@@ -208,7 +222,7 @@ try {
     }
   }
 
-  main().catch((error) => {
+main().catch((error) => {
     console.error("Execution error:", error);
     process.exitCode = 1;
   });

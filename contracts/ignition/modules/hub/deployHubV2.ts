@@ -7,7 +7,7 @@ function getHubImplV2InitializeData() {
   return new ethers.Interface(hubArtifact.abi);
 }
 
-export default buildModule("DeployV2", (m) => {
+export default buildModule("DeployHubV2", (m) => {
   const identityVerificationHubImplV2 = m.contract("IdentityVerificationHubImplV2");
 
   const hubInterface = getHubImplV2InitializeData();
