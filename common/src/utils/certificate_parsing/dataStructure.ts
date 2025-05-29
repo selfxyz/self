@@ -1,4 +1,4 @@
-import { StandardCurve } from './curves';
+import { StandardCurve } from './curves.js';
 
 export interface CertificateData {
   id: string;

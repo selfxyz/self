@@ -18,7 +18,6 @@ export async function POST(request: Request) {
             'https://forno.celo.org',
             "self-workshop",
             'uuid',
-            false
         )
             .setMinimumAge(18)
             .excludeCountries(

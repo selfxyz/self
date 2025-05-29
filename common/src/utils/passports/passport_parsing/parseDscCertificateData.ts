@@ -1,8 +1,8 @@
-import { CertificateData } from '../../certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple';
-import { getCSCAFromSKI } from '../../csca';
-import { brutforceSignatureAlgorithmDsc } from './brutForceDscSignature';
-import { getCurveOrExponent } from './parsePassportData';
+import { CertificateData } from '../../certificate_parsing/dataStructure.js';
+import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple.js';
+import { getCSCAFromSKI } from '../../csca.js';
+import { brutforceSignatureAlgorithmDsc } from './brutForceDscSignature.js';
+import { getCurveOrExponent } from './parsePassportData.js';
 
 export interface DscCertificateMetaData {
   cscaFound: boolean;

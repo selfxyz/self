@@ -20,12 +20,12 @@ import {
 } from 'tamagui';
 
 import { getSKIPEM } from '../../../.././common/src/utils/csca';
-import { countryCodes } from '../../../../common/src/constants/constants';
+import { countryCodes } from 'openpassport-common/constants/constants';
 import {
   genMockIdDoc,
   IdDocInput,
-} from '../../../../common/src/utils/passports/genMockIdDoc';
-import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
+} from 'openpassport-common/utils/passports/genMockIdDoc';
+import { initPassportDataParsing } from 'openpassport-common/utils/passports/passport';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
@@ -217,7 +217,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         ][2];
 
       const idDocInput: Partial<IdDocInput> = {
-        nationality: selectedCountry,
+        nationality: selectedCountry as IdDocInput['nationality'],
         idType: 'mock_passport',
         signatureType:
           signatureTypeForGeneration as IdDocInput['signatureType'],

@@ -10,7 +10,7 @@ import { Certificate } from 'pkijs';
 import {
   PCR0_MANAGER_ADDRESS,
   RPC_URL,
-} from '../../../../common/src/constants/constants';
+} from 'openpassport-common/constants/constants';
 import { AWS_ROOT_PEM } from './awsRootPem';
 import cose from './cose';
 

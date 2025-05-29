@@ -1,5 +1,5 @@
-import { attributeToPosition } from '../../constants/constants';
-import { SelfAppDisclosureConfig } from '../appType';
+import { attributeToPosition } from '../../constants/constants.js';
+import { SelfAppDisclosureConfig } from '../appType.js';
 
 /*** OpenPassport Attestation ***/
 export function formatForbiddenCountriesListFromCircuitOutput(

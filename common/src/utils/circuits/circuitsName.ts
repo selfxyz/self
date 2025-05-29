@@ -1,4 +1,4 @@
-import { PassportData } from '../types';
+import { PassportData } from '../types.js';
 
 export function getCircuitNameFromPassportData(passportData: PassportData, circuitType: 'register' | 'dsc') {
   if (circuitType === 'register') {

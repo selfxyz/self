@@ -1,4 +1,4 @@
-import { countryCodes, DEFAULT_MAJORITY } from '../../../common/src/constants/constants';
+import { countryCodes, DEFAULT_MAJORITY } from 'openpassport-common/constants/constants';
 
 type CircuitType = 'prove';
 type AlgorithmType = 'rsa_sha256' | 'rsa_sha1' | 'rsapss_sha256';

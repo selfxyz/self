@@ -1,13 +1,12 @@
 'use client';
 
-import { SelfAppBuilder } from '../../../../../qrcode/SelfQRcode';
-import SelfQRcodeWrapper from '../../../../../qrcode/SelfQRcode';
+import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode';
 import { v4 } from 'uuid';
 import {logo} from './logo';
 
 export default function Prove() {
   const userId = v4();
-  
+
   const selfApp = new SelfAppBuilder({
     appName: "Mock App2",
     scope: "test-scope",
@@ -36,6 +35,7 @@ export default function Prove() {
         onSuccess={() => {
           window.location.href = '/success';
         }}
+        onError={console.error}
       />
     </div>
   );

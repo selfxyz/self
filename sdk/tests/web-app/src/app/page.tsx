@@ -1,8 +1,7 @@
 'use client';
 
-import { SelfAppBuilder } from '../../../../qrcode/SelfQRcode';
-import SelfQRcodeWrapper from '../../../../qrcode/SelfQRcode';
-import { countries } from '../../../../../common/src/constants/countries';
+import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode';
+import { countries } from 'openpassport-common/constants/countries';
 import { v4 } from 'uuid';
 
 export default function Home() {
@@ -36,6 +35,7 @@ export default function Home() {
         onSuccess={() => {
           window.location.href = '/verified';
         }}
+        onError={console.error}
       />
     </div>
   );

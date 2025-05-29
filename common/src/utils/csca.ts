@@ -1,5 +1,5 @@
-import { API_URL, API_URL_STAGING } from '../constants/constants';
-import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
+import { API_URL, API_URL_STAGING } from '../constants/constants.js';
+import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem.js';
 
 export function findStartIndexEC(point: string, messagePadded: number[]): [number, number] {
   const pointNumArray = [];

@@ -3,9 +3,9 @@ import SQLite from 'react-native-sqlite-storage';
 import { io } from 'socket.io-client';
 import { create } from 'zustand';
 
-import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
-import { EndpointType } from '../../../common/src/utils/appType';
-import { UserIdType } from '../../../common/src/utils/circuits/uuid';
+import { WS_DB_RELAYER } from 'openpassport-common/constants/constants';
+import { EndpointType } from 'openpassport-common/utils/appType';
+import { UserIdType } from 'openpassport-common/utils/circuits/uuid';
 
 SQLite.enablePromise(true);
 

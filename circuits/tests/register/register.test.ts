@@ -5,7 +5,7 @@ import { describe } from 'mocha';
 import path from 'path';
 import { poseidon6 } from 'poseidon-lite';
 import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
-import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { PASSPORT_ATTESTATION_ID } from 'openpassport-common/constants/constants';
 import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/circuits/generateInputs';

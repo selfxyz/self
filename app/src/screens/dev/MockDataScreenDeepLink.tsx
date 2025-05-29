@@ -6,11 +6,11 @@ import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
 
-import { countryCodes } from '../../../../common/src/constants/constants';
+import { countryCodes } from 'openpassport-common/constants/constants';
 import {
   genMockIdDoc,
   IdDocInput,
-} from '../../../../common/src/utils/passports/genMockIdDoc';
+} from 'openpassport-common/utils/passports/genMockIdDoc';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';

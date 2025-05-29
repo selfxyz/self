@@ -11,9 +11,9 @@ import {
 import NfcManager from 'react-native-nfc-manager';
 import { Image } from 'tamagui';
 
-import { getSKIPEM } from '../../../../common/src/utils/csca';
-import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
-import { PassportData } from '../../../../common/src/utils/types';
+import { getSKIPEM } from 'openpassport-common/utils/csca';
+import { initPassportDataParsing } from 'openpassport-common/utils/passports/passport';
+import { PassportData } from 'openpassport-common/utils/types';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';

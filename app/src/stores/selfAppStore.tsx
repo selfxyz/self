@@ -1,8 +1,8 @@
 import io, { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 
-import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
-import { SelfApp } from '../../../common/src/utils/appType';
+import { WS_DB_RELAYER } from 'openpassport-common/constants/constants';
+import { SelfApp } from 'openpassport-common/utils/appType';
 
 interface SelfAppState {
   selfApp: SelfApp | null;

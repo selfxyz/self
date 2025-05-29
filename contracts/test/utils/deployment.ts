@@ -1,6 +1,6 @@
 import { Signer } from "ethers";
 import { ethers } from "hardhat";
-import { DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
+import { DscVerifierId, RegisterVerifierId } from "openpassport-common/constants/constants";
 import { genAndInitMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
 import { getCscaTreeRoot } from "../../../common/src/utils/trees";
 import { PassportData } from "../../../common/src/utils/types";

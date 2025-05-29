@@ -1,18 +1,18 @@
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
 import * as forge from 'node-forge';
-import { countryCodes } from '../../constants/constants';
-import { getCurveForElliptic } from '../certificate_parsing/curves';
+import { countryCodes } from '../../constants/constants.js';
+import { getCurveForElliptic } from '../certificate_parsing/curves.js';
 import {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSAPSS,
-} from '../certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { getHashLen, hash } from '../hash';
-import { PassportData, SignatureAlgorithm } from '../types';
-import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format';
-import { initPassportDataParsing } from './passport';
-import getMockDSC from './getMockDSC';
+} from '../certificate_parsing/dataStructure.js';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple.js';
+import { getHashLen, hash } from '../hash.js';
+import { PassportData, SignatureAlgorithm } from '../types.js';
+import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
+import { initPassportDataParsing } from './passport.js';
+import getMockDSC from './getMockDSC.js';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format

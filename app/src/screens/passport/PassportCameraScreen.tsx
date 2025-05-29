@@ -21,7 +21,7 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate800, white } from '../../utils/colors';
-import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
+import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils.js';
 
 interface PassportNFCScanScreen {}
 

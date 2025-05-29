@@ -5,7 +5,16 @@
   "license": "MIT",
   "author": "",
   "private": true,
+  "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./constants/*": "./dist/constants/*.js",
+    "./utils/*": "./dist/utils/*.js",
+    "./ofacdata/outputs/nameAndDobSMT.json": "./ofacdata/outputs/nameAndDobSMT.json",
+    "./ofacdata/outputs/nameAndYobSMT.json": "./ofacdata/outputs/nameAndYobSMT.json",
+    "./ofacdata/outputs/passportNoAndNationalitySMT.json": "./ofacdata/outputs/passportNoAndNationalitySMT.json"
+  },
   "scripts": {
     "build": "tsc",
     "format": "prettier --write .",

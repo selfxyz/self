@@ -1,5 +1,5 @@
-import { MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH } from "../../constants/constants";
-import { commonNames } from "../../constants/countries";
+import { MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH } from "../../constants/constants.js";
+import { commonNames } from "../../constants/countries.js";
 
 /**
  * Formats the list of country codes for use in verification circuits.

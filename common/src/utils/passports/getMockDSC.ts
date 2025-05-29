@@ -1,5 +1,5 @@
-import * as mockCertificates from '../../constants/mockCertificates';
-import { SignatureAlgorithm } from '../types';
+import * as mockCertificates from '../../constants/mockCertificates.js';
+import { SignatureAlgorithm } from '../types.js';
 
 
 function getMockDSC(signatureType: SignatureAlgorithm) {

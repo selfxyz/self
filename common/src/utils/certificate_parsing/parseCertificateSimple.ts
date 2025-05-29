@@ -1,17 +1,17 @@
 import * as asn1js from 'asn1js';
 import { Certificate, RSAPublicKey, RSASSAPSSParams } from 'pkijs';
-import { getFriendlyName, getSecpFromNist } from './oids';
+import { getFriendlyName, getSecpFromNist } from './oids.js';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
   PublicKeyDetailsRSAPSS,
-} from './dataStructure';
-import { getCurveForElliptic, getECDSACurveBits, identifyCurve, StandardCurve } from './curves';
-import { getIssuerCountryCode, getSubjectKeyIdentifier } from './utils';
-import { circuitNameFromMode } from '../../constants/constants';
-import { Mode } from '../appType';
-import { initElliptic } from './elliptic';
+} from './dataStructure.js';
+import { getCurveForElliptic, getECDSACurveBits, identifyCurve, StandardCurve } from './curves.js';
+import { getIssuerCountryCode, getSubjectKeyIdentifier } from './utils.js';
+import { circuitNameFromMode } from '../../constants/constants.js';
+import { Mode } from '../appType.js';
+import { initElliptic } from './elliptic.js';
 
 export function parseCertificateSimple(pem: string): CertificateData {
   let certificateData: CertificateData = {

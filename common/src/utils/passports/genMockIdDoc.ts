@@ -1,20 +1,20 @@
 // generate a mock id document
 
-import { DocumentType, SignatureAlgorithm } from "../types";
-import { hashAlgosTypes } from "../../constants/constants";
-import { countries } from "../../constants/countries";
-import { genDG1 } from "./dg1";
-import { getHashLen, hash } from "../hash";
-import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from "./format";
+import { DocumentType, SignatureAlgorithm } from "../types.js";
+import { hashAlgosTypes } from "../../constants/constants.js";
+import { countries } from "../../constants/countries.js";
+import { genDG1 } from "./dg1.js";
+import { getHashLen, hash } from "../hash.js";
+import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from "./format.js";
 import forge from "node-forge";
 import elliptic from "elliptic";
-import getMockDSC from "./getMockDSC";
-import { PublicKeyDetailsRSAPSS } from "../certificate_parsing/dataStructure";
-import { PublicKeyDetailsECDSA } from "../certificate_parsing/dataStructure";
-import { parseCertificateSimple } from "../certificate_parsing/parseCertificateSimple";
-import { getCurveForElliptic } from "../certificate_parsing/curves";
+import getMockDSC from "./getMockDSC.js";
+import { PublicKeyDetailsRSAPSS } from "../certificate_parsing/dataStructure.js";
+import { PublicKeyDetailsECDSA } from "../certificate_parsing/dataStructure.js";
+import { parseCertificateSimple } from "../certificate_parsing/parseCertificateSimple.js";
+import { getCurveForElliptic } from "../certificate_parsing/curves.js";
 import * as asn1 from 'asn1js';
-import { initPassportDataParsing } from "./passport";
+import { initPassportDataParsing } from "./passport.js";
 
 
 export interface IdDocInput {

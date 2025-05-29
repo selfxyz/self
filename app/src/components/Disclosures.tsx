@@ -4,8 +4,8 @@ import { XStack, YStack } from 'tamagui';
 import {
   Country3LetterCode,
   countryCodes,
-} from '../../../common/src/constants/constants';
-import { SelfAppDisclosureConfig } from '../../../common/src/utils/appType';
+} from 'openpassport-common/constants/constants';
+import { SelfAppDisclosureConfig } from 'openpassport-common/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
 import CheckMark from '../images/icons/checkmark.svg';
 import { slate200, slate500 } from '../utils/colors';

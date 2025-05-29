@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { groth16 } from 'snarkjs';
-import { genAndInitMockPassportData } from '../../common/src/utils/genMockPassportData';
+import { genAndInitMockPassportData } from 'openpassport-common/src/utils/genMockPassportData';
 import {
   buildAttestation,
   OpenPassportDynamicAttestation,
-} from '../../common/src/utils/openPassportAttestation';
+} from 'openpassport-common/src/utils/openPassportAttestation';
 import { OpenPassportVerifier } from '../src/OpenPassportVerifier';
 import { OpenPassportVerifierReport } from '../src/OpenPassportVerifierReport';
-import { generateCircuitInputsInSdk } from './utils/generateInputsInSdk';
+import { generateCircuitInputsInSdk } from './generateInputsInSdk';
 import {
   alphaCode,
   dateOfBirth,
@@ -18,7 +18,7 @@ import {
   scope,
   TestCase,
   testCases,
-} from './utils/testCases';
+} from './testCases';
 
 const runTest = async (testCase: TestCase) => {
   const { circuitType, algorithm, wasmPath, zkeyPath } = testCase;

@@ -19,7 +19,7 @@ import {
 import { sha224, sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384, sha512 } from 'js-sha512';
-import { hexToSignedBytes, packBytesArray } from './bytes';
+import { hexToSignedBytes, packBytesArray } from './bytes.js';
 import * as forge from 'node-forge';
 
 export function flexiblePoseidon(inputs: bigint[]): bigint {

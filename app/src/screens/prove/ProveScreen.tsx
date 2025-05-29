@@ -16,8 +16,8 @@ import {
 } from 'react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
-import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
-import { formatEndpoint } from '../../../../common/src/utils/scope';
+import { SelfAppDisclosureConfig } from 'openpassport-common/utils/appType';
+import { formatEndpoint } from 'openpassport-common/utils/scope';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrimaryButtonProveScreen';
 import Disclosures from '../../components/Disclosures';

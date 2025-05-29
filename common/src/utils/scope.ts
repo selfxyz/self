@@ -1,5 +1,5 @@
 import { poseidon2 } from "poseidon-lite";
-import { flexiblePoseidon } from "./hash";
+import { flexiblePoseidon } from "./hash.js";
 
 export function formatEndpoint(endpoint: string): string {
     if (!endpoint) return '';

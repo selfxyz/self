@@ -1,9 +1,8 @@
 import forge from 'node-forge';
-
-import { WS_DB_RELAYER_STAGING } from '../../../../common/src/constants/constants';
-import { WS_DB_RELAYER } from '../../../../common/src/constants/constants';
-import { EndpointType } from '../../../../common/src/utils/appType';
-import { initElliptic } from '../../../../common/src/utils/certificate_parsing/elliptic';
+import { WS_DB_RELAYER_STAGING } from 'openpassport-common/constants/constants';
+import { WS_DB_RELAYER } from 'openpassport-common/constants/constants';
+import { EndpointType } from 'openpassport-common/utils/appType';
+import { initElliptic } from 'openpassport-common/utils/certificate_parsing/elliptic';
 
 const elliptic = initElliptic();
 const { ec: EC } = elliptic;

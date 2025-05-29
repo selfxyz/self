@@ -1,5 +1,5 @@
 import React from 'react';
-import { QRcodeSteps } from '../utils/utils';
+import { QRcodeSteps } from '../utils/utils.js';
 interface LEDProps {
   size?: number;
   connectionStatus?: number;

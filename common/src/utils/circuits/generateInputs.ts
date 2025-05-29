@@ -6,10 +6,10 @@ import {
   MAX_PADDED_SIGNED_ATTR_LEN,
   max_csca_bytes,
   max_dsc_bytes,
-} from '../../constants/constants';
-import { getCurrentDateYYMMDD } from '../date';
-import { hash, packBytesAndPoseidon } from '../hash';
-import { formatMrz } from '../passports/format';
+} from '../../constants/constants.js';
+import { getCurrentDateYYMMDD } from '../date.js';
+import { hash, packBytesAndPoseidon } from '../hash.js';
+import { formatMrz } from '../passports/format.js';
 import {
   extractSignatureFromDSC,
   findStartPubKeyIndex,
@@ -19,11 +19,11 @@ import {
   getPassportSignatureInfos,
   pad,
   padWithZeroes,
-} from '../passports/passport';
-import { generateMerkleProof, generateSMTProof, getCountryLeaf, getCscaTreeInclusionProof, getDscTreeInclusionProof, getLeafCscaTree, getLeafDscTree, getNameDobLeaf, getNameYobLeaf, getPassportNumberAndNationalityLeaf } from '../trees';
-import { PassportData } from '../types';
-import { formatCountriesList } from './formatInputs';
-import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
+} from '../passports/passport.js';
+import { generateMerkleProof, generateSMTProof, getCountryLeaf, getCscaTreeInclusionProof, getDscTreeInclusionProof, getLeafCscaTree, getLeafDscTree, getNameDobLeaf, getNameYobLeaf, getPassportNumberAndNationalityLeaf } from '../trees.js';
+import { PassportData } from '../types.js';
+import { formatCountriesList } from './formatInputs.js';
+import { castFromUUID, stringToAsciiBigIntArray } from './uuid.js';
 
 export function generateCircuitInputsDSC(
   passportData: PassportData,

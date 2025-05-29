@@ -1,3 +1,4 @@
+/* eslint-disable simple-import-sort/imports */
 import { useNavigation } from '@react-navigation/native';
 import {
   Check,
@@ -19,7 +20,7 @@ import {
   YStack,
 } from 'tamagui';
 
-import { genAndInitMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
+import { genAndInitMockPassportData } from 'openpassport-common/utils/passports/genMockPassportData';
 import { RootStackParamList } from '../../Navigation';
 import {
   unsafe_clearSecrets,
@@ -145,7 +146,9 @@ const ScreenSelector = ({}) => {
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const { clearPassportData } = usePassport();
-  const [privateKey, setPrivateKey] = useState('Loading private key…');
+  const [privateKey, setPrivateKey] = useState<string | null>(
+    'Loading private key…',
+  );
 
   const nav = useNavigation();
 

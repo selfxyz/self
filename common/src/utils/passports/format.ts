@@ -1,4 +1,4 @@
-import { toUnsignedByte } from "../bytes";
+import { toUnsignedByte } from "../bytes.js";
 
 export function formatAndConcatenateDataHashes(
     dataHashes: [number, number[]][],

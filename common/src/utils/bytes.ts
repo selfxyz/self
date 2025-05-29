@@ -1,4 +1,4 @@
-import { MAX_BYTES_IN_FIELD } from "../constants/constants";
+import { MAX_BYTES_IN_FIELD } from "../constants/constants.js";
 
 export function packBytes(unpacked) {
     const bytesCount = [31, 31, 31];

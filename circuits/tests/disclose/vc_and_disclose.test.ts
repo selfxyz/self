@@ -12,7 +12,7 @@ import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNation
 import {
   attributeToPosition,
   PASSPORT_ATTESTATION_ID,
-} from '../../../common/src/constants/constants';
+} from 'openpassport-common/constants/constants';
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,

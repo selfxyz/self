@@ -1,17 +1,17 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { poseidon2 } from 'poseidon-lite';
-
 import {
   API_URL,
   PASSPORT_ATTESTATION_ID,
-} from '../../../../common/src/constants/constants';
-import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
+} from 'openpassport-common/constants/constants';
+import { getCircuitNameFromPassportData } from 'openpassport-common/utils/circuits/circuitsName';
 import {
   generateCommitment,
   generateNullifier,
-} from '../../../../common/src/utils/passports/passport';
-import { getLeafDscTree } from '../../../../common/src/utils/trees';
-import { PassportData } from '../../../../common/src/utils/types';
+} from 'openpassport-common/utils/passports/passport';
+import { getLeafDscTree } from 'openpassport-common/utils/trees';
+import { PassportData } from 'openpassport-common/utils/types';
+import { poseidon2 } from 'poseidon-lite';
+
 import { useProtocolStore } from '../../stores/protocolStore';
 
 export type PassportSupportStatus =
