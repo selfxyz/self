@@ -6,4 +6,6 @@ import { parseDscCertificateData } from "../../common/src/utils/passports/passpo
 import { getLeafCscaTree, getLeafDscTree } from "../../common/src/utils/trees.js";
 import { genMockIdDoc } from "../../common/src/utils/passports/genMockIdDoc.js";
 
+// TODO @Aaronmgdr these should be imported via package not relative paths
+
 export { CertificateData, findStartPubKeyIndex, getLeafCscaTree, getLeafDscTree, parseCertificate, parseCertificateSimple, parseDscCertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA, genMockIdDoc };

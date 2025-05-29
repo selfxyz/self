@@ -10,7 +10,6 @@ import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
 import {
-  castToScope,
   castToUserIdentifier,
   UserIdType,
 } from '../../../common/src/utils/circuits/uuid';
@@ -140,7 +139,6 @@ export class SelfBackendVerifier {
       result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
     } catch (error: any) {
       let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
       if (error && typeof error === 'object' && error.message && error.message.includes('INVALID_FORBIDDEN_COUNTRIES')) {
         errorMessage = 'The forbidden countries list in the backend does not match the list provided in the frontend SDK. Please ensure both lists are identical.';
       }
@@ -242,23 +240,19 @@ export class SelfBackendVerifier {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
-
     // Validate country codes
     for (const country of countries) {
       if (!country || country.length !== 3) {
         throw new Error(`Invalid country code: "${country}". Country codes must be exactly 3 characters long.`);
       }
-
       // Check if the country code exists in the list of valid codes (additional check)
       const isValidCountry = Object.values(commonNames).some(
         name => name === country || country in commonNames
       );
-
       if (!isValidCountry) {
         throw new Error(`Unknown country code: "${country}". Please use valid 3-letter ISO country codes.`);
       }
     }
-
     this.excludedCountries = { enabled: true, value: countries };
     return this;
   }

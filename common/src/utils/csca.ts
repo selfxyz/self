@@ -121,7 +121,7 @@ export function findOIDPosition(
   throw new Error('OID not found in message');
 }
 
-export function getCSCAFromSKI(ski: string, skiPem: any = null): string {
+export function getCSCAFromSKI(ski: string, skiPem: any = null ): string {
   const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
   const isSkiProvided = skiPem !== null;
   console.log('SKI-PEM provided');
@@ -164,23 +164,17 @@ export async function getSKIPEM(
     const responseText = await response.text();
     const jsonData = JSON.parse(responseText);
 
-    if (
-      !jsonData ||
-      typeof jsonData !== 'object' ||
-      !jsonData.data ||
-      typeof jsonData.data !== 'object'
-    ) {
-      console.error('Unexpected JSON structure received:', jsonData);
-      throw new Error('Unexpected JSON structure received from SKI-PEM endpoint.');
+    if (!jsonData || typeof jsonData !== 'object' || !jsonData.data || typeof jsonData.data !== 'object') {
+        console.error("Unexpected JSON structure received:", jsonData);
+        throw new Error('Unexpected JSON structure received from SKI-PEM endpoint.');
     }
 
-    console.log('Parsed SKI-PEM data received.');
+    console.log("Parsed SKI-PEM data received.");
 
     return jsonData.data;
+
   } catch (error) {
-    console.error('Error fetching or parsing ski-pem:', error);
-    throw new Error(
-      `Failed to get SKIPEM: ${error instanceof Error ? error.message : String(error)}`
-    );
+    console.error("Error fetching or parsing ski-pem:", error);
+    throw new Error(`Failed to get SKIPEM: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

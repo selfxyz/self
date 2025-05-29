@@ -12,10 +12,7 @@
     "resolveJsonModule": true,
     "jsx": "react",
     "moduleResolution": "node16",
-    "baseUrl": ".",
-    "paths": {
-      "@common/*": ["../../common/src/*"]
-    }
+    "baseUrl": "."
   },
   "include": [
     "index.ts",

@@ -1,6 +1,5 @@
 import { PassportData } from 'openpassport-common/src/utils/types';
 import { CircuitName } from 'openpassport-common/src/utils/appType';
-import { k_dsc, n_dsc, PASSPORT_ATTESTATION_ID } from 'openpassport-common/src/constants/constants';
 import { generateCircuitInputsProve } from 'openpassport-common/src/utils/generateInputs';
 import { majority, scope } from './testCases';
 
