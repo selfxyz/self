@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {AttestationId} from "./AttestationId.sol";
+
 /**
  * @title Circuit Constants Library
  * @notice This library defines constants representing indices used to access public signals
@@ -46,79 +48,59 @@ library CircuitConstantsV2 {
     // -------------------------------------
 
     /**
-     * @notice Index to access the packed revealed data in the VC and Disclose circuit public signals.
+     * @notice Structure containing circuit indices for a specific attestation type.
      */
-    uint256 constant PASSPORT_DISCLOSE_REVEALED_DATA_PACKED_INDEX = 0;
+    struct DiscloseIndices {
+        uint256 revealedDataPackedIndex;
+        uint256 forbiddenCountriesListPackedIndex;
+        uint256 nullifierIndex;
+        uint256 attestationIdIndex;
+        uint256 merkleRootIndex;
+        uint256 currentDateIndex;
+        uint256 namedobSmtRootIndex;
+        uint256 nameyobSmtRootIndex;
+        uint256 scopeIndex;
+        uint256 userIdentifierIndex;
+        uint256 passportNoSmtRootIndex; // Only for passport, 0 for ID card
+    }
 
     /**
-     * @notice Index to access the forbidden countries list (packed) in the VC and Disclose circuit public signals.
+     * @notice Returns the circuit indices for a given attestation type.
+     * @param attestationId The attestation identifier.
+     * @return indices The DiscloseIndices struct containing all relevant indices.
      */
-    uint256 constant PASSPORT_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX = 3;
+    function getDiscloseIndices(bytes32 attestationId) internal pure returns (DiscloseIndices memory indices) {
+        if (attestationId == AttestationId.E_PASSPORT) {
+            return DiscloseIndices({
+                revealedDataPackedIndex: 0,
+                forbiddenCountriesListPackedIndex: 3,
+                nullifierIndex: 7,
+                attestationIdIndex: 8,
+                merkleRootIndex: 9,
+                currentDateIndex: 10,
+                namedobSmtRootIndex: 17,
+                nameyobSmtRootIndex: 18,
+                scopeIndex: 19,
+                userIdentifierIndex: 20,
+                passportNoSmtRootIndex: 16
+            });
+        } else if (attestationId == AttestationId.EU_ID_CARD) {
+            return DiscloseIndices({
+                revealedDataPackedIndex: 0,
+                forbiddenCountriesListPackedIndex: 4,
+                nullifierIndex: 8,
+                attestationIdIndex: 9,
+                merkleRootIndex: 10,
+                currentDateIndex: 11,
+                namedobSmtRootIndex: 17,
+                nameyobSmtRootIndex: 18,
+                scopeIndex: 19,
+                userIdentifierIndex: 20,
+                passportNoSmtRootIndex: 0 // Not applicable for ID cards
+            });
+        } else {
+            revert("Invalid attestation ID");
+        }
+    }
 
-    /**
-     * @notice Index to access the nullifier in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_NULLIFIER_INDEX = 7;
-
-    /**
-     * @notice Index to access the attestation ID in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_ATTESTATION_ID_INDEX = 8;
-
-    /**
-     * @notice Index to access the Merkle root in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_MERKLE_ROOT_INDEX = 9;
-
-    /**
-     * @notice Index to access the current date in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_CURRENT_DATE_INDEX = 10;
-
-    /**
-     * @notice Index to access the passport number SMT root in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX = 16;
-
-    /**
-     * @notice Index to access the name and date of birth SMT root in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX = 17;
-
-    /**
-     * @notice Index to access the name and year of birth SMT root in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX = 18;
-
-    /**
-     * @notice Index to access the scope in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_SCOPE_INDEX = 19;
-
-    /**
-     * @notice Index to access the user identifier in the VC and Disclose circuit public signals.
-     */
-    uint256 constant PASSPORT_DISCLOSE_USER_IDENTIFIER_INDEX = 20;
-
-    // From here, shows index of id card
-
-    uint256 constant ID_CARD_DISCLOSE_REVEALED_DATA_PACKED_INDEX = 0;
-
-    uint256 constant ID_CARD_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX = 4;
-
-    uint256 constant ID_CARD_DISCLOSE_NULLIFIER_INDEX = 8;
-
-    uint256 constant ID_CARD_DISCLOSE_ATTESTATION_ID_INDEX = 9;
-
-    uint256 constant ID_CARD_DISCLOSE_MERKLE_ROOT_INDEX = 10;
-
-    uint256 constant ID_CARD_DISCLOSE_CURRENT_DATE_INDEX = 11;
-
-    uint256 constant ID_CARD_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX = 17;
-
-    uint256 constant ID_CARD_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX = 18;
-
-    uint256 constant ID_CARD_DISCLOSE_SCOPE_INDEX = 19;
-
-    uint256 constant ID_CARD_DISCLOSE_USER_IDENTIFIER_INDEX = 20;
 }

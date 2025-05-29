@@ -6,8 +6,7 @@ import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/acces
 import {CircuitConstantsV2} from "./constants/CircuitConstantsV2.sol";
 import {AttestationId} from "./constants/AttestationId.sol";
 import {Formatter} from "./libraries/Formatter.sol";
-import {CircuitAttributeHandler} from "./libraries/CircuitAttributeHandler.sol";
-import {IdCardAttributeHandler} from "./libraries/IdCardAttributeHandler.sol";
+import {CircuitAttributeHandlerV2} from "./libraries/CircuitAttributeHandlerV2.sol";
 import {IIdentityVerificationHubV2} from "./interfaces/IIdentityVerificationHubV2.sol";
 import {IIdentityRegistryV1} from "./interfaces/IIdentityRegistryV1.sol";
 import {IRegisterCircuitVerifier} from "./interfaces/IRegisterCircuitVerifier.sol";
@@ -255,77 +254,32 @@ contract IdentityVerificationHubImplV2 is IdentityVerificationHubStorageV2, IIde
     }
 
     /**
-     * @notice Verifies the VC and Disclose proof.
-     * @dev Checks commitment roots, OFAC root, current date range, and other attributes depending on verification configuration.
-     * @param proof The VcAndDiscloseHubProof containing the proof data.
-     * @return result A VcAndDiscloseVerificationResult struct with the verification results.
+     * @notice Verifies a VC and Disclose proof using unified bytes interface.
+     * @dev Supports both passport and ID card proofs through a unified interface.
+     * @param proofData Encoded proof data containing all necessary verification parameters.
+     * @return result Encoded verification result containing all relevant data.
      */
-    function verifyVcAndDisclose(
-        VcAndDiscloseHubProof memory proof
-    ) external view virtual onlyProxy returns (VcAndDiscloseVerificationResult memory) {
-        VcAndDiscloseVerificationResult memory result;
-
-        result.identityCommitmentRoot = _verifyVcAndDiscloseProof(proof);
-
-        for (uint256 i = 0; i < 3; i++) {
-            result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[
-                CircuitConstantsV2.PASSPORT_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i
-            ];
+    function verifyVcAndDisclose(bytes calldata proofData) external view virtual onlyProxy returns (bytes memory result) {
+        // Decode the attestation ID from the first 32 bytes
+        bytes32 attestationId;
+        assembly {
+            attestationId := calldataload(proofData.offset)
         }
-        for (uint256 i = 0; i < 4; i++) {
-            result.forbiddenCountriesListPacked[i] = proof.vcAndDiscloseProof.pubSignals[
-                CircuitConstantsV2.PASSPORT_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX + i
-            ];
+        
+        if (attestationId == AttestationId.E_PASSPORT) {
+            // Passport proof
+            VcAndDiscloseHubProof memory proof = _decodePassportProof(proofData[32:]);
+            VcAndDiscloseVerificationResult memory passportResult = _verifyPassportVcAndDisclose(proof);
+            return _encodePassportResult(passportResult);
+        } else if (attestationId == AttestationId.EU_ID_CARD) {
+            // ID Card proof
+            IdCardVcAndDiscloseHubProof memory proof = _decodeIdCardProof(proofData[32:]);
+            IdCardVcAndDiscloseVerificationResult memory idCardResult = _verifyEuIdVcAndDisclose(proof);
+            return _encodeIdCardResult(idCardResult);
+        } else {
+            revert INVALID_ATTESTATION_ID();
         }
-        result.nullifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.PASSPORT_DISCLOSE_NULLIFIER_INDEX];
-        result.attestationId = proof.vcAndDiscloseProof.pubSignals[
-            CircuitConstantsV2.PASSPORT_DISCLOSE_ATTESTATION_ID_INDEX
-        ];
-        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[
-            CircuitConstantsV2.PASSPORT_DISCLOSE_USER_IDENTIFIER_INDEX
-        ];
-        result.scope = proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.PASSPORT_DISCLOSE_SCOPE_INDEX];
-        return result;
     }
-
-    function verifyEuIdVcAndDisclose(
-        IdCardVcAndDiscloseHubProof memory proof
-    ) external view virtual onlyProxy returns (IdCardVcAndDiscloseVerificationResult memory) {
-        IdCardVcAndDiscloseVerificationResult memory result;
-
-        result.identityCommitmentRoot = _verifyVcAndDiscloseProofIdCard(proof);
-
-        for (uint256 i = 0; i < 4; i++) {
-            result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[
-                CircuitConstantsV2.ID_CARD_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i
-            ];
-        }
-        for (uint256 i = 0; i < 4; i++) {
-            result.forbiddenCountriesListPacked[i] = proof.vcAndDiscloseProof.pubSignals[
-                CircuitConstantsV2.ID_CARD_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX + i
-            ];
-        }
-        result.nullifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.ID_CARD_DISCLOSE_NULLIFIER_INDEX];
-        result.attestationId = proof.vcAndDiscloseProof.pubSignals[
-            CircuitConstantsV2.ID_CARD_DISCLOSE_ATTESTATION_ID_INDEX
-        ];
-        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[
-            CircuitConstantsV2.ID_CARD_DISCLOSE_USER_IDENTIFIER_INDEX
-        ];
-        result.scope = proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.ID_CARD_DISCLOSE_SCOPE_INDEX];
-        return result;
-    }
-
-    // We need this function
-    // function verifyVcAndDisclose(
-    //     bytes input
-    // )
-    //     external
-    //     virtual
-    //     view
-    //     onlyProxy
-    //     returns (bytes)
-    // {}
 
     // ====================================================
     // External Functions - Registration
@@ -474,198 +428,75 @@ contract IdentityVerificationHubImplV2 is IdentityVerificationHubStorageV2, IIde
     // ====================================================
 
     /**
-     * @notice Verifies the VC and Disclose proof.
-     * @dev Checks commitment roots, OFAC root, current date range, and other attributes depending on verification configuration.
-     * @param proof The VcAndDiscloseHubProof containing the proof data.
-     * @return identityCommitmentRoot The verified identity commitment root from the proof.
+     * @notice Internal function to verify passport VC and Disclose proof.
      */
-    function _verifyVcAndDiscloseProof(
+    function _verifyPassportVcAndDisclose(
         VcAndDiscloseHubProof memory proof
-    ) internal view returns (uint256 identityCommitmentRoot) {
-        // verify identity commitment root
-        if (
-            !IIdentityRegistryV1(_attestationIdToRegistry[AttestationId.E_PASSPORT]).checkIdentityCommitmentRoot(
-                proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.PASSPORT_DISCLOSE_MERKLE_ROOT_INDEX]
-            )
-        ) {
-            revert INVALID_COMMITMENT_ROOT();
-        }
+    ) internal view returns (VcAndDiscloseVerificationResult memory) {
+        VcAndDiscloseVerificationResult memory result;
+        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(AttestationId.E_PASSPORT);
 
-        // verify current date
-        uint[6] memory dateNum;
-        for (uint256 i = 0; i < 6; i++) {
-            dateNum[i] = proof.vcAndDiscloseProof.pubSignals[
-                CircuitConstantsV2.PASSPORT_DISCLOSE_CURRENT_DATE_INDEX + i
-            ];
-        }
+        result.identityCommitmentRoot = _verifyVcAndDiscloseProof(
+            AttestationId.E_PASSPORT,
+            proof.vcAndDiscloseProof,
+            proof.olderThanEnabled,
+            proof.olderThan,
+            proof.ofacEnabled,
+            proof.forbiddenCountriesEnabled,
+            proof.forbiddenCountriesListPacked
+        );
 
-        uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
-        if (
-            currentTimestamp < _getStartOfDayTimestamp() - 1 days + 1 ||
-            currentTimestamp > _getStartOfDayTimestamp() + 1 days - 1
-        ) {
-            revert CURRENT_DATE_NOT_IN_VALID_RANGE();
-        }
-
-        // verify attributes
-        uint256[3] memory revealedDataPacked;
         for (uint256 i = 0; i < 3; i++) {
-            revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[
-                CircuitConstantsV2.PASSPORT_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i
+            result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[
+                indices.revealedDataPackedIndex + i
             ];
         }
-        if (proof.olderThanEnabled) {
-            if (
-                !CircuitAttributeHandler.compareOlderThan(
-                    Formatter.fieldElementsToBytes(revealedDataPacked),
-                    proof.olderThan
-                )
-            ) {
-                revert INVALID_OLDER_THAN();
-            }
+        for (uint256 i = 0; i < 4; i++) {
+            result.forbiddenCountriesListPacked[i] = proof.vcAndDiscloseProof.pubSignals[
+                indices.forbiddenCountriesListPackedIndex + i
+            ];
         }
-        if (proof.ofacEnabled[0] || proof.ofacEnabled[1] || proof.ofacEnabled[2]) {
-            if (
-                !CircuitAttributeHandler.compareOfac(
-                    Formatter.fieldElementsToBytes(revealedDataPacked),
-                    proof.ofacEnabled[0],
-                    proof.ofacEnabled[1],
-                    proof.ofacEnabled[2]
-                )
-            ) {
-                revert INVALID_OFAC();
-            }
-            if (
-                !IIdentityRegistryV1(_attestationIdToRegistry[AttestationId.E_PASSPORT]).checkOfacRoots(
-                    proof.vcAndDiscloseProof.pubSignals[
-                        CircuitConstantsV2.PASSPORT_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX
-                    ],
-                    proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.PASSPORT_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX],
-                    proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.PASSPORT_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX]
-                )
-            ) {
-                revert INVALID_OFAC_ROOT();
-            }
-        }
-        if (proof.forbiddenCountriesEnabled) {
-            for (uint256 i = 0; i < 4; i++) {
-                if (
-                    proof.forbiddenCountriesListPacked[i] !=
-                    proof.vcAndDiscloseProof.pubSignals[
-                        CircuitConstantsV2.PASSPORT_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX + i
-                    ]
-                ) {
-                    revert INVALID_FORBIDDEN_COUNTRIES();
-                }
-            }
-        }
-
-        // verify the proof using the VC and Disclose circuit verifier
-        if (
-            !IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(
-                proof.vcAndDiscloseProof.a,
-                proof.vcAndDiscloseProof.b,
-                proof.vcAndDiscloseProof.c,
-                proof.vcAndDiscloseProof.pubSignals
-            )
-        ) {
-            revert INVALID_VC_AND_DISCLOSE_PROOF();
-        }
-
-        return proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.PASSPORT_DISCLOSE_MERKLE_ROOT_INDEX];
+        result.nullifier = proof.vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
+        result.attestationId = proof.vcAndDiscloseProof.pubSignals[indices.attestationIdIndex];
+        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+        result.scope = proof.vcAndDiscloseProof.pubSignals[indices.scopeIndex];
+        return result;
     }
 
-    function _verifyVcAndDiscloseProofIdCard(
+    /**
+     * @notice Internal function to verify ID card VC and Disclose proof.
+     */
+    function _verifyEuIdVcAndDisclose(
         IdCardVcAndDiscloseHubProof memory proof
-    ) internal view returns (uint256 identityCommitmentRoot) {
-        // verify identity commitment root
-        if (
-            !IIdentityRegistryIdCardV1(_attestationIdToRegistry[AttestationId.EU_ID_CARD]).checkIdentityCommitmentRoot(
-                proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.ID_CARD_DISCLOSE_MERKLE_ROOT_INDEX]
-            )
-        ) {
-            revert INVALID_COMMITMENT_ROOT();
-        }
+    ) internal view returns (IdCardVcAndDiscloseVerificationResult memory) {
+        IdCardVcAndDiscloseVerificationResult memory result;
+        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(AttestationId.EU_ID_CARD);
 
-        // verify current date
-        uint[6] memory dateNum;
-        for (uint256 i = 0; i < 6; i++) {
-            dateNum[i] = proof.vcAndDiscloseProof.pubSignals[
-                CircuitConstantsV2.ID_CARD_DISCLOSE_CURRENT_DATE_INDEX + i
-            ];
-        }
+        result.identityCommitmentRoot = _verifyVcAndDiscloseProof(
+            AttestationId.EU_ID_CARD,
+            proof.vcAndDiscloseProof,
+            proof.olderThanEnabled,
+            proof.olderThan,
+            _convertOfacFlags(proof.ofacEnabled),
+            proof.forbiddenCountriesEnabled,
+            proof.forbiddenCountriesListPacked
+        );
 
-        uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
-        if (
-            currentTimestamp < _getStartOfDayTimestamp() - 1 days + 1 ||
-            currentTimestamp > _getStartOfDayTimestamp() + 1 days - 1
-        ) {
-            revert CURRENT_DATE_NOT_IN_VALID_RANGE();
-        }
-
-        // verify attributes
-        uint256[4] memory revealedDataPacked;
         for (uint256 i = 0; i < 4; i++) {
-            revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[
-                CircuitConstantsV2.ID_CARD_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i
+            result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[
+                indices.revealedDataPackedIndex + i
             ];
         }
-        if (proof.olderThanEnabled) {
-            if (
-                !IdCardAttributeHandler.compareOlderThan(
-                    Formatter.fieldElementsToBytesIdCard(revealedDataPacked),
-                    proof.olderThan
-                )
-            ) {
-                revert INVALID_OLDER_THAN();
-            }
+        for (uint256 i = 0; i < 4; i++) {
+            result.forbiddenCountriesListPacked[i] = proof.vcAndDiscloseProof.pubSignals[
+                indices.forbiddenCountriesListPackedIndex + i
+            ];
         }
-        // Need to update circuit attribute handler
-        if (proof.ofacEnabled[0] || proof.ofacEnabled[1]) {
-            if (
-                !IdCardAttributeHandler.compareOfac(
-                    Formatter.fieldElementsToBytesIdCard(revealedDataPacked),
-                    proof.ofacEnabled[0],
-                    proof.ofacEnabled[1]
-                )
-            ) {
-                revert INVALID_OFAC();
-            }
-            if (
-                !IIdentityRegistryIdCardV1(_attestationIdToRegistry[AttestationId.EU_ID_CARD]).checkOfacRoots(
-                    proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.ID_CARD_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX],
-                    proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.ID_CARD_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX]
-                )
-            ) {
-                revert INVALID_OFAC_ROOT();
-            }
-        }
-        if (proof.forbiddenCountriesEnabled) {
-            for (uint256 i = 0; i < 4; i++) {
-                if (
-                    proof.forbiddenCountriesListPacked[i] !=
-                    proof.vcAndDiscloseProof.pubSignals[
-                        CircuitConstantsV2.ID_CARD_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX + i
-                    ]
-                ) {
-                    revert INVALID_FORBIDDEN_COUNTRIES();
-                }
-            }
-        }
-
-        // verify the proof using the VC and Disclose circuit verifier
-        if (
-            !IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(
-                proof.vcAndDiscloseProof.a,
-                proof.vcAndDiscloseProof.b,
-                proof.vcAndDiscloseProof.c,
-                proof.vcAndDiscloseProof.pubSignals
-            )
-        ) {
-            revert INVALID_VC_AND_DISCLOSE_PROOF();
-        }
-
-        return proof.vcAndDiscloseProof.pubSignals[CircuitConstantsV2.ID_CARD_DISCLOSE_MERKLE_ROOT_INDEX];
+        result.nullifier = proof.vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
+        result.attestationId = proof.vcAndDiscloseProof.pubSignals[indices.attestationIdIndex];
+        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+        result.scope = proof.vcAndDiscloseProof.pubSignals[indices.scopeIndex];
+        return result;
     }
 
     function _verifyRegisterProof(
@@ -765,5 +596,181 @@ contract IdentityVerificationHubImplV2 is IdentityVerificationHubStorageV2, IIde
      */
     function _getStartOfDayTimestamp() internal view returns (uint256) {
         return block.timestamp - (block.timestamp % 1 days);
+    }
+
+    /**
+     * @notice Unified internal verification function for both passport and ID card proofs.
+     * @dev Handles the common verification logic for both proof types.
+     */
+    function _verifyVcAndDiscloseProof(
+        bytes32 attestationId,
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        bool olderThanEnabled,
+        uint256 olderThan,
+        bool[3] memory ofacEnabled,
+        bool forbiddenCountriesEnabled,
+        uint256[4] memory forbiddenCountriesListPacked
+    ) internal view returns (uint256 identityCommitmentRoot) {
+        // Get indices for the specific attestation type
+        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(attestationId);
+        bool isPassport = (attestationId == AttestationId.E_PASSPORT);
+
+        // verify identity commitment root
+        if (isPassport) {
+            if (!IIdentityRegistryV1(_attestationIdToRegistry[attestationId]).checkIdentityCommitmentRoot(
+                vcAndDiscloseProof.pubSignals[indices.merkleRootIndex]
+            )) {
+                revert INVALID_COMMITMENT_ROOT();
+            }
+        } else {
+            if (!IIdentityRegistryIdCardV1(_attestationIdToRegistry[attestationId]).checkIdentityCommitmentRoot(
+                vcAndDiscloseProof.pubSignals[indices.merkleRootIndex]
+            )) {
+                revert INVALID_COMMITMENT_ROOT();
+            }
+        }
+
+        // verify current date
+        uint[6] memory dateNum;
+        for (uint256 i = 0; i < 6; i++) {
+            dateNum[i] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex + i];
+        }
+
+        uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
+        if (
+            currentTimestamp < _getStartOfDayTimestamp() - 1 days + 1 ||
+            currentTimestamp > _getStartOfDayTimestamp() + 1 days - 1
+        ) {
+            revert CURRENT_DATE_NOT_IN_VALID_RANGE();
+        }
+
+        // verify attributes
+        if (isPassport) {
+            uint256[3] memory revealedDataPacked;
+            for (uint256 i = 0; i < 3; i++) {
+                revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
+            }
+            
+            if (olderThanEnabled) {
+                if (!CircuitAttributeHandlerV2.compareOlderThan(
+                    attestationId,
+                    Formatter.fieldElementsToBytes(revealedDataPacked),
+                    olderThan
+                )) {
+                    revert INVALID_OLDER_THAN();
+                }
+            }
+            
+            if (ofacEnabled[0] || ofacEnabled[1] || ofacEnabled[2]) {
+                if (!CircuitAttributeHandlerV2.compareOfac(
+                    attestationId,
+                    Formatter.fieldElementsToBytes(revealedDataPacked),
+                    ofacEnabled[0],
+                    ofacEnabled[1],
+                    ofacEnabled[2]
+                )) {
+                    revert INVALID_OFAC();
+                }
+                if (!IIdentityRegistryV1(_attestationIdToRegistry[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.passportNoSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )) {
+                    revert INVALID_OFAC_ROOT();
+                }
+            }
+        } else {
+            uint256[4] memory revealedDataPacked;
+            for (uint256 i = 0; i < 4; i++) {
+                revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
+            }
+            
+            if (olderThanEnabled) {
+                if (!CircuitAttributeHandlerV2.compareOlderThan(
+                    attestationId,
+                    Formatter.fieldElementsToBytesIdCard(revealedDataPacked),
+                    olderThan
+                )) {
+                    revert INVALID_OLDER_THAN();
+                }
+            }
+            
+            if (ofacEnabled[1] || ofacEnabled[2]) {
+                if (!CircuitAttributeHandlerV2.compareOfac(
+                    attestationId,
+                    Formatter.fieldElementsToBytesIdCard(revealedDataPacked),
+                    false, // Document number OFAC not applicable for ID cards
+                    ofacEnabled[1],
+                    ofacEnabled[2]
+                )) {
+                    revert INVALID_OFAC();
+                }
+                if (!IIdentityRegistryIdCardV1(_attestationIdToRegistry[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )) {
+                    revert INVALID_OFAC_ROOT();
+                }
+            }
+        }
+
+        if (forbiddenCountriesEnabled) {
+            for (uint256 i = 0; i < 4; i++) {
+                if (forbiddenCountriesListPacked[i] != vcAndDiscloseProof.pubSignals[indices.forbiddenCountriesListPackedIndex + i]) {
+                    revert INVALID_FORBIDDEN_COUNTRIES();
+                }
+            }
+        }
+
+        // verify the proof using the VC and Disclose circuit verifier
+        if (!IVcAndDiscloseCircuitVerifier(_attestationIdToDiscloseVerifier[attestationId]).verifyProof(
+            vcAndDiscloseProof.a,
+            vcAndDiscloseProof.b,
+            vcAndDiscloseProof.c,
+            vcAndDiscloseProof.pubSignals
+        )) {
+            revert INVALID_VC_AND_DISCLOSE_PROOF();
+        }
+
+        return vcAndDiscloseProof.pubSignals[indices.merkleRootIndex];
+    }
+
+    /**
+     * @notice Converts ID card OFAC flags (2 elements) to passport format (3 elements).
+     */
+    function _convertOfacFlags(bool[2] memory idCardOfacEnabled) internal pure returns (bool[3] memory) {
+        bool[3] memory passportOfacEnabled;
+        passportOfacEnabled[0] = false; // ID cards don't have passport number OFAC
+        passportOfacEnabled[1] = idCardOfacEnabled[0]; // name and DOB OFAC
+        passportOfacEnabled[2] = idCardOfacEnabled[1]; // name and YOB OFAC
+        return passportOfacEnabled;
+    }
+
+    /**
+     * @notice Decodes passport proof data from bytes.
+     */
+    function _decodePassportProof(bytes memory data) internal pure returns (VcAndDiscloseHubProof memory) {
+        return abi.decode(data, (VcAndDiscloseHubProof));
+    }
+
+    /**
+     * @notice Decodes ID card proof data from bytes.
+     */
+    function _decodeIdCardProof(bytes memory data) internal pure returns (IdCardVcAndDiscloseHubProof memory) {
+        return abi.decode(data, (IdCardVcAndDiscloseHubProof));
+    }
+
+    /**
+     * @notice Encodes passport verification result to bytes.
+     */
+    function _encodePassportResult(VcAndDiscloseVerificationResult memory result) internal pure returns (bytes memory) {
+        return abi.encode(result);
+    }
+
+    /**
+     * @notice Encodes ID card verification result to bytes.
+     */
+    function _encodeIdCardResult(IdCardVcAndDiscloseVerificationResult memory result) internal pure returns (bytes memory) {
+        return abi.encode(result);
     }
 }
