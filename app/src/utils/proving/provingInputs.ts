@@ -1,15 +1,13 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
-import { poseidon2 } from 'poseidon-lite';
-
-import nameAndDobSMTData from 'openpassport-common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobSMTData from 'openpassport-common/ofacdata/outputs/nameAndYobSMT.json';
-import passportNoAndNationalitySMTData from 'openpassport-common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
   attributeToPosition,
   DEFAULT_MAJORITY,
   PASSPORT_ATTESTATION_ID,
 } from 'openpassport-common/constants/constants';
+import nameAndDobSMTData from 'openpassport-common/ofacdata/outputs/nameAndDobSMT.json';
+import nameAndYobSMTData from 'openpassport-common/ofacdata/outputs/nameAndYobSMT.json';
+import passportNoAndNationalitySMTData from 'openpassport-common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import { SelfApp } from 'openpassport-common/utils/appType';
 import { getCircuitNameFromPassportData } from 'openpassport-common/utils/circuits/circuitsName';
 import {
@@ -19,6 +17,8 @@ import {
 } from 'openpassport-common/utils/circuits/generateInputs';
 import { hashEndpointWithScope } from 'openpassport-common/utils/scope';
 import { PassportData } from 'openpassport-common/utils/types';
+import { poseidon2 } from 'poseidon-lite';
+
 import { useProtocolStore } from '../../stores/protocolStore';
 
 export function generateTEEInputsRegister(

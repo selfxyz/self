@@ -1,7 +1,11 @@
 module.exports = {
   root: true,
-  extends: ['@react-native', 'plugin:prettier/recommended'],
-  plugins: ['simple-import-sort', 'prettier'],
+  extends: [
+    '@react-native',
+    'plugin:prettier/recommended',
+    'plugin:jest/recommended',
+  ],
+  plugins: ['simple-import-sort', 'prettier', 'jest'],
   ignorePatterns: ['ios/', 'android/', 'deployments/', 'node_modules/'],
   rules: {
     // Import sorting rules

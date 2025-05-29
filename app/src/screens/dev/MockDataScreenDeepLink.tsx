@@ -1,16 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ScrollView, Text, XStack, YStack } from 'tamagui';
-
 import { countryCodes } from 'openpassport-common/constants/constants';
 import {
   genMockIdDoc,
   IdDocInput,
 } from 'openpassport-common/utils/passports/genMockIdDoc';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, Text, XStack, YStack } from 'tamagui';
+
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';

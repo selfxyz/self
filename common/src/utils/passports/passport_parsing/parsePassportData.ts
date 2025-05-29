@@ -89,7 +89,10 @@ export function getCurveOrExponent(certData: CertificateData): string {
   return (certData.publicKeyDetails as PublicKeyDetailsECDSA).curve;
 }
 
-export function parsePassportData(passportData: PassportData, skiPem: any = null): PassportMetadata {
+export function parsePassportData(
+  passportData: PassportData,
+  skiPem: any = null
+): PassportMetadata {
   const dg1HashInfo = passportData.mrz
     ? findDG1HashInEContent(passportData.mrz, passportData.eContent)
     : null;

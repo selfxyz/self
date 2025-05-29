@@ -1,9 +1,18 @@
 import * as forge from 'node-forge';
 import { poseidon5 } from 'poseidon-lite';
 import {
-  hashAlgos, k_csca, k_dsc, k_dsc_3072, k_dsc_4096, k_dsc_ecdsa, MAX_PUBKEY_DSC_BYTES, n_csca, n_dsc,
+  hashAlgos,
+  k_csca,
+  k_dsc,
+  k_dsc_3072,
+  k_dsc_4096,
+  k_dsc_ecdsa,
+  MAX_PUBKEY_DSC_BYTES,
+  n_csca,
+  n_dsc,
   n_dsc_3072,
-  n_dsc_4096, n_dsc_ecdsa
+  n_dsc_4096,
+  n_dsc_ecdsa,
 } from '../../constants/constants.js';
 import { bytesToBigDecimal, hexToDecimal, splitToWords } from '../bytes.js';
 import {

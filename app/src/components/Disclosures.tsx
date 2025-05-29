@@ -1,11 +1,11 @@
-import React from 'react';
-import { XStack, YStack } from 'tamagui';
-
 import {
   Country3LetterCode,
   countryCodes,
 } from 'openpassport-common/constants/constants';
 import { SelfAppDisclosureConfig } from 'openpassport-common/utils/appType';
+import React from 'react';
+import { XStack, YStack } from 'tamagui';
+
 import { BodyText } from '../components/typography/BodyText';
 import CheckMark from '../images/icons/checkmark.svg';
 import { slate200, slate500 } from '../utils/colors';

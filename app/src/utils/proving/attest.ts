@@ -5,12 +5,12 @@ import { Buffer } from 'buffer';
 import elliptic from 'elliptic';
 import { ethers } from 'ethers';
 import { sha384 } from 'js-sha512';
-import { Certificate } from 'pkijs';
-
 import {
   PCR0_MANAGER_ADDRESS,
   RPC_URL,
 } from 'openpassport-common/constants/constants';
+import { Certificate } from 'pkijs';
+
 import { AWS_ROOT_PEM } from './awsRootPem';
 import cose from './cose';
 

@@ -23,7 +23,10 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
       case 'cancel':
         selectionChange();
         if (navParams !== undefined) {
-          (navigation.popTo as (screen: S, params: typeof navParams) => void)(screen, navParams);
+          (navigation.popTo as (screen: S, params: typeof navParams) => void)(
+            screen,
+            navParams,
+          );
         } else {
           (navigation.popTo as (screen: S) => void)(screen);
         }
@@ -39,7 +42,10 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
     }
     // it is safe to cast options.params as any because it is correct when entering the function
     if (navParams !== undefined) {
-      (navigation.navigate as (screen: S, params: typeof navParams) => void)(screen, navParams);
+      (navigation.navigate as (screen: S, params: typeof navParams) => void)(
+        screen,
+        navParams,
+      );
     } else {
       (navigation.navigate as (screen: S) => void)(screen);
     }

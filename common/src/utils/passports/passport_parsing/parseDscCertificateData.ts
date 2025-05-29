@@ -16,7 +16,10 @@ export interface DscCertificateMetaData {
   cscaBits: number;
 }
 
-export function parseDscCertificateData(dscCert: CertificateData, skiPem: any = null): DscCertificateMetaData {
+export function parseDscCertificateData(
+  dscCert: CertificateData,
+  skiPem: any = null
+): DscCertificateMetaData {
   let csca,
     cscaParsed,
     cscaHashAlgorithm,
@@ -38,9 +41,8 @@ export function parseDscCertificateData(dscCert: CertificateData, skiPem: any = 
         cscaSignatureAlgorithmBits = parseInt(cscaParsed.publicKeyDetails.bits);
         cscaSaltLength = details.saltLength;
       }
-    } catch (error) { }
-  }
-  else {
+    } catch (error) {}
+  } else {
     console.log('js: dscCert.authorityKeyIdentifier not found');
   }
   return {

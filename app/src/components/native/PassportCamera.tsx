@@ -35,7 +35,9 @@ interface NativePassportOCRViewProps {
 
 const RCTPassportOCRViewNativeComponent = Platform.select({
   ios: requireNativeComponent<NativePassportOCRViewProps>('PassportOCRView'),
-  android: requireNativeComponent<NativePassportOCRViewProps>('PassportOCRViewManager'),
+  android: requireNativeComponent<NativePassportOCRViewProps>(
+    'PassportOCRViewManager',
+  ),
 });
 
 if (!RCTPassportOCRViewNativeComponent) {
@@ -119,10 +121,16 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
     );
   } else {
     // For Android, wrap the native component inside your RCTFragment to preserve existing functionality.
-    const Fragment = RCTFragment as React.FC<React.ComponentProps<typeof RCTFragment> & NativePassportOCRViewProps>;
+    const Fragment = RCTFragment as React.FC<
+      React.ComponentProps<typeof RCTFragment> & NativePassportOCRViewProps
+    >;
     return (
       <Fragment
-        RCTFragmentViewManager={RCTPassportOCRViewNativeComponent as ReturnType<typeof requireNativeComponent>}
+        RCTFragmentViewManager={
+          RCTPassportOCRViewNativeComponent as ReturnType<
+            typeof requireNativeComponent
+          >
+        }
         fragmentComponentName="PassportOCRViewManager"
         isMounted={isMounted}
         style={{

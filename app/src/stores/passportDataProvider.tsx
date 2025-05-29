@@ -1,3 +1,4 @@
+import { PassportData } from 'openpassport-common/utils/types';
 import React, {
   createContext,
   PropsWithChildren,
@@ -7,7 +8,6 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { PassportData } from 'openpassport-common/utils/types';
 import { unsafe_getPrivateKey } from '../stores/authProvider';
 import { useAuth } from './authProvider';
 

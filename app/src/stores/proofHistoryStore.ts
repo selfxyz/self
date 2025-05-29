@@ -1,11 +1,10 @@
+import { WS_DB_RELAYER } from 'openpassport-common/constants/constants';
+import { EndpointType } from 'openpassport-common/utils/appType';
+import { UserIdType } from 'openpassport-common/utils/circuits/uuid';
 import { Platform } from 'react-native';
 import SQLite from 'react-native-sqlite-storage';
 import { io } from 'socket.io-client';
 import { create } from 'zustand';
-
-import { WS_DB_RELAYER } from 'openpassport-common/constants/constants';
-import { EndpointType } from 'openpassport-common/utils/appType';
-import { UserIdType } from 'openpassport-common/utils/circuits/uuid';
 
 SQLite.enablePromise(true);
 

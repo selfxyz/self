@@ -1,7 +1,8 @@
 {
-  "name": "self",
+  "name": "self-workspace-root",
   "scripts": {
-    "build": "yarn workspaces foreach --topological-dev --parallel -i --all run build"
+    "build": "yarn workspaces foreach --topological-dev --parallel -i --all run build",
+    "lint": "yarn workspaces foreach --parallel -i --all run build"
   },
   "workspaces": [
     "app",

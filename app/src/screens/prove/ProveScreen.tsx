@@ -1,5 +1,7 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import { SelfAppDisclosureConfig } from 'openpassport-common/utils/appType';
+import { formatEndpoint } from 'openpassport-common/utils/scope';
 import React, {
   useCallback,
   useEffect,
@@ -16,8 +18,6 @@ import {
 } from 'react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
-import { SelfAppDisclosureConfig } from 'openpassport-common/utils/appType';
-import { formatEndpoint } from 'openpassport-common/utils/scope';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrimaryButtonProveScreen';
 import Disclosures from '../../components/Disclosures';

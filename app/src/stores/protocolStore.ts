@@ -1,5 +1,3 @@
-import { create } from 'zustand';
-
 import {
   API_URL,
   API_URL_STAGING,
@@ -10,6 +8,7 @@ import {
   IDENTITY_TREE_URL,
   IDENTITY_TREE_URL_STAGING,
 } from 'openpassport-common/constants/constants';
+import { create } from 'zustand';
 
 interface ProtocolState {
   passport: {

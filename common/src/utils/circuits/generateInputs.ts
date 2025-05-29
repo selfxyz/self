@@ -20,14 +20,25 @@ import {
   pad,
   padWithZeroes,
 } from '../passports/passport.js';
-import { generateMerkleProof, generateSMTProof, getCountryLeaf, getCscaTreeInclusionProof, getDscTreeInclusionProof, getLeafCscaTree, getLeafDscTree, getNameDobLeaf, getNameYobLeaf, getPassportNumberAndNationalityLeaf } from '../trees.js';
+import {
+  generateMerkleProof,
+  generateSMTProof,
+  getCountryLeaf,
+  getCscaTreeInclusionProof,
+  getDscTreeInclusionProof,
+  getLeafCscaTree,
+  getLeafDscTree,
+  getNameDobLeaf,
+  getNameYobLeaf,
+  getPassportNumberAndNationalityLeaf,
+} from '../trees.js';
 import { PassportData } from '../types.js';
 import { formatCountriesList } from './formatInputs.js';
 import { castFromUUID, stringToAsciiBigIntArray } from './uuid.js';
 
 export function generateCircuitInputsDSC(
   passportData: PassportData,
-  serializedCscaTree: string[][],
+  serializedCscaTree: string[][]
 ) {
   const passportMetadata = passportData.passportMetadata;
   const cscaParsed = passportData.csca_parsed;
@@ -59,13 +70,17 @@ export function generateCircuitInputsDSC(
     signatureRaw
   );
   // Get start index of CSCA pubkey based on algorithm
-  const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, passportMetadata.cscaSignatureAlgorithm);
+  const [startIndex, keyLength] = findStartPubKeyIndex(
+    cscaParsed,
+    cscaTbsBytesPadded,
+    passportMetadata.cscaSignatureAlgorithm
+  );
   return {
-    raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
+    raw_csca: cscaTbsBytesPadded.map((x) => x.toString()),
     raw_csca_actual_length: BigInt(cscaParsed.tbsBytes.length).toString(),
     csca_pubKey_offset: startIndex.toString(),
     csca_pubKey_actual_size: BigInt(keyLength).toString(),
-    raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
+    raw_dsc: Array.from(dscTbsBytesPadded).map((x) => x.toString()),
     raw_dsc_padded_length: BigInt(dscTbsBytesLen).toString(), // with the sha padding actually
     csca_pubKey: csca_pubKey_formatted,
     signature,
@@ -78,16 +93,13 @@ export function generateCircuitInputsDSC(
 export function generateCircuitInputsRegister(
   secret: string,
   passportData: PassportData,
-  serializedDscTree: string,
+  serializedDscTree: string
 ) {
   const { mrz, eContent, signedAttr } = passportData;
   const passportMetadata = passportData.passportMetadata;
   const dscParsed = passportData.dsc_parsed;
 
-  const [dscTbsBytesPadded,] = pad(dscParsed.hashAlgorithm)(
-    dscParsed.tbsBytes,
-    max_dsc_bytes
-  );
+  const [dscTbsBytesPadded] = pad(dscParsed.hashAlgorithm)(dscParsed.tbsBytes, max_dsc_bytes);
 
   const { pubKey, signature, signatureAlgorithmFullName } = getPassportSignatureInfos(passportData);
   const mrz_formatted = formatMrz(mrz);
@@ -115,10 +127,14 @@ export function generateCircuitInputsRegister(
   const csca_tree_leaf = getLeafCscaTree(passportData.csca_parsed);
 
   // Get start index of DSC pubkey based on algorithm
-  const [startIndex, keyLength] = findStartPubKeyIndex(dscParsed, dscTbsBytesPadded, dscParsed.signatureAlgorithm);
+  const [startIndex, keyLength] = findStartPubKeyIndex(
+    dscParsed,
+    dscTbsBytesPadded,
+    dscParsed.signatureAlgorithm
+  );
 
   const inputs = {
-    raw_dsc: dscTbsBytesPadded.map(x => x.toString()),
+    raw_dsc: dscTbsBytesPadded.map((x) => x.toString()),
     raw_dsc_actual_length: [BigInt(dscParsed.tbsBytes.length).toString()],
     dsc_pubKey_offset: startIndex,
     dsc_pubKey_actual_size: [BigInt(keyLength).toString()],
@@ -175,11 +191,7 @@ export function generateCircuitInputsVCandDisclose(
 
   const dsc_tree_leaf = getLeafDscTree(passportData.dsc_parsed, passportData.csca_parsed);
 
-  const commitment = generateCommitment(
-    secret,
-    attestation_id,
-    passportData
-  );
+  const commitment = generateCommitment(secret, attestation_id, passportData);
   const index = findIndexInTree(merkletree, BigInt(commitment));
   const { siblings, path, leaf_depth } = generateMerkleProof(
     merkletree,
@@ -190,7 +202,10 @@ export function generateCircuitInputsVCandDisclose(
   const majority_ascii = formattedMajority.split('').map((char) => char.charCodeAt(0));
 
   // SMT - OFAC
-  const passportNo_leaf = getPassportNumberAndNationalityLeaf(formattedMrz.slice(49, 58), formattedMrz.slice(59, 62));
+  const passportNo_leaf = getPassportNumberAndNationalityLeaf(
+    formattedMrz.slice(49, 58),
+    formattedMrz.slice(59, 62)
+  );
   const namedob_leaf = getNameDobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 68));
   const name_leaf = getNameYobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 64));
 
@@ -249,8 +264,14 @@ export function generateCircuitInputsOfac(
 ) {
   const mrz_bytes = formatMrz(passportData.mrz);
   console.log('mrz_bytes', mrz_bytes);
-  console.log('mrz_bytes.slice(59, 62)', mrz_bytes.slice(59, 62).map((byte) => String.fromCharCode(byte)));
-  const passport_leaf = getPassportNumberAndNationalityLeaf(mrz_bytes.slice(49, 58), mrz_bytes.slice(59, 62));
+  console.log(
+    'mrz_bytes.slice(59, 62)',
+    mrz_bytes.slice(59, 62).map((byte) => String.fromCharCode(byte))
+  );
+  const passport_leaf = getPassportNumberAndNationalityLeaf(
+    mrz_bytes.slice(49, 58),
+    mrz_bytes.slice(59, 62)
+  );
   const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10, 49), mrz_bytes.slice(62, 68)); // [57-62] + 5 shift
   const name_leaf = getNameYobLeaf(mrz_bytes.slice(10, 49), mrz_bytes.slice(62, 64));
 

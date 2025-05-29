@@ -1,5 +1,5 @@
 {
-  "name": "openpassport",
+  "name": "@selfxyz/mobile-app",
   "version": "2.5.2",
   "private": true,
   "scripts": {
@@ -30,7 +30,7 @@
     "ia": "yarn install-app",
     "install-app": "yarn install-app:setup && cd ios && bundle exec pod install && cd .. && yarn clean:xcode-env-local",
     "install-app:deploy": "yarn install-app:setup && yarn clean:xcode-env-local",
-    "install-app:setup": "cd ../common && yarn && cd ../app && yarn && cd ios && bundle install && cd ..",
+    "install-app:setup": "yarn workspaces focus @selfxyz/mobile-app && cd ios && bundle install && cd ..",
     "ios": "react-native run-ios",
     "ios:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose ios internal_test",
     "lint": "eslint .",
@@ -130,6 +130,7 @@
     "@types/react-test-renderer": "^18",
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-jest": "^28.11.1",
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "jest": "^29.6.3",
