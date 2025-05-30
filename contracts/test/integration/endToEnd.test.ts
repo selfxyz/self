@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { BigNumberish, TransactionReceipt } from "ethers";
 import { ethers } from "hardhat";
 import { poseidon2 } from "poseidon-lite";
-import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "openpassport-common/constants/constants";
+import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
 import { formatCountriesList, reverseBytes } from "../../../common/src/utils/circuits/formatInputs";
 import { castFromScope } from "../../../common/src/utils/circuits/uuid";
 import { ATTESTATION_ID } from "../utils/constants";

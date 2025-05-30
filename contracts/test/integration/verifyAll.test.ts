@@ -5,7 +5,7 @@ import { DeployedActors } from "../utils/types";
 import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { ATTESTATION_ID } from "../utils/constants";
-import { CIRCUIT_CONSTANTS } from "openpassport-common/constants/constants";
+import { CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { generateVcAndDiscloseProof, parseSolidityCalldata } from "../utils/generateProof";

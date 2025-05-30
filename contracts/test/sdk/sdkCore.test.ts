@@ -3,14 +3,14 @@
 // import { deploySystemFixtures } from "../utils/deployment";
 // import { DeployedActors } from "../utils/types";
 // import { generateRandomFieldElement } from "../utils/utils";
-// import { generateCommitment } from "openpassport-common/utils/passports/passport";
+// import { generateCommitment } from "../../../common/src/utils/passports/passport";
 // import { ATTESTATION_ID } from "../utils/constants";
-// import { CIRCUIT_CONSTANTS } from "openpassport-common/constants/constants";
+// import { CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
 // import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 // import { poseidon2 } from "poseidon-lite";
 // import { generateVcAndDiscloseRawProof, parseSolidityCalldata } from "../utils/generateProof";
 // import { Formatter } from "../utils/formatter";
-// import { formatCountriesList, reverseBytes } from "openpassport-common/utils/circuits/formatInputs";
+// import { formatCountriesList, reverseBytes } from "../../../common/src/utils/circuits/formatInputs";
 // import { VerifyAll } from "../../typechain-types";
 // import { SelfBackendVerifier } from "../../../sdk/core/src/SelfBackendVerifier";
 // import { Groth16Proof, PublicSignals, groth16 } from "snarkjs";

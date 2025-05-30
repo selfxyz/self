@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { TransactionReceipt, ZeroAddress } from "ethers";
 import { ethers } from "hardhat";
 import { poseidon2 } from "poseidon-lite";
-import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "openpassport-common/constants/constants";
+import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
 import { deploySystemFixtures } from "../utils/deployment";
 import { generateDscProof, generateRegisterProof } from "../utils/generateProof";

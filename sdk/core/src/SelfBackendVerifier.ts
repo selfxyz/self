@@ -13,9 +13,8 @@ import {
   castToUserIdentifier,
   UserIdType,
 } from 'openpassport-common/utils/circuits/uuid';
-import { CIRCUIT_CONSTANTS, revealedDataTypes } from 'openpassport-common';
+import { CIRCUIT_CONSTANTS, revealedDataTypes, Country3LetterCode, commonNames  } from 'openpassport-common';
 import { packForbiddenCountriesList } from 'openpassport-common/utils/contracts/formatCallData';
-import { Country3LetterCode, commonNames } from 'openpassport-common';
 import { hashEndpointWithScope } from 'openpassport-common/utils/scope';
 
 const CELO_MAINNET_RPC_URL = "https://forno.celo.org";
