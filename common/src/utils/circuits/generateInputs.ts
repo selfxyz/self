@@ -4,7 +4,7 @@ import {
   max_csca_bytes,
   COMMITMENT_TREE_DEPTH,
   OFAC_TREE_LEVELS,
-} from '../../constants/constants';
+} from '../../constants/constants.js';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 import {
