@@ -12,8 +12,8 @@ import {ProxyRoot} from "./upgradeable/ProxyRoot.sol";
 contract IdentityVerificationHub is ProxyRoot {
     /**
      * @notice Constructs a new IdentityVerificationHub proxy.
-     * @param _logic The address of the implementation contract containing the hub logic.
-     * @param _data The initialization data to be executed in the context of the implementation contract.
+     * @param logic The address of the implementation contract containing the hub logic.
+     * @param data The initialization data to be executed in the context of the implementation contract.
      */
-    constructor(address _logic, bytes memory _data) ProxyRoot(_logic, _data) {}
+    constructor(address logic, bytes memory data) ProxyRoot(logic, data) {}
 }

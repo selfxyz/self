@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {IVcAndDiscloseCircuitVerifier} from "./IVcAndDiscloseCircuitVerifier.sol";
-
 interface ISelfVerificationRoot {
     struct VerificationConfig {
         bool olderThanEnabled;

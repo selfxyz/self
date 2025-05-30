@@ -80,38 +80,41 @@ struct LiveMRZScannerView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-                CameraView { image in
-                    // print("[LiveMRZScannerView] CameraView frame received. Size: \(image.size), Orientation: \(image.imageOrientation.rawValue)")
-                    if scanComplete { return }
-                    MRZScanner.scan(image: image) { result, boxes in
-                        recognizedText = result
-                        lastMRZDetection = Date()
-                        let parser = QKMRZParser(ocrCorrection: false)
-                        if let mrzResult = parser.parse(mrzString: result) {
-                            let doc = mrzResult;
-                            if doc.allCheckDigitsValid == true && !scanComplete {
-                                parsedMRZ = mrzResult
-                                scanComplete = true
-                                onScanComplete?(mrzResult)
-                                onScanResultAsDict?(mapVisionResultToDictionary(mrzResult))
-                            } else if doc.isDocumentNumberValid == false && !scanComplete {
-                                if let correctedResult = singleCorrectDocumentNumberInMRZ(result: result, docNumber: doc.documentNumber, parser: parser) {
-                                    let correctedDoc = correctedResult
-                                    if correctedDoc.allCheckDigitsValid == true {
-                                        parsedMRZ = correctedResult
-                                        scanComplete = true
-                                        onScanComplete?(correctedResult)
-                                        onScanResultAsDict?(mapVisionResultToDictionary(correctedResult))
+                CameraView(
+                    frameHandler: { image, roi in
+                        if scanComplete { return }
+                        MRZScanner.scan(image: image, roi: roi) { result, boxes in
+                            recognizedText = result
+                            lastMRZDetection = Date()
+                            // print("[LiveMRZScannerView] result: \(result)")
+                            let parser = QKMRZParser(ocrCorrection: false)
+                            if let mrzResult = parser.parse(mrzString: result) {
+                                let doc = mrzResult;
+                                if doc.allCheckDigitsValid == true && !scanComplete {
+                                    parsedMRZ = mrzResult
+                                    scanComplete = true
+                                    onScanComplete?(mrzResult)
+                                    onScanResultAsDict?(mapVisionResultToDictionary(mrzResult))
+                                } else if doc.isDocumentNumberValid == false && !scanComplete {
+                                    if let correctedResult = singleCorrectDocumentNumberInMRZ(result: result, docNumber: doc.documentNumber, parser: parser) {
+                                        let correctedDoc = correctedResult
+                                        if correctedDoc.allCheckDigitsValid == true {
+                                            parsedMRZ = correctedResult
+                                            scanComplete = true
+                                            onScanComplete?(correctedResult)
+                                            onScanResultAsDict?(mapVisionResultToDictionary(correctedResult))
+                                        }
                                     }
                                 }
-                            }
-                        } else {
-                            if !scanComplete {
-                                parsedMRZ = nil
+                            } else {
+                                if !scanComplete {
+                                    parsedMRZ = nil
+                                }
                             }
                         }
-                    }
-                }
+                    },
+                    showOverlay: false
+                )
 
             VStack {
                 if !scanComplete {
