@@ -3,6 +3,7 @@ name: App CI
 on:
   push:
     paths:
+      - "common/**"
       - "app/**"
       - ".github/workflows/app.yml"
       - ".github/actions/**"

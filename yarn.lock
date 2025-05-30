@@ -20760,7 +20760,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "openpassport-common@workspace:common"
   dependencies:
-    "@babel/runtime": "npm:^7.23.4"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
