@@ -96,7 +96,7 @@ const NFCMethodSelectionScreen: React.FC = () => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <ExpandableBottomLayout.FullSection>
+      <ExpandableBottomLayout.TopSection backgroundColor={white}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <YStack paddingTop={20} gap={20}>
             <Title>Choose NFC Scan Method</Title>
@@ -138,13 +138,16 @@ const NFCMethodSelectionScreen: React.FC = () => {
             ))}
           </YStack>
         </ScrollView>
+      </ExpandableBottomLayout.TopSection>
+
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <ButtonsContainer>
           <PrimaryButton onPress={handleProceed}>Proceed</PrimaryButton>
           <SecondaryButton onPress={() => navigation.goBack()}>
             Cancel
           </SecondaryButton>
         </ButtonsContainer>
-      </ExpandableBottomLayout.FullSection>
+      </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
 };
