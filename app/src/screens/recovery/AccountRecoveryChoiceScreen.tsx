@@ -65,13 +65,12 @@ const AccountRecoveryChoiceScreen: React.FC<
         setRestoring(false);
         return;
       }
-
       if (!cloudBackupEnabled) {
         toggleCloudBackupEnabled();
       }
+      reStorePassportDataWithRightCSCA(passportData, csca as string);
       onRestoreFromCloudNext();
       setRestoring(false);
-      reStorePassportDataWithRightCSCA(passportData, csca as string);
     } catch (e) {
       console.error(e);
       setRestoring(false);
