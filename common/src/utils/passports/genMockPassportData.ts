@@ -141,15 +141,16 @@ function sign(
   hashAlgorithm: string,
   eContent: number[]
 ): number[] {
+  const actualForge = forge.pki ? forge : (forge as any).default;
   const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
   if (signatureAlgorithm === 'rsapss') {
-    const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
-    const md = forge.md[hashAlgorithm].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
-    const pss = forge.pss.create({
-      md: forge.md[hashAlgorithm].create(),
-      mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
+    const privateKey = actualForge.pki.privateKeyFromPem(privateKeyPem);
+    const md = actualForge.md[hashAlgorithm].create();
+    md.update(actualForge.util.binary.raw.encode(new Uint8Array(eContent)));
+    const pss = actualForge.pss.create({
+      md: actualForge.md[hashAlgorithm].create(),
+      mgf: actualForge.mgf.mgf1.create(actualForge.md[hashAlgorithm].create()),
       saltLength: parseInt((publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength),
     });
     const signatureBytes = privateKey.sign(md, pss);
@@ -175,9 +176,9 @@ function sign(
 
     return signatureBytes;
   } else {
-    const privKey = forge.pki.privateKeyFromPem(privateKeyPem);
-    const md = forge.md[hashAlgorithm].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+    const privKey = actualForge.pki.privateKeyFromPem(privateKeyPem);
+    const md = actualForge.md[hashAlgorithm].create();
+    md.update(actualForge.util.binary.raw.encode(new Uint8Array(eContent)));
     const forgeSignature = privKey.sign(md);
     return Array.from(forgeSignature, (c: string) => c.charCodeAt(0));
   }

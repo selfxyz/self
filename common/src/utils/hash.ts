@@ -96,8 +96,9 @@ export function hash(
   if (format === 'bytes') {
     return hexToSignedBytes(hashResult);
   }
+  const actualForgeUtil = forge.util ? forge.util : (forge as any).default.util;
   if (format === 'binary') {
-    return forge.util.binary.raw.encode(new Uint8Array(hexToSignedBytes(hashResult)));
+    return actualForgeUtil.binary.raw.encode(new Uint8Array(hexToSignedBytes(hashResult)));
   }
   throw new Error(`Invalid format: ${format}`);
 }

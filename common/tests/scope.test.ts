@@ -5,7 +5,7 @@ import {
   formatEndpoint,
   hashEndpointWithScope,
   stringToBigInt,
-} from '../src/utils/scope';
+} from '../src/utils/scope.js';
 
 describe('Scope Utilities', function () {
   describe('formatEndpoint', function () {

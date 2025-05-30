@@ -26,8 +26,8 @@
     "types": "yarn build",
     "format": "prettier --write .",
     "lint": "prettier --check .",
-    "test": "yarn ts-mocha tests/**/*.test.ts --exit",
-    "test:scope": "yarn ts-mocha tests/scope.test.ts --exit",
+    "test": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/**/*.test.ts --exit",
+    "test:scope": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/scope.test.ts --exit",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
