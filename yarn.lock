@@ -4636,8 +4636,6 @@ __metadata:
     "@types/node": "npm:^20.11.19"
     "@types/node-forge": "npm:^1.3.5"
     "@types/pako": "npm:^2.0.3"
-    "@types/react": "npm:^18.3.4"
-    "@types/react-dom": "npm:^18.3.0"
     "@types/snarkjs": "npm:^0.7.8"
     "@types/uuid": "npm:^10.0.0"
     axios: "npm:^1.7.2"
@@ -4653,8 +4651,6 @@ __metadata:
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.4.5"
     uuid: "npm:^11.1.0"
-  peerDependencies:
-    react: ">=16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
   languageName: unknown
   linkType: soft
 
