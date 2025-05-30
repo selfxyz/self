@@ -1,4 +1,4 @@
-name: OpenPassport CI/CD
+name: Self Circuits CI/CD
 on:
   push:
     branches:
@@ -53,20 +53,14 @@ jobs:
 
       - name: Install Yarn dependencies
         working-directory: ./circuits
-        run: yarn install --immutable
+        run: yarn install-circuits --immutable
 
-      - name: Run lint (global)
+      - name: Run lint
+        working-directory: ./circuits
         run: yarn lint
-
-      - name: Run typecheck (global)
-        run: yarn types
 
       - name: Run Tests (Circuits)
         working-directory: ./circuits
         env:
           FULL_TEST_SUITE: false
-        run: yarn test
-
-      - name: Run Tests (Common)
-        working-directory: ./common
         run: yarn test
