@@ -6,6 +6,7 @@ import PassportNFCScanScreen from '../screens/passport/PassportNFCScanScreen';
 import PassportNFCTrouble from '../screens/passport/PassportNFCTroubleScreen';
 import PassportOnboardingScreen from '../screens/passport/PassportOnboardingScreen';
 import UnsupportedPassportScreen from '../screens/passport/UnsupportedPassportScreen';
+import NFCMethodSelectionScreen from '../screens/passport/NFCMethodSelectionScreen';
 
 const passportScreens = {
   PassportCamera: {
@@ -55,6 +56,13 @@ const passportScreens = {
     screen: UnsupportedPassportScreen,
     options: {
       headerShown: false,
+    } as NativeStackNavigationOptions,
+  },
+  PassportNFCMethodSelection: {
+    screen: NFCMethodSelectionScreen,
+    options: {
+      headerShown: false,
+      animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
 };

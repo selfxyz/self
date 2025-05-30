@@ -10,6 +10,11 @@ interface Inputs {
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
+  canNumber?: string;
+  useCan?: boolean;
+  skipPACE?: boolean;
+  skipCA?: boolean;
+  extendedMode?: boolean;
 }
 
 export const scan = async (inputs: Inputs) => {
@@ -38,6 +43,11 @@ const scanIOS = async (inputs: Inputs) => {
     inputs.passportNumber,
     inputs.dateOfBirth,
     inputs.dateOfExpiry,
+    inputs.canNumber ?? '',
+    inputs.useCan ?? false,
+    inputs.skipPACE ?? false,
+    inputs.skipCA ?? false,
+    inputs.extendedMode ?? false,
   );
 };
 
