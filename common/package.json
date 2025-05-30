@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "description": "Constants and utils for self",
   "license": "MIT",
-  "author": "",
-  "private": true,
+  "author": "Selfxyz Team",
   "type": "module",
   "main": "dist/index.js",
   "exports": {
