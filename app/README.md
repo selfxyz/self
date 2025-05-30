@@ -39,8 +39,6 @@ yarn install-app
 
 ```
 
-
-
 ### Android
 
 #### Using Android Studio
