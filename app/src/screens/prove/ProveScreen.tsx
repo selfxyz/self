@@ -23,15 +23,19 @@ import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrima
 import Disclosures from '../../components/Disclosures';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
+import { ProofEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import {
   ProofStatus,
   useProofHistoryStore,
 } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
+import analytics from '../../utils/analytics';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
+
+const { trackEvent } = analytics();
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
@@ -129,6 +133,12 @@ const ProveScreen: React.FC = () => {
   function onVerify() {
     provingStore.setUserConfirmed();
     buttonTap();
+    trackEvent(ProofEvents.PROOF_VERIFICATION_STARTED, {
+      appName: selectedApp?.appName,
+      sessionId: provingStore.uuid,
+      endpointType: selectedApp?.endpointType,
+      userIdType: selectedApp?.userIdType,
+    });
     setTimeout(() => {
       navigate('ProofRequestStatusScreen');
     }, 100);
@@ -148,9 +158,18 @@ const ProveScreen: React.FC = () => {
       if (isCloseToBottom && !hasScrolledToBottom) {
         setHasScrolledToBottom(true);
         buttonTap();
+        trackEvent(ProofEvents.PROOF_DISCLOSURES_SCROLLED, {
+          appName: selectedApp?.appName,
+          sessionId: provingStore.uuid,
+        });
       }
     },
-    [hasScrolledToBottom, isContentShorterThanScrollView],
+    [
+      hasScrolledToBottom,
+      isContentShorterThanScrollView,
+      selectedApp,
+      provingStore.uuid,
+    ],
   );
 
   const handleContentSizeChange = useCallback(

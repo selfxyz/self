@@ -24,16 +24,16 @@ interface IDscCircuitVerifier {
     /**
      * @notice Verifies a given DSC circuit zero-knowledge proof.
      * @dev This function checks the validity of the provided DSC proof parameters.
-     * @param _pA The 'a' component of the proof.
-     * @param _pB The 'b' component of the proof.
-     * @param _pC The 'c' component of the proof.
-     * @param _pubSignals The public signals associated with the proof.
+     * @param pA The 'a' component of the proof.
+     * @param pB The 'b' component of the proof.
+     * @param pC The 'c' component of the proof.
+     * @param pubSignals The public signals associated with the proof.
      * @return A boolean value indicating whether the provided proof is valid (true) or not (false).
      */
     function verifyProof(
-        uint[2] calldata _pA,
-        uint[2][2] calldata _pB,
-        uint[2] calldata _pC,
-        uint[2] calldata _pubSignals
+        uint[2] calldata pA,
+        uint[2][2] calldata pB,
+        uint[2] calldata pC,
+        uint[2] calldata pubSignals
     ) external view returns (bool);
 }

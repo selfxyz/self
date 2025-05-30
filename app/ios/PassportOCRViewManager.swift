@@ -37,7 +37,9 @@ class PassportOCRView: UIView {
                 "data": [
                   "documentNumber": resultDict["documentNumber"] as? String ?? "",
                   "expiryDate": resultDict["expiryDate"] as? String ?? "",
-                  "birthDate": resultDict["dateOfBirth"] as? String ?? ""
+                  "birthDate": resultDict["dateOfBirth"] as? String ?? "",
+                  "documentType": resultDict["documentType"] as? String ?? "",
+                  "countryCode": resultDict["countryCode"] as? String ?? ""
                 ]])
             }
         )

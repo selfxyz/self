@@ -89,8 +89,6 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
     throw new Error("CSCA not found");
   }
 
-  const parsedDsc = passportData.dsc_parsed;
-
   const dgHashAlgo = passportMetadata.dg1HashFunction;
   const eContentHashAlgo = passportMetadata.eContentHashFunction;
   const signedAttrHashAlgo = passportMetadata.signedAttrHashFunction;
@@ -102,7 +100,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
   console.log('Signature Algorithm:', sigAlg);
   const prefix = passportData.documentType === 'id_card' || passportData.documentType === 'mock_id_card' ? 'register_id' : 'register';
 
-  if (parsedDsc.signatureAlgorithm === 'ecdsa') {
+  if (sigAlg=== 'ecdsa') {
     console.log('Processing ECDSA signature...');
     const {
       curveOrExponent,
@@ -112,7 +110,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
     console.log('Generated circuit name:', circuitName);
     return circuitName;
 
-  } else if (parsedDsc.signatureAlgorithm === 'rsa') {
+  } else if (sigAlg === 'rsa') {
     console.log('Processing RSA signature...');
     const {
       curveOrExponent,
@@ -131,7 +129,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
       throw new Error(`Unsupported key length: ${signatureAlgorithmBits}`);
     }
 
-  } else if (parsedDsc.signatureAlgorithm === 'rsapss') {
+  } else if (sigAlg === 'rsapss') {
     console.log('Processing RSA-PSS signature...');
     const {
       curveOrExponent,
@@ -151,7 +149,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
       throw new Error(`Unsupported key length: ${signatureAlgorithmBits}`);
     }
   } else {
-    console.error('Unsupported signature algorithm:', parsedDsc.signatureAlgorithm);
+    console.error('Unsupported signature algorithm:', sigAlg);
     throw new Error('Unsupported signature algorithm');
   }
 }

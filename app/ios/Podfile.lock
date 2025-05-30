@@ -1804,7 +1804,7 @@ PODS:
     - Yoga
   - RNSVG (15.11.1):
     - React-Core
-  - segment-analytics-react-native (2.20.3):
+  - segment-analytics-react-native (2.21.0):
     - React-Core
     - sovran-react-native
   - Sentry (8.50.2):
@@ -2231,7 +2231,7 @@ SPEC CHECKSUMS:
   RNScreens: b7e8d29c6be98f478bc3fb4a97cc770aa9ba7509
   RNSentry: c462461c0a5aaba206265f1f3db01b237cd33239
   RNSVG: 46769c92d1609e617dbf9326ad8a0cff912d0982
-  segment-analytics-react-native: 6f98edf18246782ee7428c5380c6519a3d2acf5e
+  segment-analytics-react-native: dab2ae61d917629b8d040b572f9f7a11b2cc5940
   Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d

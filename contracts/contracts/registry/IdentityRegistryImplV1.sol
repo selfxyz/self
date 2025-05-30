@@ -180,12 +180,12 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
     /**
      * @notice Initializes the registry implementation.
      * @dev Sets the hub address and initializes the UUPS upgradeable feature.
-     * @param _hub The address of the identity verification hub.
+     * @param hubAddress The address of the identity verification hub.
      */
-    function initialize(address _hub) external initializer {
+    function initialize(address hubAddress) external initializer {
         __ImplRoot_init();
-        _hub = _hub;
-        emit RegistryInitialized(_hub);
+        _hub = hubAddress;
+        emit RegistryInitialized(hubAddress);
     }
 
     // ====================================================

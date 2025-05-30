@@ -8,15 +8,19 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { BackupEvents } from '../../consts/analytics';
 import { useModal } from '../../hooks/useModal';
 import Cloud from '../../images/icons/logo_cloud_backup.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { RootStackParamList } from '../../Navigation';
 import { useAuth } from '../../stores/authProvider';
 import { useSettingStore } from '../../stores/settingStore';
+import analytics from '../../utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, white } from '../../utils/colors';
 import { buttonTap, confirmTap } from '../../utils/haptic';
+
+const { trackEvent } = analytics();
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 
@@ -46,9 +50,11 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         buttonText: 'I understand the risks',
         onButtonPress: async () => {
           try {
+            trackEvent(BackupEvents.CLOUD_BACKUP_DISABLE_STARTED);
             await loginWithBiometrics();
             await disableBackup();
             toggleCloudBackupEnabled();
+            trackEvent(BackupEvents.CLOUD_BACKUP_DISABLED_DONE);
           } finally {
             setPending(false);
           }
@@ -67,6 +73,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
       return;
     }
 
+    trackEvent(BackupEvents.CLOUD_BACKUP_ENABLE_STARTED);
+
     setPending(true);
 
     const storedMnemonic = await getOrCreateMnemonic();
@@ -76,6 +84,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     }
     await upload(storedMnemonic.data);
     toggleCloudBackupEnabled();
+    trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
     setPending(false);
   }, [
     cloudBackupEnabled,
@@ -128,6 +137,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               <SecondaryButton
                 onPress={disableCloudBackups}
                 disabled={pending || !biometricsAvailable}
+                trackEvent={BackupEvents.CLOUD_BACKUP_DISABLE_STARTED}
               >
                 {pending ? 'Disabling' : 'Disable'} {STORAGE_NAME} backups
                 {pending ? '…' : ''}
@@ -136,6 +146,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               <PrimaryButton
                 onPress={enableCloudBackups}
                 disabled={pending || !biometricsAvailable}
+                trackEvent={BackupEvents.CLOUD_BACKUP_ENABLE_STARTED}
               >
                 {pending ? 'Enabling' : 'Enable'} {STORAGE_NAME} backups
                 {pending ? '…' : ''}
@@ -163,6 +174,7 @@ function BottomButton({
 
   const goBack = () => {
     confirmTap();
+    trackEvent(BackupEvents.CLOUD_BACKUP_CANCELLED);
     navigation.goBack();
   };
 
@@ -173,6 +185,7 @@ function BottomButton({
           confirmTap();
           navigation.navigate(nextScreen);
         }}
+        trackEvent={BackupEvents.CLOUD_BACKUP_CONTINUE}
       >
         Continue
       </PrimaryButton>
@@ -184,16 +197,29 @@ function BottomButton({
           confirmTap();
           navigation.navigate(nextScreen);
         }}
+        trackEvent={BackupEvents.MANUAL_RECOVERY_SELECTED}
       >
         Back up manually
       </SecondaryButton>
     );
-
-    // if no next screen probably came from settings. Go back to settings
   } else if (cloudBackupEnabled) {
-    return <PrimaryButton onPress={goBack}>Nevermind</PrimaryButton>;
+    return (
+      <PrimaryButton
+        onPress={goBack}
+        trackEvent={BackupEvents.CLOUD_BACKUP_CANCELLED}
+      >
+        Nevermind
+      </PrimaryButton>
+    );
   } else {
-    return <SecondaryButton onPress={goBack}>Nevermind</SecondaryButton>;
+    return (
+      <SecondaryButton
+        onPress={goBack}
+        trackEvent={BackupEvents.CLOUD_BACKUP_CANCELLED}
+      >
+        Nevermind
+      </SecondaryButton>
+    );
   }
 }
 

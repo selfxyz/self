@@ -13,6 +13,7 @@ import {
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
@@ -44,7 +45,8 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
 
       if (error) {
         console.error(error);
-        trackEvent('Passport Camera Scan Failed', {
+        trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+          reason: 'unknown_error',
           error: error.message || 'Unknown error',
           duration_seconds: parseFloat(scanDurationSeconds),
         });
@@ -54,7 +56,8 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
 
       if (!result) {
         console.error('No result from passport scan');
-        trackEvent('Passport Camera Scan Failed', {
+        trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+          reason: 'invalid_input',
           error: 'No result from scan',
           duration_seconds: parseFloat(scanDurationSeconds),
         });
@@ -75,7 +78,8 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
           formattedDateOfExpiry,
         )
       ) {
-        trackEvent('Passport Camera Scan Failed', {
+        trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+          reason: 'invalid_format',
           passportNumberLength: passportNumber.length,
           dateOfBirthLength: formattedDateOfBirth.length,
           dateOfExpiryLength: formattedDateOfExpiry.length,
@@ -91,7 +95,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         dateOfExpiry: formattedDateOfExpiry,
       });
 
-      trackEvent('Passport Camera Scan Successful', {
+      trackEvent(PassportEvents.CAMERA_SCAN_SUCCESS, {
         duration_seconds: parseFloat(scanDurationSeconds),
       });
 
@@ -154,7 +158,12 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
             </XStack>
           </YStack>
 
-          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+          <SecondaryButton
+            trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED}
+            onPress={onCancelPress}
+          >
+            Cancel
+          </SecondaryButton>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
