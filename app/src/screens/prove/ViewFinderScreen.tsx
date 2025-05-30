@@ -17,14 +17,18 @@ import {
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { ProofEvents } from '../../consts/analytics';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useSelfAppStore } from '../../stores/selfAppStore';
+import analytics from '../../utils/analytics';
 import { black, slate800, white } from '../../utils/colors';
 
 interface QRCodeViewFinderScreenProps {}
+
+const { trackEvent } = analytics();
 
 // TODO: replace this with proper tested lib
 // or react-native-url-polyfill -> new URL(uri)
@@ -46,7 +50,10 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const isFocused = useIsFocused();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const navigateToProveScreen = useHapticNavigation('ProveScreen');
-  const onCancelPress = useHapticNavigation('Home');
+  const navigateToHome = useHapticNavigation('Home');
+  const onCancelPress = useCallback(() => {
+    navigateToHome();
+  }, [navigateToHome]);
 
   // This resets to the default state when we navigate back to this screen
   useFocusEffect(
@@ -61,6 +68,10 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
         return;
       }
       if (error) {
+        trackEvent(ProofEvents.QR_SCAN_FAILED, {
+          reason: 'scan_error',
+          error: error.message || error.toString(),
+        });
         console.error(error);
         navigation.navigate('QRCodeTrouble');
       } else {
@@ -69,6 +80,9 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
         const sessionId = encodedData.get('sessionId');
         const selfApp = encodedData.get('selfApp');
         if (selfApp) {
+          trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
+            scan_type: 'selfApp',
+          });
           const selfAppJson = JSON.parse(selfApp);
           useSelfAppStore.getState().setSelfApp(selfAppJson);
           useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
@@ -76,12 +90,19 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
             navigateToProveScreen();
           }, 100);
         } else if (sessionId) {
+          trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
+            scan_type: 'sessionId',
+          });
           useSelfAppStore.getState().cleanSelfApp();
           useSelfAppStore.getState().startAppListener(sessionId);
           setTimeout(() => {
             navigateToProveScreen();
           }, 100);
         } else {
+          trackEvent(ProofEvents.QR_SCAN_FAILED, {
+            reason: 'missing_fields',
+            details: 'No sessionId or selfApp',
+          });
           console.error('No sessionId or selfApp found in QR code');
           setDoneScanningQR(false); // Reset to allow another scan attempt
           navigation.navigate('QRCodeTrouble');
@@ -133,7 +154,12 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
               </XStack>
             </YStack>
 
-            <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+            <SecondaryButton
+              trackEvent={ProofEvents.QR_SCAN_CANCELLED}
+              onPress={onCancelPress}
+            >
+              Cancel
+            </SecondaryButton>
           </YStack>
         </ExpandableBottomLayout.BottomSection>
       </ExpandableBottomLayout.Layout>

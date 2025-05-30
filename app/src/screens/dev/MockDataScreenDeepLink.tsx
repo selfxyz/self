@@ -16,6 +16,7 @@ import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { MockDataEvents } from '../../consts/analytics';
 import { storePassportData } from '../../stores/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import { black, borderColor, white } from '../../utils/colors';
@@ -151,7 +152,10 @@ const MockDataScreenDeepLink: React.FC = () => {
 
       <YStack px="$4" pb="$4">
         <ButtonsContainer>
-          <PrimaryButton disabled={true}>
+          <PrimaryButton
+            trackEvent={MockDataEvents.CREATE_DEEP_LINK}
+            disabled={true}
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <ActivityIndicator color={black} style={{ marginRight: 8 }} />
               <Description color={black} fontWeight="bold">
