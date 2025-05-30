@@ -6,8 +6,8 @@ import { poseidon2 } from 'poseidon-lite';
 import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNoAndNationalityjson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
-import { generateCircuitInputsOfac } from '../../../common/src/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import { generateCircuitInputsOfac } from 'openpassport-common/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from 'openpassport-common/utils/passports/genMockPassportData';
 
 let circuit: any;
 

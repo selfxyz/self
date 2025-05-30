@@ -1,9 +1,12 @@
 {
-  "name": "circom-passport",
+  "name": "@selfxyz/circuits",
   "version": "0.0.1",
   "license": "MIT",
-  "author": "",
+  "private": true,
+  "author": "self team",
+  "type": "module",
   "scripts": {
+    "build": "tsc",
     "build-all": "bash scripts/build/build_register_circuits.sh && bash scripts/build/build_dsc_circuits.sh && bash scripts/build/build_disclose_circuits.sh",
     "build-disclose": "bash scripts/build/build_disclose_circuits.sh",
     "build-dsc": "bash scripts/build/build_dsc_circuits.sh",
@@ -57,6 +60,7 @@
     "jsrsasign": "^11.1.0",
     "modpow": "^1.0.0",
     "node-forge": "https://github.com/remicolin/forge",
+    "openpassport-common": "workspace:^",
     "poseidon-lite": "^0.2.0",
     "snarkjs": "^0.7.1",
     "typescript": "^5.3.3"

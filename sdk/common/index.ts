@@ -1,10 +1,10 @@
-import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from "../../common/src/utils/certificate_parsing/dataStructure.js";
-import { parseCertificate } from "../../common/src/utils/certificate_parsing/parseCertificate.js";
-import { parseCertificateSimple } from "../../common/src/utils/certificate_parsing/parseCertificateSimple.js";
-import { findStartPubKeyIndex } from "../../common/src/utils/passports/passport.js";
-import { parseDscCertificateData } from "../../common/src/utils/passports/passport_parsing/parseDscCertificateData.js";
-import { getLeafCscaTree, getLeafDscTree } from "../../common/src/utils/trees.js";
-import { genMockIdDoc } from "../../common/src/utils/passports/genMockIdDoc.js";
+import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from "openpassport-common/utils/certificate_parsing/dataStructure";
+import { parseCertificate } from "openpassport-common/utils/certificate_parsing/parseCertificate";
+import { parseCertificateSimple } from "openpassport-common/utils/certificate_parsing/parseCertificateSimple";
+import { findStartPubKeyIndex } from "openpassport-common/utils/passports/passport";
+import { parseDscCertificateData } from "openpassport-common/utils/passports/passport_parsing/parseDscCertificateData";
+import { getLeafCscaTree, getLeafDscTree } from "openpassport-common/utils/trees";
+import { genMockIdDoc } from "openpassport-common/utils/passports/genMockIdDoc";
 
 // TODO @Aaronmgdr these should be imported via package not relative paths
 

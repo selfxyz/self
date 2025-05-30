@@ -4,18 +4,18 @@ import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import path from 'path';
 import { poseidon6 } from 'poseidon-lite';
-import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
+import serialized_dsc_tree from 'openpassport-common/pubkeys/serialized_dsc_tree.json';
 import { PASSPORT_ATTESTATION_ID } from 'openpassport-common/constants/constants';
-import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
-import { generateCircuitInputsRegister } from '../../../common/src/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import { parseCertificateSimple } from 'openpassport-common/utils/certificate_parsing/parseCertificateSimple';
+import { getCircuitNameFromPassportData } from 'openpassport-common/utils/circuits/circuitsName';
+import { generateCircuitInputsRegister } from 'openpassport-common/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from 'openpassport-common/utils/passports/genMockPassportData';
 import {
   generateCommitment,
   generateNullifier,
-} from '../../../common/src/utils/passports/passport';
-import { SignatureAlgorithm } from '../../../common/src/utils/types';
-import { fullSigAlgs, sigAlgs } from './test_cases';
+} from 'openpassport-common/utils/passports/passport';
+import { SignatureAlgorithm } from 'openpassport-common/utils/types';
+import { fullSigAlgs, sigAlgs } from './test_cases.js';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;

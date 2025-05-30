@@ -17,11 +17,11 @@ import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
   getAttributeFromUnpackedReveal,
-} from '../../../common/src/utils/circuits/formatOutputs';
-import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { generateCommitment } from '../../../common/src/utils/passports/passport';
-import { hashEndpointWithScope } from '../../../common/src/utils/scope';
+} from 'openpassport-common/utils/circuits/formatOutputs';
+import { generateCircuitInputsVCandDisclose } from 'openpassport-common/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from 'openpassport-common/utils/passports/genMockPassportData';
+import { generateCommitment } from 'openpassport-common/utils/passports/passport';
+import { hashEndpointWithScope } from 'openpassport-common/utils/scope';
 
 describe('Disclose', function () {
   this.timeout(0);

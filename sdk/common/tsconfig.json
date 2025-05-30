@@ -17,7 +17,6 @@
   "include": [
     "index.ts",
     "src/**/*",
-    "../../common/src/**/*",
     "circuits/**/*",
     "circuits/**/*.json",
     "utils/utils.ts"

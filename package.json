@@ -8,7 +8,6 @@
     "app",
     "common",
     "circuits",
-    "contracts",
     "sdk/*",
     "sdk/tests/*",
     "prover/tests"

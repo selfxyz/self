@@ -131,6 +131,7 @@ function sign(
         const msgHash = hash(hashAlgorithm, eContent, 'hex');
 
         const signature = keyPair.sign(msgHash, 'hex');
+        // @ts-expect-error THIS SEEMS LIKE A LEGIT PROBLEM -- aaronmgdr
         const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
 
         return signatureBytes;

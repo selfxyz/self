@@ -36,6 +36,7 @@
     "jsrsasign": "^11.1.0",
     "mocha": "^10.7.3",
     "node-forge": "https://github.com/remicolin/forge",
+    "openpassport-common": "workspace:^",
     "path": "^0.12.7",
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
