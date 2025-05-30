@@ -14,4 +14,5 @@ library AttestationId {
      * Here it is hardcoded as bytes32(uint256(1)) for demonstration purposes.
      */
     bytes32 constant E_PASSPORT = bytes32(uint256(1));
+    bytes32 constant ID_CARD = bytes32(uint256(2));
 }

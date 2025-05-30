@@ -13,10 +13,10 @@ include "../utils/passport/checkPubkeysEqual.circom";
 include "../utils/passport/checkPubkeyPosition.circom";
 
 /// @title REGISTER
-/// @notice Main circuit — verifies the integrity of the passport data, the signature, and generates commitment and nullifier
+/// @notice Main circuit — verifies the integrity of the id card data, the signature, and generates commitment and nullifier
 /// @param DG_HASH_ALGO Hash algorithm used for DG hashing
 /// @param ECONTENT_HASH_ALGO Hash algorithm used for eContent
-/// @param signatureAlgorithm Algorithm used for passport signature verification - contains the information about the final hash algorithm
+/// @param signatureAlgorithm Algorithm used for id card signature verification - contains the information about the final hash algorithm
 /// @param n Number of bits per chunk the key is split into.
 /// @param k Number of chunks the key is split into.
 /// @param MAX_ECONTENT_PADDED_LEN Maximum length of padded eContent
@@ -25,7 +25,7 @@ include "../utils/passport/checkPubkeyPosition.circom";
 /// @input raw_dsc_actual_length Actual length of DSC certificate
 /// @input dsc_pubKey_offset Offset of DSC public key in certificate
 /// @input dsc_pubKey_actual_size Actual size of DSC public key
-/// @input dg1 Document Group 1 data (DG1_LEN bytes)
+/// @input dg1 Document Group 1 data (93 bytes)
 /// @input dg1_hash_offset Offset for DG1 hash
 /// @input eContent eContent data - contains all DG hashes
 /// @input eContent_padded_length Padded length of eContent
@@ -40,9 +40,9 @@ include "../utils/passport/checkPubkeyPosition.circom";
 /// @input siblings Sibling hashes for DSC Merkle proof
 /// @input csca_tree_leaf Leaf of CSCA Merkle tree
 /// @input secret Secret for commitment generation. Saved by the user to access their commitment
-/// @output nullifier Generated nullifier - deterministic on the passport data
+/// @output nullifier Generated nullifier - deterministic on the id card data
 /// @output commitment Commitment that will be added to the onchain registration tree
-template REGISTER(
+template REGISTER_ID(
     DG_HASH_ALGO,
     ECONTENT_HASH_ALGO,
     signatureAlgorithm,
@@ -56,8 +56,8 @@ template REGISTER(
 
     assert(MAX_DSC_LENGTH % 64 == 0);
     
-    // This means the attestation is a passport
-    var attestation_id = 1;
+    // This means the attestation is a id card
+    var attestation_id = 2;
 
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
@@ -68,7 +68,7 @@ template REGISTER(
 
     var MAX_DSC_PUBKEY_LENGTH = n * kScaled / 8;
 
-    var DG1_LEN = 93;
+    var DG1_LEN = 95;
 
     signal input raw_dsc[MAX_DSC_LENGTH];
     signal input raw_dsc_actual_length;
