@@ -14,7 +14,7 @@
     "bump-version:major": "npm version major && yarn sync-versions",
     "bump-version:minor": "npm version minor && yarn sync-versions",
     "bump-version:patch": "npm version patch && yarn sync-versions",
-    "build": "tsc",
+    "types": "tsc --noEmit",
     "clean": "watchman watch-del-all && rm -rf node_modules ios/Pods ios/build android/app/build android/build .yarn/cache ios/.xcode.env.local",
     "clean:android": "rm -rf android/app/build android/build",
     "clean:ios": "rm -rf ios/Pods ios/build",

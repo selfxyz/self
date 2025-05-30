@@ -12,6 +12,7 @@
     "build:ts": "tsc -b",
     "copy-certs": "mkdir -p dist && cp -R ../../common/src/mock_certificates ./dist/",
     "build": "yarn clean && yarn build:ts && yarn copy-certs",
+    "types": "yarn build:ts",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {

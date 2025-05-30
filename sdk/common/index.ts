@@ -6,6 +6,4 @@ import { parseDscCertificateData } from "openpassport-common/utils/passports/pas
 import { getLeafCscaTree, getLeafDscTree } from "openpassport-common/utils/trees";
 import { genMockIdDoc } from "openpassport-common/utils/passports/genMockIdDoc";
 
-// TODO @Aaronmgdr these should be imported via package not relative paths
-
 export { CertificateData, findStartPubKeyIndex, getLeafCscaTree, getLeafDscTree, parseCertificate, parseCertificateSimple, parseDscCertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA, genMockIdDoc };

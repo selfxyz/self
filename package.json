@@ -2,12 +2,14 @@
   "name": "self-workspace-root",
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel -i --all run build",
+    "types": "yarn workspaces foreach --topological-dev --parallel -i --all run types",
     "lint": "yarn workspaces foreach --parallel -i --all run build"
   },
   "workspaces": [
     "app",
     "common",
     "circuits",
+    "contracts",
     "sdk/*",
     "sdk/tests/*",
     "prover/tests"

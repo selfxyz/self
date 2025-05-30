@@ -14,6 +14,7 @@
     "contracts/abstract/*"
   ],
   "scripts": {
+    "types": "tsc -noEmit",
     "build": "npx hardhat clean && npx hardhat compile",
     "deploy:all:localhost": "npm run deploy:verifiers:localhost && npm run deploy:registry:localhost && npm run deploy:hub:localhost",
     "deploy:hub:localhost": "npx hardhat ignition deploy ignition/modules/deployHub.ts --network localhost --verify",
