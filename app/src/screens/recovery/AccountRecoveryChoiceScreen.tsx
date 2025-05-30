@@ -7,6 +7,7 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { BackupEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Keyboard from '../../images/icons/keyboard.svg';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
@@ -17,9 +18,12 @@ import {
   reStorePassportDataWithRightCSCA,
 } from '../../stores/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
+import analytics from '../../utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
+
+const { trackEvent } = analytics();
 
 interface AccountRecoveryChoiceScreenProps {}
 
@@ -44,6 +48,7 @@ const AccountRecoveryChoiceScreen: React.FC<
 
       if (!result) {
         console.warn('Failed to restore account');
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
         navigation.navigate('Launch');
         setRestoring(false);
         return;
@@ -61,6 +66,7 @@ const AccountRecoveryChoiceScreen: React.FC<
         console.log(
           'Secret provided did not match a registered passport. Please try again.',
         );
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);
         navigation.navigate('Launch');
         setRestoring(false);
         return;
@@ -69,10 +75,12 @@ const AccountRecoveryChoiceScreen: React.FC<
         toggleCloudBackupEnabled();
       }
       reStorePassportDataWithRightCSCA(passportData, csca as string);
+      trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
       onRestoreFromCloudNext();
       setRestoring(false);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
       setRestoring(false);
       throw new Error('Something wrong happened during cloud recovery');
     }
@@ -82,6 +90,11 @@ const AccountRecoveryChoiceScreen: React.FC<
     restoreAccountFromMnemonic,
     onRestoreFromCloudNext,
   ]);
+
+  const handleManualRecoveryPress = useCallback(() => {
+    trackEvent(BackupEvents.MANUAL_RECOVERY_SELECTED);
+    onEnterRecoveryPress();
+  }, [onEnterRecoveryPress]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
@@ -106,6 +119,7 @@ const AccountRecoveryChoiceScreen: React.FC<
 
           <YStack gap="$2.5" width="100%" pt="$6">
             <PrimaryButton
+              trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}
               disabled={restoring || !biometricsAvailable}
             >
@@ -118,7 +132,8 @@ const AccountRecoveryChoiceScreen: React.FC<
               <Separator flexGrow={1} />
             </XStack>
             <SecondaryButton
-              onPress={onEnterRecoveryPress}
+              trackEvent={BackupEvents.MANUAL_RECOVERY_SELECTED}
+              onPress={handleManualRecoveryPress}
               disabled={restoring}
             >
               <XStack alignItems="center" justifyContent="center">

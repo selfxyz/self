@@ -5,6 +5,9 @@ import path from 'path';
 import { poseidon2 } from 'poseidon-lite';
 import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
+import nameAndDobIdCardJson from '../../../common/ofacdata/outputs/nameAndDobSMT_ID.json';
+import nameAndYobIdCardJson from '../../../common/ofacdata/outputs/nameAndYobSMT_ID.json';
+import { genMockIdDoc } from '../../../common/src/utils/passports/genMockIdDoc';
 import passportNoAndNationalityjson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
@@ -12,6 +15,9 @@ import { genAndInitMockPassportData } from '../../../common/src/utils/passports/
 let circuit: any;
 
 // Mock passport not added in ofac list
+const mockIdData = genMockIdDoc(
+  { 'idType': 'mock_passport' }
+);
 const passportData = genAndInitMockPassportData(
   'sha256',
   'sha256',
@@ -32,6 +38,30 @@ const passportDataInOfac = genAndInitMockPassportData(
   'HENAO MONTOYA',
   'ARCANGEL DE JESUS'
 );
+
+const mockIdDataInOfac = genMockIdDoc({
+  'idType': 'mock_passport',
+  'nationality': 'FRA',
+  'birthDate': '541007',
+  'lastName': 'HENAO MONTOYA',
+  'passportNumber': '98lh90556',
+  'firstName': 'ARCANGEL DE JESUS'
+})
+
+// Mock ID Card not in OFAC list
+const idCardData = genMockIdDoc({
+  'idType': 'mock_id_card'
+})
+
+// Mock ID Card in OFAC list
+const idCardDataInOfac = genMockIdDoc({
+  'idType': 'mock_id_card',
+  'nationality': 'FRA',
+  'birthDate': '541007',
+  'firstName': 'ARCANGEL DE JESUS',
+  'lastName': 'HENAO MONTOYA'
+})
+
 
 // POSSIBLE TESTS (for each of 3 circuits):
 // 0. Cicuits compiles and loads
@@ -65,10 +95,8 @@ describe('OFAC - Passport number and Nationality match', function () {
       passNoAndNationality_smt,
       proofLevel
     );
-    // console.log('memSmtInputs', memSmtInputs);
 
     nonMemSmtInputs = generateCircuitInputsOfac(passportData, passNoAndNationality_smt, proofLevel);
-    // console.log('nonMemSmtInputs', nonMemSmtInputs);
   });
 
   // Compile circuit
@@ -138,7 +166,7 @@ describe('OFAC - Name and DOB match', function () {
     );
   });
 
-  // Compile circuit
+  // // Compile circuit
   it('should compile and load the circuit, level 2', async function () {
     expect(circuit).to.not.be.undefined;
   });
@@ -332,5 +360,131 @@ describe('OFAC - SMT Security Tests', function () {
     let w = await circuit.calculateWitness(invalidRootInputs);
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
     expect(ofacCheckResult).to.equal('0');
+  });
+});
+
+// ===========================
+// ID Card Tests
+// ===========================
+
+// Level 2: NameDob match in OfacList - ID Card
+describe('OFAC - ID Card - Name and DOB match', function () {
+  this.timeout(0);
+  let namedob_id_smt = new SMT(poseidon2, true);
+  let memSmtInputs: any;
+  let nonMemSmtInputs: any;
+
+  before(async () => {
+    circuit = await wasm_tester(
+      // Use the same circuit as passport level 2
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_id_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
+
+    // IMPORTANT: Ensure this JSON path is correct
+    namedob_id_smt.import(nameAndDobIdCardJson);
+    const proofLevel = 2;
+    memSmtInputs = generateCircuitInputsOfac(
+      idCardDataInOfac, // Use ID card data
+      namedob_id_smt,
+      proofLevel
+    );
+
+    nonMemSmtInputs = generateCircuitInputsOfac(
+      idCardData, // Use ID card data
+      namedob_id_smt,
+      proofLevel
+    );
+  });
+
+  it('ID Card L2: should pass without errors, non-membership', async function () {
+    let w = await circuit.calculateWitness(nonMemSmtInputs);
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('1'); // 1 means not found (non-membership is ok)
+  });
+
+  it('ID Card L2: should pass - ID card details are in OFAC list', async function () {
+    let w = await circuit.calculateWitness(memSmtInputs);
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0'); // 0 means found (membership proof fails non-membership check)
+  });
+
+  it('ID Card L2: should fail - wrong leaf key provided', async function () {
+    const wrongInputs = {
+      ...nonMemSmtInputs,
+      smt_leaf_key: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
+    };
+    let w = await circuit.calculateWitness(wrongInputs);
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0'); // Fails because root won't match
+  });
+});
+
+// Level 1: Name and YOB match in OfacList - ID Card
+describe('OFAC - ID Card - Name and YOB match', function () {
+  this.timeout(0);
+  let nameyob_id_smt = new SMT(poseidon2, true);
+  let memSmtInputs: any;
+  let nonMemSmtInputs: any;
+
+  before(async () => {
+    circuit = await wasm_tester(
+      // Use the same circuit as passport level 1
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_yob_id_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
+
+    // IMPORTANT: Ensure this JSON path is correct
+    nameyob_id_smt.import(nameAndYobIdCardJson);
+    const proofLevel = 1;
+    memSmtInputs = generateCircuitInputsOfac(
+      idCardDataInOfac, // Use ID card data
+      nameyob_id_smt,
+      proofLevel
+    );
+
+    nonMemSmtInputs = generateCircuitInputsOfac(
+      idCardData, // Use ID card data
+      nameyob_id_smt,
+      proofLevel
+    );
+  });
+
+  // it('should compile and load the circuit for ID Card, level 1', async function () {
+  //   expect(circuit).to.not.be.undefined;
+  // });
+
+  it('ID Card L1: should pass without errors, non-membership', async function () {
+    let w = await circuit.calculateWitness(nonMemSmtInputs);
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('1'); // 1 means not found (non-membership is ok)
+  });
+
+  it('ID Card L1: should pass - ID card details are in OFAC list', async function () {
+    let w = await circuit.calculateWitness(memSmtInputs);
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0'); // 0 means found (membership proof fails non-membership check)
+  });
+
+  it('ID Card L1: should fail - wrong leaf key provided', async function () {
+    const wrongInputs = {
+      ...nonMemSmtInputs,
+      smt_leaf_key: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
+    };
+    let w = await circuit.calculateWitness(wrongInputs);
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0'); // Fails because root won't match
   });
 });

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import {Formatter} from "./Formatter.sol";
 import {CircuitAttributeHandler} from "./CircuitAttributeHandler.sol";

@@ -7,6 +7,7 @@ import proofSuccessAnimation from '../../assets/animations/proof_success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { BackupEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
@@ -44,6 +45,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
           </Description>
         </YStack>
         <PrimaryButton
+          trackEvent={BackupEvents.ACCOUNT_VERIFICATION_COMPLETED}
           onPress={() => {
             buttonTap();
             navigation.navigate('Home');

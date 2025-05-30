@@ -20,7 +20,7 @@ export const IDENTITY_TREE_URL = 'https://tree.self.xyz/identity';
 export const IDENTITY_TREE_URL_STAGING = 'https://tree.staging.self.xyz/identity';
 
 export const PASSPORT_ATTESTATION_ID = '1'; //"8518753152044246090169372947057357973469996808638122125210848696986717482788"
-
+export const ID_CARD_ATTESTATION_ID = '2'
 export const CHAIN_NAME = 'celo';
 export const RPC_URL = 'https://forno.celo.org';
 export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8';
@@ -33,6 +33,8 @@ export const DEFAULT_MAJORITY = '18';
 export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
 export const saltLengths = [64, 48, 32];
+
+export type document_type = 'passport' | 'id_card';
 
 /**
  * Maximum number of countries in the forbidden countries list.

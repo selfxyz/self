@@ -43,7 +43,7 @@ build_circuit() {
     
     # Set circuit path based on CIRCUIT_TYPE
     local CIRCUIT_PATH
-    if [ "$CIRCUIT_TYPE" = "register" ] || [ "$CIRCUIT_TYPE" = "dsc" ]; then
+    if [ "$CIRCUIT_TYPE" = "register" ] || [ "$CIRCUIT_TYPE" = "dsc" ] || [ "$CIRCUIT_TYPE" = "register_id" ]; then
         CIRCUIT_PATH="circuits/${CIRCUIT_TYPE}/instances/${CIRCUIT_NAME}.circom"
     else
         CIRCUIT_PATH="circuits/${CIRCUIT_TYPE}/${CIRCUIT_NAME}.circom"

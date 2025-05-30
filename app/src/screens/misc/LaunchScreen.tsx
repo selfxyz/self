@@ -9,6 +9,7 @@ import onboardingAnimation from '../../assets/animations/launch_onboarding.json'
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
+import { AppEvents } from '../../consts/analytics';
 import { privacyUrl, termsUrl } from '../../consts/links';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
@@ -88,7 +89,12 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
           </Anchor>
           &nbsp;of Self provided by Self Inc.
         </Caption>
-        <PrimaryButton onPress={onStartPress}>Get Started</PrimaryButton>
+        <PrimaryButton
+          trackEvent={AppEvents.GET_STARTED}
+          onPress={onStartPress}
+        >
+          Get Started
+        </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
