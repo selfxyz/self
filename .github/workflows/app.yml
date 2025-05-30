@@ -25,9 +25,11 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Install app dependencies
-        run: yarn install-app
-        working-directory: ./app
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build
+        run: yarn build-deps
       - name: Test
         run: yarn test
         working-directory: ./app

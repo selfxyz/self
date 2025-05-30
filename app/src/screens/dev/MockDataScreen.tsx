@@ -25,7 +25,7 @@ import {
   YStack,
 } from 'tamagui';
 
-import { getSKIPEM } from '../../../.././common/src/utils/csca';
+import { getSKIPEM } from 'openpassport-common/utils/csca';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';

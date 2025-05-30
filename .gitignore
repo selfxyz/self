@@ -8,3 +8,4 @@ showcase
 .codegpt
 **/.yarn/
 output/*
+*.tsbuildinfo

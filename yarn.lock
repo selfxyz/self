@@ -20079,7 +20079,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openpassport-common@workspace:^, openpassport-common@workspace:common, openpassport-common@workspace^:":
+"openpassport-common@workspace:^, openpassport-common@workspace:common":
   version: 0.0.0-use.local
   resolution: "openpassport-common@workspace:common"
   dependencies:
@@ -20105,7 +20105,6 @@ __metadata:
     jsrsasign: "npm:^11.1.0"
     mocha: "npm:^10.7.3"
     node-forge: "https://github.com/remicolin/forge"
-    openpassport-common: "workspace^:"
     path: "npm:^0.12.7"
     pkijs: "npm:^3.2.4"
     poseidon-lite: "npm:^0.2.0"

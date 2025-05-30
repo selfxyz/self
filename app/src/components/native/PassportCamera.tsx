@@ -6,7 +6,7 @@ import {
   requireNativeComponent,
 } from 'react-native';
 
-import { extractMRZInfo } from '../../utils/utils.js';
+import { extractMRZInfo } from '../../utils/utils';
 import { RCTFragment } from './RCTFragment';
 
 interface NativePassportOCRViewProps {

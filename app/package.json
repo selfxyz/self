@@ -2,6 +2,7 @@
   "name": "@selfxyz/mobile-app",
   "version": "2.5.2",
   "private": true,
+  "type": "module",
   "scripts": {
     "analyze:android": "yarn reinstall && react-native-bundle-visualizer --platform android --dev",
     "analyze:ios": "yarn reinstall && react-native-bundle-visualizer --platform ios --dev",
@@ -30,8 +31,9 @@
     "ia": "yarn install-app",
     "install-app": "yarn install-app:setup && cd ios && bundle exec pod install && cd .. && yarn clean:xcode-env-local",
     "install-app:deploy": "yarn install-app:setup && yarn clean:xcode-env-local",
-    "install-app:setup": "yarn workspaces focus @selfxyz/mobile-app && cd ios && bundle install && cd ..",
+    "install-app:setup": "yarn workspaces focus @selfxyz/mobile-app && yarn build-deps && cd ios && bundle install && cd ..",
     "ios": "react-native run-ios",
+    "build-deps": "yarn workspaces foreach --from @selfxyz/mobile-app --topological --recursive run build",
     "ios:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose ios internal_test",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",

@@ -8,15 +8,15 @@ import {
 } from './constants/contractAddresses';
 import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
-import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
+import type { SelfVerificationResult } from 'openpassport-common/utils/selfAttestation';
 import {
   castToUserIdentifier,
   UserIdType,
-} from '../../../common/src/utils/circuits/uuid';
+} from 'openpassport-common/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from 'openpassport-common';
-import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
+import { packForbiddenCountriesList } from 'openpassport-common/utils/contracts/formatCallData';
 import { Country3LetterCode, commonNames } from 'openpassport-common';
-import { hashEndpointWithScope } from '../../../common/src/utils/scope';
+import { hashEndpointWithScope } from 'openpassport-common/utils/scope';
 
 const CELO_MAINNET_RPC_URL = "https://forno.celo.org";
 const CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org";
