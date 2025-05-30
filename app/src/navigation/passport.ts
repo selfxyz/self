@@ -1,12 +1,12 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import NFCMethodSelectionScreen from '../screens/passport/NFCMethodSelectionScreen';
 import PassportCameraScreen from '../screens/passport/PassportCameraScreen';
 import PassportCameraTrouble from '../screens/passport/PassportCameraTroubleScreen';
 import PassportNFCScanScreen from '../screens/passport/PassportNFCScanScreen';
 import PassportNFCTrouble from '../screens/passport/PassportNFCTroubleScreen';
 import PassportOnboardingScreen from '../screens/passport/PassportOnboardingScreen';
 import UnsupportedPassportScreen from '../screens/passport/UnsupportedPassportScreen';
-import NFCMethodSelectionScreen from '../screens/passport/NFCMethodSelectionScreen';
 
 const passportScreens = {
   PassportCamera: {

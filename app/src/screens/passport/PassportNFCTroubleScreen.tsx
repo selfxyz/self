@@ -39,7 +39,9 @@ const tips: TipProps[] = [
 
 const PassportNFCTrouble: React.FC = () => {
   const go = useHapticNavigation('PassportNFCScan', { action: 'cancel' });
-  const goToNFCMethodSelection = useHapticNavigation('PassportNFCMethodSelection');
+  const goToNFCMethodSelection = useHapticNavigation(
+    'PassportNFCMethodSelection',
+  );
 
   // error screen, flush analytics
   React.useEffect(() => {

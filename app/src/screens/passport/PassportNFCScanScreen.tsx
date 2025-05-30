@@ -12,6 +12,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Image } from 'tamagui';
 
@@ -36,7 +37,6 @@ import analytics from '../../utils/analytics';
 import { black, slate100, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 const { trackEvent } = analytics();
 
