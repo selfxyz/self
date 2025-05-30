@@ -1,6 +1,6 @@
 import { SelfBackendVerifier } from '@selfxyz/core';
 import { NextResponse } from 'next/server';
-import { countries } from 'openpassport-common';
+import { countries } from '@selfxyz/common';
 
 export async function POST(request: Request) {
     try {

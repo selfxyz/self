@@ -1,6 +1,6 @@
 import io, { Socket } from 'socket.io-client';
 import { QRcodeSteps } from './utils.js';
-import { SelfApp } from 'openpassport-common/utils/appType';
+import { SelfApp } from '@selfxyz/common/utils/appType';
 
 export interface WebAppInfo {
   appName: string;

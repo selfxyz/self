@@ -1,7 +1,7 @@
 import forge from 'node-forge';
-import { WS_RPC_URL_VC_AND_DISCLOSE } from 'openpassport-common/constants/constants';
-import { EndpointType, SelfApp } from 'openpassport-common/utils/appType';
-import { getCircuitNameFromPassportData } from 'openpassport-common/utils/circuits/circuitsName';
+import { WS_RPC_URL_VC_AND_DISCLOSE } from '@selfxyz/common/constants/constants';
+import { EndpointType, SelfApp } from '@selfxyz/common/utils/appType';
+import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 import { AnyActorRef, createActor, createMachine } from 'xstate';

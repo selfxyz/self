@@ -1,10 +1,10 @@
 import { SelfBackendVerifier } from './src/SelfBackendVerifier';
 import { getUserIdentifier } from './src/utils/utils';
-import { countryCodes } from 'openpassport-common/constants/constants';
-import { SelfApp, getUniversalLink, SelfAppBuilder } from 'openpassport-common/utils/appType';
-import { countries } from 'openpassport-common';
-import { hashEndpointWithScope } from 'openpassport-common/utils/scope';
-import { getPackedForbiddenCountries } from 'openpassport-common/utils/contracts/forbiddenCountries';
+import { countryCodes } from '@selfxyz/common/constants/constants';
+import { SelfApp, getUniversalLink, SelfAppBuilder } from '@selfxyz/common/utils/appType';
+import { countries } from '@selfxyz/common';
+import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+import { getPackedForbiddenCountries } from '@selfxyz/common/utils/contracts/forbiddenCountries';
 
 export {
   SelfBackendVerifier,

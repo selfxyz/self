@@ -8,7 +8,7 @@ import { sha384 } from 'js-sha512';
 import {
   PCR0_MANAGER_ADDRESS,
   RPC_URL,
-} from 'openpassport-common/constants/constants';
+} from '@selfxyz/common/constants/constants';
 import { Certificate } from 'pkijs';
 
 import { AWS_ROOT_PEM } from './awsRootPem';

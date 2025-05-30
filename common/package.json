@@ -1,7 +1,7 @@
 {
-  "name": "openpassport-common",
+  "name": "@selfxyz/common",
   "version": "0.0.1",
-  "description": "interal constants and utils",
+  "description": "Constants and utils for self",
   "license": "MIT",
   "author": "",
   "private": true,

@@ -55,9 +55,11 @@ jobs:
         working-directory: ./circuits
         run: yarn install --immutable
 
-      - name: Run lint
-        working-directory: ./circuits
+      - name: Run lint (global)
         run: yarn lint
+
+      - name: Run typecheck (global)
+        run: yarn types
 
       - name: Run Tests (Circuits)
         working-directory: ./circuits

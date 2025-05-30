@@ -1,8 +1,8 @@
 import {
   Country3LetterCode,
   countryCodes,
-} from 'openpassport-common/constants/constants';
-import { SelfAppDisclosureConfig } from 'openpassport-common/utils/appType';
+} from '@selfxyz/common/constants/constants';
+import { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 

@@ -8,7 +8,7 @@ import {
   DSC_TREE_URL_STAGING,
   IDENTITY_TREE_URL,
   IDENTITY_TREE_URL_STAGING,
-} from 'openpassport-common/constants/constants';
+} from '@selfxyz/common/constants/constants';
 
 interface ProtocolState {
   passport: {

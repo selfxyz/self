@@ -12,16 +12,16 @@ import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNation
 import {
   attributeToPosition,
   PASSPORT_ATTESTATION_ID,
-} from 'openpassport-common/constants/constants';
+} from '@selfxyz/common/constants/constants';
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
   getAttributeFromUnpackedReveal,
-} from 'openpassport-common/utils/circuits/formatOutputs';
-import { generateCircuitInputsVCandDisclose } from 'openpassport-common/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from 'openpassport-common/utils/passports/genMockPassportData';
-import { generateCommitment } from 'openpassport-common/utils/passports/passport';
-import { hashEndpointWithScope } from 'openpassport-common/utils/scope';
+} from '@selfxyz/common/utils/circuits/formatOutputs';
+import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
+import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
+import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 
 describe('Disclose', function () {
   this.timeout(0);

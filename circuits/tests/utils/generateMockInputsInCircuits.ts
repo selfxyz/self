@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 
-import { SignatureAlgorithm } from 'openpassport-common/utils/types';
-import { hexToDecimal, splitToWords } from 'openpassport-common/utils/bytes';
-import { bytesToBigDecimal } from 'openpassport-common/utils/bytes';
-import { getNAndK } from 'openpassport-common/utils/passports/passport';
+import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
+import { hexToDecimal, splitToWords } from '@selfxyz/common/utils/bytes';
+import { bytesToBigDecimal } from '@selfxyz/common/utils/bytes';
+import { getNAndK } from '@selfxyz/common/utils/passports/passport';
 
 export const generateMockRsaPkcs1v1_5Inputs = (signatureAlgorithm: SignatureAlgorithm) => {
   let privateKey: string;

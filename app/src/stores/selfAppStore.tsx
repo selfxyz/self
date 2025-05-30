@@ -1,5 +1,5 @@
-import { WS_DB_RELAYER } from 'openpassport-common/constants/constants';
-import { SelfApp } from 'openpassport-common/utils/appType';
+import { WS_DB_RELAYER } from '@selfxyz/common/constants/constants';
+import { SelfApp } from '@selfxyz/common/utils/appType';
 import io, { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 

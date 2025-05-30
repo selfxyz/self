@@ -1,8 +1,8 @@
 import { wasm as wasmTester } from 'circom_tester';
 import * as crypto from 'crypto';
-import { initElliptic } from 'openpassport-common/utils/certificate_parsing/elliptic';
+import { initElliptic } from '@selfxyz/common/utils/certificate_parsing/elliptic';
 import * as path from 'path';
-import { splitToWords } from 'openpassport-common/utils/bytes';
+import { splitToWords } from '@selfxyz/common/utils/bytes';
 
 const elliptic = initElliptic();
 const testSuite = [

@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
-import { formatCountriesList } from 'openpassport-common/utils/circuits/formatInputs';
-import { formatAndUnpackForbiddenCountriesList } from 'openpassport-common/utils/circuits/formatOutputs';
-import { formatInput } from 'openpassport-common/utils/circuits/generateInputs';
-import { formatMrz } from 'openpassport-common/utils/passports/format';
-import { genAndInitMockPassportData } from 'openpassport-common/utils/passports/genMockPassportData';
+import { formatCountriesList } from '@selfxyz/common/utils/circuits/formatInputs';
+import { formatAndUnpackForbiddenCountriesList } from '@selfxyz/common/utils/circuits/formatOutputs';
+import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
+import { formatMrz } from '@selfxyz/common/utils/passports/format';
+import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 
 describe('ProveCountryIsNotInList', function () {
   this.timeout(0);

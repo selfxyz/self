@@ -4,19 +4,19 @@ import {
   attributeToPosition,
   DEFAULT_MAJORITY,
   PASSPORT_ATTESTATION_ID,
-} from 'openpassport-common/constants/constants';
-import nameAndDobSMTData from 'openpassport-common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobSMTData from 'openpassport-common/ofacdata/outputs/nameAndYobSMT.json';
-import passportNoAndNationalitySMTData from 'openpassport-common/ofacdata/outputs/passportNoAndNationalitySMT.json';
-import { SelfApp } from 'openpassport-common/utils/appType';
-import { getCircuitNameFromPassportData } from 'openpassport-common/utils/circuits/circuitsName';
+} from '@selfxyz/common/constants/constants';
+import nameAndDobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json';
+import nameAndYobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json';
+import passportNoAndNationalitySMTData from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json';
+import { SelfApp } from '@selfxyz/common/utils/appType';
+import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
 import {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
-} from 'openpassport-common/utils/circuits/generateInputs';
-import { hashEndpointWithScope } from 'openpassport-common/utils/scope';
-import { PassportData } from 'openpassport-common/utils/types';
+} from '@selfxyz/common/utils/circuits/generateInputs';
+import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+import { PassportData } from '@selfxyz/common/utils/types';
 import { poseidon2 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';

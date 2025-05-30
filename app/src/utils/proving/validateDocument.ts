@@ -2,14 +2,14 @@ import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import {
   API_URL,
   PASSPORT_ATTESTATION_ID,
-} from 'openpassport-common/constants/constants';
-import { getCircuitNameFromPassportData } from 'openpassport-common/utils/circuits/circuitsName';
+} from '@selfxyz/common/constants/constants';
+import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
 import {
   generateCommitment,
   generateNullifier,
-} from 'openpassport-common/utils/passports/passport';
-import { getLeafDscTree } from 'openpassport-common/utils/trees';
-import { PassportData } from 'openpassport-common/utils/types';
+} from '@selfxyz/common/utils/passports/passport';
+import { getLeafDscTree } from '@selfxyz/common/utils/trees';
+import { PassportData } from '@selfxyz/common/utils/types';
 import { poseidon2 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';

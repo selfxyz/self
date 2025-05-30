@@ -1,4 +1,4 @@
-import { PassportData } from 'openpassport-common/utils/types';
+import { PassportData } from '@selfxyz/common/utils/types';
 import React, {
   createContext,
   PropsWithChildren,

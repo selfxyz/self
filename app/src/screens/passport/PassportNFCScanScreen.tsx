@@ -1,8 +1,8 @@
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import { getSKIPEM } from 'openpassport-common/utils/csca';
-import { initPassportDataParsing } from 'openpassport-common/utils/passports/passport';
-import { PassportData } from 'openpassport-common/utils/types';
+import { getSKIPEM } from '@selfxyz/common/utils/csca';
+import { initPassportDataParsing } from '@selfxyz/common/utils/passports/passport';
+import { PassportData } from '@selfxyz/common/utils/types';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Linking,

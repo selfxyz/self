@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { formatInput } from 'openpassport-common/utils/circuits/generateInputs';
-import { customHasher, packBytesAndPoseidon } from 'openpassport-common/utils/hash';
+import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
+import { customHasher, packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
 
 describe('CustomHasher', function () {
   this.timeout(0);
