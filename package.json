@@ -3,7 +3,7 @@
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
     "types": "yarn workspaces foreach --topological-dev --parallel -i --all run types",
-    "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run build"
+    "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint"
   },
   "workspaces": [
     "app",
