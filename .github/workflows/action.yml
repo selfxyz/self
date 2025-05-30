@@ -53,7 +53,7 @@ jobs:
 
       - name: Install Yarn dependencies
         working-directory: ./circuits
-        run: yarn install-circuits --immutable
+        run: yarn install --immutable
 
       - name: Run lint
         working-directory: ./circuits

@@ -14,7 +14,7 @@
     "download": "bash scripts/server/download_circuits_from_AWS.sh",
     "format": "prettier --write .",
     "nice": "prettier --write .",
-    "install-circuits": "cd ../common && yarn && cd ../circuits && yarn",
+    "install-circuits": "yarn workspaces focus @selfxyz/circuits",
     "lint": "prettier --check .",
     "test": "yarn ts-mocha --max-old-space-size=8192 'tests/**/*.test.ts' 'tests/*.test.ts' --exit",
     "test-custom-hasher": "yarn ts-mocha --max-old-space-size=8192 'tests/other_circuits/custom_hasher.test.ts' --exit",

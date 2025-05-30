@@ -32,11 +32,14 @@
 
 > All of the commands in this guide are run from the `self/app` directory
 
-Install dependencies
+Install dependencies + build
+
 ```bash
-yarn install
 yarn install-app
+
 ```
+
+
 
 ### Android
 

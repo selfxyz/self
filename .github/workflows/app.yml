@@ -29,7 +29,8 @@ jobs:
         uses: ./.github/actions/yarn-install
 
       - name: Build
-        run: yarn build-deps
+        run: yarn build:deps
+        working-directory: ./app
       - name: Test
         run: yarn test
         working-directory: ./app

@@ -21,9 +21,10 @@
   ],
   "scripts": {
     "build": "tsc",
+    "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode run build",
     "types": "yarn build --noEmit",
     "format": "prettier --write .",
-    "install-sdk": "yarn workspaces focus @selfxyz/qrcode",
+    "install-sdk": "yarn workspace focus @selfxyz/qrcode",
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
     "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassportVerifier.test.ts --exit",
