@@ -21,6 +21,7 @@ describe('navigation', () => {
       'PassportCameraTrouble',
       'PassportDataInfo',
       'PassportDataNotFound',
+      'PassportNFCMethodSelection',
       'PassportNFCScan',
       'PassportNFCTrouble',
       'PassportOnboarding',
