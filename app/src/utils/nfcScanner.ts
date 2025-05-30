@@ -52,6 +52,7 @@ const scanIOS = async (inputs: Inputs) => {
 };
 
 export const parseScanResponse = (response: any) => {
+  console.debug('Response:', response);
   return Platform.OS === 'android'
     ? handleResponseAndroid(response)
     : handleResponseIOS(response);
