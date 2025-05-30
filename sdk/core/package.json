@@ -38,6 +38,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@size-limit/preset-big-lib": "^11.2.0",
     "@types/chai": "^4.3.6",
     "@types/chai-as-promised": "^7.1.8",
     "@types/circomlibjs": "^0.1.6",
@@ -49,6 +50,7 @@
     "@types/snarkjs": "^0.7.8",
     "axios": "^1.7.2",
     "prettier": "^3.3.3",
+    "size-limit": "^11.2.0",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
