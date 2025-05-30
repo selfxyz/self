@@ -7,7 +7,7 @@ import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json'
 import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import nameAndDobIdCardJson from '../../../common/ofacdata/outputs/nameAndDobSMT_ID.json';
 import nameAndYobIdCardJson from '../../../common/ofacdata/outputs/nameAndYobSMT_ID.json';
-import { genMockIdDoc } from '../../../common/src/utils/passports/genMockIdDoc';
+import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
 import passportNoAndNationalityjson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import { generateCircuitInputsOfac } from '@selfxyz/common/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
