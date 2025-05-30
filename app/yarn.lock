@@ -2789,9 +2789,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-react-native@npm:^2.20.3":
-  version: 2.20.3
-  resolution: "@segment/analytics-react-native@npm:2.20.3"
+"@segment/analytics-react-native@npm:^2.21.0":
+  version: 2.21.0
+  resolution: "@segment/analytics-react-native@npm:2.21.0"
   dependencies:
     "@segment/tsub": "npm:2.0.0"
     "@stdlib/number-float64-base-normalize": "npm:0.0.8"
@@ -2807,7 +2807,7 @@ __metadata:
   peerDependenciesMeta:
     "@react-native-async-storage/async-storage":
       optional: true
-  checksum: 10c0/ea3909fca1656865d07e9517074bdc11b78ed69c8e5df16cd6608acfe366c48ca53d4aa6bafb0abcbb0a9c2239790943ad3f741d3e540ee3be6cd1bcbfe5aa70
+  checksum: 10c0/b8f2d11a14acb0405402873860658da928cb18207339b446bcf566318fd69c13ee35856378fa42ac6e41e3ec26c56f07bfe555f2673fd9bad492f2ffac9b3e6a
   languageName: node
   linkType: hard
 
@@ -12109,7 +12109,7 @@ __metadata:
     "@react-native/typescript-config": "npm:0.75.4"
     "@react-navigation/native": "npm:^7.0.14"
     "@react-navigation/native-stack": "npm:^7.2.0"
-    "@segment/analytics-react-native": "npm:^2.20.3"
+    "@segment/analytics-react-native": "npm:^2.21.0"
     "@segment/sovran-react-native": "npm:^1.1.3"
     "@sentry/react-native": "npm:^6.10.0"
     "@stablelib/cbor": "npm:^2.0.1"

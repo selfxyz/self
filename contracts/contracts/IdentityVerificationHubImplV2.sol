@@ -265,7 +265,7 @@ contract IdentityVerificationHubImplV2 is IdentityVerificationHubStorageV2, IIde
         assembly {
             attestationId := calldataload(proofData.offset)
         }
-        
+
         if (attestationId == AttestationId.E_PASSPORT) {
             // Passport proof
             VcAndDiscloseHubProof memory proof = _decodePassportProof(proofData[32:]);
@@ -650,7 +650,7 @@ contract IdentityVerificationHubImplV2 is IdentityVerificationHubStorageV2, IIde
             for (uint256 i = 0; i < 3; i++) {
                 revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
             }
-            
+
             if (olderThanEnabled) {
                 if (!CircuitAttributeHandlerV2.compareOlderThan(
                     attestationId,
@@ -660,7 +660,7 @@ contract IdentityVerificationHubImplV2 is IdentityVerificationHubStorageV2, IIde
                     revert INVALID_OLDER_THAN();
                 }
             }
-            
+
             if (ofacEnabled[0] || ofacEnabled[1] || ofacEnabled[2]) {
                 if (!CircuitAttributeHandlerV2.compareOfac(
                     attestationId,
@@ -684,7 +684,7 @@ contract IdentityVerificationHubImplV2 is IdentityVerificationHubStorageV2, IIde
             for (uint256 i = 0; i < 4; i++) {
                 revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
             }
-            
+
             if (olderThanEnabled) {
                 if (!CircuitAttributeHandlerV2.compareOlderThan(
                     attestationId,
@@ -694,7 +694,7 @@ contract IdentityVerificationHubImplV2 is IdentityVerificationHubStorageV2, IIde
                     revert INVALID_OLDER_THAN();
                 }
             }
-            
+
             if (ofacEnabled[1] || ofacEnabled[2]) {
                 if (!CircuitAttributeHandlerV2.compareOfac(
                     attestationId,

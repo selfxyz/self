@@ -18,6 +18,8 @@ interface RCTPassportOCRViewManagerProps extends RCTFragmentViewManagerProps {
             documentNumber: string;
             expiryDate: string;
             birthDate: string;
+            documentType: string;
+            countryCode: string;
           };
     }>,
   ) => void;
@@ -73,6 +75,8 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
               documentNumber: string;
               expiryDate: string;
               birthDate: string;
+              documentType: string;
+              countryCode: string;
             };
       }>,
     ) => {
@@ -86,6 +90,8 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
           passportNumber: event.nativeEvent.data.documentNumber,
           dateOfBirth: event.nativeEvent.data.birthDate,
           dateOfExpiry: event.nativeEvent.data.expiryDate,
+          documentType: event.nativeEvent.data.documentType,
+          countryCode: event.nativeEvent.data.countryCode,
         });
       }
     },

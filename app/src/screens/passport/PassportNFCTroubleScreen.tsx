@@ -4,7 +4,10 @@ import Tips, { TipProps } from '../../components/Tips';
 import { Caption } from '../../components/typography/Caption';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
+import analytics from '../../utils/analytics';
 import { slate500 } from '../../utils/colors';
+
+const { flush: flushAnalytics } = analytics();
 
 const tips: TipProps[] = [
   {
@@ -35,6 +38,12 @@ const tips: TipProps[] = [
 
 const PassportNFCTrouble: React.FC = () => {
   const go = useHapticNavigation('PassportNFCScan', { action: 'cancel' });
+
+  // error screen, flush analytics
+  React.useEffect(() => {
+    flushAnalytics();
+  }, []);
+
   return (
     <SimpleScrolledTitleLayout
       title="Having trouble scanning your passport?"

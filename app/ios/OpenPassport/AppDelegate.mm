@@ -5,6 +5,7 @@
 #import <React/RCTLinkingManager.h>
 #import <Firebase.h>
 #import <UserNotifications/UserNotifications.h>
+#import <segment_analytics_react_native-Swift.h>
 
 @implementation AppDelegate
 
@@ -80,6 +81,15 @@ continueUserActivity:(NSUserActivity *)userActivity
   }
 
   return [tokenString copy];
+}
+
+// for segment deep link tracking
+- (BOOL)application:(UIApplication *)application
+            openURL: (NSURL *)url
+            options:(nonnull NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
+
+  [AnalyticsReactNative trackDeepLink:url withOptions:options];
+  return YES;
 }
 
 @end
