@@ -9,7 +9,10 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import Paste from '../../images/icons/paste.svg';
 import { useAuth } from '../../stores/authProvider';
-import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
+import {
+  loadPassportDataAndSecret,
+  reStorePassportDataWithRightCSCA,
+} from '../../stores/passportDataProvider';
 import {
   black,
   slate300,
@@ -18,7 +21,7 @@ import {
   slate700,
   white,
 } from '../../utils/colors';
-import { isUserRegistered } from '../../utils/proving/validateDocument';
+import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
 
 interface RecoverWithPhraseScreenProps {}
 
@@ -56,12 +59,16 @@ const RecoverWithPhraseScreen: React.FC<
 
     const passportDataAndSecret = (await loadPassportDataAndSecret()) as string;
     const { passportData, secret } = JSON.parse(passportDataAndSecret);
-    const isRegistered = await isUserRegistered(passportData, secret);
+    const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
+      passportData,
+      secret as string,
+    );
     console.log('User is registered:', isRegistered);
     if (!isRegistered) {
       console.log(
         'Secret provided did not match a registered passport. Please try again.',
       );
+      reStorePassportDataWithRightCSCA(passportData, csca as string);
       navigation.navigate('Launch');
       setRestoring(false);
       return;

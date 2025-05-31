@@ -1,11 +1,14 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { poseidon2 } from 'poseidon-lite';
+import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import {
   API_URL,
   PASSPORT_ATTESTATION_ID,
 } from '../../../../common/src/constants/constants';
+import { parseCertificateSimple } from '../../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
+import { hash, packBytesAndPoseidon } from '../../../../common/src/utils/hash';
+import { formatMrz } from '../../../../common/src/utils/passports/format';
 import {
   generateCommitment,
   generateNullifier,
@@ -78,6 +81,46 @@ export async function isUserRegistered(
   return index !== -1;
 }
 
+export async function isUserRegisteredWithAlternativeCSCA(
+  passportData: PassportData,
+  secret: string,
+): Promise<{ isRegistered: boolean; csca: string | null }> {
+  if (!passportData) {
+    console.error('Passport data is null');
+    return { isRegistered: false, csca: null };
+  }
+  const alternativeCSCA = useProtocolStore.getState().passport.alternative_csca;
+  console.log('alternativeCSCA: ', alternativeCSCA);
+  const { commitment_list, csca_list } = generateCommitmentInApp(
+    secret,
+    PASSPORT_ATTESTATION_ID,
+    passportData,
+    alternativeCSCA,
+  );
+
+  if (commitment_list.length === 0) {
+    console.error(
+      'No valid CSCA certificates could be parsed from alternativeCSCA',
+    );
+    return { isRegistered: false, csca: null };
+  }
+
+  const serializedTree = useProtocolStore.getState().passport.commitment_tree;
+  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
+  for (let i = 0; i < commitment_list.length; i++) {
+    const commitment = commitment_list[i];
+    const index = tree.indexOf(BigInt(commitment));
+    if (index !== -1) {
+      return { isRegistered: true, csca: csca_list[i] };
+    }
+  }
+  console.error(
+    'None of the following CSCA correspond to the commitment:',
+    csca_list,
+  );
+  return { isRegistered: false, csca: null };
+}
+
 export async function isPassportNullified(passportData: PassportData) {
   const nullifier = generateNullifier(passportData);
   const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
@@ -104,7 +147,6 @@ export async function checkIfPassportDscIsInTree(
     passportData.dsc_parsed!,
     passportData.csca_parsed!,
   );
-  console.log('DSC leaf:', leaf);
   const index = tree.indexOf(BigInt(leaf));
   if (index === -1) {
     console.log('DSC not found in the tree');
@@ -113,4 +155,69 @@ export async function checkIfPassportDscIsInTree(
     console.log('DSC found in the tree');
     return true;
   }
+}
+
+export function generateCommitmentInApp(
+  secret: string,
+  attestation_id: string,
+  passportData: PassportData,
+  alternativeCSCA: Record<string, string>,
+) {
+  const dg1_packed_hash = packBytesAndPoseidon(formatMrz(passportData.mrz));
+  const eContent_packed_hash = packBytesAndPoseidon(
+    (
+      hash(
+        passportData.passportMetadata!.eContentHashFunction,
+        Array.from(passportData.eContent),
+        'bytes',
+      ) as number[]
+    ).map(byte => byte & 0xff),
+  );
+
+  const csca_list: string[] = [];
+  const commitment_list: string[] = [];
+
+  for (const [cscaKey, cscaValue] of Object.entries(alternativeCSCA)) {
+    try {
+      const formattedCsca = formatCSCAPem(cscaValue);
+      const cscaParsed = parseCertificateSimple(formattedCsca);
+
+      const commitment = poseidon5([
+        secret,
+        attestation_id,
+        dg1_packed_hash,
+        eContent_packed_hash,
+        getLeafDscTree(passportData.dsc_parsed!, cscaParsed),
+      ]).toString();
+
+      csca_list.push(formatCSCAPem(cscaValue));
+      commitment_list.push(commitment);
+    } catch (error) {
+      console.warn(
+        `Failed to parse CSCA certificate for key ${cscaKey}:`,
+        error,
+      );
+    }
+  }
+
+  if (commitment_list.length === 0) {
+    console.error('No valid CSCA certificates found in alternativeCSCA');
+  }
+
+  return { commitment_list, csca_list };
+}
+
+function formatCSCAPem(cscaPem: string): string {
+  let cleanedPem = cscaPem.trim();
+
+  if (!cleanedPem.includes('-----BEGIN CERTIFICATE-----')) {
+    cleanedPem = cleanedPem.replace(/[^A-Za-z0-9+/=]/g, '');
+    try {
+      Buffer.from(cleanedPem, 'base64');
+    } catch (error) {
+      throw new Error(`Invalid base64 certificate data: ${error}`);
+    }
+    cleanedPem = `-----BEGIN CERTIFICATE-----\n${cleanedPem}\n-----END CERTIFICATE-----`;
+  }
+  return cleanedPem;
 }

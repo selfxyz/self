@@ -7,10 +7,12 @@ import { create } from 'zustand';
 import { WS_RPC_URL_VC_AND_DISCLOSE } from '../../../../common/src/constants/constants';
 import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
+import { PassportData } from '../../../../common/src/utils/types';
 import { navigationRef } from '../../navigation';
 import {
   clearPassportData,
   loadPassportDataAndSecret,
+  reStorePassportDataWithRightCSCA,
 } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
@@ -32,7 +34,7 @@ import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
   isPassportNullified,
-  isUserRegistered,
+  isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
 
 const provingMachine = createMachine({
@@ -517,7 +519,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           passportData.documentType && passportData.documentType !== 'passport'
             ? 'stg'
             : 'prod';
-        await useProtocolStore.getState().passport.fetch_all(env);
+        await useProtocolStore
+          .getState()
+          .passport.fetch_all(
+            env,
+            (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier,
+          );
         actor!.send({ type: 'FETCH_SUCCESS' });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -542,10 +549,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           return;
         }
 
-        const isRegistered = await isUserRegistered(
-          passportData,
-          secret as string,
-        );
+        const { isRegistered, csca } =
+          await isUserRegisteredWithAlternativeCSCA(
+            passportData,
+            secret as string,
+          );
+        console.log('isRegistered: ', isRegistered, 'csca: ', csca);
+
         if (circuitType === 'disclose') {
           if (isRegistered) {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
@@ -555,6 +565,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             return;
           }
         } else if (isRegistered) {
+          reStorePassportDataWithRightCSCA(passportData, csca as string);
           actor!.send({ type: 'ALREADY_REGISTERED' });
           return;
         }
