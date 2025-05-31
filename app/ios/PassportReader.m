@@ -10,7 +10,8 @@
 
 @interface RCT_EXTERN_MODULE(PassportReader, NSObject)
 
-RCT_EXTERN_METHOD(configure:(NSString *)token)
+RCT_EXTERN_METHOD(configure:(NSString *)token
+                  enableDebugLogs:(BOOL)enableDebugLogs)
 
 RCT_EXTERN_METHOD(scanPassport:(NSString *)passportNumber
                   dateOfBirth:(NSString *)dateOfBirth
