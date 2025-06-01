@@ -46,47 +46,49 @@ library CircuitAttributeHandlerV2 {
      */
     function getFieldPositions(bytes32 attestationId) internal pure returns (FieldPositions memory positions) {
         if (attestationId == AttestationId.E_PASSPORT) {
-            return FieldPositions({
-                issuingStateStart: 2,
-                issuingStateEnd: 4,
-                nameStart: 5,
-                nameEnd: 43,
-                documentNumberStart: 44,
-                documentNumberEnd: 52,
-                nationalityStart: 54,
-                nationalityEnd: 56,
-                dateOfBirthStart: 57,
-                dateOfBirthEnd: 62,
-                genderStart: 64,
-                genderEnd: 64,
-                expiryDateStart: 65,
-                expiryDateEnd: 70,
-                olderThanStart: 88,
-                olderThanEnd: 89,
-                ofacStart: 90,
-                ofacEnd: 92
-            });
+            return
+                FieldPositions({
+                    issuingStateStart: 2,
+                    issuingStateEnd: 4,
+                    nameStart: 5,
+                    nameEnd: 43,
+                    documentNumberStart: 44,
+                    documentNumberEnd: 52,
+                    nationalityStart: 54,
+                    nationalityEnd: 56,
+                    dateOfBirthStart: 57,
+                    dateOfBirthEnd: 62,
+                    genderStart: 64,
+                    genderEnd: 64,
+                    expiryDateStart: 65,
+                    expiryDateEnd: 70,
+                    olderThanStart: 88,
+                    olderThanEnd: 89,
+                    ofacStart: 90,
+                    ofacEnd: 92
+                });
         } else if (attestationId == AttestationId.EU_ID_CARD) {
-            return FieldPositions({
-                issuingStateStart: 2,
-                issuingStateEnd: 4,
-                nameStart: 60,
-                nameEnd: 89,
-                documentNumberStart: 5,
-                documentNumberEnd: 13,
-                nationalityStart: 45,
-                nationalityEnd: 47,
-                dateOfBirthStart: 30,
-                dateOfBirthEnd: 35,
-                genderStart: 37,
-                genderEnd: 37,
-                expiryDateStart: 38,
-                expiryDateEnd: 43,
-                olderThanStart: 90,
-                olderThanEnd: 91,
-                ofacStart: 92,
-                ofacEnd: 92
-            });
+            return
+                FieldPositions({
+                    issuingStateStart: 2,
+                    issuingStateEnd: 4,
+                    nameStart: 60,
+                    nameEnd: 89,
+                    documentNumberStart: 5,
+                    documentNumberEnd: 13,
+                    nationalityStart: 45,
+                    nationalityEnd: 47,
+                    dateOfBirthStart: 30,
+                    dateOfBirthEnd: 35,
+                    genderStart: 37,
+                    genderEnd: 37,
+                    expiryDateStart: 38,
+                    expiryDateEnd: 43,
+                    olderThanStart: 90,
+                    olderThanEnd: 91,
+                    ofacStart: 92,
+                    ofacEnd: 92
+                });
         } else {
             revert("Invalid attestation ID");
         }
@@ -144,7 +146,10 @@ library CircuitAttributeHandlerV2 {
      */
     function getDateOfBirth(bytes32 attestationId, bytes memory charcodes) internal pure returns (string memory) {
         FieldPositions memory positions = getFieldPositions(attestationId);
-        return Formatter.formatDate(extractStringAttribute(charcodes, positions.dateOfBirthStart, positions.dateOfBirthEnd));
+        return
+            Formatter.formatDate(
+                extractStringAttribute(charcodes, positions.dateOfBirthStart, positions.dateOfBirthEnd)
+            );
     }
 
     /**
@@ -166,7 +171,8 @@ library CircuitAttributeHandlerV2 {
      */
     function getExpiryDate(bytes32 attestationId, bytes memory charcodes) internal pure returns (string memory) {
         FieldPositions memory positions = getFieldPositions(attestationId);
-        return Formatter.formatDate(extractStringAttribute(charcodes, positions.expiryDateStart, positions.expiryDateEnd));
+        return
+            Formatter.formatDate(extractStringAttribute(charcodes, positions.expiryDateStart, positions.expiryDateEnd));
     }
 
     /**
@@ -247,11 +253,11 @@ library CircuitAttributeHandlerV2 {
         if (checkDocumentNo && attestationId == AttestationId.E_PASSPORT) {
             documentNoResult = getDocumentNoOfac(attestationId, charcodes) == 1;
         }
-        
+
         if (checkNameAndDob) {
             nameAndDobResult = getNameAndDobOfac(attestationId, charcodes) == 1;
         }
-        
+
         if (checkNameAndYob) {
             nameAndYobResult = getNameAndYobOfac(attestationId, charcodes) == 1;
         }
@@ -266,7 +272,11 @@ library CircuitAttributeHandlerV2 {
      * @param olderThan The threshold value to compare against.
      * @return True if the extracted age is greater than or equal to the threshold, false otherwise.
      */
-    function compareOlderThan(bytes32 attestationId, bytes memory charcodes, uint256 olderThan) internal pure returns (bool) {
+    function compareOlderThan(
+        bytes32 attestationId,
+        bytes memory charcodes,
+        uint256 olderThan
+    ) internal pure returns (bool) {
         return getOlderThan(attestationId, charcodes) >= olderThan;
     }
 
@@ -311,4 +321,4 @@ library CircuitAttributeHandlerV2 {
     function getPassportNoOfac(bytes memory charcodes) internal pure returns (uint256) {
         return getDocumentNoOfac(AttestationId.E_PASSPORT, charcodes);
     }
-} 
+}
