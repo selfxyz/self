@@ -15,9 +15,7 @@ import { genAndInitMockPassportData } from '../../../common/src/utils/passports/
 let circuit: any;
 
 // Mock passport not added in ofac list
-const mockIdData = genMockIdDoc(
-  { 'idType': 'mock_passport' }
-);
+const mockIdData = genMockIdDoc({ idType: 'mock_passport' });
 const passportData = genAndInitMockPassportData(
   'sha256',
   'sha256',
@@ -40,28 +38,27 @@ const passportDataInOfac = genAndInitMockPassportData(
 );
 
 const mockIdDataInOfac = genMockIdDoc({
-  'idType': 'mock_passport',
-  'nationality': 'FRA',
-  'birthDate': '541007',
-  'lastName': 'HENAO MONTOYA',
-  'passportNumber': '98lh90556',
-  'firstName': 'ARCANGEL DE JESUS'
-})
+  idType: 'mock_passport',
+  nationality: 'FRA',
+  birthDate: '541007',
+  lastName: 'HENAO MONTOYA',
+  passportNumber: '98lh90556',
+  firstName: 'ARCANGEL DE JESUS',
+});
 
 // Mock ID Card not in OFAC list
 const idCardData = genMockIdDoc({
-  'idType': 'mock_id_card'
-})
+  idType: 'mock_id_card',
+});
 
 // Mock ID Card in OFAC list
 const idCardDataInOfac = genMockIdDoc({
-  'idType': 'mock_id_card',
-  'nationality': 'FRA',
-  'birthDate': '541007',
-  'firstName': 'ARCANGEL DE JESUS',
-  'lastName': 'HENAO MONTOYA'
-})
-
+  idType: 'mock_id_card',
+  nationality: 'FRA',
+  birthDate: '541007',
+  firstName: 'ARCANGEL DE JESUS',
+  lastName: 'HENAO MONTOYA',
+});
 
 // POSSIBLE TESTS (for each of 3 circuits):
 // 0. Cicuits compiles and loads
