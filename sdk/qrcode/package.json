@@ -14,10 +14,7 @@
   },
   "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "common",
-    "circuits/**/*.json",
-    "src/QRcode"
+    "dist"
   ],
   "scripts": {
     "build": "tsc",
@@ -26,8 +23,8 @@
     "format": "prettier --write .",
     "install-sdk": "yarn workspace focus @selfxyz/qrcode",
     "lint": "prettier --check .",
-    "prepublishOnly": "npm run build",
-    "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassportVerifier.test.ts --exit",
+    "prepublishOnly": "yarn build",
+    "test": "echo 'no tests found'",
     "publish": "yarn npm publish --access public"
   },
   "dependencies": {

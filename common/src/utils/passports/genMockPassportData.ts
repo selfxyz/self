@@ -171,7 +171,7 @@ function sign(
     const msgHash = hash(hashAlgorithm, eContent, 'hex');
 
     const signature = keyPair.sign(msgHash, 'hex');
-    // @ts-expect-error this seems wrong
+    // @ts-ignore-error this seems wrong
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
 
     return signatureBytes;

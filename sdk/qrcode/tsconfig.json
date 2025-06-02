@@ -14,10 +14,10 @@
     "moduleResolution": "node16"
   },
   "include": [
+    "animations",
     "index.ts",
-    "src/**/*",
     "components/**.tsx",
-    "utils/utils.ts"
+    "utils/*.ts"
   ],
   "exclude": [
     "node_modules",
