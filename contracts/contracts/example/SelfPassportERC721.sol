@@ -51,6 +51,7 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @notice Constructor for the SelfPassportERC721 contract
      * @param identityVerificationHubAddress The address of the Identity Verification Hub
      * @param scopeValue The expected proof scope for user registration
+     * @param contractVersion The contract version for validation
      * @param attestationIdsList The expected attestation identifiers required in proofs
      * @param name The name of the NFT collection
      * @param symbol The symbol of the NFT collection
@@ -58,11 +59,12 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     constructor(
         address identityVerificationHubAddress,
         uint256 scopeValue,
-        uint256[] memory attestationIdsList,
+        uint8 contractVersion,
+        bytes32[] memory attestationIdsList,
         string memory name,
         string memory symbol
     )
-        SelfVerificationRoot(identityVerificationHubAddress, scopeValue, attestationIdsList)
+        SelfVerificationRoot(identityVerificationHubAddress, scopeValue, contractVersion, attestationIdsList)
         ERC721(name, symbol)
         Ownable(_msgSender())
     {}
@@ -85,7 +87,7 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @dev Only callable by the contract owner
      * @param attestationId The attestation ID to add
      */
-    function addAttestationId(uint256 attestationId) external onlyOwner {
+    function addAttestationId(bytes32 attestationId) external onlyOwner {
         _addAttestationId(attestationId);
     }
 
@@ -94,7 +96,7 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @dev Only callable by the contract owner
      * @param attestationId The attestation ID to remove
      */
-    function removeAttestationId(uint256 attestationId) external onlyOwner {
+    function removeAttestationId(bytes32 attestationId) external onlyOwner {
         _removeAttestationId(attestationId);
     }
 
@@ -133,7 +135,7 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @param attestationId The attestation ID to check
      * @return True if the attestation ID is allowed, false otherwise
      */
-    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
+    function isAttestationIdAllowed(bytes32 attestationId) external view returns (bool) {
         return _attestationIdToEnabled[attestationId];
     }
 
@@ -160,13 +162,17 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     /**
      * @notice Hook called after successful verification - handles NFT minting
      * @dev Validates user identifier and mints passport NFT with extracted attributes
-     * @param revealedDataPacked The packed revealed data from the proof
      * @param userIdentifier The user identifier from the proof
+     * @param revealedDataPacked The packed revealed data from the proof
      */
     function onBasicVerificationSuccess(
-        uint256[3] memory revealedDataPacked,
+        bytes32 /* attestationId */,
+        uint256 /* scope */,
         uint256 userIdentifier,
-        uint256 /* nullifier */
+        uint256 /* nullifier */,
+        uint256 /* identityCommitmentRoot */,
+        uint256[] memory revealedDataPacked,
+        uint256[4] memory /* forbiddenCountriesListPacked */
     ) internal override {
         // Check if user identifier is valid
         if (userIdentifier == 0) {
@@ -178,8 +184,16 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
             revert UserIdentifierAlreadyMinted();
         }
 
+        // Convert dynamic array to fixed-size array for passport data (first 3 elements)
+        uint256[3] memory passportRevealedData;
+        for (uint256 i = 0; i < 3 && i < revealedDataPacked.length; i++) {
+            passportRevealedData[i] = revealedDataPacked[i];
+        }
+
         // Extract passport data using SelfCircuitLibrary
-        SelfCircuitLibrary.PassportData memory attributes = SelfCircuitLibrary.extractPassportData(revealedDataPacked);
+        SelfCircuitLibrary.PassportData memory attributes = SelfCircuitLibrary.extractPassportData(
+            passportRevealedData
+        );
 
         // Mint NFT
         uint256 tokenId = _tokenIdCounter++;

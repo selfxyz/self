@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {CircuitConstants} from "../constants/CircuitConstants.sol";
 import {Formatter} from "./Formatter.sol";
 
 /**
@@ -8,7 +9,7 @@ import {Formatter} from "./Formatter.sol";
  * @notice Provides functions for extracting and formatting passport attributes from a byte array.
  * @dev Utilizes the Formatter library for converting and formatting specific fields.
  */
-library CircuitAttributeHandler {
+library IdCardAttributeHandler {
     /**
      * @dev Reverts when the provided character codes array does not contain enough data to extract an attribute.
      */
@@ -18,28 +19,28 @@ library CircuitAttributeHandler {
     uint256 private constant ISSUING_STATE_START = 2;
     uint256 private constant ISSUING_STATE_END = 4;
 
-    uint256 private constant NAME_START = 5;
-    uint256 private constant NAME_END = 43;
+    uint256 private constant NAME_START = 60;
+    uint256 private constant NAME_END = 89;
 
-    uint256 private constant PASSPORT_NUMBER_START = 44;
-    uint256 private constant PASSPORT_NUMBER_END = 52;
+    uint256 private constant ID_CARD_NUMBER_START = 5;
+    uint256 private constant ID_CARD_NUMBER_END = 13;
 
-    uint256 private constant NATIONALITY_START = 54;
-    uint256 private constant NATIONALITY_END = 56;
+    uint256 private constant NATIONALITY_START = 45;
+    uint256 private constant NATIONALITY_END = 47;
 
-    uint256 private constant DATE_OF_BIRTH_START = 57;
-    uint256 private constant DATE_OF_BIRTH_END = 62;
+    uint256 private constant DATE_OF_BIRTH_START = 30;
+    uint256 private constant DATE_OF_BIRTH_END = 35;
 
-    uint256 private constant GENDER_START = 64;
-    uint256 private constant GENDER_END = 64;
+    uint256 private constant GENDER_START = 37;
+    uint256 private constant GENDER_END = 37;
 
-    uint256 private constant EXPIRY_DATE_START = 65;
-    uint256 private constant EXPIRY_DATE_END = 70;
+    uint256 private constant EXPIRY_DATE_START = 38;
+    uint256 private constant EXPIRY_DATE_END = 43;
 
-    uint256 private constant OLDER_THAN_START = 88;
-    uint256 private constant OLDER_THAN_END = 89;
+    uint256 private constant OLDER_THAN_START = 90;
+    uint256 private constant OLDER_THAN_END = 91;
 
-    uint256 private constant OFAC_START = 90;
+    uint256 private constant OFAC_START = 92;
     uint256 private constant OFAC_END = 92;
 
     /**
@@ -66,7 +67,7 @@ library CircuitAttributeHandler {
      * @return The passport number as a string.
      */
     function getPassportNumber(bytes memory charcodes) internal pure returns (string memory) {
-        return extractStringAttribute(charcodes, PASSPORT_NUMBER_START, PASSPORT_NUMBER_END);
+        return extractStringAttribute(charcodes, ID_CARD_NUMBER_START, ID_CARD_NUMBER_END);
     }
 
     /**
@@ -148,7 +149,6 @@ library CircuitAttributeHandler {
     /**
      * @notice Performs selective OFAC checks based on provided flags.
      * @param charcodes The byte array containing passport attribute data.
-     * @param checkPassportNo Whether to check the passport number OFAC status.
      * @param checkNameAndDob Whether to check the name and date of birth OFAC status.
      * @param checkNameAndYob Whether to check the name and year of birth OFAC status.
      * @return True if all enabled checks pass (equal 1), false if any enabled check fails.
@@ -157,12 +157,10 @@ library CircuitAttributeHandler {
      */
     function compareOfac(
         bytes memory charcodes,
-        bool checkPassportNo,
         bool checkNameAndDob,
         bool checkNameAndYob
     ) internal pure returns (bool) {
         return
-            (!checkPassportNo || getPassportNoOfac(charcodes) == 1) &&
             (!checkNameAndDob || getNameAndDobOfac(charcodes) == 1) &&
             (!checkNameAndYob || getNameAndYobOfac(charcodes) == 1);
     }

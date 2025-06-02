@@ -118,7 +118,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           const passportMetadata = parsedPassportData.passportMetadata!;
           let dscObject;
           try {
-            dscObject = JSON.parse(passportMetadata.dsc);
+            dscObject = { dsc: passportMetadata.dsc };
           } catch (error) {
             console.error('Failed to parse dsc:', error);
             dscObject = {};
