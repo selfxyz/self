@@ -42,7 +42,7 @@ function genDG1IdCard(idDocInput: IdDocInput) {
     const nationality = formatDG1Attribute(nationality_index, idDocInput.nationality);
     const optional_data_2 = formatDG1Attribute(optional_data_2_index, '');
     const overall_check_digit = formatDG1Attribute(overall_check_digit_index, '1');
-    const name = formatDG1Attribute(name_index, formatName(idDocInput.firstName, idDocInput.lastName));
+    const name = formatDG1Attribute(name_index, formatName(idDocInput.firstName, idDocInput.lastName, name_index[1] - name_index[0] + 1));
 
     const dg1 = `${doc_type}${issuing_state}${document_number}${document_number_check_digit}${optional_data}${date_of_birth}${date_of_birth_check_digit}${sex}${expiration_date}${expiration_date_check_digit}${nationality}${optional_data_2}${overall_check_digit}${name}`;
     if (dg1.length !== 90) {
@@ -69,7 +69,7 @@ function genDG1Passport(idDocInput: IdDocInput) {
 
     const doc_type = formatDG1Attribute(doc_type_index, 'P');
     const issuing_state = formatDG1Attribute(issuing_state_index, idDocInput.nationality);
-    const name = formatDG1Attribute(name_index, formatName(idDocInput.firstName, idDocInput.lastName));
+    const name = formatDG1Attribute(name_index, formatName(idDocInput.firstName, idDocInput.lastName, name_index[1] - name_index[0] + 1));
     const document_number = formatDG1Attribute(document_number_index, idDocInput.passportNumber);
     const document_number_check_digit = formatDG1Attribute(document_number_check_digit_index, '4');
     const nationality = formatDG1Attribute(nationality_index, idDocInput.nationality);
