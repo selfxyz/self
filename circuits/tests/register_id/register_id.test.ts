@@ -14,7 +14,7 @@ import {
 import { poseidon6 } from 'poseidon-lite';
 import { hashAlgosTypes, PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
+import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json' with { type: 'json' };
 import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
 dotenv.config();
 

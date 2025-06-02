@@ -6,9 +6,9 @@ import crypto from 'crypto';
 import { describe } from 'mocha';
 import path from 'path';
 import { poseidon1, poseidon2 } from 'poseidon-lite';
-import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
-import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
+import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json' with { type: 'json' };
+import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json' with { type: 'json' };
+import passportNojson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
 import {
   attributeToPosition,
   PASSPORT_ATTESTATION_ID,

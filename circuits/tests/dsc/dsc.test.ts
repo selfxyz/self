@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
 import dotenv from 'dotenv';
 import path from 'path';
-import serialized_csca_tree from '../../../common/pubkeys/serialized_csca_tree.json';
+import serialized_csca_tree from '../../../common/pubkeys/serialized_csca_tree.json' with { type: 'json' };
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
 import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/generateInputs';
@@ -26,7 +26,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
   );
   const passportMetadata = passportData.passportMetadata;
 
-  describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm.toUpperCase()} ${passportMetadata.cscaCurveOrExponent.toUpperCase()} ${
+  describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction?.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm?.toUpperCase()} ${passportMetadata.cscaCurveOrExponent?.toUpperCase()} ${
     passportData.csca_parsed.publicKeyDetails.bits
   }`, function () {
     this.timeout(0); // Disable timeout

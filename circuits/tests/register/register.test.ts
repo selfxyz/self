@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import path from 'path';
 import { poseidon6 } from 'poseidon-lite';
-import serialized_dsc_tree from '@selfxyz/common/pubkeys/serialized_dsc_tree.json';
+import serialized_dsc_tree from '@selfxyz/common/pubkeys/serialized_dsc_tree.json' with { type: 'json' };
 import { PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
