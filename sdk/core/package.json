@@ -22,7 +22,7 @@
     "install-sdk": "yarn workspaces focus @selfxyz/core",
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish --access public"
+    "publish": "yarn npm publish --access public"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:^",

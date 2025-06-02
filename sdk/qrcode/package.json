@@ -28,7 +28,7 @@
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
     "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassportVerifier.test.ts --exit",
-    "publish": "npm publish --access public"
+    "publish": "yarn npm publish --access public"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:^",
