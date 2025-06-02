@@ -50,7 +50,8 @@ jobs:
 
       - name: Print Circom version
         run: circom --version
-
+      - name: "enable yarn"
+        run: corepack enable yarn
       - name: Install Yarn dependencies
         working-directory: ./circuits
         run: yarn install-circuits --immutable

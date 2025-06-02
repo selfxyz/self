@@ -9,12 +9,34 @@ on:
       - ".github/actions/**"
 
 jobs:
-  lint:
+  build_and_install:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+      - name: Build
+        run: yarn build:deps
+        working-directory: ./app
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build-artifacts
+          path: |
+            ./app/dist
+            ./app/node_modules
+            ./node_modules
+
+  lint:
+    runs-on: macos-14
+    needs: build_and_install
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build-artifacts
+          path: ./
       - name: Run linter
         run: yarn lint
         working-directory: ./app
@@ -24,14 +46,14 @@ jobs:
 
   test:
     runs-on: macos-14
+    needs: build_and_install
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
-
-      - name: Build
-        run: yarn build:deps
-        working-directory: ./app
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build-artifacts
+          path: ./
       - name: Test
         run: yarn test
         working-directory: ./app

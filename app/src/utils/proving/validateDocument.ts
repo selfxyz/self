@@ -1,6 +1,4 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { poseidon2, poseidon5 } from 'poseidon-lite';
-
 import {
   API_URL,
   PASSPORT_ATTESTATION_ID,
@@ -15,6 +13,7 @@ import {
 } from '@selfxyz/common/utils/passports/passport';
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
 import { PassportData } from '@selfxyz/common/utils/types';
+import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';
 
