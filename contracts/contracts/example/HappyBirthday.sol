@@ -52,15 +52,20 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
      * @notice Initializes the HappyBirthday contract
      * @param identityVerificationHubAddress The address of the Identity Verification Hub
      * @param scopeValue The expected proof scope for user registration
+     * @param contractVersion The contract version for validation
      * @param attestationIds Array of allowed attestation identifiers
      * @param token The USDC token address
      */
     constructor(
         address identityVerificationHubAddress,
         uint256 scopeValue,
-        uint256[] memory attestationIds,
+        uint8 contractVersion,
+        bytes32[] memory attestationIds,
         address token
-    ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue, attestationIds) Ownable(_msgSender()) {
+    )
+        SelfVerificationRoot(identityVerificationHubAddress, scopeValue, contractVersion, attestationIds)
+        Ownable(_msgSender())
+    {
         usdc = IERC20(token);
     }
 
@@ -114,24 +119,31 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
     /**
      * @notice Hook called after successful verification
      * @dev Checks user hasn't claimed, validates birthday window, and transfers USDC if eligible
-     * @param revealedDataPacked The packed revealed data from the proof
      * @param userIdentifier The user identifier from the proof
      * @param nullifier The nullifier from the proof
+     * @param revealedDataPacked The packed revealed data from the proof
      */
     function onBasicVerificationSuccess(
-        uint256[3] memory revealedDataPacked,
+        bytes32 /* attestationId */,
+        uint256 /* scope */,
         uint256 userIdentifier,
-        uint256 nullifier
+        uint256 nullifier,
+        uint256 /* identityCommitmentRoot */,
+        uint256[] memory revealedDataPacked,
+        uint256[4] memory /* forbiddenCountriesListPacked */
     ) internal override {
-        // Get user address from the proof's user identifier
-
         // Check if user has already claimed
         if (hasClaimed[nullifier]) {
             revert AlreadyClaimed();
         }
 
-        // Check if within birthday window
-        if (_isWithinBirthdayWindow(revealedDataPacked)) {
+        // Check if within birthday window - only use first 3 elements for passport data
+        uint256[3] memory passportData;
+        for (uint256 i = 0; i < 3 && i < revealedDataPacked.length; i++) {
+            passportData[i] = revealedDataPacked[i];
+        }
+
+        if (_isWithinBirthdayWindow(passportData)) {
             // Mark user as claimed
             hasClaimed[nullifier] = true;
 

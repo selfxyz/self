@@ -71,36 +71,37 @@ library CircuitConstantsV2 {
      */
     function getDiscloseIndices(bytes32 attestationId) internal pure returns (DiscloseIndices memory indices) {
         if (attestationId == AttestationId.E_PASSPORT) {
-            return DiscloseIndices({
-                revealedDataPackedIndex: 0,
-                forbiddenCountriesListPackedIndex: 3,
-                nullifierIndex: 7,
-                attestationIdIndex: 8,
-                merkleRootIndex: 9,
-                currentDateIndex: 10,
-                namedobSmtRootIndex: 17,
-                nameyobSmtRootIndex: 18,
-                scopeIndex: 19,
-                userIdentifierIndex: 20,
-                passportNoSmtRootIndex: 16
-            });
+            return
+                DiscloseIndices({
+                    revealedDataPackedIndex: 0,
+                    forbiddenCountriesListPackedIndex: 3,
+                    nullifierIndex: 7,
+                    attestationIdIndex: 8,
+                    merkleRootIndex: 9,
+                    currentDateIndex: 10,
+                    namedobSmtRootIndex: 17,
+                    nameyobSmtRootIndex: 18,
+                    scopeIndex: 19,
+                    userIdentifierIndex: 20,
+                    passportNoSmtRootIndex: 16
+                });
         } else if (attestationId == AttestationId.EU_ID_CARD) {
-            return DiscloseIndices({
-                revealedDataPackedIndex: 0,
-                forbiddenCountriesListPackedIndex: 4,
-                nullifierIndex: 8,
-                attestationIdIndex: 9,
-                merkleRootIndex: 10,
-                currentDateIndex: 11,
-                namedobSmtRootIndex: 17,
-                nameyobSmtRootIndex: 18,
-                scopeIndex: 19,
-                userIdentifierIndex: 20,
-                passportNoSmtRootIndex: 0 // Not applicable for ID cards
-            });
+            return
+                DiscloseIndices({
+                    revealedDataPackedIndex: 0,
+                    forbiddenCountriesListPackedIndex: 4,
+                    nullifierIndex: 8,
+                    attestationIdIndex: 9,
+                    merkleRootIndex: 10,
+                    currentDateIndex: 11,
+                    namedobSmtRootIndex: 17,
+                    nameyobSmtRootIndex: 18,
+                    scopeIndex: 19,
+                    userIdentifierIndex: 20,
+                    passportNoSmtRootIndex: 0 // Not applicable for ID cards
+                });
         } else {
             revert("Invalid attestation ID");
         }
     }
-
 }
