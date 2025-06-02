@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "build:deps": "yarn workspaces foreach --from @selfxyz/circuits --topological-dev --recursive run build",
     "build-all": "bash scripts/build/build_register_circuits.sh && bash scripts/build/build_dsc_circuits.sh && bash scripts/build/build_disclose_circuits.sh",
     "build-disclose": "bash scripts/build/build_disclose_circuits.sh",
     "build-dsc": "bash scripts/build/build_dsc_circuits.sh",

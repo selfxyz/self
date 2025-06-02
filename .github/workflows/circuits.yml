@@ -59,7 +59,9 @@ jobs:
       # - name: Run lint
       #   working-directory: ./circuits
       #   run: yarn lint
-
+      - name: Build (Circuits + Self dependencies)
+        run: yarn build:deps
+        working-directory: ./circuits
       - name: Run Tests (Circuits)
         working-directory: ./circuits
         env:
