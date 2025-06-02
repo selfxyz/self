@@ -13,7 +13,7 @@ import {
   generateNullifier,
 } from '../../../common/src/utils/passports/passport';
 import { poseidon6 } from 'poseidon-lite';
-import { hashAlgosTypes, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { hashAlgosTypes, ID_CARD_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
 import { genMockIdDoc } from '../../../common/src/utils/passports/genMockIdDoc';
@@ -84,7 +84,7 @@ testSuite.forEach(
 
         const commitment_js = generateCommitment(
           secret.toString(),
-          PASSPORT_ATTESTATION_ID,
+          ID_CARD_ATTESTATION_ID,
           passportData
         );
         console.log('\x1b[35m%s\x1b[0m', 'js: commitment:', commitment_js);
