@@ -3,7 +3,7 @@ const path = require('node:path');
 const defaultConfig = getDefaultConfig(__dirname);
 const { assetExts, sourceExts } = defaultConfig.resolver;
 
-const monorepoRoot = path.resolve(__dirname, '../')
+const monorepoRoot = path.resolve(__dirname, '../');
 const commonPath = path.join(__dirname, '/../common');
 const trueMonorepoNodeModules = path.resolve(__dirname, '../node_modules');
 const extraNodeModules = {
@@ -13,7 +13,11 @@ const extraNodeModules = {
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
 };
-const watchFolders = [path.resolve(commonPath), trueMonorepoNodeModules, path.join(__dirname, "src")];
+const watchFolders = [
+  path.resolve(commonPath),
+  trueMonorepoNodeModules,
+  path.join(__dirname, 'src'),
+];
 
 /**
  * Metro configuration
@@ -30,11 +34,11 @@ const config = {
   resolver: {
     extraNodeModules,
     nodeModulesPaths: [
-        path.resolve(__dirname, 'node_modules'), // App's own node_modules
-        path.resolve(monorepoRoot, 'node_modules'), // Monorepo root node_modules
-        trueMonorepoNodeModules,
-        // Add paths to other package workspaces if needed
-      ],
+      path.resolve(__dirname, 'node_modules'), // App's own node_modules
+      path.resolve(monorepoRoot, 'node_modules'), // Monorepo root node_modules
+      trueMonorepoNodeModules,
+      // Add paths to other package workspaces if needed
+    ],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
   },
