@@ -61,7 +61,7 @@ jobs:
       - name: Publish to npm
         run: |
           cd sdk/core
-          npm publish --access public
+          yarn npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -93,6 +93,6 @@ jobs:
       - name: Publish to npm
         run: |
           cd sdk/qrcode
-          npm publish --access public
+          yarn npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
