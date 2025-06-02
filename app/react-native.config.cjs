@@ -5,7 +5,7 @@ module.exports = {
   },
   assets: [
     './src/assets/fonts',
-    './node_modules/@tamagui/font-inter/otf',
-    './node_modules/@tamagui/font-silkscreen/files',
+    '../node_modules/@tamagui/font-inter/otf',
+    '../node_modules/@tamagui/font-silkscreen/files',
   ],
 };
