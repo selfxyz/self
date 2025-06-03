@@ -1,7 +1,6 @@
 'use client';
 
-import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode';
-import { countries } from '@selfxyz/common';
+import SelfQRcodeWrapper, { SelfAppBuilder, countries } from '@selfxyz/qrcode';
 import { v4 } from 'uuid';
 
 export default function Home() {

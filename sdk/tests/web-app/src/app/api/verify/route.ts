@@ -1,6 +1,6 @@
 import { SelfBackendVerifier } from '@selfxyz/core';
 import { NextResponse } from 'next/server';
-import { countries } from '@selfxyz/common';
+import { countries } from '@selfxyz/common/constants/countries';
 
 export async function POST(request: Request) {
     try {
