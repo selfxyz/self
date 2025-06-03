@@ -12,6 +12,15 @@ jobs:
       - name: Run linter
         run: yarn lint
 
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build dependencies
+        shell: bash
+        run: yarn types
   test-common:
     runs-on: ubuntu-latest
     steps:
@@ -20,6 +29,6 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
         shell: bash
-        run: yarn build
+        run: yarn workspace @selfxyz/common build
       - name: Run @selfxyz/common tests
         run: yarn workspace @selfxyz/common test
