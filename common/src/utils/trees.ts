@@ -2,7 +2,7 @@ import { IMT } from '@openpassport/zk-kit-imt';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
 import countries from "i18n-iso-countries";
-import en from "i18n-iso-countries/langs/en.json" with { type: 'json' };
+const en = require("i18n-iso-countries/langs/en.json");
 import { poseidon12, poseidon13, poseidon2, poseidon3, poseidon6, poseidon10 } from 'poseidon-lite';
 import {
   CertificateData,

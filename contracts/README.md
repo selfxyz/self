@@ -103,7 +103,7 @@ yarn install
 2. Compile the contracts:
 
 ```bash
-yarn run compile
+yarn run build
 ```
 
 ## Deployments

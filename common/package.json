@@ -4,12 +4,25 @@
   "description": "Constants and utils for self",
   "license": "MIT",
   "author": "Selfxyz Team",
-  "type": "module",
-  "main": "dist/index.js",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./constants/*": "./dist/constants/*.js",
-    "./utils/*": "./dist/utils/*.js",
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/esm/index.d.ts"
+    },
+    "./constants/*": {
+      "import": "./dist/esm/constants/*.js",
+      "require": "./dist/cjs/constants/*.js",
+      "types": "./dist/esm/constants/*.d.ts"
+    },
+    "./utils/*": {
+      "import": "./dist/esm/utils/*.js",
+      "require": "./dist/cjs/utils/*.js",
+      "types": "./dist/esm/utils/*.d.ts"
+    },
     "./ofacdata/outputs/nameAndDobSMT.json": "./ofacdata/outputs/nameAndDobSMT.json",
     "./ofacdata/outputs/nameAndYobSMT.json": "./ofacdata/outputs/nameAndYobSMT.json",
     "./ofacdata/outputs/nameAndDobSMT_ID.json": "./ofacdata/outputs/nameAndDobSMT_ID.json",
@@ -20,16 +33,18 @@
     "./mock_certificates/**/*": "./src/mock_certificates/**/*"
   },
   "files": [
-    "dist",
+    "dist/cjs",
+    "dist/esm",
     "src/mock_certificates"
   ],
   "scripts": {
-    "build": "tsc",
-    "types": "yarn build",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && yarn postbuild",
+    "types": "tsc -p tsconfig.json",
     "format": "prettier --write .",
     "lint": "prettier --check .",
     "test": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/**/*.test.ts --exit",
     "test:scope": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/scope.test.ts --exit",
+    "postbuild": "node ./scripts/post-build.mjs",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
