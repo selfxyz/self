@@ -11,6 +11,7 @@ import { navigationRef } from '../../navigation';
 import {
   clearPassportData,
   loadPassportDataAndSecret,
+  reStorePassportDataWithRightCSCA,
 } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
@@ -32,7 +33,7 @@ import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
   isPassportNullified,
-  isUserRegistered,
+  isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
 import { PassportData } from '../../../../common/src/utils/types';
 
@@ -110,8 +111,32 @@ const provingMachine = createMachine({
 
 export type provingMachineCircuitType = 'register' | 'dsc' | 'disclose';
 
+export type ProvingStateType =
+  // Initial states
+  | 'idle'
+  | undefined
+  // Data preparation states
+  | 'fetching_data'
+  | 'validating_document'
+  // Connection states
+  | 'init_tee_connexion'
+  | 'listening_for_status'
+  // Proving states
+  | 'ready_to_prove'
+  | 'proving'
+  | 'post_proving'
+  // Success state
+  | 'completed'
+  // Error states
+  | 'error'
+  | 'failure'
+  // Special case states
+  | 'passport_not_supported'
+  | 'account_recovery_choice'
+  | 'passport_data_not_found';
+
 interface ProvingState {
-  currentState: string;
+  currentState: ProvingStateType;
   attestation: any;
   serverPublicKey: string | null;
   sharedKey: Buffer | null;
@@ -125,6 +150,8 @@ interface ProvingState {
   error_code: string | null;
   reason: string | null;
   endpointType: EndpointType | null;
+  fcmToken: string | null;
+  setFcmToken: (token: string) => void;
   init: (
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
@@ -153,7 +180,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
   function setupActorSubscriptions(newActor: AnyActorRef) {
     newActor.subscribe((state: any) => {
       console.log(`State transition: ${state.value}`);
-      set({ currentState: state.value as string });
+      set({ currentState: state.value as ProvingStateType });
 
       if (state.value === 'fetching_data') {
         get().startFetchingData();
@@ -244,6 +271,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
+    fcmToken: null,
+    setFcmToken: (token: string) => {
+      set({ fcmToken: token });
+    },
     _handleWebSocketMessage: async (event: MessageEvent) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -486,10 +517,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     startFetchingData: async () => {
       _checkActorInitialized(actor);
       try {
-        const { passportData }: { passportData: PassportData } = get();
-        const env = passportData.documentType === 'mock_passport' || passportData.documentType === 'mock_id_card' ? 'stg' : 'prod';
+        const { passportData } = get();
         const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
-        await useProtocolStore.getState()[document].fetch_all(env);
+        const env =
+          passportData.documentType && passportData.documentType !== 'passport'
+            ? 'stg'
+            : 'prod';
+        await useProtocolStore
+          .getState()
+          [document].fetch_all(
+            env,
+            (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier,
+          );
         actor!.send({ type: 'FETCH_SUCCESS' });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -514,10 +553,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           return;
         }
 
-        const isRegistered = await isUserRegistered(
-          passportData,
-          secret as string,
-        );
+        const { isRegistered, csca } =
+          await isUserRegisteredWithAlternativeCSCA(
+            passportData,
+            secret as string,
+          );
+        console.log('isRegistered: ', isRegistered, 'csca: ', csca);
+
         if (circuitType === 'disclose') {
           if (isRegistered) {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
@@ -527,6 +569,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             return;
           }
         } else if (isRegistered) {
+          reStorePassportDataWithRightCSCA(passportData, csca as string);
           actor!.send({ type: 'ALREADY_REGISTERED' });
           return;
         }
@@ -544,6 +587,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           passportData,
           useProtocolStore.getState()[document].dsc_tree,
         );
+        console.log('isDscRegistered: ', isDscRegistered);
         if (isDscRegistered) {
           set({ circuitType: 'register' });
         }
@@ -622,21 +666,41 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     startProving: async () => {
       _checkActorInitialized(actor);
-      const { wsConnection, sharedKey, passportData, secret } = get();
+      const { wsConnection, sharedKey, passportData, secret, uuid, fcmToken } =
+        get();
 
       if (get().currentState !== 'ready_to_prove') {
         console.error('Cannot start proving: Not in ready_to_prove state.');
         return;
       }
-      if (!wsConnection || !sharedKey || !passportData || !secret) {
+      if (!wsConnection || !sharedKey || !passportData || !secret || !uuid) {
         console.error(
-          'Cannot start proving: Missing wsConnection, sharedKey, passportData, or secret.',
+          'Cannot start proving: Missing wsConnection, sharedKey, passportData, secret, or uuid.',
         );
         actor!.send({ type: 'PROVE_ERROR' });
         return;
       }
 
       try {
+        // Register device token before payload generation
+        if (fcmToken) {
+          try {
+            const {
+              registerDeviceToken,
+            } = require('../../utils/notifications/notificationService');
+            console.log(
+              'passportData.documentType: ',
+              passportData?.documentType,
+            );
+            const isMockPassport =
+              passportData?.documentType === 'mock_passport';
+            await registerDeviceToken(uuid, fcmToken, isMockPassport);
+          } catch (error) {
+            console.error('Error registering device token:', error);
+            // Continue with the proving process even if token registration fails
+          }
+        }
+
         const submitBody = await get()._generatePayload();
         wsConnection.send(JSON.stringify(submitBody));
         actor!.send({ type: 'START_PROVING' });

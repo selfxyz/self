@@ -12,8 +12,8 @@ import {ProxyRoot} from "../upgradeable/ProxyRoot.sol";
 contract IdentityRegistry is ProxyRoot {
     /**
      * @notice Creates a new instance of the IdentityRegistry proxy.
-     * @param _logic The address of the initial implementation contract that contains the registry logic.
-     * @param _data The initialization data passed to the implementation during deployment.
+     * @param logic The address of the initial implementation contract that contains the registry logic.
+     * @param data The initialization data passed to the implementation during deployment.
      */
-    constructor(address _logic, bytes memory _data) ProxyRoot(_logic, _data) {}
+    constructor(address logic, bytes memory data) ProxyRoot(logic, data) {}
 }

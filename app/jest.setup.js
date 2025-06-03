@@ -4,6 +4,32 @@ require('react-native-gesture-handler/jestSetup');
 
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
+global.FileReader = class {
+  constructor() {
+    this.onload = null;
+  }
+  readAsArrayBuffer() {
+    if (this.onload) {
+      this.onload({ target: { result: new ArrayBuffer(0) } });
+    }
+  }
+};
+
+jest.mock('@react-native-firebase/messaging', () => {
+  return () => ({
+    hasPermission: jest.fn(() => Promise.resolve(true)),
+    requestPermission: jest.fn(() => Promise.resolve(true)),
+    getToken: jest.fn(() => Promise.resolve('mock-token')),
+    onMessage: jest.fn(() => jest.fn()),
+    onNotificationOpenedApp: jest.fn(() => jest.fn()),
+    getInitialNotification: jest.fn(() => Promise.resolve(null)),
+    setBackgroundMessageHandler: jest.fn(),
+    registerDeviceForRemoteMessages: jest.fn(() => Promise.resolve()),
+    subscribeToTopic: jest.fn(),
+    unsubscribeFromTopic: jest.fn(),
+  });
+});
+
 // Mock react-native-haptic-feedback
 jest.mock('react-native-haptic-feedback', () => ({
   trigger: jest.fn(),
@@ -255,3 +281,7 @@ jest.mock('react-native-localize', () => ({
     isRTL: false,
   }),
 }));
+
+jest.mock('./src/utils/notifications/notificationService', () =>
+  require('./tests/__setup__/notificationServiceMock.js'),
+);

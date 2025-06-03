@@ -36,6 +36,7 @@ import {
   slate800,
   white,
 } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
 
 interface SettingsScreenProps {}
@@ -64,7 +65,6 @@ const goToStore = () => {
 
 const routes = [
   [Data, 'View passport info', 'PassportDataInfo'],
-  [Data, 'Proof history', 'ProofHistory'],
   [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
   [Cloud, 'Cloud backup', 'CloudBackupSettings'],
   [Feedback, 'Send feeback', 'email_feedback'],
@@ -196,7 +196,8 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
           gap={20}
           jc="space-between"
           height={'100%'}
-          padding={20}
+          paddingHorizontal={20}
+          paddingBottom={bottom + extraYPadding}
           borderTopLeftRadius={30}
           borderTopRightRadius={30}
         >

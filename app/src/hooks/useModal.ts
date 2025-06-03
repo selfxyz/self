@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 
-import { ModalParams } from '../screens/static/ModalScreen';
+import { ModalParams } from '../screens/misc/ModalScreen';
 
 export const useModal = (params: ModalParams) => {
   const [visible, setVisible] = useState(false);

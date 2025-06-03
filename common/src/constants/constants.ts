@@ -27,7 +27,7 @@ export const IDENTITY_TREE_URL_ID_CARD = 'https://tree.self.xyz/identity-id';
 export const IDENTITY_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/identity-id';
 
 export const PASSPORT_ATTESTATION_ID = '1'; //"8518753152044246090169372947057357973469996808638122125210848696986717482788"
-
+export const ID_CARD_ATTESTATION_ID = '2'
 export const CHAIN_NAME = 'celo';
 export const RPC_URL = 'https://forno.celo.org';
 export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8';
@@ -41,6 +41,8 @@ export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
 export const saltLengths = [64, 48, 32];
 
+export type document_type = 'passport' | 'id_card';
+
 /**
  * Maximum number of countries in the forbidden countries list.
  *
@@ -49,50 +51,10 @@ export const saltLengths = [64, 48, 32];
  */
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 40;
 
-export const DEPLOYED_CIRCUITS_REGISTER = [
-  'register_sha1_sha1_sha1_rsa_65537_4096',
-  'register_sha1_sha256_sha256_rsa_65537_4096',
-  'register_sha224_sha224_sha224_ecdsa_brainpoolP224r1',
-  'register_sha256_sha224_sha224_ecdsa_secp224r1',
-  'register_sha256_sha256_sha256_ecdsa_brainpoolP256r1',
-  'register_sha256_sha256_sha256_ecdsa_brainpoolP384r1',
-  'register_sha256_sha256_sha256_ecdsa_secp256r1',
-  'register_sha256_sha256_sha256_ecdsa_secp384r1',
-  'register_sha256_sha256_sha256_rsa_3_4096',
-  'register_sha256_sha256_sha256_rsa_65537_4096',
-  'register_sha256_sha256_sha256_rsapss_3_32_2048',
-  'register_sha256_sha256_sha256_rsapss_65537_32_2048',
-  'register_sha256_sha256_sha256_rsapss_65537_32_3072',
-  'register_sha384_sha384_sha384_ecdsa_brainpoolP384r1',
-  'register_sha384_sha384_sha384_ecdsa_brainpoolP512r1',
-  'register_sha384_sha384_sha384_ecdsa_secp384r1',
-  'register_sha384_sha384_sha384_rsapss_65537_48_2048',
-  'register_sha1_sha1_sha1_ecdsa_brainpoolP224r1',
-  'register_sha512_sha512_sha512_ecdsa_brainpoolP512r1',
-  'register_sha512_sha512_sha512_rsa_65537_4096',
-  'register_sha512_sha512_sha512_rsapss_65537_64_2048',
-]
+// Note: Circuit lists are now managed through RegisterVerifierId and DscVerifierId enums below
+// instead of separate arrays for better type safety and maintainability
 
 export const OFAC_TREE_LEVELS = 64;
-
-export const DEPLOYED_CIRCUITS_DSC = [
-  'dsc_sha1_ecdsa_brainpoolP256r1',
-  'dsc_sha1_rsa_65537_4096',
-  'dsc_sha256_ecdsa_brainpoolP256r1',
-  'dsc_sha256_ecdsa_brainpoolP384r1',
-  'dsc_sha256_ecdsa_secp256r1',
-  'dsc_sha256_ecdsa_secp384r1',
-  'dsc_sha256_rsa_65537_4096',
-  'dsc_sha256_rsapss_3_32_3072',
-  'dsc_sha256_rsapss_65537_32_3072',
-  'dsc_sha256_rsapss_65537_32_4096',
-  'dsc_sha384_ecdsa_brainpoolP384r1',
-  'dsc_sha384_ecdsa_brainpoolP512r1',
-  'dsc_sha384_ecdsa_secp384r1',
-  'dsc_sha512_ecdsa_brainpoolP512r1',
-  'dsc_sha512_rsa_65537_4096',
-  'dsc_sha512_rsapss_65537_64_4096',
-]
 
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 384,

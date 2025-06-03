@@ -2,6 +2,7 @@ apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: 'kotlin-android'
+apply plugin: 'com.google.gms.google-services'
 
 
 /**
@@ -85,8 +86,8 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 59
-        versionName "2.5.1"
+        versionCode 65
+        versionName "2.5.2"
         externalNativeBuild {
             cmake {
                 cppFlags += "-fexceptions -frtti -std=c++11"
@@ -141,6 +142,10 @@ dependencies {
     implementation 'org.jmrtd:jmrtd:0.7.18'
 
     implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
+
+    // Firebase Dependencies
+    implementation platform('com.google.firebase:firebase-bom:32.7.3')
+    implementation 'com.google.firebase:firebase-messaging'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

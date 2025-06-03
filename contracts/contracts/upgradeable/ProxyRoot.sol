@@ -11,8 +11,8 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 contract ProxyRoot is ERC1967Proxy {
     /**
      * @notice Creates a new upgradeable proxy.
-     * @param _logic The address of the initial implementation contract.
-     * @param _data The initialization calldata to be passed to the implementation contract.
+     * @param logic The address of the initial implementation contract.
+     * @param data The initialization calldata to be passed to the implementation contract.
      */
-    constructor(address _logic, bytes memory _data) ERC1967Proxy(_logic, _data) {}
+    constructor(address logic, bytes memory data) ERC1967Proxy(logic, data) {}
 }

@@ -20,7 +20,7 @@ import {
   slate800,
   white,
 } from '../../utils/colors';
-
+import { extraYPadding } from '../../utils/constants';
 const ScanButton = styled(Button, {
   borderRadius: 20,
   width: 90,
@@ -54,7 +54,7 @@ const HomeScreen: React.FC = () => {
       jc="space-between"
       flex={1}
       paddingHorizontal={20}
-      paddingBottom={bottom}
+      paddingBottom={bottom + extraYPadding}
     >
       <YStack ai="center" gap={20} justifyContent="flex-start">
         <SelfCard width="100%" />

@@ -1,36 +1,35 @@
 import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import { PassportEvents, ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
+import {
+  getFCMToken,
+  requestNotificationPermission,
+} from '../../utils/notifications/notificationService';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from './ProofRequestStatusScreen';
 
-type ConfirmBelongingScreenProps = StaticScreenProps<
-  | {
-      mockPassportFlow?: boolean;
-    }
-  | undefined
->;
+type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
 
-const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
-  route,
-}) => {
-  const mockPassportFlow = route.params?.mockPassportFlow;
+const { trackEvent } = analytics();
+
+const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   const navigate = useHapticNavigation('LoadingScreen', {
-    params: {
-      mockPassportFlow,
-    },
+    params: {},
   });
   const provingStore = useProvingStore();
+  const [_requestingPermission, setRequestingPermission] = useState(false);
   const currentState = useProvingStore(state => state.currentState);
   const isReadyToProve = currentState === 'ready_to_prove';
 
@@ -40,18 +39,33 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   }, []);
 
   const onOkPress = async () => {
-    // Initialize the proving process just before navigation
-    // This ensures a fresh start each time
     try {
-      // Initialize the state machine
+      setRequestingPermission(true);
+      trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
+
+      // Request notification permission
+      const permissionGranted = await requestNotificationPermission();
+      if (permissionGranted) {
+        const token = await getFCMToken();
+        if (token) {
+          provingStore.setFcmToken(token);
+          trackEvent(ProofEvents.FCM_TOKEN_STORED);
+          console.log('FCM token stored in proving store');
+        }
+      }
 
       // Mark as user confirmed - proving will start automatically when ready
       provingStore.setUserConfirmed();
 
       // Navigate to loading screen
       navigate();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error initializing proving process:', error);
+      trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
+        error: error?.message || 'Unknown error',
+      });
+    } finally {
+      setRequestingPermission(false);
     }
   };
 
@@ -81,7 +95,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
           </Description>
-          <PrimaryButton onPress={onOkPress} disabled={!isReadyToProve}>
+          <PrimaryButton
+            trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}
+            onPress={onOkPress}
+            disabled={!isReadyToProve}
+          >
             {isReadyToProve ? (
               'Confirm'
             ) : (

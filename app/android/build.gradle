@@ -8,6 +8,8 @@ buildscript {
         targetSdkVersion = 35
         ndkVersion = "26.1.10909125"
         kotlinVersion = "1.9.24"
+        firebaseMessagingVersion = "23.4.0"
+        firebaseBomVersion = "32.7.3"
     }
     repositories {
         google()
@@ -17,6 +19,7 @@ buildscript {
         }
     }
     dependencies {
+        classpath("com.android.tools.build:gradle:7.3.1")
         classpath("com.facebook.react:react-native-gradle-plugin")
         // classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
@@ -24,6 +27,8 @@ buildscript {
         classpath 'com.google.gms:google-services:4.3.14'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.2'
         classpath 'org.mozilla.rust-android-gradle:plugin:0.9.3'
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0")
+        classpath("com.google.gms:google-services:4.4.0")
     }
 }
 
@@ -31,8 +36,17 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://jitpack.io" }
+        maven {
+            url("$rootDir/../node_modules/react-native/android")
+        }
+        maven {
+            url("$rootDir/../node_modules/jsc-android/dist")
+        }
+        maven { url 'https://jitpack.io' }
         jcenter()
+        maven {
+            url 'https://google.bintray.com/google-services'
+        }
     }
     configurations.configureEach {
         resolutionStrategy.dependencySubstitution {
@@ -40,6 +54,11 @@ allprojects {
             substitute module('io.fotoapparat:fotoapparat') using module('com.github.RedApparat:Fotoapparat:2.7.0')
         }
         resolutionStrategy.force 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+    }
+    configurations.all {
+        resolutionStrategy {
+            force 'com.google.firebase:firebase-iid:21.1.0'
+        }
     }
 }
 
@@ -49,7 +68,7 @@ subprojects {
             android {
                 def manifestFile = project.file('src/main/AndroidManifest.xml')
                 def buildGradleFile = project.file('build.gradle')
-                
+
                 if (buildGradleFile.exists()) {
                     def buildGradleText = buildGradleFile.text
                     def namespaceMatcher = buildGradleText =~ /namespace\s*['"](.+?)['"]/
@@ -59,7 +78,7 @@ subprojects {
                         return
                     }
                 }
-                
+
                 if (manifestFile.exists()) {
                     def manifestText = manifestFile.text
                     def packageMatcher = manifestText =~ /package="([\w\.]+)"/

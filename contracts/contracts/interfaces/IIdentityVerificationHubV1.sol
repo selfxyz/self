@@ -12,22 +12,21 @@ import {CircuitConstants} from "../constants/CircuitConstants.sol";
  * @dev Defines data structures and external functions for verifying proofs and recovering human-readable data.
  */
 interface IIdentityVerificationHubV1 {
-
     /**
      * @notice Enum representing types of data that may be revealed.
      */
     enum RevealedDataType {
-        ISSUING_STATE,     // The issuing state of the passport.
-        NAME,              // The full name of the passport holder.
-        PASSPORT_NUMBER,   // The passport number.
-        NATIONALITY,       // The nationality.
-        DATE_OF_BIRTH,     // The date of birth.
-        GENDER,            // The gender.
-        EXPIRY_DATE,       // The passport expiry date.
-        OLDER_THAN,        // The "older than" age verification value.
-        PASSPORT_NO_OFAC,  // The passport number OFAC status.
+        ISSUING_STATE, // The issuing state of the passport.
+        NAME, // The full name of the passport holder.
+        PASSPORT_NUMBER, // The passport number.
+        NATIONALITY, // The nationality.
+        DATE_OF_BIRTH, // The date of birth.
+        GENDER, // The gender.
+        EXPIRY_DATE, // The passport expiry date.
+        OLDER_THAN, // The "older than" age verification value.
+        PASSPORT_NO_OFAC, // The passport number OFAC status.
         NAME_AND_DOB_OFAC, // The name and date of birth OFAC verification result.
-        NAME_AND_YOB_OFAC  // The name and year of birth OFAC verification result.
+        NAME_AND_YOB_OFAC // The name and year of birth OFAC verification result.
     }
 
     /**
@@ -104,10 +103,7 @@ interface IIdentityVerificationHubV1 {
      */
     function verifyVcAndDisclose(
         VcAndDiscloseHubProof memory proof
-    )
-        external
-        view
-        returns (VcAndDiscloseVerificationResult memory result);
+    ) external view returns (VcAndDiscloseVerificationResult memory result);
 
     /**
      * @notice Converts packed revealed data into a human-readable format.
@@ -119,10 +115,7 @@ interface IIdentityVerificationHubV1 {
     function getReadableRevealedData(
         uint256[3] memory revealedDataPacked,
         RevealedDataType[] memory types
-    )
-        external
-        view
-        returns (ReadableRevealedData memory readableData);
+    ) external view returns (ReadableRevealedData memory readableData);
 
     /**
      * @notice Retrieves a human-readable list of forbidden countries.
@@ -132,10 +125,7 @@ interface IIdentityVerificationHubV1 {
      */
     function getReadableForbiddenCountries(
         uint256[4] memory forbiddenCountriesListPacked
-    )
-        external
-        view
-        returns (string[40] memory forbiddenCountries);
+    ) external view returns (string[40] memory forbiddenCountries);
 
     /**
      * @notice Registers a passport commitment using a register circuit proof.
@@ -146,8 +136,7 @@ interface IIdentityVerificationHubV1 {
     function registerPassportCommitment(
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
-    )
-        external;
+    ) external;
 
     /**
      * @notice Registers a DSC key commitment using a DSC circuit proof.
@@ -158,8 +147,7 @@ interface IIdentityVerificationHubV1 {
     function registerDscKeyCommitment(
         uint256 dscCircuitVerifierId,
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
-    )
-        external;
+    ) external;
 
     /**
      * @notice Returns the address of the Identity Registry.
@@ -178,22 +166,12 @@ interface IIdentityVerificationHubV1 {
      * @param typeId The signature type identifier.
      * @return verifier The address of the register circuit verifier.
      */
-    function sigTypeToRegisterCircuitVerifiers(
-        uint256 typeId
-    )
-        external
-        view
-        returns (address verifier);
+    function sigTypeToRegisterCircuitVerifiers(uint256 typeId) external view returns (address verifier);
 
     /**
      * @notice Retrieves the DSC circuit verifier for a given signature type.
      * @param typeId The signature type identifier.
      * @return verifier The address of the DSC circuit verifier.
      */
-    function sigTypeToDscCircuitVerifiers(
-        uint256 typeId
-    )
-        external
-        view
-        returns (address verifier);
-} 
+    function sigTypeToDscCircuitVerifiers(uint256 typeId) external view returns (address verifier);
+}

@@ -15,6 +15,7 @@ describe('navigation', () => {
       'Home',
       'Launch',
       'LoadingScreen',
+      'MockDataDeepLink',
       'Modal',
       'PassportCamera',
       'PassportCameraTrouble',

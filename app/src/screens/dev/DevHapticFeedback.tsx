@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Button, ScrollView, styled } from 'tamagui';
 
@@ -8,6 +8,7 @@ import {
   feedbackUnsuccessful,
   impactLight,
   impactMedium,
+  loadingScreenProgress,
   notificationError,
   notificationSuccess,
   notificationWarning,
@@ -24,11 +25,27 @@ const StyledButton = styled(Button, {
   color: '#fff',
   fontSize: 16,
   fontWeight: 'bold',
+  pointerEvents: 'auto',
+  touchAction: 'manipulation',
 });
 
 const DevHapticFeedback = () => {
+  const [loadingProgressEnabled, setLoadingProgressEnabled] = useState(true);
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingTop: 20 }}
+      bounces={false}
+    >
+      <StyledButton
+        onPress={() => {
+          loadingScreenProgress(loadingProgressEnabled);
+          setLoadingProgressEnabled(!loadingProgressEnabled);
+        }}
+      >
+        Loading Screen Progress {loadingProgressEnabled ? '(OFF)' : '(ON)'}
+      </StyledButton>
       <StyledButton onPress={feedbackUnsuccessful}>
         Feedback Unsuccessful
       </StyledButton>

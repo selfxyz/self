@@ -6,7 +6,6 @@ pragma solidity 0.8.28;
  * @dev This interface defines the structure of a register circuit proof and exposes a function to verify such proofs.
  */
 interface IRegisterCircuitVerifier {
-
     /**
      * @notice Represents a register circuit proof.
      * @dev This structure encapsulates the required proof elements.
@@ -31,7 +30,7 @@ interface IRegisterCircuitVerifier {
      * @param pubSignals The public signals associated with the proof.
      * @return isValid A boolean value indicating whether the provided proof is valid (true) or not (false).
      */
-    function verifyProof (
+    function verifyProof(
         uint[2] calldata a,
         uint[2][2] calldata b,
         uint[2] calldata c,

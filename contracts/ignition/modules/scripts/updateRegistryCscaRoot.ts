@@ -6,7 +6,6 @@ import { getCscaTreeRoot } from "../../../../common/src/utils/trees";
 import serialized_csca_tree from "../../../../common/pubkeys/serialized_csca_tree.json";
 
 module.exports = buildModule("UpdateRegistryCscaRoot", (m) => {
-
   const networkName = hre.network.config.chainId;
 
   const deployedAddressesPath = path.join(__dirname, `../../deployments/chain-${networkName}/deployed_addresses.json`);

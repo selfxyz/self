@@ -271,9 +271,9 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         const currentTotal = state.proofHistory.length + proofs.length;
         const hasMore = currentTotal < totalCount;
 
-        set(state => ({
-          proofHistory: [...state.proofHistory, ...proofs],
-          currentPage: state.currentPage + 1,
+        set(currentState => ({
+          proofHistory: [...currentState.proofHistory, ...proofs],
+          currentPage: currentState.currentPage + 1,
           hasMore,
           isLoading: false,
         }));

@@ -56,9 +56,7 @@ contract PCR0Manager is Ownable {
      * @param pcr0 The PCR0 value (must be exactly 48 bytes).
      * @return exists True if the PCR0 entry is set, false otherwise.
      */
-    function isPCR0Set(
-        bytes calldata pcr0
-    ) external view returns (bool exists) {
+    function isPCR0Set(bytes calldata pcr0) external view returns (bool exists) {
         require(pcr0.length == 48, "PCR0 must be 48 bytes");
         bytes32 key = keccak256(pcr0);
         return pcr0Mapping[key];

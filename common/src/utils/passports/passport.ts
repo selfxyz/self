@@ -57,6 +57,7 @@ export function generateCommitment(
   );
 
   const dsc_hash = getLeafDscTree(passportData.dsc_parsed, passportData.csca_parsed);
+  // Log the values used to generate the commitment
 
   return poseidon5([
     secret,

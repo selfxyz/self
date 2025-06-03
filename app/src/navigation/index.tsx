@@ -17,14 +17,14 @@ import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
 import { getAesopScreens } from './aesop';
 import devScreens from './dev';
 import homeScreens from './home';
+import miscScreens from './misc';
 import passportScreens from './passport';
 import proveScreens from './prove';
 import recoveryScreens from './recovery';
 import settingsScreens from './settings';
-import staticScreens from './static';
 
 export const navigationScreens = {
-  ...staticScreens,
+  ...miscScreens,
   ...passportScreens,
   ...homeScreens,
   ...proveScreens,

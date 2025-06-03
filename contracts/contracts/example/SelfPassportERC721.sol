@@ -2,10 +2,12 @@
 pragma solidity 0.8.28;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
-import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
+import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
+
 import {SelfCircuitLibrary} from "../libraries/SelfCircuitLibrary.sol";
+import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 
 /**
  * @title SelfPassportERC721
@@ -23,36 +25,22 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     uint256 private _tokenIdCounter;
 
     /// @notice Mapping from token ID to passport attributes
-    mapping(uint256 => SelfCircuitLibrary.PassportData) private _passportAttributes;
+    mapping(uint256 tokenId => SelfCircuitLibrary.PassportData passportAttributes) private _passportAttributes;
 
-    /// @notice Mapping to track used nullifiers
-    mapping(uint256 => bool) private _usedNullifiers;
+    /// @notice Mapping to track minted user identifiers to prevent double minting
+    mapping(uint256 userIdentifier => bool minted) private _mintedUserIdentifiers;
 
     // ====================================================
     // Events
     // ====================================================
 
-    event PassportNFTMinted(
-        uint256 indexed tokenId,
-        address indexed owner,
-        SelfCircuitLibrary.PassportData attributes
-    );
-
-    /// @notice Emitted when the scope is updated
-    event ScopeUpdated(uint256 newScope);
-    
-    /// @notice Emitted when a new attestation ID is added
-    event AttestationIdAdded(uint256 attestationId);
-    
-    /// @notice Emitted when an attestation ID is removed
-    event AttestationIdRemoved(uint256 attestationId);
+    event PassportNFTMinted(uint256 indexed tokenId, address indexed owner, SelfCircuitLibrary.PassportData attributes);
 
     // ====================================================
     // Errors
     // ====================================================
 
-    error NullifierAlreadyUsed();
-    error RegistrationNotOpen();
+    error UserIdentifierAlreadyMinted();
     error InvalidUserIdentifier();
 
     // ====================================================
@@ -61,20 +49,22 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
 
     /**
      * @notice Constructor for the SelfPassportERC721 contract
-     * @param identityVerificationHub The address of the Identity Verification Hub
-     * @param scope The expected proof scope for user registration
-     * @param attestationIds The expected attestation identifiers required in proofs
+     * @param identityVerificationHubAddress The address of the Identity Verification Hub
+     * @param scopeValue The expected proof scope for user registration
+     * @param contractVersion The contract version for validation
+     * @param attestationIdsList The expected attestation identifiers required in proofs
      * @param name The name of the NFT collection
      * @param symbol The symbol of the NFT collection
      */
     constructor(
-        address identityVerificationHub,
-        uint256 scope,
-        uint256[] memory attestationIds,
+        address identityVerificationHubAddress,
+        uint256 scopeValue,
+        uint8 contractVersion,
+        bytes32[] memory attestationIdsList,
         string memory name,
         string memory symbol
     )
-        SelfVerificationRoot(identityVerificationHub, scope, attestationIds)
+        SelfVerificationRoot(identityVerificationHubAddress, scopeValue, contractVersion, attestationIdsList)
         ERC721(name, symbol)
         Ownable(_msgSender())
     {}
@@ -90,7 +80,6 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      */
     function setScope(uint256 newScope) external onlyOwner {
         _setScope(newScope);
-        emit ScopeUpdated(newScope);
     }
 
     /**
@@ -98,9 +87,8 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @dev Only callable by the contract owner
      * @param attestationId The attestation ID to add
      */
-    function addAttestationId(uint256 attestationId) external onlyOwner {
+    function addAttestationId(bytes32 attestationId) external onlyOwner {
         _addAttestationId(attestationId);
-        emit AttestationIdAdded(attestationId);
     }
 
     /**
@@ -108,53 +96,19 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @dev Only callable by the contract owner
      * @param attestationId The attestation ID to remove
      */
-    function removeAttestationId(uint256 attestationId) external onlyOwner {
+    function removeAttestationId(bytes32 attestationId) external onlyOwner {
         _removeAttestationId(attestationId);
-        emit AttestationIdRemoved(attestationId);
     }
 
     /**
      * @notice Updates the verification configuration
      * @dev Only callable by the contract owner
-     * @param verificationConfig The new verification configuration
+     * @param newVerificationConfig The new verification configuration
      */
     function setVerificationConfig(
-        ISelfVerificationRoot.VerificationConfig memory verificationConfig
+        ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
     ) external onlyOwner {
-        _setVerificationConfig(verificationConfig);
-    }
-
-    /**
-     * @notice Verifies a self-proof and mints an NFT with passport attributes
-     * @param proof The VC and Disclose proof data used to verify and register the user
-     */
-    function verifySelfProof(
-        ISelfVerificationRoot.DiscloseCircuitProof memory proof
-    ) public override {
-        if (_usedNullifiers[proof.pubSignals[NULLIFIER_INDEX]]) {
-            revert NullifierAlreadyUsed();
-        }
-
-        if (proof.pubSignals[USER_IDENTIFIER_INDEX] == 0) {
-            revert InvalidUserIdentifier();
-        }
-
-        // Verify the proof using the parent contract's logic
-        super.verifySelfProof(proof);
-
-        // Extract passport attributes from the revealed data using the utility function
-        uint256[3] memory revealedDataPacked = getRevealedDataPacked(proof.pubSignals);
-
-        // Extract passport data using SelfCircuitLibrary
-        SelfCircuitLibrary.PassportData memory attributes = SelfCircuitLibrary.extractPassportData(revealedDataPacked);
-
-        // Mint NFT
-        uint256 tokenId = _tokenIdCounter++;
-        _mint(msg.sender, tokenId);
-        _passportAttributes[tokenId] = attributes;
-        _usedNullifiers[proof.pubSignals[NULLIFIER_INDEX]] = true;
-
-        emit PassportNFTMinted(tokenId, msg.sender, attributes);
+        _setVerificationConfig(newVerificationConfig);
     }
 
     /**
@@ -168,12 +122,12 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     }
 
     /**
-     * @notice Check if a nullifier has been used
-     * @param nullifier The nullifier to check
-     * @return True if the nullifier has been used, false otherwise
+     * @notice Check if a user identifier has already minted an NFT
+     * @param userIdentifier The user identifier to check
+     * @return True if the user identifier has already minted, false otherwise
      */
-    function isNullifierUsed(uint256 nullifier) external view returns (bool) {
-        return _usedNullifiers[nullifier];
+    function isUserIdentifierMinted(uint256 userIdentifier) external view returns (bool) {
+        return _mintedUserIdentifiers[userIdentifier];
     }
 
     /**
@@ -181,8 +135,8 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @param attestationId The attestation ID to check
      * @return True if the attestation ID is allowed, false otherwise
      */
-    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
-        return _attestationIds[attestationId];
+    function isAttestationIdAllowed(bytes32 attestationId) external view returns (bool) {
+        return _attestationIdToEnabled[attestationId];
     }
 
     /**
@@ -202,6 +156,55 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     }
 
     // ====================================================
+    // Override Functions from SelfVerificationRoot
+    // ====================================================
+
+    /**
+     * @notice Hook called after successful verification - handles NFT minting
+     * @dev Validates user identifier and mints passport NFT with extracted attributes
+     * @param userIdentifier The user identifier from the proof
+     * @param revealedDataPacked The packed revealed data from the proof
+     */
+    function onBasicVerificationSuccess(
+        bytes32 /* attestationId */,
+        uint256 /* scope */,
+        uint256 userIdentifier,
+        uint256 /* nullifier */,
+        uint256 /* identityCommitmentRoot */,
+        uint256[] memory revealedDataPacked,
+        uint256[4] memory /* forbiddenCountriesListPacked */
+    ) internal override {
+        // Check if user identifier is valid
+        if (userIdentifier == 0) {
+            revert InvalidUserIdentifier();
+        }
+
+        // Check if user identifier has already minted an NFT
+        if (_mintedUserIdentifiers[userIdentifier]) {
+            revert UserIdentifierAlreadyMinted();
+        }
+
+        // Convert dynamic array to fixed-size array for passport data (first 3 elements)
+        uint256[3] memory passportRevealedData;
+        for (uint256 i = 0; i < 3 && i < revealedDataPacked.length; i++) {
+            passportRevealedData[i] = revealedDataPacked[i];
+        }
+
+        // Extract passport data using SelfCircuitLibrary
+        SelfCircuitLibrary.PassportData memory attributes = SelfCircuitLibrary.extractPassportData(
+            passportRevealedData
+        );
+
+        // Mint NFT
+        uint256 tokenId = _tokenIdCounter++;
+        _mint(msg.sender, tokenId);
+        _passportAttributes[tokenId] = attributes;
+        _mintedUserIdentifiers[userIdentifier] = true;
+
+        emit PassportNFTMinted(tokenId, msg.sender, attributes);
+    }
+
+    // ====================================================
     // Internal Functions
     // ====================================================
 
@@ -213,4 +216,4 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     function _exists(uint256 tokenId) internal view returns (bool) {
         return _ownerOf(tokenId) != address(0);
     }
-} 
+}
