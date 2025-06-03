@@ -1,10 +1,9 @@
 import { Signer } from "ethers";
 import { ethers } from "hardhat";
-import { DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
-import { genAndInitMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
-import { getCscaTreeRoot } from "../../../common/src/utils/trees";
-import { PassportData } from "../../../common/src/utils/types";
-import { getSMTs } from "./generateProof";
+import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common/constants/constants";
+import { genAndInitMockPassportData } from "@selfxyz/common/utils/passports/genMockPassportData";
+import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
+import { PassportData } from "@selfxyz/common/utils/types";
 import serialized_csca_tree from "./pubkeys/serialized_csca_tree.json";
 import {
   DeployedActors,
@@ -139,6 +138,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
   // Initialize roots
   const csca_root = getCscaTreeRoot(serialized_csca_tree);
   await registryContract.updateCscaRoot(csca_root, { from: owner });
+  const getSMTs = await import("./generateProof.js").then((mod) => mod.getSMTs);
 
   const { passportNo_smt, nameAndDob_smt, nameAndYob_smt } = getSMTs();
 

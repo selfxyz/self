@@ -1,5 +1,5 @@
 import { Signer } from "ethers";
-import type { PassportData } from "../../../common/src/utils/types";
+import type { PassportData } from "@selfxyz/common/utils/types";
 
 import type { PublicSignals, Groth16Proof } from "snarkjs";
 

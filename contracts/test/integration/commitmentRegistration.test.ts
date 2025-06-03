@@ -1,12 +1,11 @@
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { expect } from "chai";
 import { TransactionReceipt, ZeroAddress } from "ethers";
 import { ethers } from "hardhat";
 import { poseidon2 } from "poseidon-lite";
-import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
+import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "@selfxyz/common/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
 import { deploySystemFixtures } from "../utils/deployment";
-import { generateDscProof, generateRegisterProof } from "../utils/generateProof";
+import { generateDscProof, generateRegisterProof } from "../utils/generateProof.js";
 import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
 import { DeployedActors } from "../utils/types";
 import { generateRandomFieldElement } from "../utils/utils";
@@ -59,6 +58,8 @@ describe("Commitment Registration Tests", function () {
         const tx = await hub.registerDscKeyCommitment(DscVerifierId.dsc_sha256_rsa_65537_4096, dscProof);
 
         const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+        // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
+        const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
         const imt = new LeanIMT<bigint>(hashFunction);
         await imt.insert(BigInt(dscProof.pubSignals[CIRCUIT_CONSTANTS.DSC_TREE_LEAF_INDEX]));
 
@@ -241,6 +242,8 @@ describe("Commitment Registration Tests", function () {
         const previousRoot = await registry.getIdentityCommitmentMerkleRoot();
 
         const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+        // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
+        const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
         const imt = new LeanIMT<bigint>(hashFunction);
         await imt.insert(BigInt(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX]));
 

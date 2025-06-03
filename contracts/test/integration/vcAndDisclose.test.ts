@@ -2,12 +2,11 @@ import { expect } from "chai";
 import { deploySystemFixtures } from "../utils/deployment";
 import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
+import { CIRCUIT_CONSTANTS } from "@selfxyz/common/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
-import { generateVcAndDiscloseProof, getSMTs } from "../utils/generateProof";
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import { generateVcAndDiscloseProof, getSMTs } from "../utils/generateProof.js";
 import { poseidon2 } from "poseidon-lite";
-import { generateCommitment } from "../../../common/src/utils/passports/passport";
+import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement, getStartOfDayTimestamp, splitHexFromBack } from "../utils/utils";
 import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
@@ -15,9 +14,9 @@ import {
   formatCountriesList,
   reverseBytes,
   reverseCountryBytes,
-} from "../../../common/src/utils/circuits/formatInputs";
-import { getPackedForbiddenCountries } from "../../../common/src/utils/contracts/forbiddenCountries";
-import { countries } from "../../../common/src/constants/countries";
+} from "@selfxyz/common/utils/circuits/formatInputs";
+import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
+import { countries } from "@selfxyz/common/constants/countries";
 import fs from "fs";
 import path from "path";
 
@@ -47,6 +46,8 @@ describe("VC and Disclose", () => {
       .devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+    // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
+    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
     imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(commitment));
 

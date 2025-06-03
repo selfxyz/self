@@ -5,6 +5,7 @@
     "type": "git",
     "url": "https://github.com/selfxyz/self"
   },
+  "type": "commonjs",
   "license": "MIT",
   "author": "motemotech <i.am.nicoshark@gmail.com>",
   "files": [
@@ -65,6 +66,7 @@
     "@openpassport/zk-kit-smt": "^0.0.1",
     "@openzeppelin/contracts": "^5.0.2",
     "@openzeppelin/contracts-upgradeable": "^5.1.0",
+    "@selfxyz/common": "workspace:",
     "@types/circomlibjs": "^0.1.6",
     "@types/jest": "^29.5.12",
     "@zk-kit/imt": "^2.0.0-beta.4",
