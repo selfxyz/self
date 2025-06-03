@@ -1,5 +1,5 @@
 import { Country3LetterCode as Country3LetterCode1 } from './constants/countries.js';
-import { Country3LetterCode as Country3LetterCode2 } from './constants/constants.js';
+import { Country3LetterCode as Country3LetterCode2, REDIRECT_URL } from './constants/constants.js';
 import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from "./utils/certificate_parsing/dataStructure.js";
 import { parseCertificateSimple } from "./utils/certificate_parsing/parseCertificateSimple.js";
 import { findStartPubKeyIndex, generateCommitment, generateNullifier } from "./utils/passports/passport.js";
@@ -20,11 +20,14 @@ export type { PassportData, DocumentType } from './utils/types.js';
 export type Country3LetterCode = Country3LetterCode1 & Country3LetterCode2;
 export { initPassportDataParsing } from './utils/passports/passport.js';
 export { genAndInitMockPassportData } from './utils/passports/genMockPassportData.js';
-export {IdDocInput, CertificateData, brutforceSignatureAlgorithmDsc, Hash,  generateCommitment, generateNullifier,  findStartPubKeyIndex, getLeafCscaTree, getLeafDscTree, parseCertificateSimple, parseDscCertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA, genMockIdDoc };
+
 export type { UserIdType } from './utils/circuits/uuid.js'
-export  {
+export {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
 } from './utils/circuits/generateInputs.js';
 export type { PassportMetadata } from './utils/passports/passport_parsing/parsePassportData.js';
+
+
+export { REDIRECT_URL, IdDocInput, CertificateData, brutforceSignatureAlgorithmDsc, Hash,  generateCommitment, generateNullifier,  findStartPubKeyIndex, getLeafCscaTree, getLeafDscTree, parseCertificateSimple, parseDscCertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA, genMockIdDoc };

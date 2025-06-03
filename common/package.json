@@ -4,6 +4,7 @@
   "description": "Constants and utils for self",
   "license": "MIT",
   "author": "Selfxyz Team",
+  "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
