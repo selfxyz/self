@@ -12,7 +12,7 @@ import BalanceTree from "../utils/example/balance-tree";
 import { Formatter } from "../utils/formatter";
 import { generateDscProof, generateRegisterProof, generateVcAndDiscloseProof } from "../utils/generateProof.js";
 import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
-import { DeployedActors } from "../utils/types";
+import { DeployedActors, VcAndDiscloseHubProof } from "../utils/types";
 import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 
 describe("End to End Tests", function () {
@@ -151,7 +151,7 @@ describe("End to End Tests", function () {
       (await user1.getAddress()).slice(2),
     );
 
-    const vcAndDiscloseHubProof = {
+    const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
       olderThanEnabled: true,
       olderThan: "20",
       forbiddenCountriesEnabled: true,
@@ -192,6 +192,7 @@ describe("End to End Tests", function () {
         token.target,
         true,
         20,
+        // @ts-expect-error
         true,
         countriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
         [true, true, true],

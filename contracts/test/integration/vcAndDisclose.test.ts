@@ -98,6 +98,7 @@ describe("VC and Disclose", () => {
     invalidForbiddenCountriesList = ["AAA", "ABC", "CBA", "CBA"];
     // const invalidWholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(invalidForbiddenCountriesList))));
     // invalidForbiddenCountriesListPacked = splitHexFromBack(invalidWholePacked);
+    // @ts-expect-error -- the countries are not valid
     invalidForbiddenCountriesListPacked = getPackedForbiddenCountries(invalidForbiddenCountriesList);
 
     baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
@@ -165,7 +166,7 @@ describe("VC and Disclose", () => {
     it("should not call verifyVcAndDisclose with non-proxy address", async () => {
       const { hubImpl, registry, owner } = deployedActors;
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: false,
         olderThan: "20",
         forbiddenCountriesEnabled: false,
@@ -184,7 +185,7 @@ describe("VC and Disclose", () => {
       const { hub, registry, owner } = deployedActors;
 
       vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX] = generateRandomFieldElement();
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -205,7 +206,7 @@ describe("VC and Disclose", () => {
       vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX] =
         generateRandomFieldElement();
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -226,7 +227,7 @@ describe("VC and Disclose", () => {
       vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX] =
         generateRandomFieldElement();
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -247,7 +248,7 @@ describe("VC and Disclose", () => {
       vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX] =
         generateRandomFieldElement();
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -283,7 +284,7 @@ describe("VC and Disclose", () => {
           dateComponents[i].toString();
       }
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -320,7 +321,7 @@ describe("VC and Disclose", () => {
           dateComponents[i].toString();
       }
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -335,7 +336,7 @@ describe("VC and Disclose", () => {
     it("should fail with invalid current date (- 1 day)", async () => {
       const { hub, registry, owner } = deployedActors;
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -389,7 +390,7 @@ describe("VC and Disclose", () => {
           dateComponents[i].toString();
       }
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -404,7 +405,7 @@ describe("VC and Disclose", () => {
     it("should succeed with bigger value than older than", async () => {
       const { hub, registry, owner } = deployedActors;
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "18",
         forbiddenCountriesEnabled: true,
@@ -419,7 +420,7 @@ describe("VC and Disclose", () => {
     it("should fail with invalid older than", async () => {
       const { hub, registry, owner } = deployedActors;
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "21",
         forbiddenCountriesEnabled: false,
@@ -458,7 +459,7 @@ describe("VC and Disclose", () => {
         "0",
       );
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: false,
@@ -473,7 +474,7 @@ describe("VC and Disclose", () => {
     it("should fail with invalid forbidden countries", async () => {
       const { hub, registry, owner } = deployedActors;
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -491,7 +492,7 @@ describe("VC and Disclose", () => {
     it("should not revert when all enablers are false", async () => {
       const { hub, registry, owner } = deployedActors;
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: false,
         olderThan: "40",
         forbiddenCountriesEnabled: false,
@@ -508,7 +509,7 @@ describe("VC and Disclose", () => {
 
       vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: false,
         olderThan: "20",
         forbiddenCountriesEnabled: false,
