@@ -15,5 +15,5 @@ export {
   countries,
   hashEndpointWithScope,
   SelfAppBuilder,
-  getPackedForbiddenCountries
+  getPackedForbiddenCountries,
 };

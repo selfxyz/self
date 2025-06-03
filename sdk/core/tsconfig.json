@@ -11,14 +11,8 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "node16",
-    "baseUrl": ".",
+    "baseUrl": "."
   },
-  "include": [
-    "index.ts",
-    "src/**/*",
-    "circuits/**/*",
-    "circuits/**/*.json",
-    "utils/utils.ts"
-  ],
+  "include": ["index.ts", "src/**/*", "circuits/**/*", "circuits/**/*.json", "utils/utils.ts"],
   "exclude": ["node_modules", "**/__tests__/*", "dist"]
 }

@@ -10,10 +10,7 @@ import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsin
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
 import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
-import {
-  generateCommitment,
-  generateNullifier,
-} from '@selfxyz/common/utils/passports/passport';
+import { generateCommitment, generateNullifier } from '@selfxyz/common/utils/passports/passport';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { fullSigAlgs, sigAlgs } from './test_cases.js';
 dotenv.config();

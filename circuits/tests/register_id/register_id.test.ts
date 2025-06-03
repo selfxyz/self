@@ -7,10 +7,7 @@ import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/ge
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
 import { sigAlgs, fullSigAlgs } from './test_cases.js';
-import {
-  generateCommitment,
-  generateNullifier,
-} from '@selfxyz/common/utils/passports/passport';
+import { generateCommitment, generateNullifier } from '@selfxyz/common/utils/passports/passport';
 import { poseidon6 } from 'poseidon-lite';
 import { hashAlgosTypes, ID_CARD_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';

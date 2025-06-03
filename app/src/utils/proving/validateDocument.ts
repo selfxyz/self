@@ -171,7 +171,9 @@ export function generateCommitmentInApp(
         Array.from(passportData.eContent),
         'bytes',
       ) as number[]
-    ).map(byte => byte & 0xff),
+    )
+      // eslint-disable-next-line no-bitwise
+      .map(byte => byte & 0xff),
   );
 
   const csca_list: string[] = [];

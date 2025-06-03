@@ -126,29 +126,30 @@ export function formatDg2Hash(dg2Hash: number[]) {
   return unsignedBytesDg2Hash;
 }
 
-
 export function formatDG1Attribute(index: number[], value: string) {
-    const max_length = index[1] - index[0] + 1;
-    if (value.length > max_length) {
-        throw new Error(`Value is too long for index ${index[0]}-${index[1]} value: ${value} value.length: ${value.length} maxLength: ${max_length}`);
-    }
-    return value.padEnd(max_length, '<');
+  const max_length = index[1] - index[0] + 1;
+  if (value.length > max_length) {
+    throw new Error(
+      `Value is too long for index ${index[0]}-${index[1]} value: ${value} value.length: ${value.length} maxLength: ${max_length}`
+    );
+  }
+  return value.padEnd(max_length, '<');
 }
 
 export function formatName(firstName: string, lastName: string, targetLength: number) {
-    // Split names by spaces and join parts with '<'
-    const formattedLastName = lastName.toUpperCase().split(' ').join('<');
-    const formattedFirstName = firstName.toUpperCase().split(' ').join('<');
+  // Split names by spaces and join parts with '<'
+  const formattedLastName = lastName.toUpperCase().split(' ').join('<');
+  const formattedFirstName = firstName.toUpperCase().split(' ').join('<');
 
-    // Combine with '<<' separator
-    let result = `${formattedLastName}<<${formattedFirstName}`;
+  // Combine with '<<' separator
+  let result = `${formattedLastName}<<${formattedFirstName}`;
 
-    // Pad with '<' or truncate to target length
-    if (result.length < targetLength) {
-        result = result.padEnd(targetLength, '<');
-    } else if (result.length > targetLength) {
-        result = result.substring(0, targetLength);
-    }
+  // Pad with '<' or truncate to target length
+  if (result.length < targetLength) {
+    result = result.padEnd(targetLength, '<');
+  } else if (result.length > targetLength) {
+    result = result.substring(0, targetLength);
+  }
 
-    return result;
+  return result;
 }

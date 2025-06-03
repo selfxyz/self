@@ -1,4 +1,3 @@
-
 export function formatCallData_register(parsedCallData: any[]) {
   return {
     blinded_dsc_commitment: parsedCallData[3][0],
@@ -84,7 +83,7 @@ export function packForbiddenCountriesList(forbiddenCountries: string[]) {
       }
     }
     const hexString = sum.toString(16).padStart(64, '0');
-    output[i] = '0x' + hexString as `0x${string}`;
+    output[i] = ('0x' + hexString) as `0x${string}`;
   }
 
   return output;

@@ -9,10 +9,7 @@ export const getSubjectKeyIdentifier = (cert: Certificate): string => {
       'hex'
     );
 
-    skiValue = skiValue.replace(
-      /^(?:30(?:16|1E|22|32|42))?(?:04(?:14|1C|20|30|40))?/,
-      ''
-    );
+    skiValue = skiValue.replace(/^(?:30(?:16|1E|22|32|42))?(?:04(?:14|1C|20|30|40))?/, '');
     return skiValue;
   } else {
     // console.log('\x1b[31m%s\x1b[0m', 'no subject key identifier found'); // it's no big deal if this is not found

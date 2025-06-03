@@ -3,8 +3,8 @@ import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import {
-    attributeToPosition_ID,
-    ID_CARD_ATTESTATION_ID
+  attributeToPosition_ID,
+  ID_CARD_ATTESTATION_ID,
 } from '@selfxyz/common/constants/constants';
 import { poseidon1, poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
@@ -15,9 +15,9 @@ import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.js
 import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
 import passportNojson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
 import {
-    formatAndUnpackForbiddenCountriesList,
-    formatAndUnpackReveal,
-    getAttributeFromUnpackedReveal,
+  formatAndUnpackForbiddenCountriesList,
+  formatAndUnpackReveal,
+  getAttributeFromUnpackedReveal,
 } from '@selfxyz/common/utils/circuits/formatOutputs';
 import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';

@@ -123,17 +123,19 @@ export function genAndInitMockPassportData(
   lastName: string = 'DUPONT',
   firstName: string = 'ALPHONSE HUGHUES ALBERT'
 ): PassportData {
-  return initPassportDataParsing(genMockPassportData(
-    dgHashAlgo,
-    eContentHashAlgo,
-    signatureType,
-    nationality,
-    birthDate,
-    expiryDate,
-    passportNumber,
-    lastName,
-    firstName
-  ));
+  return initPassportDataParsing(
+    genMockPassportData(
+      dgHashAlgo,
+      eContentHashAlgo,
+      signatureType,
+      nationality,
+      birthDate,
+      expiryDate,
+      passportNumber,
+      lastName,
+      firstName
+    )
+  );
 }
 function sign(
   privateKeyPem: string,
