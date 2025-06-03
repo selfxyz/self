@@ -1,6 +1,6 @@
 import { StaticScreenProps, useIsFocused } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import { PassportData } from '@selfxyz/common/utils/types';
+import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

@@ -1,13 +1,14 @@
 import { useNavigation } from '@react-navigation/native';
-import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
-import { flag } from 'country-emoji';
-import getCountryISO2 from 'country-iso-3-to-2';
 import { countryCodes } from '@selfxyz/common/constants/constants';
+import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import {
   genMockIdDoc,
   IdDocInput,
 } from '@selfxyz/common/utils/passports/genMockIdDoc';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports/passport';
+import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
+import { flag } from 'country-emoji';
+import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -25,7 +26,6 @@ import {
   YStack,
 } from 'tamagui';
 
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';

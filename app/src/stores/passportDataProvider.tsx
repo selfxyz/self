@@ -1,3 +1,9 @@
+import {
+  PublicKeyDetailsECDSA,
+  PublicKeyDetailsRSA,
+} from '@selfxyz/common/utils/certificate_parsing/dataStructure';
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
+import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common/utils/passports/passport_parsing/brutForceDscSignature';
 import { PassportData } from '@selfxyz/common/utils/types';
 import React, {
   createContext,
@@ -8,12 +14,6 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import {
-  PublicKeyDetailsECDSA,
-  PublicKeyDetailsRSA,
-} from '@selfxyz/common/utils/certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common/utils/passports/passport_parsing/brutForceDscSignature';
 import { unsafe_getPrivateKey } from '../stores/authProvider';
 import { useAuth } from './authProvider';
 

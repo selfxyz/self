@@ -1,11 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
-import { flag } from 'country-emoji';
-import getCountryISO2 from 'country-iso-3-to-2';
 import { countryCodes } from '@selfxyz/common/constants/constants';
 import {
   genMockIdDoc,
   IdDocInput,
 } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { flag } from 'country-emoji';
+import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
