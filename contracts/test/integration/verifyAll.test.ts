@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { deploySystemFixtures } from "../utils/deployment";
-import { DeployedActors } from "../utils/types";
+import { DeployedActors, VcAndDiscloseHubProof } from "../utils/types";
 import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { ATTESTATION_ID } from "../utils/constants";
@@ -136,7 +136,7 @@ describe("VerifyAll", () => {
       const receipt = (await tx.wait()) as any;
       const timestamp = (await ethers.provider.getBlock(receipt.blockNumber))!.timestamp;
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -156,7 +156,7 @@ describe("VerifyAll", () => {
       const { registry, owner } = deployedActors;
 
       await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -178,7 +178,7 @@ describe("VerifyAll", () => {
       await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
       vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX] = generateRandomFieldElement();
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -199,7 +199,7 @@ describe("VerifyAll", () => {
 
       await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -222,7 +222,7 @@ describe("VerifyAll", () => {
 
         vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
           olderThanEnabled: false,
           olderThan: "20",
           forbiddenCountriesEnabled: false,
@@ -245,7 +245,7 @@ describe("VerifyAll", () => {
 
         vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX] = 0;
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -266,7 +266,7 @@ describe("VerifyAll", () => {
         const { registry, owner } = deployedActors;
         await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof : VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "21", // Higher than the age in proof
           forbiddenCountriesEnabled: false,
@@ -304,7 +304,7 @@ describe("VerifyAll", () => {
           "0",
         );
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: false,
@@ -329,7 +329,7 @@ describe("VerifyAll", () => {
         const { registry, owner } = deployedActors;
         await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -350,7 +350,7 @@ describe("VerifyAll", () => {
         const { registry, owner } = deployedActors;
         await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -378,7 +378,7 @@ describe("VerifyAll", () => {
         vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX] =
           generateRandomFieldElement();
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -402,7 +402,7 @@ describe("VerifyAll", () => {
         vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX] =
           generateRandomFieldElement();
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -426,7 +426,7 @@ describe("VerifyAll", () => {
         vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX] =
           generateRandomFieldElement();
 
-        const vcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -479,7 +479,7 @@ describe("VerifyAll", () => {
 
       vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -502,7 +502,7 @@ describe("VerifyAll", () => {
 
       vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX] = 0;
 
-      const vcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,

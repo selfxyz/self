@@ -1,3 +1,4 @@
+
 export function formatCallData_register(parsedCallData: any[]) {
   return {
     blinded_dsc_commitment: parsedCallData[3][0],
@@ -41,7 +42,7 @@ export function formatCallData_disclose(parsedCallData: any[]) {
   };
 }
 
-export function packForbiddenCountriesList(forbiddenCountries: string[]): string[] {
+export function packForbiddenCountriesList(forbiddenCountries: string[]) {
   const MAX_BYTES_IN_FIELD = 31;
   const REQUIRED_CHUNKS = 4;
   const bytes: number[] = [];
@@ -71,7 +72,7 @@ export function packForbiddenCountriesList(forbiddenCountries: string[]): string
     remain > 0 ? Math.floor(maxBytes / packSize) + 1 : Math.floor(maxBytes / packSize);
 
   // Pack bytes into chunks
-  const output: string[] = new Array(REQUIRED_CHUNKS).fill('0x' + '0'.repeat(64));
+  const output: `0x${string}`[] = new Array(REQUIRED_CHUNKS).fill('0x' + '0'.repeat(64));
   for (let i = 0; i < numChunks; i++) {
     let sum = BigInt(0);
     for (let j = 0; j < packSize; j++) {
@@ -83,7 +84,7 @@ export function packForbiddenCountriesList(forbiddenCountries: string[]): string
       }
     }
     const hexString = sum.toString(16).padStart(64, '0');
-    output[i] = '0x' + hexString;
+    output[i] = '0x' + hexString as `0x${string}`;
   }
 
   return output;

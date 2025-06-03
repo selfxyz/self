@@ -3,8 +3,8 @@ const YELLOW = "\x1b[33m";
 const GREEN = "\x1b[32m";
 const RESET = "\x1b[0m";
 
-import type { LeanIMT } from "@openpassport/zk-kit-lean-imt";
-import { ChildNodes, SMT } from "@openpassport/zk-kit-smt";
+import { LeanIMT } from "@openpassport/zk-kit-lean-imt"
+import { ChildNodes, SMT } from "@openpassport/zk-kit-smt"
 import fs from "fs";
 import path from "path";
 import { poseidon2, poseidon3 } from "poseidon-lite";

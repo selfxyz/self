@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { TestFormatter } from "../../typechain-types";
 import { Formatter } from "../utils/formatter";
-import { splitHexFromBack } from "../utils/utils";
+import { BigNumberish } from "ethers";
 
 describe("Formatter", function () {
   let testFormatter: TestFormatter;
@@ -98,14 +98,14 @@ describe("Formatter", function () {
 
   describe("fieldElementsToBytes", function () {
     it("should match contract and ts implementation", async function () {
-      const input = [123n, 456n, 789n];
+      const input: [BigNumberish, BigNumberish, BigNumberish] = [123n, 456n, 789n];
       const contractResult = await testFormatter.testFieldElementsToBytes(input);
       const tsResult = toHexString(Formatter.fieldElementsToBytes(input as [bigint, bigint, bigint]));
       expect(contractResult).to.deep.equal(tsResult);
     });
 
     it("should match contract and ts implementation for zero values", async function () {
-      const input = [0n, 0n, 0n];
+      const input: [BigNumberish, BigNumberish, BigNumberish] = [0n, 0n, 0n];
       const contractResult = await testFormatter.testFieldElementsToBytes(input);
       const tsResult = toHexString(Formatter.fieldElementsToBytes(input as [bigint, bigint, bigint]));
       expect(contractResult).to.deep.equal(tsResult);

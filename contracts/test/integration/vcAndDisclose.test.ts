@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { deploySystemFixtures } from "../utils/deployment";
-import { DeployedActors } from "../utils/types";
+import { DeployedActors, VcAndDiscloseHubProof } from "../utils/types";
 import { ethers } from "hardhat";
 import { CIRCUIT_CONSTANTS } from "@selfxyz/common/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
@@ -16,7 +16,7 @@ import {
   reverseCountryBytes,
 } from "@selfxyz/common/utils/circuits/formatInputs";
 import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
-import { countries } from "@selfxyz/common/constants/countries";
+import { countries, Country3LetterCode } from "@selfxyz/common/constants/countries";
 import fs from "fs";
 import path from "path";
 
@@ -30,7 +30,7 @@ describe("VC and Disclose", () => {
   let commitment: any;
   let nullifier: any;
 
-  let forbiddenCountriesList: string[];
+  let forbiddenCountriesList: Country3LetterCode[];
   let invalidForbiddenCountriesList: string[];
   let forbiddenCountriesListPacked: string[];
   let invalidForbiddenCountriesListPacked: string[];
@@ -92,8 +92,8 @@ describe("VC and Disclose", () => {
       "AAA",
       "ABC",
       "CBA",
-    ];
-    forbiddenCountriesListPacked = getPackedForbiddenCountries(forbiddenCountriesList);
+    ] as Country3LetterCode[];
+    forbiddenCountriesListPacked = getPackedForbiddenCountries(forbiddenCountriesList)
 
     invalidForbiddenCountriesList = ["AAA", "ABC", "CBA", "CBA"];
     // const invalidWholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(invalidForbiddenCountriesList))));
@@ -132,7 +132,7 @@ describe("VC and Disclose", () => {
     it("should verify and get result successfully", async () => {
       const { hub, registry, owner } = deployedActors;
 
-      const vcAndDiscloseHubProof = {
+    const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,

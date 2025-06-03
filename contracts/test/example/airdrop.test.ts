@@ -79,6 +79,7 @@ describe("Airdrop", () => {
       .deploy(
         deployedActors.hub.target,
         hashEndpointWithScope("https://test.com", "test-scope"),
+        0, // the types show we need a contract version here
         attestationIds,
         token.target,
       );
@@ -351,7 +352,7 @@ describe("Airdrop", () => {
     const airdropFactory = await ethers.getContractFactory("Airdrop");
     const newAirdrop = await airdropFactory
       .connect(owner)
-      .deploy(hub.target, hashEndpointWithScope("https://test.com", "test-scope"), attestationIds, token.target);
+      .deploy(hub.target, hashEndpointWithScope("https://test.com", "test-scope"),0, attestationIds, token.target);
     await newAirdrop.waitForDeployment();
 
     const verificationConfig = {
