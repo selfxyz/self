@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		05D985FB2BB3344600F58EEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05D985FA2BB3344600F58EEA /* Assets.xcassets */; };
-		12FDE04D2B784D978F7804C0 /* Inter-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = 4B261C28061D47B7B3BB3E37 /* Inter-Black.otf */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -24,39 +23,19 @@
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		16E884A52C5BD764003B7125 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 16E884A42C5BD764003B7125 /* passport.json */; };
-		4A1791A6108347E5A635DB1C /* Inter-ThinItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = EEA2A4D24A8F4B10A5ECA607 /* Inter-ThinItalic.otf */; };
-		5008C8140A304ED79DB817C5 /* slkscrb.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B4E7218406B64A95BCE0DFE4 /* slkscrb.ttf */; };
-		5C66B65890614C638590DC8A /* Inter-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8CE3CC4CFFC24314A22F1391 /* Inter-ExtraBold.otf */; };
-		61037530CB0A4C159B892CDC /* Inter-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 64F386964AAE4C1E8F2DF789 /* Inter-ExtraLight.otf */; };
-		628102DA686542B2A5D06A54 /* Inter-SemiBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8448FE310A674E8DAA7F1CB5 /* Inter-SemiBoldItalic.otf */; };
-		799E4D28B9494C6BAA389F52 /* Inter-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 0C36821E5B014740853946D5 /* Inter-Italic.otf */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		827AB97C3F4C4DA88293E5FF /* Inter-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 276287D0D37B4E8EBD7A1ABD /* Inter-SemiBold.otf */; };
 		905B70052A72767900AFA232 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905B70042A72767900AFA232 /* PassportReader.swift */; };
 		905B70072A72774000AFA232 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 905B70062A72774000AFA232 /* PassportReader.m */; };
-		9C694E1EF05C49DF85423A6A /* Inter-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 3BF771EA645241D9A28A3AE9 /* Inter-Bold.otf */; };
-		A109328F471241A5A931D524 /* Inter-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 070CF9E82E3E45DAB6BBA375 /* Inter-Light.otf */; };
 		AE6147EC2DC95A8D00445C0F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */; };
-		B0885FC3EE2A41A1AA97EEC0 /* Inter-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = F4AE10DA498844DF8BF01948 /* Inter-LightItalic.otf */; };
 		BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */; };
 		BF1044832DD5354F009B3688 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044822DD5354F009B3688 /* CameraView.swift */; };
 		BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MRZScanner.swift */; };
-		C9F1B4F4F38F49EF8723594E /* Inter-MediumItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 06064B357139453EB2788C18 /* Inter-MediumItalic.otf */; };
-		CB116B311D63491FA54CCEE1 /* Inter-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = DD642F4F3A114B43A22296D7 /* Inter-Thin.otf */; };
-		CC02892C62AE4BB5B7F769EA /* Inter-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 15C30A8C4A6C42558DC9D78B /* Inter-Medium.otf */; };
 		CC783A35ECCD4CC4FD708516 /* Pods_Self.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBF96649C103ADB7297A6A7F /* Pods_Self.framework */; };
 		D427791AA5714251A5EAF8AD /* DINOT-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */; };
-		D7C083B0F0554047BA5E6BC0 /* slkscr.woff in Resources */ = {isa = PBXBuildFile; fileRef = C56F122245594D6DA9B7570A /* slkscr.woff */; };
 		DAC618BCA5874DD8AD74FFFC /* Advercase-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7E5C3CEF7EDA4871B3D0EBE1 /* Advercase-Regular.otf */; };
-		DB83F88A19DB4E6583FFAE06 /* Inter-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6CF8D6DF98634423ACD5D630 /* Inter-Regular.otf */; };
-		DC707B77BEF343F0A7B3DFDD /* slkscr.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7CCB5F83F57540E88D54B34A /* slkscr.ttf */; };
-		E0825E4C214B4892954725F0 /* Inter-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 00B1702DFCD448D5897AAF17 /* Inter-BoldItalic.otf */; };
-		E27FC7C055DE4CBDADEFAC29 /* Inter-BlackItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = D58C0CED91AE4265A5A406A0 /* Inter-BlackItalic.otf */; };
 		E9F9A99C2D57FE2900E1362E /* PassportOCRViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */; };
 		E9F9A99D2D57FE2900E1362E /* PassportOCRViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */; };
 		EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */; };
-		EEF3331B93C24D6482021BA2 /* Inter-ExtraLightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 090474A3F07B4FFA82C9A751 /* Inter-ExtraLightItalic.otf */; };
-		F1961109CC004035884F79D9 /* Inter-ExtraBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 37A4DECF3A824D5BAA8863FD /* Inter-ExtraBoldItalic.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -73,20 +52,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		00B1702DFCD448D5897AAF17 /* Inter-BoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-BoldItalic.otf"; sourceTree = "<group>"; };
 		05B4DDF62C7850A80067519E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "OpenPassport App Clip/Images.xcassets"; sourceTree = "<group>"; };
 		05D985FA2BB3344600F58EEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = OpenPassport/Assets.xcassets; sourceTree = "<group>"; };
-		06064B357139453EB2788C18 /* Inter-MediumItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-MediumItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-MediumItalic.otf"; sourceTree = "<group>"; };
-		070CF9E82E3E45DAB6BBA375 /* Inter-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Light.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Light.otf"; sourceTree = "<group>"; };
-		090474A3F07B4FFA82C9A751 /* Inter-ExtraLightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraLightItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraLightItalic.otf"; sourceTree = "<group>"; };
-		0C36821E5B014740853946D5 /* Inter-Italic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Italic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Italic.otf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Self.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Self.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = OpenPassport/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = OpenPassport/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = OpenPassport/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = OpenPassport/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = OpenPassport/main.m; sourceTree = "<group>"; };
-		15C30A8C4A6C42558DC9D78B /* Inter-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Medium.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Medium.otf"; sourceTree = "<group>"; };
 		1608339E2D5CF89D00056417 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1648EB772CC9564D003BEA7D /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerViewManager.swift; sourceTree = "<group>"; };
@@ -100,40 +73,25 @@
 		169349842CC694DA00166F21 /* OpenPassportDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassportDebug.entitlements; path = OpenPassport/OpenPassportDebug.entitlements; sourceTree = "<group>"; };
 		16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = "<group>"; };
 		16E884A42C5BD764003B7125 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = "<group>"; };
-		276287D0D37B4E8EBD7A1ABD /* Inter-SemiBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-SemiBold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-SemiBold.otf"; sourceTree = "<group>"; };
-		37A4DECF3A824D5BAA8863FD /* Inter-ExtraBoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraBoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraBoldItalic.otf"; sourceTree = "<group>"; };
-		3BF771EA645241D9A28A3AE9 /* Inter-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Bold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Bold.otf"; sourceTree = "<group>"; };
-		4B261C28061D47B7B3BB3E37 /* Inter-Black.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Black.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Black.otf"; sourceTree = "<group>"; };
-		64F386964AAE4C1E8F2DF789 /* Inter-ExtraLight.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraLight.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraLight.otf"; sourceTree = "<group>"; };
-		6CF8D6DF98634423ACD5D630 /* Inter-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Regular.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Regular.otf"; sourceTree = "<group>"; };
 		73A8B182B1187BFE180CBB44 /* Pods-OpenPassport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.release.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.release.xcconfig"; sourceTree = "<group>"; };
-		7CCB5F83F57540E88D54B34A /* slkscr.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscr.ttf; path = "../node_modules/@tamagui/font-silkscreen/files/slkscr.ttf"; sourceTree = "<group>"; };
 		7E5C3CEF7EDA4871B3D0EBE1 /* Advercase-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Advercase-Regular.otf"; path = "../src/assets/fonts/Advercase-Regular.otf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = OpenPassport/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8448FE310A674E8DAA7F1CB5 /* Inter-SemiBoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-SemiBoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-SemiBoldItalic.otf"; sourceTree = "<group>"; };
-		8CE3CC4CFFC24314A22F1391 /* Inter-ExtraBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraBold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraBold.otf"; sourceTree = "<group>"; };
 		905B70042A72767900AFA232 /* PassportReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportReader.swift; sourceTree = "<group>"; };
 		905B70062A72774000AFA232 /* PassportReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = "<group>"; };
 		905B70082A729CD400AFA232 /* OpenPassport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassport.entitlements; path = OpenPassport/OpenPassport.entitlements; sourceTree = "<group>"; };
 		9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "DINOT-Medium.otf"; path = "../src/assets/fonts/DINOT-Medium.otf"; sourceTree = "<group>"; };
 		AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		B4E7218406B64A95BCE0DFE4 /* slkscrb.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscrb.ttf; path = "../node_modules/@tamagui/font-silkscreen/files/slkscrb.ttf"; sourceTree = "<group>"; };
 		BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMRZScannerView.swift; sourceTree = "<group>"; };
 		BF1044822DD5354F009B3688 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		BF1044842DD53570009B3688 /* MRZScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScanner.swift; sourceTree = "<group>"; };
-		C56F122245594D6DA9B7570A /* slkscr.woff */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscr.woff; path = "../node_modules/@tamagui/font-silkscreen/files/slkscr.woff"; sourceTree = "<group>"; };
 		CA67A75B161A05334E3E9402 /* Pods-OpenPassport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.debug.xcconfig"; sourceTree = "<group>"; };
 		CBF96649C103ADB7297A6A7F /* Pods_Self.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Self.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1CE52662C8B90B7EC435251 /* Pods-Self.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Self.debug.xcconfig"; path = "Target Support Files/Pods-Self/Pods-Self.debug.xcconfig"; sourceTree = "<group>"; };
-		D58C0CED91AE4265A5A406A0 /* Inter-BlackItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BlackItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-BlackItalic.otf"; sourceTree = "<group>"; };
-		DD642F4F3A114B43A22296D7 /* Inter-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Thin.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Thin.otf"; sourceTree = "<group>"; };
 		E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = OpenPassport/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportOCRViewManager.m; sourceTree = "<group>"; };
 		E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportOCRViewManager.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED3C4098AF3349976AE7513C /* Pods-Self.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Self.release.xcconfig"; path = "Target Support Files/Pods-Self/Pods-Self.release.xcconfig"; sourceTree = "<group>"; };
-		EEA2A4D24A8F4B10A5ECA607 /* Inter-ThinItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ThinItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ThinItalic.otf"; sourceTree = "<group>"; };
-		F4AE10DA498844DF8BF01948 /* Inter-LightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-LightItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-LightItalic.otf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -200,27 +158,6 @@
 			children = (
 				7E5C3CEF7EDA4871B3D0EBE1 /* Advercase-Regular.otf */,
 				9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */,
-				4B261C28061D47B7B3BB3E37 /* Inter-Black.otf */,
-				D58C0CED91AE4265A5A406A0 /* Inter-BlackItalic.otf */,
-				3BF771EA645241D9A28A3AE9 /* Inter-Bold.otf */,
-				00B1702DFCD448D5897AAF17 /* Inter-BoldItalic.otf */,
-				8CE3CC4CFFC24314A22F1391 /* Inter-ExtraBold.otf */,
-				37A4DECF3A824D5BAA8863FD /* Inter-ExtraBoldItalic.otf */,
-				64F386964AAE4C1E8F2DF789 /* Inter-ExtraLight.otf */,
-				090474A3F07B4FFA82C9A751 /* Inter-ExtraLightItalic.otf */,
-				0C36821E5B014740853946D5 /* Inter-Italic.otf */,
-				070CF9E82E3E45DAB6BBA375 /* Inter-Light.otf */,
-				F4AE10DA498844DF8BF01948 /* Inter-LightItalic.otf */,
-				15C30A8C4A6C42558DC9D78B /* Inter-Medium.otf */,
-				06064B357139453EB2788C18 /* Inter-MediumItalic.otf */,
-				6CF8D6DF98634423ACD5D630 /* Inter-Regular.otf */,
-				276287D0D37B4E8EBD7A1ABD /* Inter-SemiBold.otf */,
-				8448FE310A674E8DAA7F1CB5 /* Inter-SemiBoldItalic.otf */,
-				DD642F4F3A114B43A22296D7 /* Inter-Thin.otf */,
-				EEA2A4D24A8F4B10A5ECA607 /* Inter-ThinItalic.otf */,
-				7CCB5F83F57540E88D54B34A /* slkscr.ttf */,
-				B4E7218406B64A95BCE0DFE4 /* slkscrb.ttf */,
-				C56F122245594D6DA9B7570A /* slkscr.woff */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -338,27 +275,6 @@
 				EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */,
 				DAC618BCA5874DD8AD74FFFC /* Advercase-Regular.otf in Resources */,
 				D427791AA5714251A5EAF8AD /* DINOT-Medium.otf in Resources */,
-				12FDE04D2B784D978F7804C0 /* Inter-Black.otf in Resources */,
-				E27FC7C055DE4CBDADEFAC29 /* Inter-BlackItalic.otf in Resources */,
-				9C694E1EF05C49DF85423A6A /* Inter-Bold.otf in Resources */,
-				E0825E4C214B4892954725F0 /* Inter-BoldItalic.otf in Resources */,
-				5C66B65890614C638590DC8A /* Inter-ExtraBold.otf in Resources */,
-				F1961109CC004035884F79D9 /* Inter-ExtraBoldItalic.otf in Resources */,
-				61037530CB0A4C159B892CDC /* Inter-ExtraLight.otf in Resources */,
-				EEF3331B93C24D6482021BA2 /* Inter-ExtraLightItalic.otf in Resources */,
-				799E4D28B9494C6BAA389F52 /* Inter-Italic.otf in Resources */,
-				A109328F471241A5A931D524 /* Inter-Light.otf in Resources */,
-				B0885FC3EE2A41A1AA97EEC0 /* Inter-LightItalic.otf in Resources */,
-				CC02892C62AE4BB5B7F769EA /* Inter-Medium.otf in Resources */,
-				C9F1B4F4F38F49EF8723594E /* Inter-MediumItalic.otf in Resources */,
-				DB83F88A19DB4E6583FFAE06 /* Inter-Regular.otf in Resources */,
-				827AB97C3F4C4DA88293E5FF /* Inter-SemiBold.otf in Resources */,
-				628102DA686542B2A5D06A54 /* Inter-SemiBoldItalic.otf in Resources */,
-				CB116B311D63491FA54CCEE1 /* Inter-Thin.otf in Resources */,
-				4A1791A6108347E5A635DB1C /* Inter-ThinItalic.otf in Resources */,
-				DC707B77BEF343F0A7B3DFDD /* slkscr.ttf in Resources */,
-				5008C8140A304ED79DB817C5 /* slkscrb.ttf in Resources */,
-				D7C083B0F0554047BA5E6BC0 /* slkscr.woff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -379,7 +295,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
 		0C6411FE06C61E7F495D9204 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
