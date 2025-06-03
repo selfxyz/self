@@ -1,7 +1,7 @@
-import { WS_RPC_URL_VC_AND_DISCLOSE } from '@selfxyz/common/constants/constants';
-import { EndpointType, SelfApp } from '@selfxyz/common/utils/appType';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
-import { PassportData } from '@selfxyz/common/utils/types';
+import { WS_RPC_URL_VC_AND_DISCLOSE } from '@selfxyz/common';
+import { EndpointType, SelfApp } from '@selfxyz/common';
+import { getCircuitNameFromPassportData } from '@selfxyz/common';
+import { PassportData } from '@selfxyz/common';
 import forge from 'node-forge';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';

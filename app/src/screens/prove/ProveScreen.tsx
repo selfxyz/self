@@ -1,6 +1,6 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
-import { formatEndpoint } from '@selfxyz/common/utils/scope';
+import { SelfAppDisclosureConfig } from '@selfxyz/common';
+import { formatEndpoint } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,

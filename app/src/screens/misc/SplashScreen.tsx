@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { PassportData } from '@selfxyz/common/utils/types';
+import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';

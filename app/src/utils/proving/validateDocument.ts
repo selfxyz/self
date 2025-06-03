@@ -1,18 +1,16 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import {
   API_URL,
-  PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common/constants/constants';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
-import { hash, packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
-import { formatMrz } from '@selfxyz/common/utils/passports/format';
-import {
+  formatMrz,
   generateCommitment,
   generateNullifier,
-} from '@selfxyz/common/utils/passports/passport';
-import { getLeafDscTree } from '@selfxyz/common/utils/trees';
-import { PassportData } from '@selfxyz/common/utils/types';
+  getCircuitNameFromPassportData,
+  getLeafDscTree,
+  Hash,
+  parseCertificateSimple,
+  PASSPORT_ATTESTATION_ID,
+  type PassportData,
+} from '@selfxyz/common';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';
@@ -163,10 +161,12 @@ export function generateCommitmentInApp(
   passportData: PassportData,
   alternativeCSCA: Record<string, string>,
 ) {
-  const dg1_packed_hash = packBytesAndPoseidon(formatMrz(passportData.mrz));
-  const eContent_packed_hash = packBytesAndPoseidon(
+  const dg1_packed_hash = Hash.packBytesAndPoseidon(
+    formatMrz(passportData.mrz),
+  );
+  const eContent_packed_hash = Hash.packBytesAndPoseidon(
     (
-      hash(
+      Hash.hash(
         passportData.passportMetadata!.eContentHashFunction,
         Array.from(passportData.eContent),
         'bytes',

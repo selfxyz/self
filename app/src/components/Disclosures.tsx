@@ -1,8 +1,5 @@
-import {
-  Country3LetterCode,
-  countryCodes,
-} from '@selfxyz/common/constants/constants';
-import { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
+import type { SelfAppDisclosureConfig } from '@selfxyz/common';
+import { Country3LetterCode, countryCodes } from '@selfxyz/common';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 

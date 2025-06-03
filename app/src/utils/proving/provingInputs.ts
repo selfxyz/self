@@ -4,19 +4,19 @@ import {
   attributeToPosition,
   DEFAULT_MAJORITY,
   PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common/constants/constants';
-import nameAndDobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json';
-import passportNoAndNationalitySMTData from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json';
-import { SelfApp } from '@selfxyz/common/utils/appType';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
+} from '@selfxyz/common';
+import { SelfApp } from '@selfxyz/common';
+import { getCircuitNameFromPassportData } from '@selfxyz/common';
 import {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
-} from '@selfxyz/common/utils/circuits/generateInputs';
-import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
-import { PassportData } from '@selfxyz/common/utils/types';
+} from '@selfxyz/common';
+import { hashEndpointWithScope } from '@selfxyz/common';
+import { PassportData } from '@selfxyz/common';
+import nameAndDobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json';
+import nameAndYobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json';
+import passportNoAndNationalitySMTData from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import { poseidon2 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';

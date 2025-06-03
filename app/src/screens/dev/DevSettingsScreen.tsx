@@ -20,7 +20,7 @@ import {
   YStack,
 } from 'tamagui';
 
-import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
+import { genAndInitMockPassportData } from '@selfxyz/common';
 import { RootStackParamList } from '../../Navigation';
 import {
   unsafe_clearSecrets,

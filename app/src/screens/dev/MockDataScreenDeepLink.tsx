@@ -1,9 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
-import { countryCodes } from '@selfxyz/common/constants/constants';
-import {
-  genMockIdDoc,
-  IdDocInput,
-} from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { countryCodes } from '@selfxyz/common';
+import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useEffect, useState } from 'react';

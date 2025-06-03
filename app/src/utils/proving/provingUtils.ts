@@ -1,7 +1,9 @@
-import { WS_DB_RELAYER_STAGING } from '@selfxyz/common/constants/constants';
-import { WS_DB_RELAYER } from '@selfxyz/common/constants/constants';
-import { EndpointType } from '@selfxyz/common/utils/appType';
-import { initElliptic } from '@selfxyz/common/utils/certificate_parsing/elliptic';
+import type { EndpointType } from '@selfxyz/common';
+import {
+  initElliptic,
+  WS_DB_RELAYER,
+  WS_DB_RELAYER_STAGING,
+} from '@selfxyz/common';
 import forge from 'node-forge';
 
 const elliptic = initElliptic();

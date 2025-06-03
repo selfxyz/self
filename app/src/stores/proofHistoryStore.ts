@@ -1,6 +1,6 @@
-import { WS_DB_RELAYER } from '@selfxyz/common/constants/constants';
-import { EndpointType } from '@selfxyz/common/utils/appType';
-import { UserIdType } from '@selfxyz/common/utils/circuits/uuid';
+import type { EndpointType } from '@selfxyz/common';
+import { WS_DB_RELAYER } from '@selfxyz/common';
+import { UserIdType } from '@selfxyz/common';
 import { Platform } from 'react-native';
 import SQLite from 'react-native-sqlite-storage';
 import { io } from 'socket.io-client';

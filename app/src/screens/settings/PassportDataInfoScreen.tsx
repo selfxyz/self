@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { PassportMetadata } from '@selfxyz/common/utils/passports/passport_parsing/parsePassportData';
+import { PassportMetadata } from '@selfxyz/common';
 import React, { useCallback, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';

@@ -1,10 +1,7 @@
-import {
-  PublicKeyDetailsECDSA,
-  PublicKeyDetailsRSA,
-} from '@selfxyz/common/utils/certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common/utils/passports/passport_parsing/brutForceDscSignature';
-import { PassportData } from '@selfxyz/common/utils/types';
+import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '@selfxyz/common';
+import { parseCertificateSimple } from '@selfxyz/common';
+import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common';
+import { PassportData } from '@selfxyz/common';
 import React, {
   createContext,
   PropsWithChildren,

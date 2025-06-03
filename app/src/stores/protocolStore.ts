@@ -7,7 +7,7 @@ import {
   DSC_TREE_URL_STAGING,
   IDENTITY_TREE_URL,
   IDENTITY_TREE_URL_STAGING,
-} from '@selfxyz/common/constants/constants';
+} from '@selfxyz/common';
 import { create } from 'zustand';
 
 interface ProtocolState {

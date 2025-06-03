@@ -1,8 +1,5 @@
 import { X509Certificate } from '@peculiar/x509';
-import {
-  PCR0_MANAGER_ADDRESS,
-  RPC_URL,
-} from '@selfxyz/common/constants/constants';
+import { PCR0_MANAGER_ADDRESS, RPC_URL } from '@selfxyz/common';
 import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
