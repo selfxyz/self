@@ -21,7 +21,7 @@ import {
 } from 'tamagui';
 
 import { genAndInitMockPassportData } from '@selfxyz/common';
-import { RootStackParamList } from '../../Navigation';
+import { RootStackParamList } from '../../navigation';
 import {
   unsafe_clearSecrets,
   unsafe_getPrivateKey,

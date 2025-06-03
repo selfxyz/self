@@ -12,7 +12,7 @@ import { BackupEvents } from '../../consts/analytics';
 import { useModal } from '../../hooks/useModal';
 import Cloud from '../../images/icons/logo_cloud_backup.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { RootStackParamList } from '../../Navigation';
+import { RootStackParamList } from '../../navigation';
 import { useAuth } from '../../stores/authProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import analytics from '../../utils/analytics';
