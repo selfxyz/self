@@ -29,7 +29,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-
+      - name: Build Common Dependencies
+        run: yarn workspace @selfxyz/common build
       - name: Build Contracts)
         run: yarn build
         working-directory: ./contracts
