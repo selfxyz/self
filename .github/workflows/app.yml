@@ -1,5 +1,12 @@
 name: App CI
-
+env:
+  # Build environment versions
+  NODE_VERSION: 18
+  RUBY_VERSION: 3.2
+  JAVA_VERSION: 17
+  # Path configuration
+  WORKSPACE: ${{ github.workspace }}
+  APP_PATH: ${{ github.workspace }}/app
 on:
   push:
     paths:
@@ -34,4 +41,26 @@ jobs:
         working-directory: ./app
       - name: Test
         run: yarn test
+        working-directory: ./app
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          # some cocoapods won't compile with xcode 16.3
+          xcode-version: "16.2"
+
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+      - name: Install And Build
+        run: yarn install-app
         working-directory: ./app
