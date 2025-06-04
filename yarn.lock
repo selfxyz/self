@@ -4548,7 +4548,7 @@ __metadata:
     json-to-ts: "npm:^2.1.0"
     jsrsasign: "npm:^11.1.0"
     mocha: "npm:^10.7.3"
-    node-forge: "https://github.com/remicolin/forge"
+    node-forge: "github:remicolin/forge#17a11a632dd0e50343b3b8393245a2696f78afbb"
     path: "npm:^0.12.7"
     pkijs: "npm:^3.2.4"
     poseidon-lite: "npm:^0.2.0"
@@ -20305,7 +20305,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@https://github.com/remicolin/forge":
+"node-forge@github:remicolin/forge#17a11a632dd0e50343b3b8393245a2696f78afbb, node-forge@https://github.com/remicolin/forge":
   version: 1.3.2-0
   resolution: "node-forge@https://github.com/remicolin/forge.git#commit=17a11a632dd0e50343b3b8393245a2696f78afbb"
   checksum: 10c0/e3f02cc45b48b90ab8715c3a03b0711559366120494a93b446da46dea7fad1c63c0e22a0162849e81dd94fcb1e5ee672e9b38aad67687c5044fd1ffb1ed631a7

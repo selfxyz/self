@@ -15,7 +15,8 @@
     "circuits/**/*.json"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -build",
+    "build:deps": "yarn workspaces foreach --from @selfxyz/core --topological-dev --recursive run build",
     "types": "yarn build",
     "copy-abi": "bash scripts/copyAbi.sh",
     "format": "prettier --write .",
