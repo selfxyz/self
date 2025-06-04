@@ -132,7 +132,7 @@ function sign(
     const msgHash = hash(hashAlgorithm, eContent, 'hex');
 
     const signature = keyPair.sign(msgHash, 'hex');
-    // @ts-ignore-error THIS SEEMS LIKE A LEGIT PROBLEM -- aaronmgdr
+    // @ts-ignore-error toDer gives number[] what is fine for Buffer.from
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
 
     return signatureBytes;
