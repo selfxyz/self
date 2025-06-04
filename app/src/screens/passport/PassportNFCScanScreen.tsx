@@ -1,4 +1,8 @@
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { getSKIPEM } from '@selfxyz/common';
 import { initPassportDataParsing } from '@selfxyz/common';
 import { PassportData } from '@selfxyz/common';
