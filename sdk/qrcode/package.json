@@ -7,11 +7,11 @@
   },
   "license": "MIT",
   "author": "turnoffthiscomputer",
-  "main": "dist/index.js",
   "type": "module",
   "exports": {
     ".": "./dist/index.js"
   },
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -19,13 +19,13 @@
   "scripts": {
     "build": "tsc --build",
     "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode --topological-dev --recursive run build",
-    "types": "yarn build",
     "format": "prettier --write .",
     "install-sdk": "yarn workspace focus @selfxyz/qrcode",
     "lint": "prettier --check .",
     "prepublishOnly": "yarn build",
+    "publish": "yarn npm publish --access public",
     "test": "echo 'no tests found'",
-    "publish": "yarn npm publish --access public"
+    "types": "yarn build"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:^",

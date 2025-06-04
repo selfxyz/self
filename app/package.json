@@ -12,10 +12,10 @@
     "android:build-debug-bundle": "yarn react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "android:build-release": "yarn reinstall && cd ./android && ./gradlew clean bundleRelease && cd ..",
     "android:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose android internal_test",
+    "build:deps": "yarn workspaces foreach --from @selfxyz/mobile-app --topological --recursive run build",
     "bump-version:major": "npm version major && yarn sync-versions",
     "bump-version:minor": "npm version minor && yarn sync-versions",
     "bump-version:patch": "npm version patch && yarn sync-versions",
-    "types": "tsc --noEmit",
     "clean": "watchman watch-del-all && rm -rf ../node_modules ios/Pods ios/build android/app/build android/build ../.yarn/cache ios/.xcode.env.local",
     "clean:android": "rm -rf android/app/build android/build",
     "clean:ios": "rm -rf ios/Pods ios/build",
@@ -33,7 +33,6 @@
     "install-app:deploy": "yarn install-app:setup && yarn clean:xcode-env-local",
     "install-app:setup": "yarn install && yarn build:deps && cd ios && bundle install && cd ..",
     "ios": "react-native run-ios",
-    "build:deps": "yarn workspaces foreach --from @selfxyz/mobile-app --topological --recursive run build",
     "ios:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose ios internal_test",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -43,7 +42,8 @@
     "sync-versions": "bundle exec fastlane ios sync_version && bundle exec fastlane android sync_version",
     "tag:release": "node scripts/tag.js release",
     "tag:remove": "node scripts/tag.js remove",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "types": "tsc --noEmit"
   },
   "dependencies": {
     "@babel/runtime": "^7.27.4",

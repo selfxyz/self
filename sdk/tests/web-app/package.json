@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "build": "next build",
-    "types": "yarn build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "types": "yarn build"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
