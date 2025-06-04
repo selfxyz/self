@@ -1,15 +1,16 @@
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { SMT } from '@openpassport/zk-kit-smt';
 import {
-  COMMITMENT_TREE_DEPTH,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
   max_csca_bytes,
-  max_dsc_bytes,
-} from '../../constants/constants';
-import { getCurrentDateYYMMDD } from '../date';
-import { hash, packBytesAndPoseidon } from '../hash';
-import { formatMrz } from '../passports/format';
+  COMMITMENT_TREE_DEPTH,
+  OFAC_TREE_LEVELS,
+} from '../../constants/constants.js';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
+import { max_dsc_bytes } from '../../constants/constants.js';
+import { getCurrentDateYYMMDD } from '../date.js';
+import { hash, packBytesAndPoseidon } from '../hash.js';
+import { formatMrz } from '../passports/format.js';
 import {
   extractSignatureFromDSC,
   findStartPubKeyIndex,
@@ -19,15 +20,26 @@ import {
   getPassportSignatureInfos,
   pad,
   padWithZeroes,
-} from '../passports/passport';
-import { generateMerkleProof, generateSMTProof, getCountryLeaf, getCscaTreeInclusionProof, getDscTreeInclusionProof, getLeafCscaTree, getLeafDscTree, getNameDobLeaf, getNameYobLeaf, getPassportNumberAndNationalityLeaf } from '../trees';
-import { PassportData } from '../types';
-import { formatCountriesList } from './formatInputs';
-import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
+} from '../passports/passport.js';
+import {
+  generateMerkleProof,
+  generateSMTProof,
+  getCountryLeaf,
+  getCscaTreeInclusionProof,
+  getDscTreeInclusionProof,
+  getLeafCscaTree,
+  getLeafDscTree,
+  getNameDobLeaf,
+  getNameYobLeaf,
+  getPassportNumberAndNationalityLeaf,
+} from '../trees.js';
+import { PassportData } from '../types.js';
+import { formatCountriesList } from './formatInputs.js';
+import { castFromUUID, stringToAsciiBigIntArray } from './uuid.js';
 
 export function generateCircuitInputsDSC(
   passportData: PassportData,
-  serializedCscaTree: string[][],
+  serializedCscaTree: string[][]
 ) {
   const passportMetadata = passportData.passportMetadata;
   const cscaParsed = passportData.csca_parsed;
@@ -59,13 +71,17 @@ export function generateCircuitInputsDSC(
     signatureRaw
   );
   // Get start index of CSCA pubkey based on algorithm
-  const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, passportMetadata.cscaSignatureAlgorithm);
+  const [startIndex, keyLength] = findStartPubKeyIndex(
+    cscaParsed,
+    cscaTbsBytesPadded,
+    passportMetadata.cscaSignatureAlgorithm
+  );
   return {
-    raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
+    raw_csca: cscaTbsBytesPadded.map((x) => x.toString()),
     raw_csca_actual_length: BigInt(cscaParsed.tbsBytes.length).toString(),
     csca_pubKey_offset: startIndex.toString(),
     csca_pubKey_actual_size: BigInt(keyLength).toString(),
-    raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
+    raw_dsc: Array.from(dscTbsBytesPadded).map((x) => x.toString()),
     raw_dsc_padded_length: BigInt(dscTbsBytesLen).toString(), // with the sha padding actually
     csca_pubKey: csca_pubKey_formatted,
     signature,
@@ -78,16 +94,13 @@ export function generateCircuitInputsDSC(
 export function generateCircuitInputsRegister(
   secret: string,
   passportData: PassportData,
-  serializedDscTree: string,
+  serializedDscTree: string
 ) {
   const { mrz, eContent, signedAttr } = passportData;
   const passportMetadata = passportData.passportMetadata;
   const dscParsed = passportData.dsc_parsed;
 
-  const [dscTbsBytesPadded,] = pad(dscParsed.hashAlgorithm)(
-    dscParsed.tbsBytes,
-    max_dsc_bytes
-  );
+  const [dscTbsBytesPadded] = pad(dscParsed.hashAlgorithm)(dscParsed.tbsBytes, max_dsc_bytes);
 
   const { pubKey, signature, signatureAlgorithmFullName } = getPassportSignatureInfos(passportData);
   const mrz_formatted = formatMrz(mrz);
@@ -115,10 +128,14 @@ export function generateCircuitInputsRegister(
   const csca_tree_leaf = getLeafCscaTree(passportData.csca_parsed);
 
   // Get start index of DSC pubkey based on algorithm
-  const [startIndex, keyLength] = findStartPubKeyIndex(dscParsed, dscTbsBytesPadded, dscParsed.signatureAlgorithm);
+  const [startIndex, keyLength] = findStartPubKeyIndex(
+    dscParsed,
+    dscTbsBytesPadded,
+    dscParsed.signatureAlgorithm
+  );
 
   const inputs = {
-    raw_dsc: dscTbsBytesPadded.map(x => x.toString()),
+    raw_dsc: dscTbsBytesPadded.map((x) => x.toString()),
     raw_dsc_actual_length: [BigInt(dscParsed.tbsBytes.length).toString()],
     dsc_pubKey_offset: startIndex,
     dsc_pubKey_actual_size: [BigInt(keyLength).toString()],
@@ -155,18 +172,22 @@ export function generateCircuitInputsVCandDisclose(
   selector_older_than: string | number,
   merkletree: LeanIMT,
   majority: string,
-  passportNo_smt: SMT,
+  passportNo_smt: SMT | null,
   nameAndDob_smt: SMT,
   nameAndYob_smt: SMT,
   selector_ofac: string | number,
   forbidden_countries_list: string[],
   user_identifier: string
 ) {
-  const formattedMrz = formatMrz(passportData.mrz);
+  const { mrz, eContent, signedAttr, documentType } = passportData;
   const passportMetadata = passportData.passportMetadata;
+  const isPassportType = documentType === 'passport' || documentType === 'mock_passport';
+
+  const formattedMrz = formatMrz(mrz);
+
   const eContent_shaBytes = hash(
     passportMetadata.eContentHashFunction,
-    Array.from(passportData.eContent),
+    Array.from(eContent),
     'bytes'
   );
   const eContent_packed_hash = packBytesAndPoseidon(
@@ -175,11 +196,7 @@ export function generateCircuitInputsVCandDisclose(
 
   const dsc_tree_leaf = getLeafDscTree(passportData.dsc_parsed, passportData.csca_parsed);
 
-  const commitment = generateCommitment(
-    secret,
-    attestation_id,
-    passportData
-  );
+  const commitment = generateCommitment(secret, attestation_id, passportData);
   const index = findIndexInTree(merkletree, BigInt(commitment));
   const { siblings, path, leaf_depth } = generateMerkleProof(
     merkletree,
@@ -189,30 +206,48 @@ export function generateCircuitInputsVCandDisclose(
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
   const majority_ascii = formattedMajority.split('').map((char) => char.charCodeAt(0));
 
-  // SMT - OFAC
-  const passportNo_leaf = getPassportNumberAndNationalityLeaf(formattedMrz.slice(49, 58), formattedMrz.slice(59, 62));
-  const namedob_leaf = getNameDobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 68));
-  const name_leaf = getNameYobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 64));
+  // Define default values for SMT proofs (BigInt(0) for roots/keys, array of 0s for siblings)
+  const defaultSiblings = Array(OFAC_TREE_LEVELS).fill(BigInt(0));
+  let passportNoProof = {
+    root: BigInt(0),
+    closestleaf: BigInt(0),
+    siblings: defaultSiblings,
+  };
+  let nameDobProof;
+  let nameYobProof;
 
-  const {
-    root: passportNo_smt_root,
-    closestleaf: passportNo_smt_leaf_key,
-    siblings: passportNo_smt_siblings,
-  } = generateSMTProof(passportNo_smt, passportNo_leaf);
+  // Calculate leaves based on document type (using OFAC logic for slicing)
+  const nameSlice = isPassportType ? formattedMrz.slice(10, 49) : formattedMrz.slice(65, 95);
+  const dobSlice = isPassportType ? formattedMrz.slice(62, 68) : formattedMrz.slice(35, 41);
+  const yobSlice = isPassportType ? formattedMrz.slice(62, 64) : formattedMrz.slice(35, 37);
+  const nationalitySlice = isPassportType ? formattedMrz.slice(59, 62) : formattedMrz.slice(50, 53);
+  const passNoSlice = isPassportType ? formattedMrz.slice(49, 58) : formattedMrz.slice(10, 19);
 
-  const {
-    root: nameAndDob_smt_root,
-    closestleaf: nameAndDob_smt_leaf_key,
-    siblings: nameAndDob_smt_siblings,
-  } = generateSMTProof(nameAndDob_smt, namedob_leaf);
+  const namedob_leaf = getNameDobLeaf(nameSlice, dobSlice);
+  const nameyob_leaf = getNameYobLeaf(nameSlice, yobSlice);
 
-  const {
-    root: nameAndYob_smt_root,
-    closestleaf: nameAndYob_smt_leaf_key,
-    siblings: nameAndYob_smt_siblings,
-  } = generateSMTProof(nameAndYob_smt, name_leaf);
+  // Generate Name/DOB and Name/YOB proofs (always needed)
+  nameDobProof = generateSMTProof(nameAndDob_smt, namedob_leaf);
+  nameYobProof = generateSMTProof(nameAndYob_smt, nameyob_leaf);
 
-  return {
+  // Generate Passport Number proof only if it's a passport type and SMT is provided
+  if (isPassportType) {
+    if (!passportNo_smt) {
+      console.warn('Document type is passport, but passportNo_smt tree was not provided.');
+    } else {
+      const passportNo_leaf = getPassportNumberAndNationalityLeaf(passNoSlice, nationalitySlice);
+      const proofResult = generateSMTProof(passportNo_smt, passportNo_leaf);
+      // Explicitly cast root and closestleaf to bigint
+      passportNoProof = {
+        root: BigInt(proofResult.root),
+        closestleaf: BigInt(proofResult.closestleaf),
+        siblings: proofResult.siblings,
+      };
+    }
+  }
+
+  // Build Final Input Object
+  const baseInputs = {
     secret: formatInput(secret),
     attestation_id: formatInput(attestation_id),
     dg1: formatInput(formattedMrz),
@@ -228,18 +263,31 @@ export function generateCircuitInputsVCandDisclose(
     current_date: formatInput(getCurrentDateYYMMDD()),
     majority: formatInput(majority_ascii),
     user_identifier: formatInput(castFromUUID(user_identifier)),
-    ofac_passportno_smt_root: formatInput(passportNo_smt_root),
-    ofac_passportno_smt_leaf_key: formatInput(passportNo_smt_leaf_key),
-    ofac_passportno_smt_siblings: formatInput(passportNo_smt_siblings),
-    ofac_namedob_smt_root: formatInput(nameAndDob_smt_root),
-    ofac_namedob_smt_leaf_key: formatInput(nameAndDob_smt_leaf_key),
-    ofac_namedob_smt_siblings: formatInput(nameAndDob_smt_siblings),
-    ofac_nameyob_smt_root: formatInput(nameAndYob_smt_root),
-    ofac_nameyob_smt_leaf_key: formatInput(nameAndYob_smt_leaf_key),
-    ofac_nameyob_smt_siblings: formatInput(nameAndYob_smt_siblings),
     selector_ofac: formatInput(selector_ofac),
     forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
   };
+
+  const ofacNameInputs = {
+    ofac_namedob_smt_root: formatInput(nameDobProof.root),
+    ofac_namedob_smt_leaf_key: formatInput(nameDobProof.closestleaf),
+    ofac_namedob_smt_siblings: formatInput(nameDobProof.siblings),
+    ofac_nameyob_smt_root: formatInput(nameYobProof.root),
+    ofac_nameyob_smt_leaf_key: formatInput(nameYobProof.closestleaf),
+    ofac_nameyob_smt_siblings: formatInput(nameYobProof.siblings),
+  };
+
+  // Conditionally include passport OFAC inputs
+  const finalInputs = {
+    ...baseInputs,
+    ...ofacNameInputs,
+    ...(isPassportType && {
+      ofac_passportno_smt_root: formatInput(passportNoProof.root),
+      ofac_passportno_smt_leaf_key: formatInput(passportNoProof.closestleaf),
+      ofac_passportno_smt_siblings: formatInput(passportNoProof.siblings),
+    }),
+  };
+
+  return finalInputs;
 }
 
 export function generateCircuitInputsOfac(
@@ -247,23 +295,44 @@ export function generateCircuitInputsOfac(
   sparsemerkletree: SMT,
   proofLevel: number
 ) {
-  const mrz_bytes = formatMrz(passportData.mrz);
-  console.log('mrz_bytes', mrz_bytes);
-  console.log('mrz_bytes.slice(59, 62)', mrz_bytes.slice(59, 62).map((byte) => String.fromCharCode(byte)));
-  const passport_leaf = getPassportNumberAndNationalityLeaf(mrz_bytes.slice(49, 58), mrz_bytes.slice(59, 62));
-  const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10, 49), mrz_bytes.slice(62, 68)); // [57-62] + 5 shift
-  const name_leaf = getNameYobLeaf(mrz_bytes.slice(10, 49), mrz_bytes.slice(62, 64));
+  const { mrz, documentType } = passportData;
+  const isPassportType = documentType === 'passport' || documentType === 'mock_passport';
 
-  let root, closestleaf, siblings;
+  const mrz_bytes = formatMrz(mrz); // Assume formatMrz handles basic formatting
+  const nameSlice = isPassportType
+    ? mrz_bytes.slice(5 + 5, 44 + 5)
+    : mrz_bytes.slice(60 + 5, 90 + 5);
+  const dobSlice = isPassportType
+    ? mrz_bytes.slice(57 + 5, 63 + 5)
+    : mrz_bytes.slice(30 + 5, 36 + 5);
+  const yobSlice = isPassportType
+    ? mrz_bytes.slice(57 + 5, 59 + 5)
+    : mrz_bytes.slice(30 + 5, 32 + 5);
+  const nationalitySlice = isPassportType
+    ? mrz_bytes.slice(54 + 5, 57 + 5)
+    : mrz_bytes.slice(45 + 5, 48 + 5);
+  const passNoSlice = isPassportType
+    ? mrz_bytes.slice(44 + 5, 53 + 5)
+    : mrz_bytes.slice(5 + 5, 14 + 5);
+
+  let leafToProve: bigint;
+
   if (proofLevel == 3) {
-    ({ root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, passport_leaf));
+    if (!isPassportType) {
+      throw new Error(
+        'Proof level 3 (Passport Number) is only applicable to passport document types.'
+      );
+    }
+    leafToProve = getPassportNumberAndNationalityLeaf(passNoSlice, nationalitySlice);
   } else if (proofLevel == 2) {
-    ({ root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, namedob_leaf));
+    leafToProve = getNameDobLeaf(nameSlice, dobSlice);
   } else if (proofLevel == 1) {
-    ({ root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, name_leaf));
+    leafToProve = getNameYobLeaf(nameSlice, yobSlice);
   } else {
-    throw new Error('Invalid proof level');
+    throw new Error('Invalid proof level specified for OFAC check.');
   }
+
+  const { root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, leafToProve);
 
   return {
     dg1: formatInput(mrz_bytes),

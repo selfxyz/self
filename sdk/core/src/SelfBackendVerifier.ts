@@ -8,19 +8,19 @@ import {
 } from './constants/contractAddresses';
 import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
-import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
+import type { SelfVerificationResult } from '@selfxyz/common/utils/selfAttestation';
+import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
 import {
-  castToScope,
-  castToUserIdentifier,
-  UserIdType,
-} from '../../../common/src/utils/circuits/uuid';
-import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
-import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
-import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
-import { hashEndpointWithScope } from '../../../common/src/utils/scope';
+  CIRCUIT_CONSTANTS,
+  revealedDataTypes,
+  Country3LetterCode,
+  commonNames,
+} from '@selfxyz/common';
+import { packForbiddenCountriesList } from '@selfxyz/common/utils/contracts/formatCallData';
+import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 
-const CELO_MAINNET_RPC_URL = "https://forno.celo.org";
-const CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org";
+const CELO_MAINNET_RPC_URL = 'https://forno.celo.org';
+const CELO_TESTNET_RPC_URL = 'https://alfajores-forno.celo-testnet.org';
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -35,9 +35,9 @@ export class SelfBackendVerifier {
     enabled: boolean;
     value: Country3LetterCode;
   } = {
-      enabled: false,
-      value: '' as Country3LetterCode,
-    };
+    enabled: false,
+    value: '' as Country3LetterCode,
+  };
   protected minimumAge: { enabled: boolean; value: string } = {
     enabled: false,
     value: '18',
@@ -46,9 +46,9 @@ export class SelfBackendVerifier {
     enabled: boolean;
     value: Country3LetterCode[];
   } = {
-      enabled: false,
-      value: [],
-    };
+    enabled: false,
+    value: [],
+  };
   protected passportNoOfac: boolean = false;
   protected nameAndDobOfac: boolean = false;
   protected nameAndYobOfac: boolean = false;
@@ -140,9 +140,14 @@ export class SelfBackendVerifier {
       result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
     } catch (error: any) {
       let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
-      if (error && typeof error === 'object' && error.message && error.message.includes('INVALID_FORBIDDEN_COUNTRIES')) {
-        errorMessage = 'The forbidden countries list in the backend does not match the list provided in the frontend SDK. Please ensure both lists are identical.';
+      if (
+        error &&
+        typeof error === 'object' &&
+        error.message &&
+        error.message.includes('INVALID_FORBIDDEN_COUNTRIES')
+      ) {
+        errorMessage =
+          'The forbidden countries list in the backend does not match the list provided in the frontend SDK. Please ensure both lists are identical.';
       }
 
       return {
@@ -233,7 +238,7 @@ export class SelfBackendVerifier {
   /**
    * Sets the list of countries to be excluded in the verification.
    * This list must exactly match the list configured in the backend.
-   * 
+   *
    * @param countries Array of 3-letter country codes to exclude
    * @returns This instance for method chaining
    * @throws Error if more than 40 countries are provided or if any country code is invalid
@@ -242,23 +247,23 @@ export class SelfBackendVerifier {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
-    
     // Validate country codes
     for (const country of countries) {
       if (!country || country.length !== 3) {
-        throw new Error(`Invalid country code: "${country}". Country codes must be exactly 3 characters long.`);
+        throw new Error(
+          `Invalid country code: "${country}". Country codes must be exactly 3 characters long.`
+        );
       }
-      
       // Check if the country code exists in the list of valid codes (additional check)
       const isValidCountry = Object.values(commonNames).some(
-        name => name === country || country in commonNames
+        (name) => name === country || country in commonNames
       );
-      
       if (!isValidCountry) {
-        throw new Error(`Unknown country code: "${country}". Please use valid 3-letter ISO country codes.`);
+        throw new Error(
+          `Unknown country code: "${country}". Please use valid 3-letter ISO country codes.`
+        );
       }
     }
-    
     this.excludedCountries = { enabled: true, value: countries };
     return this;
   }

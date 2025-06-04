@@ -1,9 +1,11 @@
 {
-  "name": "web-app",
+  "name": "test-web-app",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "next build",
+    "types": "yarn build",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start"
@@ -12,6 +14,8 @@
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^6.0.2",
+    "@selfxyz/common": "workspace:^",
+    "@selfxyz/qrcode": "workspace:^",
     "axios": "^1.7.7",
     "next": "14.2.8",
     "react": "^18",

@@ -1,4 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
+import { countryCodes } from '@selfxyz/common';
+import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -6,11 +8,6 @@ import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
 
-import { countryCodes } from '../../../../common/src/constants/constants';
-import {
-  genMockIdDoc,
-  IdDocInput,
-} from '../../../../common/src/utils/passports/genMockIdDoc';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';

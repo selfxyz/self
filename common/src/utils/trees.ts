@@ -1,25 +1,34 @@
 import { IMT } from '@openpassport/zk-kit-imt';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
-import countries from "i18n-iso-countries";
-import en from "i18n-iso-countries/langs/en.json";
-import { poseidon12, poseidon13, poseidon2, poseidon3, poseidon6 } from 'poseidon-lite';
-import { CSCA_TREE_DEPTH, DSC_TREE_DEPTH, max_csca_bytes, max_dsc_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
+import countries from 'i18n-iso-countries';
+// @ts-ignore
+import en from 'i18n-iso-countries/langs/en.json' with { type: 'json' };
+import { poseidon12, poseidon13, poseidon2, poseidon3, poseidon6, poseidon10 } from 'poseidon-lite';
+import { CertificateData } from './certificate_parsing/dataStructure.js';
+import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 import {
-  CertificateData,
-} from './certificate_parsing/dataStructure';
-import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { stringToAsciiBigIntArray } from './circuits/uuid';
-import { packBytesAndPoseidon } from './hash';
-import { pad } from './passports/passport';
-import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
-countries.registerLocale(en);
+  CSCA_TREE_DEPTH,
+  DSC_TREE_DEPTH,
+  max_csca_bytes,
+  OFAC_TREE_LEVELS,
+} from '../constants/constants.js';
+import { max_dsc_bytes } from '../constants/constants.js';
+import { stringToAsciiBigIntArray } from './circuits/uuid.js';
+import { packBytesAndPoseidon } from './hash.js';
+import { pad } from './passports/passport.js';
+import {
+  DscCertificateMetaData,
+  parseDscCertificateData,
+} from './passports/passport_parsing/parseDscCertificateData.js';
 
+// SideEffect here
+countries.registerLocale(en);
 /** get leaf for DSC and CSCA Trees */
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   if (type === 'dsc') {
     // for now, we pad it for sha
-    const tbsArray = Object.keys(parsed.tbsBytes).map(key => parsed.tbsBytes[key]);
+    const tbsArray = Object.keys(parsed.tbsBytes).map((key) => parsed.tbsBytes[key]);
     const [paddedTbsBytes, tbsBytesPaddedLength] = pad(parsed.hashAlgorithm)(
       tbsArray,
       max_dsc_bytes
@@ -29,13 +38,19 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
     return poseidon2([dsc_hash, tbsArray.length]).toString();
   } else {
     const tbsBytesArray = Array.from(parsed.tbsBytes);
-    const paddedTbsBytesArray = tbsBytesArray.concat(new Array(max_csca_bytes - tbsBytesArray.length).fill(0));
+    const paddedTbsBytesArray = tbsBytesArray.concat(
+      new Array(max_csca_bytes - tbsBytesArray.length).fill(0)
+    );
     const csca_hash = packBytesAndPoseidon(paddedTbsBytesArray);
     return poseidon2([csca_hash, tbsBytesArray.length]).toString();
   }
 }
 
-export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateData, dscMetaData: DscCertificateMetaData): string { // TODO: WRONG  change this function using raw dsc and hashfunctions from passportMetadata
+export function getLeafDscTreeFromDscCertificateMetadata(
+  dscParsed: CertificateData,
+  dscMetaData: DscCertificateMetaData
+): string {
+  // TODO: WRONG  change this function using raw dsc and hashfunctions from passportMetadata
   const cscaParsed = parseCertificateSimple(dscMetaData.csca);
   return getLeafDscTree(dscParsed, cscaParsed);
 }
@@ -54,8 +69,10 @@ export function getLeafCscaTree(csca_parsed: CertificateData): string {
   return getLeaf(csca_parsed, 'csca');
 }
 
-
-export function getDscTreeInclusionProof(leaf: string, serialized_dsc_tree: string): [string, number[], bigint[], number] {
+export function getDscTreeInclusionProof(
+  leaf: string,
+  serialized_dsc_tree: string
+): [string, number[], bigint[], number] {
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, serialized_dsc_tree);
   const index = tree.indexOf(BigInt(leaf));
@@ -74,7 +91,11 @@ export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: a
     throw new Error('Your public key was not found in the registry');
   }
   const proof = tree.createProof(index);
-  return [tree.root, proof.pathIndices.map(index => index.toString()), proof.siblings.flat().map(sibling => sibling.toString())];
+  return [
+    tree.root,
+    proof.pathIndices.map((index) => index.toString()),
+    proof.siblings.flat().map((sibling) => sibling.toString()),
+  ];
 }
 
 export function getCscaTreeRoot(serialized_csca_tree: any[][]) {
@@ -161,6 +182,7 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxleaf_depth:
 // 1. Passport Number and Nationality tree : level 3 (Absolute Match)
 // 2. Name and date of birth combo tree : level 2 (High Probability Match)
 // 3. Name and year of birth combo tree : level 1 (Partial Match)
+// NEW: ID card specific trees
 export function buildSMT(field: any[], treetype: string): [number, number, SMT] {
   let count = 0;
   let startTime = performance.now();
@@ -172,24 +194,43 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
   for (let i = 0; i < field.length; i++) {
     const entry = field[i];
 
-    if (i !== 0) {
+    // Optimization: Log progress less frequently
+    if (i !== 0 && i % 100 === 0) {
       console.log('Processing', treetype, 'number', i, 'out of', field.length);
     }
 
     let leaf = BigInt(0);
+    // Determine document type based on treetype for name processing
+    let docType: 'passport' | 'id_card' = 'passport'; // Default to passport
+    if (treetype.endsWith('_id_card')) {
+      docType = 'id_card';
+    }
+
     if (treetype == 'passport_no_and_nationality') {
       leaf = processPassportNoAndNationality(entry.Pass_No, entry.Pass_Country, i);
     } else if (treetype == 'name_and_dob') {
-      leaf = processNameAndDob(entry, i);
+      leaf = processNameAndDob(entry, i, 'passport'); // Explicitly passport
     } else if (treetype == 'name_and_yob') {
-      leaf = processNameAndYob(entry, i);
+      leaf = processNameAndYob(entry, i, 'passport'); // Explicitly passport
+    } else if (treetype == 'name_and_dob_id_card') {
+      // New ID card type
+      leaf = processNameAndDob(entry, i, 'id_card');
+    } else if (treetype == 'name_and_yob_id_card') {
+      // New ID card type
+      leaf = processNameAndYob(entry, i, 'id_card');
     } else if (treetype == 'country') {
       const keys = Object.keys(entry);
       leaf = processCountry(keys[0], entry[keys[0]], i);
     }
 
-    if (leaf == BigInt(0) || tree.createProof(leaf).membership) {
-      console.log('This entry already exists in the tree, skipping...');
+    if (leaf == BigInt(0)) {
+      // Skip entries that couldn't be processed (e.g., missing data)
+      continue;
+    }
+
+    // Check for duplicates *after* processing, as different inputs might yield the same hash
+    if (tree.createProof(leaf).membership) {
+      // console.log('Duplicate leaf generated, skipping entry:', i, entry); // Optional: log duplicates
       continue;
     }
 
@@ -197,12 +238,16 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
     tree.add(leaf, BigInt(1));
   }
 
-  console.log('Total', treetype, 'paresed are : ', count, ' over ', field.length);
-  console.log(treetype, 'tree built in', performance.now() - startTime, 'ms');
+  console.log('Total', treetype, 'entries added:', count, 'out of', field.length);
+  console.log(treetype, 'tree built in', (performance.now() - startTime).toFixed(2), 'ms');
   return [count, performance.now() - startTime, tree];
 }
 
-function processPassportNoAndNationality(passno: string, nationality: string, index: number): bigint {
+function processPassportNoAndNationality(
+  passno: string,
+  nationality: string,
+  index: number
+): bigint {
   if (passno.length > 9) {
     console.log('passport number length is greater than 9:', index, passno);
   } else if (passno.length < 9) {
@@ -234,87 +279,124 @@ function processPassportNoAndNationality(passno: string, nationality: string, in
 // will be removed once we parse the OFAC list better, starting from the XML file.
 const normalizeCountryName = (country: string): string => {
   const mapping: Record<string, string> = {
-    "palestinian": "Palestine",
-    "korea, north": "North Korea",
-    "korea, south": "Korea, Republic of",
-    "united kingdom": "United Kingdom",
-    "syria": "Syrian Arab Republic",
-    "burma": "Myanmar",
-    "cabo verde": "Cape Verde",
-    "congo, democratic republic of the": "Democratic Republic of the Congo",
-    "macau": "Macao",
+    palestinian: 'Palestine',
+    'korea, north': 'North Korea',
+    'korea, south': 'Korea, Republic of',
+    'united kingdom': 'United Kingdom',
+    syria: 'Syrian Arab Republic',
+    burma: 'Myanmar',
+    'cabo verde': 'Cape Verde',
+    'congo, democratic republic of the': 'Democratic Republic of the Congo',
+    macau: 'Macao',
   };
   return mapping[country.toLowerCase()] || country;
 };
 
 const getCountryCode = (countryName: string): string | undefined => {
-  return countries.getAlpha3Code(normalizeCountryName(countryName), "en");
+  return countries.getAlpha3Code(normalizeCountryName(countryName), 'en');
 };
 
 function generateSmallKey(input: bigint): bigint {
   return input % (BigInt(1) << BigInt(OFAC_TREE_LEVELS));
 }
 
-function processNameAndDob(entry: any, i: number): bigint {
+function processNameAndDob(entry: any, i: number, docType: 'passport' | 'id_card'): bigint {
   const firstName = entry.First_Name;
   const lastName = entry.Last_Name;
   const day = entry.day;
   const month = entry.month;
   const year = entry.year;
-  if (day == null || month == null || year == null) {
-    console.log('dob is null', i, entry);
+  if (day == null || month == null || year == null || !firstName || !lastName) {
+    // Added checks for name presence
+    // console.log('Name or DOB data missing for name_and_dob', i, entry); // Optional: log missing data
     return BigInt(0);
   }
-  const nameHash = processName(firstName, lastName, i);
+  const targetLength = docType === 'passport' ? 39 : 30;
+  const nameHash = processName(firstName, lastName, targetLength, i);
+  if (nameHash === BigInt(0)) return BigInt(0); // Propagate error
   const dobHash = processDob(day, month, year, i);
+  if (dobHash === BigInt(0)) return BigInt(0); // Propagate error
+
   return generateSmallKey(poseidon2([dobHash, nameHash]));
 }
 
-function processNameAndYob(entry: any, i: number): bigint {
+function processNameAndYob(entry: any, i: number, docType: 'passport' | 'id_card'): bigint {
   const firstName = entry.First_Name;
   const lastName = entry.Last_Name;
   const year = entry.year;
-  if (year == null) {
-    console.log('year is null', i, entry);
+  if (year == null || !firstName || !lastName) {
+    // Added checks for name presence
+    // console.log('Name or YOB data missing for name_and_yob', i, entry); // Optional: log missing data
     return BigInt(0);
   }
-  const nameHash = processName(firstName, lastName, i);
+  const targetLength = docType === 'passport' ? 39 : 30;
+  const nameHash = processName(firstName, lastName, targetLength, i);
+  if (nameHash === BigInt(0)) return BigInt(0); // Propagate error
   const yearHash = processYear(year, i);
+  if (yearHash === BigInt(0)) return BigInt(0); // Propagate error
+
   return generateSmallKey(poseidon2([yearHash, nameHash]));
 }
 
 function processYear(year: string, i: number): bigint {
-  year = year.slice(-2);
-  const yearArr = stringToAsciiBigIntArray(year);
+  if (!year || typeof year !== 'string' || year.length < 2) {
+    // console.log('Invalid year format for processYear', i, year); // Optional: log error
+    return BigInt(0);
+  }
+  const yearSuffix = year.slice(-2);
+  const yearArr = stringToAsciiBigIntArray(yearSuffix);
   return getYearLeaf(yearArr);
 }
 
 function getYearLeaf(yearArr: (bigint | number)[]): bigint {
-  return poseidon2(yearArr);
+  if (yearArr.length !== 2) {
+    // console.log('Invalid year array length for getYearLeaf', yearArr); // Optional: log error
+    return BigInt(0);
+  }
+  try {
+    return poseidon2(yearArr);
+  } catch (err) {
+    // console.log('err : Year hash', err, yearArr); // Optional: log error
+    return BigInt(0);
+  }
 }
 
-function processName(firstName: string, lastName: string, i: number): bigint {
-  // LASTNAME<<FIRSTNAME<MIDDLENAME<<<... (6-44)
-  firstName = firstName.replace(/'/g, '');
-  firstName = firstName.replace(/\./g, '');
-  firstName = firstName.replace(/[- ]/g, '<');
-  lastName = lastName.replace(/'/g, '');
-  lastName = lastName.replace(/[- ]/g, '<');
-  lastName = lastName.replace(/\./g, '');
-  // Removed apostrophes from the first name, eg O'Neil -> ONeil
-  // Replace spaces and hyphens with '<' in the first name, eg John Doe -> John<Doe
-  // TODO : Handle special cases like malaysia : no two filler characters like << for surname and givenname
-  // TODO : Verify rules for . in names. eg : J. Doe (Done same as apostrophe for now)
+function processName(
+  firstName: string,
+  lastName: string,
+  targetLength: 30 | 39,
+  i: number
+): bigint {
+  // LASTNAME<<FIRSTNAME<MIDDLENAME<<<...
+  // Ensure names are strings before processing
+  const cleanFirstName =
+    typeof firstName === 'string'
+      ? firstName.replace(/'/g, '').replace(/\./g, '').replace(/[- ]/g, '<')
+      : '';
+  const cleanLastName =
+    typeof lastName === 'string'
+      ? lastName.replace(/'/g, '').replace(/[- ]/g, '<').replace(/\./g, '')
+      : '';
 
-  let arr = lastName + '<<' + firstName;
-  if (arr.length > 39) {
-    arr = arr.substring(0, 39);
+  // Handle cases where one name might be missing
+  let arr = (cleanLastName ? cleanLastName + '<<' : '') + cleanFirstName;
+
+  if (arr.length === 0) {
+    // console.log('Cannot process empty name string', i); // Optional: log error
+    return BigInt(0);
+  }
+
+  // Pad or truncate to target length
+  if (arr.length > targetLength) {
+    arr = arr.substring(0, targetLength);
   } else {
-    while (arr.length < 39) {
+    while (arr.length < targetLength) {
       arr += '<';
     }
   }
+  console.log('arr', arr, 'arr.length', arr.length);
   let nameArr = stringToAsciiBigIntArray(arr);
+  // getNameLeaf will select the correct Poseidon hash based on nameArr.length
   return getNameLeaf(nameArr, i);
 }
 
@@ -335,9 +417,24 @@ function processDob(day: string, month: string, year: string, i: number): bigint
     dec: '12',
   };
 
-  month = monthMap[month.toLowerCase()];
-  year = year.slice(-2);
-  const dob = year + month + day;
+  const lowerMonth = typeof month === 'string' ? month.toLowerCase() : '';
+  const mappedMonth = monthMap[lowerMonth];
+
+  if (
+    !mappedMonth ||
+    !day ||
+    typeof day !== 'string' ||
+    day.length !== 2 ||
+    !year ||
+    typeof year !== 'string' ||
+    year.length < 2
+  ) {
+    // console.log('Invalid DOB component format for processDob', i, {day, month, year}); // Optional: log error
+    return BigInt(0);
+  }
+
+  const yearSuffix = year.slice(-2);
+  const dob = yearSuffix + mappedMonth + day;
   let arr = stringToAsciiBigIntArray(dob);
   return getDobLeaf(arr, i);
 }
@@ -371,7 +468,11 @@ export function getCountryLeaf(
   }
 }
 
-export function getPassportNumberAndNationalityLeaf(passport: (bigint | number)[], nationality: (bigint | number)[], i?: number): bigint {
+export function getPassportNumberAndNationalityLeaf(
+  passport: (bigint | number)[],
+  nationality: (bigint | number)[],
+  i?: number
+): bigint {
   if (passport.length !== 9) {
     console.log('parsed passport length is not 9:', i, passport);
     return;
@@ -407,28 +508,47 @@ export function getNameYobLeaf(
 export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
   let middleChunks: bigint[] = [];
   let chunks: (number | bigint)[][] = [];
-
-  chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39)); // 39/3 for posedion to digest
-
-  for (const chunk of chunks) {
-    middleChunks.push(poseidon13(chunk));
-  }
-
   try {
+    // Add try-catch block
+    if (nameMrz.length == 39) {
+      // passport
+      chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39));
+      for (const chunk of chunks) {
+        if (chunk.length !== 13)
+          throw new Error(`Invalid chunk length for Poseidon13: ${chunk.length}`);
+        middleChunks.push(poseidon13(chunk));
+      }
+    } else if (nameMrz.length == 30) {
+      // id_card
+      chunks.push(nameMrz.slice(0, 10), nameMrz.slice(10, 20), nameMrz.slice(20, 30)); // Corrected comment: 30/3 for poseidon10
+      for (const chunk of chunks) {
+        if (chunk.length !== 10)
+          throw new Error(`Invalid chunk length for Poseidon10: ${chunk.length}`);
+        middleChunks.push(poseidon10(chunk));
+      }
+    } else {
+      throw new Error(`Unsupported name MRZ length: ${nameMrz.length}`); // Handle unexpected lengths
+    }
+
+    if (middleChunks.length !== 3)
+      throw new Error(`Invalid number of middle chunks: ${middleChunks.length}`);
     return poseidon3(middleChunks);
   } catch (err) {
-    console.log('err : Name', err, i, nameMrz);
+    console.error('Error in getNameLeaf:', err, 'Index:', i, 'MRZ Length:', nameMrz.length); // Use console.error for errors
+    // console.log('MRZ data:', nameMrz); // Optional: log failing data
+    return BigInt(0); // Return 0 on error
   }
 }
 
 export function getDobLeaf(dobMrz: (bigint | number)[], i?: number): bigint {
   if (dobMrz.length !== 6) {
-    console.log('parsed dob length is not 9:', i, dobMrz);
-    return;
+    // console.log('parsed dob length is not 6:', i, dobMrz); // Corrected length check message
+    return BigInt(0); // Return 0 for invalid length
   }
   try {
     return poseidon6(dobMrz);
   } catch (err) {
-    console.log('err : Dob', err, i, dobMrz);
+    console.error('Error in getDobLeaf:', err, 'Index:', i, 'DOB MRZ:', dobMrz); // Use console.error
+    return BigInt(0); // Return 0 on error
   }
 }

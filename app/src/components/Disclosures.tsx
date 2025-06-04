@@ -1,11 +1,8 @@
+import type { SelfAppDisclosureConfig } from '@selfxyz/common';
+import { Country3LetterCode, countryCodes } from '@selfxyz/common';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
-import {
-  Country3LetterCode,
-  countryCodes,
-} from '../../../common/src/constants/constants';
-import { SelfAppDisclosureConfig } from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
 import CheckMark from '../images/icons/checkmark.svg';
 import { slate200, slate500 } from '../utils/colors';

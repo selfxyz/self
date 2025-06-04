@@ -88,6 +88,14 @@ As an example, please refer to the following contract.
 
 1. Install dependencies:
 
+We use yarn 4. If you havent already it can be enabled with
+
+```bash
+corepack enable yarn
+```
+
+_corepack_ is a built in nodejs command
+
 ```bash
 yarn install
 ```
@@ -95,7 +103,7 @@ yarn install
 2. Compile the contracts:
 
 ```bash
-yarn run compile
+yarn run build
 ```
 
 ## Deployments

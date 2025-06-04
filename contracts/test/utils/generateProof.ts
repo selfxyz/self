@@ -3,22 +3,22 @@ const YELLOW = "\x1b[33m";
 const GREEN = "\x1b[32m";
 const RESET = "\x1b[0m";
 
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
-import { ChildNodes, SMT } from "@openpassport/zk-kit-smt";
+import { LeanIMT } from "@openpassport/zk-kit-lean-imt"
+import { ChildNodes, SMT } from "@openpassport/zk-kit-smt"
 import fs from "fs";
 import path from "path";
 import { poseidon2, poseidon3 } from "poseidon-lite";
 import type { CircuitSignals, Groth16Proof, PublicSignals } from "snarkjs";
 import { groth16 } from "snarkjs";
-import { PassportData } from "../../../common/src/utils/types";
-import { CircuitArtifacts, DscCircuitProof, RegisterCircuitProof, VcAndDiscloseProof } from "./types";
+import { PassportData } from "@selfxyz/common/utils/types";
+import { CircuitArtifacts, DscCircuitProof, RegisterCircuitProof, VcAndDiscloseProof } from "./types.js";
 
 import { BigNumberish } from "ethers";
 import {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
-} from "../../../common/src/utils/circuits/generateInputs";
+} from "@selfxyz/common/utils/circuits/generateInputs";
 import serialized_csca_tree from "./pubkeys/serialized_csca_tree.json";
 import serialized_dsc_tree from "./pubkeys/serialized_dsc_tree.json";
 

@@ -97,15 +97,20 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      *      and sets the ERC20 token to be distributed.
      * @param identityVerificationHubAddress The address of the Identity Verification Hub.
      * @param scopeValue The expected proof scope for user registration.
+     * @param contractVersion The contract version for validation.
      * @param attestationIds The expected attestation identifiers required in proofs.
      * @param tokenAddress The address of the ERC20 token for airdrop.
      */
     constructor(
         address identityVerificationHubAddress,
         uint256 scopeValue,
-        uint256[] memory attestationIds,
+        uint8 contractVersion,
+        bytes32[] memory attestationIds,
         address tokenAddress
-    ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue, attestationIds) Ownable(_msgSender()) {
+    )
+        SelfVerificationRoot(identityVerificationHubAddress, scopeValue, contractVersion, attestationIds)
+        Ownable(_msgSender())
+    {
         token = IERC20(tokenAddress);
     }
 
@@ -141,7 +146,6 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      */
     function setScope(uint256 newScope) external onlyOwner {
         _setScope(newScope);
-        emit ScopeUpdated(newScope);
     }
 
     /**
@@ -149,9 +153,8 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @dev Only callable by the contract owner.
      * @param attestationId The attestation ID to add.
      */
-    function addAttestationId(uint256 attestationId) external onlyOwner {
+    function addAttestationId(bytes32 attestationId) external onlyOwner {
         _addAttestationId(attestationId);
-        emit AttestationIdAdded(attestationId);
     }
 
     /**
@@ -159,9 +162,8 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @dev Only callable by the contract owner.
      * @param attestationId The attestation ID to remove.
      */
-    function removeAttestationId(uint256 attestationId) external onlyOwner {
+    function removeAttestationId(bytes32 attestationId) external onlyOwner {
         _removeAttestationId(attestationId);
-        emit AttestationIdRemoved(attestationId);
     }
 
     /**
@@ -213,7 +215,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param attestationId The attestation ID to check.
      * @return True if the attestation ID is allowed, false otherwise.
      */
-    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
+    function isAttestationIdAllowed(bytes32 attestationId) external view returns (bool) {
         return _attestationIdToEnabled[attestationId];
     }
 
@@ -278,9 +280,13 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param nullifier The nullifier from the proof
      */
     function onBasicVerificationSuccess(
-        uint256[3] memory /* revealedDataPacked */,
+        bytes32 /* attestationId */,
+        uint256 /* scope */,
         uint256 userIdentifier,
-        uint256 nullifier
+        uint256 nullifier,
+        uint256 /* identityCommitmentRoot */,
+        uint256[] memory /* revealedDataPacked */,
+        uint256[4] memory /* forbiddenCountriesListPacked */
     ) internal override {
         // Check if registration is open
         if (!isRegistrationOpen) {

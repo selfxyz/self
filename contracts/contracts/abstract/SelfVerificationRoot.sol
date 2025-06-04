@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
-import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
+import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHubV2.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {CircuitConstants} from "../constants/CircuitConstants.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
@@ -14,6 +13,13 @@ import {AttestationId} from "../constants/AttestationId.sol";
  */
 abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // ====================================================
+    // Constants
+    // ====================================================
+
+    uint256 constant E_PASSPORT_REVEALED_DATA_LENGTH = 3;
+    uint256 constant EU_ID_CARD_REVEALED_DATA_LENGTH = 4;
+
+    // ====================================================
     // Storage Variables
     // ====================================================
 
@@ -21,17 +27,21 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Used to validate that submitted proofs match the expected scope
     uint256 internal _scope;
 
+    /// @notice The contract version for validation
+    /// @dev Used to validate the contract version in relayer data
+    uint8 internal _contractVersion;
+
     /// @notice The attestation ID that proofs must match
     /// @dev Used to validate that submitted proofs is generated with allowed attestation IDs
-    mapping(uint256 attestationId => bool attestationIdEnabled) internal _attestationIdToEnabled;
+    mapping(bytes32 attestationId => bool attestationIdEnabled) internal _attestationIdToEnabled;
 
     /// @notice Configuration settings for the verification process
     /// @dev Contains settings for age verification, country restrictions, and OFAC checks
     ISelfVerificationRoot.VerificationConfig internal _verificationConfig;
 
-    /// @notice Reference to the identity verification hub contract
-    /// @dev Immutable reference used for proof verification
-    IIdentityVerificationHubV1 internal immutable _identityVerificationHub;
+    /// @notice Reference to the identity verification hub V2 contract
+    /// @dev Immutable reference used for bytes-based proof verification
+    IIdentityVerificationHubV2 internal immutable _identityVerificationHubV2;
 
     // ====================================================
     // Circuit Constants
@@ -69,6 +79,14 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Triggered in verifySelfProof when attestation ID validation fails
     error InvalidAttestationId();
 
+    /// @notice Error thrown when the contract version doesn't match
+    /// @dev Triggered in verifySelfProof when contract version validation fails
+    error InvalidContractVersion();
+
+    /// @notice Error thrown when the data format is invalid
+    /// @dev Triggered when the provided bytes data doesn't have the expected format
+    error InvalidDataFormat();
+
     // ====================================================
     // Events
     // ====================================================
@@ -77,26 +95,42 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     event VerificationConfigUpdated(ISelfVerificationRoot.VerificationConfig indexed verificationConfig);
 
     /// @notice Emitted when the verification is successful
-    event VerificationSuccess(uint256[3] revealedDataPacked, uint256 indexed userIdentifier, uint256 indexed nullifier);
+    event VerificationSuccess(
+        uint256 indexed scope,
+        bytes32 indexed attestationId,
+        uint256 indexed nullifier,
+        uint256 userIdentifier,
+        uint256[] revealedDataPacked
+    );
 
     /// @notice Emitted when the scope is updated
     event ScopeUpdated(uint256 indexed newScope);
 
     /// @notice Emitted when a new attestation ID is added
-    event AttestationIdAdded(uint256 indexed attestationId);
+    event AttestationIdAdded(bytes32 indexed attestationId);
 
     /// @notice Emitted when an attestation ID is removed
-    event AttestationIdRemoved(uint256 indexed attestationId);
+    event AttestationIdRemoved(bytes32 indexed attestationId);
+
+    /// @notice Emitted when the contract version is updated
+    event ContractVersionUpdated(uint8 indexed newContractVersion);
 
     /**
      * @notice Initializes the SelfVerificationRoot contract.
-     * @param identityVerificationHubAddress The address of the Identity Verification Hub.
+     * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2.
      * @param scopeValue The expected proof scope for user registration.
+     * @param contractVersion The contract version for validation.
      * @param attestationIds The expected attestation identifiers required in proofs.
      */
-    constructor(address identityVerificationHubAddress, uint256 scopeValue, uint256[] memory attestationIds) {
-        _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHubAddress);
+    constructor(
+        address identityVerificationHubV2Address,
+        uint256 scopeValue,
+        uint8 contractVersion,
+        bytes32[] memory attestationIds
+    ) {
+        _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
         _scope = scopeValue;
+        _contractVersion = contractVersion;
 
         // Cache array length for gas optimization
         uint256 length = attestationIds.length;
@@ -138,11 +172,21 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     }
 
     /**
+     * @notice Updates the contract version
+     * @dev Used to change the expected contract version
+     * @param newContractVersion The new contract version to set
+     */
+    function _setContractVersion(uint8 newContractVersion) internal {
+        _contractVersion = newContractVersion;
+        emit ContractVersionUpdated(newContractVersion);
+    }
+
+    /**
      * @notice Adds a new attestation ID to the allowed list
      * @dev Used to add support for additional attestation types
      * @param attestationId The attestation ID to add
      */
-    function _addAttestationId(uint256 attestationId) internal {
+    function _addAttestationId(bytes32 attestationId) internal {
         _attestationIdToEnabled[attestationId] = true;
         emit AttestationIdAdded(attestationId);
     }
@@ -152,80 +196,138 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @dev Used to revoke support for specific attestation types
      * @param attestationId The attestation ID to remove
      */
-    function _removeAttestationId(uint256 attestationId) internal {
+    function _removeAttestationId(bytes32 attestationId) internal {
         _attestationIdToEnabled[attestationId] = false;
         emit AttestationIdRemoved(attestationId);
     }
 
     /**
-     * @notice Helper function to get an array of revealed data values from proof signals
-     * @dev Returns an array of the three packed revealed data values
-     * @param pubSignals The proof's public signals
-     * @return revealedDataPacked Array of the three packed revealed data values
+     * @notice Verifies a self-proof using the bytes-based interface
+     * @dev Parses relayer data format and validates against contract settings before calling hub V2
+     * @param relayerData Packed data from relayer in format: | 1 byte circuitVersion | 31 bytes buffer | 32 bytes attestationId | proof data |
      */
-    function _getRevealedDataPacked(
-        uint256[21] calldata pubSignals
-    ) internal pure returns (uint256[3] memory revealedDataPacked) {
-        revealedDataPacked[0] = pubSignals[REVEALED_DATA_PACKED_INDEX];
-        revealedDataPacked[1] = pubSignals[REVEALED_DATA_PACKED_INDEX + 1];
-        revealedDataPacked[2] = pubSignals[REVEALED_DATA_PACKED_INDEX + 2];
-        return revealedDataPacked;
-    }
-
-    /**
-     * @notice Verifies a self-proof
-     * @dev Validates scope and attestation ID before performing verification through the identity hub
-     * @param proof The proof data for verification and disclosure
-     */
-    function verifySelfProof(ISelfVerificationRoot.DiscloseCircuitProof calldata proof) public {
-        // Cache storage reads for gas optimization
-        uint256 cachedScope = _scope;
-
-        if (cachedScope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
-            revert InvalidScope();
+    function verifySelfProof(bytes calldata relayerData) public {
+        // Minimum expected length: 1 + 31 + 32 = 64 bytes + proof data
+        if (relayerData.length < 64) {
+            revert InvalidDataFormat();
         }
 
-        if (!_attestationIdToEnabled[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]]) {
+        // Parse the relayer data
+        uint8 circuitVersion = uint8(relayerData[0]);
+        // bytes31 buffer = bytes31(relayerData[1:32]); // Reserved for future use
+
+        bytes32 attestationId;
+        assembly {
+            // Load attestationId from offset 32 (after 1+31 bytes)
+            attestationId := calldataload(add(relayerData.offset, 32))
+        }
+
+        // Validate attestation ID against our stored allowed list
+        if (!_attestationIdToEnabled[attestationId]) {
             revert InvalidAttestationId();
         }
 
-        // Cache verification config to avoid multiple storage reads
-        ISelfVerificationRoot.VerificationConfig memory config = _verificationConfig;
-
-        _identityVerificationHub.verifyVcAndDisclose(
-            IIdentityVerificationHubV1.VcAndDiscloseHubProof({
-                olderThanEnabled: config.olderThanEnabled,
-                olderThan: config.olderThan,
-                forbiddenCountriesEnabled: config.forbiddenCountriesEnabled,
-                forbiddenCountriesListPacked: config.forbiddenCountriesListPacked,
-                ofacEnabled: config.ofacEnabled,
-                vcAndDiscloseProof: IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof({
-                    a: proof.a,
-                    b: proof.b,
-                    c: proof.c,
-                    pubSignals: proof.pubSignals
-                })
-            })
+        // Hub data should be | 1 byte circuitVersion | 1 byte contractVersion | 30 bytes buffer | 32 bytes attestationId | 32 bytes scope | proof data
+        bytes memory hubData = abi.encodePacked(
+            // 1 byte circuitVersion
+            circuitVersion,
+            // 1 byte contractVersion
+            _contractVersion,
+            // 30 bytes buffer (all zeros)
+            bytes30(0),
+            // 32 bytes attestationId
+            attestationId,
+            // 32 bytes scope
+            _scope,
+            // proof data (starts after 1+1+30+32+32 = 96 bytes)
+            relayerData[96:]
         );
 
-        uint256[3] memory revealedDataPacked = _getRevealedDataPacked(proof.pubSignals);
-        uint256 userIdentifier = proof.pubSignals[USER_IDENTIFIER_INDEX];
-        uint256 nullifier = proof.pubSignals[NULLIFIER_INDEX];
+        // Call hub V2 verification
+        bytes memory result = _identityVerificationHubV2.verifyVcAndDisclose(hubData);
 
-        emit VerificationSuccess(revealedDataPacked, userIdentifier, nullifier);
-        onBasicVerificationSuccess(revealedDataPacked, userIdentifier, nullifier);
+        // Decode the result to extract all verification data
+        // Note: Result format depends on attestation type (passport vs ID card)
+        uint256 userIdentifier;
+        uint256 nullifier;
+        uint256 scope;
+        uint256 identityCommitmentRoot;
+        uint256[] memory revealedDataPacked;
+        uint256[4] memory forbiddenCountriesListPacked;
+
+        if (attestationId == AttestationId.E_PASSPORT) {
+            IIdentityVerificationHubV2.VcAndDiscloseVerificationResult memory passportResult = abi.decode(
+                result,
+                (IIdentityVerificationHubV2.VcAndDiscloseVerificationResult)
+            );
+
+            // Copy passport data using a for loop
+            revealedDataPacked = new uint256[](E_PASSPORT_REVEALED_DATA_LENGTH);
+            for (uint256 i = 0; i < E_PASSPORT_REVEALED_DATA_LENGTH; i++) {
+                revealedDataPacked[i] = passportResult.revealedDataPacked[i];
+            }
+
+            userIdentifier = passportResult.userIdentifier;
+            nullifier = passportResult.nullifier;
+            scope = passportResult.scope;
+            identityCommitmentRoot = passportResult.identityCommitmentRoot;
+            forbiddenCountriesListPacked = passportResult.forbiddenCountriesListPacked;
+        } else if (attestationId == AttestationId.EU_ID_CARD) {
+            IIdentityVerificationHubV2.IdCardVcAndDiscloseVerificationResult memory idCardResult = abi.decode(
+                result,
+                (IIdentityVerificationHubV2.IdCardVcAndDiscloseVerificationResult)
+            );
+
+            // Copy ID card data using a for loop
+            revealedDataPacked = new uint256[](EU_ID_CARD_REVEALED_DATA_LENGTH);
+            for (uint256 i = 0; i < EU_ID_CARD_REVEALED_DATA_LENGTH; i++) {
+                revealedDataPacked[i] = idCardResult.revealedDataPacked[i];
+            }
+
+            userIdentifier = idCardResult.userIdentifier;
+            nullifier = idCardResult.nullifier;
+            scope = idCardResult.scope;
+            identityCommitmentRoot = idCardResult.identityCommitmentRoot;
+            forbiddenCountriesListPacked = idCardResult.forbiddenCountriesListPacked;
+        } else {
+            revert InvalidAttestationId();
+        }
+
+        // Validate scope against our stored scope
+        if (scope != _scope) {
+            revert InvalidScope();
+        }
+
+        emit VerificationSuccess(scope, attestationId, nullifier, userIdentifier, revealedDataPacked);
+        onBasicVerificationSuccess(
+            attestationId,
+            scope,
+            userIdentifier,
+            nullifier,
+            identityCommitmentRoot,
+            revealedDataPacked,
+            forbiddenCountriesListPacked
+        );
     }
 
     /**
      * @notice Hook called after successful verification
      * @dev Virtual function to be overridden by derived contracts for custom business logic
-     * @param revealedDataPacked The packed revealed data from the proof
+     * @param attestationId The attestation identifier from the proof
+     * @param scope The scope of the verification
      * @param userIdentifier The user identifier from the proof
      * @param nullifier The nullifier from the proof
+     * @param identityCommitmentRoot The root of the identity commitment
+     * @param revealedDataPacked The packed revealed data from the proof (E_PASSPORT_REVEALED_DATA_LENGTH for passport, EU_ID_CARD_REVEALED_DATA_LENGTH for ID card)
+     * @param forbiddenCountriesListPacked The packed forbidden countries list
      */
     function onBasicVerificationSuccess(
-        uint256[3] memory revealedDataPacked,
+        bytes32 attestationId,
+        uint256 scope,
         uint256 userIdentifier,
-        uint256 nullifier
+        uint256 nullifier,
+        uint256 identityCommitmentRoot,
+        uint256[] memory revealedDataPacked,
+        uint256[4] memory forbiddenCountriesListPacked
     ) internal virtual;
 }

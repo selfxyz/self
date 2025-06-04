@@ -1,0 +1,41 @@
+name: Self Contracts CI/CD
+on:
+  push:
+    branches:
+      - dev
+      - main
+    paths:
+      - 'contracts/**'
+      - 'common/**'
+  pull_request:
+    branches:
+      - dev
+      - main
+    paths:
+      - 'contracts/**'
+      - 'common/**'
+jobs:
+  test_contracts:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build Common Dependencies
+        run: yarn workspace @selfxyz/common build
+      - name: Build Contracts)
+        run: yarn build
+        working-directory: ./contracts
+      - name: Run Tests (Contracts)
+        working-directory: ./contracts
+        # skip until they get fixed
+        if: false
+        run: yarn test

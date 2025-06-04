@@ -1,4 +1,6 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { SelfAppDisclosureConfig } from '@selfxyz/common';
+import { formatEndpoint } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
@@ -16,8 +18,6 @@ import {
 } from 'react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
-import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
-import { formatEndpoint } from '../../../../common/src/utils/scope';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrimaryButtonProveScreen';
 import Disclosures from '../../components/Disclosures';

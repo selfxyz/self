@@ -6,22 +6,19 @@ import crypto from 'crypto';
 import { describe } from 'mocha';
 import path from 'path';
 import { poseidon1, poseidon2 } from 'poseidon-lite';
-import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
-import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
-import {
-  attributeToPosition,
-  PASSPORT_ATTESTATION_ID,
-} from '../../../common/src/constants/constants';
+import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json' with { type: 'json' };
+import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json' with { type: 'json' };
+import passportNojson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
+import { attributeToPosition, PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
   getAttributeFromUnpackedReveal,
-} from '../../../common/src/utils/circuits/formatOutputs';
-import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { generateCommitment } from '../../../common/src/utils/passports/passport';
-import { hashEndpointWithScope } from '../../../common/src/utils/scope';
+} from '@selfxyz/common/utils/circuits/formatOutputs';
+import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
+import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
+import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 
 describe('Disclose', function () {
   this.timeout(0);
@@ -156,7 +153,7 @@ describe('Disclose', function () {
 
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
 
         for (let i = 0; i < 88; i++) {
           if (selector_dg1[i] == '1') {
@@ -187,8 +184,8 @@ describe('Disclose', function () {
     });
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
-    const older_than = getAttributeFromUnpackedReveal(reveal_unpacked, 'older_than');
+    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
+    const older_than = getAttributeFromUnpackedReveal(reveal_unpacked, 'older_than', 'passport');
     expect(older_than).to.equal('18');
   });
 
@@ -203,7 +200,7 @@ describe('Disclose', function () {
 
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
     expect(reveal_unpacked[88]).to.equal('\x00');
     expect(reveal_unpacked[89]).to.equal('\x00');
   });
@@ -213,7 +210,7 @@ describe('Disclose', function () {
       w = await circuit.calculateWitness(inputs);
 
       const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
-      const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+      const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
 
       console.log('reveal_unpacked', reveal_unpacked);
       // OFAC result is stored at index 90 in the revealed data
@@ -235,7 +232,7 @@ describe('Disclose', function () {
       });
 
       const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
-      const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+      const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
 
       // OFAC result should be hidden (null byte)
       const ofac_result = reveal_unpacked[90];
@@ -382,7 +379,7 @@ describe('Disclose', function () {
 
         w = await circuit.calculateWitness(testInputs);
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
-        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'passport');
         const ofac_results = reveal_unpacked.slice(90, 93);
 
         console.log(`${testCase.desc} - OFAC bits:`, ofac_results);

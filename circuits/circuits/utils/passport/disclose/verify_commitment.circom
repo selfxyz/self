@@ -15,10 +15,10 @@ include "../customHashers.circom";
 /// @input merkletree_size Actual size of the merkle tree
 /// @input path Path to the user's commitment in the merkle tree
 /// @input siblings Siblings of the user's commitment in the merkle tree
-template VERIFY_COMMITMENT(nLevels) {
+template VERIFY_COMMITMENT(nLevels, DG1_LEN) {
     signal input secret;
     signal input attestation_id;
-    signal input dg1[93];
+    signal input dg1[DG1_LEN];
     signal input eContent_shaBytes_packed_hash;
     signal input dsc_tree_leaf;
 
@@ -27,7 +27,7 @@ template VERIFY_COMMITMENT(nLevels) {
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-    signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
+    signal dg1_packed_hash <== PackBytesAndPoseidon(DG1_LEN)(dg1);
 
     signal commitment <== Poseidon(5)([
         secret,

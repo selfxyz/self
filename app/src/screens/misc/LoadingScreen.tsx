@@ -1,11 +1,11 @@
 import { StaticScreenProps, useIsFocused } from '@react-navigation/native';
+import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, YStack } from 'tamagui';
 
-import { PassportData } from '../../../../common/src/utils/types';
 import failAnimation from '../../assets/animations/loading/fail.json';
 import proveLoadingAnimation from '../../assets/animations/loading/prove.json';
 import successAnimation from '../../assets/animations/loading/success.json';

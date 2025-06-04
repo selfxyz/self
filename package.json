@@ -1,0 +1,18 @@
+{
+  "name": "self-workspace-root",
+  "scripts": {
+    "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
+    "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint"
+  },
+  "workspaces": [
+    "app",
+    "common",
+    "circuits",
+    "contracts",
+    "sdk/*",
+    "sdk/tests/*",
+    "prover/tests"
+  ],
+  "packageManager": "yarn@4.6.0"
+}

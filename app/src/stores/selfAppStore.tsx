@@ -1,8 +1,7 @@
+import type { SelfApp } from '@selfxyz/common';
+import { WS_DB_RELAYER } from '@selfxyz/common';
 import io, { Socket } from 'socket.io-client';
 import { create } from 'zustand';
-
-import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
-import { SelfApp } from '../../../common/src/utils/appType';
 
 interface SelfAppState {
   selfApp: SelfApp | null;

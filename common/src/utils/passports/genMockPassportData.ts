@@ -1,18 +1,18 @@
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
 import * as forge from 'node-forge';
-import { countryCodes } from '../../constants/constants';
-import { getCurveForElliptic } from '../certificate_parsing/curves';
+import { countryCodes } from '../../constants/constants.js';
+import { getCurveForElliptic } from '../certificate_parsing/curves.js';
 import {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSAPSS,
-} from '../certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { getHashLen, hash } from '../hash';
-import { PassportData, SignatureAlgorithm } from '../types';
-import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format';
-import { initPassportDataParsing } from './passport';
-import getMockDSC from './getMockDSC';
+} from '../certificate_parsing/dataStructure.js';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple.js';
+import { getHashLen, hash } from '../hash.js';
+import { PassportData, SignatureAlgorithm } from '../types.js';
+import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
+import { initPassportDataParsing } from './passport.js';
+import getMockDSC from './getMockDSC.js';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format
@@ -108,7 +108,7 @@ export function genMockPassportData(
     eContent: eContent,
     signedAttr: signedAttr,
     encryptedDigest: signatureBytes,
-    documentType: "mock_passport"
+    documentType: 'mock_passport',
   };
 }
 
@@ -123,17 +123,19 @@ export function genAndInitMockPassportData(
   lastName: string = 'DUPONT',
   firstName: string = 'ALPHONSE HUGHUES ALBERT'
 ): PassportData {
-  return initPassportDataParsing(genMockPassportData(
-    dgHashAlgo,
-    eContentHashAlgo,
-    signatureType,
-    nationality,
-    birthDate,
-    expiryDate,
-    passportNumber,
-    lastName,
-    firstName
-  ));
+  return initPassportDataParsing(
+    genMockPassportData(
+      dgHashAlgo,
+      eContentHashAlgo,
+      signatureType,
+      nationality,
+      birthDate,
+      expiryDate,
+      passportNumber,
+      lastName,
+      firstName
+    )
+  );
 }
 function sign(
   privateKeyPem: string,
@@ -141,15 +143,16 @@ function sign(
   hashAlgorithm: string,
   eContent: number[]
 ): number[] {
+  const actualForge = forge.pki ? forge : (forge as any).default;
   const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
   if (signatureAlgorithm === 'rsapss') {
-    const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
-    const md = forge.md[hashAlgorithm].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
-    const pss = forge.pss.create({
-      md: forge.md[hashAlgorithm].create(),
-      mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
+    const privateKey = actualForge.pki.privateKeyFromPem(privateKeyPem);
+    const md = actualForge.md[hashAlgorithm].create();
+    md.update(actualForge.util.binary.raw.encode(new Uint8Array(eContent)));
+    const pss = actualForge.pss.create({
+      md: actualForge.md[hashAlgorithm].create(),
+      mgf: actualForge.mgf.mgf1.create(actualForge.md[hashAlgorithm].create()),
       saltLength: parseInt((publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength),
     });
     const signatureBytes = privateKey.sign(md, pss);
@@ -170,13 +173,14 @@ function sign(
     const msgHash = hash(hashAlgorithm, eContent, 'hex');
 
     const signature = keyPair.sign(msgHash, 'hex');
+    // @ts-ignore-error this seems wrong
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
 
     return signatureBytes;
   } else {
-    const privKey = forge.pki.privateKeyFromPem(privateKeyPem);
-    const md = forge.md[hashAlgorithm].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+    const privKey = actualForge.pki.privateKeyFromPem(privateKeyPem);
+    const md = actualForge.md[hashAlgorithm].create();
+    md.update(actualForge.util.binary.raw.encode(new Uint8Array(eContent)));
     const forgeSignature = privKey.sign(md);
     return Array.from(forgeSignature, (c: string) => c.charCodeAt(0));
   }

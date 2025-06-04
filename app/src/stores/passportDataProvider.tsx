@@ -1,3 +1,7 @@
+import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '@selfxyz/common';
+import { parseCertificateSimple } from '@selfxyz/common';
+import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common';
+import { PassportData } from '@selfxyz/common';
 import React, {
   createContext,
   PropsWithChildren,
@@ -7,7 +11,6 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { PassportData } from '../../../common/src/utils/types';
 import { unsafe_getPrivateKey } from '../stores/authProvider';
 import { useAuth } from './authProvider';
 
@@ -100,3 +103,52 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
 export const usePassport = () => {
   return useContext(PassportContext);
 };
+
+export async function reStorePassportDataWithRightCSCA(
+  passportData: PassportData,
+  csca: string,
+) {
+  const cscaInCurrentPassporData = passportData.passportMetadata?.csca;
+  if (!(csca === cscaInCurrentPassporData)) {
+    const cscaParsed = parseCertificateSimple(csca);
+    const dscCertData = brutforceSignatureAlgorithmDsc(
+      passportData.dsc_parsed!,
+      cscaParsed,
+    );
+
+    // Update the passport metadata with the new CSCA information
+    if (
+      passportData.passportMetadata &&
+      dscCertData &&
+      cscaParsed.publicKeyDetails
+    ) {
+      passportData.passportMetadata.csca = csca;
+      passportData.passportMetadata.cscaFound = true;
+      passportData.passportMetadata.cscaHashFunction =
+        dscCertData.hashAlgorithm;
+      passportData.passportMetadata.cscaSignatureAlgorithm =
+        dscCertData.signatureAlgorithm;
+      passportData.passportMetadata.cscaSaltLength = dscCertData.saltLength;
+
+      // Get curve or exponent from the parsed CSCA
+      const cscaCurveOrExponent =
+        cscaParsed.signatureAlgorithm === 'rsapss' ||
+        cscaParsed.signatureAlgorithm === 'rsa'
+          ? (cscaParsed.publicKeyDetails as PublicKeyDetailsRSA).exponent
+          : (cscaParsed.publicKeyDetails as PublicKeyDetailsECDSA).curve;
+
+      passportData.passportMetadata.cscaCurveOrExponent = cscaCurveOrExponent;
+      passportData.passportMetadata.cscaSignatureAlgorithmBits = parseInt(
+        cscaParsed.publicKeyDetails.bits,
+        10,
+      );
+
+      // Store the parsed CSCA certificate in the passport data
+      passportData.csca_parsed = cscaParsed;
+
+      // Store the updated passport data
+
+      await storePassportData(passportData);
+    }
+  }
+}

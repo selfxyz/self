@@ -2,9 +2,10 @@
   "compilerOptions": {
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "target": "ES2020",
-    "moduleResolution": "node",
-    "module": "CommonJS",
+    "moduleResolution": "node16",
+    "module": "node18",
     "allowJs": true,
     "checkJs": false,
     "outDir": "./dist"

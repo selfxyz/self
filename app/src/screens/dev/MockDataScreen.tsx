@@ -1,4 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
+import { countryCodes } from '@selfxyz/common';
+import { getSKIPEM } from '@selfxyz/common';
+import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
+import { initPassportDataParsing } from '@selfxyz/common';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
@@ -19,13 +23,6 @@ import {
   YStack,
 } from 'tamagui';
 
-import { getSKIPEM } from '../../../.././common/src/utils/csca';
-import { countryCodes } from '../../../../common/src/constants/constants';
-import {
-  genMockIdDoc,
-  IdDocInput,
-} from '../../../../common/src/utils/passports/genMockIdDoc';
-import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
@@ -217,7 +214,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         ][2];
 
       const idDocInput: Partial<IdDocInput> = {
-        nationality: selectedCountry,
+        nationality: selectedCountry as IdDocInput['nationality'],
         idType: 'mock_passport',
         signatureType:
           signatureTypeForGeneration as IdDocInput['signatureType'],

@@ -1,9 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
+import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { PassportData } from '../../../../common/src/utils/types';
 import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../stores/authProvider';
 import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
@@ -51,7 +51,12 @@ const SplashScreen: React.FC = ({}) => {
             (passportData as PassportData).documentType !== 'passport'
               ? 'stg'
               : 'prod';
-          await useProtocolStore.getState().passport.fetch_all(environment);
+          await useProtocolStore
+            .getState()
+            .passport.fetch_all(
+              environment,
+              (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier,
+            );
           const isRegistered = await isUserRegistered(passportData, secret);
           console.log('User is registered:', isRegistered);
           if (isRegistered) {

@@ -1,9 +1,10 @@
+import type { EndpointType } from '@selfxyz/common';
+import {
+  initElliptic,
+  WS_DB_RELAYER,
+  WS_DB_RELAYER_STAGING,
+} from '@selfxyz/common';
 import forge from 'node-forge';
-
-import { WS_DB_RELAYER_STAGING } from '../../../../common/src/constants/constants';
-import { WS_DB_RELAYER } from '../../../../common/src/constants/constants';
-import { EndpointType } from '../../../../common/src/utils/appType';
-import { initElliptic } from '../../../../common/src/utils/certificate_parsing/elliptic';
 
 const elliptic = initElliptic();
 const { ec: EC } = elliptic;

@@ -3,6 +3,7 @@ name: App CI
 on:
   push:
     paths:
+      - "common/**"
       - "app/**"
       - ".github/workflows/app.yml"
       - ".github/actions/**"
@@ -14,8 +15,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        with:
-          working_directory: ./app
       - name: Run linter
         run: yarn lint
         working-directory: ./app
@@ -29,10 +28,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        with:
-          working_directory: ./app
-      - name: Install app dependencies
-        run: yarn install-app
+
+      - name: Build
+        run: yarn build:deps
         working-directory: ./app
       - name: Test
         run: yarn test

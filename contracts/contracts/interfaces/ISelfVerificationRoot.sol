@@ -18,8 +18,8 @@ interface ISelfVerificationRoot {
     }
 
     /**
-     * @notice Verifies a self-proof
-     * @param proof The proof data for verification and disclosure
+     * @notice Verifies a self-proof using bytes-based relayer data
+     * @param relayerData Packed data from relayer in format: | 1 byte circuitVersion | 1 byte contractVersion | 30 bytes buffer | 32 bytes attestationId | 32 bytes scope | proof data |
      */
-    function verifySelfProof(DiscloseCircuitProof memory proof) external;
+    function verifySelfProof(bytes calldata relayerData) external;
 }

@@ -22,9 +22,8 @@ runs:
       with:
         node-version: 20
         cache: 'yarn'
-        cache-dependency-path: ${{ inputs.working_directory }}/yarn.lock
+        cache-dependency-path: yarn.lock
 
     - name: Install dependencies
       shell: bash
       run: yarn install --immutable
-      working-directory: ${{ inputs.working_directory }}

@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ENABLE_DEBUG_LOGS, MIXPANEL_PROJECT_TOKEN } from '@env';
+import { PassportData } from '@selfxyz/common';
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
-
-import { PassportData } from '../../../common/src/utils/types';
 
 interface Inputs {
   passportNumber: string;

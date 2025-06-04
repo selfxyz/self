@@ -4,18 +4,15 @@ import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import path from 'path';
 import { poseidon6 } from 'poseidon-lite';
-import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
-import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
-import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
-import { generateCircuitInputsRegister } from '../../../common/src/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import {
-  generateCommitment,
-  generateNullifier,
-} from '../../../common/src/utils/passports/passport';
-import { SignatureAlgorithm } from '../../../common/src/utils/types';
-import { fullSigAlgs, sigAlgs } from './test_cases';
+import serialized_dsc_tree from '@selfxyz/common/pubkeys/serialized_dsc_tree.json' with { type: 'json' };
+import { PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
+import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
+import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
+import { generateCommitment, generateNullifier } from '@selfxyz/common/utils/passports/passport';
+import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
+import { fullSigAlgs, sigAlgs } from './test_cases.js';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;

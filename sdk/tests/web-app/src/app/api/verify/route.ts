@@ -1,7 +1,6 @@
-import { SelfBackendVerifier } from '../../../../../../core';
+import { SelfBackendVerifier } from '@selfxyz/core';
 import { NextResponse } from 'next/server';
-import { countries } from '../../../../../../../common/src/constants/countries';
-import { count } from 'console';
+import { countries } from '@selfxyz/common/constants/countries';
 
 export async function POST(request: Request) {
     try {
@@ -19,7 +18,6 @@ export async function POST(request: Request) {
             'https://forno.celo.org',
             "self-workshop",
             'uuid',
-            false
         )
             .setMinimumAge(18)
             .excludeCountries(

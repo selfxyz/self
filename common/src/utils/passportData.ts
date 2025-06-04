@@ -1,4 +1,4 @@
-import { PassportData } from './types';
+import { PassportData } from './types.js';
 const fs = require('fs');
 const path = require('path');
 

@@ -1,16 +1,54 @@
 {
-  "name": "openpassport-common",
+  "name": "@selfxyz/common",
   "version": "0.0.1",
+  "description": "Constants and utils for self sdks",
   "license": "MIT",
-  "author": "",
+  "author": "@Selfxyz Team",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/esm/index.d.ts"
+    },
+    "./constants/*": {
+      "import": "./dist/esm/constants/*.js",
+      "require": "./dist/cjs/constants/*.js",
+      "types": "./dist/esm/constants/*.d.ts"
+    },
+    "./utils/*": {
+      "import": "./dist/esm/utils/*.js",
+      "require": "./dist/cjs/utils/*.js",
+      "types": "./dist/esm/utils/*.d.ts"
+    },
+    "./ofacdata/outputs/nameAndDobSMT.json": "./ofacdata/outputs/nameAndDobSMT.json",
+    "./ofacdata/outputs/nameAndYobSMT.json": "./ofacdata/outputs/nameAndYobSMT.json",
+    "./ofacdata/outputs/nameAndDobSMT_ID.json": "./ofacdata/outputs/nameAndDobSMT_ID.json",
+    "./ofacdata/outputs/nameAndYobSMT_ID.json": "./ofacdata/outputs/nameAndYobSMT_ID.json",
+    "./ofacdata/outputs/passportNoAndNationalitySMT.json": "./ofacdata/outputs/passportNoAndNationalitySMT.json",
+    "./pubkeys/serialized_dsc_tree.json": "./pubkeys/serialized_dsc_tree.json",
+    "./mock_certificates/*": "./src/mock_certificates/*",
+    "./mock_certificates/**/*": "./src/mock_certificates/**/*"
+  },
+  "files": [
+    "dist/cjs",
+    "dist/esm",
+    "src/mock_certificates"
+  ],
   "scripts": {
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && yarn postbuild",
+    "types": "tsc -p tsconfig.json",
     "format": "prettier --write .",
     "lint": "prettier --check .",
-    "test": "yarn ts-mocha tests/**/*.test.ts --exit",
-    "test:scope": "yarn ts-mocha tests/scope.test.ts --exit"
+    "test": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/**/*.test.ts --exit",
+    "test:scope": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/scope.test.ts --exit",
+    "postbuild": "node ./scripts/post-build.mjs",
+    "prepublishOnly": "yarn build"
   },
   "dependencies": {
-    "@babel/runtime": "^7.23.4",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
@@ -29,18 +67,19 @@
     "js-sha512": "^0.9.0",
     "json-to-ts": "^2.1.0",
     "jsrsasign": "^11.1.0",
-    "mocha": "^10.7.3",
-    "node-forge": "https://github.com/remicolin/forge",
+    "node-forge": "github:remicolin/forge#17a11a632dd0e50343b3b8393245a2696f78afbb",
     "path": "^0.12.7",
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
     "snarkjs": "^0.7.5",
-    "ts-mocha": "^10.0.0",
     "typescript-parser": "^2.6.1",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
     "@types/node-forge": "^1.3.10",
-    "prettier": "^3.3.3"
+    "mocha": "^10.7.3",
+    "prettier": "^3.3.3",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.8.3"
   }
 }

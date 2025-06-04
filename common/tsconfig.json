@@ -1,8 +1,23 @@
 {
   "compilerOptions": {
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
     "target": "ES2020",
-    "moduleResolution": "node"
-  }
+    "module": "nodenext",
+    "declaration": true,
+    "declarationDir": "./dist/esm",
+    "outDir": "./dist/esm",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "NodeNext",
+    "baseUrl": "./src",
+  },
+  "include": [
+    "src/**/*",
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ]
 }

@@ -1,8 +1,7 @@
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { getSKIPEM } from '@selfxyz/common';
+import { initPassportDataParsing } from '@selfxyz/common';
+import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -16,9 +15,6 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Image } from 'tamagui';
 
-import { getSKIPEM } from '../../../../common/src/utils/csca';
-import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
-import { PassportData } from '../../../../common/src/utils/types';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -144,7 +140,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           const passportMetadata = parsedPassportData.passportMetadata!;
           let dscObject;
           try {
-            dscObject = JSON.parse(passportMetadata.dsc);
+            dscObject = { dsc: passportMetadata.dsc };
           } catch (error) {
             console.error('Failed to parse dsc:', error);
             dscObject = {};

@@ -1,3 +1,4 @@
+source 'https://cdn.cocoapods.org/'
 use_frameworks!
 require "tmpdir"
 
@@ -31,8 +32,8 @@ target "Self" do
   pod "QKMRZScanner"
   pod "lottie-ios"
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
-  pod "RNReactNativeHapticFeedback", :path => "../node_modules/react-native-haptic-feedback", :modular_headers => true
   pod "Mixpanel-swift", "~> 5.0.0"
+  pod "RNReactNativeHapticFeedback", :path => "../../node_modules/react-native-haptic-feedback", :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
