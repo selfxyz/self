@@ -17,9 +17,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --build",
     "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode --topological-dev --recursive run build",
-    "types": "yarn build --noEmit",
+    "types": "yarn build",
     "format": "prettier --write .",
     "install-sdk": "yarn workspace focus @selfxyz/qrcode",
     "lint": "prettier --check .",

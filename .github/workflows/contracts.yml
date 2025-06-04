@@ -1,4 +1,4 @@
-name: Self Circuits CI/CD
+name: Self Contracts CI/CD
 on:
   push:
     branches:
@@ -15,7 +15,7 @@ on:
       - 'contracts/**'
       - 'common/**'
 jobs:
-  run_contract_tests:
+  test_contracts:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     environment: development
