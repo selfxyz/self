@@ -4725,6 +4725,7 @@ __metadata:
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     ethers: "npm:^6.11.0"
     expo-modules-core: "npm:^2.2.1"
+    hermes-engine: "npm:^0.11.0"
     jest: "npm:^29.6.3"
     js-sha512: "npm:^0.9.0"
     lottie-react-native: "npm:7.2.2"
@@ -15925,6 +15926,13 @@ __metadata:
   version: 0.2.7
   resolution: "heap@npm:0.2.7"
   checksum: 10c0/341c5d51ae13dc8346c371a8a69c57c972fcb9a3233090d3dd5ba29d483d6b5b4e75492443cbfeacd46608bb30e6680f646ffb7a6205900221735587d07a79b6
+  languageName: node
+  linkType: hard
+
+"hermes-engine@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "hermes-engine@npm:0.11.0"
+  checksum: 10c0/3a2bdc1087badbdf0134a2c2dad8602da5e9a519e29bd16cb3a075778af4cbc95655f062a63fefe6e03b02a9104afbf58ad06e394feeb79fe6bc1b023bab570d
   languageName: node
   linkType: hard
 
