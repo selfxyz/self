@@ -5,6 +5,9 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {ImplRoot} from "./upgradeable/ImplRoot.sol";
 import {SelfStructs} from "./libraries/SelfStructs.sol";
+import {AttestationId} from "./constants/AttestationId.sol";
+import {IVcAndDiscloseCircuitVerifier} from "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
+import {ISelfVerificationRoot} from "./interface/ISelfVerificationRoot.sol";
 
 contract IdentityVerificationHubImplV2 is ImplRoot {
 
@@ -19,7 +22,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     /// @custom:storage-location erc7201:self.storage.IdentityVerificationHubV2
     struct IdentityVerificationHubV2Storage {
-        mapping(bytes32 configId => SelfStruct.VerificationConfigV2) _v2VerificationConfigs;
+        mapping(bytes32 configId => SelfStructs.VerificationConfigV2) _v2VerificationConfigs;
         // We should consider to add bridge address
         // address bridgeAddress;
     }
@@ -148,12 +151,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // Input Format Structs
     // ====================================================
 
-    struct HubInputHeader {
-        uint8 contractVersion;
-        uint256 destChainId;
-        bytes32 configId;
-        bytes32 attestationId;
-    }
+    // HubInputHeader is now defined in SelfStructs library
 
     // ====================================================
     // Constructor
@@ -246,7 +244,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // External Functions - Verification
     // ====================================================
 
-    function _decodeHubInput(bytes calldata input) internal pure returns (HubInputHeader memory header, bytes calldata proofData) {
+    function _decodeInput(bytes calldata input) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
         require(input.length >= 97, "Input too short"); // 1 + 31 + 32 + 32 + 32 = 128 bytes minimum
         header.contractVersion = uint8(input[0]);
         header.destChainId = uint256(bytes32(input[32:64]));
@@ -260,7 +258,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param configId The configuration identifier
      * @return The verification configuration
      */
-    function getVerificationConfig(bytes32 configId) external view virtual onlyProxy returns (SelfStruct.VerificationConfigV2 memory) {
+    function getVerificationConfigV2(bytes32 configId) external view virtual onlyProxy returns (SelfStructs.VerificationConfigV2 memory) {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         return $v2._v2VerificationConfigs[configId];
     }
@@ -270,7 +268,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param configId The configuration identifier
      * @param config The verification configuration
      */
-    function setVerificationConfig(bytes32 configId, SelfStruct.VerificationConfigV2 memory config) external virtual onlyProxy onlyOwner {
+    function setVerificationConfigV2(bytes32 configId, SelfStructs.VerificationConfigV2 memory config) external virtual onlyProxy onlyOwner {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         $v2._v2VerificationConfigs[configId] = config;
     }
@@ -290,28 +288,27 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             | 32 bytes attestationId
             | data |
         */
-        (HubInputHeader memory header, bytes calldata proofData) = _decodeHubInput(input);
+        (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(input);
 
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
-        SelfStruct.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[header.configId];
+        SelfStructs.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[header.configId];
 
         // Perform basic verification (rootCheck, currentDateCheck, groth16 proof verification)
         uint256 identityCommitmentRoot = _basicVerification(
             header.attestationId,
-            proof.vcAndDiscloseProof
+            _decodeVcAndDiscloseProof(input)
         );
 
-        // Process based on attestation type and decode proof
-        if (header.attestationId == AttestationId.E_PASSPORT) {
-            VcAndDiscloseHubProof memory proof = _decodePassportProof(proofData);
+        // ======= Need to execute Custom Verifications Here ============
 
-            return _encodePassportResult(passportResult);
-        } else if (header.attestationId == AttestationId.EU_ID_CARD) {
-            IdCardVcAndDiscloseHubProof memory proof = _decodeIdCardProof(proofData);
+        // ======= Need to execute formatting Here =============
+        bytes memory output;
 
-            return _encodeIdCardResult(idCardResult);
+        if (header.destChainId == block.chainid) {
+            ISelfVerificationRoot(msg.sender).onBasicVerificationSuccess(output);
         } else {
-            revert InvalidAttestationId();
+            // Cal external bridge
+            // _handleBridge()
         }
     }
 
@@ -642,18 +639,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         return vcAndDiscloseProof.pubSignals[indices.merkleRootIndex];
     }
 
-    /**
-     * @notice Decodes passport proof data from bytes.
-     */
-    function _decodePassportProof(bytes memory data) internal pure returns (VcAndDiscloseHubProof memory) {
-        return abi.decode(data, (VcAndDiscloseHubProof));
-    }
-
-    /**
-     * @notice Decodes ID card proof data from bytes.
-     */
-    function _decodeIdCardProof(bytes memory data) internal pure returns (IdCardVcAndDiscloseHubProof memory) {
-        return abi.decode(data, (IdCardVcAndDiscloseHubProof));
+    function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (VcAndDiscloseProof memory) {
+        return abi.decode(data, (VcAndDiscloseProof));
     }
 
     /**

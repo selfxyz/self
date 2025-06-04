@@ -1,0 +1,51 @@
+# Aderyn Configuration File
+# Help Aderyn work with more granular control
+
+# DO NOT CHANGE version below. As of now, only 1 is supported
+version = 1
+
+# Read the description carefully and uncomment the examples in each paragraph should you consider using them.
+
+# Base path for resolving remappings and compiling smart contracts, relative to workspace-root (directory in which the editor is open)
+# Most of the time, you want to point it to the directory containing foundry.toml or hardhat.config.js/ts.
+root = "contracts"
+
+# Path of source directory containing the contracts, relative to root (above)
+# Aderyn will traverse all the nested files inside to scan and report vulnerabilities found inside.
+# - If not specified, Aderyn will try to extract it from the framework that is being used. (Foundry / Hardhat). 
+#   That would be "contracts/" in case of Hardhat and in case of Foundry, it depends on foundry.toml and
+#   many other factors like FOUNDRY_PROFILE environment variable, etc.
+# - If specified, Aderyn will override the above found `src`.
+# Example:
+# src = "src/"
+
+# Path segments of contract files to include in the analysis.
+# - It can be a partial match like "/interfaces/", which will include all files with "/interfaces/" in the file path.
+#   Or it can be a full match like "src/counters/Counter.sol", which will include only the file with the exact path.
+# - If not specified, all contract files in the source directory will be included.
+# Examples:
+# include = ["src/counters/Counter.sol", "src/others/"]
+# include = ["/interfaces/"]
+
+# Path segments of contract files to exclude in the analysis.
+# - It can be a partial match like "/interfaces/", which will exclude all files with "/interfaces/" in the file path.
+#   Or it can be a full match like "src/counters/Counter.sol", which will exclude only the file with the exact path.
+# - If not specified, no contract files will be excluded.
+# Examples:
+# exclude = ["src/counters/Counter.sol", "src/others/"]
+# exclude = ["/interfaces/"]
+
+# For advanced use cases, leverage the following
+
+# Remappings 
+# - It can be specified in `remappings.txt` within the root folder of the project.
+# - If not specified, Aderyn will try to derive the values from foundry.toml (if present.)
+
+# Environment
+# - These are usually all the FOUNDRY_, DAPP_ environment variables that are used during development.
+# - For example, if different profiles have different `src` declaration in `foundry.toml`, FOUNDRY_PROFILE can dictate the correct `src` value.
+#   Env variables and their values can be specified below.
+
+[env]
+# Example:
+# FOUNDRY_PROFILE = "default"

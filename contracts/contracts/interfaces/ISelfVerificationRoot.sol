@@ -22,4 +22,6 @@ interface ISelfVerificationRoot {
      * @param relayerData Packed data from relayer in format: | 1 byte circuitVersion | 1 byte contractVersion | 30 bytes buffer | 32 bytes attestationId | 32 bytes scope | proof data |
      */
     function verifySelfProof(bytes calldata relayerData) external;
+
+    function onBasicVerificationSuccess(bytes memory input) external;
 }

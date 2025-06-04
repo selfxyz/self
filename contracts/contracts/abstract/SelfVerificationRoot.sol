@@ -299,15 +299,17 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         }
 
         emit VerificationSuccess(scope, attestationId, nullifier, userIdentifier, revealedDataPacked);
-        onBasicVerificationSuccess(
-            attestationId,
-            scope,
-            userIdentifier,
-            nullifier,
-            identityCommitmentRoot,
-            revealedDataPacked,
-            forbiddenCountriesListPacked
-        );
+
+        // We stii have discussion if we need 2 step or 1 step
+        // onBasicVerificationSuccess(
+        //     attestationId,
+        //     scope,
+        //     userIdentifier,
+        //     nullifier,
+        //     identityCommitmentRoot,
+        //     revealedDataPacked,
+        //     forbiddenCountriesListPacked
+        // );
     }
 
     /**
@@ -322,12 +324,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param forbiddenCountriesListPacked The packed forbidden countries list
      */
     function onBasicVerificationSuccess(
-        bytes32 attestationId,
-        uint256 scope,
-        uint256 userIdentifier,
-        uint256 nullifier,
-        uint256 identityCommitmentRoot,
-        uint256[] memory revealedDataPacked,
-        uint256[4] memory forbiddenCountriesListPacked
-    ) internal virtual;
+        bytes memory input
+    ) public virtual;
 }
