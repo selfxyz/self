@@ -61,7 +61,7 @@ library CircuitConstantsV2 {
         uint256 nameyobSmtRootIndex;
         uint256 scopeIndex;
         uint256 userIdentifierIndex;
-        uint256 passportNoSmtRootIndex; // Only for passport, 0 for ID card
+        uint256 passportNoSmtRootIndex; // Only for passport, 99 for ID card
     }
 
     /**
@@ -98,7 +98,7 @@ library CircuitConstantsV2 {
                     nameyobSmtRootIndex: 18,
                     scopeIndex: 19,
                     userIdentifierIndex: 20,
-                    passportNoSmtRootIndex: 0 // Not applicable for ID cards
+                    passportNoSmtRootIndex: 99
                 });
         } else {
             revert("Invalid attestation ID");
