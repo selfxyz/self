@@ -159,12 +159,16 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - Mixpanel-swift (5.0.0):
+    - Mixpanel-swift/Complete (= 5.0.0)
+  - Mixpanel-swift/Complete (5.0.0)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
   - nanopb/decode (2.30910.0)
   - nanopb/encode (2.30910.0)
   - NFCPassportReader (2.1.1):
+    - Mixpanel-swift (~> 5.0.0)
     - OpenSSL-Universal (= 1.1.1900)
   - OpenSSL-Universal (1.1.1900)
   - PromisesObjC (2.4.0)
@@ -1832,7 +1836,8 @@ DEPENDENCIES:
   - GoogleUtilities
   - lottie-ios
   - lottie-react-native (from `../../node_modules/lottie-react-native`)
-  - NFCPassportReader (from `https://github.com/zk-passport/NFCPassportReader`, commit `e3e869b14fb7fb2417928079db3967f203523580`)
+  - Mixpanel-swift (~> 5.0.0)
+  - NFCPassportReader (from `https://github.com/seshanthS/NFCPassportReader`, commit `d365b2366d87a1cbe6d16c249ff709d63f6b6f61`)
   - QKMRZScanner
   - RCT-Folly (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1935,6 +1940,7 @@ SPEC REPOS:
     - GTMAppAuth
     - GTMSessionFetcher
     - lottie-ios
+    - Mixpanel-swift
     - nanopb
     - OpenSSL-Universal
     - PromisesObjC
@@ -1959,8 +1965,8 @@ EXTERNAL SOURCES:
   lottie-react-native:
     :path: "../../node_modules/lottie-react-native"
   NFCPassportReader:
-    :commit: e3e869b14fb7fb2417928079db3967f203523580
-    :git: https://github.com/zk-passport/NFCPassportReader
+    :commit: d365b2366d87a1cbe6d16c249ff709d63f6b6f61
+    :git: https://github.com/seshanthS/NFCPassportReader
   RCT-Folly:
     :podspec: "../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -2122,8 +2128,8 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   NFCPassportReader:
-    :commit: e3e869b14fb7fb2417928079db3967f203523580
-    :git: https://github.com/zk-passport/NFCPassportReader
+    :commit: d365b2366d87a1cbe6d16c249ff709d63f6b6f61
+    :git: https://github.com/seshanthS/NFCPassportReader
   SwiftQRScanner:
     :commit: fddcabcb431cd6110cea0394660082661dbafa7e
     :git: https://github.com/vinodiOS/SwiftQRScanner
@@ -2150,8 +2156,9 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 3ffec00c889acded6057766c99adf8eaced7790c
+  Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
-  NFCPassportReader: e931c61c189e08a4b4afa0ed4014af19eab2f129
+  NFCPassportReader: 48873f856f91215dbfa1eaaec20eae639672862e
   OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
@@ -2240,6 +2247,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
 
-PODFILE CHECKSUM: 2b4d221f59ee4daed11d52338f4dd84d2081bcc6
+PODFILE CHECKSUM: 2aeaac8e39fecbe94c8068edf25b014650520069
 
 COCOAPODS: 1.16.2
