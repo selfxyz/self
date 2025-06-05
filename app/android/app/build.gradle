@@ -150,12 +150,11 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.7.3')
     implementation 'com.google.firebase:firebase-messaging'
 
-    // if (hermesEnabled.toBoolean()) {
-    //     implementation("com.facebook.react:hermes-android")
-    // } else {
-    //     implementation jscFlavor
-    // }
-    implementation jscFlavor
+    if (hermesEnabled.toBoolean()) {
+        implementation("com.facebook.react:hermes-android")
+    } else {
+        implementation jscFlavor
+    }
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation("net.java.dev.jna:jna:5.13.0@aar")
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android'
