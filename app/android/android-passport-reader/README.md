@@ -2,7 +2,7 @@
 
 Sample project to read Passports using MRZ or manual entry. Currently I am using ML KIT for the OCR.
 
-I don't read the the whole MRZ as ML KIT for now it's unable to read it (it's struggling with "<<<"), but I use it to read the second line and after that use a regular expression to match the rigth format.
+I don't read the the whole MRZ as ML KIT for now it's unable to read it (it's struggling with "<<<"), but I use it to read the second line and after that use a regular expression to match the right format.
 
 You can use the example images stored under `examples` to test the application or download any sample passport document from https://www.consilium.europa.eu/prado/EN/prado-start-page.html
 
