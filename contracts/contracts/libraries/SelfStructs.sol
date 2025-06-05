@@ -23,13 +23,4 @@ library SelfStructs {
     uint256 nameAndDobOfac;
     uint256 nameAndYobOfac;
   }
-
-  struct VerificationConfigV2 {
-    bool olderThanEnabled;
-    uint256 olderThan;
-    bool forbiddenCountriesEnabled;
-    uint256[4] forbiddenCountriesListPacked;
-    bool[3] ofacEnabled;
-  }
-
 }

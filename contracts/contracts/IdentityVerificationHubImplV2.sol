@@ -5,9 +5,11 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {ImplRoot} from "./upgradeable/ImplRoot.sol";
 import {SelfStructs} from "./libraries/SelfStructs.sol";
+import {CustomVerifier, VerificationConfig} from "./libraries/CustomVerifier.sol";
+import {GenericFormatter} from "./libraries/GenericFormatter.sol";
 import {AttestationId} from "./constants/AttestationId.sol";
 import {IVcAndDiscloseCircuitVerifier} from "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
-import {ISelfVerificationRoot} from "./interface/ISelfVerificationRoot.sol";
+import {ISelfVerificationRoot} from "./interfaces/ISelfVerificationRoot.sol";
 
 contract IdentityVerificationHubImplV2 is ImplRoot {
 
@@ -290,16 +292,23 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         */
         (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(input);
 
-        IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
-        SelfStructs.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[header.configId];
+        bytes memory config;
+        if (header.contractVersion == 2) {
+            IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
+            VerificationConfig.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[header.configId];
+            config = GenericFormatter.formatV2Config(verificationConfig);
+        }
+
 
         // Perform basic verification (rootCheck, currentDateCheck, groth16 proof verification)
         uint256 identityCommitmentRoot = _basicVerification(
             header.attestationId,
-            _decodeVcAndDiscloseProof(input)
+            _decodeVcAndDiscloseProof(proofData)
         );
 
         // ======= Need to execute Custom Verifications Here ============
+        //shouldn't custom verifier return proof data for me?
+        CustomVerifier.customVerify(header.attestationId, config, proofData);
 
         // ======= Need to execute formatting Here =============
         bytes memory output;
