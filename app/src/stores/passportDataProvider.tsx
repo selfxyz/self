@@ -1,3 +1,7 @@
+import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '@selfxyz/common';
+import { parseCertificateSimple } from '@selfxyz/common';
+import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common';
+import { PassportData } from '@selfxyz/common';
 import React, {
   createContext,
   PropsWithChildren,
@@ -7,13 +11,6 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import {
-  PublicKeyDetailsECDSA,
-  PublicKeyDetailsRSA,
-} from '../../../common/src/utils/certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { brutforceSignatureAlgorithmDsc } from '../../../common/src/utils/passports/passport_parsing/brutForceDscSignature';
-import { PassportData } from '../../../common/src/utils/types';
 import { unsafe_getPrivateKey } from '../stores/authProvider';
 import { useAuth } from './authProvider';
 

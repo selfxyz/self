@@ -27,10 +27,10 @@ const userId = uuidv4();
 
 // Create a SelfApp instance using the builder pattern
 const selfApp = new SelfAppBuilder({
-  appName: "My App",
-  scope: "my-app-scope", 
-  endpoint: "https://myapp.com/api/verify",
-  logoBase64: "base64EncodedLogo", // Optional
+  appName: 'My App',
+  scope: 'my-app-scope',
+  endpoint: 'https://myapp.com/api/verify',
+  logoBase64: 'base64EncodedLogo', // Optional
   userId,
   // Optional disclosure requirements
   disclosures: {
@@ -44,7 +44,7 @@ const selfApp = new SelfAppBuilder({
     expiry_date: true,
     // Custom verification rules
     minimumAge: 18,
-    excludedCountries: ["IRN", "PRK"],
+    excludedCountries: ['IRN', 'PRK'],
     ofac: true,
   },
 }).build();
@@ -74,44 +74,44 @@ function MyComponent() {
 
 The `SelfAppBuilder` allows you to configure your application's verification requirements:
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `appName` | string | Yes | The name of your application |
-| `scope` | string | Yes | A unique identifier for your application |
-| `endpoint` | string | Yes | The endpoint that will verify the proof |
-| `logoBase64` | string | No | Base64-encoded logo to display in the Self app |
-| `userId` | string | Yes | Unique identifier for the user |
-| `disclosures` | object | No | Disclosure and verification requirements |
+| Parameter     | Type   | Required | Description                                    |
+| ------------- | ------ | -------- | ---------------------------------------------- |
+| `appName`     | string | Yes      | The name of your application                   |
+| `scope`       | string | Yes      | A unique identifier for your application       |
+| `endpoint`    | string | Yes      | The endpoint that will verify the proof        |
+| `logoBase64`  | string | No       | Base64-encoded logo to display in the Self app |
+| `userId`      | string | Yes      | Unique identifier for the user                 |
+| `disclosures` | object | No       | Disclosure and verification requirements       |
 
 ### Disclosure Options
 
 The `disclosures` object can include the following options:
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `issuing_state` | boolean | Request disclosure of passport issuing state |
-| `name` | boolean | Request disclosure of the user's name |
-| `nationality` | boolean | Request disclosure of nationality |
-| `date_of_birth` | boolean | Request disclosure of birth date |
-| `passport_number` | boolean | Request disclosure of passport number |
-| `gender` | boolean | Request disclosure of gender |
-| `expiry_date` | boolean | Request disclosure of passport expiry date |
-| `minimumAge` | number | Verify the user is at least this age |
-| `excludedCountries` | string[] | Array of country codes to exclude |
-| `ofac` | boolean | Enable OFAC compliance check |
+| Option              | Type     | Description                                  |
+| ------------------- | -------- | -------------------------------------------- |
+| `issuing_state`     | boolean  | Request disclosure of passport issuing state |
+| `name`              | boolean  | Request disclosure of the user's name        |
+| `nationality`       | boolean  | Request disclosure of nationality            |
+| `date_of_birth`     | boolean  | Request disclosure of birth date             |
+| `passport_number`   | boolean  | Request disclosure of passport number        |
+| `gender`            | boolean  | Request disclosure of gender                 |
+| `expiry_date`       | boolean  | Request disclosure of passport expiry date   |
+| `minimumAge`        | number   | Verify the user is at least this age         |
+| `excludedCountries` | string[] | Array of country codes to exclude            |
+| `ofac`              | boolean  | Enable OFAC compliance check                 |
 
 ## Component Props
 
 The `SelfQRcodeWrapper` component accepts the following props:
 
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `selfApp` | SelfApp | Yes | - | The SelfApp configuration object |
-| `onSuccess` | () => void | Yes | - | Callback function executed on successful verification |
-| `websocketUrl` | string | No | WS_DB_RELAYER | Custom WebSocket URL for verification |
-| `size` | number | No | 300 | QR code size in pixels |
-| `darkMode` | boolean | No | false | Enable dark mode styling |
-| `children` | React.ReactNode | No | - | Custom children to render |
+| Prop           | Type            | Required | Default       | Description                                           |
+| -------------- | --------------- | -------- | ------------- | ----------------------------------------------------- |
+| `selfApp`      | SelfApp         | Yes      | -             | The SelfApp configuration object                      |
+| `onSuccess`    | () => void      | Yes      | -             | Callback function executed on successful verification |
+| `websocketUrl` | string          | No       | WS_DB_RELAYER | Custom WebSocket URL for verification                 |
+| `size`         | number          | No       | 300           | QR code size in pixels                                |
+| `darkMode`     | boolean         | No       | false         | Enable dark mode styling                              |
+| `children`     | React.ReactNode | No       | -             | Custom children to render                             |
 
 ## Complete Example
 
@@ -136,19 +136,19 @@ function VerificationPage() {
 
   // Create the SelfApp configuration
   const selfApp = new SelfAppBuilder({
-    appName: "My Application",
-    scope: "my-application-scope",
-    endpoint: "https://myapp.com/api/verify",
+    appName: 'My Application',
+    scope: 'my-application-scope',
+    endpoint: 'https://myapp.com/api/verify',
     userId,
     disclosures: {
       // Request passport information
       name: true,
       nationality: true,
       date_of_birth: true,
-      
+
       // Set verification rules
       minimumAge: 18,
-      excludedCountries: ["IRN", "PRK", "RUS"],
+      excludedCountries: ['IRN', 'PRK', 'RUS'],
       ofac: true,
     },
   }).build();
@@ -157,17 +157,17 @@ function VerificationPage() {
     <div className="verification-container">
       <h1>Verify Your Identity</h1>
       <p>Scan this QR code with the Self app to verify your identity</p>
-      
+
       <SelfQRcodeWrapper
         selfApp={selfApp}
         onSuccess={() => {
           // Handle successful verification
-          console.log("Verification successful!");
+          console.log('Verification successful!');
           // Redirect or update UI
         }}
         size={350}
       />
-      
+
       <p className="text-sm text-gray-500">
         User ID: {userId.substring(0, 8)}...
       </p>

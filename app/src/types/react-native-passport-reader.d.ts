@@ -7,6 +7,7 @@ declare module 'react-native-passport-reader' {
   }
 
   interface PassportReader {
+    configure(token: string): void;
     scan(options: ScanOptions): Promise<{
       mrz: string;
       eContent: string;

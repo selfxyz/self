@@ -1,12 +1,12 @@
+import { WS_RPC_URL_VC_AND_DISCLOSE } from '@selfxyz/common';
+import { EndpointType, SelfApp } from '@selfxyz/common';
+import { getCircuitNameFromPassportData } from '@selfxyz/common';
 import forge from 'node-forge';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
-import { WS_RPC_URL_VC_AND_DISCLOSE } from '../../../../common/src/constants/constants';
-import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
-import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import { navigationRef } from '../../navigation';
 import {
   clearPassportData,
@@ -33,9 +33,10 @@ import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
   isPassportNullified,
+  isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
-import { DocumentCategory, PassportData } from '../../../../common/src/utils/types';
+import { DocumentCategory, PassportData } from '@selfxyz/common';
 
 const provingMachine = createMachine({
   id: 'proving',
@@ -555,45 +556,53 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           return;
         }
 
-        const { isRegistered, csca } =
-          await isUserRegisteredWithAlternativeCSCA(
+        /// disclosure
+        if (circuitType === 'disclose') {
+          // check if the user is registered using the csca from the passport data.
+          const isRegisteredWithLocalCSCA = await isUserRegistered(
             passportData,
             secret as string,
           );
-        console.log('isRegistered: ', isRegistered, 'csca: ', csca);
-
-        if (circuitType === 'disclose') {
-          if (isRegistered) {
+          if (isRegisteredWithLocalCSCA) {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
           } else {
             actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
             return;
           }
-        } else if (isRegistered) {
-          reStorePassportDataWithRightCSCA(passportData, csca as string);
-          actor!.send({ type: 'ALREADY_REGISTERED' });
-          return;
         }
 
-        const isNullifierOnchain = await isPassportNullified(passportData);
-        if (isNullifierOnchain) {
-          console.log(
-            'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
+        /// registration
+        else {
+          const { isRegistered, csca } =
+            await isUserRegisteredWithAlternativeCSCA(
+              passportData,
+              secret as string,
+            );
+          if (isRegistered) {
+            reStorePassportDataWithRightCSCA(passportData, csca as string);
+            actor!.send({ type: 'ALREADY_REGISTERED' });
+            return;
+          }
+          const isNullifierOnchain = await isPassportNullified(passportData);
+          if (isNullifierOnchain) {
+            console.log(
+              'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
+            );
+            actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
+            return;
+          }
+          const document : DocumentCategory = passportData.documentCategory;
+          const isDscRegistered = await checkIfPassportDscIsInTree(
+            passportData,
+            useProtocolStore.getState()[document].dsc_tree,
           );
-          actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
-          return;
+          console.log('isDscRegistered: ', isDscRegistered);
+          if (isDscRegistered) {
+            set({ circuitType: 'register' });
+          }
+          actor!.send({ type: 'VALIDATION_SUCCESS' });
         }
-        const document : DocumentCategory = passportData.documentCategory;
-        const isDscRegistered = await checkIfPassportDscIsInTree(
-          passportData,
-          useProtocolStore.getState()[document].dsc_tree,
-        );
-        console.log('isDscRegistered: ', isDscRegistered);
-        if (isDscRegistered) {
-          set({ circuitType: 'register' });
-        }
-        actor!.send({ type: 'VALIDATION_SUCCESS' });
       } catch (error) {
         console.error('Error validating passport:', error);
         actor!.send({ type: 'VALIDATION_ERROR' });

@@ -44,7 +44,7 @@ struct LiveMRZScannerView: View {
                         var newLines = lines
                         newLines[1] = newLine
                         let correctedMRZ = newLines.joined(separator: "\n")
-                        print("Trying candidate: \(candidate), correctedMRZ: \(correctedMRZ)")
+                        // print("Trying candidate: \(candidate), correctedMRZ: \(correctedMRZ)")
                         if let correctedResult = parser.parse(mrzString: correctedMRZ) {
                           if correctedResult.isDocumentNumberValid {
                             return correctedResult

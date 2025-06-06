@@ -8,6 +8,5 @@ module.exports = {
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$',
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
-    '^@openpassport/(.*)$': '<rootDir>/../common/node_modules/@openpassport/$1',
   },
 };

@@ -1,5 +1,5 @@
-import { CertificateData } from "./certificate_parsing/dataStructure";
-import { PassportMetadata } from "./passports/passport_parsing/parsePassportData";
+import { CertificateData } from './certificate_parsing/dataStructure.js';
+import { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 
 export type PassportData = {
   mrz: string;

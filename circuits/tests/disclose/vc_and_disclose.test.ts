@@ -6,22 +6,19 @@ import crypto from 'crypto';
 import { describe } from 'mocha';
 import path from 'path';
 import { poseidon1, poseidon2 } from 'poseidon-lite';
-import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
-import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
-import {
-  attributeToPosition,
-  PASSPORT_ATTESTATION_ID,
-} from '../../../common/src/constants/constants';
+import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json' with { type: 'json' };
+import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json' with { type: 'json' };
+import passportNojson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
+import { attributeToPosition, PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
   getAttributeFromUnpackedReveal,
-} from '../../../common/src/utils/circuits/formatOutputs';
-import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { generateCommitment } from '../../../common/src/utils/passports/passport';
-import { hashEndpointWithScope } from '../../../common/src/utils/scope';
+} from '@selfxyz/common/utils/circuits/formatOutputs';
+import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
+import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
+import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 
 describe('Disclose', function () {
   this.timeout(0);

@@ -1,12 +1,12 @@
-import { saltLengths } from '../../../constants/constants';
-import { hashAlgos } from '../../../constants/constants';
-import { CertificateData, PublicKeyDetailsECDSA } from '../../certificate_parsing/dataStructure';
-import { initElliptic } from '../../certificate_parsing/elliptic';
+import { saltLengths } from '../../../constants/constants.js';
+import { hashAlgos } from '../../../constants/constants.js';
+import { CertificateData, PublicKeyDetailsECDSA } from '../../certificate_parsing/dataStructure.js';
+import { initElliptic } from '../../certificate_parsing/elliptic.js';
 import * as asn1js from 'asn1js';
 import * as forge from 'node-forge';
-import { getCurveForElliptic } from '../../certificate_parsing/curves';
+import { getCurveForElliptic } from '../../certificate_parsing/curves.js';
 import { Certificate } from 'pkijs';
-import { hash } from '../../hash';
+import { hash } from '../../hash.js';
 
 export function brutforceSignatureAlgorithmDsc(dsc: CertificateData, csca: CertificateData) {
   if (csca.signatureAlgorithm === 'ecdsa') {

@@ -3,6 +3,7 @@ import React, { useCallback } from 'react';
 import { styled, View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import ModalClose from '../../images/icons/modal_close.svg';
@@ -26,6 +27,7 @@ export interface ModalParams extends Record<string, any> {
   titleText: string;
   bodyText: string;
   buttonText: string;
+  secondaryButtonText?: string;
   onButtonPress: (() => Promise<void>) | (() => void);
   onModalDismiss: () => void;
   preventDismiss?: boolean;
@@ -66,9 +68,16 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
               {params?.bodyText}
             </Description>
           </YStack>
-          <PrimaryButton onPress={onButtonPressed}>
-            {params?.buttonText}
-          </PrimaryButton>
+          <YStack gap={12}>
+            <PrimaryButton onPress={onButtonPressed}>
+              {params?.buttonText}
+            </PrimaryButton>
+            {params?.secondaryButtonText && (
+              <SecondaryButton onPress={onClose}>
+                {params?.secondaryButtonText}
+              </SecondaryButton>
+            )}
+          </YStack>
         </YStack>
       </View>
     </ModalBackDrop>

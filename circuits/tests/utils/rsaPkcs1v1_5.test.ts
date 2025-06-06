@@ -1,8 +1,8 @@
 import { wasm as wasmTester } from 'circom_tester';
 import { describe, it } from 'mocha';
 import path from 'path';
-import { generateMockRsaPkcs1v1_5Inputs } from './generateMockInputsInCircuits';
-import { SignatureAlgorithm } from '../../../common/src/utils/types';
+import { generateMockRsaPkcs1v1_5Inputs } from './generateMockInputsInCircuits.js';
+import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { expect } from 'chai';
 describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
   this.timeout(0);

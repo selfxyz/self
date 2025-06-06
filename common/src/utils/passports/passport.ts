@@ -1,28 +1,37 @@
 import * as forge from 'node-forge';
 import { poseidon5 } from 'poseidon-lite';
 import {
-  hashAlgos, k_csca, k_dsc, k_dsc_3072, k_dsc_4096, k_dsc_ecdsa, MAX_PUBKEY_DSC_BYTES, n_csca, n_dsc,
+  hashAlgos,
+  k_csca,
+  k_dsc,
+  k_dsc_3072,
+  k_dsc_4096,
+  k_dsc_ecdsa,
+  MAX_PUBKEY_DSC_BYTES,
+  n_csca,
+  n_dsc,
   n_dsc_3072,
-  n_dsc_4096, n_dsc_ecdsa
-} from '../../constants/constants';
-import { bytesToBigDecimal, hexToDecimal, splitToWords } from '../bytes';
+  n_dsc_4096,
+  n_dsc_ecdsa,
+} from '../../constants/constants.js';
+import { bytesToBigDecimal, hexToDecimal, splitToWords } from '../bytes.js';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-} from '../certificate_parsing/dataStructure';
+} from '../certificate_parsing/dataStructure.js';
 import {
   getCertificateFromPem,
   parseCertificateSimple,
-} from '../certificate_parsing/parseCertificateSimple';
-import { formatInput } from '../circuits/generateInputs';
-import { findStartIndex, findStartIndexEC } from '../csca';
-import { hash, packBytesAndPoseidon } from '../hash';
-import { sha384_512Pad, shaPad } from '../shaPad';
-import { getLeafDscTree } from '../trees';
-import { PassportData, SignatureAlgorithm } from '../types';
-import { formatMrz } from './format';
-import { parsePassportData } from './passport_parsing/parsePassportData';
+} from '../certificate_parsing/parseCertificateSimple.js';
+import { formatInput } from '../circuits/generateInputs.js';
+import { findStartIndex, findStartIndexEC } from '../csca.js';
+import { hash, packBytesAndPoseidon } from '../hash.js';
+import { sha384_512Pad, shaPad } from '../shaPad.js';
+import { getLeafDscTree } from '../trees.js';
+import { PassportData, SignatureAlgorithm } from '../types.js';
+import { formatMrz } from './format.js';
+import { parsePassportData } from './passport_parsing/parsePassportData.js';
 
 /// @dev will bruteforce passport and dsc signature
 export function initPassportDataParsing(passportData: PassportData, skiPem: any = null) {

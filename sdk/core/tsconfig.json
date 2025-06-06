@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
+    "module": "NodeNext",
     "declaration": true,
     "declarationDir": "./dist",
     "outDir": "./dist",
@@ -10,20 +10,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "jsx": "react",
-    "moduleResolution": "node",
-    "baseUrl": ".",
-    "paths": {
-      "@common/*": ["../../common/src/*"]
-    }
+    "moduleResolution": "node16",
+    "baseUrl": "."
   },
-  "include": [
-    "index.ts",
-    "src/**/*",
-    "../../common/src/**/*",
-    "circuits/**/*",
-    "circuits/**/*.json",
-    "utils/utils.ts"
-  ],
-  "exclude": ["node_modules", "**/__tests__/*", "dist", "common/src/utils/csca.ts"]
+  "include": ["index.ts", "src/**/*", "circuits/**/*", "circuits/**/*.json", "utils/utils.ts"],
+  "exclude": ["node_modules", "**/__tests__/*", "dist"]
 }

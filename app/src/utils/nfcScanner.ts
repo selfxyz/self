@@ -1,17 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
+import { PassportData } from '@selfxyz/common';
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
-
-import { PassportData } from '../../../common/src/utils/types';
 
 interface Inputs {
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
+  canNumber?: string;
+  useCan?: boolean;
+  skipPACE?: boolean;
+  skipCA?: boolean;
+  extendedMode?: boolean;
 }
 
 export const scan = async (inputs: Inputs) => {
+  if (MIXPANEL_NFC_PROJECT_TOKEN) {
+    if (Platform.OS === 'ios') {
+      const enableDebugLogs = ENABLE_DEBUG_LOGS === 'true';
+      NativeModules.PassportReader.configure(
+        MIXPANEL_NFC_PROJECT_TOKEN,
+        enableDebugLogs,
+      );
+    } else {
+    }
+  }
+
   return Platform.OS === 'android'
     ? await scanAndroid(inputs)
     : await scanIOS(inputs);
@@ -30,6 +46,11 @@ const scanIOS = async (inputs: Inputs) => {
     inputs.passportNumber,
     inputs.dateOfBirth,
     inputs.dateOfExpiry,
+    inputs.canNumber ?? '',
+    inputs.useCan ?? false,
+    inputs.skipPACE ?? false,
+    inputs.skipCA ?? false,
+    inputs.extendedMode ?? false,
   );
 };
 

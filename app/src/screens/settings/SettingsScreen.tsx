@@ -27,7 +27,7 @@ import ShareIcon from '../../images/icons/share.svg';
 import Star from '../../images/icons/star.svg';
 import Telegram from '../../images/icons/telegram.svg';
 import Web from '../../images/icons/webpage.svg';
-import { RootStackParamList } from '../../Navigation';
+import { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
 import {
   amber500,

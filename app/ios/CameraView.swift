@@ -114,7 +114,7 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         let roiYVision = 1.0 - clampedY - clampedHeight
         let roi = CGRect(x: clampedX, y: roiYVision, width: clampedWidth, height: clampedHeight)
         
-        print("[CameraViewController] FINAL ROI for Vision (flipped Y, visible only): \(roi)")
+        // print("[CameraViewController] FINAL ROI for Vision (flipped Y, visible only): \(roi)")
         return roi
     }
 
@@ -139,7 +139,7 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
             let originalImage = UIImage(cgImage: cgImage, scale: UIScreen.main.scale, orientation: .right)
             let uprightImage = originalImage.fixedOrientation()
-            print("[CameraViewController] cgImage size: \(cgImage.width)x\(cgImage.height), preview size: \(view.bounds.size), orientation: \(uprightImage.imageOrientation.rawValue)")
+            // print("[CameraViewController] cgImage size: \(cgImage.width)x\(cgImage.height), preview size: \(view.bounds.size), orientation: \(uprightImage.imageOrientation.rawValue)")
             let roi = roiInImageCoordinates
             DispatchQueue.main.async { [weak self] in
                 self?.frameHandler?(uprightImage, roi)

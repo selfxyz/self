@@ -1,5 +1,3 @@
-import { create } from 'zustand';
-
 import {
   API_URL,
   API_URL_STAGING,
@@ -15,7 +13,8 @@ import {
   IDENTITY_TREE_URL_ID_CARD,
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
-} from '../../../common/src/constants/constants';
+} from '@selfxyz/common';
+import { create } from 'zustand';
 
 interface ProtocolState {
   passport: {

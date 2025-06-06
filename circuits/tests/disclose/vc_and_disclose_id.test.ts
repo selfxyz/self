@@ -5,23 +5,23 @@ import { wasm as wasm_tester } from 'circom_tester';
 import {
   attributeToPosition_ID,
   ID_CARD_ATTESTATION_ID,
-} from '../../../common/src/constants/constants';
+} from '@selfxyz/common/constants/constants';
 import { poseidon1, poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
+import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circuits/generateInputs';
 import crypto from 'crypto';
 import { SMT } from '@openpassport/zk-kit-smt';
-import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT_ID.json';
-import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT_ID.json';
-import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
+import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.json' with { type: 'json' };
+import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
+import passportNojson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
   getAttributeFromUnpackedReveal,
-} from '../../../common/src/utils/circuits/formatOutputs';
-import { generateCommitment } from '../../../common/src/utils/passports/passport';
-import { hashEndpointWithScope } from '../../../common/src/utils/scope';
-import { genMockIdDoc } from '../../../common/src/utils/passports/genMockIdDoc';
+} from '@selfxyz/common/utils/circuits/formatOutputs';
+import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
+import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
 
 describe('Disclose', function () {
   this.timeout(0);

@@ -1,4 +1,11 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { getSKIPEM } from '@selfxyz/common';
+import { initPassportDataParsing } from '@selfxyz/common';
+import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -8,12 +15,10 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Image } from 'tamagui';
 
-import { getSKIPEM } from '../../../../common/src/utils/csca';
-import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
-import { PassportData } from '../../../../common/src/utils/types';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -44,6 +49,7 @@ const emitter =
 
 const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const navigation = useNavigation();
+  const route = useRoute();
   const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore();
   const [dialogMessage, setDialogMessage] = useState('');
   const [isNfcSupported, setIsNfcSupported] = useState(true);
@@ -55,6 +61,18 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   useEffect(() => {
     animationRef.current?.play();
   }, []);
+
+  const goToNFCMethodSelection = useHapticNavigation(
+    'PassportNFCMethodSelection',
+  );
+
+  // 5-taps with 2 fingers
+  const twoFingerTap = Gesture.Tap()
+    .minPointers(2)
+    .numberOfTaps(5)
+    .onStart(() => {
+      goToNFCMethodSelection();
+    });
 
   const checkNfcSupport = useCallback(async () => {
     const isSupported = await NfcManager.isSupported();
@@ -83,10 +101,18 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       const scanStartTime = Date.now();
 
       try {
+        const { canNumber, useCan, skipPACE, skipCA, extendedMode } =
+          (route.params || {}) as any;
+
         const scanResponse = await scan({
           passportNumber,
           dateOfBirth,
           dateOfExpiry,
+          canNumber,
+          useCan,
+          skipPACE,
+          skipCA,
+          extendedMode,
         });
 
         const scanDurationSeconds = (
@@ -209,7 +235,14 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         Linking.sendIntent('android.settings.NFC_SETTINGS');
       }
     }
-  }, [isNfcSupported, isNfcEnabled, passportNumber, dateOfBirth, dateOfExpiry]);
+  }, [
+    isNfcSupported,
+    isNfcEnabled,
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
+    route.params,
+  ]);
 
   const onCancelPress = useHapticNavigation('Launch', {
     action: 'cancel',
@@ -280,7 +313,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         ) : (
           <>
             <TextsContainer>
-              <Title>Verify your passport</Title>
+              <GestureDetector gesture={twoFingerTap}>
+                <Title>Verify your passport</Title>
+              </GestureDetector>
               <Description
                 children={
                   isNfcEnabled
