@@ -307,7 +307,6 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         );
 
         // ======= Need to execute Custom Verifications Here ============
-        //shouldn't custom verifier return proof data for me?
         SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(header.attestationId, config, proofOutput);
 
         bytes memory output;

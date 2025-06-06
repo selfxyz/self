@@ -45,6 +45,9 @@ library SelfStructs {
 
    struct GenericDiscloseOutputV2 {
     uint256 attestationId;
+    uint256 userIdentifier;
+    uint256 nullifier;
+    uint256[4] forbiddenCountriesListPacked;
     string issuingState;
     string[] name;
     string idNumber;

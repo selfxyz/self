@@ -66,6 +66,9 @@ library CustomVerifier {
 
     SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = SelfStructs.GenericDiscloseOutputV2({
       attestationId: AttestationId.E_PASSPORT,
+      userIdentifier: passportOutput.userIdentifier,
+      nullifier: passportOutput.nullifier,
+      forbiddenCountriesListPacked: passportOutput.forbiddenCountriesListPacked,
       issuingState: CircuitAttributeHandlerV2.getIssuingState(AttestationId.E_PASSPORT, passportOutput.revealedDataPacked),
       name: CircuitAttributeHandlerV2.getName(AttestationId.E_PASSPORT, passportOutput.revealedDataPacked),
       idNumber: CircuitAttributeHandlerV2.getDocumentNumber(AttestationId.E_PASSPORT, passportOutput.revealedDataPacked),
@@ -117,6 +120,9 @@ library CustomVerifier {
 
     SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = SelfStructs.GenericDiscloseOutputV2({
       attestationId: AttestationId.EU_ID_CARD,
+      userIdentifier: idCardOutput.userIdentifier,
+      nullifier: idCardOutput.nullifier,
+      forbiddenCountriesListPacked: idCardOutput.forbiddenCountriesListPacked,
       issuingState: CircuitAttributeHandlerV2.getIssuingState(AttestationId.EU_ID_CARD, idCardOutput.revealedDataPacked),
       name: CircuitAttributeHandlerV2.getName(AttestationId.EU_ID_CARD, idCardOutput.revealedDataPacked),
       idNumber: CircuitAttributeHandlerV2.getDocumentNumber(AttestationId.EU_ID_CARD, idCardOutput.revealedDataPacked),
