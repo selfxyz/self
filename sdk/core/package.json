@@ -17,13 +17,13 @@
   "scripts": {
     "build": "tsc -build",
     "build:deps": "yarn workspaces foreach --from @selfxyz/core --topological-dev --recursive run build",
-    "types": "yarn build",
     "copy-abi": "bash scripts/copyAbi.sh",
     "format": "prettier --write .",
     "install-sdk": "yarn workspaces focus @selfxyz/core",
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
-    "publish": "yarn npm publish --access public"
+    "publish": "yarn npm publish --access public",
+    "types": "yarn build"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:^",

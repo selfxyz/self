@@ -1,13 +1,14 @@
 {
   "name": "backend-api",
   "version": "1.0.50",
+  "module": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/app.ts",
-    "types": "tsc --noEmit",
     "init": "bash scripts/copy_abi.sh && bash scripts/copy_deployedAddress.sh",
     "start:daemon": "bun run src/app.ts > app.log 2>&1 &",
-    "stop:daemon": "pkill -f 'bun run src/app.ts'"
+    "stop:daemon": "pkill -f 'bun run src/app.ts'",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "types": "tsc --noEmit"
   },
   "dependencies": {
     "@elysiajs/swagger": "^1.2.0",
@@ -27,6 +28,5 @@
     "@types/pg": "^8.11.11",
     "bun-types": "latest",
     "typescript": "^5.8.3"
-  },
-  "module": "index.ts"
+  }
 }

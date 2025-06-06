@@ -5,9 +5,6 @@
   "license": "MIT",
   "author": "@Selfxyz Team",
   "type": "module",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/esm/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -33,6 +30,9 @@
     "./mock_certificates/*": "./src/mock_certificates/*",
     "./mock_certificates/**/*": "./src/mock_certificates/**/*"
   },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist/cjs",
     "dist/esm",
@@ -40,13 +40,13 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && yarn postbuild",
-    "types": "tsc -p tsconfig.json",
+    "postbuild": "node ./scripts/post-build.mjs",
     "format": "prettier --write .",
     "lint": "prettier --check .",
+    "prepublishOnly": "yarn build",
     "test": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/**/*.test.ts --exit",
     "test:scope": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/scope.test.ts --exit",
-    "postbuild": "node ./scripts/post-build.mjs",
-    "prepublishOnly": "yarn build"
+    "types": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@openpassport/zk-kit-imt": "^0.0.5",
