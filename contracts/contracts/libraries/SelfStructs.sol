@@ -23,4 +23,20 @@ library SelfStructs {
     uint256 nameAndDobOfac;
     uint256 nameAndYobOfac;
   }
+
+  struct PassportOutput {
+    uint256 attestationId;
+    uint256[3] revealedDataPacked;
+    uint256 userIdentifier;
+    uint256 nullifier;
+    uint256[4] forbiddenCountriesListPacked;
+  }
+
+  struct EuIdOutput {
+    uint256 attestationId;
+    uint256[4] revealedDataPacked;
+    uint256 userIdentifier;
+    uint256 nullifier;
+    uint256[4] forbiddenCountriesListPacked;
+  }
 }
