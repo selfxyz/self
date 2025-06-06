@@ -34,6 +34,7 @@ import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
   isPassportNullified,
+  isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
 
@@ -549,27 +550,29 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           return;
         }
 
-        const { isRegistered, csca } =
-          await isUserRegisteredWithAlternativeCSCA(
-            passportData,
-            secret as string,
-          );
-        console.log('isRegistered: ', isRegistered, 'csca: ', csca);
 
+
+      /// disclosure
         if (circuitType === 'disclose') {
-          if (isRegistered) {
+          // check if the user is registered using the csca from the passport data.
+          const isRegisteredWithLocalCSCA = await isUserRegistered(passportData, secret as string)
+          if (isRegisteredWithLocalCSCA) {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
           } else {
             actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
             return;
           }
-        } else if (isRegistered) {
+        }
+
+        /// registration
+        else{
+        const { isRegistered, csca } =  await isUserRegisteredWithAlternativeCSCA(passportData, secret as string);
+        if (isRegistered) {
           reStorePassportDataWithRightCSCA(passportData, csca as string);
           actor!.send({ type: 'ALREADY_REGISTERED' });
           return;
         }
-
         const isNullifierOnchain = await isPassportNullified(passportData);
         if (isNullifierOnchain) {
           console.log(
@@ -587,6 +590,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           set({ circuitType: 'register' });
         }
         actor!.send({ type: 'VALIDATION_SUCCESS' });
+        }
       } catch (error) {
         console.error('Error validating passport:', error);
         actor!.send({ type: 'VALIDATION_ERROR' });
