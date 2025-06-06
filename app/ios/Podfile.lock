@@ -1811,9 +1811,9 @@ PODS:
   - segment-analytics-react-native (2.21.0):
     - React-Core
     - sovran-react-native
-  - Sentry (8.49.0):
-    - Sentry/Core (= 8.49.0)
-  - Sentry/Core (8.49.0)
+  - Sentry (8.52.0):
+    - Sentry/Core (= 8.52.0)
+  - Sentry/Core (8.52.0)
   - Sentry/HybridSDK (8.48.0)
   - SentryPrivate (8.21.0)
   - SocketRocket (0.7.0)
@@ -2163,7 +2163,7 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
   QKMRZScanner: cf2348fd6ce441e758328da4adf231ef2b51d769
-  RCT-Folly: 34124ae2e667a0e5f0ea378db071d27548124321
+  RCT-Folly: 4464f4d875961fce86008d45f4ecf6cef6de0740
   RCTDeprecation: 726d24248aeab6d7180dac71a936bbca6a994ed1
   RCTRequired: a94e7febda6db0345d207e854323c37e3a31d93b
   RCTTypeSafety: 28e24a6e44f5cbf912c66dde6ab7e07d1059a205
