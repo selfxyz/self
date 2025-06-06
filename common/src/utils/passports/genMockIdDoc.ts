@@ -68,7 +68,9 @@ export function genMockIdDoc(userInput: Partial<IdDocInput> = {}):PassportData {
         eContent: eContent,
         signedAttr: signedAttr,
         encryptedDigest: signatureBytes,
-        documentType: mergedInput.idType as DocumentType
+        documentType: mergedInput.idType as DocumentType,
+        documentCategory: mergedInput.idType === 'mock_passport' ? 'passport' : 'id_card',
+        mock: true,
     };
 }
 

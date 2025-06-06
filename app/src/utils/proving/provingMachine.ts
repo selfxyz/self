@@ -35,7 +35,7 @@ import {
   isPassportNullified,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
-import { PassportData } from '../../../../common/src/utils/types';
+import { DocumentCategory, PassportData } from '../../../../common/src/utils/types';
 
 const provingMachine = createMachine({
   id: 'proving',
@@ -151,6 +151,7 @@ interface ProvingState {
   reason: string | null;
   endpointType: EndpointType | null;
   fcmToken: string | null;
+  env: 'prod' | 'stg' | null;
   setFcmToken: (token: string) => void;
   init: (
     circuitType: 'dsc' | 'disclose' | 'register',
@@ -267,6 +268,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     passportData: null,
     secret: null,
     circuitType: null,
+    env: null,
     selfApp: null,
     error_code: null,
     reason: null,
@@ -494,6 +496,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         secret: null,
         circuitType,
         endpointType: null,
+        env: null,
       });
 
       actor = createActor(provingMachine);
@@ -509,7 +512,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const passportDataAndSecret = JSON.parse(passportDataAndSecretStr);
       const { passportData, secret } = passportDataAndSecret;
 
-      set({ passportData, secret });
+      // Set environment based on mock property
+      const env = passportData.mock ? 'stg' : 'prod';
+
+      set({ passportData, secret, env });
       set({ circuitType });
       actor.send({ type: 'FETCH_DATA' });
     },
@@ -517,16 +523,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     startFetchingData: async () => {
       _checkActorInitialized(actor);
       try {
-        const { passportData } = get();
-        const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
-        const env =
-          passportData.documentType && passportData.documentType !== 'passport'
-            ? 'stg'
-            : 'prod';
+        const { passportData, env } = get();
+        const document : DocumentCategory = passportData.documentCategory;
         await useProtocolStore
           .getState()
           [document].fetch_all(
-            env,
+            env!,
             (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier,
           );
         actor!.send({ type: 'FETCH_SUCCESS' });
@@ -582,7 +584,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
           return;
         }
-        const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
+        const document : DocumentCategory = passportData.documentCategory;
         const isDscRegistered = await checkIfPassportDscIsInTree(
           passportData,
           useProtocolStore.getState()[document].dsc_tree,
@@ -600,7 +602,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     initTeeConnection: async (): Promise<boolean> => {
       const { passportData }: { passportData: PassportData } = get();
-      const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
+      const document : DocumentCategory = passportData.documentCategory;
       const circuitsMapping =
         useProtocolStore.getState()[document].circuits_dns_mapping;
 
@@ -689,11 +691,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               registerDeviceToken,
             } = require('../../utils/notifications/notificationService');
             console.log(
-              'passportData.documentType: ',
-              passportData?.documentType,
+              'passportData.mock: ',
+              passportData?.mock,
             );
-            const isMockPassport =
-              passportData?.documentType === 'mock_passport';
+            const isMockPassport = passportData?.mock;
             await registerDeviceToken(uuid, fcmToken, isMockPassport);
           } catch (error) {
             console.error('Error registering device token:', error);
@@ -760,12 +761,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         sharedKey: null,
         uuid: null,
         endpointType: null,
+        env: null,
       });
     },
 
     _generatePayload: async () => {
       const { circuitType, passportData, secret, uuid, sharedKey } = get();
-      const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
+      const document : DocumentCategory = passportData.documentCategory;
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
       let inputs, circuitName, endpointType, endpoint;

@@ -6,7 +6,7 @@ import { StyleSheet } from 'react-native';
 import { PassportData } from '../../../../common/src/utils/types';
 import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../stores/authProvider';
-import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
+import { loadPassportDataAndSecret, storePassportData } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSettingStore } from '../../stores/settingStore';
 import { black } from '../../utils/colors';
@@ -46,18 +46,24 @@ const SplashScreen: React.FC = ({}) => {
             setNextScreen('Launch');
             return;
           }
-          const environment =
-            (passportData as PassportData).documentType &&
-            (passportData as PassportData).documentType !== 'passport'
-              ? 'stg'
-              : 'prod';
+
+          // Migrate passport data if needed
+          const migratedPassportData = migratePassportData(passportData);
+
+          // If migration occurred, store the updated data
+          if (migratedPassportData !== passportData) {
+            await storePassportData(migratedPassportData);
+          }
+
+          const environment = (migratedPassportData as PassportData).mock ? 'stg' : 'prod';
+          const documentCategory = (migratedPassportData as PassportData).documentCategory;
           await useProtocolStore
             .getState()
-            .passport.fetch_all(
+            [documentCategory].fetch_all(
               environment,
-              (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier,
+              (migratedPassportData as PassportData).dsc_parsed!.authorityKeyIdentifier,
             );
-          const isRegistered = await isUserRegistered(passportData, secret);
+          const isRegistered = await isUserRegistered(migratedPassportData, secret);
           console.log('User is registered:', isRegistered);
           if (isRegistered) {
             console.log(
@@ -145,4 +151,31 @@ function isPassportDataValid(passportData: PassportData) {
     return false;
   }
   return true;
+}
+
+function migratePassportData(passportData: PassportData): PassportData {
+  const migratedData = { ...passportData } as any;
+
+  // Check if new fields are missing
+  if (!('documentCategory' in migratedData) || !('mock' in migratedData)) {
+
+    // If documentType exists, derive from it
+    if ('documentType' in migratedData && migratedData.documentType) {
+      migratedData.mock = migratedData.documentType.startsWith('mock');
+      migratedData.documentCategory = migratedData.documentType.includes('passport') ? 'passport' : 'id_card';
+    } else {
+      // If documentType doesn't exist, assume it's a real passport (legacy data)
+      migratedData.documentType = 'passport';
+      migratedData.documentCategory = 'passport';
+      migratedData.mock = false;
+    }
+
+    console.log('Migrated passport data:', {
+      documentType: migratedData.documentType,
+      documentCategory: migratedData.documentCategory,
+      mock: migratedData.mock,
+    });
+  }
+
+  return migratedData as PassportData;
 }

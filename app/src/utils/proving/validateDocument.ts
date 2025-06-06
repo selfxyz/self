@@ -14,7 +14,7 @@ import {
   generateNullifier,
 } from '../../../../common/src/utils/passports/passport';
 import { getLeafDscTree } from '../../../../common/src/utils/trees';
-import { PassportData } from '../../../../common/src/utils/types';
+import { DocumentCategory, PassportData } from '../../../../common/src/utils/types';
 import { useProtocolStore } from '../../stores/protocolStore';
 
 export type PassportSupportStatus =
@@ -30,7 +30,7 @@ export async function checkPassportSupported(
   details: string;
 }> {
   const passportMetadata = passportData.passportMetadata;
-  const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
+  const document : DocumentCategory = passportData.documentCategory;
   if (!passportMetadata) {
     console.log('Passport metadata is null');
     return { status: 'passport_metadata_missing', details: passportData.dsc };
@@ -84,7 +84,7 @@ export async function isUserRegistered(
     PASSPORT_ATTESTATION_ID,
     passportData,
   );
-  const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
+  const document : DocumentCategory = passportData.documentCategory;
   const serializedTree = useProtocolStore.getState()[document].commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   const index = tree.indexOf(BigInt(commitment));

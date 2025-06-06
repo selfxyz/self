@@ -78,6 +78,8 @@ const handleResponseIOS = (response: any) => {
     Buffer.from(signatureBase64, 'base64'),
   ).map(byte => (byte > 127 ? byte - 256 : byte));
 
+  const document_type = mrz.length === 88 ? 'passport' : 'id_card';
+
   return {
     mrz,
     dsc: pem,
@@ -88,11 +90,13 @@ const handleResponseIOS = (response: any) => {
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
     parsed: false,
-    documentType: 'passport',
+    documentType: document_type,
+    mock: false,
+    documentCategory: document_type,
   } as PassportData;
 };
 
-const handleResponseAndroid = (response: any) => {
+const handleResponseAndroid = (response: any) : PassportData => {
   const {
     mrz,
     eContent,
@@ -122,6 +126,8 @@ const handleResponseAndroid = (response: any) => {
     .filter(num => !isNaN(num))
     .sort((a, b) => a - b);
 
+  const document_type = mrz.length === 88 ? 'passport' : 'id_card';
+
   return {
     mrz: mrz.replace(/\n/g, ''),
     dsc: pem,
@@ -131,6 +137,8 @@ const handleResponseAndroid = (response: any) => {
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
-    documentType: 'passport',
-  } as PassportData;
+    documentType: document_type,
+    documentCategory: document_type,
+    mock: false,
+  } ;
 };
