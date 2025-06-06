@@ -4,9 +4,6 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.gms.google-services'
 
-project.ext.react = [
-    enableHermes: false
-]
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -89,7 +86,7 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 66
+        versionCode 65
         versionName "2.5.2"
         externalNativeBuild {
             cmake {
