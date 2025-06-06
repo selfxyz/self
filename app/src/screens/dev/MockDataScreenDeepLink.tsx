@@ -14,7 +14,7 @@ import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { MockDataEvents } from '../../consts/analytics';
-import { storePassportData } from '../../stores/passportDataProvider';
+import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import { black, borderColor, white } from '../../utils/colors';
 

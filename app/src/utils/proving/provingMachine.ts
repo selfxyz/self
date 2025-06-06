@@ -13,7 +13,7 @@ import {
   clearPassportData,
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
-} from '../../stores/passportDataProvider';
+} from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { getPublicKey, verifyAttestation } from './attest';

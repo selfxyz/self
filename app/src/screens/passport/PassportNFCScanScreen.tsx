@@ -31,7 +31,7 @@ import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { storePassportData } from '../../stores/passportDataProvider';
+import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate100, white } from '../../utils/colors';

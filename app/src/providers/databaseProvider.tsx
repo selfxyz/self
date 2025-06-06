@@ -1,6 +1,6 @@
 import React, { createContext, useEffect } from 'react';
 
-import { useProofHistoryStore } from './proofHistoryStore';
+import { useProofHistoryStore } from '../stores/proofHistoryStore';
 
 export const DatabaseContext = createContext(null);
 
