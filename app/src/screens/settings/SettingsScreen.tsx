@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { Bug } from '@tamagui/lucide-icons';
+import { Plus, VenetianMask } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useCallback, useMemo } from 'react';
 import { Linking, Platform, Share } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -69,6 +70,8 @@ const routes = [
   [Cloud, 'Cloud backup', 'CloudBackupSettings'],
   [Feedback, 'Send feeback', 'email_feedback'],
   [ShareIcon, 'Share Self app', 'share'],
+  [VenetianMask as React.FC<SvgProps>, 'Generate mock passport', 'CreateMock'],
+  [Plus as React.FC<SvgProps>, 'Add new ID document', 'PassportOnboarding'],
 ] satisfies [React.FC<SvgProps>, string, RouteOption][];
 
 // get the actual type of the routes so we can use in the onMenuPress function so it
@@ -76,7 +79,6 @@ const routes = [
 type RouteLinks = (typeof routes)[number][2] | (typeof DEBUG_MENU)[number][2];
 
 const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
-  [Data as React.FC<SvgProps>, 'Gen Mock Passport Data', 'CreateMock'],
   [Bug as React.FC<SvgProps>, 'Debug menu', 'DevSettings'],
 ];
 

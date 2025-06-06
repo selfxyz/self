@@ -117,7 +117,7 @@ const handleResponseIOS = (response: any) => {
   } as PassportData;
 };
 
-const handleResponseAndroid = (response: any) : PassportData => {
+const handleResponseAndroid = (response: any): PassportData => {
   const {
     mrz,
     eContent,
@@ -161,5 +161,5 @@ const handleResponseAndroid = (response: any) : PassportData => {
     documentType: document_type,
     documentCategory: document_type,
     mock: false,
-  } ;
+  };
 };

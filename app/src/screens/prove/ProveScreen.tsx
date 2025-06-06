@@ -25,6 +25,7 @@ import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ProofEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { setDefaultDocumentTypeIfNeeded } from '../../stores/passportDataProvider';
 import {
   ProofStatus,
   useProofHistoryStore,
@@ -60,7 +61,6 @@ const ProveScreen: React.FC = () => {
   const { addProofHistory } = useProofHistoryStore();
 
   useEffect(() => {
-    // Only add proof history after generating a uuid
     if (provingStore.uuid && selectedApp) {
       addProofHistory({
         appName: selectedApp.appName,
@@ -75,10 +75,6 @@ const ProveScreen: React.FC = () => {
     }
   }, [provingStore.uuid, selectedApp]);
 
-  /**
-   * Whenever the relationship between content height vs. scroll view height changes,
-   * reset (or enable) the button state accordingly.
-   */
   useEffect(() => {
     if (isContentShorterThanScrollView) {
       setHasScrolledToBottom(true);
@@ -89,8 +85,11 @@ const ProveScreen: React.FC = () => {
 
   useEffect(() => {
     if (!isFocused || !selectedApp) {
-      return; // Avoid unnecessary updates or processing when not focused
+      return;
     }
+
+    setDefaultDocumentTypeIfNeeded();
+
     if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
       console.log('[ProveScreen] Selected app updated:', selectedApp);
       provingStore.init('disclose');

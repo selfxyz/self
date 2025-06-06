@@ -13,13 +13,132 @@ import Keychain from 'react-native-keychain';
 
 import { unsafe_getPrivateKey } from '../stores/authProvider';
 import { useAuth } from './authProvider';
+import useUserStore from './userStore';
 
-// TODO: refactor this as it shouldnt be used directly IMHO
+function getServiceNameForDocumentType(documentType: string): string {
+  switch (documentType) {
+    case 'passport':
+      return 'passportData';
+    case 'mock_passport':
+      return 'mockPassportData';
+    case 'id_card':
+      return 'idCardData';
+    case 'mock_id_card':
+      return 'mockIdCardData';
+    default:
+      return 'passportData';
+  }
+}
+
+function getDocumentTypeFromServiceName(serviceName: string): string {
+  switch (serviceName) {
+    case 'passportData':
+      return 'passport';
+    case 'mockPassportData':
+      return 'mock_passport';
+    case 'idCardData':
+      return 'id_card';
+    case 'mockIdCardData':
+      return 'mock_id_card';
+    default:
+      return 'passport';
+  }
+}
+
 export async function loadPassportData() {
-  const passportDataCreds = await Keychain.getGenericPassword({
-    service: 'passportData',
+  const services = [
+    'passportData',
+    'mockPassportData',
+    'idCardData',
+    'mockIdCardData',
+  ];
+
+  for (const service of services) {
+    const passportDataCreds = await Keychain.getGenericPassword({
+      service,
+    });
+    if (passportDataCreds !== false) {
+      return passportDataCreds.password;
+    }
+  }
+
+  return false;
+}
+
+export async function loadSelectedPassportData(
+  selectedDocumentType: string,
+): Promise<string | false> {
+  if (selectedDocumentType) {
+    const serviceName = getServiceNameForDocumentType(selectedDocumentType);
+    const passportDataCreds = await Keychain.getGenericPassword({
+      service: serviceName,
+    });
+    if (passportDataCreds !== false) {
+      return passportDataCreds.password;
+    }
+  }
+
+  return await loadPassportData();
+}
+
+export async function loadSelectedPassportDataAndSecret(
+  selectedDocumentType: string,
+) {
+  const passportData = await loadSelectedPassportData(selectedDocumentType);
+  const secret = await unsafe_getPrivateKey();
+  if (!secret || !passportData) {
+    return false;
+  }
+  return JSON.stringify({
+    secret,
+    passportData: JSON.parse(passportData),
   });
-  return passportDataCreds === false ? false : passportDataCreds.password;
+}
+
+export async function loadAllPassportData(): Promise<{
+  [service: string]: PassportData;
+}> {
+  const services = [
+    'passportData',
+    'mockPassportData',
+    'idCardData',
+    'mockIdCardData',
+  ];
+  const allData: { [service: string]: PassportData } = {};
+
+  for (const service of services) {
+    try {
+      const passportDataCreds = await Keychain.getGenericPassword({
+        service,
+      });
+      if (passportDataCreds !== false) {
+        allData[service] = JSON.parse(passportDataCreds.password);
+      }
+    } catch (error) {
+      console.log(`Could not load data from service ${service}:`, error);
+    }
+  }
+
+  return allData;
+}
+
+export async function getAvailableDocumentTypes(): Promise<string[]> {
+  const allData = await loadAllPassportData();
+  return Object.keys(allData).map(service =>
+    getDocumentTypeFromServiceName(service),
+  );
+}
+
+export async function setDefaultDocumentTypeIfNeeded() {
+  const { selectedDocumentType, setSelectedDocumentType } =
+    useUserStore.getState();
+
+  if (!selectedDocumentType) {
+    const availableTypes = await getAvailableDocumentTypes();
+    if (availableTypes.length > 0) {
+      setSelectedDocumentType(availableTypes[0]);
+    }
+  }
 }
 
 export async function loadPassportDataAndSecret() {
@@ -35,15 +154,37 @@ export async function loadPassportDataAndSecret() {
 }
 
 export async function storePassportData(passportData: PassportData) {
-  await Keychain.setGenericPassword(
-    'passportData',
-    JSON.stringify(passportData),
-    { service: 'passportData' },
-  );
+  const serviceName = getServiceNameForDocumentType(passportData.documentType);
+  await Keychain.setGenericPassword(serviceName, JSON.stringify(passportData), {
+    service: serviceName,
+  });
+  useUserStore.getState().setSelectedDocumentType(passportData.documentType);
 }
 
 export async function clearPassportData() {
-  await Keychain.resetGenericPassword({ service: 'passportData' });
+  const services = [
+    'passportData',
+    'mockPassportData',
+    'idCardData',
+    'mockIdCardData',
+  ];
+
+  for (const service of services) {
+    try {
+      await Keychain.resetGenericPassword({ service });
+    } catch (error) {
+      console.log(`Service ${service} not found or already cleared`);
+    }
+  }
+}
+
+export async function clearSpecificPassportData(documentType: string) {
+  const serviceName = getServiceNameForDocumentType(documentType);
+  try {
+    await Keychain.resetGenericPassword({ service: serviceName });
+  } catch (error) {
+    console.log(`Service ${serviceName} not found or already cleared`);
+  }
 }
 
 interface PassportProviderProps extends PropsWithChildren {
@@ -51,19 +192,35 @@ interface PassportProviderProps extends PropsWithChildren {
 }
 interface IPassportContext {
   getData: () => Promise<{ signature: string; data: PassportData } | null>;
+  getSelectedData: () => Promise<{
+    signature: string;
+    data: PassportData;
+  } | null>;
+  getAllData: () => Promise<{ [service: string]: PassportData }>;
+  getAvailableTypes: () => Promise<string[]>;
   setData: (data: PassportData) => Promise<void>;
   getPassportDataAndSecret: () => Promise<{
     data: { passportData: PassportData; secret: string };
     signature: string;
   } | null>;
+  getSelectedPassportDataAndSecret: () => Promise<{
+    data: { passportData: PassportData; secret: string };
+    signature: string;
+  } | null>;
   clearPassportData: () => Promise<void>;
+  clearSpecificData: (documentType: string) => Promise<void>;
 }
 
 export const PassportContext = createContext<IPassportContext>({
   getData: () => Promise.resolve(null),
+  getSelectedData: () => Promise.resolve(null),
+  getAllData: () => Promise.resolve({}),
+  getAvailableTypes: () => Promise.resolve([]),
   setData: storePassportData,
   getPassportDataAndSecret: () => Promise.resolve(null),
+  getSelectedPassportDataAndSecret: () => Promise.resolve(null),
   clearPassportData: clearPassportData,
+  clearSpecificData: clearSpecificPassportData,
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
@@ -74,6 +231,18 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     [_getSecurely],
   );
 
+  const getSelectedData = useCallback(
+    () =>
+      _getSecurely<PassportData>(loadSelectedPassportData, str =>
+        JSON.parse(str),
+      ),
+    [_getSecurely],
+  );
+
+  const getAllData = useCallback(() => loadAllPassportData(), []);
+
+  const getAvailableTypes = useCallback(() => getAvailableDocumentTypes(), []);
+
   const getPassportDataAndSecret = useCallback(
     () =>
       _getSecurely<{ passportData: PassportData; secret: string }>(
@@ -83,14 +252,35 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     [_getSecurely],
   );
 
+  const getSelectedPassportDataAndSecret = useCallback(
+    () =>
+      _getSecurely<{ passportData: PassportData; secret: string }>(
+        loadSelectedPassportDataAndSecret,
+        str => JSON.parse(str),
+      ),
+    [_getSecurely],
+  );
+
   const state: IPassportContext = useMemo(
     () => ({
       getData,
+      getSelectedData,
+      getAllData,
+      getAvailableTypes,
       setData: storePassportData,
       getPassportDataAndSecret,
+      getSelectedPassportDataAndSecret,
       clearPassportData: clearPassportData,
+      clearSpecificData: clearSpecificPassportData,
     }),
-    [getData, getPassportDataAndSecret],
+    [
+      getData,
+      getSelectedData,
+      getAllData,
+      getAvailableTypes,
+      getPassportDataAndSecret,
+      getSelectedPassportDataAndSecret,
+    ],
   );
 
   return (
@@ -116,7 +306,6 @@ export async function reStorePassportDataWithRightCSCA(
       cscaParsed,
     );
 
-    // Update the passport metadata with the new CSCA information
     if (
       passportData.passportMetadata &&
       dscCertData &&
@@ -130,7 +319,6 @@ export async function reStorePassportDataWithRightCSCA(
         dscCertData.signatureAlgorithm;
       passportData.passportMetadata.cscaSaltLength = dscCertData.saltLength;
 
-      // Get curve or exponent from the parsed CSCA
       const cscaCurveOrExponent =
         cscaParsed.signatureAlgorithm === 'rsapss' ||
         cscaParsed.signatureAlgorithm === 'rsa'
@@ -143,10 +331,7 @@ export async function reStorePassportDataWithRightCSCA(
         10,
       );
 
-      // Store the parsed CSCA certificate in the passport data
       passportData.csca_parsed = cscaParsed;
-
-      // Store the updated passport data
 
       await storePassportData(passportData);
     }

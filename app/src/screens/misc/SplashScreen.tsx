@@ -6,7 +6,10 @@ import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../stores/authProvider';
-import { loadPassportDataAndSecret, storePassportData } from '../../stores/passportDataProvider';
+import {
+  loadPassportDataAndSecret,
+  storePassportData,
+} from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSettingStore } from '../../stores/settingStore';
 import { black } from '../../utils/colors';
@@ -55,15 +58,20 @@ const SplashScreen: React.FC = ({}) => {
             await storePassportData(migratedPassportData);
           }
 
-          const environment = (migratedPassportData as PassportData).mock ? 'stg' : 'prod';
-          const documentCategory = (migratedPassportData as PassportData).documentCategory;
+          const environment = (migratedPassportData as PassportData).mock
+            ? 'stg'
+            : 'prod';
+          const documentCategory = (migratedPassportData as PassportData)
+            .documentCategory;
           await useProtocolStore
             .getState()
-            [documentCategory].fetch_all(
-              environment,
-              (migratedPassportData as PassportData).dsc_parsed!.authorityKeyIdentifier,
-            );
-          const isRegistered = await isUserRegistered(migratedPassportData, secret);
+            [
+              documentCategory
+            ].fetch_all(environment, (migratedPassportData as PassportData).dsc_parsed!.authorityKeyIdentifier);
+          const isRegistered = await isUserRegistered(
+            migratedPassportData,
+            secret,
+          );
           console.log('User is registered:', isRegistered);
           if (isRegistered) {
             console.log(
@@ -158,11 +166,14 @@ function migratePassportData(passportData: PassportData): PassportData {
 
   // Check if new fields are missing
   if (!('documentCategory' in migratedData) || !('mock' in migratedData)) {
-
     // If documentType exists, derive from it
     if ('documentType' in migratedData && migratedData.documentType) {
       migratedData.mock = migratedData.documentType.startsWith('mock');
-      migratedData.documentCategory = migratedData.documentType.includes('passport') ? 'passport' : 'id_card';
+      migratedData.documentCategory = migratedData.documentType.includes(
+        'passport',
+      )
+        ? 'passport'
+        : 'id_card';
     } else {
       // If documentType doesn't exist, assume it's a real passport (legacy data)
       migratedData.documentType = 'passport';

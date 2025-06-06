@@ -55,7 +55,7 @@ export type TEEPayload = {
 
 export function getPayload(
   inputs: any,
-  circuitType: 'register' | 'dsc' | 'disclose' | 'register_id' | 'dsc_id' ,
+  circuitType: 'register' | 'dsc' | 'disclose' | 'register_id' | 'dsc_id',
   circuitName: string,
   endpointType: EndpointType,
   endpoint: string,

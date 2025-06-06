@@ -11,10 +11,10 @@ import {
   PASSPORT_ATTESTATION_ID,
   type PassportData,
 } from '@selfxyz/common';
+import { DocumentCategory } from '@selfxyz/common';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';
-import { DocumentCategory } from '@selfxyz/common';
 
 export type PassportSupportStatus =
   | 'passport_metadata_missing'
@@ -29,7 +29,7 @@ export async function checkPassportSupported(
   details: string;
 }> {
   const passportMetadata = passportData.passportMetadata;
-  const document : DocumentCategory = passportData.documentCategory;
+  const document: DocumentCategory = passportData.documentCategory;
   if (!passportMetadata) {
     console.log('Passport metadata is null');
     return { status: 'passport_metadata_missing', details: passportData.dsc };
@@ -83,7 +83,7 @@ export async function isUserRegistered(
     PASSPORT_ATTESTATION_ID,
     passportData,
   );
-  const document : DocumentCategory = passportData.documentCategory;
+  const document: DocumentCategory = passportData.documentCategory;
   const serializedTree = useProtocolStore.getState()[document].commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   const index = tree.indexOf(BigInt(commitment));

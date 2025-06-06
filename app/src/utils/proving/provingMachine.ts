@@ -1,6 +1,7 @@
 import { WS_RPC_URL_VC_AND_DISCLOSE } from '@selfxyz/common';
 import { EndpointType, SelfApp } from '@selfxyz/common';
 import { getCircuitNameFromPassportData } from '@selfxyz/common';
+import { DocumentCategory, PassportData } from '@selfxyz/common';
 import forge from 'node-forge';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
@@ -10,11 +11,12 @@ import { create } from 'zustand';
 import { navigationRef } from '../../navigation';
 import {
   clearPassportData,
-  loadPassportDataAndSecret,
+  loadSelectedPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
+import useUserStore from '../../stores/userStore';
 import { getPublicKey, verifyAttestation } from './attest';
 import {
   generateTEEInputsDisclose,
@@ -36,7 +38,6 @@ import {
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
-import { DocumentCategory, PassportData } from '@selfxyz/common';
 
 const provingMachine = createMachine({
   id: 'proving',
@@ -503,8 +504,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       actor = createActor(provingMachine);
       setupActorSubscriptions(actor);
       actor.start();
-
-      const passportDataAndSecretStr = await loadPassportDataAndSecret();
+      const selectedDocumentType = useUserStore.getState().selectedDocumentType;
+      const passportDataAndSecretStr = await loadSelectedPassportDataAndSecret(
+        selectedDocumentType as string,
+      );
       if (!passportDataAndSecretStr) {
         actor!.send({ type: 'ERROR' });
         return;
@@ -525,13 +528,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       _checkActorInitialized(actor);
       try {
         const { passportData, env } = get();
-        const document : DocumentCategory = passportData.documentCategory;
+        const document: DocumentCategory = passportData.documentCategory;
         await useProtocolStore
           .getState()
-          [document].fetch_all(
-            env!,
-            (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier,
-          );
+          [
+            document
+          ].fetch_all(env!, (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier);
         actor!.send({ type: 'FETCH_SUCCESS' });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -592,7 +594,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
             return;
           }
-          const document : DocumentCategory = passportData.documentCategory;
+          const document: DocumentCategory = passportData.documentCategory;
           const isDscRegistered = await checkIfPassportDscIsInTree(
             passportData,
             useProtocolStore.getState()[document].dsc_tree,
@@ -611,7 +613,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     initTeeConnection: async (): Promise<boolean> => {
       const { passportData }: { passportData: PassportData } = get();
-      const document : DocumentCategory = passportData.documentCategory;
+      const document: DocumentCategory = passportData.documentCategory;
       const circuitsMapping =
         useProtocolStore.getState()[document].circuits_dns_mapping;
 
@@ -625,13 +627,19 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           get().circuitType as 'register' | 'dsc',
         );
         if (get().circuitType === 'register') {
-          if (passportData.documentType === 'passport' || passportData.documentType === 'mock_passport') {
-          wsRpcUrl = circuitsMapping?.REGISTER?.[circuitName];
+          if (
+            passportData.documentType === 'passport' ||
+            passportData.documentType === 'mock_passport'
+          ) {
+            wsRpcUrl = circuitsMapping?.REGISTER?.[circuitName];
           } else {
             wsRpcUrl = circuitsMapping?.REGISTER_ID?.[circuitName];
           }
-        } else{
-          if (passportData.documentType === 'passport' || passportData.documentType === 'mock_passport') {
+        } else {
+          if (
+            passportData.documentType === 'passport' ||
+            passportData.documentType === 'mock_passport'
+          ) {
             wsRpcUrl = circuitsMapping?.DSC?.[circuitName];
           } else {
             wsRpcUrl = circuitsMapping?.DSC_ID?.[circuitName];
@@ -699,10 +707,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             const {
               registerDeviceToken,
             } = require('../../utils/notifications/notificationService');
-            console.log(
-              'passportData.mock: ',
-              passportData?.mock,
-            );
+            console.log('passportData.mock: ', passportData?.mock);
             const isMockPassport = passportData?.mock;
             await registerDeviceToken(uuid, fcmToken, isMockPassport);
           } catch (error) {
@@ -776,7 +781,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _generatePayload: async () => {
       const { circuitType, passportData, secret, uuid, sharedKey } = get();
-      const document : DocumentCategory = passportData.documentCategory;
+      const document: DocumentCategory = passportData.documentCategory;
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
       let inputs, circuitName, endpointType, endpoint;
@@ -812,7 +817,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       let circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
       const payload = getPayload(
         inputs,
-        circuitTypeWithDocumentExtension as 'register_id' | 'dsc_id' | 'register' | 'dsc',
+        circuitTypeWithDocumentExtension as
+          | 'register_id'
+          | 'dsc_id'
+          | 'register'
+          | 'dsc',
         circuitName as string,
         endpointType as EndpointType,
         endpoint as string,

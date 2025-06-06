@@ -254,7 +254,9 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     },
     fetch_csca_tree: async (environment: 'prod' | 'stg') => {
       const url =
-        environment === 'prod' ? CSCA_TREE_URL_ID_CARD : CSCA_TREE_URL_STAGING_ID_CARD;
+        environment === 'prod'
+          ? CSCA_TREE_URL_ID_CARD
+          : CSCA_TREE_URL_STAGING_ID_CARD;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -281,7 +283,10 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       }
     },
     fetch_dsc_tree: async (environment: 'prod' | 'stg') => {
-      const url = environment === 'prod' ? DSC_TREE_URL_ID_CARD : DSC_TREE_URL_STAGING_ID_CARD;
+      const url =
+        environment === 'prod'
+          ? DSC_TREE_URL_ID_CARD
+          : DSC_TREE_URL_STAGING_ID_CARD;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -299,7 +304,9 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     },
     fetch_identity_tree: async (environment: 'prod' | 'stg') => {
       const url =
-        environment === 'prod' ? IDENTITY_TREE_URL_ID_CARD : IDENTITY_TREE_URL_STAGING_ID_CARD;
+        environment === 'prod'
+          ? IDENTITY_TREE_URL_ID_CARD
+          : IDENTITY_TREE_URL_STAGING_ID_CARD;
       try {
         const response = await fetch(url);
         if (!response.ok) {

@@ -1,5 +1,9 @@
 import { X509Certificate } from '@peculiar/x509';
-import { PCR0_MANAGER_ADDRESS, RPC_URL, SKIP_PCR0_CHECK } from '@selfxyz/common';
+import {
+  PCR0_MANAGER_ADDRESS,
+  RPC_URL,
+  SKIP_PCR0_CHECK,
+} from '@selfxyz/common';
 import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
