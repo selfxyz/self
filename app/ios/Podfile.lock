@@ -1811,9 +1811,9 @@ PODS:
   - segment-analytics-react-native (2.21.0):
     - React-Core
     - sovran-react-native
-  - Sentry (8.52.0):
-    - Sentry/Core (= 8.52.0)
-  - Sentry/Core (8.52.0)
+  - Sentry (8.52.1):
+    - Sentry/Core (= 8.52.1)
+  - Sentry/Core (8.52.1)
   - Sentry/HybridSDK (8.48.0)
   - SentryPrivate (8.21.0)
   - SocketRocket (0.7.0)
