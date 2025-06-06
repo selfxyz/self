@@ -1837,7 +1837,7 @@ DEPENDENCIES:
   - lottie-ios
   - lottie-react-native (from `../../node_modules/lottie-react-native`)
   - Mixpanel-swift (~> 5.0.0)
-  - NFCPassportReader (from `https://github.com/seshanthS/NFCPassportReader`, commit `d365b2366d87a1cbe6d16c249ff709d63f6b6f61`)
+  - NFCPassportReader (from `https://github.com/seshanthS/NFCPassportReader`, commit `5ac02efe4c130e9d8af286659cdb5098a3660a27`)
   - QKMRZScanner
   - RCT-Folly (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1965,7 +1965,7 @@ EXTERNAL SOURCES:
   lottie-react-native:
     :path: "../../node_modules/lottie-react-native"
   NFCPassportReader:
-    :commit: d365b2366d87a1cbe6d16c249ff709d63f6b6f61
+    :commit: 5ac02efe4c130e9d8af286659cdb5098a3660a27
     :git: https://github.com/seshanthS/NFCPassportReader
   RCT-Folly:
     :podspec: "../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
@@ -2128,7 +2128,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   NFCPassportReader:
-    :commit: d365b2366d87a1cbe6d16c249ff709d63f6b6f61
+    :commit: 5ac02efe4c130e9d8af286659cdb5098a3660a27
     :git: https://github.com/seshanthS/NFCPassportReader
   SwiftQRScanner:
     :commit: fddcabcb431cd6110cea0394660082661dbafa7e
@@ -2163,7 +2163,7 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
   QKMRZScanner: cf2348fd6ce441e758328da4adf231ef2b51d769
-  RCT-Folly: 4464f4d875961fce86008d45f4ecf6cef6de0740
+  RCT-Folly: 34124ae2e667a0e5f0ea378db071d27548124321
   RCTDeprecation: 726d24248aeab6d7180dac71a936bbca6a994ed1
   RCTRequired: a94e7febda6db0345d207e854323c37e3a31d93b
   RCTTypeSafety: 28e24a6e44f5cbf912c66dde6ab7e07d1059a205
@@ -2247,6 +2247,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
 
-PODFILE CHECKSUM: 2aeaac8e39fecbe94c8068edf25b014650520069
+PODFILE CHECKSUM: 646120ab110b3f6ba400d4df630d38e6af27ef47
 
 COCOAPODS: 1.16.2

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ENABLE_DEBUG_LOGS, MIXPANEL_PROJECT_TOKEN } from '@env';
+import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import { PassportData } from '@selfxyz/common';
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
@@ -17,11 +17,11 @@ interface Inputs {
 }
 
 export const scan = async (inputs: Inputs) => {
-  if (MIXPANEL_PROJECT_TOKEN) {
+  if (MIXPANEL_NFC_PROJECT_TOKEN) {
     if (Platform.OS === 'ios') {
       const enableDebugLogs = ENABLE_DEBUG_LOGS === 'true';
       NativeModules.PassportReader.configure(
-        MIXPANEL_PROJECT_TOKEN,
+        MIXPANEL_NFC_PROJECT_TOKEN,
         enableDebugLogs,
       );
     } else {
