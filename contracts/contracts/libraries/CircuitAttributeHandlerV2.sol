@@ -195,9 +195,9 @@ library CircuitAttributeHandlerV2 {
      * @param charcodes The byte array containing attribute data.
      * @return The OFAC status for document number check as a uint256.
      */
-    function getDocumentNoOfac(bytes32 attestationId, bytes memory charcodes) internal pure returns (uint256) {
+    function getDocumentNoOfac(bytes32 attestationId, bytes memory charcodes) internal pure returns (bool) {
         FieldPositions memory positions = getFieldPositions(attestationId);
-        return uint8(charcodes[positions.ofacStart]);
+        return uint8(charcodes[positions.ofacStart]) == 1;
     }
 
     /**
@@ -206,10 +206,10 @@ library CircuitAttributeHandlerV2 {
      * @param charcodes The byte array containing attribute data.
      * @return The OFAC status for name and DOB check as a uint256.
      */
-    function getNameAndDobOfac(bytes32 attestationId, bytes memory charcodes) internal pure returns (uint256) {
+    function getNameAndDobOfac(bytes32 attestationId, bytes memory charcodes) internal pure returns (bool) {
         FieldPositions memory positions = getFieldPositions(attestationId);
         if (attestationId == AttestationId.E_PASSPORT) {
-            return uint8(charcodes[positions.ofacStart + 1]);
+            return uint8(charcodes[positions.ofacStart + 1]) == 1;
         } else {
             return uint8(charcodes[positions.ofacStart]);
         }
@@ -221,12 +221,12 @@ library CircuitAttributeHandlerV2 {
      * @param charcodes The byte array containing attribute data.
      * @return The OFAC status for name and YOB check as a uint256.
      */
-    function getNameAndYobOfac(bytes32 attestationId, bytes memory charcodes) internal pure returns (uint256) {
+    function getNameAndYobOfac(bytes32 attestationId, bytes memory charcodes) internal pure returns (bool) {
         FieldPositions memory positions = getFieldPositions(attestationId);
         if (attestationId == AttestationId.E_PASSPORT) {
-            return uint8(charcodes[positions.ofacStart + 2]);
+            return uint8(charcodes[positions.ofacStart + 2]) == 1;
         } else {
-            return uint8(charcodes[positions.ofacStart + 1]);
+            return uint8(charcodes[positions.ofacStart + 1]) == 1;
         }
     }
 
@@ -251,15 +251,15 @@ library CircuitAttributeHandlerV2 {
         bool nameAndYobResult = true;
 
         if (checkDocumentNo && attestationId == AttestationId.E_PASSPORT) {
-            documentNoResult = getDocumentNoOfac(attestationId, charcodes) == 1;
+            documentNoResult = getDocumentNoOfac(attestationId, charcodes);
         }
 
         if (checkNameAndDob) {
-            nameAndDobResult = getNameAndDobOfac(attestationId, charcodes) == 1;
+            nameAndDobResult = getNameAndDobOfac(attestationId, charcodes);
         }
 
         if (checkNameAndYob) {
-            nameAndYobResult = getNameAndYobOfac(attestationId, charcodes) == 1;
+            nameAndYobResult = getNameAndYobOfac(attestationId, charcodes);
         }
 
         return documentNoResult && nameAndDobResult && nameAndYobResult;
@@ -319,6 +319,6 @@ library CircuitAttributeHandlerV2 {
      * @dev Maintained for backward compatibility. Use getDocumentNoOfac instead.
      */
     function getPassportNoOfac(bytes memory charcodes) internal pure returns (uint256) {
-        return getDocumentNoOfac(AttestationId.E_PASSPORT, charcodes);
+        return getDocumentNoOfac(AttestationId.E_PASSPORT, charcodes) ? 1 : 0;
     }
 }

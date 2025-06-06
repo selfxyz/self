@@ -2,7 +2,6 @@
 pragma solidity 0.8.30;
 
 library SelfStructs {
-
   struct HubInputHeader {
     uint8 contractVersion;
     uint256 destChainId;
@@ -39,4 +38,21 @@ library SelfStructs {
     uint256 nullifier;
     uint256[4] forbiddenCountriesListPacked;
   }
+
+  uint256 constant passportNoOfac = 0;
+  uint256 constant nameAndDobOfac = 1;
+  uint256 constant nameAndYobOfac = 2;
+
+   struct GenericDiscloseOutputV2 {
+    uint256 attestationId;
+    string issuingState;
+    string[] name;
+    string idNumber;
+    string nationality;
+    string dateOfBirth;
+    string gender;
+    string expiryDate;
+    uint256 olderThan;
+    bool[3] ofac;
+   }
 }

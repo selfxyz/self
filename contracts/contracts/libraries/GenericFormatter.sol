@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {VerificationConfig} from "./CustomVerifier.sol";
+import {SelfStructs} from "./SelfStructs.sol";
 
 struct GenericVerificationStruct {
   uint8 attestationId;
@@ -16,5 +17,14 @@ library GenericFormatter {
 
   function formatV2Config(VerificationConfig.GenericVerficationConfigV2 memory verificationConfig) internal pure returns (bytes memory v2ConfigBytes) {
     v2ConfigBytes = abi.encode(verificationConfig);
+  }
+
+
+  function toV1Struct(SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput) internal pure returns (bytes memory v1StructBytes) {
+    v1StructBytes = abi.encode(genericDiscloseOutput);
+  }
+
+   function toV2Struct(SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput) internal pure returns (bytes memory v2StructBytes) {
+    v2StructBytes = abi.encode(genericDiscloseOutput);
   }
 }

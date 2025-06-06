@@ -301,14 +301,19 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
 
         // Perform basic verification (rootCheck, currentDateCheck, groth16 proof verification)
-        bytes memory output = _basicVerification(
+        bytes memory proofOutput = _basicVerification(
             header.attestationId,
             _decodeVcAndDiscloseProof(proofData)
         );
 
         // ======= Need to execute Custom Verifications Here ============
         //shouldn't custom verifier return proof data for me?
-        CustomVerifier.customVerify(header.attestationId, config, proofData);
+        SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(header.attestationId, config, proofOutput);
+
+        bytes memory output;
+        if (header.contractVersion == 2) {
+            output = GenericFormatter.toV2Struct(genericDiscloseOutput);
+        }
 
         // ======= Need to execute formatting Here =============
         /*
