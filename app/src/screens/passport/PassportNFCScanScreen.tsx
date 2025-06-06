@@ -222,6 +222,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         } else if (e.message.includes('Could not tranceive APDU')) {
           // android
           navigation.navigate('PassportNFCTrouble');
+        } else if (e.message.includes('SODNotFound')) {
+          // developer defined error - not part of the library
+          navigation.navigate('PassportNFCTrouble');
         } else {
           // TODO: Handle other error types
         }

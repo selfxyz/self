@@ -244,28 +244,33 @@ class PassportReader: NSObject {
         // }
 
         do {
-          let sod = passport.getDataGroup(DataGroupId.SOD) as! SOD
-
-          // ret["concatenatedDataHashes"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
-          ret["eContentBase64"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
-
-          ret["signatureAlgorithm"] = try sod.getSignatureAlgorithm()
-          ret["encapsulatedContentDigestAlgorithm"] = try sod.getEncapsulatedContentDigestAlgorithm()
-          
-          let messageDigestFromSignedAttributes = try sod.getMessageDigestFromSignedAttributes()
-          let signedAttributes = try sod.getSignedAttributes()
-          //print("messageDigestFromSignedAttributes", messageDigestFromSignedAttributes)
-
-          ret["signedAttributes"] = signedAttributes.base64EncodedString()
-          // if let pubKey = convertOpaquePointerToSecKey(opaquePointer: sod.pubKey),
-          //   let serializedPublicKey = serializePublicKey(pubKey) {
-          //     ret["publicKeyBase64"] = serializedPublicKey
-          // } else {
-          //     // Handle the case where pubKey is nil
-          // }
-
-          if let serializedSignature = serializeSignature(from: sod) {
-            ret["signatureBase64"] = serializedSignature
+          // although this line won't be reached if there is an error, Its better to handle it here instead of crashing the app
+          if let sod = try passport.getDataGroup(DataGroupId.SOD) as? SOD {
+             // ret["concatenatedDataHashes"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
+            ret["eContentBase64"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
+  
+            ret["signatureAlgorithm"] = try sod.getSignatureAlgorithm()
+            ret["encapsulatedContentDigestAlgorithm"] = try sod.getEncapsulatedContentDigestAlgorithm()
+            
+            let messageDigestFromSignedAttributes = try sod.getMessageDigestFromSignedAttributes()
+            let signedAttributes = try sod.getSignedAttributes()
+            //print("messageDigestFromSignedAttributes", messageDigestFromSignedAttributes)
+  
+            ret["signedAttributes"] = signedAttributes.base64EncodedString()
+            // if let pubKey = convertOpaquePointerToSecKey(opaquePointer: sod.pubKey),
+            //   let serializedPublicKey = serializePublicKey(pubKey) {
+            //     ret["publicKeyBase64"] = serializedPublicKey
+            // } else {
+            //     // Handle the case where pubKey is nil
+            // }
+  
+            if let serializedSignature = serializeSignature(from: sod) {
+              ret["signatureBase64"] = serializedSignature
+            }
+          } else {
+            print("SOD not found or could not be cast to SOD")
+            reject("E_PASSPORT_READ", "SODNotFound : SOD not found or could not be cast to SOD", nil)
+            return
           }
 
         } catch {
