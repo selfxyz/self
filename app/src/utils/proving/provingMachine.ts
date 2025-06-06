@@ -550,12 +550,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           return;
         }
 
-
-
-      /// disclosure
+        /// disclosure
         if (circuitType === 'disclose') {
           // check if the user is registered using the csca from the passport data.
-          const isRegisteredWithLocalCSCA = await isUserRegistered(passportData, secret as string)
+          const isRegisteredWithLocalCSCA = await isUserRegistered(
+            passportData,
+            secret as string,
+          );
           if (isRegisteredWithLocalCSCA) {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
@@ -566,30 +567,34 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
 
         /// registration
-        else{
-        const { isRegistered, csca } =  await isUserRegisteredWithAlternativeCSCA(passportData, secret as string);
-        if (isRegistered) {
-          reStorePassportDataWithRightCSCA(passportData, csca as string);
-          actor!.send({ type: 'ALREADY_REGISTERED' });
-          return;
-        }
-        const isNullifierOnchain = await isPassportNullified(passportData);
-        if (isNullifierOnchain) {
-          console.log(
-            'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
+        else {
+          const { isRegistered, csca } =
+            await isUserRegisteredWithAlternativeCSCA(
+              passportData,
+              secret as string,
+            );
+          if (isRegistered) {
+            reStorePassportDataWithRightCSCA(passportData, csca as string);
+            actor!.send({ type: 'ALREADY_REGISTERED' });
+            return;
+          }
+          const isNullifierOnchain = await isPassportNullified(passportData);
+          if (isNullifierOnchain) {
+            console.log(
+              'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
+            );
+            actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
+            return;
+          }
+          const isDscRegistered = await checkIfPassportDscIsInTree(
+            passportData,
+            useProtocolStore.getState().passport.dsc_tree,
           );
-          actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
-          return;
-        }
-        const isDscRegistered = await checkIfPassportDscIsInTree(
-          passportData,
-          useProtocolStore.getState().passport.dsc_tree,
-        );
-        console.log('isDscRegistered: ', isDscRegistered);
-        if (isDscRegistered) {
-          set({ circuitType: 'register' });
-        }
-        actor!.send({ type: 'VALIDATION_SUCCESS' });
+          console.log('isDscRegistered: ', isDscRegistered);
+          if (isDscRegistered) {
+            set({ circuitType: 'register' });
+          }
+          actor!.send({ type: 'VALIDATION_SUCCESS' });
         }
       } catch (error) {
         console.error('Error validating passport:', error);
