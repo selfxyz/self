@@ -29,6 +29,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+      - name: Prettier Check - Code Formatting
+        run: yarn prettier:check
+        working-directory: ./contracts
       - name: Build Common Dependencies
         run: yarn workspace @selfxyz/common build
       - name: Build Contracts)
