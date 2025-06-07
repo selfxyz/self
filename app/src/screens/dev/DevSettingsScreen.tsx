@@ -91,7 +91,7 @@ const ScreenSelector = ({}) => {
       disablePreventBodyScroll
     >
       <Select.Trigger width={220} iconAfter={ChevronDown}>
-        <Select.Value placeholder="Select screen to debug" />
+        <Select.Value placeholder="Select screen to jump to" />
       </Select.Trigger>
 
       <Adapt when="sm" platform="touch">
