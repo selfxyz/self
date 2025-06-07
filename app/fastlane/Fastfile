@@ -257,7 +257,7 @@ platform :android do
 
     Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
       gradle(
-        task: "clean bundleRelease",
+        task: "clean bundleRelease --stacktrace --info",
         project_dir: "android/",
         properties: {
           "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
