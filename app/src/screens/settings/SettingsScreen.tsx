@@ -74,7 +74,7 @@ const routes = [
   [Cloud, 'Cloud backup', 'CloudBackupSettings'],
   [Feedback, 'Send feeback', 'email_feedback'],
   [ShareIcon, 'Share Self app', 'share'],
-  [FileText as React.FC<SvgProps>, 'Manage documents', 'ManageDocuments'],
+  [FileText as React.FC<SvgProps>, 'Manage ID documents', 'ManageDocuments'],
 ] satisfies [React.FC<SvgProps>, string, RouteOption][];
 
 // get the actual type of the routes so we can use in the onMenuPress function so it
