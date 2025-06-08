@@ -240,9 +240,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         }
       }
       idDocInput.birthDate = dobForGeneration;
-      console.log('idDocInput', idDocInput);
       let rawMockData = genMockIdDoc(idDocInput);
-      console.log('rawMockData', rawMockData);
       const skiPem = await getSKIPEM('staging');
       let parsedMockData = initPassportDataParsing(rawMockData, skiPem);
       await storePassportData(parsedMockData);
