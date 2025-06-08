@@ -12,11 +12,11 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Keyboard from '../../images/icons/keyboard.svg';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useAuth } from '../../stores/authProvider';
+import { useAuth } from '../../providers/authProvider';
 import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
-} from '../../stores/passportDataProvider';
+} from '../../providers/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import analytics from '../../utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';

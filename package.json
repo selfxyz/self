@@ -12,7 +12,6 @@
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
     "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
-    "sort-package-json": "find . -name 'package.json' -not -path '*/node_modules/*' -print0 | xargs -0 -I {} sh -c 'echo Sorting {}; npx sort-package-json {}'",
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
   "packageManager": "yarn@4.6.0"

@@ -8,11 +8,11 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import Paste from '../../images/icons/paste.svg';
-import { useAuth } from '../../stores/authProvider';
+import { useAuth } from '../../providers/authProvider';
 import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
-} from '../../stores/passportDataProvider';
+} from '../../providers/passportDataProvider';
 import {
   black,
   slate300,

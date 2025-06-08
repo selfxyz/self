@@ -6,6 +6,13 @@ export const AppEvents = {
   UPDATE_STARTED: 'App: Update Started',
 };
 
+export const NotificationEvents = {
+  BACKGROUND_NOTIFICATION_OPENED:
+    'Notification: Background Notification Opened',
+  COLD_START_NOTIFICATION_OPENED:
+    'Notification: Cold Start Notification Opened',
+};
+
 export const AuthEvents = {
   AUTHENTICATION_TIMEOUT: 'Auth: Authentication Timeout',
   BIOMETRIC_AUTH_FAILED: 'Auth: Biometric Auth Failed',

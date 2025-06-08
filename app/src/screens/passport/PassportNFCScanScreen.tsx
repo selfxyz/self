@@ -31,7 +31,7 @@ import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { storePassportData } from '../../stores/passportDataProvider';
+import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate100, white } from '../../utils/colors';
@@ -221,6 +221,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           navigation.navigate('PassportNFCTrouble');
         } else if (e.message.includes('Could not tranceive APDU')) {
           // android
+          navigation.navigate('PassportNFCTrouble');
+        } else if (e.message.includes('SODNotFound')) {
+          // developer defined error - not part of the library
           navigation.navigate('PassportNFCTrouble');
         } else {
           // TODO: Handle other error types

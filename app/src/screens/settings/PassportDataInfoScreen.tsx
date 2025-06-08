@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 
 import { Caption } from '../../components/typography/Caption';
-import { usePassport } from '../../stores/passportDataProvider';
+import { usePassport } from '../../providers/passportDataProvider';
 import { black, slate200, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 

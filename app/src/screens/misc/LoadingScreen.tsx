@@ -15,7 +15,7 @@ import CloseWarningIcon from '../../images/icons/close-warning.svg';
 import {
   clearPassportData,
   loadPassportDataAndSecret,
-} from '../../stores/passportDataProvider';
+} from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
 import { advercase, dinot } from '../../utils/fonts';

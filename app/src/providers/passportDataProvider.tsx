@@ -54,7 +54,7 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { unsafe_getPrivateKey } from '../stores/authProvider';
+import { unsafe_getPrivateKey } from '../providers/authProvider';
 import { useAuth } from './authProvider';
 interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication

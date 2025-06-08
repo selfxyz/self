@@ -29,7 +29,7 @@ import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';
 import { Title } from '../../components/typography/Title';
 import { MockDataEvents } from '../../consts/analytics';
-import { storePassportData } from '../../stores/passportDataProvider';
+import { storePassportData } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import {
   borderColor,
