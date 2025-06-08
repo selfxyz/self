@@ -10,6 +10,12 @@ import {GenericFormatter} from "./libraries/GenericFormatter.sol";
 import {AttestationId} from "./constants/AttestationId.sol";
 import {IVcAndDiscloseCircuitVerifier} from "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {ISelfVerificationRoot} from "./interfaces/ISelfVerificationRoot.sol";
+import {IIdentityRegistryV1} from "./interfaces/IIdentityRegistryV1.sol";
+import {IIdentityRegistryIdCardV1} from "./interfaces/IIdentityRegistryIdCardV1.sol";
+import {IRegisterCircuitVerifier} from "./interfaces/IRegisterCircuitVerifier.sol";
+import {IDscCircuitVerifier} from "./interfaces/IDscCircuitVerifier.sol";
+import {CircuitConstantsV2} from "./constants/CircuitConstantsV2.sol";
+import {Formatter} from "./libraries/Formatter.sol";
 
 contract IdentityVerificationHubImplV2 is ImplRoot {
 
@@ -242,6 +248,32 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         return $._dscCircuitVerifiers[attestationId][typeId];
     }
 
+    function rootTimestamp(bytes32 attestationId, uint256 root) external view virtual onlyProxy returns (uint256) {
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+        address registryAddress = $._registries[attestationId];
+
+        if (attestationId == AttestationId.E_PASSPORT) {
+            return IIdentityRegistryV1(registryAddress).rootTimestamps(root);
+        } else if (attestationId == AttestationId.EU_ID_CARD) {
+            return IIdentityRegistryIdCardV1(registryAddress).rootTimestamps(root);
+        } else {
+            revert InvalidAttestationId();
+        }
+    }
+
+    function getIdentityCommitmentMerkleRoot(bytes32 attestationId) external view virtual onlyProxy returns (uint256) {
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+        address registryAddress = $._registries[attestationId];
+
+        if (attestationId == AttestationId.E_PASSPORT) {
+            return IIdentityRegistryV1(registryAddress).getIdentityCommitmentMerkleRoot();
+        } else if (attestationId == AttestationId.EU_ID_CARD) {
+            return IIdentityRegistryIdCardV1(registryAddress).getIdentityCommitmentMerkleRoot();
+        } else {
+            revert InvalidAttestationId();
+        }
+    }
+
     // ====================================================
     // External Functions - Verification
     // ====================================================
@@ -372,12 +404,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
     ) external virtual onlyProxy {
         _verifyDscProof(attestationId, dscCircuitVerifierId, dscCircuitProof);
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         if (attestationId == AttestationId.E_PASSPORT) {
-            IIdentityRegistryV1(_attestationIdToRegistry[attestationId]).registerDscKeyCommitment(
+            IIdentityRegistryV1($._registries[attestationId]).registerDscKeyCommitment(
                 dscCircuitProof.pubSignals[CircuitConstantsV2.DSC_TREE_LEAF_INDEX]
             );
         } else if (attestationId == AttestationId.EU_ID_CARD) {
-            IIdentityRegistryIdCardV1(_attestationIdToRegistry[attestationId]).registerDscKeyCommitment(
+            IIdentityRegistryIdCardV1($._registries[attestationId]).registerDscKeyCommitment(
                 dscCircuitProof.pubSignals[CircuitConstantsV2.DSC_TREE_LEAF_INDEX]
             );
         } else {
