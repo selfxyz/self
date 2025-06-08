@@ -132,7 +132,6 @@ const ScreenSelector = ({}) => {
 };
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
-  const navigation = useNavigation();
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const [privateKey, setPrivateKey] = useState<string | null>(
     'Loading private key…',

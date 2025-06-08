@@ -483,7 +483,9 @@ export async function clearDocumentCatalogForMigrationTesting() {
 
   // Note: We intentionally do NOT clear legacy storage entries
   // (passportData, mockPassportData, etc.) so migration can be tested
-  console.log('Document catalog cleared. Legacy storage preserved for migration testing.');
+  console.log(
+    'Document catalog cleared. Legacy storage preserved for migration testing.',
+  );
 }
 
 interface PassportProviderProps extends PropsWithChildren {
@@ -535,7 +537,8 @@ export const PassportContext = createContext<IPassportContext>({
   deleteDocument: deleteDocument,
   migrateFromLegacyStorage: migrateFromLegacyStorage,
   getCurrentDocumentType: getCurrentDocumentType,
-  clearDocumentCatalogForMigrationTesting: clearDocumentCatalogForMigrationTesting,
+  clearDocumentCatalogForMigrationTesting:
+    clearDocumentCatalogForMigrationTesting,
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
@@ -590,7 +593,8 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       deleteDocument: deleteDocument,
       migrateFromLegacyStorage: migrateFromLegacyStorage,
       getCurrentDocumentType: getCurrentDocumentType,
-      clearDocumentCatalogForMigrationTesting: clearDocumentCatalogForMigrationTesting,
+      clearDocumentCatalogForMigrationTesting:
+        clearDocumentCatalogForMigrationTesting,
     }),
     [
       getData,
