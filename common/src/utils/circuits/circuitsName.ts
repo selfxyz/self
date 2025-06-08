@@ -25,7 +25,6 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
     throw new Error('CSCA not found');
   }
 
-
   const signatureAlgorithm = passportMetadata.cscaSignatureAlgorithm;
   const hashFunction = passportMetadata.cscaHashFunction;
 

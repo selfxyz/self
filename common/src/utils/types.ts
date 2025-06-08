@@ -18,8 +18,8 @@ export type PassportData = {
   mock: boolean;
 };
 
-export type DocumentType = "passport" | "id_card" | "mock_passport" | "mock_id_card";
-export type DocumentCategory = "passport" | "id_card";
+export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
+export type DocumentCategory = 'passport' | 'id_card';
 
 // Define the signature algorithm in "algorithm_hashfunction_domainPapameter_keyLength"
 export type SignatureAlgorithm =
