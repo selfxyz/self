@@ -8,7 +8,7 @@ import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
-import { usePassport } from '../../stores/passportDataProvider';
+import { usePassport } from '../../providers/passportDataProvider';
 import { borderColor, textBlack, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';

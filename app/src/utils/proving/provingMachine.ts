@@ -14,7 +14,6 @@ import {
   loadSelectedDocument,
   reStorePassportDataWithRightCSCA,
 } from '../../providers/passportDataProvider';
-import { unsafe_getPrivateKey } from '../../stores/authProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { getPublicKey, verifyAttestation } from './attest';
@@ -38,6 +37,7 @@ import {
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
+import { unsafe_getPrivateKey } from '../../providers/authProvider';
 
 const provingMachine = createMachine({
   id: 'proving',
