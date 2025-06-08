@@ -25,6 +25,7 @@ import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ProofEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { setDefaultDocumentTypeIfNeeded } from '../../providers/passportDataProvider';
 import {
   ProofStatus,
   useProofHistoryStore,
@@ -34,7 +35,6 @@ import analytics from '../../utils/analytics';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
-import { setDefaultDocumentTypeIfNeeded } from '../../providers/passportDataProvider';
 
 const { trackEvent } = analytics();
 

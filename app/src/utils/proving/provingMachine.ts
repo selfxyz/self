@@ -9,6 +9,7 @@ import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
 import { navigationRef } from '../../navigation';
+import { unsafe_getPrivateKey } from '../../providers/authProvider';
 import {
   clearPassportData,
   loadSelectedDocument,
@@ -37,7 +38,6 @@ import {
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
-import { unsafe_getPrivateKey } from '../../providers/authProvider';
 
 const provingMachine = createMachine({
   id: 'proving',
