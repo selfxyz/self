@@ -1,9 +1,5 @@
 import { X509Certificate } from '@peculiar/x509';
-import {
-  PCR0_MANAGER_ADDRESS,
-  RPC_URL,
-  SKIP_PCR0_CHECK,
-} from '@selfxyz/common';
+import { PCR0_MANAGER_ADDRESS, RPC_URL } from '@selfxyz/common';
 import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
@@ -172,10 +168,10 @@ export const verifyAttestation = async (attestation: Array<number>) => {
   const cert = derToPem(attestationDoc.certificate);
   const isPCR0Set = await checkPCR0Mapping(attestation);
   console.log('isPCR0Set', isPCR0Set);
-  if (!isPCR0Set && !SKIP_PCR0_CHECK) {
+  if (!isPCR0Set && !__DEV__) {
     throw new Error('Invalid image hash');
   }
-  if (SKIP_PCR0_CHECK) {
+  if (__DEV__ && !isPCR0Set) {
     console.warn('\x1b[31m%s\x1b[0m', '⚠️  WARNING: PCR0 CHECK SKIPPED ⚠️');
   }
   console.log('TEE image hash verified');

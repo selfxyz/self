@@ -32,9 +32,6 @@ export const CHAIN_NAME = 'celo';
 export const RPC_URL = 'https://forno.celo.org';
 export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8';
 
-export const SKIP_PCR0_CHECK = true; // TODO: for development purpose only
-
-
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEVELOPMENT_MODE = true;
 export const DEFAULT_MAJORITY = '18';
