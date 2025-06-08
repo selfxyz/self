@@ -8,6 +8,8 @@ import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../stores/authProvider';
 import {
   loadPassportDataAndSecret,
+  loadSelectedDocument,
+  migrateFromLegacyStorage,
   storePassportData,
 } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
@@ -37,27 +39,24 @@ const SplashScreen: React.FC = ({}) => {
 
       const loadDataAndDetermineNextScreen = async () => {
         try {
-          const passportDataAndSecret = await loadPassportDataAndSecret();
+          await migrateFromLegacyStorage();
+          const selectedDocument = await loadSelectedDocument();
 
-          if (!passportDataAndSecret) {
+          if (!selectedDocument) {
+            console.log('No document found, navigating to Launch');
             setNextScreen('Launch');
             return;
           }
-
-          const { passportData, secret } = JSON.parse(passportDataAndSecret);
+          const { data: passportData } = selectedDocument;
           if (!isPassportDataValid(passportData)) {
+            console.log('Invalid passport data, navigating to Launch');
             setNextScreen('Launch');
             return;
           }
-
-          // Migrate passport data if needed
           const migratedPassportData = migratePassportData(passportData);
-
-          // If migration occurred, store the updated data
           if (migratedPassportData !== passportData) {
             await storePassportData(migratedPassportData);
           }
-
           const environment = (migratedPassportData as PassportData).mock
             ? 'stg'
             : 'prod';
@@ -68,6 +67,15 @@ const SplashScreen: React.FC = ({}) => {
             [
               documentCategory
             ].fetch_all(environment, (migratedPassportData as PassportData).dsc_parsed!.authorityKeyIdentifier);
+
+          // Get secret and check registration
+          const passportDataAndSecret = await loadPassportDataAndSecret();
+          if (!passportDataAndSecret) {
+            setNextScreen('Launch');
+            return;
+          }
+
+          const { secret } = JSON.parse(passportDataAndSecret);
           const isRegistered = await isUserRegistered(
             migratedPassportData,
             secret,
@@ -163,10 +171,7 @@ function isPassportDataValid(passportData: PassportData) {
 
 function migratePassportData(passportData: PassportData): PassportData {
   const migratedData = { ...passportData } as any;
-
-  // Check if new fields are missing
   if (!('documentCategory' in migratedData) || !('mock' in migratedData)) {
-    // If documentType exists, derive from it
     if ('documentType' in migratedData && migratedData.documentType) {
       migratedData.mock = migratedData.documentType.startsWith('mock');
       migratedData.documentCategory = migratedData.documentType.includes(
@@ -175,7 +180,6 @@ function migratePassportData(passportData: PassportData): PassportData {
         ? 'passport'
         : 'id_card';
     } else {
-      // If documentType doesn't exist, assume it's a real passport (legacy data)
       migratedData.documentType = 'passport';
       migratedData.documentCategory = 'passport';
       migratedData.mock = false;

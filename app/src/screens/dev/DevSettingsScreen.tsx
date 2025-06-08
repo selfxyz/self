@@ -1,24 +1,21 @@
-/* eslint-disable simple-import-sort/imports */
 import { useNavigation } from '@react-navigation/native';
 import { Check, ChevronDown, Eraser } from '@tamagui/lucide-icons';
 import React, {
   PropsWithChildren,
+  useCallback,
   useEffect,
   useState,
-  useCallback,
 } from 'react';
-import { Platform, StyleProp, TextInput } from 'react-native';
-import { Adapt, Button, Select, Sheet, Text, YStack, XStack } from 'tamagui';
+import { Alert, Platform, StyleProp, TextInput } from 'react-native';
+import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
-import { PassportData } from '@selfxyz/common';
 import { RootStackParamList } from '../../navigation';
 import {
   unsafe_clearSecrets,
   unsafe_getPrivateKey,
 } from '../../stores/authProvider';
 import { usePassport } from '../../stores/passportDataProvider';
-import useUserStore from '../../stores/userStore';
-import { borderColor, textBlack } from '../../utils/colors';
+import { textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
@@ -134,166 +131,9 @@ const ScreenSelector = ({}) => {
   );
 };
 
-const PassportDataSelector = () => {
-  const { getAllData, getAvailableTypes, clearSpecificData } = usePassport();
-  const {
-    selectedDocumentType,
-    setSelectedDocumentType,
-    clearSelectedDocumentType,
-  } = useUserStore();
-  const [availableTypes, setAvailableTypes] = useState<string[]>([]);
-  const [allPassportData, setAllPassportData] = useState<{
-    [service: string]: PassportData;
-  }>({});
-
-  useEffect(() => {
-    loadPassportDataInfo();
-  }, []);
-
-  const loadPassportDataInfo = async () => {
-    const types = await getAvailableTypes();
-    const data = await getAllData();
-    setAvailableTypes(types);
-    setAllPassportData(data);
-  };
-
-  const handleDocumentTypeChange = (documentType: string) => {
-    setSelectedDocumentType(documentType);
-  };
-
-  const handleDeleteSpecific = async (documentType: string) => {
-    await clearSpecificData(documentType);
-    await loadPassportDataInfo();
-
-    // Get remaining types after deletion
-    const remainingTypes = await getAvailableTypes();
-
-    if (selectedDocumentType === documentType) {
-      if (remainingTypes.length > 0) {
-        // Set the first remaining document as selected
-        setSelectedDocumentType(remainingTypes[0]);
-      } else {
-        clearSelectedDocumentType();
-      }
-    }
-  };
-
-  const getDisplayName = (documentType: string): string => {
-    switch (documentType) {
-      case 'passport':
-        return 'Passport';
-      case 'mock_passport':
-        return 'Mock Passport';
-      case 'id_card':
-        return 'ID Card';
-      case 'mock_id_card':
-        return 'Mock ID Card';
-      default:
-        return documentType;
-    }
-  };
-
-  const getDocumentInfo = (documentType: string): string => {
-    // Map document types to data keys
-    const dataKey =
-      documentType === 'passport'
-        ? 'passportData'
-        : documentType === 'mock_passport'
-          ? 'mockPassportData'
-          : documentType === 'id_card'
-            ? 'idCardData'
-            : documentType === 'mock_id_card'
-              ? 'mockIdCardData'
-              : documentType;
-
-    const data = allPassportData[dataKey];
-
-    if (!data) {
-      console.log(
-        `No data found for documentType: ${documentType}, dataKey: ${dataKey}`,
-      );
-      return 'Unknown';
-    }
-
-    const countryCode = data.passportMetadata?.countryCode || 'Unknown';
-    return `${countryCode}`;
-  };
-
-  if (availableTypes.length === 0) {
-    return (
-      <YStack gap="$2" ai="center">
-        <Text color={textBlack} fontSize="$4">
-          No passport data found
-        </Text>
-      </YStack>
-    );
-  }
-
-  return (
-    <YStack gap="$3" w="100%">
-      <Text
-        color={textBlack}
-        fontWeight="bold"
-        fontSize="$5"
-        textAlign="center"
-      >
-        Available Documents
-      </Text>
-      {availableTypes.map(type => (
-        <YStack
-          key={type}
-          p="$3"
-          borderWidth={1}
-          borderColor={selectedDocumentType === type ? textBlack : borderColor}
-          borderRadius="$3"
-          bg={selectedDocumentType === type ? '$gray2' : 'white'}
-          onPress={() => handleDocumentTypeChange(type)}
-          pressStyle={{ opacity: 0.8 }}
-        >
-          <XStack ai="center" jc="space-between" mb="$2">
-            <XStack ai="center" gap="$3" flex={1}>
-              <Button
-                size="$2"
-                circular
-                bg={selectedDocumentType === type ? textBlack : 'white'}
-                borderColor={textBlack}
-                borderWidth={1}
-                onPress={() => handleDocumentTypeChange(type)}
-              >
-                {selectedDocumentType === type && (
-                  <Check size={12} color="white" />
-                )}
-              </Button>
-              <YStack flex={1}>
-                <Text color={textBlack} fontWeight="bold" fontSize="$4">
-                  {getDisplayName(type)}
-                </Text>
-                <Text color={textBlack} fontSize="$3" opacity={0.7}>
-                  {getDocumentInfo(type)}
-                </Text>
-              </YStack>
-            </XStack>
-            <Button
-              bg="white"
-              jc="center"
-              borderColor={borderColor}
-              borderWidth={1}
-              size="$3"
-              onPress={e => {
-                e.stopPropagation();
-                handleDeleteSpecific(type);
-              }}
-            >
-              <Eraser color={textBlack} size={16} />
-            </Button>
-          </XStack>
-        </YStack>
-      ))}
-    </YStack>
-  );
-};
-
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
+  const navigation = useNavigation();
+  const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const [privateKey, setPrivateKey] = useState<string | null>(
     'Loading private key…',
   );
@@ -328,10 +168,48 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     return '*'.repeat(privateKey.length);
   }, [privateKey]);
 
-  return (
-    <YStack gap="$3" ai="center" bg="white" h="100%" px="$4" pt="$4">
-      <PassportDataSelector />
+  const handleClearSecretsPress = () => {
+    Alert.alert(
+      'Delete Keychain Secrets',
+      "Are you sure you want to remove your keychain secrets?\n\nIf this secret is not backed up, your account will be lost and the ID documents attached to it won't be usable.",
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await unsafe_clearSecrets();
+          },
+        },
+      ],
+    );
+  };
 
+  const handleClearDocumentCatalogPress = () => {
+    Alert.alert(
+      'Clear Document Catalog',
+      'Are you sure you want to clear the document catalog?\n\nThis will remove all documents from the new storage system but preserve legacy storage for migration testing. You will need to restart the app to test migration.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            await clearDocumentCatalogForMigrationTesting();
+          },
+        },
+      ],
+    );
+  };
+
+  return (
+    <YStack gap="$3" ai="center" bg="white" f={1} px="$4" pt="$4">
       <YStack
         p="$4"
         borderWidth={2}
@@ -367,6 +245,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
       </YStack>
       <YStack
         mt="$3"
+        mb="$10"
         p="$4"
         borderWidth={2}
         borderColor="$red8"
@@ -441,13 +320,26 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         <YStack alignItems="center" gap="$3" mt="$2">
           <XStack alignItems="center" gap="$3">
             <Text color={textBlack} fontSize="$3">
-              Delete all keychain secrets
+              Delete Private Key
             </Text>
             <Button
               bg="$red8"
               color="white"
               size="$3"
-              onPress={unsafe_clearSecrets}
+              onPress={handleClearSecretsPress}
+            >
+              <Eraser color="white" size={16} />
+            </Button>
+          </XStack>
+          <XStack alignItems="center" gap="$3">
+            <Text color={textBlack} fontSize="$3">
+              Clear Document Catalog
+            </Text>
+            <Button
+              bg="$red8"
+              color="white"
+              size="$3"
+              onPress={handleClearDocumentCatalogPress}
             >
               <Eraser color="white" size={16} />
             </Button>

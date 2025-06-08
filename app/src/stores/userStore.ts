@@ -5,15 +5,12 @@ interface UserState {
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
-  selectedDocumentType?: string;
   deepLinkName?: string;
   deepLinkSurname?: string;
   deepLinkNationality?: string;
   deepLinkBirthDate?: string;
   update: (patch: Partial<UserState>) => void;
   deleteMrzFields: () => void;
-  setSelectedDocumentType: (documentType: string) => void;
-  clearSelectedDocumentType: () => void;
   setDeepLinkUserDetails: (details: {
     name?: string;
     surname?: string;
@@ -27,7 +24,6 @@ const useUserStore = create<UserState>((set, _get) => ({
   passportNumber: DEFAULT_PNUMBER ?? '',
   dateOfBirth: DEFAULT_DOB ?? '',
   dateOfExpiry: DEFAULT_DOE ?? '',
-  selectedDocumentType: undefined,
   deepLinkName: undefined,
   deepLinkSurname: undefined,
   deepLinkNationality: undefined,
@@ -43,11 +39,6 @@ const useUserStore = create<UserState>((set, _get) => ({
       dateOfBirth: '',
       dateOfExpiry: '',
     }),
-
-  setSelectedDocumentType: documentType =>
-    set({ selectedDocumentType: documentType }),
-
-  clearSelectedDocumentType: () => set({ selectedDocumentType: undefined }),
 
   setDeepLinkUserDetails: details =>
     set({

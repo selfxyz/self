@@ -9,14 +9,14 @@ import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
 import { navigationRef } from '../../navigation';
+import { unsafe_getPrivateKey } from '../../stores/authProvider';
 import {
   clearPassportData,
-  loadSelectedPassportDataAndSecret,
+  loadSelectedDocument,
   reStorePassportDataWithRightCSCA,
 } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
-import useUserStore from '../../stores/userStore';
 import { getPublicKey, verifyAttestation } from './attest';
 import {
   generateTEEInputsDisclose,
@@ -47,6 +47,7 @@ const provingMachine = createMachine({
       on: {
         FETCH_DATA: 'fetching_data',
         ERROR: 'error',
+        PASSPORT_DATA_NOT_FOUND: 'passport_data_not_found',
       },
     },
     fetching_data: {
@@ -504,17 +505,22 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       actor = createActor(provingMachine);
       setupActorSubscriptions(actor);
       actor.start();
-      const selectedDocumentType = useUserStore.getState().selectedDocumentType;
-      const passportDataAndSecretStr = await loadSelectedPassportDataAndSecret(
-        selectedDocumentType as string,
-      );
-      if (!passportDataAndSecretStr) {
-        actor!.send({ type: 'ERROR' });
+
+      const selectedDocument = await loadSelectedDocument();
+      if (!selectedDocument) {
+        console.error('No document found for proving');
+        actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
         return;
       }
 
-      const passportDataAndSecret = JSON.parse(passportDataAndSecretStr);
-      const { passportData, secret } = passportDataAndSecret;
+      const { data: passportData } = selectedDocument;
+
+      const secret = await unsafe_getPrivateKey();
+      if (!secret) {
+        console.error('Could not load secret');
+        actor!.send({ type: 'ERROR' });
+        return;
+      }
 
       // Set environment based on mock property
       const env = passportData.mock ? 'stg' : 'prod';
@@ -707,7 +713,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             const {
               registerDeviceToken,
             } = require('../../utils/notifications/notificationService');
-            console.log('passportData.mock: ', passportData?.mock);
             const isMockPassport = passportData?.mock;
             await registerDeviceToken(uuid, fcmToken, isMockPassport);
           } catch (error) {
@@ -826,7 +831,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         endpointType as EndpointType,
         endpoint as string,
       );
-      console.log(payload);
       const forgeKey = forge.util.createBuffer(
         sharedKey?.toString('binary') as string,
       );

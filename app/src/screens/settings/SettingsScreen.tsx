@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { Bug } from '@tamagui/lucide-icons';
-import { Plus, VenetianMask } from '@tamagui/lucide-icons';
+import { FileText } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useCallback, useMemo } from 'react';
 import { Linking, Platform, Share } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -55,7 +55,11 @@ interface SocialButtonProps {
 }
 
 const emailFeedback = 'feedback@self.xyz';
-type RouteOption = keyof RootStackParamList | 'share' | 'email_feedback';
+type RouteOption =
+  | keyof RootStackParamList
+  | 'share'
+  | 'email_feedback'
+  | 'ManageDocuments';
 
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
@@ -70,8 +74,7 @@ const routes = [
   [Cloud, 'Cloud backup', 'CloudBackupSettings'],
   [Feedback, 'Send feeback', 'email_feedback'],
   [ShareIcon, 'Share Self app', 'share'],
-  [VenetianMask as React.FC<SvgProps>, 'Generate mock passport', 'CreateMock'],
-  [Plus as React.FC<SvgProps>, 'Add new ID document', 'PassportOnboarding'],
+  [FileText as React.FC<SvgProps>, 'Manage documents', 'ManageDocuments'],
 ] satisfies [React.FC<SvgProps>, string, RouteOption][];
 
 // get the actual type of the routes so we can use in the onMenuPress function so it
@@ -179,6 +182,10 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
                 subject,
               )}&body=${encodeURIComponent(body)}`,
             );
+            break;
+
+          case 'ManageDocuments':
+            navigation.navigate('ManageDocuments' as any);
             break;
 
           default:
