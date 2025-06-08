@@ -9,12 +9,12 @@ import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
 import { navigationRef } from '../../navigation';
-import { unsafe_getPrivateKey } from '../../stores/authProvider';
 import {
   clearPassportData,
   loadSelectedDocument,
   reStorePassportDataWithRightCSCA,
 } from '../../providers/passportDataProvider';
+import { unsafe_getPrivateKey } from '../../stores/authProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { getPublicKey, verifyAttestation } from './attest';

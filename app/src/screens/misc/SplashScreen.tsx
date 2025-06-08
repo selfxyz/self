@@ -5,14 +5,20 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
+import { useAuth } from '../../providers/authProvider';
+import {
+  loadPassportDataAndSecret,
+  storePassportData,
+} from '../../providers/passportDataProvider';
+import {
+  loadSelectedDocument,
+  migrateFromLegacyStorage,
+} from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSettingStore } from '../../stores/settingStore';
 import { black } from '../../utils/colors';
 import { impactLight } from '../../utils/haptic';
 import { isUserRegistered } from '../../utils/proving/validateDocument';
-import { useAuth } from '../../providers/authProvider';
-import { loadPassportDataAndSecret, storePassportData } from '../../providers/passportDataProvider';
-import { loadSelectedDocument, migrateFromLegacyStorage } from '../../providers/passportDataProvider';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();

@@ -10,8 +10,11 @@ import { Alert, Platform, StyleProp, TextInput } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
 import { RootStackParamList } from '../../navigation';
+import {
+  unsafe_clearSecrets,
+  unsafe_getPrivateKey,
+} from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
-import { unsafe_clearSecrets, unsafe_getPrivateKey } from '../../providers/authProvider';
 import { textBlack } from '../../utils/colors';
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
