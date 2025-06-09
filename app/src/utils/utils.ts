@@ -2,14 +2,8 @@
 export function extractMRZInfo(mrzString: string) {
   const mrzLines = mrzString.split('\n');
 
-  if (mrzLines.length < 2) {
-    throw new Error(
-      'Invalid MRZ format: Expected at least two lines of MRZ data',
-    );
-  }
-
   // Check format based on line length
-  const isTD1 = mrzLines[0].length === 30;
+  const isTD1 = mrzLines[0].length === 30 || mrzLines[0].startsWith('ID');
   const isTD3 = mrzLines[0].length === 44;
 
   if (!isTD1 && !isTD3) {
@@ -22,11 +16,12 @@ export function extractMRZInfo(mrzString: string) {
 
   if (isTD1) {
     // TD1 format (ID cards)
-    documentType = mrzLines[0].slice(0, 2).replace(/</g, '').trim();
-    countryCode = mrzLines[0].slice(2, 5).replace(/</g, '').trim();
-    passportNumber = mrzLines[0].slice(5, 14).replace(/</g, '').trim();
-    dateOfBirth = mrzLines[1].slice(0, 6).trim();
-    dateOfExpiry = mrzLines[1].slice(8, 14).trim();
+    const line = mrzLines[0];
+    documentType = line.slice(0, 2).replace(/</g, '').trim();
+    countryCode = line.slice(2, 5).replace(/</g, '').trim();
+    passportNumber = line.slice(5, 14).replace(/</g, '').trim();
+    dateOfBirth = line.slice(30, 36).trim();
+    dateOfExpiry = line.slice(38, 44).trim();
   } else {
     // TD3 format (passports)
     documentType = mrzLines[0].slice(0, 2).replace(/</g, '').trim();
