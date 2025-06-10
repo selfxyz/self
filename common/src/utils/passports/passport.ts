@@ -7,7 +7,6 @@ import {
   k_dsc_3072,
   k_dsc_4096,
   k_dsc_ecdsa,
-  MAX_PUBKEY_DSC_BYTES,
   n_csca,
   n_dsc,
   n_dsc_3072,
@@ -240,67 +239,6 @@ export function getSignatureAlgorithmFullName(
     const { exponent } = publicKeyDetails as PublicKeyDetailsRSA;
     return `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${publicKeyDetails.bits}`;
   }
-}
-
-/*** retrieve pubKey bytes - will be used in generateCircuitsInputsCSCA ***/
-export function getPubKeyBytes(passportData: PassportData, type: 'dsc' | 'csca'): number[] {
-  if (type === 'dsc') {
-    return getDscPubKeyBytes(passportData);
-  } else if (type === 'csca') {
-    return getCscaPubKeyBytes(passportData);
-  } else {
-    throw new Error('Invalid type');
-  }
-}
-
-function getDscPubKeyBytes(passportData: PassportData): number[] {
-  const signatureAlgorithm = passportData.passportMetadata.signatureAlgorithm;
-  if (signatureAlgorithm === 'ecdsa') {
-    return getECDSAPubKeyBytes(passportData.dsc_parsed);
-  }
-  return getRsaPubKeyBytes(passportData.dsc_parsed);
-}
-
-function getCscaPubKeyBytes(passportData: PassportData): number[] {
-  if (!passportData.passportMetadata.cscaFound) {
-    throw new Error('CSCA not found');
-  }
-  const signatureAlgorithm = passportData.passportMetadata.cscaSignatureAlgorithm;
-  if (signatureAlgorithm === 'ecdsa') {
-    throw new Error('ECDSA signature algorithm not supported for CSCA');
-  }
-  return getRsaPubKeyBytes(passportData.dsc);
-}
-
-function getRsaPubKeyBytes(parsedCertificate: any): number[] {
-  const pubKeyHex = (parsedCertificate.publicKeyDetails as PublicKeyDetailsRSA).modulus;
-  return hexToBytes(pubKeyHex);
-}
-
-function getECDSAPubKeyBytes(parsedCertificate: any): number[] {
-  const { x, y } = parsedCertificate.publicKeyDetails as PublicKeyDetailsECDSA;
-  const pubKeyBytes = [...hexToBytes(x), ...hexToBytes(y)];
-  return pubKeyBytes;
-}
-
-function padPubKeyBytes(pubKeyBytes: number[]) {
-  const paddedPubKeyBytes = pubKeyBytes.concat(
-    new Array(MAX_PUBKEY_DSC_BYTES - pubKeyBytes.length).fill(0)
-  );
-  return paddedPubKeyBytes;
-}
-
-function hexToBytes(hex: string) {
-  // Remove '0x' prefix if present
-  const cleanHex = hex.startsWith('0x') ? hex.slice(2) : hex;
-
-  const paddedHex = cleanHex.length % 2 ? '0' + cleanHex : cleanHex;
-
-  const bytes = [];
-  for (let i = 0; i < paddedHex.length; i += 2) {
-    bytes.push(parseInt(paddedHex.slice(i, i + 2), 16));
-  }
-  return bytes;
 }
 
 export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
