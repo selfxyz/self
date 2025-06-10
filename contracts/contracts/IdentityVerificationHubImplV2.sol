@@ -122,6 +122,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     error InvalidAttestationId();
 
+    /// @notice Thrown when the scope in the header doesn't match the scope in the proof.
+    /// @dev Ensures that the scope value in the header matches the scope value in the proof.
+    error ScopeMismatch();
+
     // ====================================================
     // Input Format Structs
     // ====================================================
@@ -383,10 +387,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         bytes calldata userDefinedData
     ) internal {
         // Perform basic verification
-        bytes memory proofOutput = _basicVerification(
-            header.attestationId,
-            _decodeVcAndDiscloseProof(proofData)
-        );
+        bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData));
 
         // Execute custom verifications
         SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(
@@ -690,25 +691,42 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     /**
      * @notice Unified basic verification function for both passport and ID card proofs.
-     * @dev Performs three core verification steps: rootCheck, currentDateCheck, groth16 proof verification
-     * @param attestationId The attestation identifier
+     * @dev Performs four core verification steps: scopeCheck, rootCheck, currentDateCheck, groth16 proof verification
+     * @param header The hub input header containing scope and attestation information
      * @param vcAndDiscloseProof The VC and Disclose proof data
      * @return output The verification result encoded as bytes (PassportOutput or EuIdOutput)
      */
     function _basicVerification(
-        bytes32 attestationId,
+        SelfStructs.HubInputHeader memory header,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof
     ) internal view returns (bytes memory output) {
         // Get indices for the specific attestation type
-        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(attestationId);
+        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
 
         // Perform all verification checks
-        _performRootCheck(attestationId, vcAndDiscloseProof, indices);
+        _performScopeCheck(header.scope, vcAndDiscloseProof, indices);
+        _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
         _performCurrentDateCheck(vcAndDiscloseProof, indices);
-        _performGroth16ProofVerification(attestationId, vcAndDiscloseProof);
+        _performGroth16ProofVerification(header.attestationId, vcAndDiscloseProof);
 
         // Create and return output
-        return _createVerificationOutput(attestationId, vcAndDiscloseProof, indices);
+        return _createVerificationOutput(header.attestationId, vcAndDiscloseProof, indices);
+    }
+
+    /**
+     * @notice Performs scope validation
+     */
+    function _performScopeCheck(
+        uint256 headerScope,
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal pure {
+        // Get scope from proof using the scope index from indices
+        uint256 proofScope = vcAndDiscloseProof.pubSignals[indices.scopeIndex];
+
+        if (headerScope != proofScope) {
+            revert ScopeMismatch();
+        }
     }
 
     /**
