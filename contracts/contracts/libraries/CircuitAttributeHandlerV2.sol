@@ -247,9 +247,9 @@ library CircuitAttributeHandlerV2 {
         bool checkNameAndDob,
         bool checkNameAndYob
     ) internal pure returns (bool) {
-        bool documentNoResult = true;
-        bool nameAndDobResult = true;
-        bool nameAndYobResult = true;
+        bool documentNoResult = !checkDocumentNo;
+        bool nameAndDobResult = !checkNameAndDob;
+        bool nameAndYobResult = !checkNameAndYob;
 
         if (checkDocumentNo && attestationId == AttestationId.E_PASSPORT) {
             documentNoResult = getDocumentNoOfac(attestationId, charcodes);
@@ -263,7 +263,7 @@ library CircuitAttributeHandlerV2 {
             nameAndYobResult = getNameAndYobOfac(attestationId, charcodes);
         }
 
-        return documentNoResult && nameAndDobResult && nameAndYobResult;
+        return !documentNoResult && !nameAndDobResult && !nameAndYobResult;
     }
 
     /**
