@@ -55,6 +55,8 @@ export class SelfBackendVerifier {
 
   protected registryContract: ethers.Contract;
   protected verifyAllContract: ethers.Contract;
+  protected mainnetRegistryContract?: ethers.Contract;
+  protected mainnetVerifyAllContract?: ethers.Contract;
   protected mockPassport: boolean;
 
   constructor(
@@ -63,12 +65,34 @@ export class SelfBackendVerifier {
     user_identifier_type: UserIdType = 'uuid',
     mockPassport: boolean = false
   ) {
-    const rpcUrl = mockPassport ? CELO_TESTNET_RPC_URL : CELO_MAINNET_RPC_URL;
-    const provider = new ethers.JsonRpcProvider(rpcUrl);
-    const registryAddress = mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
-    const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
-    this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
-    this.verifyAllContract = new ethers.Contract(verifyAllAddress, verifyAllAbi, provider);
+    if (mockPassport) {
+      const providerMock = new ethers.JsonRpcProvider(CELO_TESTNET_RPC_URL);
+      const providerMain = new ethers.JsonRpcProvider(CELO_MAINNET_RPC_URL);
+      this.registryContract = new ethers.Contract(
+        REGISTRY_ADDRESS_STAGING,
+        registryAbi,
+        providerMock
+      );
+      this.verifyAllContract = new ethers.Contract(
+        VERIFYALL_ADDRESS_STAGING,
+        verifyAllAbi,
+        providerMock
+      );
+      this.mainnetRegistryContract = new ethers.Contract(
+        REGISTRY_ADDRESS,
+        registryAbi,
+        providerMain
+      );
+      this.mainnetVerifyAllContract = new ethers.Contract(
+        VERIFYALL_ADDRESS,
+        verifyAllAbi,
+        providerMain
+      );
+    } else {
+      const provider = new ethers.JsonRpcProvider(CELO_MAINNET_RPC_URL);
+      this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
+      this.verifyAllContract = new ethers.Contract(VERIFYALL_ADDRESS, verifyAllAbi, provider);
+    }
     this.scope = hashEndpointWithScope(endpoint, scope);
     this.user_identifier_type = user_identifier_type;
     this.mockPassport = mockPassport;
@@ -127,94 +151,115 @@ export class SelfBackendVerifier {
       types.push(revealedDataTypes.name_and_yob_ofac);
     }
 
-    const currentRoot = await this.registryContract.getIdentityCommitmentMerkleRoot();
-    const timestamp = await this.registryContract.rootTimestamps(currentRoot);
-
     const user_identifier = castToUserIdentifier(
       BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]),
       this.user_identifier_type
     );
 
-    let result: any;
-    try {
-      result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
-    } catch (error: any) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (
-        error &&
-        typeof error === 'object' &&
-        error.message &&
-        error.message.includes('INVALID_FORBIDDEN_COUNTRIES')
-      ) {
-        errorMessage =
-          'The forbidden countries list in the backend does not match the list provided in the frontend SDK. Please ensure both lists are identical.';
+    const attempt = async (
+      registry: ethers.Contract,
+      verifier: ethers.Contract
+    ): Promise<SelfVerificationResult> => {
+      const currentRoot = await registry.getIdentityCommitmentMerkleRoot();
+      const timestamp = await registry.rootTimestamps(currentRoot);
+
+      let result: any;
+      try {
+        result = await verifier.verifyAll(timestamp, vcAndDiscloseHubProof, types);
+      } catch (error: any) {
+        let errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        if (
+          error &&
+          typeof error === 'object' &&
+          error.message &&
+          error.message.includes('INVALID_FORBIDDEN_COUNTRIES')
+        ) {
+          errorMessage =
+            'The forbidden countries list in the backend does not match the list provided in the frontend SDK. Please ensure both lists are identical.';
+        }
+
+        return {
+          isValid: false,
+          isValidDetails: {
+            isValidScope: false,
+            isValidAttestationId: false,
+            isValidProof: false,
+            isValidNationality: false,
+          },
+          userId: user_identifier,
+          application: this.scope,
+          nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
+          credentialSubject: {},
+          proof: {
+            value: {
+              proof: proof,
+              publicSignals: publicSignals,
+            },
+          },
+          error: errorMessage,
+        };
       }
 
-      return {
-        isValid: false,
+      let isValidNationality = true;
+      if (this.nationality.enabled) {
+        const nationality = result[0][revealedDataTypes.nationality];
+        isValidNationality = nationality === this.nationality.value;
+      }
+
+      const credentialSubject = {
+        merkle_root: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX],
+        attestation_id: this.attestationId.toString(),
+        current_date: new Date().toISOString(),
+        issuing_state: result[0][revealedDataTypes.issuing_state],
+        name: result[0][revealedDataTypes.name],
+        passport_number: result[0][revealedDataTypes.passport_number],
+        nationality: result[0][revealedDataTypes.nationality],
+        date_of_birth: result[0][revealedDataTypes.date_of_birth],
+        gender: result[0][revealedDataTypes.gender],
+        expiry_date: result[0][revealedDataTypes.expiry_date],
+        older_than: result[0][revealedDataTypes.older_than].toString(),
+        passport_no_ofac: result[0][revealedDataTypes.passport_no_ofac].toString() === '1',
+        name_and_dob_ofac: result[0][revealedDataTypes.name_and_dob_ofac].toString() === '1',
+        name_and_yob_ofac: result[0][revealedDataTypes.name_and_yob_ofac].toString() === '1',
+      };
+
+      const attestation: SelfVerificationResult = {
+        isValid: result[1] && isValidScope && isValidAttestationId && isValidNationality,
         isValidDetails: {
-          isValidScope: false,
-          isValidAttestationId: false,
-          isValidProof: false,
-          isValidNationality: false,
+          isValidScope: isValidScope,
+          isValidAttestationId: isValidAttestationId,
+          isValidProof: result[1],
+          isValidNationality: isValidNationality,
         },
         userId: user_identifier,
         application: this.scope,
         nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
-        credentialSubject: {},
+        credentialSubject: credentialSubject,
         proof: {
           value: {
             proof: proof,
             publicSignals: publicSignals,
           },
         },
-        error: errorMessage,
+        error: result[2],
       };
-    }
 
-    let isValidNationality = true;
-    if (this.nationality.enabled) {
-      const nationality = result[0][revealedDataTypes.nationality];
-      isValidNationality = nationality === this.nationality.value;
-    }
-
-    const credentialSubject = {
-      merkle_root: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX],
-      attestation_id: this.attestationId.toString(),
-      current_date: new Date().toISOString(),
-      issuing_state: result[0][revealedDataTypes.issuing_state],
-      name: result[0][revealedDataTypes.name],
-      passport_number: result[0][revealedDataTypes.passport_number],
-      nationality: result[0][revealedDataTypes.nationality],
-      date_of_birth: result[0][revealedDataTypes.date_of_birth],
-      gender: result[0][revealedDataTypes.gender],
-      expiry_date: result[0][revealedDataTypes.expiry_date],
-      older_than: result[0][revealedDataTypes.older_than].toString(),
-      passport_no_ofac: result[0][revealedDataTypes.passport_no_ofac].toString() === '1',
-      name_and_dob_ofac: result[0][revealedDataTypes.name_and_dob_ofac].toString() === '1',
-      name_and_yob_ofac: result[0][revealedDataTypes.name_and_yob_ofac].toString() === '1',
+      return attestation;
     };
 
-    const attestation: SelfVerificationResult = {
-      isValid: result[1] && isValidScope && isValidAttestationId && isValidNationality,
-      isValidDetails: {
-        isValidScope: isValidScope,
-        isValidAttestationId: isValidAttestationId,
-        isValidProof: result[1],
-        isValidNationality: isValidNationality,
-      },
-      userId: user_identifier,
-      application: this.scope,
-      nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
-      credentialSubject: credentialSubject,
-      proof: {
-        value: {
-          proof: proof,
-          publicSignals: publicSignals,
-        },
-      },
-      error: result[2],
-    };
+    let attestation = await attempt(this.registryContract, this.verifyAllContract);
+
+    if (
+      this.mockPassport &&
+      !attestation.isValid &&
+      this.mainnetRegistryContract &&
+      this.mainnetVerifyAllContract
+    ) {
+      const mainResult = await attempt(this.mainnetRegistryContract, this.mainnetVerifyAllContract);
+      if (mainResult.isValid) {
+        attestation = mainResult;
+      }
+    }
 
     return attestation;
   }

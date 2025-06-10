@@ -21,7 +21,9 @@ import { SelfBackendVerifier } from '@selfxyz/core';
 
 const selfBackendVerifier = new SelfBackendVerifier(
   process.env.CELO_RPC_URL as string, // e.g., 'https://forno.celo.org'
-  process.env.SCOPE as string // Your application's unique scope. Should be the same as when initializing SelfApp
+  process.env.SCOPE as string, // Your application's unique scope. Should be the same as when initializing SelfApp
+  'uuid',
+  true // also allow verifying mock passports
 );
 ```
 
@@ -152,7 +154,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Initialize and configure the verifier
       const selfBackendVerifier = new SelfBackendVerifier(
         'https://forno.celo.org',
-        'my-application-scope'
+        'my-application-scope',
+        'uuid',
+        true
       );
 
       // Configure verification options
