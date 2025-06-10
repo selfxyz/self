@@ -4,9 +4,9 @@ pragma solidity 0.8.28;
 library SelfStructs {
   struct HubInputHeader {
     uint8 contractVersion;
-    uint256 destChainId;
-    bytes32 configId;
+    uint256 scope;
     bytes32 attestationId;
+    // Note: configId and destChainId are now extracted from userDefinedData
   }
 
   struct DiscloseV2 {

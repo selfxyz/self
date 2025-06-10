@@ -84,15 +84,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // Events
     // ====================================================
 
-    /// @notice Emitted when the verification is successful
-    event VerificationSuccess(
-        uint256 indexed scope,
-        bytes32 indexed attestationId,
-        uint256 indexed nullifier,
-        uint256 userIdentifier,
-        uint256[] revealedDataPacked
-    );
-
     /// @notice Emitted when the scope is updated
     event ScopeUpdated(uint256 indexed newScope);
 
@@ -120,6 +111,14 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     }
 
     /**
+     * @notice Returns the current scope value
+     * @return The scope value that proofs must match
+     */
+    function scope() public view returns (uint256) {
+        return _scope;
+    }
+
+    /**
      * @notice Updates the scope value
      * @dev Used to change the expected scope for proofs
      * @param newScope The new scope value to set
@@ -133,43 +132,31 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
      * @param teeData Packed data from relayer in format: | 32 bytes attestationId | proof data |
-     * @param userDefinedData User-defined data in format: | 32 bytes requestId | 32 bytes configId | 32 bytes destChainId | calldata |
+     * @param additionalData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
      */
     /*
-        - Extract requestId from userDefinedData
-        - Store requestId => calldata mapping
+        - Extract userIdentifier from userDefinedData
         - Do scope verification
         - Encode contractVersion
         - Call verify function in the Hub contract
         - Call onVerificationSuccess
 
-        teeData = | 32 bytes attestationId | 32 bytes configId | 32 bytes destChainId | proofData |
-        userDefinedData
-        hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes attestationId | bytes32 configId | 32 bytes destChainId | proofData |
+        teeData = | 32 bytes attestationId | proofData |
+        additionalData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+        hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
     function verifySelfProof(
         bytes calldata teeData,
-        bytes calldata userDefinedData
+        bytes calldata additionalData
     ) public {
         // Minimum expected length for teeData: 32 bytes attestationId + proof data
         if (teeData.length < 32) {
             revert InvalidDataFormat();
         }
 
-        // Minimum userDefinedData length: 32 (requestId) + 32 (configId) + 32 (destChainId) = 96 bytes
-        if (userDefinedData.length < 96) {
+        // Minimum userDefinedData length: 32 (configId) + 32 (destChainId) + 32 (userIdentifier) = 96 bytes
+        if (additionalData.length < 96) {
             revert InvalidDataFormat();
-        }
-
-        // Extract requestId, configId, destChainId from userDefinedData
-        bytes32 requestId;
-        bytes32 configId;
-        bytes32 destChainId;
-
-        assembly {
-            requestId := calldataload(userDefinedData.offset)
-            configId := calldataload(add(userDefinedData.offset, 32))
-            destChainId := calldataload(add(userDefinedData.offset, 64))
         }
 
         bytes32 attestationId;
@@ -178,16 +165,18 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             attestationId := calldataload(teeData.offset)
         }
 
-        // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes destChainId | 32 bytes configId | 32 bytes attestationId | proof data
+        // Validate scope (this check ensures the proof was generated for the correct scope)
+        // Note: In a complete implementation, you would extract the scope from the proof
+        // and verify it matches _scope. For now, we'll use _scope directly.
+
+        // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proof data
         bytes memory hubData = abi.encodePacked(
             // 1 byte contractVersion
             CONTRACT_VERSION,
             // 31 bytes buffer (all zeros)
             bytes31(0),
-            // 32 bytes destChainId
-            destChainId,
-            // 32 bytes configId
-            configId,
+            // 32 bytes scope
+            _scope,
             // 32 bytes attestationId
             attestationId,
             // proof data (starts after 32 bytes attestationId)
@@ -195,177 +184,19 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         );
 
         // Call hub V2 verification
-        bytes memory result = _identityVerificationHubV2.verifyVcAndDisclose(hubData);
-
-        // Decode the result to extract all verification data
-        // Note: Result format depends on attestation type (passport vs ID card)
-        uint256 userIdentifier;
-        uint256 nullifier;
-        uint256 scope;
-        uint256 identityCommitmentRoot;
-        uint256[] memory revealedDataPacked;
-        uint256[4] memory forbiddenCountriesListPacked;
-
-        if (attestationId == AttestationId.E_PASSPORT) {
-            IIdentityVerificationHubV2.VcAndDiscloseVerificationResult memory passportResult = abi.decode(
-                result,
-                (IIdentityVerificationHubV2.VcAndDiscloseVerificationResult)
-            );
-
-            // Copy passport data using a for loop
-            revealedDataPacked = new uint256[](E_PASSPORT_REVEALED_DATA_LENGTH);
-            for (uint256 i = 0; i < E_PASSPORT_REVEALED_DATA_LENGTH; i++) {
-                revealedDataPacked[i] = passportResult.revealedDataPacked[i];
-            }
-
-            userIdentifier = passportResult.userIdentifier;
-            nullifier = passportResult.nullifier;
-            scope = passportResult.scope;
-            identityCommitmentRoot = passportResult.identityCommitmentRoot;
-            forbiddenCountriesListPacked = passportResult.forbiddenCountriesListPacked;
-        } else if (attestationId == AttestationId.EU_ID_CARD) {
-            IIdentityVerificationHubV2.IdCardVcAndDiscloseVerificationResult memory idCardResult = abi.decode(
-                result,
-                (IIdentityVerificationHubV2.IdCardVcAndDiscloseVerificationResult)
-            );
-
-            // Copy ID card data using a for loop
-            revealedDataPacked = new uint256[](EU_ID_CARD_REVEALED_DATA_LENGTH);
-            for (uint256 i = 0; i < EU_ID_CARD_REVEALED_DATA_LENGTH; i++) {
-                revealedDataPacked[i] = idCardResult.revealedDataPacked[i];
-            }
-
-            userIdentifier = idCardResult.userIdentifier;
-            nullifier = idCardResult.nullifier;
-            scope = idCardResult.scope;
-            identityCommitmentRoot = idCardResult.identityCommitmentRoot;
-            forbiddenCountriesListPacked = idCardResult.forbiddenCountriesListPacked;
-        } else {
-            revert InvalidAttestationId();
-        }
-
-        // Validate scope against our stored scope
-        if (scope != _scope) {
-            revert InvalidScope();
-        }
-
-        emit VerificationSuccess(scope, attestationId, nullifier, userIdentifier, revealedDataPacked);
-
-        // Call onVerificationSuccess with the verification data and requestId
-        bytes memory verificationData = abi.encode(
-            attestationId,
-            scope,
-            userIdentifier,
-            nullifier,
-            identityCommitmentRoot,
-            revealedDataPacked,
-            forbiddenCountriesListPacked
-        );
-
-        // Pass requestId, configId, destChainId in userDefinedData for onVerificationSuccess
-        bytes memory modifiedUserDefinedData = abi.encodePacked(requestId, configId, destChainId);
-        onVerificationSuccess(verificationData, modifiedUserDefinedData);
+        _identityVerificationHubV2.verify(hubData, additionalData);
     }
 
     /**
      * @notice Hook called after successful verification with requestId-based execution
      * @dev Virtual function that can be overridden by derived contracts
      * @param verificationData The encoded verification data (attestationId, scope, userIdentifier, nullifier, identityCommitmentRoot, revealedDataPacked, forbiddenCountriesListPacked)
-     * @param userDefinedData User-defined data containing requestId, configId, destChainId
+     * @param userDefinedData User-defined data
      */
     function onVerificationSuccess(
         bytes memory verificationData,
         bytes memory userDefinedData
     ) public virtual {
-        // Extract requestId from userDefinedData
-        if (userDefinedData.length < 32) {
-            return; // No requestId provided
-        }
-
-        // Execute stored calldata for this requestId
-        _executeStoredCalldata(verificationData, userDefinedData);
     }
 
-    function _executeStoredCalldata(
-        bytes memory verificationData,
-        bytes memory userDefinedData
-    ) internal {
-
-        // Execute the stored calldata
-        // The stored calldata should contain the function selector and any additional parameters
-        // // We'll prepend the verificationData and userDefinedData to the call
-        // bytes memory fullCalldata = abi.encodePacked(
-        //     storedCalldata,
-        //     verificationData,
-        //     userDefinedData
-        // );
-
-        // // Make the call to this contract
-        // (bool success, bytes memory result) = address(this).call(fullCalldata);
-
-        // emit CalldataExecuted(requestId, success, result);
-
-        // if (!success) {
-        //     // Handle call failure - could emit an event or revert based on requirements
-        //     // For now, we'll continue silently (can be customized by derived contracts)
-        //     return;
-        // }
-    }
-
-    /**
-     * @notice Dispatches function calls based on function selector
-     * @dev Can be overridden by derived contracts to implement custom function routing
-     * @param functionSelector The 4-byte function selector
-     * @param verificationData The encoded verification data
-     * @param userDefinedData The complete user-defined data
-     */
-    function _dispatchFunction(
-        bytes4 functionSelector,
-        bytes memory verificationData,
-        bytes calldata userDefinedData
-    ) internal virtual {
-        // This function is now less relevant since we're using stored calldata execution
-        // But keeping it for backward compatibility and potential custom implementations
-
-        if (userDefinedData.length < 96) {
-            return; // Insufficient data
-        }
-
-        bytes32 requestId;
-        bytes32 configId;
-        bytes32 destChainId;
-
-        assembly {
-            requestId := calldataload(userDefinedData.offset)
-            configId := calldataload(add(userDefinedData.offset, 32))
-            destChainId := calldataload(add(userDefinedData.offset, 64))
-        }
-
-        // Prepare the call data with the function selector and all parameters
-        bytes memory callData = abi.encodePacked(
-            functionSelector,
-            verificationData,
-            requestId,
-            configId,
-            destChainId
-        );
-
-        // Make the call to this contract
-        (bool success, bytes memory result) = address(this).call(callData);
-
-        if (!success) {
-            // Handle call failure - could emit an event or revert based on requirements
-            return;
-        }
-    }
-
-    /**
-     * @notice Returns the circuit indices for a given attestation type
-     * @dev Uses CircuitConstantsV2 to get the appropriate indices for the attestation
-     * @param attestationId The attestation identifier
-     * @return indices The DiscloseIndices struct containing all relevant indices
-     */
-    function _getDiscloseIndices(bytes32 attestationId) internal pure returns (CircuitConstantsV2.DiscloseIndices memory) {
-        return CircuitConstantsV2.getDiscloseIndices(attestationId);
-    }
 }

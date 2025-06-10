@@ -16,6 +16,7 @@ import {IRegisterCircuitVerifier} from "./interfaces/IRegisterCircuitVerifier.so
 import {IDscCircuitVerifier} from "./interfaces/IDscCircuitVerifier.sol";
 import {CircuitConstantsV2} from "./constants/CircuitConstantsV2.sol";
 import {Formatter} from "./libraries/Formatter.sol";
+import {PoseidonT3} from "../node_modules/poseidon-solidity/PoseidonT3.sol";
 
 contract IdentityVerificationHubImplV2 is ImplRoot {
 
@@ -200,12 +201,97 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // ====================================================
 
     function _decodeInput(bytes calldata input) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
-        require(input.length >= 97, "Input too short"); // 1 + 31 + 32 + 32 + 32 = 128 bytes minimum
+        require(input.length >= 97, "Input too short"); // 1 + 31 + 32 + 32 = 96 bytes minimum
         header.contractVersion = uint8(input[0]);
-        header.destChainId = uint256(bytes32(input[32:64]));
-        header.configId = bytes32(input[64:96]);
-        header.attestationId = bytes32(input[96:128]);
-        proofData = input[128:];
+        // Skip 31 bytes buffer (input[1:32])
+        header.scope = uint256(bytes32(input[32:64]));
+        header.attestationId = bytes32(input[64:96]);
+        proofData = input[96:];
+    }
+
+    /**
+     * @notice Decodes userDefinedData to extract configId, destChainId, and userIdentifier
+     * @param userDefinedData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+     * @return configId The configuration identifier
+     * @return destChainId The destination chain identifier
+     * @return userIdentifier The user identifier
+     * @return remainingData The remaining data after the first 96 bytes
+     */
+    function _decodeUserDefinedData(bytes calldata userDefinedData) internal pure returns (
+        bytes32 configId,
+        uint256 destChainId,
+        uint256 userIdentifier,
+        bytes calldata remainingData
+    ) {
+        require(userDefinedData.length >= 96, "UserDefinedData too short");
+        configId = bytes32(userDefinedData[0:32]);
+        destChainId = uint256(bytes32(userDefinedData[32:64]));
+        userIdentifier = uint256(bytes32(userDefinedData[64:96]));
+        remainingData = userDefinedData[96:];
+    }
+
+    /**
+     * @notice Verifies that the poseidon hash of userDefinedData matches the userIdentifier in the proof
+     * @param userDefinedData The complete user-defined data
+     * @param proofData The proof data containing public signals
+     * @param attestationId The attestation identifier to get the correct index
+     */
+    function _verifyUserIdentifierHash(
+        bytes calldata userDefinedData,
+        bytes calldata proofData,
+        bytes32 attestationId
+    ) internal pure {
+        // Decode the proof to get public signals
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof = _decodeVcAndDiscloseProof(proofData);
+
+        // Get the user identifier index for this attestation type
+        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(attestationId);
+        uint256 proofUserIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+
+        // Convert userDefinedData to uint256 chunks for poseidon hashing
+        // For poseidon T3, we can hash 2 field elements at a time
+        uint256 dataLength = userDefinedData.length;
+        uint256 numChunks = (dataLength + 31) / 32; // Round up to get number of 32-byte chunks
+
+        uint256 hashedValue;
+        if (numChunks == 0) {
+            hashedValue = 0;
+        } else if (numChunks == 1) {
+            // Single chunk - pad and hash with 0
+            uint256 chunk1 = uint256(bytes32(userDefinedData[0:dataLength < 32 ? dataLength : 32]));
+            if (dataLength < 32) {
+                // Pad with zeros on the right
+                chunk1 = chunk1 << (8 * (32 - dataLength));
+            }
+            hashedValue = PoseidonT3.hash([chunk1, 0]);
+        } else {
+            // Multiple chunks - hash them pairwise
+            uint256 chunk1 = uint256(bytes32(userDefinedData[0:32]));
+            uint256 chunk2 = uint256(bytes32(userDefinedData[32:dataLength < 64 ? dataLength : 64]));
+            if (dataLength < 64) {
+                // Pad second chunk with zeros on the right
+                chunk2 = chunk2 << (8 * (64 - dataLength));
+            }
+            hashedValue = PoseidonT3.hash([chunk1, chunk2]);
+
+            // For more than 2 chunks, continue hashing
+            for (uint256 i = 2; i < numChunks; i++) {
+                uint256 nextChunk;
+                uint256 startIdx = i * 32;
+                uint256 endIdx = startIdx + 32;
+                if (endIdx > dataLength) {
+                    // Last chunk may be partial
+                    bytes memory partialChunk = userDefinedData[startIdx:dataLength];
+                    nextChunk = uint256(bytes32(partialChunk));
+                    nextChunk = nextChunk << (8 * (32 - (dataLength - startIdx)));
+                } else {
+                    nextChunk = uint256(bytes32(userDefinedData[startIdx:endIdx]));
+                }
+                hashedValue = PoseidonT3.hash([hashedValue, nextChunk]);
+            }
+        }
+
+        require(hashedValue == proofUserIdentifier, "UserIdentifier hash mismatch");
     }
 
     /**
@@ -260,26 +346,30 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function verify(
         bytes calldata input,
         bytes calldata userDefinedData
-    ) external virtual onlyProxy returns (bytes memory result) {
+    ) external virtual onlyProxy {
         // Decode the structured input
         (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(input);
 
-        // Get verification config
-        bytes memory config = _getVerificationConfig(header);
+        // Decode userDefinedData to extract configId, destChainId, userIdentifier
+        (bytes32 configId, uint256 destChainId, uint256 userIdentifier, bytes calldata remainingData) = _decodeUserDefinedData(userDefinedData);
+
+        // Verify that the poseidon hash of userDefinedData matches the userIdentifier in the proof
+        _verifyUserIdentifierHash(userDefinedData, proofData, header.attestationId);
+
+        // Get verification config using configId from userDefinedData
+        bytes memory config = _getVerificationConfigById(configId);
 
         // Perform verification and return result
-        return _executeVerificationFlow(header, proofData, config);
+        _executeVerificationFlow(header, proofData, config, destChainId, userDefinedData);
     }
 
     /**
-     * @notice Gets verification config based on contract version
+     * @notice Gets verification config by configId
      */
-    function _getVerificationConfig(SelfStructs.HubInputHeader memory header) internal view returns (bytes memory config) {
-        if (header.contractVersion == 2) {
-            IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
-            VerificationConfig.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[header.configId];
-            config = GenericFormatter.formatV2Config(verificationConfig);
-        }
+    function _getVerificationConfigById(bytes32 configId) internal view returns (bytes memory config) {
+        IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
+        VerificationConfig.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[configId];
+        config = GenericFormatter.formatV2Config(verificationConfig);
     }
 
     /**
@@ -288,8 +378,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _executeVerificationFlow(
         SelfStructs.HubInputHeader memory header,
         bytes calldata proofData,
-        bytes memory config
-    ) internal returns (bytes memory) {
+        bytes memory config,
+        uint256 destChainId,
+        bytes calldata userDefinedData
+    ) internal {
         // Perform basic verification
         bytes memory proofOutput = _basicVerification(
             header.attestationId,
@@ -303,13 +395,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             proofOutput
         );
 
-        // Format output
-        bytes memory output = _formatVerificationOutput(header.contractVersion, genericDiscloseOutput);
+        // Format output (using contractVersion 2 for now)
+        bytes memory output = _formatVerificationOutput(2, genericDiscloseOutput);
 
         // Handle result based on destination chain
-        _handleVerificationResult(header.destChainId, output);
-
-        return output;
+        _handleVerificationResult(destChainId, output, userDefinedData);
     }
 
     /**
@@ -327,9 +417,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /**
      * @notice Handles verification result based on destination chain
      */
-    function _handleVerificationResult(uint256 destChainId, bytes memory output) internal {
+    function _handleVerificationResult(uint256 destChainId, bytes memory output, bytes calldata userDefinedData) internal {
         if (destChainId == block.chainid) {
-            ISelfVerificationRoot(msg.sender).onVerificationSuccess(output);
+            // Convert calldata to memory for the function call
+            bytes memory userDefinedDataMemory = userDefinedData;
+            ISelfVerificationRoot(msg.sender).onVerificationSuccess(output, userDefinedDataMemory);
         } else {
             // Call external bridge
             // _handleBridge()
@@ -800,20 +892,4 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory) {
         return abi.decode(data, (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof));
     }
-
-    /**
-     * @notice Encodes passport verification result to bytes.
-     */
-    // function _encodePassportResult(VcAndDiscloseVerificationResult memory result) internal pure returns (bytes memory) {
-    //     return abi.encode(result);
-    // }
-
-    /**
-     * @notice Encodes ID card verification result to bytes.
-     */
-    // function _encodeIdCardResult(
-    //     IdCardVcAndDiscloseVerificationResult memory result
-    // ) internal pure returns (bytes memory) {
-    //     return abi.encode(result);
-    // }
 }
