@@ -75,10 +75,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Triggered in verifySelfProof when attestation ID validation fails
     error InvalidAttestationId();
 
-    /// @notice Error thrown when the contract version doesn't match
-    /// @dev Triggered in verifySelfProof when contract version validation fails
-    error InvalidContractVersion();
-
     /// @notice Error thrown when the data format is invalid
     /// @dev Triggered when the provided bytes data doesn't have the expected format
     error InvalidDataFormat();

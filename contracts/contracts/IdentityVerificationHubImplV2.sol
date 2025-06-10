@@ -55,6 +55,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     event HubInitializedV2();
     /**
+     * @notice Emitted when a verification config V2 is set.
+     * @param configId The configuration identifier (generated from config hash).
+     * @param config The verification configuration that was set.
+     */
+    event VerificationConfigV2Set(bytes32 indexed configId, VerificationConfig.VerificationConfigV2 config);
+    /**
      * @notice Emitted when the registry address is updated.
      * @param registry The new registry address.
      */
@@ -91,18 +97,6 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev Ensures that the provided proof's date is within one day of the expected start time.
     error CurrentDateNotInValidRange();
 
-    /// @notice Thrown when the 'older than' attribute in the proof is invalid.
-    /// @dev The 'older than' value derived from the proof does not match the expected criteria.
-    error InvalidOlderThan();
-
-    /// @notice Thrown when the provided forbidden countries list is invalid.
-    /// @dev The forbidden countries list in the proof does not match the expected packed data.
-    error InvalidForbiddenCountries();
-
-    /// @notice Thrown when the OFAC check fails.
-    /// @dev Indicates that the proof did not satisfy the required OFAC conditions.
-    error InvalidOfacCheck();
-
     /// @notice Thrown when the register circuit proof is invalid.
     /// @dev The register circuit verifier did not validate the provided proof.
     error InvalidRegisterProof();
@@ -121,17 +115,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     error InvalidIdentityCommitmentRoot();
     error InvalidDscCommitmentRoot();
 
-    /// @notice Thrown when the provided OFAC root is invalid.
-    /// @dev Indicates that the OFAC root from the proof does not match the expected OFAC root.
-    error InvalidOfacRoot();
-
     /// @notice Thrown when the provided CSCA root is invalid.
     /// @dev Indicates that the CSCA root from the DSC proof does not match the expected CSCA root.
     error InvalidCscaRoot();
-
-    /// @notice Thrown when the revealed data type is invalid or not supported.
-    /// @dev Raised during the processing of revealed data if it does not match any supported type.
-    error INVALID_REVEALED_DATA_TYPE();
 
     error InvalidAttestationId();
 
@@ -233,13 +219,39 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Sets verification config in V2 storage (owner only)
-     * @param configId The configuration identifier
+     * @notice Generates a config ID from a verification config
      * @param config The verification configuration
+     * @return The generated config ID (sha256 hash of encoded config)
      */
-    function setVerificationConfigV2(bytes32 configId, VerificationConfig.VerificationConfigV2 memory config) external virtual onlyProxy onlyOwner {
+    function generateConfigId(VerificationConfig.VerificationConfigV2 memory config) public pure returns (bytes32) {
+        return sha256(abi.encode(config));
+    }
+
+    /**
+     * @notice Sets verification config in V2 storage (owner only)
+     * @dev The configId is automatically generated from the config content using sha256(abi.encode(config))
+     * @param config The verification configuration
+     * @return configId The generated config ID
+     */
+    function setVerificationConfigV2(VerificationConfig.VerificationConfigV2 memory config) external virtual onlyProxy onlyOwner returns (bytes32 configId) {
+        configId = generateConfigId(config);
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         $v2._v2VerificationConfigs[configId] = config;
+
+        emit VerificationConfigV2Set(configId, config);
+    }
+
+    /**
+     * @notice Checks if a verification config exists
+     * @param configId The configuration identifier
+     * @return exists Whether the config exists
+     */
+    function verificationConfigV2Exists(bytes32 configId) external view virtual onlyProxy returns (bool exists) {
+        IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
+        // Check if the config has non-zero values (assuming at least one field will be non-zero for valid configs)
+        VerificationConfig.VerificationConfigV2 memory config = $v2._v2VerificationConfigs[configId];
+        // This is a simple existence check - you might want to implement a more sophisticated check
+        return generateConfigId(config) == configId;
     }
 
     /**
