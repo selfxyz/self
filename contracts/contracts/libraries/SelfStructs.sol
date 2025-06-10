@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.30;
+pragma solidity 0.8.28;
 
 library SelfStructs {
   struct HubInputHeader {
@@ -25,7 +25,7 @@ library SelfStructs {
 
   struct PassportOutput {
     uint256 attestationId;
-    uint256[3] revealedDataPacked;
+    bytes revealedDataPacked;
     uint256 userIdentifier;
     uint256 nullifier;
     uint256[4] forbiddenCountriesListPacked;
@@ -33,7 +33,7 @@ library SelfStructs {
 
   struct EuIdOutput {
     uint256 attestationId;
-    uint256[4] revealedDataPacked;
+    bytes revealedDataPacked;
     uint256 userIdentifier;
     uint256 nullifier;
     uint256[4] forbiddenCountriesListPacked;
@@ -44,7 +44,7 @@ library SelfStructs {
   uint256 constant nameAndYobOfac = 2;
 
    struct GenericDiscloseOutputV2 {
-    uint256 attestationId;
+    bytes32 attestationId;
     uint256 userIdentifier;
     uint256 nullifier;
     uint256[4] forbiddenCountriesListPacked;

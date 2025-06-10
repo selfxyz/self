@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.30;
+pragma solidity 0.8.28;
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
@@ -30,7 +30,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     /// @custom:storage-location erc7201:self.storage.IdentityVerificationHubV2
     struct IdentityVerificationHubV2Storage {
-        mapping(bytes32 configId => SelfStructs.VerificationConfigV2) _v2VerificationConfigs;
+        mapping(bytes32 configId => VerificationConfig.VerificationConfigV2) _v2VerificationConfigs;
         // We should consider to add bridge address
         // address bridgeAddress;
     }
@@ -292,7 +292,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param configId The configuration identifier
      * @return The verification configuration
      */
-    function getVerificationConfigV2(bytes32 configId) external view virtual onlyProxy returns (SelfStructs.VerificationConfigV2 memory) {
+    function getVerificationConfigV2(bytes32 configId) external view virtual onlyProxy returns (VerificationConfig.VerificationConfigV2 memory) {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         return $v2._v2VerificationConfigs[configId];
     }
@@ -302,7 +302,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param configId The configuration identifier
      * @param config The verification configuration
      */
-    function setVerificationConfigV2(bytes32 configId, SelfStructs.VerificationConfigV2 memory config) external virtual onlyProxy onlyOwner {
+    function setVerificationConfigV2(bytes32 configId, VerificationConfig.VerificationConfigV2 memory config) external virtual onlyProxy onlyOwner {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         $v2._v2VerificationConfigs[configId] = config;
     }
@@ -312,8 +312,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function verify(
         bytes calldata input
+<<<<<<< HEAD
         bytes calldata userDefinedData
     ) external view virtual onlyProxy returns (bytes memory result) {
+=======
+    ) external virtual onlyProxy returns (bytes memory result) {
+>>>>>>> d38616d79c7936de6cee1db3fad0e28e1bcadd4b
         // Decode the structured input
         /*
             | 1 byte contractVersion
@@ -697,11 +701,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             passportOutput.attestationId = uint256(attestationId);
 
             // Extract revealed data (3 elements for passport)
+            uint256[3] memory revealedDataPacked;
             for (uint256 i = 0; i < 3; i++) {
-                passportOutput.revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
+                revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
             }
 
             passportOutput.userIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+            passportOutput.revealedDataPacked = Formatter.fieldElementsToBytes(revealedDataPacked);
             passportOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
 
             // Extract forbidden countries list (4 elements)
@@ -717,9 +723,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             euIdOutput.attestationId = uint256(attestationId);
 
             // Extract revealed data (4 elements for EU ID)
+            uint256[4] memory revealedDataPacked;
             for (uint256 i = 0; i < 4; i++) {
-                euIdOutput.revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
+                revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
             }
+
+            euIdOutput.revealedDataPacked = Formatter.fieldElementsToBytesIdCard(revealedDataPacked);
 
             euIdOutput.userIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
             euIdOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
@@ -735,23 +744,23 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         revert InvalidAttestationId();
     }
 
-    function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (VcAndDiscloseProof memory) {
-        return abi.decode(data, (VcAndDiscloseProof));
+    function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory) {
+        return abi.decode(data, (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof));
     }
 
     /**
      * @notice Encodes passport verification result to bytes.
      */
-    function _encodePassportResult(VcAndDiscloseVerificationResult memory result) internal pure returns (bytes memory) {
-        return abi.encode(result);
-    }
+    // function _encodePassportResult(VcAndDiscloseVerificationResult memory result) internal pure returns (bytes memory) {
+    //     return abi.encode(result);
+    // }
 
     /**
      * @notice Encodes ID card verification result to bytes.
      */
-    function _encodeIdCardResult(
-        IdCardVcAndDiscloseVerificationResult memory result
-    ) internal pure returns (bytes memory) {
-        return abi.encode(result);
-    }
+    // function _encodeIdCardResult(
+    //     IdCardVcAndDiscloseVerificationResult memory result
+    // ) internal pure returns (bytes memory) {
+    //     return abi.encode(result);
+    // }
 }

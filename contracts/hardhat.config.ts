@@ -21,7 +21,7 @@ const config: HardhatUserConfig = {
       metadata: {
         bytecodeHash: "none",
       },
-      viaIR: false,
+      viaIR: true,
     },
   },
   contractSizer: {

@@ -3,6 +3,7 @@ pragma solidity 0.8.28;
 
 import {Formatter} from "./Formatter.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
+import {SelfStructs} from "./SelfStructs.sol";
 
 /**
  * @title UnifiedAttributeHandler Library
@@ -211,7 +212,7 @@ library CircuitAttributeHandlerV2 {
         if (attestationId == AttestationId.E_PASSPORT) {
             return uint8(charcodes[positions.ofacStart + 1]) == 1;
         } else {
-            return uint8(charcodes[positions.ofacStart]);
+            return uint8(charcodes[positions.ofacStart]) == 1;
         }
     }
 

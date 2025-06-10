@@ -10,13 +10,13 @@ struct GenericVerificationStruct {
 }
 
 library GenericFormatter {
-  function formatV1Config(VerificationConfig.GenericVerficationConfigV1 memory verificationConfigV1) internal pure returns (bytes memory v1ConfigBytes) {
-    VerificationConfig.GenericVerficationConfigV2 memory verificationConfigV2 = VerificationConfig.fromV1Config(verificationConfigV1);
-    v1ConfigBytes = abi.encode(verificationConfigV2);
+  function formatV1Config(VerificationConfig.VerificationConfigV1 memory verificationConfigV1) internal pure returns (bytes memory v1ConfigBytes) {
+    VerificationConfig.VerificationConfigV2 memory verificationConfigV2 = VerificationConfig.fromV1Config(verificationConfigV1);
+    return abi.encode(verificationConfigV2);
   }
 
-  function formatV2Config(VerificationConfig.GenericVerficationConfigV2 memory verificationConfig) internal pure returns (bytes memory v2ConfigBytes) {
-    v2ConfigBytes = abi.encode(verificationConfig);
+  function formatV2Config(VerificationConfig.VerificationConfigV2 memory verificationConfigV2) internal pure returns (bytes memory v2ConfigBytes) {
+    return abi.encode(verificationConfigV2);
   }
 
 
