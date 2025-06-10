@@ -4,6 +4,7 @@ import {CircuitAttributeHandlerV2} from "./CircuitAttributeHandlerV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
 import {SelfStructs} from "./SelfStructs.sol";
 import {CircuitAttributeHandlerV2} from "./CircuitAttributeHandlerV2.sol";
+import {Formatter} from "./Formatter.sol";
 
 library CustomVerifier {
   error INVALID_ATTESTATION_ID();
@@ -16,7 +17,7 @@ library CustomVerifier {
    * @param config The configuration of the custom verifier.
    * @param proofOutput The proof output of the custom verifier.
    */
-  function customVerify(uint8 attestationId, bytes calldata config, bytes calldata proofOutput) external pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
+  function customVerify(bytes32 attestationId, bytes calldata config, bytes calldata proofOutput) external pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
     VerificationConfig.VerificationConfigV2 memory verificationConfig = VerificationConfig.verificationConfigFromBytes(config);
 
     if (attestationId == AttestationId.E_PASSPORT) {
@@ -169,15 +170,15 @@ library VerificationConfig {
     });
   }
 
-  function verificationConfigFromBytes(bytes memory verificationConfig) internal pure returns (VerificationConfigV2 memory verificationConfig) {
-    verificationConfig = abi.decode(verificationConfig, (VerificationConfigV2));
+  function verificationConfigFromBytes(bytes memory verificationConfig) internal pure returns (VerificationConfigV2 memory verificationConfigV2) {
+    return abi.decode(verificationConfig, (VerificationConfigV2));
   }
 
   function v1ConfigIntoBytes(uint8 attestationId, VerificationConfigV1 memory verificationConfig) internal pure returns (bytes memory v1ConfigBytes) {
-    v1ConfigBytes = bytes.concat(attestationId, abi.encode(verificationConfig));
+    return bytes.concat(bytes1(attestationId), abi.encode(verificationConfig));
   }
 
   function v2ConfigIntoBytes(uint8 attestationId, VerificationConfigV2 memory verificationConfig) internal pure returns (bytes memory v2ConfigBytes) {
-    v2ConfigBytes = bytes.concat(attestationId, abi.encode(verificationConfig));
+    return bytes.concat(bytes1(attestationId), abi.encode(verificationConfig));
   }
 }

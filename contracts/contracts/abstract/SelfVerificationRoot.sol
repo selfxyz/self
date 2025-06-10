@@ -312,18 +312,18 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         // );
     }
 
-    /**
-     * @notice Hook called after successful verification
-     * @dev Virtual function to be overridden by derived contracts for custom business logic
-     * @param attestationId The attestation identifier from the proof
-     * @param scope The scope of the verification
-     * @param userIdentifier The user identifier from the proof
-     * @param nullifier The nullifier from the proof
-     * @param identityCommitmentRoot The root of the identity commitment
-     * @param revealedDataPacked The packed revealed data from the proof (E_PASSPORT_REVEALED_DATA_LENGTH for passport, EU_ID_CARD_REVEALED_DATA_LENGTH for ID card)
-     * @param forbiddenCountriesListPacked The packed forbidden countries list
-     */
-    function onBasicVerificationSuccess(
-        bytes memory input
-    ) public virtual;
+    // /**
+    //  * @notice Hook called after successful verification
+    //  * @dev Virtual function to be overridden by derived contracts for custom business logic
+    //  * @param attestationId The attestation identifier from the proof
+    //  * @param scope The scope of the verification
+    //  * @param userIdentifier The user identifier from the proof
+    //  * @param nullifier The nullifier from the proof
+    //  * @param identityCommitmentRoot The root of the identity commitment
+    //  * @param revealedDataPacked The packed revealed data from the proof (E_PASSPORT_REVEALED_DATA_LENGTH for passport, EU_ID_CARD_REVEALED_DATA_LENGTH for ID card)
+    //  * @param forbiddenCountriesListPacked The packed forbidden countries list
+    //  */
+    // function onBasicVerificationSuccess(
+    //     bytes memory input
+    // ) public virtual;
 }
