@@ -53,27 +53,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         }
     }
 
-    event HubInitialized(
-        bytes32[] attestationIds,
-        address[] registryAddresses,
-        address[] vcAndDiscloseCircuitVerifiers,
-        uint256[] registerCircuitVerifierIds,
-        address[] registerCircuitVerifiers,
-        uint256[] dscCircuitVerifierIds,
-        address[] dscCircuitVerifiers
-    );
-
-    event HubInitializedV2(
-        bytes32[] attestationIds,
-        address[] registryAddresses,
-        address[] vcAndDiscloseCircuitVerifierAddresses,
-        bytes32[] registerCircuitAttestationIds,
-        uint256[] registerCircuitTypeIds,
-        address[] registerCircuitVerifierAddresses,
-        bytes32[] dscCircuitAttestationIds,
-        uint256[] dscCircuitTypeIds,
-        address[] dscCircuitVerifierAddresses
-    );
+    event HubInitializedV2();
     /**
      * @notice Emitted when the registry address is updated.
      * @param registry The new registry address.
@@ -173,55 +153,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // Initializer
     // ====================================================
 
-    function initialize(
-        bytes32[] memory attestationIds,
-        address[] memory registryAddresses,
-        address[] memory vcAndDiscloseCircuitVerifierAddresses,
-        bytes32[] memory registerCircuitAttestationIds,
-        uint256[] memory registerCircuitTypeIds,
-        address[] memory registerCircuitVerifierAddresses,
-        bytes32[] memory dscCircuitAttestationIds,
-        uint256[] memory dscCircuitTypeIds,
-        address[] memory dscCircuitVerifierAddresses
-    ) external initializer {
+    function initialize() external initializer {
         __ImplRoot_init();
 
-        if (attestationIds.length != registryAddresses.length ||
-            attestationIds.length != vcAndDiscloseCircuitVerifierAddresses.length ||
-            registerCircuitAttestationIds.length != registerCircuitTypeIds.length ||
-            registerCircuitAttestationIds.length != registerCircuitVerifierAddresses.length ||
-            dscCircuitAttestationIds.length != dscCircuitTypeIds.length ||
-            dscCircuitAttestationIds.length != dscCircuitVerifierAddresses.length
-        ) {
-            revert LengthMismatch();
-        }
-
-        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
-
-        for (uint256 i = 0; i < attestationIds.length; i++) {
-            $._registries[attestationIds[i]] = registryAddresses[i];
-            $._discloseVerifiers[attestationIds[i]] = vcAndDiscloseCircuitVerifierAddresses[i];
-        }
-
-        for (uint256 i = 0; i < registerCircuitAttestationIds.length; i++) {
-            $._registerCircuitVerifiers[registerCircuitAttestationIds[i]][registerCircuitTypeIds[i]] = registerCircuitVerifierAddresses[i];
-        }
-
-        for (uint256 i = 0; i < dscCircuitAttestationIds.length; i++) {
-            $._dscCircuitVerifiers[dscCircuitAttestationIds[i]][dscCircuitTypeIds[i]] = dscCircuitVerifierAddresses[i];
-        }
-
-        emit HubInitializedV2(
-            attestationIds,
-            registryAddresses,
-            vcAndDiscloseCircuitVerifierAddresses,
-            registerCircuitAttestationIds,
-            registerCircuitTypeIds,
-            registerCircuitVerifierAddresses,
-            dscCircuitAttestationIds,
-            dscCircuitTypeIds,
-            dscCircuitVerifierAddresses
-        );
+        emit HubInitializedV2();
     }
 
     // ====================================================
@@ -311,56 +246,80 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @notice Main verification function with new structured input format
      */
     function verify(
-        bytes calldata input
+        bytes calldata input,
         bytes calldata userDefinedData
-    ) external view virtual onlyProxy returns (bytes memory result) {
+    ) external virtual onlyProxy returns (bytes memory result) {
         // Decode the structured input
-        /*
-            | 1 byte contractVersion
-            | 31 bytes buffer
-            | 32 bytes destChainId
-            | 32 bytes configId
-            | 32 bytes attestationId
-            | data |
-        */
         (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(input);
 
-        bytes memory config;
+        // Get verification config
+        bytes memory config = _getVerificationConfig(header);
+
+        // Perform verification and return result
+        return _executeVerificationFlow(header, proofData, config);
+    }
+
+    /**
+     * @notice Gets verification config based on contract version
+     */
+    function _getVerificationConfig(SelfStructs.HubInputHeader memory header) internal view returns (bytes memory config) {
         if (header.contractVersion == 2) {
             IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
             VerificationConfig.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[header.configId];
             config = GenericFormatter.formatV2Config(verificationConfig);
         }
+    }
 
-
-        // Perform basic verification (rootCheck, currentDateCheck, groth16 proof verification)
+    /**
+     * @notice Executes the complete verification flow
+     */
+    function _executeVerificationFlow(
+        SelfStructs.HubInputHeader memory header,
+        bytes calldata proofData,
+        bytes memory config
+    ) internal returns (bytes memory) {
+        // Perform basic verification
         bytes memory proofOutput = _basicVerification(
             header.attestationId,
             _decodeVcAndDiscloseProof(proofData)
         );
 
-        // ======= Need to execute Custom Verifications Here ============
-        SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(header.attestationId, config, proofOutput);
+        // Execute custom verifications
+        SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(
+            header.attestationId,
+            config,
+            proofOutput
+        );
 
-        bytes memory output;
-        if (header.contractVersion == 2) {
+        // Format output
+        bytes memory output = _formatVerificationOutput(header.contractVersion, genericDiscloseOutput);
+
+        // Handle result based on destination chain
+        _handleVerificationResult(header.destChainId, output);
+
+        return output;
+    }
+
+    /**
+     * @notice Formats verification output based on contract version
+     */
+    function _formatVerificationOutput(
+        uint8 contractVersion,
+        SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput
+    ) internal pure returns (bytes memory output) {
+        if (contractVersion == 2) {
             output = GenericFormatter.toV2Struct(genericDiscloseOutput);
         }
+    }
 
-        // ======= Need to execute formatting Here =============
-        /*
-            Informations which should be included in the output
-            - attestationId
-            - revealedData_packed
-            - user_identifier
-            - nullifier
-            - forbiddenCountriesListPacked
-         */
-
-        if (header.destChainId == block.chainid) {
-            ISelfVerificationRoot(msg.sender).onBasicVerificationSuccess(output);
+    /**
+     * @notice Handles verification result based on destination chain
+     */
+    function _handleVerificationResult(uint256 destChainId, bytes memory output) internal {
+        if (destChainId == block.chainid) {
+            ISelfVerificationRoot(msg.sender).onVerificationSuccess(output);
         } else {
-            // Cal external bridge
+            // Call external bridge
             // _handleBridge()
         }
     }
@@ -638,106 +597,192 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     ) internal view returns (bytes memory output) {
         // Get indices for the specific attestation type
         CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(attestationId);
-        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
 
-        // === 1. ROOT CHECK ===
-        // Verify identity commitment root exists in registry
+        // Perform all verification checks
+        _performRootCheck(attestationId, vcAndDiscloseProof, indices);
+        _performCurrentDateCheck(vcAndDiscloseProof, indices);
+        _performGroth16ProofVerification(attestationId, vcAndDiscloseProof);
+
+        // Create and return output
+        return _createVerificationOutput(attestationId, vcAndDiscloseProof, indices);
+    }
+
+    /**
+     * @notice Performs identity commitment root verification
+     */
+    function _performRootCheck(
+        bytes32 attestationId,
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal view {
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+        uint256 merkleRoot = vcAndDiscloseProof.pubSignals[indices.merkleRootIndex];
+
         if (attestationId == AttestationId.E_PASSPORT) {
-            if (
-                !IIdentityRegistryV1($._registries[attestationId]).checkIdentityCommitmentRoot(
-                    vcAndDiscloseProof.pubSignals[indices.merkleRootIndex]
-                )
-            ) {
+            if (!IIdentityRegistryV1($._registries[attestationId]).checkIdentityCommitmentRoot(merkleRoot)) {
                 revert InvalidIdentityCommitmentRoot();
             }
         } else if (attestationId == AttestationId.EU_ID_CARD) {
-            if (
-                !IIdentityRegistryIdCardV1($._registries[attestationId]).checkIdentityCommitmentRoot(
-                    vcAndDiscloseProof.pubSignals[indices.merkleRootIndex]
-                )
-            ) {
+            if (!IIdentityRegistryIdCardV1($._registries[attestationId]).checkIdentityCommitmentRoot(merkleRoot)) {
                 revert InvalidIdentityCommitmentRoot();
             }
         } else {
             revert InvalidAttestationId();
         }
+    }
 
-        // === 2. CURRENT DATE CHECK ===
-        // Verify current date is within valid range (±1 day)
+    /**
+     * @notice Performs current date validation
+     */
+    function _performCurrentDateCheck(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal view {
         uint[6] memory dateNum;
         for (uint256 i = 0; i < 6; i++) {
             dateNum[i] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex + i];
         }
 
         uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
-        if (
-            currentTimestamp < _getStartOfDayTimestamp() - 1 days + 1 ||
-            currentTimestamp > _getStartOfDayTimestamp() + 1 days - 1
-        ) {
+        uint startOfDay = _getStartOfDayTimestamp();
+
+        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > startOfDay + 1 days - 1) {
             revert CurrentDateNotInValidRange();
         }
+    }
 
-        // === 3. GROTH16 PROOF VERIFICATION ===
-        // Verify the proof using the VC and Disclose circuit verifier
-        if (
-            !IVcAndDiscloseCircuitVerifier($._discloseVerifiers[attestationId]).verifyProof(
-                vcAndDiscloseProof.a,
-                vcAndDiscloseProof.b,
-                vcAndDiscloseProof.c,
-                vcAndDiscloseProof.pubSignals
-            )
-        ) {
+    /**
+     * @notice Performs Groth16 proof verification
+     */
+    function _performGroth16ProofVerification(
+        bytes32 attestationId,
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof
+    ) internal view {
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+
+        if (!IVcAndDiscloseCircuitVerifier($._discloseVerifiers[attestationId]).verifyProof(
+            vcAndDiscloseProof.a,
+            vcAndDiscloseProof.b,
+            vcAndDiscloseProof.c,
+            vcAndDiscloseProof.pubSignals
+        )) {
             revert InvalidVcAndDiscloseProof();
         }
+    }
 
-        // === 4. CREATE OUTPUT STRUCT AND ENCODE TO BYTES ===
+    /**
+     * @notice Creates verification output based on attestation type
+     */
+    function _createVerificationOutput(
+        bytes32 attestationId,
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal pure returns (bytes memory) {
         if (attestationId == AttestationId.E_PASSPORT) {
-            // Create PassportOutput struct
-            SelfStructs.PassportOutput memory passportOutput;
-            passportOutput.attestationId = uint256(attestationId);
-
-            // Extract revealed data (3 elements for passport)
-            uint256[3] memory revealedDataPacked;
-            for (uint256 i = 0; i < 3; i++) {
-                revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
-            }
-
-            passportOutput.userIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
-            passportOutput.revealedDataPacked = Formatter.fieldElementsToBytes(revealedDataPacked);
-            passportOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
-
-            // Extract forbidden countries list (4 elements)
-            for (uint256 i = 0; i < 4; i++) {
-                passportOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[indices.forbiddenCountriesListPackedIndex + i];
-            }
-
-            return abi.encode(passportOutput);
-
+            return _createPassportOutput(vcAndDiscloseProof, indices, attestationId);
         } else if (attestationId == AttestationId.EU_ID_CARD) {
-            // Create EuIdOutput struct
-            SelfStructs.EuIdOutput memory euIdOutput;
-            euIdOutput.attestationId = uint256(attestationId);
-
-            // Extract revealed data (4 elements for EU ID)
-            uint256[4] memory revealedDataPacked;
-            for (uint256 i = 0; i < 4; i++) {
-                revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
-            }
-
-            euIdOutput.revealedDataPacked = Formatter.fieldElementsToBytesIdCard(revealedDataPacked);
-
-            euIdOutput.userIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
-            euIdOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
-
-            // Extract forbidden countries list (4 elements)
-            for (uint256 i = 0; i < 4; i++) {
-                euIdOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[indices.forbiddenCountriesListPackedIndex + i];
-            }
-
-            return abi.encode(euIdOutput);
+            return _createEuIdOutput(vcAndDiscloseProof, indices, attestationId);
+        } else {
+            revert InvalidAttestationId();
         }
+    }
 
-        revert InvalidAttestationId();
+    /**
+     * @notice Creates passport output struct
+     */
+    function _createPassportOutput(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices,
+        bytes32 attestationId
+    ) internal pure returns (bytes memory) {
+        SelfStructs.PassportOutput memory passportOutput;
+        passportOutput.attestationId = uint256(attestationId);
+        passportOutput.userIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+        passportOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
+
+        // Extract revealed data
+        passportOutput.revealedDataPacked = _extractPassportRevealedData(vcAndDiscloseProof, indices);
+
+        // Extract forbidden countries list
+        _extractPassportForbiddenCountries(vcAndDiscloseProof, indices, passportOutput);
+
+        return abi.encode(passportOutput);
+    }
+
+    /**
+     * @notice Extracts revealed data for passport
+     */
+    function _extractPassportRevealedData(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal pure returns (bytes memory) {
+        uint256[3] memory revealedDataPacked;
+        for (uint256 i = 0; i < 3; i++) {
+            revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
+        }
+        return Formatter.fieldElementsToBytes(revealedDataPacked);
+    }
+
+    /**
+     * @notice Extracts forbidden countries list for passport
+     */
+    function _extractPassportForbiddenCountries(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices,
+        SelfStructs.PassportOutput memory passportOutput
+    ) internal pure {
+        for (uint256 i = 0; i < 4; i++) {
+            passportOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[indices.forbiddenCountriesListPackedIndex + i];
+        }
+    }
+
+    /**
+     * @notice Creates EU ID output struct
+     */
+    function _createEuIdOutput(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices,
+        bytes32 attestationId
+    ) internal pure returns (bytes memory) {
+        SelfStructs.EuIdOutput memory euIdOutput;
+        euIdOutput.attestationId = uint256(attestationId);
+        euIdOutput.userIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+        euIdOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
+
+        // Extract revealed data
+        euIdOutput.revealedDataPacked = _extractEuIdRevealedData(vcAndDiscloseProof, indices);
+
+        // Extract forbidden countries list
+        _extractEuIdForbiddenCountries(vcAndDiscloseProof, indices, euIdOutput);
+
+        return abi.encode(euIdOutput);
+    }
+
+    /**
+     * @notice Extracts revealed data for EU ID
+     */
+    function _extractEuIdRevealedData(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal pure returns (bytes memory) {
+        uint256[4] memory revealedDataPacked;
+        for (uint256 i = 0; i < 4; i++) {
+            revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
+        }
+        return Formatter.fieldElementsToBytesIdCard(revealedDataPacked);
+    }
+
+    /**
+     * @notice Extracts forbidden countries list for EU ID
+     */
+    function _extractEuIdForbiddenCountries(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices,
+        SelfStructs.EuIdOutput memory euIdOutput
+    ) internal pure {
+        for (uint256 i = 0; i < 4; i++) {
+            euIdOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[indices.forbiddenCountriesListPackedIndex + i];
+        }
     }
 
     function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory) {

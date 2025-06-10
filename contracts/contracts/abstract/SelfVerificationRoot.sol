@@ -83,13 +83,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Triggered when the provided bytes data doesn't have the expected format
     error InvalidDataFormat();
 
-    /// @notice Error thrown when a requestId has already been executed
-    /// @dev Prevents replay attacks
-    error RequestIdAlreadyExecuted();
-
-    /// @notice Error thrown when no calldata is stored for a given requestId
-    /// @dev Triggered when trying to execute a requestId that doesn't exist
-    error NoCalldataStored();
 
     // ====================================================
     // Events
@@ -113,8 +106,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @notice Emitted when an attestation ID is removed
     event AttestationIdRemoved(bytes32 indexed attestationId);
 
-    /// @notice Emitted when calldata is stored for a requestId
-    event CalldataStored(bytes32 indexed requestId, bytes calldata);
 
     /// @notice Emitted when calldata is executed for a requestId
     event CalldataExecuted(bytes32 indexed requestId, bool success, bytes result);
@@ -183,18 +174,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             requestId := calldataload(userDefinedData.offset)
             configId := calldataload(add(userDefinedData.offset, 32))
             destChainId := calldataload(add(userDefinedData.offset, 64))
-        }
-
-        // Check if requestId has already been executed
-        if (_requestIdExecuted[requestId]) {
-            revert RequestIdAlreadyExecuted();
-        }
-
-        // Store calldata for later execution (if any calldata exists beyond the 96 bytes)
-        if (userDefinedData.length > 96) {
-            bytes calldata calldataToStore = userDefinedData[96:];
-            _requestIdToCalldata[requestId] = calldataToStore;
-            emit CalldataStored(requestId, calldataToStore);
         }
 
         bytes32 attestationId;
@@ -300,68 +279,41 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     function onVerificationSuccess(
         bytes memory verificationData,
-        bytes calldata userDefinedData
+        bytes memory userDefinedData
     ) public virtual {
         // Extract requestId from userDefinedData
         if (userDefinedData.length < 32) {
             return; // No requestId provided
         }
 
-        bytes32 requestId;
-        assembly {
-            requestId := calldataload(userDefinedData.offset)
-        }
-
         // Execute stored calldata for this requestId
-        _executeStoredCalldata(requestId, verificationData, userDefinedData);
+        _executeStoredCalldata(verificationData, userDefinedData);
     }
 
-    /**
-     * @notice Executes stored calldata for a given requestId
-     * @dev Internal function that retrieves and executes the stored calldata
-     * @param requestId The request identifier
-     * @param verificationData The verification data to pass to the executed function
-     * @param userDefinedData The user-defined data containing requestId, configId, destChainId
-     */
     function _executeStoredCalldata(
-        bytes32 requestId,
         bytes memory verificationData,
-        bytes calldata userDefinedData
+        bytes memory userDefinedData
     ) internal {
-        // Check if requestId has already been executed
-        if (_requestIdExecuted[requestId]) {
-            revert RequestIdAlreadyExecuted();
-        }
-
-        // Get stored calldata
-        bytes memory storedCalldata = _requestIdToCalldata[requestId];
-        if (storedCalldata.length == 0) {
-            // No calldata to execute, just return
-            return;
-        }
-
-        // Mark as executed to prevent replay
-        _requestIdExecuted[requestId] = true;
 
         // Execute the stored calldata
         // The stored calldata should contain the function selector and any additional parameters
-        // We'll prepend the verificationData and userDefinedData to the call
-        bytes memory fullCalldata = abi.encodePacked(
-            storedCalldata,
-            verificationData,
-            userDefinedData
-        );
+        // // We'll prepend the verificationData and userDefinedData to the call
+        // bytes memory fullCalldata = abi.encodePacked(
+        //     storedCalldata,
+        //     verificationData,
+        //     userDefinedData
+        // );
 
-        // Make the call to this contract
-        (bool success, bytes memory result) = address(this).call(fullCalldata);
+        // // Make the call to this contract
+        // (bool success, bytes memory result) = address(this).call(fullCalldata);
 
-        emit CalldataExecuted(requestId, success, result);
+        // emit CalldataExecuted(requestId, success, result);
 
-        if (!success) {
-            // Handle call failure - could emit an event or revert based on requirements
-            // For now, we'll continue silently (can be customized by derived contracts)
-            return;
-        }
+        // if (!success) {
+        //     // Handle call failure - could emit an event or revert based on requirements
+        //     // For now, we'll continue silently (can be customized by derived contracts)
+        //     return;
+        // }
     }
 
     /**

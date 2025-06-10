@@ -16,5 +16,5 @@ interface ISelfVerificationRoot {
      */
     function verifySelfProof(bytes calldata relayerData) external;
 
-    function onBasicVerificationSuccess(bytes memory input) external;
+    function onVerificationSuccess(bytes memory input) external;
 }
