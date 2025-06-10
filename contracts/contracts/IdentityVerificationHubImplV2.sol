@@ -312,6 +312,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function verify(
         bytes calldata input
+        bytes calldata userDefinedData
     ) external view virtual onlyProxy returns (bytes memory result) {
         // Decode the structured input
         /*

@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHubV2.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
-import {CircuitConstants} from "../constants/CircuitConstants.sol";
+import {CircuitConstantsV2} from "../constants/CircuitConstantsV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
 
 /**
@@ -19,6 +19,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     uint256 constant E_PASSPORT_REVEALED_DATA_LENGTH = 3;
     uint256 constant EU_ID_CARD_REVEALED_DATA_LENGTH = 4;
 
+    uint8 constant CONTRACT_VERSION = 2;
+
     // ====================================================
     // Storage Variables
     // ====================================================
@@ -27,39 +29,33 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Used to validate that submitted proofs match the expected scope
     uint256 internal _scope;
 
-    /// @notice The contract version for validation
-    /// @dev Used to validate the contract version in relayer data
-    uint8 internal _contractVersion;
-
-    /// @notice The attestation ID that proofs must match
-    /// @dev Used to validate that submitted proofs is generated with allowed attestation IDs
-    mapping(bytes32 attestationId => bool attestationIdEnabled) internal _attestationIdToEnabled;
-
-    /// @notice Configuration settings for the verification process
-    /// @dev Contains settings for age verification, country restrictions, and OFAC checks
-    ISelfVerificationRoot.VerificationConfig internal _verificationConfig;
-
     /// @notice Reference to the identity verification hub V2 contract
     /// @dev Immutable reference used for bytes-based proof verification
     IIdentityVerificationHubV2 internal immutable _identityVerificationHubV2;
+
+    /// @notice Mapping from requestId to stored calldata for deferred execution
+    /// @dev Used to store calldata that will be executed after successful verification
+    mapping(bytes32 => bytes) internal _requestIdToCalldata;
+
+    /// @notice Mapping to track if a requestId has been used/executed
+    /// @dev Prevents replay attacks and ensures one-time execution per requestId
+    mapping(bytes32 => bool) internal _requestIdExecuted;
 
     // ====================================================
     // Circuit Constants
     // ====================================================
 
-    // Make CircuitConstants available to inheriting contracts
-    uint256 internal constant REVEALED_DATA_PACKED_INDEX = CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX;
-    uint256 internal constant FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX =
-        CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX;
-    uint256 internal constant NULLIFIER_INDEX = CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX;
-    uint256 internal constant ATTESTATION_ID_INDEX = CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX;
-    uint256 internal constant MERKLE_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX;
-    uint256 internal constant CURRENT_DATE_INDEX = CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX;
-    uint256 internal constant PASSPORT_NO_SMT_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX;
-    uint256 internal constant NAME_DOB_SMT_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX;
-    uint256 internal constant NAME_YOB_SMT_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX;
-    uint256 internal constant SCOPE_INDEX = CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX;
-    uint256 internal constant USER_IDENTIFIER_INDEX = CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX;
+    // Register circuit constants remain the same
+    uint256 internal constant REGISTER_NULLIFIER_INDEX = CircuitConstantsV2.REGISTER_NULLIFIER_INDEX;
+    uint256 internal constant REGISTER_COMMITMENT_INDEX = CircuitConstantsV2.REGISTER_COMMITMENT_INDEX;
+    uint256 internal constant REGISTER_MERKLE_ROOT_INDEX = CircuitConstantsV2.REGISTER_MERKLE_ROOT_INDEX;
+
+    // DSC circuit constants remain the same
+    uint256 internal constant DSC_TREE_LEAF_INDEX = CircuitConstantsV2.DSC_TREE_LEAF_INDEX;
+    uint256 internal constant DSC_CSCA_ROOT_INDEX = CircuitConstantsV2.DSC_CSCA_ROOT_INDEX;
+
+    // Note: VC and Disclose constants are now dynamic and obtained via getDiscloseIndices()
+    // These are no longer available as compile-time constants but can be accessed at runtime
 
     // ====================================================
     // Attestation ID
@@ -87,12 +83,17 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Triggered when the provided bytes data doesn't have the expected format
     error InvalidDataFormat();
 
+    /// @notice Error thrown when a requestId has already been executed
+    /// @dev Prevents replay attacks
+    error RequestIdAlreadyExecuted();
+
+    /// @notice Error thrown when no calldata is stored for a given requestId
+    /// @dev Triggered when trying to execute a requestId that doesn't exist
+    error NoCalldataStored();
+
     // ====================================================
     // Events
     // ====================================================
-
-    /// @notice Emitted when the verification configuration is updated
-    event VerificationConfigUpdated(ISelfVerificationRoot.VerificationConfig indexed verificationConfig);
 
     /// @notice Emitted when the verification is successful
     event VerificationSuccess(
@@ -112,53 +113,23 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @notice Emitted when an attestation ID is removed
     event AttestationIdRemoved(bytes32 indexed attestationId);
 
-    /// @notice Emitted when the contract version is updated
-    event ContractVersionUpdated(uint8 indexed newContractVersion);
+    /// @notice Emitted when calldata is stored for a requestId
+    event CalldataStored(bytes32 indexed requestId, bytes calldata);
+
+    /// @notice Emitted when calldata is executed for a requestId
+    event CalldataExecuted(bytes32 indexed requestId, bool success, bytes result);
 
     /**
      * @notice Initializes the SelfVerificationRoot contract.
      * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2.
      * @param scopeValue The expected proof scope for user registration.
-     * @param contractVersion The contract version for validation.
-     * @param attestationIds The expected attestation identifiers required in proofs.
      */
     constructor(
         address identityVerificationHubV2Address,
-        uint256 scopeValue,
-        uint8 contractVersion,
-        bytes32[] memory attestationIds
+        uint256 scopeValue
     ) {
         _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
         _scope = scopeValue;
-        _contractVersion = contractVersion;
-
-        // Cache array length for gas optimization
-        uint256 length = attestationIds.length;
-        for (uint256 i; i < length; ) {
-            _attestationIdToEnabled[attestationIds[i]] = true;
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    /**
-     * @notice Updates the verification configuration
-     * @dev Used to set or update verification parameters after contract deployment
-     * @param newVerificationConfig The new verification configuration to apply
-     */
-    function _setVerificationConfig(ISelfVerificationRoot.VerificationConfig memory newVerificationConfig) internal {
-        _verificationConfig = newVerificationConfig;
-        emit VerificationConfigUpdated(newVerificationConfig);
-    }
-
-    /**
-     * @notice Returns the current verification configuration
-     * @dev Used to retrieve the current verification settings
-     * @return Current verification configuration
-     */
-    function _getVerificationConfig() internal view returns (ISelfVerificationRoot.VerificationConfig memory) {
-        return _verificationConfig;
     }
 
     /**
@@ -172,75 +143,80 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     }
 
     /**
-     * @notice Updates the contract version
-     * @dev Used to change the expected contract version
-     * @param newContractVersion The new contract version to set
-     */
-    function _setContractVersion(uint8 newContractVersion) internal {
-        _contractVersion = newContractVersion;
-        emit ContractVersionUpdated(newContractVersion);
-    }
-
-    /**
-     * @notice Adds a new attestation ID to the allowed list
-     * @dev Used to add support for additional attestation types
-     * @param attestationId The attestation ID to add
-     */
-    function _addAttestationId(bytes32 attestationId) internal {
-        _attestationIdToEnabled[attestationId] = true;
-        emit AttestationIdAdded(attestationId);
-    }
-
-    /**
-     * @notice Removes an attestation ID from the allowed list
-     * @dev Used to revoke support for specific attestation types
-     * @param attestationId The attestation ID to remove
-     */
-    function _removeAttestationId(bytes32 attestationId) internal {
-        _attestationIdToEnabled[attestationId] = false;
-        emit AttestationIdRemoved(attestationId);
-    }
-
-    /**
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
-     * @param relayerData Packed data from relayer in format: | 1 byte circuitVersion | 31 bytes buffer | 32 bytes attestationId | proof data |
+     * @param teeData Packed data from relayer in format: | 32 bytes attestationId | proof data |
+     * @param userDefinedData User-defined data in format: | 32 bytes requestId | 32 bytes configId | 32 bytes destChainId | calldata |
      */
-    function verifySelfProof(bytes calldata relayerData) public {
-        // Minimum expected length: 1 + 31 + 32 = 64 bytes + proof data
-        if (relayerData.length < 64) {
+    /*
+        - Extract requestId from userDefinedData
+        - Store requestId => calldata mapping
+        - Do scope verification
+        - Encode contractVersion
+        - Call verify function in the Hub contract
+        - Call onVerificationSuccess
+
+        teeData = | 32 bytes attestationId | 32 bytes configId | 32 bytes destChainId | proofData |
+        userDefinedData
+        hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes attestationId | bytes32 configId | 32 bytes destChainId | proofData |
+     */
+    function verifySelfProof(
+        bytes calldata teeData,
+        bytes calldata userDefinedData
+    ) public {
+        // Minimum expected length for teeData: 32 bytes attestationId + proof data
+        if (teeData.length < 32) {
             revert InvalidDataFormat();
         }
 
-        // Parse the relayer data
-        uint8 circuitVersion = uint8(relayerData[0]);
-        // bytes31 buffer = bytes31(relayerData[1:32]); // Reserved for future use
+        // Minimum userDefinedData length: 32 (requestId) + 32 (configId) + 32 (destChainId) = 96 bytes
+        if (userDefinedData.length < 96) {
+            revert InvalidDataFormat();
+        }
+
+        // Extract requestId, configId, destChainId from userDefinedData
+        bytes32 requestId;
+        bytes32 configId;
+        bytes32 destChainId;
+
+        assembly {
+            requestId := calldataload(userDefinedData.offset)
+            configId := calldataload(add(userDefinedData.offset, 32))
+            destChainId := calldataload(add(userDefinedData.offset, 64))
+        }
+
+        // Check if requestId has already been executed
+        if (_requestIdExecuted[requestId]) {
+            revert RequestIdAlreadyExecuted();
+        }
+
+        // Store calldata for later execution (if any calldata exists beyond the 96 bytes)
+        if (userDefinedData.length > 96) {
+            bytes calldata calldataToStore = userDefinedData[96:];
+            _requestIdToCalldata[requestId] = calldataToStore;
+            emit CalldataStored(requestId, calldataToStore);
+        }
 
         bytes32 attestationId;
         assembly {
-            // Load attestationId from offset 32 (after 1+31 bytes)
-            attestationId := calldataload(add(relayerData.offset, 32))
+            // Load attestationId from the beginning of teeData (first 32 bytes)
+            attestationId := calldataload(teeData.offset)
         }
 
-        // Validate attestation ID against our stored allowed list
-        if (!_attestationIdToEnabled[attestationId]) {
-            revert InvalidAttestationId();
-        }
-
-        // Hub data should be | 1 byte circuitVersion | 1 byte contractVersion | 30 bytes buffer | 32 bytes attestationId | 32 bytes scope | proof data
+        // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes destChainId | 32 bytes configId | 32 bytes attestationId | proof data
         bytes memory hubData = abi.encodePacked(
-            // 1 byte circuitVersion
-            circuitVersion,
             // 1 byte contractVersion
-            _contractVersion,
-            // 30 bytes buffer (all zeros)
-            bytes30(0),
+            CONTRACT_VERSION,
+            // 31 bytes buffer (all zeros)
+            bytes31(0),
+            // 32 bytes destChainId
+            destChainId,
+            // 32 bytes configId
+            configId,
             // 32 bytes attestationId
             attestationId,
-            // 32 bytes scope
-            _scope,
-            // proof data (starts after 1+1+30+32+32 = 96 bytes)
-            relayerData[96:]
+            // proof data (starts after 32 bytes attestationId)
+            teeData[32:]
         );
 
         // Call hub V2 verification
@@ -300,30 +276,148 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
         emit VerificationSuccess(scope, attestationId, nullifier, userIdentifier, revealedDataPacked);
 
-        // We stii have discussion if we need 2 step or 1 step
-        // onBasicVerificationSuccess(
-        //     attestationId,
-        //     scope,
-        //     userIdentifier,
-        //     nullifier,
-        //     identityCommitmentRoot,
-        //     revealedDataPacked,
-        //     forbiddenCountriesListPacked
-        // );
+        // Call onVerificationSuccess with the verification data and requestId
+        bytes memory verificationData = abi.encode(
+            attestationId,
+            scope,
+            userIdentifier,
+            nullifier,
+            identityCommitmentRoot,
+            revealedDataPacked,
+            forbiddenCountriesListPacked
+        );
+
+        // Pass requestId, configId, destChainId in userDefinedData for onVerificationSuccess
+        bytes memory modifiedUserDefinedData = abi.encodePacked(requestId, configId, destChainId);
+        onVerificationSuccess(verificationData, modifiedUserDefinedData);
     }
 
     /**
-     * @notice Hook called after successful verification
-     * @dev Virtual function to be overridden by derived contracts for custom business logic
-     * @param attestationId The attestation identifier from the proof
-     * @param scope The scope of the verification
-     * @param userIdentifier The user identifier from the proof
-     * @param nullifier The nullifier from the proof
-     * @param identityCommitmentRoot The root of the identity commitment
-     * @param revealedDataPacked The packed revealed data from the proof (E_PASSPORT_REVEALED_DATA_LENGTH for passport, EU_ID_CARD_REVEALED_DATA_LENGTH for ID card)
-     * @param forbiddenCountriesListPacked The packed forbidden countries list
+     * @notice Hook called after successful verification with requestId-based execution
+     * @dev Virtual function that can be overridden by derived contracts
+     * @param verificationData The encoded verification data (attestationId, scope, userIdentifier, nullifier, identityCommitmentRoot, revealedDataPacked, forbiddenCountriesListPacked)
+     * @param userDefinedData User-defined data containing requestId, configId, destChainId
      */
-    function onBasicVerificationSuccess(
-        bytes memory input
-    ) public virtual;
+    function onVerificationSuccess(
+        bytes memory verificationData,
+        bytes calldata userDefinedData
+    ) public virtual {
+        // Extract requestId from userDefinedData
+        if (userDefinedData.length < 32) {
+            return; // No requestId provided
+        }
+
+        bytes32 requestId;
+        assembly {
+            requestId := calldataload(userDefinedData.offset)
+        }
+
+        // Execute stored calldata for this requestId
+        _executeStoredCalldata(requestId, verificationData, userDefinedData);
+    }
+
+    /**
+     * @notice Executes stored calldata for a given requestId
+     * @dev Internal function that retrieves and executes the stored calldata
+     * @param requestId The request identifier
+     * @param verificationData The verification data to pass to the executed function
+     * @param userDefinedData The user-defined data containing requestId, configId, destChainId
+     */
+    function _executeStoredCalldata(
+        bytes32 requestId,
+        bytes memory verificationData,
+        bytes calldata userDefinedData
+    ) internal {
+        // Check if requestId has already been executed
+        if (_requestIdExecuted[requestId]) {
+            revert RequestIdAlreadyExecuted();
+        }
+
+        // Get stored calldata
+        bytes memory storedCalldata = _requestIdToCalldata[requestId];
+        if (storedCalldata.length == 0) {
+            // No calldata to execute, just return
+            return;
+        }
+
+        // Mark as executed to prevent replay
+        _requestIdExecuted[requestId] = true;
+
+        // Execute the stored calldata
+        // The stored calldata should contain the function selector and any additional parameters
+        // We'll prepend the verificationData and userDefinedData to the call
+        bytes memory fullCalldata = abi.encodePacked(
+            storedCalldata,
+            verificationData,
+            userDefinedData
+        );
+
+        // Make the call to this contract
+        (bool success, bytes memory result) = address(this).call(fullCalldata);
+
+        emit CalldataExecuted(requestId, success, result);
+
+        if (!success) {
+            // Handle call failure - could emit an event or revert based on requirements
+            // For now, we'll continue silently (can be customized by derived contracts)
+            return;
+        }
+    }
+
+    /**
+     * @notice Dispatches function calls based on function selector
+     * @dev Can be overridden by derived contracts to implement custom function routing
+     * @param functionSelector The 4-byte function selector
+     * @param verificationData The encoded verification data
+     * @param userDefinedData The complete user-defined data
+     */
+    function _dispatchFunction(
+        bytes4 functionSelector,
+        bytes memory verificationData,
+        bytes calldata userDefinedData
+    ) internal virtual {
+        // This function is now less relevant since we're using stored calldata execution
+        // But keeping it for backward compatibility and potential custom implementations
+
+        if (userDefinedData.length < 96) {
+            return; // Insufficient data
+        }
+
+        bytes32 requestId;
+        bytes32 configId;
+        bytes32 destChainId;
+
+        assembly {
+            requestId := calldataload(userDefinedData.offset)
+            configId := calldataload(add(userDefinedData.offset, 32))
+            destChainId := calldataload(add(userDefinedData.offset, 64))
+        }
+
+        // Prepare the call data with the function selector and all parameters
+        bytes memory callData = abi.encodePacked(
+            functionSelector,
+            verificationData,
+            requestId,
+            configId,
+            destChainId
+        );
+
+        // Make the call to this contract
+        (bool success, bytes memory result) = address(this).call(callData);
+
+        if (!success) {
+            // Handle call failure - could emit an event or revert based on requirements
+            return;
+        }
+    }
+
+    /**
+     * @notice Returns the circuit indices for a given attestation type
+     * @dev Uses CircuitConstantsV2 to get the appropriate indices for the attestation
+     * @param attestationId The attestation identifier
+     * @return indices The DiscloseIndices struct containing all relevant indices
+     */
+    function _getDiscloseIndices(bytes32 attestationId) internal pure returns (CircuitConstantsV2.DiscloseIndices memory) {
+        return CircuitConstantsV2.getDiscloseIndices(attestationId);
+    }
 }
