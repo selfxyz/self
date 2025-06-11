@@ -147,10 +147,11 @@ const handleResponseAndroid = (response: any): PassportData => {
     .filter(num => !isNaN(num))
     .sort((a, b) => a - b);
 
-  const document_type = mrz.length === 88 ? 'passport' : 'id_card';
+  const mrz_clean = mrz.replace(/\n/g, '');
+  const document_type = mrz_clean.length === 88 ? 'passport' : 'id_card';
 
   return {
-    mrz: mrz.replace(/\n/g, ''),
+    mrz: mrz_clean,
     dsc: pem,
     dg2Hash,
     dg1Hash,
