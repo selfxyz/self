@@ -67,6 +67,7 @@ library CustomVerifier {
 
     SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = SelfStructs.GenericDiscloseOutputV2({
       attestationId: AttestationId.E_PASSPORT,
+      // TODO: here put actual user identifier
       userIdentifier: passportOutput.userIdentifier,
       nullifier: passportOutput.nullifier,
       forbiddenCountriesListPacked: passportOutput.forbiddenCountriesListPacked,

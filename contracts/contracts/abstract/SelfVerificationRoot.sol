@@ -141,12 +141,12 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         - Call verify function in the Hub contract
         - Call onVerificationSuccess
 
-        teeData = | 32 bytes attestationId | proofData |
+        proofData = | 32 bytes attestationId | proofData |
         additionalData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
         hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
     function verifySelfProof(
-        bytes calldata teeData,
+        bytes calldata proofData,
         bytes calldata additionalData
     ) public {
         // Minimum expected length for teeData: 32 bytes attestationId + proof data
@@ -162,7 +162,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         bytes32 attestationId;
         assembly {
             // Load attestationId from the beginning of teeData (first 32 bytes)
-            attestationId := calldataload(teeData.offset)
+            attestationId := calldataload(proofData.offset)
         }
 
         // Validate scope (this check ensures the proof was generated for the correct scope)
@@ -180,7 +180,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             // 32 bytes attestationId
             attestationId,
             // proof data (starts after 32 bytes attestationId)
-            teeData[32:]
+            proofData[32:]
         );
 
         // Call hub V2 verification
@@ -194,9 +194,11 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param userDefinedData User-defined data
      */
     function onVerificationSuccess(
-        bytes memory verificationData,
-        bytes memory userDefinedData
+        bytes memory disclosedBytes,
+        bytes memory additionalDataBytes
     ) public virtual {
+
+        abi.decode(disclosedBytes, SelfStructs.GenericDiscloseOutputV2)
     }
 
 }

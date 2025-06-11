@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {ImplRoot} from "./upgradeable/ImplRoot.sol";
 import {SelfStructs} from "./libraries/SelfStructs.sol";
 import {CustomVerifier, VerificationConfig} from "./libraries/CustomVerifier.sol";
@@ -125,6 +123,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev Ensures that the scope value in the header matches the scope value in the proof.
     error ScopeMismatch();
 
+    error CrossChainIsNotSupportedYet();
+
     // ====================================================
     // Input Format Structs
     // ====================================================
@@ -206,7 +206,6 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _decodeInput(bytes calldata input) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
         require(input.length >= 97, "Input too short"); // 1 + 31 + 32 + 32 = 96 bytes minimum
         header.contractVersion = uint8(input[0]);
-        // Skip 31 bytes buffer (input[1:32])
         header.scope = uint256(bytes32(input[32:64]));
         header.attestationId = bytes32(input[64:96]);
         proofData = input[96:];
@@ -241,11 +240,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _verifyUserIdentifierHash(
         bytes calldata userDefinedData,
-        bytes calldata proofData,
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
         bytes32 attestationId
     ) internal pure {
-        // Decode the proof to get public signals
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof = _decodeVcAndDiscloseProof(proofData);
 
         // Get the user identifier index for this attestation type
         CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(attestationId);
@@ -298,10 +295,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @return exists Whether the config exists
      */
     function verificationConfigV2Exists(bytes32 configId) external view virtual onlyProxy returns (bool exists) {
-        IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
-        // Check if the config has non-zero values (assuming at least one field will be non-zero for valid configs)
-        VerificationConfig.VerificationConfigV2 memory config = $v2._v2VerificationConfigs[configId];
-        // This is a simple existence check - you might want to implement a more sophisticated check
+        getVerificationConfigV2(configId);
         return generateConfigId(config) == configId;
     }
 
@@ -319,7 +313,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         (bytes32 configId, uint256 destChainId, uint256 userIdentifier, bytes calldata remainingData) = _decodeUserDefinedData(userDefinedData);
 
         // Verify that the ripemd160(sha256(userDefinedData)) matches the userIdentifier in the proof
-        _verifyUserIdentifierHash(userDefinedData, proofData, header.attestationId);
+        // IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof = _decodeVcAndDiscloseProof(proofData);
+        // _verifyUserIdentifierHash(userDefinedData, vcAndDiscloseProof, header.attestationId);
 
         // Get verification config using configId from userDefinedData
         bytes memory config = _getVerificationConfigById(configId);
@@ -327,6 +322,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Perform verification and return result
         bytes memory output = _executeVerificationFlow(header, proofData, config, destChainId);
 
+        // just return userIdentifier and data
+        //
         _handleVerificationResult(destChainId, output, userDefinedData);
     }
 
@@ -344,7 +341,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _executeVerificationFlow(
         SelfStructs.HubInputHeader memory header,
-        bytes calldata proofData,
+        bytes memory proofData,
         bytes memory config,
         uint256 destChainId
     ) internal returns (bytes memory output){
@@ -359,7 +356,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         );
 
         // Format output (using contractVersion 2 for now)
-        output = _formatVerificationOutput(2, genericDiscloseOutput);
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+        output = _formatVerificationOutput($._circuitVersion, genericDiscloseOutput);
     }
 
     /**
@@ -385,6 +383,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         } else {
             // Call external bridge
             // _handleBridge()
+            revert CrossChainIsNotSupportedYet();
         }
     }
 
@@ -664,6 +663,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
         // Perform all verification checks
         _performScopeCheck(header.scope, vcAndDiscloseProof, indices);
+        // TODO: Add user identifier check in this function
+        // _performUserIdentifierCheck()
         _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
         _performCurrentDateCheck(vcAndDiscloseProof, indices);
         _performGroth16ProofVerification(header.attestationId, vcAndDiscloseProof);
@@ -782,39 +783,18 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         passportOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
 
         // Extract revealed data
-        passportOutput.revealedDataPacked = _extractPassportRevealedData(vcAndDiscloseProof, indices);
-
-        // Extract forbidden countries list
-        _extractPassportForbiddenCountries(vcAndDiscloseProof, indices, passportOutput);
-
-        return abi.encode(passportOutput);
-    }
-
-    /**
-     * @notice Extracts revealed data for passport
-     */
-    function _extractPassportRevealedData(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        CircuitConstantsV2.DiscloseIndices memory indices
-    ) internal pure returns (bytes memory) {
         uint256[3] memory revealedDataPacked;
         for (uint256 i = 0; i < 3; i++) {
             revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
         }
-        return Formatter.fieldElementsToBytes(revealedDataPacked);
-    }
+        passportOutput.revealedDataPacked = Formatter.fieldElementsToBytes(revealedDataPacked);
 
-    /**
-     * @notice Extracts forbidden countries list for passport
-     */
-    function _extractPassportForbiddenCountries(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        CircuitConstantsV2.DiscloseIndices memory indices,
-        SelfStructs.PassportOutput memory passportOutput
-    ) internal pure {
+        // Extract forbidden countries list
         for (uint256 i = 0; i < 4; i++) {
             passportOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[indices.forbiddenCountriesListPackedIndex + i];
         }
+
+        return abi.encode(passportOutput);
     }
 
     /**
@@ -831,39 +811,18 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         euIdOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
 
         // Extract revealed data
-        euIdOutput.revealedDataPacked = _extractEuIdRevealedData(vcAndDiscloseProof, indices);
-
-        // Extract forbidden countries list
-        _extractEuIdForbiddenCountries(vcAndDiscloseProof, indices, euIdOutput);
-
-        return abi.encode(euIdOutput);
-    }
-
-    /**
-     * @notice Extracts revealed data for EU ID
-     */
-    function _extractEuIdRevealedData(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        CircuitConstantsV2.DiscloseIndices memory indices
-    ) internal pure returns (bytes memory) {
         uint256[4] memory revealedDataPacked;
         for (uint256 i = 0; i < 4; i++) {
             revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
         }
-        return Formatter.fieldElementsToBytesIdCard(revealedDataPacked);
-    }
+        euIdOutput.revealedDataPacked = Formatter.fieldElementsToBytesIdCard(revealedDataPacked);
 
-    /**
-     * @notice Extracts forbidden countries list for EU ID
-     */
-    function _extractEuIdForbiddenCountries(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        CircuitConstantsV2.DiscloseIndices memory indices,
-        SelfStructs.EuIdOutput memory euIdOutput
-    ) internal pure {
+        // Extract forbidden countries list
         for (uint256 i = 0; i < 4; i++) {
             euIdOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[indices.forbiddenCountriesListPackedIndex + i];
         }
+
+        return abi.encode(euIdOutput);
     }
 
     function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory) {

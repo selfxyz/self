@@ -154,6 +154,7 @@ library Formatter {
      * @param publicSignals A packed uint256 containing encoded forbidden country data.
      * @return forbiddenCountries An array of strings representing the forbidden country codes.
      */
+     // TODO: look at this function a bit
     function extractForbiddenCountriesFromPacked(
         uint256[4] memory publicSignals
     ) internal pure returns (string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory forbiddenCountries) {
