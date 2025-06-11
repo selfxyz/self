@@ -12,7 +12,12 @@
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
     "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
-    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
+    "postinstall": "patch-package"
   },
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.6.0",
+  "devDependencies": {
+    "patch-package": "^8.0.0",
+    "postinstall-postinstall": "^2.1.0"
+  }
 }

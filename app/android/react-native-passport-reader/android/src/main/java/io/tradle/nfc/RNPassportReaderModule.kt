@@ -55,10 +55,12 @@ import org.bouncycastle.jce.interfaces.ECPublicKey
 
 import org.jmrtd.BACKey
 import org.jmrtd.BACKeySpec
+import org.jmrtd.AccessKeySpec
 import org.jmrtd.PassportService
 import org.jmrtd.lds.CardAccessFile
 import org.jmrtd.lds.ChipAuthenticationPublicKeyInfo
 import org.jmrtd.lds.PACEInfo
+import org.jmrtd.PACEKeySpec
 import org.jmrtd.lds.SODFile
 import org.jmrtd.lds.SecurityInfo
 import org.jmrtd.lds.icao.DG14File
@@ -240,7 +242,14 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 val passportNumber = opts?.getString(PARAM_DOC_NUM)
                 val expirationDate = opts?.getString(PARAM_DOE)
                 val birthDate = opts?.getString(PARAM_DOB)
-                if (!passportNumber.isNullOrEmpty() && !expirationDate.isNullOrEmpty() && !birthDate.isNullOrEmpty()) {
+                val cardAccessNumber = opts?.getString(PARAM_CAN)
+                val useCan = opts?.getBoolean(PARAM_USE_CAN) ?: false
+
+                if (useCan && !cardAccessNumber.isNullOrEmpty()) {
+                    val paceKey: PACEKeySpec = PACEKeySpec.createCANKey(cardAccessNumber)
+                    ReadTask(IsoDep.get(tag), paceKey).execute()
+                }
+                else if (!passportNumber.isNullOrEmpty() && !expirationDate.isNullOrEmpty() && !birthDate.isNullOrEmpty()) {
                     val bacKey: BACKeySpec = BACKey(passportNumber, birthDate, expirationDate)
                     ReadTask(IsoDep.get(tag), bacKey).execute()
                 }
@@ -257,7 +266,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     }
 
     @SuppressLint("StaticFieldLeak")
-    private inner class ReadTask(private val isoDep: IsoDep, private val bacKey: BACKeySpec) : AsyncTask<Void?, Void?, Exception?>() {
+    private inner class ReadTask(
+        private val isoDep: IsoDep, 
+        private val authKey: AccessKeySpec
+    ) : AsyncTask<Void?, Void?, Exception?>() {
 
         private lateinit var dg1File: DG1File
         private lateinit var dg2File: DG2File
@@ -312,7 +324,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                         if (securityInfo is PACEInfo) {
                             Log.e("MY_LOGS", "trying PACE...")
                             service.doPACE(
-                                bacKey,
+                                authKey,
                                 securityInfo.objectIdentifier,
                                 PACEInfo.toParameterSpec(securityInfo.parameterId),
                                 null,
@@ -327,7 +339,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 Log.e("MY_LOGS", "Sending select applet command with paceSucceeded: ${paceSucceeded}") // this is false so PACE doesn't succeed
                 service.sendSelectApplet(paceSucceeded)
 
-                if (!paceSucceeded) {
+                if (!paceSucceeded && authKey is BACKeySpec) {
                     var bacSucceeded = false
                     var attempts = 0
                     val maxAttempts = 3
@@ -347,7 +359,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                                 service.getInputStream(PassportService.EF_COM).read()
                             } catch (e: Exception) {
                                 // EF_COM failed, do BAC
-                                service.doBAC(bacKey)
+                                service.doBAC(authKey)
                             }
                             
                             bacSucceeded = true
@@ -699,11 +711,18 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         }
     }
 
+    @ReactMethod
+    fun reset() {
+        resetState()
+    }
+
     companion object {
         private val TAG = RNPassportReaderModule::class.java.simpleName
         private const val PARAM_DOC_NUM = "documentNumber";
         private const val PARAM_DOB = "dateOfBirth";
         private const val PARAM_DOE = "dateOfExpiry";
+        private const val PARAM_CAN = "canNumber";
+        private const val PARAM_USE_CAN = "useCan";
         const val JPEG_DATA_URI_PREFIX = "data:image/jpeg;base64,"
         private const val KEY_IS_SUPPORTED = "isSupported"
         private var instance: RNPassportReaderModule? = null
