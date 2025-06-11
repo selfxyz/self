@@ -219,7 +219,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @return userIdentifier The user identifier
      * @return remainingData The remaining data after the first 96 bytes
      */
-    function _decodeUserDefinedData(bytes calldata userDefinedData) internal pure returns (
+    function _decodeAdditionalData(bytes calldata userDefinedData) internal pure returns (
         bytes32 configId,
         uint256 destChainId,
         uint256 userIdentifier,
@@ -280,23 +280,15 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function verify(
         bytes calldata input,
-        bytes calldata userDefinedData
+        bytes calldata additionalData
     ) external virtual onlyProxy {
-        // Decode the structured input
         (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(input);
 
-        // Decode userDefinedData to extract configId, destChainId, userIdentifier
-        (bytes32 configId, uint256 destChainId, uint256 userIdentifier, bytes calldata remainingData) = _decodeUserDefinedData(userDefinedData);
+        // Perform verification and get output along with user data
+        (bytes memory output, uint256 destChainId, bytes memory userDataToPass) = _executeVerificationFlow(header, proofData, additionalData);
 
-        // Get verification config using configId from userDefinedData
-        bytes memory config = _getVerificationConfigById(configId);
-
-        // Perform verification and return result
-        bytes memory output = _executeVerificationFlow(header, proofData, config, destChainId, userDefinedData);
-
-        // just return userIdentifier and data
-        //
-        _handleVerificationResult(destChainId, output, userDefinedData);
+        // Use destChainId and userDataToPass returned from _executeVerificationFlow
+        _handleVerificationResult(destChainId, output, userDataToPass);
     }
 
     /**
@@ -314,23 +306,32 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _executeVerificationFlow(
         SelfStructs.HubInputHeader memory header,
         bytes memory proofData,
-        bytes memory config,
-        uint256 destChainId,
-        bytes calldata userDefinedData
-    ) internal returns (bytes memory output){
-        // Perform basic verification
-        bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData), userDefinedData);
+        bytes calldata additionalData
+    ) internal returns (bytes memory output, uint256 destChainId, bytes memory userDataToPass) {
+        bytes32 configId;
+        uint256 userIdentifier;
+        bytes calldata remainingData;
+        {
+            uint256 _destChainId;
+            (configId, _destChainId, userIdentifier, remainingData) = _decodeAdditionalData(additionalData);
+            destChainId = _destChainId;
+        }
 
-        // Execute custom verifications
-        SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(
-            header.attestationId,
-            config,
-            proofOutput
-        );
+        {
+            bytes memory config = _getVerificationConfigById(configId);
+            bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData), additionalData);
 
-        // Format output (using contractVersion 2 for now)
-        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
-        output = _formatVerificationOutput($._circuitVersion, genericDiscloseOutput);
+            SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(
+                header.attestationId,
+                config,
+                proofOutput
+            );
+
+            IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+            output = _formatVerificationOutput($._circuitVersion, genericDiscloseOutput);
+        }
+
+        userDataToPass = abi.encodePacked(bytes32(userIdentifier), remainingData);
     }
 
     /**
@@ -348,11 +349,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /**
      * @notice Handles verification result based on destination chain
      */
-    function _handleVerificationResult(uint256 destChainId, bytes memory output, bytes calldata userDefinedData) internal {
+    function _handleVerificationResult(uint256 destChainId, bytes memory output, bytes memory userDataToPass) internal {
         if (destChainId == block.chainid) {
-            // Convert calldata to memory for the function call
-            bytes memory userDefinedDataMemory = userDefinedData;
-            ISelfVerificationRoot(msg.sender).onVerificationSuccess(output, userDefinedDataMemory);
+            ISelfVerificationRoot(msg.sender).onVerificationSuccess(output, userDataToPass);
         } else {
             // Call external bridge
             // _handleBridge()
@@ -630,20 +629,30 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _basicVerification(
         SelfStructs.HubInputHeader memory header,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        bytes calldata userDefinedData
+        bytes calldata additionalData
     ) internal view returns (bytes memory output) {
-        // Get indices for the specific attestation type
-        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
+        // Scope 1: Basic checks (scope and user identifier)
+        {
+            CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
+            _performScopeCheck(header.scope, vcAndDiscloseProof, indices);
+            _performUserIdentifierCheck(additionalData, vcAndDiscloseProof, header.attestationId, indices);
+        }
 
-        // Perform all verification checks
-        _performScopeCheck(header.scope, vcAndDiscloseProof, indices);
-        _performUserIdentifierCheck(userDefinedData, vcAndDiscloseProof, header.attestationId, indices);
-        _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
-        _performCurrentDateCheck(vcAndDiscloseProof, indices);
+        // Scope 2: Root and date checks
+        {
+            CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
+            _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
+            _performCurrentDateCheck(vcAndDiscloseProof, indices);
+        }
+
+        // Scope 3: Groth16 proof verification
         _performGroth16ProofVerification(header.attestationId, vcAndDiscloseProof);
 
-        // Create and return output
-        return _createVerificationOutput(header.attestationId, vcAndDiscloseProof, indices);
+        // Scope 4: Create and return output
+        {
+            CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
+            return _createVerificationOutput(header.attestationId, vcAndDiscloseProof, indices);
+        }
     }
 
     /**
@@ -803,7 +812,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     function _performUserIdentifierCheck(
-        bytes calldata userDefinedData,
+        bytes calldata additionalData,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
         bytes32 attestationId,
         CircuitConstantsV2.DiscloseIndices memory indices
@@ -811,8 +820,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Get the user identifier index for this attestation type
         uint256 proofUserIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
 
-        // Calculate ripemd160(sha256(userDefinedData)) and convert to uint256
-        bytes32 sha256Hash = sha256(userDefinedData);
+        bytes32 sha256Hash = sha256(additionalData);
         bytes20 ripemdHash = ripemd160(abi.encodePacked(sha256Hash));
         uint256 hashedValue = uint256(uint160(ripemdHash));
 

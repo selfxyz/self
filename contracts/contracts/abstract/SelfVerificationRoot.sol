@@ -187,17 +187,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         _identityVerificationHubV2.verify(hubData, additionalData);
     }
 
-    /**
-     * @notice Hook called after successful verification with requestId-based execution
-     * @dev Virtual function that can be overridden by derived contracts
-     * @param disclosedBytes The encoded verification data (attestationId, scope, userIdentifier, nullifier, identityCommitmentRoot, revealedDataPacked, forbiddenCountriesListPacked)
-     * @param additionalDataBytes User-defined data
-     */
     function onVerificationSuccess(
-        bytes memory disclosedBytes,
-        bytes memory additionalDataBytes
+        bytes memory output,
+        bytes memory userData
     ) public virtual {
-        abi.decode(disclosedBytes, (GenericDiscloseOutputV2));
     }
 
 }
