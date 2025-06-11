@@ -233,30 +233,6 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Verifies that the ripemd160(sha256(userDefinedData)) matches the userIdentifier in the proof
-     * @param userDefinedData The complete user-defined data
-     * @param vcAndDiscloseProof The VC and Disclose proof
-     * @param attestationId The attestation identifier to get the correct index
-     */
-    function _verifyUserIdentifierHash(
-        bytes calldata userDefinedData,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        bytes32 attestationId
-    ) internal pure {
-
-        // Get the user identifier index for this attestation type
-        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(attestationId);
-        uint256 proofUserIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
-
-        // Calculate ripemd160(sha256(userDefinedData)) and convert to uint256
-        bytes32 sha256Hash = sha256(userDefinedData);
-        bytes20 ripemdHash = ripemd160(abi.encodePacked(sha256Hash));
-        uint256 hashedValue = uint256(uint160(ripemdHash));
-
-        require(hashedValue == proofUserIdentifier, "UserIdentifier hash mismatch");
-    }
-
-    /**
      * @notice Gets verification config from V2 storage
      * @param configId The configuration identifier
      * @return The verification configuration
@@ -312,15 +288,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Decode userDefinedData to extract configId, destChainId, userIdentifier
         (bytes32 configId, uint256 destChainId, uint256 userIdentifier, bytes calldata remainingData) = _decodeUserDefinedData(userDefinedData);
 
-        // Verify that the ripemd160(sha256(userDefinedData)) matches the userIdentifier in the proof
-        // IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof = _decodeVcAndDiscloseProof(proofData);
-        // _verifyUserIdentifierHash(userDefinedData, vcAndDiscloseProof, header.attestationId);
-
         // Get verification config using configId from userDefinedData
         bytes memory config = _getVerificationConfigById(configId);
 
         // Perform verification and return result
-        bytes memory output = _executeVerificationFlow(header, proofData, config, destChainId);
+        bytes memory output = _executeVerificationFlow(header, proofData, config, destChainId, userDefinedData);
 
         // just return userIdentifier and data
         //
@@ -343,10 +315,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         SelfStructs.HubInputHeader memory header,
         bytes memory proofData,
         bytes memory config,
-        uint256 destChainId
+        uint256 destChainId,
+        bytes calldata userDefinedData
     ) internal returns (bytes memory output){
         // Perform basic verification
-        bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData));
+        bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData), userDefinedData);
 
         // Execute custom verifications
         SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(
@@ -656,15 +629,15 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _basicVerification(
         SelfStructs.HubInputHeader memory header,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        bytes calldata userDefinedData
     ) internal view returns (bytes memory output) {
         // Get indices for the specific attestation type
         CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
 
         // Perform all verification checks
         _performScopeCheck(header.scope, vcAndDiscloseProof, indices);
-        // TODO: Add user identifier check in this function
-        // _performUserIdentifierCheck()
+        _performUserIdentifierCheck(userDefinedData, vcAndDiscloseProof, header.attestationId, indices);
         _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
         _performCurrentDateCheck(vcAndDiscloseProof, indices);
         _performGroth16ProofVerification(header.attestationId, vcAndDiscloseProof);
@@ -827,5 +800,22 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory) {
         return abi.decode(data, (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof));
+    }
+
+    function _performUserIdentifierCheck(
+        bytes calldata userDefinedData,
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        bytes32 attestationId,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal pure {
+        // Get the user identifier index for this attestation type
+        uint256 proofUserIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+
+        // Calculate ripemd160(sha256(userDefinedData)) and convert to uint256
+        bytes32 sha256Hash = sha256(userDefinedData);
+        bytes20 ripemdHash = ripemd160(abi.encodePacked(sha256Hash));
+        uint256 hashedValue = uint256(uint160(ripemdHash));
+
+        require(hashedValue == proofUserIdentifier, "UserIdentifier hash mismatch");
     }
 }
