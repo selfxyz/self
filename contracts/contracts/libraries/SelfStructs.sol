@@ -43,4 +43,35 @@ library SelfStructs {
   //   uint256 olderThan;
   //   bool[3] ofac;
   //  }
+   struct GenericDiscloseOutputV2 {
+    bytes32 attestationId;
+    uint256 userIdentifier;
+    uint256 nullifier;
+    uint256[4] forbiddenCountriesListPacked;
+    string issuingState;
+    string[] name;
+    string idNumber;
+    string nationality;
+    string dateOfBirth;
+    string gender;
+    string expiryDate;
+    uint256 olderThan;
+    bool[3] ofac;
+   }
+
+  struct VerificationConfigV1 {
+    bool olderThanEnabled;
+    uint256 olderThan;
+    bool forbiddenCountriesEnabled;
+    uint256[4] forbiddenCountriesListPacked;
+    bool[3] ofacEnabled;
+  }
+
+  struct VerificationConfigV2 {
+    bool olderThanEnabled;
+    uint256 olderThan;
+    bool forbiddenCountriesEnabled;
+    uint256[4] forbiddenCountriesListPacked;
+    bool[3] ofacEnabled;
+  }
 }

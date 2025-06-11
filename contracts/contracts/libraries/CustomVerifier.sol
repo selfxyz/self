@@ -5,6 +5,7 @@ import {AttestationId} from "../constants/AttestationId.sol";
 import {SelfStructs} from "./SelfStructs.sol";
 import {CircuitAttributeHandlerV2} from "./CircuitAttributeHandlerV2.sol";
 import {Formatter} from "./Formatter.sol";
+import {GenericFormatter} from "./GenericFormatter.sol";
 
 library CustomVerifier {
   error INVALID_ATTESTATION_ID();
@@ -18,7 +19,7 @@ library CustomVerifier {
    * @param proofOutput The proof output of the custom verifier.
    */
   function customVerify(bytes32 attestationId, bytes calldata config, bytes calldata proofOutput) external pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
-    VerificationConfig.VerificationConfigV2 memory verificationConfig = VerificationConfig.verificationConfigFromBytes(config);
+    SelfStructs.VerificationConfigV2 memory verificationConfig = GenericFormatter.verificationConfigFromBytes(config);
 
     if (attestationId == AttestationId.E_PASSPORT) {
       SelfStructs.PassportOutput memory passportOutput = abi.decode(proofOutput, (SelfStructs.PassportOutput));
@@ -31,7 +32,7 @@ library CustomVerifier {
     }
   }
 
-  function verifyPassport(VerificationConfig.VerificationConfigV2 memory verificationConfig, SelfStructs.PassportOutput memory passportOutput) internal pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
+  function verifyPassport(SelfStructs.VerificationConfigV2 memory verificationConfig, SelfStructs.PassportOutput memory passportOutput) internal pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
     if (
       verificationConfig.ofacEnabled[0] ||
       verificationConfig.ofacEnabled[1] ||
@@ -89,7 +90,7 @@ library CustomVerifier {
     return genericDiscloseOutput;
   }
 
-  function verifyIdCard(VerificationConfig.VerificationConfigV2 memory verificationConfig, SelfStructs.EuIdOutput memory idCardOutput) internal pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
+  function verifyIdCard(SelfStructs.VerificationConfigV2 memory verificationConfig, SelfStructs.EuIdOutput memory idCardOutput) internal pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
     if (verificationConfig.ofacEnabled[0] || verificationConfig.ofacEnabled[1]) {
       if (!CircuitAttributeHandlerV2.compareOfac(
         AttestationId.EU_ID_CARD,
@@ -141,45 +142,5 @@ library CustomVerifier {
     });
 
     return genericDiscloseOutput;
-  }
-}
-
-library VerificationConfig {
-  struct VerificationConfigV1 {
-    bool olderThanEnabled;
-    uint256 olderThan;
-    bool forbiddenCountriesEnabled;
-    uint256[4] forbiddenCountriesListPacked;
-    bool[3] ofacEnabled;
-  }
-
-  struct VerificationConfigV2 {
-    bool olderThanEnabled;
-    uint256 olderThan;
-    bool forbiddenCountriesEnabled;
-    uint256[4] forbiddenCountriesListPacked;
-    bool[3] ofacEnabled;
-  }
-
-  function fromV1Config(VerificationConfigV1 memory verificationConfigV1) internal pure returns (VerificationConfigV2 memory verificationConfig) {
-    verificationConfig = VerificationConfigV2({
-      olderThanEnabled: verificationConfigV1.olderThanEnabled,
-      olderThan: verificationConfigV1.olderThan,
-      forbiddenCountriesEnabled: verificationConfigV1.forbiddenCountriesEnabled,
-      forbiddenCountriesListPacked: verificationConfigV1.forbiddenCountriesListPacked,
-      ofacEnabled: verificationConfigV1.ofacEnabled
-    });
-  }
-
-  function verificationConfigFromBytes(bytes memory verificationConfig) internal pure returns (VerificationConfigV2 memory verificationConfigV2) {
-    return abi.decode(verificationConfig, (VerificationConfigV2));
-  }
-
-  function v1ConfigIntoBytes(uint8 attestationId, VerificationConfigV1 memory verificationConfig) internal pure returns (bytes memory v1ConfigBytes) {
-    return bytes.concat(bytes1(attestationId), abi.encode(verificationConfig));
-  }
-
-  function v2ConfigIntoBytes(uint8 attestationId, VerificationConfigV2 memory verificationConfig) internal pure returns (bytes memory v2ConfigBytes) {
-    return bytes.concat(bytes1(attestationId), abi.encode(verificationConfig));
   }
 }

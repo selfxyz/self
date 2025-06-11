@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {VerificationConfig} from "./CustomVerifier.sol";
 import {SelfStructs} from "./SelfStructs.sol";
 
 struct GenericVerificationStruct {
@@ -10,18 +9,27 @@ struct GenericVerificationStruct {
 }
 
 library GenericFormatter {
-  function formatV1Config(VerificationConfig.VerificationConfigV1 memory verificationConfigV1) internal pure returns (bytes memory v1ConfigBytes) {
-    VerificationConfig.VerificationConfigV2 memory verificationConfigV2 = VerificationConfig.fromV1Config(verificationConfigV1);
+  function fromV1Config(SelfStructs.VerificationConfigV1 memory verificationConfigV1) internal pure returns (SelfStructs.VerificationConfigV2 memory verificationConfig) {
+    verificationConfig = SelfStructs.VerificationConfigV2({
+      olderThanEnabled: verificationConfigV1.olderThanEnabled,
+      olderThan: verificationConfigV1.olderThan,
+      forbiddenCountriesEnabled: verificationConfigV1.forbiddenCountriesEnabled,
+      forbiddenCountriesListPacked: verificationConfigV1.forbiddenCountriesListPacked,
+      ofacEnabled: verificationConfigV1.ofacEnabled
+    });
+  }
+
+  function verificationConfigFromBytes(bytes memory verificationConfig) internal pure returns (SelfStructs.VerificationConfigV2 memory verificationConfigV2) {
+    return abi.decode(verificationConfig, (SelfStructs.VerificationConfigV2));
+  }
+
+  function formatV1Config(SelfStructs.VerificationConfigV1 memory verificationConfigV1) internal pure returns (bytes memory v1ConfigBytes) {
+    SelfStructs.VerificationConfigV2 memory verificationConfigV2 = fromV1Config(verificationConfigV1);
     return abi.encode(verificationConfigV2);
   }
 
-  function formatV2Config(VerificationConfig.VerificationConfigV2 memory verificationConfigV2) internal pure returns (bytes memory v2ConfigBytes) {
+  function formatV2Config(SelfStructs.VerificationConfigV2 memory verificationConfigV2) internal pure returns (bytes memory v2ConfigBytes) {
     return abi.encode(verificationConfigV2);
-  }
-
-
-  function toV1Struct(SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput) internal pure returns (bytes memory v1StructBytes) {
-    v1StructBytes = abi.encode(genericDiscloseOutput);
   }
 
    function toV2Struct(SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput) internal pure returns (bytes memory v2StructBytes) {

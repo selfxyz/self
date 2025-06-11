@@ -3,7 +3,7 @@ pragma solidity 0.8.28;
 
 import {ImplRoot} from "./upgradeable/ImplRoot.sol";
 import {SelfStructs} from "./libraries/SelfStructs.sol";
-import {CustomVerifier, VerificationConfig} from "./libraries/CustomVerifier.sol";
+import {CustomVerifier} from "./libraries/CustomVerifier.sol";
 import {GenericFormatter} from "./libraries/GenericFormatter.sol";
 import {AttestationId} from "./constants/AttestationId.sol";
 import {IVcAndDiscloseCircuitVerifier} from "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
@@ -28,7 +28,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     /// @custom:storage-location erc7201:self.storage.IdentityVerificationHubV2
     struct IdentityVerificationHubV2Storage {
-        mapping(bytes32 configId => VerificationConfig.VerificationConfigV2) _v2VerificationConfigs;
+        mapping(bytes32 configId => SelfStructs.VerificationConfigV2) _v2VerificationConfigs;
         // We should consider to add bridge address
         // address bridgeAddress;
     }
@@ -57,7 +57,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param configId The configuration identifier (generated from config hash).
      * @param config The verification configuration that was set.
      */
-    event VerificationConfigV2Set(bytes32 indexed configId, VerificationConfig.VerificationConfigV2 config);
+    event VerificationConfigV2Set(bytes32 indexed configId, SelfStructs.VerificationConfigV2 config);
     /**
      * @notice Emitted when the registry address is updated.
      * @param registry The new registry address.
@@ -235,7 +235,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /**
      * @notice Verifies that the ripemd160(sha256(userDefinedData)) matches the userIdentifier in the proof
      * @param userDefinedData The complete user-defined data
-     * @param proofData The proof data containing public signals
+     * @param vcAndDiscloseProof The VC and Disclose proof
      * @param attestationId The attestation identifier to get the correct index
      */
     function _verifyUserIdentifierHash(
@@ -261,7 +261,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param configId The configuration identifier
      * @return The verification configuration
      */
-    function getVerificationConfigV2(bytes32 configId) external view virtual onlyProxy returns (VerificationConfig.VerificationConfigV2 memory) {
+    function getVerificationConfigV2(bytes32 configId) internal view virtual onlyProxy returns (SelfStructs.VerificationConfigV2 memory) {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         return $v2._v2VerificationConfigs[configId];
     }
@@ -271,7 +271,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param config The verification configuration
      * @return The generated config ID (sha256 hash of encoded config)
      */
-    function generateConfigId(VerificationConfig.VerificationConfigV2 memory config) public pure returns (bytes32) {
+    function generateConfigId(SelfStructs.VerificationConfigV2 memory config) public pure returns (bytes32) {
         return sha256(abi.encode(config));
     }
 
@@ -281,7 +281,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param config The verification configuration
      * @return configId The generated config ID
      */
-    function setVerificationConfigV2(VerificationConfig.VerificationConfigV2 memory config) external virtual onlyProxy onlyOwner returns (bytes32 configId) {
+    function setVerificationConfigV2(SelfStructs.VerificationConfigV2 memory config) external virtual onlyProxy onlyOwner returns (bytes32 configId) {
         configId = generateConfigId(config);
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         $v2._v2VerificationConfigs[configId] = config;
@@ -295,7 +295,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @return exists Whether the config exists
      */
     function verificationConfigV2Exists(bytes32 configId) external view virtual onlyProxy returns (bool exists) {
-        getVerificationConfigV2(configId);
+        SelfStructs.VerificationConfigV2 memory config = getVerificationConfigV2(configId);
         return generateConfigId(config) == configId;
     }
 
@@ -332,7 +332,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _getVerificationConfigById(bytes32 configId) internal view returns (bytes memory config) {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
-        VerificationConfig.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[configId];
+        SelfStructs.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[configId];
         config = GenericFormatter.formatV2Config(verificationConfig);
     }
 
@@ -364,7 +364,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @notice Formats verification output based on contract version
      */
     function _formatVerificationOutput(
-        uint8 contractVersion,
+        uint256 contractVersion,
         SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput
     ) internal pure returns (bytes memory output) {
         if (contractVersion == 2) {

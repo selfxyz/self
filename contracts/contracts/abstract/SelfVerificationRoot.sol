@@ -131,7 +131,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /**
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
-     * @param teeData Packed data from relayer in format: | 32 bytes attestationId | proof data |
+     * @param proofData Packed data from relayer in format: | 32 bytes attestationId | proof data |
      * @param additionalData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
      */
     /*
@@ -149,8 +149,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         bytes calldata proofData,
         bytes calldata additionalData
     ) public {
-        // Minimum expected length for teeData: 32 bytes attestationId + proof data
-        if (teeData.length < 32) {
+        // Minimum expected length for proofData: 32 bytes attestationId + proof data
+        if (proofData.length < 32) {
             revert InvalidDataFormat();
         }
 
@@ -161,7 +161,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
         bytes32 attestationId;
         assembly {
-            // Load attestationId from the beginning of teeData (first 32 bytes)
+            // Load attestationId from the beginning of proofData (first 32 bytes)
             attestationId := calldataload(proofData.offset)
         }
 
@@ -190,15 +190,14 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /**
      * @notice Hook called after successful verification with requestId-based execution
      * @dev Virtual function that can be overridden by derived contracts
-     * @param verificationData The encoded verification data (attestationId, scope, userIdentifier, nullifier, identityCommitmentRoot, revealedDataPacked, forbiddenCountriesListPacked)
-     * @param userDefinedData User-defined data
+     * @param disclosedBytes The encoded verification data (attestationId, scope, userIdentifier, nullifier, identityCommitmentRoot, revealedDataPacked, forbiddenCountriesListPacked)
+     * @param additionalDataBytes User-defined data
      */
     function onVerificationSuccess(
         bytes memory disclosedBytes,
         bytes memory additionalDataBytes
     ) public virtual {
-
-        abi.decode(disclosedBytes, SelfStructs.GenericDiscloseOutputV2)
+        abi.decode(disclosedBytes, (GenericDiscloseOutputV2));
     }
 
 }
