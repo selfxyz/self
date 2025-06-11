@@ -16,7 +16,6 @@ import {IRegisterCircuitVerifier} from "./interfaces/IRegisterCircuitVerifier.so
 import {IDscCircuitVerifier} from "./interfaces/IDscCircuitVerifier.sol";
 import {CircuitConstantsV2} from "./constants/CircuitConstantsV2.sol";
 import {Formatter} from "./libraries/Formatter.sol";
-import {PoseidonT3} from "../node_modules/poseidon-solidity/PoseidonT3.sol";
 
 contract IdentityVerificationHubImplV2 is ImplRoot {
 
@@ -235,7 +234,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Verifies that the poseidon hash of userDefinedData matches the userIdentifier in the proof
+     * @notice Verifies that the ripemd160(sha256(userDefinedData)) matches the userIdentifier in the proof
      * @param userDefinedData The complete user-defined data
      * @param proofData The proof data containing public signals
      * @param attestationId The attestation identifier to get the correct index
@@ -252,48 +251,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(attestationId);
         uint256 proofUserIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
 
-        // Convert userDefinedData to uint256 chunks for poseidon hashing
-        // For poseidon T3, we can hash 2 field elements at a time
-        uint256 dataLength = userDefinedData.length;
-        uint256 numChunks = (dataLength + 31) / 32; // Round up to get number of 32-byte chunks
-
-        uint256 hashedValue;
-        if (numChunks == 0) {
-            hashedValue = 0;
-        } else if (numChunks == 1) {
-            // Single chunk - pad and hash with 0
-            uint256 chunk1 = uint256(bytes32(userDefinedData[0:dataLength < 32 ? dataLength : 32]));
-            if (dataLength < 32) {
-                // Pad with zeros on the right
-                chunk1 = chunk1 << (8 * (32 - dataLength));
-            }
-            hashedValue = PoseidonT3.hash([chunk1, 0]);
-        } else {
-            // Multiple chunks - hash them pairwise
-            uint256 chunk1 = uint256(bytes32(userDefinedData[0:32]));
-            uint256 chunk2 = uint256(bytes32(userDefinedData[32:dataLength < 64 ? dataLength : 64]));
-            if (dataLength < 64) {
-                // Pad second chunk with zeros on the right
-                chunk2 = chunk2 << (8 * (64 - dataLength));
-            }
-            hashedValue = PoseidonT3.hash([chunk1, chunk2]);
-
-            // For more than 2 chunks, continue hashing
-            for (uint256 i = 2; i < numChunks; i++) {
-                uint256 nextChunk;
-                uint256 startIdx = i * 32;
-                uint256 endIdx = startIdx + 32;
-                if (endIdx > dataLength) {
-                    // Last chunk may be partial
-                    bytes memory partialChunk = userDefinedData[startIdx:dataLength];
-                    nextChunk = uint256(bytes32(partialChunk));
-                    nextChunk = nextChunk << (8 * (32 - (dataLength - startIdx)));
-                } else {
-                    nextChunk = uint256(bytes32(userDefinedData[startIdx:endIdx]));
-                }
-                hashedValue = PoseidonT3.hash([hashedValue, nextChunk]);
-            }
-        }
+        // Calculate ripemd160(sha256(userDefinedData)) and convert to uint256
+        bytes32 sha256Hash = sha256(userDefinedData);
+        bytes20 ripemdHash = ripemd160(abi.encodePacked(sha256Hash));
+        uint256 hashedValue = uint256(uint160(ripemdHash));
 
         require(hashedValue == proofUserIdentifier, "UserIdentifier hash mismatch");
     }
@@ -357,14 +318,16 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Decode userDefinedData to extract configId, destChainId, userIdentifier
         (bytes32 configId, uint256 destChainId, uint256 userIdentifier, bytes calldata remainingData) = _decodeUserDefinedData(userDefinedData);
 
-        // Verify that the poseidon hash of userDefinedData matches the userIdentifier in the proof
+        // Verify that the ripemd160(sha256(userDefinedData)) matches the userIdentifier in the proof
         _verifyUserIdentifierHash(userDefinedData, proofData, header.attestationId);
 
         // Get verification config using configId from userDefinedData
         bytes memory config = _getVerificationConfigById(configId);
 
         // Perform verification and return result
-        _executeVerificationFlow(header, proofData, config, destChainId, userDefinedData);
+        bytes memory output = _executeVerificationFlow(header, proofData, config, destChainId);
+
+        _handleVerificationResult(destChainId, output, userDefinedData);
     }
 
     /**
@@ -383,9 +346,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         SelfStructs.HubInputHeader memory header,
         bytes calldata proofData,
         bytes memory config,
-        uint256 destChainId,
-        bytes calldata userDefinedData
-    ) internal {
+        uint256 destChainId
+    ) internal returns (bytes memory output){
         // Perform basic verification
         bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData));
 
@@ -397,10 +359,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         );
 
         // Format output (using contractVersion 2 for now)
-        bytes memory output = _formatVerificationOutput(2, genericDiscloseOutput);
-
-        // Handle result based on destination chain
-        _handleVerificationResult(destChainId, output, userDefinedData);
+        output = _formatVerificationOutput(2, genericDiscloseOutput);
     }
 
     /**

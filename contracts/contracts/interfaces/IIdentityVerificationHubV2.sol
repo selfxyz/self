@@ -86,13 +86,10 @@ interface IIdentityVerificationHubV2 {
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof vcAndDiscloseProof;
     }
 
-    /**
-     * @notice Verifies a VC and Disclose proof using unified bytes interface.
-     * @dev Supports both passport and ID card proofs through a unified interface.
-     * @param proofData Encoded proof data containing all necessary verification parameters.
-     * @return result Encoded verification result containing all relevant data.
-     */
-    function verifyVcAndDisclose(bytes calldata proofData) external view returns (bytes memory result);
+    function verify(
+        bytes calldata input,
+        bytes calldata userDefinedData
+    ) external view returns (bytes memory result);
 
     /**
      * @notice Registers a passport commitment using a register circuit proof.
