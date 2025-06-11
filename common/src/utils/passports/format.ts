@@ -107,16 +107,27 @@ export function generateSignedAttr(messageDigest: number[]) {
   constructedEContent.push(...messageDigest);
   return constructedEContent;
 }
+
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
 
-  mrzCharcodes.unshift(88); // the length of the mrz data
-  mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
-  mrzCharcodes.unshift(91); // the new length of the whole array
-  mrzCharcodes.unshift(97); // the tag for DG1
+  if (mrz.length === 88) {
+    mrzCharcodes.unshift(88); // the length of the mrz data
+    mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
+    mrzCharcodes.unshift(91); // the new length of the whole array
+    mrzCharcodes.unshift(97); // the tag for DG1
+  } else if (mrz.length === 90) {
+    mrzCharcodes.unshift(90); // the length of the mrz data
+    mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
+    mrzCharcodes.unshift(93); // the new length of the whole array
+    mrzCharcodes.unshift(97); // the tag for DG1
+  } else {
+    throw new Error(`Unsupported MRZ length: ${mrz.length}. Expected 88 or 90 characters.`);
+  }
 
   return mrzCharcodes;
 }
+
 export function formatDg2Hash(dg2Hash: number[]) {
   const unsignedBytesDg2Hash = dg2Hash.map((x) => toUnsignedByte(x));
   while (unsignedBytesDg2Hash.length < 64) {
