@@ -5,8 +5,8 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
-import { useAuth } from '../../stores/authProvider';
-import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
+import { useAuth } from '../../providers/authProvider';
+import { loadPassportDataAndSecret } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSettingStore } from '../../stores/settingStore';
 import { black } from '../../utils/colors';

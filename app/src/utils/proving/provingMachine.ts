@@ -13,7 +13,7 @@ import {
   clearPassportData,
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
-} from '../../stores/passportDataProvider';
+} from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { getPublicKey, verifyAttestation } from './attest';
@@ -34,6 +34,7 @@ import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
   isPassportNullified,
+  isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
 
@@ -549,44 +550,52 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           return;
         }
 
-        const { isRegistered, csca } =
-          await isUserRegisteredWithAlternativeCSCA(
+        /// disclosure
+        if (circuitType === 'disclose') {
+          // check if the user is registered using the csca from the passport data.
+          const isRegisteredWithLocalCSCA = await isUserRegistered(
             passportData,
             secret as string,
           );
-        console.log('isRegistered: ', isRegistered, 'csca: ', csca);
-
-        if (circuitType === 'disclose') {
-          if (isRegistered) {
+          if (isRegisteredWithLocalCSCA) {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
           } else {
             actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
             return;
           }
-        } else if (isRegistered) {
-          reStorePassportDataWithRightCSCA(passportData, csca as string);
-          actor!.send({ type: 'ALREADY_REGISTERED' });
-          return;
         }
 
-        const isNullifierOnchain = await isPassportNullified(passportData);
-        if (isNullifierOnchain) {
-          console.log(
-            'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
+        /// registration
+        else {
+          const { isRegistered, csca } =
+            await isUserRegisteredWithAlternativeCSCA(
+              passportData,
+              secret as string,
+            );
+          if (isRegistered) {
+            reStorePassportDataWithRightCSCA(passportData, csca as string);
+            actor!.send({ type: 'ALREADY_REGISTERED' });
+            return;
+          }
+          const isNullifierOnchain = await isPassportNullified(passportData);
+          if (isNullifierOnchain) {
+            console.log(
+              'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
+            );
+            actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
+            return;
+          }
+          const isDscRegistered = await checkIfPassportDscIsInTree(
+            passportData,
+            useProtocolStore.getState().passport.dsc_tree,
           );
-          actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
-          return;
+          console.log('isDscRegistered: ', isDscRegistered);
+          if (isDscRegistered) {
+            set({ circuitType: 'register' });
+          }
+          actor!.send({ type: 'VALIDATION_SUCCESS' });
         }
-        const isDscRegistered = await checkIfPassportDscIsInTree(
-          passportData,
-          useProtocolStore.getState().passport.dsc_tree,
-        );
-        console.log('isDscRegistered: ', isDscRegistered);
-        if (isDscRegistered) {
-          set({ circuitType: 'register' });
-        }
-        actor!.send({ type: 'VALIDATION_SUCCESS' });
       } catch (error) {
         console.error('Error validating passport:', error);
         actor!.send({ type: 'VALIDATION_ERROR' });

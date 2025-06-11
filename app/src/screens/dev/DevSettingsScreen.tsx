@@ -25,11 +25,11 @@ import { RootStackParamList } from '../../navigation';
 import {
   unsafe_clearSecrets,
   unsafe_getPrivateKey,
-} from '../../stores/authProvider';
+} from '../../providers/authProvider';
 import {
   storePassportData,
   usePassport,
-} from '../../stores/passportDataProvider';
+} from '../../providers/passportDataProvider';
 import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps extends PropsWithChildren {

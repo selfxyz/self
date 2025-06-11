@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { unsafe_getPrivateKey } from '../stores/authProvider';
+import { unsafe_getPrivateKey } from '../providers/authProvider';
 import { useAuth } from './authProvider';
 
 // TODO: refactor this as it shouldnt be used directly IMHO
