@@ -91,12 +91,9 @@ describe('OFAC - Passport number and Nationality match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_3.circom'),
-      {
-        include: defaultIncludePaths,
-      }
-    );
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_3.circom'), {
+      include: defaultIncludePaths,
+    });
 
     const proofLevel = 3;
     passNoAndNationality_smt.import(passportNoAndNationalityjson);
@@ -148,12 +145,9 @@ describe('OFAC - Name and DOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_2.circom'),
-      {
-        include: defaultIncludePaths,
-      }
-    );
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_2.circom'), {
+      include: defaultIncludePaths,
+    });
 
     namedob_smt.import(nameAndDobjson);
     const proofLevel = 2;
@@ -212,12 +206,9 @@ describe('OFAC - Name and YOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_1.circom'),
-      {
-        include: defaultIncludePaths,
-      }
-    );
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_1.circom'), {
+      include: defaultIncludePaths,
+    });
 
     name_smt.import(nameAndYobjson);
     const proofLevel = 1;
@@ -373,12 +364,9 @@ describe('OFAC - ID Card - Name and DOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_id_2.circom'),
-      {
-        include: defaultIncludePaths,
-      }
-    );
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_id_2.circom'), {
+      include: defaultIncludePaths,
+    });
 
     // IMPORTANT: Ensure this JSON path is correct
     namedob_id_smt.import(nameAndDobIdCardJson);
@@ -427,12 +415,9 @@ describe('OFAC - ID Card - Name and YOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_id_1.circom'),
-      {
-        include: defaultIncludePaths,
-      }
-    );
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_id_1.circom'), {
+      include: defaultIncludePaths,
+    });
 
     // IMPORTANT: Ensure this JSON path is correct
     nameyob_id_smt.import(nameAndYobIdCardJson);
