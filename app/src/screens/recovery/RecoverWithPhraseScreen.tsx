@@ -7,12 +7,14 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
+import { BackupEvents } from '../../consts/analytics';
 import Paste from '../../images/icons/paste.svg';
 import { useAuth } from '../../providers/authProvider';
 import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '../../providers/passportDataProvider';
+import analytics from '../../utils/analytics';
 import {
   black,
   slate300,
@@ -30,6 +32,7 @@ const RecoverWithPhraseScreen: React.FC<
 > = ({}) => {
   const navigation = useNavigation();
   const { restoreAccountFromMnemonic } = useAuth();
+  const { trackEvent } = analytics();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {
@@ -75,6 +78,7 @@ const RecoverWithPhraseScreen: React.FC<
     }
 
     setRestoring(false);
+    trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
     navigation.navigate('AccountVerifiedSuccess');
   }, [mnemonic, restoreAccountFromMnemonic]);
 
