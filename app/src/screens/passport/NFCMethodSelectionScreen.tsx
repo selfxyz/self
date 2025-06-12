@@ -42,7 +42,7 @@ const NFC_METHODS = [
     label: 'CAN Authentication',
     description:
       'Use Card Access Number (CAN) for authentication. Enter your CAN below.',
-    platform: ['ios'],
+    platform: ['ios', 'android'],
     params: { useCan: true },
   },
   {
