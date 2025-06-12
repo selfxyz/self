@@ -1,21 +1,29 @@
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
+import crypto from 'crypto';
+import { describe } from 'mocha';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { poseidon2 } from 'poseidon-lite';
 import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json' with { type: 'json' };
 import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json' with { type: 'json' };
 import nameAndDobIdCardJson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.json' with { type: 'json' };
 import nameAndYobIdCardJson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
-import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
 import passportNoAndNationalityjson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
 import { generateCircuitInputsOfac } from '@selfxyz/common/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 let circuit: any;
 
 // Mock passport not added in ofac list
-const mockIdData = genMockIdDoc({ idType: 'mock_passport' });
+const mockIdData = genMockIdDocAndInitDataParsing({ idType: 'mock_passport' });
 const passportData = genAndInitMockPassportData(
   'sha256',
   'sha256',
@@ -37,7 +45,7 @@ const passportDataInOfac = genAndInitMockPassportData(
   'ARCANGEL DE JESUS'
 );
 
-const mockIdDataInOfac = genMockIdDoc({
+const mockIdDataInOfac = genMockIdDocAndInitDataParsing({
   idType: 'mock_passport',
   nationality: 'FRA',
   birthDate: '541007',
@@ -47,12 +55,12 @@ const mockIdDataInOfac = genMockIdDoc({
 });
 
 // Mock ID Card not in OFAC list
-const idCardData = genMockIdDoc({
+const idCardData = genMockIdDocAndInitDataParsing({
   idType: 'mock_id_card',
 });
 
 // Mock ID Card in OFAC list
-const idCardDataInOfac = genMockIdDoc({
+const idCardDataInOfac = genMockIdDocAndInitDataParsing({
   idType: 'mock_id_card',
   nationality: 'FRA',
   birthDate: '541007',

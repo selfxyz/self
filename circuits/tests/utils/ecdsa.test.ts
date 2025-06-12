@@ -1,7 +1,10 @@
-import { wasm as wasmTester } from 'circom_tester';
+import { expect } from 'chai';
+import { wasm as wasm_tester } from 'circom_tester';
+import { describe } from 'mocha';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import * as crypto from 'crypto';
 import { initElliptic } from '@selfxyz/common/utils/certificate_parsing/elliptic';
-import * as path from 'path';
 import { splitToWords } from '@selfxyz/common/utils/bytes';
 
 const elliptic = initElliptic();
@@ -67,6 +70,10 @@ const fullTestSuite = [
   },
 ];
 
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 describe('ecdsa', () => {
   testSuite.forEach(({ hash, curve, n, k, reason }) => {
     const message = crypto.randomBytes(32);
@@ -84,7 +91,7 @@ describe('ecdsa', () => {
         }
 
         it(reason, async () => {
-          const circuit = await wasmTester(
+          const circuit = await wasm_tester(
             path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_${curve}.circom`),
             {
               include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
@@ -112,7 +119,7 @@ describe('ecdsa', () => {
       if (['p256', 'p384'].includes(curve)) {
         return;
       }
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_${curve}.circom`),
         {
           include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
@@ -137,7 +144,7 @@ describe('ecdsa', () => {
   });
   it('should not accept invalid chunks in the signature', async function () {
     this.timeout(0);
-    const circuit = await wasmTester(
+    const circuit = await wasm_tester(
       path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_p256.circom`),
       {
         include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
@@ -199,7 +206,7 @@ describe('ecdsa', () => {
 
   it('should reduce the final signature addition mod n', async function () {
     this.timeout(0);
-    const circuit = await wasmTester(
+    const circuit = await wasm_tester(
       path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_p256.circom`),
       {
         include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],

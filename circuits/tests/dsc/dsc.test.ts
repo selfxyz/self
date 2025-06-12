@@ -1,7 +1,8 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import serialized_csca_tree from '../../../common/pubkeys/serialized_csca_tree.json' with { type: 'json' };
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
@@ -11,19 +12,31 @@ import { parseDscCertificateData } from '@selfxyz/common/utils/passports/passpor
 import { getLeafDscTreeFromParsedDsc } from '@selfxyz/common/utils/trees';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { fullSigAlgs, sigAlgs } from './test_cases.js';
+import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { hashAlgosTypes } from '@selfxyz/common/constants/constants';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
-  const passportData = genAndInitMockPassportData(
-    hashFunction,
-    hashFunction,
-    `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
-    'FRA',
-    '000101',
-    '300101'
-  );
+  // const passportData = genAndInitMockPassportData(
+  //   hashFunction,
+  //   hashFunction,
+  //   `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
+  //   'FRA',
+  //   '000101',
+  //   '300101'
+  // );
+  const passportData = genMockIdDocAndInitDataParsing({
+    idType: 'mock_passport',
+    dgHashAlgo: hashFunction as hashAlgosTypes,
+    eContentHashAlgo: hashFunction as hashAlgosTypes,
+    signatureType: `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
+  });
   const passportMetadata = passportData.passportMetadata;
 
   describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction?.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm?.toUpperCase()} ${passportMetadata.cscaCurveOrExponent?.toUpperCase()} ${

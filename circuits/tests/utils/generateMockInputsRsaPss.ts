@@ -1,4 +1,4 @@
-import * as forge from 'node-forge';
+import forge from 'node-forge';
 
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { hexToDecimal } from '@selfxyz/common/utils/bytes';
@@ -19,8 +19,13 @@ export const generateMockRsaPssInputs = (
   });
   const message = 'helloworld';
 
-  // Create message hash
-  const md = forge.md[hashAlgorithm].create();
+  // Create message hash - fix for undefined forge.md issue
+  const hashAlg = hashAlgorithm.toLowerCase() === 'sha256' ? 'sha256' : hashAlgorithm.toLowerCase();
+  if (!forge.md[hashAlg]) {
+    throw new Error(`Unsupported hash algorithm: ${hashAlgorithm}, available: ${Object.keys(forge.md)}`);
+  }
+
+  const md = forge.md[hashAlg].create();
   md.update(forge.util.binary.raw.encode(Buffer.from(message)));
   const messageHash = md.digest().bytes();
   const messageBits = Array.from(messageHash)
@@ -32,8 +37,8 @@ export const generateMockRsaPssInputs = (
 
   // Create PSS signature
   const pss = forge.pss.create({
-    md: forge.md[hashAlgorithm].create(),
-    mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
+    md: forge.md[hashAlg].create(),
+    mgf: forge.mgf.mgf1.create(forge.md[hashAlg].create()),
     saltLength,
   });
   const signatureBytes = keypair.privateKey.sign(md, pss);
@@ -66,14 +71,21 @@ export const generateMalleableRsaPssInputs = (
   });
 
   const message = 'helloworld';
-  const md = forge.md[hashAlgorithm].create();
+
+  // Fix for undefined forge.md issue
+  const hashAlg = hashAlgorithm.toLowerCase() === 'sha256' ? 'sha256' : hashAlgorithm.toLowerCase();
+  if (!forge.md[hashAlg]) {
+    throw new Error(`Unsupported hash algorithm: ${hashAlgorithm}, available: ${Object.keys(forge.md)}`);
+  }
+
+  const md = forge.md[hashAlg].create();
   md.update(forge.util.binary.raw.encode(Buffer.from(message)));
   const messageHash = md.digest().bytes();
 
   // Create valid signature
   const pss = forge.pss.create({
-    md: forge.md[hashAlgorithm].create(),
-    mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
+    md: forge.md[hashAlg].create(),
+    mgf: forge.mgf.mgf1.create(forge.md[hashAlg].create()),
     saltLength,
   });
 

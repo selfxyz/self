@@ -1,6 +1,7 @@
 import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { wasm as wasm_tester } from 'circom_tester';
 import {
   attributeToPosition_ID,
@@ -21,14 +22,17 @@ import {
 } from '@selfxyz/common/utils/circuits/formatOutputs';
 import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
-import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('Disclose', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
   let w: any;
-  const passportData = genMockIdDoc({
+  const passportData = genMockIdDocAndInitDataParsing({
     idType: 'mock_id_card',
   });
   console.log(passportData.mrz);
@@ -218,12 +222,12 @@ describe('Disclose', function () {
       const testCases = [
         {
           desc: 'No details match',
-          data: genMockIdDoc({ idType: 'mock_id_card' }),
+          data: genMockIdDocAndInitDataParsing({ idType: 'mock_id_card' }),
           expectedBits: ['\x01', '\x01'],
         },
         {
           desc: 'Name and DOB matches (so YOB matches too)',
-          data: genMockIdDoc({
+          data: genMockIdDocAndInitDataParsing({
             idType: 'mock_id_card',
             passportNumber: 'DIF123456',
             lastName: 'HENAO MONTOYA',
@@ -235,7 +239,7 @@ describe('Disclose', function () {
         },
         {
           desc: 'Only name and YOB match',
-          data: genMockIdDoc({
+          data: genMockIdDocAndInitDataParsing({
             idType: 'mock_id_card',
             passportNumber: 'DIF123456',
             lastName: 'HENAO MONTOYA',

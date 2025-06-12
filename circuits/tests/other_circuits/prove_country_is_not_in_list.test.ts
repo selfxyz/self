@@ -1,11 +1,17 @@
 import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
+import { describe } from 'mocha';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { formatCountriesList } from '@selfxyz/common/utils/circuits/formatInputs';
 import { formatAndUnpackForbiddenCountriesList } from '@selfxyz/common/utils/circuits/formatOutputs';
 import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
 import { formatMrz } from '@selfxyz/common/utils/passports/format';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
+
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('ProveCountryIsNotInList', function () {
   this.timeout(0);

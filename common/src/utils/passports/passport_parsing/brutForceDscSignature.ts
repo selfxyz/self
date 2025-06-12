@@ -3,7 +3,7 @@ import { hashAlgos } from '../../../constants/constants.js';
 import { CertificateData, PublicKeyDetailsECDSA } from '../../certificate_parsing/dataStructure.js';
 import { initElliptic } from '../../certificate_parsing/elliptic.js';
 import * as asn1js from 'asn1js';
-import * as forge from 'node-forge';
+import forge from 'node-forge';
 import { getCurveForElliptic } from '../../certificate_parsing/curves.js';
 import { Certificate } from 'pkijs';
 import { hash } from '../../hash.js';
@@ -47,7 +47,7 @@ function brutforceHashAlgorithmDsc(
 ): any {
   for (const hashFunction of hashAlgos) {
     if (verifySignature(dsc, csca, signatureAlgorithm, hashFunction, saltLength)) {
-      // console.log(`✓ Success with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);
+       // console.log(`✓ Success with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);
       return hashFunction;
     }
     // console.log(`✗ Failed with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);

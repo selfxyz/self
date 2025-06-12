@@ -5,6 +5,7 @@ import { wasm as wasm_tester } from 'circom_tester';
 import crypto from 'crypto';
 import { describe } from 'mocha';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { poseidon1, poseidon2 } from 'poseidon-lite';
 import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json' with { type: 'json' };
 import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json' with { type: 'json' };
@@ -19,6 +20,10 @@ import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circui
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('Disclose', function () {
   this.timeout(0);

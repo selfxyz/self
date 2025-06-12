@@ -1,9 +1,15 @@
-import { wasm as wasmTester } from 'circom_tester';
-import { describe, it } from 'mocha';
+import { expect } from 'chai';
+import { wasm as wasm_tester } from 'circom_tester';
+import { describe } from 'mocha';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { generateMockRsaPkcs1v1_5Inputs } from './generateMockInputsInCircuits.js';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
-import { expect } from 'chai';
+
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
   this.timeout(0);
   /** Some tests are disabled to avoid overloading the CI/CD pipeline - the commented rsa verifications will however be tested in prove.test.ts and dsc.test.ts **/
@@ -24,7 +30,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const { signature, modulus, message } = generateMockRsaPkcs1v1_5Inputs(algorithm);
 
       // Run circuit with inputs
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
           include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
@@ -48,7 +54,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const { signature, modulus, message } = generateMockRsaPkcs1v1_5Inputs(algorithm);
 
       const invalidSignature = signature.map((byte: string) => String((parseInt(byte) + 1) % 256));
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
           include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
@@ -70,7 +76,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const { signature, modulus, message } = generateMockRsaPkcs1v1_5Inputs(algorithm);
 
       const invalidMessage = message.map((byte: string) => String((parseInt(byte) + 1) % 256));
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
           include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],

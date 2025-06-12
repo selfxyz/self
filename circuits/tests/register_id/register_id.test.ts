@@ -12,10 +12,15 @@ import { poseidon6 } from 'poseidon-lite';
 import { hashAlgosTypes, ID_CARD_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json' with { type: 'json' };
-import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { fileURLToPath } from 'url';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
+
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 testSuite.forEach(
   ({
@@ -33,7 +38,7 @@ testSuite.forEach(
       this.timeout(0);
       let circuit: any;
 
-      const passportData = genMockIdDoc({
+      const passportData = genMockIdDocAndInitDataParsing({
         idType: 'mock_id_card',
         dgHashAlgo: dgHashAlgo as hashAlgosTypes,
         eContentHashAlgo: eContentHashAlgo as hashAlgosTypes,

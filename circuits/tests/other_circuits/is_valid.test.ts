@@ -1,6 +1,13 @@
-import chai, { expect, assert } from 'chai';
-import path from 'path';
+import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
+import { describe } from 'mocha';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import chai, { assert } from 'chai';
+
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('DateIsLessChecker Circuit Test', function () {
   this.timeout(0); // Disable timeout

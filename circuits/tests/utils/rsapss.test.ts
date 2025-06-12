@@ -1,12 +1,17 @@
-import { wasm as wasmTester } from 'circom_tester';
-import { describe, it } from 'mocha';
+import { expect } from 'chai';
+import { wasm as wasm_tester } from 'circom_tester';
+import { describe } from 'mocha';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import {
   generateMalleableRsaPssInputs,
   generateMockRsaPssInputs,
 } from './generateMockInputsRsaPss.js';
-import { expect } from 'chai';
 import { fullAlgorithms, sigAlgs, AdditionalCases } from './testcase/rsapss.js';
+
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('VerifyRsapss Circuit Test', function () {
   this.timeout(0);
@@ -21,7 +26,7 @@ describe('VerifyRsapss Circuit Test', function () {
         const modulus = additionalCase.modulus;
         const message = additionalCase.message;
 
-        const circuit = await wasmTester(
+        const circuit = await wasm_tester(
           path.join(
             __dirname,
             `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
@@ -59,7 +64,7 @@ describe('VerifyRsapss Circuit Test', function () {
       );
 
       // Run circuit with inputs
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(
           __dirname,
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
@@ -92,7 +97,7 @@ describe('VerifyRsapss Circuit Test', function () {
       const randomIndex = Math.floor(Math.random() * signature.length);
       invalidSignature[randomIndex] = String((BigInt(signature[randomIndex]) + 1n).toString());
 
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(
           __dirname,
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
@@ -124,7 +129,7 @@ describe('VerifyRsapss Circuit Test', function () {
       const randomIndex = Math.floor(Math.random() * message.length);
       invalidMessage[randomIndex] = invalidMessage[randomIndex] === 0 ? 1 : 0;
 
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(
           __dirname,
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
@@ -154,7 +159,7 @@ describe('VerifyRsapss Circuit Test', function () {
       const largeSignature = [...signature];
       largeSignature[k - 1] = String(BigInt(modulus[k - 1]) + 1n);
 
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(
           __dirname,
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
@@ -182,7 +187,7 @@ describe('VerifyRsapss Circuit Test', function () {
         algorithm.saltLength
       );
 
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(
           __dirname,
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
@@ -213,7 +218,7 @@ describe('VerifyRsapss Circuit Test', function () {
       let overflowSignature = [...signature];
       overflowSignature[0] = String(BigInt(2) ** BigInt(122));
 
-      const circuit = await wasmTester(
+      const circuit = await wasm_tester(
         path.join(
           __dirname,
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`

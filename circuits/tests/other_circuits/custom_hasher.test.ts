@@ -3,6 +3,12 @@ import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
 import { customHasher, packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
+import { describe } from 'mocha';
+import { fileURLToPath } from 'url';
+
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 describe('CustomHasher', function () {
   this.timeout(0);

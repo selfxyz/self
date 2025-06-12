@@ -3,6 +3,7 @@ import { wasm as wasm_tester } from 'circom_tester';
 import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { poseidon6 } from 'poseidon-lite';
 import serialized_dsc_tree from '@selfxyz/common/pubkeys/serialized_dsc_tree.json' with { type: 'json' };
 import { PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
@@ -16,6 +17,10 @@ import { fullSigAlgs, sigAlgs } from './test_cases.js';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
+
+// Add this helper to replace __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 testSuite.forEach(
   ({
