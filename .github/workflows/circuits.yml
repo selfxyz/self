@@ -53,7 +53,9 @@ jobs:
       - name: "enable yarn"
         run: corepack enable yarn
       - name: Install Yarn dependencies
-        run: yarn workspaces focus @selfxyz/circuits
+        run: |
+          yarn install --frozen-lockfile
+          yarn workspaces focus @selfxyz/circuits
 
       - name: Run lint
         working-directory: ./circuits
