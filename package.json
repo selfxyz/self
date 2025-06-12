@@ -15,9 +15,12 @@
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
     "postinstall": "patch-package"
   },
-  "packageManager": "yarn@4.6.0",
   "devDependencies": {
+    "@types/node": "^24.0.0",
+    "knip": "^5.60.2",
     "patch-package": "^8.0.0",
-    "postinstall-postinstall": "^2.1.0"
-  }
+    "postinstall-postinstall": "^2.1.0",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "yarn@4.6.0"
 }
