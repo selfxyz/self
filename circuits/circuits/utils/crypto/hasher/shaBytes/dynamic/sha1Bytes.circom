@@ -6,9 +6,6 @@ include "@openpassport/zk-email-circuits/utils/array.circom";
 include "circomlib/circuits/bitify.circom";
 
 //Adapted from @openpassport/zk-email-circuits/helpers/sha.circom
-// Assumption: The value `in_len_padded_bytes * 8` must fit within `ceil(log2(max_num_bytes * 8))` bits.
-// This range constraint is assumed (but not enforced) by the underlying `Sha1General` template.
-// It must be enforced externally, via a Num2Bits check, to prevent incorrect hash outputs.
 template Sha1Bytes(max_num_bytes) {
     signal input in_padded[max_num_bytes];
     signal input in_len_padded_bytes;
@@ -36,9 +33,6 @@ template Sha1Bytes(max_num_bytes) {
 
 //Adapted from @openpassport/zk-email-circuits/helpers/sha256general.circom
 //Sha1 template from https://github.com/dmpierre/sha1-circom/blob/fe18319cf72b9f3b83d0cea8f49a1f04482c125b/circuits/sha1.circom
-// Assumption: The value of `in_len_padded_bits` must fit within `ceil(log2(maxBitsPadded))` bits.
-// This constraint is required to ensure soundness of the LessEqThan comparator. 
-// It is not enforced here: it must be guaranteed by the "caller", via a Num2Bits check!
 template Sha1General(maxBitsPadded) {
     assert(maxBitsPadded % 512 == 0);
     var maxBitsPaddedBits = log2Ceil(maxBitsPadded);
