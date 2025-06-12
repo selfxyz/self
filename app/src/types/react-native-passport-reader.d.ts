@@ -3,11 +3,14 @@ declare module 'react-native-passport-reader' {
     documentNumber: string;
     dateOfBirth: string;
     dateOfExpiry: string;
+    canNumber: string;
+    useCan: boolean;
     quality?: number;
   }
 
   interface PassportReader {
     configure(token: string): void;
+    reset(): void;
     scan(options: ScanOptions): Promise<{
       mrz: string;
       eContent: string;

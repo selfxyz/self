@@ -34,10 +34,13 @@ export const scan = async (inputs: Inputs) => {
 };
 
 const scanAndroid = async (inputs: Inputs) => {
+  PassportReader.reset();
   return await PassportReader.scan({
     documentNumber: inputs.passportNumber,
     dateOfBirth: inputs.dateOfBirth,
     dateOfExpiry: inputs.dateOfExpiry,
+    canNumber: inputs.canNumber ?? '',
+    useCan: inputs.useCan ?? false,
   });
 };
 
