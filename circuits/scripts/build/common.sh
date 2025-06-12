@@ -72,9 +72,9 @@ build_circuit() {
 
     # Compile circuit
     circom ${CIRCUIT_PATH} \
-        -l node_modules \
-        -l ./node_modules/@zk-kit/binary-merkle-root.circom/src \
-        -l ./node_modules/circomlib/circuits \
+        -l ../node_modules \
+        -l ../node_modules/@zk-kit/binary-merkle-root.circom/src \
+        -l ../node_modules/circomlib/circuits \
         --r1cs --O1 --wasm -c \
         --output ${OUTPUT_DIR}/${CIRCUIT_NAME}/
 
@@ -85,10 +85,10 @@ build_circuit() {
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
     # Generate and contribute random string
-    local RAND_STR=$(get_random_string)
-    echo $RAND_STR | yarn snarkjs zkey contribute \
-        ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey \
-        ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey
+    # local RAND_STR=$(get_random_string)
+    # echo $RAND_STR | yarn snarkjs zkey contribute \
+    #     ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey \
+    #     ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey
 
     echo -e "${BLUE}Building vkey${NC}"
     yarn snarkjs zkey export verificationkey \

@@ -29,9 +29,9 @@ template ShaBytesDynamic(hashLen, max_num_bytes) {
     if (hashLen == 256) {
 
         // Range check for the padded input length (in_len_padded_bytes).
-        // This check enforces that `in_len_padded_bytes * 8` can be represented using 
-        // `ceil(log2(max_num_bytes * 8))` bits, which is a requirement assumed by the 
-        // underlying SHA templates. Without this check, out-of-range values could 
+        // This check enforces that `in_len_padded_bytes * 8` can be represented using
+        // `ceil(log2(max_num_bytes * 8))` bits, which is a requirement assumed by the
+        // underlying SHA templates. Without this check, out-of-range values could
         // silently bypass internal constraints, leading to incorrect hash outputs.
         // For more information, see:
         // https://github.com/zkemail/zk-email-verify/blob/b193cf0c760456b837b2bbcf7b2c72d5bb3f43c3/packages/circuits/lib/sha.circom#L87
@@ -42,15 +42,15 @@ template ShaBytesDynamic(hashLen, max_num_bytes) {
 
         hash_bits <== Sha256Bytes(max_num_bytes)(in_padded, in_len_padded_bytes);
     }
-    if (hashLen == 224) { 
+    if (hashLen == 224) {
         hash_bits <== Sha224Bytes(max_num_bytes)(in_padded, in_len_padded_bytes);
     }
     if (hashLen == 160) {
 
         // Range check for the padded input length (in_len_padded_bytes).
-        // This check enforces that `in_len_padded_bytes * 8` can be represented using 
-        // `ceil(log2(max_num_bytes * 8))` bits, which is a requirement assumed by the 
-        // underlying SHA templates. Without this check, out-of-range values could 
+        // This check enforces that `in_len_padded_bytes * 8` can be represented using
+        // `ceil(log2(max_num_bytes * 8))` bits, which is a requirement assumed by the
+        // underlying SHA templates. Without this check, out-of-range values could
         // silently bypass internal constraints, leading to incorrect hash outputs.
         // For more information, see:
         // https://github.com/selfxyz/self/pull/579#issuecomment-2922842294
@@ -58,7 +58,7 @@ template ShaBytesDynamic(hashLen, max_num_bytes) {
         var maxBitsPaddedBits = ceil(log2(maxBitsPadded));
         component rangeCheck = Num2Bits(maxBitsPaddedBits);
         rangeCheck.in <== in_len_padded_bytes * 8;
-        
+
         hash_bits <== Sha1Bytes(max_num_bytes)(in_padded, in_len_padded_bytes);
     }
 
