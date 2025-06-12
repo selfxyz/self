@@ -1,11 +1,5 @@
-import { CertificateData } from "./certificate_parsing/dataStructure";
-import { PassportMetadata } from "./passports/passport_parsing/parsePassportData";
-
-export type ID = {
-  documentType: DocumentType;
-  mock: boolean;
-  data: PassportData;
-}
+import { CertificateData } from './certificate_parsing/dataStructure.js';
+import { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 
 export type PassportData = {
   mrz: string;
@@ -20,9 +14,12 @@ export type PassportData = {
   dsc_parsed?: CertificateData;
   csca_parsed?: CertificateData;
   documentType: DocumentType;
+  documentCategory: DocumentCategory;
+  mock: boolean;
 };
 
-export type DocumentType = "passport" | "id_card" | "mock_passport" | "mock_id_card";
+export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
+export type DocumentCategory = 'passport' | 'id_card';
 
 // Define the signature algorithm in "algorithm_hashfunction_domainPapameter_keyLength"
 export type SignatureAlgorithm =

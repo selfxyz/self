@@ -2,7 +2,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import hre from "hardhat";
 import fs from "fs";
 import path from "path";
-import { getCscaTreeRoot } from "../../../../common/src/utils/trees";
+import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
 import serialized_csca_tree from "../../../../common/pubkeys/serialized_csca_tree.json";
 
 module.exports = buildModule("UpdateRegistryCscaRoot", (m) => {

@@ -53,16 +53,23 @@ OpenPassport currently supports the following sig/hash algorithms:
 
 ## Installation
 
-Go to the `/circuits` directory and run `yarn install`
+you can do a focused install with
 
 ```bash
-cd circuits && yarn install && cd ..
+
+yarn workspace @selfxyz/circuits focus
+
 ```
 
-Go to the `/common` directory and run `yarn install`
+or you can run `yarn install` (it has the same affect whether ran in workspace root or circuits folder)
+
+## Build TS Dependencies
+
+from circuits directory run
 
 ```bash
-cd common && yarn install && cd ..
+yarn build:deps
+
 ```
 
 ## Build circuits (dev only)
@@ -71,7 +78,7 @@ cd common && yarn install && cd ..
 ./scripts/build_circuits.sh
 ```
 
-## Run tests
+## Run tests ()
 
 ```bash
 yarn test

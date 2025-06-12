@@ -1,20 +1,19 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { poseidon2, poseidon5 } from 'poseidon-lite';
-
 import {
   API_URL,
-  PASSPORT_ATTESTATION_ID,
-} from '../../../../common/src/constants/constants';
-import { parseCertificateSimple } from '../../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
-import { hash, packBytesAndPoseidon } from '../../../../common/src/utils/hash';
-import { formatMrz } from '../../../../common/src/utils/passports/format';
-import {
+  formatMrz,
   generateCommitment,
   generateNullifier,
-} from '../../../../common/src/utils/passports/passport';
-import { getLeafDscTree } from '../../../../common/src/utils/trees';
-import { PassportData } from '../../../../common/src/utils/types';
+  getCircuitNameFromPassportData,
+  getLeafDscTree,
+  Hash,
+  parseCertificateSimple,
+  PASSPORT_ATTESTATION_ID,
+  type PassportData,
+} from '@selfxyz/common';
+import { DocumentCategory } from '@selfxyz/common';
+import { poseidon2, poseidon5 } from 'poseidon-lite';
+
 import { useProtocolStore } from '../../stores/protocolStore';
 
 export type PassportSupportStatus =
@@ -30,6 +29,7 @@ export async function checkPassportSupported(
   details: string;
 }> {
   const passportMetadata = passportData.passportMetadata;
+  const document: DocumentCategory = passportData.documentCategory;
   if (!passportMetadata) {
     console.log('Passport metadata is null');
     return { status: 'passport_metadata_missing', details: passportData.dsc };
@@ -43,11 +43,13 @@ export async function checkPassportSupported(
     'register',
   );
   const deployedCircuits =
-    useProtocolStore.getState().passport.deployed_circuits;
-  console.log('circuitNameRegister', circuitNameRegister);
+    useProtocolStore.getState()[document].deployed_circuits; // change this to the document type
   if (
     !circuitNameRegister ||
-    !deployedCircuits.REGISTER.includes(circuitNameRegister)
+    !(
+      deployedCircuits.REGISTER.includes(circuitNameRegister) ||
+      deployedCircuits.REGISTER_ID.includes(circuitNameRegister)
+    )
   ) {
     return {
       status: 'registration_circuit_not_supported',
@@ -55,7 +57,13 @@ export async function checkPassportSupported(
     };
   }
   const circuitNameDsc = getCircuitNameFromPassportData(passportData, 'dsc');
-  if (!circuitNameDsc || !deployedCircuits.DSC.includes(circuitNameDsc)) {
+  if (
+    !circuitNameDsc ||
+    !(
+      deployedCircuits.DSC.includes(circuitNameDsc) ||
+      deployedCircuits.DSC_ID.includes(circuitNameDsc)
+    )
+  ) {
     console.log('DSC circuit not supported:', circuitNameDsc);
     return { status: 'dsc_circuit_not_supported', details: circuitNameDsc };
   }
@@ -75,7 +83,8 @@ export async function isUserRegistered(
     PASSPORT_ATTESTATION_ID,
     passportData,
   );
-  const serializedTree = useProtocolStore.getState().passport.commitment_tree;
+  const document: DocumentCategory = passportData.documentCategory;
+  const serializedTree = useProtocolStore.getState()[document].commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   const index = tree.indexOf(BigInt(commitment));
   return index !== -1;
@@ -114,7 +123,7 @@ export async function isUserRegisteredWithAlternativeCSCA(
       return { isRegistered: true, csca: csca_list[i] };
     }
   }
-  console.error(
+  console.warn(
     'None of the following CSCA correspond to the commitment:',
     csca_list,
   );
@@ -163,15 +172,19 @@ export function generateCommitmentInApp(
   passportData: PassportData,
   alternativeCSCA: Record<string, string>,
 ) {
-  const dg1_packed_hash = packBytesAndPoseidon(formatMrz(passportData.mrz));
-  const eContent_packed_hash = packBytesAndPoseidon(
+  const dg1_packed_hash = Hash.packBytesAndPoseidon(
+    formatMrz(passportData.mrz),
+  );
+  const eContent_packed_hash = Hash.packBytesAndPoseidon(
     (
-      hash(
+      Hash.hash(
         passportData.passportMetadata!.eContentHashFunction,
         Array.from(passportData.eContent),
         'bytes',
       ) as number[]
-    ).map(byte => byte & 0xff),
+    )
+      // eslint-disable-next-line no-bitwise
+      .map(byte => byte & 0xff),
   );
 
   const csca_list: string[] = [];

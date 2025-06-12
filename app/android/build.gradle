@@ -37,10 +37,10 @@ allprojects {
         google()
         mavenCentral()
         maven {
-            url("$rootDir/../node_modules/react-native/android")
+            url("$rootDir/../../node_modules/react-native/android")
         }
         maven {
-            url("$rootDir/../node_modules/jsc-android/dist")
+            url("$rootDir/../../node_modules/jsc-android/dist")
         }
         maven { url 'https://jitpack.io' }
         jcenter()

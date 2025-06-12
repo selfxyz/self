@@ -31,11 +31,21 @@ extension Dictionary {
 
 @available(iOS 15, *)
 @objc(PassportReader)
-class PassportReader: NSObject{
-  
-  private let passportReader = NFCPassportReader.PassportReader()
-  
-  func getMRZKey(passportNumber: String, dateOfBirth: String, dateOfExpiry: String ) -> String {
+class PassportReader: NSObject {
+    private var passportReader: NFCPassportReader.PassportReader
+    
+    override init() {
+        self.passportReader = NFCPassportReader.PassportReader()
+        super.init()
+    }
+    
+    @objc(configure:enableDebugLogs:)
+    func configure(token: String, enableDebugLogs: Bool) {
+        let analytics = Analytics(token: token, enableDebugLogs: enableDebugLogs)
+        self.passportReader = NFCPassportReader.PassportReader(analytics: analytics)
+    }
+    
+    func getMRZKey(passportNumber: String, dateOfBirth: String, dateOfExpiry: String ) -> String {
     
     // Pad fields if necessary
     let pptNr = pad( passportNumber, fieldLength:9)
@@ -75,8 +85,22 @@ class PassportReader: NSObject{
     return (sum % 10)
   }
   
-  @objc(scanPassport:dateOfBirth:dateOfExpiry:resolve:reject:)
-  func scanPassport(_ passportNumber: String, dateOfBirth: String, dateOfExpiry: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:resolve:reject:)
+  func scanPassport(
+    _ passportNumber: String,
+    dateOfBirth: String,
+    dateOfExpiry: String,
+    canNumber: String,
+    useCan: NSNumber,
+    skipPACE: NSNumber,
+    skipCA: NSNumber,
+    extendedMode: NSNumber,
+    resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+   let useCANBool = useCan.boolValue
+   let skipPACEBool = skipPACE.boolValue 
+   let skipCABool = skipCA.boolValue
+   let extendedModeBool = extendedMode.boolValue
+   
     let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
       switch displayMessage {
         case .requestPresentPassport:
@@ -93,11 +117,31 @@ class PassportReader: NSObject{
       }
 
       do {
-        let mrzKey = getMRZKey( passportNumber: passportNumber, dateOfBirth: dateOfBirth, dateOfExpiry: dateOfExpiry)
+        let password: String
+        var passwordType:PACEPasswordType
+        if useCANBool {
+          if canNumber.count != 6 {
+            reject("E_PASSPORT_READ", "CAN number must be 6 digits", nil)
+            return
+          }
+          password = canNumber
+          passwordType = PACEPasswordType.can
+        } else {
+          password = getMRZKey( passportNumber: passportNumber, dateOfBirth: dateOfBirth, dateOfExpiry: dateOfExpiry)
+          passwordType = PACEPasswordType.mrz
+        }
         // let masterListURL = Bundle.main.url(forResource: "masterList", withExtension: ".pem")
         // passportReader.setMasterListURL( masterListURL! )
 
-        let passport = try await passportReader.readPassport( mrzKey: mrzKey, tags: [.COM, .DG1, .SOD], customDisplayMessage: customMessageHandler)
+        let passport = try await self.passportReader.readPassport(
+          password: password, 
+          type: passwordType, 
+          tags: [.COM, .DG1, .SOD], 
+          skipCA: skipCABool,
+          skipPACE: skipPACEBool,
+          useExtendedMode: extendedModeBool,
+          customDisplayMessage: customMessageHandler
+        )
 
         var ret = [String:String]()
         //print("documentType", passport.documentType)
@@ -200,28 +244,33 @@ class PassportReader: NSObject{
         // }
 
         do {
-          let sod = passport.getDataGroup(DataGroupId.SOD) as! SOD
-
-          // ret["concatenatedDataHashes"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
-          ret["eContentBase64"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
-
-          ret["signatureAlgorithm"] = try sod.getSignatureAlgorithm()
-          ret["encapsulatedContentDigestAlgorithm"] = try sod.getEncapsulatedContentDigestAlgorithm()
-          
-          let messageDigestFromSignedAttributes = try sod.getMessageDigestFromSignedAttributes()
-          let signedAttributes = try sod.getSignedAttributes()
-          //print("messageDigestFromSignedAttributes", messageDigestFromSignedAttributes)
-
-          ret["signedAttributes"] = signedAttributes.base64EncodedString()
-          // if let pubKey = convertOpaquePointerToSecKey(opaquePointer: sod.pubKey),
-          //   let serializedPublicKey = serializePublicKey(pubKey) {
-          //     ret["publicKeyBase64"] = serializedPublicKey
-          // } else {
-          //     // Handle the case where pubKey is nil
-          // }
-
-          if let serializedSignature = serializeSignature(from: sod) {
-            ret["signatureBase64"] = serializedSignature
+          // although this line won't be reached if there is an error, Its better to handle it here instead of crashing the app
+          if let sod = try passport.getDataGroup(DataGroupId.SOD) as? SOD {
+             // ret["concatenatedDataHashes"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
+            ret["eContentBase64"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
+  
+            ret["signatureAlgorithm"] = try sod.getSignatureAlgorithm()
+            ret["encapsulatedContentDigestAlgorithm"] = try sod.getEncapsulatedContentDigestAlgorithm()
+            
+            let messageDigestFromSignedAttributes = try sod.getMessageDigestFromSignedAttributes()
+            let signedAttributes = try sod.getSignedAttributes()
+            //print("messageDigestFromSignedAttributes", messageDigestFromSignedAttributes)
+  
+            ret["signedAttributes"] = signedAttributes.base64EncodedString()
+            // if let pubKey = convertOpaquePointerToSecKey(opaquePointer: sod.pubKey),
+            //   let serializedPublicKey = serializePublicKey(pubKey) {
+            //     ret["publicKeyBase64"] = serializedPublicKey
+            // } else {
+            //     // Handle the case where pubKey is nil
+            // }
+  
+            if let serializedSignature = serializeSignature(from: sod) {
+              ret["signatureBase64"] = serializedSignature
+            }
+          } else {
+            print("SOD not found or could not be cast to SOD")
+            reject("E_PASSPORT_READ", "SODNotFound : SOD not found or could not be cast to SOD", nil)
+            return
           }
 
         } catch {

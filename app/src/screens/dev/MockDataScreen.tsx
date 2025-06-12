@@ -1,4 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
+import { countryCodes } from '@selfxyz/common';
+import { getSKIPEM } from '@selfxyz/common';
+import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
+import { initPassportDataParsing } from '@selfxyz/common';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
@@ -19,20 +23,13 @@ import {
   YStack,
 } from 'tamagui';
 
-import { getSKIPEM } from '../../../.././common/src/utils/csca';
-import { countryCodes } from '../../../../common/src/constants/constants';
-import {
-  genMockIdDoc,
-  IdDocInput,
-} from '../../../../common/src/utils/passports/genMockIdDoc';
-import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';
 import { Title } from '../../components/typography/Title';
 import { MockDataEvents } from '../../consts/analytics';
-import { storePassportData } from '../../stores/passportDataProvider';
+import { storePassportData } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import {
   borderColor,
@@ -53,6 +50,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
   const [advancedMode, setAdvancedMode] = useState(false);
+  const [selectedDocumentType, setSelectedDocumentType] = useState<
+    'mock_passport' | 'mock_id_card'
+  >('mock_passport');
   const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + yearsOffset);
@@ -204,6 +204,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   } as const;
 
   const handleGenerate = useCallback(async () => {
+    console.log('selectedDocumentType', selectedDocumentType);
     setIsGenerating(true);
     try {
       const randomPassportNumber = Math.random()
@@ -217,8 +218,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         ][2];
 
       const idDocInput: Partial<IdDocInput> = {
-        nationality: selectedCountry,
-        idType: 'mock_passport',
+        nationality: selectedCountry as IdDocInput['nationality'],
+        idType: selectedDocumentType,
         signatureType:
           signatureTypeForGeneration as IdDocInput['signatureType'],
         expiryDate: castDateToYYMMDDForExpiry(expiryYears),
@@ -234,17 +235,15 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         if (birthDate.length === 10 && birthDate.split('/').length === 3) {
           dobForGeneration = formatBirthDateForGeneration(birthDate);
         } else {
-          setIsGenerating(false);
-          return;
+          console.warn('Using default birth date 000101 (January 1, 2000)');
+          dobForGeneration = '000101';
         }
       }
       idDocInput.birthDate = dobForGeneration;
-
       let rawMockData = genMockIdDoc(idDocInput);
       const skiPem = await getSKIPEM('staging');
       let parsedMockData = initPassportDataParsing(rawMockData, skiPem);
       await storePassportData(parsedMockData);
-
       navigation.navigate('ConfirmBelongingScreen', {});
     } catch (error) {
       console.error('Error during mock data generation:', error);
@@ -258,6 +257,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     expiryYears,
     isInOfacList,
     navigation,
+    selectedDocumentType,
   ]);
 
   const twoFingerTripleTap = Gesture.Tap()
@@ -276,35 +276,83 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         <YStack px="$4" pb="$4" gap="$5">
           <GestureDetector gesture={twoFingerTripleTap}>
             <YStack ai="center" mb={'$10'}>
-              <Title>Generate Passport Data</Title>
+              <Title>Generate Document Data</Title>
               <BodyText textAlign="center">
-                Configure the passport data parameters below
+                Configure the document data parameters below
               </BodyText>
             </YStack>
           </GestureDetector>
 
           {advancedMode && (
-            <XStack ai="center" jc="space-between">
-              <BodyText>Encryption</BodyText>
-              <Button
-                onPress={() => {
-                  buttonTap();
-                  setAlgorithmSheetOpen(true);
-                  trackEvent(MockDataEvents.OPEN_ALGORITHM_SELECTION);
-                }}
-                p="$2"
-                px="$3"
-                bg="white"
-                borderColor={borderColor}
-                borderWidth={1}
-                borderRadius="$4"
-              >
-                <XStack ai="center" gap="$2">
-                  <Text fontSize="$4">{selectedAlgorithm}</Text>
-                  <ChevronDown size={20} />
+            <>
+              <XStack ai="center" jc="space-between">
+                <BodyText>Document Type</BodyText>
+                <XStack space="$2" ai="center">
+                  <Button
+                    size="$3"
+                    onPress={() => {
+                      buttonTap();
+                      setSelectedDocumentType('mock_passport');
+                    }}
+                    bg={
+                      selectedDocumentType === 'mock_passport'
+                        ? '$blue7Light'
+                        : white
+                    }
+                    borderColor={borderColor}
+                    borderWidth={1}
+                    color={
+                      selectedDocumentType === 'mock_passport'
+                        ? white
+                        : textBlack
+                    }
+                  >
+                    Passport
+                  </Button>
+                  <Button
+                    size="$3"
+                    onPress={() => {
+                      buttonTap();
+                      setSelectedDocumentType('mock_id_card');
+                    }}
+                    bg={
+                      selectedDocumentType === 'mock_id_card'
+                        ? '$blue7Light'
+                        : white
+                    }
+                    borderColor={borderColor}
+                    borderWidth={1}
+                    color={
+                      selectedDocumentType === 'mock_id_card'
+                        ? white
+                        : textBlack
+                    }
+                  >
+                    ID Card
+                  </Button>
                 </XStack>
-              </Button>
-            </XStack>
+              </XStack>
+              <XStack ai="center" jc="space-between">
+                <BodyText>Encryption</BodyText>
+                <Button
+                  onPress={() => {
+                    buttonTap();
+                    setAlgorithmSheetOpen(true);
+                  }}
+                  p="$2"
+                  px="$3"
+                  bg="white"
+                  borderColor={borderColor}
+                  borderWidth={1}
+                  borderRadius="$4"
+                >
+                  <XStack ai="center" gap="$2">
+                    <Text fontSize="$4">{selectedAlgorithm}</Text>
+                    <ChevronDown size={20} />
+                  </XStack>
+                </Button>
+              </XStack>
+            </>
           )}
 
           <XStack ai="center" jc="space-between">

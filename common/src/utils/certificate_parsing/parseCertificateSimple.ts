@@ -1,17 +1,17 @@
 import * as asn1js from 'asn1js';
 import { Certificate, RSAPublicKey, RSASSAPSSParams } from 'pkijs';
-import { getFriendlyName, getSecpFromNist } from './oids';
+import { getFriendlyName, getSecpFromNist } from './oids.js';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
   PublicKeyDetailsRSAPSS,
-} from './dataStructure';
-import { getCurveForElliptic, getECDSACurveBits, identifyCurve, StandardCurve } from './curves';
-import { getIssuerCountryCode, getSubjectKeyIdentifier } from './utils';
-import { circuitNameFromMode } from '../../constants/constants';
-import { Mode } from '../appType';
-import { initElliptic } from './elliptic';
+} from './dataStructure.js';
+import { getCurveForElliptic, getECDSACurveBits, identifyCurve, StandardCurve } from './curves.js';
+import { getIssuerCountryCode, getSubjectKeyIdentifier } from './utils.js';
+import { circuitNameFromMode } from '../../constants/constants.js';
+import { Mode } from '../appType.js';
+import { initElliptic } from './elliptic.js';
 
 export function parseCertificateSimple(pem: string): CertificateData {
   let certificateData: CertificateData = {
@@ -71,7 +71,10 @@ export function parseCertificateSimple(pem: string): CertificateData {
     certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
 
     // corner case for rsapss
-    if (certificateData.signatureAlgorithm === 'rsapss' && (!certificateData.hashAlgorithm || certificateData.hashAlgorithm === 'unknown')) {
+    if (
+      certificateData.signatureAlgorithm === 'rsapss' &&
+      (!certificateData.hashAlgorithm || certificateData.hashAlgorithm === 'unknown')
+    ) {
       certificateData.hashAlgorithm = (
         certificateData.publicKeyDetails as PublicKeyDetailsRSAPSS
       ).hashAlgorithm;
@@ -257,7 +260,9 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
 export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
   const authorityKeyIdentifier = cert.extensions.find((ext) => ext.extnID === '2.5.29.35');
   if (authorityKeyIdentifier) {
-    let akiValue = Buffer.from(authorityKeyIdentifier.extnValue.valueBlock.valueHexView).toString('hex');
+    let akiValue = Buffer.from(authorityKeyIdentifier.extnValue.valueBlock.valueHexView).toString(
+      'hex'
+    );
 
     // Match the ASN.1 sequence header pattern: 30 followed by length
     const sequenceMatch = akiValue.match(/^30([0-9a-f]{2}|8[0-9a-f][0-9a-f])/i);
@@ -271,13 +276,12 @@ export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
       const keyIdLength = parseInt(keyIdMatch[1], 16);
       // Extract the actual key ID (length * 2 because hex)
       const startIndex = akiValue.indexOf(keyIdMatch[0]) + 4;
-      akiValue = akiValue.slice(startIndex, startIndex + (keyIdLength * 2));
+      akiValue = akiValue.slice(startIndex, startIndex + keyIdLength * 2);
       return akiValue.toUpperCase();
     }
   }
   return null;
 };
-
 
 export const getCircuitName = (
   circuitMode: 'prove' | 'dsc' | 'vc_and_disclose',
@@ -359,11 +363,9 @@ export function getCertificateFromPem(pemContent: string): Certificate {
     throw new Error(`ASN.1 parsing error: ${asn1.result.error}`);
   }
 
-  return new Certificate({ schema: asn1.result })
+  return new Certificate({ schema: asn1.result });
 }
 
 export function getTBSBytesForge(certificate: Certificate): number[] {
-  return Array.from(
-    certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16))
-  );
+  return Array.from(certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16)));
 }

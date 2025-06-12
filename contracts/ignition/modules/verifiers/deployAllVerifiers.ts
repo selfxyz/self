@@ -1,5 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import { RegisterVerifierId, DscVerifierId } from "../../../../common/src/constants/constants";
+import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common/constants/constants";
 import * as fs from "fs";
 import * as path from "path";
 

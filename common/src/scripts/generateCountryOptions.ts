@@ -1,4 +1,4 @@
-import { countryCodes } from '../constants/constants';
+import { countryCodes } from '../constants/constants.js';
 import getCountryISO2 from 'country-iso-3-to-2';
 import { flag } from 'country-emoji';
 import fs from 'fs';

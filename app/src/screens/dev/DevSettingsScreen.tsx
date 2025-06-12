@@ -1,36 +1,21 @@
 import { useNavigation } from '@react-navigation/native';
-import {
-  Check,
-  ChevronDown,
-  Eraser,
-  IterationCw,
-  VenetianMask,
-} from '@tamagui/lucide-icons';
-import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Platform, StyleProp, TextInput } from 'react-native';
-import {
-  Adapt,
-  Button,
-  Fieldset,
-  Label,
-  Select,
-  Sheet,
-  Text,
-  YStack,
-} from 'tamagui';
+import { Check, ChevronDown, Eraser } from '@tamagui/lucide-icons';
+import React, {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+import { Alert, Platform, StyleProp, TextInput } from 'react-native';
+import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
-import { genAndInitMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
-import { RootStackParamList } from '../../Navigation';
+import { RootStackParamList } from '../../navigation';
 import {
   unsafe_clearSecrets,
   unsafe_getPrivateKey,
-} from '../../stores/authProvider';
-import {
-  storePassportData,
-  usePassport,
-} from '../../stores/passportDataProvider';
-import { borderColor, textBlack } from '../../utils/colors';
-
+} from '../../providers/authProvider';
+import { usePassport } from '../../providers/passportDataProvider';
+import { textBlack } from '../../utils/colors';
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
   width?: number;
@@ -43,6 +28,7 @@ interface DevSettingsScreenProps extends PropsWithChildren {
     | 'space-around'
     | 'space-evenly';
   userSelect?: 'all' | 'text' | 'none' | 'contain';
+  textAlign?: 'center' | 'left' | 'right';
   style?: StyleProp<any>;
 }
 
@@ -90,6 +76,7 @@ const items = [
   'PassportCameraTrouble',
   'PassportNFCTrouble',
 ] satisfies (keyof RootStackParamList)[];
+
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   return (
@@ -100,7 +87,7 @@ const ScreenSelector = ({}) => {
       disablePreventBodyScroll
     >
       <Select.Trigger width={220} iconAfter={ChevronDown}>
-        <Select.Value placeholder="Select screen to debug" />
+        <Select.Value placeholder="Select screen to jump to" />
       </Select.Trigger>
 
       <Adapt when="sm" platform="touch">
@@ -144,143 +131,219 @@ const ScreenSelector = ({}) => {
 };
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
-  const { clearPassportData } = usePassport();
-  const [privateKey, setPrivateKey] = useState('Loading private key…');
-
-  const nav = useNavigation();
-
-  async function handleRestart() {
-    await clearPassportData();
-    nav.navigate('Launch');
-  }
-
-  async function deleteEverything() {
-    await unsafe_clearSecrets();
-    await handleRestart();
-  }
-
-  function handleGenerateMockPassportData() {
-    const passportData = genAndInitMockPassportData(
-      'sha256',
-      'sha256',
-      'rsa_sha256_65537_2048',
-      'FRA',
-      '000101',
-      '300101',
-    );
-    storePassportData(passportData);
-  }
+  const { clearDocumentCatalogForMigrationTesting } = usePassport();
+  const [privateKey, setPrivateKey] = useState<string | null>(
+    'Loading private key…',
+  );
+  const [isPrivateKeyRevealed, setIsPrivateKeyRevealed] = useState(false);
 
   useEffect(() => {
-    unsafe_getPrivateKey().then(setPrivateKey);
+    unsafe_getPrivateKey().then(key =>
+      setPrivateKey(key || 'No private key found'),
+    );
   }, []);
 
+  const handleRevealPrivateKey = useCallback(() => {
+    setIsPrivateKeyRevealed(true);
+  }, []);
+
+  const getRedactedPrivateKey = useCallback(() => {
+    if (
+      !privateKey ||
+      privateKey === 'Loading private key…' ||
+      privateKey === 'No private key found'
+    ) {
+      return privateKey;
+    }
+
+    // If it starts with 0x, show 0x followed by asterisks for the rest
+    if (privateKey.startsWith('0x')) {
+      const restLength = privateKey.length - 2;
+      return '0x' + '*'.repeat(restLength);
+    }
+
+    // Otherwise, show asterisks for the entire length
+    return '*'.repeat(privateKey.length);
+  }, [privateKey]);
+
+  const handleClearSecretsPress = () => {
+    Alert.alert(
+      'Delete Keychain Secrets',
+      "Are you sure you want to remove your keychain secrets?\n\nIf this secret is not backed up, your account will be lost and the ID documents attached to it won't be usable.",
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await unsafe_clearSecrets();
+          },
+        },
+      ],
+    );
+  };
+
+  const handleClearDocumentCatalogPress = () => {
+    Alert.alert(
+      'Clear Document Catalog',
+      'Are you sure you want to clear the document catalog?\n\nThis will remove all documents from the new storage system but preserve legacy storage for migration testing. You will need to restart the app to test migration.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            await clearDocumentCatalogForMigrationTesting();
+          },
+        },
+      ],
+    );
+  };
+
   return (
-    <YStack gap="$3" mt="$2" ai="center">
-      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
-        <Label color={textBlack} width={200} justifyContent="flex-end">
-          Rescan passport
-        </Label>
-        <Button
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          onPress={handleRestart}
+    <YStack gap="$3" ai="center" bg="white" f={1} px="$4" pt="$4">
+      <YStack
+        p="$4"
+        borderWidth={2}
+        borderColor="$blue8"
+        borderRadius="$4"
+        bg="$blue1"
+        w="100%"
+        gap="$3"
+        mt="$3"
+      >
+        <Text
+          color="$blue10"
+          fontWeight="bold"
+          fontSize="$5"
+          textAlign="center"
+          mb="$2"
         >
-          <IterationCw color={textBlack} />
-        </Button>
-      </Fieldset>
-      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
-        <Label color={textBlack} width={200} justifyContent="flex-end">
-          Generate mock passport data
-        </Label>
-        <Button
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          onPress={handleGenerateMockPassportData}
+          🚀 Developer Shortcuts
+        </Text>
+        <YStack alignItems="center" gap="$3">
+          <YStack alignItems="center" gap="$3" w="100%">
+            <Text
+              color={textBlack}
+              fontSize="$3"
+              textAlign="center"
+              opacity={0.7}
+            >
+              Jump directly to any screen for testing
+            </Text>
+            <ScreenSelector />
+          </YStack>
+        </YStack>
+      </YStack>
+      <YStack
+        mt="$3"
+        mb="$10"
+        p="$4"
+        borderWidth={2}
+        borderColor="$red8"
+        borderRadius="$4"
+        bg="$red1"
+        w="100%"
+        gap="$3"
+      >
+        <Text
+          color="$red10"
+          fontWeight="bold"
+          fontSize="$5"
+          textAlign="center"
+          mb="$2"
         >
-          <VenetianMask color={textBlack} />
-        </Button>
-      </Fieldset>
+          ⚠️ Danger Zone ⚠️
+        </Text>
 
-      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
-        <Label color={textBlack} width={200} justifyContent="flex-end">
-          Delete passport data
-        </Label>
-        <Button
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          onPress={clearPassportData}
-        >
-          <Eraser color={textBlack} />
-        </Button>
-      </Fieldset>
-      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
-        <Label color={textBlack} width={200} justifyContent="flex-end">
-          Delete keychain secrets
-        </Label>
-        <Button
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          onPress={unsafe_clearSecrets}
-        >
-          <Eraser color={textBlack} />
-        </Button>
-      </Fieldset>
+        <YStack alignItems="center" gap="$3">
+          {!isPrivateKeyRevealed ? (
+            <YStack alignItems="center" gap="$3" w="100%">
+              <Text
+                color={textBlack}
+                textAlign="center"
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: 12,
+                  backgroundColor: 'white',
+                  padding: 12,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#e0e0e0',
+                  wordBreak: 'break-all',
+                  lineHeight: 18,
+                }}
+              >
+                {getRedactedPrivateKey()}
+              </Text>
+              <Button
+                bg="$gray12"
+                color="white"
+                size="$3"
+                mt="$2"
+                onPress={handleRevealPrivateKey}
+              >
+                Tap to reveal private key
+              </Button>
+            </YStack>
+          ) : (
+            <SelectableText
+              textAlign="center"
+              color={textBlack}
+              userSelect="all"
+              style={{
+                fontFamily: 'monospace',
+                fontWeight: 'bold',
+                fontSize: 12,
+                backgroundColor: 'white',
+                padding: 12,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: '#e0e0e0',
+                wordBreak: 'break-all',
+                lineHeight: 18,
+              }}
+            >
+              {privateKey}
+            </SelectableText>
+          )}
+        </YStack>
 
-      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
-        <Label color={textBlack} width={200} justifyContent="flex-end">
-          Delete everything
-        </Label>
-        <Button
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          onPress={deleteEverything}
-        >
-          <Eraser color={textBlack} />
-        </Button>
-      </Fieldset>
-
-      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
-        <Label color={textBlack} justifyContent="flex-end">
-          Shortcuts
-        </Label>
-        <ScreenSelector />
-      </Fieldset>
-
-      <Fieldset px="$4" width="100%" mt={30} justifyContent="space-between">
-        <Label color={textBlack} width={200} justifyContent="flex-end">
-          Private key
-        </Label>
-        <SelectableText
-          color={textBlack}
-          width={300}
-          justifyContent="flex-end"
-          userSelect="all"
-          style={{ fontFamily: 'monospace', fontWeight: 'bold' }}
-        >
-          {privateKey}
-        </SelectableText>
-      </Fieldset>
+        <YStack alignItems="center" gap="$3" mt="$2">
+          <XStack alignItems="center" gap="$3">
+            <Text color={textBlack} fontSize="$3">
+              Delete Private Key
+            </Text>
+            <Button
+              bg="$red8"
+              color="white"
+              size="$3"
+              onPress={handleClearSecretsPress}
+            >
+              <Eraser color="white" size={16} />
+            </Button>
+          </XStack>
+          <XStack alignItems="center" gap="$3">
+            <Text color={textBlack} fontSize="$3">
+              Clear Document Catalog
+            </Text>
+            <Button
+              bg="$red8"
+              color="white"
+              size="$3"
+              onPress={handleClearDocumentCatalogPress}
+            >
+              <Eraser color="white" size={16} />
+            </Button>
+          </XStack>
+        </YStack>
+      </YStack>
     </YStack>
   );
 };

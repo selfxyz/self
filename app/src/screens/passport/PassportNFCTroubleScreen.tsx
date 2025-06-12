@@ -1,4 +1,5 @@
 import React from 'react';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import Tips, { TipProps } from '../../components/Tips';
 import { Caption } from '../../components/typography/Caption';
@@ -38,20 +39,33 @@ const tips: TipProps[] = [
 
 const PassportNFCTrouble: React.FC = () => {
   const go = useHapticNavigation('PassportNFCScan', { action: 'cancel' });
+  const goToNFCMethodSelection = useHapticNavigation(
+    'PassportNFCMethodSelection',
+  );
 
   // error screen, flush analytics
   React.useEffect(() => {
     flushAnalytics();
   }, []);
 
+  // 2-finger, 5-tap
+  const twoFingerTap = Gesture.Tap()
+    .minPointers(2)
+    .numberOfTaps(5)
+    .onStart(() => {
+      goToNFCMethodSelection();
+    });
+
   return (
     <SimpleScrolledTitleLayout
       title="Having trouble scanning your passport?"
       onDismiss={go}
     >
-      <Caption size="large" color={slate500}>
-        Here are some tips to help you successfully scan the RFID chip::
-      </Caption>
+      <GestureDetector gesture={twoFingerTap}>
+        <Caption size="large" color={slate500}>
+          Here are some tips to help you successfully scan the RFID chip::
+        </Caption>
+      </GestureDetector>
       <Tips items={tips} />
       <Caption size="large" color={slate500}>
         These steps should help improve the success rate of reading the RFID

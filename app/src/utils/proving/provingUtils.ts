@@ -1,9 +1,10 @@
+import type { EndpointType } from '@selfxyz/common';
+import {
+  initElliptic,
+  WS_DB_RELAYER,
+  WS_DB_RELAYER_STAGING,
+} from '@selfxyz/common';
 import forge from 'node-forge';
-
-import { WS_DB_RELAYER_STAGING } from '../../../../common/src/constants/constants';
-import { WS_DB_RELAYER } from '../../../../common/src/constants/constants';
-import { EndpointType } from '../../../../common/src/utils/appType';
-import { initElliptic } from '../../../../common/src/utils/certificate_parsing/elliptic';
 
 const elliptic = initElliptic();
 const { ec: EC } = elliptic;
@@ -43,7 +44,7 @@ export type TEEPayloadDisclose = {
 };
 
 export type TEEPayload = {
-  type: 'register' | 'dsc';
+  type: 'register' | 'dsc' | 'register_id' | 'dsc_id';
   onchain: true;
   endpointType: string;
   circuit: {
@@ -54,7 +55,7 @@ export type TEEPayload = {
 
 export function getPayload(
   inputs: any,
-  circuitType: 'register' | 'dsc' | 'disclose',
+  circuitType: 'register' | 'dsc' | 'disclose' | 'register_id' | 'dsc_id',
   circuitName: string,
   endpointType: EndpointType,
   endpoint: string,
@@ -73,7 +74,7 @@ export function getPayload(
     return payload;
   } else {
     const payload: TEEPayload = {
-      type: circuitType as 'register' | 'dsc',
+      type: circuitType as 'register' | 'dsc' | 'register_id' | 'dsc_id',
       onchain: true,
       endpointType: endpointType,
       circuit: {

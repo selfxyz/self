@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { execSync } from 'child_process';
-import { parseCertificateSimple } from './parseCertificateSimple';
-import { CertificateData } from './dataStructure';
+import { parseCertificateSimple } from './parseCertificateSimple.js';
+import { CertificateData } from './dataStructure.js';
 export function parseCertificate(pem: string, fileName: string): CertificateData {
   let certificateData: CertificateData = {
     id: '',

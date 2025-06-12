@@ -1,17 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
+import { PassportData } from '@selfxyz/common';
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
-
-import { PassportData } from '../../../common/src/utils/types';
 
 interface Inputs {
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
+  canNumber?: string;
+  useCan?: boolean;
+  skipPACE?: boolean;
+  skipCA?: boolean;
+  extendedMode?: boolean;
 }
 
 export const scan = async (inputs: Inputs) => {
+  if (MIXPANEL_NFC_PROJECT_TOKEN) {
+    if (Platform.OS === 'ios') {
+      const enableDebugLogs = ENABLE_DEBUG_LOGS === 'true';
+      NativeModules.PassportReader.configure(
+        MIXPANEL_NFC_PROJECT_TOKEN,
+        enableDebugLogs,
+      );
+    } else {
+    }
+  }
+
   return Platform.OS === 'android'
     ? await scanAndroid(inputs)
     : await scanIOS(inputs);
@@ -30,6 +46,11 @@ const scanIOS = async (inputs: Inputs) => {
     inputs.passportNumber,
     inputs.dateOfBirth,
     inputs.dateOfExpiry,
+    inputs.canNumber ?? '',
+    inputs.useCan ?? false,
+    inputs.skipPACE ?? false,
+    inputs.skipCA ?? false,
+    inputs.extendedMode ?? false,
   );
 };
 
@@ -78,6 +99,8 @@ const handleResponseIOS = (response: any) => {
     Buffer.from(signatureBase64, 'base64'),
   ).map(byte => (byte > 127 ? byte - 256 : byte));
 
+  const document_type = mrz.length === 88 ? 'passport' : 'id_card';
+
   return {
     mrz,
     dsc: pem,
@@ -88,11 +111,13 @@ const handleResponseIOS = (response: any) => {
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
     parsed: false,
-    documentType: 'passport',
+    documentType: document_type,
+    mock: false,
+    documentCategory: document_type,
   } as PassportData;
 };
 
-const handleResponseAndroid = (response: any) => {
+const handleResponseAndroid = (response: any): PassportData => {
   const {
     mrz,
     eContent,
@@ -122,8 +147,11 @@ const handleResponseAndroid = (response: any) => {
     .filter(num => !isNaN(num))
     .sort((a, b) => a - b);
 
+  const mrz_clean = mrz.replace(/\n/g, '');
+  const document_type = mrz_clean.length === 88 ? 'passport' : 'id_card';
+
   return {
-    mrz: mrz.replace(/\n/g, ''),
+    mrz: mrz_clean,
     dsc: pem,
     dg2Hash,
     dg1Hash,
@@ -131,6 +159,8 @@ const handleResponseAndroid = (response: any) => {
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
-    documentType: 'passport',
-  } as PassportData;
+    documentType: document_type,
+    documentCategory: document_type,
+    mock: false,
+  };
 };

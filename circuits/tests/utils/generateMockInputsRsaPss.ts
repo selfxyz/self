@@ -1,10 +1,10 @@
 import * as forge from 'node-forge';
 
-import { SignatureAlgorithm } from '../../../common/src/utils/types';
-import { hexToDecimal } from '../../../common/src/utils/bytes';
-import { bytesToBigDecimal } from '../../../common/src/utils/bytes';
-import { getNAndK } from '../../../common/src/utils/passports/passport';
-import { splitToWords } from '../../../common/src/utils/bytes';
+import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
+import { hexToDecimal } from '@selfxyz/common/utils/bytes';
+import { bytesToBigDecimal } from '@selfxyz/common/utils/bytes';
+import { getNAndK } from '@selfxyz/common/utils/passports/passport';
+import { splitToWords } from '@selfxyz/common/utils/bytes';
 
 export const generateMockRsaPssInputs = (
   signatureAlgorithm: SignatureAlgorithm,

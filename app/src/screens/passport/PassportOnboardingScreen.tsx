@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
@@ -14,14 +15,21 @@ import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '../../utils/colors';
+import { impactLight } from '../../utils/haptic';
+
 interface PassportOnboardingScreenProps {}
 
 const PassportOnboardingScreen: React.FC<
   PassportOnboardingScreenProps
 > = ({}) => {
+  const navigation = useNavigation();
   const handleCameraPress = useHapticNavigation('PassportCamera');
-  const onCancelPress = useHapticNavigation('Launch', { action: 'cancel' });
   const animationRef = useRef<LottieView>(null);
+
+  const onCancelPress = () => {
+    impactLight();
+    navigation.goBack();
+  };
 
   useEffect(() => {
     animationRef.current?.play();

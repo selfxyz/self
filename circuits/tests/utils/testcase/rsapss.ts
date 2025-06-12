@@ -1,4 +1,4 @@
-import { SignatureAlgorithm } from '../../../../common/src/utils/types';
+import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 
 export const fullAlgorithms: { algo: SignatureAlgorithm; saltLength: number }[] = [
   { algo: 'rsapss_sha256_65537_4096', saltLength: 32 },

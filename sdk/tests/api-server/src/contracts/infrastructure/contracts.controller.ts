@@ -1,6 +1,5 @@
 import Elysia, { t } from 'elysia';
-// import { SelfBackendVerifier } from "@selfxyz/core";
-import { SelfBackendVerifier } from "../../../../../core/src/SelfBackendVerifier";
+import { SelfBackendVerifier } from "@selfxyz/core";
 
 export const ContractsController = new Elysia()
   .post(
@@ -51,4 +50,3 @@ export const ContractsController = new Elysia()
       },
     },
   );
-  

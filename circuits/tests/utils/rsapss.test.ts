@@ -4,9 +4,9 @@ import path from 'path';
 import {
   generateMalleableRsaPssInputs,
   generateMockRsaPssInputs,
-} from './generateMockInputsRsaPss';
+} from './generateMockInputsRsaPss.js';
 import { expect } from 'chai';
-import { fullAlgorithms, sigAlgs, AdditionalCases } from './testcase/rsapss';
+import { fullAlgorithms, sigAlgs, AdditionalCases } from './testcase/rsapss.js';
 
 describe('VerifyRsapss Circuit Test', function () {
   this.timeout(0);

@@ -3,14 +3,14 @@ import { expect } from 'chai';
 import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
 import { poseidon2 } from 'poseidon-lite';
-import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
-import nameAndDobIdCardJson from '../../../common/ofacdata/outputs/nameAndDobSMT_ID.json';
-import nameAndYobIdCardJson from '../../../common/ofacdata/outputs/nameAndYobSMT_ID.json';
-import { genMockIdDoc } from '../../../common/src/utils/passports/genMockIdDoc';
-import passportNoAndNationalityjson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
-import { generateCircuitInputsOfac } from '../../../common/src/utils/circuits/generateInputs';
-import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json' with { type: 'json' };
+import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json' with { type: 'json' };
+import nameAndDobIdCardJson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.json' with { type: 'json' };
+import nameAndYobIdCardJson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
+import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import passportNoAndNationalityjson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
+import { generateCircuitInputsOfac } from '@selfxyz/common/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 
 let circuit: any;
 

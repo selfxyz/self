@@ -1,6 +1,9 @@
-import { PassportData } from '../types';
+import { PassportData } from '../types.js';
 
-export function getCircuitNameFromPassportData(passportData: PassportData, circuitType: 'register' | 'dsc') {
+export function getCircuitNameFromPassportData(
+  passportData: PassportData,
+  circuitType: 'register' | 'dsc'
+) {
   if (circuitType === 'register') {
     return getRegisterNameFromPassportData(passportData);
   } else {
@@ -13,13 +16,13 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
 
   if (!passportData.passportMetadata) {
     console.error('Passport metadata is missing');
-    throw new Error("Passport data are not parsed");
+    throw new Error('Passport data are not parsed');
   }
   const passportMetadata = passportData.passportMetadata;
 
   if (!passportMetadata.cscaFound) {
     console.error('CSCA not found in passport metadata');
-    throw new Error("CSCA not found");
+    throw new Error('CSCA not found');
   }
 
   const signatureAlgorithm = passportMetadata.cscaSignatureAlgorithm;
@@ -35,7 +38,6 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
     const circuitName = `dsc_${hashFunction}_${signatureAlgorithm}_${curve}`;
     console.log('Generated circuit name:', circuitName);
     return circuitName;
-
   } else if (signatureAlgorithm === 'rsa') {
     console.log('Processing RSA signature...');
     const exponent = passportMetadata.cscaCurveOrExponent;
@@ -51,7 +53,6 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
       console.error('RSA key length exceeds maximum supported length');
       throw new Error(`Unsupported key length: ${bits}`);
     }
-
   } else if (signatureAlgorithm === 'rsapss') {
     console.log('Processing RSA-PSS signature...');
     const exponent = passportMetadata.cscaCurveOrExponent;
@@ -80,13 +81,13 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
 
   if (!passportData.passportMetadata) {
     console.error('Passport metadata is missing');
-    throw new Error("Passport data are not parsed");
+    throw new Error('Passport data are not parsed');
   }
   const passportMetadata = passportData.passportMetadata;
 
   if (!passportMetadata.cscaFound) {
     console.error('CSCA not found in passport metadata');
-    throw new Error("CSCA not found");
+    throw new Error('CSCA not found');
   }
 
   const dgHashAlgo = passportMetadata.dg1HashFunction;
@@ -98,29 +99,25 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
   console.log('eContent Hash Algorithm:', eContentHashAlgo);
   console.log('Signed Attributes Hash Algorithm:', signedAttrHashAlgo);
   console.log('Signature Algorithm:', sigAlg);
-  const prefix = passportData.documentType === 'id_card' || passportData.documentType === 'mock_id_card' ? 'register_id' : 'register';
+  const prefix =
+    passportData.documentType === 'id_card' || passportData.documentType === 'mock_id_card'
+      ? 'register_id'
+      : 'register';
 
-  if (sigAlg=== 'ecdsa') {
+  if (sigAlg === 'ecdsa') {
     console.log('Processing ECDSA signature...');
-    const {
-      curveOrExponent,
-    } = passportMetadata
+    const { curveOrExponent } = passportMetadata;
     console.log('ECDSA curve:', curveOrExponent);
     const circuitName = `${prefix}_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}`;
     console.log('Generated circuit name:', circuitName);
     return circuitName;
-
   } else if (sigAlg === 'rsa') {
     console.log('Processing RSA signature...');
-    const {
-      curveOrExponent,
-      signatureAlgorithmBits
-    } = passportMetadata
+    const { curveOrExponent, signatureAlgorithmBits } = passportMetadata;
     console.log('RSA exponent:', curveOrExponent);
     console.log('RSA bits:', signatureAlgorithmBits);
 
     if (signatureAlgorithmBits <= 4096) {
-
       const circuitName = `${prefix}_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${4096}`;
       console.log('Generated circuit name:', circuitName);
       return circuitName;
@@ -128,14 +125,9 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
       console.error('RSA key length exceeds maximum supported length');
       throw new Error(`Unsupported key length: ${signatureAlgorithmBits}`);
     }
-
   } else if (sigAlg === 'rsapss') {
     console.log('Processing RSA-PSS signature...');
-    const {
-      curveOrExponent,
-      saltLength,
-      signatureAlgorithmBits
-    } = passportMetadata
+    const { curveOrExponent, saltLength, signatureAlgorithmBits } = passportMetadata;
     console.log('RSA-PSS exponent:', curveOrExponent);
     console.log('RSA-PSS salt length:', saltLength);
     console.log('RSA-PSS bits:', signatureAlgorithmBits);

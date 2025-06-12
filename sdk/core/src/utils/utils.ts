@@ -1,5 +1,5 @@
-import { CIRCUIT_CONSTANTS } from '../../../../common/src/constants/constants';
-import { castToUserIdentifier, UserIdType } from '../../../../common/src/utils/circuits/uuid';
+import { CIRCUIT_CONSTANTS } from '@selfxyz/common';
+import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
 import { BigNumberish } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 

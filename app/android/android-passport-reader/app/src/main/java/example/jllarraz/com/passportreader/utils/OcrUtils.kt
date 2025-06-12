@@ -10,10 +10,16 @@ object OcrUtils {
 
     private val TAG = OcrUtils::class.java.simpleName
 
+    // TD3 (Passport) format patterns
     private val REGEX_OLD_PASSPORT = "(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9ILDSOG]{1})(?<nationality>[A-Z<]{3})(?<dateOfBirth>[0-9ILDSOG]{6})(?<checkDigitDateOfBirth>[0-9ILDSOG]{1})(?<sex>[FM<]){1}(?<expirationDate>[0-9ILDSOG]{6})(?<checkDigitExpiration>[0-9ILDSOG]{1})"
     private val REGEX_OLD_PASSPORT_CLEAN = "(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})(?<nationality>[A-Z<]{3})(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<sex>[FM<]){1}(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})"
     private val REGEX_IP_PASSPORT_LINE_1 = "\\bIP[A-Z<]{3}[A-Z0-9<]{9}[0-9]{1}"
     private val REGEX_IP_PASSPORT_LINE_2 = "[0-9]{6}[0-9]{1}[FM<]{1}[0-9]{6}[0-9]{1}[A-Z<]{3}"
+
+    // TD1 (ID Card) format patterns
+    private val REGEX_TD1_LINE1 = "(?<documentCode>[A-Z]{1}[A-Z0-9<]{1})(?<issuingState>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})(?<optionalData1>[A-Z0-9<]{15})"
+    private val REGEX_TD1_LINE2 = "(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<sex>[FM<]{1})(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})(?<nationality>[A-Z<]{3})(?<optionalData2>[A-Z0-9<]{7})"
+    private val REGEX_TD1_LINE3 ="(?<names>[A-Z<]{30})"
 
     fun processOcr(
         results: Text,
@@ -35,10 +41,36 @@ object OcrUtils {
         }
         fullRead = fullRead.toUpperCase()
         Log.d(TAG, "Read: $fullRead")
+
+        // We try with TD1 format first (ID Card)
+        val patternTD1Line1 = Pattern.compile(REGEX_TD1_LINE1)
+        val patternTD1Line2 = Pattern.compile(REGEX_TD1_LINE2)
+        val patternTD1Line3 = Pattern.compile(REGEX_TD1_LINE3)
+
+        val matcherTD1Line1 = patternTD1Line1.matcher(fullRead)
+        val matcherTD1Line2 = patternTD1Line2.matcher(fullRead)
+        val matcherTD1Line3 = patternTD1Line3.matcher(fullRead)
+
+        if (matcherTD1Line1.find() && matcherTD1Line2.find()) {
+            val documentNumber = matcherTD1Line1.group("documentNumber")
+            val checkDigitDocumentNumber = matcherTD1Line1.group("checkDigitDocumentNumber").toInt()
+            val dateOfBirth = matcherTD1Line2.group("dateOfBirth")
+            val expirationDate = matcherTD1Line2.group("expirationDate")
+            val documentType = matcherTD1Line1.group("documentCode")
+            val issuingState = matcherTD1Line1.group("issuingState")
+
+            val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
+            if (cleanDocumentNumber != null) {
+                val mrzInfo = createDummyMrz(documentType, issuingState, documentNumber, dateOfBirth, expirationDate)
+                Log.d(TAG, "MRZ-TD1: $mrzInfo")
+                callback.onMRZRead(mrzInfo, timeRequired)
+                return
+            }
+        }
+
+        // If not TD1 we try with TD3 (Passport) format
         val patternLineOldPassportType = Pattern.compile(REGEX_OLD_PASSPORT)
         val matcherLineOldPassportType = patternLineOldPassportType.matcher(fullRead)
-
-
 
         if (matcherLineOldPassportType.find()) {
             //Old passport format
@@ -50,41 +82,36 @@ object OcrUtils {
 
             val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
             if (cleanDocumentNumber!=null){
-                val mrzInfo = createDummyMrz(documentNumber, dateOfBirthDay, expirationDate)
+                val mrzInfo = createDummyMrz("P", "ESP", documentNumber, dateOfBirthDay, expirationDate)
+                // Log.d(TAG, "MRZ: $mrzInfo")
                 callback.onMRZRead(mrzInfo, timeRequired)
-            }else{
-                //No success
-                callback.onMRZReadFailure(timeRequired)
-            }
-
-
-        } else {
-            //Try with the new IP passport type
-            val patternLineIPassportTypeLine1 = Pattern.compile(REGEX_IP_PASSPORT_LINE_1)
-            val matcherLineIPassportTypeLine1 = patternLineIPassportTypeLine1.matcher(fullRead)
-            val patternLineIPassportTypeLine2 = Pattern.compile(REGEX_IP_PASSPORT_LINE_2)
-            val matcherLineIPassportTypeLine2 = patternLineIPassportTypeLine2.matcher(fullRead)
-            if (matcherLineIPassportTypeLine1.find() && matcherLineIPassportTypeLine2.find()) {
-                val line1 = matcherLineIPassportTypeLine1.group(0)
-                val line2 = matcherLineIPassportTypeLine2.group(0)
-                var documentNumber = line1.substring(5, 14)
-                val checkDigitDocumentNumber = line1.substring(14, 15).toInt()
-                val dateOfBirthDay = line2.substring(0, 6)
-                val expirationDate = line2.substring(8, 14)
-
-                val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
-                if (cleanDocumentNumber!=null){
-                    val mrzInfo = createDummyMrz(documentNumber, dateOfBirthDay, expirationDate)
-                    callback.onMRZRead(mrzInfo, timeRequired)
-                }else{
-                    //No success
-                    callback.onMRZReadFailure(timeRequired)
-                }
-            } else {
-                //No success
-                callback.onMRZReadFailure(timeRequired)
+                return
             }
         }
+
+        //Try with the new IP passport type
+        val patternLineIPassportTypeLine1 = Pattern.compile(REGEX_IP_PASSPORT_LINE_1)
+        val matcherLineIPassportTypeLine1 = patternLineIPassportTypeLine1.matcher(fullRead)
+        val patternLineIPassportTypeLine2 = Pattern.compile(REGEX_IP_PASSPORT_LINE_2)
+        val matcherLineIPassportTypeLine2 = patternLineIPassportTypeLine2.matcher(fullRead)
+        if (matcherLineIPassportTypeLine1.find() && matcherLineIPassportTypeLine2.find()) {
+            val line1 = matcherLineIPassportTypeLine1.group(0)
+            val line2 = matcherLineIPassportTypeLine2.group(0)
+            val documentNumber = line1.substring(5, 14)
+            val checkDigitDocumentNumber = line1.substring(14, 15).toInt()
+            val dateOfBirthDay = line2.substring(0, 6)
+            val expirationDate = line2.substring(8, 14)
+
+            val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
+            if (cleanDocumentNumber != null) {
+                val mrzInfo = createDummyMrz("P", "ESP", documentNumber, dateOfBirthDay, expirationDate)
+                callback.onMRZRead(mrzInfo, timeRequired)
+                return
+            }
+        }
+
+        //No success with any format
+        callback.onMRZReadFailure(timeRequired)
     }
 
     private fun cleanDocumentNumber(documentNumber: String, checkDigit:Int):String?{
@@ -111,10 +138,17 @@ object OcrUtils {
         return null
     }
 
-    private fun createDummyMrz(documentNumber: String, dateOfBirthDay: String, expirationDate: String): MRZInfo {
+    private fun createDummyMrz(
+        documentType: String,
+        issuingState: String = "ESP",
+        documentNumber: String,
+        dateOfBirthDay: String,
+        expirationDate: String,
+        nationality: String = "ESP"
+    ): MRZInfo {
         return MRZInfo(
-            "P",
-            "ESP",
+            documentType,
+            issuingState,
             "DUMMY",
             "DUMMY",
             documentNumber,

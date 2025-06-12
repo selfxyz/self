@@ -2,7 +2,7 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import hre from "hardhat";
 import fs from "fs";
 import path from "path";
-import { getSMTs } from "../../../test/utils/generateProof";
+import { getSMTs } from "../../../test/utils/generateProof.js";
 
 module.exports = buildModule("UpdateRegistryOfacRoot", (m) => {
   const networkName = hre.network.config.chainId;

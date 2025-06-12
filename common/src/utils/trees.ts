@@ -1,26 +1,34 @@
 import { IMT } from '@openpassport/zk-kit-imt';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
-import countries from "i18n-iso-countries";
-import en from "i18n-iso-countries/langs/en.json";
+import countries from 'i18n-iso-countries';
+// @ts-ignore
+import en from 'i18n-iso-countries/langs/en.json' with { type: 'json' };
 import { poseidon12, poseidon13, poseidon2, poseidon3, poseidon6, poseidon10 } from 'poseidon-lite';
+import { CertificateData } from './certificate_parsing/dataStructure.js';
+import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 import {
-  CertificateData,
-} from './certificate_parsing/dataStructure';
-import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { CSCA_TREE_DEPTH, DSC_TREE_DEPTH, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
-import { max_dsc_bytes } from '../constants/constants';
-import { stringToAsciiBigIntArray } from './circuits/uuid';
-import { packBytesAndPoseidon } from './hash';
-import { pad } from './passports/passport';
-import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
-countries.registerLocale(en);
+  CSCA_TREE_DEPTH,
+  DSC_TREE_DEPTH,
+  max_csca_bytes,
+  OFAC_TREE_LEVELS,
+} from '../constants/constants.js';
+import { max_dsc_bytes } from '../constants/constants.js';
+import { stringToAsciiBigIntArray } from './circuits/uuid.js';
+import { packBytesAndPoseidon } from './hash.js';
+import { pad } from './passports/passport.js';
+import {
+  DscCertificateMetaData,
+  parseDscCertificateData,
+} from './passports/passport_parsing/parseDscCertificateData.js';
 
+// SideEffect here
+countries.registerLocale(en);
 /** get leaf for DSC and CSCA Trees */
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   if (type === 'dsc') {
     // for now, we pad it for sha
-    const tbsArray = Object.keys(parsed.tbsBytes).map(key => parsed.tbsBytes[key]);
+    const tbsArray = Object.keys(parsed.tbsBytes).map((key) => parsed.tbsBytes[key]);
     const [paddedTbsBytes, tbsBytesPaddedLength] = pad(parsed.hashAlgorithm)(
       tbsArray,
       max_dsc_bytes
@@ -30,13 +38,19 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
     return poseidon2([dsc_hash, tbsArray.length]).toString();
   } else {
     const tbsBytesArray = Array.from(parsed.tbsBytes);
-    const paddedTbsBytesArray = tbsBytesArray.concat(new Array(max_csca_bytes - tbsBytesArray.length).fill(0));
+    const paddedTbsBytesArray = tbsBytesArray.concat(
+      new Array(max_csca_bytes - tbsBytesArray.length).fill(0)
+    );
     const csca_hash = packBytesAndPoseidon(paddedTbsBytesArray);
     return poseidon2([csca_hash, tbsBytesArray.length]).toString();
   }
 }
 
-export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateData, dscMetaData: DscCertificateMetaData): string { // TODO: WRONG  change this function using raw dsc and hashfunctions from passportMetadata
+export function getLeafDscTreeFromDscCertificateMetadata(
+  dscParsed: CertificateData,
+  dscMetaData: DscCertificateMetaData
+): string {
+  // TODO: WRONG  change this function using raw dsc and hashfunctions from passportMetadata
   const cscaParsed = parseCertificateSimple(dscMetaData.csca);
   return getLeafDscTree(dscParsed, cscaParsed);
 }
@@ -55,8 +69,10 @@ export function getLeafCscaTree(csca_parsed: CertificateData): string {
   return getLeaf(csca_parsed, 'csca');
 }
 
-
-export function getDscTreeInclusionProof(leaf: string, serialized_dsc_tree: string): [string, number[], bigint[], number] {
+export function getDscTreeInclusionProof(
+  leaf: string,
+  serialized_dsc_tree: string
+): [string, number[], bigint[], number] {
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, serialized_dsc_tree);
   const index = tree.indexOf(BigInt(leaf));
@@ -75,7 +91,11 @@ export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: a
     throw new Error('Your public key was not found in the registry');
   }
   const proof = tree.createProof(index);
-  return [tree.root, proof.pathIndices.map(index => index.toString()), proof.siblings.flat().map(sibling => sibling.toString())];
+  return [
+    tree.root,
+    proof.pathIndices.map((index) => index.toString()),
+    proof.siblings.flat().map((sibling) => sibling.toString()),
+  ];
 }
 
 export function getCscaTreeRoot(serialized_csca_tree: any[][]) {
@@ -192,12 +212,13 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
       leaf = processNameAndDob(entry, i, 'passport'); // Explicitly passport
     } else if (treetype == 'name_and_yob') {
       leaf = processNameAndYob(entry, i, 'passport'); // Explicitly passport
-    } else if (treetype == 'name_and_dob_id_card') { // New ID card type
+    } else if (treetype == 'name_and_dob_id_card') {
+      // New ID card type
       leaf = processNameAndDob(entry, i, 'id_card');
-    } else if (treetype == 'name_and_yob_id_card') { // New ID card type
+    } else if (treetype == 'name_and_yob_id_card') {
+      // New ID card type
       leaf = processNameAndYob(entry, i, 'id_card');
-    }
-    else if (treetype == 'country') {
+    } else if (treetype == 'country') {
       const keys = Object.keys(entry);
       leaf = processCountry(keys[0], entry[keys[0]], i);
     }
@@ -222,7 +243,11 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
   return [count, performance.now() - startTime, tree];
 }
 
-function processPassportNoAndNationality(passno: string, nationality: string, index: number): bigint {
+function processPassportNoAndNationality(
+  passno: string,
+  nationality: string,
+  index: number
+): bigint {
   if (passno.length > 9) {
     console.log('passport number length is greater than 9:', index, passno);
   } else if (passno.length < 9) {
@@ -254,21 +279,21 @@ function processPassportNoAndNationality(passno: string, nationality: string, in
 // will be removed once we parse the OFAC list better, starting from the XML file.
 const normalizeCountryName = (country: string): string => {
   const mapping: Record<string, string> = {
-    "palestinian": "Palestine",
-    "korea, north": "North Korea",
-    "korea, south": "Korea, Republic of",
-    "united kingdom": "United Kingdom",
-    "syria": "Syrian Arab Republic",
-    "burma": "Myanmar",
-    "cabo verde": "Cape Verde",
-    "congo, democratic republic of the": "Democratic Republic of the Congo",
-    "macau": "Macao",
+    palestinian: 'Palestine',
+    'korea, north': 'North Korea',
+    'korea, south': 'Korea, Republic of',
+    'united kingdom': 'United Kingdom',
+    syria: 'Syrian Arab Republic',
+    burma: 'Myanmar',
+    'cabo verde': 'Cape Verde',
+    'congo, democratic republic of the': 'Democratic Republic of the Congo',
+    macau: 'Macao',
   };
   return mapping[country.toLowerCase()] || country;
 };
 
 const getCountryCode = (countryName: string): string | undefined => {
-  return countries.getAlpha3Code(normalizeCountryName(countryName), "en");
+  return countries.getAlpha3Code(normalizeCountryName(countryName), 'en');
 };
 
 function generateSmallKey(input: bigint): bigint {
@@ -281,7 +306,8 @@ function processNameAndDob(entry: any, i: number, docType: 'passport' | 'id_card
   const day = entry.day;
   const month = entry.month;
   const year = entry.year;
-  if (day == null || month == null || year == null || !firstName || !lastName) { // Added checks for name presence
+  if (day == null || month == null || year == null || !firstName || !lastName) {
+    // Added checks for name presence
     // console.log('Name or DOB data missing for name_and_dob', i, entry); // Optional: log missing data
     return BigInt(0);
   }
@@ -298,7 +324,8 @@ function processNameAndYob(entry: any, i: number, docType: 'passport' | 'id_card
   const firstName = entry.First_Name;
   const lastName = entry.Last_Name;
   const year = entry.year;
-  if (year == null || !firstName || !lastName) { // Added checks for name presence
+  if (year == null || !firstName || !lastName) {
+    // Added checks for name presence
     // console.log('Name or YOB data missing for name_and_yob', i, entry); // Optional: log missing data
     return BigInt(0);
   }
@@ -334,11 +361,22 @@ function getYearLeaf(yearArr: (bigint | number)[]): bigint {
   }
 }
 
-function processName(firstName: string, lastName: string, targetLength: 30 | 39, i: number): bigint {
+function processName(
+  firstName: string,
+  lastName: string,
+  targetLength: 30 | 39,
+  i: number
+): bigint {
   // LASTNAME<<FIRSTNAME<MIDDLENAME<<<...
   // Ensure names are strings before processing
-  const cleanFirstName = typeof firstName === 'string' ? firstName.replace(/'/g, '').replace(/\./g, '').replace(/[- ]/g, '<') : '';
-  const cleanLastName = typeof lastName === 'string' ? lastName.replace(/'/g, '').replace(/[- ]/g, '<').replace(/\./g, '') : '';
+  const cleanFirstName =
+    typeof firstName === 'string'
+      ? firstName.replace(/'/g, '').replace(/\./g, '').replace(/[- ]/g, '<')
+      : '';
+  const cleanLastName =
+    typeof lastName === 'string'
+      ? lastName.replace(/'/g, '').replace(/[- ]/g, '<').replace(/\./g, '')
+      : '';
 
   // Handle cases where one name might be missing
   let arr = (cleanLastName ? cleanLastName + '<<' : '') + cleanFirstName;
@@ -362,18 +400,35 @@ function processName(firstName: string, lastName: string, targetLength: 30 | 39,
   return getNameLeaf(nameArr, i);
 }
 
-
 function processDob(day: string, month: string, year: string, i: number): bigint {
   // YYMMDD
   const monthMap: { [key: string]: string } = {
-    jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
-    jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+    jan: '01',
+    feb: '02',
+    mar: '03',
+    apr: '04',
+    may: '05',
+    jun: '06',
+    jul: '07',
+    aug: '08',
+    sep: '09',
+    oct: '10',
+    nov: '11',
+    dec: '12',
   };
 
   const lowerMonth = typeof month === 'string' ? month.toLowerCase() : '';
   const mappedMonth = monthMap[lowerMonth];
 
-  if (!mappedMonth || !day || typeof day !== 'string' || day.length !== 2 || !year || typeof year !== 'string' || year.length < 2) {
+  if (
+    !mappedMonth ||
+    !day ||
+    typeof day !== 'string' ||
+    day.length !== 2 ||
+    !year ||
+    typeof year !== 'string' ||
+    year.length < 2
+  ) {
     // console.log('Invalid DOB component format for processDob', i, {day, month, year}); // Optional: log error
     return BigInt(0);
   }
@@ -413,7 +468,11 @@ export function getCountryLeaf(
   }
 }
 
-export function getPassportNumberAndNationalityLeaf(passport: (bigint | number)[], nationality: (bigint | number)[], i?: number): bigint {
+export function getPassportNumberAndNationalityLeaf(
+  passport: (bigint | number)[],
+  nationality: (bigint | number)[],
+  i?: number
+): bigint {
   if (passport.length !== 9) {
     console.log('parsed passport length is not 9:', i, passport);
     return;
@@ -449,24 +508,30 @@ export function getNameYobLeaf(
 export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
   let middleChunks: bigint[] = [];
   let chunks: (number | bigint)[][] = [];
-  try { // Add try-catch block
-    if (nameMrz.length == 39) { // passport
+  try {
+    // Add try-catch block
+    if (nameMrz.length == 39) {
+      // passport
       chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39));
       for (const chunk of chunks) {
-        if (chunk.length !== 13) throw new Error(`Invalid chunk length for Poseidon13: ${chunk.length}`);
+        if (chunk.length !== 13)
+          throw new Error(`Invalid chunk length for Poseidon13: ${chunk.length}`);
         middleChunks.push(poseidon13(chunk));
       }
-    } else if (nameMrz.length == 30) { // id_card
+    } else if (nameMrz.length == 30) {
+      // id_card
       chunks.push(nameMrz.slice(0, 10), nameMrz.slice(10, 20), nameMrz.slice(20, 30)); // Corrected comment: 30/3 for poseidon10
       for (const chunk of chunks) {
-        if (chunk.length !== 10) throw new Error(`Invalid chunk length for Poseidon10: ${chunk.length}`);
+        if (chunk.length !== 10)
+          throw new Error(`Invalid chunk length for Poseidon10: ${chunk.length}`);
         middleChunks.push(poseidon10(chunk));
       }
     } else {
       throw new Error(`Unsupported name MRZ length: ${nameMrz.length}`); // Handle unexpected lengths
     }
 
-    if (middleChunks.length !== 3) throw new Error(`Invalid number of middle chunks: ${middleChunks.length}`);
+    if (middleChunks.length !== 3)
+      throw new Error(`Invalid number of middle chunks: ${middleChunks.length}`);
     return poseidon3(middleChunks);
   } catch (err) {
     console.error('Error in getNameLeaf:', err, 'Index:', i, 'MRZ Length:', nameMrz.length); // Use console.error for errors

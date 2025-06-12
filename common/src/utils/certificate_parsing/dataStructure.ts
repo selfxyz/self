@@ -1,4 +1,4 @@
-import { StandardCurve } from './curves';
+import { StandardCurve } from './curves.js';
 
 export interface CertificateData {
   id: string;
@@ -12,10 +12,10 @@ export interface CertificateData {
   signatureAlgorithm: string;
   hashAlgorithm: string;
   publicKeyDetails:
-  | PublicKeyDetailsRSA
-  | PublicKeyDetailsECDSA
-  | PublicKeyDetailsRSAPSS
-  | undefined;
+    | PublicKeyDetailsRSA
+    | PublicKeyDetailsECDSA
+    | PublicKeyDetailsRSAPSS
+    | undefined;
   tbsBytes: number[] | undefined;
   tbsBytesLength: string;
   rawPem: string;
