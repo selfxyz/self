@@ -27,6 +27,15 @@ import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const defaultIncludePaths = [
+  'node_modules',
+  './node_modules/@zk-kit/binary-merkle-root.circom/src',
+  './node_modules/circomlib/circuits',
+  './node_modules/@zk-email/circuits',
+  './node_modules/circom-dl/circuits',
+  './node_modules/@openpassport/zk-email-circuits',
+];
+
 describe('Disclose', function () {
   this.timeout(0);
   let inputs: any;
@@ -69,11 +78,7 @@ describe('Disclose', function () {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/disclose/vc_and_disclose_id.circom'),
       {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
+        include: defaultIncludePaths,
       }
     );
 

@@ -9,6 +9,15 @@ import chai, { assert } from 'chai';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const defaultIncludePaths = [
+  'node_modules',
+  './node_modules/@zk-kit/binary-merkle-root.circom/src',
+  './node_modules/circomlib/circuits',
+  './node_modules/@zk-email/circuits',
+  './node_modules/circom-dl/circuits',
+  './node_modules/@openpassport/zk-email-circuits',
+];
+
 describe('DateIsLessChecker Circuit Test', function () {
   this.timeout(0); // Disable timeout
 
@@ -73,14 +82,7 @@ describe('DateIsLessChecker Circuit Test', function () {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/other_circuits/is_valid.circom'),
       {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-          './node_modules/@zk-email/circuits',
-          './node_modules/circom-dl/circuits',
-          './node_modules/@openpassport/zk-email-circuits',
-        ],
+        include: defaultIncludePaths,
       }
     );
   });
