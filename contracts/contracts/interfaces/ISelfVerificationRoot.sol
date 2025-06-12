@@ -31,7 +31,10 @@ interface ISelfVerificationRoot {
      * @notice Verifies a self-proof using bytes-based relayer data
      * @param relayerData Packed data from relayer in format: | 1 byte circuitVersion | 1 byte contractVersion | 30 bytes buffer | 32 bytes attestationId | 32 bytes scope | proof data |
      */
-    function verifySelfProof(bytes calldata relayerData) external;
+    function verifySelfProof(
+        bytes calldata proofData,
+        bytes calldata additionalData
+    ) external;
 
     function onVerificationSuccess(
         bytes memory verificationData,

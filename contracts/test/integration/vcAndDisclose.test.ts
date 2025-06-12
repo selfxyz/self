@@ -135,7 +135,7 @@ describe("VC and Disclose", () => {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
-        forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+        forbiddenCountriesListPacked: forbiddenCountriesListPacked.slice(0, 4) as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
         ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
         vcAndDiscloseProof: vcAndDiscloseProof,
       };

@@ -7,8 +7,10 @@ import type { PublicSignals, Groth16Proof } from "snarkjs";
 import {
   IdentityVerificationHub,
   IdentityVerificationHubImplV1,
+  IdentityVerificationHubImplV2,
   IdentityRegistry,
   IdentityRegistryImplV1,
+  TestSelfVerificationRoot,
 } from "../../typechain-types";
 
 import type {
@@ -53,12 +55,31 @@ export interface DeployedActors {
   mockPassport: PassportData;
 }
 
+export interface DeployedActorsV2 {
+  hubV2: IdentityVerificationHubImplV2;
+  hubImplV2: IdentityVerificationHubImplV2;
+  hubProxy: IdentityVerificationHub;
+  registry: IdentityRegistryImplV1;
+  registryImpl: IdentityRegistryImplV1;
+  registryProxy: IdentityRegistry;
+  vcAndDisclose: VcAndDiscloseVerifier;
+  register: RegisterVerifier;
+  dsc: DscVerifier;
+  testSelfVerificationRoot: TestSelfVerificationRoot;
+  owner: Signer;
+  user1: Signer;
+  user2: Signer;
+  mockPassport: PassportData;
+}
+
 // Contract type exports
 export type {
   IdentityVerificationHub,
   IdentityVerificationHubImplV1,
+  IdentityVerificationHubImplV2,
   IdentityRegistry,
   IdentityRegistryImplV1,
+  TestSelfVerificationRoot,
   Groth16Proof,
   PublicSignals,
 };
