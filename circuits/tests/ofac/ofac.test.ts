@@ -20,6 +20,15 @@ import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const defaultIncludePaths = [
+  'node_modules',
+  './node_modules/@zk-kit/binary-merkle-root.circom/src',
+  './node_modules/circomlib/circuits',
+  './node_modules/@zk-email/circuits',
+  './node_modules/circom-dl/circuits',
+  './node_modules/@openpassport/zk-email-circuits',
+];
+
 let circuit: any;
 
 // Mock passport not added in ofac list
@@ -83,13 +92,9 @@ describe('OFAC - Passport number and Nationality match', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_3.circom'),
       {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
+        include: defaultIncludePaths,
       }
     );
 
@@ -144,13 +149,9 @@ describe('OFAC - Name and DOB match', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_tester.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_2.circom'),
       {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
+        include: defaultIncludePaths,
       }
     );
 
@@ -212,13 +213,9 @@ describe('OFAC - Name and YOB match', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_yob_tester.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_1.circom'),
       {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
+        include: defaultIncludePaths,
       }
     );
 
@@ -278,13 +275,9 @@ describe('OFAC - SMT Security Tests', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
+      path.join(__dirname, '../../circuits/ofac/smt_test_security.circom'),
       {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
+        include: defaultIncludePaths,
       }
     );
 
@@ -381,14 +374,9 @@ describe('OFAC - ID Card - Name and DOB match', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      // Use the same circuit as passport level 2
-      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_id_tester.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_id_2.circom'),
       {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
+        include: defaultIncludePaths,
       }
     );
 
@@ -440,14 +428,9 @@ describe('OFAC - ID Card - Name and YOB match', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      // Use the same circuit as passport level 1
-      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_yob_id_tester.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_id_1.circom'),
       {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
+        include: defaultIncludePaths,
       }
     );
 

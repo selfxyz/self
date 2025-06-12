@@ -13,6 +13,15 @@ import { fullAlgorithms, sigAlgs, AdditionalCases } from './testcase/rsapss.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const defaultIncludePaths = [
+  'node_modules',
+  './node_modules/@zk-kit/binary-merkle-root.circom/src',
+  './node_modules/circomlib/circuits',
+  './node_modules/@zk-email/circuits',
+  './node_modules/circom-dl/circuits',
+  './node_modules/@openpassport/zk-email-circuits',
+];
+
 describe('VerifyRsapss Circuit Test', function () {
   this.timeout(0);
 
@@ -32,7 +41,7 @@ describe('VerifyRsapss Circuit Test', function () {
             `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
           ),
           {
-            include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+            include: defaultIncludePaths,
           }
         );
 
@@ -70,7 +79,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
@@ -103,7 +112,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
@@ -135,7 +144,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
@@ -165,7 +174,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
@@ -193,7 +202,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
@@ -224,7 +233,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 

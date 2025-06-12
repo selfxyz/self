@@ -74,6 +74,15 @@ const fullTestSuite = [
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const defaultIncludePaths = [
+  'node_modules',
+  './node_modules/@zk-kit/binary-merkle-root.circom/src',
+  './node_modules/circomlib/circuits',
+  './node_modules/@zk-email/circuits',
+  './node_modules/circom-dl/circuits',
+  './node_modules/@openpassport/zk-email-circuits',
+];
+
 describe('ecdsa', () => {
   testSuite.forEach(({ hash, curve, n, k, reason }) => {
     const message = crypto.randomBytes(32);
@@ -94,7 +103,7 @@ describe('ecdsa', () => {
           const circuit = await wasm_tester(
             path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_${curve}.circom`),
             {
-              include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+              include: defaultIncludePaths,
             }
           );
 
@@ -122,7 +131,7 @@ describe('ecdsa', () => {
       const circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_${curve}.circom`),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
@@ -147,7 +156,7 @@ describe('ecdsa', () => {
     const circuit = await wasm_tester(
       path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_p256.circom`),
       {
-        include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+        include: defaultIncludePaths,
       }
     );
 
@@ -209,7 +218,7 @@ describe('ecdsa', () => {
     const circuit = await wasm_tester(
       path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_p256.circom`),
       {
-        include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+        include: defaultIncludePaths,
       }
     );
 

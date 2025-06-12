@@ -10,6 +10,15 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const defaultIncludePaths = [
+  'node_modules',
+  './node_modules/@zk-kit/binary-merkle-root.circom/src',
+  './node_modules/circomlib/circuits',
+  './node_modules/@zk-email/circuits',
+  './node_modules/circom-dl/circuits',
+  './node_modules/@openpassport/zk-email-circuits',
+];
+
 describe('CustomHasher', function () {
   this.timeout(0);
   let circuitCustomHasher;
@@ -25,18 +34,10 @@ describe('CustomHasher', function () {
       '../../circuits/tests/utils/packBytesAndPoseidon_tester.circom'
     );
     circuitCustomHasher = await wasm_tester(circuitPathCustomHasher, {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
+      include: defaultIncludePaths,
     });
     circuitPackBytesAndPoseidon = await wasm_tester(circuitPathPackBytesAndPoseidon, {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
+      include: defaultIncludePaths,
     });
   });
 

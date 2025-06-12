@@ -10,6 +10,15 @@ import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const defaultIncludePaths = [
+  'node_modules',
+  './node_modules/@zk-kit/binary-merkle-root.circom/src',
+  './node_modules/circomlib/circuits',
+  './node_modules/@zk-email/circuits',
+  './node_modules/circom-dl/circuits',
+  './node_modules/@openpassport/zk-email-circuits',
+];
+
 describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
   this.timeout(0);
   /** Some tests are disabled to avoid overloading the CI/CD pipeline - the commented rsa verifications will however be tested in prove.test.ts and dsc.test.ts **/
@@ -33,7 +42,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
@@ -57,7 +66,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
@@ -79,7 +88,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: defaultIncludePaths,
         }
       );
 
