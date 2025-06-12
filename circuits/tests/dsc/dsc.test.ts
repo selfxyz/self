@@ -35,7 +35,8 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
     idType: 'mock_passport',
     dgHashAlgo: hashFunction as hashAlgosTypes,
     eContentHashAlgo: hashFunction as hashAlgosTypes,
-    signatureType: `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
+    signatureType:
+      `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
   });
   const passportMetadata = passportData.passportMetadata;
 

@@ -22,7 +22,9 @@ export const generateMockRsaPssInputs = (
   // Create message hash - fix for undefined forge.md issue
   const hashAlg = hashAlgorithm.toLowerCase() === 'sha256' ? 'sha256' : hashAlgorithm.toLowerCase();
   if (!forge.md[hashAlg]) {
-    throw new Error(`Unsupported hash algorithm: ${hashAlgorithm}, available: ${Object.keys(forge.md)}`);
+    throw new Error(
+      `Unsupported hash algorithm: ${hashAlgorithm}, available: ${Object.keys(forge.md)}`
+    );
   }
 
   const md = forge.md[hashAlg].create();
@@ -75,7 +77,9 @@ export const generateMalleableRsaPssInputs = (
   // Fix for undefined forge.md issue
   const hashAlg = hashAlgorithm.toLowerCase() === 'sha256' ? 'sha256' : hashAlgorithm.toLowerCase();
   if (!forge.md[hashAlg]) {
-    throw new Error(`Unsupported hash algorithm: ${hashAlgorithm}, available: ${Object.keys(forge.md)}`);
+    throw new Error(
+      `Unsupported hash algorithm: ${hashAlgorithm}, available: ${Object.keys(forge.md)}`
+    );
   }
 
   const md = forge.md[hashAlg].create();
