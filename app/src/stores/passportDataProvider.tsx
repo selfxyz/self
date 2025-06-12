@@ -6,6 +6,7 @@
 // Use of this software is governed by the Business Source License included in the LICENSE file.
 //
 // As of 2029-06-11, this file will be governed by the Apache License, Version 2.0.
+import { PassportData } from '@selfxyz/common';
 import React, {
   createContext,
   PropsWithChildren,
@@ -15,9 +16,8 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { PassportData } from '../../../common/src/utils/types';
-import { unsafe_getPrivateKey } from '../stores/authProvider';
-import { useAuth } from './authProvider';
+import { unsafe_getPrivateKey } from '../providers/authProvider';
+import { useAuth } from '../providers/authProvider';
 
 // TODO: refactor this as it shouldnt be used directly IMHO
 export async function loadPassportData() {
