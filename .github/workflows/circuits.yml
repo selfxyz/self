@@ -57,14 +57,21 @@ jobs:
           yarn install --frozen-lockfile
           yarn workspaces focus @selfxyz/circuits
 
-      - name: Run lint
-        working-directory: ./circuits
-        run: yarn lint
+      # Run lint inside the circuits workspace (from the repo root) so that `node_modules` is
+      # correctly resolved via the hoisted root installation.
+      - name: Run lint (circuits)
+        run: yarn workspace @selfxyz/circuits lint
+
+      # Build the circuits (and their internal dependencies) from the root to keep the same CWD
+      # during the subsequent test step. Using the workspace command avoids us cd-ing into the
+      # package folder which previously broke Circom include paths.
       - name: Build (Circuits + Self dependencies)
-        run: yarn build:deps
-        working-directory: ./circuits
+        run: yarn workspace @selfxyz/circuits build:deps
+
+      # Execute the circuits test suite from the repository root (keeping CWD==PROJECT_ROOT).
+      # This guarantees that the relative include path "node_modules" used by circom_tester
+      # resolves to the hoisted root dependencies, fixing the missing file errors seen in CI.
       - name: Run Tests (Circuits)
-        working-directory: ./circuits
         env:
           FULL_TEST_SUITE: false
-        run: yarn test
+        run: yarn workspace @selfxyz/circuits test
