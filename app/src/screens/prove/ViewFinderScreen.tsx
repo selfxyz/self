@@ -3,6 +3,10 @@ import {
   useIsFocused,
   useNavigation,
 } from '@react-navigation/native';
+import Additional from '@selfxyz/ui/dist/typography/Additional';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, slate800, white } from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -14,9 +18,6 @@ import {
   QRCodeScannerView,
   QRCodeScannerViewProps,
 } from '../../components/native/QRCodeScanner';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { ProofEvents } from '../../consts/analytics';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
@@ -24,7 +25,6 @@ import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
-import { black, slate800, white } from '../../utils/colors';
 
 interface QRCodeViewFinderScreenProps {}
 

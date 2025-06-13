@@ -1,8 +1,7 @@
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import { slate500 } from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 import { Text, View } from 'tamagui';
-
-import { slate500 } from '../utils/colors';
-import { Caption } from './typography/Caption';
 
 export interface TipProps {
   title: string;

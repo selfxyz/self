@@ -13,5 +13,13 @@ module.exports = {
         allowUndefined: true,
       },
     ],
+    [
+      '@tamagui/babel-plugin',
+      {
+        components: ['tamagui', '@selfxyz/ui'],
+        config: './tamagui.config.ts',
+        logTimings: true,
+      },
+    ],
   ],
 };

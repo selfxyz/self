@@ -12,7 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { DefaultNavBar } from '../components/NavBar';
 import AppLayout from '../layouts/AppLayout';
 import analytics from '../utils/analytics';
-import { white } from '../utils/colors';
+import { white } from '@selfxyz/ui/dist/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
 import { getAesopScreens } from './aesop';
 import devScreens from './dev';

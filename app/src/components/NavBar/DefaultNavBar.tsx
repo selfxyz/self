@@ -3,9 +3,9 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextStyle, ViewStyle } from 'tamagui';
 
-import { white } from '../../utils/colors';
+import { white } from '../../../../ui/src/utils/colors';
 import { extraYPadding } from '../../utils/constants';
-import { buttonTap } from '../../utils/haptic';
+import { buttonTap } from '@selfxyz/ui/src/utils/haptic';
 import { NavBar } from './BaseNavBar';
 
 export const DefaultNavBar = (props: NativeStackHeaderProps) => {

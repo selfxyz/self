@@ -1,4 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
+import Caution from '@selfxyz/ui/dist/typography/Caution';
+import { SubHeader } from '@selfxyz/ui/dist/typography/SubHeader';
+import { black, white } from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
@@ -6,13 +9,10 @@ import { YStack } from 'tamagui';
 
 import warningAnimation from '../../assets/animations/warning.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import Caution from '../../components/typography/Caution';
-import { SubHeader } from '../../components/typography/SubHeader';
 import { AppEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useSettingStore } from '../../stores/settingStore';
-import { black, white } from '../../utils/colors';
-import { confirmTap, notificationWarning } from '../../utils/haptic';
+import { confirmTap, notificationWarning } from '@selfxyz/ui/src/utils/haptic';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation = useNavigation();

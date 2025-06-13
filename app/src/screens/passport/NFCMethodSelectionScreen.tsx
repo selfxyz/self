@@ -1,4 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { white } from '@selfxyz/ui/dist/utils/colors';
 import React, { useState } from 'react';
 import { Platform, ScrollView } from 'react-native';
 import { Input, YStack } from 'tamagui';
@@ -6,10 +9,7 @@ import { Input, YStack } from 'tamagui';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { white } from '../../utils/colors';
 
 type NFCParams = {
   skipPACE?: boolean;

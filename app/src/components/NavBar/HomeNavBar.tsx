@@ -1,13 +1,13 @@
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
+import { black, neutral400, white } from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from 'tamagui';
 
 import ActivityIcon from '../../images/icons/activity.svg';
 import SettingsIcon from '../../images/icons/settings.svg';
-import { black, neutral400, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
-import { buttonTap } from '../../utils/haptic';
+import { buttonTap } from '@selfxyz/ui/src/utils/haptic';
 import { NavBar } from './BaseNavBar';
 
 export const HomeNavBar = (props: NativeStackHeaderProps) => {

@@ -1,4 +1,8 @@
 import { useNavigation } from '@react-navigation/native';
+import Additional from '@selfxyz/ui/dist/typography/Additional';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, slate100, white } from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
@@ -8,14 +12,10 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '../../utils/colors';
-import { impactLight } from '../../utils/haptic';
+import { impactLight } from '@selfxyz/ui/src/utils/haptic';
 
 interface PassportOnboardingScreenProps {}
 

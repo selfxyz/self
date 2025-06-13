@@ -1,10 +1,10 @@
+import { dinot } from '@selfxyz/ui/dist/utils/fonts';
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { Button, Text, ViewProps } from 'tamagui';
 
 import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
 import analytics from '../../utils/analytics';
-import { dinot } from '../../utils/fonts';
 import { pressedStyle } from './pressedStyle';
 
 export interface ButtonProps extends ViewProps {

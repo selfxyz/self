@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import { textBlack } from '@selfxyz/ui/dist/utils/colors';
 import { Check, ChevronDown, Eraser } from '@tamagui/lucide-icons';
 import React, {
   PropsWithChildren,
@@ -15,7 +16,6 @@ import {
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
-import { textBlack } from '../../utils/colors';
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
   width?: number;

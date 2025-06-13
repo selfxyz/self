@@ -1,15 +1,15 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { white } from '@selfxyz/ui/dist/utils/colors';
 import React, { useCallback } from 'react';
 import { styled, View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import ModalClose from '../../images/icons/modal_close.svg';
 import LogoInversed from '../../images/logo_inversed.svg';
-import { white } from '../../utils/colors';
-import { confirmTap, impactLight } from '../../utils/haptic';
+import { confirmTap, impactLight } from '@selfxyz/ui/src/utils/haptic';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',

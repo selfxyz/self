@@ -202,11 +202,22 @@ export const triggerFeedback = (
       enableVibrateFallback: mergedOptions.enableVibrateFallback,
       ignoreAndroidSystemSettings: mergedOptions.ignoreAndroidSystemSettings,
     });
-  } else {
+  } else if (Platform.OS === 'android') {
     if (mergedOptions.pattern) {
       Vibration.vibrate(mergedOptions.pattern, false);
     } else {
       Vibration.vibrate(100);
+    }
+  } else if (Platform.OS === 'web') {
+    // Web does not support haptic feedback, but we can use vibration API
+    if ('vibrate' in navigator) {
+      if (mergedOptions.pattern) {
+        navigator.vibrate(mergedOptions.pattern);
+      } else {
+        navigator.vibrate(100);
+      }
+    } else {
+      console.warn('Haptic feedback is not supported on this platform.');
     }
   }
 };

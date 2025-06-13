@@ -3,7 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback } from 'react';
 
 import type { RootStackParamList } from '../navigation/index';
-import { impactLight, impactMedium, selectionChange } from '../utils/haptic';
+import { impactLight, impactMedium, selectionChange } from '@selfxyz/ui/src/utils/haptic';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
 

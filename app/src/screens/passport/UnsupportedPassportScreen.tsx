@@ -1,17 +1,17 @@
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, white } from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 
 import warnAnimation from '../../assets/animations/warning.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { Caption } from '../../components/typography/Caption';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
-import { black, white } from '../../utils/colors';
-import { notificationError } from '../../utils/haptic';
+import { notificationError } from '@selfxyz/ui/src/utils/haptic';
 import { styles } from '../prove/ProofRequestStatusScreen';
 
 const { flush: flushAnalytics } = analytics();

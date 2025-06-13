@@ -1,9 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
 
-import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
-import { slate400 } from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
+import { shouldShowAesopRedesign } from '../utils/showAesopRedesign';
+import { slate400 } from '../utils/colors';
+import { dinot } from '../utils/fonts';
 
 interface AdditionalProps extends TextProps {}
 

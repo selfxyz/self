@@ -1,4 +1,14 @@
 import { useIsFocused } from '@react-navigation/native';
+import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { typography } from '@selfxyz/ui/dist/typography/styles';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, white } from '@selfxyz/ui/dist/utils/colors';
+import {
+  buttonTap,
+  notificationError,
+  notificationSuccess,
+} from '@selfxyz/ui/src/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
@@ -8,10 +18,6 @@ import loadingAnimation from '../../assets/animations/loading/misc.json';
 import failAnimation from '../../assets/animations/proof_failed.json';
 import succesAnimation from '../../assets/animations/proof_success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { BodyText } from '../../components/typography/BodyText';
-import Description from '../../components/typography/Description';
-import { typography } from '../../components/typography/styles';
-import { Title } from '../../components/typography/Title';
 import { ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
@@ -21,12 +27,6 @@ import {
 } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
-import { black, white } from '../../utils/colors';
-import {
-  buttonTap,
-  notificationError,
-  notificationSuccess,
-} from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
 const { trackEvent } = analytics();

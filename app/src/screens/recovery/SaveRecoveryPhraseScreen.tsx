@@ -1,16 +1,16 @@
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, slate400, white } from '@selfxyz/ui/dist/utils/colors';
 import React, { useCallback, useState } from 'react';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Mnemonic from '../../components/Mnemonic';
-import { Caption } from '../../components/typography/Caption';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
+import Mnemonic from '@selfxyz/ui/dist/components/Mnemonic';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import useMnemonic from '../../hooks/useMnemonic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { STORAGE_NAME } from '../../utils/cloudBackup';
-import { black, slate400, white } from '../../utils/colors';
 
 interface SaveRecoveryPhraseScreenProps {}
 

@@ -9,3 +9,5 @@ showcase
 **/.yarn/
 output/*
 *.tsbuildinfo
+ui/types
+sdk/tests/web-app

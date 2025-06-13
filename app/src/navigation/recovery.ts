@@ -6,7 +6,7 @@ import AccountVerifiedSuccessScreen from '../screens/recovery/AccountVerifiedSuc
 import PassportDataNotFound from '../screens/recovery/PassportDataNotFoundScreen';
 import RecoverWithPhraseScreen from '../screens/recovery/RecoverWithPhraseScreen';
 import SaveRecoveryPhraseScreen from '../screens/recovery/SaveRecoveryPhraseScreen';
-import { black, slate300 } from '../utils/colors';
+import { black, slate300 } from '@selfxyz/ui/dist/utils/colors';
 
 const recoveryScreens = {
   AccountRecovery: {

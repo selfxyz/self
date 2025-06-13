@@ -1,4 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
+import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import {
+  amber500,
+  black,
+  neutral700,
+  slate800,
+  white,
+} from '@selfxyz/ui/dist/utils/colors';
 import { Bug } from '@tamagui/lucide-icons';
 import { FileText } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useCallback, useMemo } from 'react';
@@ -11,7 +19,6 @@ import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
 import { version } from '../../../package.json';
 import { pressedStyle } from '../../components/buttons/pressedStyle';
-import { BodyText } from '../../components/typography/BodyText';
 import {
   appStoreUrl,
   gitHubUrl,
@@ -30,15 +37,8 @@ import Telegram from '../../images/icons/telegram.svg';
 import Web from '../../images/icons/webpage.svg';
 import { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
-import {
-  amber500,
-  black,
-  neutral700,
-  slate800,
-  white,
-} from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
-import { impactLight } from '../../utils/haptic';
+import { impactLight } from '@selfxyz/ui/src/utils/haptic';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {

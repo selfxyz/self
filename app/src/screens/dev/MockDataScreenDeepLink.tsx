@@ -1,6 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
 import { countryCodes } from '@selfxyz/common';
 import { genMockIdDocAndInitDataParsing, IdDocInput } from '@selfxyz/common';
+import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, borderColor, white } from '@selfxyz/ui/dist/utils/colors';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -10,13 +14,9 @@ import { ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
-import { BodyText } from '../../components/typography/BodyText';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { MockDataEvents } from '../../consts/analytics';
 import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
-import { black, borderColor, white } from '../../utils/colors';
 
 const MockDataScreenDeepLink: React.FC = () => {
   const navigation = useNavigation();

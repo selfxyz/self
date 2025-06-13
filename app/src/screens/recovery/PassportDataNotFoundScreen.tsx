@@ -1,12 +1,12 @@
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, slate200, white } from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
-import { black, slate200, white } from '../../utils/colors';
 
 const { flush: flushAnalytics } = analytics();
 

@@ -1,3 +1,12 @@
+import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import {
+  black,
+  slate50,
+  slate100,
+  slate500,
+  white,
+} from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -7,16 +16,13 @@ import { useWindowDimensions } from 'tamagui';
 
 import onboardingAnimation from '../../assets/animations/launch_onboarding.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { BodyText } from '../../components/typography/BodyText';
-import { Caption } from '../../components/typography/Caption';
 import { AppEvents } from '../../consts/analytics';
 import { privacyUrl, termsUrl } from '../../consts/links';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Logo from '../../images/logo.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate50, slate100, slate500, white } from '../../utils/colors';
-import { advercase, dinot } from '../../utils/fonts';
+import { advercase, dinot } from '@selfxyz/ui/dist/utils/fonts';
 
 interface LaunchScreenProps {}
 

@@ -1,9 +1,3 @@
-import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
-import React, { useMemo } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { Card, Image, Text, XStack, YStack } from 'tamagui';
-
-import { ProofHistory, ProofStatus } from '../../stores/proofHistoryStore';
 import {
   black,
   blue100,
@@ -16,8 +10,14 @@ import {
   white,
   zinc400,
   zinc500,
-} from '../../utils/colors';
-import { advercase, dinot, plexMono } from '../../utils/fonts';
+} from '@selfxyz/ui/dist/utils/colors';
+import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
+import React, { useMemo } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
+import { Card, Image, Text, XStack, YStack } from 'tamagui';
+
+import { ProofHistory, ProofStatus } from '../../stores/proofHistoryStore';
+import { advercase, dinot, plexMono } from '@selfxyz/ui/dist/utils/fonts';
 
 type ProofHistoryDetailScreenProps = {
   route: {

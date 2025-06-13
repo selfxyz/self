@@ -3,6 +3,14 @@ import { countryCodes } from '@selfxyz/common';
 import { getSKIPEM } from '@selfxyz/common';
 import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
 import { initPassportDataParsing } from '@selfxyz/common';
+import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import {
+  borderColor,
+  separatorColor,
+  textBlack,
+  white,
+} from '@selfxyz/ui/dist/utils/colors';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
@@ -26,18 +34,10 @@ import {
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
-import { BodyText } from '../../components/typography/BodyText';
-import { Title } from '../../components/typography/Title';
 import { MockDataEvents } from '../../consts/analytics';
 import { storePassportData } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
-import {
-  borderColor,
-  separatorColor,
-  textBlack,
-  white,
-} from '../../utils/colors';
-import { buttonTap, selectionChange } from '../../utils/haptic';
+import { buttonTap, selectionChange } from '@selfxyz/ui/src/utils/haptic';
 
 const { trackEvent } = analytics();
 

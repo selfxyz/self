@@ -1,12 +1,20 @@
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import {
+  black,
+  slate300,
+  slate400,
+  slate600,
+  slate700,
+  white,
+} from '@selfxyz/ui/dist/utils/colors';
 import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Description from '../../components/typography/Description';
 import { BackupEvents } from '../../consts/analytics';
 import Paste from '../../images/icons/paste.svg';
 import { useAuth } from '../../providers/authProvider';
@@ -15,14 +23,6 @@ import {
   reStorePassportDataWithRightCSCA,
 } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
-import {
-  black,
-  slate300,
-  slate400,
-  slate600,
-  slate700,
-  white,
-} from '../../utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
 
 interface RecoverWithPhraseScreenProps {}

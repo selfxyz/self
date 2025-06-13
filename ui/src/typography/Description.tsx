@@ -2,9 +2,9 @@ import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Text, TextProps } from 'tamagui';
 
-import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
-import { slate500 } from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
+import { shouldShowAesopRedesign } from '../utils/showAesopRedesign';
+import { slate500 } from '../utils/colors';
+import { dinot } from '../utils/fonts';
 
 interface DescriptionProps extends TextProps {}
 

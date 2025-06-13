@@ -1,18 +1,18 @@
 import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, white } from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
 import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { PassportEvents, ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
-import { black, white } from '../../utils/colors';
-import { notificationSuccess } from '../../utils/haptic';
+import { notificationSuccess } from '@selfxyz/ui/src/utils/haptic';
 import {
   getFCMToken,
   requestNotificationPermission,

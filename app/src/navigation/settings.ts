@@ -5,7 +5,7 @@ import ManageDocumentsScreen from '../screens/settings/ManageDocumentsScreen';
 import PassportDataInfoScreen from '../screens/settings/PassportDataInfoScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '../screens/settings/ShowRecoveryPhraseScreen';
-import { black, slate300, white } from '../utils/colors';
+import { black, slate300, white } from '@selfxyz/ui/dist/utils/colors';
 
 const settingsScreens = {
   CloudBackupSettings: {

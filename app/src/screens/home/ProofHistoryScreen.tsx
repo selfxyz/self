@@ -1,4 +1,15 @@
 import { useNavigation } from '@react-navigation/native';
+import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import {
+  black,
+  blue100,
+  blue600,
+  slate50,
+  slate200,
+  slate300,
+  slate500,
+  white,
+} from '@selfxyz/ui/dist/utils/colors';
 import { CheckSquare2, Wallet } from '@tamagui/lucide-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -10,23 +21,12 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 
-import { BodyText } from '../../components/typography/BodyText';
 import {
   ProofHistory,
   useProofHistoryStore,
 } from '../../stores/proofHistoryStore';
-import {
-  black,
-  blue100,
-  blue600,
-  slate50,
-  slate200,
-  slate300,
-  slate500,
-  white,
-} from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
-import { dinot } from '../../utils/fonts';
+import { dinot } from '@selfxyz/ui/dist/utils/fonts';
 
 type Section = {
   title: string;

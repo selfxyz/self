@@ -1,4 +1,8 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import Additional from '@selfxyz/ui/dist/typography/Additional';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, slate800, white } from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useRef } from 'react';
 import { Platform, StyleSheet } from 'react-native';
@@ -10,9 +14,6 @@ import {
   PassportCamera,
   PassportCameraProps,
 } from '../../components/native/PassportCamera';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Bulb from '../../images/icons/passport_camera_bulb.svg';
@@ -20,7 +21,6 @@ import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
-import { black, slate800, white } from '../../utils/colors';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
 
 interface PassportNFCScanScreen {}

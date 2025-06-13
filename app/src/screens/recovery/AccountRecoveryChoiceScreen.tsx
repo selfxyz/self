@@ -1,12 +1,18 @@
 import { useNavigation } from '@react-navigation/native';
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import {
+  black,
+  slate500,
+  slate600,
+  white,
+} from '@selfxyz/ui/dist/utils/colors';
 import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import { Caption } from '../../components/typography/Caption';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { BackupEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Keyboard from '../../images/icons/keyboard.svg';
@@ -20,7 +26,6 @@ import {
 import { useSettingStore } from '../../stores/settingStore';
 import analytics from '../../utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
-import { black, slate500, slate600, white } from '../../utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
 
 const { trackEvent } = analytics();

@@ -1,12 +1,12 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { PassportMetadata } from '@selfxyz/common';
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import { black, slate200, white } from '@selfxyz/ui/dist/utils/colors';
 import React, { useCallback, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 
-import { Caption } from '../../components/typography/Caption';
 import { usePassport } from '../../providers/passportDataProvider';
-import { black, slate200, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 
 // TODO clarify if we need more/less keys to be displayed

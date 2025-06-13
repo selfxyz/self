@@ -1,11 +1,11 @@
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import { slate500 } from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 
 import Tips, { TipProps } from '../../components/Tips';
-import { Caption } from '../../components/typography/Caption';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
 import analytics from '../../utils/analytics';
-import { slate500 } from '../../utils/colors';
 
 const { flush: flushAnalytics } = analytics();
 

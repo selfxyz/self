@@ -1,16 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
+import { black, white } from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React from 'react';
 import { YStack } from 'tamagui';
 
 import proofSuccessAnimation from '../../assets/animations/proof_success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { BackupEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, white } from '../../utils/colors';
-import { buttonTap } from '../../utils/haptic';
+import { buttonTap } from '@selfxyz/ui/src/utils/haptic';
 import { styles } from '../prove/ProofRequestStatusScreen';
 
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {

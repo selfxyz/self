@@ -10,7 +10,7 @@ import {
   XStackProps,
 } from 'tamagui';
 
-import { Title } from '../typography/Title';
+import { Title } from '@selfxyz/ui/dist/typography/Title';
 
 interface NavBarProps extends XStackProps {
   children: React.ReactNode;

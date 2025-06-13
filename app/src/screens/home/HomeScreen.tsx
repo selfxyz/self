@@ -1,11 +1,18 @@
 import { useFocusEffect, usePreventRemove } from '@react-navigation/native';
+import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import {
+  amber500,
+  black,
+  neutral700,
+  slate800,
+  white,
+} from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, styled, YStack } from 'tamagui';
 
 import { pressedStyle } from '../../components/buttons/pressedStyle';
-import { BodyText } from '../../components/typography/BodyText';
-import { Caption } from '../../components/typography/Caption';
 import { useAppUpdates } from '../../hooks/useAppUpdates';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
@@ -13,13 +20,6 @@ import SelfCard from '../../images/card-style-1.svg';
 import ScanIcon from '../../images/icons/qr_scan.svg';
 import WarnIcon from '../../images/icons/warning.svg';
 import { useSettingStore } from '../../stores/settingStore';
-import {
-  amber500,
-  black,
-  neutral700,
-  slate800,
-  white,
-} from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 const ScanButton = styled(Button, {
   borderRadius: 20,

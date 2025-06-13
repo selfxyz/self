@@ -1,3 +1,7 @@
+import Additional from '@selfxyz/ui/dist/typography/Additional';
+import Description from '@selfxyz/ui/dist/typography/Description';
+import { DescriptionTitle } from '@selfxyz/ui/dist/typography/DescriptionTitle';
+import { black, slate100, white } from '@selfxyz/ui/dist/utils/colors';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
@@ -7,14 +11,10 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { DescriptionTitle } from '../../components/typography/DescriptionTitle';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '../../utils/colors';
 
 interface PassportOnboardingScreenProps {}
 

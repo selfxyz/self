@@ -1,6 +1,10 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { SelfAppDisclosureConfig } from '@selfxyz/common';
-import { formatEndpoint } from '@selfxyz/common';
+import { formatEndpoint, SelfAppDisclosureConfig } from '@selfxyz/common';
+import Disclosures from '@selfxyz/ui/dist/components/Disclosures';
+import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import { Caption } from '@selfxyz/ui/dist/typography/Caption';
+import { black, slate300, white } from '@selfxyz/ui/dist/utils/colors';
+import { buttonTap } from '@selfxyz/ui/src/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
@@ -20,9 +24,6 @@ import { Image, Text, View, YStack } from 'tamagui';
 
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrimaryButtonProveScreen';
-import Disclosures from '../../components/Disclosures';
-import { BodyText } from '../../components/typography/BodyText';
-import { Caption } from '../../components/typography/Caption';
 import { ProofEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { setDefaultDocumentTypeIfNeeded } from '../../providers/passportDataProvider';
@@ -32,8 +33,6 @@ import {
 } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
-import { black, slate300, white } from '../../utils/colors';
-import { buttonTap } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
 const { trackEvent } = analytics();

@@ -9,7 +9,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, ViewProps } from 'tamagui';
 
-import { black, white } from '../utils/colors';
+import { black, white } from '@selfxyz/ui/dist/utils/colors';
 
 // Get the current font scale factor
 const fontScale = PixelRatio.getFontScale();
