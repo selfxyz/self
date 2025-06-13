@@ -83,9 +83,16 @@ describe('OFAC - Passport number and Nationality match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_3.circom'), {
-      include: defaultIncludePaths,
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     const proofLevel = 3;
     passNoAndNationality_smt.import(passportNoAndNationalityjson);
@@ -137,9 +144,16 @@ describe('OFAC - Name and DOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_2.circom'), {
-      include: defaultIncludePaths,
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     namedob_smt.import(nameAndDobjson);
     const proofLevel = 2;
@@ -198,9 +212,16 @@ describe('OFAC - Name and YOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_1.circom'), {
-      include: defaultIncludePaths,
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_yob_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     name_smt.import(nameAndYobjson);
     const proofLevel = 1;
@@ -258,9 +279,13 @@ describe('OFAC - SMT Security Tests', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/smt_test_security.circom'),
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
       {
-        include: defaultIncludePaths,
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
       }
     );
 
@@ -356,9 +381,16 @@ describe('OFAC - ID Card - Name and DOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_id_2.circom'), {
-      include: defaultIncludePaths,
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_id_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     // IMPORTANT: Ensure this JSON path is correct
     namedob_id_smt.import(nameAndDobIdCardJson);
@@ -407,9 +439,16 @@ describe('OFAC - ID Card - Name and YOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_id_1.circom'), {
-      include: defaultIncludePaths,
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_yob_id_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     // IMPORTANT: Ensure this JSON path is correct
     nameyob_id_smt.import(nameAndYobIdCardJson);
