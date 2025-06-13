@@ -247,9 +247,9 @@ library CircuitAttributeHandlerV2 {
         bool checkNameAndDob,
         bool checkNameAndYob
     ) internal pure returns (bool) {
-        bool documentNoResult = !checkDocumentNo;
-        bool nameAndDobResult = !checkNameAndDob;
-        bool nameAndYobResult = !checkNameAndYob;
+        bool documentNoResult = true; // Default to true (no violation) if not checking
+        bool nameAndDobResult = true; // Default to true (no violation) if not checking
+        bool nameAndYobResult = true; // Default to true (no violation) if not checking
 
         if (checkDocumentNo && attestationId == AttestationId.E_PASSPORT) {
             documentNoResult = getDocumentNoOfac(attestationId, charcodes);
@@ -263,7 +263,8 @@ library CircuitAttributeHandlerV2 {
             nameAndYobResult = getNameAndYobOfac(attestationId, charcodes);
         }
 
-        return !documentNoResult && !nameAndDobResult && !nameAndYobResult;
+        // Return true if all enabled checks indicate no OFAC violations (all return true)
+        return documentNoResult && nameAndDobResult && nameAndYobResult;
     }
 
     /**

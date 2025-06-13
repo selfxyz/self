@@ -146,6 +146,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function initialize() external initializer {
         __ImplRoot_init();
 
+        // Initialize circuit version to 2 for V2 hub
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+        $._circuitVersion = 2;
+
         emit HubInitializedV2();
     }
 
@@ -319,6 +323,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
         {
             bytes memory config = _getVerificationConfigById(configId);
+
             bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData), additionalData);
 
             SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(
@@ -630,7 +635,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         SelfStructs.HubInputHeader memory header,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
         bytes calldata additionalData
-    ) internal view returns (bytes memory output) {
+    ) internal returns (bytes memory output) {
         // Scope 1: Basic checks (scope and user identifier)
         {
             CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
@@ -662,7 +667,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         uint256 headerScope,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices
-    ) internal pure {
+    ) internal view {
         // Get scope from proof using the scope index from indices
         uint256 proofScope = vcAndDiscloseProof.pubSignals[indices.scopeIndex];
 
@@ -681,6 +686,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     ) internal view {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         uint256 merkleRoot = vcAndDiscloseProof.pubSignals[indices.merkleRootIndex];
+
+        address registryAddress = $._registries[attestationId];
+
+        if (registryAddress == address(0)) {
+            revert("Registry not set for attestation ID");
+        }
 
         if (attestationId == AttestationId.E_PASSPORT) {
             if (!IIdentityRegistryV1($._registries[attestationId]).checkIdentityCommitmentRoot(merkleRoot)) {
@@ -811,6 +822,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         return abi.decode(data, (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof));
     }
 
+    /**
+     * @notice Performs user identifier validation
+     */
     function _performUserIdentifierCheck(
         bytes calldata additionalData,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,

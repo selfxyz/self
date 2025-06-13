@@ -165,10 +165,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             attestationId := calldataload(proofData.offset)
         }
 
-        // Validate scope (this check ensures the proof was generated for the correct scope)
-        // Note: In a complete implementation, you would extract the scope from the proof
-        // and verify it matches _scope. For now, we'll use _scope directly.
-
         // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proof data
         bytes memory hubData = abi.encodePacked(
             // 1 byte contractVersion
@@ -187,6 +183,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         _identityVerificationHubV2.verify(hubData, additionalData);
     }
 
+    // TODO: need to consider about how to protect onVerificationSuccess is only called by hub contract.
     function onVerificationSuccess(
         bytes memory output,
         bytes memory userData

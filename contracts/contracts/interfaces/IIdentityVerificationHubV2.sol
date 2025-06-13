@@ -89,7 +89,7 @@ interface IIdentityVerificationHubV2 {
     function verify(
         bytes calldata input,
         bytes calldata userDefinedData
-    ) external view returns (bytes memory result);
+    ) external;
 
     /**
      * @notice Registers a passport commitment using a register circuit proof.

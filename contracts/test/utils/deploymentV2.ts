@@ -10,6 +10,7 @@ import serialized_csca_tree from "./pubkeys/serialized_csca_tree.json";
 import {
   DeployedActorsV2,
 } from "./types";
+import { hashEndpointWithScope } from "@selfxyz/common/utils/scope";
 
 // Verifier artifacts (local staging)
 import VcAndDiscloseVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/staging/disclose/Verifier_vc_and_disclose_staging.sol/Verifier_vc_and_disclose_staging.json";
@@ -192,6 +193,10 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   const E_PASSPORT = ethers.hexlify(ethers.zeroPadValue(ethers.toBeHex(1), 32));
   const EU_ID_CARD = ethers.hexlify(ethers.zeroPadValue(ethers.toBeHex(2), 32));
 
+  // Update registries in the hub
+  await hubContract.updateRegistry(E_PASSPORT, identityRegistryProxy.target);
+  await hubContract.updateRegistry(EU_ID_CARD, identityRegistryIdProxy.target);
+
   // Update VC and Disclose verifiers
   await hubContract.updateVcAndDiscloseCircuit(E_PASSPORT, vcAndDiscloseVerifier.target);
   await hubContract.updateVcAndDiscloseCircuit(EU_ID_CARD, vcAndDiscloseIdVerifier.target);
@@ -216,7 +221,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   );
 
   // Deploy TestSelfVerificationRoot
-  const testScope = ethers.keccak256(ethers.toUtf8Bytes("test-scope"));
+  const testScope = hashEndpointWithScope("example.com", "test-scope");
   const testRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
   testSelfVerificationRoot = await testRootFactory.deploy(identityVerificationHubV2.target, testScope);
   await testSelfVerificationRoot.waitForDeployment();

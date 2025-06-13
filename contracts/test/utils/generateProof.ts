@@ -442,7 +442,14 @@ export function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
       [BigNumberish, BigNumberish],
     ],
     c: parsed[2].map((x: string) => x.replace(/"/g, "")) as [BigNumberish, BigNumberish],
-    pubSignals: parsed[3].map((x: string) => x.replace(/"/g, "")) as BigNumberish[],
+    pubSignals: parsed[3].map((x: string) => {
+      const cleaned = x.replace(/"/g, "");
+      // Convert hex strings to decimal strings for Solidity compatibility
+      if (cleaned.startsWith('0x')) {
+        return BigInt(cleaned).toString();
+      }
+      return cleaned;
+    }) as BigNumberish[],
   } as T;
 }
 
