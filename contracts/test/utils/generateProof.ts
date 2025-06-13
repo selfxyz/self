@@ -29,6 +29,13 @@ const registerCircuits: CircuitArtifacts = {
     vkey: "../circuits/build/register/register_sha256_sha256_sha256_rsa_65537_4096/register_sha256_sha256_sha256_rsa_65537_4096_vkey.json",
   },
 };
+const registerCircuitsId: CircuitArtifacts = {
+    register_sha256_sha256_sha256_rsa_65537_4096_staging: {
+        wasm: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_js/register_id_sha256_sha256_sha256_rsa_65537_4096.wasm",
+        zkey: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_final.zkey",
+        vkey: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_vkey.json",
+    },
+};
 const dscCircuits: CircuitArtifacts = {
   dsc_sha256_rsa_65537_4096: {
     wasm: "../circuits/build/dsc/dsc_sha256_rsa_65537_4096/dsc_sha256_rsa_65537_4096_js/dsc_sha256_rsa_65537_4096.wasm",
@@ -42,6 +49,13 @@ const vcAndDiscloseCircuits: CircuitArtifacts = {
     zkey: "../circuits/build/disclose/vc_and_disclose/vc_and_disclose_final.zkey",
     vkey: "../circuits/build/disclose/vc_and_disclose/vc_and_disclose_vkey.json",
   },
+};
+const vcAndDiscloseIdCircuits: CircuitArtifacts = {
+    vc_and_disclose_id: {
+        wasm: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_js/vc_and_disclose_id.wasm",
+        zkey: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_final.zkey",
+        vkey: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_vkey.json",
+    }
 };
 
 export async function generateRegisterProof(secret: string, passportData: PassportData): Promise<RegisterCircuitProof> {
@@ -83,6 +97,48 @@ export async function generateRegisterProof(secret: string, passportData: Passpo
   const fixedProof = parseSolidityCalldata(rawCallData, {} as RegisterCircuitProof);
 
   console.log(CYAN, "=== End generateRegisterProof ===", RESET);
+  return fixedProof;
+}
+
+export async function generateRegisterIdProof(secret: string, passportData: PassportData): Promise<RegisterCircuitProof> {
+  console.log(CYAN, "=== Start generateRegisterIdProof ===", RESET);
+
+  // Get the circuit inputs
+  const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
+    secret,
+    passportData,
+    serialized_dsc_tree as string,
+  );
+
+  // Generate the proof
+  const startTime = performance.now();
+
+  const registerProof: {
+    proof: Groth16Proof;
+    publicSignals: PublicSignals;
+  } = await groth16.fullProve(
+    registerCircuitInputs,
+    registerCircuitsId["register_sha256_sha256_sha256_rsa_65537_4096_staging"].wasm,
+    registerCircuitsId["register_sha256_sha256_sha256_rsa_65537_4096_staging"].zkey,
+  );
+
+  const endTime = performance.now();
+  console.log(GREEN, `groth16.fullProve execution time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`, RESET);
+
+  // Verify the proof
+  const vKey = JSON.parse(
+    fs.readFileSync(registerCircuitsId["register_sha256_sha256_sha256_rsa_65537_4096_staging"].vkey, "utf8"),
+  );
+  const isValid = await groth16.verify(vKey, registerProof.publicSignals, registerProof.proof);
+  if (!isValid) {
+    throw new Error("Generated register ID proof verification failed");
+  }
+  console.log(GREEN, "Register ID proof verified successfully", RESET);
+
+  const rawCallData = await groth16.exportSolidityCallData(registerProof.proof, registerProof.publicSignals);
+  const fixedProof = parseSolidityCalldata(rawCallData, {} as RegisterCircuitProof);
+
+  console.log(CYAN, "=== End generateRegisterIdProof ===", RESET);
   return fixedProof;
 }
 
@@ -259,6 +315,120 @@ export async function generateVcAndDiscloseProof(
   const rawCallData = await groth16.exportSolidityCallData(rawProof.proof, rawProof.publicSignals);
   const fixedProof = parseSolidityCalldata(rawCallData, {} as VcAndDiscloseProof);
 
+  return fixedProof;
+}
+
+export async function generateVcAndDiscloseIdProof(
+  secret: string,
+  attestationId: string,
+  passportData: PassportData,
+  scope: string,
+  selectorDg1: string[] = new Array(90).fill("1"),
+  selectorOlderThan: string | number = "1",
+  merkletree: LeanIMT<bigint>,
+  majority: string = "20",
+  passportNo_smt?: SMT,
+  nameAndDob_smt?: SMT,
+  nameAndYob_smt?: SMT,
+  selectorOfac: string | number = "1",
+  forbiddenCountriesList: string[] = [
+    "AAA",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "AAA",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "AAA",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "AAA",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+    "000",
+  ],
+  userIdentifier: string = "0000000000000000000000000000000000000000",
+): Promise<VcAndDiscloseProof> {
+  // Initialize all three SMTs if not provided
+  if (!passportNo_smt || !nameAndDob_smt || !nameAndYob_smt) {
+    const smts = getSMTs();
+    passportNo_smt = smts.passportNo_smt;
+    nameAndDob_smt = smts.nameAndDob_smt;
+    nameAndYob_smt = smts.nameAndYob_smt;
+  }
+
+  const idCardPassportData = {
+    ...passportData,
+    documentType: passportData.documentType.includes('id') ? passportData.documentType : 'id_card',
+    documentCategory: 'id_card' as const
+  };
+
+  const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsVCandDisclose(
+    secret,
+    attestationId,
+    idCardPassportData,
+    scope,
+    selectorDg1,
+    selectorOlderThan,
+    merkletree,
+    majority,
+    passportNo_smt,
+    nameAndDob_smt,
+    nameAndYob_smt,
+    selectorOfac,
+    forbiddenCountriesList,
+    userIdentifier,
+  );
+
+  console.log(CYAN, "=== Start generateVcAndDiscloseIdProof ===", RESET);
+  const startTime = performance.now();
+  const vcAndDiscloseProof = await groth16.fullProve(
+    vcAndDiscloseCircuitInputs,
+    vcAndDiscloseIdCircuits["vc_and_disclose_id"].wasm,
+    vcAndDiscloseIdCircuits["vc_and_disclose_id"].zkey,
+  );
+
+  const endTime = performance.now();
+  console.log(GREEN, `groth16.fullProve execution time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`, RESET);
+
+  // Verify the proof
+  const vKey = JSON.parse(fs.readFileSync(vcAndDiscloseIdCircuits["vc_and_disclose_id"].vkey, "utf8"));
+  const isValid = await groth16.verify(vKey, vcAndDiscloseProof.publicSignals, vcAndDiscloseProof.proof);
+  if (!isValid) {
+    throw new Error("Generated VC and Disclose ID proof verification failed");
+  }
+  console.log(GREEN, "VC and Disclose ID proof verified successfully", RESET);
+
+  const rawCallData = await groth16.exportSolidityCallData(vcAndDiscloseProof.proof, vcAndDiscloseProof.publicSignals);
+  const fixedProof = parseSolidityCalldata(rawCallData, {} as VcAndDiscloseProof);
+
+  console.log(CYAN, "=== End generateVcAndDiscloseIdProof ===", RESET);
   return fixedProof;
 }
 

@@ -1,11 +1,10 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
+import { CIRCUIT_CONSTANTS } from "@selfxyz/common/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
 import { generateVcAndDiscloseProof, getSMTs } from "../utils/generateProof";
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
-import { generateCommitment } from "../../../common/src/utils/passports/passport";
+import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement, getStartOfDayTimestamp, splitHexFromBack } from "../utils/utils";
 import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
@@ -13,17 +12,20 @@ import {
   formatCountriesList,
   reverseBytes,
   reverseCountryBytes,
-} from "../../../common/src/utils/circuits/formatInputs";
-import { getPackedForbiddenCountries } from "../../../common/src/utils/contracts/forbiddenCountries";
-import { countries } from "../../../common/src/constants/countries";
-import { deploySystemFixtures } from "../utils/deployment";
-import { DeployedActors } from "../utils/types";
-import { genAndInitMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
-import { getCscaTreeRoot } from "../../../common/src/utils/trees";
+} from "@selfxyz/common/utils/circuits/formatInputs";
+import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
+import { countries } from "@selfxyz/common/constants/countries";
+import { deploySystemFixturesV2 } from "../utils/deploymentV2";
+import { DeployedActorsV2 } from "../utils/types";
+import { genAndInitMockPassportData } from "@selfxyz/common/utils/passports/genMockPassportData";
+import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
 import serialized_csca_tree from "../utils/pubkeys/serialized_csca_tree.json";
+import { Country3LetterCode } from "@selfxyz/common/constants/countries";
+import { RegisterVerifierId } from "@selfxyz/common/constants/constants";
+import { hashEndpointWithScope } from "@selfxyz/common/utils/scope";
 
 describe("Self Verification Flow V2", () => {
-  let deployedActors: any;
+  let deployedActors: DeployedActorsV2;
   let snapshotId: string;
   let baseVcAndDiscloseProof: any;
   let vcAndDiscloseProof: any;
@@ -31,51 +33,38 @@ describe("Self Verification Flow V2", () => {
   let imt: any;
   let commitment: any;
   let nullifier: any;
-  let testSelfVerificationRoot: any;
-  let hubV2: any;
-  let hubImplV2: any;
-  let hubProxy: any;
 
-  let forbiddenCountriesList: string[];
+  let forbiddenCountriesList: Country3LetterCode[];
   let forbiddenCountriesListPacked: string[];
 
   before(async () => {
     snapshotId = await ethers.provider.send("evm_snapshot", []);
 
-    // Basic V1 deployment for comparison and to get verifiers
-    deployedActors = await deploySystemFixtures();
+    // Deploy all contracts using deploySystemFixturesV2
+    deployedActors = await deploySystemFixturesV2();
 
-    // Deploy V2 Hub Implementation
-    const IdentityVerificationHubImplV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV2");
-    hubImplV2 = await IdentityVerificationHubImplV2Factory.deploy();
-    await hubImplV2.waitForDeployment();
-
-    // Deploy Hub Proxy with V2 implementation
-    const hubInterface = hubImplV2.interface;
-    const initData = hubInterface.encodeFunctionData("initialize");
-    const hubProxyFactory = await ethers.getContractFactory("IdentityVerificationHub");
-    hubProxy = await hubProxyFactory.deploy(hubImplV2.target, initData);
-    await hubProxy.waitForDeployment();
-
-    // Get V2 hub contract with implementation ABI
-    hubV2 = await ethers.getContractAt("IdentityVerificationHubImplV2", hubProxy.target);
-
-    // Deploy TestSelfVerificationRoot
-    const testScope = ethers.keccak256(ethers.toUtf8Bytes("test-scope"));
-    const testRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
-    testSelfVerificationRoot = await testRootFactory.deploy(hubProxy.target, testScope);
-    await testSelfVerificationRoot.waitForDeployment();
-
-    // Set up test data similar to vcAndDisclose test
+    // Set up test data
     registerSecret = generateRandomFieldElement();
     nullifier = generateRandomFieldElement();
     commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
 
-    await deployedActors.registry
-      .connect(deployedActors.owner)
-      .devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
+    // Add the commitment to both registries directly using devAddIdentityCommitment
+    // This ensures the test can have the same merkle tree state
+    await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
+      ATTESTATION_ID.E_PASSPORT,
+      nullifier,
+      commitment
+    );
+
+    await deployedActors.registryId.connect(deployedActors.owner).devAddIdentityCommitment(
+      ATTESTATION_ID.E_PASSPORT,
+      nullifier,
+      commitment
+    );
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+    // Use dynamic import for LeanIMT (ESM only)
+    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
     imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(commitment));
 
@@ -84,14 +73,14 @@ describe("Self Verification Flow V2", () => {
       "ABC",
       "CBA",
       "AAA",
-    ];
+    ] as Country3LetterCode[];
     forbiddenCountriesListPacked = getPackedForbiddenCountries(forbiddenCountriesList);
 
     baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
       registerSecret,
       BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
       deployedActors.mockPassport,
-      "test-scope",
+      hashEndpointWithScope("example.com", "test-scope"),
       new Array(88).fill("1"),
       "1",
       imt,
@@ -115,17 +104,17 @@ describe("Self Verification Flow V2", () => {
   });
 
   describe("V2 Contracts Deployment", () => {
-    it("should deploy IdentityVerificationHubImplV2 successfully", async () => {
-      expect(hubImplV2.target).to.not.equal(ethers.ZeroAddress);
+    it("should have deployed IdentityVerificationHubImplV2 successfully", async () => {
+      expect(deployedActors.hubImplV2.target).to.not.equal(ethers.ZeroAddress);
     });
 
-    it("should deploy TestSelfVerificationRoot successfully", async () => {
-      expect(testSelfVerificationRoot.target).to.not.equal(ethers.ZeroAddress);
+    it("should have deployed TestSelfVerificationRoot successfully", async () => {
+      expect(deployedActors.testSelfVerificationRoot.target).to.not.equal(ethers.ZeroAddress);
     });
 
     it("should have correct scope set in TestSelfVerificationRoot", async () => {
       const expectedScope = ethers.keccak256(ethers.toUtf8Bytes("test-scope"));
-      const actualScope = await testSelfVerificationRoot.scope();
+      const actualScope = await deployedActors.testSelfVerificationRoot.scope();
       expect(actualScope).to.equal(expectedScope);
     });
   });
@@ -140,10 +129,10 @@ describe("Self Verification Flow V2", () => {
         ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
       };
 
-      const configId = await hubV2.generateConfigId(verificationConfigV2);
+      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
 
-      await expect(hubV2.setVerificationConfigV2(verificationConfigV2))
-        .to.emit(hubV2, "VerificationConfigV2Set")
+      await expect(deployedActors.hub.setVerificationConfigV2(verificationConfigV2))
+        .to.emit(deployedActors.hub, "VerificationConfigV2Set")
         .withArgs(configId, Object.values(verificationConfigV2));
     });
 
@@ -156,16 +145,16 @@ describe("Self Verification Flow V2", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
-      const configId = await hubV2.generateConfigId(verificationConfigV2);
+      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
 
       // Should not exist initially
-      expect(await hubV2.verificationConfigV2Exists(configId)).to.be.false;
+      expect(await deployedActors.hub.verificationConfigV2Exists(configId)).to.be.false;
 
       // Set the config
-      await hubV2.setVerificationConfigV2(verificationConfigV2);
+      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
 
       // Should exist now
-      expect(await hubV2.verificationConfigV2Exists(configId)).to.be.true;
+      expect(await deployedActors.hub.verificationConfigV2Exists(configId)).to.be.true;
     });
   });
 
@@ -173,20 +162,20 @@ describe("Self Verification Flow V2", () => {
     it("should allow scope changes", async () => {
       const newScope = ethers.keccak256(ethers.toUtf8Bytes("new-test-scope"));
 
-      await expect(testSelfVerificationRoot.setScope(newScope))
-        .to.emit(testSelfVerificationRoot, "ScopeUpdated")
+      await expect(deployedActors.testSelfVerificationRoot.setScope(newScope))
+        .to.emit(deployedActors.testSelfVerificationRoot, "ScopeUpdated")
         .withArgs(newScope);
 
-      expect(await testSelfVerificationRoot.scope()).to.equal(newScope);
+      expect(await deployedActors.testSelfVerificationRoot.scope()).to.equal(newScope);
     });
 
     it("should reset test state", async () => {
       // Manually set some test state
-      await testSelfVerificationRoot.resetTestState();
+      await deployedActors.testSelfVerificationRoot.resetTestState();
 
-      expect(await testSelfVerificationRoot.verificationSuccessful()).to.be.false;
-      expect(await testSelfVerificationRoot.lastOutput()).to.equal("0x");
-      expect(await testSelfVerificationRoot.lastUserData()).to.equal("0x");
+      expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.false;
+      expect(await deployedActors.testSelfVerificationRoot.lastOutput()).to.equal("0x");
+      expect(await deployedActors.testSelfVerificationRoot.lastUserData()).to.equal("0x");
     });
   });
 
@@ -212,7 +201,7 @@ describe("Self Verification Flow V2", () => {
       // This should revert since we haven't set up the full V2 infrastructure
       // but it demonstrates the interface
       await expect(
-        testSelfVerificationRoot.verifySelfProof(mockProofData, additionalData)
+        deployedActors.testSelfVerificationRoot.verifySelfProof(mockProofData, additionalData)
       ).to.be.reverted; // Expected to revert due to incomplete setup
     });
 
@@ -221,15 +210,15 @@ describe("Self Verification Flow V2", () => {
       const mockUserData = ethers.toUtf8Bytes("mock-user-data");
 
       await expect(
-        testSelfVerificationRoot.onVerificationSuccess(mockOutput, mockUserData)
-      ).to.emit(testSelfVerificationRoot, "VerificationCompleted")
+        deployedActors.testSelfVerificationRoot.onVerificationSuccess(mockOutput, mockUserData)
+      ).to.emit(deployedActors.testSelfVerificationRoot, "VerificationCompleted")
         .withArgs(mockOutput, mockUserData);
 
-      expect(await testSelfVerificationRoot.verificationSuccessful()).to.be.true;
-      expect(await testSelfVerificationRoot.lastOutput()).to.equal(
+      expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.true;
+      expect(await deployedActors.testSelfVerificationRoot.lastOutput()).to.equal(
         ethers.hexlify(mockOutput)
       );
-      expect(await testSelfVerificationRoot.lastUserData()).to.equal(
+      expect(await deployedActors.testSelfVerificationRoot.lastUserData()).to.equal(
         ethers.hexlify(mockUserData)
       );
     });

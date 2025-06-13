@@ -3,22 +3,34 @@ import type { PassportData } from "@selfxyz/common/utils/types";
 
 import type { PublicSignals, Groth16Proof } from "snarkjs";
 
-// Contract imports
 import {
   IdentityVerificationHub,
   IdentityVerificationHubImplV1,
   IdentityVerificationHubImplV2,
   IdentityRegistry,
   IdentityRegistryImplV1,
+  IdentityRegistryIdCardImplV1,
   TestSelfVerificationRoot,
-} from "../../typechain-types";
-
-import type {
+  Verifier_vc_and_disclose_staging as LocalVerifier,
+  Verifier_vc_and_disclose_id_staging as LocalIdCardVerifier,
+  Verifier_vc_and_disclose as ProdVerifier,
+  Verifier_vc_and_disclose_id as ProdIdCardVerifier,
+  Verifier_register_sha256_sha256_sha256_rsa_65537_4096 as ProdRegisterVerifier,
+  Verifier_register_sha256_sha256_sha256_rsa_65537_4096_staging as LocalRegisterVerifier,
+  Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096 as ProdIdCardRegisterVerifier,
+  Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096_staging as LocalIdCardRegisterVerifier,
+  Verifier_dsc_sha256_rsa_65537_4096 as ProdDscVerifier,
+  Verifier_dsc_sha256_rsa_65537_4096_staging as LocalDscVerifier,
   IIdentityVerificationHubV1,
+  IIdentityVerificationHubV2,
+  IIdentityRegistryIdCardV1,
+  IIdentityRegistryV1,
   IRegisterCircuitVerifier,
   IDscCircuitVerifier,
-  IVcAndDiscloseCircuitVerifier,
-} from "../../typechain-types/contracts/IdentityVerificationHubImplV1";
+  IVcAndDiscloseCircuitVerifier
+} from "../../typechain-types";
+
+import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common";
 
 export type PassportProof = IIdentityVerificationHubV1.PassportProofStruct;
 export type RegisterCircuitProof = IRegisterCircuitVerifier.RegisterCircuitProofStruct;
@@ -26,19 +38,11 @@ export type DscCircuitProof = IDscCircuitVerifier.DscCircuitProofStruct;
 export type VcAndDiscloseHubProof = IIdentityVerificationHubV1.VcAndDiscloseHubProofStruct;
 export type VcAndDiscloseProof = IVcAndDiscloseCircuitVerifier.VcAndDiscloseProofStruct;
 
-// Verifier type imports
-import type { Verifier_vc_and_disclose as ProdVerifier } from "../../typechain-types/contracts/verifiers/disclose/Verifier_vc_and_disclose";
-import type { Verifier_vc_and_disclose as LocalVerifier } from "../../typechain-types/contracts/verifiers/local/disclose/Verifier_vc_and_disclose";
-import type { Verifier_register_rsa_65537_sha256_sha256_sha256_rsa_65537_4096 as ProdRegisterVerifier } from "../../typechain-types/contracts/verifiers/register/Verifier_register_rsa_65537_sha256_sha256_sha256_rsa_65537_4096";
-import type { Verifier_register_sha256_sha256_sha256_rsa_65537_4096 as LocalRegisterVerifier } from "../../typechain-types/contracts/verifiers/local/register/Verifier_register_sha256_sha256_sha256_rsa_65537_4096";
-import type { Verifier_dsc_rsa_65537_sha256_4096 as ProdDscVerifier } from "../../typechain-types/contracts/verifiers/dsc/Verifier_dsc_rsa_65537_sha256_4096";
-import type { Verifier_dsc_rsa_sha256_65537_4096 as LocalDscVerifier } from "../../typechain-types/contracts/verifiers/local/dsc/Verifier_dsc_rsa_sha256_65537_4096";
-
 // Type definitions
 export type VcAndDiscloseVerifier = typeof process.env.TEST_ENV extends "local" ? LocalVerifier : ProdVerifier;
-export type RegisterVerifier = typeof process.env.TEST_ENV extends "local"
-  ? LocalRegisterVerifier
-  : ProdRegisterVerifier;
+export type VcAndDiscloseIdVerifier = typeof process.env.TEST_ENV extends "local" ? LocalIdCardVerifier : ProdIdCardVerifier;
+export type RegisterVerifier = typeof process.env.TEST_ENV extends "local" ? LocalRegisterVerifier : ProdRegisterVerifier;
+export type IdCardRegisterVerifier = typeof process.env.TEST_ENV extends "local" ? LocalIdCardRegisterVerifier : ProdIdCardRegisterVerifier;
 export type DscVerifier = typeof process.env.TEST_ENV extends "local" ? LocalDscVerifier : ProdDscVerifier;
 
 export interface DeployedActors {
@@ -56,15 +60,18 @@ export interface DeployedActors {
 }
 
 export interface DeployedActorsV2 {
-  hubV2: IdentityVerificationHubImplV2;
   hubImplV2: IdentityVerificationHubImplV2;
-  hubProxy: IdentityVerificationHub;
-  registry: IdentityRegistryImplV1;
+  hub: IdentityVerificationHubImplV2;
   registryImpl: IdentityRegistryImplV1;
-  registryProxy: IdentityRegistry;
+  registry: IdentityRegistryImplV1;
+  registryIdImpl: IdentityRegistryIdCardImplV1;
+  registryId: IdentityRegistryIdCardImplV1;
   vcAndDisclose: VcAndDiscloseVerifier;
+  vcAndDiscloseId: VcAndDiscloseIdVerifier;
   register: RegisterVerifier;
+  registerId: RegisterVerifierId;
   dsc: DscVerifier;
+  dscId: DscVerifierId;
   testSelfVerificationRoot: TestSelfVerificationRoot;
   owner: Signer;
   user1: Signer;
@@ -79,6 +86,7 @@ export type {
   IdentityVerificationHubImplV2,
   IdentityRegistry,
   IdentityRegistryImplV1,
+  IdentityRegistryIdCardImplV1,
   TestSelfVerificationRoot,
   Groth16Proof,
   PublicSignals,

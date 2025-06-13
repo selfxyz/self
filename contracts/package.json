@@ -50,6 +50,7 @@
     "test:unit": "npx dotenv-cli -- bash -c 'TEST_ENV=${TEST_ENV:-local} yarn hardhat test test/unit/*'",
     "test:verifyall": "npx dotenv-cli -- bash -c 'TEST_ENV=${TEST_ENV:-local} yarn hardhat test test/integration/verifyAll.test.ts'",
     "test:view": "yarn hardhat test test/view.ts",
+    "test:v2": "yarn hardhat test test/v2/selfVerificationFlow.test.ts --network localhost",
     "types": "tsc -noEmit",
     "update:cscaroot": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/scripts/updateRegistryCscaRoot.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "update:hub": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK:-staging} npx ts-node scripts/setRegistry.ts'",

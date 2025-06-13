@@ -3,6 +3,7 @@ pragma circom 2.1.9;
 include "./dynamic/sha1Bytes.circom";
 include "./dynamic/sha224Bytes.circom";
 include "@openpassport/zk-email-circuits/lib/sha.circom";
+include "@openpassport/zk-email-circuits/lib/bigint-func.circom";
 include "./dynamic/sha384Bytes.circom";
 include "./dynamic/sha512Bytes.circom";
 include "circomlib/circuits/bitify.circom"; // needed for Num2Bits
@@ -36,7 +37,7 @@ template ShaBytesDynamic(hashLen, max_num_bytes) {
         // For more information, see:
         // https://github.com/zkemail/zk-email-verify/blob/b193cf0c760456b837b2bbcf7b2c72d5bb3f43c3/packages/circuits/lib/sha.circom#L87
         var maxBitsPadded = max_num_bytes * 8;
-        var maxBitsPaddedBits = ceil(log2(maxBitsPadded));
+        var maxBitsPaddedBits = log_ceil_zkemail(maxBitsPadded);
         component rangeCheck = Num2Bits(maxBitsPaddedBits);
         rangeCheck.in <== in_len_padded_bytes * 8;
 
@@ -55,7 +56,7 @@ template ShaBytesDynamic(hashLen, max_num_bytes) {
         // For more information, see:
         // https://github.com/selfxyz/self/pull/579#issuecomment-2922842294
         var maxBitsPadded = max_num_bytes * 8;
-        var maxBitsPaddedBits = ceil(log2(maxBitsPadded));
+        var maxBitsPaddedBits = log_ceil_zkemail(maxBitsPadded);
         component rangeCheck = Num2Bits(maxBitsPaddedBits);
         rangeCheck.in <== in_len_padded_bytes * 8;
 
