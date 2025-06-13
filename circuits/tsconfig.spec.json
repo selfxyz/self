@@ -9,7 +9,12 @@
     "allowJs": true,
     "checkJs": false,
     "outDir": "./dist",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@selfxyz/common/utils/*": ["../common/src/utils/*"],
+      "@selfxyz/common/constants/*": ["../common/src/constants/*"],
+      "@selfxyz/common": ["../common/index.ts"]
+    }
   },
   "include": ["tests/**/*", "src/**/*"],
   "exclude": ["node_modules"],

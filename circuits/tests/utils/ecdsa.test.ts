@@ -3,8 +3,12 @@ import * as crypto from 'crypto';
 import { initElliptic } from '@selfxyz/common/utils/certificate_parsing/elliptic';
 import * as path from 'path';
 import { splitToWords } from '@selfxyz/common/utils/bytes';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const elliptic = initElliptic();
+
 const testSuite = [
   {
     hash: 'sha512',
@@ -87,7 +91,7 @@ describe('ecdsa', () => {
           const circuit = await wasmTester(
             path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_${curve}.circom`),
             {
-              include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+              include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
             }
           );
 
@@ -115,7 +119,7 @@ describe('ecdsa', () => {
       const circuit = await wasmTester(
         path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_${curve}.circom`),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
       );
 
@@ -140,7 +144,7 @@ describe('ecdsa', () => {
     const circuit = await wasmTester(
       path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_p256.circom`),
       {
-        include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+        include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
       }
     );
 
@@ -202,7 +206,7 @@ describe('ecdsa', () => {
     const circuit = await wasmTester(
       path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_p256.circom`),
       {
-        include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+        include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
       }
     );
 

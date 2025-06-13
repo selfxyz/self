@@ -56,13 +56,8 @@ jobs:
         run: yarn workspaces focus @selfxyz/circuits
 
       - name: Run lint
-        working-directory: ./circuits
-        run: yarn lint
-      - name: Build (Circuits + Self dependencies)
-        run: yarn build:deps
-        working-directory: ./circuits
+        run: yarn workspace @selfxyz/circuits lint
       - name: Run Tests (Circuits)
-        working-directory: ./circuits
         env:
           FULL_TEST_SUITE: false
-        run: yarn test
+        run: yarn workspace @selfxyz/circuits test

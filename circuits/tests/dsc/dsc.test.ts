@@ -11,7 +11,10 @@ import { parseDscCertificateData } from '@selfxyz/common/utils/passports/passpor
 import { getLeafDscTreeFromParsedDsc } from '@selfxyz/common/utils/trees';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { fullSigAlgs, sigAlgs } from './test_cases.js';
+import { fileURLToPath } from 'url';
 dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
@@ -42,9 +45,9 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         ),
         {
           include: [
-            'node_modules',
-            './node_modules/@zk-kit/binary-merkle-root.circom/src',
-            './node_modules/circomlib/circuits',
+            '../node_modules',
+            '../node_modules/@zk-kit/binary-merkle-root.circom/src',
+            '../node_modules/circomlib/circuits',
           ],
         }
       );

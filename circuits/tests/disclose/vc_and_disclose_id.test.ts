@@ -6,7 +6,7 @@ import {
   attributeToPosition_ID,
   ID_CARD_ATTESTATION_ID,
 } from '@selfxyz/common/constants/constants';
-import { poseidon1, poseidon2 } from 'poseidon-lite';
+import { poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circuits/generateInputs';
 import crypto from 'crypto';
@@ -21,14 +21,17 @@ import {
 } from '@selfxyz/common/utils/circuits/formatOutputs';
 import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
-import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('Disclose', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
   let w: any;
-  const passportData = genMockIdDoc({
+  const passportData = genMockIdDocAndInitDataParsing({
     idType: 'mock_id_card',
   });
   console.log(passportData.mrz);
@@ -66,9 +69,9 @@ describe('Disclose', function () {
       path.join(__dirname, '../../circuits/disclose/vc_and_disclose_id.circom'),
       {
         include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
+          '../node_modules',
+          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
+          '../node_modules/circomlib/circuits',
         ],
       }
     );
@@ -218,12 +221,12 @@ describe('Disclose', function () {
       const testCases = [
         {
           desc: 'No details match',
-          data: genMockIdDoc({ idType: 'mock_id_card' }),
+          data: genMockIdDocAndInitDataParsing({ idType: 'mock_id_card' }),
           expectedBits: ['\x01', '\x01'],
         },
         {
           desc: 'Name and DOB matches (so YOB matches too)',
-          data: genMockIdDoc({
+          data: genMockIdDocAndInitDataParsing({
             idType: 'mock_id_card',
             passportNumber: 'DIF123456',
             lastName: 'HENAO MONTOYA',
@@ -235,7 +238,7 @@ describe('Disclose', function () {
         },
         {
           desc: 'Only name and YOB match',
-          data: genMockIdDoc({
+          data: genMockIdDocAndInitDataParsing({
             idType: 'mock_id_card',
             passportNumber: 'DIF123456',
             lastName: 'HENAO MONTOYA',

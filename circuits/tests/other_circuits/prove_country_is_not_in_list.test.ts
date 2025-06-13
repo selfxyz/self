@@ -6,6 +6,9 @@ import { formatAndUnpackForbiddenCountriesList } from '@selfxyz/common/utils/cir
 import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
 import { formatMrz } from '@selfxyz/common/utils/passports/format';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('ProveCountryIsNotInList', function () {
   this.timeout(0);
@@ -18,9 +21,9 @@ describe('ProveCountryIsNotInList', function () {
     );
     circuit = await wasm_tester(circuitPath, {
       include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
+        '../node_modules',
+        '../node_modules/@zk-kit/binary-merkle-root.circom/src',
+        '../node_modules/circomlib/circuits',
       ],
     });
   });

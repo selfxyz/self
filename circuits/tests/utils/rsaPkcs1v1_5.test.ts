@@ -4,6 +4,10 @@ import path from 'path';
 import { generateMockRsaPkcs1v1_5Inputs } from './generateMockInputsInCircuits.js';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { expect } from 'chai';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
   this.timeout(0);
   /** Some tests are disabled to avoid overloading the CI/CD pipeline - the commented rsa verifications will however be tested in prove.test.ts and dsc.test.ts **/
@@ -27,7 +31,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasmTester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
       );
 
@@ -51,7 +55,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasmTester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
       );
 
@@ -73,7 +77,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasmTester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
       );
 

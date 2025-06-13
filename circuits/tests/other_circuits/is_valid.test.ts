@@ -1,6 +1,9 @@
 import chai, { expect, assert } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('DateIsLessChecker Circuit Test', function () {
   this.timeout(0); // Disable timeout
@@ -66,7 +69,7 @@ describe('DateIsLessChecker Circuit Test', function () {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/tests/utils/isValid_tester.circom'),
       {
-        include: ['node_modules'],
+        include: ['../node_modules'],
       }
     );
   });

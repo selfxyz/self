@@ -3,6 +3,9 @@ import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
 import { customHasher, packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('CustomHasher', function () {
   this.timeout(0);
@@ -20,16 +23,16 @@ describe('CustomHasher', function () {
     );
     circuitCustomHasher = await wasm_tester(circuitPathCustomHasher, {
       include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
+        '../node_modules',
+        '../node_modules/@zk-kit/binary-merkle-root.circom/src',
+        '../node_modules/circomlib/circuits',
       ],
     });
     circuitPackBytesAndPoseidon = await wasm_tester(circuitPathPackBytesAndPoseidon, {
       include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
+        '../node_modules',
+        '../node_modules/@zk-kit/binary-merkle-root.circom/src',
+        '../node_modules/circomlib/circuits',
       ],
     });
   });
