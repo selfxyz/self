@@ -7,20 +7,12 @@ import { formatCountriesList } from '@selfxyz/common/utils/circuits/formatInputs
 import { formatAndUnpackForbiddenCountriesList } from '@selfxyz/common/utils/circuits/formatOutputs';
 import { formatInput } from '@selfxyz/common/utils/circuits/generateInputs';
 import { formatMrz } from '@selfxyz/common/utils/passports/format';
+import { defaultIncludePaths } from '@selfxyz/common/constants/constants';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 
 // Add this helper to replace __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const defaultIncludePaths = [
-  'node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  'node_modules/circomlib/circuits',
-  'node_modules/@zk-email/circuits',
-  'node_modules/circom-dl/circuits',
-  'node_modules/@openpassport/zk-email-circuits',
-];
 
 describe('ProveCountryIsNotInList', function () {
   this.timeout(0);

@@ -540,3 +540,12 @@ qzOBhID0Nxk4k9sW1uT6ocW1xp1SB2WotORssOKIAOLJM8IbPl6n/DkYNcfvyXI7
 export const DEFAULT_RPC_URL = 'https://mainnet.optimism.io';
 export const REGISTER_CONTRACT_ADDRESS = '0x3F346FFdC5d583e4126AF01A02Ac5b9CdB3f1909';
 export const SBT_CONTRACT_ADDRESS = '0x601Fd54FD11C5E77DE84d877e55B829aff20f0A6';
+
+export const defaultIncludePaths = [
+  '../node_modules',
+  '../node_modules/@zk-kit/binary-merkle-root.circom/src',
+  '../node_modules/circomlib/circuits',
+  '../node_modules/@zk-email/circuits',
+  '../node_modules/circom-dl/circuits',
+  '../node_modules/@openpassport/zk-email-circuits',
+];

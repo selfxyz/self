@@ -13,7 +13,7 @@ import { getLeafDscTreeFromParsedDsc } from '@selfxyz/common/utils/trees';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { fullSigAlgs, sigAlgs } from './test_cases.js';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
-import { hashAlgosTypes } from '@selfxyz/common/constants/constants';
+import { defaultIncludePaths, hashAlgosTypes } from '@selfxyz/common/constants/constants';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
@@ -21,15 +21,6 @@ const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs
 // Add this helper to replace __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const defaultIncludePaths = [
-  'node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  'node_modules/circomlib/circuits',
-  'node_modules/@zk-email/circuits',
-  'node_modules/circom-dl/circuits',
-  'node_modules/@openpassport/zk-email-circuits',
-];
 
 testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
   // const passportData = genAndInitMockPassportData(

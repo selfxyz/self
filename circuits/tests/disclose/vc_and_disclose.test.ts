@@ -10,7 +10,11 @@ import { poseidon1, poseidon2 } from 'poseidon-lite';
 import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json' with { type: 'json' };
 import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json' with { type: 'json' };
 import passportNojson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
-import { attributeToPosition, PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
+import {
+  attributeToPosition,
+  defaultIncludePaths,
+  PASSPORT_ATTESTATION_ID,
+} from '@selfxyz/common/constants/constants';
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
@@ -24,15 +28,6 @@ import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 // Add this helper to replace __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const defaultIncludePaths = [
-  'node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  'node_modules/circomlib/circuits',
-  'node_modules/@zk-email/circuits',
-  'node_modules/circom-dl/circuits',
-  'node_modules/@openpassport/zk-email-circuits',
-];
 
 describe('Disclose', function () {
   this.timeout(0);

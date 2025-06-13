@@ -9,7 +9,11 @@ import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/c
 import { sigAlgs, fullSigAlgs } from './test_cases.js';
 import { generateCommitment, generateNullifier } from '@selfxyz/common/utils/passports/passport';
 import { poseidon6 } from 'poseidon-lite';
-import { hashAlgosTypes, ID_CARD_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
+import {
+  defaultIncludePaths,
+  hashAlgosTypes,
+  ID_CARD_ATTESTATION_ID,
+} from '@selfxyz/common/constants/constants';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json' with { type: 'json' };
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
@@ -21,15 +25,6 @@ const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs
 // Add this helper to replace __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const defaultIncludePaths = [
-  'node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  'node_modules/circomlib/circuits',
-  'node_modules/@zk-email/circuits',
-  'node_modules/circom-dl/circuits',
-  'node_modules/@openpassport/zk-email-circuits',
-];
 
 testSuite.forEach(
   ({

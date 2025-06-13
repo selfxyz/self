@@ -13,21 +13,13 @@ import nameAndDobIdCardJson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT
 import nameAndYobIdCardJson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
 import passportNoAndNationalityjson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
+import { defaultIncludePaths } from '@selfxyz/common/constants/constants';
 import { generateCircuitInputsOfac } from '@selfxyz/common/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 
 // Add this helper to replace __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const defaultIncludePaths = [
-  'node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  'node_modules/circomlib/circuits',
-  'node_modules/@zk-email/circuits',
-  'node_modules/circom-dl/circuits',
-  'node_modules/@openpassport/zk-email-circuits',
-];
 
 let circuit: any;
 

@@ -15,6 +15,7 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.json' with { type: 'json' };
 import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
 import passportNojson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
+import { defaultIncludePaths } from '@selfxyz/common/constants/constants';
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
@@ -26,15 +27,6 @@ import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const defaultIncludePaths = [
-  'node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  'node_modules/circomlib/circuits',
-  'node_modules/@zk-email/circuits',
-  'node_modules/circom-dl/circuits',
-  'node_modules/@openpassport/zk-email-circuits',
-];
 
 describe('Disclose', function () {
   this.timeout(0);

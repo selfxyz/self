@@ -4,6 +4,7 @@ import { describe } from 'mocha';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import * as crypto from 'crypto';
+import { defaultIncludePaths } from '@selfxyz/common/constants/constants';
 import { initElliptic } from '@selfxyz/common/utils/certificate_parsing/elliptic';
 import { splitToWords } from '@selfxyz/common/utils/bytes';
 
@@ -73,15 +74,6 @@ const fullTestSuite = [
 // Add this helper to replace __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const defaultIncludePaths = [
-  'node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  'node_modules/circomlib/circuits',
-  'node_modules/@zk-email/circuits',
-  'node_modules/circom-dl/circuits',
-  'node_modules/@openpassport/zk-email-circuits',
-];
 
 describe('ecdsa', () => {
   testSuite.forEach(({ hash, curve, n, k, reason }) => {

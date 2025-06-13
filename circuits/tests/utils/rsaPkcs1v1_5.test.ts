@@ -4,20 +4,12 @@ import { describe } from 'mocha';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { generateMockRsaPkcs1v1_5Inputs } from './generateMockInputsInCircuits.js';
+import { defaultIncludePaths } from '@selfxyz/common/constants/constants';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 
 // Add this helper to replace __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const defaultIncludePaths = [
-  'node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  'node_modules/circomlib/circuits',
-  'node_modules/@zk-email/circuits',
-  'node_modules/circom-dl/circuits',
-  'node_modules/@openpassport/zk-email-circuits',
-];
 
 describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
   this.timeout(0);
