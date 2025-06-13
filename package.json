@@ -6,7 +6,6 @@
     "circuits",
     "contracts",
     "sdk/*",
-    "sdk/tests/*",
     "prover/tests"
   ],
   "scripts": {
