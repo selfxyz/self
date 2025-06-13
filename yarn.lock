@@ -4824,7 +4824,7 @@ __metadata:
     prettier: "npm:^3.3.3"
     snarkjs: "npm:^0.7.5"
     ts-mocha: "npm:^10.0.0"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.4.5"
     typescript-parser: "npm:^2.6.1"
     uuid: "npm:^11.0.5"
   languageName: unknown
