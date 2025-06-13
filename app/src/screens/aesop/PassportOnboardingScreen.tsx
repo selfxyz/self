@@ -52,7 +52,7 @@ const PassportOnboardingScreen: React.FC<
         style={styles.bottomSection}
         backgroundColor={white}
       >
-        <TextsContainer style={styles.textContainer}>
+        <TextsContainer marginBottom={10}>
           <View style={styles.textIconWrapper}>
             <Scan
               style={styles.scanIcon}
@@ -109,9 +109,6 @@ const styles = StyleSheet.create({
   },
   scanIcon: {
     marginRight: 10,
-  },
-  textContainer: {
-    marginBottom: 10,
   },
   bottomSection: {
     paddingBottom: 32,

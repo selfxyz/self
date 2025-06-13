@@ -13,7 +13,8 @@ const extraNodeModules = {
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
 };
-const watchFolders = [path.resolve(path.join(__dirname, '../ui')),
+const watchFolders = [
+  path.resolve(path.join(__dirname, '../ui')),
   path.resolve(commonPath),
   trueMonorepoNodeModules,
   path.join(__dirname, 'src'),

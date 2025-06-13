@@ -3,6 +3,7 @@ import Additional from '@selfxyz/ui/dist/typography/Additional';
 import Description from '@selfxyz/ui/dist/typography/Description';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
 import { black, slate100, white } from '@selfxyz/ui/dist/utils/colors';
+import { impactLight } from '@selfxyz/ui/src/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
@@ -15,7 +16,6 @@ import TextsContainer from '../../components/TextsContainer';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { impactLight } from '@selfxyz/ui/src/utils/haptic';
 
 interface PassportOnboardingScreenProps {}
 
