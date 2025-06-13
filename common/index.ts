@@ -1,5 +1,8 @@
 import { Country3LetterCode as Country3LetterCode1 } from './src/constants/countries.js';
-import { Country3LetterCode as Country3LetterCode2, REDIRECT_URL } from './src/constants/constants.js';
+import {
+  Country3LetterCode as Country3LetterCode2,
+  REDIRECT_URL,
+} from './src/constants/constants.js';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
