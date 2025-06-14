@@ -212,55 +212,55 @@ describe("Self Verification Flow V2", () => {
   // });
 
   describe("Complete V2 Verification Flow", () => {
-    // it("should complete full verification flow with proper proof encoding", async () => {
-    //   // Use the already configured verificationConfigV2 and configId from before hook
-    //   const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
-    //   const user1Address = await deployedActors.user1.getAddress();
-    //   const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
+    it("should complete full verification flow with proper proof encoding", async () => {
+      // Use the already configured verificationConfigV2 and configId from before hook
+      const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+      const user1Address = await deployedActors.user1.getAddress();
+      const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
-    //   const userContextData = ethers.solidityPacked(
-    //     ["bytes32", "bytes32", "bytes32", "bytes"],
-    //     [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData]
-    //   );
+      const userContextData = ethers.solidityPacked(
+        ["bytes32", "bytes32", "bytes32", "bytes"],
+        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData]
+      );
 
-    //   const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
+      const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-    //   const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-    //     ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
-    //     [[
-    //       vcAndDiscloseProof.a,
-    //       vcAndDiscloseProof.b,
-    //       vcAndDiscloseProof.c,
-    //       vcAndDiscloseProof.pubSignals
-    //     ]]
-    //   );
+      const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        [[
+          vcAndDiscloseProof.a,
+          vcAndDiscloseProof.b,
+          vcAndDiscloseProof.c,
+          vcAndDiscloseProof.pubSignals
+        ]]
+      );
 
-    //   const proofData = ethers.solidityPacked(
-    //     ["bytes32", "bytes"],
-    //     [attestationId, encodedProof]
-    //   );
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes"],
+        [attestationId, encodedProof]
+      );
 
-    //   await deployedActors.testSelfVerificationRoot.resetTestState();
+      await deployedActors.testSelfVerificationRoot.resetTestState();
 
-    //   const tx = await deployedActors.testSelfVerificationRoot.verifySelfProof(
-    //     proofData,
-    //     userContextData
-    //   );
+      const tx = await deployedActors.testSelfVerificationRoot.verifySelfProof(
+        proofData,
+        userContextData
+      );
 
-    //   await expect(tx).to.emit(deployedActors.testSelfVerificationRoot, "VerificationCompleted");
+      await expect(tx).to.emit(deployedActors.testSelfVerificationRoot, "VerificationCompleted");
 
-    //   expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.true;
+      expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.true;
 
-    //   const lastOutput = await deployedActors.testSelfVerificationRoot.lastOutput();
-    //   expect(lastOutput).to.not.equal("0x");
+      const lastOutput = await deployedActors.testSelfVerificationRoot.lastOutput();
+      expect(lastOutput).to.not.equal("0x");
 
-    //   const expectedUserData = ethers.solidityPacked(
-    //     ["bytes32", "bytes"],
-    //     [ethers.zeroPadValue(user1Address, 32), userData]
-    //   );
-    //   const actualUserData = await deployedActors.testSelfVerificationRoot.lastUserData();
-    //   expect(actualUserData).to.equal(expectedUserData);
-    // });
+      const expectedUserData = ethers.solidityPacked(
+        ["bytes32", "bytes"],
+        [ethers.zeroPadValue(user1Address, 32), userData]
+      );
+      const actualUserData = await deployedActors.testSelfVerificationRoot.lastUserData();
+      expect(actualUserData).to.equal(expectedUserData);
+    });
 
     it("should fail verification with invalid length of proofData", async () => {
       // Use the already configured verificationConfigV2 and configId from before hook
