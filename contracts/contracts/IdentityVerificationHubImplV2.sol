@@ -340,7 +340,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         {
             bytes memory config = _getVerificationConfigById(configId);
 
-            bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData), userContextData);
+            bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData), userContextData, userIdentifier);
 
             SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(
                 header.attestationId,
@@ -650,7 +650,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _basicVerification(
         SelfStructs.HubInputHeader memory header,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        bytes calldata userContextData
+        bytes calldata userContextData,
+        uint256 userIdentifier
     ) internal returns (bytes memory output) {
         // Scope 1: Basic checks (scope and user identifier)
         {
@@ -672,7 +673,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Scope 4: Create and return output
         {
             CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
-            return _createVerificationOutput(header.attestationId, vcAndDiscloseProof, indices);
+            return _createVerificationOutput(header.attestationId, vcAndDiscloseProof, indices, userIdentifier);
         }
     }
 
@@ -767,12 +768,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _createVerificationOutput(
         bytes32 attestationId,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        CircuitConstantsV2.DiscloseIndices memory indices
+        CircuitConstantsV2.DiscloseIndices memory indices,
+        uint256 userIdentifier
     ) internal pure returns (bytes memory) {
         if (attestationId == AttestationId.E_PASSPORT) {
-            return _createPassportOutput(vcAndDiscloseProof, indices, attestationId);
+            return _createPassportOutput(vcAndDiscloseProof, indices, attestationId, userIdentifier);
         } else if (attestationId == AttestationId.EU_ID_CARD) {
-            return _createEuIdOutput(vcAndDiscloseProof, indices, attestationId);
+            return _createEuIdOutput(vcAndDiscloseProof, indices, attestationId, userIdentifier);
         } else {
             revert InvalidAttestationId();
         }
@@ -784,11 +786,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _createPassportOutput(
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices,
-        bytes32 attestationId
+        bytes32 attestationId,
+        uint256 userIdentifier
     ) internal pure returns (bytes memory) {
         SelfStructs.PassportOutput memory passportOutput;
         passportOutput.attestationId = uint256(attestationId);
-        passportOutput.userIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+        passportOutput.userIdentifier = userIdentifier;
         passportOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
 
         // Extract revealed data
@@ -812,11 +815,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _createEuIdOutput(
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices,
-        bytes32 attestationId
+        bytes32 attestationId,
+        uint256 userIdentifier
     ) internal pure returns (bytes memory) {
         SelfStructs.EuIdOutput memory euIdOutput;
         euIdOutput.attestationId = uint256(attestationId);
-        euIdOutput.userIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
+        euIdOutput.userIdentifier = userIdentifier;
         euIdOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
 
         // Extract revealed data
