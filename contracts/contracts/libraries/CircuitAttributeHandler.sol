@@ -12,7 +12,7 @@ library CircuitAttributeHandler {
     /**
      * @dev Reverts when the provided character codes array does not contain enough data to extract an attribute.
      */
-    error INSUFFICIENT_CHARCODE_LEN();
+    error InsufficientCharcodeLen();
 
     // Define constant start and end positions for each attribute
     uint256 private constant ISSUING_STATE_START = 2;
@@ -179,7 +179,7 @@ library CircuitAttributeHandler {
 
     /**
      * @notice Extracts a substring from a specified range in the byte array.
-     * @dev Reverts with INSUFFICIENT_CHARCODE_LEN if the byte array's length is insufficient.
+     * @dev Reverts with InsufficientCharcodeLen if the byte array's length is insufficient.
      * @param charcodes The byte array containing the encoded passport attribute.
      * @param start The starting index (inclusive) of the attribute in the byte array.
      * @param end The ending index (inclusive) of the attribute in the byte array.
@@ -191,7 +191,7 @@ library CircuitAttributeHandler {
         uint256 end
     ) internal pure returns (string memory) {
         if (charcodes.length <= end) {
-            revert INSUFFICIENT_CHARCODE_LEN();
+            revert InsufficientCharcodeLen();
         }
         bytes memory attributeBytes = new bytes(end - start + 1);
         for (uint256 i = start; i <= end; i++) {

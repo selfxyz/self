@@ -29,19 +29,20 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
     ) SelfVerificationRoot(identityVerificationHubV2Address, scopeValue) {}
 
     /**
-     * @notice Implementation of onVerificationSuccess for testing
-     * @param verificationData The verification output from the hub
-     * @param userDefinedData The user data passed through verification
+     * @notice Implementation of customVerificationHook for testing
+     * @dev This function is called by onVerificationSuccess after hub address validation
+     * @param output The verification output from the hub
+     * @param userData The user data passed through verification
      */
-    function onVerificationSuccess(
-        bytes memory verificationData,
-        bytes memory userDefinedData
-    ) public override {
+    function customVerificationHook(
+        bytes memory output,
+        bytes memory userData
+    ) internal override {
         verificationSuccessful = true;
-        lastOutput = verificationData;
-        lastUserData = userDefinedData;
+        lastOutput = output;
+        lastUserData = userData;
 
-        emit VerificationCompleted(verificationData, userDefinedData);
+        emit VerificationCompleted(output, userData);
     }
 
     /**
@@ -59,5 +60,19 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
      */
     function setScope(uint256 newScope) external {
         _setScope(newScope);
+    }
+
+    /**
+     * @notice Test function to simulate calling onVerificationSuccess from hub
+     * @dev This function is only for testing purposes to verify access control
+     * @param output The verification output
+     * @param userData The user data
+     */
+    function testOnVerificationSuccess(
+        bytes memory output,
+        bytes memory userData
+    ) external {
+        // This should fail if called by anyone other than the hub
+        onVerificationSuccess(output, userData);
     }
 }

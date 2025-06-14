@@ -14,7 +14,7 @@ library CircuitAttributeHandlerV2 {
     /**
      * @dev Reverts when the provided character codes array does not contain enough data to extract an attribute.
      */
-    error INSUFFICIENT_CHARCODE_LEN();
+    error InsufficientCharcodeLen();
 
     /**
      * @notice Structure containing field positions for a specific attestation type.
@@ -295,7 +295,7 @@ library CircuitAttributeHandlerV2 {
         uint256 end
     ) internal pure returns (string memory) {
         if (charcodes.length <= end) {
-            revert INSUFFICIENT_CHARCODE_LEN();
+            revert InsufficientCharcodeLen();
         }
         bytes memory attributeBytes = new bytes(end - start + 1);
         for (uint256 i = start; i <= end; i++) {

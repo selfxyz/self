@@ -79,6 +79,9 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Triggered when the provided bytes data doesn't have the expected format
     error InvalidDataFormat();
 
+    /// @notice Error thrown when onVerificationSuccess is called by an unauthorized address
+    /// @dev Only the identity verification hub V2 contract can call onVerificationSuccess
+    error UnauthorizedCaller();
 
     // ====================================================
     // Events
@@ -187,7 +190,27 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     function onVerificationSuccess(
         bytes memory output,
         bytes memory userData
-    ) public virtual {
+    ) public {
+        // Only allow the identity verification hub V2 to call this function
+        if (msg.sender != address(_identityVerificationHubV2)) {
+            revert UnauthorizedCaller();
+        }
+
+        // Call the customizable verification hook
+        customVerificationHook(output, userData);
+    }
+
+    /**
+     * @notice Custom verification hook that can be overridden by implementing contracts
+     * @dev This function is called after successful verification and hub address validation
+     * @param output The verification output data from the hub
+     * @param userData The user-defined data passed through the verification process
+     */
+    function customVerificationHook(
+        bytes memory output,
+        bytes memory userData
+    ) internal virtual {
+        // Default implementation is empty - override in derived contracts to add custom logic
     }
 
 }

@@ -8,10 +8,10 @@ import {Formatter} from "./Formatter.sol";
 import {GenericFormatter} from "./GenericFormatter.sol";
 
 library CustomVerifier {
-  error INVALID_ATTESTATION_ID();
-  error INVALID_OFAC();
-  error INVALID_FORBIDDEN_COUNTRIES();
-  error INVALID_OLDER_THAN();
+  error InvalidAttestationId();
+  error InvalidOfac();
+  error InvalidForbiddenCountries();
+  error InvalidOlderThan();
 
   /**
    * @dev Verifies the configuration of the custom verifier.
@@ -28,7 +28,7 @@ library CustomVerifier {
       SelfStructs.EuIdOutput memory idCardOutput = abi.decode(proofOutput, (SelfStructs.EuIdOutput));
       return CustomVerifier.verifyIdCard(verificationConfig, idCardOutput);
     } else {
-      revert INVALID_ATTESTATION_ID();
+      revert InvalidAttestationId();
     }
   }
 
@@ -45,13 +45,13 @@ library CustomVerifier {
         verificationConfig.ofacEnabled[1],
         verificationConfig.ofacEnabled[2]
       )) {
-        revert INVALID_OFAC();
+        revert InvalidOfac();
       }
     }
     if (verificationConfig.forbiddenCountriesEnabled) {
       for (uint256 i = 0; i < 4; i++) {
         if (passportOutput.forbiddenCountriesListPacked[i] != verificationConfig.forbiddenCountriesListPacked[i]) {
-          revert INVALID_FORBIDDEN_COUNTRIES();
+          revert InvalidForbiddenCountries();
         }
       }
     }
@@ -62,7 +62,7 @@ library CustomVerifier {
         passportOutput.revealedDataPacked,
         verificationConfig.olderThan
       )) {
-        revert INVALID_OLDER_THAN();
+        revert InvalidOlderThan();
       }
     }
 
@@ -99,14 +99,14 @@ library CustomVerifier {
         verificationConfig.ofacEnabled[0],
         verificationConfig.ofacEnabled[1]
       )) {
-        revert INVALID_OFAC();
+        revert InvalidOfac();
       }
     }
 
     if (verificationConfig.forbiddenCountriesEnabled) {
       for (uint256 i = 0; i < 4; i++) {
         if (idCardOutput.forbiddenCountriesListPacked[i] != verificationConfig.forbiddenCountriesListPacked[i]) {
-          revert INVALID_FORBIDDEN_COUNTRIES();
+          revert InvalidForbiddenCountries();
         }
       }
     }
@@ -117,7 +117,7 @@ library CustomVerifier {
         idCardOutput.revealedDataPacked,
         verificationConfig.olderThan
       )) {
-        revert INVALID_OLDER_THAN();
+        revert InvalidOlderThan();
       }
     }
 

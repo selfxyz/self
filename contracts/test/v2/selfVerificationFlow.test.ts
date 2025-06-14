@@ -137,103 +137,100 @@ describe("Self Verification Flow V2", () => {
     // });
   });
 
-  describe("V2 Verification Configuration", () => {
-    // it("should set verification config V2", async () => {
-    //   const verificationConfigV2 = {
-    //     olderThanEnabled: true,
-    //     olderThan: "20",
-    //     forbiddenCountriesEnabled: true,
-    //     forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
-    //     ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
-    //   };
+  // describe("V2 Verification Configuration", () => {
+  //   it("should set verification config V2", async () => {
+  //     const verificationConfigV2 = {
+  //       olderThanEnabled: true,
+  //       olderThan: "20",
+  //       forbiddenCountriesEnabled: true,
+  //       forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+  //       ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
+  //     };
 
-    //   const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+  //     const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
 
-    //   await expect(deployedActors.hub.setVerificationConfigV2(verificationConfigV2))
-    //     .to.emit(deployedActors.hub, "VerificationConfigV2Set")
-    //     .withArgs(configId, Object.values(verificationConfigV2));
-    // });
+  //     await expect(deployedActors.hub.setVerificationConfigV2(verificationConfigV2))
+  //       .to.emit(deployedActors.hub, "VerificationConfigV2Set")
+  //       .withArgs(configId, Object.values(verificationConfigV2));
+  //   });
 
-    // it("should check if verification config exists", async () => {
-    //   const verificationConfigV2 = {
-    //     olderThanEnabled: true,
-    //     olderThan: "20",
-    //     forbiddenCountriesEnabled: false,
-    //     forbiddenCountriesListPacked: [0n, 0n, 0n, 0n] as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
-    //     ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
-    //   };
+  //   it("should check if verification config exists", async () => {
+  //     const verificationConfigV2 = {
+  //       olderThanEnabled: true,
+  //       olderThan: "20",
+  //       forbiddenCountriesEnabled: false,
+  //       forbiddenCountriesListPacked: [0n, 0n, 0n, 0n] as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+  //       ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
+  //     };
 
-    //   const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+  //     const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
 
-    //   expect(await deployedActors.hub.verificationConfigV2Exists(configId)).to.be.false;
+  //     expect(await deployedActors.hub.verificationConfigV2Exists(configId)).to.be.false;
 
-    //   await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
+  //     await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
 
-    //   expect(await deployedActors.hub.verificationConfigV2Exists(configId)).to.be.true;
-    // });
-  });
+  //     expect(await deployedActors.hub.verificationConfigV2Exists(configId)).to.be.true;
+  //   });
+  // });
 
-  describe("Self Verification Root Functions", () => {
-    // it("should allow scope changes", async () => {
-    //   const newScope = hashEndpointWithScope("example.com", "new-scope");
+  // describe("Self Verification Root Functions", () => {
+  //   it("should allow scope changes", async () => {
+  //     const newScope = hashEndpointWithScope("example.com", "new-scope");
 
-    //   await expect(deployedActors.testSelfVerificationRoot.setScope(newScope))
-    //     .to.emit(deployedActors.testSelfVerificationRoot, "ScopeUpdated")
-    //     .withArgs(newScope);
+  //     await expect(deployedActors.testSelfVerificationRoot.setScope(newScope))
+  //       .to.emit(deployedActors.testSelfVerificationRoot, "ScopeUpdated")
+  //       .withArgs(newScope);
 
-    //   expect(await deployedActors.testSelfVerificationRoot.scope()).to.equal(newScope);
-    // });
+  //     expect(await deployedActors.testSelfVerificationRoot.scope()).to.equal(newScope);
+  //   });
 
-    // it("should reset test state", async () => {
-    //   await deployedActors.testSelfVerificationRoot.resetTestState();
+  //   it("should reset test state", async () => {
+  //     await deployedActors.testSelfVerificationRoot.resetTestState();
 
-    //   expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.false;
-    //   expect(await deployedActors.testSelfVerificationRoot.lastOutput()).to.equal("0x");
-    //   expect(await deployedActors.testSelfVerificationRoot.lastUserData()).to.equal("0x");
-    // });
-  });
+  //     expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.false;
+  //     expect(await deployedActors.testSelfVerificationRoot.lastOutput()).to.equal("0x");
+  //     expect(await deployedActors.testSelfVerificationRoot.lastUserData()).to.equal("0x");
+  //   });
 
-  describe("Mock Self Verification Flow", () => {
-    // it("should demonstrate self verification interface", async () => {
-    //   const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
-    //   const mockProofData = ethers.solidityPacked(
-    //     ["bytes32", "bytes"],
-    //     [attestationId, "0x1234567890abcdef"]
-    //   );
+  //   it("should only allow hub contract to call onVerificationSuccess", async () => {
+  //     const mockOutput = ethers.toUtf8Bytes("mock-verification-output");
+  //     const mockUserData = ethers.toUtf8Bytes("mock-user-data");
 
-    //   const configId = ethers.keccak256(ethers.toUtf8Bytes("mock-config"));
-    //   const destChainId = ethers.zeroPadValue(ethers.toBeHex(1), 32);
-    //   const userIdentifier = ethers.zeroPadValue(ethers.toBeHex(12345), 32);
-    //   const userData = ethers.toUtf8Bytes("test-user-data");
+  //     // Should fail when called by non-hub address using testOnVerificationSuccess method
+  //     await expect(
+  //       (deployedActors.testSelfVerificationRoot as any).testOnVerificationSuccess(mockOutput, mockUserData)
+  //     ).to.be.revertedWithCustomError(deployedActors.testSelfVerificationRoot, "UnauthorizedCaller");
 
-    //   const additionalData = ethers.solidityPacked(
-    //     ["bytes32", "bytes32", "bytes32", "bytes"],
-    //     [configId, destChainId, userIdentifier, userData]
-    //   );
+  //     // Should also fail when called directly by any other address
+  //     await expect(
+  //       (deployedActors.testSelfVerificationRoot.connect(deployedActors.user1) as any).testOnVerificationSuccess(mockOutput, mockUserData)
+  //     ).to.be.revertedWithCustomError(deployedActors.testSelfVerificationRoot, "UnauthorizedCaller");
+  //   });
+  // });
 
-    //   await expect(
-    //     deployedActors.testSelfVerificationRoot.verifySelfProof(mockProofData, additionalData)
-    //   ).to.be.reverted;
-    // });
+  // describe("Mock Self Verification Flow", () => {
+  //   it("should demonstrate self verification interface", async () => {
+  //     const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
+  //     const mockProofData = ethers.solidityPacked(
+  //       ["bytes32", "bytes"],
+  //       [attestationId, "0x1234567890abcdef"]
+  //     );
 
-    // it("should test onVerificationSuccess callback", async () => {
-    //   const mockOutput = ethers.toUtf8Bytes("mock-verification-output");
-    //   const mockUserData = ethers.toUtf8Bytes("mock-user-data");
+  //     const configId = ethers.keccak256(ethers.toUtf8Bytes("mock-config"));
+  //     const destChainId = ethers.zeroPadValue(ethers.toBeHex(1), 32);
+  //     const userIdentifier = ethers.zeroPadValue(ethers.toBeHex(12345), 32);
+  //     const userData = ethers.toUtf8Bytes("test-user-data");
 
-    //   await expect(
-    //     deployedActors.testSelfVerificationRoot.onVerificationSuccess(mockOutput, mockUserData)
-    //   ).to.emit(deployedActors.testSelfVerificationRoot, "VerificationCompleted")
-    //     .withArgs(mockOutput, mockUserData);
+  //     const additionalData = ethers.solidityPacked(
+  //       ["bytes32", "bytes32", "bytes32", "bytes"],
+  //       [configId, destChainId, userIdentifier, userData]
+  //     );
 
-    //   expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.true;
-    //   expect(await deployedActors.testSelfVerificationRoot.lastOutput()).to.equal(
-    //     ethers.hexlify(mockOutput)
-    //   );
-    //   expect(await deployedActors.testSelfVerificationRoot.lastUserData()).to.equal(
-    //     ethers.hexlify(mockUserData)
-    //   );
-    // });
-  });
+  //     await expect(
+  //       deployedActors.testSelfVerificationRoot.verifySelfProof(mockProofData, additionalData)
+  //     ).to.be.reverted;
+  //   });
+  // });
 
   describe("Complete V2 Verification Flow", () => {
     it("should complete full verification flow with proper proof encoding", async () => {
@@ -322,7 +319,7 @@ describe("Self Verification Flow V2", () => {
 
     //   const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
     //   const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-    //     ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
+    //     ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
     //     [[
     //       vcAndDiscloseProof.a,
     //       vcAndDiscloseProof.b,
@@ -367,7 +364,7 @@ describe("Self Verification Flow V2", () => {
 
     //   const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
     //   const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-    //     ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
+    //     ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
     //     [[
     //       vcAndDiscloseProof.a,
     //       vcAndDiscloseProof.b,
