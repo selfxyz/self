@@ -29,7 +29,7 @@ interface ISelfVerificationRoot {
 
     function verifySelfProof(
         bytes calldata proofData,
-        bytes calldata additionalData
+        bytes calldata userContextData
     ) external;
 
     function onVerificationSuccess(

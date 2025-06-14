@@ -240,6 +240,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     dsc: dscVerifier,
     dscId: DscVerifierId.dsc_sha256_rsa_65537_4096,
     testSelfVerificationRoot: testSelfVerificationRoot,
+    customVerifier: customVerifier,
     owner: owner as any,
     user1: user1 as any,
     user2: user2 as any,

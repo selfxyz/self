@@ -135,7 +135,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
      * @param proofData Packed data from relayer in format: | 32 bytes attestationId | proof data |
-     * @param additionalData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+     * @param userContextData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
      */
     /*
         - Extract userIdentifier from userDefinedData
@@ -145,12 +145,12 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         - Call onVerificationSuccess
 
         proofData = | 32 bytes attestationId | proofData |
-        additionalData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+        userContextData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
         hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
     function verifySelfProof(
         bytes calldata proofData,
-        bytes calldata additionalData
+        bytes calldata userContextData
     ) public {
         // Minimum expected length for proofData: 32 bytes attestationId + proof data
         if (proofData.length < 32) {
@@ -158,7 +158,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         }
 
         // Minimum userDefinedData length: 32 (configId) + 32 (destChainId) + 32 (userIdentifier) = 96 bytes
-        if (additionalData.length < 96) {
+        if (userContextData.length < 96) {
             revert InvalidDataFormat();
         }
 
@@ -183,10 +183,9 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         );
 
         // Call hub V2 verification
-        _identityVerificationHubV2.verify(hubData, additionalData);
+        _identityVerificationHubV2.verify(hubData, userContextData);
     }
 
-    // TODO: need to consider about how to protect onVerificationSuccess is only called by hub contract.
     function onVerificationSuccess(
         bytes memory output,
         bytes memory userData

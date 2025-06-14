@@ -125,6 +125,18 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     error CrossChainIsNotSupportedYet();
 
+    /// @notice Thrown when the input data is too short for decoding.
+    /// @dev The input data must be at least 97 bytes (1 + 31 + 32 + 32 + 1 minimum).
+    error InputTooShort();
+
+    /// @notice Thrown when the user context data is too short for decoding.
+    /// @dev The user context data must be at least 96 bytes (32 + 32 + 32 minimum).
+    error UserContextDataTooShort();
+
+    /// @notice Thrown when the user identifier hash does not match the proof user identifier.
+    /// @dev Ensures that the user context data hash matches the user identifier in the proof.
+    error InvalidUserIdentifierInProof();
+
     // ====================================================
     // Input Format Structs
     // ====================================================
@@ -208,7 +220,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // ====================================================
 
     function _decodeInput(bytes calldata input) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
-        require(input.length >= 97, "Input too short"); // 1 + 31 + 32 + 32 = 96 bytes minimum
+        if (input.length < 97) {
+            revert InputTooShort();
+        }
         header.contractVersion = uint8(input[0]);
         header.scope = uint256(bytes32(input[32:64]));
         header.attestationId = bytes32(input[64:96]);
@@ -216,24 +230,26 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Decodes userDefinedData to extract configId, destChainId, and userIdentifier
-     * @param userDefinedData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+     * @notice Decodes userContextData to extract configId, destChainId, and userIdentifier
+     * @param userContextData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
      * @return configId The configuration identifier
      * @return destChainId The destination chain identifier
      * @return userIdentifier The user identifier
      * @return remainingData The remaining data after the first 96 bytes
      */
-    function _decodeAdditionalData(bytes calldata userDefinedData) internal pure returns (
+    function _decodeUserContextData(bytes calldata userContextData) internal pure returns (
         bytes32 configId,
         uint256 destChainId,
         uint256 userIdentifier,
         bytes calldata remainingData
     ) {
-        require(userDefinedData.length >= 96, "UserDefinedData too short");
-        configId = bytes32(userDefinedData[0:32]);
-        destChainId = uint256(bytes32(userDefinedData[32:64]));
-        userIdentifier = uint256(bytes32(userDefinedData[64:96]));
-        remainingData = userDefinedData[96:];
+        if (userContextData.length < 96) {
+            revert UserContextDataTooShort();
+        }
+        configId = bytes32(userContextData[0:32]);
+        destChainId = uint256(bytes32(userContextData[32:64]));
+        userIdentifier = uint256(bytes32(userContextData[64:96]));
+        remainingData = userContextData[96:];
     }
 
     /**
@@ -284,12 +300,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function verify(
         bytes calldata input,
-        bytes calldata additionalData
+        bytes calldata userContextData
     ) external virtual onlyProxy {
         (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(input);
 
         // Perform verification and get output along with user data
-        (bytes memory output, uint256 destChainId, bytes memory userDataToPass) = _executeVerificationFlow(header, proofData, additionalData);
+        (bytes memory output, uint256 destChainId, bytes memory userDataToPass) = _executeVerificationFlow(header, proofData, userContextData);
 
         // Use destChainId and userDataToPass returned from _executeVerificationFlow
         _handleVerificationResult(destChainId, output, userDataToPass);
@@ -310,21 +326,21 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _executeVerificationFlow(
         SelfStructs.HubInputHeader memory header,
         bytes memory proofData,
-        bytes calldata additionalData
+        bytes calldata userContextData
     ) internal returns (bytes memory output, uint256 destChainId, bytes memory userDataToPass) {
         bytes32 configId;
         uint256 userIdentifier;
         bytes calldata remainingData;
         {
             uint256 _destChainId;
-            (configId, _destChainId, userIdentifier, remainingData) = _decodeAdditionalData(additionalData);
+            (configId, _destChainId, userIdentifier, remainingData) = _decodeUserContextData(userContextData);
             destChainId = _destChainId;
         }
 
         {
             bytes memory config = _getVerificationConfigById(configId);
 
-            bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData), additionalData);
+            bytes memory proofOutput = _basicVerification(header, _decodeVcAndDiscloseProof(proofData), userContextData);
 
             SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = CustomVerifier.customVerify(
                 header.attestationId,
@@ -634,13 +650,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _basicVerification(
         SelfStructs.HubInputHeader memory header,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
-        bytes calldata additionalData
+        bytes calldata userContextData
     ) internal returns (bytes memory output) {
         // Scope 1: Basic checks (scope and user identifier)
         {
             CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
             _performScopeCheck(header.scope, vcAndDiscloseProof, indices);
-            _performUserIdentifierCheck(additionalData, vcAndDiscloseProof, header.attestationId, indices);
+            _performUserIdentifierCheck(userContextData, vcAndDiscloseProof, header.attestationId, indices);
         }
 
         // Scope 2: Root and date checks
@@ -826,7 +842,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @notice Performs user identifier validation
      */
     function _performUserIdentifierCheck(
-        bytes calldata additionalData,
+        bytes calldata userContextData,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
         bytes32 attestationId,
         CircuitConstantsV2.DiscloseIndices memory indices
@@ -834,10 +850,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Get the user identifier index for this attestation type
         uint256 proofUserIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
 
-        bytes32 sha256Hash = sha256(additionalData);
+        bytes32 sha256Hash = sha256(userContextData);
         bytes20 ripemdHash = ripemd160(abi.encodePacked(sha256Hash));
         uint256 hashedValue = uint256(uint160(ripemdHash));
 
-        require(hashedValue == proofUserIdentifier, "UserIdentifier hash mismatch");
+        if (hashedValue != proofUserIdentifier) {
+            revert InvalidUserIdentifierInProof();
+        }
     }
 }

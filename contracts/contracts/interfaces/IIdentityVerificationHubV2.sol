@@ -88,7 +88,7 @@ interface IIdentityVerificationHubV2 {
 
     function verify(
         bytes calldata input,
-        bytes calldata userDefinedData
+        bytes calldata userContextData
     ) external;
 
     /**

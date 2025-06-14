@@ -73,6 +73,7 @@ export interface DeployedActorsV2 {
   dsc: DscVerifier;
   dscId: DscVerifierId;
   testSelfVerificationRoot: TestSelfVerificationRoot;
+  customVerifier: any;
   owner: Signer;
   user1: Signer;
   user2: Signer;

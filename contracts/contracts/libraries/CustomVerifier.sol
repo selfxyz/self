@@ -9,7 +9,7 @@ import {GenericFormatter} from "./GenericFormatter.sol";
 
 library CustomVerifier {
   error InvalidAttestationId();
-  error InvalidOfac();
+  error InvalidOfacCheck();
   error InvalidForbiddenCountries();
   error InvalidOlderThan();
 
@@ -45,7 +45,7 @@ library CustomVerifier {
         verificationConfig.ofacEnabled[1],
         verificationConfig.ofacEnabled[2]
       )) {
-        revert InvalidOfac();
+        revert InvalidOfacCheck();
       }
     }
     if (verificationConfig.forbiddenCountriesEnabled) {
@@ -99,7 +99,7 @@ library CustomVerifier {
         verificationConfig.ofacEnabled[0],
         verificationConfig.ofacEnabled[1]
       )) {
-        revert InvalidOfac();
+        revert InvalidOfacCheck();
       }
     }
 
