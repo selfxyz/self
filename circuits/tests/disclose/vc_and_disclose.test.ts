@@ -19,6 +19,9 @@ import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circui
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 describe('Disclose', function () {
   this.timeout(0);
@@ -67,9 +70,9 @@ describe('Disclose', function () {
       path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
       {
         include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
+          '../node_modules',
+          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
+          '../node_modules/circomlib/circuits',
         ],
       }
     );

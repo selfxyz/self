@@ -8,6 +8,7 @@ import { v4 } from 'uuid';
 import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
+import { ProofEvents } from '../../consts/analytics';
 import { navigationRef } from '../../navigation';
 import { unsafe_getPrivateKey } from '../../providers/authProvider';
 import {
@@ -17,6 +18,7 @@ import {
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
+import analytics from '../analytics';
 import { getPublicKey, verifyAttestation } from './attest';
 import {
   generateTEEInputsDisclose,
@@ -38,6 +40,8 @@ import {
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
+
+const { trackEvent } = analytics();
 
 const provingMachine = createMachine({
   id: 'proving',
@@ -385,6 +389,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         } else if (data.status === 4) {
           socket?.disconnect();
           set({ socketConnection: null });
+          if (get().circuitType === 'register') {
+            trackEvent(ProofEvents.REGISTER_COMPLETED);
+          }
           actor!.send({ type: 'PROVE_SUCCESS' });
         }
       });
@@ -589,6 +596,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             );
           if (isRegistered) {
             reStorePassportDataWithRightCSCA(passportData, csca as string);
+            trackEvent(ProofEvents.ALREADY_REGISTERED);
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;
           }

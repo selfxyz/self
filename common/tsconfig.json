@@ -11,10 +11,11 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "NodeNext",
-    "baseUrl": "./src",
+    "baseUrl": "./",
+    "composite": true,
   },
   "include": [
-    "src/**/*",
+    "src/**/*", "index.ts",
   ],
   "exclude": [
     "dist",

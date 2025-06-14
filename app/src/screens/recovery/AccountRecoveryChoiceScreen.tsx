@@ -76,6 +76,7 @@ const AccountRecoveryChoiceScreen: React.FC<
       }
       reStorePassportDataWithRightCSCA(passportData, csca as string);
       trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
+      trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
       onRestoreFromCloudNext();
       setRestoring(false);
     } catch (e: any) {

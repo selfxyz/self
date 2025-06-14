@@ -12,14 +12,14 @@
       "types": "./dist/esm/index.d.ts"
     },
     "./constants/*": {
-      "import": "./dist/esm/constants/*.js",
-      "require": "./dist/cjs/constants/*.js",
-      "types": "./dist/esm/constants/*.d.ts"
+      "import": "./dist/esm/src/constants/*.js",
+      "require": "./dist/cjs/src/constants/*.js",
+      "types": "./dist/esm/src/constants/*.d.ts"
     },
     "./utils/*": {
-      "import": "./dist/esm/utils/*.js",
-      "require": "./dist/cjs/utils/*.js",
-      "types": "./dist/esm/utils/*.d.ts"
+      "import": "./dist/esm/src/utils/*.js",
+      "require": "./dist/cjs/src/utils/*.js",
+      "types": "./dist/esm/src/utils/*.d.ts"
     },
     "./ofacdata/outputs/nameAndDobSMT.json": "./ofacdata/outputs/nameAndDobSMT.json",
     "./ofacdata/outputs/nameAndYobSMT.json": "./ofacdata/outputs/nameAndYobSMT.json",
@@ -80,6 +80,6 @@
     "mocha": "^10.7.3",
     "prettier": "^3.3.3",
     "ts-mocha": "^10.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.4.5"
   }
 }

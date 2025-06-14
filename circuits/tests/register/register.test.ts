@@ -13,6 +13,10 @@ import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genM
 import { generateCommitment, generateNullifier } from '@selfxyz/common/utils/passports/passport';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { fullSigAlgs, sigAlgs } from './test_cases.js';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
@@ -58,9 +62,9 @@ testSuite.forEach(
           ),
           {
             include: [
-              'node_modules',
-              './node_modules/@zk-kit/binary-merkle-root.circom/src',
-              './node_modules/circomlib/circuits',
+              '../node_modules',
+              '../node_modules/@zk-kit/binary-merkle-root.circom/src',
+              '../node_modules/circomlib/circuits',
             ],
           }
         );
