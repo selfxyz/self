@@ -4,7 +4,7 @@ import { generateVcAndDiscloseIdProof, getSMTs } from "../utils/generateProof";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { BigNumberish } from "ethers";
-import { generateRandomFieldElement } from "../utils/utils";
+import { generateRandomFieldElement, getStartOfDayTimestamp } from "../utils/utils";
 import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
 import { countries } from "@selfxyz/common/constants/countries";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
@@ -15,10 +15,18 @@ import { createHash } from "crypto";
 import { ID_CARD_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
 import { genMockIdDocAndInitDataParsing } from "@selfxyz/common/utils/passports/genMockIdDoc";
 
+// Helper function to calculate user identifier hash (same as passport test)
+function calculateUserIdentifierHash(userContextData: string): string {
+  const sha256Hash = createHash('sha256').update(Buffer.from(userContextData.slice(2), 'hex')).digest();
+  const ripemdHash = createHash('ripemd160').update(sha256Hash).digest();
+  return '0x' + ripemdHash.toString('hex').padStart(40, '0');
+}
+
 describe("Self Verification Flow V2 - ID Card", () => {
   let deployedActors: DeployedActorsV2;
   let snapshotId: string;
   let baseVcAndDiscloseProof: any;
+  let pristineBaseVcAndDiscloseProof: any;
   let vcAndDiscloseProof: any;
   let registerSecret: any;
   let imt: any;
@@ -31,17 +39,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
   let verificationConfigV2: any;
   let configId: string;
 
-  function calculateUserIdentifierHash(userContextData: string): string {
-    const sha256Hash = createHash('sha256').update(Buffer.from(userContextData.slice(2), 'hex')).digest();
-    const ripemdHash = createHash('ripemd160').update(sha256Hash).digest();
-    return '0x' + ripemdHash.toString('hex').padStart(40, '0');
-  }
-
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
-
-    // Take snapshot after deployment and balance setting
-    snapshotId = await ethers.provider.send("evm_snapshot", []);
 
     // Generate mock ID card data
     mockIdCardData = genMockIdDocAndInitDataParsing({
@@ -54,12 +53,11 @@ describe("Self Verification Flow V2 - ID Card", () => {
       expiryDate: '321231',
     });
 
-    const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
-
     registerSecret = generateRandomFieldElement();
     nullifier = generateRandomFieldElement();
     commitment = generateCommitment(registerSecret, ID_CARD_ATTESTATION_ID.toString(), mockIdCardData);
 
+    const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
     await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
       attestationIdBytes32,
       nullifier,
@@ -73,6 +71,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
     );
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+    // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until version 3
     const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
     imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(commitment));
@@ -128,10 +127,35 @@ describe("Self Verification Flow V2 - ID Card", () => {
       forbiddenCountriesList,
       userIdentifierBigInt.toString(16).padStart(64, '0'),
     );
+
+    pristineBaseVcAndDiscloseProof = structuredClone(baseVcAndDiscloseProof);
+    snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
 
   beforeEach(async () => {
-    vcAndDiscloseProof = structuredClone(baseVcAndDiscloseProof);
+    baseVcAndDiscloseProof = structuredClone(pristineBaseVcAndDiscloseProof);
+    vcAndDiscloseProof = structuredClone(pristineBaseVcAndDiscloseProof);
+
+    // Re-register the commitment after snapshot revert to ensure registry state is consistent
+    // Check if commitment already exists to avoid LeafAlreadyExists error
+    const currentRoot = await deployedActors.hub.getIdentityCommitmentMerkleRoot(
+      ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32)
+    );
+
+    if (currentRoot.toString() === "0") {
+      const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
+      await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
+        attestationIdBytes32,
+        nullifier,
+        commitment
+      );
+
+      await deployedActors.registryId.connect(deployedActors.owner).devAddIdentityCommitment(
+        attestationIdBytes32,
+        nullifier,
+        commitment
+      );
+    }
   });
 
   afterEach(async () => {
@@ -256,17 +280,56 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Use the base proof but modify only the scope in the pubSignals to create a minimal invalid proof
-      const modifiedVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      modifiedVcAndDiscloseProof.pubSignals[0] = "999999999"; // Invalid scope
+      // Create a separate commitment and register it
+      const scopeRegisterSecret = generateRandomFieldElement();
+      const scopeNullifier = generateRandomFieldElement();
+      const scopeCommitment = generateCommitment(scopeRegisterSecret, ID_CARD_ATTESTATION_ID.toString(), mockIdCardData);
+
+      const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
+      await deployedActors.registryId.connect(deployedActors.owner).devAddIdentityCommitment(
+        attestationIdBytes32,
+        scopeNullifier,
+        scopeCommitment
+      );
+
+      // Create IMT for this specific commitment
+      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+      const scopeIMT = new LeanIMT<bigint>(hashFunction);
+      await scopeIMT.insert(BigInt(scopeCommitment));
+
+      const userIdentifierHash = calculateUserIdentifierHash(userContextData);
+      const userIdentifierBigInt = BigInt(userIdentifierHash);
+
+      // Generate proof with a different scope (this will create a valid proof but with wrong scope)
+      const differentScopeFromHash = hashEndpointWithScope("different.com", "different-scope");
+      const differentScopeAsBigInt = BigInt(differentScopeFromHash);
+      const differentScopeAsBigIntString = differentScopeAsBigInt.toString();
+
+      const differentScopeProof = await generateVcAndDiscloseIdProof(
+        scopeRegisterSecret,
+        ID_CARD_ATTESTATION_ID.toString(),
+        mockIdCardData,
+        differentScopeAsBigIntString, // Different scope
+        new Array(90).fill("1"),
+        "1",
+        scopeIMT,
+        "20",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        forbiddenCountriesList,
+        userIdentifierBigInt.toString(16).padStart(64, '0'),
+      );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          modifiedVcAndDiscloseProof.a,
-          modifiedVcAndDiscloseProof.b,
-          modifiedVcAndDiscloseProof.c,
-          modifiedVcAndDiscloseProof.pubSignals
+          differentScopeProof.a,
+          differentScopeProof.b,
+          differentScopeProof.c,
+          differentScopeProof.pubSignals
         ]]
       );
 
@@ -275,10 +338,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [attestationId, encodedProof]
       );
 
-      // Since modifying pubSignals makes the proof invalid, it will fail at the root check first
+      // This should fail with ScopeMismatch because the proof has a different scope
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidIdentityCommitmentRoot");
+      ).to.be.revertedWithCustomError(deployedActors.hub, "ScopeMismatch");
     });
 
     it("should fail verification with invalid user identifier", async () => {
@@ -351,9 +414,9 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Create proof with invalid merkle root
+      // Create proof with invalid merkle root - for ID card, merkle root is at index 10
       const modifiedVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      modifiedVcAndDiscloseProof.pubSignals[3] = "999999999"; // Invalid merkle root
+      modifiedVcAndDiscloseProof.pubSignals[10] = "999999999"; // ID card merkle root index is 10
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
@@ -398,23 +461,32 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Use the base proof but modify only the current date fields to be 2 days in the future
-      const modifiedVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      const futureDate = new Date();
-      futureDate.setDate(futureDate.getDate() + 2); // 2 days in the future
+      // Get current block timestamp and calculate future date
+      const currentBlock = await ethers.provider.getBlock("latest");
+      const oneDayAfter = getStartOfDayTimestamp(currentBlock!.timestamp) + 24 * 60 * 60;
 
-      // Modify the current date fields (indices 4-9 typically represent current date)
-      modifiedVcAndDiscloseProof.pubSignals[4] = futureDate.getFullYear().toString();
-      modifiedVcAndDiscloseProof.pubSignals[5] = (futureDate.getMonth() + 1).toString();
-      modifiedVcAndDiscloseProof.pubSignals[6] = futureDate.getDate().toString();
+      const date = new Date(oneDayAfter * 1000);
+      const dateComponents = [
+        Math.floor((date.getUTCFullYear() % 100) / 10),
+        date.getUTCFullYear() % 10,
+        Math.floor((date.getUTCMonth() + 1) / 10),
+        (date.getUTCMonth() + 1) % 10,
+        Math.floor(date.getUTCDate() / 10),
+        date.getUTCDate() % 10,
+      ];
+
+      // Modify the current date fields in the proof (index 11-16 for ID card)
+      for (let i = 0; i < 6; i++) {
+        vcAndDiscloseProof.pubSignals[11 + i] = dateComponents[i].toString();
+      }
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          modifiedVcAndDiscloseProof.a,
-          modifiedVcAndDiscloseProof.b,
-          modifiedVcAndDiscloseProof.c,
-          modifiedVcAndDiscloseProof.pubSignals
+          vcAndDiscloseProof.a,
+          vcAndDiscloseProof.b,
+          vcAndDiscloseProof.c,
+          vcAndDiscloseProof.pubSignals
         ]]
       );
 
@@ -423,10 +495,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [attestationId, encodedProof]
       );
 
-      // Since modifying pubSignals makes the proof invalid, it will fail at the root check first
+      // This should fail with CurrentDateNotInValidRange because the date is in the future
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidIdentityCommitmentRoot");
+      ).to.be.revertedWithCustomError(deployedActors.hub, "CurrentDateNotInValidRange");
     });
 
     it("should fail verification with invalid current date - 1 day", async () => {
@@ -452,23 +524,32 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Use the base proof but modify only the current date fields to be 2 days in the past
-      const modifiedVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      const pastDate = new Date();
-      pastDate.setDate(pastDate.getDate() - 2); // 2 days in the past
+      // Get current block timestamp and calculate past date
+      const currentBlock = await ethers.provider.getBlock("latest");
+      const oneDayBefore = getStartOfDayTimestamp(currentBlock!.timestamp) - 1;
 
-      // Modify the current date fields
-      modifiedVcAndDiscloseProof.pubSignals[4] = pastDate.getFullYear().toString();
-      modifiedVcAndDiscloseProof.pubSignals[5] = (pastDate.getMonth() + 1).toString();
-      modifiedVcAndDiscloseProof.pubSignals[6] = pastDate.getDate().toString();
+      const date = new Date(oneDayBefore * 1000);
+      const dateComponents = [
+        Math.floor((date.getUTCFullYear() % 100) / 10),
+        date.getUTCFullYear() % 10,
+        Math.floor((date.getUTCMonth() + 1) / 10),
+        (date.getUTCMonth() + 1) % 10,
+        Math.floor(date.getUTCDate() / 10),
+        date.getUTCDate() % 10,
+      ];
+
+      // Modify the current date fields in the proof (index 11-16 for ID card)
+      for (let i = 0; i < 6; i++) {
+        vcAndDiscloseProof.pubSignals[11 + i] = dateComponents[i].toString();
+      }
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          modifiedVcAndDiscloseProof.a,
-          modifiedVcAndDiscloseProof.b,
-          modifiedVcAndDiscloseProof.c,
-          modifiedVcAndDiscloseProof.pubSignals
+          vcAndDiscloseProof.a,
+          vcAndDiscloseProof.b,
+          vcAndDiscloseProof.c,
+          vcAndDiscloseProof.pubSignals
         ]]
       );
 
@@ -477,10 +558,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [attestationId, encodedProof]
       );
 
-      // Since modifying pubSignals makes the proof invalid, it will fail at the root check first
+      // This should fail with CurrentDateNotInValidRange because the date is in the past
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidIdentityCommitmentRoot");
+      ).to.be.revertedWithCustomError(deployedActors.hub, "CurrentDateNotInValidRange");
     });
 
     it("should fail verification with invalid groth16 proof", async () => {
@@ -506,19 +587,21 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Create proof with invalid groth16 proof components but keep pubSignals valid
-      const invalidVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      invalidVcAndDiscloseProof.a = ["999999999", "888888888"]; // Invalid proof components
-      invalidVcAndDiscloseProof.b = [["777777777", "666666666"], ["555555555", "444444444"]];
-      invalidVcAndDiscloseProof.c = ["333333333", "222222222"];
+      // Use the valid proof but modify only the groth16 proof components
+      // but keep the pubSignals valid so it doesn't fail at earlier checks
+      const invalidGrothProof = { ...vcAndDiscloseProof };
+      invalidGrothProof.a = ["999999999", "888888888"]; // Invalid proof components
+      invalidGrothProof.b = [["777777777", "666666666"], ["555555555", "444444444"]];
+      invalidGrothProof.c = ["333333333", "222222222"];
+      // Keep pubSignals unchanged so other validations pass
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          invalidVcAndDiscloseProof.a,
-          invalidVcAndDiscloseProof.b,
-          invalidVcAndDiscloseProof.c,
-          invalidVcAndDiscloseProof.pubSignals
+          invalidGrothProof.a,
+          invalidGrothProof.b,
+          invalidGrothProof.c,
+          invalidGrothProof.pubSignals
         ]]
       );
 
@@ -527,10 +610,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [attestationId, encodedProof]
       );
 
-      // Since modifying the proof components makes it invalid, it will fail at the root check first
+      // This should fail with InvalidVcAndDiscloseProof because the groth16 proof is invalid
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidIdentityCommitmentRoot");
+      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidVcAndDiscloseProof");
     });
 
     it("should fail verification with invalid attestation Id", async () => {
@@ -607,37 +690,20 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
-      const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Create a separate commitment and register it
-      const ofacRegisterSecret = generateRandomFieldElement();
-      const ofacNullifier = generateRandomFieldElement();
-      const ofacCommitment = generateCommitment(ofacRegisterSecret, ID_CARD_ATTESTATION_ID.toString(), mockIdCardData);
-
-      await deployedActors.registryId.connect(deployedActors.owner).devAddIdentityCommitment(
-        attestationIdBytes32,
-        ofacNullifier,
-        ofacCommitment
-      );
-
-      // Create IMT for this specific commitment
-      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
-      const ofacIMT = new LeanIMT<bigint>(hashFunction);
-      await ofacIMT.insert(BigInt(ofacCommitment));
-
+      // Use the existing commitment and merkle root instead of creating new ones
       // Get OFAC SMTs that will cause validation failure
       const { passportNo_smt, nameAndDob_smt, nameAndYob_smt } = getSMTs();
 
-      // Generate proof that will fail OFAC verification (with ofacCheck = "0")
+      // Generate proof that will fail OFAC verification (with ofacCheck = "0") using existing IMT
       const ofacFailingProof = await generateVcAndDiscloseIdProof(
-        ofacRegisterSecret,
+        registerSecret, // Use existing registerSecret
         ID_CARD_ATTESTATION_ID.toString(),
         mockIdCardData,
         scopeAsBigIntString,
         new Array(90).fill("1"),
         "1",
-        ofacIMT,
+        imt, // Use existing IMT
         "20",
         passportNo_smt,
         nameAndDob_smt,
@@ -697,37 +763,20 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
-      const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Create a separate commitment and register it
-      const forbiddenRegisterSecret = generateRandomFieldElement();
-      const forbiddenNullifier = generateRandomFieldElement();
-      const forbiddenCommitment = generateCommitment(forbiddenRegisterSecret, ID_CARD_ATTESTATION_ID.toString(), mockIdCardData);
-
-      await deployedActors.registryId.connect(deployedActors.owner).devAddIdentityCommitment(
-        attestationIdBytes32,
-        forbiddenNullifier,
-        forbiddenCommitment
-      );
-
-      // Create IMT for this specific commitment
-      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
-      const forbiddenIMT = new LeanIMT<bigint>(hashFunction);
-      await forbiddenIMT.insert(BigInt(forbiddenCommitment));
-
+      // Use the existing commitment and merkle root instead of creating new ones
       // Get OFAC SMTs
       const { passportNo_smt, nameAndDob_smt, nameAndYob_smt } = getSMTs();
 
-      // Generate proof with the original forbidden countries list (this will create a mismatch)
+      // Generate proof with the original forbidden countries list (this will create a mismatch) using existing commitment
       const forbiddenCountryProof = await generateVcAndDiscloseIdProof(
-        forbiddenRegisterSecret,
+        registerSecret, // Use existing registerSecret
         ID_CARD_ATTESTATION_ID.toString(),
         mockIdCardData,
         scopeAsBigIntString,
         new Array(90).fill("1"),
         "1",
-        forbiddenIMT,
+        imt, // Use existing IMT
         "20",
         passportNo_smt,
         nameAndDob_smt,
@@ -788,37 +837,20 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
-      const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Create a separate commitment and register it
-      const ageRegisterSecret = generateRandomFieldElement();
-      const ageNullifier = generateRandomFieldElement();
-      const ageCommitment = generateCommitment(ageRegisterSecret, ID_CARD_ATTESTATION_ID.toString(), mockIdCardData);
-
-      await deployedActors.registryId.connect(deployedActors.owner).devAddIdentityCommitment(
-        attestationIdBytes32,
-        ageNullifier,
-        ageCommitment
-      );
-
-      // Create IMT for this specific commitment
-      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
-      const ageIMT = new LeanIMT<bigint>(hashFunction);
-      await ageIMT.insert(BigInt(ageCommitment));
-
+      // Use the existing commitment and merkle root instead of creating new ones
       // Get OFAC SMTs
       const { passportNo_smt, nameAndDob_smt, nameAndYob_smt } = getSMTs();
 
-      // Generate proof with age 20 (which is less than required 25)
+      // Generate proof with age 20 (which is less than required 25) using existing commitment
       const youngerAgeProof = await generateVcAndDiscloseIdProof(
-        ageRegisterSecret,
+        registerSecret, // Use existing registerSecret
         ID_CARD_ATTESTATION_ID.toString(),
         mockIdCardData,
         scopeAsBigIntString,
         new Array(90).fill("1"),
         "1",
-        ageIMT,
+        imt, // Use existing IMT
         "20", // Age 20, which is less than required 25
         passportNo_smt,
         nameAndDob_smt,
@@ -879,37 +911,20 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
-      const attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
-      // Create a separate commitment and register it
-      const chainRegisterSecret = generateRandomFieldElement();
-      const chainNullifier = generateRandomFieldElement();
-      const chainCommitment = generateCommitment(chainRegisterSecret, ID_CARD_ATTESTATION_ID.toString(), mockIdCardData);
-
-      await deployedActors.registryId.connect(deployedActors.owner).devAddIdentityCommitment(
-        attestationIdBytes32,
-        chainNullifier,
-        chainCommitment
-      );
-
-      // Create IMT for this specific commitment
-      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
-      const chainIMT = new LeanIMT<bigint>(hashFunction);
-      await chainIMT.insert(BigInt(chainCommitment));
-
+      // Use the existing commitment and merkle root instead of creating new ones
       // Get OFAC SMTs
       const { passportNo_smt, nameAndDob_smt, nameAndYob_smt } = getSMTs();
 
-      // Generate proof with the correct user identifier that matches the userContextData
+      // Generate proof with the correct user identifier that matches the userContextData using existing commitment
       const validProof = await generateVcAndDiscloseIdProof(
-        chainRegisterSecret,
+        registerSecret, // Use existing registerSecret
         ID_CARD_ATTESTATION_ID.toString(),
         mockIdCardData,
         scopeAsBigIntString,
         new Array(90).fill("1"),
         "1",
-        chainIMT,
+        imt, // Use existing IMT
         "20",
         passportNo_smt,
         nameAndDob_smt,

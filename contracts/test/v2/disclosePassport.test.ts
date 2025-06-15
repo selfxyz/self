@@ -5,7 +5,7 @@ import { generateVcAndDiscloseProof, getSMTs } from "../utils/generateProof";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { BigNumberish } from "ethers";
-import { generateRandomFieldElement } from "../utils/utils";
+import { generateRandomFieldElement, getStartOfDayTimestamp } from "../utils/utils";
 import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
 import { countries } from "@selfxyz/common/constants/countries";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
@@ -14,10 +14,19 @@ import { Country3LetterCode } from "@selfxyz/common/constants/countries";
 import { hashEndpointWithScope } from "@selfxyz/common/utils/scope";
 import { createHash } from "crypto";
 
+// Helper function to format date for passport (YYMMDD format)
+function formatDateForPassport(date: Date): string {
+  const year = date.getUTCFullYear().toString().slice(-2); // Get last 2 digits of year
+  const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
+  const day = date.getUTCDate().toString().padStart(2, '0');
+  return year + month + day;
+}
+
 describe("Self Verification Flow V2", () => {
   let deployedActors: DeployedActorsV2;
   let snapshotId: string;
   let baseVcAndDiscloseProof: any;
+  let pristineBaseVcAndDiscloseProof: any;
   let vcAndDiscloseProof: any;
   let registerSecret: any;
   let imt: any;
@@ -113,103 +122,37 @@ describe("Self Verification Flow V2", () => {
       forbiddenCountriesList,
       userIdentifierBigInt.toString(16).padStart(64, '0'),
     );
+
+    pristineBaseVcAndDiscloseProof = structuredClone(baseVcAndDiscloseProof);
   });
 
   beforeEach(async () => {
-    vcAndDiscloseProof = structuredClone(baseVcAndDiscloseProof);
+    baseVcAndDiscloseProof = structuredClone(pristineBaseVcAndDiscloseProof);
+    vcAndDiscloseProof = structuredClone(pristineBaseVcAndDiscloseProof);
+
+    // Re-register the commitment after snapshot revert to ensure registry state is consistent
+    // Check if commitment already exists to avoid LeafAlreadyExists error
+    const currentRoot = await deployedActors.hub.getIdentityCommitmentMerkleRoot(ATTESTATION_ID.E_PASSPORT);
+
+    if (currentRoot.toString() === "0") {
+      await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
+        ATTESTATION_ID.E_PASSPORT,
+        nullifier,
+        commitment
+      );
+
+      await deployedActors.registryId.connect(deployedActors.owner).devAddIdentityCommitment(
+        ATTESTATION_ID.E_PASSPORT,
+        nullifier,
+        commitment
+      );
+    }
   });
 
   afterEach(async () => {
     await ethers.provider.send("evm_revert", [snapshotId]);
     snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
-
-  describe("V2 Contracts Deployment", () => {
-    // it("should have deployed IdentityVerificationHubImplV2 successfully", async () => {
-    //   expect(deployedActors.hubImplV2.target).to.not.equal(ethers.ZeroAddress);
-    // });
-
-    // it("should have deployed TestSelfVerificationRoot successfully", async () => {
-    //   expect(deployedActors.testSelfVerificationRoot.target).to.not.equal(ethers.ZeroAddress);
-    // });
-
-    // it("should have correct scope set in TestSelfVerificationRoot", async () => {
-    //   const expectedScope = hashEndpointWithScope("example.com", "test-scope");
-    //   const actualScope = await deployedActors.testSelfVerificationRoot.scope();
-    //   expect(actualScope).to.equal(expectedScope);
-    // });
-  });
-
-  // describe("V2 Verification Configuration", () => {
-  //   it("should set verification config V2", async () => {
-  //     const verificationConfigV2 = {
-  //       olderThanEnabled: true,
-  //       olderThan: "20",
-  //       forbiddenCountriesEnabled: true,
-  //       forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
-  //       ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
-  //     };
-
-  //     const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
-
-  //     await expect(deployedActors.hub.setVerificationConfigV2(verificationConfigV2))
-  //       .to.emit(deployedActors.hub, "VerificationConfigV2Set")
-  //       .withArgs(configId, Object.values(verificationConfigV2));
-  //   });
-
-  //   it("should check if verification config exists", async () => {
-  //     const verificationConfigV2 = {
-  //       olderThanEnabled: true,
-  //       olderThan: "20",
-  //       forbiddenCountriesEnabled: false,
-  //       forbiddenCountriesListPacked: [0n, 0n, 0n, 0n] as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
-  //       ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
-  //     };
-
-  //     const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
-
-  //     expect(await deployedActors.hub.verificationConfigV2Exists(configId)).to.be.false;
-
-  //     await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-
-  //     expect(await deployedActors.hub.verificationConfigV2Exists(configId)).to.be.true;
-  //   });
-  // });
-
-  // describe("Self Verification Root Functions", () => {
-  //   it("should allow scope changes", async () => {
-  //     const newScope = hashEndpointWithScope("example.com", "new-scope");
-
-  //     await expect(deployedActors.testSelfVerificationRoot.setScope(newScope))
-  //       .to.emit(deployedActors.testSelfVerificationRoot, "ScopeUpdated")
-  //       .withArgs(newScope);
-
-  //     expect(await deployedActors.testSelfVerificationRoot.scope()).to.equal(newScope);
-  //   });
-
-  //   it("should reset test state", async () => {
-  //     await deployedActors.testSelfVerificationRoot.resetTestState();
-
-  //     expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.false;
-  //     expect(await deployedActors.testSelfVerificationRoot.lastOutput()).to.equal("0x");
-  //     expect(await deployedActors.testSelfVerificationRoot.lastUserData()).to.equal("0x");
-  //   });
-
-  //   it("should only allow hub contract to call onVerificationSuccess", async () => {
-  //     const mockOutput = ethers.toUtf8Bytes("mock-verification-output");
-  //     const mockUserData = ethers.toUtf8Bytes("mock-user-data");
-
-  //     // Should fail when called by non-hub address using testOnVerificationSuccess method
-  //     await expect(
-  //       (deployedActors.testSelfVerificationRoot as any).testOnVerificationSuccess(mockOutput, mockUserData)
-  //     ).to.be.revertedWithCustomError(deployedActors.testSelfVerificationRoot, "UnauthorizedCaller");
-
-  //     // Should also fail when called directly by any other address
-  //     await expect(
-  //       (deployedActors.testSelfVerificationRoot.connect(deployedActors.user1) as any).testOnVerificationSuccess(mockOutput, mockUserData)
-  //     ).to.be.revertedWithCustomError(deployedActors.testSelfVerificationRoot, "UnauthorizedCaller");
-  //   });
-  // });
 
   describe("Complete V2 Verification Flow", () => {
     it("should complete full verification flow with proper proof encoding", async () => {
@@ -329,17 +272,55 @@ describe("Self Verification Flow V2", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Use the base proof but modify only the scope in the pubSignals to create a minimal invalid proof
-      const modifiedVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      modifiedVcAndDiscloseProof.pubSignals[0] = "999999999"; // Invalid scope
+      // Create a separate commitment and register it
+      const scopeRegisterSecret = generateRandomFieldElement();
+      const scopeNullifier = generateRandomFieldElement();
+      const scopeCommitment = generateCommitment(scopeRegisterSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
+
+      await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
+        ATTESTATION_ID.E_PASSPORT,
+        scopeNullifier,
+        scopeCommitment
+      );
+
+      // Create IMT for this specific commitment
+      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+      const scopeIMT = new LeanIMT<bigint>(hashFunction);
+      await scopeIMT.insert(BigInt(scopeCommitment));
+
+      const userIdentifierHash = calculateUserIdentifierHash(userContextData);
+      const userIdentifierBigInt = BigInt(userIdentifierHash);
+
+      // Generate proof with a different scope (this will create a valid proof but with wrong scope)
+      const differentScopeFromHash = hashEndpointWithScope("different.com", "different-scope");
+      const differentScopeAsBigInt = BigInt(differentScopeFromHash);
+      const differentScopeAsBigIntString = differentScopeAsBigInt.toString();
+
+      const differentScopeProof = await generateVcAndDiscloseProof(
+        scopeRegisterSecret,
+        BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+        deployedActors.mockPassport,
+        differentScopeAsBigIntString, // Different scope
+        new Array(88).fill("1"),
+        "1",
+        scopeIMT,
+        "20",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        forbiddenCountriesList,
+        userIdentifierBigInt.toString(16).padStart(64, '0'),
+      );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          modifiedVcAndDiscloseProof.a,
-          modifiedVcAndDiscloseProof.b,
-          modifiedVcAndDiscloseProof.c,
-          modifiedVcAndDiscloseProof.pubSignals
+          differentScopeProof.a,
+          differentScopeProof.b,
+          differentScopeProof.c,
+          differentScopeProof.pubSignals
         ]]
       );
 
@@ -348,10 +329,10 @@ describe("Self Verification Flow V2", () => {
         [attestationId, encodedProof]
       );
 
-      // Since modifying pubSignals makes the proof invalid, it will fail at the root check first
+      // This should fail with ScopeMismatch because the proof has a different scope
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidIdentityCommitmentRoot");
+      ).to.be.revertedWithCustomError(deployedActors.hub, "ScopeMismatch");
     });
 
     it("should fail verification with invalid user identifier", async () => {
@@ -422,19 +403,51 @@ describe("Self Verification Flow V2", () => {
         [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData]
       );
 
+      const userIdentifierHash = calculateUserIdentifierHash(userContextData);
+      const userIdentifierBigInt = BigInt(userIdentifierHash);
+
+      const expectedScopeFromHash = hashEndpointWithScope("example.com", "test-scope");
+      const scopeAsBigInt = BigInt(expectedScopeFromHash);
+      const scopeAsBigIntString = scopeAsBigInt.toString();
+
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Create proof with invalid merkle root
-      const modifiedVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      modifiedVcAndDiscloseProof.pubSignals[3] = "999999999"; // Invalid merkle root
+      // Create a separate commitment with a different secret to generate a different merkle root
+      const differentRegisterSecret = generateRandomFieldElement();
+      const differentNullifier = generateRandomFieldElement();
+      const differentCommitment = generateCommitment(differentRegisterSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
+
+      // Create a new IMT with different commitment (different root)
+      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+      const differentIMT = new LeanIMT<bigint>(hashFunction);
+      await differentIMT.insert(BigInt(differentCommitment));
+
+      // Generate proof with different merkle root
+      const differentRootProof = await generateVcAndDiscloseProof(
+        differentRegisterSecret,
+        BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+        deployedActors.mockPassport,
+        scopeAsBigIntString,
+        new Array(88).fill("1"),
+        "1",
+        differentIMT, // Different IMT = different root
+        "20",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        forbiddenCountriesList,
+        userIdentifierBigInt.toString(16).padStart(64, '0'),
+      );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          modifiedVcAndDiscloseProof.a,
-          modifiedVcAndDiscloseProof.b,
-          modifiedVcAndDiscloseProof.c,
-          modifiedVcAndDiscloseProof.pubSignals
+          differentRootProof.a,
+          differentRootProof.b,
+          differentRootProof.c,
+          differentRootProof.pubSignals
         ]]
       );
 
@@ -471,23 +484,32 @@ describe("Self Verification Flow V2", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Use the base proof but modify only the current date fields to be 2 days in the future
-      const modifiedVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      const futureDate = new Date();
-      futureDate.setDate(futureDate.getDate() + 2); // 2 days in the future
+      // Get current block timestamp and calculate future date
+      const currentBlock = await ethers.provider.getBlock("latest");
+      const oneDayAfter = getStartOfDayTimestamp(currentBlock!.timestamp) + 24 * 60 * 60;
 
-      // Modify the current date fields (indices 4-9 typically represent current date)
-      modifiedVcAndDiscloseProof.pubSignals[4] = futureDate.getFullYear().toString();
-      modifiedVcAndDiscloseProof.pubSignals[5] = (futureDate.getMonth() + 1).toString();
-      modifiedVcAndDiscloseProof.pubSignals[6] = futureDate.getDate().toString();
+      const date = new Date(oneDayAfter * 1000);
+      const dateComponents = [
+        Math.floor((date.getUTCFullYear() % 100) / 10),
+        date.getUTCFullYear() % 10,
+        Math.floor((date.getUTCMonth() + 1) / 10),
+        (date.getUTCMonth() + 1) % 10,
+        Math.floor(date.getUTCDate() / 10),
+        date.getUTCDate() % 10,
+      ];
+
+      // Modify the current date fields directly in the proof signals (index 10-15 for E_PASSPORT)
+      for (let i = 0; i < 6; i++) {
+        vcAndDiscloseProof.pubSignals[10 + i] = dateComponents[i].toString();
+      }
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          modifiedVcAndDiscloseProof.a,
-          modifiedVcAndDiscloseProof.b,
-          modifiedVcAndDiscloseProof.c,
-          modifiedVcAndDiscloseProof.pubSignals
+          vcAndDiscloseProof.a,
+          vcAndDiscloseProof.b,
+          vcAndDiscloseProof.c,
+          vcAndDiscloseProof.pubSignals
         ]]
       );
 
@@ -496,10 +518,10 @@ describe("Self Verification Flow V2", () => {
         [attestationId, encodedProof]
       );
 
-      // Since modifying pubSignals makes the proof invalid, it will fail at the root check first
+      // This should fail with CurrentDateNotInValidRange because the date is in the future
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidIdentityCommitmentRoot");
+      ).to.be.revertedWithCustomError(deployedActors.hub, "CurrentDateNotInValidRange");
     });
 
     it("should fail verification with invalid current date - 1 day", async () => {
@@ -525,23 +547,32 @@ describe("Self Verification Flow V2", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Use the base proof but modify only the current date fields to be 2 days in the past
-      const modifiedVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      const pastDate = new Date();
-      pastDate.setDate(pastDate.getDate() - 2); // 2 days in the past
+      // Get current block timestamp and calculate past date
+      const currentBlock = await ethers.provider.getBlock("latest");
+      const oneDayBefore = getStartOfDayTimestamp(currentBlock!.timestamp) - 1;
 
-      // Modify the current date fields
-      modifiedVcAndDiscloseProof.pubSignals[4] = pastDate.getFullYear().toString();
-      modifiedVcAndDiscloseProof.pubSignals[5] = (pastDate.getMonth() + 1).toString();
-      modifiedVcAndDiscloseProof.pubSignals[6] = pastDate.getDate().toString();
+      const date = new Date(oneDayBefore * 1000);
+      const dateComponents = [
+        Math.floor((date.getUTCFullYear() % 100) / 10),
+        date.getUTCFullYear() % 10,
+        Math.floor((date.getUTCMonth() + 1) / 10),
+        (date.getUTCMonth() + 1) % 10,
+        Math.floor(date.getUTCDate() / 10),
+        date.getUTCDate() % 10,
+      ];
+
+      // Modify the current date fields directly in the proof signals (index 10-15 for E_PASSPORT)
+      for (let i = 0; i < 6; i++) {
+        vcAndDiscloseProof.pubSignals[10 + i] = dateComponents[i].toString();
+      }
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          modifiedVcAndDiscloseProof.a,
-          modifiedVcAndDiscloseProof.b,
-          modifiedVcAndDiscloseProof.c,
-          modifiedVcAndDiscloseProof.pubSignals
+          vcAndDiscloseProof.a,
+          vcAndDiscloseProof.b,
+          vcAndDiscloseProof.c,
+          vcAndDiscloseProof.pubSignals
         ]]
       );
 
@@ -550,10 +581,10 @@ describe("Self Verification Flow V2", () => {
         [attestationId, encodedProof]
       );
 
-      // Since modifying pubSignals makes the proof invalid, it will fail at the root check first
+      // This should fail with CurrentDateNotInValidRange because the date is in the past
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidIdentityCommitmentRoot");
+      ).to.be.revertedWithCustomError(deployedActors.hub, "CurrentDateNotInValidRange");
     });
 
     it("should fail verification with invalid groth16 proof", async () => {
@@ -579,19 +610,21 @@ describe("Self Verification Flow V2", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Create proof with invalid groth16 proof components but keep pubSignals valid
-      const invalidVcAndDiscloseProof = { ...vcAndDiscloseProof };
-      invalidVcAndDiscloseProof.a = ["999999999", "888888888"]; // Invalid proof components
-      invalidVcAndDiscloseProof.b = [["777777777", "666666666"], ["555555555", "444444444"]];
-      invalidVcAndDiscloseProof.c = ["333333333", "222222222"];
+      // Use the valid proof but modify only the groth16 proof components to make it fail verification
+      // but keep the pubSignals valid so it doesn't fail at earlier checks
+      const invalidGrothProof = structuredClone(vcAndDiscloseProof);
+      invalidGrothProof.a = ["999999999", "888888888"]; // Invalid proof components
+      invalidGrothProof.b = [["777777777", "666666666"], ["555555555", "444444444"]];
+      invalidGrothProof.c = ["333333333", "222222222"];
+      // Keep pubSignals unchanged so other validations pass
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
         [[
-          invalidVcAndDiscloseProof.a,
-          invalidVcAndDiscloseProof.b,
-          invalidVcAndDiscloseProof.c,
-          invalidVcAndDiscloseProof.pubSignals
+          invalidGrothProof.a,
+          invalidGrothProof.b,
+          invalidGrothProof.c,
+          invalidGrothProof.pubSignals
         ]]
       );
 
@@ -600,10 +633,10 @@ describe("Self Verification Flow V2", () => {
         [attestationId, encodedProof]
       );
 
-      // Since modifying the proof components makes it invalid, it will fail at the root check first
+      // This should fail with InvalidVcAndDiscloseProof because the groth16 proof is invalid
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidIdentityCommitmentRoot");
+      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidVcAndDiscloseProof");
     });
 
     it("should fail verification with invalid attestation Id", async () => {
@@ -681,35 +714,19 @@ describe("Self Verification Flow V2", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Create a separate commitment and register it
-      const ofacRegisterSecret = generateRandomFieldElement();
-      const ofacNullifier = generateRandomFieldElement();
-      const ofacCommitment = generateCommitment(ofacRegisterSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
-
-      await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
-        ATTESTATION_ID.E_PASSPORT,
-        ofacNullifier,
-        ofacCommitment
-      );
-
-      // Create IMT for this specific commitment
-      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
-      const ofacIMT = new LeanIMT<bigint>(hashFunction);
-      await ofacIMT.insert(BigInt(ofacCommitment));
-
+      // Use the existing commitment and merkle root instead of creating new ones
       // Get OFAC SMTs that will cause validation failure
       const { passportNo_smt, nameAndDob_smt, nameAndYob_smt } = getSMTs();
 
-      // Generate proof that will fail OFAC verification (with ofacCheck = "0")
+      // Generate proof that will fail OFAC verification (with ofacCheck = "0") using existing IMT
       const ofacFailingProof = await generateVcAndDiscloseProof(
-        ofacRegisterSecret,
+        registerSecret, // Use existing registerSecret
         BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
         deployedActors.mockPassport,
         scopeAsBigIntString,
         new Array(88).fill("1"),
         "1",
-        ofacIMT,
+        imt, // Use existing IMT
         "20",
         passportNo_smt,
         nameAndDob_smt,
@@ -778,32 +795,15 @@ describe("Self Verification Flow V2", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Create a separate commitment and register it
-      const forbiddenRegisterSecret = generateRandomFieldElement();
-      const forbiddenNullifier = generateRandomFieldElement();
-      const forbiddenCommitment = generateCommitment(forbiddenRegisterSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
-
-      await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
-        ATTESTATION_ID.E_PASSPORT,
-        forbiddenNullifier,
-        forbiddenCommitment
-      );
-
-      // Create IMT for this specific commitment
-      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
-      const forbiddenIMT = new LeanIMT<bigint>(hashFunction);
-      await forbiddenIMT.insert(BigInt(forbiddenCommitment));
-
-      // Generate proof with the original forbidden countries list (this will create a mismatch)
+      // Generate proof with the original forbidden countries list (this will create a mismatch) using existing commitment
       const forbiddenCountryProof = await generateVcAndDiscloseProof(
-        forbiddenRegisterSecret,
+        registerSecret, // Use existing registerSecret
         BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
         deployedActors.mockPassport,
         scopeAsBigIntString,
         new Array(88).fill("1"),
         "1",
-        forbiddenIMT,
+        imt, // Use existing IMT
         "20",
         undefined,
         undefined,
@@ -865,32 +865,15 @@ describe("Self Verification Flow V2", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Create a separate commitment and register it
-      const ageRegisterSecret = generateRandomFieldElement();
-      const ageNullifier = generateRandomFieldElement();
-      const ageCommitment = generateCommitment(ageRegisterSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
-
-      await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
-        ATTESTATION_ID.E_PASSPORT,
-        ageNullifier,
-        ageCommitment
-      );
-
-      // Create IMT for this specific commitment
-      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
-      const ageIMT = new LeanIMT<bigint>(hashFunction);
-      await ageIMT.insert(BigInt(ageCommitment));
-
-      // Generate proof with age 20 (which is less than required 25)
+      // Generate proof with age 20 (which is less than required 25) using existing commitment
       const youngerAgeProof = await generateVcAndDiscloseProof(
-        ageRegisterSecret,
+        registerSecret, // Use existing registerSecret
         BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
         deployedActors.mockPassport,
         scopeAsBigIntString,
         new Array(88).fill("1"),
         "1",
-        ageIMT,
+        imt, // Use existing IMT
         "20", // Age 20, which is less than required 25
         undefined,
         undefined,
@@ -952,32 +935,15 @@ describe("Self Verification Flow V2", () => {
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
-      // Create a separate commitment and register it
-      const chainRegisterSecret = generateRandomFieldElement();
-      const chainNullifier = generateRandomFieldElement();
-      const chainCommitment = generateCommitment(chainRegisterSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
-
-      await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
-        ATTESTATION_ID.E_PASSPORT,
-        chainNullifier,
-        chainCommitment
-      );
-
-      // Create IMT for this specific commitment
-      const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
-      const chainIMT = new LeanIMT<bigint>(hashFunction);
-      await chainIMT.insert(BigInt(chainCommitment));
-
-      // Generate proof with the correct user identifier that matches the userContextData
+      // Generate proof with the correct user identifier that matches the userContextData using existing commitment
       const validProof = await generateVcAndDiscloseProof(
-        chainRegisterSecret,
+        registerSecret, // Use existing registerSecret
         BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
         deployedActors.mockPassport,
         scopeAsBigIntString,
         new Array(88).fill("1"),
         "1",
-        chainIMT,
+        imt, // Use existing IMT
         "20",
         undefined,
         undefined,
