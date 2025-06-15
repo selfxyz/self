@@ -36,25 +36,39 @@ show_help() {
     echo "Usage: ./scripts/test.sh [command]"
     echo ""
     echo "Commands:"
-    echo "  all           Run all contract tests"
-    echo "  v2disclose            Run V2 verification flow tests"
-    echo "  v2register      Run identity and DSC commitment registration tests"
-    echo "  unit          Run unit tests"
-    echo "  integration   Run integration tests"
-    echo "  coverage      Run test coverage"
-    echo "  airdrop       Run airdrop tests"
-    echo "  attribute     Run attribute handler tests"
-    echo "  formatter     Run formatter tests"
-    echo "  hub           Run hub tests"
-    echo "  registry      Run registry tests"
-    echo "  sdk           Run SDK core tests"
-    echo "  clean         Clean test artifacts"
-    echo "  help          Show this help message"
+    echo "  all                   Run all contract tests"
+    echo ""
+    echo "V2 Tests (Individual):"
+    echo "  v2-disclose-passport  Run V2 passport disclosure tests"
+    echo "  v2-disclose-id        Run V2 ID disclosure tests"
+    echo "  v2-register-id        Run V2 ID registration tests"
+    echo "  v2-register-passport  Run V2 passport registration tests"
+    echo "  v2-hub-other          Run V2 hub other functionality tests"
+    echo ""
+    echo "V2 Tests (Groups):"
+    echo "  v2-disclose           Run all V2 disclosure tests"
+    echo "  v2-register           Run all V2 registration tests"
+    echo "  v2-all                Run all V2 tests"
+    echo ""
+    echo "Legacy Tests:"
+    echo "  unit                  Run unit tests"
+    echo "  integration           Run integration tests"
+    echo "  coverage              Run test coverage"
+    echo "  airdrop               Run airdrop tests"
+    echo "  attribute             Run attribute handler tests"
+    echo "  formatter             Run formatter tests"
+    echo "  hub                   Run hub tests"
+    echo "  registry              Run registry tests"
+    echo "  sdk                   Run SDK core tests"
+    echo ""
+    echo "Utilities:"
+    echo "  clean                 Clean test artifacts"
+    echo "  help                  Show this help message"
     echo ""
     echo "Examples:"
-    echo "  ./scripts/test.sh v2disclose"
-    echo "  ./scripts/test.sh v2register"
-    echo "  ./scripts/test.sh unit"
+    echo "  ./scripts/test.sh v2-disclose-passport"
+    echo "  ./scripts/test.sh v2-register-id"
+    echo "  ./scripts/test.sh v2-all"
     echo "  ./scripts/test.sh coverage"
     echo ""
 }
@@ -68,12 +82,33 @@ run_test() {
         "all")
             npx hardhat test
             ;;
-        "v2disclose")
-            npx hardhat test test/v2/disclose.test.ts --network localhost
+        # V2 Individual Tests
+        "v2-disclose-passport")
+            npx hardhat test test/v2/disclosePassport.test.ts --network localhost
             ;;
-        "v2register")
-            npx hardhat test test/v2/register.test.ts --network localhost
+        "v2-disclose-id")
+            npx hardhat test test/v2/discloseId.test.ts --network localhost
             ;;
+        "v2-register-id")
+            npx hardhat test test/v2/registerId.test.ts --network localhost
+            ;;
+        "v2-register-passport")
+            npx hardhat test test/v2/registerPassport.test.ts --network localhost
+            ;;
+        "v2-hub-other")
+            npx hardhat test test/v2/hubOther.test.ts --network localhost
+            ;;
+        # V2 Group Tests
+        "v2-disclose")
+            npx hardhat test test/v2/disclosePassport.test.ts test/v2/discloseId.test.ts --network localhost
+            ;;
+        "v2-register")
+            npx hardhat test test/v2/registerId.test.ts test/v2/registerPassport.test.ts --network localhost
+            ;;
+        "v2-all")
+            npx hardhat test test/v2/ --network localhost
+            ;;
+        # Legacy Tests
         "unit")
             TEST_ENV=local npx hardhat test test/unit/*
             ;;
