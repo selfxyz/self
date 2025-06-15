@@ -348,8 +348,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
                 proofOutput
             );
 
-            IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
-            output = _formatVerificationOutput($._circuitVersion, genericDiscloseOutput);
+            output = _formatVerificationOutput(header.contractVersion, genericDiscloseOutput);
         }
 
         userDataToPass = abi.encodePacked(bytes32(userIdentifier), remainingData);
