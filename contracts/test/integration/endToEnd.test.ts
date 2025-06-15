@@ -1,4 +1,3 @@
-
 import { expect } from "chai";
 import { BigNumberish, TransactionReceipt } from "ethers";
 import { ethers } from "hardhat";
@@ -10,8 +9,9 @@ import { ATTESTATION_ID } from "../utils/constants";
 import { deploySystemFixtures } from "../utils/deployment";
 import BalanceTree from "../utils/example/balance-tree";
 import { Formatter } from "../utils/formatter";
-import { generateDscProof, generateRegisterProof, generateVcAndDiscloseProof } from "../utils/generateProof.js";
-import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
+import { generateDscProof, generateRegisterProof, generateVcAndDiscloseProof } from "../utils/generateProof";
+import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import serialized_dsc_tree from "../../../common/pubkeys/serialized_dsc_tree.json";
 import { DeployedActors, VcAndDiscloseHubProof } from "../utils/types";
 import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 

@@ -37,7 +37,8 @@ show_help() {
     echo ""
     echo "Commands:"
     echo "  all           Run all contract tests"
-    echo "  v2            Run V2 verification flow tests"
+    echo "  v2disclose            Run V2 verification flow tests"
+    echo "  v2register      Run identity and DSC commitment registration tests"
     echo "  unit          Run unit tests"
     echo "  integration   Run integration tests"
     echo "  coverage      Run test coverage"
@@ -51,7 +52,8 @@ show_help() {
     echo "  help          Show this help message"
     echo ""
     echo "Examples:"
-    echo "  ./scripts/test.sh v2"
+    echo "  ./scripts/test.sh v2disclose"
+    echo "  ./scripts/test.sh v2register"
     echo "  ./scripts/test.sh unit"
     echo "  ./scripts/test.sh coverage"
     echo ""
@@ -66,8 +68,11 @@ run_test() {
         "all")
             npx hardhat test
             ;;
-        "v2")
-            npx hardhat test test/v2/selfVerificationFlow.test.ts --network localhost
+        "v2disclose")
+            npx hardhat test test/v2/disclose.test.ts --network localhost
+            ;;
+        "v2register")
+            npx hardhat test test/v2/register.test.ts --network localhost
             ;;
         "unit")
             TEST_ENV=local npx hardhat test test/unit/*

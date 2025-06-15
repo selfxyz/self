@@ -6,7 +6,7 @@ import { genAndInitMockPassportData } from "@selfxyz/common/utils/passports/genM
 import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
 import { PassportData } from "@selfxyz/common/utils/types";
 import { getSMTs } from "./generateProof";
-import serialized_csca_tree from "./pubkeys/serialized_csca_tree.json";
+import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
 import {
   DeployedActorsV2,
 } from "./types";
@@ -216,6 +216,12 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   // Update DSC verifiers
   await hubContract.updateDscVerifier(
     E_PASSPORT,
+    DscVerifierId.dsc_sha256_rsa_65537_4096,
+    dscVerifier.target
+  );
+  // Add DSC verifier for EU_ID_CARD as well
+  await hubContract.updateDscVerifier(
+    EU_ID_CARD,
     DscVerifierId.dsc_sha256_rsa_65537_4096,
     dscVerifier.target
   );

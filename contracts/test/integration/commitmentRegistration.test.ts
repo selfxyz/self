@@ -5,8 +5,8 @@ import { poseidon2 } from "poseidon-lite";
 import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "@selfxyz/common/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
 import { deploySystemFixtures } from "../utils/deployment";
-import { generateDscProof, generateRegisterProof } from "../utils/generateProof.js";
-import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
+import { generateDscProof, generateRegisterProof } from "../utils/generateProof";
+import serialized_dsc_tree from "../../../common/pubkeys/serialized_dsc_tree.json";
 import { DeployedActors } from "../utils/types";
 import { generateRandomFieldElement } from "../utils/utils";
 
