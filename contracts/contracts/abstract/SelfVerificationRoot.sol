@@ -10,12 +10,15 @@ import {AttestationId} from "../constants/AttestationId.sol";
  * @title SelfVerificationRoot
  * @notice Abstract base contract to be integrated with self's verification infrastructure
  * @dev Provides base functionality for verifying and disclosing identity credentials
+ * @author Self Team
  */
 abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // ====================================================
     // Constants
     // ====================================================
 
+    /// @notice Contract version identifier used in verification process
+    /// @dev This version is included in the hub data for protocol compatibility
     uint8 constant CONTRACT_VERSION = 2;
 
     // ====================================================
@@ -34,7 +37,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // Errors
     // ====================================================
 
-
     /// @notice Error thrown when the data format is invalid
     /// @dev Triggered when the provided bytes data doesn't have the expected format
     error InvalidDataFormat();
@@ -48,12 +50,14 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // ====================================================
 
     /// @notice Emitted when the scope is updated
+    /// @param newScope The new scope value that was set
     event ScopeUpdated(uint256 indexed newScope);
 
     /**
-     * @notice Initializes the SelfVerificationRoot contract.
-     * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2.
-     * @param scopeValue The expected proof scope for user registration.
+     * @notice Initializes the SelfVerificationRoot contract
+     * @dev Sets up the immutable reference to the hub contract and initial scope
+     * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2
+     * @param scopeValue The expected proof scope for user registration
      */
     constructor(
         address identityVerificationHubV2Address,
@@ -65,6 +69,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
     /**
      * @notice Returns the current scope value
+     * @dev Public view function to access the current scope setting
      * @return The scope value that proofs must match
      */
     function scope() public view returns (uint256) {
@@ -73,7 +78,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
     /**
      * @notice Updates the scope value
-     * @dev Used to change the expected scope for proofs
+     * @dev Protected internal function to change the expected scope for proofs
      * @param newScope The new scope value to set
      */
     function _setScope(uint256 newScope) internal {
@@ -86,17 +91,9 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
      * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | proof data |
      * @param userContextData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
-     */
-    /*
-        - Extract userIdentifier from userDefinedData
-        - Do scope verification
-        - Encode contractVersion
-        - Call verify function in the Hub contract
-        - Call onVerificationSuccess
-
-        proofPayload = | 32 bytes attestationId | proofData |
-        userContextData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
-        hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
+     * @custom:data-format proofPayload = | 32 bytes attestationId | proofData |
+     * @custom:data-format userContextData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+     * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
     function verifySelfProof(
         bytes calldata proofPayload,
@@ -136,6 +133,14 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         _identityVerificationHubV2.verify(baseVerificationInput, userContextData);
     }
 
+    /**
+     * @notice Callback function called upon successful verification by the hub contract
+     * @dev Only callable by the identity verification hub V2 contract for security
+     * @param output The verification output data containing disclosed identity information
+     * @param userData The user-defined data passed through the verification process
+     * @custom:security Only the authorized hub contract can call this function
+     * @custom:flow This function decodes the output and calls the customizable verification hook
+     */
     function onVerificationSuccess(
         bytes memory output,
         bytes memory userData
@@ -154,8 +159,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /**
      * @notice Custom verification hook that can be overridden by implementing contracts
      * @dev This function is called after successful verification and hub address validation
-     * @param output The verification output data from the hub
+     * @param output The verification output data from the hub containing disclosed identity information
      * @param userData The user-defined data passed through the verification process
+     * @custom:override Override this function in derived contracts to add custom verification logic
+     * @custom:security This function is only called after proper authentication by the hub contract
      */
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,

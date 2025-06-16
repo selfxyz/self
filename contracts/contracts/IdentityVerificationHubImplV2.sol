@@ -39,18 +39,31 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.IdentityVerificationHubV2")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant IDENTITYVERIFICATIONHUBV2_STORAGE_LOCATION = 0xf9b5980dcec1a8b0609576a1f453bb2cad4732a0ea02bb89154d44b14a306c00;
 
+    /**
+     * @notice Returns the storage struct for the main IdentityVerificationHub.
+     * @dev Uses ERC-7201 storage pattern for upgradeable contracts.
+     * @return $ The storage struct reference.
+     */
     function _getIdentityVerificationHubStorage() private pure returns (IdentityVerificationHubStorage storage $) {
         assembly {
             $.slot := IDENTITYVERIFICATIONHUB_STORAGE_LOCATION
         }
     }
 
+    /**
+     * @notice Returns the storage struct for IdentityVerificationHub V2 features.
+     * @dev Uses ERC-7201 storage pattern for upgradeable contracts.
+     * @return $ The V2 storage struct reference.
+     */
     function _getIdentityVerificationHubV2Storage() private pure returns (IdentityVerificationHubV2Storage storage $) {
         assembly {
             $.slot := IDENTITYVERIFICATIONHUBV2_STORAGE_LOCATION
         }
     }
 
+    /**
+     * @notice Emitted when the Hub V2 is successfully initialized.
+     */
     event HubInitializedV2();
     /**
      * @notice Emitted when a verification config V2 is set.
@@ -60,11 +73,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     event VerificationConfigV2Set(bytes32 indexed configId, SelfStructs.VerificationConfigV2 config);
     /**
      * @notice Emitted when the registry address is updated.
+     * @param attestationId The attestation identifier.
      * @param registry The new registry address.
      */
     event RegistryUpdated(bytes32 attestationId, address registry);
     /**
      * @notice Emitted when the VC and Disclose circuit verifier is updated.
+     * @param attestationId The attestation identifier.
      * @param vcAndDiscloseCircuitVerifier The new VC and Disclose circuit verifier address.
      */
     event VcAndDiscloseCircuitUpdated(bytes32 attestationId, address vcAndDiscloseCircuitVerifier);
@@ -85,6 +100,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // Errors
     // ====================================================
 
+    /// @notice Thrown when arrays have mismatched lengths in batch operations.
+    /// @dev Ensures that all input arrays have the same length for batch updates.
     error LengthMismatch();
 
     /// @notice Thrown when no verifier is set for a given signature type.
@@ -107,22 +124,28 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev The VC and Disclose circuit verifier did not validate the provided proof.
     error InvalidVcAndDiscloseProof();
 
-    /// @notice Thrown when the provided commitment root is invalid.
-    /// @dev Used in proofs to ensure that the commitment root matches the expected value in the registry.
-
+    /// @notice Thrown when the provided identity commitment root is invalid.
+    /// @dev Used in proofs to ensure that the identity commitment root matches the expected value in the registry.
     error InvalidIdentityCommitmentRoot();
+
+    /// @notice Thrown when the provided DSC commitment root is invalid.
+    /// @dev Used in proofs to ensure that the DSC commitment root matches the expected value in the registry.
     error InvalidDscCommitmentRoot();
 
     /// @notice Thrown when the provided CSCA root is invalid.
     /// @dev Indicates that the CSCA root from the DSC proof does not match the expected CSCA root.
     error InvalidCscaRoot();
 
+    /// @notice Thrown when an invalid attestation ID is provided.
+    /// @dev The attestation ID must be a supported type (e.g., E_PASSPORT or EU_ID_CARD).
     error InvalidAttestationId();
 
     /// @notice Thrown when the scope in the header doesn't match the scope in the proof.
     /// @dev Ensures that the scope value in the header matches the scope value in the proof.
     error ScopeMismatch();
 
+    /// @notice Thrown when cross-chain verification is attempted but not yet supported.
+    /// @dev Cross-chain bridging functionality is not implemented yet.
     error CrossChainIsNotSupportedYet();
 
     /// @notice Thrown when the input data is too short for decoding.
@@ -138,15 +161,14 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     error InvalidUserIdentifierInProof();
 
     // ====================================================
-    // Input Format Structs
-    // ====================================================
-
-    // HubInputHeader is now defined in SelfStructs library
-
-    // ====================================================
     // Constructor
     // ====================================================
 
+    /**
+     * @notice Constructor that disables initializers for the implementation contract.
+     * @dev This prevents the implementation contract from being initialized directly.
+     * The actual initialization should only happen through the proxy.
+     */
     constructor() {
         _disableInitializers();
     }
@@ -155,6 +177,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // Initializer
     // ====================================================
 
+    /**
+     * @notice Initializes the Identity Verification Hub V2 contract.
+     * @dev Sets up the contract state including circuit version and emits initialization event.
+     * This function can only be called once due to the initializer modifier.
+     * The circuit version is set to 2 for V2 hub compatibility.
+     */
     function initialize() external initializer {
         __ImplRoot_init();
 
@@ -241,7 +269,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Main verification function with new structured input format
+     * @notice Main verification function with new structured input format.
+     * @dev Orchestrates the complete verification process including proof validation and result handling.
+     * This function decodes the input, executes the verification flow, and handles the result based on destination chain.
+     * @param baseVerificationInput The base verification input containing header and proof data.
+     * @param userContextData The user context data containing config ID, destination chain ID, user identifier, and additional data.
      */
     function verify(
         bytes calldata baseVerificationInput,
@@ -464,7 +496,15 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // ====================================================
 
     /**
-     * @notice Executes the complete verification flow
+     * @notice Executes the complete verification flow.
+     * @dev Processes user context data, retrieves verification config, performs basic verification,
+     * executes custom verification logic, and formats the output.
+     * @param header The decoded hub input header containing verification parameters.
+     * @param proofData The raw proof data to be decoded and verified.
+     * @param userContextData The user-provided context data.
+     * @return output The formatted verification output.
+     * @return destChainId The destination chain identifier.
+     * @return userDataToPass The remaining user data to pass through.
      */
     function _executeVerificationFlow(
         SelfStructs.HubInputHeader memory header,
@@ -498,7 +538,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Handles verification result based on destination chain
+     * @notice Handles verification result based on destination chain.
+     * @dev Routes the verification result to the appropriate handler based on whether
+     * the destination is the current chain or requires cross-chain bridging.
+     * @param destChainId The destination chain identifier.
+     * @param output The verification output data.
+     * @param userDataToPass The user data to pass to the result handler.
      */
     function _handleVerificationResult(uint256 destChainId, bytes memory output, bytes memory userDataToPass) internal {
         if (destChainId == block.chainid) {
@@ -515,6 +560,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @dev Performs four core verification steps: scopeCheck, rootCheck, currentDateCheck, groth16 proof verification
      * @param header The hub input header containing scope and attestation information
      * @param vcAndDiscloseProof The VC and Disclose proof data
+     * @param userContextData The user context data for validation
+     * @param userIdentifier The user identifier for proof validation
      * @return output The verification result encoded as bytes (PassportOutput or EuIdOutput)
      */
     function _basicVerification(
@@ -807,7 +854,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Formats verification output based on contract version
+     * @notice Formats verification output based on contract version.
+     * @dev Converts the generic disclosure output to the appropriate struct format based on version.
+     * @param contractVersion The contract version to determine output format.
+     * @param genericDiscloseOutput The generic disclosure output to format.
+     * @return output The formatted output as bytes.
      */
     function _formatVerificationOutput(
         uint256 contractVersion,
@@ -819,7 +870,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Creates verification output based on attestation type
+     * @notice Creates verification output based on attestation type.
+     * @dev Routes to the appropriate output creation function based on the attestation ID.
+     * @param attestationId The attestation identifier (passport or EU ID card).
+     * @param vcAndDiscloseProof The VC and Disclose proof data.
+     * @param indices The circuit-specific indices for extracting proof values.
+     * @param userIdentifier The user identifier to include in the output.
+     * @return The encoded verification output.
      */
     function _createVerificationOutput(
         bytes32 attestationId,
@@ -837,7 +894,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Creates passport output struct
+     * @notice Creates passport output struct.
+     * @dev Constructs a PassportOutput struct from the proof data and encodes it.
+     * @param vcAndDiscloseProof The VC and Disclose proof containing passport data.
+     * @param indices The circuit-specific indices for extracting proof values.
+     * @param attestationId The attestation identifier.
+     * @param userIdentifier The user identifier.
+     * @return The encoded PassportOutput struct.
      */
     function _createPassportOutput(
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
@@ -866,7 +929,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
-     * @notice Creates EU ID output struct
+     * @notice Creates EU ID output struct.
+     * @dev Constructs an EuIdOutput struct from the proof data and encodes it.
+     * @param vcAndDiscloseProof The VC and Disclose proof containing EU ID card data.
+     * @param indices The circuit-specific indices for extracting proof values.
+     * @param attestationId The attestation identifier.
+     * @param userIdentifier The user identifier.
+     * @return The encoded EuIdOutput struct.
      */
     function _createEuIdOutput(
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
@@ -894,12 +963,24 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         return abi.encode(euIdOutput);
     }
 
+    /**
+     * @notice Decodes VC and Disclose proof from bytes data.
+     * @dev Simple wrapper around abi.decode for type safety and clarity.
+     * @param data The encoded proof data.
+     * @return The decoded VcAndDiscloseProof struct.
+     */
     function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory) {
         return abi.decode(data, (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof));
     }
 
     /**
-     * @notice Performs user identifier validation
+     * @notice Performs user identifier validation.
+     * @dev Validates that the user identifier in the proof matches the hash of the user context data.
+     * Uses SHA256 followed by RIPEMD160 hashing for consistency with circuit implementation.
+     * @param userContextData The user context data to hash and compare.
+     * @param vcAndDiscloseProof The VC and Disclose proof containing the user identifier.
+     * @param attestationId The attestation identifier (used for getting correct indices).
+     * @param indices The circuit-specific indices for extracting the user identifier from proof.
      */
     function _performUserIdentifierCheck(
         bytes calldata userContextData,
