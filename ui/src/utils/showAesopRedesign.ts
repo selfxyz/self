@@ -1,4 +1,4 @@
-let SHOW_AESOP_REDESIGN: boolean = true; // Default value
+let SHOW_AESOP_REDESIGN: boolean = false; // Default value
 
 // todo make this based on environment variables in a way that is compatible with both web and native
 export function shouldShowAesopRedesign(): boolean {
