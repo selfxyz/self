@@ -10,11 +10,7 @@ import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement, getStartOfDayTimestamp, splitHexFromBack } from "../utils/utils";
 import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
-import {
-  formatCountriesList,
-  reverseBytes,
-  reverseCountryBytes,
-} from "@selfxyz/common/utils/circuits/formatInputs";
+import { formatCountriesList, reverseBytes, reverseCountryBytes } from "@selfxyz/common/utils/circuits/formatInputs";
 import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
 import { countries, Country3LetterCode } from "@selfxyz/common/constants/countries";
 import fs from "fs";
@@ -47,7 +43,7 @@ describe("VC and Disclose", () => {
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
     // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
-    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(commitment));
 
@@ -93,7 +89,7 @@ describe("VC and Disclose", () => {
       "ABC",
       "CBA",
     ] as Country3LetterCode[];
-    forbiddenCountriesListPacked = getPackedForbiddenCountries(forbiddenCountriesList)
+    forbiddenCountriesListPacked = getPackedForbiddenCountries(forbiddenCountriesList);
 
     invalidForbiddenCountriesList = ["AAA", "ABC", "CBA", "CBA"];
     // const invalidWholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(invalidForbiddenCountriesList))));
@@ -133,11 +129,16 @@ describe("VC and Disclose", () => {
     it("should verify and get result successfully", async () => {
       const { hub, registry, owner } = deployedActors;
 
-    const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
-        forbiddenCountriesListPacked: forbiddenCountriesListPacked.slice(0, 4) as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        forbiddenCountriesListPacked: forbiddenCountriesListPacked.slice(0, 4) as [
+          BigNumberish,
+          BigNumberish,
+          BigNumberish,
+          BigNumberish,
+        ],
         ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
         vcAndDiscloseProof: vcAndDiscloseProof,
       };

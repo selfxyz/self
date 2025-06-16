@@ -10,7 +10,6 @@ import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
  * @dev This contract provides a concrete implementation of the abstract SelfVerificationRoot
  */
 contract TestSelfVerificationRoot is SelfVerificationRoot {
-
     // Storage for testing purposes
     bool public verificationSuccessful;
     ISelfVerificationRoot.GenericDiscloseOutputV2 public lastOutput;
@@ -83,10 +82,7 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
      * @param output The verification output
      * @param userData The user data
      */
-    function testOnVerificationSuccess(
-        bytes memory output,
-        bytes memory userData
-    ) external {
+    function testOnVerificationSuccess(bytes memory output, bytes memory userData) external {
         // This should fail if called by anyone other than the hub
         onVerificationSuccess(output, userData);
     }

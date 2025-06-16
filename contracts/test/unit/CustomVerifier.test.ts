@@ -4,7 +4,7 @@ import { TestCustomVerifier, CustomVerifier } from "../../typechain-types";
 
 export const AttestationId = {
   E_PASSPORT: "0x0000000000000000000000000000000000000000000000000000000000000001",
-  EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002"
+  EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002",
 } as const;
 
 describe("CustomVerifier", function () {
@@ -18,8 +18,8 @@ describe("CustomVerifier", function () {
 
     const TestVerifierFactory = await ethers.getContractFactory("TestCustomVerifier", {
       libraries: {
-        CustomVerifier: await customVerifier.getAddress()
-      }
+        CustomVerifier: await customVerifier.getAddress(),
+      },
     });
     testVerifier = await TestVerifierFactory.deploy();
     await testVerifier.waitForDeployment();
@@ -35,7 +35,7 @@ describe("CustomVerifier", function () {
       mrzBytes, // revealedDataPacked (bytes)
       ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // userIdentifier (uint256)
       ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // nullifier (uint256)
-      [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)] // forbiddenCountriesListPacked
+      [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)], // forbiddenCountriesListPacked
     ];
 
     it("should verify passport with all checks disabled", async function () {
@@ -44,13 +44,16 @@ describe("CustomVerifier", function () {
         0,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.E_PASSPORT,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [samplePassportOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [samplePassportOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.E_PASSPORT);
@@ -62,14 +65,20 @@ describe("CustomVerifier", function () {
         0,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [true, false, true]
+        [true, false, true],
       ];
 
-      expect(async () => await testVerifier.testCustomVerify(
-        AttestationId.E_PASSPORT,
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [samplePassportOutput])
-      )).to.be.revertedWithCustomError(customVerifier, "INVALID_OFAC");
+      expect(
+        async () =>
+          await testVerifier.testCustomVerify(
+            AttestationId.E_PASSPORT,
+            ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
+            ethers.AbiCoder.defaultAbiCoder().encode(
+              ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+              [samplePassportOutput],
+            ),
+          ),
+      ).to.be.revertedWithCustomError(customVerifier, "INVALID_OFAC");
     });
 
     it("should return proper OFAC results", async function () {
@@ -78,20 +87,23 @@ describe("CustomVerifier", function () {
         0,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.E_PASSPORT,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [samplePassportOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [samplePassportOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.E_PASSPORT);
       expect(result.ofac[0]).to.equal(true);
       expect(result.ofac[1]).to.equal(false);
       expect(result.ofac[2]).to.equal(true);
-    })
+    });
 
     it("should verify passport with forbidden countries check", async function () {
       const config = [
@@ -99,13 +111,16 @@ describe("CustomVerifier", function () {
         0,
         true,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.E_PASSPORT,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [samplePassportOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [samplePassportOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.E_PASSPORT);
@@ -117,14 +132,20 @@ describe("CustomVerifier", function () {
         19,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
-      expect(async () => await testVerifier.testCustomVerify(
-        AttestationId.E_PASSPORT,
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [samplePassportOutput])
-      )).to.be.revertedWithCustomError(customVerifier, "INVALID_OLDER_THAN");
+      expect(
+        async () =>
+          await testVerifier.testCustomVerify(
+            AttestationId.E_PASSPORT,
+            ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
+            ethers.AbiCoder.defaultAbiCoder().encode(
+              ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+              [samplePassportOutput],
+            ),
+          ),
+      ).to.be.revertedWithCustomError(customVerifier, "INVALID_OLDER_THAN");
     });
 
     it("should not throw an error if older than is not enabled", async function () {
@@ -133,17 +154,20 @@ describe("CustomVerifier", function () {
         19,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.E_PASSPORT,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [samplePassportOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [samplePassportOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.E_PASSPORT);
-    })
+    });
 
     it("should not throw an error if age is valid", async function () {
       const config = [
@@ -151,18 +175,21 @@ describe("CustomVerifier", function () {
         18,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.E_PASSPORT,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [samplePassportOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [samplePassportOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.E_PASSPORT);
       expect(result.olderThan).to.equal(18);
-    })
+    });
   });
 
   describe("ID Card Verification", function () {
@@ -173,7 +200,7 @@ describe("CustomVerifier", function () {
       mrzBytes, // revealedDataPacked (bytes)
       ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // userIdentifier (uint256)
       ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // nullifier (uint256)
-      [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)] // forbiddenCountriesListPacked
+      [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)], // forbiddenCountriesListPacked
     ];
 
     it("should verify ID card with all checks disabled", async function () {
@@ -182,13 +209,16 @@ describe("CustomVerifier", function () {
         0,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.EU_ID_CARD,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [sampleIdCardOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [sampleIdCardOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.EU_ID_CARD);
@@ -200,14 +230,20 @@ describe("CustomVerifier", function () {
         0,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [true, false, true]
+        [true, false, true],
       ];
 
-      expect(async () => await testVerifier.testCustomVerify(
-        AttestationId.EU_ID_CARD,
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [sampleIdCardOutput])
-      )).to.be.revertedWithCustomError(customVerifier, "INVALID_OFAC");
+      expect(
+        async () =>
+          await testVerifier.testCustomVerify(
+            AttestationId.EU_ID_CARD,
+            ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
+            ethers.AbiCoder.defaultAbiCoder().encode(
+              ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+              [sampleIdCardOutput],
+            ),
+          ),
+      ).to.be.revertedWithCustomError(customVerifier, "INVALID_OFAC");
     });
 
     it("should return proper OFAC results", async function () {
@@ -216,13 +252,16 @@ describe("CustomVerifier", function () {
         0,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.EU_ID_CARD,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [sampleIdCardOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [sampleIdCardOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.EU_ID_CARD);
@@ -237,13 +276,16 @@ describe("CustomVerifier", function () {
         0,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.EU_ID_CARD,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [sampleIdCardOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [sampleIdCardOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.EU_ID_CARD);
@@ -255,13 +297,16 @@ describe("CustomVerifier", function () {
         0,
         true,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.EU_ID_CARD,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [sampleIdCardOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [sampleIdCardOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.EU_ID_CARD);
@@ -273,14 +318,20 @@ describe("CustomVerifier", function () {
         19,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
-      expect(async () => await testVerifier.testCustomVerify(
-        AttestationId.EU_ID_CARD,
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [sampleIdCardOutput])
-      )).to.be.revertedWithCustomError(customVerifier, "INVALID_OLDER_THAN");
+      expect(
+        async () =>
+          await testVerifier.testCustomVerify(
+            AttestationId.EU_ID_CARD,
+            ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
+            ethers.AbiCoder.defaultAbiCoder().encode(
+              ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+              [sampleIdCardOutput],
+            ),
+          ),
+      ).to.be.revertedWithCustomError(customVerifier, "INVALID_OLDER_THAN");
     });
 
     it("should not throw an error if older than is not enabled", async function () {
@@ -289,13 +340,16 @@ describe("CustomVerifier", function () {
         19,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.EU_ID_CARD,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [sampleIdCardOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [sampleIdCardOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.EU_ID_CARD);
@@ -307,13 +361,16 @@ describe("CustomVerifier", function () {
         18,
         false,
         [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
+        [false, false, false],
       ];
 
       const result = await testVerifier.testCustomVerify(
         AttestationId.EU_ID_CARD,
         ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [sampleIdCardOutput])
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [sampleIdCardOutput],
+        ),
       );
 
       expect(result.attestationId).to.equal(AttestationId.EU_ID_CARD);
@@ -321,29 +378,34 @@ describe("CustomVerifier", function () {
     });
   });
 
-    it("should revert with invalid attestation ID", async function () {
-      const config = [
-        false,
-        0,
-        false,
-        [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
-        [false, false, false]
-      ];
+  it("should revert with invalid attestation ID", async function () {
+    const config = [
+      false,
+      0,
+      false,
+      [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)],
+      [false, false, false],
+    ];
 
-      const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
+    const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
 
-      await expect(
-        testVerifier.testCustomVerify(
-          invalidAttestationId,
-          ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
-          ethers.AbiCoder.defaultAbiCoder().encode(["tuple(uint256,bytes,uint256,uint256,uint256[4])"], [[
-            ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // attestationId (uint256)
-            ethers.randomBytes(88), // revealedDataPacked (bytes)
-            ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // userIdentifier (uint256)
-            ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // nullifier (uint256)
-            [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)] // forbiddenCountriesListPacked
-          ]])
-        )
-      ).to.be.revertedWithCustomError(customVerifier, "INVALID_ATTESTATION_ID");
+    await expect(
+      testVerifier.testCustomVerify(
+        invalidAttestationId,
+        ethers.AbiCoder.defaultAbiCoder().encode(["tuple(bool,uint256,bool,uint256[4],bool[3])"], [config]),
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["tuple(uint256,bytes,uint256,uint256,uint256[4])"],
+          [
+            [
+              ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // attestationId (uint256)
+              ethers.randomBytes(88), // revealedDataPacked (bytes)
+              ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // userIdentifier (uint256)
+              ethers.getBigInt(ethers.hexlify(ethers.randomBytes(32))), // nullifier (uint256)
+              [ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0), ethers.getBigInt(0)], // forbiddenCountriesListPacked
+            ],
+          ],
+        ),
+      ),
+    ).to.be.revertedWithCustomError(customVerifier, "INVALID_ATTESTATION_ID");
   });
 });

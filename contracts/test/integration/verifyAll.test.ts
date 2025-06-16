@@ -41,7 +41,7 @@ describe("VerifyAll", () => {
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
     // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
-    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(commitment));
 
@@ -178,7 +178,7 @@ describe("VerifyAll", () => {
       await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
       vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX] = generateRandomFieldElement();
-      const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -199,7 +199,7 @@ describe("VerifyAll", () => {
 
       await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
-      const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -222,7 +222,7 @@ describe("VerifyAll", () => {
 
         vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
-        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: false,
           olderThan: "20",
           forbiddenCountriesEnabled: false,
@@ -245,7 +245,7 @@ describe("VerifyAll", () => {
 
         vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX] = 0;
 
-        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -266,7 +266,7 @@ describe("VerifyAll", () => {
         const { registry, owner } = deployedActors;
         await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
-        const vcAndDiscloseHubProof : VcAndDiscloseHubProof = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "21", // Higher than the age in proof
           forbiddenCountriesEnabled: false,
@@ -304,7 +304,7 @@ describe("VerifyAll", () => {
           "0",
         );
 
-        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: false,
@@ -329,7 +329,7 @@ describe("VerifyAll", () => {
         const { registry, owner } = deployedActors;
         await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
-        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -350,7 +350,7 @@ describe("VerifyAll", () => {
         const { registry, owner } = deployedActors;
         await registry.connect(owner).devAddIdentityCommitment(ATTESTATION_ID.E_PASSPORT, nullifier, commitment);
 
-        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -378,7 +378,7 @@ describe("VerifyAll", () => {
         vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX] =
           generateRandomFieldElement();
 
-        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -402,7 +402,7 @@ describe("VerifyAll", () => {
         vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX] =
           generateRandomFieldElement();
 
-        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -426,7 +426,7 @@ describe("VerifyAll", () => {
         vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX] =
           generateRandomFieldElement();
 
-        const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+        const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
           olderThanEnabled: true,
           olderThan: "20",
           forbiddenCountriesEnabled: true,
@@ -479,7 +479,7 @@ describe("VerifyAll", () => {
 
       vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
-      const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,
@@ -502,7 +502,7 @@ describe("VerifyAll", () => {
 
       vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX] = 0;
 
-      const vcAndDiscloseHubProof: VcAndDiscloseHubProof  = {
+      const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
         olderThanEnabled: true,
         olderThan: "20",
         forbiddenCountriesEnabled: true,

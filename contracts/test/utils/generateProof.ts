@@ -1,5 +1,5 @@
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt"
-import { ChildNodes, SMT } from "@openpassport/zk-kit-smt"
+import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import { ChildNodes, SMT } from "@openpassport/zk-kit-smt";
 import fs from "fs";
 import path from "path";
 import { poseidon2, poseidon3 } from "poseidon-lite";
@@ -26,11 +26,11 @@ const registerCircuits: CircuitArtifacts = {
   },
 };
 const registerCircuitsId: CircuitArtifacts = {
-    register_id_sha256_sha256_sha256_rsa_65537_4096: {
-        wasm: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_js/register_id_sha256_sha256_sha256_rsa_65537_4096.wasm",
-        zkey: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_final.zkey",
-        vkey: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_vkey.json",
-    },
+  register_id_sha256_sha256_sha256_rsa_65537_4096: {
+    wasm: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_js/register_id_sha256_sha256_sha256_rsa_65537_4096.wasm",
+    zkey: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_final.zkey",
+    vkey: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_vkey.json",
+  },
 };
 const dscCircuits: CircuitArtifacts = {
   dsc_sha256_rsa_65537_4096: {
@@ -47,11 +47,11 @@ const vcAndDiscloseCircuits: CircuitArtifacts = {
   },
 };
 const vcAndDiscloseIdCircuits: CircuitArtifacts = {
-    vc_and_disclose_id: {
-        wasm: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_js/vc_and_disclose_id.wasm",
-        zkey: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_final.zkey",
-        vkey: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_vkey.json",
-    }
+  vc_and_disclose_id: {
+    wasm: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_js/vc_and_disclose_id.wasm",
+    zkey: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_final.zkey",
+    vkey: "../circuits/build/disclose/vc_and_disclose_id/vc_and_disclose_id_vkey.json",
+  },
 };
 
 export async function generateRegisterProof(secret: string, passportData: PassportData): Promise<RegisterCircuitProof> {
@@ -87,9 +87,12 @@ export async function generateRegisterProof(secret: string, passportData: Passpo
   return fixedProof;
 }
 
-export async function generateRegisterIdProof(secret: string, passportData: PassportData): Promise<RegisterCircuitProof> {
+export async function generateRegisterIdProof(
+  secret: string,
+  passportData: PassportData,
+): Promise<RegisterCircuitProof> {
   // Get the correct circuit name based on passport data
-  const circuitName = getCircuitNameFromPassportData(passportData, 'register');
+  const circuitName = getCircuitNameFromPassportData(passportData, "register");
 
   // Get the circuit inputs for ID card - passportData should already be parsed from genMockIdDocAndInitDataParsing
   const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
@@ -103,7 +106,7 @@ export async function generateRegisterIdProof(secret: string, passportData: Pass
   let artifactKey;
 
   // Check if this is an ID circuit
-  if (circuitName.startsWith('register_id_')) {
+  if (circuitName.startsWith("register_id_")) {
     circuitArtifacts = registerCircuitsId;
     // Use the actual circuit name as the key
     artifactKey = circuitName;
@@ -123,9 +126,7 @@ export async function generateRegisterIdProof(secret: string, passportData: Pass
   );
 
   // Verify the proof
-  const vKey = JSON.parse(
-    fs.readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"),
-  );
+  const vKey = JSON.parse(fs.readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"));
   const isValid = await groth16.verify(vKey, registerProof.publicSignals, registerProof.proof);
   if (!isValid) {
     throw new Error("Generated register ID proof verification failed");
@@ -366,8 +367,8 @@ export async function generateVcAndDiscloseIdProof(
 
   const idCardPassportData = {
     ...passportData,
-    documentType: passportData.documentType.includes('id') ? passportData.documentType : 'id_card',
-    documentCategory: 'id_card' as const
+    documentType: passportData.documentType.includes("id") ? passportData.documentType : "id_card",
+    documentCategory: "id_card" as const,
   };
 
   const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsVCandDisclose(
@@ -419,7 +420,7 @@ export function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
     pubSignals: parsed[3].map((x: string) => {
       const cleaned = x.replace(/"/g, "");
       // Convert hex strings to decimal strings for Solidity compatibility
-      if (cleaned.startsWith('0x')) {
+      if (cleaned.startsWith("0x")) {
         return BigInt(cleaned).toString();
       }
       return cleaned;

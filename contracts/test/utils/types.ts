@@ -27,7 +27,7 @@ import {
   IIdentityRegistryV1,
   IRegisterCircuitVerifier,
   IDscCircuitVerifier,
-  IVcAndDiscloseCircuitVerifier
+  IVcAndDiscloseCircuitVerifier,
 } from "../../typechain-types";
 
 import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common";
@@ -40,9 +40,15 @@ export type VcAndDiscloseProof = IVcAndDiscloseCircuitVerifier.VcAndDiscloseProo
 
 // Type definitions
 export type VcAndDiscloseVerifier = typeof process.env.TEST_ENV extends "local" ? LocalVerifier : ProdVerifier;
-export type VcAndDiscloseIdVerifier = typeof process.env.TEST_ENV extends "local" ? LocalIdCardVerifier : ProdIdCardVerifier;
-export type RegisterVerifier = typeof process.env.TEST_ENV extends "local" ? LocalRegisterVerifier : ProdRegisterVerifier;
-export type IdCardRegisterVerifier = typeof process.env.TEST_ENV extends "local" ? LocalIdCardRegisterVerifier : ProdIdCardRegisterVerifier;
+export type VcAndDiscloseIdVerifier = typeof process.env.TEST_ENV extends "local"
+  ? LocalIdCardVerifier
+  : ProdIdCardVerifier;
+export type RegisterVerifier = typeof process.env.TEST_ENV extends "local"
+  ? LocalRegisterVerifier
+  : ProdRegisterVerifier;
+export type IdCardRegisterVerifier = typeof process.env.TEST_ENV extends "local"
+  ? LocalIdCardRegisterVerifier
+  : ProdIdCardRegisterVerifier;
 export type DscVerifier = typeof process.env.TEST_ENV extends "local" ? LocalDscVerifier : ProdDscVerifier;
 
 export interface DeployedActors {

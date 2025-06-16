@@ -88,15 +88,14 @@ export class Formatter {
     );
   }
 
-  static extractForbiddenCountriesFromPacked(revealedData_packed: string | string[],
-    id_type: 'passport' | 'id'
+  static extractForbiddenCountriesFromPacked(
+    revealedData_packed: string | string[],
+    id_type: "passport" | "id",
   ): string[] {
     // If revealedData_packed is not an array, convert it to an array
-    const packedArray = Array.isArray(revealedData_packed)
-      ? revealedData_packed
-      : [revealedData_packed];
+    const packedArray = Array.isArray(revealedData_packed) ? revealedData_packed : [revealedData_packed];
 
-    const bytesCount = id_type === 'passport' ? [31, 31, 31] : [31, 31, 31, 27]; // nb of bytes in each of the first three field elements
+    const bytesCount = id_type === "passport" ? [31, 31, 31] : [31, 31, 31, 27]; // nb of bytes in each of the first three field elements
     const bytesArray = packedArray.flatMap((element: string, index: number) => {
       const bytes = bytesCount[index] || 31; // Use 31 as default if index is out of range
       const elementBigInt = BigInt(element);

@@ -16,9 +16,9 @@ const CSCA_ROOT = process.env.CSCA_ROOT; // Allow manual CSCA root setting
 
 // Network to Chain ID mapping
 const NETWORK_TO_CHAIN_ID: Record<string, string> = {
-  "localhost": "31337",
-  "celoAlfajores": "44787",
-  "celo": "42220",
+  localhost: "31337",
+  celoAlfajores: "44787",
+  celo: "42220",
 };
 
 // Get chain ID from network name
@@ -30,7 +30,10 @@ const CHAIN_ID = getChainId(NETWORK);
 
 // Dynamic paths based on chain ID
 const deployedAddressesPath = path.join(__dirname, `../ignition/deployments/chain-${CHAIN_ID}/deployed_addresses.json`);
-const contractAbiPath = path.join(__dirname, `../ignition/deployments/chain-${CHAIN_ID}/artifacts/DeployIdCardRegistryModule#IdentityRegistryIdCardImplV1.json`);
+const contractAbiPath = path.join(
+  __dirname,
+  `../ignition/deployments/chain-${CHAIN_ID}/artifacts/DeployIdCardRegistryModule#IdentityRegistryIdCardImplV1.json`,
+);
 
 // Debug logs for paths and files
 console.log("Network:", NETWORK);
@@ -83,7 +86,11 @@ try {
       throw new Error("Hub address not found in deployed_addresses.json");
     }
 
-    const identityRegistryIdCard = new ethers.Contract(registryIdCardAddress as string, identityRegistryIdCardAbi, wallet);
+    const identityRegistryIdCard = new ethers.Contract(
+      registryIdCardAddress as string,
+      identityRegistryIdCardAbi,
+      wallet,
+    );
     console.log("Registry ID Card contract instance created");
 
     // Update hub address

@@ -39,11 +39,7 @@ describe("Hub Other Functions Test", function () {
       const verifierAddresses = [ethers.ZeroAddress, ethers.ZeroAddress];
 
       await expect(
-        deployedActors.hub.batchUpdateRegisterCircuitVerifiers(
-          attestationIds,
-          typeIds,
-          verifierAddresses
-        )
+        deployedActors.hub.batchUpdateRegisterCircuitVerifiers(attestationIds, typeIds, verifierAddresses),
       ).to.be.revertedWithCustomError(deployedActors.hub, "LengthMismatch");
     });
 
@@ -53,11 +49,7 @@ describe("Hub Other Functions Test", function () {
       const verifierAddresses = [ethers.ZeroAddress];
 
       await expect(
-        deployedActors.hub.batchUpdateDscCircuitVerifiers(
-          attestationIds,
-          typeIds,
-          verifierAddresses
-        )
+        deployedActors.hub.batchUpdateDscCircuitVerifiers(attestationIds, typeIds, verifierAddresses),
       ).to.be.revertedWithCustomError(deployedActors.hub, "LengthMismatch");
     });
 
@@ -66,13 +58,8 @@ describe("Hub Other Functions Test", function () {
       const typeIds = [1, 2];
       const verifierAddresses = [ethers.ZeroAddress, ethers.ZeroAddress];
 
-      await expect(
-        deployedActors.hub.batchUpdateRegisterCircuitVerifiers(
-          attestationIds,
-          typeIds,
-          verifierAddresses
-        )
-      ).to.not.be.reverted;
+      await expect(deployedActors.hub.batchUpdateRegisterCircuitVerifiers(attestationIds, typeIds, verifierAddresses))
+        .to.not.be.reverted;
     });
 
     it("should successfully batch update DSC circuit verifiers with matching array lengths", async () => {
@@ -80,13 +67,8 @@ describe("Hub Other Functions Test", function () {
       const typeIds = [1, 2];
       const verifierAddresses = [ethers.ZeroAddress, ethers.ZeroAddress];
 
-      await expect(
-        deployedActors.hub.batchUpdateDscCircuitVerifiers(
-          attestationIds,
-          typeIds,
-          verifierAddresses
-        )
-      ).to.not.be.reverted;
+      await expect(deployedActors.hub.batchUpdateDscCircuitVerifiers(attestationIds, typeIds, verifierAddresses)).to.not
+        .be.reverted;
     });
   });
 
@@ -94,21 +76,14 @@ describe("Hub Other Functions Test", function () {
     it("should fail when non-owner tries to call onlyOwner functions", async () => {
       const nonOwnerHub = deployedActors.hub.connect(deployedActors.user1);
 
-      await expect(
-        nonOwnerHub.updateRegistry(attestationIdBytes32, ethers.ZeroAddress)
-      ).to.be.reverted; // Should revert due to onlyOwner modifier
+      await expect(nonOwnerHub.updateRegistry(attestationIdBytes32, ethers.ZeroAddress)).to.be.reverted; // Should revert due to onlyOwner modifier
 
-      await expect(
-        nonOwnerHub.updateVcAndDiscloseCircuit(attestationIdBytes32, ethers.ZeroAddress)
-      ).to.be.reverted; // Should revert due to onlyOwner modifier
+      await expect(nonOwnerHub.updateVcAndDiscloseCircuit(attestationIdBytes32, ethers.ZeroAddress)).to.be.reverted; // Should revert due to onlyOwner modifier
 
-      await expect(
-        nonOwnerHub.updateRegisterCircuitVerifier(attestationIdBytes32, 1, ethers.ZeroAddress)
-      ).to.be.reverted; // Should revert due to onlyOwner modifier
+      await expect(nonOwnerHub.updateRegisterCircuitVerifier(attestationIdBytes32, 1, ethers.ZeroAddress)).to.be
+        .reverted; // Should revert due to onlyOwner modifier
 
-      await expect(
-        nonOwnerHub.updateDscVerifier(attestationIdBytes32, 1, ethers.ZeroAddress)
-      ).to.be.reverted; // Should revert due to onlyOwner modifier
+      await expect(nonOwnerHub.updateDscVerifier(attestationIdBytes32, 1, ethers.ZeroAddress)).to.be.reverted; // Should revert due to onlyOwner modifier
     });
   });
 
@@ -126,7 +101,7 @@ describe("Hub Other Functions Test", function () {
     it("should return correct register circuit verifier address", async () => {
       const registerVerifierAddress = await deployedActors.hub.registerCircuitVerifiers(
         attestationIdBytes32,
-        RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096
+        RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
       );
       expect(registerVerifierAddress).to.not.equal(ethers.ZeroAddress);
     });
@@ -134,30 +109,31 @@ describe("Hub Other Functions Test", function () {
     it("should return correct DSC circuit verifier address", async () => {
       const dscVerifierAddress = await deployedActors.hub.dscCircuitVerifiers(
         attestationIdBytes32,
-        DscVerifierId.dsc_sha256_rsa_65537_4096
+        DscVerifierId.dsc_sha256_rsa_65537_4096,
       );
       expect(dscVerifierAddress).to.not.equal(ethers.ZeroAddress);
     });
 
     it("should return correct identity commitment merkle root", async () => {
       const merkleRoot = await deployedActors.hub.getIdentityCommitmentMerkleRoot(attestationIdBytes32);
-      expect(merkleRoot).to.be.a('bigint');
+      expect(merkleRoot).to.be.a("bigint");
     });
 
     it("should fail getIdentityCommitmentMerkleRoot with InvalidAttestationId", async () => {
       const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
 
       await expect(
-        deployedActors.hub.getIdentityCommitmentMerkleRoot(invalidAttestationId)
+        deployedActors.hub.getIdentityCommitmentMerkleRoot(invalidAttestationId),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
 
     it("should fail rootTimestamp with InvalidAttestationId", async () => {
       const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
 
-      await expect(
-        deployedActors.hub.rootTimestamp(invalidAttestationId, 123)
-      ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
+      await expect(deployedActors.hub.rootTimestamp(invalidAttestationId, 123)).to.be.revertedWithCustomError(
+        deployedActors.hub,
+        "InvalidAttestationId",
+      );
     });
   });
 
@@ -168,14 +144,19 @@ describe("Hub Other Functions Test", function () {
         olderThan: 18,
         forbiddenCountriesEnabled: true,
         forbiddenCountriesListPacked: [840, 156, 0, 0] as [number, number, number, number], // USA, China
-        ofacEnabled: [true, false, false] as [boolean, boolean, boolean]
+        ofacEnabled: [true, false, false] as [boolean, boolean, boolean],
       };
 
       const configId = await deployedActors.hub.setVerificationConfigV2.staticCall(config);
-      await expect(
-        deployedActors.hub.setVerificationConfigV2(config)
-      ).to.emit(deployedActors.hub, "VerificationConfigV2Set")
-        .withArgs(configId, [config.olderThanEnabled, config.olderThan, config.forbiddenCountriesEnabled, config.forbiddenCountriesListPacked, config.ofacEnabled]);
+      await expect(deployedActors.hub.setVerificationConfigV2(config))
+        .to.emit(deployedActors.hub, "VerificationConfigV2Set")
+        .withArgs(configId, [
+          config.olderThanEnabled,
+          config.olderThan,
+          config.forbiddenCountriesEnabled,
+          config.forbiddenCountriesListPacked,
+          config.ofacEnabled,
+        ]);
 
       const exists = await deployedActors.hub.verificationConfigV2Exists(configId);
       expect(exists).to.be.true;
@@ -187,7 +168,7 @@ describe("Hub Other Functions Test", function () {
         olderThan: 21,
         forbiddenCountriesEnabled: false,
         forbiddenCountriesListPacked: [392, 0, 0, 0] as [number, number, number, number], // Japan
-        ofacEnabled: [false, false, false] as [boolean, boolean, boolean]
+        ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
       const generatedId = await deployedActors.hub.generateConfigId(config);

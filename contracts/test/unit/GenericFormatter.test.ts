@@ -19,7 +19,7 @@ describe("GenericFormatter", function () {
       olderThan: 18,
       forbiddenCountriesEnabled: false,
       forbiddenCountriesListPacked: [0n, 0n, 0n, 0n],
-      ofacEnabled: [false, false, false]
+      ofacEnabled: [false, false, false],
     };
 
     const verificationConfigV2 = await testGenericFormatter.testFromV1Config(verificationConfigV1);
@@ -28,7 +28,9 @@ describe("GenericFormatter", function () {
     expect(verificationConfigV2.olderThanEnabled).to.equal(verificationConfigV1.olderThanEnabled);
     expect(verificationConfigV2.olderThan).to.equal(verificationConfigV1.olderThan);
     expect(verificationConfigV2.forbiddenCountriesEnabled).to.equal(verificationConfigV1.forbiddenCountriesEnabled);
-    expect(verificationConfigV2.forbiddenCountriesListPacked).to.deep.equal(verificationConfigV1.forbiddenCountriesListPacked);
+    expect(verificationConfigV2.forbiddenCountriesListPacked).to.deep.equal(
+      verificationConfigV1.forbiddenCountriesListPacked,
+    );
     expect(verificationConfigV2.ofacEnabled).to.deep.equal(verificationConfigV1.ofacEnabled);
   });
 
@@ -39,27 +41,35 @@ describe("GenericFormatter", function () {
       olderThan: 18,
       forbiddenCountriesEnabled: false,
       forbiddenCountriesListPacked: [0n, 0n, 0n, 0n],
-      ofacEnabled: [false, false, false]
+      ofacEnabled: [false, false, false],
     };
 
     //abi encode the verificationConfigV2 struct
     const verificationConfigV2Bytes = ethers.AbiCoder.defaultAbiCoder().encode(
       ["tuple(bool,uint256,bool,uint256[4],bool[3])"],
-      [[
-        verificationConfigV2.olderThanEnabled,
-        verificationConfigV2.olderThan,
-        verificationConfigV2.forbiddenCountriesEnabled,
-        verificationConfigV2.forbiddenCountriesListPacked,
-        verificationConfigV2.ofacEnabled
-      ]]);
+      [
+        [
+          verificationConfigV2.olderThanEnabled,
+          verificationConfigV2.olderThan,
+          verificationConfigV2.forbiddenCountriesEnabled,
+          verificationConfigV2.forbiddenCountriesListPacked,
+          verificationConfigV2.ofacEnabled,
+        ],
+      ],
+    );
 
-    const verificationConfigV2BytesDecoded = await testGenericFormatter.testVerificationConfigFromBytes(verificationConfigV2Bytes);
+    const verificationConfigV2BytesDecoded =
+      await testGenericFormatter.testVerificationConfigFromBytes(verificationConfigV2Bytes);
 
     // Add your assertions here
     expect(verificationConfigV2BytesDecoded.olderThanEnabled).to.equal(verificationConfigV2.olderThanEnabled);
     expect(verificationConfigV2BytesDecoded.olderThan).to.equal(verificationConfigV2.olderThan);
-    expect(verificationConfigV2BytesDecoded.forbiddenCountriesEnabled).to.equal(verificationConfigV2.forbiddenCountriesEnabled);
-    expect(verificationConfigV2BytesDecoded.forbiddenCountriesListPacked).to.deep.equal(verificationConfigV2.forbiddenCountriesListPacked);
+    expect(verificationConfigV2BytesDecoded.forbiddenCountriesEnabled).to.equal(
+      verificationConfigV2.forbiddenCountriesEnabled,
+    );
+    expect(verificationConfigV2BytesDecoded.forbiddenCountriesListPacked).to.deep.equal(
+      verificationConfigV2.forbiddenCountriesListPacked,
+    );
     expect(verificationConfigV2BytesDecoded.ofacEnabled).to.deep.equal(verificationConfigV2.ofacEnabled);
   });
 
@@ -70,14 +80,14 @@ describe("GenericFormatter", function () {
       olderThan: 18,
       forbiddenCountriesEnabled: false,
       forbiddenCountriesListPacked: [0n, 0n, 0n, 0n],
-      ofacEnabled: [false, false, false]
+      ofacEnabled: [false, false, false],
     };
 
     const verificationConfigLatest = await testGenericFormatter.testFormatV1Config(verificationConfigV1);
 
     const verificationConfigLatestDecoded = ethers.AbiCoder.defaultAbiCoder().decode(
       ["tuple(bool,uint256,bool,uint256[4],bool[3])"],
-      verificationConfigLatest
+      verificationConfigLatest,
     );
 
     // Add your assertions here
@@ -95,14 +105,14 @@ describe("GenericFormatter", function () {
       olderThan: 18,
       forbiddenCountriesEnabled: false,
       forbiddenCountriesListPacked: [0n, 0n, 0n, 0n],
-      ofacEnabled: [false, false, false]
+      ofacEnabled: [false, false, false],
     };
 
     const verificationConfigV2Bytes = await testGenericFormatter.testFormatV2Config(verificationConfigV2);
 
     const verificationConfigLatest = ethers.AbiCoder.defaultAbiCoder().decode(
       ["tuple(bool,uint256,bool,uint256[4],bool[3])"],
-      verificationConfigV2Bytes
+      verificationConfigV2Bytes,
     );
 
     // Add your assertions here
@@ -128,14 +138,14 @@ describe("GenericFormatter", function () {
       gender: "Male",
       expiryDate: "2025-01-01",
       olderThan: 18,
-      ofac: [false, false, false]
+      ofac: [false, false, false],
     };
 
     const genericDiscloseOutputV2Bytes = await testGenericFormatter.testToV2Struct(genericDiscloseOutputV2);
 
     const genericDiscloseOutputLatest = ethers.AbiCoder.defaultAbiCoder().decode(
       ["tuple(bytes32,uint256,uint256,uint256[4],string,string[],string,string,string,string,string,uint256,bool[3])"],
-      genericDiscloseOutputV2Bytes
+      genericDiscloseOutputV2Bytes,
     );
 
     expect(genericDiscloseOutputV2.attestationId.toString()).to.equal(genericDiscloseOutputV2.attestationId);

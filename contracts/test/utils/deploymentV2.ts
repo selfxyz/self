@@ -7,9 +7,7 @@ import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
 import { PassportData } from "@selfxyz/common/utils/types";
 import { getSMTs } from "./generateProof";
 import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
-import {
-  DeployedActorsV2,
-} from "./types";
+import { DeployedActorsV2 } from "./types";
 import { hashEndpointWithScope } from "@selfxyz/common/utils/scope";
 
 // Verifier artifacts (local staging)
@@ -52,7 +50,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   const vcAndDiscloseVerifierArtifact = VcAndDiscloseVerifierArtifactLocal;
   const vcAndDiscloseVerifierFactory = await ethers.getContractFactory(
     vcAndDiscloseVerifierArtifact.abi,
-    vcAndDiscloseVerifierArtifact.bytecode
+    vcAndDiscloseVerifierArtifact.bytecode,
   );
   vcAndDiscloseVerifier = await vcAndDiscloseVerifierFactory.connect(owner).deploy();
   await vcAndDiscloseVerifier.waitForDeployment();
@@ -61,7 +59,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   const vcAndDiscloseIdVerifierArtifact = VcAndDiscloseIdVerifierArtifactLocal;
   const vcAndDiscloseIdVerifierFactory = await ethers.getContractFactory(
     vcAndDiscloseIdVerifierArtifact.abi,
-    vcAndDiscloseIdVerifierArtifact.bytecode
+    vcAndDiscloseIdVerifierArtifact.bytecode,
   );
   vcAndDiscloseIdVerifier = await vcAndDiscloseIdVerifierFactory.connect(owner).deploy();
   await vcAndDiscloseIdVerifier.waitForDeployment();
@@ -70,7 +68,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   const registerVerifierArtifact = RegisterVerifierArtifactLocal;
   const registerVerifierFactory = await ethers.getContractFactory(
     registerVerifierArtifact.abi,
-    registerVerifierArtifact.bytecode
+    registerVerifierArtifact.bytecode,
   );
   registerVerifier = await registerVerifierFactory.connect(owner).deploy();
   await registerVerifier.waitForDeployment();
@@ -79,17 +77,14 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   const registerIdVerifierArtifact = RegisterIdVerifierArtifactLocal;
   const registerIdVerifierFactory = await ethers.getContractFactory(
     registerIdVerifierArtifact.abi,
-    registerIdVerifierArtifact.bytecode
+    registerIdVerifierArtifact.bytecode,
   );
   registerIdVerifier = await registerIdVerifierFactory.connect(owner).deploy();
   await registerIdVerifier.waitForDeployment();
 
   // Deploy dsc verifier
   const dscVerifierArtifact = DscVerifierArtifactLocal;
-  const dscVerifierFactory = await ethers.getContractFactory(
-    dscVerifierArtifact.abi,
-    dscVerifierArtifact.bytecode
-  );
+  const dscVerifierFactory = await ethers.getContractFactory(dscVerifierArtifact.abi, dscVerifierArtifact.bytecode);
   dscVerifier = await dscVerifierFactory.connect(owner).deploy();
   await dscVerifier.waitForDeployment();
 
@@ -109,37 +104,28 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   await genericFormatter.waitForDeployment();
 
   // Deploy IdentityRegistryImplV1 (same registry as V1)
-  const IdentityRegistryImplFactory = await ethers.getContractFactory(
-    "IdentityRegistryImplV1",
-    {
-      libraries: {
-        PoseidonT3: poseidonT3.target
-      }
-    }
-  );
+  const IdentityRegistryImplFactory = await ethers.getContractFactory("IdentityRegistryImplV1", {
+    libraries: {
+      PoseidonT3: poseidonT3.target,
+    },
+  });
   identityRegistryImpl = await IdentityRegistryImplFactory.connect(owner).deploy();
   await identityRegistryImpl.waitForDeployment();
 
   // Deploy IdentityRegistryIdCardImplV1 for ID cards
-  const IdentityRegistryIdImplFactory = await ethers.getContractFactory(
-    "IdentityRegistryIdCardImplV1",
-    {
-      libraries: {
-        PoseidonT3: poseidonT3.target
-      }
-    }
-  );
+  const IdentityRegistryIdImplFactory = await ethers.getContractFactory("IdentityRegistryIdCardImplV1", {
+    libraries: {
+      PoseidonT3: poseidonT3.target,
+    },
+  });
   identityRegistryIdImpl = await IdentityRegistryIdImplFactory.connect(owner).deploy();
   await identityRegistryIdImpl.waitForDeployment();
   // Deploy IdentityVerificationHubImplV2
-  const IdentityVerificationHubImplV2Factory = await ethers.getContractFactory(
-    "IdentityVerificationHubImplV2",
-    {
-      libraries: {
-        CustomVerifier: customVerifier.target
-      }
-    }
-  );
+  const IdentityVerificationHubImplV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV2", {
+    libraries: {
+      CustomVerifier: customVerifier.target,
+    },
+  });
   identityVerificationHubImplV2 = await IdentityVerificationHubImplV2Factory.connect(owner).deploy();
   await identityVerificationHubImplV2.waitForDeployment();
 
@@ -147,19 +133,25 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   const temporaryHubAddress = "0x0000000000000000000000000000000000000000";
   const registryInitData = identityRegistryImpl.interface.encodeFunctionData("initialize", [temporaryHubAddress]);
   const registryProxyFactory = await ethers.getContractFactory("IdentityRegistry");
-  identityRegistryProxy = await registryProxyFactory.connect(owner).deploy(identityRegistryImpl.target, registryInitData);
+  identityRegistryProxy = await registryProxyFactory
+    .connect(owner)
+    .deploy(identityRegistryImpl.target, registryInitData);
   await identityRegistryProxy.waitForDeployment();
 
   // Deploy ID card registry with temporary hub address
   const registryIdInitData = identityRegistryIdImpl.interface.encodeFunctionData("initialize", [temporaryHubAddress]);
   const registryIdProxyFactory = await ethers.getContractFactory("IdentityRegistry");
-  identityRegistryIdProxy = await registryIdProxyFactory.connect(owner).deploy(identityRegistryIdImpl.target, registryIdInitData);
+  identityRegistryIdProxy = await registryIdProxyFactory
+    .connect(owner)
+    .deploy(identityRegistryIdImpl.target, registryIdInitData);
   await identityRegistryIdProxy.waitForDeployment();
 
   // Deploy hub V2 with simple initialization (V2 has different initialization)
   const initializeDataV2 = identityVerificationHubImplV2.interface.encodeFunctionData("initialize");
   const hubFactory = await ethers.getContractFactory("IdentityVerificationHub");
-  identityVerificationHubV2 = await hubFactory.connect(owner).deploy(identityVerificationHubImplV2.target, initializeDataV2);
+  identityVerificationHubV2 = await hubFactory
+    .connect(owner)
+    .deploy(identityVerificationHubImplV2.target, initializeDataV2);
   await identityVerificationHubV2.waitForDeployment();
 
   // Get contracts with implementation ABI and update hub address
@@ -171,10 +163,10 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   const updateIdHubTx = await registryIdContract.updateHub(identityVerificationHubV2.target);
   await updateIdHubTx.wait();
 
-  const hubContract = await ethers.getContractAt(
+  const hubContract = (await ethers.getContractAt(
     "IdentityVerificationHubImplV2",
-    identityVerificationHubV2.target
-  ) as any;
+    identityVerificationHubV2.target,
+  )) as any;
 
   // Initialize roots
   const csca_root = getCscaTreeRoot(serialized_csca_tree);
@@ -205,26 +197,18 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   await hubContract.updateRegisterCircuitVerifier(
     E_PASSPORT,
     RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-    registerVerifier.target
+    registerVerifier.target,
   );
   await hubContract.updateRegisterCircuitVerifier(
     EU_ID_CARD,
     RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-    registerIdVerifier.target
+    registerIdVerifier.target,
   );
 
   // Update DSC verifiers
-  await hubContract.updateDscVerifier(
-    E_PASSPORT,
-    DscVerifierId.dsc_sha256_rsa_65537_4096,
-    dscVerifier.target
-  );
+  await hubContract.updateDscVerifier(E_PASSPORT, DscVerifierId.dsc_sha256_rsa_65537_4096, dscVerifier.target);
   // Add DSC verifier for EU_ID_CARD as well
-  await hubContract.updateDscVerifier(
-    EU_ID_CARD,
-    DscVerifierId.dsc_sha256_rsa_65537_4096,
-    dscVerifier.target
-  );
+  await hubContract.updateDscVerifier(EU_ID_CARD, DscVerifierId.dsc_sha256_rsa_65537_4096, dscVerifier.target);
 
   // Deploy TestSelfVerificationRoot
   const testScope = hashEndpointWithScope("example.com", "test-scope");

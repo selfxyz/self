@@ -7,7 +7,6 @@ pragma solidity 0.8.28;
  * @dev Provides base functionality for verifying and disclosing identity credentials
  */
 interface ISelfVerificationRoot {
-
     /**
      * @notice Structure containing proof data for disclose circuits
      * @dev Contains the proof elements required for zero-knowledge verification
@@ -62,10 +61,7 @@ interface ISelfVerificationRoot {
      * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | proof data |
      * @param userContextData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
      */
-    function verifySelfProof(
-        bytes calldata proofPayload,
-        bytes calldata userContextData
-    ) external;
+    function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) external;
 
     /**
      * @notice Callback function called upon successful verification
@@ -73,8 +69,5 @@ interface ISelfVerificationRoot {
      * @param output The verification output data containing disclosed identity information
      * @param userData The user-defined data passed through the verification process
      */
-    function onVerificationSuccess(
-        bytes memory output,
-        bytes memory userData
-    ) external;
+    function onVerificationSuccess(bytes memory output, bytes memory userData) external;
 }

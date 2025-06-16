@@ -11,7 +11,6 @@ import {SelfStructs} from "../libraries/SelfStructs.sol";
  * @dev Defines all external and public functions from IdentityVerificationHubImplV2.
  */
 interface IIdentityVerificationHubV2 {
-
     // ====================================================
     // External Functions
     // ====================================================
@@ -48,17 +47,16 @@ interface IIdentityVerificationHubV2 {
      * @param config The verification configuration
      * @return configId The generated config ID
      */
-    function setVerificationConfigV2(SelfStructs.VerificationConfigV2 memory config) external returns (bytes32 configId);
+    function setVerificationConfigV2(
+        SelfStructs.VerificationConfigV2 memory config
+    ) external returns (bytes32 configId);
 
     /**
      * @notice Main verification function with new structured input format
      * @param baseVerificationInput The base verification input data
      * @param userContextData The user context data
      */
-    function verify(
-        bytes calldata baseVerificationInput,
-        bytes calldata userContextData
-    ) external;
+    function verify(bytes calldata baseVerificationInput, bytes calldata userContextData) external;
 
     /**
      * @notice Updates the registry address.
@@ -72,10 +70,7 @@ interface IIdentityVerificationHubV2 {
      * @param attestationId The attestation ID.
      * @param vcAndDiscloseCircuitVerifierAddress The new VC and Disclose circuit verifier address.
      */
-    function updateVcAndDiscloseCircuit(
-        bytes32 attestationId,
-        address vcAndDiscloseCircuitVerifierAddress
-    ) external;
+    function updateVcAndDiscloseCircuit(bytes32 attestationId, address vcAndDiscloseCircuitVerifierAddress) external;
 
     /**
      * @notice Updates the register circuit verifier for a specific signature type.
@@ -83,11 +78,7 @@ interface IIdentityVerificationHubV2 {
      * @param typeId The signature type identifier.
      * @param verifierAddress The new register circuit verifier address.
      */
-    function updateRegisterCircuitVerifier(
-        bytes32 attestationId,
-        uint256 typeId,
-        address verifierAddress
-    ) external;
+    function updateRegisterCircuitVerifier(bytes32 attestationId, uint256 typeId, address verifierAddress) external;
 
     /**
      * @notice Updates the DSC circuit verifier for a specific signature type.
@@ -95,11 +86,7 @@ interface IIdentityVerificationHubV2 {
      * @param typeId The signature type identifier.
      * @param verifierAddress The new DSC circuit verifier address.
      */
-    function updateDscVerifier(
-        bytes32 attestationId,
-        uint256 typeId,
-        address verifierAddress
-    ) external;
+    function updateDscVerifier(bytes32 attestationId, uint256 typeId, address verifierAddress) external;
 
     /**
      * @notice Batch updates register circuit verifiers.

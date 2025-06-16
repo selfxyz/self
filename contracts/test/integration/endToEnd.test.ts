@@ -86,7 +86,7 @@ describe("End to End Tests", function () {
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
     // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
-    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     const imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX]));
 
@@ -183,20 +183,18 @@ describe("End to End Tests", function () {
     await token.waitForDeployment();
 
     const airdropFactory = await ethers.getContractFactory("Airdrop");
-    const airdrop = await airdropFactory
-      .connect(owner)
-      .deploy(
-        hub.target,
-        castFromScope("test-scope"),
-        ATTESTATION_ID.E_PASSPORT,
-        token.target,
-        true,
-        20,
-        // @ts-expect-error
-        true,
-        countriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
-        [true, true, true],
-      );
+    const airdrop = await airdropFactory.connect(owner).deploy(
+      hub.target,
+      castFromScope("test-scope"),
+      ATTESTATION_ID.E_PASSPORT,
+      token.target,
+      true,
+      20,
+      // @ts-expect-error
+      true,
+      countriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      [true, true, true],
+    );
     await airdrop.waitForDeployment();
 
     await token.connect(owner).mint(airdrop.target, BigInt(1000000000000000000));

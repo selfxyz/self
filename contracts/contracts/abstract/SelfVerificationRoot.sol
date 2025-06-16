@@ -59,10 +59,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2
      * @param scopeValue The expected proof scope for user registration
      */
-    constructor(
-        address identityVerificationHubV2Address,
-        uint256 scopeValue
-    ) {
+    constructor(address identityVerificationHubV2Address, uint256 scopeValue) {
         _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
         _scope = scopeValue;
     }
@@ -95,10 +92,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @custom:data-format userContextData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
      * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
-    function verifySelfProof(
-        bytes calldata proofPayload,
-        bytes calldata userContextData
-    ) public {
+    function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) public {
         // Minimum expected length for proofData: 32 bytes attestationId + proof data
         if (proofPayload.length < 32) {
             revert InvalidDataFormat();
@@ -141,16 +135,16 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @custom:security Only the authorized hub contract can call this function
      * @custom:flow This function decodes the output and calls the customizable verification hook
      */
-    function onVerificationSuccess(
-        bytes memory output,
-        bytes memory userData
-    ) public {
+    function onVerificationSuccess(bytes memory output, bytes memory userData) public {
         // Only allow the identity verification hub V2 to call this function
         if (msg.sender != address(_identityVerificationHubV2)) {
             revert UnauthorizedCaller();
         }
 
-        ISelfVerificationRoot.GenericDiscloseOutputV2 memory genericDiscloseOutput = abi.decode(output, (ISelfVerificationRoot.GenericDiscloseOutputV2));
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory genericDiscloseOutput = abi.decode(
+            output,
+            (ISelfVerificationRoot.GenericDiscloseOutputV2)
+        );
 
         // Call the customizable verification hook
         customVerificationHook(genericDiscloseOutput, userData);
@@ -170,5 +164,4 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     ) internal virtual {
         // Default implementation is empty - override in derived contracts to add custom logic
     }
-
 }

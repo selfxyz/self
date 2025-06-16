@@ -41,13 +41,13 @@ describe("Passport Registration test", function () {
     before(async () => {
       // Generate DSC proof once for all tests in this describe block
       passportData = genMockIdDocAndInitDataParsing({
-        idType: 'mock_passport',
-        dgHashAlgo: 'sha256',
-        eContentHashAlgo: 'sha256',
-        signatureType: 'rsa_sha256_65537_2048',
-        nationality: 'USA',
-        birthDate: '900101',
-        expiryDate: '301231',
+        idType: "mock_passport",
+        dgHashAlgo: "sha256",
+        eContentHashAlgo: "sha256",
+        signatureType: "rsa_sha256_65537_2048",
+        nationality: "USA",
+        birthDate: "900101",
+        expiryDate: "301231",
       });
 
       dscProof = await generateDscProof(passportData);
@@ -61,11 +61,7 @@ describe("Passport Registration test", function () {
 
       // Register the DSC key commitment
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(
-          ePassportAttestationIdBytes32,
-          dscCircuitVerifierId,
-          dscProof
-        )
+        deployedActors.hub.registerDscKeyCommitment(ePassportAttestationIdBytes32, dscCircuitVerifierId, dscProof),
       ).to.emit(deployedActors.registry, "DscKeyCommitmentRegistered");
 
       // Verify DSC was added to tree
@@ -77,7 +73,7 @@ describe("Passport Registration test", function () {
 
       // Verify the commitment is registered
       const isRegistered = await deployedActors.registry.isRegisteredDscKeyCommitment(
-        dscProof.pubSignals[CIRCUIT_CONSTANTS.DSC_TREE_LEAF_INDEX]
+        dscProof.pubSignals[CIRCUIT_CONSTANTS.DSC_TREE_LEAF_INDEX],
       );
       expect(isRegistered).to.be.true;
     });
@@ -86,11 +82,7 @@ describe("Passport Registration test", function () {
       const nonExistentVerifierId = 999999; // Non-existent verifier ID
 
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(
-          ePassportAttestationIdBytes32,
-          nonExistentVerifierId,
-          dscProof
-        )
+        deployedActors.hub.registerDscKeyCommitment(ePassportAttestationIdBytes32, nonExistentVerifierId, dscProof),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -99,11 +91,7 @@ describe("Passport Registration test", function () {
       const dscCircuitVerifierId = DscVerifierId.dsc_sha256_rsa_65537_4096;
 
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(
-          invalidAttestationId,
-          dscCircuitVerifierId,
-          dscProof
-        )
+        deployedActors.hub.registerDscKeyCommitment(invalidAttestationId, dscCircuitVerifierId, dscProof),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -115,16 +103,12 @@ describe("Passport Registration test", function () {
       await deployedActors.hub.updateDscVerifier(
         invalidAttestationId,
         dscCircuitVerifierId,
-        await deployedActors.dsc.getAddress()
+        await deployedActors.dsc.getAddress(),
       );
 
       // Now the call should fail with InvalidAttestationId since verifier exists but attestation ID is not valid
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(
-          invalidAttestationId,
-          dscCircuitVerifierId,
-          dscProof
-        )
+        deployedActors.hub.registerDscKeyCommitment(invalidAttestationId, dscCircuitVerifierId, dscProof),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
 
@@ -135,16 +119,19 @@ describe("Passport Registration test", function () {
       const invalidDscProof = {
         ...dscProof,
         a: ["0x1", "0x2"], // Invalid proof values
-        b: [["0x1", "0x2"], ["0x3", "0x4"]],
-        c: ["0x1", "0x2"]
+        b: [
+          ["0x1", "0x2"],
+          ["0x3", "0x4"],
+        ],
+        c: ["0x1", "0x2"],
       };
 
       await expect(
         deployedActors.hub.registerDscKeyCommitment(
           ePassportAttestationIdBytes32,
           dscCircuitVerifierId,
-          invalidDscProof
-        )
+          invalidDscProof,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidDscProof");
     });
 
@@ -155,11 +142,7 @@ describe("Passport Registration test", function () {
       await deployedActors.registry.updateCscaRoot(12345); // Invalid CSCA root
 
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(
-          ePassportAttestationIdBytes32,
-          dscCircuitVerifierId,
-          dscProof
-        )
+        deployedActors.hub.registerDscKeyCommitment(ePassportAttestationIdBytes32, dscCircuitVerifierId, dscProof),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidCscaRoot");
     });
   });
@@ -170,7 +153,6 @@ describe("Passport Registration test", function () {
     let passportData: any;
 
     before(async () => {
-
       const dscKeys = JSON.parse(serialized_dsc_tree);
       for (let i = 0; i < dscKeys[0].length; i++) {
         await deployedActors.registry.devAddDscKeyCommitment(BigInt(dscKeys[0][i]));
@@ -178,13 +160,13 @@ describe("Passport Registration test", function () {
 
       // Generate passport identity commitment proof using passport-specific function
       passportData = genMockIdDocAndInitDataParsing({
-        idType: 'mock_passport',
-        dgHashAlgo: 'sha256',
-        eContentHashAlgo: 'sha256',
-        signatureType: 'rsa_sha256_65537_2048',
-        nationality: 'GBR',
-        birthDate: '920315',
-        expiryDate: '321231',
+        idType: "mock_passport",
+        dgHashAlgo: "sha256",
+        eContentHashAlgo: "sha256",
+        signatureType: "rsa_sha256_65537_2048",
+        nationality: "GBR",
+        birthDate: "920315",
+        expiryDate: "321231",
       });
 
       registerSecret = generateRandomFieldElement();
@@ -197,17 +179,13 @@ describe("Passport Registration test", function () {
 
       // Register the passport identity commitment
       await expect(
-        deployedActors.hub.registerCommitment(
-          ePassportAttestationIdBytes32,
-          registerCircuitVerifierId,
-          registerProof
-        )
+        deployedActors.hub.registerCommitment(ePassportAttestationIdBytes32, registerCircuitVerifierId, registerProof),
       ).to.emit(deployedActors.registry, "CommitmentRegistered");
 
       // Verify the commitment is registered by checking the nullifier
       const isRegistered = await deployedActors.registry.nullifiers(
         ePassportAttestationIdBytes32,
-        registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_NULLIFIER_INDEX]
+        registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_NULLIFIER_INDEX],
       );
       expect(isRegistered).to.be.true;
     });
@@ -216,11 +194,7 @@ describe("Passport Registration test", function () {
       const nonExistentVerifierId = 999999; // Non-existent verifier ID
 
       await expect(
-        deployedActors.hub.registerCommitment(
-          ePassportAttestationIdBytes32,
-          nonExistentVerifierId,
-          registerProof
-        )
+        deployedActors.hub.registerCommitment(ePassportAttestationIdBytes32, nonExistentVerifierId, registerProof),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -229,11 +203,7 @@ describe("Passport Registration test", function () {
       const registerCircuitVerifierId = RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096;
 
       await expect(
-        deployedActors.hub.registerCommitment(
-          invalidAttestationId,
-          registerCircuitVerifierId,
-          registerProof
-        )
+        deployedActors.hub.registerCommitment(invalidAttestationId, registerCircuitVerifierId, registerProof),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -245,16 +215,12 @@ describe("Passport Registration test", function () {
       await deployedActors.hub.updateRegisterCircuitVerifier(
         invalidAttestationId,
         registerCircuitVerifierId,
-        await deployedActors.register.getAddress()
+        await deployedActors.register.getAddress(),
       );
 
       // Now the call should fail with InvalidAttestationId since verifier exists but attestation ID is not valid
       await expect(
-        deployedActors.hub.registerCommitment(
-          invalidAttestationId,
-          registerCircuitVerifierId,
-          registerProof
-        )
+        deployedActors.hub.registerCommitment(invalidAttestationId, registerCircuitVerifierId, registerProof),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
 
@@ -265,16 +231,19 @@ describe("Passport Registration test", function () {
       const invalidRegisterProof = {
         ...registerProof,
         a: ["0x1", "0x2"], // Invalid proof values
-        b: [["0x1", "0x2"], ["0x3", "0x4"]],
-        c: ["0x1", "0x2"]
+        b: [
+          ["0x1", "0x2"],
+          ["0x3", "0x4"],
+        ],
+        c: ["0x1", "0x2"],
       };
 
       await expect(
         deployedActors.hub.registerCommitment(
           ePassportAttestationIdBytes32,
           registerCircuitVerifierId,
-          invalidRegisterProof
-        )
+          invalidRegisterProof,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidRegisterProof");
     });
 
@@ -289,11 +258,7 @@ describe("Passport Registration test", function () {
 
       // The proof was generated with the original root, so it should fail
       await expect(
-        deployedActors.hub.registerCommitment(
-          ePassportAttestationIdBytes32,
-          registerCircuitVerifierId,
-          registerProof
-        )
+        deployedActors.hub.registerCommitment(ePassportAttestationIdBytes32, registerCircuitVerifierId, registerProof),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidDscCommitmentRoot");
 
       // Restore the snapshot

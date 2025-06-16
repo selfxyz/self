@@ -134,12 +134,14 @@ chmod +x scripts/test.sh scripts/dev.sh
 ### "hardhat.config.ts not found" Error
 
 This means the script couldn't find the Hardhat configuration. Make sure you're running from:
+
 - The `contracts/` directory, or
 - The `contracts/scripts/` directory
 
 ### Yarn 4 Workspace Issues
 
-If you encounter Yarn workspace issues, these scripts are designed to work directly with `npx hardhat` to avoid the workspace complexities.
+If you encounter Yarn workspace issues, these scripts are designed to work directly with `npx hardhat` to avoid the
+workspace complexities.
 
 ## Integration with Package.json
 
