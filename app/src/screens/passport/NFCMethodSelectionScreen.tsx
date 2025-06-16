@@ -6,9 +6,11 @@ import { Input, YStack } from 'tamagui';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
+import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import useUserStore from '../../stores/userStore';
 import { white } from '../../utils/colors';
 
 type NFCParams = {
@@ -53,6 +55,14 @@ const NFC_METHODS = [
     platform: ['ios'],
     params: { extendedMode: true },
   },
+  {
+    key: 'mrzCorrection',
+    label: 'Edit MRZ',
+    description:
+      'Edit the MRZ fields manually. This allows to correct the MRZ if it is incorrect.',
+    platform: ['ios', 'android'],
+    params: {},
+  },
 
   // we have these options, but its not recommended to use them in production.
   // We can enable this during development.
@@ -71,10 +81,26 @@ const NFCMethodSelectionScreen: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
   const [error, setError] = useState('');
+  const updatePassport = useUserStore(state => state.update);
+  const passportNumber = useUserStore(state => state.passportNumber);
+  const dateOfBirth = useUserStore(state => state.dateOfBirth);
+  const dateOfExpiry = useUserStore(state => state.dateOfExpiry);
 
   const handleSelect = (key: string) => {
     setSelectedMethod(key);
     setError('');
+  };
+
+  const onPassportNumberChange = (text: string) => {
+    updatePassport({ passportNumber: text });
+  };
+
+  const onDateOfBirthChange = (text: string) => {
+    updatePassport({ dateOfBirth: text });
+  };
+
+  const onDateOfExpiryChange = (text: string) => {
+    updatePassport({ dateOfExpiry: text });
   };
 
   const handleProceed = () => {
@@ -134,6 +160,34 @@ const NFCMethodSelectionScreen: React.FC = () => {
                     ) : null}
                   </YStack>
                 )}
+                {method.key === 'mrzCorrection' &&
+                  selectedMethod === 'mrzCorrection' && (
+                    <YStack marginTop={12} gap={8}>
+                      <Input
+                        placeholder="Enter Passport/ID Number"
+                        value={passportNumber}
+                        onChangeText={onPassportNumberChange}
+                      />
+
+                      <BodyText>Birth Date (YYMMDD)</BodyText>
+                      <Input
+                        placeholder="YYMMDD"
+                        value={dateOfBirth}
+                        onChangeText={onDateOfBirthChange}
+                        keyboardType="numeric"
+                        maxLength={6}
+                      />
+
+                      <BodyText>Date of Expiry (YYMMDD)</BodyText>
+                      <Input
+                        placeholder="YYMMDD"
+                        value={dateOfExpiry}
+                        onChangeText={onDateOfExpiryChange}
+                        keyboardType="numeric"
+                        maxLength={6}
+                      />
+                    </YStack>
+                  )}
               </YStack>
             ))}
           </YStack>
