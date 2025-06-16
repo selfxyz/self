@@ -1,5 +1,5 @@
 import { StyleProp, TextStyle } from 'react-native';
-import { styled, Text, GetProps } from 'tamagui';
+import { GetProps, styled, Text } from 'tamagui';
 
 import { advercase } from '../utils/fonts';
 
@@ -24,4 +24,4 @@ export const Title = styled(
     acceptsClassName: true,
     style: (props: { style?: StyleProp<TextStyle> }) => props.style,
   },
-)
+);

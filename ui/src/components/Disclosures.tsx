@@ -4,8 +4,8 @@ import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
 import { BodyText } from '../typography/BodyText';
-import CheckMark from './icons/checkmark.svg';
 import { slate200, slate500 } from '../utils/colors';
+import CheckMark from './icons/checkmark.svg';
 
 interface DisclosureProps {
   disclosures: SelfAppDisclosureConfig;

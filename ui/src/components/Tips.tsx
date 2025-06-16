@@ -1,6 +1,7 @@
+import { Text, View } from 'tamagui';
+
 import { Caption } from '../typography/Caption';
 import { slate500 } from '../utils/colors';
-import { Text, View } from 'tamagui';
 
 export interface TipProps {
   title: string;

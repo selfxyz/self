@@ -15,7 +15,8 @@
     "build:clean": "rm -rf dist",
     "build:tamagui": "tamagui-build --config ./src/tamagui.config.ts   --out dist",
     "types": "tsc --b --declaration --emitDeclarationOnly",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint ./src/ --ext .ts,.tsx && prettier --check ./src",
+    "lint:fix": "eslint --fix ./src/ --ext .ts,.tsx && prettier --write ./src"
   },
   "dependencies": {
     "@tamagui/config": "1.126.16",
@@ -28,6 +29,11 @@
     "@tamagui/build": "^1.126.16",
     "@types/node": "^24.0.1",
     "@types/react-native": "^0.73.0",
+    "eslint": "^8.19.0",
+    "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.3.3",
     "react-native-svg": "^15.11.1",
     "react-native-svg-transformer": "^1.5.0",
     "tsx": "^4.20.2",

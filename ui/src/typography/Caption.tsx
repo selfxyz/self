@@ -1,9 +1,8 @@
-import { styled, GetProps } from 'tamagui';
+import React from 'react';
+import { GetProps, styled } from 'tamagui';
 
 import { slate400 } from '../utils/colors';
 import { BodyText } from './BodyText';
-import React from 'react';
-
 
 const _Caption = styled(BodyText, {
   fontSize: 15,
@@ -18,9 +17,7 @@ const _Caption = styled(BodyText, {
       },
     },
   },
-})
+});
 type CaptionProps = GetProps<typeof _Caption>;
 
-
-
-export const Caption = _Caption as React.FC<CaptionProps>
+export const Caption = _Caption as React.FC<CaptionProps>;

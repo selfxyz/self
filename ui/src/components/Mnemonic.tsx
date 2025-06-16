@@ -1,4 +1,7 @@
 import Clipboard from '@react-native-clipboard/clipboard';
+import React, { useCallback, useState } from 'react';
+import { Button, Text, XStack, YStack } from 'tamagui';
+
 import {
   black,
   slate50,
@@ -8,9 +11,6 @@ import {
   teal500,
   white,
 } from '../utils/colors';
-import React, { useCallback, useState } from 'react';
-import { Button, Text, XStack, YStack } from 'tamagui';
-
 import { confirmTap } from '../utils/haptic';
 
 interface MnemonicProps {
