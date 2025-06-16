@@ -1,5 +1,5 @@
-import { Caption } from '@selfxyz/ui/dist/typography/Caption';
-import { slate500 } from '@selfxyz/ui/dist/utils/colors';
+import { Caption } from '../typography/Caption';
+import { slate500 } from '../utils/colors';
 import { Text, View } from 'tamagui';
 
 export interface TipProps {

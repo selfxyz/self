@@ -3,7 +3,7 @@ import { Country3LetterCode, countryCodes } from '@selfxyz/common';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
-import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
+import { BodyText } from '../typography/BodyText';
 import CheckMark from './icons/checkmark.svg';
 import { slate200, slate500 } from '../utils/colors';
 
