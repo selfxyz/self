@@ -11,13 +11,15 @@ export interface ButtonProps extends ViewProps {
   children: React.ReactNode;
   animatedComponent?: React.ReactNode;
   trackEvent?: string;
+  onPress?: ((e: any) => void) | null | undefined;
+  disabled?: boolean;
+  style?: ViewStyle;
 }
 
 interface AbstractButtonProps extends ButtonProps {
   bgColor: string;
   borderColor?: string;
   color: string;
-  onPress?: ((e: any) => void) | null | undefined;
 }
 
 const { trackEvent: analyticsTrackEvent } = analytics();

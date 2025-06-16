@@ -39,12 +39,23 @@ import {
 } from '../../utils/colors';
 import { buttonTap, selectionChange } from '../../utils/haptic';
 
+type RootStackParamList = {
+  PassportDataInitScreen: {
+    passportData: any;
+  };
+};
+
+type NavigationProp = {
+  navigate: (screen: keyof RootStackParamList, params: any) => void;
+  goBack: () => void;
+};
+
 const { trackEvent } = analytics();
 
 interface MockDataScreenProps {}
 
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const [birthDate, setBirthDate] = useState('2000/01/01');
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -200,6 +211,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       'sha512',
       'ecdsa_sha512_brainpoolP384r1_384',
     ],
+
     'sha512 poland': ['sha512', 'sha512', 'rsa_sha256_65537_4096'],
   } as const;
 
@@ -241,10 +253,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       }
       idDocInput.birthDate = dobForGeneration;
       let rawMockData = genMockIdDoc(idDocInput);
-      const skiPem = await getSKIPEM('staging');
-      let parsedMockData = initPassportDataParsing(rawMockData, skiPem);
-      await storePassportData(parsedMockData);
-      navigation.navigate('ConfirmBelongingScreen', {});
+
+      // Navigate to PassportDataInit screen with the raw mock data
+      navigation.navigate('PassportDataInitScreen', {
+        passportData: rawMockData,
+      });
     } catch (error) {
       console.error('Error during mock data generation:', error);
     } finally {

@@ -57,6 +57,7 @@ const items = [
   'PassportCamera',
   'PassportNFCScan',
   'PassportDataInfo',
+  'PassportDataInitScreen',
   'LoadingScreen',
   'AccountVerifiedSuccess',
   'ConfirmBelongingScreen',
@@ -82,7 +83,41 @@ const ScreenSelector = ({}) => {
   return (
     <Select
       onValueChange={(screen: any) => {
-        navigation.navigate(screen);
+        if (screen === 'PassportDataInitScreen') {
+          // Provide mock passport data
+          navigation.navigate(screen, {
+            passportData: {
+              mock: true,
+              // Add minimal mock data needed for testing
+              passportMetadata: {
+                dataGroups: ['DG1', 'DG2'],
+                dg1Size: 100,
+                dg1HashSize: 32,
+                dg1HashFunction: 'SHA256',
+                dg1HashOffset: 0,
+                dgPaddingBytes: 0,
+                eContentSize: 200,
+                eContentHashFunction: 'SHA256',
+                eContentHashOffset: 0,
+                signedAttrSize: 100,
+                signedAttrHashFunction: 'SHA256',
+                signatureAlgorithm: 'RSA',
+                saltLength: 32,
+                curveOrExponent: '65537',
+                signatureAlgorithmBits: 2048,
+                countryCode: 'US',
+                cscaFound: true,
+                cscaHashFunction: 'SHA256',
+                cscaSignatureAlgorithm: 'RSA',
+                cscaSaltLength: 32,
+                cscaCurveOrExponent: '65537',
+                cscaSignatureAlgorithmBits: 2048,
+              },
+            },
+          });
+        } else {
+          navigation.navigate(screen);
+        }
       }}
       disablePreventBodyScroll
     >

@@ -128,7 +128,6 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           duration_seconds: parseFloat(scanDurationSeconds),
         });
         let passportData: PassportData | null = null;
-        let parsedPassportData: PassportData | null = null;
         try {
           passportData = parseScanResponse(scanResponse);
         } catch (e: any) {
@@ -138,58 +137,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           });
           return;
         }
-        try {
-          const skiPem = await getSKIPEM('production');
-          parsedPassportData = initPassportDataParsing(passportData, skiPem);
-          const passportMetadata = parsedPassportData.passportMetadata!;
-          let dscObject;
-          try {
-            dscObject = { dsc: passportMetadata.dsc };
-          } catch (error) {
-            console.error('Failed to parse dsc:', error);
-            dscObject = {};
-          }
 
-          trackEvent(PassportEvents.PASSPORT_PARSED, {
-            success: true,
-            data_groups: passportMetadata.dataGroups,
-            dg1_size: passportMetadata.dg1Size,
-            dg1_hash_size: passportMetadata.dg1HashSize,
-            dg1_hash_function: passportMetadata.dg1HashFunction,
-            dg1_hash_offset: passportMetadata.dg1HashOffset,
-            dg_padding_bytes: passportMetadata.dgPaddingBytes,
-            e_content_size: passportMetadata.eContentSize,
-            e_content_hash_function: passportMetadata.eContentHashFunction,
-            e_content_hash_offset: passportMetadata.eContentHashOffset,
-            signed_attr_size: passportMetadata.signedAttrSize,
-            signed_attr_hash_function: passportMetadata.signedAttrHashFunction,
-            signature_algorithm: passportMetadata.signatureAlgorithm,
-            salt_length: passportMetadata.saltLength,
-            curve_or_exponent: passportMetadata.curveOrExponent,
-            signature_algorithm_bits: passportMetadata.signatureAlgorithmBits,
-            country_code: passportMetadata.countryCode,
-            csca_found: passportMetadata.cscaFound,
-            csca_hash_function: passportMetadata.cscaHashFunction,
-            csca_signature_algorithm: passportMetadata.cscaSignatureAlgorithm,
-            csca_salt_length: passportMetadata.cscaSaltLength,
-            csca_curve_or_exponent: passportMetadata.cscaCurveOrExponent,
-            csca_signature_algorithm_bits:
-              passportMetadata.cscaSignatureAlgorithmBits,
-            dsc: dscObject,
-            dsc_aki: passportData.dsc_parsed?.authorityKeyIdentifier,
-            dsc_ski: passportData.dsc_parsed?.subjectKeyIdentifier,
-          });
-          await storePassportData(parsedPassportData);
-          // Feels better somehow
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          navigation.navigate('ConfirmBelongingScreen', {});
-        } catch (e: any) {
-          console.error('Passport Parsed Failed:', e);
-          trackEvent(PassportEvents.PASSPORT_PARSE_FAILED, {
-            error: e.message,
-          });
-          return;
-        }
+        // Navigate to passport data initialization screen
+        (navigation as any).navigate('PassportDataInitScreen', {
+          passportData,
+        });
       } catch (e: any) {
         const scanDurationSeconds = (
           (Date.now() - scanStartTime) /
