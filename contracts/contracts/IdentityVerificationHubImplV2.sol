@@ -169,26 +169,54 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // External View Functions
     // ====================================================
 
+    /**
+     * @notice Returns the registry address for a given attestation ID.
+     * @param attestationId The attestation ID to query.
+     * @return The registry address associated with the attestation ID.
+     */
     function registry(bytes32 attestationId) external view virtual onlyProxy returns (address) {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         return $._registries[attestationId];
     }
 
+    /**
+     * @notice Returns the disclose verifier address for a given attestation ID.
+     * @param attestationId The attestation ID to query.
+     * @return The disclose verifier address associated with the attestation ID.
+     */
     function discloseVerifier(bytes32 attestationId) external view virtual onlyProxy returns (address) {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         return $._discloseVerifiers[attestationId];
     }
 
+    /**
+     * @notice Returns the register circuit verifier address for a given attestation ID and type ID.
+     * @param attestationId The attestation ID to query.
+     * @param typeId The type ID to query.
+     * @return The register circuit verifier address associated with the attestation ID and type ID.
+     */
     function registerCircuitVerifiers(bytes32 attestationId, uint256 typeId) external view virtual onlyProxy returns (address) {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         return $._registerCircuitVerifiers[attestationId][typeId];
     }
 
+    /**
+     * @notice Returns the DSC circuit verifier address for a given attestation ID and type ID.
+     * @param attestationId The attestation ID to query.
+     * @param typeId The type ID to query.
+     * @return The DSC circuit verifier address associated with the attestation ID and type ID.
+     */
     function dscCircuitVerifiers(bytes32 attestationId, uint256 typeId) external view virtual onlyProxy returns (address) {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         return $._dscCircuitVerifiers[attestationId][typeId];
     }
 
+    /**
+     * @notice Returns the merkle root timestamp for a given attestation ID and root.
+     * @param attestationId The attestation ID to query.
+     * @param root The merkle root to query.
+     * @return The merkle root timestamp associated with the attestation ID and root.
+     */
     function rootTimestamp(bytes32 attestationId, uint256 root) external view virtual onlyProxy returns (uint256) {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         address registryAddress = $._registries[attestationId];
@@ -202,6 +230,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         }
     }
 
+    /**
+     * @notice Returns the identity commitment merkle root for a given attestation ID.
+     * @param attestationId The attestation ID to query.
+     * @return The identity commitment merkle root associated with the attestation ID.
+     */
     function getIdentityCommitmentMerkleRoot(bytes32 attestationId) external view virtual onlyProxy returns (uint256) {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         address registryAddress = $._registries[attestationId];
@@ -219,6 +252,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // External Functions - Verification
     // ====================================================
 
+    /**
+     * @notice Decodes the input data to extract the header and proof data.
+     * @param input The input data to decode. Format: | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | user defined data |
+     * @return header The header of the input data.
+     * @return proofData The proof data of the input data.
+     */
     function _decodeInput(bytes calldata input) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
         if (input.length < 97) {
             revert InputTooShort();
@@ -383,6 +422,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // External Functions - Registration
     // ====================================================
 
+    /**
+     * @notice Registers a commitment using a register circuit proof.
+     * @dev Verifies the register circuit proof and then calls the Identity Registry to register the commitment.
+     * @param attestationId The attestation ID.
+     * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
+     * @param registerCircuitProof The register circuit proof data.
+     */
     function registerCommitment(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,
@@ -538,6 +584,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // Internal Functions
     // ====================================================
 
+    /**
+     * @notice Verifies the register circuit proof.
+     * @dev Uses the register circuit verifier specified by registerCircuitVerifierId.
+     * @param attestationId The attestation ID.
+     * @param registerCircuitVerifierId The identifier for the register circuit verifier.
+     * @param registerCircuitProof The register circuit proof data.
+     */
     function _verifyRegisterProof(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,

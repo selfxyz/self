@@ -14,9 +14,11 @@ library CustomVerifier {
   error InvalidOlderThan();
 
   /**
-   * @dev Verifies the configuration of the custom verifier.
-   * @param config The configuration of the custom verifier.
+   * @notice Verifies the configuration of the custom verifier.
+   * @param attestationId The attestation ID.
+   * @param config The verification config of the custom verifier.
    * @param proofOutput The proof output of the custom verifier.
+   * @return genericDiscloseOutput The generic disclose output.
    */
   function customVerify(bytes32 attestationId, bytes calldata config, bytes calldata proofOutput) external pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
     SelfStructs.VerificationConfigV2 memory verificationConfig = GenericFormatter.verificationConfigFromBytes(config);
@@ -32,6 +34,12 @@ library CustomVerifier {
     }
   }
 
+  /**
+   * @notice Verifies a passport output.
+   * @param verificationConfig The verification configuration.
+   * @param passportOutput The passport output from the circuit.
+   * @return genericDiscloseOutput The generic disclose output.
+   */
   function verifyPassport(SelfStructs.VerificationConfigV2 memory verificationConfig, SelfStructs.PassportOutput memory passportOutput) internal pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
     if (
       verificationConfig.ofacEnabled[0] ||
@@ -68,7 +76,6 @@ library CustomVerifier {
 
     SelfStructs.GenericDiscloseOutputV2 memory genericDiscloseOutput = SelfStructs.GenericDiscloseOutputV2({
       attestationId: AttestationId.E_PASSPORT,
-      // TODO: here put actual user identifier
       userIdentifier: passportOutput.userIdentifier,
       nullifier: passportOutput.nullifier,
       forbiddenCountriesListPacked: passportOutput.forbiddenCountriesListPacked,
@@ -90,6 +97,12 @@ library CustomVerifier {
     return genericDiscloseOutput;
   }
 
+  /**
+   * @notice Verifies an ID card output.
+   * @param verificationConfig The verification configuration.
+   * @param idCardOutput The ID card output from the circuit.
+   * @return genericDiscloseOutput The generic disclose output.
+   */
   function verifyIdCard(SelfStructs.VerificationConfigV2 memory verificationConfig, SelfStructs.EuIdOutput memory idCardOutput) internal pure returns (SelfStructs.GenericDiscloseOutputV2 memory) {
     if (verificationConfig.ofacEnabled[0] || verificationConfig.ofacEnabled[1]) {
       if (!CircuitAttributeHandlerV2.compareOfac(
