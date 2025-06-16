@@ -390,7 +390,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             output = _formatVerificationOutput(header.contractVersion, genericDiscloseOutput);
         }
 
-        userDataToPass = abi.encodePacked(bytes32(userIdentifier), remainingData);
+        userDataToPass = remainingData;
     }
 
     /**
