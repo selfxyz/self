@@ -3,7 +3,8 @@ pragma circom 2.1.9;
 include "./dynamic/sha1Bytes.circom";
 include "./dynamic/sha224Bytes.circom";
 include "@openpassport/zk-email-circuits/lib/sha.circom";
-include "@openpassport/zk-email-circuits/lib/bigint-func.circom";
+include "@openpassport/zk-email-circuits/utils/array.circom";
+include "circomlib/circuits/bitify.circom";
 include "./dynamic/sha384Bytes.circom";
 include "./dynamic/sha512Bytes.circom";
 
@@ -19,6 +20,10 @@ template ShaBytesDynamic(hashLen, max_num_bytes) {
     signal input in_len_padded_bytes;
 
     signal output hash_bits[hashLen];
+
+    // Assert `in_len_padded_bytes` fits in `ceil(log2(max_num_bytes * 8))`
+    component rangeCheck = Num2Bits(log2Ceil(max_num_bytes * 8));
+    rangeCheck.in <== in_len_padded_bytes;
 
     if (hashLen == 512) {
         hash_bits <== Sha512Bytes(max_num_bytes)(in_padded, in_len_padded_bytes);
