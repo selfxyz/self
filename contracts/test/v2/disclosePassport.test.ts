@@ -198,8 +198,8 @@ describe("Self Verification Flow V2", () => {
       expect(lastOutput).to.not.equal("0x");
 
       const expectedUserData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [ethers.zeroPadValue(user1Address, 32), userData]
+        ["bytes"],
+        [userData]
       );
       const actualUserData = await deployedActors.testSelfVerificationRoot.lastUserData();
       expect(actualUserData).to.equal(expectedUserData);

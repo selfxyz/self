@@ -84,7 +84,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /**
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
-     * @param proofData Packed data from relayer in format: | 32 bytes attestationId | proof data |
+     * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | proof data |
      * @param userContextData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
      */
     /*
@@ -145,8 +145,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             revert UnauthorizedCaller();
         }
 
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory genericDiscloseOutput = abi.decode(output, (ISelfVerificationRoot.GenericDiscloseOutputV2));
+
         // Call the customizable verification hook
-        _customVerificationHook(output, userData);
+        customVerificationHook(genericDiscloseOutput, userData);
     }
 
     /**
@@ -155,8 +157,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param output The verification output data from the hub
      * @param userData The user-defined data passed through the verification process
      */
-    function _customVerificationHook(
-        bytes memory output,
+    function customVerificationHook(
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
     ) internal virtual {
         // Default implementation is empty - override in derived contracts to add custom logic

@@ -2,6 +2,7 @@
 pragma solidity 0.8.28;
 
 import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
+import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 
 /**
  * @title TestSelfVerificationRoot
@@ -12,11 +13,11 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
 
     // Storage for testing purposes
     bool public verificationSuccessful;
-    bytes public lastOutput;
+    ISelfVerificationRoot.GenericDiscloseOutputV2 public lastOutput;
     bytes public lastUserData;
 
     // Events for testing
-    event VerificationCompleted(bytes output, bytes userData);
+    event VerificationCompleted(ISelfVerificationRoot.GenericDiscloseOutputV2 output, bytes userData);
 
     /**
      * @notice Constructor for the test contract
@@ -35,7 +36,7 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
      * @param userData The user data passed through verification
      */
     function customVerificationHook(
-        bytes memory output,
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
     ) internal override {
         verificationSuccessful = true;
@@ -50,7 +51,21 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
      */
     function resetTestState() external {
         verificationSuccessful = false;
-        lastOutput = "";
+        lastOutput = ISelfVerificationRoot.GenericDiscloseOutputV2({
+            attestationId: bytes32(0),
+            userIdentifier: 0,
+            nullifier: 0,
+            forbiddenCountriesListPacked: [uint256(0), uint256(0), uint256(0), uint256(0)],
+            issuingState: "",
+            name: new string[](3),
+            idNumber: "",
+            nationality: "",
+            dateOfBirth: "",
+            gender: "",
+            expiryDate: "",
+            olderThan: 0,
+            ofac: [false, false, false]
+        });
         lastUserData = "";
     }
 
