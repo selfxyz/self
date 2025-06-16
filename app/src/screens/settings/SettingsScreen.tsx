@@ -7,6 +7,7 @@ import {
   slate800,
   white,
 } from '@selfxyz/ui/dist/utils/colors';
+import { impactLight } from '@selfxyz/ui/dist/utils/haptic';
 import { Bug } from '@tamagui/lucide-icons';
 import { FileText } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useCallback, useMemo } from 'react';
@@ -38,7 +39,6 @@ import Web from '../../images/icons/webpage.svg';
 import { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
 import { extraYPadding } from '../../utils/constants';
-import { impactLight } from '@selfxyz/ui/src/utils/haptic';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {

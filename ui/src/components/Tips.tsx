@@ -1,6 +1,5 @@
 import { Caption } from '@selfxyz/ui/dist/typography/Caption';
 import { slate500 } from '@selfxyz/ui/dist/utils/colors';
-import React from 'react';
 import { Text, View } from 'tamagui';
 
 export interface TipProps {

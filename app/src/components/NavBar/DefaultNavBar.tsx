@@ -1,11 +1,11 @@
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
+import { white } from '@selfxyz/ui/dist/utils/colors';
+import { buttonTap } from '@selfxyz/ui/dist/utils/haptic';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextStyle, ViewStyle } from 'tamagui';
 
-import { white } from '../../../../ui/src/utils/colors';
 import { extraYPadding } from '../../utils/constants';
-import { buttonTap } from '@selfxyz/ui/src/utils/haptic';
 import { NavBar } from './BaseNavBar';
 
 export const DefaultNavBar = (props: NativeStackHeaderProps) => {

@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { borderColor, textBlack, white } from '@selfxyz/ui/dist/utils/colors';
+import { impactLight } from '@selfxyz/ui/dist/utils/haptic';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 import React, { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -8,10 +9,9 @@ import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { usePassport } from '../../providers/passportDataProvider';
 import { extraYPadding } from '../../utils/constants';
-import { impactLight } from '@selfxyz/ui/src/utils/haptic';
 
 interface ManageDocumentsScreenProps {}
 

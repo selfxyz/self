@@ -4,7 +4,7 @@ import Disclosures from '@selfxyz/ui/dist/components/Disclosures';
 import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
 import { Caption } from '@selfxyz/ui/dist/typography/Caption';
 import { black, slate300, white } from '@selfxyz/ui/dist/utils/colors';
-import { buttonTap } from '@selfxyz/ui/src/utils/haptic';
+import { buttonTap } from '@selfxyz/ui/dist/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,

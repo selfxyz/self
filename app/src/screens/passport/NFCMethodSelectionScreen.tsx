@@ -8,7 +8,7 @@ import { Input, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 
 type NFCParams = {

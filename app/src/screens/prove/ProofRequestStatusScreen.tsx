@@ -8,7 +8,7 @@ import {
   buttonTap,
   notificationError,
   notificationSuccess,
-} from '@selfxyz/ui/src/utils/haptic';
+} from '@selfxyz/ui/dist/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';

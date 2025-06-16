@@ -1,11 +1,11 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black, slate300, white } from '@selfxyz/ui/dist/utils/colors';
 
 import CloudBackupScreen from '../screens/settings/CloudBackupScreen';
 import ManageDocumentsScreen from '../screens/settings/ManageDocumentsScreen';
 import PassportDataInfoScreen from '../screens/settings/PassportDataInfoScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '../screens/settings/ShowRecoveryPhraseScreen';
-import { black, slate300, white } from '@selfxyz/ui/dist/utils/colors';
 
 const settingsScreens = {
   CloudBackupSettings: {

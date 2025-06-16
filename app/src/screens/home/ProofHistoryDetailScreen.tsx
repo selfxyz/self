@@ -11,13 +11,13 @@ import {
   zinc400,
   zinc500,
 } from '@selfxyz/ui/dist/utils/colors';
+import { advercase, dinot, plexMono } from '@selfxyz/ui/dist/utils/fonts';
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 
 import { ProofHistory, ProofStatus } from '../../stores/proofHistoryStore';
-import { advercase, dinot, plexMono } from '@selfxyz/ui/dist/utils/fonts';
 
 type ProofHistoryDetailScreenProps = {
   route: {

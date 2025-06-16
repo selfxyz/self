@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
-
 import Mnemonic from '@selfxyz/ui/dist/components/Mnemonic';
 import Description from '@selfxyz/ui/dist/typography/Description';
+import React, { useCallback } from 'react';
+
 import useMnemonic from '../../hooks/useMnemonic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 

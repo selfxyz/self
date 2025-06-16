@@ -11,6 +11,7 @@ import {
   textBlack,
   white,
 } from '@selfxyz/ui/dist/utils/colors';
+import { buttonTap, selectionChange } from '@selfxyz/ui/dist/utils/haptic';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
@@ -33,11 +34,10 @@ import {
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { MockDataEvents } from '../../consts/analytics';
 import { storePassportData } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
-import { buttonTap, selectionChange } from '@selfxyz/ui/src/utils/haptic';
 
 const { trackEvent } = analytics();
 

@@ -1,4 +1,5 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black } from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 import { StatusBar } from 'react-native';
 
@@ -6,7 +7,6 @@ import LaunchScreen from '../screens/misc/LaunchScreen';
 import LoadingScreen from '../screens/misc/LoadingScreen';
 import ModalScreen from '../screens/misc/ModalScreen';
 import SplashScreen from '../screens/misc/SplashScreen';
-import { black } from '@selfxyz/ui/dist/utils/colors';
 
 const miscScreens = {
   Launch: {

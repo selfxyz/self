@@ -2,6 +2,7 @@ import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
 import Description from '@selfxyz/ui/dist/typography/Description';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
 import { black, white } from '@selfxyz/ui/dist/utils/colors';
+import { notificationSuccess } from '@selfxyz/ui/dist/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -12,7 +13,6 @@ import { PassportEvents, ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
-import { notificationSuccess } from '@selfxyz/ui/src/utils/haptic';
 import {
   getFCMToken,
   requestNotificationPermission,

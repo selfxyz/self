@@ -1,6 +1,11 @@
+import {
+  slate200,
+  slate300,
+  slate500,
+  white,
+} from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 
-import { slate200, slate300, slate500, white } from '../../../../ui/src/utils/colors';
 import AbstractButton, { ButtonProps } from './AbstractButton';
 
 export function SecondaryButton({ children, ...props }: ButtonProps) {

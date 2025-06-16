@@ -1,10 +1,10 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { white } from '@selfxyz/ui/dist/utils/colors';
 
 import DevHapticFeedbackScreen from '../screens/dev/DevHapticFeedback';
 import DevSettingsScreen from '../screens/dev/DevSettingsScreen';
 import MockDataScreen from '../screens/dev/MockDataScreen';
 import MockDataScreenDeepLink from '../screens/dev/MockDataScreenDeepLink';
-import { white } from '@selfxyz/ui/dist/utils/colors';
 
 const devScreens = {
   CreateMock: {

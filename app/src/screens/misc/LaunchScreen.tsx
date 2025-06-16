@@ -7,6 +7,7 @@ import {
   slate500,
   white,
 } from '@selfxyz/ui/dist/utils/colors';
+import { advercase, dinot } from '@selfxyz/ui/dist/utils/fonts';
 import LottieView from 'lottie-react-native';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -22,7 +23,6 @@ import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Logo from '../../images/logo.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { advercase, dinot } from '@selfxyz/ui/dist/utils/fonts';
 
 interface LaunchScreenProps {}
 

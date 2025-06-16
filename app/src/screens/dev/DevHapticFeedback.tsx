@@ -1,7 +1,3 @@
-import React, { useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { Button, ScrollView, styled } from 'tamagui';
-
 import {
   feedbackProgress,
   feedbackSuccess,
@@ -13,7 +9,10 @@ import {
   notificationSuccess,
   notificationWarning,
   selectionChange,
-} from '@selfxyz/ui/src/utils/haptic';
+} from '@selfxyz/ui/dist/utils/haptic';
+import React, { useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { Button, ScrollView, styled } from 'tamagui';
 
 const StyledButton = styled(Button, {
   width: '75%',

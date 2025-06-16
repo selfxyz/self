@@ -1,11 +1,11 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black } from '@selfxyz/ui/dist/utils/colors';
 
 import { HomeNavBar } from '../components/NavBar';
 import DisclaimerScreen from '../screens/home/DisclaimerScreen';
 import HomeScreen from '../screens/home/HomeScreen';
 import ProofHistoryDetailScreen from '../screens/home/ProofHistoryDetailScreen';
 import ProofHistoryScreen from '../screens/home/ProofHistoryScreen';
-import { black } from '@selfxyz/ui/dist/utils/colors';
 
 const homeScreens = {
   Disclaimer: {

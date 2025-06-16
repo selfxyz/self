@@ -1,6 +1,6 @@
+import { amber50, black, slate300, white } from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 
-import { amber50, black, slate300, white } from '../../../../ui/src/utils/colors';
 import AbstractButton, { ButtonProps } from './AbstractButton';
 
 export function PrimaryButton({ children, ...props }: ButtonProps) {

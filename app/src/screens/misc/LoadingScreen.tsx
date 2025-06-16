@@ -7,6 +7,8 @@ import {
   zinc500,
   zinc900,
 } from '@selfxyz/ui/dist/utils/colors';
+import { advercase, dinot } from '@selfxyz/ui/dist/utils/fonts';
+import { loadingScreenProgress } from '@selfxyz/ui/dist/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -24,8 +26,6 @@ import {
   loadPassportDataAndSecret,
 } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
-import { advercase, dinot } from '@selfxyz/ui/dist/utils/fonts';
-import { loadingScreenProgress } from '@selfxyz/ui/src/utils/haptic';
 import { setupNotifications } from '../../utils/notifications/notificationService';
 import { getLoadingScreenText } from '../../utils/proving/loadingScreenStateText';
 import {

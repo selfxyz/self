@@ -3,6 +3,7 @@ import { Caption } from '@selfxyz/ui/dist/typography/Caption';
 import Description from '@selfxyz/ui/dist/typography/Description';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
 import { black, white } from '@selfxyz/ui/dist/utils/colors';
+import { buttonTap, confirmTap } from '@selfxyz/ui/dist/utils/haptic';
 import React, { useCallback, useMemo, useState } from 'react';
 import { YStack } from 'tamagui';
 
@@ -18,7 +19,6 @@ import { useAuth } from '../../providers/authProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import analytics from '../../utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
-import { buttonTap, confirmTap } from '@selfxyz/ui/src/utils/haptic';
 
 const { trackEvent } = analytics();
 

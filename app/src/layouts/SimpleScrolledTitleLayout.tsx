@@ -1,9 +1,9 @@
+import { Title } from '@selfxyz/ui/dist/typography/Title';
 import { white } from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 import { ScrollView, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import { Title } from '@selfxyz/ui/dist/typography/Title';
 import { ExpandableBottomLayout } from './ExpandableBottomLayout';
 
 interface DetailListProps

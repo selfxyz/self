@@ -2,6 +2,7 @@ import { Caption } from '@selfxyz/ui/dist/typography/Caption';
 import Description from '@selfxyz/ui/dist/typography/Description';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
 import { black, white } from '@selfxyz/ui/dist/utils/colors';
+import { notificationError } from '@selfxyz/ui/dist/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 
@@ -11,7 +12,6 @@ import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
-import { notificationError } from '@selfxyz/ui/src/utils/haptic';
 import { styles } from '../prove/ProofRequestStatusScreen';
 
 const { flush: flushAnalytics } = analytics();

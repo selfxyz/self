@@ -3,11 +3,11 @@ import {
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
 import { cyan300, slate200, white } from '@selfxyz/ui/dist/utils/colors';
+import { buttonTap } from '@selfxyz/ui/dist/utils/haptic';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextStyle, ViewStyle, XStack, YStack } from 'tamagui';
 
-import { buttonTap } from '@selfxyz/ui/src/utils/haptic';
 import { NavBar } from './BaseNavBar';
 
 interface ProgressNavBarProps extends NativeStackHeaderProps {

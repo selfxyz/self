@@ -1,8 +1,8 @@
 import { Caption } from '@selfxyz/ui/dist/typography/Caption';
 import { slate500 } from '@selfxyz/ui/dist/utils/colors';
+import Tips, { TipProps } from '@selfxyz/ui/src/components/Tips';
 import React from 'react';
 
-import Tips, { TipProps } from '../../components/Tips';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
 import analytics from '../../utils/analytics';

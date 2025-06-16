@@ -1,3 +1,4 @@
+import Description from '@selfxyz/ui/dist/typography/Description';
 import { black } from '@selfxyz/ui/dist/utils/colors';
 import { useMachine } from '@xstate/react';
 import React, { useEffect } from 'react';
@@ -5,7 +6,6 @@ import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
 
 import { ProofEvents } from '../../consts/analytics';
-import Description from '@selfxyz/ui/dist/typography/Description';
 import { HeldPrimaryButton } from './PrimaryButtonLongHold';
 
 interface HeldPrimaryButtonProveScreenProps {

@@ -6,10 +6,12 @@ import {
 import { getSKIPEM } from '@selfxyz/common';
 import { initPassportDataParsing } from '@selfxyz/common';
 import { PassportData } from '@selfxyz/common';
+import TextsContainer from '@selfxyz/ui/dist/components/TextsContainer';
 import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
 import Description from '@selfxyz/ui/dist/typography/Description';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
 import { black, slate100, white } from '@selfxyz/ui/dist/utils/colors';
+import { buttonTap } from '@selfxyz/ui/dist/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -26,8 +28,7 @@ import { Image } from 'tamagui';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
@@ -35,7 +36,6 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
-import { buttonTap } from '@selfxyz/ui/src/utils/haptic';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 
 const { trackEvent } = analytics();

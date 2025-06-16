@@ -1,3 +1,4 @@
+import Mnemonic from '@selfxyz/ui/dist/components/Mnemonic';
 import { Caption } from '@selfxyz/ui/dist/typography/Caption';
 import Description from '@selfxyz/ui/dist/typography/Description';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
@@ -6,7 +7,6 @@ import React, { useCallback, useState } from 'react';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Mnemonic from '@selfxyz/ui/dist/components/Mnemonic';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import useMnemonic from '../../hooks/useMnemonic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';

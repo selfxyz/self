@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { PassportData } from '@selfxyz/common';
 import { black } from '@selfxyz/ui/dist/utils/colors';
+import { impactLight } from '@selfxyz/ui/dist/utils/haptic';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
@@ -17,7 +18,6 @@ import {
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSettingStore } from '../../stores/settingStore';
-import { impactLight } from '@selfxyz/ui/src/utils/haptic';
 import { isUserRegistered } from '../../utils/proving/validateDocument';
 
 const SplashScreen: React.FC = ({}) => {

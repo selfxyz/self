@@ -1,9 +1,9 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { white } from '@selfxyz/ui/dist/utils/colors';
 
 import { ProgressNavBar } from '../components/NavBar';
 import { shouldShowAesopRedesign } from '../hooks/useAesopRedesign';
 import PassportOnboardingScreen from '../screens/aesop/PassportOnboardingScreen';
-import { white } from '@selfxyz/ui/dist/utils/colors';
 
 const aesopScreens = {
   PassportOnboarding: {

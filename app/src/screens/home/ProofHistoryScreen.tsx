@@ -10,6 +10,7 @@ import {
   slate500,
   white,
 } from '@selfxyz/ui/dist/utils/colors';
+import { dinot } from '@selfxyz/ui/dist/utils/fonts';
 import { CheckSquare2, Wallet } from '@tamagui/lucide-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -26,7 +27,6 @@ import {
   useProofHistoryStore,
 } from '../../stores/proofHistoryStore';
 import { extraYPadding } from '../../utils/constants';
-import { dinot } from '@selfxyz/ui/dist/utils/fonts';
 
 type Section = {
   title: string;

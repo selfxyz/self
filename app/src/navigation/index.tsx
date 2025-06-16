@@ -6,13 +6,13 @@ import {
   StaticParamList,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { white } from '@selfxyz/ui/dist/utils/colors';
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DefaultNavBar } from '../components/NavBar';
 import AppLayout from '../layouts/AppLayout';
 import analytics from '../utils/analytics';
-import { white } from '@selfxyz/ui/dist/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
 import { getAesopScreens } from './aesop';
 import devScreens from './dev';

@@ -1,4 +1,5 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black, slate300 } from '@selfxyz/ui/dist/utils/colors';
 
 import AccountRecoveryChoiceScreen from '../screens/recovery/AccountRecoveryChoiceScreen';
 import AccountRecoveryScreen from '../screens/recovery/AccountRecoveryScreen';
@@ -6,7 +7,6 @@ import AccountVerifiedSuccessScreen from '../screens/recovery/AccountVerifiedSuc
 import PassportDataNotFound from '../screens/recovery/PassportDataNotFoundScreen';
 import RecoverWithPhraseScreen from '../screens/recovery/RecoverWithPhraseScreen';
 import SaveRecoveryPhraseScreen from '../screens/recovery/SaveRecoveryPhraseScreen';
-import { black, slate300 } from '@selfxyz/ui/dist/utils/colors';
 
 const recoveryScreens = {
   AccountRecovery: {
