@@ -259,7 +259,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @return proofData The proof data of the input data.
      */
     function _decodeInput(bytes calldata baseVerificationInput) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
-        if (input.length < 97) {
+        if (baseVerificationInput.length < 97) {
             revert InputTooShort();
         }
         header.contractVersion = uint8(baseVerificationInput[0]);
