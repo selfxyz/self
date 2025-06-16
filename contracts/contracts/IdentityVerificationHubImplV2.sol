@@ -219,14 +219,14 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // External Functions - Verification
     // ====================================================
 
-    function _decodeInput(bytes calldata input) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
-        if (input.length < 97) {
+    function _decodeInput(bytes calldata baseVerificationInput) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
+        if (baseVerificationInput.length < 97) {
             revert InputTooShort();
         }
-        header.contractVersion = uint8(input[0]);
-        header.scope = uint256(bytes32(input[32:64]));
-        header.attestationId = bytes32(input[64:96]);
-        proofData = input[96:];
+        header.contractVersion = uint8(baseVerificationInput[0]);
+        header.scope = uint256(bytes32(baseVerificationInput[32:64]));
+        header.attestationId = bytes32(baseVerificationInput[64:96]);
+        proofData = baseVerificationInput[96:];
     }
 
     /**
@@ -299,10 +299,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @notice Main verification function with new structured input format
      */
     function verify(
-        bytes calldata input,
+        bytes calldata baseVerificationInput,
         bytes calldata userContextData
     ) external virtual onlyProxy {
-        (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(input);
+        (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(baseVerificationInput);
 
         // Perform verification and get output along with user data
         (bytes memory output, uint256 destChainId, bytes memory userDataToPass) = _executeVerificationFlow(header, proofData, userContextData);

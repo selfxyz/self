@@ -16,9 +16,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // Constants
     // ====================================================
 
-    uint256 constant E_PASSPORT_REVEALED_DATA_LENGTH = 3;
-    uint256 constant EU_ID_CARD_REVEALED_DATA_LENGTH = 4;
-
     uint8 constant CONTRACT_VERSION = 2;
 
     // ====================================================
@@ -33,47 +30,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @dev Immutable reference used for bytes-based proof verification
     IIdentityVerificationHubV2 internal immutable _identityVerificationHubV2;
 
-    /// @notice Mapping from requestId to stored calldata for deferred execution
-    /// @dev Used to store calldata that will be executed after successful verification
-    mapping(bytes32 => bytes) internal _requestIdToCalldata;
-
-    /// @notice Mapping to track if a requestId has been used/executed
-    /// @dev Prevents replay attacks and ensures one-time execution per requestId
-    mapping(bytes32 => bool) internal _requestIdExecuted;
-
-    // ====================================================
-    // Circuit Constants
-    // ====================================================
-
-    // Register circuit constants remain the same
-    uint256 internal constant REGISTER_NULLIFIER_INDEX = CircuitConstantsV2.REGISTER_NULLIFIER_INDEX;
-    uint256 internal constant REGISTER_COMMITMENT_INDEX = CircuitConstantsV2.REGISTER_COMMITMENT_INDEX;
-    uint256 internal constant REGISTER_MERKLE_ROOT_INDEX = CircuitConstantsV2.REGISTER_MERKLE_ROOT_INDEX;
-
-    // DSC circuit constants remain the same
-    uint256 internal constant DSC_TREE_LEAF_INDEX = CircuitConstantsV2.DSC_TREE_LEAF_INDEX;
-    uint256 internal constant DSC_CSCA_ROOT_INDEX = CircuitConstantsV2.DSC_CSCA_ROOT_INDEX;
-
-    // Note: VC and Disclose constants are now dynamic and obtained via getDiscloseIndices()
-    // These are no longer available as compile-time constants but can be accessed at runtime
-
-    // ====================================================
-    // Attestation ID
-    // ====================================================
-
-    bytes32 constant E_PASSPORT_ID = AttestationId.E_PASSPORT;
-
     // ====================================================
     // Errors
     // ====================================================
 
-    /// @notice Error thrown when the proof's scope doesn't match the expected scope
-    /// @dev Triggered in verifySelfProof when scope validation fails
-    error InvalidScope();
-
-    /// @notice Error thrown when the proof's attestation ID doesn't match the expected ID
-    /// @dev Triggered in verifySelfProof when attestation ID validation fails
-    error InvalidAttestationId();
 
     /// @notice Error thrown when the data format is invalid
     /// @dev Triggered when the provided bytes data doesn't have the expected format
@@ -89,16 +49,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
     /// @notice Emitted when the scope is updated
     event ScopeUpdated(uint256 indexed newScope);
-
-    /// @notice Emitted when a new attestation ID is added
-    event AttestationIdAdded(bytes32 indexed attestationId);
-
-    /// @notice Emitted when an attestation ID is removed
-    event AttestationIdRemoved(bytes32 indexed attestationId);
-
-
-    /// @notice Emitted when calldata is executed for a requestId
-    event CalldataExecuted(bytes32 indexed requestId, bool success, bytes result);
 
     /**
      * @notice Initializes the SelfVerificationRoot contract.
@@ -144,16 +94,16 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         - Call verify function in the Hub contract
         - Call onVerificationSuccess
 
-        proofData = | 32 bytes attestationId | proofData |
+        proofPayload = | 32 bytes attestationId | proofData |
         userContextData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
         hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
     function verifySelfProof(
-        bytes calldata proofData,
+        bytes calldata proofPayload,
         bytes calldata userContextData
     ) public {
         // Minimum expected length for proofData: 32 bytes attestationId + proof data
-        if (proofData.length < 32) {
+        if (proofPayload.length < 32) {
             revert InvalidDataFormat();
         }
 
@@ -165,11 +115,11 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         bytes32 attestationId;
         assembly {
             // Load attestationId from the beginning of proofData (first 32 bytes)
-            attestationId := calldataload(proofData.offset)
+            attestationId := calldataload(proofPayload.offset)
         }
 
         // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proof data
-        bytes memory hubData = abi.encodePacked(
+        bytes memory baseVerificationInput = abi.encodePacked(
             // 1 byte contractVersion
             CONTRACT_VERSION,
             // 31 bytes buffer (all zeros)
@@ -179,11 +129,11 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             // 32 bytes attestationId
             attestationId,
             // proof data (starts after 32 bytes attestationId)
-            proofData[32:]
+            proofPayload[32:]
         );
 
         // Call hub V2 verification
-        _identityVerificationHubV2.verify(hubData, userContextData);
+        _identityVerificationHubV2.verify(baseVerificationInput, userContextData);
     }
 
     function onVerificationSuccess(
@@ -196,7 +146,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         }
 
         // Call the customizable verification hook
-        customVerificationHook(output, userData);
+        _customVerificationHook(output, userData);
     }
 
     /**
@@ -205,7 +155,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param output The verification output data from the hub
      * @param userData The user-defined data passed through the verification process
      */
-    function customVerificationHook(
+    function _customVerificationHook(
         bytes memory output,
         bytes memory userData
     ) internal virtual {

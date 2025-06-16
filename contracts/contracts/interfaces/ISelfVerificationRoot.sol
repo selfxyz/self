@@ -10,7 +10,6 @@ interface ISelfVerificationRoot {
         uint256[21] pubSignals;
     }
 
-    // TODO: use this struct
     struct GenericDiscloseOutputV2 {
         bytes32 attestationId;
         uint256 userIdentifier;
