@@ -6,6 +6,7 @@ import {
 import { getSKIPEM } from '@selfxyz/common';
 import { initPassportDataParsing } from '@selfxyz/common';
 import { PassportData } from '@selfxyz/common';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import TextsContainer from '@selfxyz/ui/dist/components/TextsContainer';
 import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
 import Description from '@selfxyz/ui/dist/typography/Description';
@@ -28,7 +29,6 @@ import { Image } from 'tamagui';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';

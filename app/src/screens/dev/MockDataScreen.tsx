@@ -3,6 +3,7 @@ import { countryCodes } from '@selfxyz/common';
 import { getSKIPEM } from '@selfxyz/common';
 import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
 import { initPassportDataParsing } from '@selfxyz/common';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
 import {
@@ -34,7 +35,6 @@ import {
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { MockDataEvents } from '../../consts/analytics';
 import { storePassportData } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';

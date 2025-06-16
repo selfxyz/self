@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import TextsContainer from '@selfxyz/ui/dist/components/TextsContainer';
 import Additional from '@selfxyz/ui/dist/typography/Additional';
 import Description from '@selfxyz/ui/dist/typography/Description';
@@ -12,7 +13,6 @@ import { StatusBar, StyleSheet } from 'react-native';
 import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';

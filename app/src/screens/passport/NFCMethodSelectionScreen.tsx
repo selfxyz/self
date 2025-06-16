@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import Description from '@selfxyz/ui/dist/typography/Description';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
 import { white } from '@selfxyz/ui/dist/utils/colors';
@@ -8,7 +9,6 @@ import { Input, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 
 type NFCParams = {

@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { countryCodes } from '@selfxyz/common';
 import { genMockIdDocAndInitDataParsing, IdDocInput } from '@selfxyz/common';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { BodyText } from '@selfxyz/ui/dist/typography/BodyText';
 import Description from '@selfxyz/ui/dist/typography/Description';
 import { Title } from '@selfxyz/ui/dist/typography/Title';
@@ -13,7 +14,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { MockDataEvents } from '../../consts/analytics';
 import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';

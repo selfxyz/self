@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { borderColor, textBlack, white } from '@selfxyz/ui/dist/utils/colors';
 import { impactLight } from '@selfxyz/ui/dist/utils/haptic';
 import { Check, Eraser } from '@tamagui/lucide-icons';
@@ -9,7 +10,6 @@ import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '@selfxyz/ui/dist/components/ButtonsContainer';
 import { usePassport } from '../../providers/passportDataProvider';
 import { extraYPadding } from '../../utils/constants';
 
