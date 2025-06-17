@@ -35,6 +35,7 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+.kotlin/
 # debug bundled builds
 android/app/src/main/assets/*android.bundle
 android/app/src/main/res/*/node_modules*

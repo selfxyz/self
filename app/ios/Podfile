@@ -11,7 +11,7 @@ require Pod::Executable.execute_command("node", ["-p",
 
 project "Self.xcodeproj"
 
-platform :ios, "15.0" if !ENV["ACT"]
+platform :ios, "16.0" if !ENV["ACT"]
 prepare_react_native_project!
 
 flipper_enabled = ENV["NO_FLIPPER"] != "1"
