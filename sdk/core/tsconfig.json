@@ -3,8 +3,8 @@
     "target": "ES2020",
     "module": "NodeNext",
     "declaration": true,
-    "declarationDir": "./dist",
-    "outDir": "./dist",
+    "declarationDir": "./dist/esm",
+    "outDir": "./dist/esm",
     "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -14,5 +14,10 @@
     "baseUrl": "."
   },
   "include": ["index.ts", "src/**/*", "circuits/**/*", "circuits/**/*.json", "utils/utils.ts"],
-  "exclude": ["node_modules", "**/__tests__/*", "dist"]
+  "exclude": ["node_modules", "**/__tests__/*", "dist"],
+  "references": [
+    {
+      "path": "../../common"
+    }
+  ]
 }

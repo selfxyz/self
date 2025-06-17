@@ -1,22 +1,33 @@
 {
   "name": "@selfxyz/core",
   "version": "0.0.25",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
   },
   "license": "MIT",
   "author": "motemotech",
-  "main": "dist/sdk/core/index.js",
-  "types": "dist/sdk/core/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
   "files": [
-    "dist",
-    "common",
-    "circuits/**/*.json"
+    "dist"
   ],
   "scripts": {
-    "build": "tsc -build",
-    "build:deps": "yarn workspaces foreach --from @selfxyz/core --topological-dev --recursive run build",
+    "build": "tsup index.ts --format cjs,esm --dts --clean --sourcemap",
     "copy-abi": "bash scripts/copyAbi.sh",
     "format": "prettier --write .",
     "install-sdk": "yarn workspaces focus @selfxyz/core",
@@ -26,7 +37,7 @@
     "types": "yarn build"
   },
   "dependencies": {
-    "@selfxyz/common": "workspace:^",
+    "@selfxyz/common": "file:../../common",
     "@types/uuid": "^10.0.0",
     "ethers": "^6.13.5",
     "js-sha1": "^0.7.0",
@@ -51,6 +62,7 @@
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
     "typescript": "^5.4.5"
   },
   "publishConfig": {

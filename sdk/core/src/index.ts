@@ -1,1 +1,1 @@
-export { SelfBackendVerifier } from './SelfBackendVerifier';
+export { SelfBackendVerifier } from './SelfBackendVerifier.js';

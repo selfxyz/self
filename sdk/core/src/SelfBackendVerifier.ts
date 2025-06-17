@@ -1,11 +1,11 @@
-import { registryAbi } from './abi/IdentityRegistryImplV1';
-import { verifyAllAbi } from './abi/VerifyAll';
+import { registryAbi } from './abi/IdentityRegistryImplV1.js';
+import { verifyAllAbi } from './abi/VerifyAll.js';
 import {
   REGISTRY_ADDRESS,
   VERIFYALL_ADDRESS,
   REGISTRY_ADDRESS_STAGING,
   VERIFYALL_ADDRESS_STAGING,
-} from './constants/contractAddresses';
+} from './constants/contractAddresses.js';
 import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 import type { SelfVerificationResult } from '@selfxyz/common/utils/selfAttestation';

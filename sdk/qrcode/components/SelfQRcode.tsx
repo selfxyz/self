@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
-import CHECK_ANIMATION from '../animations/check_animation.json';
-import X_ANIMATION from '../animations/x_animation.json';
+import CHECK_ANIMATION from '../animations/check_animation.json' with { type: 'json' };
+import X_ANIMATION from '../animations/x_animation.json' with { type: 'json' };
 import LED from './LED.js';
 import {
   REDIRECT_URL,
