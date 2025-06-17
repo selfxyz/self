@@ -6,3 +6,8 @@ export type VcAndDiscloseProof = {
   c: [BigNumberish, BigNumberish];
   pubSignals: BigNumberish[];
 };
+
+// export type VerificationConfig =
+
+interface IConfigStorage {
+}

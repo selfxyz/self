@@ -49,6 +49,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@typechain/ethers-v6": "^0.5.1",
     "@types/chai": "^4.3.6",
     "@types/chai-as-promised": "^7.1.8",
     "@types/circomlibjs": "^0.1.6",
@@ -63,6 +64,7 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
+    "typechain": "^8.3.2",
     "typescript": "^5.4.5"
   },
   "publishConfig": {

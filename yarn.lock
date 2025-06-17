@@ -4310,7 +4310,7 @@ __metadata:
 
 "@selfxyz/common@file:../../common::locator=%40selfxyz%2Fcore%40workspace%3Asdk%2Fcore":
   version: 0.0.2
-  resolution: "@selfxyz/common@file:../../common#../../common::hash=50993d&locator=%40selfxyz%2Fcore%40workspace%3Asdk%2Fcore"
+  resolution: "@selfxyz/common@file:../../common#../../common::hash=c4cbd1&locator=%40selfxyz%2Fcore%40workspace%3Asdk%2Fcore"
   dependencies:
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
@@ -4337,7 +4337,7 @@ __metadata:
     snarkjs: "npm:^0.7.5"
     typescript-parser: "npm:^2.6.1"
     uuid: "npm:^11.0.5"
-  checksum: 10c0/ed038945ad93e4424658f7cb1fb421696c3c5ececd653a53ec00df592edd5c48ab2e4ea9bb431f032ad9d964a19a417569ff6c6709bbc672dc215b10c60e1b30
+  checksum: 10c0/78ab1198944837f4726a467ccbe02133ce86ed5435980a997fe2c51f1c0261c48dfc03c5ddca23755060d7cd2df9d00d07f16dc14ad4bc2ec54ecf9966385aad
   languageName: node
   linkType: hard
 
@@ -4437,6 +4437,7 @@ __metadata:
   resolution: "@selfxyz/core@workspace:sdk/core"
   dependencies:
     "@selfxyz/common": "file:../../common"
+    "@typechain/ethers-v6": "npm:^0.5.1"
     "@types/chai": "npm:^4.3.6"
     "@types/chai-as-promised": "npm:^7.1.8"
     "@types/circomlibjs": "npm:^0.1.6"
@@ -4459,6 +4460,7 @@ __metadata:
     ts-loader: "npm:^9.5.1"
     ts-node: "npm:^10.9.2"
     tsup: "npm:^8.5.0"
+    typechain: "npm:^8.3.2"
     typescript: "npm:^5.4.5"
     uuid: "npm:^11.1.0"
   languageName: unknown
@@ -7858,6 +7860,20 @@ __metadata:
     typechain: ^8.3.1
     typescript: ">=4.7.0"
   checksum: 10c0/e66728763916f5b4ce4c9753098e17c1dd17f5913792de9801c79fcbc57b46a52a1f6602ce35be377c7503cc5004b285dab8bd911afe13b057007d5ccf947094
+  languageName: node
+  linkType: hard
+
+"@typechain/ethers-v6@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "@typechain/ethers-v6@npm:0.5.1"
+  dependencies:
+    lodash: "npm:^4.17.15"
+    ts-essentials: "npm:^7.0.1"
+  peerDependencies:
+    ethers: 6.x
+    typechain: ^8.3.2
+    typescript: ">=4.7.0"
+  checksum: 10c0/f3c80151c07e01adbf520e0854426649edb0ee540920569487dd8da7eca2fa8615710f4c0eda008e7afdf255fbb8dfdebf721a5d324a4dffeb087611d9bd64b9
   languageName: node
   linkType: hard
 
