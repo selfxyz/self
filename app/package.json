@@ -39,6 +39,7 @@
     "install-app:setup": "yarn install && yarn build:deps && cd ios && bundle install && cd ..",
     "ios": "react-native run-ios",
     "ios:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose ios internal_test",
+    "setup": "yarn clean:build && yarn install && yarn build:deps && cd ios && bundle install && bundle exec pod install --repo-update && cd .. && yarn clean:xcode-env-local",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "nice": "yarn lint:fix && yarn fmt:fix",
