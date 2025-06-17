@@ -150,13 +150,26 @@ describe("Formatter", function () {
 
   describe("extractForbiddenCountriesFromPacked", function () {
     it("should match contract and ts implementation", async function () {
-      const input = "0x414141424242434343";
-      const contractResult = await testFormatter.testExtractForbiddenCountriesFromPacked([input, 0n, 0n, 0n]);
-      const tsResult = Formatter.extractForbiddenCountriesFromPacked(BigInt(input));
-      expect(contractResult).to.deep.equal(tsResult);
-      expect(contractResult[0]).to.equal("CCC");
-      expect(contractResult[1]).to.equal("BBB");
-      expect(contractResult[2]).to.equal("AAA");
+      const input1 = "0x414754414154414149414f4741444e414d5341415a44424c41414c41474641";
+      const input2 = "0x4542524c42425242444742524842534842455a415355415742414d52414752";
+      const input3 = "0x4e41434d484b5650434e52424c4f424e5442554d424e45425a4c42554d424c";
+      const input4 = "0x4853454d4559424d5a45575a5455564b4e445453454e4843564943";
+      const contractResult = await testFormatter.testExtractForbiddenCountriesFromPacked([
+        input1,
+        input2,
+        input3,
+        input4,
+      ]);
+      const tsResult: string[] = Formatter.extractForbiddenCountriesFromPacked([input1, input2, input3, input4], "id");
+      let formattedTsResult = tsResult
+        .map((item: string, index: number) => {
+          if (index % 3 === 0) {
+            return item + tsResult[index + 1] + tsResult[index + 2];
+          }
+          return undefined;
+        })
+        .filter(Boolean);
+      expect(contractResult).to.deep.equal(formattedTsResult);
     });
 
     it("should revert when field element is out of range", async function () {

@@ -192,7 +192,7 @@ describe("Unit Tests for IdentityRegistry", () => {
 
       const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
       // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
-      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+      const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
       const imt = new LeanIMT<bigint>(hashFunction);
       imt.insert(BigInt(commitment));
       expect(imt.root).to.equal(root);

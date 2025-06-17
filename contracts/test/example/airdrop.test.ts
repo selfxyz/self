@@ -32,7 +32,7 @@ describe("Airdrop", () => {
   before(async () => {
     deployedActors = await deploySystemFixtures();
     // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
-    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     registerSecret = generateRandomFieldElement();
     nullifier = generateRandomFieldElement();
     attestationIds = [BigInt(ATTESTATION_ID.E_PASSPORT)];
@@ -74,15 +74,13 @@ describe("Airdrop", () => {
     );
 
     const airdropFactory = await ethers.getContractFactory("Airdrop");
-    airdrop = await airdropFactory
-      .connect(deployedActors.owner)
-      .deploy(
-        deployedActors.hub.target,
-        hashEndpointWithScope("https://test.com", "test-scope"),
-        0, // the types show we need a contract version here
-        attestationIds,
-        token.target,
-      );
+    airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
+      deployedActors.hub.target,
+      hashEndpointWithScope("https://test.com", "test-scope"),
+      0, // the types show we need a contract version here
+      attestationIds,
+      token.target,
+    );
     await airdrop.waitForDeployment();
 
     const verificationConfig = {
@@ -275,7 +273,6 @@ describe("Airdrop", () => {
   });
 
   it("should not able to register address by user if attestation id is invalid", async () => {
-
     const { registry, owner, user1 } = deployedActors;
 
     const invalidCommitment = generateCommitment(
@@ -290,7 +287,7 @@ describe("Airdrop", () => {
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
     // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
-    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     const invalidImt = new LeanIMT<bigint>(hashFunction);
     await invalidImt.insert(BigInt(commitment));
     await invalidImt.insert(BigInt(invalidCommitment));
@@ -352,7 +349,7 @@ describe("Airdrop", () => {
     const airdropFactory = await ethers.getContractFactory("Airdrop");
     const newAirdrop = await airdropFactory
       .connect(owner)
-      .deploy(hub.target, hashEndpointWithScope("https://test.com", "test-scope"),0, attestationIds, token.target);
+      .deploy(hub.target, hashEndpointWithScope("https://test.com", "test-scope"), 0, attestationIds, token.target);
     await newAirdrop.waitForDeployment();
 
     const verificationConfig = {

@@ -2,11 +2,8 @@
 pragma solidity 0.8.28;
 
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {InternalLeanIMT, LeanIMTData} from "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
 import {IIdentityRegistryIdCardV1} from "../interfaces/IIdentityRegistryIdCardV1.sol";
-import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {ImplRoot} from "../upgradeable/ImplRoot.sol";
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️

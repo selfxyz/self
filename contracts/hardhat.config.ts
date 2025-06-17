@@ -1,7 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config({
-  path: process.env.CI ? ".env.test" : ".env"
+  path: process.env.CI ? ".env.test" : ".env",
 });
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-ignition-ethers";
@@ -16,14 +16,10 @@ const config: HardhatUserConfig = {
       optimizer: {
         enabled: true,
         runs: 200,
-        details: {
-          yul: true,
-        },
       },
       metadata: {
         bytecodeHash: "none",
       },
-      viaIR: false,
     },
   },
   contractSizer: {

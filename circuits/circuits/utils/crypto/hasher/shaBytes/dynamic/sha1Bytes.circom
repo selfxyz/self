@@ -28,7 +28,7 @@ template Sha1Bytes(max_num_bytes) {
     for (var i = 0; i < 160; i++) {
         out[i] <== sha.out[i];
     }
-   
+
 }
 
 //Adapted from @openpassport/zk-email-circuits/helpers/sha256general.circom
@@ -66,9 +66,9 @@ template Sha1General(maxBitsPadded) {
     component he0 = H_sha1(4);
 
     component sha1compression[maxBlocks];
-    
+
     for (i=0; i<maxBlocks; i++) {
-        
+
         sha1compression[i] = Sha1compression();
 
         if (i==0) {
@@ -86,13 +86,13 @@ template Sha1General(maxBitsPadded) {
                 sha1compression[i].hin[32*2+k] <== sha1compression[i-1].out[32*2+31-k];
                 sha1compression[i].hin[32*3+k] <== sha1compression[i-1].out[32*3+31-k];
                 sha1compression[i].hin[32*4+k] <== sha1compression[i-1].out[32*4+31-k];
-            } 
+            }
         }
 
         for (k=0; k<512; k++) {
             sha1compression[i].inp[k] <== paddedIn[i*512+k];
         }
-        
+
     }
 
     component arraySelectors[160];

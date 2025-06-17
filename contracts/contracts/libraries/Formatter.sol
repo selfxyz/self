@@ -154,6 +154,7 @@ library Formatter {
      * @param publicSignals A packed uint256 containing encoded forbidden country data.
      * @return forbiddenCountries An array of strings representing the forbidden country codes.
      */
+    // TODO: look at this function a bit
     function extractForbiddenCountriesFromPacked(
         uint256[4] memory publicSignals
     ) internal pure returns (string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory forbiddenCountries) {
@@ -164,33 +165,47 @@ library Formatter {
         }
 
         for (uint256 j = 0; j < MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH; j++) {
-            uint256 byteIndex = j * 3;
+            uint256 byteIndex = (j * 3) % 93;
+            uint256 index = j / 31;
 
-            if (byteIndex + 2 < 32) {
+            if (byteIndex + 2 < 31) {
                 uint256 shift = byteIndex * 8;
                 uint256 mask = 0xFFFFFF;
-                uint256 packedData = (publicSignals[0] >> shift) & mask;
-                forbiddenCountries[j] = string(abi.encodePacked(uint24(packedData)));
-            } else if (byteIndex < 32) {
-                uint256 bytesFrom0 = 32 - byteIndex;
-                uint256 bytesTo1 = 3 - bytesFrom0;
-
-                uint256 shift0 = byteIndex * 8;
-                uint256 mask0 = (1 << (bytesFrom0 * 8)) - 1;
-                uint256 part0 = (publicSignals[0] >> shift0) & mask0;
-
-                uint256 shift1 = 0;
-                uint256 mask1 = (1 << (bytesTo1 * 8)) - 1;
-                uint256 part1 = (publicSignals[1] >> shift1) & mask1;
-
-                uint256 combined = (part1 << (bytesFrom0 * 8)) | part0;
+                uint256 packedData = (publicSignals[index * 3] >> shift) & mask;
+                uint256 reversedPackedData = ((packedData & 0xff) << 16) |
+                    ((packedData & 0xff00)) |
+                    ((packedData & 0xff0000) >> 16);
+                forbiddenCountries[j] = string(abi.encodePacked(uint24(reversedPackedData)));
+            } else if (byteIndex < 31) {
+                uint256 part0 = (publicSignals[0] >> (byteIndex * 8));
+                uint256 part1 = publicSignals[1] & 0x00ffff;
+                uint256 reversedPart1 = ((part1 & 0xff) << 8) | ((part1 & 0xff00) >> 8);
+                uint256 combined = reversedPart1 | (part0 << 16);
                 forbiddenCountries[j] = string(abi.encodePacked(uint24(combined)));
-            } else {
-                uint256 byteIndexIn1 = byteIndex - 32;
+            } else if (byteIndex + 2 < 62) {
+                uint256 byteIndexIn1 = byteIndex - 31;
                 uint256 shift = byteIndexIn1 * 8;
                 uint256 mask = 0xFFFFFF;
                 uint256 packedData = (publicSignals[1] >> shift) & mask;
-                forbiddenCountries[j] = string(abi.encodePacked(uint24(packedData)));
+                uint256 reversedPackedData = ((packedData & 0xff) << 16) |
+                    ((packedData & 0xff00)) |
+                    ((packedData & 0xff0000) >> 16);
+                forbiddenCountries[j] = string(abi.encodePacked(uint24(reversedPackedData)));
+            } else if (byteIndex < 62) {
+                uint256 part0 = (publicSignals[1] >> ((byteIndex - 31) * 8)) & 0x00ffff;
+                uint256 reversedPart0 = ((part0 & 0xff) << 8) | ((part0 & 0xff00) >> 8);
+                uint256 part1 = publicSignals[2] & 0x0000ff;
+                uint256 combined = part1 | (reversedPart0 << 8);
+                forbiddenCountries[j] = string(abi.encodePacked(uint24(combined)));
+            } else if (byteIndex < 93) {
+                uint256 byteIndexIn1 = byteIndex - 62;
+                uint256 shift = byteIndexIn1 * 8;
+                uint256 mask = 0xFFFFFF;
+                uint256 packedData = (publicSignals[2] >> shift) & mask;
+                uint256 reversedPackedData = ((packedData & 0xff) << 16) |
+                    ((packedData & 0xff00)) |
+                    ((packedData & 0xff0000) >> 16);
+                forbiddenCountries[j] = string(abi.encodePacked(uint24(reversedPackedData)));
             }
         }
 

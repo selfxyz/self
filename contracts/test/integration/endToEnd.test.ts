@@ -1,4 +1,3 @@
-
 import { expect } from "chai";
 import { BigNumberish, TransactionReceipt } from "ethers";
 import { ethers } from "hardhat";
@@ -10,8 +9,9 @@ import { ATTESTATION_ID } from "../utils/constants";
 import { deploySystemFixtures } from "../utils/deployment";
 import BalanceTree from "../utils/example/balance-tree";
 import { Formatter } from "../utils/formatter";
-import { generateDscProof, generateRegisterProof, generateVcAndDiscloseProof } from "../utils/generateProof.js";
-import serialized_dsc_tree from "../utils/pubkeys/serialized_dsc_tree.json";
+import { generateDscProof, generateRegisterProof, generateVcAndDiscloseProof } from "../utils/generateProof";
+import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import serialized_dsc_tree from "../../../common/pubkeys/serialized_dsc_tree.json";
 import { DeployedActors, VcAndDiscloseHubProof } from "../utils/types";
 import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 
@@ -86,7 +86,7 @@ describe("End to End Tests", function () {
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
     // must be imported dynamic since @openpassport/zk-kit-lean-imt is exclusively esm and hardhat does not support esm with typescript until verison 3
-    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then(mod => mod.LeanIMT);
+    const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     const imt = new LeanIMT<bigint>(hashFunction);
     await imt.insert(BigInt(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX]));
 
@@ -183,20 +183,18 @@ describe("End to End Tests", function () {
     await token.waitForDeployment();
 
     const airdropFactory = await ethers.getContractFactory("Airdrop");
-    const airdrop = await airdropFactory
-      .connect(owner)
-      .deploy(
-        hub.target,
-        castFromScope("test-scope"),
-        ATTESTATION_ID.E_PASSPORT,
-        token.target,
-        true,
-        20,
-        // @ts-expect-error
-        true,
-        countriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
-        [true, true, true],
-      );
+    const airdrop = await airdropFactory.connect(owner).deploy(
+      hub.target,
+      castFromScope("test-scope"),
+      ATTESTATION_ID.E_PASSPORT,
+      token.target,
+      true,
+      20,
+      // @ts-expect-error
+      true,
+      countriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+      [true, true, true],
+    );
     await airdrop.waitForDeployment();
 
     await token.connect(owner).mint(airdrop.target, BigInt(1000000000000000000));

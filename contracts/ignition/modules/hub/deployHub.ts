@@ -18,14 +18,7 @@ export default buildModule("DeployHubV1", (m) => {
   const identityVerificationHubImplV1 = m.contract("IdentityVerificationHubImplV1");
 
   const hubInterface = getHubInitializeData();
-  const initializeData = hubInterface.encodeFunctionData("initialize", [
-    "",
-    "",
-    [],
-    [],
-    [],
-    [],
-  ]);
+  const initializeData = hubInterface.encodeFunctionData("initialize", ["", "", [], [], [], []]);
 
   // Deploy proxy with V1 implementation
   const hubV1 = m.contract("IdentityVerificationHub", [identityVerificationHubImplV1, initializeData]);

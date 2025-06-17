@@ -7,7 +7,7 @@ import * as path from "path";
  * Get enum keys (circuit names) excluding numeric values
  */
 function getEnumKeys<T extends Record<string, string | number>>(enumObject: T): string[] {
-  return Object.keys(enumObject).filter(key => isNaN(Number(key)));
+  return Object.keys(enumObject).filter((key) => isNaN(Number(key)));
 }
 
 /**
@@ -22,7 +22,7 @@ function contractExists(contractName: string): boolean {
     path.join(contractsDir, "verifiers", `${contractName}.sol`),
   ];
 
-  return possiblePaths.some(filePath => fs.existsSync(filePath));
+  return possiblePaths.some((filePath) => fs.existsSync(filePath));
 }
 
 export default buildModule("DeployAllVerifiers", (m) => {
@@ -64,8 +64,12 @@ export default buildModule("DeployAllVerifiers", (m) => {
 
   console.log(`Total verifiers deployment summary:`);
   console.log(`  - VC and Disclose: 1`);
-  console.log(`  - Register: ${successfulRegisterDeployments}/${registerCircuits.length} (${registerCircuits.length - successfulRegisterDeployments} skipped)`);
-  console.log(`  - DSC: ${successfulDscDeployments}/${dscCircuits.length} (${dscCircuits.length - successfulDscDeployments} skipped)`);
+  console.log(
+    `  - Register: ${successfulRegisterDeployments}/${registerCircuits.length} (${registerCircuits.length - successfulRegisterDeployments} skipped)`,
+  );
+  console.log(
+    `  - DSC: ${successfulDscDeployments}/${dscCircuits.length} (${dscCircuits.length - successfulDscDeployments} skipped)`,
+  );
   console.log(`  - Total successful deployments: ${1 + successfulRegisterDeployments + successfulDscDeployments}`);
 
   return deployedContracts;
