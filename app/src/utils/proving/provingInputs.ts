@@ -77,7 +77,6 @@ export function generateTEEInputsDisclose(
   const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT, nameAndDobSMTID, nameAndYobSMTID } =
     getOfacSMTs();
   const serialized_tree = useProtocolStore.getState()[document].commitment_tree;
-  const serialized_tree = useProtocolStore.getState().passport.commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
   const inputs = generateCircuitInputsVCandDisclose(
     secret,
