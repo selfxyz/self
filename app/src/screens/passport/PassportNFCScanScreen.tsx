@@ -66,9 +66,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     'PassportNFCMethodSelection',
   );
 
-  // 5-taps with 2 fingers
-  const twoFingerTap = Gesture.Tap()
-    .minPointers(2)
+  // 5-taps with a single finger
+  const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
       goToNFCMethodSelection();
@@ -316,7 +315,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         ) : (
           <>
             <TextsContainer>
-              <GestureDetector gesture={twoFingerTap}>
+              <GestureDetector gesture={devModeTap}>
                 <Title>Verify your passport</Title>
               </GestureDetector>
               <Description

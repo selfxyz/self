@@ -48,9 +48,8 @@ const PassportNFCTrouble: React.FC = () => {
     flushAnalytics();
   }, []);
 
-  // 2-finger, 5-tap
-  const twoFingerTap = Gesture.Tap()
-    .minPointers(2)
+  // 5-taps with a single finger
+  const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
       goToNFCMethodSelection();
@@ -61,7 +60,7 @@ const PassportNFCTrouble: React.FC = () => {
       title="Having trouble scanning your passport?"
       onDismiss={go}
     >
-      <GestureDetector gesture={twoFingerTap}>
+      <GestureDetector gesture={devModeTap}>
         <Caption size="large" color={slate500}>
           Here are some tips to help you successfully scan the RFID chip::
         </Caption>
