@@ -308,7 +308,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           <>
             <TextsContainer>
               <GestureDetector gesture={devModeTap}>
-                <XStack justifyContent="space-between" alignItems="center" gap="$1.5">
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap="$1.5"
+                >
                   <Title>Verify your passport</Title>
                   <Button
                     unstyled
