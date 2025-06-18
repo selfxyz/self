@@ -52,7 +52,6 @@ describe('Disclose', function () {
   const tree: any = new LeanIMT((a, b) => poseidon2([a, b]), []);
   tree.insert(BigInt(commitment));
 
-
   const nameAndDob_smt = new SMT(poseidon2, true);
   nameAndDob_smt.import(nameAndDobjson);
 
