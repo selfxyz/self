@@ -14,7 +14,7 @@ project "Self.xcodeproj"
 platform :ios, "16.0" if !ENV["ACT"]
 prepare_react_native_project!
 
-flipper_enabled = ENV["NO_FLIPPER"] != "1"
+flipper_enabled = false
 flipper_config = { "Flipper" => flipper_enabled ? "~> 0.125.0" : nil }
 
 linkage = ENV["USE_FRAMEWORKS"]
@@ -126,6 +126,12 @@ target "Self" do
 
     # Disable code signing for Pod targets to avoid conflicts with main app signing
     installer.pods_project.targets.each do |target|
+      if target.name == 'Sentry'
+        target.build_configurations.each do |config|
+          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        end
+      end
+
       target.build_configurations.each do |config|
         config.build_settings["CODE_SIGNING_ALLOWED"] = "NO"
       end
