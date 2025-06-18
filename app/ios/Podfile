@@ -43,8 +43,8 @@ target "Self" do
     # Flipper設定は削除
   )
 
-  pod "Sentry", :modular_headers => true
-  pod "SentryPrivate", :modular_headers => true
+  pod "Sentry", :modular_headers => true, :inhibit_warnings => true
+  pod "SentryPrivate", :modular_headers => true, :inhibit_warnings => true
 
   pod "Firebase", :modular_headers => true
   pod "FirebaseCore", :modular_headers => true

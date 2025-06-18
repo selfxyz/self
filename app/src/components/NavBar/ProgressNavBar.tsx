@@ -70,7 +70,12 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
           </XStack>
 
           <XStack flex={1} justifyContent="center" alignItems="center">
-            <NavBar.Title {...(options.headerTitleStyle as ViewStyle)}>
+            <NavBar.Title
+              {...(options.headerTitleStyle as Omit<
+                ViewStyle,
+                'pointerEvents'
+              >)}
+            >
               {props.options.title}
             </NavBar.Title>
           </XStack>

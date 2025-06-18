@@ -37,7 +37,9 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
         }}
         {...(options.headerTitleStyle as ViewStyle)}
       />
-      <NavBar.Title {...(options.headerTitleStyle as ViewStyle)}>
+      <NavBar.Title
+        {...(options.headerTitleStyle as Omit<ViewStyle, 'pointerEvents'>)}
+      >
         {props.options.title}
       </NavBar.Title>
     </NavBar.Container>
