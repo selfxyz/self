@@ -1,6 +1,7 @@
 import React from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Tips, { TipProps } from '../../components/Tips';
 import { Caption } from '../../components/typography/Caption';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
@@ -72,6 +73,9 @@ const PassportNFCTrouble: React.FC = () => {
         device supports NFC and that your passport’s RFID is functioning
         properly.
       </Caption>
+      <PrimaryButton onPress={goToNFCMethodSelection}>
+        Open NFC Options
+      </PrimaryButton>
     </SimpleScrolledTitleLayout>
   );
 };
