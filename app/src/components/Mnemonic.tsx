@@ -1,12 +1,4 @@
-// SPDX-License-Identifier: BSL-1.1
-// Copyright (c) 2025 Social Connect Labs, Inc.
-//
-// This file is licensed under the Business Source License 1.1 (BSL-1.1).
-//
-// Use of this software is governed by the Business Source License included in the LICENSE file.
-//
-// As of 2029-06-11, this file will be governed by the Apache License, Version 2.0.
-
+// SPDX-License-Identifier: BSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, { useCallback, useState } from 'react';
