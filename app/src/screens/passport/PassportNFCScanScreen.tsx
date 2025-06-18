@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
-import { Button, Image } from 'tamagui';
+import { Button, Image, XStack } from 'tamagui';
 
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -218,34 +218,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           error: e.message,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
-
-        if (e.message.includes('InvalidMRZKey')) {
-          // iOS
-          // This works and even says "MRZ key not valid for this document"
-          navigation.navigate('PassportCamera');
-        } else if (e.message.includes('Tag response error / no response')) {
-          // iOS
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('UserCanceled')) {
-          // iOS
-          // Do nothing
-        } else if (e.message.includes('UnexpectedError')) {
-          // iOS
-          // Timeout reached, do nothing
-        } else if (
-          e.message.includes('Error: Lost connection to chip on card')
-        ) {
-          // android
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('Could not tranceive APDU')) {
-          // android
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('SODNotFound')) {
-          // developer defined error - not part of the library
-          navigation.navigate('PassportNFCTrouble');
-        } else {
-          openErrorModal(e.message);
-        }
+        openErrorModal(e.message);
       } finally {
         setIsNfcSheetOpen(false);
       }
@@ -335,7 +308,15 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           <>
             <TextsContainer>
               <GestureDetector gesture={devModeTap}>
-                <Title>Verify your passport</Title>
+                <XStack justifyContent="space-between" alignItems="center" gap="$1.5">
+                  <Title>Verify your passport</Title>
+                  <Button
+                    unstyled
+                    onPress={goToNFCTrouble}
+                    icon={<CircleHelp size={28} color={slate500} />}
+                    aria-label="Help"
+                  />
+                </XStack>
               </GestureDetector>
               <Description
                 children={
@@ -365,12 +346,6 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               >
                 Cancel
               </SecondaryButton>
-              <Button
-                unstyled
-                onPress={goToNFCTrouble}
-                icon={<CircleHelp size={24} color={slate500} />}
-                aria-label="Help"
-              />
             </ButtonsContainer>
           </>
         )}
