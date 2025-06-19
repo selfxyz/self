@@ -42,6 +42,7 @@ type DiscloseProofType = `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`
 
 export type TEEPayloadBase = {
   endpointType: EndpointType;
+  version: number;
   circuit: {
     name: string;
     inputs: string;
@@ -57,7 +58,6 @@ export type TEEPayloadDisclose = TEEPayloadBase & {
   type: DiscloseProofType;
   onchain: boolean;
   endpoint: string;
-  version: number;
   userDefinedData: string;
 };
 
@@ -80,8 +80,8 @@ export function getPayload(
         name: circuitName,
         inputs: JSON.stringify(inputs),
       },
-      version: version,
-      userDefinedData: userDefinedData,
+      version,
+      userDefinedData,
     };
     return payload;
   } else {
@@ -93,6 +93,7 @@ export function getPayload(
         name: circuitName,
         inputs: JSON.stringify(inputs),
       },
+      version,
     };
     return payload;
   }
