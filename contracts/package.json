@@ -24,6 +24,7 @@
     "deploy:registry:idcard": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/registry/deployIdCardRegistry.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "deploy:verifiers": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/verifiers/deployVerifiers.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "deploy:verifiers:all": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/verifiers/deployAllVerifiers.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
+    "deploy:verifiers:id": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/verifiers/deployIdCardVerifier.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify} --reset'",
     "export-prod": "bash ./scripts/prod.sh",
     "prettier:check": "prettier --list-different '**/*.{json,md,yml,sol,ts}'",
     "prettier:write": "prettier --write '**/*.{json,md,yml,sol,ts}'",

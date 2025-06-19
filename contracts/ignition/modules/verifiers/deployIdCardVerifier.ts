@@ -7,8 +7,10 @@ import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 export default buildModule("DeployIdCardVerifier", (m) => {
   // Deploy the ID Card Verifier contract
   const idCardVerifier = m.contract("Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096");
+  const idCardDisclose = m.contract("Verifier_vc_and_disclose_id");
 
   return {
     idCardVerifier,
+    idCardDisclose
   };
 });
