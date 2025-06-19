@@ -35,6 +35,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
   let commitment: any;
   let nullifier: any;
   let mockIdCardData: any;
+  let snapshotId2: string;
 
   let forbiddenCountriesList: Country3LetterCode[];
   let forbiddenCountriesListPacked: string[];
@@ -89,6 +90,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
       ],
       ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
     };
+
+    snapshotId2 = await ethers.provider.send("evm_snapshot", []);
 
     await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
     configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
@@ -195,13 +198,14 @@ describe("Self Verification Flow V2 - ID Card", () => {
     });
 
     it("should fail verification with invalid configId", async () => {
+      await ethers.provider.send("evm_revert", [snapshotId2]);
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
         ["bytes32", "bytes32", "bytes32", "bytes"],
-        [ethers.randomBytes(32), destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
@@ -215,7 +219,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
-      expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hub, "ConfigNotSet");
+      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hub, "ConfigNotSet");
     });
 
     it("should fail verification with invalid length of proofData", async () => {

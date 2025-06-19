@@ -632,11 +632,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         bytes32 configId
     ) internal view virtual onlyProxy returns (SelfStructs.VerificationConfigV2 memory) {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
-        SelfStructs.VerificationConfigV2 memory config = $v2._v2VerificationConfigs[configId];
-        if (generateConfigId(config) != configId) {
-            revert ConfigNotSet();
-        }
-        return config;
+        return $v2._v2VerificationConfigs[configId];
     }
 
     /**
@@ -646,6 +642,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         SelfStructs.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[configId];
         config = GenericFormatter.formatV2Config(verificationConfig);
+        if (generateConfigId(verificationConfig) != configId) {
+            revert ConfigNotSet();
+        }
+        return config;
     }
 
     /**
