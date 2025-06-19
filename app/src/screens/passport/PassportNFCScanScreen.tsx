@@ -3,9 +3,12 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { getSKIPEM } from '@selfxyz/common';
-import { initPassportDataParsing } from '@selfxyz/common';
-import { PassportData } from '@selfxyz/common';
+import {
+  getSKIPEM,
+  initPassportDataParsing,
+  PassportData,
+} from '@selfxyz/common';
+import { CircleHelp } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -17,7 +20,7 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
-import { Image } from 'tamagui';
+import { Button, Image, XStack } from 'tamagui';
 
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -34,7 +37,7 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
-import { black, slate100, white } from '../../utils/colors';
+import { black, slate100, slate500, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 
@@ -65,6 +68,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const goToNFCMethodSelection = useHapticNavigation(
     'PassportNFCMethodSelection',
   );
+  const goToNFCTrouble = useHapticNavigation('PassportNFCTrouble');
 
   // 5-taps with a single finger
   const devModeTap = Gesture.Tap()
@@ -72,6 +76,21 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     .onStart(() => {
       goToNFCMethodSelection();
     });
+
+  const openErrorModal = useCallback(
+    (message: string) => {
+      navigation.navigate('Modal', {
+        titleText: 'NFC Scan Error',
+        bodyText: message,
+        buttonText: 'Dismiss',
+        secondaryButtonText: 'Help',
+        onButtonPress: () => {},
+        onModalDismiss: goToNFCTrouble,
+        preventDismiss: true,
+      });
+    },
+    [navigation, goToNFCTrouble],
+  );
 
   const checkNfcSupport = useCallback(async () => {
     const isSupported = await NfcManager.isSupported();
@@ -199,34 +218,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           error: e.message,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
-
-        if (e.message.includes('InvalidMRZKey')) {
-          // iOS
-          // This works and even says "MRZ key not valid for this document"
-          navigation.navigate('PassportCamera');
-        } else if (e.message.includes('Tag response error / no response')) {
-          // iOS
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('UserCanceled')) {
-          // iOS
-          // Do nothing
-        } else if (e.message.includes('UnexpectedError')) {
-          // iOS
-          // Timeout reached, do nothing
-        } else if (
-          e.message.includes('Error: Lost connection to chip on card')
-        ) {
-          // android
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('Could not tranceive APDU')) {
-          // android
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('SODNotFound')) {
-          // developer defined error - not part of the library
-          navigation.navigate('PassportNFCTrouble');
-        } else {
-          // TODO: Handle other error types
-        }
+        openErrorModal(e.message);
       } finally {
         setIsNfcSheetOpen(false);
       }
@@ -316,7 +308,19 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           <>
             <TextsContainer>
               <GestureDetector gesture={devModeTap}>
-                <Title>Verify your passport</Title>
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap="$1.5"
+                >
+                  <Title>Verify your passport</Title>
+                  <Button
+                    unstyled
+                    onPress={goToNFCTrouble}
+                    icon={<CircleHelp size={28} color={slate500} />}
+                    aria-label="Help"
+                  />
+                </XStack>
               </GestureDetector>
               <Description
                 children={

@@ -19,6 +19,8 @@ export interface SelfApp {
   userIdType: UserIdType;
   devMode: boolean;
   disclosures: SelfAppDisclosureConfig;
+  version: number;
+  userDefinedData: string;
 }
 
 export interface SelfAppDisclosureConfig {
@@ -92,6 +94,8 @@ export class SelfAppBuilder {
       header: '',
       logoBase64: '',
       disclosures: {},
+      version: config.userDefinedData ? 2 : 1,
+      userDefinedData: 'here is mock user defined data',
       ...config,
     } as SelfApp;
   }

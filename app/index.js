@@ -21,7 +21,7 @@ LogBox.ignoreLogs([
 
 const Root = () => (
   <TamaguiProvider config={tamaguiConfig}>
-      <App />
+    <App />
   </TamaguiProvider>
 );
 
