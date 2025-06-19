@@ -49,11 +49,19 @@ template PassportVerifier(DG1_LEN, DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAl
     signal input pubKey_dsc[kScaled];
     signal input signature_passport[kScaled];
 
+    // Assert `dg1_hash_offset` fits in 2^12
+    component is_dg1_hash_offset_valid = Num2Bits(12);
+    is_dg1_hash_offset_valid.in <== dg1_hash_offset;
+
+    // Assert `signed_attr_econtent_hash_offset` fits in 2^12
+    component is_signed_attr_econtent_hash_offset_valid = Num2Bits(12);
+    is_signed_attr_econtent_hash_offset_valid.in <== signed_attr_econtent_hash_offset;
+
     // check offsets refer to valid ranges
-    signal dg1OffsetInRange <== LessEqThan(12)([dg1_hash_offset + DG_HASH_ALGO_BYTES, eContent_padded_length]); 
+    signal dg1OffsetInRange <== LessEqThan(12)([dg1_hash_offset + DG_HASH_ALGO_BYTES, eContent_padded_length]);
     dg1OffsetInRange === 1;
 
-    signal signedAttrOffsetInRange <== LessEqThan(12)([signed_attr_econtent_hash_offset + ECONTENT_HASH_ALGO_BYTES, signed_attr_padded_length]); 
+    signal signedAttrOffsetInRange <== LessEqThan(12)([signed_attr_econtent_hash_offset + ECONTENT_HASH_ALGO_BYTES, signed_attr_padded_length]);
     signedAttrOffsetInRange === 1;
 
     // compute hash of DG1
@@ -84,4 +92,3 @@ template PassportVerifier(DG1_LEN, DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAl
     // verify passport signature
     SignatureVerifier(signatureAlgorithm, n, k)(signedAttrShaBits, pubKey_dsc, signature_passport);
 }
-
