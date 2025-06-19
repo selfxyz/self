@@ -2,9 +2,13 @@
 export function extractMRZInfo(mrzString: string) {
   const mrzLines = mrzString.split('\n');
 
-  // Check format based on line length
-  const isTD1 = mrzLines[0].length === 30 || mrzLines[0].startsWith('ID');
-  const isTD3 = mrzLines[0].length === 44;
+  //line 1 and line 2 - concated
+  const TD1_REGEX =
+    /^(?<documentType>[A-Z0-9<]{2})(?<issuingCountry>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})(?<optionalData1>[A-Z0-9<]{15})(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<sex>[MF<]{1})(?<dateOfExpiry>[0-9]{6})(?<checkDigitDateOfExpiry>[0-9]{1})(?<nationality>[A-Z<]{3})(?<optionalData2>[A-Z0-9<]{7})/;
+  const TD3_line_2_REGEX = /^([A-Z0-9<]{9})([0-9ILDSOG])([A-Z<]{3})/;
+
+  const isTD1 = TD1_REGEX.test(mrzLines[0]) || mrzLines[0].startsWith('I');
+  const isTD3 = TD3_line_2_REGEX.test(mrzLines[1]);
 
   if (!isTD1 && !isTD3) {
     throw new Error(
