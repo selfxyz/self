@@ -95,7 +95,7 @@ export class SelfAppBuilder {
       logoBase64: '',
       disclosures: {},
       version: config.userDefinedData ? 2 : 1,
-      userDefinedData: 'here is mock user defined data',
+      userDefinedData: '',
       ...config,
     } as SelfApp;
   }
