@@ -185,6 +185,30 @@ describe("Self Verification Flow V2", () => {
       expect(actualUserData).to.equal(expectedUserData);
     });
 
+    it("should fail verification with invalid configId", async () => {
+      const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+      const user1Address = await deployedActors.user1.getAddress();
+      const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
+
+      const userContextData = ethers.solidityPacked(
+        ["bytes32", "bytes32", "bytes32", "bytes"],
+        [ethers.randomBytes(32), destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+      );
+
+      const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
+
+      const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
+      );
+
+      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+
+      await deployedActors.testSelfVerificationRoot.resetTestState();
+
+      expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hub, "ConfigNotSet");
+    });
+
     it("should fail verification with invalid length of proofData", async () => {
       // Use the already configured verificationConfigV2 and configId from before hook
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
