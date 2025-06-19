@@ -1,5 +1,6 @@
 export type UserIdType = 'hex' | 'uuid';
-
+import { sha256 } from 'js-sha256';
+import * as ripemd160 from 'ripemd160';
 /// UUID
 function hexToBigInt(hex: string): bigint {
   return BigInt(`0x${hex}`);
@@ -96,4 +97,12 @@ export function validateUserId(userId: string, type: UserIdType): boolean {
     default:
       return false;
   }
+}
+
+// Helper function to calculate user identifier hash (same as passport test)
+function calculateUserIdentifierHash(userContextData: string): bigint {
+  const inputBytes = Buffer.from(userContextData, "hex");
+  const sha256Hash = sha256.array(inputBytes);
+  const ripemdHash = ripemd160(Buffer.from(sha256Hash));
+  return BigInt(`0x${ripemdHash.toString('hex')}`);
 }

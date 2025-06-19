@@ -581,6 +581,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
           } else {
+            console.log('Passport is not registered with local CSCA');
             actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
             return;
           }
