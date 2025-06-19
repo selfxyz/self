@@ -100,9 +100,9 @@ export function validateUserId(userId: string, type: UserIdType): boolean {
 }
 
 // Helper function to calculate user identifier hash (same as passport test)
-function calculateUserIdentifierHash(userContextData: string): bigint {
+function calculateUserIdentifierHash(userContextData: string): string {
   const inputBytes = Buffer.from(userContextData, "hex");
   const sha256Hash = sha256.array(inputBytes);
   const ripemdHash = ripemd160(Buffer.from(sha256Hash));
-  return BigInt(`0x${ripemdHash.toString('hex')}`);
+  return ripemdHash.toString('hex');
 }
