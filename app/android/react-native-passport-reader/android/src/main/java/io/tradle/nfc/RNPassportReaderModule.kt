@@ -336,8 +336,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 } catch (e: Exception) {
                     Log.w("MY_LOGS", e)
                 }
-                Log.e("MY_LOGS", "Sending select applet command with paceSucceeded: ${paceSucceeded}") // this is false so PACE doesn't succeed
-                service.sendSelectApplet(paceSucceeded)
+                // Log.e("MY_LOGS", "Sending select applet command with paceSucceeded: ${paceSucceeded}") // this is false so PACE doesn't succeed
+                // service.sendSelectApplet(paceSucceeded)
 
                 if (!paceSucceeded && authKey is BACKeySpec) {
                     var bacSucceeded = false
@@ -352,6 +352,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             if (attempts > 1) {
                                 // Wait before retry
                                 Thread.sleep(500)
+                                // Re-send SELECT command before retry
+                                service.sendSelectApplet(false)
                             }
                             
                             // Try to read EF_COM first
