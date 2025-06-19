@@ -1,28 +1,34 @@
-import { CIRCUIT_CONSTANTS } from '@selfxyz/common';
-import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
-import { BigNumberish } from 'ethers';
-import { PublicSignals } from 'snarkjs';
+export function unpackReveal(
+  revealedData_packed: string | string[],
+  id_type: 'passport' | 'id'
+): string[] {
+  // If revealedData_packed is not an array, convert it to an array
+  const packedArray = Array.isArray(revealedData_packed)
+    ? revealedData_packed
+    : [revealedData_packed];
 
-export function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
-  const parsed = JSON.parse('[' + rawCallData + ']');
+  const bytesCount = id_type === 'passport' ? [31, 31, 31] : [31, 31, 31, 27]; // nb of bytes in each of the first three field elements
+  const bytesArray = packedArray.flatMap((element: string, index: number) => {
+    const bytes = bytesCount[index] || 31; // Use 31 as default if index is out of range
+    const elementBigInt = BigInt(element);
+    const byteMask = BigInt(255); // 0xFF
+    const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
+      return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
+    });
+    return bytesOfElement;
+  });
 
-  return {
-    a: parsed[0].map((x: string) => x.replace(/"/g, '')) as [BigNumberish, BigNumberish],
-    b: parsed[1].map((arr: string[]) => arr.map((x: string) => x.replace(/"/g, ''))) as [
-      [BigNumberish, BigNumberish],
-      [BigNumberish, BigNumberish],
-    ],
-    c: parsed[2].map((x: string) => x.replace(/"/g, '')) as [BigNumberish, BigNumberish],
-    pubSignals: parsed[3].map((x: string) => x.replace(/"/g, '')) as BigNumberish[],
-  } as T;
+  return bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
 }
 
-export async function getUserIdentifier(
-  publicSignals: PublicSignals,
-  user_identifier_type: UserIdType = 'uuid'
-): Promise<string> {
-  return castToUserIdentifier(
-    BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]),
-    user_identifier_type
-  );
+export function unpackForbiddenCountriesList(forbiddenCountriesList_packed: string[]) {
+  const trimmed = unpackReveal(forbiddenCountriesList_packed, 'id');
+  const countries = [];
+  for (let i = 0; i < trimmed.length; i += 3) {
+    const countryCode = trimmed.slice(i, i + 3).join('');
+    if (countryCode.length === 3) {
+      countries.push(countryCode);
+    }
+  }
+  return countries; // Return countries array instead of trimmed
 }

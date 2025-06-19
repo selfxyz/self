@@ -1,4 +1,5 @@
 import type { BigNumberish } from 'ethers';
+import type { SelfStructs } from '../typechain-types/IdentityVerificationHubImpl.js';
 
 export type VcAndDiscloseProof = {
   a: [BigNumberish, BigNumberish];
@@ -7,7 +8,6 @@ export type VcAndDiscloseProof = {
   pubSignals: BigNumberish[];
 };
 
-// export type VerificationConfig =
+export type VerificationConfig = SelfStructs.VerificationConfigV2Struct;
 
-interface IConfigStorage {
-}
+export type GenericDiscloseStruct = SelfStructs.VerificationConfigV2Struct;

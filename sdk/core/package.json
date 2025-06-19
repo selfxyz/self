@@ -28,6 +28,7 @@
   ],
   "scripts": {
     "build": "tsup index.ts --format cjs,esm --dts --clean --sourcemap",
+    "build:deps": "yarn workspaces foreach --from @selfxyz/core --topological-dev --recursive run build",
     "copy-abi": "bash scripts/copyAbi.sh",
     "format": "prettier --write .",
     "install-sdk": "yarn workspaces focus @selfxyz/core",
@@ -37,7 +38,7 @@
     "types": "yarn build"
   },
   "dependencies": {
-    "@selfxyz/common": "file:../../common",
+    "@selfxyz/common": "workspace:^",
     "@types/uuid": "^10.0.0",
     "ethers": "^6.13.5",
     "js-sha1": "^0.7.0",

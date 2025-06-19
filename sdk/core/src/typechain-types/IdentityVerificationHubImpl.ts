@@ -23,6 +23,35 @@ import type {
   TypedContractMethod,
 } from "./common.js";
 
+export declare namespace SelfStructs {
+  export type VerificationConfigV2Struct = {
+    olderThanEnabled: boolean;
+    olderThan: BigNumberish;
+    forbiddenCountriesEnabled: boolean;
+    forbiddenCountriesListPacked: [
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ];
+    ofacEnabled: [boolean, boolean, boolean];
+  };
+
+  export type VerificationConfigV2StructOutput = [
+    olderThanEnabled: boolean,
+    olderThan: bigint,
+    forbiddenCountriesEnabled: boolean,
+    forbiddenCountriesListPacked: [bigint, bigint, bigint, bigint],
+    ofacEnabled: [boolean, boolean, boolean]
+  ] & {
+    olderThanEnabled: boolean;
+    olderThan: bigint;
+    forbiddenCountriesEnabled: boolean;
+    forbiddenCountriesListPacked: [bigint, bigint, bigint, bigint];
+    ofacEnabled: [boolean, boolean, boolean];
+  };
+}
+
 export declare namespace IRegisterCircuitVerifier {
   export type RegisterCircuitProofStruct = {
     a: [BigNumberish, BigNumberish];
@@ -72,30 +101,35 @@ export interface IdentityVerificationHubImplInterface extends Interface {
       | "acceptOwnership"
       | "batchUpdateDscCircuitVerifiers"
       | "batchUpdateRegisterCircuitVerifiers"
+      | "discloseVerifier"
+      | "dscCircuitVerifiers"
+      | "generateConfigId"
+      | "getIdentityCommitmentMerkleRoot"
       | "initialize"
       | "owner"
       | "pendingOwner"
       | "proxiableUUID"
+      | "registerCircuitVerifiers"
       | "registerCommitment"
       | "registerDscKeyCommitment"
       | "registry"
       | "renounceOwnership"
-      | "sigTypeToDscCircuitVerifiers"
-      | "sigTypeToRegisterCircuitVerifiers"
+      | "rootTimestamp"
+      | "setVerificationConfigV2"
       | "transferOwnership"
       | "updateDscVerifier"
       | "updateRegisterCircuitVerifier"
       | "updateRegistry"
       | "updateVcAndDiscloseCircuit"
       | "upgradeToAndCall"
-      | "vcAndDiscloseCircuitVerifier"
-      | "verifyVcAndDisclose"
+      | "verificationConfigV2Exists"
+      | "verify"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
       | "DscCircuitVerifierUpdated"
-      | "HubInitialized"
+      | "HubInitializedV2"
       | "Initialized"
       | "OwnershipTransferStarted"
       | "OwnershipTransferred"
@@ -103,6 +137,7 @@ export interface IdentityVerificationHubImplInterface extends Interface {
       | "RegistryUpdated"
       | "Upgraded"
       | "VcAndDiscloseCircuitUpdated"
+      | "VerificationConfigV2Set"
   ): EventFragment;
 
   encodeFunctionData(
@@ -115,23 +150,31 @@ export interface IdentityVerificationHubImplInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "batchUpdateDscCircuitVerifiers",
-    values: [BigNumberish[], AddressLike[]]
+    values: [BytesLike[], BigNumberish[], AddressLike[]]
   ): string;
   encodeFunctionData(
     functionFragment: "batchUpdateRegisterCircuitVerifiers",
-    values: [BigNumberish[], AddressLike[]]
+    values: [BytesLike[], BigNumberish[], AddressLike[]]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "discloseVerifier",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "dscCircuitVerifiers",
+    values: [BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "generateConfigId",
+    values: [SelfStructs.VerificationConfigV2Struct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getIdentityCommitmentMerkleRoot",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
-    values: [
-      BytesLike[],
-      AddressLike[],
-      AddressLike[],
-      BigNumberish[],
-      AddressLike[],
-      BigNumberish[],
-      AddressLike[]
-    ]
+    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
@@ -141,6 +184,10 @@ export interface IdentityVerificationHubImplInterface extends Interface {
   encodeFunctionData(
     functionFragment: "proxiableUUID",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "registerCircuitVerifiers",
+    values: [BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "registerCommitment",
@@ -160,12 +207,12 @@ export interface IdentityVerificationHubImplInterface extends Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "sigTypeToDscCircuitVerifiers",
-    values: [BigNumberish]
+    functionFragment: "rootTimestamp",
+    values: [BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "sigTypeToRegisterCircuitVerifiers",
-    values: [BigNumberish]
+    functionFragment: "setVerificationConfigV2",
+    values: [SelfStructs.VerificationConfigV2Struct]
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
@@ -173,11 +220,11 @@ export interface IdentityVerificationHubImplInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "updateDscVerifier",
-    values: [BigNumberish, AddressLike]
+    values: [BytesLike, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "updateRegisterCircuitVerifier",
-    values: [BigNumberish, AddressLike]
+    values: [BytesLike, BigNumberish, AddressLike]
   ): string;
   encodeFunctionData(
     functionFragment: "updateRegistry",
@@ -192,12 +239,12 @@ export interface IdentityVerificationHubImplInterface extends Interface {
     values: [AddressLike, BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "vcAndDiscloseCircuitVerifier",
+    functionFragment: "verificationConfigV2Exists",
     values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "verifyVcAndDisclose",
-    values: [BytesLike]
+    functionFragment: "verify",
+    values: [BytesLike, BytesLike]
   ): string;
 
   decodeFunctionResult(
@@ -216,6 +263,22 @@ export interface IdentityVerificationHubImplInterface extends Interface {
     functionFragment: "batchUpdateRegisterCircuitVerifiers",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "discloseVerifier",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "dscCircuitVerifiers",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "generateConfigId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getIdentityCommitmentMerkleRoot",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
@@ -224,6 +287,10 @@ export interface IdentityVerificationHubImplInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "proxiableUUID",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "registerCircuitVerifiers",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -240,11 +307,11 @@ export interface IdentityVerificationHubImplInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "sigTypeToDscCircuitVerifiers",
+    functionFragment: "rootTimestamp",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "sigTypeToRegisterCircuitVerifiers",
+    functionFragment: "setVerificationConfigV2",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -272,13 +339,10 @@ export interface IdentityVerificationHubImplInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "vcAndDiscloseCircuitVerifier",
+    functionFragment: "verificationConfigV2Exists",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "verifyVcAndDisclose",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "verify", data: BytesLike): Result;
 }
 
 export namespace DscCircuitVerifierUpdatedEvent {
@@ -294,34 +358,10 @@ export namespace DscCircuitVerifierUpdatedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
-export namespace HubInitializedEvent {
-  export type InputTuple = [
-    attestationIds: BytesLike[],
-    registryAddresses: AddressLike[],
-    vcAndDiscloseCircuitVerifiers: AddressLike[],
-    registerCircuitVerifierIds: BigNumberish[],
-    registerCircuitVerifiers: AddressLike[],
-    dscCircuitVerifierIds: BigNumberish[],
-    dscCircuitVerifiers: AddressLike[]
-  ];
-  export type OutputTuple = [
-    attestationIds: string[],
-    registryAddresses: string[],
-    vcAndDiscloseCircuitVerifiers: string[],
-    registerCircuitVerifierIds: bigint[],
-    registerCircuitVerifiers: string[],
-    dscCircuitVerifierIds: bigint[],
-    dscCircuitVerifiers: string[]
-  ];
-  export interface OutputObject {
-    attestationIds: string[];
-    registryAddresses: string[];
-    vcAndDiscloseCircuitVerifiers: string[];
-    registerCircuitVerifierIds: bigint[];
-    registerCircuitVerifiers: string[];
-    dscCircuitVerifierIds: bigint[];
-    dscCircuitVerifiers: string[];
-  }
+export namespace HubInitializedV2Event {
+  export type InputTuple = [];
+  export type OutputTuple = [];
+  export interface OutputObject {}
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
   export type Log = TypedEventLog<Event>;
@@ -423,6 +463,25 @@ export namespace VcAndDiscloseCircuitUpdatedEvent {
   export type LogDescription = TypedLogDescription<Event>;
 }
 
+export namespace VerificationConfigV2SetEvent {
+  export type InputTuple = [
+    configId: BytesLike,
+    config: SelfStructs.VerificationConfigV2Struct
+  ];
+  export type OutputTuple = [
+    configId: string,
+    config: SelfStructs.VerificationConfigV2StructOutput
+  ];
+  export interface OutputObject {
+    configId: string;
+    config: SelfStructs.VerificationConfigV2StructOutput;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
+}
+
 export interface IdentityVerificationHubImpl extends BaseContract {
   connect(runner?: ContractRunner | null): IdentityVerificationHubImpl;
   waitForDeployment(): Promise<this>;
@@ -471,36 +530,62 @@ export interface IdentityVerificationHubImpl extends BaseContract {
   acceptOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
   batchUpdateDscCircuitVerifiers: TypedContractMethod<
-    [typeIds: BigNumberish[], verifierAddresses: AddressLike[]],
+    [
+      attestationIds: BytesLike[],
+      typeIds: BigNumberish[],
+      verifierAddresses: AddressLike[]
+    ],
     [void],
     "nonpayable"
   >;
 
   batchUpdateRegisterCircuitVerifiers: TypedContractMethod<
-    [typeIds: BigNumberish[], verifierAddresses: AddressLike[]],
-    [void],
-    "nonpayable"
-  >;
-
-  initialize: TypedContractMethod<
     [
       attestationIds: BytesLike[],
-      registryAddresses: AddressLike[],
-      vcAndDiscloseCircuitVerifierAddresses: AddressLike[],
-      registerCircuitVerifierIds: BigNumberish[],
-      registerCircuitVerifierAddresses: AddressLike[],
-      dscCircuitVerifierIds: BigNumberish[],
-      dscCircuitVerifierAddresses: AddressLike[]
+      typeIds: BigNumberish[],
+      verifierAddresses: AddressLike[]
     ],
     [void],
     "nonpayable"
   >;
+
+  discloseVerifier: TypedContractMethod<
+    [attestationId: BytesLike],
+    [string],
+    "view"
+  >;
+
+  dscCircuitVerifiers: TypedContractMethod<
+    [attestationId: BytesLike, typeId: BigNumberish],
+    [string],
+    "view"
+  >;
+
+  generateConfigId: TypedContractMethod<
+    [config: SelfStructs.VerificationConfigV2Struct],
+    [string],
+    "view"
+  >;
+
+  getIdentityCommitmentMerkleRoot: TypedContractMethod<
+    [attestationId: BytesLike],
+    [bigint],
+    "view"
+  >;
+
+  initialize: TypedContractMethod<[], [void], "nonpayable">;
 
   owner: TypedContractMethod<[], [string], "view">;
 
   pendingOwner: TypedContractMethod<[], [string], "view">;
 
   proxiableUUID: TypedContractMethod<[], [string], "view">;
+
+  registerCircuitVerifiers: TypedContractMethod<
+    [attestationId: BytesLike, typeId: BigNumberish],
+    [string],
+    "view"
+  >;
 
   registerCommitment: TypedContractMethod<
     [
@@ -526,16 +611,16 @@ export interface IdentityVerificationHubImpl extends BaseContract {
 
   renounceOwnership: TypedContractMethod<[], [void], "nonpayable">;
 
-  sigTypeToDscCircuitVerifiers: TypedContractMethod<
-    [typeId: BigNumberish],
-    [string],
+  rootTimestamp: TypedContractMethod<
+    [attestationId: BytesLike, root: BigNumberish],
+    [bigint],
     "view"
   >;
 
-  sigTypeToRegisterCircuitVerifiers: TypedContractMethod<
-    [typeId: BigNumberish],
+  setVerificationConfigV2: TypedContractMethod<
+    [config: SelfStructs.VerificationConfigV2Struct],
     [string],
-    "view"
+    "nonpayable"
   >;
 
   transferOwnership: TypedContractMethod<
@@ -545,13 +630,21 @@ export interface IdentityVerificationHubImpl extends BaseContract {
   >;
 
   updateDscVerifier: TypedContractMethod<
-    [typeId: BigNumberish, verifierAddress: AddressLike],
+    [
+      attestationId: BytesLike,
+      typeId: BigNumberish,
+      verifierAddress: AddressLike
+    ],
     [void],
     "nonpayable"
   >;
 
   updateRegisterCircuitVerifier: TypedContractMethod<
-    [typeId: BigNumberish, verifierAddress: AddressLike],
+    [
+      attestationId: BytesLike,
+      typeId: BigNumberish,
+      verifierAddress: AddressLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -577,16 +670,16 @@ export interface IdentityVerificationHubImpl extends BaseContract {
     "payable"
   >;
 
-  vcAndDiscloseCircuitVerifier: TypedContractMethod<
-    [attestationId: BytesLike],
-    [string],
+  verificationConfigV2Exists: TypedContractMethod<
+    [configId: BytesLike],
+    [boolean],
     "view"
   >;
 
-  verifyVcAndDisclose: TypedContractMethod<
-    [proofData: BytesLike],
-    [string],
-    "view"
+  verify: TypedContractMethod<
+    [baseVerificationInput: BytesLike, userContextData: BytesLike],
+    [void],
+    "nonpayable"
   >;
 
   getFunction<T extends ContractMethod = ContractMethod>(
@@ -602,32 +695,48 @@ export interface IdentityVerificationHubImpl extends BaseContract {
   getFunction(
     nameOrSignature: "batchUpdateDscCircuitVerifiers"
   ): TypedContractMethod<
-    [typeIds: BigNumberish[], verifierAddresses: AddressLike[]],
+    [
+      attestationIds: BytesLike[],
+      typeIds: BigNumberish[],
+      verifierAddresses: AddressLike[]
+    ],
     [void],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "batchUpdateRegisterCircuitVerifiers"
   ): TypedContractMethod<
-    [typeIds: BigNumberish[], verifierAddresses: AddressLike[]],
-    [void],
-    "nonpayable"
-  >;
-  getFunction(
-    nameOrSignature: "initialize"
-  ): TypedContractMethod<
     [
       attestationIds: BytesLike[],
-      registryAddresses: AddressLike[],
-      vcAndDiscloseCircuitVerifierAddresses: AddressLike[],
-      registerCircuitVerifierIds: BigNumberish[],
-      registerCircuitVerifierAddresses: AddressLike[],
-      dscCircuitVerifierIds: BigNumberish[],
-      dscCircuitVerifierAddresses: AddressLike[]
+      typeIds: BigNumberish[],
+      verifierAddresses: AddressLike[]
     ],
     [void],
     "nonpayable"
   >;
+  getFunction(
+    nameOrSignature: "discloseVerifier"
+  ): TypedContractMethod<[attestationId: BytesLike], [string], "view">;
+  getFunction(
+    nameOrSignature: "dscCircuitVerifiers"
+  ): TypedContractMethod<
+    [attestationId: BytesLike, typeId: BigNumberish],
+    [string],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "generateConfigId"
+  ): TypedContractMethod<
+    [config: SelfStructs.VerificationConfigV2Struct],
+    [string],
+    "view"
+  >;
+  getFunction(
+    nameOrSignature: "getIdentityCommitmentMerkleRoot"
+  ): TypedContractMethod<[attestationId: BytesLike], [bigint], "view">;
+  getFunction(
+    nameOrSignature: "initialize"
+  ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "owner"
   ): TypedContractMethod<[], [string], "view">;
@@ -637,6 +746,13 @@ export interface IdentityVerificationHubImpl extends BaseContract {
   getFunction(
     nameOrSignature: "proxiableUUID"
   ): TypedContractMethod<[], [string], "view">;
+  getFunction(
+    nameOrSignature: "registerCircuitVerifiers"
+  ): TypedContractMethod<
+    [attestationId: BytesLike, typeId: BigNumberish],
+    [string],
+    "view"
+  >;
   getFunction(
     nameOrSignature: "registerCommitment"
   ): TypedContractMethod<
@@ -666,25 +782,41 @@ export interface IdentityVerificationHubImpl extends BaseContract {
     nameOrSignature: "renounceOwnership"
   ): TypedContractMethod<[], [void], "nonpayable">;
   getFunction(
-    nameOrSignature: "sigTypeToDscCircuitVerifiers"
-  ): TypedContractMethod<[typeId: BigNumberish], [string], "view">;
+    nameOrSignature: "rootTimestamp"
+  ): TypedContractMethod<
+    [attestationId: BytesLike, root: BigNumberish],
+    [bigint],
+    "view"
+  >;
   getFunction(
-    nameOrSignature: "sigTypeToRegisterCircuitVerifiers"
-  ): TypedContractMethod<[typeId: BigNumberish], [string], "view">;
+    nameOrSignature: "setVerificationConfigV2"
+  ): TypedContractMethod<
+    [config: SelfStructs.VerificationConfigV2Struct],
+    [string],
+    "nonpayable"
+  >;
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
   getFunction(
     nameOrSignature: "updateDscVerifier"
   ): TypedContractMethod<
-    [typeId: BigNumberish, verifierAddress: AddressLike],
+    [
+      attestationId: BytesLike,
+      typeId: BigNumberish,
+      verifierAddress: AddressLike
+    ],
     [void],
     "nonpayable"
   >;
   getFunction(
     nameOrSignature: "updateRegisterCircuitVerifier"
   ): TypedContractMethod<
-    [typeId: BigNumberish, verifierAddress: AddressLike],
+    [
+      attestationId: BytesLike,
+      typeId: BigNumberish,
+      verifierAddress: AddressLike
+    ],
     [void],
     "nonpayable"
   >;
@@ -713,11 +845,15 @@ export interface IdentityVerificationHubImpl extends BaseContract {
     "payable"
   >;
   getFunction(
-    nameOrSignature: "vcAndDiscloseCircuitVerifier"
-  ): TypedContractMethod<[attestationId: BytesLike], [string], "view">;
+    nameOrSignature: "verificationConfigV2Exists"
+  ): TypedContractMethod<[configId: BytesLike], [boolean], "view">;
   getFunction(
-    nameOrSignature: "verifyVcAndDisclose"
-  ): TypedContractMethod<[proofData: BytesLike], [string], "view">;
+    nameOrSignature: "verify"
+  ): TypedContractMethod<
+    [baseVerificationInput: BytesLike, userContextData: BytesLike],
+    [void],
+    "nonpayable"
+  >;
 
   getEvent(
     key: "DscCircuitVerifierUpdated"
@@ -727,11 +863,11 @@ export interface IdentityVerificationHubImpl extends BaseContract {
     DscCircuitVerifierUpdatedEvent.OutputObject
   >;
   getEvent(
-    key: "HubInitialized"
+    key: "HubInitializedV2"
   ): TypedContractEvent<
-    HubInitializedEvent.InputTuple,
-    HubInitializedEvent.OutputTuple,
-    HubInitializedEvent.OutputObject
+    HubInitializedV2Event.InputTuple,
+    HubInitializedV2Event.OutputTuple,
+    HubInitializedV2Event.OutputObject
   >;
   getEvent(
     key: "Initialized"
@@ -782,6 +918,13 @@ export interface IdentityVerificationHubImpl extends BaseContract {
     VcAndDiscloseCircuitUpdatedEvent.OutputTuple,
     VcAndDiscloseCircuitUpdatedEvent.OutputObject
   >;
+  getEvent(
+    key: "VerificationConfigV2Set"
+  ): TypedContractEvent<
+    VerificationConfigV2SetEvent.InputTuple,
+    VerificationConfigV2SetEvent.OutputTuple,
+    VerificationConfigV2SetEvent.OutputObject
+  >;
 
   filters: {
     "DscCircuitVerifierUpdated(uint256,address)": TypedContractEvent<
@@ -795,15 +938,15 @@ export interface IdentityVerificationHubImpl extends BaseContract {
       DscCircuitVerifierUpdatedEvent.OutputObject
     >;
 
-    "HubInitialized(bytes32[],address[],address[],uint256[],address[],uint256[],address[])": TypedContractEvent<
-      HubInitializedEvent.InputTuple,
-      HubInitializedEvent.OutputTuple,
-      HubInitializedEvent.OutputObject
+    "HubInitializedV2()": TypedContractEvent<
+      HubInitializedV2Event.InputTuple,
+      HubInitializedV2Event.OutputTuple,
+      HubInitializedV2Event.OutputObject
     >;
-    HubInitialized: TypedContractEvent<
-      HubInitializedEvent.InputTuple,
-      HubInitializedEvent.OutputTuple,
-      HubInitializedEvent.OutputObject
+    HubInitializedV2: TypedContractEvent<
+      HubInitializedV2Event.InputTuple,
+      HubInitializedV2Event.OutputTuple,
+      HubInitializedV2Event.OutputObject
     >;
 
     "Initialized(uint64)": TypedContractEvent<
@@ -881,6 +1024,17 @@ export interface IdentityVerificationHubImpl extends BaseContract {
       VcAndDiscloseCircuitUpdatedEvent.InputTuple,
       VcAndDiscloseCircuitUpdatedEvent.OutputTuple,
       VcAndDiscloseCircuitUpdatedEvent.OutputObject
+    >;
+
+    "VerificationConfigV2Set(bytes32,tuple)": TypedContractEvent<
+      VerificationConfigV2SetEvent.InputTuple,
+      VerificationConfigV2SetEvent.OutputTuple,
+      VerificationConfigV2SetEvent.OutputObject
+    >;
+    VerificationConfigV2Set: TypedContractEvent<
+      VerificationConfigV2SetEvent.InputTuple,
+      VerificationConfigV2SetEvent.OutputTuple,
+      VerificationConfigV2SetEvent.OutputObject
     >;
   };
 }

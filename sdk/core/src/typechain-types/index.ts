@@ -2,5 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { IdentityVerificationHubImpl } from "./IdentityVerificationHubImpl.js";
+export type { Registry } from "./Registry.js";
+export type { Verifier } from "./Verifier.js";
 export * as factories from "./factories/index.js";
 export { IdentityVerificationHubImpl__factory } from "./factories/IdentityVerificationHubImpl__factory.js";
+export { Registry__factory } from "./factories/Registry__factory.js";
+export { Verifier__factory } from "./factories/Verifier__factory.js";

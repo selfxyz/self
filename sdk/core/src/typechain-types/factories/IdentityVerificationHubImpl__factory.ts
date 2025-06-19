@@ -27,7 +27,12 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "CURRENT_DATE_NOT_IN_VALID_RANGE",
+    name: "CrossChainIsNotSupportedYet",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "CurrentDateNotInValidRange",
     type: "error",
   },
   {
@@ -53,57 +58,17 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "INVALID_ATTESTATION_ID",
+    name: "InputTooShort",
     type: "error",
   },
   {
     inputs: [],
-    name: "INVALID_COMMITMENT_ROOT",
+    name: "InvalidAttestationId",
     type: "error",
   },
   {
     inputs: [],
-    name: "INVALID_CSCA_ROOT",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "INVALID_DSC_PROOF",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "INVALID_FORBIDDEN_COUNTRIES",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "INVALID_OFAC",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "INVALID_OFAC_ROOT",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "INVALID_OLDER_THAN",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "INVALID_REGISTER_PROOF",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "INVALID_REVEALED_DATA_TYPE",
-    type: "error",
-  },
-  {
-    inputs: [],
-    name: "INVALID_VC_AND_DISCLOSE_PROOF",
+    name: "InvalidCscaRoot",
     type: "error",
   },
   {
@@ -123,7 +88,22 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "InvalidDscCommitmentRoot",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidDscProof",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "InvalidFieldElement",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidIdentityCommitmentRoot",
     type: "error",
   },
   {
@@ -138,17 +118,32 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "InvalidRegisterProof",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidUserIdentifierInProof",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "InvalidVcAndDiscloseProof",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "InvalidYearRange",
     type: "error",
   },
   {
     inputs: [],
-    name: "LENGTH_MISMATCH",
+    name: "LengthMismatch",
     type: "error",
   },
   {
     inputs: [],
-    name: "NO_VERIFIER_SET",
+    name: "NoVerifierSet",
     type: "error",
   },
   {
@@ -180,6 +175,11 @@ const _abi = [
   },
   {
     inputs: [],
+    name: "ScopeMismatch",
+    type: "error",
+  },
+  {
+    inputs: [],
     name: "UUPSUnauthorizedCallContext",
     type: "error",
   },
@@ -192,6 +192,11 @@ const _abi = [
       },
     ],
     name: "UUPSUnsupportedProxiableUUID",
+    type: "error",
+  },
+  {
+    inputs: [],
+    name: "UserContextDataTooShort",
     type: "error",
   },
   {
@@ -215,51 +220,8 @@ const _abi = [
   },
   {
     anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "bytes32[]",
-        name: "attestationIds",
-        type: "bytes32[]",
-      },
-      {
-        indexed: false,
-        internalType: "address[]",
-        name: "registryAddresses",
-        type: "address[]",
-      },
-      {
-        indexed: false,
-        internalType: "address[]",
-        name: "vcAndDiscloseCircuitVerifiers",
-        type: "address[]",
-      },
-      {
-        indexed: false,
-        internalType: "uint256[]",
-        name: "registerCircuitVerifierIds",
-        type: "uint256[]",
-      },
-      {
-        indexed: false,
-        internalType: "address[]",
-        name: "registerCircuitVerifiers",
-        type: "address[]",
-      },
-      {
-        indexed: false,
-        internalType: "uint256[]",
-        name: "dscCircuitVerifierIds",
-        type: "uint256[]",
-      },
-      {
-        indexed: false,
-        internalType: "address[]",
-        name: "dscCircuitVerifiers",
-        type: "address[]",
-      },
-    ],
-    name: "HubInitialized",
+    inputs: [],
+    name: "HubInitializedV2",
     type: "event",
   },
   {
@@ -384,6 +346,52 @@ const _abi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "bytes32",
+        name: "configId",
+        type: "bytes32",
+      },
+      {
+        components: [
+          {
+            internalType: "bool",
+            name: "olderThanEnabled",
+            type: "bool",
+          },
+          {
+            internalType: "uint256",
+            name: "olderThan",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "forbiddenCountriesEnabled",
+            type: "bool",
+          },
+          {
+            internalType: "uint256[4]",
+            name: "forbiddenCountriesListPacked",
+            type: "uint256[4]",
+          },
+          {
+            internalType: "bool[3]",
+            name: "ofacEnabled",
+            type: "bool[3]",
+          },
+        ],
+        indexed: false,
+        internalType: "struct SelfStructs.VerificationConfigV2",
+        name: "config",
+        type: "tuple",
+      },
+    ],
+    name: "VerificationConfigV2Set",
+    type: "event",
+  },
+  {
     inputs: [],
     name: "UPGRADE_INTERFACE_VERSION",
     outputs: [
@@ -406,6 +414,11 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bytes32[]",
+        name: "attestationIds",
+        type: "bytes32[]",
+      },
+      {
         internalType: "uint256[]",
         name: "typeIds",
         type: "uint256[]",
@@ -423,6 +436,11 @@ const _abi = [
   },
   {
     inputs: [
+      {
+        internalType: "bytes32[]",
+        name: "attestationIds",
+        type: "bytes32[]",
+      },
       {
         internalType: "uint256[]",
         name: "typeIds",
@@ -442,41 +460,113 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes32[]",
-        name: "attestationIds",
-        type: "bytes32[]",
-      },
-      {
-        internalType: "address[]",
-        name: "registryAddresses",
-        type: "address[]",
-      },
-      {
-        internalType: "address[]",
-        name: "vcAndDiscloseCircuitVerifierAddresses",
-        type: "address[]",
-      },
-      {
-        internalType: "uint256[]",
-        name: "registerCircuitVerifierIds",
-        type: "uint256[]",
-      },
-      {
-        internalType: "address[]",
-        name: "registerCircuitVerifierAddresses",
-        type: "address[]",
-      },
-      {
-        internalType: "uint256[]",
-        name: "dscCircuitVerifierIds",
-        type: "uint256[]",
-      },
-      {
-        internalType: "address[]",
-        name: "dscCircuitVerifierAddresses",
-        type: "address[]",
+        internalType: "bytes32",
+        name: "attestationId",
+        type: "bytes32",
       },
     ],
+    name: "discloseVerifier",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "attestationId",
+        type: "bytes32",
+      },
+      {
+        internalType: "uint256",
+        name: "typeId",
+        type: "uint256",
+      },
+    ],
+    name: "dscCircuitVerifiers",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "bool",
+            name: "olderThanEnabled",
+            type: "bool",
+          },
+          {
+            internalType: "uint256",
+            name: "olderThan",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "forbiddenCountriesEnabled",
+            type: "bool",
+          },
+          {
+            internalType: "uint256[4]",
+            name: "forbiddenCountriesListPacked",
+            type: "uint256[4]",
+          },
+          {
+            internalType: "bool[3]",
+            name: "ofacEnabled",
+            type: "bool[3]",
+          },
+        ],
+        internalType: "struct SelfStructs.VerificationConfigV2",
+        name: "config",
+        type: "tuple",
+      },
+    ],
+    name: "generateConfigId",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "pure",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "attestationId",
+        type: "bytes32",
+      },
+    ],
+    name: "getIdentityCommitmentMerkleRoot",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "initialize",
     outputs: [],
     stateMutability: "nonpayable",
@@ -516,6 +606,30 @@ const _abi = [
         internalType: "bytes32",
         name: "",
         type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "attestationId",
+        type: "bytes32",
+      },
+      {
+        internalType: "uint256",
+        name: "typeId",
+        type: "uint256",
+      },
+    ],
+    name: "registerCircuitVerifiers",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
       },
     ],
     stateMutability: "view",
@@ -640,17 +754,22 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bytes32",
+        name: "attestationId",
+        type: "bytes32",
+      },
+      {
         internalType: "uint256",
-        name: "typeId",
+        name: "root",
         type: "uint256",
       },
     ],
-    name: "sigTypeToDscCircuitVerifiers",
+    name: "rootTimestamp",
     outputs: [
       {
-        internalType: "address",
+        internalType: "uint256",
         name: "",
-        type: "address",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -659,20 +778,47 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "typeId",
-        type: "uint256",
+        components: [
+          {
+            internalType: "bool",
+            name: "olderThanEnabled",
+            type: "bool",
+          },
+          {
+            internalType: "uint256",
+            name: "olderThan",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "forbiddenCountriesEnabled",
+            type: "bool",
+          },
+          {
+            internalType: "uint256[4]",
+            name: "forbiddenCountriesListPacked",
+            type: "uint256[4]",
+          },
+          {
+            internalType: "bool[3]",
+            name: "ofacEnabled",
+            type: "bool[3]",
+          },
+        ],
+        internalType: "struct SelfStructs.VerificationConfigV2",
+        name: "config",
+        type: "tuple",
       },
     ],
-    name: "sigTypeToRegisterCircuitVerifiers",
+    name: "setVerificationConfigV2",
     outputs: [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        internalType: "bytes32",
+        name: "configId",
+        type: "bytes32",
       },
     ],
-    stateMutability: "view",
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -691,6 +837,11 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bytes32",
+        name: "attestationId",
+        type: "bytes32",
+      },
+      {
         internalType: "uint256",
         name: "typeId",
         type: "uint256",
@@ -708,6 +859,11 @@ const _abi = [
   },
   {
     inputs: [
+      {
+        internalType: "bytes32",
+        name: "attestationId",
+        type: "bytes32",
+      },
       {
         internalType: "uint256",
         name: "typeId",
@@ -782,16 +938,16 @@ const _abi = [
     inputs: [
       {
         internalType: "bytes32",
-        name: "attestationId",
+        name: "configId",
         type: "bytes32",
       },
     ],
-    name: "vcAndDiscloseCircuitVerifier",
+    name: "verificationConfigV2Exists",
     outputs: [
       {
-        internalType: "address",
-        name: "",
-        type: "address",
+        internalType: "bool",
+        name: "exists",
+        type: "bool",
       },
     ],
     stateMutability: "view",
@@ -801,19 +957,18 @@ const _abi = [
     inputs: [
       {
         internalType: "bytes",
-        name: "proofData",
+        name: "baseVerificationInput",
         type: "bytes",
       },
-    ],
-    name: "verifyVcAndDisclose",
-    outputs: [
       {
         internalType: "bytes",
-        name: "result",
+        name: "userContextData",
         type: "bytes",
       },
     ],
-    stateMutability: "view",
+    name: "verify",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
 ] as const;
