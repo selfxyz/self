@@ -10,6 +10,7 @@ import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits
 import { ConfigMismatch, ConfigMismatchError } from './errors.js';
 import { IConfigStorage } from './store/interface.js';
 import { unpackForbiddenCountriesList } from './utils/utils.js';
+import { BigNumberish } from 'ethers';
 
 const CELO_MAINNET_RPC_URL = 'https://forno.celo.org';
 const CELO_TESTNET_RPC_URL = 'https://alfajores-forno.celo-testnet.org';
@@ -40,7 +41,7 @@ export class SelfBackendVerifier {
   public async verify(
     attestationId: AttestationId,
     proof: VcAndDiscloseProof,
-    pubSignals: string[],
+    pubSignals: BigNumberish[],
     userContextData: string,
   ) {
     //check if attestation id is allowed
@@ -51,10 +52,9 @@ export class SelfBackendVerifier {
     }
 
     const publicSignals = pubSignals.map(String).map((x) => /[a-f]/g.test(x) ? '0x' + x : x);
-
     //check if user context hash matches
-    const userContextHashInCircuit = publicSignals[discloseIndices[attestationId].userIdentifierIndex];
-    const userContextHash = calculateUserIdentifierHash(Buffer.from(userContextData, "hex"));
+    const userContextHashInCircuit = BigInt(publicSignals[discloseIndices[attestationId].userIdentifierIndex]);
+    const userContextHash = BigInt(calculateUserIdentifierHash(Buffer.from(userContextData, "hex")));
 
     if (userContextHashInCircuit !== userContextHash) {
       issues.push({ type: ConfigMismatch.InvalidUserContextHash, message: 'User context hash does not match with the one in the circuit' });
@@ -87,7 +87,7 @@ export class SelfBackendVerifier {
       issues.push({ type: ConfigMismatch.InvalidAttestationId, message: 'Attestation ID does not match with the one in the circuit' });
     }
 
-    const userIdentifier = castToUserIdentifier(BigInt(userContextData.slice(64, 128)), this.userIdentifierType);
+    const userIdentifier = castToUserIdentifier(BigInt('0x' + userContextData.slice(64, 128)), this.userIdentifierType);
     const userDefinedData = userContextData.slice(128);
     const configId = await this.configStorage.getActionId(userIdentifier, userDefinedData);
     const verificationConfig = await this.configStorage.getConfig(configId);
@@ -103,7 +103,7 @@ export class SelfBackendVerifier {
 
     const genericDiscloseOutput = formatRevealedDataPacked(attestationId, publicSignals);
     //check if minimum age matches
-    const isMinimumAgeValid = verificationConfig.olderThanEnabled ? verificationConfig.olderThan === genericDiscloseOutput.olderThan : true;
+    const isMinimumAgeValid = verificationConfig.olderThanEnabled ? verificationConfig.olderThan === genericDiscloseOutput.olderThan || genericDiscloseOutput.olderThan === '00' : true;
     if (!isMinimumAgeValid) {
       issues.push({ type: ConfigMismatch.InvalidMinimumAge, message: 'Minimum age in config does not match with the one in the circuit' });
     }
@@ -115,7 +115,7 @@ export class SelfBackendVerifier {
     const currentTimestamp = new Date();
 
     //check if timestamp is in the future
-    const oneDayAgo = new Date(currentTimestamp.getTime() - (24 * 60 * 60 * 1000));
+    const oneDayAgo = new Date(currentTimestamp.getTime() + (24 * 60 * 60 * 1000));
     if (circuitTimestamp > oneDayAgo) {
       issues.push({ type: ConfigMismatch.InvalidTimestamp, message: 'Circuit timestamp is in the future' });
     }
@@ -153,6 +153,7 @@ export class SelfBackendVerifier {
       throw new Error('Verifier contract not found');
     }
 
+    //TODO: put in try catch
     const isValid = await verifierContract.verifyProof(proof.a, [
       [proof.b[0][1], proof.b[0][0]],
       [proof.b[1][1], proof.b[1][0]],

@@ -6,6 +6,7 @@ export const formatRevealedDataPacked = (attestationId: AttestationId, publicSig
   const revealedDataPacked = getRevealedDataBytes(attestationId, publicSignals);
   const revealedDataPackedString = Buffer.from(revealedDataPacked);
 
+
   const nullifier = publicSignals[discloseIndices[attestationId].nullifierIndex];
   const forbiddenCountriesListPacked = publicSignals.slice(discloseIndices[attestationId].forbiddenCountriesListPackedIndex, discloseIndices[attestationId].forbiddenCountriesListPackedIndex + 3);
   const issuingState = revealedDataPackedString.subarray(revealedDataIndices[attestationId].issuingStateStart, revealedDataIndices[attestationId].issuingStateEnd + 1).toString("utf-8");
@@ -15,8 +16,9 @@ export const formatRevealedDataPacked = (attestationId: AttestationId, publicSig
   const dateOfBirth = revealedDataPackedString.subarray(revealedDataIndices[attestationId].dateOfBirthStart, revealedDataIndices[attestationId].dateOfBirthEnd + 1).toString("utf-8");
   const gender = revealedDataPackedString.subarray(revealedDataIndices[attestationId].genderStart, revealedDataIndices[attestationId].genderEnd + 1).toString("utf-8");
   const expiryDate = revealedDataPackedString.subarray(revealedDataIndices[attestationId].expiryDateStart, revealedDataIndices[attestationId].expiryDateEnd + 1).toString("utf-8");
-  const olderThan = revealedDataPackedString.subarray(revealedDataIndices[attestationId].olderThanStart, revealedDataIndices[attestationId].olderThanEnd + 1).toString("utf-8");
+  const olderThan = Buffer.from(revealedDataPackedString.subarray(revealedDataIndices[attestationId].olderThanStart, revealedDataIndices[attestationId].olderThanEnd + 1).map((x) => x + 48)).toString("utf-8");
   const ofac = Array.from(revealedDataPackedString.subarray(revealedDataIndices[attestationId].ofacStart, revealedDataIndices[attestationId].ofacEnd + 1)).map(Boolean);
+  console.log("ofac",ofac);
 
   return {
     nullifier: nullifier.toString(),
