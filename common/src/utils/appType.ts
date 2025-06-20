@@ -20,6 +20,7 @@ export interface SelfApp {
   devMode: boolean;
   disclosures: SelfAppDisclosureConfig;
   version: number;
+  chainID: 42220 | 44787;
   userDefinedData: string;
 }
 
@@ -94,6 +95,7 @@ export class SelfAppBuilder {
       header: '',
       logoBase64: '',
       disclosures: {},
+      chainID: config.endpointType === 'staging_celo' ? 44787 : 42220,
       version: config.userDefinedData ? 2 : 1,
       userDefinedData: '',
       ...config,

@@ -16,7 +16,8 @@ import {
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
 } from '@selfxyz/common';
-import { hashEndpointWithScope } from '@selfxyz/common';
+import { hashEndpointWithScope} from '@selfxyz/common';
+import { calculateUserIdentifierHash } from '@selfxyz/common';
 import { PassportData } from '@selfxyz/common';
 import nameAndDobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json';
@@ -61,7 +62,9 @@ export function generateTEEInputsDisclose(
   passportData: PassportData,
   selfApp: SelfApp,
 ) {
-  const { scope, userId, disclosures, endpoint } = selfApp;
+  const { scope,  disclosures, endpoint, userId, userDefinedData, chainID  } = selfApp;
+  const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);
+  const userIdentifierHashBigInt = BigInt(userIdentifierHash);
   const scope_hash = hashEndpointWithScope(endpoint, scope);
   const document: DocumentCategory = passportData.documentCategory;
 
@@ -92,7 +95,7 @@ export function generateTEEInputsDisclose(
     document === 'passport' ? nameAndYobSMT : nameAndYobSMTID,
     selector_ofac,
     disclosures.excludedCountries ?? [],
-    userId,
+    userIdentifierHashBigInt,
   );
   return {
     inputs,

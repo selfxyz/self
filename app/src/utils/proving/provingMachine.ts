@@ -845,6 +845,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitName as string,
         endpointType as EndpointType,
         endpoint as string,
+        selfApp?.version,
+        selfApp?.userDefinedData,
       );
       const forgeKey = forge.util.createBuffer(
         sharedKey?.toString('binary') as string,

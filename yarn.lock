@@ -4198,6 +4198,7 @@ __metadata:
     country-emoji: "npm:^1.5.6"
     country-iso-3-to-2: "npm:^1.1.1"
     elliptic: "npm:^6.5.5"
+    ethers: "npm:^6.14.4"
     fs: "npm:^0.0.1-security"
     i18n-iso-countries: "npm:^7.13.0"
     js-sha1: "npm:^0.7.0"
@@ -10247,9 +10248,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001718":
-  version: 1.0.30001723
-  resolution: "caniuse-lite@npm:1.0.30001723"
-  checksum: 10c0/e019503061759b96017c4d27ddd7ca1b48533eabcd0431b51d2e3156f99f6b031075e46c279c0db63424cdfc874bba992caec2db51b922a0f945e686246886f6
+  version: 1.0.30001724
+  resolution: "caniuse-lite@npm:1.0.30001724"
+  checksum: 10c0/ed9ec0bcf619f0e7ef2d33aac74d2346d1faf52060dfded1fb9c32d87854de5c2988b3ba338c281034c88bf797d6b55468a804ce8396a7e16a48cb0d481d4bfe
   languageName: node
   linkType: hard
 
@@ -11742,9 +11743,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.5.160":
-  version: 1.5.170
-  resolution: "electron-to-chromium@npm:1.5.170"
-  checksum: 10c0/138c6d293b310729f7550f6d36ae4b2bdd0453220e8b11d8780395cf38c9ae816b1f30a3978d790f1951cfa89e7c7911af4a779094c33ae167c89c7ba6751834
+  version: 1.5.171
+  resolution: "electron-to-chromium@npm:1.5.171"
+  checksum: 10c0/e9d7e70d5fe829951c955287877155889a752336e48c715e373c6919f8e438bb686b7278511013aa8456c329c55895059a1d9e4b799217483f28dbae60c198d8
   languageName: node
   linkType: hard
 
@@ -12768,7 +12769,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.11.0, ethers@npm:^6.12.1, ethers@npm:^6.13.5, ethers@npm:^6.7.0":
+"ethers@npm:^6.11.0, ethers@npm:^6.12.1, ethers@npm:^6.13.5, ethers@npm:^6.14.4, ethers@npm:^6.7.0":
   version: 6.14.4
   resolution: "ethers@npm:6.14.4"
   dependencies:
@@ -22655,9 +22656,9 @@ __metadata:
   linkType: hard
 
 "xstate@npm:^5.19.2":
-  version: 5.19.4
-  resolution: "xstate@npm:5.19.4"
-  checksum: 10c0/3a3a65c13263cd0f80de90c14d80113cfd53d37d9cb8c2dcaec4d14c07a980c976f508534fc64f09fb8f83d3513b76af43640bf9feca8886e356d209482e2baa
+  version: 5.20.0
+  resolution: "xstate@npm:5.20.0"
+  checksum: 10c0/4443c87ce86901e71881842845785acb26eb5d7579c3a95966db83e6499f574325efbfd593e3051a21dbf5b101ba9474d284a43335ea56f518c666f0361bfc89
   languageName: node
   linkType: hard
 

@@ -21,6 +21,7 @@ import { sha1 } from 'js-sha1';
 import { sha384, sha512 } from 'js-sha512';
 import { hexToSignedBytes, packBytesArray } from './bytes.js';
 import * as forge from 'node-forge';
+import { ethers } from 'ethers';
 
 export function flexiblePoseidon(inputs: bigint[]): bigint {
   switch (inputs.length) {
@@ -149,4 +150,16 @@ export function customHasher(pubKeyFormatted: string[]) {
 export function packBytesAndPoseidon(unpacked: number[]) {
   const packed = packBytesArray(unpacked);
   return customHasher(packed.map(String)).toString();
+}
+
+export function calculateUserIdentifierHash(destChainID: number, userID: string, userDefinedData: string): BigInt {
+  const userIdHex = userID.replace(/-/g, '');
+  const tempUserContextData = ethers.solidityPacked(
+    [ "bytes32", "bytes32", "bytes"],
+    [ethers.zeroPadValue(ethers.toBeHex(destChainID), 32), ethers.zeroPadValue("0x" + userIdHex, 32), ethers.toUtf8Bytes(userDefinedData)],
+  );
+  const inputBytes = Buffer.from(tempUserContextData.slice(2), "hex");
+  const sha256Hash = ethers.sha256(inputBytes);
+  const ripemdHash = ethers.ripemd160(sha256Hash);
+  return BigInt(ripemdHash);
 }
