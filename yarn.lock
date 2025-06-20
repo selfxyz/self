@@ -4382,7 +4382,7 @@ __metadata:
     react-native-cloud-storage: "npm:^2.2.2"
     react-native-device-info: "npm:^14.0.4"
     react-native-dotenv: "npm:^3.4.11"
-    react-native-gesture-handler: "npm:^2.22.1"
+    react-native-gesture-handler: "npm:^2.25.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
     react-native-keychain: "npm:^10.0.0"
@@ -19215,7 +19215,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-gesture-handler@npm:^2.22.1":
+"react-native-gesture-handler@npm:^2.25.0":
   version: 2.26.0
   resolution: "react-native-gesture-handler@npm:2.26.0"
   dependencies:
