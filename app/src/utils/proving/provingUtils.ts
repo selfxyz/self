@@ -44,7 +44,6 @@ type DiscloseProofType =
 
 export type TEEPayloadBase = {
   endpointType: EndpointType;
-  version: number;
   circuit: {
     name: string;
     inputs: string;
@@ -61,6 +60,7 @@ export type TEEPayloadDisclose = TEEPayloadBase & {
   onchain: boolean;
   endpoint: string;
   userDefinedData: string;
+  version: number;
 };
 
 export function getPayload(
@@ -95,7 +95,6 @@ export function getPayload(
         name: circuitName,
         inputs: JSON.stringify(inputs),
       },
-      version,
     };
     return payload;
   }

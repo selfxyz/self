@@ -1,6 +1,4 @@
-import { EndpointType, SelfApp } from '@selfxyz/common';
-import { getCircuitNameFromPassportData } from '@selfxyz/common';
-import { DocumentCategory, PassportData } from '@selfxyz/common';
+import { DocumentCategory, PassportData , getSolidityPackedUserContextData, EndpointType, SelfApp, getCircuitNameFromPassportData } from '@selfxyz/common';
 import forge from 'node-forge';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
@@ -846,7 +844,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         endpointType as EndpointType,
         endpoint as string,
         selfApp?.version,
-        selfApp?.userDefinedData,
+        selfApp?.userDefinedData ?? getSolidityPackedUserContextData(passportData.destChainID, passportData.userID, passportData.userDefinedData).slice(2),
       );
       const forgeKey = forge.util.createBuffer(
         sharedKey?.toString('binary') as string,
