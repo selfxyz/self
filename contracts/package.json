@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/contracts",
-  "version": "0.0.8",
+  "version": "1.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -9,10 +9,9 @@
   "author": "motemotech <i.am.nicoshark@gmail.com>",
   "type": "commonjs",
   "files": [
-    "contracts/interfaces/*",
-    "contracts/constants/*",
-    "contracts/libraries/*",
-    "contracts/abstract/*"
+    "contracts/interfaces/ISelfVerificationRoot.sol",
+    "contracts/libraries/Formatter.sol",
+    "contracts/abstract/SelfVerificationRoot.sol"
   ],
   "scripts": {
     "build": "yarn hardhat clean && yarn hardhat compile",
@@ -24,6 +23,7 @@
     "deploy:registry:idcard": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/registry/deployIdCardRegistry.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "deploy:verifiers": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/verifiers/deployVerifiers.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "deploy:verifiers:all": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/verifiers/deployAllVerifiers.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
+    "deploy:verifier:id": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/verifiers/deployAllVerifiers.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "export-prod": "bash ./scripts/prod.sh",
     "prettier:check": "prettier --list-different '**/*.{json,md,yml,sol,ts}'",
     "prettier:write": "prettier --write '**/*.{json,md,yml,sol,ts}'",
