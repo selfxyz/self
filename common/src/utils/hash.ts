@@ -17,7 +17,9 @@ import {
   poseidon16,
 } from 'poseidon-lite';
 import { sha224, sha256 } from 'js-sha256';
-import  sha1  from 'js-sha1';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const sha1 = require('js-sha1');
 import { sha384, sha512 } from 'js-sha512';
 import { hexToSignedBytes, packBytesArray } from './bytes.js';
 import * as forge from 'node-forge';
