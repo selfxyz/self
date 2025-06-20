@@ -26,19 +26,3 @@ export class ConfigMismatchError extends Error {
     return new ConfigMismatchError([{ type, message }]);
   }
 }
-
-export enum InvalidProof {
-  InvalidProof = 'InvalidProof',
-}
-
-export class InvalidProofError extends Error {
-  public readonly type: InvalidProof;
-
-  constructor(type: InvalidProof, message: string) {
-    super(`[${type}]: ${message}`);
-    this.name = 'InvalidProofError';
-    this.type = type;
-
-    Object.setPrototypeOf(this, InvalidProofError.prototype);
-  }
-}

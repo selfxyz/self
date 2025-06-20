@@ -7,8 +7,7 @@ import { AttestationId, VcAndDiscloseProof } from './types/types.js';
 import { Country3LetterCode } from '@selfxyz/common';
 import { calculateUserIdentifierHash } from './utils/hash.js';
 import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
-import { ConfigMismatch, ConfigMismatchError, InvalidProof, InvalidProofError } from './errors.js';
-import { DefaultConfigStore } from './store/DefaultConfigStore.js';
+import { ConfigMismatch, ConfigMismatchError } from './errors.js';
 import { IConfigStorage } from './store/interface.js';
 import { unpackForbiddenCountriesList } from './utils/utils.js';
 
@@ -153,10 +152,6 @@ export class SelfBackendVerifier {
       [proof.b[0][1], proof.b[0][0]],
       [proof.b[1][1], proof.b[1][0]],
     ], proof.c, publicSignals);
-
-    if (!isValid) {
-      throw new InvalidProofError(InvalidProof.InvalidProof, 'Proof is invalid');
-    }
 
     return {
       isValid,
