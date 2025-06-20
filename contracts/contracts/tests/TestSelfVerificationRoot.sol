@@ -3,6 +3,7 @@ pragma solidity 0.8.28;
 
 import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
+import {SelfStructs} from "../libraries/SelfStructs.sol";
 
 /**
  * @title TestSelfVerificationRoot
@@ -14,6 +15,7 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
     bool public verificationSuccessful;
     ISelfVerificationRoot.GenericDiscloseOutputV2 public lastOutput;
     bytes public lastUserData;
+    SelfStructs.VerificationConfigV2 public verificationConfig;
 
     // Events for testing
     event VerificationCompleted(ISelfVerificationRoot.GenericDiscloseOutputV2 output, bytes userData);
@@ -74,6 +76,15 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
      */
     function setScope(uint256 newScope) external {
         _setScope(newScope);
+    }
+
+    function setVerificationConfig(SelfStructs.VerificationConfigV2 memory config) external {
+        verificationConfig = config;
+        _identityVerificationHubV2.setVerificationConfigV2(verificationConfig);
+    }
+
+    function getConfigId(bytes32 destinationChainId, bytes32 userIdentifier, bytes memory userDefinedData) public view override returns (bytes32) {
+        return _identityVerificationHubV2.generateConfigId(verificationConfig);
     }
 
     /**
