@@ -1,5 +1,11 @@
 import { unpackReveal } from "@selfxyz/common/utils/circuits/formatOutputs";
 
+/**
+ * Unpacks a list of packed forbidden country codes into an array of 3-character country codes.
+ *
+ * @param forbiddenCountriesList_packed - An array of packed strings representing forbidden countries.
+ * @returns An array of 3-character country codes extracted from the packed input.
+ */
 export function unpackForbiddenCountriesList(forbiddenCountriesList_packed: string[]) {
   const trimmed = unpackReveal(forbiddenCountriesList_packed, 'id');
   const countries = [];

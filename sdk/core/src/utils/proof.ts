@@ -2,6 +2,14 @@ import { PublicSignals } from 'snarkjs';
 import { discloseIndices } from './constants.js';
 import { AttestationId } from 'src/types/types.js';
 
+/**
+ * Returns the number of public signals containing revealed data for the specified attestation ID.
+ *
+ * Throws an error if the attestation ID is not supported.
+ *
+ * @param attestationId - The attestation ID for which to determine the number of revealed data public signals
+ * @returns The number of public signals corresponding to revealed data
+ */
 export function getRevealedDataPublicSignalsLength(attestationId: AttestationId): number {
   switch (attestationId) {
     case 1:
@@ -18,6 +26,15 @@ export const bytesCount: Record<AttestationId, number[]> = {
   2: [31, 31, 31, 1],
 };
 
+/**
+ * Extracts and returns the revealed data bytes from the public signals for a given attestation ID.
+ *
+ * Iterates over the relevant public signals, unpacks each into its constituent bytes according to the attestation's byte structure, and accumulates all revealed bytes into a single array.
+ *
+ * @param attestationId - The attestation ID specifying the format of revealed data
+ * @param publicSignals - The array of public signals containing packed revealed data
+ * @returns An array of bytes representing the revealed data for the specified attestation
+ */
 export function getRevealedDataBytes(attestationId: AttestationId, publicSignals: PublicSignals): number[] {
   let bytes: number[] = [];
   for (let i = 0; i < getRevealedDataPublicSignalsLength(attestationId); i++) {
