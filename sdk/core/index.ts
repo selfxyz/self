@@ -15,4 +15,5 @@ export {
   hashEndpointWithScope,
   SelfAppBuilder,
   getPackedForbiddenCountries,
+  AttestationId
 };
