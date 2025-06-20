@@ -40,6 +40,7 @@ export class SelfBackendVerifier {
   public async verify(
     attestationId: AttestationId,
     proof: VcAndDiscloseProof,
+    pubSignals: string[],
     userContextData: string,
   ) {
     //check if attestation id is allowed
@@ -49,7 +50,7 @@ export class SelfBackendVerifier {
       issues.push({ type: ConfigMismatch.InvalidId, message: 'Attestation ID is not allowed' });
     }
 
-    const publicSignals = proof.pubSignals.map(String).map((x) => /[a-f]/g.test(x) ? '0x' + x : x);
+    const publicSignals = pubSignals.map(String).map((x) => /[a-f]/g.test(x) ? '0x' + x : x);
 
     //check if user context hash matches
     const userContextHashInCircuit = publicSignals[discloseIndices[attestationId].userIdentifierIndex];

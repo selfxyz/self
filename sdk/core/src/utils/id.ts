@@ -1,7 +1,6 @@
 import { discloseIndices, revealedDataIndices } from "./constants.js";
-import { AttestationId } from "src/types/types.js";
+import { AttestationId, GenericDiscloseOutput } from "src/types/types.js";
 import { getRevealedDataBytes } from "./proof.js";
-
 
 export const formatRevealedDataPacked = (attestationId: AttestationId, publicSignals: string[]): GenericDiscloseOutput => {
   const revealedDataPacked = getRevealedDataBytes(attestationId, publicSignals);
@@ -33,17 +32,3 @@ export const formatRevealedDataPacked = (attestationId: AttestationId, publicSig
     ofac: ofac,
   }
 };
-
-type GenericDiscloseOutput = {
-  nullifier: string;
-  forbiddenCountriesListPacked: string[];
-  issuingState: string;
-  name: string;
-  idNumber: string;
-  nationality: string;
-  dateOfBirth: string;
-  gender: string;
-  expiryDate: string;
-  olderThan: string;
-  ofac: boolean[];
-}

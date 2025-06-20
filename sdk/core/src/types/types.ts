@@ -1,16 +1,32 @@
 import type { BigNumberish } from 'ethers';
-import type { SelfStructs } from '../typechain-types/IdentityVerificationHubImpl.js';
 import { discloseIndices } from 'src/utils/constants.js';
 
 export type VcAndDiscloseProof = {
   a: [BigNumberish, BigNumberish];
   b: [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]];
   c: [BigNumberish, BigNumberish];
-  pubSignals: BigNumberish[];
 };
 
-export type VerificationConfig = SelfStructs.VerificationConfigV2Struct;
+export type VerificationConfig = {
+  olderThanEnabled: boolean;
+  olderThan: string;
+  forbiddenCountriesEnabled: boolean;
+  forbiddenCountriesListPacked: string[];
+  ofacEnabled: [boolean, boolean, boolean];
+};
 
-export type GenericDiscloseStruct = SelfStructs.VerificationConfigV2Struct;
+export type GenericDiscloseOutput = {
+  nullifier: string;
+  forbiddenCountriesListPacked: string[];
+  issuingState: string;
+  name: string;
+  idNumber: string;
+  nationality: string;
+  dateOfBirth: string;
+  gender: string;
+  expiryDate: string;
+  olderThan: string;
+  ofac: boolean[];
+}
 
 export type AttestationId = keyof typeof discloseIndices;
