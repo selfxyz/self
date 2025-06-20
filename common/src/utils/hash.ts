@@ -17,7 +17,8 @@ import {
   poseidon16,
 } from 'poseidon-lite';
 import { sha224, sha256 } from 'js-sha256';
-import { sha1 } from 'js-sha1';
+import  sha1  from 'js-sha1';
+console.log(sha1.create().update("0").hex());
 import { sha384, sha512 } from 'js-sha512';
 import { hexToSignedBytes, packBytesArray } from './bytes.js';
 import * as forge from 'node-forge';
@@ -73,7 +74,7 @@ export function hash(
 
   switch (hashFunction) {
     case 'sha1':
-      hashResult = sha1(unsignedBytesArray);
+      hashResult = sha1.create().update(new Uint8Array(unsignedBytesArray).buffer).hex();
       break;
     case 'sha224':
       hashResult = sha224(unsignedBytesArray);
