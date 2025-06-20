@@ -16,12 +16,12 @@ import {
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
 } from '@selfxyz/common';
-import { hashEndpointWithScope} from '@selfxyz/common';
+import { hashEndpointWithScope } from '@selfxyz/common';
 import { calculateUserIdentifierHash } from '@selfxyz/common';
 import { PassportData } from '@selfxyz/common';
 import nameAndDobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json';
 import nameAndDobSMTDataID from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.json';
+import nameAndYobSMTData from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json';
 import nameAndYobSMTDataID from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json';
 import passportNoAndNationalitySMTData from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import { poseidon2 } from 'poseidon-lite';
@@ -62,8 +62,13 @@ export function generateTEEInputsDisclose(
   passportData: PassportData,
   selfApp: SelfApp,
 ) {
-  const { scope,  disclosures, endpoint, userId, userDefinedData, chainID  } = selfApp;
-  const userIdentifierHash = calculateUserIdentifierHash(chainID, userId, userDefinedData);
+  const { scope, disclosures, endpoint, userId, userDefinedData, chainID } =
+    selfApp;
+  const userIdentifierHash = calculateUserIdentifierHash(
+    chainID,
+    userId,
+    userDefinedData,
+  );
   const userIdentifierHashBigInt = BigInt(userIdentifierHash);
   const scope_hash = hashEndpointWithScope(endpoint, scope);
   const document: DocumentCategory = passportData.documentCategory;
@@ -77,8 +82,13 @@ export function generateTEEInputsDisclose(
 
   const selector_ofac = disclosures.ofac ? 1 : 0;
 
-  const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT, nameAndDobSMTID, nameAndYobSMTID } =
-    getOfacSMTs();
+  const {
+    passportNoAndNationalitySMT,
+    nameAndDobSMT,
+    nameAndYobSMT,
+    nameAndDobSMTID,
+    nameAndYobSMTID,
+  } = getOfacSMTs();
   const serialized_tree = useProtocolStore.getState()[document].commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
   const inputs = generateCircuitInputsVCandDisclose(
@@ -99,7 +109,10 @@ export function generateTEEInputsDisclose(
   );
   return {
     inputs,
-    circuitName: passportData.documentCategory === 'passport' ? 'vc_and_disclose' : 'vc_and_disclose_id',
+    circuitName:
+      passportData.documentCategory === 'passport'
+        ? 'vc_and_disclose'
+        : 'vc_and_disclose_id',
     endpointType: selfApp.endpointType,
     endpoint: selfApp.endpoint,
   };
@@ -119,12 +132,19 @@ function getOfacSMTs() {
   nameAndDobSMTID.import(nameAndDobSMTDataID);
   const nameAndYobSMTID = new SMT(poseidon2, true);
   nameAndYobSMTID.import(nameAndYobSMTDataID);
-  return { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT, nameAndDobSMTID, nameAndYobSMTID };
+  return {
+    passportNoAndNationalitySMT,
+    nameAndDobSMT,
+    nameAndYobSMT,
+    nameAndDobSMTID,
+    nameAndYobSMTID,
+  };
 }
 
-
-
-function getSelectorDg1(document: DocumentCategory, disclosures: SelfAppDisclosureConfig) {
+function getSelectorDg1(
+  document: DocumentCategory,
+  disclosures: SelfAppDisclosureConfig,
+) {
   switch (document) {
     case 'passport':
       return getSelectorDg1Passport(disclosures);
@@ -152,11 +172,13 @@ function getSelectorDg1IdCard(disclosures: SelfAppDisclosureConfig) {
   const selector_dg1 = Array(90).fill('0');
   Object.entries(disclosures).forEach(([attribute, reveal]) => {
     if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
-        return;
-      }
+      return;
+    }
     if (reveal) {
       const [start, end] =
-        attributeToPosition_ID[attribute as keyof typeof attributeToPosition_ID];
+        attributeToPosition_ID[
+          attribute as keyof typeof attributeToPosition_ID
+        ];
       selector_dg1.fill('1', start, end + 1);
     }
   });

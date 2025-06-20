@@ -36,9 +36,11 @@ type RegisterSuffixes = '' | '_id';
 type DscSuffixes = '' | '_id';
 type DiscloseSuffixes = '' | '_id';
 type ProofTypes = 'register' | 'dsc' | 'disclose';
-type RegisterProofType = `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
+type RegisterProofType =
+  `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
 type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
-type DiscloseProofType = `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
+type DiscloseProofType =
+  `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
 
 export type TEEPayloadBase = {
   endpointType: EndpointType;

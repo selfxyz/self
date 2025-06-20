@@ -645,17 +645,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           get().circuitType as 'register' | 'dsc',
         );
         if (get().circuitType === 'register') {
-          if (
-            passportData.documentCategory === 'passport'
-          ) {
+          if (passportData.documentCategory === 'passport') {
             wsRpcUrl = circuitsMapping?.REGISTER?.[circuitName];
           } else {
             wsRpcUrl = circuitsMapping?.REGISTER_ID?.[circuitName];
           }
         } else {
-          if (
-            passportData.documentCategory === 'passport'
-          ) {
+          if (passportData.documentCategory === 'passport') {
             wsRpcUrl = circuitsMapping?.DSC?.[circuitName];
           } else {
             wsRpcUrl = circuitsMapping?.DSC_ID?.[circuitName];
@@ -801,7 +797,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const document: DocumentCategory = passportData.documentCategory;
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
-      let inputs, circuitName, endpointType, endpoint, circuitTypeWithDocumentExtension;
+      let inputs,
+        circuitName,
+        endpointType,
+        endpoint,
+        circuitTypeWithDocumentExtension;
       const protocolStore = useProtocolStore.getState();
       switch (circuitType) {
         case 'register':
