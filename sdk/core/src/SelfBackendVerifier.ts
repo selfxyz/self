@@ -164,7 +164,6 @@ export class SelfBackendVerifier {
       userIdentifier,
       userDefinedData,
       isOlderThanValid: verificationConfig.olderThanEnabled ? verificationConfig.olderThan <= genericDiscloseOutput.olderThan : true,
-      isForbiddenCountriesListValid: verificationConfig.forbiddenCountriesEnabled ? !forbiddenCountriesList.includes(genericDiscloseOutput.nationality) : true,
       isOfacValid: verificationConfig.ofacEnabled.every((enabled, index) => enabled ? genericDiscloseOutput.ofac[index] : true),
     }
   }

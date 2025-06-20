@@ -1,5 +1,9 @@
 import { unpackReveal } from "@selfxyz/common/utils/circuits/formatOutputs";
 
+function trimu0000(unpackedReveal: string[]): string[] {
+  return unpackedReveal.filter((value) => value !== '\u0000');
+}
+
 /**
  * Unpacks a list of packed forbidden country codes into an array of 3-character country codes.
  *
@@ -7,7 +11,7 @@ import { unpackReveal } from "@selfxyz/common/utils/circuits/formatOutputs";
  * @returns An array of 3-character country codes extracted from the packed input.
  */
 export function unpackForbiddenCountriesList(forbiddenCountriesList_packed: string[]) {
-  const trimmed = unpackReveal(forbiddenCountriesList_packed, 'id');
+  const trimmed = trimu0000(unpackReveal(forbiddenCountriesList_packed, 'id'));
   const countries = [];
   for (let i = 0; i < trimmed.length; i += 3) {
     const countryCode = trimmed.slice(i, i + 3).join('');
