@@ -10,17 +10,17 @@ ethers.computeHmac.register((algo, key, data) => {
   return crypto.createHmac(algo, key).update(data).digest();
 });
 
-// @ts-expect-error
+// @ts-ignore
 ethers.pbkdf2.register((passwd, salt, iter, keylen, algo) => {
   return crypto.pbkdf2Sync(passwd, salt, iter, keylen, algo);
 });
 
 ethers.sha256.register(data => {
-  // @ts-expect-error
+  // @ts-ignore
   return crypto.createHash('sha256').update(data).digest();
 });
 
 ethers.sha512.register(data => {
-  // @ts-expect-error
+  // @ts-ignore
   return crypto.createHash('sha512').update(data).digest();
 });
