@@ -89,7 +89,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | proof data |
      * @param userContextData User-defined data in format: | 32 bytes destChainId | 32 bytes userIdentifier | data |
      * @custom:data-format proofPayload = | 32 bytes attestationId | proofData |
-     * @custom:data-format userContextData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+     * @custom:data-format userContextData = | 32 bytes destChainId | 32 bytes userIdentifier | data |
      * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
     function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) public {
@@ -98,7 +98,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             revert InvalidDataFormat();
         }
 
-        // Minimum userDefinedData length: 32 (destChainId) + 32 (userIdentifier) + 32 (userDefinedData) = 96 bytes
+        // Minimum userDefinedData length: 32 (destChainId) + 32 (userIdentifier) + 0 (userDefinedData) = 64 bytes
         if (userContextData.length < 64) {
             revert InvalidDataFormat();
         }
