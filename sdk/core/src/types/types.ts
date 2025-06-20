@@ -1,5 +1,6 @@
 import type { BigNumberish } from 'ethers';
 import type { SelfStructs } from '../typechain-types/IdentityVerificationHubImpl.js';
+import { discloseIndices } from 'src/utils/constants.js';
 
 export type VcAndDiscloseProof = {
   a: [BigNumberish, BigNumberish];
@@ -11,3 +12,5 @@ export type VcAndDiscloseProof = {
 export type VerificationConfig = SelfStructs.VerificationConfigV2Struct;
 
 export type GenericDiscloseStruct = SelfStructs.VerificationConfigV2Struct;
+
+export type AttestationId = keyof typeof discloseIndices;

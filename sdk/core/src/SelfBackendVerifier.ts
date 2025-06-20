@@ -1,9 +1,9 @@
 import { ethers } from 'ethers';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import { IdentityVerificationHubImpl, IdentityVerificationHubImpl__factory, Registry__factory, Verifier, Verifier__factory } from './typechain-types/index.js';
-import { AttestationId, discloseIndices } from './utils/constants.js';
+import { discloseIndices } from './utils/constants.js';
 import { formatRevealedDataPacked } from './utils/id.js';
-import { VcAndDiscloseProof } from './types/types.js';
+import { AttestationId, VcAndDiscloseProof } from './types/types.js';
 import { Country3LetterCode } from '@selfxyz/common';
 import { calculateUserIdentifierHash } from './utils/hash.js';
 import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';

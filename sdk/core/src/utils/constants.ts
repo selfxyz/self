@@ -1,3 +1,5 @@
+import { AttestationId } from "src/types/types.js";
+
 export const discloseIndices = {
   1: {
     revealedDataPackedIndex: 0,
@@ -71,5 +73,3 @@ export const revealedDataIndices: Record<AttestationId, Record<`${RevealedDataFi
     ofacEnd: 93,
   }
 } as const;
-
-export type AttestationId = keyof typeof discloseIndices;
