@@ -24,9 +24,9 @@ template SMTVerify(nLength) {
     signal depth <-- getSiblingsLength(siblings, nLength);
 
     // Convert the full key to bits and take only nLength bits
-    component num2Bits = Num2Bits(254);  // Using 254 bits for poseidon output
+    component num2Bits = Num2Bits_strict();  
     num2Bits.in <== virtualKey;
-    
+
     // Convert back to a field element using only nLength bits
     component bits2Num = Bits2Num(nLength);
     for (var i = 0; i < nLength; i++) {
@@ -38,11 +38,11 @@ template SMTVerify(nLength) {
     signal path[nLength];
     signal path_in_bits_reversed[nLength] <== Num2Bits(nLength)(smallKey);
     var path_in_bits[nLength];
-    
+
     for (var i = 0; i < nLength; i++) {
         path_in_bits[i] = path_in_bits_reversed[nLength-1-i];
     }
-    
+
     // Shift the path to the left by depth to make it compatible for BinaryMerkleRoot function
     component pathShifter = VarShiftLeft(nLength, nLength);
     pathShifter.in <== path_in_bits;
