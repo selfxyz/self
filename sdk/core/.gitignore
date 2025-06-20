@@ -1,4 +1,5 @@
 node_modules/
+src/typechain-types/
 yarn.lock
 yarn-error.log
 dist

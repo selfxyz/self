@@ -1,4 +1,5 @@
-import { AttestationId, discloseIndices, revealedDataIndices } from "./constants.js";
+import { discloseIndices, revealedDataIndices } from "./constants.js";
+import { AttestationId } from "src/types/types.js";
 import { getRevealedDataBytes } from "./proof.js";
 
 

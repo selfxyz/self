@@ -27,7 +27,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup index.ts --format cjs,esm --dts --clean --sourcemap",
+    "build": "typechain --target ethers-v6 --node16-modules --out-dir src/typechain-types src/abi/**.json && tsup index.ts --format cjs,esm --dts --clean --sourcemap",
     "build:deps": "yarn workspaces foreach --from @selfxyz/core --topological-dev --recursive run build",
     "copy-abi": "bash scripts/copyAbi.sh",
     "format": "prettier --write .",

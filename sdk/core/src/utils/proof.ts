@@ -1,5 +1,6 @@
 import { PublicSignals } from 'snarkjs';
-import { AttestationId, discloseIndices } from './constants.js';
+import { discloseIndices } from './constants.js';
+import { AttestationId } from 'src/types/types.js';
 
 export function getRevealedDataPublicSignalsLength(attestationId: AttestationId): number {
   switch (attestationId) {
@@ -26,17 +27,6 @@ export function getRevealedDataBytes(attestationId: AttestationId, publicSignals
       publicSignal = publicSignal >> 8n;
     }
   }
-  console.log(bytes);
 
   return bytes;
 }
-
-// export async function getUserIdentifier(
-//   publicSignals: PublicSignals,
-//   user_identifier_type: UserIdType = 'uuid'
-// ): Promise<string> {
-//   return castToUserIdentifier(
-//     BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]),
-//     user_identifier_type
-//   );
-// }
