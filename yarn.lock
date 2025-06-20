@@ -4308,39 +4308,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/common@file:../../common::locator=%40selfxyz%2Fcore%40workspace%3Asdk%2Fcore":
-  version: 0.0.2
-  resolution: "@selfxyz/common@file:../../common#../../common::hash=c4cbd1&locator=%40selfxyz%2Fcore%40workspace%3Asdk%2Fcore"
-  dependencies:
-    "@openpassport/zk-kit-imt": "npm:^0.0.5"
-    "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
-    "@openpassport/zk-kit-smt": "npm:^0.0.1"
-    asn1.js: "npm:^5.4.1"
-    asn1js: "npm:^3.0.5"
-    axios: "npm:^1.7.2"
-    buffer: "npm:^6.0.3"
-    chai: "npm:^4.3.8"
-    country-emoji: "npm:^1.5.6"
-    country-iso-3-to-2: "npm:^1.1.1"
-    elliptic: "npm:^6.5.5"
-    fs: "npm:^0.0.1-security"
-    i18n-iso-countries: "npm:^7.13.0"
-    js-sha1: "npm:^0.7.0"
-    js-sha256: "npm:^0.11.0"
-    js-sha512: "npm:^0.9.0"
-    json-to-ts: "npm:^2.1.0"
-    jsrsasign: "npm:^11.1.0"
-    node-forge: "github:remicolin/forge#17a11a632dd0e50343b3b8393245a2696f78afbb"
-    path: "npm:^0.12.7"
-    pkijs: "npm:^3.2.4"
-    poseidon-lite: "npm:^0.2.0"
-    snarkjs: "npm:^0.7.5"
-    typescript-parser: "npm:^2.6.1"
-    uuid: "npm:^11.0.5"
-  checksum: 10c0/78ab1198944837f4726a467ccbe02133ce86ed5435980a997fe2c51f1c0261c48dfc03c5ddca23755060d7cd2df9d00d07f16dc14ad4bc2ec54ecf9966385aad
-  languageName: node
-  linkType: hard
-
 "@selfxyz/common@workspace:, @selfxyz/common@workspace:^, @selfxyz/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@selfxyz/common@workspace:common"
@@ -4436,7 +4403,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/core@workspace:sdk/core"
   dependencies:
-    "@selfxyz/common": "file:../../common"
+    "@selfxyz/common": "workspace:^"
     "@typechain/ethers-v6": "npm:^0.5.1"
     "@types/chai": "npm:^4.3.6"
     "@types/chai-as-promised": "npm:^7.1.8"

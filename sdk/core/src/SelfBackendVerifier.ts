@@ -93,8 +93,8 @@ export class SelfBackendVerifier {
     const verificationConfig = await this.configStorage.getConfig(configId);
 
     //check if forbidden countries list matches
-    const forbiddenCountriesList = unpackForbiddenCountriesList(verificationConfig.forbiddenCountriesListPacked.map(String));
-    const forbiddenCountriesListVerificationConfig = unpackForbiddenCountriesList(verificationConfig.forbiddenCountriesListPacked.map(String));
+    let forbiddenCountriesList: string[] = [0, 1, 2, 3].map((x) => publicSignals[discloseIndices[attestationId].forbiddenCountriesListPackedIndex + x]);
+    const forbiddenCountriesListVerificationConfig = unpackForbiddenCountriesList(verificationConfig.forbiddenCountriesListPacked);
 
     const isForbiddenCountryListValid = forbiddenCountriesListVerificationConfig.every(country => forbiddenCountriesList.includes(country as Country3LetterCode));
     if (!isForbiddenCountryListValid) {
@@ -115,7 +115,8 @@ export class SelfBackendVerifier {
     const currentTimestamp = new Date();
 
     //check if timestamp is in the future
-    if (circuitTimestamp > currentTimestamp) {
+    const oneDayAgo = new Date(currentTimestamp.getTime() - (24 * 60 * 60 * 1000));
+    if (circuitTimestamp > oneDayAgo) {
       issues.push({ type: ConfigMismatch.InvalidTimestamp, message: 'Circuit timestamp is in the future' });
     }
 
@@ -144,6 +145,9 @@ export class SelfBackendVerifier {
     let verifierContract: Verifier;
     try {
       const verifierAddress = await this.identityVerificationHubContract.discloseVerifier('0x' + attestationId.toString(16).padStart(64, '0'));
+      if (verifierAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Verifier contract not found');
+      }
       verifierContract = Verifier__factory.connect(verifierAddress, this.provider);
     }catch (error) {
       throw new Error('Verifier contract not found');
@@ -160,7 +164,7 @@ export class SelfBackendVerifier {
       userIdentifier,
       userDefinedData,
       isOlderThanValid: verificationConfig.olderThanEnabled ? verificationConfig.olderThan <= genericDiscloseOutput.olderThan : true,
-      isForbiddenCountriesListValid: verificationConfig.forbiddenCountriesEnabled ? forbiddenCountriesList.includes(genericDiscloseOutput.nationality) : true,
+      isForbiddenCountriesListValid: verificationConfig.forbiddenCountriesEnabled ? !forbiddenCountriesList.includes(genericDiscloseOutput.nationality) : true,
       isOfacValid: verificationConfig.ofacEnabled.every((enabled, index) => enabled ? genericDiscloseOutput.ofac[index] : true),
     }
   }

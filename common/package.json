@@ -9,17 +9,17 @@
     ".": {
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
-      "types": "./dist/esm/index.d.ts"
+      "types": "./dist/cjs/index.d.ts"
     },
     "./constants/*": {
       "import": "./dist/esm/src/constants/*.js",
       "require": "./dist/cjs/src/constants/*.js",
-      "types": "./dist/esm/src/constants/*.d.ts"
+      "types": "./dist/cjs/src/constants/*.d.ts"
     },
     "./utils/*": {
       "import": "./dist/esm/src/utils/*.js",
       "require": "./dist/cjs/src/utils/*.js",
-      "types": "./dist/esm/src/utils/*.d.ts"
+      "types": "./dist/cjs/src/utils/*.d.ts"
     },
     "./ofacdata/outputs/nameAndDobSMT.json": "./ofacdata/outputs/nameAndDobSMT.json",
     "./ofacdata/outputs/nameAndYobSMT.json": "./ofacdata/outputs/nameAndYobSMT.json",
