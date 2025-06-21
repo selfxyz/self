@@ -9,10 +9,15 @@
   "author": "turnoffthiscomputer",
   "type": "module",
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.cts"
+    }
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.cts",
   "files": [
     "dist"
   ],
@@ -28,7 +33,7 @@
     "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode --topological-dev --recursive run build"
   },
   "dependencies": {
-    "@selfxyz/common": "workspace:^",
+    "@selfxyz/common": "file:../../common",
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",

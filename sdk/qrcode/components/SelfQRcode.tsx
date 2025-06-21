@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
-import CHECK_ANIMATION from '../animations/check_animation.json';
-import X_ANIMATION from '../animations/x_animation.json';
+import CHECK_ANIMATION from '../animations/check_animation.json' with { type: 'json' };
+import X_ANIMATION from '../animations/x_animation.json' with { type: 'json' };
 import LED from './LED.js';
 import {
   REDIRECT_URL,
@@ -19,9 +19,10 @@ import { QRCodeSVG } from 'qrcode.react';
 import { initWebSocket } from '../utils/websocket.js';
 import {
   getUniversalLink,
-  SelfApp,
   SelfAppBuilder,
 } from '@selfxyz/common/utils/appType';
+import type { SelfApp } from '@selfxyz/common/utils/appType';
+
 interface SelfQRcodeProps {
   selfApp: SelfApp;
   onSuccess: () => void;

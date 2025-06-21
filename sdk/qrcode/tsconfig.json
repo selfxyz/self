@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "Node16",
+    "module": "NodeNext",
     "declaration": true,
     "declarationDir": "./dist",
     "outDir": "./dist",
@@ -11,7 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "jsx": "react",
-    "moduleResolution": "node16"
+    "moduleResolution": "NodeNext"
   },
   "include": [
     "animations",

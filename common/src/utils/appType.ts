@@ -7,6 +7,7 @@ import { v4 } from 'uuid';
 import { REDIRECT_URL } from '../constants/constants.js';
 import { Country3LetterCode } from '../constants/countries.js';
 import { formatEndpoint } from './scope.js';
+
 export interface SelfApp {
   appName: string;
   logoBase64: string;
