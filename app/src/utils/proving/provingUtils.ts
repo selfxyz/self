@@ -74,7 +74,7 @@ export function getPayload(
 ) {
   if (circuitType === 'disclose') {
     const payload: TEEPayloadDisclose = {
-      type: 'disclose',
+      type: circuitName === 'vc_and_disclose' ? 'disclose' : 'disclose_id',
       endpointType: endpointType,
       endpoint: endpoint,
       onchain: endpointType === 'celo' ? true : false,

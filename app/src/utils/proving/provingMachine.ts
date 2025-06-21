@@ -832,7 +832,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);
       }
-
+      const userDefinedData = selfApp?.userDefinedData ? getSolidityPackedUserContextData(selfApp.chainID, selfApp.userId, selfApp.userDefinedData).slice(2) : "";
       const payload = getPayload(
         inputs,
         circuitTypeWithDocumentExtension as
@@ -844,7 +844,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         endpointType as EndpointType,
         endpoint as string,
         selfApp?.version,
-        selfApp?.userDefinedData ?? getSolidityPackedUserContextData(passportData.destChainID, passportData.userID, passportData.userDefinedData).slice(2),
+        userDefinedData,
       );
       const forgeKey = forge.util.createBuffer(
         sharedKey?.toString('binary') as string,
