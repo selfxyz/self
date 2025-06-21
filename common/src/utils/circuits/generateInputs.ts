@@ -245,7 +245,6 @@ export function generateCircuitInputsVCandDisclose(
       };
     }
   }
-
   // Build Final Input Object
   const baseInputs = {
     secret: formatInput(secret),

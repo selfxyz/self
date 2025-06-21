@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "1.0.3",
+  "version": "1.0.8",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -17,15 +17,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc --build",
-    "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode --topological-dev --recursive run build",
     "format": "prettier --write .",
     "install-sdk": "yarn workspace focus @selfxyz/qrcode",
     "lint": "prettier --check .",
     "prepublishOnly": "yarn build",
     "publish": "yarn npm publish --access public",
     "test": "echo 'no tests found'",
-    "types": "yarn build"
+    "types": "yarn build",
+    "build": "tsup --config tsup.config.ts",
+    "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode --topological-dev --recursive run build"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:^",
@@ -38,6 +38,7 @@
     "qrcode.react": "^4.1.0",
     "react-spinners": "^0.14.1",
     "socket.io-client": "^4.8.1",
+    "tsup": "^8.5.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/common",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Constants and utils for self sdks",
   "license": "MIT",
   "author": "@Selfxyz Team",
@@ -34,8 +34,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist/cjs",
-    "dist/esm",
+    "dist/**/*",
     "src/mock_certificates"
   ],
   "scripts": {
