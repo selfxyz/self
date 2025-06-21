@@ -153,27 +153,42 @@ export function packBytesAndPoseidon(unpacked: number[]) {
   return customHasher(packed.map(String)).toString();
 }
 
-export function calculateUserIdentifierHash(destChainID: number, userID: string, userDefinedData: string): BigInt {
-  console.log("destChainID: ", destChainID);
-  console.log("userID: ", userID);
-  console.log("userDefinedData: ", userDefinedData);
-  const solidityPackedUserContextData = getSolidityPackedUserContextData(destChainID, userID, userDefinedData);
-  console.log("solidityPackedUserContextData: ", solidityPackedUserContextData);
-  const inputBytes = Buffer.from(solidityPackedUserContextData.slice(2), "hex");
-  console.log("inputBytes: ", inputBytes);
+export function calculateUserIdentifierHash(
+  destChainID: number,
+  userID: string,
+  userDefinedData: string
+): BigInt {
+  console.log('destChainID: ', destChainID);
+  console.log('userID: ', userID);
+  console.log('userDefinedData: ', userDefinedData);
+  const solidityPackedUserContextData = getSolidityPackedUserContextData(
+    destChainID,
+    userID,
+    userDefinedData
+  );
+  console.log('solidityPackedUserContextData: ', solidityPackedUserContextData);
+  const inputBytes = Buffer.from(solidityPackedUserContextData.slice(2), 'hex');
+  console.log('inputBytes: ', inputBytes);
   const sha256Hash = ethers.sha256(inputBytes);
-  console.log("sha256Hash: ", sha256Hash);
+  console.log('sha256Hash: ', sha256Hash);
   const ripemdHash = ethers.ripemd160(sha256Hash);
-  console.log("ripemdHash: ", ripemdHash);
-  console.log("ripemdHash BigInt: ", BigInt(ripemdHash));
+  console.log('ripemdHash: ', ripemdHash);
+  console.log('ripemdHash BigInt: ', BigInt(ripemdHash));
   return BigInt(ripemdHash);
 }
 
-
-export function getSolidityPackedUserContextData(destChainID: number, userID: string, userDefinedData: string): string {
+export function getSolidityPackedUserContextData(
+  destChainID: number,
+  userID: string,
+  userDefinedData: string
+): string {
   const userIdHex = userID.replace(/-/g, '');
   return ethers.solidityPacked(
-    [ "bytes32", "bytes32", "bytes"],
-    [ethers.zeroPadValue(ethers.toBeHex(destChainID), 32), ethers.zeroPadValue("0x" + userIdHex, 32), ethers.toUtf8Bytes(userDefinedData)],
+    ['bytes32', 'bytes32', 'bytes'],
+    [
+      ethers.zeroPadValue(ethers.toBeHex(destChainID), 32),
+      ethers.zeroPadValue('0x' + userIdHex, 32),
+      ethers.toUtf8Bytes(userDefinedData),
+    ]
   );
 }
