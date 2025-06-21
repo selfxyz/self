@@ -11,7 +11,7 @@ export interface IConfigStorage {
    * Set the verification config for a given id
    * @param id - An identifiier associated with the verification config
    * @param config - The verification config
-   * @returns True if the config was set successfully, false otherwise
+   * @returns True if a config was replaced, false if a new config was set
    */
   setConfig(id: string, config: VerificationConfig): Promise<boolean>;
   /**

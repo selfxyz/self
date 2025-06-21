@@ -15,6 +15,21 @@ export type VerificationConfig = {
   ofacEnabled: [boolean, boolean, boolean];
 };
 
+export type VerificationResult = {
+  attestationId: AttestationId;
+  isValidDetails: {
+    isValid: boolean;
+    isOlderThanValid: boolean;
+    isOfacValid: boolean;
+  };
+  forbiddenCountriesList: string[];
+  discloseOutput: GenericDiscloseOutput;
+  userData: {
+    userIdentifier: string;
+    userDefinedData: string;
+  };
+}
+
 export type GenericDiscloseOutput = {
   nullifier: string;
   forbiddenCountriesListPacked: string[];

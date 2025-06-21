@@ -7,7 +7,8 @@ export enum ConfigMismatch {
   InvalidForbiddenCountriesList = 'InvalidForbiddenCountriesList',
   InvalidMinimumAge = 'InvalidMinimumAge',
   InvalidTimestamp = 'InvalidTimestamp',
-  InvalidOfac = 'InvalidOfac'
+  InvalidOfac = 'InvalidOfac',
+  ConfigNotFound = 'ConfigNotFound'
 }
 
 export class ConfigMismatchError extends Error {

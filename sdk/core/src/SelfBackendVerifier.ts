@@ -90,7 +90,12 @@ export class SelfBackendVerifier {
     const userIdentifier = castToUserIdentifier(BigInt('0x' + userContextData.slice(64, 128)), this.userIdentifierType);
     const userDefinedData = userContextData.slice(128);
     const configId = await this.configStorage.getActionId(userIdentifier, userDefinedData);
-    const verificationConfig = await this.configStorage.getConfig(configId);
+    let verificationConfig;
+    try {
+      verificationConfig = await this.configStorage.getConfig(configId);
+    } catch (error) {
+      issues.push({ type: ConfigMismatch.ConfigNotFound, message: 'Config not found' });
+    }
 
     //check if forbidden countries list matches
     let forbiddenCountriesList: string[] = [0, 1, 2, 3].map((x) => publicSignals[discloseIndices[attestationId].forbiddenCountriesListPackedIndex + x]);
@@ -153,19 +158,29 @@ export class SelfBackendVerifier {
       throw new Error('Verifier contract not found');
     }
 
-    //TODO: put in try catch
-    const isValid = await verifierContract.verifyProof(proof.a, [
+    let isValid = false;
+    try {
+      isValid = await verifierContract.verifyProof(proof.a, [
       [proof.b[0][1], proof.b[0][0]],
       [proof.b[1][1], proof.b[1][0]],
     ], proof.c, publicSignals);
+    } catch (error) {
+      isValid = false;
+    }
 
     return {
-      isValid,
+      attestationId,
+      isValidDetails: {
+        isValid,
+        isOlderThanValid: verificationConfig.olderThanEnabled ? verificationConfig.olderThan <= genericDiscloseOutput.olderThan : true,
+        isOfacValid: verificationConfig.ofacEnabled.every((enabled: boolean, index: number) => enabled ? genericDiscloseOutput.ofac[index] : true),
+      },
+      forbiddenCountriesList,
       discloseOutput: genericDiscloseOutput,
-      userIdentifier,
-      userDefinedData,
-      isOlderThanValid: verificationConfig.olderThanEnabled ? verificationConfig.olderThan <= genericDiscloseOutput.olderThan : true,
-      isOfacValid: verificationConfig.ofacEnabled.every((enabled, index) => enabled ? genericDiscloseOutput.ofac[index] : true),
+      userData: {
+        userIdentifier,
+        userDefinedData,
+      },
     }
   }
 }

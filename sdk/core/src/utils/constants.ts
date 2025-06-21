@@ -73,3 +73,6 @@ export const revealedDataIndices: Record<AttestationId, Record<`${RevealedDataFi
     ofacEnd: 93,
   }
 } as const;
+
+const allIdEntries = Object.keys(discloseIndices).map((id) => [Number(id), true] as [number, boolean]);
+export const AllIds = new Map<number, boolean>(allIdEntries);
