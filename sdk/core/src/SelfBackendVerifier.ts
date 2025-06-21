@@ -3,7 +3,7 @@ import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import { IdentityVerificationHubImpl, IdentityVerificationHubImpl__factory, Registry__factory, Verifier, Verifier__factory } from './typechain-types/index.js';
 import { discloseIndices } from './utils/constants.js';
 import { formatRevealedDataPacked } from './utils/id.js';
-import { AttestationId, VcAndDiscloseProof } from './types/types.js';
+import { AttestationId, VcAndDiscloseProof, VerificationConfig } from './types/types.js';
 import { Country3LetterCode } from '@selfxyz/common';
 import { calculateUserIdentifierHash } from './utils/hash.js';
 import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
@@ -90,7 +90,7 @@ export class SelfBackendVerifier {
     const userIdentifier = castToUserIdentifier(BigInt('0x' + userContextData.slice(64, 128)), this.userIdentifierType);
     const userDefinedData = userContextData.slice(128);
     const configId = await this.configStorage.getActionId(userIdentifier, userDefinedData);
-    let verificationConfig;
+    let verificationConfig: VerificationConfig;
     try {
       verificationConfig = await this.configStorage.getConfig(configId);
     } catch (error) {
@@ -98,8 +98,8 @@ export class SelfBackendVerifier {
     }
 
     //check if forbidden countries list matches
-    let forbiddenCountriesList: string[] = [0, 1, 2, 3].map((x) => publicSignals[discloseIndices[attestationId].forbiddenCountriesListPackedIndex + x]);
-    const forbiddenCountriesListVerificationConfig = unpackForbiddenCountriesList(verificationConfig.forbiddenCountriesListPacked);
+    const forbiddenCountriesList: string[] = unpackForbiddenCountriesList([0, 1, 2, 3].map((x) => publicSignals[discloseIndices[attestationId].forbiddenCountriesListPackedIndex + x]));
+    const forbiddenCountriesListVerificationConfig = verificationConfig.forbiddenCountriesList;
 
     const isForbiddenCountryListValid = forbiddenCountriesListVerificationConfig.every(country => forbiddenCountriesList.includes(country as Country3LetterCode));
     if (!isForbiddenCountryListValid) {
@@ -108,7 +108,7 @@ export class SelfBackendVerifier {
 
     const genericDiscloseOutput = formatRevealedDataPacked(attestationId, publicSignals);
     //check if minimum age matches
-    const isMinimumAgeValid = verificationConfig.olderThanEnabled ? verificationConfig.olderThan === genericDiscloseOutput.olderThan || genericDiscloseOutput.olderThan === '00' : true;
+    const isMinimumAgeValid = verificationConfig.olderThan !== undefined ? verificationConfig.olderThan === Number.parseInt(genericDiscloseOutput.olderThan, 10) || genericDiscloseOutput.olderThan === '00' : true;
     if (!isMinimumAgeValid) {
       issues.push({ type: ConfigMismatch.InvalidMinimumAge, message: 'Minimum age in config does not match with the one in the circuit' });
     }
@@ -120,26 +120,26 @@ export class SelfBackendVerifier {
     const currentTimestamp = new Date();
 
     //check if timestamp is in the future
-    const oneDayAgo = new Date(currentTimestamp.getTime() + (24 * 60 * 60 * 1000));
-    if (circuitTimestamp > oneDayAgo) {
+    const oneDayAhead = new Date(currentTimestamp.getTime() + (24 * 60 * 60 * 1000));
+    if (circuitTimestamp > oneDayAhead) {
       issues.push({ type: ConfigMismatch.InvalidTimestamp, message: 'Circuit timestamp is in the future' });
     }
 
     //check if timestamp is 1 day in the past
-    currentTimestamp.setTime(currentTimestamp.getTime() - (24 * 60 * 60 * 1000));
-    if (circuitTimestamp < currentTimestamp) {
+    const oneDayAgo = new Date(currentTimestamp.getTime() - (24 * 60 * 60 * 1000));
+    if (circuitTimestamp < oneDayAgo) {
       issues.push({ type: ConfigMismatch.InvalidTimestamp, message: 'Circuit timestamp is too old' });
     }
 
-    if (!verificationConfig.ofacEnabled[0] && genericDiscloseOutput.ofac[0]) {
+    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[0]) {
       issues.push({ type: ConfigMismatch.InvalidOfac, message: 'Passport number OFAC check is not allowed' });
     }
 
-    if (!verificationConfig.ofacEnabled[1] && genericDiscloseOutput.ofac[1]) {
+    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[1]) {
       issues.push({ type: ConfigMismatch.InvalidOfac, message: 'Name and DOB OFAC check is not allowed' });
     }
 
-    if (!verificationConfig.ofacEnabled[2] && genericDiscloseOutput.ofac[2]) {
+    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[2]) {
       issues.push({ type: ConfigMismatch.InvalidOfac, message: 'Name and YOB OFAC check is not allowed' });
     }
 
@@ -172,8 +172,8 @@ export class SelfBackendVerifier {
       attestationId,
       isValidDetails: {
         isValid,
-        isOlderThanValid: verificationConfig.olderThanEnabled ? verificationConfig.olderThan <= genericDiscloseOutput.olderThan : true,
-        isOfacValid: verificationConfig.ofacEnabled.every((enabled: boolean, index: number) => enabled ? genericDiscloseOutput.ofac[index] : true),
+        isOlderThanValid: verificationConfig.olderThan !== undefined ? verificationConfig.olderThan <= Number.parseInt(genericDiscloseOutput.olderThan, 10) : true,
+        isOfacValid: verificationConfig.ofac !== undefined && verificationConfig.ofac ? genericDiscloseOutput.ofac.every((enabled: boolean, index: number) => enabled ? genericDiscloseOutput.ofac[index] : true) : true,
       },
       forbiddenCountriesList,
       discloseOutput: genericDiscloseOutput,

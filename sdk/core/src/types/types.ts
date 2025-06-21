@@ -1,3 +1,4 @@
+import { Country3LetterCode } from '@selfxyz/common';
 import type { BigNumberish } from 'ethers';
 import { discloseIndices } from 'src/utils/constants.js';
 
@@ -8,11 +9,9 @@ export type VcAndDiscloseProof = {
 };
 
 export type VerificationConfig = {
-  olderThanEnabled: boolean;
-  olderThan: string;
-  forbiddenCountriesEnabled: boolean;
-  forbiddenCountriesListPacked: string[];
-  ofacEnabled: [boolean, boolean, boolean];
+  olderThan?: number;
+  forbiddenCountriesList?: Country3LetterCode[];
+  ofac?: boolean;
 };
 
 export type VerificationResult = {
