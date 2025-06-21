@@ -17,9 +17,8 @@ import {
   poseidon16,
 } from 'poseidon-lite';
 import { sha224, sha256 } from 'js-sha256';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const sha1 = require('js-sha1');
+import * as sha1Module from 'js-sha1';
+const sha1 = (sha1Module as any).default || (sha1Module as any);
 import { sha384, sha512 } from 'js-sha512';
 import { hexToSignedBytes, packBytesArray } from './bytes.js';
 import * as forge from 'node-forge';
@@ -75,7 +74,7 @@ export function hash(
 
   switch (hashFunction) {
     case 'sha1':
-      hashResult = sha1.create().update(new Uint8Array(unsignedBytesArray).buffer).hex();
+      hashResult = sha1(unsignedBytesArray);
       break;
     case 'sha224':
       hashResult = sha224(unsignedBytesArray);
@@ -155,10 +154,18 @@ export function packBytesAndPoseidon(unpacked: number[]) {
 }
 
 export function calculateUserIdentifierHash(destChainID: number, userID: string, userDefinedData: string): BigInt {
+  console.log("destChainID: ", destChainID);
+  console.log("userID: ", userID);
+  console.log("userDefinedData: ", userDefinedData);
   const solidityPackedUserContextData = getSolidityPackedUserContextData(destChainID, userID, userDefinedData);
+  console.log("solidityPackedUserContextData: ", solidityPackedUserContextData);
   const inputBytes = Buffer.from(solidityPackedUserContextData.slice(2), "hex");
+  console.log("inputBytes: ", inputBytes);
   const sha256Hash = ethers.sha256(inputBytes);
+  console.log("sha256Hash: ", sha256Hash);
   const ripemdHash = ethers.ripemd160(sha256Hash);
+  console.log("ripemdHash: ", ripemdHash);
+  console.log("ripemdHash BigInt: ", BigInt(ripemdHash));
   return BigInt(ripemdHash);
 }
 
