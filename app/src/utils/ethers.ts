@@ -10,7 +10,6 @@ ethers.computeHmac.register((algo, key, data) => {
   return crypto.createHmac(algo, key).update(data).digest();
 });
 
-// @ts-expect-error
 ethers.pbkdf2.register((passwd, salt, iter, keylen, algo) => {
   return crypto.pbkdf2Sync(passwd, salt, iter, keylen, algo);
 });
