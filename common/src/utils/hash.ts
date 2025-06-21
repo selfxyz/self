@@ -17,8 +17,8 @@ import {
   poseidon16,
 } from 'poseidon-lite';
 import { sha224, sha256 } from 'js-sha256';
-import * as sha1Module from 'js-sha1';
-const sha1 = (sha1Module as any).default || (sha1Module as any);
+// @ts-ignore - ESLint incorrectly flags this as needing default import, but TypeScript definitions use named export
+import { sha1 } from 'js-sha1';
 import { sha384, sha512 } from 'js-sha512';
 import { hexToSignedBytes, packBytesArray } from './bytes.js';
 import * as forge from 'node-forge';
