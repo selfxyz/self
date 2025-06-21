@@ -69,7 +69,6 @@ export function generateTEEInputsDisclose(
     userId,
     userDefinedData,
   );
-  const userIdentifierHashBigInt = BigInt(userIdentifierHash);
   const scope_hash = hashEndpointWithScope(endpoint, scope);
   const document: DocumentCategory = passportData.documentCategory;
 
@@ -105,7 +104,7 @@ export function generateTEEInputsDisclose(
     document === 'passport' ? nameAndYobSMT : nameAndYobSMTID,
     selector_ofac,
     disclosures.excludedCountries ?? [],
-    userIdentifierHashBigInt,
+    userIdentifierHash.toString(),
   );
   return {
     inputs,
