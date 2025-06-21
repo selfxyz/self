@@ -1,4 +1,11 @@
-import { DocumentCategory, PassportData , getSolidityPackedUserContextData, EndpointType, SelfApp, getCircuitNameFromPassportData } from '@selfxyz/common';
+import {
+  DocumentCategory,
+  EndpointType,
+  getCircuitNameFromPassportData,
+  getSolidityPackedUserContextData,
+  PassportData,
+  SelfApp,
+} from '@selfxyz/common';
 import forge from 'node-forge';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
@@ -832,7 +839,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);
       }
-      const userDefinedData = selfApp?.userDefinedData ? getSolidityPackedUserContextData(selfApp.chainID, selfApp.userId, selfApp.userDefinedData).slice(2) : "";
+      const userDefinedData = selfApp?.userDefinedData
+        ? getSolidityPackedUserContextData(
+            selfApp.chainID,
+            selfApp.userId,
+            selfApp.userDefinedData,
+          ).slice(2)
+        : '';
       const payload = getPayload(
         inputs,
         circuitTypeWithDocumentExtension as
