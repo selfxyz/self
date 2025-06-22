@@ -1,8 +1,8 @@
- // // SPDX-License-Identifier: MIT
-// pragma solidity 0.8.28;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.28;
 
-// import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-// import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
@@ -29,8 +29,8 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
     // Storage Variables
     // ====================================================
 
-//     /// @notice USDC token contract
-//     IERC20 public immutable usdc;
+    /// @notice USDC token contract
+    IERC20 public immutable usdc;
 
     /// @notice Default: 50 dollar (6 decimals for USDC)
     uint256 public claimableAmount = 50e6;
@@ -41,27 +41,27 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
     /// @notice Bonus multiplier for E-Passport card users (in basis points)
     uint256 public passportBonusMultiplier = 100; // 100% = 50% bonus
 
-//     /// @notice Default: 1 day window around birthday
-//     uint256 public claimableWindow = 1 days;
+    /// @notice Default: 1 day window around birthday
+    uint256 public claimableWindow = 1 days;
 
-//     /// @notice Tracks users who have claimed to prevent double claims
-//     mapping(uint256 nullifier => bool hasClaimed) public hasClaimed;
+    /// @notice Tracks users who have claimed to prevent double claims
+    mapping(uint256 nullifier => bool hasClaimed) public hasClaimed;
 
-//     // ====================================================
-//     // Events
-//     // ====================================================
+    // ====================================================
+    // Events
+    // ====================================================
 
     event USDCClaimed(address indexed claimer, uint256 amount, bytes32 attestationId);
     event ClaimableAmountUpdated(uint256 oldAmount, uint256 newAmount);
     event ClaimableWindowUpdated(uint256 oldWindow, uint256 newWindow);
     event EuidBonusMultiplierUpdated(uint256 oldMultiplier, uint256 newMultiplier);
 
-//     // ====================================================
-//     // Errors
-//     // ====================================================
+    // ====================================================
+    // Errors
+    // ====================================================
 
-//     error NotWithinBirthdayWindow();
-//     error AlreadyClaimed();
+    error NotWithinBirthdayWindow();
+    error AlreadyClaimed();
 
     /**
      * @notice Initializes the HappyBirthday V2 contract
@@ -77,9 +77,9 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
         usdc = IERC20(token);
     }
 
-//     // ====================================================
-//     // External/Public Functions
-//     // ====================================================
+    // ====================================================
+    // External/Public Functions
+    // ====================================================
 
     /**
      * @notice Sets the claimable USDC amount
@@ -91,15 +91,15 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
         emit ClaimableAmountUpdated(oldAmount, newAmount);
     }
 
-//     /**
-//      * @notice Sets the claimable window around birthdays
-//      * @param newWindow The new claimable window in seconds
-//      */
-//     function setClaimableWindow(uint256 newWindow) external onlyOwner {
-//         uint256 oldWindow = claimableWindow;
-//         claimableWindow = newWindow;
-//         emit ClaimableWindowUpdated(oldWindow, newWindow);
-//     }
+    /**
+     * @notice Sets the claimable window around birthdays
+     * @param newWindow The new claimable window in seconds
+     */
+    function setClaimableWindow(uint256 newWindow) external onlyOwner {
+        uint256 oldWindow = claimableWindow;
+        claimableWindow = newWindow;
+        emit ClaimableWindowUpdated(oldWindow, newWindow);
+    }
 
     /**
      * @notice Sets the EUID bonus multiplier for EUID card users
@@ -120,9 +120,9 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
         usdc.safeTransfer(to, amount);
     }
 
-//     // ====================================================
-//     // Override Functions from SelfVerificationRoot
-//     // ====================================================
+    // ====================================================
+    // Override Functions from SelfVerificationRoot
+    // ====================================================
 
     /**
      * @notice Hook called after successful verification
@@ -163,9 +163,9 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
         }
     }
 
-//     // ====================================================
-//     // Internal Functions
-//     // ====================================================
+    // ====================================================
+    // Internal Functions
+    // ====================================================
 
     /**
      * @notice Checks if the current date is within the user's birthday window
@@ -186,15 +186,15 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
         string memory dobInThisYear = string(abi.encodePacked("25", month, day));
         uint256 dobInThisYearTimestamp = Formatter.dateToUnixTimestamp(dobInThisYear);
 
-//         uint256 currentTime = block.timestamp;
-//         uint256 timeDifference;
+        uint256 currentTime = block.timestamp;
+        uint256 timeDifference;
 
-//         if (currentTime > dobInThisYearTimestamp) {
-//             timeDifference = currentTime - dobInThisYearTimestamp;
-//         } else {
-//             timeDifference = dobInThisYearTimestamp - currentTime;
-//         }
+        if (currentTime > dobInThisYearTimestamp) {
+            timeDifference = currentTime - dobInThisYearTimestamp;
+        } else {
+            timeDifference = dobInThisYearTimestamp - currentTime;
+        }
 
-//         return timeDifference <= claimableWindow;
-//     }
-// }
+        return timeDifference <= claimableWindow;
+    }
+}
