@@ -4,7 +4,6 @@
 import './src/utils/ethers';
 
 import { config } from '@tamagui/config/v2-native';
-import { ToastProvider } from '@tamagui/toast';
 import React from 'react';
 import { AppRegistry, LogBox } from 'react-native';
 import { createTamagui, TamaguiProvider } from 'tamagui';
@@ -22,9 +21,7 @@ LogBox.ignoreLogs([
 
 const Root = () => (
   <TamaguiProvider config={tamaguiConfig}>
-    <ToastProvider swipeDirection="up">
-      <App />
-    </ToastProvider>
+    <App />
   </TamaguiProvider>
 );
 

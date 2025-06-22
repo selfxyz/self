@@ -42,7 +42,6 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
-
     snapshotId = await ethers.provider.send("evm_snapshot", []);
 
     // Generate mock ID card data

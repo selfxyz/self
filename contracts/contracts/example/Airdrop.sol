@@ -5,34 +5,40 @@
 // import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 // import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-// import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
+import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
+import {CircuitAttributeHandlerV2} from "../libraries/CircuitAttributeHandlerV2.sol";
 
 // import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 
-// /**
-//  * @title Airdrop (Experimental)
-//  * @notice This contract manages an airdrop campaign by verifying user registrations with zero‐knowledge proofs
-//  *         and distributing ERC20 tokens. It is provided for testing and demonstration purposes only.
-//  *         **WARNING:** This contract has not been audited and is NOT intended for production use.
-//  * @dev Inherits from SelfVerificationRoot for registration logic and Ownable for administrative control.
-//  */
-// contract Airdrop is SelfVerificationRoot, Ownable {
-//     using SafeERC20 for IERC20;
+/**
+ * @title Airdrop V2 (Experimental)
+ * @notice This contract manages an airdrop campaign by verifying user registrations with zero‐knowledge proofs
+ *         supporting both E-Passport and EU ID Card attestations, and distributing ERC20 tokens.
+ *         It is provided for testing and demonstration purposes only.
+ *         **WARNING:** This contract has not been audited and is NOT intended for production use.
+ * @dev Inherits from SelfVerificationRoot V2 for registration logic and Ownable for administrative control.
+ */
+contract Airdrop is SelfVerificationRoot, Ownable {
+    using SafeERC20 for IERC20;
 
 //     // ====================================================
 //     // Storage Variables
 //     // ====================================================
 
-//     /// @notice ERC20 token to be airdropped.
-//     IERC20 public immutable token;
-//     /// @notice Merkle root used to validate airdrop claims.
-//     bytes32 public merkleRoot;
-//     /// @notice Tracks addresses that have claimed tokens.
-//     mapping(address => bool) public claimed;
-//     /// @notice Indicates whether the registration phase is active.
-//     bool public isRegistrationOpen;
-//     /// @notice Indicates whether the claim phase is active.
-//     bool public isClaimOpen;
+    /// @notice ERC20 token to be airdropped.
+    IERC20 public immutable token;
+
+    /// @notice Merkle root used to validate airdrop claims.
+    bytes32 public merkleRoot;
+
+    /// @notice Tracks addresses that have claimed tokens.
+    mapping(address => bool) public claimed;
+
+    /// @notice Indicates whether the registration phase is active.
+    bool public isRegistrationOpen;
+
+    /// @notice Indicates whether the claim phase is active.
+    bool public isClaimOpen;
 
 //     /// @notice Maps nullifiers to user identifiers for registration tracking
 //     mapping(uint256 nullifier => uint256 userIdentifier) internal _nullifierToUserIdentifier;
@@ -44,42 +50,54 @@
 //     // Errors
 //     // ====================================================
 
-//     /// @notice Reverts when an invalid Merkle proof is provided.
-//     error InvalidProof();
-//     /// @notice Reverts when a user attempts to claim tokens more than once.
-//     error AlreadyClaimed();
-//     /// @notice Reverts when an unregistered address attempts to claim tokens.
-//     error NotRegistered(address nonRegisteredAddress);
-//     /// @notice Reverts when registration is attempted while the registration phase is closed.
-//     error RegistrationNotOpen();
-//     /// @notice Reverts when a claim attempt is made while registration is still open.
-//     error RegistrationNotClosed();
-//     /// @notice Reverts when a claim is attempted while claiming is not enabled.
-//     error ClaimNotOpen();
-//     /// @notice Reverts when an invalid user identifier is provided.
-//     error InvalidUserIdentifier();
-//     /// @notice Reverts when a user identifier has already been registered
-//     error UserIdentifierAlreadyRegistered();
-//     /// @notice Reverts when a nullifier has already been registered
-//     error RegisteredNullifier();
+    /// @notice Reverts when an invalid Merkle proof is provided.
+    error InvalidProof();
+
+    /// @notice Reverts when a user attempts to claim tokens more than once.
+    error AlreadyClaimed();
+
+    /// @notice Reverts when an unregistered address attempts to claim tokens.
+    error NotRegistered(address nonRegisteredAddress);
+
+    /// @notice Reverts when registration is attempted while the registration phase is closed.
+    error RegistrationNotOpen();
+
+    /// @notice Reverts when a claim attempt is made while registration is still open.
+    error RegistrationNotClosed();
+
+    /// @notice Reverts when a claim is attempted while claiming is not enabled.
+    error ClaimNotOpen();
+
+    /// @notice Reverts when an invalid user identifier is provided.
+    error InvalidUserIdentifier();
+
+    /// @notice Reverts when a user identifier has already been registered
+    error UserIdentifierAlreadyRegistered();
+
+    /// @notice Reverts when a nullifier has already been registered
+    error RegisteredNullifier();
 
 //     // ====================================================
 //     // Events
 //     // ====================================================
 
-//     /// @notice Emitted when a user successfully claims tokens.
-//     /// @param index The index of the claim in the Merkle tree.
-//     /// @param account The address that claimed tokens.
-//     /// @param amount The amount of tokens claimed.
-//     event Claimed(uint256 index, address account, uint256 amount);
-//     /// @notice Emitted when the registration phase is opened.
-//     event RegistrationOpen();
-//     /// @notice Emitted when the registration phase is closed.
-//     event RegistrationClose();
-//     /// @notice Emitted when the claim phase is opened.
-//     event ClaimOpen();
-//     /// @notice Emitted when the claim phase is closed.
-//     event ClaimClose();
+    /// @notice Emitted when a user successfully claims tokens.
+    /// @param index The index of the claim in the Merkle tree.
+    /// @param account The address that claimed tokens.
+    /// @param amount The amount of tokens claimed.
+    event Claimed(uint256 index, address account, uint256 amount);
+
+    /// @notice Emitted when the registration phase is opened.
+    event RegistrationOpen();
+
+    /// @notice Emitted when the registration phase is closed.
+    event RegistrationClose();
+
+    /// @notice Emitted when the claim phase is opened.
+    event ClaimOpen();
+
+    /// @notice Emitted when the claim phase is closed.
+    event ClaimClose();
 
 //     /// @notice Emitted when a user identifier is registered.
 //     event UserIdentifierRegistered(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
@@ -91,28 +109,21 @@
 //     // Constructor
 //     // ====================================================
 
-//     /**
-//      * @notice Constructor for the experimental Airdrop contract.
-//      * @dev Initializes the airdrop parameters, zero-knowledge verification configuration,
-//      *      and sets the ERC20 token to be distributed.
-//      * @param identityVerificationHubAddress The address of the Identity Verification Hub.
-//      * @param scopeValue The expected proof scope for user registration.
-//      * @param contractVersion The contract version for validation.
-//      * @param attestationIds The expected attestation identifiers required in proofs.
-//      * @param tokenAddress The address of the ERC20 token for airdrop.
-//      */
-//     constructor(
-//         address identityVerificationHubAddress,
-//         uint256 scopeValue,
-//         uint8 contractVersion,
-//         bytes32[] memory attestationIds,
-//         address tokenAddress
-//     )
-//         SelfVerificationRoot(identityVerificationHubAddress, scopeValue, contractVersion, attestationIds)
-//         Ownable(_msgSender())
-//     {
-//         token = IERC20(tokenAddress);
-//     }
+    /**
+     * @notice Constructor for the experimental Airdrop V2 contract.
+     * @dev Initializes the airdrop parameters, zero-knowledge verification configuration,
+     *      and sets the ERC20 token to be distributed. Supports both E-Passport and EUID attestations.
+     * @param identityVerificationHubAddress The address of the Identity Verification Hub V2.
+     * @param scopeValue The expected proof scope for user registration.
+     * @param tokenAddress The address of the ERC20 token for airdrop.
+     */
+    constructor(
+        address identityVerificationHubAddress,
+        uint256 scopeValue,
+        address tokenAddress
+    ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue) Ownable(_msgSender()) {
+        token = IERC20(tokenAddress);
+    }
 
 //     // ====================================================
 //     // External/Public Functions
@@ -128,52 +139,23 @@
 //         emit MerkleRootUpdated(newMerkleRoot);
 //     }
 
-//     /**
-//      * @notice Updates the verification configuration for address registration.
-//      * @dev Only callable by the contract owner.
-//      * @param newVerificationConfig The new verification configuration.
-//      */
-//     function setVerificationConfig(
-//         ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
-//     ) external onlyOwner {
-//         _setVerificationConfig(newVerificationConfig);
-//     }
+    /**
+     * @notice Updates the scope used for verification.
+     * @dev Only callable by the contract owner.
+     * @param newScope The new scope to set.
+     */
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
+    }
 
-//     /**
-//      * @notice Updates the scope used for verification.
-//      * @dev Only callable by the contract owner.
-//      * @param newScope The new scope to set.
-//      */
-//     function setScope(uint256 newScope) external onlyOwner {
-//         _setScope(newScope);
-//     }
-
-//     /**
-//      * @notice Adds a new attestation ID to the allowed list.
-//      * @dev Only callable by the contract owner.
-//      * @param attestationId The attestation ID to add.
-//      */
-//     function addAttestationId(bytes32 attestationId) external onlyOwner {
-//         _addAttestationId(attestationId);
-//     }
-
-//     /**
-//      * @notice Removes an attestation ID from the allowed list.
-//      * @dev Only callable by the contract owner.
-//      * @param attestationId The attestation ID to remove.
-//      */
-//     function removeAttestationId(bytes32 attestationId) external onlyOwner {
-//         _removeAttestationId(attestationId);
-//     }
-
-//     /**
-//      * @notice Opens the registration phase for users.
-//      * @dev Only callable by the contract owner.
-//      */
-//     function openRegistration() external onlyOwner {
-//         isRegistrationOpen = true;
-//         emit RegistrationOpen();
-//     }
+    /**
+     * @notice Opens the registration phase for users.
+     * @dev Only callable by the contract owner.
+     */
+    function openRegistration() external onlyOwner {
+        isRegistrationOpen = true;
+        emit RegistrationOpen();
+    }
 
 //     /**
 //      * @notice Closes the registration phase.
@@ -210,31 +192,14 @@
 //         return _scope;
 //     }
 
-//     /**
-//      * @notice Checks if the specified attestation ID is allowed.
-//      * @param attestationId The attestation ID to check.
-//      * @return True if the attestation ID is allowed, false otherwise.
-//      */
-//     function isAttestationIdAllowed(bytes32 attestationId) external view returns (bool) {
-//         return _attestationIdToEnabled[attestationId];
-//     }
-
-//     /**
-//      * @notice Retrieves the current verification configuration.
-//      * @return The verification configuration used for registration.
-//      */
-//     function getVerificationConfig() external view returns (ISelfVerificationRoot.VerificationConfig memory) {
-//         return _getVerificationConfig();
-//     }
-
-//     /**
-//      * @notice Checks if a given address is registered.
-//      * @param registeredAddress The address to check.
-//      * @return True if the address is registered, false otherwise.
-//      */
-//     function isRegistered(address registeredAddress) external view returns (bool) {
-//         return _registeredUserIdentifiers[uint256(uint160(registeredAddress))];
-//     }
+    /**
+     * @notice Checks if a given address is registered.
+     * @param registeredAddress The address to check.
+     * @return True if the address is registered, false otherwise.
+     */
+    function isRegistered(address registeredAddress) external view returns (bool) {
+        return _registeredUserIdentifiers[uint256(uint160(registeredAddress))];
+    }
 
 //     /**
 //      * @notice Allows a registered user to claim their tokens.
@@ -273,47 +238,41 @@
 //     // Override Functions from SelfVerificationRoot
 //     // ====================================================
 
-//     /**
-//      * @notice Hook called after successful verification - handles user registration
-//      * @dev Validates registration conditions and registers the user
-//      * @param userIdentifier The user identifier from the proof
-//      * @param nullifier The nullifier from the proof
-//      */
-//     function onBasicVerificationSuccess(
-//         bytes32 /* attestationId */,
-//         uint256 /* scope */,
-//         uint256 userIdentifier,
-//         uint256 nullifier,
-//         uint256 /* identityCommitmentRoot */,
-//         uint256[] memory /* revealedDataPacked */,
-//         uint256[4] memory /* forbiddenCountriesListPacked */
-//     ) internal override {
-//         // Check if registration is open
-//         if (!isRegistrationOpen) {
-//             revert RegistrationNotOpen();
-//         }
+    /**
+     * @notice Hook called after successful verification - handles user registration
+     * @dev Validates registration conditions and registers the user for both E-Passport and EUID attestations
+     * @param output The verification output containing user data
+     */
+    function customVerificationHook(
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
+        bytes memory /* userData */
+    ) internal override {
+        // Check if registration is open
+        if (!isRegistrationOpen) {
+            revert RegistrationNotOpen();
+        }
 
-//         // Check if nullifier has already been registered
-//         if (_nullifierToUserIdentifier[nullifier] != 0) {
-//             revert RegisteredNullifier();
-//         }
+        // Check if nullifier has already been registered
+        if (_nullifierToUserIdentifier[output.nullifier] != 0) {
+            revert RegisteredNullifier();
+        }
 
-//         // Check if user identifier is valid
-//         if (userIdentifier == 0) {
-//             revert InvalidUserIdentifier();
-//         }
+        // Check if user identifier is valid
+        if (output.userIdentifier == 0) {
+            revert InvalidUserIdentifier();
+        }
 
-//         // Check if user identifier has already been registered
-//         if (_registeredUserIdentifiers[userIdentifier]) {
-//             revert UserIdentifierAlreadyRegistered();
-//         }
+        // Check if user identifier has already been registered
+        if (_registeredUserIdentifiers[output.userIdentifier]) {
+            revert UserIdentifierAlreadyRegistered();
+        }
 
-//         _nullifierToUserIdentifier[nullifier] = userIdentifier;
-//         _registeredUserIdentifiers[userIdentifier] = true;
+        _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
+        _registeredUserIdentifiers[output.userIdentifier] = true;
 
-//         // Emit registration event
-//         emit UserIdentifierRegistered(userIdentifier, nullifier);
-//     }
+        // Emit registration event
+        emit UserIdentifierRegistered(output.userIdentifier, output.nullifier);
+    }
 
 //     // ====================================================
 //     // Internal Functions

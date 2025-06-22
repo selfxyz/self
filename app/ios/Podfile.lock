@@ -1383,7 +1383,7 @@ PODS:
     - Yoga
   - react-native-biometrics (3.0.1):
     - React-Core
-  - react-native-cloud-storage (2.2.2):
+  - react-native-cloud-storage (2.3.0):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.01.01.00)
@@ -1410,7 +1410,7 @@ PODS:
     - React-Core
   - react-native-nfc-manager (3.16.1):
     - React-Core
-  - react-native-quick-crypto (0.7.13):
+  - react-native-quick-crypto (0.7.14):
     - DoubleConversion
     - glog
     - OpenSSL-Universal
@@ -1680,7 +1680,7 @@ PODS:
     - React-logger (= 0.75.4)
     - React-perflogger (= 0.75.4)
     - React-utils (= 0.75.4)
-  - RNCAsyncStorage (2.1.2):
+  - RNCAsyncStorage (2.2.0):
     - React-Core
   - RNCClipboard (1.13.2):
     - React-Core
@@ -1694,7 +1694,7 @@ PODS:
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNGestureHandler (2.25.0):
+  - RNGestureHandler (2.24.0):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.01.01.00)
@@ -1808,7 +1808,7 @@ PODS:
     - Yoga
   - RNSVG (15.12.0):
     - React-Core
-  - segment-analytics-react-native (2.21.0):
+  - segment-analytics-react-native (2.21.1):
     - React-Core
     - sovran-react-native
   - Sentry (8.52.1):
@@ -2193,11 +2193,11 @@ SPEC CHECKSUMS:
   React-Mapbuffer: b2642edd9be75d51ead8cda109c986665eae09cf
   React-microtasksnativemodule: 7ebf131e1792a668004d2719a36da0ff8d19c43c
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
-  react-native-cloud-storage: 74d1f1456d714e0fca6d10c7ab6fe9a52ba203b6
+  react-native-cloud-storage: 47e6649373f429d2f244c904347e9fc4d9ef4ca8
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: a280ef94cd4871a471b052f0dc70381cf1223049
-  react-native-quick-crypto: 2d8136faf9e82a8f396a9b5ad85203ac20212739
+  react-native-quick-crypto: c42da02f2832626ec0b8d8465f2f9b3889a317f6
   react-native-safe-area-context: dde2052b903c11d677c320b599c3244021c34ce8
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   React-nativeconfig: 31072ab0146e643594f6959c7f970a04b6c9ddd0
@@ -2225,12 +2225,12 @@ SPEC CHECKSUMS:
   React-utils: 7198bd077f07ce8f9263c05bf610da6e251058ad
   ReactCodegen: fbd3d6af21ba08f12ccd0f542393393d21134ea5
   ReactCommon: b02a50498cb1071cd793044ddbd5d2b5f4db0a34
-  RNCAsyncStorage: b9f5f78da5d16a853fe3dc22e8268d932fc45a83
+  RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
   RNCClipboard: 4abb037e8fe3b98a952564c9e0474f91c492df6d
   RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
   RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
-  RNGestureHandler: ffb1f106c7a78377a2ae7568d51ccf87dc5c83c6
+  RNGestureHandler: 9c3877d98d4584891b69d16ebca855ac46507f4d
   RNGoogleSignin: 576a84dd0407b912e7a0adf07492de9feb79e5d9
   RNKeychain: 4990d9be2916c60f9ed4f8c484fcd7ced4828b86
   RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
@@ -2238,7 +2238,7 @@ SPEC CHECKSUMS:
   RNScreens: b7e8d29c6be98f478bc3fb4a97cc770aa9ba7509
   RNSentry: c462461c0a5aaba206265f1f3db01b237cd33239
   RNSVG: e3ad69848b6357587545e0a49628b1148acf082c
-  segment-analytics-react-native: dab2ae61d917629b8d040b572f9f7a11b2cc5940
+  segment-analytics-react-native: 5c3e8a4ee6d7532a011ed862d7c7d4fb5e5303e2
   Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
