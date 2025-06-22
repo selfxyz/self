@@ -22,12 +22,6 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     using SafeERC20 for IERC20;
 
     // ====================================================
-    // Constants
-    // ====================================================
-
-    uint256 public constant BASIS_POINTS = 10000;
-
-    // ====================================================
     // Storage Variables
     // ====================================================
 
