@@ -117,29 +117,27 @@ contract SelfIdentityERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @dev Validates user identifier and mints identity NFT with extracted attributes for both E-Passport and EUID
      * @param output The verification output containing user data
      */
-    function onVerificationSuccess(bytes memory output, bytes memory /* userData */) internal override {
-        ISelfVerificationRoot.GenericDiscloseOutputV2 memory discloseOutput = abi.decode(
-            output,
-            (ISelfVerificationRoot.GenericDiscloseOutputV2)
-        );
-
+    function customVerificationHook(
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
+        bytes memory /* userData */
+    ) internal override {
         // Check if user identifier is valid
-        if (discloseOutput.userIdentifier == 0) {
+        if (output.userIdentifier == 0) {
             revert InvalidUserIdentifier();
         }
 
         // Check if user identifier has already minted an NFT
-        if (_mintedUserIdentifiers[discloseOutput.userIdentifier]) {
+        if (_mintedUserIdentifiers[output.userIdentifier]) {
             revert UserIdentifierAlreadyMinted();
         }
 
         // Mint NFT
         uint256 tokenId = _tokenIdCounter++;
         _mint(msg.sender, tokenId);
-        _identityAttributes[tokenId] = discloseOutput;
-        _mintedUserIdentifiers[discloseOutput.userIdentifier] = true;
+        _identityAttributes[tokenId] = output;
+        _mintedUserIdentifiers[output.userIdentifier] = true;
 
-        emit IdentityNFTMinted(tokenId, msg.sender, discloseOutput.attestationId, discloseOutput);
+        emit IdentityNFTMinted(tokenId, msg.sender, output.attestationId, output);
     }
 
     // ====================================================

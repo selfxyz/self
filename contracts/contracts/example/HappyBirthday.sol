@@ -129,35 +129,35 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
      * @dev Checks user hasn't claimed, validates birthday window, and transfers USDC if eligible
      * @param output The verification output containing user data
      */
-    function onVerificationSuccess(bytes memory output, bytes memory /* userData */) internal override {
-        ISelfVerificationRoot.GenericDiscloseOutputV2 memory discloseOutput = abi.decode(
-            output,
-            (ISelfVerificationRoot.GenericDiscloseOutputV2)
-        );
-
+    function customVerificationHook(
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
+        bytes memory /* userData */
+    ) internal override {
         // Check if user has already claimed
-        if (hasClaimed[discloseOutput.nullifier]) {
+        if (hasClaimed[output.nullifier]) {
             revert AlreadyClaimed();
         }
 
         // Check if within birthday window using V2 attribute handler
-        if (_isWithinBirthdayWindow(discloseOutput.attestationId, discloseOutput.dateOfBirth)) {
+        if (_isWithinBirthdayWindow(output.attestationId, output.dateOfBirth)) {
             // Calculate final amount based on attestation type
             uint256 finalAmount = claimableAmount;
-            if (discloseOutput.attestationId == AttestationId.EU_ID_CARD) {
+
+            // Apply bonus multiplier for EUID card users
+            if (output.attestationId == AttestationId.EU_ID_CARD) {
                 finalAmount = (claimableAmount * euidBonusMultiplier) / BASIS_POINTS;
             }
 
             // Mark user as claimed
-            hasClaimed[discloseOutput.nullifier] = true;
+            hasClaimed[output.nullifier] = true;
 
-            address recipient = address(uint160(discloseOutput.userIdentifier));
+            address recipient = address(uint160(output.userIdentifier));
 
             // Transfer USDC to the user
             usdc.safeTransfer(recipient, finalAmount);
 
             // Emit success event
-            emit USDCClaimed(recipient, finalAmount, discloseOutput.attestationId);
+            emit USDCClaimed(recipient, finalAmount, output.attestationId);
         } else {
             revert NotWithinBirthdayWindow();
         }

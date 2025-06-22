@@ -243,41 +243,35 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @dev Validates registration conditions and registers the user for both E-Passport and EUID attestations
      * @param output The verification output containing user data
      */
-    function onVerificationSuccess(bytes memory output, bytes memory /* userData */) internal override {
-        ISelfVerificationRoot.GenericDiscloseOutputV2 memory discloseOutput = abi.decode(
-            output,
-            (ISelfVerificationRoot.GenericDiscloseOutputV2)
-        );
-
+    function customVerificationHook(
+        ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
+        bytes memory /* userData */
+    ) internal override {
         // Check if registration is open
         if (!isRegistrationOpen) {
             revert RegistrationNotOpen();
         }
 
         // Check if nullifier has already been registered
-        if (_nullifierToUserIdentifier[discloseOutput.nullifier] != 0) {
+        if (_nullifierToUserIdentifier[output.nullifier] != 0) {
             revert RegisteredNullifier();
         }
 
         // Check if user identifier is valid
-        if (discloseOutput.userIdentifier == 0) {
+        if (output.userIdentifier == 0) {
             revert InvalidUserIdentifier();
         }
 
         // Check if user identifier has already been registered
-        if (_registeredUserIdentifiers[discloseOutput.userIdentifier]) {
+        if (_registeredUserIdentifiers[output.userIdentifier]) {
             revert UserIdentifierAlreadyRegistered();
         }
 
-        _nullifierToUserIdentifier[discloseOutput.nullifier] = discloseOutput.userIdentifier;
-        _registeredUserIdentifiers[discloseOutput.userIdentifier] = true;
+        _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
+        _registeredUserIdentifiers[output.userIdentifier] = true;
 
-        // Emit registration event with attestation type
-        emit UserIdentifierRegistered(
-            discloseOutput.userIdentifier,
-            discloseOutput.nullifier,
-            discloseOutput.attestationId
-        );
+        // Emit registration event
+        emit UserIdentifierRegistered(output.userIdentifier, output.nullifier);
     }
 
     // ====================================================
