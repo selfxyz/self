@@ -97,7 +97,7 @@ export class SelfAppBuilder {
       logoBase64: '',
       disclosures: {},
       chainID: config.endpointType === 'staging_celo' ? 44787 : 42220,
-      version: config.userDefinedData ? 2 : 1,
+      version: config.version ?? 2,
       userDefinedData: '',
       ...config,
     } as SelfApp;
