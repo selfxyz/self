@@ -32,12 +32,10 @@ describe("Self Verification Flow V2", () => {
   let imt: any;
   let commitment: any;
   let nullifier: any;
-  let snapshotId2: string;
 
   let forbiddenCountriesList: Country3LetterCode[];
   let forbiddenCountriesListPacked: string[];
   let verificationConfigV2: any;
-  let configId: string;
 
   function calculateUserIdentifierHash(userContextData: string): string {
     const sha256Hash = createHash("sha256")
@@ -86,8 +84,6 @@ describe("Self Verification Flow V2", () => {
       ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
     };
 
-    await deployedActors.testSelfVerificationRoot.setVerificationConfigNoHub(verificationConfigV2);
-    snapshotId2 = await ethers.provider.send("evm_snapshot", []);
     await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
     const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
@@ -187,8 +183,9 @@ describe("Self Verification Flow V2", () => {
       expect(actualUserData).to.equal(expectedUserData);
     });
 
-    it.only("should fail verification with invalid configId", async () => {
-      await ethers.provider.send("evm_revert", [snapshotId2]);
+    it("should fail verification with invalid configId", async () => {
+      const tx = await deployedActors.testSelfVerificationRoot.setVerificationConfigNoHub(verificationConfigV2);
+      await tx.wait();
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
@@ -249,22 +246,6 @@ describe("Self Verification Flow V2", () => {
     });
 
     it("should fail verification with invalid scope", async () => {
-      const verificationConfigV2 = {
-        olderThanEnabled: true,
-        olderThan: "20",
-        forbiddenCountriesEnabled: true,
-        forbiddenCountriesListPacked: forbiddenCountriesListPacked as [
-          BigNumberish,
-          BigNumberish,
-          BigNumberish,
-          BigNumberish,
-        ],
-        ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
-      };
-
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
-
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
