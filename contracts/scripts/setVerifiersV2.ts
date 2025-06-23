@@ -26,7 +26,7 @@ console.log(
 
 // Debug logs for environment variables (redacted for security)
 console.log("CELO_RPC_URL configured:", !!process.env.CELO_ALFAJORES_RPC_URL);
-console.log("CELO_KEY configured:", !!process.env.PRIVATE_KEY);
+console.log("PRIVATE_KEY configured:", !!process.env.PRIVATE_KEY);
 
 try {
   const deployedAddresses = JSON.parse(

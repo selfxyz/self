@@ -2,25 +2,31 @@ import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
-import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/constants";
+import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common";
 
 dotenv.config();
 
 // Environment configuration
 const NETWORK = process.env.NETWORK || "localhost"; // Default to staging
 const RPC_URL_KEY = NETWORK === "celo" ? "CELO_RPC_URL" : "CELO_ALFAJORES_RPC_URL";
-const PRIVATE_KEY = process.env.CELO_KEY;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
 // Network to Chain ID mapping
 const NETWORK_TO_CHAIN_ID: Record<string, string> = {
   localhost: "31337",
+  hardhat: "31337",
+  alfajores: "44787",
   celoAlfajores: "44787",
   celo: "42220",
+  mainnet: "42220",
+  staging: "44787", // Default staging to alfajores
 };
 
 // Get chain ID from network name
 const getChainId = (network: string): string => {
-  return NETWORK_TO_CHAIN_ID[network] || NETWORK_TO_CHAIN_ID["staging"];
+  const chainId = NETWORK_TO_CHAIN_ID[network] || NETWORK_TO_CHAIN_ID["alfajores"];
+  console.log(`Network "${network}" mapped to Chain ID: ${chainId}`);
+  return chainId;
 };
 
 const CHAIN_ID = getChainId(NETWORK);
@@ -32,11 +38,13 @@ const AttestationId = {
   EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002",
 };
 
+const repo = CHAIN_ID === "42220" ? "prod" : "staging";
+
 // Dynamic paths based on chain ID
-const deployedAddressesPath = path.join(__dirname, `../ignition/deployments/chain-${CHAIN_ID}/deployed_addresses.json`);
+const deployedAddressesPath = path.join(__dirname, `../ignition/deployments/${repo}/deployed_addresses.json`);
 const contractAbiPath = path.join(
   __dirname,
-  `../ignition/deployments/chain-${CHAIN_ID}/artifacts/DeployHubV2#IdentityVerificationHubImplV2.json`,
+  `../ignition/deployments/${repo}/artifacts/DeployV2#IdentityVerificationHubImplV2.json`,
 );
 
 // Debug logs for paths and files
@@ -48,7 +56,7 @@ console.log("Contract ABI path:", contractAbiPath);
 
 // Debug logs for environment variables (redacted for security)
 console.log(`${RPC_URL_KEY} configured:`, !!process.env[RPC_URL_KEY]);
-console.log("CELO_KEY configured:", !!PRIVATE_KEY);
+console.log("PRIVATE_KEY configured:", !!PRIVATE_KEY);
 
 try {
   const deployedAddresses = JSON.parse(fs.readFileSync(deployedAddressesPath, "utf-8"));
@@ -87,12 +95,17 @@ try {
     const wallet = new ethers.Wallet(PRIVATE_KEY as string, provider);
     console.log("Wallet created");
 
-    // const hubAddress = deployedAddresses["DeployHub#IdentityVerificationHub"];
-    const hubAddress = "0xbaB9B3c376e84FEB4aFD9423e3aB278B47d34a0a"; // Update with your actual hub address
+    // Get hub address from deployment files (PROXY, not implementation)
+    const hubAddress = (getContractAddressByExactName("DeployV2#IdentityVerificationHub") ||          // ← PROXY
+                       getContractAddressByExactName("DeployHubV2#IdentityVerificationHub") ||
+                       getContractAddressByExactName("DeployHub#IdentityVerificationHub") ||
+                       getContractAddressByPartialName("IdentityVerificationHub")) as string;
+
     console.log("Hub address:", hubAddress);
 
     if (!hubAddress) {
-      throw new Error("Hub address not found in deployed_addresses.json");
+      console.error("Available contracts:", Object.keys(deployedAddresses));
+      throw new Error("Hub address not found in deployed_addresses.json. Available contracts listed above.");
     }
 
     const identityVerificationHub = new ethers.Contract(hubAddress, identityVerificationHubAbi, wallet);
@@ -158,69 +171,81 @@ try {
 
     // Batch update register circuit verifiers
     const registerVerifierKeys = Object.keys(RegisterVerifierId).filter((key) => isNaN(Number(key)));
-    const registerCircuitVerifierIds: number[] = [];
-    const registerCircuitVerifierAddresses: string[] = [];
 
-    for (const key of registerVerifierKeys) {
-      const verifierName = `Verifier_${key}`;
-      const verifierAddress = getContractAddressByPartialName(verifierName);
+    for (const attestationType of attestationTypes) {
+      const attestationId = getAttestationIdBytes32(attestationType);
+      const registerCircuitVerifierIds: number[] = [];
+      const registerCircuitVerifierAddresses: string[] = [];
 
-      if (!verifierAddress) {
-        console.log(`Skipping ${verifierName} because no deployed address was found.`);
-        continue;
+      for (const key of registerVerifierKeys) {
+        const verifierName = `Verifier_${key}`;
+        const verifierAddress = getContractAddressByPartialName(verifierName);
+
+        if (!verifierAddress) {
+          console.log(`Skipping ${verifierName} because no deployed address was found.`);
+          continue;
+        }
+
+        const verifierId = RegisterVerifierId[key as keyof typeof RegisterVerifierId];
+        registerCircuitVerifierIds.push(verifierId);
+        registerCircuitVerifierAddresses.push(verifierAddress as string);
       }
 
-      const verifierId = RegisterVerifierId[key as keyof typeof RegisterVerifierId];
-      registerCircuitVerifierIds.push(verifierId);
-      registerCircuitVerifierAddresses.push(verifierAddress as string);
-    }
+      if (registerCircuitVerifierIds.length > 0) {
+        console.log(`Batch updating register circuit verifiers for ${attestationType}`);
 
-    if (registerCircuitVerifierIds.length > 0) {
-      console.log("Batch updating register circuit verifiers");
-
-      try {
-        const tx = await identityVerificationHub.batchUpdateRegisterCircuitVerifiers(
-          registerCircuitVerifierIds,
-          registerCircuitVerifierAddresses,
-        );
-        const receipt = await tx.wait();
-        console.log(`Register circuit verifiers updated with tx: ${receipt.hash}`);
-      } catch (error) {
-        console.error("Error batch updating register circuit verifiers:", error);
+        try {
+          const attestationIds = Array(registerCircuitVerifierIds.length).fill(attestationId);
+          const tx = await identityVerificationHub.batchUpdateRegisterCircuitVerifiers(
+            attestationIds,
+            registerCircuitVerifierIds,
+            registerCircuitVerifierAddresses,
+          );
+          const receipt = await tx.wait();
+          console.log(`Register circuit verifiers for ${attestationType} updated with tx: ${receipt.hash}`);
+        } catch (error) {
+          console.error(`Error batch updating register circuit verifiers for ${attestationType}:`, error);
+        }
       }
     }
 
     // Batch update DSC circuit verifiers
     const dscKeys = Object.keys(DscVerifierId).filter((key) => isNaN(Number(key)));
-    const dscCircuitVerifierIds: number[] = [];
-    const dscCircuitVerifierAddresses: string[] = [];
 
-    for (const key of dscKeys) {
-      const verifierName = `Verifier_${key}`;
-      const verifierAddress = getContractAddressByPartialName(verifierName);
+    for (const attestationType of attestationTypes) {
+      const attestationId = getAttestationIdBytes32(attestationType);
+      const dscCircuitVerifierIds: number[] = [];
+      const dscCircuitVerifierAddresses: string[] = [];
 
-      if (!verifierAddress) {
-        console.log(`Skipping ${verifierName} because no deployed address was found.`);
-        continue;
+      for (const key of dscKeys) {
+        const verifierName = `Verifier_${key}`;
+        const verifierAddress = getContractAddressByPartialName(verifierName);
+
+        if (!verifierAddress) {
+          console.log(`Skipping ${verifierName} because no deployed address was found.`);
+          continue;
+        }
+
+        const verifierId = DscVerifierId[key as keyof typeof DscVerifierId];
+        dscCircuitVerifierIds.push(verifierId);
+        dscCircuitVerifierAddresses.push(verifierAddress as string);
       }
 
-      const verifierId = DscVerifierId[key as keyof typeof DscVerifierId];
-      dscCircuitVerifierIds.push(verifierId);
-      dscCircuitVerifierAddresses.push(verifierAddress as string);
-    }
+      if (dscCircuitVerifierIds.length > 0) {
+        console.log(`Batch updating DSC circuit verifiers for ${attestationType}`);
 
-    if (dscCircuitVerifierIds.length > 0) {
-      console.log("Batch updating DSC circuit verifiers");
-
-      try {
-        const tx = await identityVerificationHub.batchUpdateDscCircuitVerifiers(
-          dscCircuitVerifierIds,
-          dscCircuitVerifierAddresses,
-        );
-        const receipt = await tx.wait();
-        console.log(`DSC circuit verifiers updated with tx: ${receipt.hash}`);
-      } catch (error) {
-        console.error("Error batch updating DSC circuit verifiers:", error);
+        try {
+          const attestationIds = Array(dscCircuitVerifierIds.length).fill(attestationId);
+          const tx = await identityVerificationHub.batchUpdateDscCircuitVerifiers(
+            attestationIds,
+            dscCircuitVerifierIds,
+            dscCircuitVerifierAddresses,
+          );
+          const receipt = await tx.wait();
+          console.log(`DSC circuit verifiers for ${attestationType} updated with tx: ${receipt.hash}`);
+        } catch (error) {
+          console.error(`Error batch updating DSC circuit verifiers for ${attestationType}:`, error);
+        }
       }
     }
   }

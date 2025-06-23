@@ -11,16 +11,20 @@ artifacts
 ignition/deployed_addresses.json
 ignition/parameters.json
 
+# Ignore all deployment folders except important ones
 ignition/deployments/*
-!ignition/deployments/prod
-ignition/deployments/prod/*
-!ignition/deployments/prod/deployed_addresses.json
-!ignition/deployments/prod/artifacts
-ignition/deployments/prod/artifacts/*
-!ignition/deployments/prod/artifacts/*.json
-!ignition/deployments/prod/artifacts/**/*.json
-ignition/deployments/prod/artifacts/**/dbg.json
-ignition/deployments/prod/artifacts/dbg.json
+!ignition/deployments/prod/
+!ignition/deployments/staging/
+
+# For important environments, keep only essential files
+ignition/deployments/{prod,staging}/*
+!ignition/deployments/{prod,staging}/deployed_addresses.json
+!ignition/deployments/{prod,staging}/artifacts/
+
+# In artifacts, keep deployment files but exclude debug files
+ignition/deployments/{prod,staging}/artifacts/*
+!ignition/deployments/{prod,staging}/artifacts/**/*.json
+ignition/deployments/{prod,staging}/artifacts/**/*dbg.json
 
 #Local verifier
 contracts/verifiers/local/*
