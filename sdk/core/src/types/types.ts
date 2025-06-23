@@ -10,7 +10,7 @@ export type VcAndDiscloseProof = {
 
 export type VerificationConfig = {
   olderThan?: number;
-  forbiddenCountriesList?: Country3LetterCode[];
+  excludedCountries?: Country3LetterCode[];
   ofac?: boolean;
 };
 

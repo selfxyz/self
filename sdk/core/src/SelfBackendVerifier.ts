@@ -147,7 +147,7 @@ export class SelfBackendVerifier {
         (x) => publicSignals[discloseIndices[attestationId].forbiddenCountriesListPackedIndex + x]
       )
     );
-    const forbiddenCountriesListVerificationConfig = verificationConfig.forbiddenCountriesList;
+    const forbiddenCountriesListVerificationConfig = verificationConfig.excludedCountries;
 
     const isForbiddenCountryListValid = forbiddenCountriesListVerificationConfig.every((country) =>
       forbiddenCountriesList.includes(country as Country3LetterCode)
