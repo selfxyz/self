@@ -1,5 +1,4 @@
 export type UserIdType = 'hex' | 'uuid';
-
 /// UUID
 function hexToBigInt(hex: string): bigint {
   return BigInt(`0x${hex}`);

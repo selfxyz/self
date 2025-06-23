@@ -35,7 +35,7 @@ import {
 } from '../trees.js';
 import { PassportData } from '../types.js';
 import { formatCountriesList } from './formatInputs.js';
-import { castFromUUID, stringToAsciiBigIntArray } from './uuid.js';
+import { stringToAsciiBigIntArray } from './uuid.js';
 
 export function generateCircuitInputsDSC(
   passportData: PassportData,
@@ -245,7 +245,6 @@ export function generateCircuitInputsVCandDisclose(
       };
     }
   }
-
   // Build Final Input Object
   const baseInputs = {
     secret: formatInput(secret),
@@ -262,7 +261,7 @@ export function generateCircuitInputsVCandDisclose(
     scope: formatInput(scope),
     current_date: formatInput(getCurrentDateYYMMDD()),
     majority: formatInput(majority_ascii),
-    user_identifier: formatInput(castFromUUID(user_identifier)),
+    user_identifier: formatInput(user_identifier),
     selector_ofac: formatInput(selector_ofac),
     forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
   };

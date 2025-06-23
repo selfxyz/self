@@ -47,6 +47,11 @@ jest.mock('@segment/analytics-react-native', () => {
     reset: jest.fn(),
   };
 
+  // Mock flush policy classes
+  const MockFlushPolicy = class {
+    constructor() {}
+  };
+
   return {
     createClient: jest.fn(() => mockClient),
     EventPlugin: jest.fn(),
@@ -54,7 +59,10 @@ jest.mock('@segment/analytics-react-native', () => {
       ENRICHMENT: 'enrichment',
       DESTINATION: 'destination',
       BEFORE: 'before',
+      before: 'before',
     },
+    StartupFlushPolicy: MockFlushPolicy,
+    BackgroundFlushPolicy: MockFlushPolicy,
   };
 });
 

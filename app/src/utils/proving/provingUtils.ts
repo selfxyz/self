@@ -32,37 +32,49 @@ export function encryptAES256GCM(
   };
 }
 
-export type TEEPayloadDisclose = {
-  type: 'disclose';
-  endpointType: string;
-  endpoint: string;
-  onchain: boolean;
+type RegisterSuffixes = '' | '_id';
+type DscSuffixes = '' | '_id';
+type DiscloseSuffixes = '' | '_id';
+type ProofTypes = 'register' | 'dsc' | 'disclose';
+type RegisterProofType =
+  `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
+type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
+type DiscloseProofType =
+  `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
+
+export type TEEPayloadBase = {
+  endpointType: EndpointType;
   circuit: {
     name: string;
     inputs: string;
   };
 };
 
-export type TEEPayload = {
-  type: 'register' | 'dsc' | 'register_id' | 'dsc_id';
+export type TEEPayload = TEEPayloadBase & {
+  type: RegisterProofType | DscProofType;
   onchain: true;
-  endpointType: string;
-  circuit: {
-    name: string;
-    inputs: string;
-  };
+};
+
+export type TEEPayloadDisclose = TEEPayloadBase & {
+  type: DiscloseProofType;
+  onchain: boolean;
+  endpoint: string;
+  userDefinedData: string;
+  version: number;
 };
 
 export function getPayload(
   inputs: any,
-  circuitType: 'register' | 'dsc' | 'disclose' | 'register_id' | 'dsc_id',
+  circuitType: RegisterProofType | DscProofType | DiscloseProofType,
   circuitName: string,
   endpointType: EndpointType,
   endpoint: string,
+  version: number = 1,
+  userDefinedData: string = '',
 ) {
   if (circuitType === 'disclose') {
     const payload: TEEPayloadDisclose = {
-      type: 'disclose',
+      type: circuitName === 'vc_and_disclose' ? 'disclose' : 'disclose_id',
       endpointType: endpointType,
       endpoint: endpoint,
       onchain: endpointType === 'celo' ? true : false,
@@ -70,11 +82,13 @@ export function getPayload(
         name: circuitName,
         inputs: JSON.stringify(inputs),
       },
+      version,
+      userDefinedData,
     };
     return payload;
   } else {
     const payload: TEEPayload = {
-      type: circuitType as 'register' | 'dsc' | 'register_id' | 'dsc_id',
+      type: circuitType as RegisterProofType | DscProofType,
       onchain: true,
       endpointType: endpointType,
       circuit: {

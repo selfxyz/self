@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "0.0.19",
+  "version": "1.0.8",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -48,6 +48,7 @@
     "qrcode.react": "^4.1.0",
     "react-spinners": "^0.14.1",
     "socket.io-client": "^4.8.1",
+    "tsup": "^8.5.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {

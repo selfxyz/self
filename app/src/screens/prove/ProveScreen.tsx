@@ -233,6 +233,31 @@ const ProveScreen: React.FC = () => {
           onLayout={handleScrollViewLayout}
         >
           <Disclosures disclosures={disclosureOptions} />
+
+          {/* Display userDefinedData if it exists */}
+          {selectedApp?.userDefinedData && (
+            <View marginTop={20} paddingHorizontal={20}>
+              <BodyText
+                fontSize={16}
+                color={black}
+                fontWeight="600"
+                marginBottom={10}
+              >
+                Additional Information:
+              </BodyText>
+              <View
+                backgroundColor={slate300}
+                padding={15}
+                borderRadius={8}
+                marginBottom={10}
+              >
+                <BodyText fontSize={14} color={black} lineHeight={20}>
+                  {selectedApp.userDefinedData}
+                </BodyText>
+              </View>
+            </View>
+          )}
+
           <View marginTop={20}>
             <Caption
               textAlign="center"

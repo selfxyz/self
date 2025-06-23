@@ -7,6 +7,7 @@ import {
   getCircuitNameFromPassportData,
   getLeafDscTree,
   Hash,
+  ID_CARD_ATTESTATION_ID,
   parseCertificateSimple,
   PASSPORT_ATTESTATION_ID,
   type PassportData,
@@ -78,11 +79,11 @@ export async function isUserRegistered(
   if (!passportData) {
     return false;
   }
-  const commitment = generateCommitment(
-    secret,
-    PASSPORT_ATTESTATION_ID,
-    passportData,
-  );
+  const attestationId =
+    passportData.documentCategory === 'passport'
+      ? PASSPORT_ATTESTATION_ID
+      : ID_CARD_ATTESTATION_ID;
+  const commitment = generateCommitment(secret, attestationId, passportData);
   const document: DocumentCategory = passportData.documentCategory;
   const serializedTree = useProtocolStore.getState()[document].commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);

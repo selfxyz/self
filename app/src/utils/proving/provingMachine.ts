@@ -1,7 +1,11 @@
-import { WS_RPC_URL_VC_AND_DISCLOSE } from '@selfxyz/common';
-import { EndpointType, SelfApp } from '@selfxyz/common';
-import { getCircuitNameFromPassportData } from '@selfxyz/common';
-import { DocumentCategory, PassportData } from '@selfxyz/common';
+import {
+  DocumentCategory,
+  EndpointType,
+  getCircuitNameFromPassportData,
+  getSolidityPackedUserContextData,
+  PassportData,
+  SelfApp,
+} from '@selfxyz/common';
 import forge from 'node-forge';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
@@ -582,6 +586,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
           } else {
+            console.log('Passport is not registered with local CSCA');
             actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
             return;
           }
@@ -634,26 +639,24 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       let circuitName, wsRpcUrl;
       if (get().circuitType === 'disclose') {
         circuitName = 'disclose';
-        wsRpcUrl = WS_RPC_URL_VC_AND_DISCLOSE;
+        if (passportData.documentCategory === 'passport') {
+          wsRpcUrl = circuitsMapping?.DISCLOSE?.[circuitName];
+        } else {
+          wsRpcUrl = circuitsMapping?.DISCLOSE_ID?.[circuitName];
+        }
       } else {
         circuitName = getCircuitNameFromPassportData(
           passportData,
           get().circuitType as 'register' | 'dsc',
         );
         if (get().circuitType === 'register') {
-          if (
-            passportData.documentType === 'passport' ||
-            passportData.documentType === 'mock_passport'
-          ) {
+          if (passportData.documentCategory === 'passport') {
             wsRpcUrl = circuitsMapping?.REGISTER?.[circuitName];
           } else {
             wsRpcUrl = circuitsMapping?.REGISTER_ID?.[circuitName];
           }
         } else {
-          if (
-            passportData.documentType === 'passport' ||
-            passportData.documentType === 'mock_passport'
-          ) {
+          if (passportData.documentCategory === 'passport') {
             wsRpcUrl = circuitsMapping?.DSC?.[circuitName];
           } else {
             wsRpcUrl = circuitsMapping?.DSC_ID?.[circuitName];
@@ -664,7 +667,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         actor?.send({ type: 'CONNECT_ERROR' });
         throw new Error('Could not determine circuit name');
       }
+
       if (!wsRpcUrl) {
+        actor?.send({ type: 'CONNECT_ERROR' });
         throw new Error('No WebSocket URL available for TEE connection');
       }
 
@@ -797,7 +802,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const document: DocumentCategory = passportData.documentCategory;
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
-      let inputs, circuitName, endpointType, endpoint;
+      let inputs,
+        circuitName,
+        endpointType,
+        endpoint,
+        circuitTypeWithDocumentExtension;
       const protocolStore = useProtocolStore.getState();
       switch (circuitType) {
         case 'register':
@@ -807,6 +816,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               passportData,
               protocolStore[document].dsc_tree,
             ));
+          circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
           break;
         case 'dsc':
           ({ inputs, circuitName, endpointType, endpoint } =
@@ -814,6 +824,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               passportData,
               protocolStore[document].csca_tree as string[][],
             ));
+          circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
           break;
         case 'disclose':
           ({ inputs, circuitName, endpointType, endpoint } =
@@ -822,12 +833,19 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               passportData,
               selfApp as SelfApp,
             ));
+          circuitTypeWithDocumentExtension = `disclose`;
           break;
         default:
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);
       }
-      let circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
+      const userDefinedData = selfApp?.userDefinedData
+        ? getSolidityPackedUserContextData(
+            selfApp.chainID,
+            selfApp.userId,
+            selfApp.userDefinedData,
+          ).slice(2)
+        : '';
       const payload = getPayload(
         inputs,
         circuitTypeWithDocumentExtension as
@@ -838,6 +856,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitName as string,
         endpointType as EndpointType,
         endpoint as string,
+        selfApp?.version,
+        userDefinedData,
       );
       const forgeKey = forge.util.createBuffer(
         sharedKey?.toString('binary') as string,

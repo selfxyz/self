@@ -19,9 +19,10 @@ import { QRCodeSVG } from 'qrcode.react';
 import { initWebSocket } from '../utils/websocket.js';
 import {
   getUniversalLink,
-  SelfApp,
   SelfAppBuilder,
 } from '@selfxyz/common/utils/appType';
+import type { SelfApp } from '@selfxyz/common/utils/appType';
+
 interface SelfQRcodeProps {
   selfApp: SelfApp;
   onSuccess: () => void;

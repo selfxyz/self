@@ -7,6 +7,7 @@ import { v4 } from 'uuid';
 import { REDIRECT_URL } from '../constants/constants.js';
 import { Country3LetterCode } from '../constants/countries.js';
 import { formatEndpoint } from './scope.js';
+
 export interface SelfApp {
   appName: string;
   logoBase64: string;
@@ -19,6 +20,9 @@ export interface SelfApp {
   userIdType: UserIdType;
   devMode: boolean;
   disclosures: SelfAppDisclosureConfig;
+  version: number;
+  chainID: 42220 | 44787;
+  userDefinedData: string;
 }
 
 export interface SelfAppDisclosureConfig {
@@ -92,6 +96,9 @@ export class SelfAppBuilder {
       header: '',
       logoBase64: '',
       disclosures: {},
+      chainID: config.endpointType === 'staging_celo' ? 44787 : 42220,
+      version: config.version ?? 2,
+      userDefinedData: '',
       ...config,
     } as SelfApp;
   }

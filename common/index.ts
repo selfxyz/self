@@ -28,6 +28,7 @@ export { getSKIPEM } from './src/utils/csca.js';
 export { formatMrz } from './src/utils/passports/format.js';
 export { getCircuitNameFromPassportData } from './src/utils/circuits/circuitsName.js';
 import * as Hash from './src/utils/hash.js';
+import { calculateUserIdentifierHash, getSolidityPackedUserContextData } from './src/utils/hash.js';
 export * from './src/constants/countries.js';
 export * from './src/constants/constants.js';
 export * from './src/utils/appType.js';
@@ -63,4 +64,6 @@ export {
   genMockIdDoc,
   genMockIdDocAndInitDataParsing,
   buildSMT,
+  calculateUserIdentifierHash,
+  getSolidityPackedUserContextData,
 };

@@ -22,6 +22,7 @@ import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
 import { fileURLToPath } from 'url';
+import { castFromUUID } from '@selfxyz/common/utils/circuits/uuid';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,7 +39,7 @@ describe('Disclose', function () {
 
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
   const majority = '18';
-  const user_identifier = crypto.randomUUID();
+  const user_identifier = castFromUUID(crypto.randomUUID());
   const selector_dg1 = Array(90).fill('1');
   const selector_older_than = '1';
   const endpoint = 'https://example.com';

@@ -17,10 +17,12 @@ import {
   poseidon16,
 } from 'poseidon-lite';
 import { sha224, sha256 } from 'js-sha256';
+// @ts-ignore - ESLint incorrectly flags this as needing default import, but TypeScript definitions use named export
 import { sha1 } from 'js-sha1';
 import { sha384, sha512 } from 'js-sha512';
 import { hexToSignedBytes, packBytesArray } from './bytes.js';
 import * as forge from 'node-forge';
+import { ethers } from 'ethers';
 
 export function flexiblePoseidon(inputs: bigint[]): bigint {
   switch (inputs.length) {
@@ -149,4 +151,36 @@ export function customHasher(pubKeyFormatted: string[]) {
 export function packBytesAndPoseidon(unpacked: number[]) {
   const packed = packBytesArray(unpacked);
   return customHasher(packed.map(String)).toString();
+}
+
+export function calculateUserIdentifierHash(
+  destChainID: number,
+  userID: string,
+  userDefinedData: string
+): BigInt {
+  const solidityPackedUserContextData = getSolidityPackedUserContextData(
+    destChainID,
+    userID,
+    userDefinedData
+  );
+  const inputBytes = Buffer.from(solidityPackedUserContextData.slice(2), 'hex');
+  const sha256Hash = ethers.sha256(inputBytes);
+  const ripemdHash = ethers.ripemd160(sha256Hash);
+  return BigInt(ripemdHash);
+}
+
+export function getSolidityPackedUserContextData(
+  destChainID: number,
+  userID: string,
+  userDefinedData: string
+): string {
+  const userIdHex = userID.replace(/-/g, '');
+  return ethers.solidityPacked(
+    ['bytes32', 'bytes32', 'bytes'],
+    [
+      ethers.zeroPadValue(ethers.toBeHex(destChainID), 32),
+      ethers.zeroPadValue('0x' + userIdHex, 32),
+      ethers.toUtf8Bytes(userDefinedData),
+    ]
+  );
 }
