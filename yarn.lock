@@ -4322,7 +4322,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/common@workspace:, @selfxyz/common@workspace:^, @selfxyz/common@workspace:common":
+"@selfxyz/common@workspace:^, @selfxyz/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
@@ -4380,7 +4380,7 @@ __metadata:
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
     "@openzeppelin/contracts": "npm:^5.0.2"
     "@openzeppelin/contracts-upgradeable": "npm:^5.1.0"
-    "@selfxyz/common": "workspace:"
+    "@selfxyz/common": "workspace:^"
     "@typechain/ethers-v6": "npm:^0.4.3"
     "@typechain/hardhat": "npm:^8.0.3"
     "@types/chai": "npm:^4.3.16"
