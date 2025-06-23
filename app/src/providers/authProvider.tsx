@@ -262,6 +262,12 @@ export async function hasSecretStored() {
  * to access both the privatekey and the passport data with the user only authenticating once
  */
 export async function unsafe_getPrivateKey() {
+  // if is AndroidApp aka embedded miniapp
+  // request secret from the native app passing in a token to authenticate the request?
+  // const privateKey = window.Android?.getPrivateKey(token)
+  // return privateKey;
+  //
+
   const foundMnemonic = await loadOrCreateMnemonic();
   if (!foundMnemonic) {
     return null;

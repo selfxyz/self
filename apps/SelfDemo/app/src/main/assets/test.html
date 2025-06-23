@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self App Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .secret-display {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Self App Integration Test</h1>
+        
+        <h2>App Secret</h2>
+        <div id="secretDisplay" class="secret-display">
+            Waiting for secret from Android app...
+        </div>
+        
+        <h2>NFC Reading</h2>
+        <button onclick="readNfcTag()">Read NFC Tag</button>
+        <button onclick="getAppVersion()">Get App Version</button>
+        
+        <h2>Results</h2>
+        <div id="results" class="result">
+            Click a button above to test functionality...
+        </div>
+    </div>
+
+    <script>
+        // Global object to receive secret from Android app
+        window.selfApp = {
+            setSecret: function(secret) {
+                document.getElementById('secretDisplay').textContent = 
+                    'Secret received: ' + secret;
+                console.log('Secret set:', secret);
+            }
+        };
+
+        // Check if secret was already set (fallback)
+        if (window.selfAppSecret) {
+            window.selfApp.setSecret(window.selfAppSecret);
+        }
+
+        function readNfcTag() {
+            if (window.AndroidApp) {
+                document.getElementById('results').textContent = 'Reading NFC tag...';
+                
+                // Call the Android app's NFC reading function
+                const result = window.AndroidApp.readNfcTag();
+                document.getElementById('results').textContent = 
+                    'NFC Read Result:\n' + result;
+            } else {
+                document.getElementById('results').textContent = 
+                    'ERROR: AndroidApp interface not available';
+            }
+        }
+
+        function getAppVersion() {
+            if (window.AndroidApp) {
+                const version = window.AndroidApp.getAppVersion();
+                document.getElementById('results').textContent = 
+                    'App Version: ' + version;
+            } else {
+                document.getElementById('results').textContent = 
+                    'ERROR: AndroidApp interface not available';
+            }
+        }
+
+        // Log when the page loads
+        console.log('Test page loaded, waiting for Android app integration...');
+    </script>
+</body>
+</html> 
