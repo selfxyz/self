@@ -88,7 +88,7 @@ library CircuitAttributeHandlerV2 {
                     olderThanStart: 90,
                     olderThanEnd: 91,
                     ofacStart: 92,
-                    ofacEnd: 92
+                    ofacEnd: 93
                 });
         } else {
             revert("Invalid attestation ID");
