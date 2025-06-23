@@ -630,7 +630,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function getVerificationConfigV2(
         bytes32 configId
-    ) internal view virtual onlyProxy returns (SelfStructs.VerificationConfigV2 memory) {
+    ) public view virtual onlyProxy returns (SelfStructs.VerificationConfigV2 memory) {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         return $v2._v2VerificationConfigs[configId];
     }
