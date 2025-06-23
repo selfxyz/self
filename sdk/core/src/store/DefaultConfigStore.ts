@@ -1,5 +1,5 @@
-import { VerificationConfig } from "src/types/types.js";
-import { IConfigStorage } from "./interface.js";
+import { VerificationConfig } from 'src/types/types.js';
+import { IConfigStorage } from './interface.js';
 
 export class DefaultConfigStore implements IConfigStorage {
   constructor(private config: VerificationConfig) {}
@@ -14,6 +14,6 @@ export class DefaultConfigStore implements IConfigStorage {
   }
 
   async getActionId(_userIdentifier: string, _data: string): Promise<string> {
-    return "";
+    return '';
   }
 }

@@ -35,10 +35,15 @@ export const bytesCount: Record<AttestationId, number[]> = {
  * @param publicSignals - The array of public signals containing packed revealed data
  * @returns An array of bytes representing the revealed data for the specified attestation
  */
-export function getRevealedDataBytes(attestationId: AttestationId, publicSignals: PublicSignals): number[] {
+export function getRevealedDataBytes(
+  attestationId: AttestationId,
+  publicSignals: PublicSignals
+): number[] {
   let bytes: number[] = [];
   for (let i = 0; i < getRevealedDataPublicSignalsLength(attestationId); i++) {
-    let publicSignal = BigInt(publicSignals[discloseIndices[attestationId].revealedDataPackedIndex + i]);
+    let publicSignal = BigInt(
+      publicSignals[discloseIndices[attestationId].revealedDataPackedIndex + i]
+    );
     for (let j = 0; j < bytesCount[attestationId][i]; j++) {
       bytes.push(Number(publicSignal & 0xffn));
       publicSignal = publicSignal >> 8n;

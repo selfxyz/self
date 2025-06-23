@@ -1,4 +1,4 @@
-import { AttestationId } from "src/types/types.js";
+import { AttestationId } from 'src/types/types.js';
 
 export const discloseIndices = {
   1: {
@@ -26,12 +26,24 @@ export const discloseIndices = {
     scopeIndex: 19,
     userIdentifierIndex: 20,
     passportNoSmtRootIndex: 99,
-  }
+  },
 } as const;
 
-type RevealedDataFields = 'issuingState' | 'name' | 'idNumber' | 'nationality' | 'dateOfBirth' | 'gender' | 'expiryDate' | 'olderThan' | 'ofac';
+type RevealedDataFields =
+  | 'issuingState'
+  | 'name'
+  | 'idNumber'
+  | 'nationality'
+  | 'dateOfBirth'
+  | 'gender'
+  | 'expiryDate'
+  | 'olderThan'
+  | 'ofac';
 
-export const revealedDataIndices: Record<AttestationId, Record<`${RevealedDataFields}Start` | `${RevealedDataFields}End`, number>> = {
+export const revealedDataIndices: Record<
+  AttestationId,
+  Record<`${RevealedDataFields}Start` | `${RevealedDataFields}End`, number>
+> = {
   1: {
     issuingStateStart: 2,
     issuingStateEnd: 4,
@@ -71,8 +83,10 @@ export const revealedDataIndices: Record<AttestationId, Record<`${RevealedDataFi
     olderThanEnd: 91,
     ofacStart: 92,
     ofacEnd: 93,
-  }
+  },
 } as const;
 
-const allIdEntries = Object.keys(discloseIndices).map((id) => [Number(id), true] as [number, boolean]);
+const allIdEntries = Object.keys(discloseIndices).map(
+  (id) => [Number(id), true] as [number, boolean]
+);
 export const AllIds = new Map<number, boolean>(allIdEntries);

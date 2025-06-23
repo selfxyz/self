@@ -1,5 +1,5 @@
-import { VerificationConfig } from "src/types/types.js";
-import { IConfigStorage } from "./interface.js";
+import { VerificationConfig } from 'src/types/types.js';
+import { IConfigStorage } from './interface.js';
 
 export class InMemoryConfigStore implements IConfigStorage {
   private configs: Map<string, VerificationConfig> = new Map();

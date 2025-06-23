@@ -1,4 +1,4 @@
-import { unpackReveal } from "@selfxyz/common/utils/circuits/formatOutputs";
+import { unpackReveal } from '@selfxyz/common/utils/circuits/formatOutputs';
 
 function trimu0000(unpackedReveal: string[]): string[] {
   return unpackedReveal.filter((value) => value !== '\u0000');

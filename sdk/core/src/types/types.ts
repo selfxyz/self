@@ -27,7 +27,7 @@ export type VerificationResult = {
     userIdentifier: string;
     userDefinedData: string;
   };
-}
+};
 
 export type GenericDiscloseOutput = {
   nullifier: string;
@@ -41,6 +41,6 @@ export type GenericDiscloseOutput = {
   expiryDate: string;
   olderThan: string;
   ofac: boolean[];
-}
+};
 
 export type AttestationId = keyof typeof discloseIndices;

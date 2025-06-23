@@ -8,7 +8,7 @@ export const tsup: Options = {
   dts: true, // generate dts files
   format: ['cjs', 'esm'], // generate cjs and esm files
   skipNodeModulesBundle: true,
-  entryPoints: ['index.ts', "animations/**/*", "components/**/*", "utils/**/*"],
+  entryPoints: ['index.ts', 'animations/**/*', 'components/**/*', 'utils/**/*'],
   watch: env === 'development',
   target: 'es2020',
   outDir: 'dist',

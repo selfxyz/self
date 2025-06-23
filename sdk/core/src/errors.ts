@@ -8,14 +8,14 @@ export enum ConfigMismatch {
   InvalidMinimumAge = 'InvalidMinimumAge',
   InvalidTimestamp = 'InvalidTimestamp',
   InvalidOfac = 'InvalidOfac',
-  ConfigNotFound = 'ConfigNotFound'
+  ConfigNotFound = 'ConfigNotFound',
 }
 
 export class ConfigMismatchError extends Error {
   public readonly issues: Array<{ type: ConfigMismatch; message: string }>;
 
   constructor(issues: Array<{ type: ConfigMismatch; message: string }>) {
-    const message = issues.map(issue => `[${issue.type}]: ${issue.message}`).join('\n');
+    const message = issues.map((issue) => `[${issue.type}]: ${issue.message}`).join('\n');
     super(message);
     this.name = 'ConfigMismatchError';
     this.issues = issues;
