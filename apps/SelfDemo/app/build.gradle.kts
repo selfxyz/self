@@ -54,7 +54,7 @@ dependencies {
     implementation("androidx.webkit:webkit:1.8.0")
     
     // NFC support
-    implementation("androidx.core:core-ktx:1.12.0")
+    
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
