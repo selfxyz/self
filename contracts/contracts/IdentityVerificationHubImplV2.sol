@@ -161,6 +161,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev Ensures that the user context data hash matches the user identifier in the proof.
     error InvalidUserIdentifierInProof();
 
+    /// @notice Thrown when a verification config is not set
+    /// @dev Ensures that the verification config is set before calling the verify function.
+    error ConfigNotSet();
+
     // ====================================================
     // Constructor
     // ====================================================

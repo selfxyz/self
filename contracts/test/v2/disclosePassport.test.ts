@@ -116,7 +116,7 @@ describe("Self Verification Flow V2", () => {
       undefined,
       undefined,
       forbiddenCountriesList,
-      userIdentifierBigInt.toString(16).padStart(64, "0"),
+      "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
     );
 
     pristineBaseVcAndDiscloseProof = structuredClone(baseVcAndDiscloseProof);
@@ -298,7 +298,7 @@ describe("Self Verification Flow V2", () => {
         undefined,
         undefined,
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -418,7 +418,7 @@ describe("Self Verification Flow V2", () => {
         undefined,
         undefined,
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -695,7 +695,7 @@ describe("Self Verification Flow V2", () => {
         nameAndYob_smt,
         "0", // This will make OFAC verification fail
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -768,7 +768,7 @@ describe("Self Verification Flow V2", () => {
         undefined,
         undefined,
         forbiddenCountriesList, // Use the original forbidden countries list (different from config)
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -829,7 +829,7 @@ describe("Self Verification Flow V2", () => {
         undefined,
         undefined,
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -890,7 +890,7 @@ describe("Self Verification Flow V2", () => {
         undefined,
         undefined,
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(

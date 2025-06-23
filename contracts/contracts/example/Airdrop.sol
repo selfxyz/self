@@ -1,200 +1,288 @@
- // // SPDX-License-Identifier: MIT
-// pragma solidity 0.8.28;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.28;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
-import {AttestationId} from "../constants/AttestationId.sol";
 import {CircuitAttributeHandlerV2} from "../libraries/CircuitAttributeHandlerV2.sol";
-import {Formatter} from "../libraries/Formatter.sol";
 
-// import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
+import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 
 /**
- * @title SelfHappyBirthday V2
- * @notice A contract that gives out USDC to users on their birthday, supporting both E-Passport and EUID cards
- * @dev Uses SelfVerificationRoot V2 to handle verification with nullifier management for birthday claims
+ * @title Airdrop V2 (Experimental)
+ * @notice This contract manages an airdrop campaign by verifying user registrations with zero‐knowledge proofs
+ *         supporting both E-Passport and EU ID Card attestations, and distributing ERC20 tokens.
+ *         It is provided for testing and demonstration purposes only.
+ *         **WARNING:** This contract has not been audited and is NOT intended for production use.
+ * @dev Inherits from SelfVerificationRoot V2 for registration logic and Ownable for administrative control.
  */
-contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
+contract Airdrop is SelfVerificationRoot, Ownable {
     using SafeERC20 for IERC20;
-
-    // ====================================================
-    // Constants
-    // ====================================================
-
-    uint256 public constant BASIS_POINTS = 10000;
 
     // ====================================================
     // Storage Variables
     // ====================================================
 
-    /// @notice USDC token contract
-    IERC20 public immutable usdc;
+    /// @notice ERC20 token to be airdropped.
+    IERC20 public immutable token;
 
-    /// @notice Default: 50 dollar (6 decimals for USDC)
-    uint256 public claimableAmount = 50e6;
+    /// @notice Merkle root used to validate airdrop claims.
+    bytes32 public merkleRoot;
 
-    /// @notice Bonus multiplier for EUID card users (in basis points)
-    uint256 public euidBonusMultiplier = 200; // 200% = 100% bonus
+    /// @notice Tracks addresses that have claimed tokens.
+    mapping(address => bool) public claimed;
 
-    /// @notice Bonus multiplier for E-Passport card users (in basis points)
-    uint256 public passportBonusMultiplier = 100; // 100% = 50% bonus
+    /// @notice Indicates whether the registration phase is active.
+    bool public isRegistrationOpen;
 
-    /// @notice Default: 1 day window around birthday
-    uint256 public claimableWindow = 1 days;
+    /// @notice Indicates whether the claim phase is active.
+    bool public isClaimOpen;
 
-    /// @notice Tracks users who have claimed to prevent double claims
-    mapping(uint256 nullifier => bool hasClaimed) public hasClaimed;
+    /// @notice Maps nullifiers to user identifiers for registration tracking
+    mapping(uint256 nullifier => uint256 userIdentifier) internal _nullifierToUserIdentifier;
 
-//     // ====================================================
-//     // Events
-//     // ====================================================
-
-    event USDCClaimed(address indexed claimer, uint256 amount, bytes32 attestationId);
-    event ClaimableAmountUpdated(uint256 oldAmount, uint256 newAmount);
-    event ClaimableWindowUpdated(uint256 oldWindow, uint256 newWindow);
-    event EuidBonusMultiplierUpdated(uint256 oldMultiplier, uint256 newMultiplier);
+    /// @notice Maps user identifiers to registration status
+    mapping(uint256 userIdentifier => bool registered) internal _registeredUserIdentifiers;
 
     // ====================================================
     // Errors
     // ====================================================
 
-    error NotWithinBirthdayWindow();
+    /// @notice Reverts when an invalid Merkle proof is provided.
+    error InvalidProof();
+
+    /// @notice Reverts when a user attempts to claim tokens more than once.
     error AlreadyClaimed();
 
+    /// @notice Reverts when an unregistered address attempts to claim tokens.
+    error NotRegistered(address nonRegisteredAddress);
+
+    /// @notice Reverts when registration is attempted while the registration phase is closed.
+    error RegistrationNotOpen();
+
+    /// @notice Reverts when a claim attempt is made while registration is still open.
+    error RegistrationNotClosed();
+
+    /// @notice Reverts when a claim is attempted while claiming is not enabled.
+    error ClaimNotOpen();
+
+    /// @notice Reverts when an invalid user identifier is provided.
+    error InvalidUserIdentifier();
+
+    /// @notice Reverts when a user identifier has already been registered
+    error UserIdentifierAlreadyRegistered();
+
+    /// @notice Reverts when a nullifier has already been registered
+    error RegisteredNullifier();
+
+    // ====================================================
+    // Events
+    // ====================================================
+
+    /// @notice Emitted when a user successfully claims tokens.
+    /// @param index The index of the claim in the Merkle tree.
+    /// @param account The address that claimed tokens.
+    /// @param amount The amount of tokens claimed.
+    event Claimed(uint256 index, address account, uint256 amount);
+
+    /// @notice Emitted when the registration phase is opened.
+    event RegistrationOpen();
+
+    /// @notice Emitted when the registration phase is closed.
+    event RegistrationClose();
+
+    /// @notice Emitted when the claim phase is opened.
+    event ClaimOpen();
+
+    /// @notice Emitted when the claim phase is closed.
+    event ClaimClose();
+
+    /// @notice Emitted when a user identifier is registered.
+    event UserIdentifierRegistered(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
+
+    /// @notice Emitted when the Merkle root is updated.
+    event MerkleRootUpdated(bytes32 newMerkleRoot);
+
+    // ====================================================
+    // Constructor
+    // ====================================================
+
     /**
-     * @notice Initializes the HappyBirthday V2 contract
-     * @param identityVerificationHubAddress The address of the Identity Verification Hub V2
-     * @param scopeValue The expected proof scope for user registration
-     * @param token The USDC token address
+     * @notice Constructor for the experimental Airdrop V2 contract.
+     * @dev Initializes the airdrop parameters, zero-knowledge verification configuration,
+     *      and sets the ERC20 token to be distributed. Supports both E-Passport and EUID attestations.
+     * @param identityVerificationHubAddress The address of the Identity Verification Hub V2.
+     * @param scopeValue The expected proof scope for user registration.
+     * @param tokenAddress The address of the ERC20 token for airdrop.
      */
     constructor(
         address identityVerificationHubAddress,
         uint256 scopeValue,
-        address token
+        address tokenAddress
     ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue) Ownable(_msgSender()) {
-        usdc = IERC20(token);
+        token = IERC20(tokenAddress);
     }
 
-//     // ====================================================
-//     // External/Public Functions
-//     // ====================================================
+    // ====================================================
+    // External/Public Functions
+    // ====================================================
 
     /**
-     * @notice Sets the claimable USDC amount
-     * @param newAmount The new claimable amount
+     * @notice Sets the Merkle root for claim validation.
+     * @dev Only callable by the contract owner.
+     * @param newMerkleRoot The new Merkle root.
      */
-    function setClaimableAmount(uint256 newAmount) external onlyOwner {
-        uint256 oldAmount = claimableAmount;
-        claimableAmount = newAmount;
-        emit ClaimableAmountUpdated(oldAmount, newAmount);
+    function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
+        merkleRoot = newMerkleRoot;
+        emit MerkleRootUpdated(newMerkleRoot);
     }
 
     /**
-     * @notice Sets the claimable window around birthdays
-     * @param newWindow The new claimable window in seconds
+     * @notice Updates the scope used for verification.
+     * @dev Only callable by the contract owner.
+     * @param newScope The new scope to set.
      */
-    function setClaimableWindow(uint256 newWindow) external onlyOwner {
-        uint256 oldWindow = claimableWindow;
-        claimableWindow = newWindow;
-        emit ClaimableWindowUpdated(oldWindow, newWindow);
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
     }
 
     /**
-     * @notice Sets the EUID bonus multiplier for EUID card users
-     * @param newMultiplier The new bonus multiplier in basis points (10000 = 100%)
+     * @notice Opens the registration phase for users.
+     * @dev Only callable by the contract owner.
      */
-    function setEuidBonusMultiplier(uint256 newMultiplier) external onlyOwner {
-        uint256 oldMultiplier = euidBonusMultiplier;
-        euidBonusMultiplier = newMultiplier;
-        emit EuidBonusMultiplierUpdated(oldMultiplier, newMultiplier);
+    function openRegistration() external onlyOwner {
+        isRegistrationOpen = true;
+        emit RegistrationOpen();
     }
 
     /**
-     * @notice Allows the owner to withdraw USDC from the contract
-     * @param to The address to withdraw to
-     * @param amount The amount to withdraw
+     * @notice Closes the registration phase.
+     * @dev Only callable by the contract owner.
      */
-    function withdrawUSDC(address to, uint256 amount) external onlyOwner {
-        usdc.safeTransfer(to, amount);
+    function closeRegistration() external onlyOwner {
+        isRegistrationOpen = false;
+        emit RegistrationClose();
     }
 
-//     // ====================================================
-//     // Override Functions from SelfVerificationRoot
-//     // ====================================================
+    /**
+     * @notice Opens the claim phase, allowing registered users to claim tokens.
+     * @dev Only callable by the contract owner.
+     */
+    function openClaim() external onlyOwner {
+        isClaimOpen = true;
+        emit ClaimOpen();
+    }
 
     /**
-     * @notice Hook called after successful verification
-     * @dev Checks user hasn't claimed, validates birthday window, and transfers USDC if eligible
+     * @notice Closes the claim phase.
+     * @dev Only callable by the contract owner.
+     */
+    function closeClaim() external onlyOwner {
+        isClaimOpen = false;
+        emit ClaimClose();
+    }
+
+    /**
+     * @notice Retrieves the expected proof scope.
+     * @return The scope value used for registration verification.
+     */
+    function getScope() external view returns (uint256) {
+        return _scope;
+    }
+
+    /**
+     * @notice Checks if a given address is registered.
+     * @param registeredAddress The address to check.
+     * @return True if the address is registered, false otherwise.
+     */
+    function isRegistered(address registeredAddress) external view returns (bool) {
+        return _registeredUserIdentifiers[uint256(uint160(registeredAddress))];
+    }
+
+    /**
+     * @notice Allows a registered user to claim their tokens.
+     * @dev Reverts if registration is still open, if claiming is disabled, if already claimed,
+     *      or if the sender is not registered. Also validates the claim using a Merkle proof.
+     * @param index The index of the claim in the Merkle tree.
+     * @param amount The amount of tokens to be claimed.
+     * @param merkleProof The Merkle proof verifying the claim.
+     */
+    function claim(uint256 index, uint256 amount, bytes32[] memory merkleProof) external {
+        if (isRegistrationOpen) {
+            revert RegistrationNotClosed();
+        }
+        if (!isClaimOpen) {
+            revert ClaimNotOpen();
+        }
+        if (claimed[msg.sender]) {
+            revert AlreadyClaimed();
+        }
+        if (!_registeredUserIdentifiers[uint256(uint160(msg.sender))]) {
+            revert NotRegistered(msg.sender);
+        }
+
+        // Verify the Merkle proof.
+        bytes32 node = keccak256(abi.encodePacked(index, msg.sender, amount));
+        if (!MerkleProof.verify(merkleProof, merkleRoot, node)) revert InvalidProof();
+
+        // Mark as claimed and transfer tokens.
+        _setClaimed();
+        token.safeTransfer(msg.sender, amount);
+
+        emit Claimed(index, msg.sender, amount);
+    }
+
+    // ====================================================
+    // Override Functions from SelfVerificationRoot
+    // ====================================================
+
+    /**
+     * @notice Hook called after successful verification - handles user registration
+     * @dev Validates registration conditions and registers the user for both E-Passport and EUID attestations
      * @param output The verification output containing user data
      */
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory /* userData */
     ) internal override {
-        // Check if user has already claimed
-        if (hasClaimed[output.nullifier]) {
-            revert AlreadyClaimed();
+        // Check if registration is open
+        if (!isRegistrationOpen) {
+            revert RegistrationNotOpen();
         }
 
-        // Check if within birthday window using V2 attribute handler
-        if (_isWithinBirthdayWindow(output.attestationId, output.dateOfBirth)) {
-            // Calculate final amount based on attestation type
-            uint256 finalAmount = claimableAmount;
-
-            // Apply bonus multiplier for EUID card users
-            if (output.attestationId == AttestationId.EU_ID_CARD) {
-                finalAmount = (claimableAmount * euidBonusMultiplier) / BASIS_POINTS;
-            }
-
-            // Mark user as claimed
-            hasClaimed[output.nullifier] = true;
-
-            address recipient = address(uint160(output.userIdentifier));
-
-            // Transfer USDC to the user
-            usdc.safeTransfer(recipient, finalAmount);
-
-            // Emit success event
-            emit USDCClaimed(recipient, finalAmount, output.attestationId);
-        } else {
-            revert NotWithinBirthdayWindow();
+        // Check if nullifier has already been registered
+        if (_nullifierToUserIdentifier[output.nullifier] != 0) {
+            revert RegisteredNullifier();
         }
+
+        // Check if user identifier is valid
+        if (output.userIdentifier == 0) {
+            revert InvalidUserIdentifier();
+        }
+
+        // Check if user identifier has already been registered
+        if (_registeredUserIdentifiers[output.userIdentifier]) {
+            revert UserIdentifierAlreadyRegistered();
+        }
+
+        _nullifierToUserIdentifier[output.nullifier] = output.userIdentifier;
+        _registeredUserIdentifiers[output.userIdentifier] = true;
+
+        // Emit registration event
+        emit UserIdentifierRegistered(output.userIdentifier, output.nullifier);
     }
 
-//     // ====================================================
-//     // Internal Functions
-//     // ====================================================
+    // ====================================================
+    // Internal Functions
+    // ====================================================
 
     /**
-     * @notice Checks if the current date is within the user's birthday window
-     * @param attestationId The attestation type (E-Passport or EUID)
-     * @param dobFromProof The date of birth extracted from the proof (format: "DD-MM-YY")
-     * @return isWithinWindow True if within the birthday window
+     * @notice Internal function to mark the caller as having claimed their tokens.
+     * @dev Updates the claimed mapping.
      */
-    function _isWithinBirthdayWindow(bytes32 attestationId, string memory dobFromProof) internal view returns (bool) {
-        // DOB comes in format "DD-MM-YY" from the proof system
-        bytes memory dobBytes = bytes(dobFromProof);
-        require(dobBytes.length == 8, "Invalid DOB format"); // "DD-MM-YY" = 8 chars
-
-        // Extract day and month from "DD-MM-YY" format
-        string memory day = Formatter.substring(dobFromProof, 0, 2); // DD
-        string memory month = Formatter.substring(dobFromProof, 3, 5); // MM (skip hyphen at index 2)
-
-        // Create birthday in current year (format: YYMMDD)
-        string memory dobInThisYear = string(abi.encodePacked("25", month, day));
-        uint256 dobInThisYearTimestamp = Formatter.dateToUnixTimestamp(dobInThisYear);
-
-        uint256 currentTime = block.timestamp;
-        uint256 timeDifference;
-
-        if (currentTime > dobInThisYearTimestamp) {
-            timeDifference = currentTime - dobInThisYearTimestamp;
-        } else {
-            timeDifference = dobInThisYearTimestamp - currentTime;
-        }
-
-        return timeDifference <= claimableWindow;
+    function _setClaimed() internal {
+        claimed[msg.sender] = true;
     }
 }
