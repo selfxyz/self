@@ -90,11 +90,13 @@ export class SelfBackendVerifier {
     const userIdentifier = castToUserIdentifier(BigInt('0x' + userContextData.slice(64, 128)), this.userIdentifierType);
     const userDefinedData = userContextData.slice(128);
     const configId = await this.configStorage.getActionId(userIdentifier, userDefinedData);
-    let verificationConfig: VerificationConfig;
+    let verificationConfig: VerificationConfig | null;
     try {
       verificationConfig = await this.configStorage.getConfig(configId);
     } catch (error) {
       issues.push({ type: ConfigMismatch.ConfigNotFound, message: 'Config not found' });
+    } finally {
+      if (!verificationConfig) throw new ConfigMismatchError(issues);
     }
 
     //check if forbidden countries list matches
