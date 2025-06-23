@@ -206,7 +206,9 @@ describe("Self Verification Flow V2", () => {
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
-      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hub, "ConfigNotSet");
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hub, "ConfigNotSet");
     });
 
     it("should fail verification with invalid length of proofData", async () => {

@@ -215,7 +215,9 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
-      await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.revertedWithCustomError(deployedActors.hub, "ConfigNotSet");
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hub, "ConfigNotSet");
     });
 
     it("should fail verification with invalid length of proofData", async () => {
@@ -331,7 +333,6 @@ describe("Self Verification Flow V2 - ID Card", () => {
         forbiddenCountriesListPacked: [0n, 0n, 0n, 0n] as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
-
 
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
