@@ -8,7 +8,6 @@
 //
 //  As of 2029-06-11, this file will be governed by the Apache License, Version 2.0.
 
-
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
