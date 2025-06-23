@@ -199,33 +199,12 @@ jest.mock('@stablelib/utf8', () => ({
   decode: jest.fn(),
 }));
 
-// Mock @react-native-google-signin/google-signin
-jest.mock('@react-native-google-signin/google-signin', () => ({
-  GoogleSignin: {
-    configure: jest.fn(),
-    hasPlayServices: jest.fn().mockResolvedValue(true),
-    signIn: jest.fn().mockResolvedValue({
-      user: {
-        id: 'mock-user-id',
-        email: 'mock@example.com',
-        name: 'Mock User',
-        photo: 'mock-photo-url',
-      },
-    }),
-    signOut: jest.fn(),
-    revokeAccess: jest.fn(),
-    isSignedIn: jest.fn().mockResolvedValue(false),
-    getCurrentUser: jest.fn().mockResolvedValue(null),
-    getTokens: jest.fn().mockResolvedValue({
-      accessToken: 'mock-access-token',
-      idToken: 'mock-id-token',
-    }),
-  },
-  statusCodes: {
-    SIGN_IN_REQUIRED: 'SIGN_IN_REQUIRED',
-    IN_PROGRESS: 'IN_PROGRESS',
-    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
-  },
+// Mock react-native-credentials-manager
+jest.mock('react-native-credentials-manager', () => ({
+  signIn: jest.fn().mockResolvedValue({
+    type: 'google-signin',
+    idToken: 'mock-id-token',
+  }),
 }));
 
 // Mock react-native-cloud-storage

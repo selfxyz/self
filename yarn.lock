@@ -3567,23 +3567,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-google-signin/google-signin@npm:^13.1.0":
-  version: 13.3.1
-  resolution: "@react-native-google-signin/google-signin@npm:13.3.1"
-  peerDependencies:
-    expo: ">=50.0.0"
-    react: "*"
-    react-dom: "*"
-    react-native: "*"
-  peerDependenciesMeta:
-    expo:
-      optional: true
-    react-dom:
-      optional: true
-  checksum: 10c0/39be6c3bb52be30a8b6c49376ea90c325c07f63c01938df9ba4b3d8966f69c7e1e8fe8ab000227939b899fce06efd3725f3fba56848cf9d25eb9507f8f994f8c
-  languageName: node
-  linkType: hard
-
 "@react-native/assets-registry@npm:0.75.4":
   version: 0.75.4
   resolution: "@react-native/assets-registry@npm:0.75.4"
@@ -4466,7 +4449,6 @@ __metadata:
     "@react-native-community/netinfo": "npm:^11.4.1"
     "@react-native-firebase/app": "npm:^19.0.1"
     "@react-native-firebase/messaging": "npm:^19.0.1"
-    "@react-native-google-signin/google-signin": "npm:^13.1.0"
     "@react-native/babel-preset": "npm:0.75.4"
     "@react-native/eslint-config": "npm:0.75.4"
     "@react-native/gradle-plugin": "npm:^0.79.2"
@@ -4525,6 +4507,7 @@ __metadata:
     react-native-bundle-visualizer: "npm:^3.1.3"
     react-native-check-version: "npm:^1.3.0"
     react-native-cloud-storage: "npm:^2.2.2"
+    react-native-credentials-manager: "npm:^0.6.1"
     react-native-device-info: "npm:^14.0.4"
     react-native-dotenv: "npm:^3.4.11"
     react-native-gesture-handler: "npm:2.24.0"
@@ -19532,6 +19515,16 @@ __metadata:
     expo:
       optional: true
   checksum: 10c0/1754203be18d096826d2e9db5bf3c62f76ed085e32873d335fca7541b37acff427d2b116f3a2988fa882925c3e4afab071836e18ca33f40b8cdc6a2019b917b3
+  languageName: node
+  linkType: hard
+
+"react-native-credentials-manager@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "react-native-credentials-manager@npm:0.6.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/afd8c054dedf379d3e9e756fba3e60c3fe5faf1926e0da47d2771901423c1abb292dd163d76c2f32617773fac545d5c8bc759f38336c51a67b4274b238c2b768
   languageName: node
   linkType: hard
 
