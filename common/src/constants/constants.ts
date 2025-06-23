@@ -121,6 +121,7 @@ export enum RegisterVerifierId {
   register_sha256_sha256_sha256_rsapss_65537_64_2048 = 22,
   register_sha512_sha512_sha256_rsa_65537_4096 = 23,
   register_sha512_sha512_sha512_ecdsa_secp521r1 = 24,
+  register_id_sha256_sha256_sha256_rsa_65537_4096 = 25,
 }
 
 export enum DscVerifierId {

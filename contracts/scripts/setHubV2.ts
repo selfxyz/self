@@ -146,7 +146,7 @@ try {
       if (attestationType == "E_PASSPORT") {
         verifierName = "DeployAllVerifiers#Verifier_vc_and_disclose";
       } else if (attestationType == "EU_ID_CARD") {
-        verifierName = "";
+        verifierName = "DeployAllVerifiers#Verifier_vc_and_disclose_id";
       }
       const verifierAddress = getContractAddressByExactName(verifierName);
 

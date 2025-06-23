@@ -1,7 +1,11 @@
 {
+  "DeployRegistryModule#PoseidonT3": "0x40Ac8B4Ca156915675Cb6128940a58b884c64194",
+  "DeployRegistryModule#IdentityRegistryImplV1": "0x0729Bfd9F70E65Fdda5eA69560902802cE948882",
+  "DeployRegistryModule#IdentityRegistry": "0xE1A05bbee7D8DF2ee2A81dEE8FB22e07B07D1084",
   "DeployHubV2#CustomVerifier": "0xC95e53bB0d26295c5814F4cE1d72fB4c2df0Fd4f",
   "DeployHubV2#IdentityVerificationHubImplV2": "0xC3b7D434C08311eCF437b54A5d4c5Ecd88FB505A",
   "DeployHubV2#IdentityVerificationHub": "0x68c931C9a534D37aa78094877F46fE46a49F1A51",
+  "DeployIdCardRegistryModule#IdentityRegistryIdCard": "0xF77Be82318F11392Efb5F1062D954911d6086537",
   "DeployAllVerifiers#Verifier_dsc_sha1_ecdsa_brainpoolP256r1": "0x1c017f6Ec7f28e793fbCFf86fDED3A7Ab702026C",
   "DeployAllVerifiers#Verifier_dsc_sha1_ecdsa_secp256r1": "0xa484e357B380D25CC8343C3970fFA3244aa85C8f",
   "DeployAllVerifiers#Verifier_dsc_sha1_rsa_65537_4096": "0x3AA2af39570943826A0F3E947b709C9624F955Ef",
@@ -47,5 +51,7 @@
   "DeployAllVerifiers#Verifier_register_sha512_sha512_sha512_rsa_65537_4096": "0xFad583ccE9B8Ff9131eA09308E423C6A16b255b0",
   "DeployAllVerifiers#Verifier_register_sha512_sha512_sha512_rsapss_65537_64_2048": "0xA3d7F6c891DaF8e036c92c92Df174c9E3a390f86",
   "DeployAllVerifiers#Verifier_vc_and_disclose": "0x34e0d12F100e8fBaFb3d7c2605c53684a38bA3dD",
-  "DeployAllVerifiers#Verifier_vc_and_disclose_id": "0xC59B0E8525DedF2D64CA8f60c930279c871Aa3cc"
+  "DeployAllVerifiers#Verifier_vc_and_disclose_id": "0xC59B0E8525DedF2D64CA8f60c930279c871Aa3cc",
+  "UpdateRegistryHubV2#IdentityRegistryIdCardImplV1": "0xF77Be82318F11392Efb5F1062D954911d6086537",
+  "DeployAllVerifiers#Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096": "0x05D1043F88aeA207f5a450597c5ABA8cCe8Dc874"
 }
