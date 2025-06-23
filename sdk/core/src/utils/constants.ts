@@ -87,6 +87,6 @@ export const revealedDataIndices: Record<
 } as const;
 
 const allIdEntries = Object.keys(discloseIndices).map(
-  (id) => [Number(id), true] as [number, boolean]
+  (id) => [Number(id) as AttestationId, true] as [AttestationId, boolean]
 );
-export const AllIds = new Map<number, boolean>(allIdEntries);
+export const AllIds = new Map<AttestationId, boolean>(allIdEntries);
