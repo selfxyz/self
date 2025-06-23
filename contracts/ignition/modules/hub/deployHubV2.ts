@@ -21,8 +21,8 @@ function getHubImplV2InitializeData() {
  * 3. IdentityVerificationHub - The proxy contract pointing to the implementation
  *
  * Usage:
- * - Deploy: `npx hardhat ignition deploy ignition/modules/deployV2.ts --network <network-name>`
- * - Deploy and verify: `npx hardhat ignition deploy ignition/modules/deployV2.ts --network <network-name> --verify`
+ * - Deploy: `npx hardhat ignition deploy ignition/modules/hub/deployHubV2.ts --network <network-name>`
+ * - Deploy and verify: `npx hardhat ignition deploy ignition/modules/hub/deployHubV2.ts --network <network-name> --verify`
  * - The proxy will be initialized with the V2 implementation
  * - Circuit version is automatically set to 2 during initialization
  * - After deployment, use the update functions to configure:
@@ -36,7 +36,7 @@ function getHubImplV2InitializeData() {
  * 3. Set up verification configurations using setVerificationConfigV2()
  * 4. Transfer ownership to the appropriate address if needed
  */
-export default buildModule("DeployV2", (m) => {
+export default buildModule("DeployHubV2", (m) => {
   // Deploy the CustomVerifier library
   const customVerifier = m.library("CustomVerifier");
 
