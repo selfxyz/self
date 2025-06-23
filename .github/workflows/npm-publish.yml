@@ -86,7 +86,7 @@ jobs:
 
       - name: Build package
         run: |
-          yarn workspace @sdk/qrcode build:deps
+          yarn workspace @selfxyz/qrcode build:deps
 
       - name: Publish to npm
         working-directory: sdk/qrcode
