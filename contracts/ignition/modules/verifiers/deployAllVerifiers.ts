@@ -32,6 +32,10 @@ export default buildModule("DeployAllVerifiers", (m) => {
   console.log("Deploying VC and Disclose verifier...");
   deployedContracts.vcAndDiscloseVerifier = m.contract("Verifier_vc_and_disclose");
 
+  // Deploy VC and Disclose ID verifier
+  console.log("Deploying VC and Disclose ID verifier...");
+  deployedContracts.vcAndDiscloseIdVerifier = m.contract("Verifier_vc_and_disclose_id");
+
   // Deploy Register verifiers using RegisterVerifierId enum
   console.log("Deploying Register verifiers...");
   const registerCircuits = getEnumKeys(RegisterVerifierId);
@@ -64,13 +68,14 @@ export default buildModule("DeployAllVerifiers", (m) => {
 
   console.log(`Total verifiers deployment summary:`);
   console.log(`  - VC and Disclose: 1`);
+  console.log(`  - VC and Disclose ID: 1`);
   console.log(
     `  - Register: ${successfulRegisterDeployments}/${registerCircuits.length} (${registerCircuits.length - successfulRegisterDeployments} skipped)`,
   );
   console.log(
     `  - DSC: ${successfulDscDeployments}/${dscCircuits.length} (${dscCircuits.length - successfulDscDeployments} skipped)`,
   );
-  console.log(`  - Total successful deployments: ${1 + successfulRegisterDeployments + successfulDscDeployments}`);
+  console.log(`  - Total successful deployments: ${2 + successfulRegisterDeployments + successfulDscDeployments}`);
 
   return deployedContracts;
 });
