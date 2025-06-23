@@ -22,6 +22,7 @@ import {
   IdDocInput,
 } from './src/utils/passports/genMockIdDoc.js';
 import { brutforceSignatureAlgorithmDsc } from './src/utils/passports/passport_parsing/brutForceDscSignature.js';
+import { buildSMT } from './src/utils/trees.js';
 export { initElliptic } from './src/utils/certificate_parsing/elliptic.js';
 export { getSKIPEM } from './src/utils/csca.js';
 export { formatMrz } from './src/utils/passports/format.js';
@@ -61,4 +62,5 @@ export {
   PublicKeyDetailsRSA,
   genMockIdDoc,
   genMockIdDocAndInitDataParsing,
+  buildSMT,
 };

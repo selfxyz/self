@@ -260,9 +260,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     selectedDocumentType,
   ]);
 
-  const twoFingerTripleTap = Gesture.Tap()
-    .minPointers(2)
-    .numberOfTaps(3)
+  const devModeTap = Gesture.Tap()
+    .numberOfTaps(5)
     .onStart(() => {
       setAdvancedMode(true);
       buttonTap();
@@ -274,7 +273,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     <YStack f={1} bg={white} pt={top} pb={bottom}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack px="$4" pb="$4" gap="$5">
-          <GestureDetector gesture={twoFingerTripleTap}>
+          <GestureDetector gesture={devModeTap}>
             <YStack ai="center" mb={'$10'}>
               <Title>Generate Document Data</Title>
               <BodyText textAlign="center">

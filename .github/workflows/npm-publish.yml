@@ -3,7 +3,7 @@ name: Publish to npm
 on:
   push:
     branches:
-      - main
+      - dev
     paths:
       - 'sdk/core/package.json'
       - 'sdk/qrcode/package.json'
@@ -63,9 +63,10 @@ jobs:
       - name: Publish to npm
         working-directory: sdk/core
         run: |
-          yarn npm publish --access public
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-qrcode:
     needs: detect-changes
@@ -90,9 +91,10 @@ jobs:
       - name: Publish to npm
         working-directory: sdk/qrcode
         run: |
-          yarn npm publish --access public
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-common:
     needs: detect-changes
@@ -116,6 +118,7 @@ jobs:
       - name: Publish to npm
         working-directory: common
         run: |
-          yarn npm publish --access public
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

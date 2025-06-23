@@ -1,0 +1,16 @@
+name: Block non-dev PRs to main
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-source:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Block PRs not from dev
+        run: |
+          if [[ "${{ github.head_ref }}" != "dev" ]]; then
+            echo "You can only merge from dev to main."
+            exit 1
+          fi

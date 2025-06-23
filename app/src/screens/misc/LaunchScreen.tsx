@@ -26,8 +26,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
   const skipToHome = useHapticNavigation('Home');
   const createMock = useHapticNavigation('CreateMock');
   const { height } = useWindowDimensions();
-  const twoFingerTap = Gesture.Tap()
-    .minPointers(2)
+  const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
       createMock();
@@ -38,7 +37,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <YStack flex={1} paddingTop="$10">
           <View style={styles.cardContainer}>
-            <GestureDetector gesture={twoFingerTap}>
+            <GestureDetector gesture={devModeTap}>
               <LottieView
                 autoPlay={true}
                 loop={false}

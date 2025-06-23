@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.28;
+
 import {GenericFormatter} from "../libraries/GenericFormatter.sol";
 import {SelfStructs} from "../libraries/SelfStructs.sol";
 

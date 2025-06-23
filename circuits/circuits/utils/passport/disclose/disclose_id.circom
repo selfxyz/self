@@ -42,9 +42,9 @@ template DISCLOSE_ID(
     signal input ofac_nameyob_smt_leaf_key;
     signal input ofac_nameyob_smt_root;
     signal input ofac_nameyob_smt_siblings[nameyobTreeLevels];
-    
+
     signal input selector_ofac;
-    
+
     // assert selectors are 0 or 1
     for (var i = 0; i < 90; i++) {
         selector_dg1[i] * (selector_dg1[i] - 1) === 0;
@@ -64,11 +64,11 @@ template DISCLOSE_ID(
     older_than_verified[0] <== isOlderThan.out * majority[0];
     older_than_verified[1] <== isOlderThan.out * majority[1];
 
-    signal revealedData[94]; // mrz: 88 bytes | older_than: 2 bytes | ofac: 3 byte
+    signal revealedData[94]; // mrz: 90 bytes | older_than: 2 bytes | ofac: 2 byte
     for (var i = 0; i < 90; i++) {
         revealedData[i] <== dg1[5+i] * selector_dg1[i];
     }
-    
+
     revealedData[90] <== older_than_verified[0] * selector_older_than;
     revealedData[91] <== older_than_verified[1] * selector_older_than;
 

@@ -136,8 +136,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
     return isDevMode ? [...routes, ...DEBUG_MENU] : routes;
   }, [isDevMode]);
 
-  const twoFingerTap = Gesture.Tap()
-    .minPointers(2)
+  const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
       setDevModeOn();
@@ -198,7 +197,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
   );
   const { bottom } = useSafeAreaInsets();
   return (
-    <GestureDetector gesture={twoFingerTap}>
+    <GestureDetector gesture={devModeTap}>
       <View backgroundColor={white}>
         <YStack
           bg={black}
