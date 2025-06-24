@@ -2673,24 +2673,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomicfoundation/hardhat-ignition-ethers@npm:^0.15.3":
-  version: 0.15.12
-  resolution: "@nomicfoundation/hardhat-ignition-ethers@npm:0.15.12"
+"@nomicfoundation/hardhat-ignition-ethers@npm:^0.15.12":
+  version: 0.15.13
+  resolution: "@nomicfoundation/hardhat-ignition-ethers@npm:0.15.13"
   peerDependencies:
     "@nomicfoundation/hardhat-ethers": ^3.0.9
-    "@nomicfoundation/hardhat-ignition": ^0.15.11
-    "@nomicfoundation/ignition-core": ^0.15.11
+    "@nomicfoundation/hardhat-ignition": ^0.15.12
+    "@nomicfoundation/ignition-core": ^0.15.12
     ethers: ^6.14.0
     hardhat: ^2.18.0
-  checksum: 10c0/ec7593ad7ebddd629f43e46d1db79de5418bfaec743dd46aa93b7e698745c9a09736bc8dd1ca2414721c20d4f84150ee51c981f60752e4d27c90411c7c1f6fcb
+  checksum: 10c0/85b720232bd5e92512e16dfbecb9044ce891981cbfab51a43339f904136f615a5bbdc8b948c6fdf389a9d1d00dc20de1cbcad8afe3956c8470036e1c65f1419e
   languageName: node
   linkType: hard
 
-"@nomicfoundation/hardhat-ignition@npm:^0.15.3":
-  version: 0.15.11
-  resolution: "@nomicfoundation/hardhat-ignition@npm:0.15.11"
+"@nomicfoundation/hardhat-ignition@npm:^0.15.12":
+  version: 0.15.12
+  resolution: "@nomicfoundation/hardhat-ignition@npm:0.15.12"
   dependencies:
-    "@nomicfoundation/ignition-core": "npm:^0.15.11"
+    "@nomicfoundation/ignition-core": "npm:^0.15.12"
     "@nomicfoundation/ignition-ui": "npm:^0.15.11"
     chalk: "npm:^4.0.0"
     debug: "npm:^4.3.2"
@@ -2700,7 +2700,7 @@ __metadata:
   peerDependencies:
     "@nomicfoundation/hardhat-verify": ^2.0.1
     hardhat: ^2.18.0
-  checksum: 10c0/05248edfb96471990290dd4bf894602d003c09a44a1bab4861beac6ff06ced24ecd1656de287698329ca6999feb01ca3c769b4cc344f981b14ca09f3c0b659c8
+  checksum: 10c0/d01ec36db650fb6416a82299e6e971aa36262f48994868bcaab6cce54c078d2fccfb3c40e7dda7971bb7e9f37a147e33bb8f9fb7d9c433bf6f7173a64afbf0a5
   languageName: node
   linkType: hard
 
@@ -2759,20 +2759,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nomicfoundation/ignition-core@npm:^0.15.11, @nomicfoundation/ignition-core@npm:^0.15.3":
-  version: 0.15.11
-  resolution: "@nomicfoundation/ignition-core@npm:0.15.11"
+"@nomicfoundation/ignition-core@npm:^0.15.12":
+  version: 0.15.12
+  resolution: "@nomicfoundation/ignition-core@npm:0.15.12"
   dependencies:
     "@ethersproject/address": "npm:5.6.1"
     "@nomicfoundation/solidity-analyzer": "npm:^0.1.1"
     cbor: "npm:^9.0.0"
     debug: "npm:^4.3.2"
-    ethers: "npm:^6.7.0"
+    ethers: "npm:^6.14.0"
     fs-extra: "npm:^10.0.0"
     immer: "npm:10.0.2"
     lodash: "npm:4.17.21"
     ndjson: "npm:2.0.0"
-  checksum: 10c0/39a28a39fa7de37aebde771a2dd9ca9c56474238fdb0c2fd1e7b636e22e66c4f94c8f2d2471921b2ddd2fabcb6c880962b0bb6bedc74f378a0ae8c8ced7ad2da
+  checksum: 10c0/55a6d9172cc4bbb7da51722a16c93bda0ee300f3ee35714957b14e5ac949da36cd2f32d3e3a4ba181c46809f9dabaeab6f325a63d5a0098f648165c32bb20a71
   languageName: node
   linkType: hard
 
@@ -4369,12 +4369,12 @@ __metadata:
     "@eth-optimism/hardhat-ovm": "npm:^0.2.4"
     "@nomicfoundation/hardhat-chai-matchers": "npm:^2.0.6"
     "@nomicfoundation/hardhat-ethers": "npm:^3.0.5"
-    "@nomicfoundation/hardhat-ignition": "npm:^0.15.3"
-    "@nomicfoundation/hardhat-ignition-ethers": "npm:^0.15.3"
+    "@nomicfoundation/hardhat-ignition": "npm:^0.15.12"
+    "@nomicfoundation/hardhat-ignition-ethers": "npm:^0.15.12"
     "@nomicfoundation/hardhat-network-helpers": "npm:^1.0.10"
     "@nomicfoundation/hardhat-toolbox": "npm:^3.0.0"
     "@nomicfoundation/hardhat-verify": "npm:^2.0.6"
-    "@nomicfoundation/ignition-core": "npm:^0.15.3"
+    "@nomicfoundation/ignition-core": "npm:^0.15.12"
     "@nomiclabs/hardhat-ethers": "npm:^2.2.3"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
@@ -13347,7 +13347,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.11.0, ethers@npm:^6.12.1, ethers@npm:^6.13.5, ethers@npm:^6.14.4, ethers@npm:^6.7.0":
+"ethers@npm:^6.11.0, ethers@npm:^6.12.1, ethers@npm:^6.13.5, ethers@npm:^6.14.0, ethers@npm:^6.14.4":
   version: 6.14.4
   resolution: "ethers@npm:6.14.4"
   dependencies:
