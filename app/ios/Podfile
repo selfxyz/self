@@ -1,4 +1,4 @@
-source 'https://cdn.cocoapods.org/'
+source "https://cdn.cocoapods.org/"
 use_frameworks!
 require "tmpdir"
 
@@ -11,7 +11,7 @@ require Pod::Executable.execute_command("node", ["-p",
 
 project "Self.xcodeproj"
 
-platform :ios, "15.0" if !ENV["ACT"]
+platform :ios, "15.1" if !ENV["ACT"]
 prepare_react_native_project!
 
 flipper_enabled = ENV["NO_FLIPPER"] != "1"
@@ -25,6 +25,9 @@ end
 
 target "Self" do
   config = use_native_modules!
+
+  # Exclude react-native-credentials-manager from iOS build (Android only)
+  config[:exclude] = ["react-native-credentials-manager"]
 
   use_frameworks!
   pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "2391579b439362ec925e039cd4a503b6968e2728"
@@ -67,7 +70,7 @@ target "Self" do
           end
         end
         target.build_configurations.each do |config|
-          config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.0"
+          config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.1"
           config.build_settings["GCC_PREPROCESSOR_DEFINITIONS"] ||= ["$(inherited)", "_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]
         end
       end
