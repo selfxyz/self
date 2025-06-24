@@ -4,6 +4,7 @@ import {
   DocumentCategory,
   EndpointType,
   getCircuitNameFromPassportData,
+  getSolidityPackedUserContextData,
   PassportData,
   SelfApp,
 } from '@selfxyz/common';
