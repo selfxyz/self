@@ -16,6 +16,7 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
     ISelfVerificationRoot.GenericDiscloseOutputV2 public lastOutput;
     bytes public lastUserData;
     SelfStructs.VerificationConfigV2 public verificationConfig;
+    bytes32 public verificationConfigId;
 
     // Events for testing
     event VerificationCompleted(ISelfVerificationRoot.GenericDiscloseOutputV2 output, bytes userData);
@@ -87,12 +88,16 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
         verificationConfig = config;
     }
 
+    function setConfigId(bytes32 configId) external {
+        verificationConfigId = configId;
+    }
+
     function getConfigId(
         bytes32 destinationChainId,
         bytes32 userIdentifier,
         bytes memory userDefinedData
     ) public view override returns (bytes32) {
-        return _identityVerificationHubV2.generateConfigId(verificationConfig);
+        return verificationConfigId;
     }
 
     /**
