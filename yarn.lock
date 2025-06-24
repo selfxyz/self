@@ -4291,7 +4291,7 @@ __metadata:
     "@zk-email/circuits": "npm:^6.3.2"
     "@zk-email/helpers": "npm:^6.1.1"
     "@zk-email/zk-regex-circom": "npm:^1.2.1"
-    "@zk-kit/binary-merkle-root.circom": "npm:^1.0.0"
+    "@zk-kit/binary-merkle-root.circom": "https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree"
     "@zk-kit/circuits": "npm:^1.0.0-beta"
     asn1: "npm:^0.2.6"
     asn1.js: "npm:^5.4.1"
@@ -9382,12 +9382,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-kit/binary-merkle-root.circom@npm:^1.0.0":
+"@zk-kit/binary-merkle-root.circom@https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree":
   version: 1.0.0
-  resolution: "@zk-kit/binary-merkle-root.circom@npm:1.0.0"
+  resolution: "@zk-kit/binary-merkle-root.circom@https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree"
   dependencies:
     circomlib: "npm:^2.0.5"
-  checksum: 10c0/d5585d2efa0e45b79eca651659c7f2e9fa96d6ae83a7653e9dfe1c9f436071367dd01070b70dd86cefec341cd5e57c108c3ab08cde25f2fe51efb8bd4e4a28be
+  checksum: 10c0/f7bef284bae30b261610c5e2791c8aa7cc6ab42f5b4caf1e4b251543f506989dfb27d27963979a1db2c67b9c3d3561ce287fa8e0391bddee567c62963cd8f743
   languageName: node
   linkType: hard
 

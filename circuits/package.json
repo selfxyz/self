@@ -48,7 +48,7 @@
     "@zk-email/circuits": "^6.3.2",
     "@zk-email/helpers": "^6.1.1",
     "@zk-email/zk-regex-circom": "^1.2.1",
-    "@zk-kit/binary-merkle-root.circom": "^1.0.0",
+    "@zk-kit/binary-merkle-root.circom": "https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree",
     "@zk-kit/circuits": "^1.0.0-beta",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",
