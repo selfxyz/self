@@ -50,8 +50,9 @@
   "DeployAllVerifiers#Verifier_register_sha512_sha512_sha512_ecdsa_secp521r1": "0xCab0632d19d387218d68b026e9b1A62f2C0866dA",
   "DeployAllVerifiers#Verifier_register_sha512_sha512_sha512_rsa_65537_4096": "0xFad583ccE9B8Ff9131eA09308E423C6A16b255b0",
   "DeployAllVerifiers#Verifier_register_sha512_sha512_sha512_rsapss_65537_64_2048": "0xA3d7F6c891DaF8e036c92c92Df174c9E3a390f86",
-  "DeployAllVerifiers#Verifier_vc_and_disclose": "0x34e0d12F100e8fBaFb3d7c2605c53684a38bA3dD",
+  "DeployAllVerifiers#Verifier_vc_and_disclose": "0xddC2376F60F79b19e1C43297E481CeB551330076",
   "DeployAllVerifiers#Verifier_vc_and_disclose_id": "0xC59B0E8525DedF2D64CA8f60c930279c871Aa3cc",
   "UpdateRegistryHubV2#IdentityRegistryIdCardImplV1": "0xF77Be82318F11392Efb5F1062D954911d6086537",
+  "UpdateRegistryHubV2#IdentityRegistryImplV1": "0xE1A05bbee7D8DF2ee2A81dEE8FB22e07B07D1084",
   "DeployAllVerifiers#Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096": "0x05D1043F88aeA207f5a450597c5ABA8cCe8Dc874"
 }

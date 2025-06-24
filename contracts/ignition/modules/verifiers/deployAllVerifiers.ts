@@ -3,6 +3,15 @@ import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common/constants/con
 import * as fs from "fs";
 import * as path from "path";
 
+
+const deployVerifiers = {
+  vcAndDiscloseVerifier: true,
+  vcAndDiscloseIdVerifier: false,
+  registerIdVerifier: false,
+  registerVerifier: false,
+  dscVerifier: false,
+};
+
 /**
  * Get enum keys (circuit names) excluding numeric values
  */
@@ -27,20 +36,28 @@ function contractExists(contractName: string): boolean {
 }
 
 export default buildModule("DeployAllVerifiers", (m) => {
+let successfulRegisterIdDeployments = 0;
+let successfulRegisterDeployments = 0;
+let successfulDscDeployments = 0;
+
   const deployedContracts: Record<string, any> = {};
 
   // Deploy VC and Disclose verifier
+  if (deployVerifiers.vcAndDiscloseVerifier) {
   console.log("Deploying VC and Disclose verifier...");
-  deployedContracts.vcAndDiscloseVerifier = m.contract("Verifier_vc_and_disclose");
+    deployedContracts.vcAndDiscloseVerifier = m.contract("Verifier_vc_and_disclose");
+  }
 
   // Deploy VC and Disclose ID verifier
-  console.log("Deploying VC and Disclose ID verifier...");
-  deployedContracts.vcAndDiscloseIdVerifier = m.contract("Verifier_vc_and_disclose_id");
+  if (deployVerifiers.vcAndDiscloseIdVerifier) {
+    console.log("Deploying VC and Disclose ID verifier...");
+    deployedContracts.vcAndDiscloseIdVerifier = m.contract("Verifier_vc_and_disclose_id");
+  }
 
-  // Deploy Register ID verifiers (for ID cards)
-  console.log("Deploying Register ID verifiers...");
   const registerIdCircuits = ["register_id_sha256_sha256_sha256_rsa_65537_4096"];
-  let successfulRegisterIdDeployments = 0;
+  // Deploy Register ID verifiers (for ID cards)
+  if (deployVerifiers.registerIdVerifier) {
+  console.log("Deploying Register ID verifiers...");
   registerIdCircuits.forEach((circuitName) => {
     const contractName = `Verifier_${circuitName}`;
     if (contractExists(contractName)) {
@@ -51,11 +68,12 @@ export default buildModule("DeployAllVerifiers", (m) => {
       console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
     }
   });
+  }
 
   // Deploy Register verifiers using RegisterVerifierId enum
-  console.log("Deploying Register verifiers...");
   const registerCircuits = getEnumKeys(RegisterVerifierId);
-  let successfulRegisterDeployments = 0;
+  if (deployVerifiers.registerVerifier) {
+  console.log("Deploying Register verifiers...");
   registerCircuits.forEach((circuitName) => {
     const contractName = `Verifier_${circuitName}`;
     if (contractExists(contractName)) {
@@ -66,11 +84,12 @@ export default buildModule("DeployAllVerifiers", (m) => {
       console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
     }
   });
+  }
 
   // Deploy DSC verifiers using DscVerifierId enum
-  console.log("Deploying DSC verifiers...");
   const dscCircuits = getEnumKeys(DscVerifierId);
-  let successfulDscDeployments = 0;
+  if (deployVerifiers.dscVerifier) {
+  console.log("Deploying DSC verifiers...");
   dscCircuits.forEach((circuitName) => {
     const contractName = `Verifier_${circuitName}`;
     if (contractExists(contractName)) {
@@ -81,10 +100,11 @@ export default buildModule("DeployAllVerifiers", (m) => {
       console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
     }
   });
+  }
 
   console.log(`Total verifiers deployment summary:`);
-  console.log(`  - VC and Disclose: 1`);
-  console.log(`  - VC and Disclose ID: 1`);
+  console.log(`  - VC and Disclose: ${deployVerifiers.vcAndDiscloseVerifier ? 1 : 0}`);
+  console.log(`  - VC and Disclose ID: ${deployVerifiers.vcAndDiscloseIdVerifier ? 1 : 0}`);
   console.log(
     `  - Register ID: ${successfulRegisterIdDeployments}/${registerIdCircuits.length} (${registerIdCircuits.length - successfulRegisterIdDeployments} skipped)`,
   );
