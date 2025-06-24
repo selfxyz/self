@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { WS_RPC_URL_VC_AND_DISCLOSE } from '@selfxyz/common';
-import { EndpointType, SelfApp } from '@selfxyz/common';
-import { getCircuitNameFromPassportData } from '@selfxyz/common';
-import { DocumentCategory, PassportData } from '@selfxyz/common';
+import {
+  DocumentCategory,
+  EndpointType,
+  getCircuitNameFromPassportData,
+  PassportData,
+  SelfApp,
+} from '@selfxyz/common';
 import forge from 'node-forge';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
