@@ -6,7 +6,7 @@ import * as path from "path";
 
 const deployVerifiers = {
   vcAndDiscloseVerifier: false,
-  vcAndDiscloseIdVerifier: true,
+  vcAndDiscloseIdVerifier: false,
   registerIdVerifier: false,
   registerVerifier: false,
   dscVerifier: false,

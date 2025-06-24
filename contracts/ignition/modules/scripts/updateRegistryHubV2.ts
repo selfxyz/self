@@ -1,50 +1,47 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import hre from "hardhat";
-import fs from "fs";
-import path from "path";
+import { getSavedRepo, getDeployedAddresses, getContractAddress, log } from "../../../scripts/constants";
 
 module.exports = buildModule("UpdateRegistryHubV2", (m) => {
-  const repo = hre.network.config.chainId === 42220 ? "prod" : "staging";
-  const deployedAddressesPath = path.join(__dirname, `../../deployments/${repo}/deployed_addresses.json`);
+  const chainId = hre.network.config.chainId;
+  const networkName = hre.network.name;
 
-  console.log(`Reading deployed addresses from: ${deployedAddressesPath}`);
-  const deployedAddresses = JSON.parse(fs.readFileSync(deployedAddressesPath, "utf8"));
+  log.info(`Network: ${networkName}, Chain ID: ${chainId}`);
 
-  const registryAddress = deployedAddresses["DeployRegistryModule#IdentityRegistry"];
-  const registryIdCardAddress = deployedAddresses["DeployIdCardRegistryModule#IdentityRegistryIdCard"];
-  const hubAddress = deployedAddresses["DeployHubV2#IdentityVerificationHub"];
+  const repoName = getSavedRepo(networkName);
+  const deployedAddresses = getDeployedAddresses(repoName);
 
-  // Validate addresses
-  if (!registryAddress) {
-    throw new Error("IdentityRegistry address not found in deployed addresses");
-  }
-  if (!registryIdCardAddress) {
-    throw new Error("IdentityRegistryIdCard address not found in deployed addresses");
-  }
-  if (!hubAddress) {
-    throw new Error("IdentityVerificationHub address not found in deployed addresses");
-  }
+  log.info(`Using repo: ${repoName}`);
 
-  console.log(`Registry address: ${registryAddress}`);
-  console.log(`Registry ID Card address: ${registryIdCardAddress}`);
-  console.log(`Hub address: ${hubAddress}`);
+  try {
+    const registryAddress = getContractAddress("DeployRegistryModule#IdentityRegistry", deployedAddresses);
+    const registryIdCardAddress = getContractAddress("DeployIdCardRegistryModule#IdentityRegistryIdCard", deployedAddresses);
+    const hubAddress = getContractAddress("DeployHubV2#IdentityVerificationHub", deployedAddresses);
 
-  const deployedRegistryInstance = m.contractAt("IdentityRegistryImplV1", registryAddress);
-  const deployedRegistryIdCardInstance = m.contractAt("IdentityRegistryIdCardImplV1", registryIdCardAddress);
+    log.info(`Registry address: ${registryAddress}`);
+    log.info(`Registry ID Card address: ${registryIdCardAddress}`);
+    log.info(`Hub address: ${hubAddress}`);
 
-  console.log("✓ Created registry contract instances");
+    const deployedRegistryInstance = m.contractAt("IdentityRegistryImplV1", registryAddress);
+    const deployedRegistryIdCardInstance = m.contractAt("IdentityRegistryIdCardImplV1", registryIdCardAddress);
+
+    log.success("Created registry contract instances");
 
     // Execute the updateHub calls
-  console.log("Updating hub address on IdentityRegistry...");
-  m.call(deployedRegistryInstance, "updateHub", [hubAddress]);
+    log.step("Updating hub address on IdentityRegistry...");
+    m.call(deployedRegistryInstance, "updateHub", [hubAddress]);
 
-  console.log("Updating hub address on IdentityRegistryIdCard...");
-  m.call(deployedRegistryIdCardInstance, "updateHub", [hubAddress]);
+    log.step("Updating hub address on IdentityRegistryIdCard...");
+    m.call(deployedRegistryIdCardInstance, "updateHub", [hubAddress]);
 
-  console.log("✓ Hub update calls initiated successfully");
+    log.success("Hub update calls initiated successfully");
 
     return {
-    deployedRegistryInstance,
-    deployedRegistryIdCardInstance
-  };
+      deployedRegistryInstance,
+      deployedRegistryIdCardInstance
+    };
+  } catch (error) {
+    log.error(`Failed to update registry hub: ${error}`);
+    throw error;
+  }
 });
