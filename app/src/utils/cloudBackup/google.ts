@@ -24,14 +24,22 @@ export async function googleSignIn() {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${credential.idToken}`,
+      signal: AbortSignal.timeout(10000), // 10 second timeout
     });
-    const json = await response.json();
 
     if (!response.ok) {
-      throw new Error(`Token exchange failed: ${JSON.stringify(json)}`);
+      const errorText = await response.text();
+      throw new Error(
+        `Token exchange failed (${response.status}): ${errorText}`,
+      );
     }
 
-    return { accessToken: json.access_token as string };
+    const json = await response.json();
+
+    if (!json.access_token || typeof json.access_token !== 'string') {
+      throw new Error('Invalid response: missing or invalid access_token');
+    }
+    return { accessToken: json.access_token };
   } catch (error) {
     console.error(error);
     return null;
