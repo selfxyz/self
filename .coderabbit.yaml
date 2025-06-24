@@ -14,7 +14,6 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-    # also trigger on dev
     base_branches: ["main", "dev"]
   path_instructions:
     - path: "app/src/**/*.{ts,tsx,js,jsx}"
@@ -41,7 +40,7 @@ reviews:
         - Constraint efficiency
         - Input validation
         - Security considerations for zero-knowledge proofs
-    - path: "**/*.test.{ts,js,tsx,jsx}"
+    - path: "**/*.{test,spec}.{ts,js,tsx,jsx}"
       instructions: |
         Review test files for:
         - Test coverage completeness
