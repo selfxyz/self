@@ -14,6 +14,7 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
+    # also trigger on dev
     base_branches: ["main", "dev"]
   path_instructions:
     - path: "app/src/**/*.{ts,tsx,js,jsx}"
