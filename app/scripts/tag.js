@@ -1,14 +1,6 @@
-// SPDX-License-Identifier: BSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 #!/usr/bin/env node
-//  SPDX-License-Identifier: BUSL-1.1
-//  Copyright (c) 2025 Social Connect Labs, Inc.
-//
-//  This file is licensed under the Business Source License 1.1 (BUSL-1.1).
-//
-//  Use of this software is governed by the Business Source License included in the LICENSE file.
-//
-//  As of 2029-06-11, this file will be governed by the Apache License, Version 2.0.
 
 const { execSync } = require('child_process');
 const fs = require('fs');
