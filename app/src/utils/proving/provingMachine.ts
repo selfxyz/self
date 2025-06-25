@@ -800,7 +800,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     _generatePayload: async () => {
-      const { circuitType, passportData, secret, uuid, sharedKey } = get();
+      const { circuitType, passportData, secret, uuid, sharedKey, env } =
+        get();
       const document: DocumentCategory = passportData.documentCategory;
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
@@ -810,6 +811,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         endpoint,
         circuitTypeWithDocumentExtension;
       const protocolStore = useProtocolStore.getState();
+
+      if (!env) {
+        throw new Error('Environment not set');
+      }
+
       switch (circuitType) {
         case 'register':
           ({ inputs, circuitName, endpointType, endpoint } =
@@ -817,6 +823,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               secret as string,
               passportData,
               protocolStore[document].dsc_tree,
+              env,
             ));
           circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
           break;
@@ -825,6 +832,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             generateTEEInputsDSC(
               passportData,
               protocolStore[document].csca_tree as string[][],
+              env,
             ));
           circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
           break;
