@@ -55,7 +55,13 @@ const emitter =
 const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore();
+  const {
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
+    documentType,
+    countryCode,
+  } = useUserStore();
   const [dialogMessage, setDialogMessage] = useState('');
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
@@ -113,6 +119,21 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     }
   }, []);
 
+  const usePacePolling = (): boolean => {
+    const { usePacePolling: usePacePollingParam } = (route.params || {}) as any;
+    const shouldUsePacePolling = documentType + countryCode === 'IDFRA';
+
+    if (usePacePollingParam !== undefined) {
+      return usePacePollingParam;
+    } else if (shouldUsePacePolling) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const isPacePolling = usePacePolling();
+
   const onVerifyPress = useCallback(async () => {
     buttonTap();
     if (isNfcEnabled) {
@@ -133,6 +154,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           skipPACE,
           skipCA,
           extendedMode,
+          usePacePolling: isPacePolling,
         });
 
         const scanDurationSeconds = (
@@ -238,6 +260,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     dateOfBirth,
     dateOfExpiry,
     route.params,
+    isPacePolling,
   ]);
 
   const onCancelPress = useHapticNavigation('Launch', {

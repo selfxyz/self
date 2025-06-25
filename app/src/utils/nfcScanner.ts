@@ -16,6 +16,7 @@ interface Inputs {
   skipPACE?: boolean;
   skipCA?: boolean;
   extendedMode?: boolean;
+  usePacePolling?: boolean;
 }
 
 export const scan = async (inputs: Inputs) => {
@@ -56,6 +57,7 @@ const scanIOS = async (inputs: Inputs) => {
     inputs.skipPACE ?? false,
     inputs.skipCA ?? false,
     inputs.extendedMode ?? false,
+    inputs.usePacePolling ?? false,
   );
 };
 

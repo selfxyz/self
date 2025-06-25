@@ -4,6 +4,8 @@ import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 import { create } from 'zustand';
 
 interface UserState {
+  documentType: string;
+  countryCode: string;
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
@@ -24,6 +26,8 @@ interface UserState {
 
 const useUserStore = create<UserState>((set, _get) => ({
   passportNumber: DEFAULT_PNUMBER ?? '',
+  documentType: '',
+  countryCode: '',
   dateOfBirth: DEFAULT_DOB ?? '',
   dateOfExpiry: DEFAULT_DOE ?? '',
   deepLinkName: undefined,
@@ -37,7 +41,9 @@ const useUserStore = create<UserState>((set, _get) => ({
 
   deleteMrzFields: () =>
     set({
+      documentType: '',
       passportNumber: '',
+      countryCode: '',
       dateOfBirth: '',
       dateOfExpiry: '',
     }),
