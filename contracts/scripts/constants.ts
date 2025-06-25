@@ -8,7 +8,7 @@ export const ATTESTATION_ID = {
 
 export const ATTESTATION_TO_REGISTRY = {
   E_PASSPORT: 'DeployRegistryModule#IdentityRegistry',
-  EU_ID_CARD: 'DeployIdCardRegistryModule#IdentityRegistryIdCard',
+  EU_ID_CARD: 'DeployIdCardRegistryModule#IdentityRegistry',
 }
 
 export const NETWORK_TO_CHAIN_ID: Record<string, string> = {

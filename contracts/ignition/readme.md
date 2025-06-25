@@ -26,7 +26,7 @@ yarn deploy:hub:v2
 ```
 
 ```
-deploy:registry:idcard
+yarn deploy:registry:idcard
 ```
 
 ### Set the registries address in the hub
