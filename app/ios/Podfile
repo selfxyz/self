@@ -27,7 +27,7 @@ target "Self" do
   config = use_native_modules!
 
   use_frameworks!
-  pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "2391579b439362ec925e039cd4a503b6968e2728"
+  pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "d24c93bc394ac8b2f8f0ea7b7e3ea960410aca81"
 
   pod "QKMRZScanner"
   pod "lottie-ios"
