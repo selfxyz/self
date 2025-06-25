@@ -146,9 +146,7 @@ for item in "${allowed_circuits[@]}"; do
         -l "node_modules" \
         -l "node_modules/@zk-kit/binary-merkle-root.circom/src" \
         -l "node_modules/circomlib/circuits" \
-        --O1 -c --output $output && \
-        cd $output/${circuit_name}_cpp && \
-        make
+        --O1 --r1cs --wasm --output $output
     ) &
     pids+=($!)
 done
