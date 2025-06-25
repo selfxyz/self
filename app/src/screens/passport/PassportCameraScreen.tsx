@@ -101,8 +101,8 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         passportNumber,
         dateOfBirth: formattedDateOfBirth,
         dateOfExpiry: formattedDateOfExpiry,
-        documentType,
-        countryCode,
+        documentType: documentType?.trim() || '',
+        countryCode: countryCode?.trim().toUpperCase() || '',
       });
 
       trackEvent(PassportEvents.CAMERA_SCAN_SUCCESS, {
