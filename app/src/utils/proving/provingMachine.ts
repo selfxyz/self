@@ -799,8 +799,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     _generatePayload: async () => {
-      const { circuitType, passportData, secret, uuid, sharedKey, env } =
-        get();
+      const { circuitType, passportData, secret, uuid, sharedKey, env } = get();
       const document: DocumentCategory = passportData.documentCategory;
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
