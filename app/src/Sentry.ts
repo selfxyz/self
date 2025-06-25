@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { SENTRY_DSN } from '@env';
-import * as Sentry from '@sentry/react-native';
+import {
+  captureException as SentryCaptureException,
+  captureMessage as SentryCaptureMessage,
+  init,
+  wrap,
+} from '@sentry/react-native';
 
 export const isSentryDisabled = !SENTRY_DSN;
 
@@ -10,7 +15,7 @@ export const initSentry = () => {
     return null;
   }
 
-  Sentry.init({
+  init({
     dsn: SENTRY_DSN,
     debug: false,
     enableAutoSessionTracking: true,
@@ -29,7 +34,7 @@ export const initSentry = () => {
       return event;
     },
   });
-  return Sentry;
+  return;
 };
 
 export const captureException = (
@@ -39,7 +44,7 @@ export const captureException = (
   if (isSentryDisabled) {
     return;
   }
-  Sentry.captureException(error, {
+  SentryCaptureException(error, {
     extra: context,
   });
 };
@@ -51,11 +56,11 @@ export const captureMessage = (
   if (isSentryDisabled) {
     return;
   }
-  Sentry.captureMessage(message, {
+  SentryCaptureMessage(message, {
     extra: context,
   });
 };
 
 export const wrapWithSentry = (App: React.ComponentType) => {
-  return isSentryDisabled ? App : Sentry.wrap(App);
+  return isSentryDisabled ? App : wrap(App);
 };

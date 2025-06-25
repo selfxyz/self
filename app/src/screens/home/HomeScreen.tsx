@@ -59,7 +59,7 @@ const HomeScreen: React.FC = () => {
       paddingBottom={bottom + extraYPadding}
     >
       <YStack ai="center" gap={20} justifyContent="flex-start">
-        <SelfCard width="100%" />
+        {/* <SelfCard width="100%" /> */}
         <Caption color={amber500} opacity={0.3} textTransform="uppercase">
           Only visible to you
         </Caption>
@@ -71,7 +71,7 @@ const HomeScreen: React.FC = () => {
           hitSlop={100}
           pressStyle={pressStyle}
         >
-          <ScanIcon color={amber500} />
+          {/* <ScanIcon color={amber500} /> */}
         </ScanButton>
         <Caption
           onPress={onScanButtonPress}
@@ -103,7 +103,7 @@ function PrivacyNote() {
 
   return (
     <Card onPress={onDisclaimerPress} pressStyle={pressedStyle}>
-      <WarnIcon color={white} width={24} height={33} />
+      {/* <WarnIcon color={white} width={24} height={33} /> */}
       <BodyText color={white} textAlign="center" fontSize={18}>
         A note on protecting your privacy
       </BodyText>

@@ -1,0 +1,55 @@
+import { tamaguiPlugin } from '@tamagui/vite-plugin';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { defineConfig } from 'vite';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default defineConfig({
+  root: 'web',
+  resolve: {
+    extensions: [
+      '.web.tsx',
+      '.web.js',
+      '.web.jsx',
+      '.web.ts',
+      '.tsx',
+      '.ts',
+      '.jsx',
+      '.js',
+    ],
+    alias: {
+      '@env': path.resolve(__dirname, 'env.ts'),
+      '/src': path.resolve(__dirname, 'src'),
+      'react-native': 'react-native-web',
+      'react-native/Libraries/Utilities/codegenNativeComponent':
+        'react-native-web/dist/index.js',
+      'react-native-svg': 'react-native-svg-web',
+      'lottie-react-native': 'lottie-react',
+      'react-native-safe-area-context': path.resolve(
+        __dirname,
+        'src/mocks/react-native-safe-area-context.js',
+      ),
+    },
+  },
+  plugins: [
+    react(),
+    tamaguiPlugin({
+      config: path.resolve(__dirname, 'tamagui.config.ts'),
+      components: ['tamagui'],
+      excludeReactNativeWebExports: [
+        'Switch',
+        'ProgressBar',
+        'Picker',
+        'CheckBox',
+        'Touchable',
+      ],
+      optimize: true,
+    }),
+  ].filter(Boolean),
+  define: {
+    global: 'globalThis',
+  },
+});

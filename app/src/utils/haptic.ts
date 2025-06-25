@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { Platform, Vibration } from 'react-native';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+// import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 export type HapticType =
   | 'selection'
@@ -200,10 +200,10 @@ export const triggerFeedback = (
       }
     }
 
-    ReactNativeHapticFeedback.trigger(type, {
-      enableVibrateFallback: mergedOptions.enableVibrateFallback,
-      ignoreAndroidSystemSettings: mergedOptions.ignoreAndroidSystemSettings,
-    });
+    // ReactNativeHapticFeedback.trigger(type, {
+    //   enableVibrateFallback: mergedOptions.enableVibrateFallback,
+    //   ignoreAndroidSystemSettings: mergedOptions.ignoreAndroidSystemSettings,
+    // });
   } else {
     if (mergedOptions.pattern) {
       Vibration.vibrate(mergedOptions.pattern, false);

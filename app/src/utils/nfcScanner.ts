@@ -5,7 +5,6 @@ import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import { PassportData } from '@selfxyz/common';
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
-import PassportReader from 'react-native-passport-reader';
 
 interface Inputs {
   passportNumber: string;
@@ -29,6 +28,9 @@ export const scan = async (inputs: Inputs) => {
     } else {
     }
   }
+  if (Platform.OS === 'web') {
+    return;
+  }
 
   return Platform.OS === 'android'
     ? await scanAndroid(inputs)
@@ -36,6 +38,9 @@ export const scan = async (inputs: Inputs) => {
 };
 
 const scanAndroid = async (inputs: Inputs) => {
+  const PassportReader = await import('react-native-passport-reader').then(
+    mod => mod.default,
+  );
   PassportReader.reset();
   return await PassportReader.scan({
     documentNumber: inputs.passportNumber,

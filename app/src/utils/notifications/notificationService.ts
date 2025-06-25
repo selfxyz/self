@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import messaging from '@react-native-firebase/messaging';
 import { PermissionsAndroid, Platform } from 'react-native';
 
 const API_URL = 'https://notification.self.xyz';
@@ -41,6 +40,12 @@ export const getStateMessage = (state: string): string => {
 
 export async function requestNotificationPermission(): Promise<boolean> {
   try {
+    if (Platform.OS !== 'ios' && Platform.OS !== 'android') {
+      console.warn(
+        'Notification permissions are not supported on this platform',
+      );
+      return false;
+    }
     if (Platform.OS === 'android') {
       if (Platform.Version >= 33) {
         const permission = await PermissionsAndroid.request(
@@ -52,15 +57,18 @@ export async function requestNotificationPermission(): Promise<boolean> {
         }
       }
     }
+    // const messaging = await import('@react-native-firebase/messaging').then(
+    //   mod => mod.default,
+    // );
+    // const authStatus = await messaging().requestPermission();
+    // const enabled =
+    //   authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    //   authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    // console.log('Notification permission status:', enabled);
 
-    console.log('Notification permission status:', enabled);
-
-    return enabled;
+    // return enabled;
+    return false;
   } catch (error) {
     console.error('Failed to request notification permission:', error);
     return false;
@@ -68,17 +76,18 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 export async function getFCMToken(): Promise<string | null> {
-  try {
-    const token = await messaging().getToken();
-    if (token) {
-      console.log('FCM Token received');
-      return token;
-    }
-    return null;
-  } catch (error) {
-    console.error('Failed to get FCM token:', error);
-    return null;
-  }
+  return null; // Temporarily disabled due to issues with Firebase messaging in the current setup
+  // try {
+  //   const token = await messaging().getToken();
+  //   if (token) {
+  //     console.log('FCM Token received');
+  //     return token;
+  //   }
+  //   return null;
+  // } catch (error) {
+  //   console.error('Failed to get FCM token:', error);
+  //   return null;
+  // }
 }
 
 export async function registerDeviceToken(
@@ -89,7 +98,7 @@ export async function registerDeviceToken(
   try {
     let token = deviceToken;
     if (!token) {
-      token = await messaging().getToken();
+      // token = await messaging().getToken();
       if (!token) {
         console.log('No FCM token available');
         return;
