@@ -66,7 +66,13 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         return;
       }
 
-      const { passportNumber, dateOfBirth, dateOfExpiry } = result;
+      const {
+        passportNumber,
+        dateOfBirth,
+        dateOfExpiry,
+        documentType,
+        countryCode,
+      } = result;
 
       const formattedDateOfBirth =
         Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfBirth) : dateOfBirth;
@@ -95,6 +101,8 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         passportNumber,
         dateOfBirth: formattedDateOfBirth,
         dateOfExpiry: formattedDateOfExpiry,
+        documentType,
+        countryCode,
       });
 
       trackEvent(PassportEvents.CAMERA_SCAN_SUCCESS, {
