@@ -6,7 +6,7 @@ import { StatusBar } from 'react-native';
 
 import LaunchScreen from '../screens/misc/LaunchScreen';
 // import LoadingScreen from '../screens/misc/LoadingScreen';
-// import ModalScreen from '../screens/misc/ModalScreen';
+import ModalScreen from '../screens/misc/ModalScreen';
 import SplashScreen from '../screens/misc/SplashScreen';
 import { black } from '../utils/colors';
 
@@ -25,14 +25,14 @@ const miscScreens = {
   //     navigationBarColor: black,
   //   } as NativeStackNavigationOptions,
   // },
-  // Modal: {
-  //   screen: ModalScreen,
-  //   options: {
-  //     headerShown: false,
-  //     presentation: 'transparentModal',
-  //     animation: 'fade',
-  //   } as NativeStackNavigationOptions,
-  // },
+  Modal: {
+    screen: ModalScreen,
+    options: {
+      headerShown: false,
+      presentation: 'transparentModal',
+      animation: 'fade',
+    } as NativeStackNavigationOptions,
+  },
   Splash: {
     screen: SplashScreen,
     options: {

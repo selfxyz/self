@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import queryString from 'query-string';
-import { Linking } from 'react-native';
+import { Linking, Platform } from 'react-native';
 
 import { navigationRef } from '../navigation';
 import { useSelfAppStore } from '../stores/selfAppStore';
@@ -67,6 +67,8 @@ const handleUrl = (uri: string) => {
       console.error('Error parsing mock_passport data or navigating:', error);
       navigationRef.navigate('QRCodeTrouble');
     }
+  } else if (Platform.OS === 'web') {
+    // For web, we can handle the URL some other way if we dont do this loading app in web always navigates to QRCodeTrouble
   } else {
     console.error('No sessionId or selfApp found in the data');
     navigationRef.navigate('QRCodeTrouble');

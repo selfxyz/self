@@ -29,7 +29,7 @@ export const navigationScreens = {
   // ...miscScreens,
   // ...passportScreens,
   ...homeScreens,
-  // ...proveScreens,
+  ...proveScreens,
   // ...settingsScreens,
   // ...recoveryScreens,
   // ...devScreens,
@@ -38,6 +38,7 @@ export const navigationScreens = {
 };
 
 const AppNavigation = createNativeStackNavigator({
+  id: undefined,
   initialRouteName: 'Home',
   screenOptions: {
     header: DefaultNavBar,

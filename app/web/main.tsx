@@ -2,21 +2,19 @@ import 'react-native-get-random-values';
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Platform } from 'react-native';
-console.warn('PLATFORM: ', Platform.OS);
-import { AppRegistry } from 'react-native';
-import { TamaguiProvider } from 'tamagui';
+import { TamaguiProvider, View } from 'tamagui';
 
 import App from '../App';
+import { black } from '../src/utils/colors';
 import tamaguiConfig from '../tamagui.config.ts';
 
 const Root = () => (
   <TamaguiProvider config={tamaguiConfig}>
-    <App />
+    <View backgroundColor={black} flex={1} height="100vh" width="100%">
+      <App />
+    </View>
   </TamaguiProvider>
 );
-
-AppRegistry.registerComponent('SelfWeb', () => Root);
 
 // Create root element and render the app
 const container = document.getElementById('root');
