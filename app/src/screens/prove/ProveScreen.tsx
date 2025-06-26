@@ -28,10 +28,8 @@ import { Caption } from '../../components/typography/Caption';
 import { ProofEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { setDefaultDocumentTypeIfNeeded } from '../../providers/passportDataProvider';
-import {
-  ProofStatus,
-  useProofHistoryStore,
-} from '../../stores/proofHistoryStore';
+import { ProofStatus } from '../../stores/proof-types';
+import { useProofHistoryStore } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
 import { black, slate300, white } from '../../utils/colors';

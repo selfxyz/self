@@ -14,9 +14,9 @@ import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 
 import { BodyText } from '../../components/typography/BodyText';
 import {
-  ProofHistory,
   useProofHistoryStore,
 } from '../../stores/proofHistoryStore';
+import { ProofHistory } from '../../stores/proof-types';
 import {
   black,
   blue100,
