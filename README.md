@@ -41,7 +41,7 @@ Not all signature algorithms are currently supported. To help us add support for
 
 #### Where can I find the countries' public keys ?
 
-You can download the full list of public keys on the [ICAO website](https://download.pkd.icao.int/). Our parsed list is at [`/registry`](https://github.com/zk-passport/openpassport/tree/main/registry).
+You can download the full list of public keys on the [ICAO website](https://download.pkd.icao.int/). Our parsed list is now available in the [Self Protocol documentation](https://docs.self.xyz/).
 
 #### What's the ICAO ?
 
