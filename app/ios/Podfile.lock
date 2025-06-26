@@ -1748,6 +1748,7 @@ PODS:
   - react-native-biometrics (3.0.1):
     - React-Core
   - react-native-cloud-storage (2.3.0):
+    - boost
     - DoubleConversion
     - fast_float
     - fmt
@@ -1781,6 +1782,7 @@ PODS:
   - react-native-nfc-manager (3.16.1):
     - React-Core
   - react-native-quick-crypto (0.7.14):
+    - boost
     - DoubleConversion
     - fast_float
     - fmt
@@ -2303,16 +2305,41 @@ PODS:
     - fast_float
     - fmt
     - glog
-    - RCT-Folly (= 2024.01.01.00)
-    - React-callinvoker (= 0.75.4)
-    - React-cxxreact (= 0.75.4)
-    - React-debug (= 0.75.4)
-    - React-featureflags (= 0.75.4)
-    - React-jsi (= 0.75.4)
-    - React-logger (= 0.75.4)
-    - React-perflogger (= 0.75.4)
-    - React-utils (= 0.75.4)
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - React-callinvoker (= 0.80.0)
+    - React-cxxreact (= 0.80.0)
+    - React-jsi (= 0.80.0)
+    - React-logger (= 0.80.0)
+    - React-perflogger (= 0.80.0)
+    - SocketRocket
+  - ReactCommon/turbomodule/core (0.80.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - React-callinvoker (= 0.80.0)
+    - React-cxxreact (= 0.80.0)
+    - React-debug (= 0.80.0)
+    - React-featureflags (= 0.80.0)
+    - React-jsi (= 0.80.0)
+    - React-logger (= 0.80.0)
+    - React-perflogger (= 0.80.0)
+    - React-utils (= 0.80.0)
+    - SocketRocket
   - RNCAsyncStorage (2.2.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
     - React-debug
     - React-Fabric
@@ -2370,6 +2397,7 @@ PODS:
     - React-Core
     - RNFBApp
   - RNGestureHandler (2.24.0):
+    - boost
     - DoubleConversion
     - fast_float
     - fmt
@@ -2608,6 +2636,52 @@ PODS:
     - RCTRequired
     - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsc
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - RNSVG/common (= 15.12.0)
+    - SocketRocket
+    - Yoga
+  - RNSVG/common (15.12.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsc
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - segment-analytics-react-native (2.21.1):
     - React-Core
     - sovran-react-native
