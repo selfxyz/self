@@ -2,7 +2,6 @@
 
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
-import { Linking } from 'react-native';
 
 import { AppEvents } from '../consts/analytics';
 import analytics from '../utils/analytics';
