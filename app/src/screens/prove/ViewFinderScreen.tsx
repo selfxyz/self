@@ -22,7 +22,7 @@ import { Title } from '../../components/typography/Title';
 import { ProofEvents } from '../../consts/analytics';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
-// import QRScan from '../../images/icons/qr_code.svg';
+import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
@@ -142,7 +142,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
               <Title>Verify your ID</Title>
               <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
                 <View pt="$2">
-                  {/* <QRScan height={40} width={40} color={slate800} /> */}
+                  <QRScan height={40} width={40} color={slate800} />
                 </View>
                 <View maxWidth="75%">
                   <Description style={styles.subheader}>

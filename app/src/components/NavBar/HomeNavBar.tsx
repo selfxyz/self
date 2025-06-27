@@ -5,8 +5,8 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from 'tamagui';
 
-// import ActivityIcon from '../../images/icons/activity.svg';
-// import SettingsIcon from '../../images/icons/settings.svg';
+import ActivityIcon from '../../images/icons/activity.svg';
+import SettingsIcon from '../../images/icons/settings.svg';
 import { black, neutral400, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { buttonTap } from '../../utils/haptic';
@@ -23,7 +23,15 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
       paddingTop={Math.max(insets.top, 15) + extraYPadding}
     >
       <NavBar.LeftAction
-        component={<Button size={'$3'} unstyled />}
+        component={
+          <Button
+            size={'$3'}
+            unstyled
+            icon={
+              <ActivityIcon width={'24'} height={'100%'} color={neutral400} />
+            }
+          />
+        }
         // disable icon click for now
         onPress={() => {
           buttonTap();
@@ -34,7 +42,15 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
         {props.options.title}
       </NavBar.Title>
       <NavBar.RightAction
-        component={<Button size={'$3'} unstyled />}
+        component={
+          <Button
+            size={'$3'}
+            unstyled
+            icon={
+              <SettingsIcon width={'24'} height={'100%'} color={neutral400} />
+            }
+          />
+        }
         onPress={() => {
           buttonTap();
           props.navigation.navigate('Settings');

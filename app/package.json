@@ -73,6 +73,8 @@
     "@selfxyz/common": "workspace:^",
     "@sentry/react-native": "6.10.0",
     "@stablelib/cbor": "^2.0.1",
+    "@tamagui/animations-css": "^1.129.3",
+    "@tamagui/animations-react-native": "^1.129.3",
     "@tamagui/config": "1.126.14",
     "@tamagui/lucide-icons": "1.126.14",
     "@tamagui/toast": "^1.127.2",
@@ -120,6 +122,7 @@
     "socket.io-client": "^4.7.5",
     "tamagui": "1.126.14",
     "uuid": "^11.0.5",
+    "vite-plugin-svgr": "^4.3.0",
     "xstate": "^5.19.2",
     "zustand": "^4.5.2"
   },
