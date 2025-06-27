@@ -68,6 +68,7 @@ const handleUrl = (uri: string) => {
       navigationRef.navigate('QRCodeTrouble');
     }
   } else if (Platform.OS === 'web') {
+    // TODO: web handle links if we need to idk if we do
     // For web, we can handle the URL some other way if we dont do this loading app in web always navigates to QRCodeTrouble
   } else {
     console.error('No sessionId or selfApp found in the data');

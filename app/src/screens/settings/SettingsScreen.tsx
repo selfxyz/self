@@ -72,7 +72,7 @@ const goToStore = () => {
 
 const routes =
   Platform.OS !== 'web'
-    ? [
+    ? ([
         [Data, 'View passport info', 'PassportDataInfo'],
         [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
         [Cloud, 'Cloud backup', 'CloudBackupSettings'],
@@ -83,7 +83,7 @@ const routes =
           'Manage ID documents',
           'ManageDocuments',
         ],
-      ]
+      ] satisfies [React.FC<SvgProps>, string, RouteOption][])
     : ([
         [Data, 'View passport info', 'PassportDataInfo'],
         [Feedback, 'Send feeback', 'email_feedback'],

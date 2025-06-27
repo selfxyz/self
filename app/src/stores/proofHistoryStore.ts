@@ -33,7 +33,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
 
       const pendingProofs = await database.getPendingProofs();
 
-      if (pendingProofs.length === 0) {
+      if (pendingProofs.rows.length === 0) {
         console.log('No pending proofs to sync');
         return;
       }
@@ -43,8 +43,8 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         transports: ['websocket'],
       });
 
-      for (let i = 0; i < pendingProofs.length; i++) {
-        const proof = pendingProofs.item(i);
+      for (let i = 0; i < pendingProofs.rows.length; i++) {
+        const proof = pendingProofs.rows[i];
         websocket.emit('subscribe', proof.sessionId);
       }
 
@@ -150,8 +150,8 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         let totalCount = 0;
 
         for (let i = 0; i < results.rows.length; i++) {
-          const row = results.rows.item(i);
-          totalCount = row.total_count; // same for all rows
+          const row = results.rows[i];
+          totalCount = results.total_count ?? 0;
           proofs.push({
             id: row.id.toString(),
             sessionId: row.sessionId,

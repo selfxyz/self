@@ -7,6 +7,8 @@ import {
   getStateMessage,
 } from './notificationService.shared';
 
+// TODO: web handle notifications better. this file is more or less a fancy placeholder
+
 export { getStateMessage };
 
 export async function requestNotificationPermission(): Promise<boolean> {

@@ -20,11 +20,7 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
         "We've improved performance, fixed bugs, and added new features. Update now to install the latest version of Self.",
       buttonText: 'Update and restart',
       onButtonPress: async () => {
-        if (newVersionUrl !== null) {
-          trackEvent(AppEvents.UPDATE_STARTED);
-          // TODO or use: `Platform.OS === 'ios' ? appStoreUrl : playStoreUrl`
-          await Linking.openURL(newVersionUrl);
-        }
+        window.location.reload();
       },
       onModalDismiss: () => {
         setIsModalDismissed(true);

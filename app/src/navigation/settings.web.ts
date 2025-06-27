@@ -2,26 +2,12 @@
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import CloudBackupScreen from '../screens/settings/CloudBackupScreen';
 import ManageDocumentsScreen from '../screens/settings/ManageDocumentsScreen';
 import PassportDataInfoScreen from '../screens/settings/PassportDataInfoScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
-import ShowRecoveryPhraseScreen from '../screens/settings/ShowRecoveryPhraseScreen';
-import { black, slate300, white } from '../utils/colors';
+import { black, white } from '../utils/colors';
 
 const settingsScreens = {
-  CloudBackupSettings: {
-    screen: CloudBackupScreen,
-    options: {
-      title: 'Cloud backup',
-      headerStyle: {
-        backgroundColor: black,
-      },
-      headerTitleStyle: {
-        color: slate300,
-      },
-    } as NativeStackNavigationOptions,
-  },
   ManageDocuments: {
     screen: ManageDocumentsScreen,
     options: {
@@ -59,15 +45,6 @@ const settingsScreens = {
     config: {
       screens: {},
     },
-  },
-  ShowRecoveryPhrase: {
-    screen: ShowRecoveryPhraseScreen,
-    options: {
-      title: 'Recovery Phrase',
-      headerStyle: {
-        backgroundColor: white,
-      },
-    } as NativeStackNavigationOptions,
   },
 };
 
