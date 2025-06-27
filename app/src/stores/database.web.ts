@@ -149,7 +149,7 @@ class IndexedDBDatabase implements ProofDB {
               const updateRequest = store.put({
                 ...existing,
                 ...proofWithId,
-                id: existing.id // Preserve the original ID
+                id: existing.id, // Preserve the original ID
               });
               updateRequest.onerror = () => reject(updateRequest.error);
               updateRequest.onsuccess = () => {

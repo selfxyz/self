@@ -1,4 +1,3 @@
-
 import { defaultOptions, HapticOptions, HapticType } from './shared';
 
 /**
