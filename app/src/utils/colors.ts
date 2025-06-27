@@ -26,6 +26,7 @@ export const neutral700 = '#404040';
 
 export const zinc400 = '#A1A1AA';
 export const zinc500 = '#71717A';
+export const zinc800 = '#27272A';
 export const zinc900 = '#18181B';
 export const blue100 = '#DBEAFE';
 export const blue600 = '#2563EB';

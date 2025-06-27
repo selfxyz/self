@@ -6,7 +6,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import AbstractButton from '../../components/buttons/AbstractButton';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { AppEvents } from '../../consts/analytics';
@@ -14,7 +14,7 @@ import { privacyUrl, termsUrl } from '../../consts/links';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Logo from '../../images/logo.svg';
-import { black, slate500, white, zinc900 } from '../../utils/colors';
+import { black, slate400, white, zinc800, zinc900 } from '../../utils/colors';
 import { advercase, dinot } from '../../utils/fonts';
 
 interface LaunchScreenProps {}
@@ -57,22 +57,23 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
         </View>
       </View>
 
-      <YStack gap="$3" width="100%" alignItems="center">
+      <YStack gap="$3" width="100%" alignItems="center" marginBottom={20}>
         <YStack gap="$3" width="100%">
-          <PrimaryButton style={styles.secondaryButton}>
+          <AbstractButton bgColor={black} borderColor={zinc800} color={white}>
             List of supported biometric IDs
-          </PrimaryButton>
+          </AbstractButton>
 
-          <PrimaryButton
+          <AbstractButton
             trackEvent={AppEvents.GET_STARTED}
             onPress={onStartPress}
-            style={styles.primaryButton}
+            bgColor={white}
+            color={black}
           >
             I have a passport or biometric ID
-          </PrimaryButton>
+          </AbstractButton>
         </YStack>
 
-        <Caption style={styles.notice} size={'small'}>
+        <Caption style={styles.notice}>
           By continuing, you agree to the&nbsp;
           <Anchor style={styles.link} href={termsUrl}>
             User Terms and Conditions
@@ -92,13 +93,14 @@ export default LaunchScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
     width: '100%',
-    paddingTop: 60,
+    paddingTop: '25%',
   },
   card: {
-    width: '92%',
+    width: '100%',
     borderRadius: 16,
     paddingVertical: 40,
     paddingHorizontal: 24,
@@ -137,28 +139,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
-  secondaryButton: {
-    backgroundColor: black,
-    borderWidth: 1,
-    borderColor: slate500,
-    color: white,
-  },
-  primaryButton: {
-    backgroundColor: white,
-    color: black,
-  },
   notice: {
+    fontFamily: dinot,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    color: slate500,
+    color: slate400,
     textAlign: 'center',
     lineHeight: 18,
-    fontSize: 12,
+    fontSize: 14,
   },
   link: {
     fontFamily: dinot,
-    color: slate500,
-    fontSize: 12,
+    color: slate400,
     lineHeight: 18,
     textDecorationLine: 'underline',
   },
