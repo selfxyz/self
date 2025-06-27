@@ -13,9 +13,15 @@ export const triggerFeedback = (
 ) => {
   const mergedOptions = { ...defaultOptions, ...options };
 
+  // Check if Vibration API is available
+  if (!navigator.vibrate) {
+    console.warn('Vibration API not supported in this browser');
+    return;
+  }
+
   if (mergedOptions.pattern) {
-    Vibration.vibrate(mergedOptions.pattern, false);
+    navigator.vibrate(mergedOptions.pattern);
   } else {
-    Vibration.vibrate(100);
+    navigator.vibrate(100);
   }
 };
