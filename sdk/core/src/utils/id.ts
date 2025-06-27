@@ -64,7 +64,6 @@ export const formatRevealedDataPacked = (
         revealedDataIndices[attestationId].olderThanStart,
         revealedDataIndices[attestationId].olderThanEnd + 1
       )
-      .map((x) => x + 48)
   ).toString('utf-8');
   const ofac = Array.from(
     revealedDataPackedString.subarray(
@@ -72,7 +71,6 @@ export const formatRevealedDataPacked = (
       revealedDataIndices[attestationId].ofacEnd + 1
     )
   ).map(Boolean);
-  console.log('ofac', ofac);
 
   return {
     nullifier: nullifier.toString(),

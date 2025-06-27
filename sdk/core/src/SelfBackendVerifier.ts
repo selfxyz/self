@@ -145,6 +145,13 @@ export class SelfBackendVerifier {
     );
     const userDefinedData = userContextData.slice(128);
     const configId = await this.configStorage.getActionId(userIdentifier, userDefinedData);
+    if (!configId) {
+      issues.push({
+        type: ConfigMismatch.ConfigNotFound,
+        message: "Config Id not found",
+      });
+    }
+
     let verificationConfig: VerificationConfig | null;
     try {
       verificationConfig = await this.configStorage.getConfig(configId);
