@@ -24,9 +24,6 @@ export default defineConfig({
     alias: {
       '@env': path.resolve(__dirname, 'env.ts'),
       '/src': path.resolve(__dirname, 'src'),
-      'react-native': 'react-native-web',
-      'react-native/Libraries/Utilities/codegenNativeComponent':
-        'react-native-web/dist/index.js',
       'react-native-svg': 'react-native-svg-web',
       'lottie-react-native': 'lottie-react',
       'react-native-safe-area-context': path.resolve(
