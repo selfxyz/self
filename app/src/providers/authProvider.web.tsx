@@ -44,14 +44,8 @@ const getPrivateKeyFromAndroidBridge = async (): Promise<string | null> => {
 
 // Prompt user for private key input
 const promptUserForPrivateKey = async (): Promise<string | null> => {
-  return new Promise(resolve => {
-    const privateKey = prompt('Please enter your private key:');
-    if (privateKey && privateKey.trim()) {
-      resolve(privateKey.trim());
-    } else {
-      resolve(null);
-    }
-  });
+  // TODO: Implement secure key input mechanism
+  throw new Error('Secure key input not yet implemented for web');
 };
 
 // Get private key from Android bridge or prompt user
