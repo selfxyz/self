@@ -5,10 +5,9 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { HomeNavBar } from '../components/NavBar';
 import DisclaimerScreen from '../screens/home/DisclaimerScreen';
 import HomeScreen from '../screens/home/HomeScreen';
-// import ProofHistoryDetailScreen from '../screens/home/ProofHistoryDetailScreen';
-// import ProofHistoryScreen from '../screens/home/ProofHistoryScreen';
+import ProofHistoryDetailScreen from '../screens/home/ProofHistoryDetailScreen';
+import ProofHistoryScreen from '../screens/home/ProofHistoryScreen';
 import { black } from '../utils/colors';
-
 const homeScreens = {
   Disclaimer: {
     screen: DisclaimerScreen,
@@ -26,20 +25,20 @@ const homeScreens = {
       presentation: 'card',
     } as NativeStackNavigationOptions,
   },
-  // ProofHistory: {
-  //   screen: ProofHistoryScreen,
-  //   options: {
-  //     title: 'Approved Requests',
-  //     navigationBarColor: black,
-  //     headerBackTitle: 'close',
-  //   },
-  // },
-  // ProofHistoryDetail: {
-  //   screen: ProofHistoryDetailScreen,
-  //   options: {
-  //     title: 'Approval',
-  //   },
-  // },
+  ProofHistory: {
+    screen: ProofHistoryScreen,
+    options: {
+      title: 'Approved Requests',
+      navigationBarColor: black,
+      headerBackTitle: 'close',
+    },
+  },
+  ProofHistoryDetail: {
+    screen: ProofHistoryDetailScreen,
+    options: {
+      title: 'Approval',
+    },
+  },
 };
 
 export default homeScreens;

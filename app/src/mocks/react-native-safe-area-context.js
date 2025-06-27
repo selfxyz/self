@@ -1,4 +1,5 @@
 import React from 'react';
+// On web we dont need safe context area since we will be inside another app. (and it doesnt work)
 
 export function SafeAreaProvider({ children }) {
   return React.createElement(React.Fragment, null, children);
@@ -38,4 +39,4 @@ export const initialWindowMetrics = {
   },
 };
 
-export const SafeAreaInsetsContext = React.createContext(initialWindowMetrics)
+export const SafeAreaInsetsContext = React.createContext(initialWindowMetrics);

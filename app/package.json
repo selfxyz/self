@@ -71,6 +71,7 @@
     "@segment/analytics-react-native": "^2.21.0",
     "@segment/sovran-react-native": "^1.1.3",
     "@selfxyz/common": "workspace:^",
+    "@sentry/react": "^9.32.0",
     "@sentry/react-native": "6.10.0",
     "@stablelib/cbor": "^2.0.1",
     "@tamagui/animations-css": "^1.129.3",

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-// import 'react-native-gesture-handler';
+import 'react-native-gesture-handler';
 
 import {
   createNavigationContainerRef,
@@ -9,32 +9,32 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-// import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { DefaultNavBar } from '../components/NavBar';
 import AppLayout from '../layouts/AppLayout';
 import analytics from '../utils/analytics';
 import { white } from '../utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
-// import { getAesopScreens } from './aesop';
-// import devScreens from './dev';
+import { getAesopScreens } from './aesop';
+import devScreens from './dev';
 import homeScreens from './home';
-// import miscScreens from './misc';
-// import passportScreens from './passport';
+import miscScreens from './misc';
+import passportScreens from './passport';
 import proveScreens from './prove';
-// import recoveryScreens from './recovery';
-// import settingsScreens from './settings';
+import recoveryScreens from './recovery';
+import settingsScreens from './settings';
 
 export const navigationScreens = {
-  // ...miscScreens,
-  // ...passportScreens,
+  ...miscScreens,
+  ...passportScreens,
   ...homeScreens,
   ...proveScreens,
-  // ...settingsScreens,
-  // ...recoveryScreens,
-  // ...devScreens,
+  ...settingsScreens,
+  ...recoveryScreens,
+  ...devScreens,
   // add last to override other screens
-  // ...getAesopScreens(),
+  ...getAesopScreens(),
 };
 
 const AppNavigation = createNativeStackNavigator({
@@ -82,7 +82,11 @@ const NavigationWithTracking = () => {
     };
   }, []);
 
-  return <Navigation ref={navigationRef} onStateChange={trackScreen} />;
+  return (
+    <GestureHandlerRootView>
+      <Navigation ref={navigationRef} onStateChange={trackScreen} />
+    </GestureHandlerRootView>
+  );
 };
 
 export default NavigationWithTracking;

@@ -9,12 +9,12 @@ import { YStack } from 'tamagui';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import AppNavigation from './src/navigation';
 import { AuthProvider } from './src/providers/authProvider';
-// import { DatabaseProvider } from './src/providers/databaseProvider';
+import { DatabaseProvider } from './src/providers/databaseProvider';
 // import { NotificationTrackingProvider } from './src/providers/notificationTrackingProvider';
 import { PassportProvider } from './src/providers/passportDataProvider';
-// import { initSentry, wrapWithSentry } from './src/Sentry';
+import { initSentry, wrapWithSentry } from './src/Sentry';
 
-// initSentry();
+initSentry();
 
 global.Buffer = Buffer;
 
@@ -24,11 +24,11 @@ function App(): React.JSX.Element {
       <YStack f={1} h="100%" w="100%">
         <AuthProvider>
           <PassportProvider>
-            {/* <DatabaseProvider> */}
-            {/* <NotificationTrackingProvider> */}
-            <AppNavigation />
-            {/* </NotificationTrackingProvider> */}
-            {/* </DatabaseProvider> */}
+            <DatabaseProvider>
+              {/* <NotificationTrackingProvider> */}
+              <AppNavigation />
+              {/* </NotificationTrackingProvider> */}
+            </DatabaseProvider>
           </PassportProvider>
         </AuthProvider>
       </YStack>
@@ -36,4 +36,4 @@ function App(): React.JSX.Element {
   );
 }
 
-export default App;
+export default wrapWithSentry(App);
