@@ -1,4 +1,3 @@
-import { Vibration } from 'react-native';
 
 import { defaultOptions, HapticOptions, HapticType } from './shared';
 
