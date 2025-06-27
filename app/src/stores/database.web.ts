@@ -140,16 +140,30 @@ class IndexedDBDatabase implements ProofDB {
       request.onerror = () => {
         // Handle unique constraint violation for sessionId
         if (request.error?.name === 'ConstraintError') {
-          // Try to update existing record instead
-          const updateRequest = store.put(proofWithId);
-          updateRequest.onerror = () => reject(updateRequest.error);
-          updateRequest.onsuccess = () => {
-            resolve({
-              id: updateRequest.result?.toString() || '',
-              timestamp,
-              rowsAffected: 1,
-            });
+          // Find existing record by sessionId and update it
+          const sessionIdIndex = store.index('sessionId');
+          const getRequest = sessionIdIndex.get(proof.sessionId);
+          getRequest.onsuccess = () => {
+            const existing = getRequest.result;
+            if (existing) {
+              const updateRequest = store.put({
+                ...existing,
+                ...proofWithId,
+                id: existing.id // Preserve the original ID
+              });
+              updateRequest.onerror = () => reject(updateRequest.error);
+              updateRequest.onsuccess = () => {
+                resolve({
+                  id: existing.id.toString(),
+                  timestamp,
+                  rowsAffected: 1,
+                });
+              };
+            } else {
+              reject(new Error('Constraint error but record not found'));
+            }
           };
+          getRequest.onerror = () => reject(getRequest.error);
         } else {
           reject(request.error);
         }
