@@ -19,12 +19,12 @@ const { flush: flushAnalytics } = analytics();
 const tips: TipProps[] = [
   {
     title: 'Use Good Lighting',
-    body: 'Try scanning in a well-lit area to reduce glare or shadows on the passport page.',
+    body: 'Try scanning in a well-lit area to reduce glare or shadows on the ID page.',
     icon: <PassportCameraBulb width={28} height={28} />,
   },
   {
     title: 'Lay It Flat',
-    body: 'Place your passport on a stable, flat surface to keep the ID page smooth and fully visible.',
+    body: 'Place your ID on a stable, flat surface to keep the ID page smooth and fully visible.',
     icon: <Star width={28} height={28} />,
   },
   {
@@ -39,7 +39,7 @@ const tips: TipProps[] = [
   },
   {
     title: 'Avoid Reflections',
-    body: 'Slightly tilt the passport or your phone if bright lights create glare on the page.',
+    body: 'Slightly tilt the ID or your phone if bright lights create glare on the page.',
     icon: <PassportCameraScan width={28} height={28} />,
   },
 ];
