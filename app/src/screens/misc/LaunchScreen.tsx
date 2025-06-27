@@ -64,6 +64,8 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             borderColor={zinc800}
             color={white}
             borderWidth={1}
+            // TODO: add onPress event
+            onPress={() => {}}
           >
             List of supported biometric IDs
           </AbstractButton>
