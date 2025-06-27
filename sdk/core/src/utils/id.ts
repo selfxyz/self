@@ -84,7 +84,7 @@ export const formatRevealedDataPacked = (
     dateOfBirth: dateOfBirth,
     gender: gender,
     expiryDate: expiryDate,
-    olderThan: olderThan,
+    minimumAge: olderThan,
     ofac: ofac,
   };
 };

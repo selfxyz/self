@@ -9,7 +9,7 @@ export type VcAndDiscloseProof = {
 };
 
 export type VerificationConfig = {
-  olderThan?: number;
+  minimumAge?: number;
   excludedCountries?: Country3LetterCode[];
   ofac?: boolean;
 };
@@ -18,7 +18,7 @@ export type VerificationResult = {
   attestationId: AttestationId;
   isValidDetails: {
     isValid: boolean;
-    isOlderThanValid: boolean;
+    isMinimumAgeValid: boolean;
     isOfacValid: boolean;
   };
   forbiddenCountriesList: string[];
@@ -39,7 +39,7 @@ export type GenericDiscloseOutput = {
   dateOfBirth: string;
   gender: string;
   expiryDate: string;
-  olderThan: string;
+  minimumAge: string;
   ofac: boolean[];
 };
 
