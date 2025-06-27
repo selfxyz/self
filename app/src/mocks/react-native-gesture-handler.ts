@@ -11,12 +11,12 @@ export const GestureHandlerRootView: React.FC<{
 
 const returnValue = {
   numberOfTaps: () => returnValue,
-  onStart: () => {},
-  onEnd: () => {},
-  onCancel: () => {},
-  onFail: () => {},
-  onUpdate: () => {},
-  onFinalize: () => {},
+  onStart: () => returnValue,
+  onEnd: () => returnValue,
+  onCancel: () => returnValue,
+  onFail: () => returnValue,
+  onUpdate: () => returnValue,
+  onFinalize: () => returnValue,
 };
 
 // Mock Gesture and GestureDetector for web
