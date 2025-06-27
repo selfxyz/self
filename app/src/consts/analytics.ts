@@ -3,6 +3,7 @@
 export const AppEvents = {
   DISMISS_PRIVACY_DISCLAIMER: 'App: Dismiss Privacy Disclaimer',
   GET_STARTED: 'App: Get Started',
+  SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
   UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
   UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
   UPDATE_STARTED: 'App: Update Started',

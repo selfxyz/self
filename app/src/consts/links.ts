@@ -6,6 +6,8 @@ export const termsUrl = 'https://self.xyz/terms';
 
 export const privacyUrl = 'https://self.xyz/privacy';
 
+export const supportedBiometricIdsUrl = 'https://self.xyz/supported-ids';
+
 export const telegramUrl = 'https://t.me/self_xyz';
 
 export const gitHubUrl = 'https://github.com/selfxyz/self';

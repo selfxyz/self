@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
@@ -10,7 +10,11 @@ import AbstractButton from '../../components/buttons/AbstractButton';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { AppEvents } from '../../consts/analytics';
-import { privacyUrl, termsUrl } from '../../consts/links';
+import {
+  privacyUrl,
+  supportedBiometricIdsUrl,
+  termsUrl,
+} from '../../consts/links';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Logo from '../../images/logo.svg';
@@ -64,10 +68,12 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             borderColor={zinc800}
             color={white}
             borderWidth={1}
-            // TODO: add onPress event
-            onPress={() => {}}
+            trackEvent={AppEvents.SUPPORTED_BIOMETRIC_IDS}
+            onPress={() => {
+              Linking.openURL(supportedBiometricIdsUrl);
+            }}
           >
-            List of supported Biometric IDs
+            List of Supported Biometric IDs
           </AbstractButton>
 
           <AbstractButton
@@ -76,7 +82,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             bgColor={white}
             color={black}
           >
-            I have a passport or Biometric ID
+            I have a Passport or Biometric ID
           </AbstractButton>
         </YStack>
 
