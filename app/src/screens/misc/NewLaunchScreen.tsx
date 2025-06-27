@@ -59,7 +59,12 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
 
       <YStack gap="$3" width="100%" alignItems="center" marginBottom={20}>
         <YStack gap="$3" width="100%">
-          <AbstractButton bgColor={black} borderColor={zinc800} color={white}>
+          <AbstractButton
+            bgColor={black}
+            borderColor={zinc800}
+            color={white}
+            borderWidth={1}
+          >
             List of supported biometric IDs
           </AbstractButton>
 
@@ -96,14 +101,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    width: '100%',
+    width: '102%',
     paddingTop: '25%',
   },
   card: {
     width: '100%',
+    marginTop: '30%',
     borderRadius: 16,
     paddingVertical: 40,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     alignItems: 'center',
     backgroundColor: zinc900,
     shadowColor: black,
@@ -126,7 +132,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: advercase,
-    fontSize: 32,
+    fontSize: 38,
     fontWeight: '500',
     color: white,
     textAlign: 'center',
