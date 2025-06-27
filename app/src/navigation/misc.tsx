@@ -4,7 +4,6 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React from 'react';
 import { StatusBar } from 'react-native';
 
-import LaunchScreen from '../screens/misc/LaunchScreen';
 import LoadingScreen from '../screens/misc/LoadingScreen';
 import ModalScreen from '../screens/misc/ModalScreen';
 import NewLaunchScreen from '../screens/misc/NewLaunchScreen';
@@ -13,10 +12,12 @@ import { black } from '../utils/colors';
 
 const miscScreens = {
   Launch: {
-    screen: LaunchScreen,
+    screen: NewLaunchScreen,
     options: {
-      headerShown: false,
-      gestureEnabled: false,
+      header: () => (
+        <StatusBar barStyle="light-content" backgroundColor={black} />
+      ),
+      navigationBarColor: black,
     },
   },
   LoadingScreen: {
@@ -34,15 +35,7 @@ const miscScreens = {
       animation: 'fade',
     } as NativeStackNavigationOptions,
   },
-  NewLaunch: {
-    screen: NewLaunchScreen,
-    options: {
-      header: () => (
-        <StatusBar barStyle="light-content" backgroundColor={black} />
-      ),
-      navigationBarColor: black,
-    },
-  },
+
   Splash: {
     screen: SplashScreen,
     options: {
