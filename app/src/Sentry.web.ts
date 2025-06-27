@@ -22,8 +22,8 @@ export const initSentry = () => {
     beforeSend(event) {
       // Remove PII data
       if (event.user) {
-        delete event.user.ip_address;
-        delete event.user.id;
+        event.user.ip_address = undefined;
+        event.user.id = undefined;
       }
       return event;
     },
