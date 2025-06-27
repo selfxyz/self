@@ -17,12 +17,12 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
-import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
-import { black, slate800, white } from '../../utils/colors';
+import { black, slate400, slate800, white } from '../../utils/colors';
+import { dinot } from '../../utils/fonts';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
 
 interface PassportNFCScanScreen {}
@@ -125,7 +125,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack alignItems="center" gap="$2.5">
           <YStack alignItems="center" gap="$6" pb="$2.5">
-            <Title>Scan your passport</Title>
+            <Title>Scan your ID</Title>
             <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
               <View pt="$2">
                 <Scan height={40} width={40} color={slate800} />
@@ -135,30 +135,16 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
                   Open to the photograph page
                 </Description>
                 <Additional style={styles.description}>
-                  Position all four corners of the first passport page clearly
-                  in the frame.
-                </Additional>
-              </View>
-            </XStack>
-            <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
-              <View pt="$2">
-                <Bulb height={40} width={40} color={slate800} />
-              </View>
-              <View
-                alignItems="flex-start"
-                justifyContent="flex-start"
-                maxWidth="75%"
-              >
-                <Description style={styles.subheader}>
-                  Avoid dim lighting or glare
-                </Description>
-                <Additional style={styles.description}>
-                  Ensure that the text and photo are clearly readable and well
-                  lit.
+                  Lay your document flat and position the machine readable text
+                  in the viewfinder
                 </Additional>
               </View>
             </XStack>
           </YStack>
+
+          <Additional style={styles.disclaimer}>
+            SELF WILL NOT CAPTURE AN IMAGE OF YOUR PASSPORT.
+          </Additional>
 
           <SecondaryButton
             trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED}
@@ -187,5 +173,17 @@ const styles = StyleSheet.create({
   },
   description: {
     textAlign: 'left',
+  },
+  disclaimer: {
+    fontFamily: dinot,
+    textAlign: 'center',
+    fontSize: 11,
+    color: slate400,
+    textTransform: 'uppercase',
+    width: '100%',
+    alignSelf: 'center',
+    letterSpacing: 0.44,
+    marginTop: 0,
+    marginBottom: 10,
   },
 });
