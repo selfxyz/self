@@ -33,6 +33,10 @@ export default defineConfig({
         __dirname,
         'src/mocks/react-native-safe-area-context.js',
       ),
+      'react-native-gesture-handler': path.resolve(
+        __dirname,
+        'src/mocks/react-native-gesture-handler.ts',
+      ),
     },
   },
   plugins: [
@@ -50,6 +54,7 @@ export default defineConfig({
         'CheckBox',
         'Touchable',
       ],
+      platform: 'web',
       optimize: true,
     }),
   ].filter(Boolean),
