@@ -19,7 +19,7 @@ export function getLocales(): Locale[] {
       scriptCode: locale.script,
       languageTag: lang,
       // @ts-expect-error this not in type but appears to be in browsers
-      isRTL: locale.textInfo?.direction === 'rtl' ?? false,
+      isRTL: locale.textInfo?.direction === 'rtl',
     };
   });
 }

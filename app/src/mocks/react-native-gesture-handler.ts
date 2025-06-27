@@ -9,20 +9,30 @@ export const GestureHandlerRootView: React.FC<{
   return React.createElement('div', props, children);
 };
 
+const returnValue = {
+  numberOfTaps: () => returnValue,
+  onStart: () => {},
+  onEnd: () => {},
+  onCancel: () => {},
+  onFail: () => {},
+  onUpdate: () => {},
+  onFinalize: () => {},
+};
+
 // Mock Gesture and GestureDetector for web
 export const Gesture = {
-  Pan: () => ({}),
-  Tap: () => ({}),
-  LongPress: () => ({}),
-  Pinch: () => ({}),
-  Rotation: () => ({}),
-  Fling: () => ({}),
-  Force: () => ({}),
-  Native: () => ({}),
-  Race: () => ({}),
-  Simultaneous: () => ({}),
-  Exclusive: () => ({}),
-  Composed: () => ({}),
+  Pan: () => returnValue,
+  Tap: () => returnValue,
+  LongPress: () => returnValue,
+  Pinch: () => returnValue,
+  Rotation: () => returnValue,
+  Fling: () => returnValue,
+  Force: () => returnValue,
+  Native: () => returnValue,
+  Race: () => returnValue,
+  Simultaneous: () => returnValue,
+  Exclusive: () => returnValue,
+  Composed: () => returnValue,
 };
 
 export const GestureDetector: React.FC<{

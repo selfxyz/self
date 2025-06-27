@@ -9,6 +9,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DefaultNavBar } from '../components/NavBar';
@@ -39,7 +40,7 @@ export const navigationScreens = {
 
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
-  initialRouteName: 'Home',
+  initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,
