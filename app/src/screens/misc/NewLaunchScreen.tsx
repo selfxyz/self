@@ -1,0 +1,165 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Anchor, Text, YStack } from 'tamagui';
+
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { BodyText } from '../../components/typography/BodyText';
+import { Caption } from '../../components/typography/Caption';
+import { AppEvents } from '../../consts/analytics';
+import { privacyUrl, termsUrl } from '../../consts/links';
+import useConnectionModal from '../../hooks/useConnectionModal';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
+import Logo from '../../images/logo.svg';
+import { black, slate500, white, zinc900 } from '../../utils/colors';
+import { advercase, dinot } from '../../utils/fonts';
+
+interface LaunchScreenProps {}
+
+const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
+  useConnectionModal();
+  const onStartPress = useHapticNavigation('PassportOnboarding');
+  const createMock = useHapticNavigation('CreateMock');
+  const { bottom } = useSafeAreaInsets();
+
+  const devModeTap = Gesture.Tap()
+    .numberOfTaps(5)
+    .onStart(() => {
+      createMock();
+    });
+
+  return (
+    <YStack
+      bg={black}
+      flex={1}
+      justifyContent="space-between"
+      alignItems="center"
+      paddingHorizontal={20}
+      paddingBottom={bottom}
+    >
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <GestureDetector gesture={devModeTap}>
+            <View style={styles.logoSection}>
+              <Logo style={styles.logo} />
+            </View>
+          </GestureDetector>
+
+          <Text style={styles.title}>Get started</Text>
+
+          <BodyText style={styles.description}>
+            Register with Self using your passport or biometric ID to prove your
+            identity across the web without revealing your personal information.
+          </BodyText>
+        </View>
+      </View>
+
+      <YStack gap="$3" width="100%" alignItems="center">
+        <YStack gap="$3" width="100%">
+          <PrimaryButton style={styles.secondaryButton}>
+            List of supported biometric IDs
+          </PrimaryButton>
+
+          <PrimaryButton
+            trackEvent={AppEvents.GET_STARTED}
+            onPress={onStartPress}
+            style={styles.primaryButton}
+          >
+            I have a passport or biometric ID
+          </PrimaryButton>
+        </YStack>
+
+        <Caption style={styles.notice} size={'small'}>
+          By continuing, you agree to the&nbsp;
+          <Anchor style={styles.link} href={termsUrl}>
+            User Terms and Conditions
+          </Anchor>
+          &nbsp;and acknowledge the&nbsp;
+          <Anchor style={styles.link} href={privacyUrl}>
+            Privacy notice
+          </Anchor>
+          &nbsp;of Self provided by Self Inc.
+        </Caption>
+      </YStack>
+    </YStack>
+  );
+};
+
+export default LaunchScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '100%',
+    paddingTop: 60,
+  },
+  card: {
+    width: '92%',
+    borderRadius: 16,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    backgroundColor: zinc900,
+    shadowColor: black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+    marginBottom: 20,
+  },
+  logoSection: {
+    width: 60,
+    height: 60,
+    marginBottom: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: 40,
+    height: 40,
+  },
+  title: {
+    fontFamily: advercase,
+    fontSize: 32,
+    fontWeight: '500',
+    color: white,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  description: {
+    color: white,
+    fontSize: 16,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  secondaryButton: {
+    backgroundColor: black,
+    borderWidth: 1,
+    borderColor: slate500,
+    color: white,
+  },
+  primaryButton: {
+    backgroundColor: white,
+    color: black,
+  },
+  notice: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    color: slate500,
+    textAlign: 'center',
+    lineHeight: 18,
+    fontSize: 12,
+  },
+  link: {
+    fontFamily: dinot,
+    color: slate500,
+    fontSize: 12,
+    lineHeight: 18,
+    textDecorationLine: 'underline',
+  },
+});
