@@ -7,10 +7,7 @@ async function showRegistryAddresses() {
 
   try {
     // Read the deployed addresses from the deployment artifacts
-    const deployedAddressesPath = path.join(
-      __dirname,
-      "../ignition/deployments/chain-44787/deployed_addresses.json"
-    );
+    const deployedAddressesPath = path.join(__dirname, "../ignition/deployments/chain-44787/deployed_addresses.json");
 
     if (!fs.existsSync(deployedAddressesPath)) {
       console.log("❌ No deployment found for chain 44787 (Alfajores)");
@@ -21,9 +18,7 @@ async function showRegistryAddresses() {
     const deployedAddresses = JSON.parse(fs.readFileSync(deployedAddressesPath, "utf8"));
 
     // Show registry-related addresses
-    const registryKeys = Object.keys(deployedAddresses).filter(key =>
-      key.startsWith("DeployRegistryModule#")
-    );
+    const registryKeys = Object.keys(deployedAddresses).filter((key) => key.startsWith("DeployRegistryModule#"));
 
     if (registryKeys.length === 0) {
       console.log("❌ No registry contracts found in deployed addresses");
@@ -31,7 +26,7 @@ async function showRegistryAddresses() {
       return;
     }
 
-    registryKeys.forEach(key => {
+    registryKeys.forEach((key) => {
       const contractName = key.replace("DeployRegistryModule#", "");
       const address = deployedAddresses[key];
       let emoji = "📝";
@@ -45,7 +40,6 @@ async function showRegistryAddresses() {
     });
 
     console.log("\n✅ Registry deployment complete!");
-
   } catch (error) {
     console.error("❌ Error reading deployment addresses:", error);
   }
