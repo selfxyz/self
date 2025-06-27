@@ -40,6 +40,13 @@ const NFC_METHODS = [
     params: { usePacePolling: true },
   },
   {
+    key: 'enableTestFlag',
+    label: 'French ID - Test',
+    description: 'Enable test flag for NFC scan.',
+    platform: ['ios'],
+    params: { enableTestFlag: true },
+  },
+  {
     // We try PACE first, but if it fails, we try BAC authentication.
     // Some chips will invalidate the session if PACE fails.
     key: 'skipPACE',

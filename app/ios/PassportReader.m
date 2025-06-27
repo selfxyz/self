@@ -24,6 +24,7 @@ RCT_EXTERN_METHOD(scanPassport:(NSString *)passportNumber
                   skipCA:(NSNumber * _Nonnull)skipCA
                   extendedMode:(NSNumber * _Nonnull)extendedMode
                   usePacePolling:(NSNumber * _Nonnull)usePacePolling
+                  enableTestFlag:(NSNumber * _Nonnull)enableTestFlag
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
