@@ -6,7 +6,14 @@ module.exports = {
     'plugin:jest/recommended',
   ],
   plugins: ['simple-import-sort', 'prettier', 'jest'],
-  ignorePatterns: ['ios/', 'android/', 'deployments/', 'node_modules/'],
+  ignorePatterns: [
+    'ios/',
+    'android/',
+    'deployments/',
+    'node_modules/',
+    'web/dist/',
+    '.tamagui/*',
+  ],
   rules: {
     // Import sorting rules
     'simple-import-sort/imports': 'warn',
