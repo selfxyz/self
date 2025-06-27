@@ -67,7 +67,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             // TODO: add onPress event
             onPress={() => {}}
           >
-            List of supported biometric IDs
+            List of supported Biometric IDs
           </AbstractButton>
 
           <AbstractButton
@@ -76,7 +76,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             bgColor={white}
             color={black}
           >
-            I have a passport or biometric ID
+            I have a passport or Biometric ID
           </AbstractButton>
         </YStack>
 
