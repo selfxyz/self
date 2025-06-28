@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
+    "format": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
     "postinstall": "patch-package"
