@@ -27,6 +27,7 @@
     "clean:xcode-env-local": "rm -f ios/.xcode.env.local",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
+    "format": "yarn nice",
     "force-local-upload-deploy": "yarn force-local-upload-deploy:android && yarn force-local-upload-deploy:ios",
     "force-local-upload-deploy:android": "yarn reinstall && FORCE_UPLOAD_LOCAL_DEV=true bundle exec fastlane android deploy --verbose",
     "force-local-upload-deploy:ios": "yarn reinstall && FORCE_UPLOAD_LOCAL_DEV=true bundle exec fastlane ios deploy --verbose",
