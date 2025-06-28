@@ -60,7 +60,10 @@ export function useBackupMnemonic() {
 }
 
 async function addAccessTokenForGoogleDrive() {
-  if (CloudStorage.getProvider() === CloudStorageProvider.GoogleDrive) {
+  if (
+    Platform.OS === 'android' &&
+    CloudStorage.getProvider() === CloudStorageProvider.GoogleDrive
+  ) {
     const response = await googleSignIn();
     if (!response) {
       // user canceled
