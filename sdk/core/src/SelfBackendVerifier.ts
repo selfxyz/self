@@ -148,7 +148,7 @@ export class SelfBackendVerifier {
     if (!configId) {
       issues.push({
         type: ConfigMismatch.ConfigNotFound,
-        message: "Config Id not found",
+        message: 'Config Id not found',
       });
     }
 
