@@ -59,11 +59,10 @@ export const formatRevealedDataPacked = (
     )
     .toString('utf-8');
   const olderThan = Buffer.from(
-    revealedDataPackedString
-      .subarray(
-        revealedDataIndices[attestationId].olderThanStart,
-        revealedDataIndices[attestationId].olderThanEnd + 1
-      )
+    revealedDataPackedString.subarray(
+      revealedDataIndices[attestationId].olderThanStart,
+      revealedDataIndices[attestationId].olderThanEnd + 1
+    )
   ).toString('utf-8');
   const ofac = Array.from(
     revealedDataPackedString.subarray(
