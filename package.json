@@ -13,10 +13,14 @@
     "format": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "gitleaks": "gitleaks protect --staged --redact --config=.gitleaks.toml",
+    "prepare": "husky install"
   },
   "packageManager": "yarn@4.6.0",
   "devDependencies": {
+    "gitleaks": "^1.0.0",
+    "husky": "^8.0.0",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0"
   }

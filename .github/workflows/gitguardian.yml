@@ -1,0 +1,13 @@
+name: GitGuardian Scan
+
+on:
+  pull_request:
+
+jobs:
+  gitguardian:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: GitGuardian/ggshield/actions/scan@v1
+        with:
+          path: .

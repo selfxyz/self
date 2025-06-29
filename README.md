@@ -62,6 +62,11 @@ The International Civil Aviation Organization (ICAO) is a specialized agency of 
 - Passport Wallet: use [active authentication](https://en.wikipedia.org/wiki/Biometric_passport#:~:text=Active%20Authentication%20(AA),Using%20AA%20is%20optional.) to build a wallet, a multisig or a recovery module using passport signatures
 
 We will provide bounties for all those applications. Those are not fixed right now, so please contact us if you're interested.
+## Development Setup
+
+Run `yarn install` to bootstrap dependencies and husky hooks.
+Gitleaks will scan staged changes on each commit via `yarn gitleaks`.
+
 
 ## Licensing
 

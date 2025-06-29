@@ -14260,6 +14260,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gitleaks@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "gitleaks@npm:1.0.0"
+  checksum: 10c0/126d819495f6f5cb91390a67d2e41ff4f1140412b46501ae2e25f73de1282e94233ca8874946651dc0a70cb0bc346a58fdc292150520451efad6e71ef791dd25
+  languageName: node
+  linkType: hard
+
 "glob-parent@npm:^5.1.2, glob-parent@npm:~5.1.2":
   version: 5.1.2
   resolution: "glob-parent@npm:5.1.2"
@@ -14895,6 +14902,15 @@ __metadata:
   version: 2.1.0
   resolution: "human-signals@npm:2.1.0"
   checksum: 10c0/695edb3edfcfe9c8b52a76926cd31b36978782062c0ed9b1192b36bebc75c4c87c82e178dfcb0ed0fc27ca59d434198aac0bd0be18f5781ded775604db22304a
+  languageName: node
+  linkType: hard
+
+"husky@npm:^8.0.0":
+  version: 8.0.3
+  resolution: "husky@npm:8.0.3"
+  bin:
+    husky: lib/bin.js
+  checksum: 10c0/6722591771c657b91a1abb082e07f6547eca79144d678e586828ae806499d90dce2a6aee08b66183fd8b085f19d20e0990a2ad396961746b4c8bd5bdb619d668
   languageName: node
   linkType: hard
 
@@ -20664,6 +20680,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "self-workspace-root@workspace:."
   dependencies:
+    gitleaks: "npm:^1.0.0"
+    husky: "npm:^8.0.0"
     patch-package: "npm:^8.0.0"
     postinstall-postinstall: "npm:^2.1.0"
   languageName: unknown
