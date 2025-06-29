@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { GOOGLE_SIGNIN_WEB_CLIENT_ID } from '@env';
+import { GOOGLE_SIGNIN_ANDROID_CLIENT_ID } from '@env';
 import {
   AuthConfiguration,
   authorize,
@@ -8,10 +8,15 @@ import {
 } from 'react-native-app-auth';
 
 const config: AuthConfiguration = {
-  issuer: 'https://accounts.google.com',
-  clientId: GOOGLE_SIGNIN_WEB_CLIENT_ID,
-  redirectUrl: 'com.proofofpassportapp:/oauthredirect',
+  // DEBUG: log config for Auth
+  // ensure this prints the correct values before calling authorize
+  clientId: GOOGLE_SIGNIN_ANDROID_CLIENT_ID,
+  redirectUrl: 'com.proofofpassportapp:/oauth2redirect',
   scopes: ['https://www.googleapis.com/auth/drive.appdata'],
+  serviceConfiguration: {
+    authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+    tokenEndpoint: 'https://oauth2.googleapis.com/token',
+  },
   additionalParameters: { access_type: 'offline', prompt: 'consent' as const },
 };
 
