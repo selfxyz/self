@@ -15,21 +15,20 @@
 {
   [FIRApp configure];
 
-  // TODO: Uncomment this after the APN has been configured
-  // if ([UNUserNotificationCenter class] != nil) {
-  //   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-  //   center.delegate = self;
+  if ([UNUserNotificationCenter class] != nil) {
+    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+    center.delegate = self;
 
-  //   // Request permission for notifications
-  //   [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge)
-  //                         completionHandler:^(BOOL granted, NSError * _Nullable error) {
-  //     if (granted) {
-  //       dispatch_async(dispatch_get_main_queue(), ^{
-  //         [[UIApplication sharedApplication] registerForRemoteNotifications];
-  //       });
-  //     }
-  //   }];
-  // }
+    // Request permission for notifications
+    [center requestAuthorizationWithOptions:(UNAuthorizationOptionSound | UNAuthorizationOptionAlert | UNAuthorizationOptionBadge)
+                          completionHandler:^(BOOL granted, NSError * _Nullable error) {
+      if (granted) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [[UIApplication sharedApplication] registerForRemoteNotifications];
+        });
+      }
+    }];
+  }
 
   self.moduleName = @"OpenPassport";
   self.initialProps = @{};
@@ -66,6 +65,7 @@ continueUserActivity:(NSUserActivity *)userActivity
   NSString *token = [self stringFromDeviceToken:deviceToken];
   NSLog(@"APNs device token: %@", token);
   [[FIRMessaging messaging] setAPNSToken:deviceToken type:FIRMessagingAPNSTokenTypeProd];
+  // [[FIRMessaging messaging] setAPNSToken:deviceToken type:FIRMessagingAPNSTokenTypeSandbox];
 }
 
 // Handle device token registration errors
