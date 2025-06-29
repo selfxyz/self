@@ -31,7 +31,14 @@ export const useModal = (params: ModalParams) => {
     }
     if (callbackIdRef.current !== undefined) {
       const callbacks = getModalCallbacks(callbackIdRef.current);
-      callbacks?.onModalDismiss();
+      if (callbacks) {
+        try {
+          callbacks.onModalDismiss();
+        } catch (error) {
+          // Log error but continue cleanup process
+          console.warn('Error in modal dismiss callback:', error);
+        }
+      }
       unregisterModalCallbacks(callbackIdRef.current);
       callbackIdRef.current = undefined;
     }

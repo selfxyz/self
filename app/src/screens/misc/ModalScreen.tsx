@@ -52,13 +52,39 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
 
   const onButtonPressed = useCallback(async () => {
     confirmTap();
+
+    // Check if callbacks and onButtonPress are defined
+    if (!callbacks || !callbacks.onButtonPress) {
+      console.warn('Modal callbacks not found or onButtonPress not defined');
+      return;
+    }
+
     try {
-      await callbacks?.onButtonPress();
-      navigation.goBack();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      unregisterModalCallbacks(params.callbackId);
+      // Try to execute the callback first
+      await callbacks.onButtonPress();
+
+      try {
+        // If callback succeeds, try to navigate back
+        navigation.goBack();
+        // Only unregister after successful navigation
+        unregisterModalCallbacks(params.callbackId);
+      } catch (navigationError) {
+        console.error('Navigation error:', navigationError);
+        // Don't cleanup if navigation fails - modal might still be visible
+      }
+    } catch (callbackError) {
+      console.error('Callback error:', callbackError);
+      // If callback fails, we should still try to navigate and cleanup
+      try {
+        navigation.goBack();
+        unregisterModalCallbacks(params.callbackId);
+      } catch (navigationError) {
+        console.error(
+          'Navigation error after callback failure:',
+          navigationError,
+        );
+        // Don't cleanup if navigation fails
+      }
     }
   }, [callbacks, navigation, params.callbackId]);
 
