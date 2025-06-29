@@ -75,7 +75,7 @@ async function createGDrive() {
   return gdrive;
 }
 
-async function upload(mnemonic: Mnemonic) {
+export async function upload(mnemonic: Mnemonic) {
   if (!mnemonic || !mnemonic.phrase) {
     throw new Error(
       'Mnemonic not set yet. Did the user see the recovery phrase?',
@@ -109,7 +109,7 @@ async function upload(mnemonic: Mnemonic) {
   }
 }
 
-async function download() {
+export async function download() {
   if (Platform.OS === 'ios') {
     if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
       const mnemonicString = await withRetries(() =>
@@ -152,16 +152,20 @@ async function download() {
   const mnemonicString = await withRetries(() =>
     gdrive.files.getText(files[0].id as string),
   );
-  const mnemonic = JSON.parse(mnemonicString) as Mnemonic;
-  if (!mnemonic.phrase || !ethers.Mnemonic.isValidMnemonic(mnemonic.phrase)) {
+  try {
+    const mnemonic = JSON.parse(mnemonicString) as Mnemonic;
+    if (!mnemonic.phrase || !ethers.Mnemonic.isValidMnemonic(mnemonic.phrase)) {
+      throw new Error();
+    }
+    return mnemonic;
+  } catch (e) {
     throw new Error(
       `Malformed mnemonic, expected JSON structure, got ${mnemonicString}`,
     );
   }
-  return mnemonic;
 }
 
-async function disableBackup() {
+export async function disableBackup() {
   if (Platform.OS === 'ios') {
     withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
     return;
