@@ -14,6 +14,7 @@ import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 import { version } from '../../../package.json';
 import { pressedStyle } from '../../components/buttons/pressedStyle';
 import { BodyText } from '../../components/typography/BodyText';
+import { DocumentEvents } from '../../consts/analytics';
 import {
   appStoreUrl,
   gitHubUrl,
@@ -32,6 +33,7 @@ import Telegram from '../../images/icons/telegram.svg';
 import Web from '../../images/icons/webpage.svg';
 import { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
+import analytics from '../../utils/analytics';
 import {
   amber500,
   black,
@@ -41,6 +43,8 @@ import {
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
+
+const { trackEvent } = analytics();
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {
@@ -186,6 +190,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             break;
 
           case 'ManageDocuments':
+            trackEvent(DocumentEvents.MANAGE_SCREEN_OPENED);
             navigation.navigate('ManageDocuments' as any);
             break;
 

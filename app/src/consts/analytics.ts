@@ -105,3 +105,15 @@ export const MockDataEvents = {
   SELECT_COUNTRY: 'Mock Data: Select Country',
   TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
 };
+
+export const DocumentEvents = {
+  MANAGE_SCREEN_OPENED: 'Document: Manage Documents Screen Opened',
+  DOCUMENTS_FETCHED: 'Document: Documents Fetched',
+  NO_DOCUMENTS_FOUND: 'Document: No Documents Found',
+  DOCUMENT_SELECTED: 'Document: Document Selected',
+  DOCUMENT_DELETED: 'Document: Document Deleted',
+  ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
+  ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
+  PASSPORT_INFO_OPENED: 'Document: Passport Info Screen Opened',
+  PASSPORT_METADATA_LOADED: 'Document: Passport Metadata Loaded',
+};
