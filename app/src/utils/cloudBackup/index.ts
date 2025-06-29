@@ -68,7 +68,7 @@ async function createGDrive() {
   const response = await googleSignIn();
   if (!response) {
     // user canceled
-    throw new Error('User canceled Google sign-in');
+    return null;
   }
   const gdrive = new GDrive();
   gdrive.accessToken = response.accessToken;
@@ -95,6 +95,9 @@ async function upload(mnemonic: Mnemonic) {
     );
   } else {
     const gdrive = await createGDrive();
+    if (!gdrive) {
+      throw new Error('User canceled Google sign-in');
+    }
     await withRetries(() =>
       gdrive.files
         .newMultipartUploader()
@@ -134,6 +137,9 @@ async function download() {
   }
 
   const gdrive = await createGDrive();
+  if (!gdrive) {
+    throw new Error('User canceled Google sign-in');
+  }
   const { files } = await gdrive.files.list({
     spaces: APP_DATA_FOLDER_ID,
     q: `name = '${FILE_NAME}'`,
@@ -144,7 +150,7 @@ async function download() {
     );
   }
   const mnemonicString = await withRetries(() =>
-    gdrive.files.getText(files[0].id as string, { alt: 'media' }),
+    gdrive.files.getText(files[0].id as string),
   );
   const mnemonic = JSON.parse(mnemonicString) as Mnemonic;
   if (!mnemonic.phrase || !ethers.Mnemonic.isValidMnemonic(mnemonic.phrase)) {
@@ -161,6 +167,10 @@ async function disableBackup() {
     return;
   }
   const gdrive = await createGDrive();
+  if (!gdrive) {
+    // User canceled sign-in, nothing to disable
+    return;
+  }
   const { files } = await gdrive.files.list({
     spaces: APP_DATA_FOLDER_ID,
     q: `name = '${FILE_NAME}'`,
