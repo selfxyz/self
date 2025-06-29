@@ -1,0 +1,40 @@
+import { useEffect } from 'react';
+import { navigationRef } from '../navigation';
+import { useModal } from './useModal';
+import { useSettingStore } from '../stores/settingStore';
+
+const modalParams = {
+  titleText: 'Protect your account',
+  bodyText:
+    'Enable cloud backup or save your recovery phrase so you can recover your account.',
+  buttonText: 'Back up now',
+  onButtonPress: async () => {
+    if (navigationRef.isReady()) {
+      navigationRef.navigate('CloudBackupSettings', {
+        nextScreen: 'SaveRecoveryPhrase',
+      });
+    }
+  },
+  onModalDismiss: () => {},
+} as const;
+
+export default function useRecoveryPrompts() {
+  const { loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase } =
+    useSettingStore();
+  const { showModal, visible } = useModal(modalParams);
+
+  useEffect(() => {
+    if (!navigationRef.isReady()) {
+      return;
+    }
+    if (!cloudBackupEnabled && !hasViewedRecoveryPhrase) {
+      const shouldPrompt =
+        loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 5 === 0);
+      if (shouldPrompt && !visible) {
+        showModal();
+      }
+    }
+  }, [loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase, visible, showModal]);
+
+  return { visible };
+}

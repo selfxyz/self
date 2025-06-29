@@ -10,6 +10,7 @@ import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { useAppUpdates } from '../../hooks/useAppUpdates';
 import useConnectionModal from '../../hooks/useConnectionModal';
+import useRecoveryPrompts from '../../hooks/useRecoveryPrompts';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import SelfCard from '../../images/card-style-1.svg';
 import ScanIcon from '../../images/icons/qr_scan.svg';
@@ -36,6 +37,7 @@ const ScanButton = styled(Button, {
 
 const HomeScreen: React.FC = () => {
   useConnectionModal();
+  useRecoveryPrompts();
   const [isNewVersionAvailable, showAppUpdateModal, isModalDismissed] =
     useAppUpdates();
 

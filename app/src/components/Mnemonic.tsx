@@ -14,6 +14,7 @@ import {
   white,
 } from '../utils/colors';
 import { confirmTap } from '../utils/haptic';
+import { useSettingStore } from '../stores/settingStore';
 
 interface MnemonicProps {
   words?: string[];
@@ -50,11 +51,13 @@ const REDACTED = new Array(24)
 const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { setHasViewedRecoveryPhrase } = useSettingStore();
   const copyToClipboardOrReveal = useCallback(async () => {
     confirmTap();
     if (!revealWords) {
       // TODO: container jumps when words are revealed on android
       await onRevealWords?.();
+      setHasViewedRecoveryPhrase(true);
       return setRevealWords(previous => !previous);
     }
     Clipboard.setString(words.join(' '));
