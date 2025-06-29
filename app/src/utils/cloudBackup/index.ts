@@ -172,8 +172,7 @@ export async function disableBackup() {
   }
   const gdrive = await createGDrive();
   if (!gdrive) {
-    // User canceled sign-in, nothing to disable
-    return;
+    throw new Error('User canceled Google sign-in');
   }
   const { files } = await gdrive.files.list({
     spaces: APP_DATA_FOLDER_ID,
