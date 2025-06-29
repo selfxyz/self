@@ -62,6 +62,16 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         name: DB_NAME,
         location: 'default',
       });
+
+      const tenMinutesAgo = Date.now() - 10 * 60 * 1000;
+      const [stalePending] = await db.executeSql(
+        `SELECT sessionId FROM ${TABLE_NAME} WHERE status = ? AND timestamp <= ?`,
+        [ProofStatus.PENDING, tenMinutesAgo],
+      );
+      for (let i = 0; i < stalePending.rows.length; i++) {
+        const { sessionId } = stalePending.rows.item(i);
+        await get().updateProofStatus(sessionId, ProofStatus.FAILURE);
+      }
       const [pendingProofs] = await db.executeSql(`
         SELECT * FROM ${TABLE_NAME} WHERE status = '${ProofStatus.PENDING}'
       `);
