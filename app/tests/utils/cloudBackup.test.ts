@@ -399,4 +399,51 @@ describe('cloudBackup', () => {
       );
     });
   });
+
+  describe('disableBackup function - iOS', () => {
+    beforeEach(() => {
+      Platform.OS = 'ios';
+    });
+
+    it('should remove backup folder from iCloud', async () => {
+      (CloudStorage.rmdir as jest.Mock).mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.disableBackup()).resolves.toBeUndefined();
+      expect(CloudStorage.rmdir).toHaveBeenCalledWith('/@selfxyz/mobile-app', { recursive: true });
+    });
+  });
+
+  describe('disableBackup function - Android', () => {
+    beforeEach(() => {
+      Platform.OS = 'android';
+    });
+
+    it('should delete backup files from Google Drive', async () => {
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files.list.mockResolvedValue({
+        files: [{ id: 'file-id' }, { id: 'file-id2' }],
+      });
+      mockGDriveInstance.files.delete.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.disableBackup()).resolves.toBeUndefined();
+      expect(mockGDriveInstance.files.list).toHaveBeenCalledWith({
+        spaces: 'mock-app-data-folder',
+        q: "name = 'encrypted-private-key'",
+      });
+      expect(mockGDriveInstance.files.delete).toHaveBeenNthCalledWith(1, 'file-id');
+      expect(mockGDriveInstance.files.delete).toHaveBeenNthCalledWith(2, 'file-id2');
+    });
+
+    it('should resolve when user cancels Google sign-in', async () => {
+      (createGDrive as jest.Mock).mockResolvedValue(null);
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.disableBackup()).resolves.toBeUndefined();
+    });
+  });
 });
