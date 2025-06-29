@@ -5,7 +5,7 @@ module.exports = {
     'plugin:prettier/recommended',
     'plugin:jest/recommended',
   ],
-  plugins: ['simple-import-sort', 'prettier', 'jest', 'header'],
+  plugins: ['header', 'jest', 'prettier', 'simple-import-sort'],
   ignorePatterns: ['ios/', 'android/', 'deployments/', 'node_modules/'],
   rules: {
     // Import sorting rules
