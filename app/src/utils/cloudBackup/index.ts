@@ -2,7 +2,6 @@
 
 import {
   APP_DATA_FOLDER_ID,
-  GDrive,
   MIME_TYPES,
 } from '@robinbobin/react-native-google-drive-api-wrapper';
 import { ethers } from 'ethers';
@@ -12,7 +11,7 @@ import { CloudStorage, CloudStorageScope } from 'react-native-cloud-storage';
 
 import { name } from '../../../package.json';
 import { Mnemonic } from '../../types/mnemonic';
-import { googleSignIn } from './google';
+import { createGDrive } from './google';
 
 const FOLDER = `/${name}`;
 const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;
@@ -62,17 +61,6 @@ export function useBackupMnemonic() {
     }),
     [],
   );
-}
-
-async function createGDrive() {
-  const response = await googleSignIn();
-  if (!response) {
-    // user canceled
-    return null;
-  }
-  const gdrive = new GDrive();
-  gdrive.accessToken = response.accessToken;
-  return gdrive;
 }
 
 export async function upload(mnemonic: Mnemonic) {
