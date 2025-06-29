@@ -41,6 +41,7 @@ import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate100, slate500, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
+import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 
 const { trackEvent } = analytics();
@@ -81,14 +82,17 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
 
   const openErrorModal = useCallback(
     (message: string) => {
+      const callbackId = registerModalCallbacks({
+        onButtonPress: () => {},
+        onModalDismiss: goToNFCTrouble,
+      });
       navigation.navigate('Modal', {
         titleText: 'NFC Scan Error',
         bodyText: message,
         buttonText: 'Dismiss',
         secondaryButtonText: 'Help',
-        onButtonPress: () => {},
-        onModalDismiss: goToNFCTrouble,
         preventDismiss: true,
+        callbackId,
       });
     },
     [navigation, goToNFCTrouble],

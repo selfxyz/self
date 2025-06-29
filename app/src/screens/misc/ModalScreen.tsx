@@ -12,6 +12,10 @@ import ModalClose from '../../images/icons/modal_close.svg';
 import LogoInversed from '../../images/logo_inversed.svg';
 import { white } from '../../utils/colors';
 import { confirmTap, impactLight } from '../../utils/haptic';
+import {
+  getModalCallbacks,
+  unregisterModalCallbacks,
+} from '../../utils/modalCallbackRegistry';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',
@@ -35,26 +39,35 @@ export interface ModalParams extends Record<string, any> {
   preventDismiss?: boolean;
 }
 
-interface ModalScreenProps extends StaticScreenProps<ModalParams> {}
+export interface ModalNavigationParams
+  extends Omit<ModalParams, 'onButtonPress' | 'onModalDismiss'> {
+  callbackId: number;
+}
+
+interface ModalScreenProps extends StaticScreenProps<ModalNavigationParams> {}
 
 const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   const navigation = useNavigation();
+  const callbacks = getModalCallbacks(params.callbackId);
 
   const onButtonPressed = useCallback(async () => {
     confirmTap();
     try {
-      await params?.onButtonPress();
+      await callbacks?.onButtonPress();
       navigation.goBack();
     } catch (error) {
       console.error(error);
+    } finally {
+      unregisterModalCallbacks(params.callbackId);
     }
-  }, [params?.onButtonPress]);
+  }, [callbacks, navigation, params.callbackId]);
 
   const onClose = useCallback(() => {
     impactLight();
     navigation.goBack();
-    params?.onModalDismiss();
-  }, [params?.onModalDismiss]);
+    callbacks?.onModalDismiss();
+    unregisterModalCallbacks(params.callbackId);
+  }, [callbacks, navigation, params.callbackId]);
 
   return (
     <ModalBackDrop>
