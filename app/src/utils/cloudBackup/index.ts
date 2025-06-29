@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import {
+  APP_DATA_FOLDER_ID,
+  GDrive,
+  MIME_TYPES,
+} from '@robinbobin/react-native-google-drive-api-wrapper';
 import { ethers } from 'ethers';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
-import {
-  CloudStorage,
-  CloudStorageScope,
-} from 'react-native-cloud-storage';
-import {
-  GDrive,
-  MIME_TYPES,
-  APP_DATA_FOLDER_ID,
-} from '@robinbobin/react-native-google-drive-api-wrapper';
+import { CloudStorage, CloudStorageScope } from 'react-native-cloud-storage';
 
 import { name } from '../../../package.json';
 import { Mnemonic } from '../../types/mnemonic';
@@ -169,8 +166,6 @@ async function disableBackup() {
     q: `name = '${FILE_NAME}'`,
   });
   await Promise.all(
-    files
-      .filter(f => f.id)
-      .map(f => gdrive.files.delete(f.id as string)),
+    files.filter(f => f.id).map(f => gdrive.files.delete(f.id as string)),
   );
 }
