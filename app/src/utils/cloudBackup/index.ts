@@ -167,7 +167,7 @@ export async function download() {
 
 export async function disableBackup() {
   if (Platform.OS === 'ios') {
-    withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
+    await withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
     return;
   }
   const gdrive = await createGDrive();
