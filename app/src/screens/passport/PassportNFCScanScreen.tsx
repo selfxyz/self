@@ -113,6 +113,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       setDialogMessage(
         "Sorry, your device doesn't seem to have an NFC reader.",
       );
+      // Set isNfcEnabled to false so the message is shown on the screen
+      // near the disabled button when NFC isn't supported
+      setIsNfcEnabled(false);
       setIsNfcSupported(false);
     }
   }, []);
