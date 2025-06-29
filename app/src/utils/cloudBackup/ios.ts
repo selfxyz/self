@@ -2,8 +2,13 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
-import { ENCRYPTED_FILE_PATH, FOLDER, parseMnemonic, withRetries } from './helpers';
 import { Mnemonic } from '../../types/mnemonic';
+import {
+  ENCRYPTED_FILE_PATH,
+  FOLDER,
+  parseMnemonic,
+  withRetries,
+} from './helpers';
 
 export async function upload(mnemonic: Mnemonic) {
   try {

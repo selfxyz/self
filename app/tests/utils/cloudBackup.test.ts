@@ -411,7 +411,9 @@ describe('cloudBackup', () => {
       const { result } = renderHook(() => useBackupMnemonic());
 
       await expect(result.current.disableBackup()).resolves.toBeUndefined();
-      expect(CloudStorage.rmdir).toHaveBeenCalledWith('/@selfxyz/mobile-app', { recursive: true });
+      expect(CloudStorage.rmdir).toHaveBeenCalledWith('/@selfxyz/mobile-app', {
+        recursive: true,
+      });
     });
   });
 
@@ -434,8 +436,14 @@ describe('cloudBackup', () => {
         spaces: 'mock-app-data-folder',
         q: "name = 'encrypted-private-key'",
       });
-      expect(mockGDriveInstance.files.delete).toHaveBeenNthCalledWith(1, 'file-id');
-      expect(mockGDriveInstance.files.delete).toHaveBeenNthCalledWith(2, 'file-id2');
+      expect(mockGDriveInstance.files.delete).toHaveBeenNthCalledWith(
+        1,
+        'file-id',
+      );
+      expect(mockGDriveInstance.files.delete).toHaveBeenNthCalledWith(
+        2,
+        'file-id2',
+      );
     });
 
     it('should resolve when user cancels Google sign-in', async () => {

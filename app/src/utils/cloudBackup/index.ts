@@ -9,8 +9,8 @@ import { Platform } from 'react-native';
 
 import { Mnemonic } from '../../types/mnemonic';
 import { createGDrive } from './google';
-import * as ios from './ios';
 import { FILE_NAME, parseMnemonic, withRetries } from './helpers';
+import * as ios from './ios';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 
@@ -62,14 +62,18 @@ export async function download() {
     spaces: APP_DATA_FOLDER_ID,
     q: `name = '${FILE_NAME}'`,
   });
-  if (!files.length || !files[0].id) {
+  if (!files.length) {
     throw new Error(
       'Couldnt find the encrypted backup, did you back it up previously?',
     );
   }
-  const mnemonicString = await withRetries(() =>
-    gdrive.files.getText(files[0].id as string),
-  );
+  const fileId = (files[0] as any).id as string;
+  if (!fileId) {
+    throw new Error(
+      'Couldnt find the encrypted backup, did you back it up previously?',
+    );
+  }
+  const mnemonicString = await withRetries(() => gdrive.files.getText(fileId));
   try {
     const mnemonic = parseMnemonic(mnemonicString);
     return mnemonic;
@@ -93,6 +97,9 @@ export async function disableBackup() {
     q: `name = '${FILE_NAME}'`,
   });
   await Promise.all(
-    files.filter(f => f.id).map(f => gdrive.files.delete(f.id as string)),
+    files.map((f: any) => {
+      const id = f.id as string;
+      return id ? gdrive.files.delete(id) : Promise.resolve();
+    }),
   );
 }

@@ -63,13 +63,14 @@ export async function withRetries<T>(
     try {
       return await promiseBuilder();
     } catch (e) {
-      retries++;
       latestError = e as Error;
-      if (retries < i - 1) {
+      if (i < retries - 1) {
         console.info('retry #', i);
         await new Promise(resolve => setTimeout(resolve, 200 * i));
       }
     }
   }
-  throw new Error(`retry count exhausted (${retries}), original error ${latestError!}`);
+  throw new Error(
+    `retry count exhausted (${retries}), original error ${latestError!}`,
+  );
 }
