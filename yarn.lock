@@ -3567,23 +3567,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-google-signin/google-signin@npm:^13.1.0":
-  version: 13.3.1
-  resolution: "@react-native-google-signin/google-signin@npm:13.3.1"
-  peerDependencies:
-    expo: ">=50.0.0"
-    react: "*"
-    react-dom: "*"
-    react-native: "*"
-  peerDependenciesMeta:
-    expo:
-      optional: true
-    react-dom:
-      optional: true
-  checksum: 10c0/39be6c3bb52be30a8b6c49376ea90c325c07f63c01938df9ba4b3d8966f69c7e1e8fe8ab000227939b899fce06efd3725f3fba56848cf9d25eb9507f8f994f8c
-  languageName: node
-  linkType: hard
-
 "@react-native/assets-registry@npm:0.75.4":
   version: 0.75.4
   resolution: "@react-native/assets-registry@npm:0.75.4"
@@ -4016,6 +3999,27 @@ __metadata:
   dependencies:
     nanoid: "npm:^3.3.11"
   checksum: 10c0/785c061df9aa0239251fe4942f0d8906d9448ea96ab3cda06e111aa94295094358453dd22ca574aef19f65618315ed1ad159acb567db5a83d37b70bcd7923814
+  languageName: node
+  linkType: hard
+
+"@robinbobin/mimetype-constants@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@robinbobin/mimetype-constants@npm:2.0.1"
+  dependencies:
+    radashi: "npm:^12.2.3"
+  checksum: 10c0/37aa993f596a32ba654baf99128752f86a616503a430d173d080701b041d5af24ea992f9d0429c26120c7f5b4d007e89f54735ce31850ae21dd2285646ab8ebc
+  languageName: node
+  linkType: hard
+
+"@robinbobin/react-native-google-drive-api-wrapper@npm:^2.2.3":
+  version: 2.2.3
+  resolution: "@robinbobin/react-native-google-drive-api-wrapper@npm:2.2.3"
+  dependencies:
+    "@robinbobin/mimetype-constants": "npm:^2.0.1"
+    base64-js: "npm:^1.5.1"
+    radashi: "npm:^12.2.3"
+    utf8: "npm:^3.0.0"
+  checksum: 10c0/e6d26b3b72011ba2d4cc70d4a4f102ffefc1e52d4904b3ea3c9fbd97c2fc2d86d519270135cefb56e9f3de36e8a2c7471d276f63e09afe5666b4f10150b05a81
   languageName: node
   linkType: hard
 
@@ -4466,7 +4470,6 @@ __metadata:
     "@react-native-community/netinfo": "npm:^11.4.1"
     "@react-native-firebase/app": "npm:^19.0.1"
     "@react-native-firebase/messaging": "npm:^19.0.1"
-    "@react-native-google-signin/google-signin": "npm:^13.1.0"
     "@react-native/babel-preset": "npm:0.75.4"
     "@react-native/eslint-config": "npm:0.75.4"
     "@react-native/gradle-plugin": "npm:^0.79.2"
@@ -4474,6 +4477,7 @@ __metadata:
     "@react-native/typescript-config": "npm:0.75.4"
     "@react-navigation/native": "npm:^7.0.14"
     "@react-navigation/native-stack": "npm:^7.2.0"
+    "@robinbobin/react-native-google-drive-api-wrapper": "npm:^2.2.3"
     "@segment/analytics-react-native": "npm:^2.21.0"
     "@segment/sovran-react-native": "npm:^1.1.3"
     "@selfxyz/common": "workspace:^"
@@ -4522,6 +4526,7 @@ __metadata:
     prettier: "npm:^3.5.3"
     react: "npm:^18.3.1"
     react-native: "npm:0.75.4"
+    react-native-app-auth: "npm:^8.0.3"
     react-native-biometrics: "npm:^3.0.1"
     react-native-bundle-visualizer: "npm:^3.1.3"
     react-native-check-version: "npm:^1.3.0"
@@ -15068,7 +15073,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"invariant@npm:^2.2.4":
+"invariant@npm:2.2.4, invariant@npm:^2.2.4":
   version: 2.2.4
   resolution: "invariant@npm:2.2.4"
   dependencies:
@@ -19388,6 +19393,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"radashi@npm:^12.2.3":
+  version: 12.6.0
+  resolution: "radashi@npm:12.6.0"
+  checksum: 10c0/50bc1906bf13e13997d95ce0af7a452734b0973e4b9bdb73837789cf78656c1d91fadba2e8bcfb22c48b9d068408e54f01d86735589b77b35c50b3b0cbc21de6
+  languageName: node
+  linkType: hard
+
 "randombytes@npm:^2.1.0":
   version: 2.1.0
   resolution: "randombytes@npm:2.1.0"
@@ -19493,6 +19505,25 @@ __metadata:
   version: 19.1.0
   resolution: "react-is@npm:19.1.0"
   checksum: 10c0/b6c6cadd172d5d39f66d493700d137a5545c294a62ce0f8ec793d59794c97d2bed6bad227626f16bd0e90004ed7fdc8ed662a004e6edcf5d2b7ecb6e3040ea6b
+  languageName: node
+  linkType: hard
+
+"react-native-app-auth@npm:^8.0.3":
+  version: 8.0.3
+  resolution: "react-native-app-auth@npm:8.0.3"
+  dependencies:
+    invariant: "npm:2.2.4"
+    react-native-base64: "npm:0.0.2"
+  peerDependencies:
+    react-native: ">=0.63.0"
+  checksum: 10c0/a3b7e5394c509ad05fb091484d5ff0a14bf6e09b0cfa14c5d81b1abcd92b3e7110f17dca08cb4337e93725e78eddab4611c95a67ab2c7b8bec36984d8ae99999
+  languageName: node
+  linkType: hard
+
+"react-native-base64@npm:0.0.2":
+  version: 0.0.2
+  resolution: "react-native-base64@npm:0.0.2"
+  checksum: 10c0/655e5638c30bc0af1ac649ba053e849a268f12d9657124b1418e27019cbf0f4141e5a93086ee640b46e90e5bb1003d640f38d55504b3637fcd72b7894ac1a30c
   languageName: node
   linkType: hard
 
@@ -23007,7 +23038,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utf8@npm:3.0.0":
+"utf8@npm:3.0.0, utf8@npm:^3.0.0":
   version: 3.0.0
   resolution: "utf8@npm:3.0.0"
   checksum: 10c0/675d008bab65fc463ce718d5cae8fd4c063540f269e4f25afebce643098439d53e7164bb1f193e0c3852825c7e3e32fbd8641163d19a618dbb53f1f09acb0d5a

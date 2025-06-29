@@ -5,9 +5,13 @@ import { useMemo } from 'react';
 import { Platform } from 'react-native';
 import {
   CloudStorage,
-  CloudStorageProvider,
   CloudStorageScope,
 } from 'react-native-cloud-storage';
+import {
+  GDrive,
+  MIME_TYPES,
+  APP_DATA_FOLDER_ID,
+} from '@robinbobin/react-native-google-drive-api-wrapper';
 
 import { name } from '../../../package.json';
 import { Mnemonic } from '../../types/mnemonic';
@@ -15,7 +19,11 @@ import { googleSignIn } from './google';
 
 const FOLDER = `/${name}`;
 const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;
-CloudStorage.setProviderOptions({ scope: CloudStorageScope.AppData });
+if (Platform.OS === 'ios') {
+  CloudStorage.setProviderOptions({ scope: CloudStorageScope.AppData });
+}
+
+const FILE_NAME = 'encrypted-private-key';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 
@@ -59,17 +67,15 @@ export function useBackupMnemonic() {
   );
 }
 
-async function addAccessTokenForGoogleDrive() {
-  if (CloudStorage.getProvider() === CloudStorageProvider.GoogleDrive) {
-    const response = await googleSignIn();
-    if (!response) {
-      // user canceled
-      return;
-    }
-    CloudStorage.setProviderOptions({
-      accessToken: response.accessToken,
-    });
+async function createGDrive() {
+  const response = await googleSignIn();
+  if (!response) {
+    // user canceled
+    throw new Error('User canceled Google sign-in');
   }
+  const gdrive = new GDrive();
+  gdrive.accessToken = response.accessToken;
+  return gdrive;
 }
 
 async function upload(mnemonic: Mnemonic) {
@@ -78,49 +84,93 @@ async function upload(mnemonic: Mnemonic) {
       'Mnemonic not set yet. Did the user see the recovery phrase?',
     );
   }
-
-  await addAccessTokenForGoogleDrive();
-  try {
-    await CloudStorage.mkdir(FOLDER);
-  } catch (e) {
-    console.error(e);
-    if (!(e as Error).message.includes('already')) {
-      throw e;
+  if (Platform.OS === 'ios') {
+    try {
+      await CloudStorage.mkdir(FOLDER);
+    } catch (e) {
+      console.error(e);
+      if (!(e as Error).message.includes('already')) {
+        throw e;
+      }
     }
+    await withRetries(() =>
+      CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(mnemonic)),
+    );
+  } else {
+    const gdrive = await createGDrive();
+    await withRetries(() =>
+      gdrive.files
+        .newMultipartUploader()
+        .setData(JSON.stringify(mnemonic))
+        .setDataMimeType(MIME_TYPES.application.json)
+        .setRequestBody({ name: FILE_NAME, parents: [APP_DATA_FOLDER_ID] })
+        .execute(),
+    );
   }
-  await withRetries(() =>
-    CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(mnemonic)),
-  );
 }
 
 async function download() {
-  await addAccessTokenForGoogleDrive();
-  if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
-    const mnemonicString = await withRetries(() =>
-      CloudStorage.readFile(ENCRYPTED_FILE_PATH),
-    );
-
-    try {
-      const mnemonic = JSON.parse(mnemonicString) as Mnemonic;
-      if (
-        !mnemonic.phrase ||
-        !ethers.Mnemonic.isValidMnemonic(mnemonic.phrase)
-      ) {
-        throw new Error();
-      }
-      return mnemonic;
-    } catch (e) {
-      throw new Error(
-        `Malformed mnemonic, expected JSON structure, got ${mnemonicString}`,
+  if (Platform.OS === 'ios') {
+    if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
+      const mnemonicString = await withRetries(() =>
+        CloudStorage.readFile(ENCRYPTED_FILE_PATH),
       );
+
+      try {
+        const mnemonic = JSON.parse(mnemonicString) as Mnemonic;
+        if (
+          !mnemonic.phrase ||
+          !ethers.Mnemonic.isValidMnemonic(mnemonic.phrase)
+        ) {
+          throw new Error();
+        }
+        return mnemonic;
+      } catch (e) {
+        throw new Error(
+          `Malformed mnemonic, expected JSON structure, got ${mnemonicString}`,
+        );
+      }
     }
+    throw new Error(
+      'Couldnt find the encrypted backup, did you back it up previously?',
+    );
   }
-  throw new Error(
-    'Couldnt find the encrypted backup, did you back it up previously?',
+
+  const gdrive = await createGDrive();
+  const { files } = await gdrive.files.list({
+    spaces: APP_DATA_FOLDER_ID,
+    q: `name = '${FILE_NAME}'`,
+  });
+  if (!files.length || !files[0].id) {
+    throw new Error(
+      'Couldnt find the encrypted backup, did you back it up previously?',
+    );
+  }
+  const mnemonicString = await withRetries(() =>
+    gdrive.files.getText(files[0].id as string, { alt: 'media' }),
   );
+  const mnemonic = JSON.parse(mnemonicString) as Mnemonic;
+  if (!mnemonic.phrase || !ethers.Mnemonic.isValidMnemonic(mnemonic.phrase)) {
+    throw new Error(
+      `Malformed mnemonic, expected JSON structure, got ${mnemonicString}`,
+    );
+  }
+  return mnemonic;
 }
 
 async function disableBackup() {
-  await addAccessTokenForGoogleDrive();
-  withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
+  if (Platform.OS === 'ios') {
+    withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
+    return;
+  }
+  const gdrive = await createGDrive();
+  const { files } = await gdrive.files.list({
+    spaces: APP_DATA_FOLDER_ID,
+    q: `name = '${FILE_NAME}'`,
+  });
+  await Promise.all(
+    files
+      .filter(f => f.id)
+      .map(f => gdrive.files.delete(f.id as string)),
+  );
 }
