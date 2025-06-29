@@ -28,9 +28,15 @@ jest.mock('@robinbobin/react-native-google-drive-api-wrapper', () => ({
   },
 }));
 
-jest.mock('../../src/utils/cloudBackup/google', () => ({
-  googleSignIn: jest.fn(),
-}));
+jest.mock('../../src/utils/cloudBackup/google', () => {
+  const originalModule = jest.requireActual(
+    '../../src/utils/cloudBackup/google',
+  );
+  return {
+    ...originalModule,
+    createGDrive: jest.fn(),
+  };
+});
 
 jest.mock('ethers', () => ({
   ethers: {
@@ -46,7 +52,7 @@ import { ethers } from 'ethers';
 import { CloudStorage } from 'react-native-cloud-storage';
 
 import { useBackupMnemonic } from '../../src/utils/cloudBackup';
-import { googleSignIn } from '../../src/utils/cloudBackup/google';
+import { createGDrive } from '../../src/utils/cloudBackup/google';
 
 // Mock implementations
 const mockGDriveInstance = {
@@ -74,16 +80,20 @@ const mockMnemonic = {
 
 describe('cloudBackup', () => {
   let originalPlatform: any;
+  let consoleSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
     originalPlatform = Platform.OS;
+    // Suppress console.error during tests to avoid cluttering output
+    consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     (GDrive as jest.Mock).mockImplementation(() => mockGDriveInstance);
     (ethers.Mnemonic.isValidMnemonic as jest.Mock).mockReturnValue(true);
   });
 
   afterEach(() => {
     Platform.OS = originalPlatform;
+    consoleSpy.mockRestore();
   });
 
   describe('useBackupMnemonic hook', () => {
@@ -179,9 +189,7 @@ describe('cloudBackup', () => {
     });
 
     it('should upload mnemonic to Google Drive successfully', async () => {
-      (googleSignIn as jest.Mock).mockResolvedValue({
-        accessToken: 'mock-token',
-      });
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
       mockGDriveInstance.files
         .newMultipartUploader()
         .execute.mockResolvedValue({});
@@ -192,8 +200,7 @@ describe('cloudBackup', () => {
         result.current.upload(mockMnemonic),
       ).resolves.toBeUndefined();
 
-      expect(googleSignIn).toHaveBeenCalled();
-      expect(mockGDriveInstance.accessToken).toBe('mock-token');
+      expect(createGDrive).toHaveBeenCalled();
       expect(
         mockGDriveInstance.files.newMultipartUploader().setData,
       ).toHaveBeenCalledWith(JSON.stringify(mockMnemonic));
@@ -203,7 +210,7 @@ describe('cloudBackup', () => {
     });
 
     it('should throw error when user cancels Google sign-in', async () => {
-      (googleSignIn as jest.Mock).mockResolvedValue(null);
+      (createGDrive as jest.Mock).mockResolvedValue(null);
 
       const { result } = renderHook(() => useBackupMnemonic());
 
@@ -283,9 +290,7 @@ describe('cloudBackup', () => {
     });
 
     it('should download and parse mnemonic from Google Drive successfully', async () => {
-      (googleSignIn as jest.Mock).mockResolvedValue({
-        accessToken: 'mock-token',
-      });
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
       mockGDriveInstance.files.list.mockResolvedValue({
         files: [{ id: 'file-id', name: 'encrypted-private-key' }],
       });
@@ -297,7 +302,7 @@ describe('cloudBackup', () => {
 
       const downloaded = await result.current.download();
 
-      expect(googleSignIn).toHaveBeenCalled();
+      expect(createGDrive).toHaveBeenCalled();
       expect(mockGDriveInstance.files.list).toHaveBeenCalledWith({
         spaces: 'mock-app-data-folder',
         q: "name = 'encrypted-private-key'",
@@ -310,9 +315,7 @@ describe('cloudBackup', () => {
     });
 
     it('should throw error when backup file does not exist', async () => {
-      (googleSignIn as jest.Mock).mockResolvedValue({
-        accessToken: 'mock-token',
-      });
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
       mockGDriveInstance.files.list.mockResolvedValue({
         files: [],
       });
@@ -325,9 +328,7 @@ describe('cloudBackup', () => {
     });
 
     it('should throw error for malformed mnemonic JSON', async () => {
-      (googleSignIn as jest.Mock).mockResolvedValue({
-        accessToken: 'mock-token',
-      });
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
       mockGDriveInstance.files.list.mockResolvedValue({
         files: [{ id: 'file-id', name: 'encrypted-private-key' }],
       });
@@ -341,9 +342,7 @@ describe('cloudBackup', () => {
     });
 
     it('should throw error for invalid mnemonic phrase', async () => {
-      (googleSignIn as jest.Mock).mockResolvedValue({
-        accessToken: 'mock-token',
-      });
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
       mockGDriveInstance.files.list.mockResolvedValue({
         files: [{ id: 'file-id', name: 'encrypted-private-key' }],
       });
