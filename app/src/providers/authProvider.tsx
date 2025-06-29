@@ -15,6 +15,7 @@ import Keychain from 'react-native-keychain';
 import { AuthEvents } from '../consts/analytics';
 import { Mnemonic } from '../types/mnemonic';
 import analytics from '../utils/analytics';
+import { useSettingStore } from '../stores/settingStore';
 
 const { trackEvent } = analytics();
 
@@ -208,6 +209,7 @@ export const AuthProvider = ({
 
     setIsAuthenticatingPromise(null);
     setIsAuthenticated(true);
+    useSettingStore.getState().incrementLoginCount();
     trackEvent(AuthEvents.BIOMETRIC_LOGIN_SUCCESS);
     setAuthenticatedTimeout(previousTimeout => {
       if (previousTimeout) {
