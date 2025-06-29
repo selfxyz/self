@@ -264,7 +264,7 @@ describe('cloudBackup', () => {
       const { result } = renderHook(() => useBackupMnemonic());
 
       await expect(result.current.download()).rejects.toThrow(
-        'Malformed mnemonic, expected JSON structure, got invalid json',
+        'Failed to parse mnemonic backup: Invalid JSON format in mnemonic backup',
       );
     });
 
@@ -279,7 +279,21 @@ describe('cloudBackup', () => {
       const { result } = renderHook(() => useBackupMnemonic());
 
       await expect(result.current.download()).rejects.toThrow(
-        'Malformed mnemonic, expected JSON structure',
+        'Failed to parse mnemonic backup: Invalid mnemonic phrase: not a valid BIP39 mnemonic',
+      );
+    });
+
+    it('should throw error for missing mnemonic properties', async () => {
+      const incompleteMnemonic = { phrase: 'valid phrase', password: '' }; // missing wordlist and entropy
+      (CloudStorage.exists as jest.Mock).mockResolvedValue(true);
+      (CloudStorage.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(incompleteMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.download()).rejects.toThrow(
+        'Failed to parse mnemonic backup: Invalid mnemonic structure: missing required properties (phrase, password, wordlist, entropy)',
       );
     });
   });
@@ -314,6 +328,16 @@ describe('cloudBackup', () => {
       );
     });
 
+    it('should throw error when user cancels Google sign-in', async () => {
+      (createGDrive as jest.Mock).mockResolvedValue(null);
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.download()).rejects.toThrow(
+        'User canceled Google sign-in',
+      );
+    });
+
     it('should throw error when backup file does not exist', async () => {
       (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
       mockGDriveInstance.files.list.mockResolvedValue({
@@ -337,7 +361,7 @@ describe('cloudBackup', () => {
       const { result } = renderHook(() => useBackupMnemonic());
 
       await expect(result.current.download()).rejects.toThrow(
-        'Malformed mnemonic, expected JSON structure, got invalid json',
+        'Failed to parse mnemonic backup: Invalid JSON format in mnemonic backup',
       );
     });
 
@@ -354,7 +378,24 @@ describe('cloudBackup', () => {
       const { result } = renderHook(() => useBackupMnemonic());
 
       await expect(result.current.download()).rejects.toThrow(
-        'Malformed mnemonic, expected JSON structure',
+        'Failed to parse mnemonic backup: Invalid mnemonic phrase: not a valid BIP39 mnemonic',
+      );
+    });
+
+    it('should throw error for missing mnemonic properties', async () => {
+      const incompleteMnemonic = { phrase: 'valid phrase', password: '' }; // missing wordlist and entropy
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files.list.mockResolvedValue({
+        files: [{ id: 'file-id', name: 'encrypted-private-key' }],
+      });
+      mockGDriveInstance.files.getText.mockResolvedValue(
+        JSON.stringify(incompleteMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.download()).rejects.toThrow(
+        'Failed to parse mnemonic backup: Invalid mnemonic structure: missing required properties (phrase, password, wordlist, entropy)',
       );
     });
   });
