@@ -5,12 +5,17 @@ module.exports = {
     'plugin:prettier/recommended',
     'plugin:jest/recommended',
   ],
-  plugins: ['simple-import-sort', 'prettier', 'jest'],
+  plugins: ['simple-import-sort', 'prettier', 'jest', 'header'],
   ignorePatterns: ['ios/', 'android/', 'deployments/', 'node_modules/'],
   rules: {
     // Import sorting rules
     'simple-import-sort/imports': 'warn',
     'simple-import-sort/exports': 'warn',
+    'header/header': [
+      2,
+      'line',
+      ' SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11',
+    ],
 
     // Add prettier rule to show prettier errors as ESLint errors
     'prettier/prettier': [
