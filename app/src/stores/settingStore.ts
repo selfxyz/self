@@ -47,9 +47,7 @@ export const useSettingStore = create<SettingsState>()(
       toggleCloudBackupEnabled: () =>
         set(oldState => ({
           cloudBackupEnabled: !oldState.cloudBackupEnabled,
-          loginCount: oldState.cloudBackupEnabled
-            ? oldState.loginCount
-            : 0,
+          loginCount: oldState.cloudBackupEnabled ? oldState.loginCount : 0,
         })),
 
       loginCount: 0,

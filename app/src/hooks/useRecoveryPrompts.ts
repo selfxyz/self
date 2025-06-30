@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 import { useEffect } from 'react';
+
 import { navigationRef } from '../navigation';
-import { useModal } from './useModal';
 import { useSettingStore } from '../stores/settingStore';
+import { useModal } from './useModal';
 
 const modalParams = {
   titleText: 'Protect your account',
@@ -34,7 +36,13 @@ export default function useRecoveryPrompts() {
         showModal();
       }
     }
-  }, [loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase, visible, showModal]);
+  }, [
+    loginCount,
+    cloudBackupEnabled,
+    hasViewedRecoveryPhrase,
+    visible,
+    showModal,
+  ]);
 
   return { visible };
 }
