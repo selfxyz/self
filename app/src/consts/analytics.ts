@@ -60,6 +60,7 @@ export const ProofEvents = {
   PROOF_VERIFICATION_STARTED: 'Proof: Proof Verification Started',
   PROVING_PROCESS_ERROR: 'Proof: Proving Process Error',
   PROVING_STATE_CHANGE: 'Proof: Proving State Change',
+  PROVING_STORE_REINITIALIZED: 'Proof: Proving Store Re-initialized',
   REGISTER_COMPLETED: 'Proof: Register Completed',
   ALREADY_REGISTERED: 'Proof: Already Registered',
   QR_SCAN_CANCELLED: 'Proof: QR Scan Cancelled',
