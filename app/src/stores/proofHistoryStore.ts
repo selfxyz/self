@@ -54,10 +54,21 @@ const PAGE_SIZE = 20;
 const DB_NAME = Platform.OS === 'ios' ? 'proof_history.db' : 'proof_history.db';
 const TABLE_NAME = 'proof_history';
 const STALE_PROOF_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+const SYNC_THROTTLE_MS = 30 * 1000; // 30 seconds throttle for sync calls
 
 export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
+  let lastSyncTime = 0; // Track last sync time for throttling
+
   const syncProofHistoryStatus = async () => {
     try {
+      // Throttling mechanism - prevent sync if called too frequently
+      const now = Date.now();
+      if (now - lastSyncTime < SYNC_THROTTLE_MS) {
+        console.log('Sync throttled - too soon since last sync');
+        return;
+      }
+      lastSyncTime = now;
+
       set({ isLoading: true });
       const db = await SQLite.openDatabase({
         name: DB_NAME,
@@ -69,10 +80,32 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         `SELECT sessionId FROM ${TABLE_NAME} WHERE status = ? AND timestamp <= ?`,
         [ProofStatus.PENDING, tenMinutesAgo],
       );
+
+      // Improved error handling - wrap each updateProofStatus call in try-catch
+      let successfulUpdates = 0;
+      let failedUpdates = 0;
+
       for (let i = 0; i < stalePending.rows.length; i++) {
         const { sessionId } = stalePending.rows.item(i);
-        await get().updateProofStatus(sessionId, ProofStatus.FAILURE);
+        try {
+          await get().updateProofStatus(sessionId, ProofStatus.FAILURE);
+          successfulUpdates++;
+        } catch (error) {
+          console.error(
+            `Failed to update proof status for session ${sessionId}:`,
+            error,
+          );
+          failedUpdates++;
+          // Continue with the next iteration instead of stopping the entire loop
+        }
       }
+
+      if (stalePending.rows.length > 0) {
+        console.log(
+          `Stale proof cleanup: ${successfulUpdates} successful, ${failedUpdates} failed`,
+        );
+      }
+
       const [pendingProofs] = await db.executeSql(`
         SELECT * FROM ${TABLE_NAME} WHERE status = '${ProofStatus.PENDING}'
       `);

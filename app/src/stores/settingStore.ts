@@ -57,7 +57,10 @@ export const useSettingStore = create<SettingsState>()(
       setHasViewedRecoveryPhrase: viewed =>
         set(oldState => ({
           hasViewedRecoveryPhrase: viewed,
-          loginCount: viewed ? 0 : oldState.loginCount,
+          loginCount:
+            viewed && !oldState.hasViewedRecoveryPhrase
+              ? 0
+              : oldState.loginCount,
         })),
 
       isDevMode: false,

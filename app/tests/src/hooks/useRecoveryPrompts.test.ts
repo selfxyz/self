@@ -27,7 +27,7 @@ describe('useRecoveryPrompts', () => {
   });
 
   it('shows modal on first login', () => {
-    useSettingStore.getState().incrementLoginCount();
+    useSettingStore.setState({ loginCount: 1 });
     renderHook(() => useRecoveryPrompts());
     expect(showModal).toHaveBeenCalled();
   });
@@ -48,5 +48,45 @@ describe('useRecoveryPrompts', () => {
     useSettingStore.setState({ loginCount: 1, cloudBackupEnabled: true });
     renderHook(() => useRecoveryPrompts());
     expect(showModal).not.toHaveBeenCalled();
+  });
+
+  it('does not show modal when navigation is not ready', () => {
+    const navigationRef = require('../../../src/navigation').navigationRef;
+    navigationRef.isReady.mockReturnValueOnce(false);
+    useSettingStore.setState({ loginCount: 1 });
+    renderHook(() => useRecoveryPrompts());
+    expect(showModal).not.toHaveBeenCalled();
+  });
+
+  it('does not show modal when recovery phrase has been viewed', () => {
+    useSettingStore.setState({ loginCount: 1, hasViewedRecoveryPhrase: true });
+    renderHook(() => useRecoveryPrompts());
+    expect(showModal).not.toHaveBeenCalled();
+  });
+
+  it('shows modal for other valid login counts', () => {
+    [2, 3, 13, 18].forEach(count => {
+      showModal.mockClear();
+      useSettingStore.setState({ loginCount: count });
+      renderHook(() => useRecoveryPrompts());
+      expect(showModal).toHaveBeenCalled();
+    });
+  });
+
+  it('returns correct visible state', () => {
+    const { result } = renderHook(() => useRecoveryPrompts());
+    expect(result.current.visible).toBe(false);
+  });
+
+  it('calls useModal with correct parameters', () => {
+    renderHook(() => useRecoveryPrompts());
+    expect(useModal).toHaveBeenCalledWith({
+      titleText: 'Protect your account',
+      bodyText:
+        'Enable cloud backup or save your recovery phrase so you can recover your account.',
+      buttonText: 'Back up now',
+      onButtonPress: expect.any(Function),
+      onModalDismiss: expect.any(Function),
+    });
   });
 });
