@@ -60,13 +60,13 @@ const PassportDataSelector = () => {
     const docs = await getAllDocuments();
     setDocumentCatalog(catalog);
     setAllDocuments(docs);
-    trackEvent(DocumentEvents.DOCUMENT_SELECTED, { document_id: documentId });
+    trackEvent(DocumentEvents.DOCUMENT_SELECTED);
   };
 
   const handleDeleteSpecific = async (documentId: string) => {
     setLoading(true);
     await deleteDocument(documentId);
-    trackEvent(DocumentEvents.DOCUMENT_DELETED, { document_id: documentId });
+    trackEvent(DocumentEvents.DOCUMENT_DELETED);
     await loadPassportDataInfo();
   };
 
