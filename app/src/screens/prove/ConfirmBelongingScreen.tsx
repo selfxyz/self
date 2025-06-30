@@ -59,6 +59,14 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
       // Mark as user confirmed - proving will start automatically when ready
       provingStore.setUserConfirmed();
 
+      // Ensure proving store is initialized before navigation
+      if (provingStore.circuitType !== 'dsc') {
+        console.log(
+          'Re-initializing proving store with DSC circuit type before navigation',
+        );
+        await provingStore.init('dsc', true);
+      }
+
       // Navigate to loading screen
       navigate();
     } catch (error: any) {

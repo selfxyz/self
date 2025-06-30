@@ -49,7 +49,9 @@ export default function useRecoveryPrompts() {
         }
       }
     }
-    void maybePrompt();
+    maybePrompt().catch(() => {
+      // Silently fail to avoid breaking the hook
+    });
   }, [
     loginCount,
     cloudBackupEnabled,

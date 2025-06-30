@@ -16,8 +16,8 @@ import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '../../providers/passportDataProvider';
-import analytics from '../../utils/analytics';
 import { useSettingStore } from '../../stores/settingStore';
+import analytics from '../../utils/analytics';
 import {
   black,
   slate300,

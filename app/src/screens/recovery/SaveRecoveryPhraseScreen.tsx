@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import React, { useCallback, useState } from 'react';
 import { StaticScreenProps } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -11,11 +11,11 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import useMnemonic from '../../hooks/useMnemonic';
-import { RootStackParamList } from '../../navigation';
-import { useProvingStore } from '../../utils/proving/provingMachine';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { RootStackParamList } from '../../navigation';
 import { STORAGE_NAME } from '../../utils/cloudBackup';
 import { black, slate400, white } from '../../utils/colors';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 
 type NextScreen = keyof RootStackParamList;
 interface SaveRecoveryPhraseScreenProps
