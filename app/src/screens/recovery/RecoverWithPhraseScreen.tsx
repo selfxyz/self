@@ -17,6 +17,7 @@ import {
   reStorePassportDataWithRightCSCA,
 } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
+import { useSettingStore } from '../../stores/settingStore';
 import {
   black,
   slate300,
@@ -81,6 +82,7 @@ const RecoverWithPhraseScreen: React.FC<
 
     setRestoring(false);
     trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
+    useSettingStore.getState().setHasViewedRecoveryPhrase(true);
     navigation.navigate('AccountVerifiedSuccess');
   }, [mnemonic, restoreAccountFromMnemonic]);
 

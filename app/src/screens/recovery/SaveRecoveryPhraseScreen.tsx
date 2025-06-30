@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React, { useCallback, useState } from 'react';
+import { StaticScreenProps } from '@react-navigation/native';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -10,15 +11,19 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import useMnemonic from '../../hooks/useMnemonic';
+import { RootStackParamList } from '../../navigation';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { STORAGE_NAME } from '../../utils/cloudBackup';
 import { black, slate400, white } from '../../utils/colors';
 
-interface SaveRecoveryPhraseScreenProps {}
+type NextScreen = keyof RootStackParamList;
+interface SaveRecoveryPhraseScreenProps
+  extends StaticScreenProps<{ nextScreen?: NextScreen } | undefined> {}
 
-const SaveRecoveryPhraseScreen: React.FC<
-  SaveRecoveryPhraseScreenProps
-> = ({}) => {
+const SaveRecoveryPhraseScreen: React.FC<SaveRecoveryPhraseScreenProps> = ({
+  route,
+}) => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
 
@@ -27,12 +32,19 @@ const SaveRecoveryPhraseScreen: React.FC<
     setUserHasSeenMnemonic(true);
   }, []);
 
+  const nextScreen = route.params?.nextScreen ?? 'AccountVerifiedSuccess';
+
   const onCloudBackupPress = useHapticNavigation('CloudBackupSettings', {
     params: { nextScreen: 'SaveRecoveryPhrase' },
   });
-  const onSkipPress = useHapticNavigation('AccountVerifiedSuccess', {
-    action: 'confirm',
-  });
+
+  const navigateNext = useHapticNavigation(nextScreen, { action: 'confirm' });
+  const onSkipPress = useCallback(() => {
+    if (nextScreen === 'LoadingScreen') {
+      useProvingStore.getState().init('register', true);
+    }
+    navigateNext();
+  }, [navigateNext, nextScreen]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>

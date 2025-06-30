@@ -5,16 +5,27 @@ import { getPostVerificationRoute } from '../../../src/utils/proving/provingMach
 
 describe('getPostVerificationRoute', () => {
   afterEach(() => {
-    useSettingStore.setState({ cloudBackupEnabled: false });
+    useSettingStore.setState({
+      cloudBackupEnabled: false,
+      hasViewedRecoveryPhrase: false,
+    });
   });
 
-  it('returns SaveRecoveryPhrase when cloud backup disabled', () => {
-    useSettingStore.setState({ cloudBackupEnabled: false });
+  it('returns SaveRecoveryPhrase when no backup and phrase not viewed', () => {
+    useSettingStore.setState({
+      cloudBackupEnabled: false,
+      hasViewedRecoveryPhrase: false,
+    });
     expect(getPostVerificationRoute()).toBe('SaveRecoveryPhrase');
   });
 
   it('returns AccountVerifiedSuccess when cloud backup enabled', () => {
     useSettingStore.setState({ cloudBackupEnabled: true });
+    expect(getPostVerificationRoute()).toBe('AccountVerifiedSuccess');
+  });
+
+  it('returns AccountVerifiedSuccess when phrase already viewed', () => {
+    useSettingStore.setState({ hasViewedRecoveryPhrase: true });
     expect(getPostVerificationRoute()).toBe('AccountVerifiedSuccess');
   });
 });
