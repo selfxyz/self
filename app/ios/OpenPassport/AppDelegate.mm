@@ -72,8 +72,12 @@ continueUserActivity:(NSUserActivity *)userActivity
 {
   NSString *token = [self stringFromDeviceToken:deviceToken];
   NSLog(@"APNs device token: %@", token);
+
+#ifdef DEBUG
+  [[FIRMessaging messaging] setAPNSToken:deviceToken type:FIRMessagingAPNSTokenTypeSandbox];
+#else
   [[FIRMessaging messaging] setAPNSToken:deviceToken type:FIRMessagingAPNSTokenTypeProd];
-  // [[FIRMessaging messaging] setAPNSToken:deviceToken type:FIRMessagingAPNSTokenTypeSandbox];
+#endif
 }
 
 // Handle device token registration errors
