@@ -60,6 +60,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
 
   const animationRef = useRef<LottieView>(null);
 
@@ -103,6 +104,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       const isEnabled = await NfcManager.isEnabled();
       if (!isEnabled) {
         setIsNfcEnabled(false);
+        setDialogMessage('NFC is not enabled. Please enable it in settings.');
       }
       setIsNfcSupported(true);
     } else {
@@ -327,16 +329,26 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
                   />
                 </XStack>
               </GestureDetector>
-              <Title style={styles.title} mt="$2">
-                Find the RFID chip in your ID
-              </Title>
-              <BodyText style={styles.bodyText} mt="$2" mb="$2">
-                Place your phone against the chip and keep it still until the
-                sensor reads it.
-              </BodyText>
-              <BodyText style={styles.disclaimer} mt="$2">
-                SELF DOES NOT STORE THIS INFORMATION.
-              </BodyText>
+              {isNfcEnabled ? (
+                <>
+                  <Title style={styles.title} mt="$2">
+                    Find the RFID chip in your ID
+                  </Title>
+                  <BodyText style={styles.bodyText} mt="$2" mb="$2">
+                    Place your phone against the chip and keep it still until
+                    the sensor reads it.
+                  </BodyText>
+                  <BodyText style={styles.disclaimer} mt="$2">
+                    SELF DOES NOT STORE THIS INFORMATION.
+                  </BodyText>
+                </>
+              ) : (
+                <>
+                  <BodyText style={styles.disclaimer} mt="$2">
+                    {dialogMessage}
+                  </BodyText>
+                </>
+              )}
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton
