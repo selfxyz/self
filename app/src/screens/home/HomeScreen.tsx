@@ -10,6 +10,7 @@ import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { useAppUpdates } from '../../hooks/useAppUpdates';
 import useConnectionModal from '../../hooks/useConnectionModal';
+import useRecoveryPrompts from '../../hooks/useRecoveryPrompts';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import useRecoveryPrompts from '../../hooks/useRecoveryPrompts';
 import SelfCard from '../../images/card-style-1.svg';

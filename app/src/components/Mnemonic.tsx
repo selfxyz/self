@@ -15,6 +15,7 @@ import {
   white,
 } from '../utils/colors';
 import { confirmTap } from '../utils/haptic';
+import { useSettingStore } from '../stores/settingStore';
 
 interface MnemonicProps {
   words?: string[];
