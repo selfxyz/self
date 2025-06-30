@@ -7,7 +7,7 @@ buildscript {
         compileSdkVersion = 35
         targetSdkVersion = 35
         ndkVersion = "27.1.12297006"
-        kotlinVersion = "2.1.20"
+        kotlinVersion = "1.9.22"
         firebaseMessagingVersion = "23.4.0"
         firebaseBomVersion = "32.7.3"
     }
@@ -19,16 +19,12 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:7.3.1")
-        classpath("com.facebook.react:react-native-gradle-plugin")
-        // classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath 'com.android.tools.build:gradle:8.1.0'
-        classpath 'com.google.gms:google-services:4.3.14'
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "com.google.gms:google-services:4.4.0"
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.2'
         classpath 'org.mozilla.rust-android-gradle:plugin:0.9.3'
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0")
-        classpath("com.google.gms:google-services:4.4.0")
     }
 }
 
@@ -90,6 +86,15 @@ subprojects {
                 } else {
                     namespace = project.group
                     println "AndroidManifest.xml not found. Set namespace for ${project.name} to ${namespace}"
+                }
+
+                // Fix BuildConfig issues for libraries that need it
+                if (project.name == 'react-native-gesture-handler' ||
+                    project.name.contains('segment') ||
+                    buildGradleFile.text.contains('buildConfigField')) {
+                    buildFeatures {
+                        buildConfig = true
+                    }
                 }
             }
         }

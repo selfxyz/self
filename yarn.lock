@@ -4066,7 +4066,7 @@ __metadata:
     "@segment/analytics-react-native": "npm:^2.21.1"
     "@segment/sovran-react-native": "npm:^1.1.3"
     "@selfxyz/common": "workspace:^"
-    "@sentry/react-native": "npm:6.16.0"
+    "@sentry/react-native": "npm:^6.16.0"
     "@stablelib/cbor": "npm:^2.0.1"
     "@tamagui/config": "npm:1.126.14"
     "@tamagui/lucide-icons": "npm:1.126.14"
@@ -4101,7 +4101,7 @@ __metadata:
     expo-modules-core: "npm:^2.2.1"
     jest: "npm:^29.7.0"
     js-sha512: "npm:^0.9.0"
-    lottie-react-native: "npm:7.2.2"
+    lottie-react-native: "npm:^7.2.2"
     msgpack-lite: "npm:^0.1.26"
     node-forge: "npm:^1.3.1"
     pako: "npm:^2.1.0"
@@ -4125,7 +4125,7 @@ __metadata:
     react-native-passport-reader: "npm:^1.0.3"
     react-native-quick-crypto: "npm:^0.7.14"
     react-native-safe-area-context: "npm:^5.4.1"
-    react-native-screens: "npm:4.11.1"
+    react-native-screens: "npm:^4.11.1"
     react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:^15.12.0"
     react-native-svg-transformer: "npm:^1.5.1"
@@ -4391,7 +4391,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sentry/react-native@npm:6.16.0":
+"@sentry/react-native@npm:^6.16.0":
   version: 6.16.0
   resolution: "@sentry/react-native@npm:6.16.0"
   dependencies:
@@ -16301,9 +16301,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lottie-react-native@npm:7.2.2":
-  version: 7.2.2
-  resolution: "lottie-react-native@npm:7.2.2"
+"lottie-react-native@npm:^7.2.2":
+  version: 7.2.3
+  resolution: "lottie-react-native@npm:7.2.3"
   peerDependencies:
     "@lottiefiles/dotlottie-react": ^0.6.5
     react: "*"
@@ -16314,7 +16314,7 @@ __metadata:
       optional: true
     react-native-windows:
       optional: true
-  checksum: 10c0/d0ee7c6ed639ad1b5cfe04dd3b704f3f968806c59a6361986fbb22ebd1b332d9cb13ee7d78ed49848f8d416d468ae2fdc9077815280023dac0b66e841b5ce840
+  checksum: 10c0/5e26d4e33e06f7ac5e214cd1a2d43109a7e48273142d9056849c2ced07c0b58731b9aedb25afc80567d6bbd38a6c01145a6f8f44a3af75b507c1a243e737624b
   languageName: node
   linkType: hard
 
@@ -18877,7 +18877,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-screens@npm:4.11.1":
+"react-native-screens@npm:^4.11.1":
   version: 4.11.1
   resolution: "react-native-screens@npm:4.11.1"
   dependencies:
