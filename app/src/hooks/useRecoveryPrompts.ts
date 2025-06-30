@@ -5,25 +5,23 @@ import { navigationRef } from '../navigation';
 import { useSettingStore } from '../stores/settingStore';
 import { useModal } from './useModal';
 
-const modalParams = {
-  titleText: 'Protect your account',
-  bodyText:
-    'Enable cloud backup or save your recovery phrase so you can recover your account.',
-  buttonText: 'Back up now',
-  onButtonPress: async () => {
-    if (navigationRef.isReady()) {
-      navigationRef.navigate('CloudBackupSettings', {
-        nextScreen: 'SaveRecoveryPhrase',
-      });
-    }
-  },
-  onModalDismiss: () => {},
-} as const;
-
 export default function useRecoveryPrompts() {
   const { loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase } =
     useSettingStore();
-  const { showModal, visible } = useModal(modalParams);
+  const { showModal, visible } = useModal({
+    titleText: 'Protect your account',
+    bodyText:
+      'Enable cloud backup or save your recovery phrase so you can recover your account.',
+    buttonText: 'Back up now',
+    onButtonPress: async () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('CloudBackupSettings', {
+          nextScreen: 'SaveRecoveryPhrase',
+        });
+      }
+    },
+    onModalDismiss: () => {},
+  } as const);
 
   useEffect(() => {
     if (!navigationRef.isReady()) {
@@ -32,17 +30,11 @@ export default function useRecoveryPrompts() {
     if (!cloudBackupEnabled && !hasViewedRecoveryPhrase) {
       const shouldPrompt =
         loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 5 === 0);
-      if (shouldPrompt && !visible) {
+      if (shouldPrompt) {
         showModal();
       }
     }
-  }, [
-    loginCount,
-    cloudBackupEnabled,
-    hasViewedRecoveryPhrase,
-    visible,
-    showModal,
-  ]);
+  }, [loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase, showModal]);
 
   return { visible };
 }
