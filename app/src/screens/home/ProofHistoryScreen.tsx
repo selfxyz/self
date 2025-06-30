@@ -22,12 +22,12 @@ import {
   black,
   blue100,
   blue600,
+  red500,
   slate50,
   slate200,
   slate300,
   slate500,
   white,
-  red500,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { dinot } from '../../utils/fonts';
