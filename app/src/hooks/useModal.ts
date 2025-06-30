@@ -13,7 +13,7 @@ import {
 export const useModal = (params: ModalParams) => {
   const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
-  const callbackIdRef = useRef<number>();
+  const callbackIdRef = useRef<number | undefined>(undefined);
 
   const showModal = useCallback(() => {
     setVisible(true);
