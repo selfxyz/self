@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { usePassport } from '../providers/passportDataProvider';
+
 import { navigationRef } from '../navigation';
 import { useSettingStore } from '../stores/settingStore';
 import { useModal } from './useModal';
@@ -9,6 +11,7 @@ import { useModal } from './useModal';
 export default function useRecoveryPrompts() {
   const { loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase } =
     useSettingStore();
+  const { getAllDocuments } = usePassport();
   const { showModal, visible } = useModal({
     titleText: 'Protect your account',
     bodyText:
@@ -25,17 +28,30 @@ export default function useRecoveryPrompts() {
   } as const);
 
   useEffect(() => {
-    if (!navigationRef.isReady()) {
-      return;
-    }
-    if (!cloudBackupEnabled && !hasViewedRecoveryPhrase) {
-      const shouldPrompt =
-        loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 5 === 0);
-      if (shouldPrompt) {
-        showModal();
+    async function maybePrompt() {
+      if (!navigationRef.isReady()) {
+        return;
+      }
+      if (!cloudBackupEnabled && !hasViewedRecoveryPhrase) {
+        const docs = await getAllDocuments();
+        if (Object.keys(docs).length === 0) {
+          return;
+        }
+        const shouldPrompt =
+          loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 5 === 0);
+        if (shouldPrompt) {
+          showModal();
+        }
       }
     }
-  }, [loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase, showModal]);
+    void maybePrompt();
+  }, [
+    loginCount,
+    cloudBackupEnabled,
+    hasViewedRecoveryPhrase,
+    showModal,
+    getAllDocuments,
+  ]);
 
   return { visible };
 }
