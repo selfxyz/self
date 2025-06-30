@@ -3,7 +3,6 @@ import { renderHook } from '@testing-library/react-native';
 
 import { useModal } from '../../../src/hooks/useModal';
 import useRecoveryPrompts from '../../../src/hooks/useRecoveryPrompts';
-import { navigationRef } from '../../../src/navigation';
 import { useSettingStore } from '../../../src/stores/settingStore';
 
 jest.mock('../../../src/hooks/useModal');
