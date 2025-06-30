@@ -5,6 +5,7 @@ import React, { useCallback, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 
 import { useSettingStore } from '../stores/settingStore';
+import { useSettingStore } from '../stores/settingStore';
 import {
   black,
   slate50,
@@ -15,7 +16,6 @@ import {
   white,
 } from '../utils/colors';
 import { confirmTap } from '../utils/haptic';
-import { useSettingStore } from '../stores/settingStore';
 
 interface MnemonicProps {
   words?: string[];
