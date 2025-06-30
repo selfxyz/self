@@ -21,9 +21,7 @@ import Logo from '../../images/logo.svg';
 import { black, slate400, white, zinc800, zinc900 } from '../../utils/colors';
 import { advercase, dinot } from '../../utils/fonts';
 
-interface LaunchScreenProps {}
-
-const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
+const LaunchScreen: React.FC = () => {
   useConnectionModal();
   const onStartPress = useHapticNavigation('PassportOnboarding');
   const createMock = useHapticNavigation('CreateMock');
@@ -69,8 +67,12 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             color={white}
             borderWidth={1}
             trackEvent={AppEvents.SUPPORTED_BIOMETRIC_IDS}
-            onPress={() => {
-              Linking.openURL(supportedBiometricIdsUrl);
+            onPress={async () => {
+              try {
+                await Linking.openURL(supportedBiometricIdsUrl);
+              } catch (error) {
+                console.warn('Failed to open supported IDs URL:', error);
+              }
             }}
           >
             List of Supported Biometric IDs
