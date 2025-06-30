@@ -2,9 +2,8 @@
 
 import { useEffect } from 'react';
 
-import { usePassport } from '../providers/passportDataProvider';
-
 import { navigationRef } from '../navigation';
+import { usePassport } from '../providers/passportDataProvider';
 import { useSettingStore } from '../stores/settingStore';
 import { useModal } from './useModal';
 
@@ -33,14 +32,20 @@ export default function useRecoveryPrompts() {
         return;
       }
       if (!cloudBackupEnabled && !hasViewedRecoveryPhrase) {
-        const docs = await getAllDocuments();
-        if (Object.keys(docs).length === 0) {
+        try {
+          const docs = await getAllDocuments();
+          if (Object.keys(docs).length === 0) {
+            return;
+          }
+          const shouldPrompt =
+            loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 5 === 0);
+          if (shouldPrompt) {
+            showModal();
+          }
+        } catch (error) {
+          // Silently fail to avoid breaking the hook
+          // If we can't get documents, we shouldn't show the prompt
           return;
-        }
-        const shouldPrompt =
-          loginCount > 0 && (loginCount <= 3 || (loginCount - 3) % 5 === 0);
-        if (shouldPrompt) {
-          showModal();
         }
       }
     }

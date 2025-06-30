@@ -4,8 +4,8 @@ import { renderHook, waitFor } from '@testing-library/react-native';
 
 import { useModal } from '../../../src/hooks/useModal';
 import useRecoveryPrompts from '../../../src/hooks/useRecoveryPrompts';
-import { useSettingStore } from '../../../src/stores/settingStore';
 import { usePassport } from '../../../src/providers/passportDataProvider';
+import { useSettingStore } from '../../../src/stores/settingStore';
 
 jest.mock('../../../src/hooks/useModal');
 jest.mock('../../../src/providers/passportDataProvider');
