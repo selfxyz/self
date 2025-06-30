@@ -6,7 +6,13 @@ module.exports = {
     'plugin:jest/recommended',
   ],
   plugins: ['header', 'jest', 'prettier', 'simple-import-sort'],
-  ignorePatterns: ['ios/', 'android/', 'deployments/', 'node_modules/'],
+  ignorePatterns: [
+    'ios/',
+    'android/',
+    'deployments/',
+    'node_modules/',
+    'metro.config.cjs',
+  ],
   rules: {
     // Import sorting rules
     'simple-import-sort/imports': 'warn',
