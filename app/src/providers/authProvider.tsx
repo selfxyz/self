@@ -14,7 +14,6 @@ import Keychain from 'react-native-keychain';
 
 import { AuthEvents } from '../consts/analytics';
 import { useSettingStore } from '../stores/settingStore';
-import { useSettingStore } from '../stores/settingStore';
 import { Mnemonic } from '../types/mnemonic';
 import analytics from '../utils/analytics';
 

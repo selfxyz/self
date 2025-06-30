@@ -5,7 +5,6 @@ import React, { useCallback, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 
 import { useSettingStore } from '../stores/settingStore';
-import { useSettingStore } from '../stores/settingStore';
 import {
   black,
   slate50,
