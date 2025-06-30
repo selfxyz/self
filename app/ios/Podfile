@@ -1,4 +1,4 @@
-source 'https://cdn.cocoapods.org/'
+source "https://cdn.cocoapods.org/"
 use_frameworks!
 require "tmpdir"
 
@@ -11,7 +11,7 @@ require Pod::Executable.execute_command("node", ["-p",
 
 project "Self.xcodeproj"
 
-platform :ios, "16.0" if !ENV["ACT"]
+platform :ios, "15.1" if !ENV["ACT"]
 prepare_react_native_project!
 
 flipper_enabled = false
@@ -67,7 +67,7 @@ target "Self" do
           end
         end
         target.build_configurations.each do |config|
-          config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.0"
+          config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.1"
           config.build_settings["GCC_PREPROCESSOR_DEFINITIONS"] ||= ["$(inherited)", "_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]
         end
       end
@@ -126,9 +126,9 @@ target "Self" do
 
     # Disable code signing for Pod targets to avoid conflicts with main app signing
     installer.pods_project.targets.each do |target|
-      if target.name == 'Sentry'
+      if target.name == "Sentry"
         target.build_configurations.each do |config|
-          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+          config.build_settings["CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES"] = "YES"
         end
       end
 

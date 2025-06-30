@@ -10,4 +10,7 @@ module.exports = {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',
   },
+  testEnvironmentOptions: {
+    customExportConditions: ['react-native'],
+  },
 };

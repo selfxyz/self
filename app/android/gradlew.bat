@@ -1,8 +1,3 @@
-@REM Copyright (c) Meta Platforms, Inc. and affiliates.
-@REM
-@REM This source code is licensed under the MIT license found in the
-@REM LICENSE file in the root directory of this source tree.
-
 @rem
 @rem Copyright 2015 the original author or authors.
 @rem
@@ -17,6 +12,7 @@
 @rem WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 @rem See the License for the specific language governing permissions and
 @rem limitations under the License.
+@rem
 @rem SPDX-License-Identifier: Apache-2.0
 @rem
 
