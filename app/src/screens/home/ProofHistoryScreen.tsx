@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
-import { CheckSquare2, Wallet } from '@tamagui/lucide-icons';
+import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,12 +15,14 @@ import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 import { BodyText } from '../../components/typography/BodyText';
 import {
   ProofHistory,
+  ProofStatus,
   useProofHistoryStore,
 } from '../../stores/proofHistoryStore';
 import {
   black,
   blue100,
   blue600,
+  red500,
   slate50,
   slate200,
   slate300,
@@ -270,6 +272,25 @@ const ProofHistoryScreen: React.FC = () => {
                     </Text>
                     <CheckSquare2 color={blue600} height={14} width={14} />
                   </XStack>
+                  {item.status === ProofStatus.FAILURE && (
+                    <XStack
+                      paddingVertical={2}
+                      paddingHorizontal={8}
+                      borderRadius={4}
+                      alignItems="center"
+                      marginLeft={4}
+                    >
+                      <Text
+                        color={red500}
+                        fontSize={14}
+                        fontWeight="600"
+                        marginRight={4}
+                      >
+                        FAIL
+                      </Text>
+                      <XCircle color={red500} height={14} width={14} />
+                    </XStack>
+                  )}
                 </XStack>
               </Card>
             </YStack>

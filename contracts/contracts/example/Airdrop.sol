@@ -46,6 +46,9 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     /// @notice Maps user identifiers to registration status
     mapping(uint256 userIdentifier => bool registered) internal _registeredUserIdentifiers;
 
+    /// @notice Verification config ID for identity verification
+    bytes32 public verificationConfigId;
+
     // ====================================================
     // Errors
     // ====================================================
@@ -190,6 +193,31 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      */
     function getScope() external view returns (uint256) {
         return _scope;
+    }
+
+    /**
+     * @notice Sets the verification config ID
+     * @dev Only callable by the contract owner
+     * @param configId The verification config ID to set
+     */
+    function setConfigId(bytes32 configId) external onlyOwner {
+        verificationConfigId = configId;
+    }
+
+    /**
+     * @notice Generates a configId for the user
+     * @dev Override of the SelfVerificationRoot virtual function
+     * @param destinationChainId The destination chain ID
+     * @param userIdentifier The user identifier
+     * @param userDefinedData The user defined data
+     * @return The stored verification config ID
+     */
+    function getConfigId(
+        bytes32 destinationChainId,
+        bytes32 userIdentifier,
+        bytes memory userDefinedData
+    ) public view override returns (bytes32) {
+        return verificationConfigId;
     }
 
     /**

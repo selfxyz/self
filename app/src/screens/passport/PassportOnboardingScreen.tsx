@@ -58,13 +58,13 @@ const PassportOnboardingScreen: React.FC<
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <TextsContainer>
-          <Title>Scan your passport</Title>
+          <Title>Scan your ID</Title>
           <Description textBreakStrategy="balanced">
-            Open your passport to the first page to scan it.
+            Open to the photo page
           </Description>
           <Additional textBreakStrategy="balanced">
-            Self will not capture an image of your passport. Our system is only
-            reading the fields.
+            Lay your document flat and position the machine readable text in the
+            viewfinder
           </Additional>
         </TextsContainer>
         <ButtonsContainer>

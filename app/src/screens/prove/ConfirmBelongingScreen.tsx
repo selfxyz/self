@@ -12,6 +12,7 @@ import { Title } from '../../components/typography/Title';
 import { PassportEvents, ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { captureException } from '../../Sentry';
 import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
@@ -59,6 +60,33 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
       // Mark as user confirmed - proving will start automatically when ready
       provingStore.setUserConfirmed();
 
+      // Ensure proving store is initialized before navigation
+      if (provingStore.circuitType !== 'dsc') {
+        try {
+          console.error(
+            'Re-initializing proving store with DSC circuit type before navigation',
+          );
+          trackEvent(ProofEvents.PROVING_STORE_REINITIALIZED, {
+            reason: 'circuit_type_mismatch',
+            expected_type: 'dsc',
+            current_type: provingStore.circuitType,
+          });
+          await provingStore.init('dsc', true);
+        } catch (error: any) {
+          console.error('Error during proving store re-initialization:', error);
+          captureException(error, {
+            context: 'proving_store_reinitialization',
+            circuit_type: 'dsc',
+            current_circuit_type: provingStore.circuitType,
+          });
+          trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
+            error: error?.message || 'Unknown re-initialization error',
+            context: 'proving_store_reinitialization',
+          });
+          throw error; // Re-throw to be handled by the outer try-catch
+        }
+      }
+
       // Navigate to loading screen
       navigate();
     } catch (error: any) {
@@ -95,7 +123,9 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
           <Title textAlign="center">Confirm your identity</Title>
           <Description textAlign="center" paddingBottom={20}>
             By continuing, you certify that this passport belongs to you and is
-            not stolen or forged.
+            not stolen or forged. Once registered with Self, this document will
+            be permanently linked to your identity and can't be linked to
+            another one.
           </Description>
           <PrimaryButton
             trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}

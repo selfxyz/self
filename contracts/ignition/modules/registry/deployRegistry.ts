@@ -17,9 +17,7 @@ export default buildModule("DeployRegistryModule", (m) => {
   // Get the interface and encode the initialize function call
   const registryInterface = getRegistryInitializeData();
 
-  const registryInitData = registryInterface.encodeFunctionData("initialize", [
-    ethers.ZeroAddress,
-  ]);
+  const registryInitData = registryInterface.encodeFunctionData("initialize", [ethers.ZeroAddress]);
   console.log("   Init data:", registryInitData);
 
   console.log("🚀 Deploying IdentityRegistry proxy...");

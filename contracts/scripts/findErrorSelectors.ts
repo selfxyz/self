@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { keccak256 } from 'ethers';
+import fs from "fs";
+import path from "path";
+import { keccak256 } from "ethers";
 
 interface CustomError {
   name: string;
@@ -25,10 +25,10 @@ function findSolidityFiles(dir: string): string[] {
 
       if (stat.isDirectory()) {
         // Skip node_modules, .git, and other common directories
-        if (!['node_modules', '.git', 'dist', 'build', 'cache'].includes(item)) {
+        if (!["node_modules", ".git", "dist", "build", "cache"].includes(item)) {
           traverse(fullPath);
         }
-      } else if (item.endsWith('.sol')) {
+      } else if (item.endsWith(".sol")) {
         files.push(fullPath);
       }
     }
@@ -42,8 +42,8 @@ function findSolidityFiles(dir: string): string[] {
  * Extract custom errors from Solidity file content
  */
 function extractCustomErrors(filePath: string): CustomError[] {
-  const content = fs.readFileSync(filePath, 'utf8');
-  const lines = content.split('\n');
+  const content = fs.readFileSync(filePath, "utf8");
+  const lines = content.split("\n");
   const errors: CustomError[] = [];
 
   // Regex to match custom error declarations
@@ -60,18 +60,18 @@ function extractCustomErrors(filePath: string): CustomError[] {
 
       // Clean up parameters - remove parameter names, keep only types
       const paramTypes = params
-        .split(',')
-        .map(param => param.trim())
-        .filter(param => param.length > 0)
-        .map(param => {
+        .split(",")
+        .map((param) => param.trim())
+        .filter((param) => param.length > 0)
+        .map((param) => {
           // Extract type from "type name" or "type"
           const parts = param.split(/\s+/);
           return parts[0]; // First part is the type
         })
-        .join(',');
+        .join(",");
 
       const signature = `${errorName}(${paramTypes})`;
-      const hash = keccak256(Buffer.from(signature, 'utf8'));
+      const hash = keccak256(Buffer.from(signature, "utf8"));
       const selector = hash.slice(0, 10); // First 4 bytes (8 hex chars + 0x)
 
       errors.push({
@@ -79,7 +79,7 @@ function extractCustomErrors(filePath: string): CustomError[] {
         signature,
         selector,
         file: path.relative(process.cwd(), filePath),
-        line: i + 1
+        line: i + 1,
       });
     }
   }
@@ -91,9 +91,9 @@ function extractCustomErrors(filePath: string): CustomError[] {
  * Main function to scan all contracts and find error selectors
  */
 async function findAllErrorSelectors(targetSelector?: string) {
-  console.log('🔍 Scanning Solidity files for custom errors...\n');
+  console.log("🔍 Scanning Solidity files for custom errors...\n");
 
-  const contractsDir = path.join(process.cwd(), 'contracts');
+  const contractsDir = path.join(process.cwd(), "contracts");
   const solidityFiles = findSolidityFiles(contractsDir);
 
   console.log(`Found ${solidityFiles.length} Solidity files\n`);
@@ -107,7 +107,7 @@ async function findAllErrorSelectors(targetSelector?: string) {
 
     // Check if we found the target selector
     if (targetSelector) {
-      const match = errors.find(error => error.selector.toLowerCase() === targetSelector.toLowerCase());
+      const match = errors.find((error) => error.selector.toLowerCase() === targetSelector.toLowerCase());
       if (match) {
         console.log(`🎯 FOUND TARGET ERROR: ${targetSelector}`);
         console.log(`   Error: ${match.name}`);
@@ -130,35 +130,38 @@ async function findAllErrorSelectors(targetSelector?: string) {
   }
 
   // Group errors by file for better organization
-  const errorsByFile = allErrors.reduce((acc, error) => {
-    if (!acc[error.file]) {
-      acc[error.file] = [];
-    }
-    acc[error.file].push(error);
-    return acc;
-  }, {} as Record<string, CustomError[]>);
+  const errorsByFile = allErrors.reduce(
+    (acc, error) => {
+      if (!acc[error.file]) {
+        acc[error.file] = [];
+      }
+      acc[error.file].push(error);
+      return acc;
+    },
+    {} as Record<string, CustomError[]>,
+  );
 
-  console.log('📋 All Custom Errors by File:');
-  console.log('================================\n');
+  console.log("📋 All Custom Errors by File:");
+  console.log("================================\n");
 
   for (const [file, errors] of Object.entries(errorsByFile)) {
     console.log(`📄 ${file}:`);
     for (const error of errors) {
       console.log(`   ${error.selector} → ${error.signature} (line ${error.line})`);
     }
-    console.log('');
+    console.log("");
   }
 
   // Generate a quick lookup table
-  console.log('🔗 Quick Selector Lookup:');
-  console.log('=========================\n');
+  console.log("🔗 Quick Selector Lookup:");
+  console.log("=========================\n");
 
   for (const error of allErrors) {
     console.log(`${error.selector} → ${error.name} (${error.file}:${error.line})`);
   }
 
   // Save results to JSON file for future reference
-  const outputFile = 'error-selectors.json';
+  const outputFile = "error-selectors.json";
   fs.writeFileSync(outputFile, JSON.stringify(allErrors, null, 2));
   console.log(`\n💾 Results saved to ${outputFile}`);
 
@@ -174,9 +177,9 @@ if (targetSelector) {
 
 findAllErrorSelectors(targetSelector)
   .then(() => {
-    console.log('\n✅ Scan complete!');
+    console.log("\n✅ Scan complete!");
   })
   .catch((error) => {
-    console.error('❌ Error during scan:', error);
+    console.error("❌ Error during scan:", error);
     process.exit(1);
   });

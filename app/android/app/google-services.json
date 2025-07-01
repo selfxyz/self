@@ -12,7 +12,23 @@
           "package_name": "com.proofofpassportapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "148489200613-m7f49n6qav3ufcvai9j9k2dp4v0671qk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.proofofpassportapp",
+            "certificate_hash": [
+              "88:5D:A6:EF:1D:DA:05:C7:F0:55:F1:F4:C4:16:4C:6E:93:4E:76:78",
+              "AB:FE:10:57:76:E5:F9:FC:4F:95:6B:59:FC:78:7A:4D:D6:47:DA:BC"
+            ]
+          }
+        },
+        {
+          "client_id": "148489200613-grc1n6g4aspl2m5euk9neqagf4atnrs5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDbMZ52EpHA-5BbMgTQK3OMOVcarGJQ-es"

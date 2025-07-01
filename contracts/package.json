@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/contracts",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -11,7 +11,13 @@
   "files": [
     "contracts/interfaces/ISelfVerificationRoot.sol",
     "contracts/libraries/Formatter.sol",
-    "contracts/abstract/SelfVerificationRoot.sol"
+    "contracts/abstract/SelfVerificationRoot.sol",
+    "contracts/libraries/SelfStructs.sol",
+    "contracts/interfaces/IIdentityVerificationHubV2.sol",
+    "contracts/constants/AttestationId.sol",
+    "contracts/constants/CircuitConstantsV2.sol",
+    "contracts/interfaces/IRegisterCircuitVerifier.sol",
+    "contracts/interfaces/IDscCircuitVerifier.sol"
   ],
   "scripts": {
     "build": "yarn hardhat clean && yarn hardhat compile",

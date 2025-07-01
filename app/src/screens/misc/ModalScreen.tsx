@@ -12,6 +12,10 @@ import ModalClose from '../../images/icons/modal_close.svg';
 import LogoInversed from '../../images/logo_inversed.svg';
 import { white } from '../../utils/colors';
 import { confirmTap, impactLight } from '../../utils/haptic';
+import {
+  getModalCallbacks,
+  unregisterModalCallbacks,
+} from '../../utils/modalCallbackRegistry';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',
@@ -35,26 +39,61 @@ export interface ModalParams extends Record<string, any> {
   preventDismiss?: boolean;
 }
 
-interface ModalScreenProps extends StaticScreenProps<ModalParams> {}
+export interface ModalNavigationParams
+  extends Omit<ModalParams, 'onButtonPress' | 'onModalDismiss'> {
+  callbackId: number;
+}
+
+interface ModalScreenProps extends StaticScreenProps<ModalNavigationParams> {}
 
 const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   const navigation = useNavigation();
+  const callbacks = getModalCallbacks(params.callbackId);
 
   const onButtonPressed = useCallback(async () => {
     confirmTap();
-    try {
-      await params?.onButtonPress();
-      navigation.goBack();
-    } catch (error) {
-      console.error(error);
+
+    // Check if callbacks and onButtonPress are defined
+    if (!callbacks || !callbacks.onButtonPress) {
+      console.warn('Modal callbacks not found or onButtonPress not defined');
+      return;
     }
-  }, [params?.onButtonPress]);
+
+    try {
+      // Try to execute the callback first
+      await callbacks.onButtonPress();
+
+      try {
+        // If callback succeeds, try to navigate back
+        navigation.goBack();
+        // Only unregister after successful navigation
+        unregisterModalCallbacks(params.callbackId);
+      } catch (navigationError) {
+        console.error('Navigation error:', navigationError);
+        // Don't cleanup if navigation fails - modal might still be visible
+      }
+    } catch (callbackError) {
+      console.error('Callback error:', callbackError);
+      // If callback fails, we should still try to navigate and cleanup
+      try {
+        navigation.goBack();
+        unregisterModalCallbacks(params.callbackId);
+      } catch (navigationError) {
+        console.error(
+          'Navigation error after callback failure:',
+          navigationError,
+        );
+        // Don't cleanup if navigation fails
+      }
+    }
+  }, [callbacks, navigation, params.callbackId]);
 
   const onClose = useCallback(() => {
     impactLight();
     navigation.goBack();
-    params?.onModalDismiss();
-  }, [params?.onModalDismiss]);
+    callbacks?.onModalDismiss();
+    unregisterModalCallbacks(params.callbackId);
+  }, [callbacks, navigation, params.callbackId]);
 
   return (
     <ModalBackDrop>

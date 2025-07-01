@@ -1,6 +1,5 @@
 name: OpenPassport CI/CD
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -13,6 +12,7 @@ on:
     paths:
       - "circuits/circuits/**"
       - ".github/workflows/artifacts.yml"
+  workflow_dispatch:
 
 jobs:
   build:
