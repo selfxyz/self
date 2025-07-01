@@ -32,6 +32,7 @@ import Telegram from '../../images/icons/telegram.svg';
 import Web from '../../images/icons/webpage.svg';
 import { RootStackParamList } from '../../navigation';
 import { usePassport } from '../../providers/passportDataProvider';
+import { captureException } from '../../Sentry';
 import { useSettingStore } from '../../stores/settingStore';
 import {
   amber500,
@@ -137,17 +138,50 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
   const { getAllDocuments } = usePassport();
 
   React.useEffect(() => {
+    let isActive = true; // Flag to prevent race conditions
+
     const unsubscribe = navigation.addListener('beforeRemove', async () => {
+      if (!isActive) return; // Early return if component is unmounted
+
       try {
         const docs = await getAllDocuments();
+
+        // Double-check the component is still active after async operation
+        if (!isActive) return;
+
         if (Object.keys(docs).length === 0) {
-          navigation.reset({ index: 0, routes: [{ name: 'Launch' as any }] });
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Launch' }], // Removed 'as any' - Launch is a valid route name
+          });
         }
-      } catch {
-        // silently fail
+      } catch (error: any) {
+        console.error(
+          'Error checking documents before navigation removal:',
+          error,
+        );
+
+        // Log error with context for debugging
+        captureException(error, {
+          context: 'settings_screen_before_remove',
+          action: 'getAllDocuments',
+        });
+
+        // Optionally, you could still navigate to Launch if there's an error
+        // This depends on your app's requirements
+        if (isActive && error?.message?.includes('no documents')) {
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Launch' }],
+          });
+        }
       }
     });
-    return unsubscribe;
+
+    return () => {
+      isActive = false; // Mark as inactive to prevent race conditions
+      unsubscribe();
+    };
   }, [getAllDocuments, navigation]);
 
   const screenRoutes = useMemo(() => {
