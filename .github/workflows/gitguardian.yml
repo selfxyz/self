@@ -8,6 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: GitGuardian/ggshield/actions/scan@v1
-        with:
-          path: .
+      - uses: GitGuardian/ggshield/actions/secret@v1.41.0
+        env:
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
