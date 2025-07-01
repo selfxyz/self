@@ -32,6 +32,7 @@ import Telegram from '../../images/icons/telegram.svg';
 import Web from '../../images/icons/webpage.svg';
 import { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
+import { usePassport } from '../../providers/passportDataProvider';
 import {
   amber500,
   black,
@@ -133,6 +134,21 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
   const { isDevMode, setDevModeOn } = useSettingStore();
   useSettingStore();
   const navigation = useNavigation();
+  const { getAllDocuments } = usePassport();
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', async () => {
+      try {
+        const docs = await getAllDocuments();
+        if (Object.keys(docs).length === 0) {
+          navigation.reset({ index: 0, routes: [{ name: 'Launch' as any }] });
+        }
+      } catch {
+        // silently fail
+      }
+    });
+    return unsubscribe;
+  }, [getAllDocuments, navigation]);
 
   const screenRoutes = useMemo(() => {
     return isDevMode ? [...routes, ...DEBUG_MENU] : routes;
