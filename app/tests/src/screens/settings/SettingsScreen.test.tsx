@@ -1,8 +1,11 @@
-import { render, act, waitFor } from '@testing-library/react-native';
-import React from 'react';
-import SettingsScreen from '../../../../src/screens/settings/SettingsScreen';
-import { usePassport } from '../../../../src/providers/passportDataProvider';
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { useNavigation } from '@react-navigation/native';
+import { act, render, waitFor } from '@testing-library/react-native';
+import React from 'react';
+
+import { usePassport } from '../../../../src/providers/passportDataProvider';
+import SettingsScreen from '../../../../src/screens/settings/SettingsScreen';
 
 jest.mock('../../../../src/providers/passportDataProvider');
 jest.mock('@react-navigation/native', () => ({
@@ -27,14 +30,27 @@ jest.mock('tamagui', () => ({
   styled: jest.fn(() => ({ children }: any) => <>{children}</>),
 }));
 
-jest.mock('@tamagui/lucide-icons', () => new Proxy({}, {
-  get: () => () => null,
-}));
+jest.mock(
+  '@tamagui/lucide-icons',
+  () =>
+    new Proxy(
+      {},
+      {
+        get: () => () => null,
+      },
+    ),
+);
 
 jest.mock('../../../../src/images/icons/github.svg', () => 'Github');
-jest.mock('../../../../src/images/icons/settings_cloud_backup.svg', () => 'Cloud');
+jest.mock(
+  '../../../../src/images/icons/settings_cloud_backup.svg',
+  () => 'Cloud',
+);
 jest.mock('../../../../src/images/icons/settings_data.svg', () => 'Data');
-jest.mock('../../../../src/images/icons/settings_feedback.svg', () => 'Feedback');
+jest.mock(
+  '../../../../src/images/icons/settings_feedback.svg',
+  () => 'Feedback',
+);
 jest.mock('../../../../src/images/icons/settings_lock.svg', () => 'Lock');
 jest.mock('../../../../src/images/icons/share.svg', () => 'ShareIcon');
 jest.mock('../../../../src/images/icons/star.svg', () => 'Star');
@@ -50,7 +66,9 @@ const mockAddListener = jest.fn();
 });
 
 const mockGetAllDocuments = jest.fn();
-(usePassport as jest.Mock).mockReturnValue({ getAllDocuments: mockGetAllDocuments });
+(usePassport as jest.Mock).mockReturnValue({
+  getAllDocuments: mockGetAllDocuments,
+});
 
 it('redirects to Launch when leaving settings with no documents', async () => {
   mockAddListener.mockImplementation((_evt, cb) => cb);
@@ -61,6 +79,9 @@ it('redirects to Launch when leaving settings with no documents', async () => {
     await handler();
   });
   await waitFor(() => {
-    expect(mockReset).toHaveBeenCalledWith({ index: 0, routes: [{ name: 'Launch' }] });
+    expect(mockReset).toHaveBeenCalledWith({
+      index: 0,
+      routes: [{ name: 'Launch' }],
+    });
   });
 });

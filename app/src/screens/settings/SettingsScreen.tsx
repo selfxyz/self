@@ -31,8 +31,8 @@ import Star from '../../images/icons/star.svg';
 import Telegram from '../../images/icons/telegram.svg';
 import Web from '../../images/icons/webpage.svg';
 import { RootStackParamList } from '../../navigation';
-import { useSettingStore } from '../../stores/settingStore';
 import { usePassport } from '../../providers/passportDataProvider';
+import { useSettingStore } from '../../stores/settingStore';
 import {
   amber500,
   black,
