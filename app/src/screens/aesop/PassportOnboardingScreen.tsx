@@ -38,11 +38,16 @@ const PassportOnboardingScreen: React.FC<
         <LottieView
           ref={animationRef}
           autoPlay={false}
-          loop={true}
+          loop={false}
           source={passportOnboardingAnimation}
           style={styles.animation}
           cacheComposition={true}
           renderMode="HARDWARE"
+          onAnimationFinish={() => {
+            setTimeout(() => {
+              animationRef.current?.play();
+            }, 100);
+          }}
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
