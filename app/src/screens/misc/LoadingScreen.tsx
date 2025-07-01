@@ -143,10 +143,19 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
 
     // Update UI if passport data is available
     if (passportData?.passportMetadata) {
-      // Update loading text based on current state
+      // Get the current circuit type from the proving store
+      const circuitType = useProvingStore.getState().circuitType;
+
+      // Determine the appropriate type for loading screen text
+      // 'disclose' circuit type should use 'register' timing, but 'dsc' should use 'dsc' timing
+      const loadingScreenType: 'dsc' | 'register' =
+        circuitType === 'dsc' ? 'dsc' : 'register';
+
+      // Update loading text based on current state and circuit type
       const { actionText, estimatedTime } = getLoadingScreenText(
         currentState as ProvingStateType,
         passportData?.passportMetadata,
+        loadingScreenType,
       );
       setLoadingText({ actionText, estimatedTime });
 

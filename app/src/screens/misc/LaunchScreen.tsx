@@ -1,33 +1,32 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import LottieView from 'lottie-react-native';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { Anchor, Text, XStack, YStack } from 'tamagui';
-import { useWindowDimensions } from 'tamagui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Anchor, Text, YStack } from 'tamagui';
 
-import onboardingAnimation from '../../assets/animations/launch_onboarding.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import AbstractButton from '../../components/buttons/AbstractButton';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { AppEvents } from '../../consts/analytics';
-import { privacyUrl, termsUrl } from '../../consts/links';
+import {
+  privacyUrl,
+  supportedBiometricIdsUrl,
+  termsUrl,
+} from '../../consts/links';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Logo from '../../images/logo.svg';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate50, slate100, slate500, white } from '../../utils/colors';
+import { black, slate400, white, zinc800, zinc900 } from '../../utils/colors';
 import { advercase, dinot } from '../../utils/fonts';
 
-interface LaunchScreenProps {}
-
-const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
+const LaunchScreen: React.FC = () => {
   useConnectionModal();
   const onStartPress = useHapticNavigation('PassportOnboarding');
-  const skipToHome = useHapticNavigation('Home');
   const createMock = useHapticNavigation('CreateMock');
-  const { height } = useWindowDimensions();
+  const { bottom } = useSafeAreaInsets();
+
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
@@ -35,51 +34,61 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
     });
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <YStack flex={1} paddingTop="$10">
-          <View style={styles.cardContainer}>
-            <GestureDetector gesture={devModeTap}>
-              <LottieView
-                autoPlay={true}
-                loop={false}
-                source={onboardingAnimation}
-                style={{
-                  ...styles.animation,
-                  height: height * 0.4,
-                }}
-                cacheComposition={true}
-                renderMode="HARDWARE"
-              />
-            </GestureDetector>
-          </View>
-        </YStack>
-        <YStack flex={1} justifyContent="flex-end">
-          <XStack
-            marginBottom="$10"
-            alignItems="center"
-            justifyContent="center"
-            gap="$4"
+    <YStack
+      bg={black}
+      flex={1}
+      justifyContent="space-between"
+      alignItems="center"
+      paddingHorizontal={20}
+      paddingBottom={bottom}
+    >
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <GestureDetector gesture={devModeTap}>
+            <View style={styles.logoSection}>
+              <Logo style={styles.logo} />
+            </View>
+          </GestureDetector>
+
+          <Text style={styles.title}>Get started</Text>
+
+          <BodyText style={styles.description}>
+            Register with Self using your passport or biometric ID to prove your
+            identity across the web without revealing your personal information.
+          </BodyText>
+        </View>
+      </View>
+
+      <YStack gap="$3" width="100%" alignItems="center" marginBottom={20}>
+        <YStack gap="$3" width="100%">
+          <AbstractButton
+            bgColor={black}
+            borderColor={zinc800}
+            color={white}
+            borderWidth={1}
+            trackEvent={AppEvents.SUPPORTED_BIOMETRIC_IDS}
+            onPress={async () => {
+              try {
+                await Linking.openURL(supportedBiometricIdsUrl);
+              } catch (error) {
+                console.warn('Failed to open supported IDs URL:', error);
+              }
+            }}
           >
-            <Logo style={styles.logo} />
-            <Text
-              onPress={__DEV__ ? skipToHome : undefined}
-              style={styles.selfText}
-            >
-              Self
-            </Text>
-          </XStack>
+            List of Supported Biometric IDs
+          </AbstractButton>
+
+          <AbstractButton
+            trackEvent={AppEvents.GET_STARTED}
+            onPress={onStartPress}
+            bgColor={white}
+            color={black}
+          >
+            I have a Passport or Biometric ID
+          </AbstractButton>
         </YStack>
-      </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection
-        backgroundColor={white}
-        justifyContent="flex-end"
-      >
-        <BodyText style={styles.subheader}>
-          The simplest way to verify identity for safety and trust wherever you
-          are.
-        </BodyText>
-        <Caption style={styles.notice} size={'small'}>
+
+        <Caption style={styles.notice}>
           By continuing, you agree to the&nbsp;
           <Anchor style={styles.link} href={termsUrl}>
             User Terms and Conditions
@@ -90,71 +99,75 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
           </Anchor>
           &nbsp;of Self provided by Self Inc.
         </Caption>
-        <PrimaryButton
-          trackEvent={AppEvents.GET_STARTED}
-          onPress={onStartPress}
-        >
-          Get Started
-        </PrimaryButton>
-      </ExpandableBottomLayout.BottomSection>
-    </ExpandableBottomLayout.Layout>
+      </YStack>
+    </YStack>
   );
 };
 
 export default LaunchScreen;
 
 const styles = StyleSheet.create({
-  animation: {
-    aspectRatio: 1,
-  },
-  subheader: {
-    fontWeight: '500',
-    fontSize: 20,
-    lineHeight: 26,
-    textAlign: 'center',
-  },
-  link: {
-    // must pass into Anchor component
-    fontFamily: dinot,
-    color: slate500,
-    fontSize: 14,
-    lineHeight: 18,
-    textDecorationLine: 'underline',
-  },
-  notice: {
-    marginTop: 26,
-    marginBottom: 10,
-    paddingTop: 10,
-    paddingBottom: 10,
-    paddingLeft: 20,
-    paddingRight: 20,
-    backgroundColor: slate50,
-    borderColor: slate100,
-    borderWidth: 1,
-    borderStyle: 'solid',
-    color: slate500,
-    textAlign: 'center',
-    lineHeight: 18,
-    fontWeight: '500',
-  },
-  cardContainer: {
-    width: '100%',
-    alignItems: 'center',
-    paddingTop: 0,
+  container: {
     flex: 1,
-  },
-  selfText: {
-    fontFamily: advercase,
-    fontSize: 36,
-    fontWeight: '500',
-    color: white,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    width: '102%',
+    paddingTop: '25%',
   },
   card: {
     width: '100%',
-    height: '100%',
+    marginTop: '30%',
+    borderRadius: 16,
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    backgroundColor: zinc900,
+    shadowColor: black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+    marginBottom: 20,
+  },
+  logoSection: {
+    width: 60,
+    height: 60,
+    marginBottom: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
-    width: '100%',
-    height: '100%',
+    width: 40,
+    height: 40,
+  },
+  title: {
+    fontFamily: advercase,
+    fontSize: 38,
+    fontWeight: '500',
+    color: white,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  description: {
+    color: white,
+    fontSize: 16,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  notice: {
+    fontFamily: dinot,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    color: slate400,
+    textAlign: 'center',
+    lineHeight: 18,
+    fontSize: 14,
+  },
+  link: {
+    fontFamily: dinot,
+    color: slate400,
+    lineHeight: 18,
+    textDecorationLine: 'underline',
   },
 });

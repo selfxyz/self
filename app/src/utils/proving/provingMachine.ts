@@ -24,6 +24,7 @@ import {
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
+import { useSettingStore } from '../../stores/settingStore';
 import analytics from '../analytics';
 import { getPublicKey, verifyAttestation } from './attest';
 import {
@@ -48,6 +49,14 @@ import {
 } from './validateDocument';
 
 const { trackEvent } = analytics();
+
+export const getPostVerificationRoute = () => {
+  const { cloudBackupEnabled, hasViewedRecoveryPhrase } =
+    useSettingStore.getState();
+  return cloudBackupEnabled || hasViewedRecoveryPhrase
+    ? 'AccountVerifiedSuccess'
+    : 'SaveRecoveryPhrase';
+};
 
 const provingMachine = createMachine({
   id: 'proving',
@@ -227,7 +236,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'completed') {
         if (get().circuitType !== 'disclose' && navigationRef.isReady()) {
           setTimeout(() => {
-            navigationRef.navigate('AccountVerifiedSuccess');
+            navigationRef.navigate(getPostVerificationRoute());
           }, 3000);
         }
         if (get().circuitType === 'disclose') {
@@ -756,9 +765,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       if (circuitType === 'dsc') {
-        setTimeout(() => {
-          get().init('register', true);
-        }, 1500);
+        const { hasViewedRecoveryPhrase } = useSettingStore.getState();
+        if (!hasViewedRecoveryPhrase) {
+          if (navigationRef.isReady()) {
+            navigationRef.navigate('SaveRecoveryPhrase', {
+              nextScreen: 'LoadingScreen',
+            });
+          }
+        } else {
+          setTimeout(() => {
+            get().init('register', true);
+          }, 1500);
+        }
       } else if (circuitType === 'register') {
         actor!.send({ type: 'COMPLETED' });
       } else if (circuitType === 'disclose') {

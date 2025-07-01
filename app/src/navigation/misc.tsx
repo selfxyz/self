@@ -14,8 +14,10 @@ const miscScreens = {
   Launch: {
     screen: LaunchScreen,
     options: {
-      headerShown: false,
-      gestureEnabled: false,
+      header: () => (
+        <StatusBar barStyle="light-content" backgroundColor={black} />
+      ),
+      navigationBarColor: black,
     },
   },
   LoadingScreen: {
@@ -33,6 +35,7 @@ const miscScreens = {
       animation: 'fade',
     } as NativeStackNavigationOptions,
   },
+
   Splash: {
     screen: SplashScreen,
     options: {

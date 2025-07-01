@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
@@ -15,6 +16,8 @@ interface DetailListProps
     onDismiss: () => void;
     secondaryButtonText?: string;
     onSecondaryButtonPress?: () => void;
+    header?: React.ReactNode;
+    footer?: React.ReactNode;
   }> {}
 
 export default function SimpleScrolledTitleLayout({
@@ -23,25 +26,31 @@ export default function SimpleScrolledTitleLayout({
   onDismiss,
   secondaryButtonText,
   onSecondaryButtonPress,
+  header,
+  footer,
 }: DetailListProps) {
+  const insets = useSafeAreaInsets();
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.FullSection paddingTop={0} flex={1}>
-        <ScrollView flex={1}>
-          <YStack paddingTop={20}>
-            <Title>{title}</Title>
-            <YStack paddingVertical={20} flex={1}>
-              {children}
-            </YStack>
+        <YStack paddingTop={insets.top + 12}>
+          <Title>{title}</Title>
+          {header}
+        </YStack>
+        <ScrollView flex={1} showsVerticalScrollIndicator={false}>
+          <YStack paddingTop={0} paddingBottom={20} flex={1}>
+            {children}
           </YStack>
         </ScrollView>
-
+        {footer && <YStack marginBottom={18}>{footer}</YStack>}
         {secondaryButtonText && onSecondaryButtonPress && (
           <SecondaryButton onPress={onSecondaryButtonPress} mb="$2">
             {secondaryButtonText}
           </SecondaryButton>
         )}
-        <PrimaryButton onPress={onDismiss}>Dismiss</PrimaryButton>
+        <YStack paddingBottom={insets.bottom + 12}>
+          <PrimaryButton onPress={onDismiss}>Dismiss</PrimaryButton>
+        </YStack>
       </ExpandableBottomLayout.FullSection>
     </ExpandableBottomLayout.Layout>
   );

@@ -3,6 +3,7 @@
 export const AppEvents = {
   DISMISS_PRIVACY_DISCLAIMER: 'App: Dismiss Privacy Disclaimer',
   GET_STARTED: 'App: Get Started',
+  SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
   UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
   UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
   UPDATE_STARTED: 'App: Update Started',
@@ -60,6 +61,7 @@ export const ProofEvents = {
   PROOF_VERIFICATION_STARTED: 'Proof: Proof Verification Started',
   PROVING_PROCESS_ERROR: 'Proof: Proving Process Error',
   PROVING_STATE_CHANGE: 'Proof: Proving State Change',
+  PROVING_STORE_REINITIALIZED: 'Proof: Proving Store Re-initialized',
   REGISTER_COMPLETED: 'Proof: Register Completed',
   ALREADY_REGISTERED: 'Proof: Already Registered',
   QR_SCAN_CANCELLED: 'Proof: QR Scan Cancelled',
@@ -104,4 +106,16 @@ export const MockDataEvents = {
   SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
   SELECT_COUNTRY: 'Mock Data: Select Country',
   TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
+};
+
+export const DocumentEvents = {
+  MANAGE_SCREEN_OPENED: 'Document: Manage Documents Screen Opened',
+  DOCUMENTS_FETCHED: 'Document: Documents Fetched',
+  NO_DOCUMENTS_FOUND: 'Document: No Documents Found',
+  DOCUMENT_SELECTED: 'Document: Document Selected',
+  DOCUMENT_DELETED: 'Document: Document Deleted',
+  ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
+  ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
+  PASSPORT_INFO_OPENED: 'Document: Passport Info Screen Opened',
+  PASSPORT_METADATA_LOADED: 'Document: Passport Metadata Loaded',
 };

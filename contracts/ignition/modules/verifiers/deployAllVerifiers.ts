@@ -3,7 +3,6 @@ import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common/constants/con
 import * as fs from "fs";
 import * as path from "path";
 
-
 const deployVerifiers = {
   vcAndDiscloseVerifier: false,
   vcAndDiscloseIdVerifier: false,
@@ -36,15 +35,15 @@ function contractExists(contractName: string): boolean {
 }
 
 export default buildModule("DeployAllVerifiers", (m) => {
-let successfulRegisterIdDeployments = 0;
-let successfulRegisterDeployments = 0;
-let successfulDscDeployments = 0;
+  let successfulRegisterIdDeployments = 0;
+  let successfulRegisterDeployments = 0;
+  let successfulDscDeployments = 0;
 
   const deployedContracts: Record<string, any> = {};
 
   // Deploy VC and Disclose verifier
   if (deployVerifiers.vcAndDiscloseVerifier) {
-  console.log("Deploying VC and Disclose verifier...");
+    console.log("Deploying VC and Disclose verifier...");
     deployedContracts.vcAndDiscloseVerifier = m.contract("Verifier_vc_and_disclose");
   }
 
@@ -57,17 +56,17 @@ let successfulDscDeployments = 0;
   const registerIdCircuits = ["register_id_sha256_sha256_sha256_rsa_65537_4096"];
   // Deploy Register ID verifiers (for ID cards)
   if (deployVerifiers.registerIdVerifier) {
-  console.log("Deploying Register ID verifiers...");
-  registerIdCircuits.forEach((circuitName) => {
-    const contractName = `Verifier_${circuitName}`;
-    if (contractExists(contractName)) {
-      console.log(`  - Deploying ${contractName}`);
-      deployedContracts[circuitName] = m.contract(contractName);
-      successfulRegisterIdDeployments++;
-    } else {
-      console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
-    }
-  });
+    console.log("Deploying Register ID verifiers...");
+    registerIdCircuits.forEach((circuitName) => {
+      const contractName = `Verifier_${circuitName}`;
+      if (contractExists(contractName)) {
+        console.log(`  - Deploying ${contractName}`);
+        deployedContracts[circuitName] = m.contract(contractName);
+        successfulRegisterIdDeployments++;
+      } else {
+        console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
+      }
+    });
   }
 
   // Deploy VC and Disclose ID verifier
@@ -92,33 +91,33 @@ let successfulDscDeployments = 0;
   // Deploy Register verifiers using RegisterVerifierId enum
   const registerCircuits = getEnumKeys(RegisterVerifierId);
   if (deployVerifiers.registerVerifier) {
-  console.log("Deploying Register verifiers...");
-  registerCircuits.forEach((circuitName) => {
-    const contractName = `Verifier_${circuitName}`;
-    if (contractExists(contractName)) {
-      console.log(`  - Deploying ${contractName}`);
-      deployedContracts[circuitName] = m.contract(contractName);
-      successfulRegisterDeployments++;
-    } else {
-      console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
-    }
-  });
+    console.log("Deploying Register verifiers...");
+    registerCircuits.forEach((circuitName) => {
+      const contractName = `Verifier_${circuitName}`;
+      if (contractExists(contractName)) {
+        console.log(`  - Deploying ${contractName}`);
+        deployedContracts[circuitName] = m.contract(contractName);
+        successfulRegisterDeployments++;
+      } else {
+        console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
+      }
+    });
   }
 
   // Deploy DSC verifiers using DscVerifierId enum
   const dscCircuits = getEnumKeys(DscVerifierId);
   if (deployVerifiers.dscVerifier) {
-  console.log("Deploying DSC verifiers...");
-  dscCircuits.forEach((circuitName) => {
-    const contractName = `Verifier_${circuitName}`;
-    if (contractExists(contractName)) {
-      console.log(`  - Deploying ${contractName}`);
-      deployedContracts[circuitName] = m.contract(contractName);
-      successfulDscDeployments++;
-    } else {
-      console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
-    }
-  });
+    console.log("Deploying DSC verifiers...");
+    dscCircuits.forEach((circuitName) => {
+      const contractName = `Verifier_${circuitName}`;
+      if (contractExists(contractName)) {
+        console.log(`  - Deploying ${contractName}`);
+        deployedContracts[circuitName] = m.contract(contractName);
+        successfulDscDeployments++;
+      } else {
+        console.warn(`  - Warning: Contract ${contractName} not found, skipping...`);
+      }
+    });
   }
 
   console.log(`Total verifiers deployment summary:`);
@@ -133,7 +132,9 @@ let successfulDscDeployments = 0;
   console.log(
     `  - DSC: ${successfulDscDeployments}/${dscCircuits.length} (${dscCircuits.length - successfulDscDeployments} skipped)`,
   );
-  console.log(`  - Total successful deployments: ${2 + successfulRegisterIdDeployments + successfulRegisterDeployments + successfulDscDeployments}`);
+  console.log(
+    `  - Total successful deployments: ${2 + successfulRegisterIdDeployments + successfulRegisterDeployments + successfulDscDeployments}`,
+  );
 
   return deployedContracts;
 });

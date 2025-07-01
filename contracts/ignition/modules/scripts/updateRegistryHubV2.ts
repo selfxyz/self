@@ -15,7 +15,10 @@ module.exports = buildModule("UpdateRegistryHubV2", (m) => {
 
   try {
     const registryAddress = getContractAddress("DeployRegistryModule#IdentityRegistry", deployedAddresses);
-    const registryIdCardAddress = getContractAddress("DeployIdCardRegistryModule#IdentityRegistryIdCard", deployedAddresses);
+    const registryIdCardAddress = getContractAddress(
+      "DeployIdCardRegistryModule#IdentityRegistryIdCard",
+      deployedAddresses,
+    );
     const hubAddress = getContractAddress("DeployHubV2#IdentityVerificationHub", deployedAddresses);
 
     log.info(`Registry address: ${registryAddress}`);
@@ -38,7 +41,7 @@ module.exports = buildModule("UpdateRegistryHubV2", (m) => {
 
     return {
       deployedRegistryInstance,
-      deployedRegistryIdCardInstance
+      deployedRegistryIdCardInstance,
     };
   } catch (error) {
     log.error(`Failed to update registry hub: ${error}`);

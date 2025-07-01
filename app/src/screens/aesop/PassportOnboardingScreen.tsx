@@ -39,15 +39,15 @@ const PassportOnboardingScreen: React.FC<
           ref={animationRef}
           autoPlay={false}
           loop={false}
-          onAnimationFinish={() => {
-            setTimeout(() => {
-              animationRef.current?.play();
-            }, 5000); // Pause 5 seconds before playing again
-          }}
           source={passportOnboardingAnimation}
           style={styles.animation}
           cacheComposition={true}
           renderMode="HARDWARE"
+          onAnimationFinish={() => {
+            setTimeout(() => {
+              animationRef.current?.play();
+            }, 100);
+          }}
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
@@ -100,8 +100,8 @@ export default PassportOnboardingScreen;
 const styles = StyleSheet.create({
   animation: {
     backgroundColor: slate100,
-    width: '115%',
-    height: '115%',
+    width: '100%',
+    height: '100%',
   },
   textIconWrapper: {
     width: '100%',

@@ -126,7 +126,7 @@ for item in "${allowed_circuits[@]}"; do
         continue
     fi
 
-    while [[ ${#pids[@]} -ge 3 ]]; do
+    while [[ ${#pids[@]} -ge 2 ]]; do
         new_pids=()
         for pid in "${pids[@]}"; do
             if kill -0 "$pid" 2>/dev/null; then

@@ -60,15 +60,20 @@ const PassportNFCTrouble: React.FC = () => {
 
   return (
     <SimpleScrolledTitleLayout
-      title="Having trouble scanning your passport?"
+      title="Having trouble verifying your ID?"
       onDismiss={go}
       secondaryButtonText="Open NFC Options"
       onSecondaryButtonPress={goToNFCMethodSelection}
     >
-      <YStack>
+      <YStack
+        paddingTop={24}
+        paddingHorizontal={10}
+        paddingBottom={32}
+        gap={20}
+      >
         <GestureDetector gesture={devModeTap}>
           <Caption size="large" color={slate500}>
-            Here are some tips to help you successfully scan the RFID chip::
+            Here are some tips to help you successfully scan the RFID chip:
           </Caption>
         </GestureDetector>
         <Tips items={tips} />

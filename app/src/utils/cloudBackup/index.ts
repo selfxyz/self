@@ -1,52 +1,18 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { ethers } from 'ethers';
+import {
+  APP_DATA_FOLDER_ID,
+  MIME_TYPES,
+} from '@robinbobin/react-native-google-drive-api-wrapper';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
-import {
-  CloudStorage,
-  CloudStorageProvider,
-  CloudStorageScope,
-} from 'react-native-cloud-storage';
 
-import { name } from '../../../package.json';
 import { Mnemonic } from '../../types/mnemonic';
-import { googleSignIn } from './google';
-
-const FOLDER = `/${name}`;
-const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;
-CloudStorage.setProviderOptions({ scope: CloudStorageScope.AppData });
+import { createGDrive } from './google';
+import { FILE_NAME, parseMnemonic, withRetries } from './helpers';
+import * as ios from './ios';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
-
-/**
- * For some reason google drive api can be very ... brittle and abort randomly (network conditions)
- * so retry a couple times for good measure.
- *
- * Filter the error message by checking if `abort` is included didnt help as the error can be `path not found`
- * maybe some race conditions on the drive side
- */
-async function withRetries<T>(
-  promiseBuilder: () => Promise<T>,
-  retries = 10,
-): Promise<T> {
-  let latestError: Error;
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await promiseBuilder();
-    } catch (e) {
-      retries++;
-      latestError = e as Error;
-      if (retries < i - 1) {
-        console.info('retry #', i);
-        await new Promise(resolve => setTimeout(resolve, 200 * i));
-      }
-    }
-  }
-  throw new Error(
-    `retry count exhausted (${retries}), original error ${latestError!}`,
-  );
-}
 
 export function useBackupMnemonic() {
   return useMemo(
@@ -59,68 +25,81 @@ export function useBackupMnemonic() {
   );
 }
 
-async function addAccessTokenForGoogleDrive() {
-  if (CloudStorage.getProvider() === CloudStorageProvider.GoogleDrive) {
-    const response = await googleSignIn();
-    if (!response) {
-      // user canceled
-      return;
-    }
-    CloudStorage.setProviderOptions({
-      accessToken: response.accessToken,
-    });
-  }
-}
-
-async function upload(mnemonic: Mnemonic) {
+export async function upload(mnemonic: Mnemonic) {
   if (!mnemonic || !mnemonic.phrase) {
     throw new Error(
       'Mnemonic not set yet. Did the user see the recovery phrase?',
     );
   }
-
-  await addAccessTokenForGoogleDrive();
-  try {
-    await CloudStorage.mkdir(FOLDER);
-  } catch (e) {
-    console.error(e);
-    if (!(e as Error).message.includes('already')) {
-      throw e;
+  if (Platform.OS === 'ios') {
+    await ios.upload(mnemonic);
+  } else {
+    const gdrive = await createGDrive();
+    if (!gdrive) {
+      throw new Error('User canceled Google sign-in');
     }
-  }
-  await withRetries(() =>
-    CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(mnemonic)),
-  );
-}
-
-async function download() {
-  await addAccessTokenForGoogleDrive();
-  if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
-    const mnemonicString = await withRetries(() =>
-      CloudStorage.readFile(ENCRYPTED_FILE_PATH),
+    await withRetries(() =>
+      gdrive.files
+        .newMultipartUploader()
+        .setData(JSON.stringify(mnemonic))
+        .setDataMimeType(MIME_TYPES.application.json)
+        .setRequestBody({ name: FILE_NAME, parents: [APP_DATA_FOLDER_ID] })
+        .execute(),
     );
-
-    try {
-      const mnemonic = JSON.parse(mnemonicString) as Mnemonic;
-      if (
-        !mnemonic.phrase ||
-        !ethers.Mnemonic.isValidMnemonic(mnemonic.phrase)
-      ) {
-        throw new Error();
-      }
-      return mnemonic;
-    } catch (e) {
-      throw new Error(
-        `Malformed mnemonic, expected JSON structure, got ${mnemonicString}`,
-      );
-    }
   }
-  throw new Error(
-    'Couldnt find the encrypted backup, did you back it up previously?',
-  );
 }
 
-async function disableBackup() {
-  await addAccessTokenForGoogleDrive();
-  withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
+export async function download() {
+  if (Platform.OS === 'ios') {
+    return ios.download();
+  }
+
+  const gdrive = await createGDrive();
+  if (!gdrive) {
+    throw new Error('User canceled Google sign-in');
+  }
+  const { files } = await gdrive.files.list({
+    spaces: APP_DATA_FOLDER_ID,
+    q: `name = '${FILE_NAME}'`,
+  });
+  if (!files.length) {
+    throw new Error(
+      'Couldnt find the encrypted backup, did you back it up previously?',
+    );
+  }
+  const fileId = (files[0] as any).id as string;
+  if (!fileId) {
+    throw new Error(
+      'Couldnt find the encrypted backup, did you back it up previously?',
+    );
+  }
+  const mnemonicString = await withRetries(() => gdrive.files.getText(fileId));
+  try {
+    const mnemonic = parseMnemonic(mnemonicString);
+    return mnemonic;
+  } catch (e) {
+    throw new Error(`Failed to parse mnemonic backup: ${(e as Error).message}`);
+  }
+}
+
+export async function disableBackup() {
+  if (Platform.OS === 'ios') {
+    await ios.disableBackup();
+    return;
+  }
+  const gdrive = await createGDrive();
+  if (!gdrive) {
+    // User canceled Google sign-in; skip disabling backup gracefully.
+    return;
+  }
+  const { files } = await gdrive.files.list({
+    spaces: APP_DATA_FOLDER_ID,
+    q: `name = '${FILE_NAME}'`,
+  });
+  await Promise.all(
+    files.map((f: any) => {
+      const id = f.id as string;
+      return id ? gdrive.files.delete(id) : Promise.resolve();
+    }),
+  );
 }

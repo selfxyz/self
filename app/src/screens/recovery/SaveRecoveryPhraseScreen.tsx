@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import { StaticScreenProps } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -11,14 +12,18 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import useMnemonic from '../../hooks/useMnemonic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { RootStackParamList } from '../../navigation';
 import { STORAGE_NAME } from '../../utils/cloudBackup';
 import { black, slate400, white } from '../../utils/colors';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 
-interface SaveRecoveryPhraseScreenProps {}
+type NextScreen = keyof RootStackParamList;
+interface SaveRecoveryPhraseScreenProps
+  extends StaticScreenProps<{ nextScreen?: NextScreen } | undefined> {}
 
-const SaveRecoveryPhraseScreen: React.FC<
-  SaveRecoveryPhraseScreenProps
-> = ({}) => {
+const SaveRecoveryPhraseScreen: React.FC<SaveRecoveryPhraseScreenProps> = ({
+  route,
+}) => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
 
@@ -27,12 +32,19 @@ const SaveRecoveryPhraseScreen: React.FC<
     setUserHasSeenMnemonic(true);
   }, []);
 
+  const nextScreen = route.params?.nextScreen ?? 'AccountVerifiedSuccess';
+
   const onCloudBackupPress = useHapticNavigation('CloudBackupSettings', {
     params: { nextScreen: 'SaveRecoveryPhrase' },
   });
-  const onSkipPress = useHapticNavigation('AccountVerifiedSuccess', {
-    action: 'confirm',
-  });
+
+  const navigateNext = useHapticNavigation(nextScreen, { action: 'confirm' });
+  const onSkipPress = useCallback(() => {
+    if (nextScreen === 'LoadingScreen') {
+      useProvingStore.getState().init('register', true);
+    }
+    navigateNext();
+  }, [navigateNext, nextScreen]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>

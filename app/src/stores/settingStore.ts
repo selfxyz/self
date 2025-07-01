@@ -11,6 +11,10 @@ interface PersistedSettingsState {
   setBiometricsAvailable: (biometricsAvailable: boolean) => void;
   cloudBackupEnabled: boolean;
   toggleCloudBackupEnabled: () => void;
+  loginCount: number;
+  incrementLoginCount: () => void;
+  hasViewedRecoveryPhrase: boolean;
+  setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   isDevMode: boolean;
   setDevModeOn: () => void;
   setDevModeOff: () => void;
@@ -43,6 +47,20 @@ export const useSettingStore = create<SettingsState>()(
       toggleCloudBackupEnabled: () =>
         set(oldState => ({
           cloudBackupEnabled: !oldState.cloudBackupEnabled,
+          loginCount: oldState.cloudBackupEnabled ? oldState.loginCount : 0,
+        })),
+
+      loginCount: 0,
+      incrementLoginCount: () =>
+        set(oldState => ({ loginCount: oldState.loginCount + 1 })),
+      hasViewedRecoveryPhrase: false,
+      setHasViewedRecoveryPhrase: viewed =>
+        set(oldState => ({
+          hasViewedRecoveryPhrase: viewed,
+          loginCount:
+            viewed && !oldState.hasViewedRecoveryPhrase
+              ? 0
+              : oldState.loginCount,
         })),
 
       isDevMode: false,
