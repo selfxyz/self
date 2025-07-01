@@ -581,6 +581,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             isSupported.status,
             isSupported.details,
           );
+          set({
+            error_code: isSupported.status,
+            reason: isSupported.details,
+          });
           await clearPassportData();
           actor!.send({ type: 'PASSPORT_NOT_SUPPORTED' });
           return;

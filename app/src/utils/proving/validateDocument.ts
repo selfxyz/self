@@ -24,6 +24,7 @@ export type PassportSupportStatus =
   | 'csca_not_found'
   | 'registration_circuit_not_supported'
   | 'dsc_circuit_not_supported'
+  | 'protocol_data_missing'
   | 'passport_supported';
 export async function checkPassportSupported(
   passportData: PassportData,
@@ -46,9 +47,15 @@ export async function checkPassportSupported(
     'register',
   );
   const deployedCircuits =
-    useProtocolStore.getState()[document].deployed_circuits; // change this to the document type
+    useProtocolStore.getState()[document].deployed_circuits;
+  if (!deployedCircuits) {
+    console.warn('Protocol data missing: deployed circuits not loaded');
+    return { status: 'protocol_data_missing', details: 'deployed_circuits' };
+  }
   if (
     !circuitNameRegister ||
+    !deployedCircuits.REGISTER ||
+    !deployedCircuits.REGISTER_ID ||
     !(
       deployedCircuits.REGISTER.includes(circuitNameRegister) ||
       deployedCircuits.REGISTER_ID.includes(circuitNameRegister)
@@ -62,6 +69,8 @@ export async function checkPassportSupported(
   const circuitNameDsc = getCircuitNameFromPassportData(passportData, 'dsc');
   if (
     !circuitNameDsc ||
+    !deployedCircuits.DSC ||
+    !deployedCircuits.DSC_ID ||
     !(
       deployedCircuits.DSC.includes(circuitNameDsc) ||
       deployedCircuits.DSC_ID.includes(circuitNameDsc)

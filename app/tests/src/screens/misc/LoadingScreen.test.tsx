@@ -6,6 +6,15 @@ import React from 'react';
 import LoadingScreen from '../../../../src/screens/misc/LoadingScreen';
 import { useProvingStore } from '../../../../src/utils/proving/provingMachine';
 
+jest.mock('../../../../src/utils/analytics', () => {
+  const trackEventMock = jest.fn();
+  return {
+    __esModule: true,
+    default: () => ({ trackEvent: trackEventMock }),
+    trackEventMock,
+  };
+});
+
 // Mock the proving store
 jest.mock('../../../../src/utils/proving/provingMachine');
 
@@ -259,6 +268,50 @@ describe('LoadingScreen', () => {
           'register',
         );
       });
+    });
+  });
+
+  describe('Unsupported passport handling', () => {
+    it('tracks reason from proving store', async () => {
+      const { PassportEvents } = require('../../../../src/consts/analytics');
+      const { checkPassportSupported } = require('../../../../src/utils/proving/validateDocument');
+
+      mockUseProvingStore.mockImplementation(selector => {
+        if (typeof selector === 'function') {
+          return selector({
+            currentState: 'passport_not_supported',
+            fcmToken: 'test-token',
+            circuitType: 'register',
+            error_code: 'csca_not_found',
+            reason: 'missing csca',
+          } as any);
+        }
+        return {
+          currentState: 'passport_not_supported',
+          fcmToken: 'test-token',
+          circuitType: 'register',
+          error_code: 'csca_not_found',
+          reason: 'missing csca',
+        } as any;
+      });
+
+      (mockUseProvingStore as any).getState = jest.fn().mockReturnValue({
+        circuitType: 'register',
+        error_code: 'csca_not_found',
+        reason: 'missing csca',
+      });
+
+      render(<LoadingScreen route={{} as any} />);
+
+      const { trackEventMock } = require('../../../../src/utils/analytics');
+      await waitFor(() => {
+        expect(trackEventMock).toHaveBeenCalledWith(
+          PassportEvents.UNSUPPORTED_PASSPORT,
+          { reason: 'csca_not_found', details: 'missing csca' },
+        );
+      });
+
+      expect(checkPassportSupported).not.toHaveBeenCalled();
     });
   });
 });

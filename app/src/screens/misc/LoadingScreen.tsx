@@ -28,7 +28,6 @@ import {
   ProvingStateType,
   useProvingStore,
 } from '../../utils/proving/provingMachine';
-import { checkPassportSupported } from '../../utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 
@@ -74,10 +73,10 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const canCloseApp = safeToCloseStates.includes(currentState);
 
   const handleUnsupportedPassport = async (_passportData: PassportData) => {
-    const isSupported = await checkPassportSupported(_passportData);
+    const { error_code, reason } = useProvingStore.getState();
     trackEvent(PassportEvents.UNSUPPORTED_PASSPORT, {
-      reason: isSupported.status,
-      details: isSupported.details,
+      reason: error_code,
+      details: reason,
     });
     console.log('Passport not supported');
     clearPassportData();
