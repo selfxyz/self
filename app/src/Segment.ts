@@ -9,7 +9,6 @@ import {
   EventPlugin,
   PluginType,
   SegmentEvent,
-  StartupFlushPolicy,
 } from '@segment/analytics-react-native';
 
 let segmentClient: ReturnType<typeof createClient> | null = null;
@@ -47,7 +46,7 @@ export const createSegmentClient = () => {
     return segmentClient;
   }
 
-  const flushPolicies = [new StartupFlushPolicy(), new BackgroundFlushPolicy()];
+  const flushPolicies = [new BackgroundFlushPolicy()];
 
   const client = createClient({
     writeKey: SEGMENT_KEY,
