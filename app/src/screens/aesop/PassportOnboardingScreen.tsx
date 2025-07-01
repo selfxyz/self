@@ -38,12 +38,7 @@ const PassportOnboardingScreen: React.FC<
         <LottieView
           ref={animationRef}
           autoPlay={false}
-          loop={false}
-          onAnimationFinish={() => {
-            setTimeout(() => {
-              animationRef.current?.play();
-            }, 5000); // Pause 5 seconds before playing again
-          }}
+          loop={true}
           source={passportOnboardingAnimation}
           style={styles.animation}
           cacheComposition={true}
@@ -100,8 +95,8 @@ export default PassportOnboardingScreen;
 const styles = StyleSheet.create({
   animation: {
     backgroundColor: slate100,
-    width: '115%',
-    height: '115%',
+    width: '100%',
+    height: '100%',
   },
   textIconWrapper: {
     width: '100%',
