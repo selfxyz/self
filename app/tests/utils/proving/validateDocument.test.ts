@@ -1,6 +1,9 @@
-import { checkPassportSupported } from '../../../src/utils/proving/validateDocument';
-import { useProtocolStore } from '../../../src/stores/protocolStore';
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { PassportData } from '@selfxyz/common';
+
+import { useProtocolStore } from '../../../src/stores/protocolStore';
+import { checkPassportSupported } from '../../../src/utils/proving/validateDocument';
 
 jest.mock('@selfxyz/common', () => {
   const actual = jest.requireActual('@selfxyz/common');
@@ -18,7 +21,11 @@ describe('checkPassportSupported', () => {
     eContent: [],
     signedAttr: [],
     encryptedDigest: [],
-    passportMetadata: { cscaFound: true, signatureAlgorithm: 'RSA', curveOrExponent: '' } as any,
+    passportMetadata: {
+      cscaFound: true,
+      signatureAlgorithm: 'RSA',
+      curveOrExponent: '',
+    } as any,
     documentType: 'passport',
     documentCategory: 'passport',
     mock: false,

@@ -274,7 +274,9 @@ describe('LoadingScreen', () => {
   describe('Unsupported passport handling', () => {
     it('tracks reason from proving store', async () => {
       const { PassportEvents } = require('../../../../src/consts/analytics');
-      const { checkPassportSupported } = require('../../../../src/utils/proving/validateDocument');
+      const {
+        checkPassportSupported,
+      } = require('../../../../src/utils/proving/validateDocument');
 
       mockUseProvingStore.mockImplementation(selector => {
         if (typeof selector === 'function') {
