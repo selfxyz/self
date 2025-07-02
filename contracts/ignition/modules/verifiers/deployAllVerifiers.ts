@@ -23,7 +23,7 @@ function getEnumKeys<T extends Record<string, string | number>>(enumObject: T): 
  */
 function getRegisterIdCircuits(): string[] {
   const allRegisterCircuits = getEnumKeys(RegisterVerifierId);
-  return allRegisterCircuits.filter(circuit => circuit.startsWith('register_id_'));
+  return allRegisterCircuits.filter((circuit) => circuit.startsWith("register_id_"));
 }
 
 /**
@@ -31,7 +31,9 @@ function getRegisterIdCircuits(): string[] {
  */
 function getRegularRegisterCircuits(): string[] {
   const allRegisterCircuits = getEnumKeys(RegisterVerifierId);
-  return allRegisterCircuits.filter(circuit => circuit.startsWith('register_') && !circuit.startsWith('register_id_'));
+  return allRegisterCircuits.filter(
+    (circuit) => circuit.startsWith("register_") && !circuit.startsWith("register_id_"),
+  );
 }
 
 /**
@@ -54,7 +56,7 @@ function contractExists(contractName: string): boolean {
  * Sleep utility function
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export default buildModule("DeployAllVerifiers", (m) => {

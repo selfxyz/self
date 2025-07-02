@@ -36,7 +36,7 @@ log.info(`Network: ${NETWORK}, Repo: ${repoName}`);
 
 try {
   const hubABI = getContractAbi(repoName, "DeployHubV2#IdentityVerificationHubImplV2");
-  const prefix = "DeployAllVerifiers"
+  const prefix = "DeployAllVerifiers";
 
   function getContractAddressByPartialName(partialName: string): string | undefined {
     const fullKey = `${prefix}#${partialName}`;

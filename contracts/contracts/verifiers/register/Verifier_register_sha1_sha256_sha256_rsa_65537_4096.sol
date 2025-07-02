@@ -22,17 +22,17 @@ pragma solidity >=0.7.0 <0.9.0;
 
 contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
     // Scalar field size
-    uint256 constant r    = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    uint256 constant r = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     // Base field size
-    uint256 constant q   = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
+    uint256 constant q = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
 
     // Verification Key data
-    uint256 constant alphax  = 20491192805390485299153009773594534940189261866228447918068658471970481763042;
-    uint256 constant alphay  = 9383485363053290200918347156157836566562967994039712273449902621266178545958;
-    uint256 constant betax1  = 4252822878758300859123897981450591353533073413197771768651442665752259397132;
-    uint256 constant betax2  = 6375614351688725206403948262868962793625744043794305715222011528459656738731;
-    uint256 constant betay1  = 21847035105528745403288232691147584728191162732299865338377159692350059136679;
-    uint256 constant betay2  = 10505242626370262277552901082094356697409835680220590971873171140371331206856;
+    uint256 constant alphax = 20491192805390485299153009773594534940189261866228447918068658471970481763042;
+    uint256 constant alphay = 9383485363053290200918347156157836566562967994039712273449902621266178545958;
+    uint256 constant betax1 = 4252822878758300859123897981450591353533073413197771768651442665752259397132;
+    uint256 constant betax2 = 6375614351688725206403948262868962793625744043794305715222011528459656738731;
+    uint256 constant betay1 = 21847035105528745403288232691147584728191162732299865338377159692350059136679;
+    uint256 constant betay2 = 10505242626370262277552901082094356697409835680220590971873171140371331206856;
     uint256 constant gammax1 = 11559732032986387107991004021392285783925812861821192530917403151452391805634;
     uint256 constant gammax2 = 10857046999023057135944570762232829481370756359578518086990519993285655852781;
     uint256 constant gammay1 = 4082367875863433681332203403145435568316851327593401208105741076214120093531;
@@ -42,27 +42,30 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
     uint256 constant deltay1 = 10867418941173876719720494291312874121303926097736052348630352417528330069757;
     uint256 constant deltay2 = 3966455194280524402580954960974488627038469185349748194102799761509282372804;
 
-    
     uint256 constant IC0x = 12549424169777536312794493254383437627272542627214847190918561652575320013838;
     uint256 constant IC0y = 20997677641719247504304696603717414649155364545594497756116337404077594755851;
-    
+
     uint256 constant IC1x = 11649247927567371840629000567928966111162534018568034494702973366134070466928;
     uint256 constant IC1y = 2688308711058321703717613327926760301446206609607158869709321039936465465859;
-    
+
     uint256 constant IC2x = 12205236554951714841890485722044384206867427673483832637343145778819270571892;
     uint256 constant IC2y = 18818955995239520245471064325930332746676640132913589855547929584133183110972;
-    
+
     uint256 constant IC3x = 7570845991894012528979301185197636069733965741463734389351303485977840118761;
     uint256 constant IC3y = 13798124377026774663632173979000314997672799649105223548347777540978097876710;
-    
- 
+
     // Memory data
     uint16 constant pVk = 0;
     uint16 constant pPairing = 128;
 
     uint16 constant pLastMem = 896;
 
-    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[3] calldata _pubSignals) public view returns (bool) {
+    function verifyProof(
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[3] calldata _pubSignals
+    ) public view returns (bool) {
         assembly {
             function checkField(v) {
                 if iszero(lt(v, r)) {
@@ -70,7 +73,7 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
                     return(0, 0x20)
                 }
             }
-            
+
             // G1 function to multiply a G1 value(x,y) to value in an address
             function g1_mulAccC(pR, x, y, s) {
                 let success
@@ -105,13 +108,12 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
                 mstore(add(_pVk, 32), IC0y)
 
                 // Compute the linear combination vk_x
-                
+
                 g1_mulAccC(_pVk, IC1x, IC1y, calldataload(add(pubSignals, 0)))
-                
+
                 g1_mulAccC(_pVk, IC2x, IC2y, calldataload(add(pubSignals, 32)))
-                
+
                 g1_mulAccC(_pVk, IC3x, IC3y, calldataload(add(pubSignals, 64)))
-                
 
                 // -A
                 mstore(_pPairing, calldataload(pA))
@@ -137,7 +139,6 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
                 mstore(add(_pPairing, 384), mload(add(pMem, pVk)))
                 mstore(add(_pPairing, 416), mload(add(pMem, add(pVk, 32))))
 
-
                 // gamma2
                 mstore(add(_pPairing, 448), gammax1)
                 mstore(add(_pPairing, 480), gammax2)
@@ -154,7 +155,6 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
                 mstore(add(_pPairing, 704), deltay1)
                 mstore(add(_pPairing, 736), deltay2)
 
-
                 let success := staticcall(sub(gas(), 2000), 8, _pPairing, 768, _pPairing, 0x20)
 
                 isOk := and(success, mload(_pPairing))
@@ -164,19 +164,18 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
             mstore(0x40, add(pMem, pLastMem))
 
             // Validate that all evaluations ∈ F
-            
+
             checkField(calldataload(add(_pubSignals, 0)))
-            
+
             checkField(calldataload(add(_pubSignals, 32)))
-            
+
             checkField(calldataload(add(_pubSignals, 64)))
-            
 
             // Validate all evaluations
             let isValid := checkPairing(_pA, _pB, _pC, _pubSignals, pMem)
 
             mstore(0, isValid)
-             return(0, 0x20)
-         }
-     }
- }
+            return(0, 0x20)
+        }
+    }
+}
