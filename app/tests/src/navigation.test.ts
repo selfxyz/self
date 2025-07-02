@@ -38,6 +38,7 @@ describe('navigation', () => {
       'SaveRecoveryPhrase',
       'Settings',
       'ShowRecoveryPhrase',
+      'SpinnerDemo',
       'Splash',
       'UnsupportedPassport',
     ]);
