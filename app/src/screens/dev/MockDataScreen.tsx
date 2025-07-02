@@ -39,8 +39,8 @@ import {
   textBlack,
   white,
 } from '../../utils/colors';
-import { buttonTap, selectionChange } from '../../utils/haptic';
 import { extraYPadding } from '../../utils/constants';
+import { buttonTap, selectionChange } from '../../utils/haptic';
 
 const { trackEvent } = analytics();
 

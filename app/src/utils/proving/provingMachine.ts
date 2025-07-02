@@ -775,7 +775,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         } else {
           setTimeout(() => {
             get().init('register', true);
-          }, 1500);
+          }, 3000);
         }
       } else if (circuitType === 'register') {
         actor!.send({ type: 'COMPLETED' });
