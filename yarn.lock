@@ -4385,7 +4385,7 @@ __metadata:
     react-native-check-version: "npm:^1.4.0"
     react-native-cloud-storage: "npm:^2.3.0"
     react-native-dotenv: "npm:^3.4.11"
-    react-native-gesture-handler: "npm:^2.26.0"
+    react-native-gesture-handler: "npm:^2.27.1"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
     react-native-keychain: "npm:^10.0.0"
@@ -19254,9 +19254,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-gesture-handler@npm:^2.26.0":
-  version: 2.26.0
-  resolution: "react-native-gesture-handler@npm:2.26.0"
+"react-native-gesture-handler@npm:^2.27.1":
+  version: 2.27.1
+  resolution: "react-native-gesture-handler@npm:2.27.1"
   dependencies:
     "@egjs/hammerjs": "npm:^2.0.17"
     hoist-non-react-statics: "npm:^3.3.0"

@@ -65,12 +65,23 @@ subprojects {
                 if (project.name == 'react-native-gesture-handler') {
                     namespace = 'com.swmansion.gesturehandler'
                     println("Force namespace for ${project.name} -> $namespace")
+                    buildFeatures {
+                        buildConfig = true
+                    }
+                    return
                 } else if (buildGradleFile.exists()) {
                     def buildGradleText = buildGradleFile.text
                     def namespaceMatcher = buildGradleText =~ /namespace\s*['"](.+?)['"]/
                     if (namespaceMatcher.find()) {
                         namespace = namespaceMatcher[0][1]
                         println "Set namespace for ${project.name} to ${namespace} from build.gradle"
+
+                        // Check if this project needs BuildConfig
+                        if (project.name.contains('segment') || buildGradleText.contains('buildConfigField')) {
+                            buildFeatures {
+                                buildConfig = true
+                            }
+                        }
                         return
                     }
                 }
@@ -89,15 +100,6 @@ subprojects {
                 } else {
                     namespace = project.group
                     println "AndroidManifest.xml not found. Set namespace for ${project.name} to ${namespace}"
-                }
-
-                // Fix BuildConfig issues for libraries that need it
-                if (project.name == 'react-native-gesture-handler' ||
-                    project.name.contains('segment') ||
-                    buildGradleFile.text.contains('buildConfigField')) {
-                    buildFeatures {
-                        buildConfig = true
-                    }
                 }
             }
         }
