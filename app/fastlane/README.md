@@ -70,6 +70,10 @@ Push a new build to Google Play Store
 
 ----
 
+Before running these lanes or triggering the GitHub Actions workflow, bump the
+project version with the `yarn bump-version:*` scripts and manually increment
+the native build numbers in `ios` and `android`.
+
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
 More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).

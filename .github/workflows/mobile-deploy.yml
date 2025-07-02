@@ -30,6 +30,17 @@ permissions:
   pull-requests: write
 
 on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Select platform to build"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - ios
+          - android
+          - both
   push:
     branches:
       - dev
@@ -44,8 +55,7 @@ on:
 
 jobs:
   build-ios:
-    # disable for now, will fix soon
-    if: false
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.platform != 'android' }}
     runs-on: macos-latest
     steps:
       - name: Set up Xcode
@@ -363,8 +373,7 @@ jobs:
           commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
 
   build-android:
-    # disable for now, will fix soon
-    if: false
+    if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.platform != 'ios' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
