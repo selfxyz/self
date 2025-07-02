@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useFocusEffect, usePreventRemove } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  usePreventRemove,
+} from '@react-navigation/native';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, styled, YStack } from 'tamagui';
@@ -15,6 +19,7 @@ import useRecoveryPrompts from '../../hooks/useRecoveryPrompts';
 import SelfCard from '../../images/card-style-1.svg';
 import ScanIcon from '../../images/icons/qr_scan.svg';
 import WarnIcon from '../../images/icons/warning.svg';
+import { usePassport } from '../../providers/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import {
   amber500,
@@ -38,6 +43,8 @@ const ScanButton = styled(Button, {
 const HomeScreen: React.FC = () => {
   useConnectionModal();
   useRecoveryPrompts();
+  const navigation = useNavigation();
+  const { getAllDocuments } = usePassport();
   const [isNewVersionAvailable, showAppUpdateModal, isModalDismissed] =
     useAppUpdates();
 
@@ -46,6 +53,23 @@ const HomeScreen: React.FC = () => {
       showAppUpdateModal();
     }
   });
+
+  useFocusEffect(
+    React.useCallback(() => {
+      async function checkDocs() {
+        try {
+          const docs = await getAllDocuments();
+          if (Object.keys(docs).length === 0) {
+            navigation.navigate('Launch' as never);
+          }
+        } catch {
+          // ignore errors
+        }
+      }
+
+      checkDocs();
+    }, [getAllDocuments, navigation]),
+  );
 
   const onScanButtonPress = useHapticNavigation('QRCodeViewFinder');
   // Prevents back navigation
