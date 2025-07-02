@@ -1,0 +1,31 @@
+# Release Mobile App workflow (currently disabled)
+
+# NOTE: Automated releases are temporarily disabled while we trial a manual
+# release process. To enable this workflow again, restore the `on` block below
+# and remove the `if: false` condition in the job.
+#
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - 'app/**'
+#   workflow_dispatch:
+
+jobs:
+  release:
+    if: false # disable job while releases are manual
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Release mobile app
+        working-directory: app
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
