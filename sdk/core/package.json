@@ -1,16 +1,13 @@
 {
   "name": "@selfxyz/core",
   "version": "1.0.4",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
   },
   "license": "MIT",
   "author": "motemotech",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.cts",
+  "type": "module",
   "exports": {
     ".": {
       "import": {
@@ -23,6 +20,9 @@
       }
     }
   },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.cts",
   "files": [
     "dist"
   ],

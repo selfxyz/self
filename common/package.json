@@ -39,12 +39,12 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && yarn postbuild",
-    "test-base": "yarn ts-mocha -n import=tsx --max-old-space-size=8192 --paths -p tsconfig.json",
     "postbuild": "node ./scripts/post-build.mjs",
     "format": "prettier --write .",
     "lint": "prettier --check .",
     "prepublishOnly": "yarn build",
     "test": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/**/*.test.ts --exit",
+    "test-base": "yarn ts-mocha -n import=tsx --max-old-space-size=8192 --paths -p tsconfig.json",
     "test:scope": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/scope.test.ts --exit",
     "types": "tsc -p tsconfig.json"
   },

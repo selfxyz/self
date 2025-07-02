@@ -2,26 +2,27 @@
   "name": "self-workspace-root",
   "workspaces": [
     "app",
-    "common",
     "circuits",
+    "common",
     "contracts",
-    "sdk/*",
-    "prover/tests"
+    "prover/tests",
+    "sdk/*"
   ],
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
     "format": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
-    "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
-    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
-    "postinstall": "patch-package",
     "gitleaks": "gitleaks protect --staged --redact --config=.gitleaks.toml",
-    "prepare": "husky"
+    "postinstall": "patch-package",
+    "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
+    "prepare": "husky",
+    "sort-packages": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
-  "packageManager": "yarn@4.6.0",
   "devDependencies": {
     "gitleaks": "1.0.0",
     "husky": "9.1.7",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0"
-  }
+  },
+  "packageManager": "yarn@4.6.0"
 }
