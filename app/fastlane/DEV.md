@@ -165,6 +165,9 @@ Several scripts in `app/package.json` facilitate common Fastlane and versioning 
 * Updates iOS `Info.plist` and Android `build.gradle`
 * Ensures consistency across JS bundle and native app wrappers
 
+Build numbers for both platforms are **not** auto-incremented. Update them
+manually in `ios/` and `android/` before running the deployment workflow.
+
 ### Local Testing with `act` 🧰
 
 You can test the GitHub Actions workflow locally using [`act`](https://github.com/nektos/act):
@@ -199,6 +202,12 @@ The primary CI/CD workflow is defined in `.github/workflows/mobile-deploy.yml`. 
 
 * **Push Events:** Runs on pushes to `dev` or `main` branches that change files in `app/` or the workflow file
 * **Pull Request Events:** Runs on PRs to `dev` or `main` branches that change files in `app/` or the workflow file
+
+### Manual Deployments
+
+From the GitHub Actions page select **Mobile App Deployments** and use the
+**Run workflow** button. Choose the desired platform (`ios`, `android`, or
+`both`) to start the build jobs on demand.
 
 ### Jobs
 
@@ -295,9 +304,11 @@ There are important limitations when working with Android deployments:
 
 2. **Manual Upload Process Required:**
    * After the Android build job finishes, you must:
-     1. Download the AAB artifact from the GitHub Actions run
-     2. Manually upload the AAB file to the Google Play Console
-     3. Complete the release process in the Play Console UI
+     1. Download the `app-release.aab` artifact from the GitHub Actions run
+        (under **Artifacts** on the workflow summary page)
+     2. Sign in to the Google Play Console and create a new release
+     3. Upload the downloaded AAB file and follow the console prompts
+     4. Complete the release process in the Play Console UI
 
 3. **Version Code Management:**
    * Unlike iOS, we cannot automatically fetch the current Android build number (version code)

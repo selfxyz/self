@@ -1,0 +1,62 @@
+module Fastlane
+  module Helpers
+    module Android
+      @@android_has_permissions = false
+
+      # Decode keystore from ENV for local development
+      def android_create_keystore(path)
+        if ENV["ANDROID_KEYSTORE"]
+          FileUtils.mkdir_p(File.dirname(path))
+          File.write(path, Base64.decode64(ENV["ANDROID_KEYSTORE"]))
+        end
+        File.realpath(path)
+      end
+
+      # Decode Play Store JSON key from ENV
+      def android_create_play_store_key(path)
+        if ENV["ANDROID_PLAY_STORE_JSON_KEY_BASE64"]
+          FileUtils.mkdir_p(File.dirname(path))
+          File.write(path, Base64.decode64(ENV["ANDROID_PLAY_STORE_JSON_KEY_BASE64"]))
+        end
+        File.realpath(path)
+      end
+
+      # Verify version code against Play Store (unused)
+      def android_verify_version_code(gradle_file)
+        latest = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
+          track: "internal",
+          json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
+          package_name: ENV["ANDROID_PACKAGE_NAME"]
+        ).first
+
+        line = File.readlines(gradle_file).find { |l| l.include?("versionCode") }
+        current = line.match(/versionCode\s+(\d+)/)[1].to_i
+
+        if current <= latest
+          report_error(
+            "Version code must be greater than latest Play Store version!",
+            "Latest: #{latest} Current: #{current}",
+            "Version code verification failed"
+          )
+        else
+          report_success("Version code verified (Current: #{current}, Latest: #{latest})")
+        end
+      end
+
+      # Increment version code locally (Play Store fetch disabled)
+      def android_increment_version_code(gradle_file)
+        full = File.expand_path(gradle_file, File.dirname(__FILE__))
+        raise "Could not find build.gradle" unless File.exist?(full)
+        content = File.read(full)
+        match = content.match(/versionCode\s+(\d+)/)
+        current = match ? match[1].to_i : 0
+        new_version = current + 1
+        if @@android_has_permissions
+          File.write(full, content.gsub(/versionCode\s+\d+/, "versionCode #{new_version}"))
+        end
+        report_success("Version code incremented from #{current} to #{new_version}")
+        @@android_has_permissions ? new_version : current
+      end
+    end
+  end
+end
