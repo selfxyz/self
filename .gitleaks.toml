@@ -1,5 +1,5 @@
 # This file has been auto-generated. Do not edit manually.
-# If you would like to contribute new rules, please use 
+# If you would like to contribute new rules, please use
 # cmd/generate/config/main.go and follow the contributing guidelines
 # at https://github.com/zricethezav/gitleaks/blob/master/CONTRIBUTING.md
 
@@ -14,7 +14,7 @@ title = "gitleaks config"
 description = "global allow lists"
 paths = [
     '''gitleaks.toml''',
-    '''(.*?)(jpg|gif|doc|docx|zip|xls|pdf|bin|svg|socket)$''',
+    '''.*\.(jpg|gif|doc|docx|zip|xls|pdf|bin|svg|socket)$''',
     '''(go.mod|go.sum)$''',
     '''gradle.lockfile''',
     '''node_modules''',
@@ -2800,5 +2800,3 @@ secretGroup = 1
 keywords = [
     "zendesk",
 ]
-
-

@@ -20,7 +20,7 @@
   "packageManager": "yarn@4.6.0",
   "devDependencies": {
     "gitleaks": "1.0.0",
-    "husky": "^9.0.0",
+    "husky": "9.1.7",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0"
   }
