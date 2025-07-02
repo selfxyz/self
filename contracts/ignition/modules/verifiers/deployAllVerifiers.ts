@@ -1,5 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
-import { RegisterVerifierId, RegisterVerifierId_ID_CARD, DscVerifierId } from "@selfxyz/common";
+import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -7,8 +7,8 @@ const deployVerifiers = {
   vcAndDiscloseVerifier: false,
   vcAndDiscloseIdVerifier: false,
   registerIdVerifier: false,
-  registerVerifier: false,
-  dscVerifier: true,
+  registerVerifier: true,
+  dscVerifier: false,
 };
 
 /**
@@ -16,6 +16,22 @@ const deployVerifiers = {
  */
 function getEnumKeys<T extends Record<string, string | number>>(enumObject: T): string[] {
   return Object.keys(enumObject).filter((key) => isNaN(Number(key)));
+}
+
+/**
+ * Filter register circuits to get only register_id variants
+ */
+function getRegisterIdCircuits(): string[] {
+  const allRegisterCircuits = getEnumKeys(RegisterVerifierId);
+  return allRegisterCircuits.filter(circuit => circuit.startsWith('register_id_'));
+}
+
+/**
+ * Filter register circuits to get only regular register variants (non-ID)
+ */
+function getRegularRegisterCircuits(): string[] {
+  const allRegisterCircuits = getEnumKeys(RegisterVerifierId);
+  return allRegisterCircuits.filter(circuit => circuit.startsWith('register_') && !circuit.startsWith('register_id_'));
 }
 
 /**
@@ -64,8 +80,8 @@ export default buildModule("DeployAllVerifiers", (m) => {
     lastDeployedContract = deployedContracts.vcAndDiscloseIdVerifier;
   }
 
-  // Deploy Register ID verifiers (for ID cards) using RegisterVerifierId_ID_CARD enum
-  const registerIdCircuits = getEnumKeys(RegisterVerifierId_ID_CARD);
+  // Deploy Register ID verifiers (for ID cards) - filtered from unified RegisterVerifierId enum
+  const registerIdCircuits = getRegisterIdCircuits();
   if (deployVerifiers.registerIdVerifier) {
     console.log("Deploying Register ID verifiers with sequential dependencies...");
     registerIdCircuits.forEach((circuitName, index) => {
@@ -84,8 +100,8 @@ export default buildModule("DeployAllVerifiers", (m) => {
     });
   }
 
-  // Deploy Register verifiers using RegisterVerifierId enum
-  const registerCircuits = getEnumKeys(RegisterVerifierId);
+  // Deploy Register verifiers (regular, non-ID) - filtered from unified RegisterVerifierId enum
+  const registerCircuits = getRegularRegisterCircuits();
   if (deployVerifiers.registerVerifier) {
     console.log("Deploying Register verifiers with sequential dependencies...");
     registerCircuits.forEach((circuitName, index) => {

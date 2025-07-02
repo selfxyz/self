@@ -42,17 +42,17 @@ contract Verifier_dsc_sha384_ecdsa_brainpoolP384r1 {
     uint256 constant deltay1 = 11712163246522753328246822746546226305603736139933813498321529564454062688875;
     uint256 constant deltay2 = 6547018154312625719489980055241406155522432812974681740316121237776204083251;
 
-    
+
     uint256 constant IC0x = 8690468284659354664601222478335689000249729213701563869868962203010566715685;
     uint256 constant IC0y = 16813402712401271783721636123949491546460809148173687740432353096111405367099;
-    
+
     uint256 constant IC1x = 9245721007396533667812765974161580418983474663014799956395470393271747459037;
     uint256 constant IC1y = 21883079548894362823853128935560609269879246035813146472795131184603815310330;
-    
+
     uint256 constant IC2x = 7341347255997912391349254931651309124225172666582448787939289687077799126690;
     uint256 constant IC2y = 18017546419618758909559606330921244412572575492009969468877078701141573341810;
-    
- 
+
+
     // Memory data
     uint16 constant pVk = 0;
     uint16 constant pPairing = 128;
@@ -67,7 +67,7 @@ contract Verifier_dsc_sha384_ecdsa_brainpoolP384r1 {
                     return(0, 0x20)
                 }
             }
-            
+
             // G1 function to multiply a G1 value(x,y) to value in an address
             function g1_mulAccC(pR, x, y, s) {
                 let success
@@ -102,11 +102,11 @@ contract Verifier_dsc_sha384_ecdsa_brainpoolP384r1 {
                 mstore(add(_pVk, 32), IC0y)
 
                 // Compute the linear combination vk_x
-                
+
                 g1_mulAccC(_pVk, IC1x, IC1y, calldataload(add(pubSignals, 0)))
-                
+
                 g1_mulAccC(_pVk, IC2x, IC2y, calldataload(add(pubSignals, 32)))
-                
+
 
                 // -A
                 mstore(_pPairing, calldataload(pA))
@@ -159,11 +159,11 @@ contract Verifier_dsc_sha384_ecdsa_brainpoolP384r1 {
             mstore(0x40, add(pMem, pLastMem))
 
             // Validate that all evaluations ∈ F
-            
+
             checkField(calldataload(add(_pubSignals, 0)))
-            
+
             checkField(calldataload(add(_pubSignals, 32)))
-            
+
 
             // Validate all evaluations
             let isValid := checkPairing(_pA, _pB, _pC, _pubSignals, pMem)

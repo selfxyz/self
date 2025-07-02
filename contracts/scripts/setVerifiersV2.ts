@@ -18,7 +18,7 @@ const setVerifiers = {
   vcAndDiscloseId: true, // VC and Disclose ID verifier for EU_ID_CARD
   register: true, // Register verifiers for E_PASSPORT
   registerId: true, // Register ID verifiers for EU_ID_CARD
-  dsc: true, // DSC verifiers for both E_PASSPORT and EU_ID_CARD
+  dsc: false, // DSC verifiers for both E_PASSPORT and EU_ID_CARD
 };
 
 const NETWORK = process.env.NETWORK;
@@ -36,16 +36,18 @@ log.info(`Network: ${NETWORK}, Repo: ${repoName}`);
 
 try {
   const hubABI = getContractAbi(repoName, "DeployHubV2#IdentityVerificationHubImplV2");
+  const prefix = "DeployAllVerifiers"
 
   function getContractAddressByPartialName(partialName: string): string | undefined {
-    console.log(`🔍 Searching for contract with partial name: "${partialName}"`);
-    for (const [key, value] of Object.entries(deployedAddresses)) {
-      if (key.includes(partialName)) {
-        console.log(`   ✅ Found match: ${key} -> ${value}`);
-        return value as string;
-      }
+    const fullKey = `${prefix}#${partialName}`;
+    console.log(`🔍 Searching for contract with exact key: "${fullKey}"`);
+
+    if (deployedAddresses[fullKey]) {
+      console.log(`   ✅ Found exact match: ${fullKey} -> ${deployedAddresses[fullKey]}`);
+      return deployedAddresses[fullKey] as string;
     }
-    console.log(`   ❌ No match found for: "${partialName}"`);
+
+    console.log(`   ❌ No exact match found for: "${fullKey}"`);
     return undefined;
   }
 
