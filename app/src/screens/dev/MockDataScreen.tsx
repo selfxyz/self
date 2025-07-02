@@ -40,6 +40,7 @@ import {
   white,
 } from '../../utils/colors';
 import { buttonTap, selectionChange } from '../../utils/haptic';
+import { extraYPadding } from '../../utils/constants';
 
 const { trackEvent } = analytics();
 
@@ -272,7 +273,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack f={1} bg={white} pt={top} pb={bottom}>
+    <YStack f={1} bg={white} pt={top} pb={bottom + extraYPadding}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack px="$4" pb="$4" gap="$5">
           <GestureDetector gesture={devModeTap}>

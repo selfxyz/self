@@ -22,6 +22,7 @@ import analytics from '../../utils/analytics';
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
 import { advercase, dinot } from '../../utils/fonts';
 import { loadingScreenProgress } from '../../utils/haptic';
+import { extraYPadding } from '../../utils/constants';
 import { setupNotifications } from '../../utils/notifications/notificationService';
 import { getLoadingScreenText } from '../../utils/proving/loadingScreenStateText';
 import {
@@ -205,7 +206,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       jc="space-between"
       flex={1}
       paddingHorizontal={20}
-      paddingBottom={bottom}
+      paddingBottom={bottom + extraYPadding}
     >
       <View style={styles.container}>
         <View style={styles.card}>

@@ -19,6 +19,7 @@ import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Logo from '../../images/logo.svg';
 import { black, slate400, white, zinc800, zinc900 } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 import { advercase, dinot } from '../../utils/fonts';
 
 const LaunchScreen: React.FC = () => {
@@ -40,7 +41,7 @@ const LaunchScreen: React.FC = () => {
       justifyContent="space-between"
       alignItems="center"
       paddingHorizontal={20}
-      paddingBottom={bottom}
+      paddingBottom={bottom + extraYPadding}
     >
       <View style={styles.container}>
         <View style={styles.card}>

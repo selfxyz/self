@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, ViewProps } from 'tamagui';
 
 import { black, white } from '../utils/colors';
+import { extraYPadding } from '../utils/constants';
 
 // Get the current font scale factor
 const fontScale = PixelRatio.getFontScale();
@@ -102,7 +103,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
 }) => {
   const { bottom: safeAreaBottom } = useSafeAreaInsets();
   const incomingBottom = props.paddingBottom ?? props.pb ?? 0;
-  const minBottom = Math.max(safeAreaBottom, 10);
+  const minBottom = safeAreaBottom + extraYPadding;
   const totalBottom =
     typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
 

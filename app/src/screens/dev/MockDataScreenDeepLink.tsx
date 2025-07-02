@@ -19,6 +19,7 @@ import { MockDataEvents } from '../../consts/analytics';
 import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import { black, borderColor, white } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 
 const MockDataScreenDeepLink: React.FC = () => {
   const navigation = useNavigation();
@@ -72,7 +73,7 @@ const MockDataScreenDeepLink: React.FC = () => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack f={1} bg={white} pt={top} pb={bottom}>
+    <YStack f={1} bg={white} pt={top} pb={bottom + extraYPadding}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack px="$4" pb="$4" gap="$5">
           <YStack ai="center" mb={'$5'} mt={'$14'}>
