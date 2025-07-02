@@ -3909,20 +3909,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/new-app-screen@npm:0.80.0":
-  version: 0.80.0
-  resolution: "@react-native/new-app-screen@npm:0.80.0"
-  peerDependencies:
-    "@types/react": ^19.0.0
-    react: "*"
-    react-native: "*"
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10c0/4c23006e6ebe223f7c0c307aeb5a1c0d9ba71fda4a9a3841dbb5038fab0498667a1c49a8084ab49ef5d13918b2aac0d007a0efe09b56eab8201a6ad27319bc8a
-  languageName: node
-  linkType: hard
-
 "@react-native/normalize-color@npm:^2.1.0":
   version: 2.1.0
   resolution: "@react-native/normalize-color@npm:2.1.0"
@@ -4345,12 +4331,10 @@ __metadata:
     "@react-native-community/netinfo": "npm:^11.4.1"
     "@react-native-firebase/app": "npm:^19.3.0"
     "@react-native-firebase/messaging": "npm:^19.3.0"
-    "@react-native-google-signin/google-signin": "npm:^13.1.0"
     "@react-native/babel-preset": "npm:0.80.0"
     "@react-native/eslint-config": "npm:0.80.0"
     "@react-native/gradle-plugin": "npm:^0.79.4"
     "@react-native/metro-config": "npm:0.80.0"
-    "@react-native/new-app-screen": "npm:0.80.0"
     "@react-native/typescript-config": "npm:0.80.0"
     "@react-navigation/native": "npm:^7.1.11"
     "@react-navigation/native-stack": "npm:^7.3.16"
@@ -4369,9 +4353,7 @@ __metadata:
     "@types/add": "npm:^2"
     "@types/elliptic": "npm:^6"
     "@types/jest": "npm:^29.5.14"
-    "@types/msgpack-lite": "npm:^0.1.11"
     "@types/node-forge": "npm:^1.3.3"
-    "@types/pako": "npm:^2.0.3"
     "@types/react": "npm:^19.1.8"
     "@types/react-native-dotenv": "npm:^0.2.0"
     "@types/react-native-sqlite-storage": "npm:^6.0.5"
@@ -4389,13 +4371,10 @@ __metadata:
     eslint-plugin-prettier: "npm:^5.2.6"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     ethers: "npm:^6.11.0"
-    expo-modules-core: "npm:^2.2.1"
     jest: "npm:^29.7.0"
     js-sha512: "npm:^0.9.0"
     lottie-react-native: "npm:^7.2.2"
-    msgpack-lite: "npm:^0.1.26"
     node-forge: "npm:^1.3.1"
-    pako: "npm:^2.1.0"
     pkijs: "npm:^3.2.4"
     poseidon-lite: "npm:^0.2.0"
     prettier: "npm:^3.5.3"
@@ -4405,7 +4384,6 @@ __metadata:
     react-native-bundle-visualizer: "npm:^3.1.3"
     react-native-check-version: "npm:^1.4.0"
     react-native-cloud-storage: "npm:^2.3.0"
-    react-native-device-info: "npm:^14.0.4"
     react-native-dotenv: "npm:^3.4.11"
     react-native-gesture-handler: "npm:^2.26.0"
     react-native-get-random-values: "npm:^1.11.0"
@@ -8453,15 +8431,6 @@ __metadata:
   version: 10.0.10
   resolution: "@types/mocha@npm:10.0.10"
   checksum: 10c0/d2b8c48138cde6923493e42b38e839695eb42edd04629abe480a8f34c0e3f50dd82a55832c2e8d2b6e6f9e4deb492d7d733e600fbbdd5a0ceccbcfc6844ff9d5
-  languageName: node
-  linkType: hard
-
-"@types/msgpack-lite@npm:^0.1.11":
-  version: 0.1.11
-  resolution: "@types/msgpack-lite@npm:0.1.11"
-  dependencies:
-    "@types/node": "npm:*"
-  checksum: 10c0/d51a47a20ef5ff9b8b61d33ca3d10c992bbf10c4d4dbcbb7d1f1f9cdb2c8c1a302de36b00e1f11ef954b1bc4730add11b610996cd6ee767624b2bdd572e7b647
   languageName: node
   linkType: hard
 
@@ -13298,13 +13267,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"event-lite@npm:^0.1.1":
-  version: 0.1.3
-  resolution: "event-lite@npm:0.1.3"
-  checksum: 10c0/68d11a1e9001d713d673866fe07f6c310fa9054fc0a936dd5eacc37a793aa6b3331ddb1d85dbcb88ddbe6b04944566a0f1c5b515118e1ec2e640ffcb30858b3f
-  languageName: node
-  linkType: hard
-
 "event-target-shim@npm:^5.0.0, event-target-shim@npm:^5.0.1":
   version: 5.0.1
   resolution: "event-target-shim@npm:5.0.1"
@@ -13378,15 +13340,6 @@ __metadata:
     jest-message-util: "npm:^29.7.0"
     jest-util: "npm:^29.7.0"
   checksum: 10c0/2eddeace66e68b8d8ee5f7be57f3014b19770caaf6815c7a08d131821da527fb8c8cb7b3dcd7c883d2d3d8d184206a4268984618032d1e4b16dc8d6596475d41
-  languageName: node
-  linkType: hard
-
-"expo-modules-core@npm:^2.2.1":
-  version: 2.4.2
-  resolution: "expo-modules-core@npm:2.4.2"
-  dependencies:
-    invariant: "npm:^2.2.4"
-  checksum: 10c0/4f44514ef8a0f673c6af988c92bed35d410b5725b989e2b91210b3e70d9e56dccb51ca439740997f95d7dc2f9fd7d2ff53cbd37396546986c0369587c779be73
   languageName: node
   linkType: hard
 
@@ -14806,7 +14759,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ieee754@npm:^1.1.13, ieee754@npm:^1.1.8, ieee754@npm:^1.2.1":
+"ieee754@npm:^1.1.13, ieee754@npm:^1.2.1":
   version: 1.2.1
   resolution: "ieee754@npm:1.2.1"
   checksum: 10c0/b0782ef5e0935b9f12883a2e2aa37baa75da6e66ce6515c168697b42160807d9330de9a32ec1ed73149aea02e0d822e572bca6f1e22bdcbd2149e13b050b17bb
@@ -14926,13 +14879,6 @@ __metadata:
   version: 1.3.8
   resolution: "ini@npm:1.3.8"
   checksum: 10c0/ec93838d2328b619532e4f1ff05df7909760b6f66d9c9e2ded11e5c1897d6f2f9980c54dd638f88654b00919ce31e827040631eab0a3969e4d1abefa0719516a
-  languageName: node
-  linkType: hard
-
-"int64-buffer@npm:^0.1.9":
-  version: 0.1.10
-  resolution: "int64-buffer@npm:0.1.10"
-  checksum: 10c0/22688f6d1f4db11eaacbf8e7f0b80a23690c29d023987302c367f8c071a53b84fa1cef6f8db0a347e9326f94ff76aa3529e8e9964e99d37fc675f5dcd835ee50
   languageName: node
   linkType: hard
 
@@ -15358,17 +15304,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"isarray@npm:^1.0.0, isarray@npm:~1.0.0":
-  version: 1.0.0
-  resolution: "isarray@npm:1.0.0"
-  checksum: 10c0/18b5be6669be53425f0b84098732670ed4e727e3af33bc7f948aac01782110eb9a18b3b329c5323bcdd3acdaae547ee077d3951317e7f133bff7105264b3003d
-  languageName: node
-  linkType: hard
-
 "isarray@npm:^2.0.5":
   version: 2.0.5
   resolution: "isarray@npm:2.0.5"
   checksum: 10c0/4199f14a7a13da2177c66c31080008b7124331956f47bca57dd0b6ea9f11687aa25e565a2c7a2b519bc86988d10398e3049a1f5df13c9f6b7664154690ae79fd
+  languageName: node
+  linkType: hard
+
+"isarray@npm:~1.0.0":
+  version: 1.0.0
+  resolution: "isarray@npm:1.0.0"
+  checksum: 10c0/18b5be6669be53425f0b84098732670ed4e727e3af33bc7f948aac01782110eb9a18b3b329c5323bcdd3acdaae547ee077d3951317e7f133bff7105264b3003d
   languageName: node
   linkType: hard
 
@@ -17716,20 +17662,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msgpack-lite@npm:^0.1.26":
-  version: 0.1.26
-  resolution: "msgpack-lite@npm:0.1.26"
-  dependencies:
-    event-lite: "npm:^0.1.1"
-    ieee754: "npm:^1.1.8"
-    int64-buffer: "npm:^0.1.9"
-    isarray: "npm:^1.0.0"
-  bin:
-    msgpack: ./bin/msgpack
-  checksum: 10c0/ba571dca7d789fa033523b74c1aae52bbd023834bcad3f397f481889a8df6cdb6b163b73307be8b744c420ce6d3c0e697f588bb96984c04f9dcf09370b9f12d4
-  languageName: node
-  linkType: hard
-
 "mz@npm:^2.7.0":
   version: 2.7.0
   resolution: "mz@npm:2.7.0"
@@ -19308,15 +19240,6 @@ __metadata:
     expo:
       optional: true
   checksum: 10c0/1754203be18d096826d2e9db5bf3c62f76ed085e32873d335fca7541b37acff427d2b116f3a2988fa882925c3e4afab071836e18ca33f40b8cdc6a2019b917b3
-  languageName: node
-  linkType: hard
-
-"react-native-device-info@npm:^14.0.4":
-  version: 14.0.4
-  resolution: "react-native-device-info@npm:14.0.4"
-  peerDependencies:
-    react-native: "*"
-  checksum: 10c0/3d89519b4e9f9f130b352f5243282f8b807aba0f55ccc0e1dc9f15b285215949751491ef2f11f1984a55f0f5e0ae76cd16620d2cdfcc118e2ca5f39d300d5524
   languageName: node
   linkType: hard
 

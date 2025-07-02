@@ -62,7 +62,10 @@ subprojects {
                 def manifestFile = project.file('src/main/AndroidManifest.xml')
                 def buildGradleFile = project.file('build.gradle')
 
-                if (buildGradleFile.exists()) {
+                if (project.name == 'react-native-gesture-handler') {
+                    namespace = 'com.swmansion.gesturehandler'
+                    println("Force namespace for ${project.name} -> $namespace")
+                } else if (buildGradleFile.exists()) {
                     def buildGradleText = buildGradleFile.text
                     def namespaceMatcher = buildGradleText =~ /namespace\s*['"](.+?)['"]/
                     if (namespaceMatcher.find()) {

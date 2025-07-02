@@ -4,7 +4,37 @@
 /** @jest-environment jsdom */
 require('react-native-gesture-handler/jestSetup');
 
-jest.mock('react-native/Libraries/Animated/NativeAnimatedModule');
+// Mock NativeAnimatedModule without deep imports for RN 0.80.0 compatibility
+jest.mock('react-native', () => {
+  const RN = jest.requireActual('react-native');
+
+  // Mock the NativeAnimatedModule
+  RN.NativeModules = {
+    ...RN.NativeModules,
+    NativeAnimatedModule: {
+      startOperationBatch: jest.fn(),
+      finishOperationBatch: jest.fn(),
+      createAnimatedNode: jest.fn(),
+      startListeningToAnimatedNodeValue: jest.fn(),
+      stopListeningToAnimatedNodeValue: jest.fn(),
+      connectAnimatedNodes: jest.fn(),
+      disconnectAnimatedNodes: jest.fn(),
+      startAnimatingNode: jest.fn(),
+      stopAnimation: jest.fn(),
+      setAnimatedNodeValue: jest.fn(),
+      setAnimatedNodeOffset: jest.fn(),
+      flattenAnimatedNodeOffset: jest.fn(),
+      extractAnimatedNodeOffset: jest.fn(),
+      connectAnimatedNodeToView: jest.fn(),
+      disconnectAnimatedNodeFromView: jest.fn(),
+      dropAnimatedNode: jest.fn(),
+      addAnimatedEventToView: jest.fn(),
+      removeAnimatedEventFromView: jest.fn(),
+    },
+  };
+
+  return RN;
+});
 
 global.FileReader = class {
   constructor() {
