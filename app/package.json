@@ -97,7 +97,7 @@
     "react-native-nfc-manager": "^3.16.1",
     "react-native-passport-reader": "^1.0.3",
     "react-native-quick-crypto": "^0.7.14",
-    "react-native-safe-area-context": "^5.4.1",
+    "react-native-safe-area-context": "^5.5.1",
     "react-native-screens": "^4.11.1",
     "react-native-sqlite-storage": "^6.0.1",
     "react-native-svg": "^15.12.0",

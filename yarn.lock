@@ -4393,7 +4393,7 @@ __metadata:
     react-native-nfc-manager: "npm:^3.16.1"
     react-native-passport-reader: "npm:^1.0.3"
     react-native-quick-crypto: "npm:^0.7.14"
-    react-native-safe-area-context: "npm:^5.4.1"
+    react-native-safe-area-context: "npm:^5.5.1"
     react-native-screens: "npm:^4.11.1"
     react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:^15.12.0"
@@ -19361,7 +19361,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-safe-area-context@npm:^5.4.1":
+"react-native-safe-area-context@npm:^5.5.1":
   version: 5.5.1
   resolution: "react-native-safe-area-context@npm:5.5.1"
   peerDependencies:

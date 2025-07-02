@@ -9,7 +9,6 @@ import android.content.Context
 import android.os.Build
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
-import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultReactNativeHost
@@ -38,7 +37,6 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
 
-    loadReactNative(this)
     // ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

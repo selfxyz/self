@@ -1687,7 +1687,7 @@ PODS:
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNGestureHandler (2.27.1):
+  - RNGestureHandler (2.24.0):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.01.01.00)
@@ -2211,7 +2211,7 @@ SPEC CHECKSUMS:
   RNCClipboard: f6679d470d0da2bce2a37b0af7b9e0bf369ecda5
   RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
-  RNGestureHandler: 48961df747b99fe972f08e964cfe155393bf671e
+  RNGestureHandler: 9c3877d98d4584891b69d16ebca855ac46507f4d
   RNKeychain: 4990d9be2916c60f9ed4f8c484fcd7ced4828b86
   RNLocalize: 6a87f0490f1793d7a70042e4c55eb9a1ba6dd5b4
   RNReactNativeHapticFeedback: e19b9b2e2ecf5593de8c4ef1496e1e31ae227514
