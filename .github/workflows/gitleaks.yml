@@ -11,7 +11,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7  # pinned to v2.3.9 release
+        uses: gitleaks/gitleaks-action@v2.3.9
         with:
           config-path: .gitleaks.toml
           fail: true
