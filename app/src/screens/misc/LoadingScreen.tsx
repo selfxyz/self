@@ -20,9 +20,9 @@ import {
 } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 import { advercase, dinot } from '../../utils/fonts';
 import { loadingScreenProgress } from '../../utils/haptic';
-import { extraYPadding } from '../../utils/constants';
 import { setupNotifications } from '../../utils/notifications/notificationService';
 import { getLoadingScreenText } from '../../utils/proving/loadingScreenStateText';
 import {
