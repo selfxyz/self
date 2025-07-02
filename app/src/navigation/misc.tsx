@@ -7,6 +7,7 @@ import { StatusBar } from 'react-native';
 import LaunchScreen from '../screens/misc/LaunchScreen';
 import LoadingScreen from '../screens/misc/LoadingScreen';
 import ModalScreen from '../screens/misc/ModalScreen';
+import SpinnerDemoScreen from '../screens/misc/SpinnerDemoScreen';
 import SplashScreen from '../screens/misc/SplashScreen';
 import { black } from '../utils/colors';
 
@@ -35,7 +36,12 @@ const miscScreens = {
       animation: 'fade',
     } as NativeStackNavigationOptions,
   },
-
+  SpinnerDemo: {
+    screen: SpinnerDemoScreen,
+    options: {
+      headerShown: false,
+    },
+  },
   Splash: {
     screen: SplashScreen,
     options: {

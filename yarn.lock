@@ -4537,6 +4537,7 @@ __metadata:
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
     react-native-keychain: "npm:^10.0.0"
+    react-native-loader-kit: "npm:^3.0.0"
     react-native-localize: "npm:^3.4.1"
     react-native-nfc-manager: "npm:^3.15.1"
     react-native-passport-reader: "npm:^1.0.3"
@@ -19650,6 +19651,16 @@ __metadata:
   version: 10.0.0
   resolution: "react-native-keychain@npm:10.0.0"
   checksum: 10c0/a632ad27e58264506d2b373d329a867f042fb014e8a78db3a63031e953d61b5c98066eed1be238ee6c186d3f213d0efaa2a26526fb3a1d36a624c4460e982230
+  languageName: node
+  linkType: hard
+
+"react-native-loader-kit@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "react-native-loader-kit@npm:3.0.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/456e0604ae881fabbf03f5893e36a7cb67d95552880e2d9db96395825a424ebb58850bd8ffd2fbb1267b0086be714d31838c69f5e13bae960861d87803b7428e
   languageName: node
   linkType: hard
 

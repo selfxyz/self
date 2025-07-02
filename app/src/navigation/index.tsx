@@ -38,7 +38,7 @@ export const navigationScreens = {
 };
 
 const AppNavigation = createNativeStackNavigator({
-  initialRouteName: 'Splash',
+  initialRouteName: 'SpinnerDemo',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,
