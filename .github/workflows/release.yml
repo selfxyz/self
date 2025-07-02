@@ -12,6 +12,9 @@
 #       - 'app/**'
 #   workflow_dispatch:
 
+on:
+  workflow_dispatch: {}   # keeps actionlint happy; job is still skipped by `if: false`
+
 jobs:
   release:
     if: false # disable job while releases are manual
