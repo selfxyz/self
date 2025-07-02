@@ -215,14 +215,19 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         .substring(2, 11)
         .replace(/[^a-z0-9]/gi, '')
         .toUpperCase();
-      const signatureTypeForGeneration =
+      const algorithmMapping =
         signatureAlgorithmToStrictSignatureAlgorithm[
           selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-        ][2];
+        ];
+      const dgHashAlgo = algorithmMapping[0];
+      const eContentHashAlgo = algorithmMapping[1];
+      const signatureTypeForGeneration = algorithmMapping[2];
 
       const idDocInput: Partial<IdDocInput> = {
         nationality: selectedCountry as IdDocInput['nationality'],
         idType: selectedDocumentType,
+        dgHashAlgo: dgHashAlgo as IdDocInput['dgHashAlgo'],
+        eContentHashAlgo: eContentHashAlgo as IdDocInput['eContentHashAlgo'],
         signatureType:
           signatureTypeForGeneration as IdDocInput['signatureType'],
         expiryDate: castDateToYYMMDDForExpiry(expiryYears),
