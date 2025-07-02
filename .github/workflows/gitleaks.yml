@@ -13,3 +13,5 @@ jobs:
         with:
           config-path: .gitleaks.toml
           fail: true
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
