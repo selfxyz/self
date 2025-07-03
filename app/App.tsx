@@ -12,9 +12,11 @@ import { AuthProvider } from './src/providers/authProvider';
 import { DatabaseProvider } from './src/providers/databaseProvider';
 import { NotificationTrackingProvider } from './src/providers/notificationTrackingProvider';
 import { PassportProvider } from './src/providers/passportDataProvider';
+import { initRemoteConfig } from './src/RemoteConfig';
 import { initSentry, wrapWithSentry } from './src/Sentry';
 
 initSentry();
+initRemoteConfig();
 
 global.Buffer = Buffer;
 

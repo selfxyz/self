@@ -32,6 +32,17 @@ jest.mock('@react-native-firebase/messaging', () => {
   });
 });
 
+jest.mock('@react-native-firebase/remote-config', () => {
+  const mockValue = { asBoolean: jest.fn(() => false) };
+  const mockConfig = {
+    setDefaults: jest.fn(),
+    setConfigSettings: jest.fn(),
+    fetchAndActivate: jest.fn(() => Promise.resolve(true)),
+    getValue: jest.fn(() => mockValue),
+  };
+  return () => mockConfig;
+});
+
 // Mock react-native-haptic-feedback
 jest.mock('react-native-haptic-feedback', () => ({
   trigger: jest.fn(),

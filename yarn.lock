@@ -3567,6 +3567,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-firebase/remote-config@npm:^19.0.1":
+  version: 19.3.0
+  resolution: "@react-native-firebase/remote-config@npm:19.3.0"
+  peerDependencies:
+    "@react-native-firebase/analytics": 19.3.0
+    "@react-native-firebase/app": 19.3.0
+  checksum: 10c0/4e22d5cf25b6895ea99088e437c6bd295624e83a6b42a8e27a32b7205f0fe7fcc292ab3b24230ea002de9f29e94faac7a55ced5ff796aa21ce72cf71553530b1
+  languageName: node
+  linkType: hard
+
 "@react-native/assets-registry@npm:0.75.4":
   version: 0.75.4
   resolution: "@react-native/assets-registry@npm:0.75.4"
@@ -4470,6 +4480,7 @@ __metadata:
     "@react-native-community/netinfo": "npm:^11.4.1"
     "@react-native-firebase/app": "npm:^19.0.1"
     "@react-native-firebase/messaging": "npm:^19.0.1"
+    "@react-native-firebase/remote-config": "npm:^19.0.1"
     "@react-native/babel-preset": "npm:0.75.4"
     "@react-native/eslint-config": "npm:0.75.4"
     "@react-native/gradle-plugin": "npm:^0.79.2"

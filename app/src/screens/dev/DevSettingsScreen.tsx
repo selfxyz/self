@@ -17,6 +17,7 @@ import {
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
+import { getFeatureFlag, refreshRemoteConfig } from '../../RemoteConfig';
 import { textBlack } from '../../utils/colors';
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
@@ -138,11 +139,18 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     'Loading private key…',
   );
   const [isPrivateKeyRevealed, setIsPrivateKeyRevealed] = useState(false);
+  const [testFeatureEnabled, setTestFeatureEnabled] = useState<boolean>(false);
+
+  const handleRefreshFeature = useCallback(async () => {
+    await refreshRemoteConfig();
+    setTestFeatureEnabled(getFeatureFlag('test_feature'));
+  }, []);
 
   useEffect(() => {
     unsafe_getPrivateKey().then(key =>
       setPrivateKey(key || 'No private key found'),
     );
+    setTestFeatureEnabled(getFeatureFlag('test_feature'));
   }, []);
 
   const handleRevealPrivateKey = useCallback(() => {
@@ -240,6 +248,20 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
               Jump directly to any screen for testing
             </Text>
             <ScreenSelector />
+            <YStack alignItems="center" gap="$2" mt="$3" w="100%">
+              <Text color={textBlack} fontSize="$3" textAlign="center">
+                Remote flag <Text fontWeight="bold">test_feature</Text> is{' '}
+                {testFeatureEnabled ? 'ENABLED' : 'DISABLED'}
+              </Text>
+              <Button
+                size="$3"
+                onPress={handleRefreshFeature}
+                bg="$blue8"
+                color="white"
+              >
+                Refresh flag
+              </Button>
+            </YStack>
           </YStack>
         </YStack>
       </YStack>
