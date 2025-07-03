@@ -45,8 +45,19 @@ module.exports = {
   overrides: [
     {
       files: ['*.cjs'],
+      env: {
+        node: true,
+        commonjs: true,
+        es6: true,
+      },
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'script',
+      },
       rules: {
         'header/header': 'off',
+        '@typescript-eslint/no-var-requires': 'off',
+        'no-undef': 'off',
       },
     },
   ],
