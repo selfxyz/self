@@ -1,11 +1,6 @@
 name: Mobile App Deployments
 
 env:
-  # Branch configuration
-  IS_PR: ${{ github.event.pull_request.number != null }}
-  STAGING_BRANCH: dev
-  MAIN_BRANCH: main
-
   # Build environment versions
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
@@ -41,17 +36,6 @@ on:
           - ios
           - android
           - both
-  push:
-    branches:
-      - dev
-      - main
-    paths:
-      - "app/**"
-      - ".github/workflows/mobile-deploy.yml"
-  pull_request:
-    paths:
-      - "app/**"
-      - ".github/workflows/mobile-deploy.yml"
 
 jobs:
   build-ios:
@@ -278,10 +262,9 @@ jobs:
           echo "✅ Provisioning profile installation steps completed."
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
-      - name: Build and upload to TestFlight (Internal)
+      - name: Build and upload to App Store Connect/TestFlight
         if: ${{ !env.ACT }}
         env:
-          IS_PR: ${{ env.IS_PR }}
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
           IOS_CONNECT_API_KEY_BASE64: ${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}
           IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
@@ -310,13 +293,8 @@ jobs:
           echo "Identities in build.keychain:"
           security find-identity -v -p codesigning build.keychain || echo "Failed to find identities in build.keychain"
           echo "--- Starting Fastlane ---"
-          # if pushing to main, deploy to App Store
-          if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
-            bundle exec fastlane ios deploy --verbose
-          # else to upload to TestFlight Internal Testing
-          else
-            bundle exec fastlane ios internal_test --verbose
-          fi
+          echo "🚀 Uploading to App Store Connect/TestFlight..."
+          bundle exec fastlane ios internal_test --verbose
 
       - name: Remove project.pbxproj updates we don't want to commit
         run: |
@@ -466,7 +444,6 @@ jobs:
 
       - name: Build and upload to Google Play Internal Testing
         env:
-          IS_PR: ${{ env.IS_PR }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
@@ -479,13 +456,8 @@ jobs:
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
         run: |
           cd ${{ env.APP_PATH }}
-          # if pushing to main, deploy to Play Store
-          if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
-            bundle exec fastlane android deploy --verbose
-          # else to upload to Play Store Internal Testing
-          else
-            bundle exec fastlane android internal_test --verbose
-          fi
+          echo "🚀 Uploading to Google Play Internal Testing..."
+          bundle exec fastlane android internal_test --verbose
 
       - name: Get version from package.json
         uses: ./.github/actions/get-version
