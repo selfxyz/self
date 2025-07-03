@@ -234,7 +234,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'completed') {
         if (get().circuitType !== 'disclose' && navigationRef.isReady()) {
           setTimeout(() => {
-            navigationRef.navigate(getPostVerificationRoute());
+            navigationRef.navigate('AccountVerifiedSuccess');
           }, 3000);
         }
         if (get().circuitType === 'disclose') {
