@@ -6,7 +6,7 @@ class HelpersTest < Minitest::Test
     @gradle = Tempfile.new(['build', '.gradle'])
     @gradle.write("versionCode 5\n")
     @gradle.close
-    Fastlane::Helpers::Android.class_variable_set(:@@android_has_permissions, true)
+    Fastlane::Helpers::Android.set_permissions(true)
   end
 
   def teardown
@@ -20,6 +20,7 @@ class HelpersTest < Minitest::Test
   end
 
   def test_should_upload_app
+    assert_respond_to Fastlane::Helpers, :should_upload_app
     ENV.delete('CI')
     ENV.delete('FORCE_UPLOAD_LOCAL_DEV')
     ENV.delete('ACT')
@@ -29,5 +30,27 @@ class HelpersTest < Minitest::Test
     assert_equal true, Fastlane::Helpers.should_upload_app('ios')
   ensure
     ENV.delete('FORCE_UPLOAD_LOCAL_DEV')
+  end
+
+  def test_should_upload_app_with_ci
+    ENV['CI'] = 'true'
+    %w[FORCE_UPLOAD_LOCAL_DEV ACT IS_PR].each { |v| ENV.delete(v) }
+    assert_equal true, Fastlane::Helpers.should_upload_app('ios')
+  ensure
+    ENV.delete('CI')
+  end
+
+  def test_should_upload_app_with_act_or_is_pr
+    %w[ACT IS_PR].each do |flag|
+      ENV[flag] = 'true'
+      %w[CI FORCE_UPLOAD_LOCAL_DEV].each { |v| ENV.delete(v) }
+      assert_equal false, Fastlane::Helpers.should_upload_app('ios'), "#{flag} should block upload"
+      ENV.delete(flag)
+    end
+  end
+
+  def test_should_upload_app_with_invalid_platform
+    %w[CI ACT IS_PR FORCE_UPLOAD_LOCAL_DEV].each { |v| ENV.delete(v) }
+    assert_equal false, Fastlane::Helpers.should_upload_app(nil)
   end
 end
