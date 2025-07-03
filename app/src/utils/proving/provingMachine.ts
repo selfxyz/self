@@ -51,11 +51,8 @@ import {
 const { trackEvent } = analytics();
 
 export const getPostVerificationRoute = () => {
-  const { cloudBackupEnabled, hasViewedRecoveryPhrase } =
-    useSettingStore.getState();
-  return cloudBackupEnabled || hasViewedRecoveryPhrase
-    ? 'AccountVerifiedSuccess'
-    : 'SaveRecoveryPhrase';
+  const { cloudBackupEnabled } = useSettingStore.getState();
+  return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
 };
 
 const provingMachine = createMachine({
@@ -765,18 +762,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       if (circuitType === 'dsc') {
-        const { hasViewedRecoveryPhrase } = useSettingStore.getState();
-        if (!hasViewedRecoveryPhrase) {
-          if (navigationRef.isReady()) {
-            navigationRef.navigate('SaveRecoveryPhrase', {
-              nextScreen: 'LoadingScreen',
-            });
-          }
-        } else {
-          setTimeout(() => {
-            get().init('register', true);
-          }, 3000);
-        }
+        setTimeout(() => {
+          get().init('register', true);
+        }, 1500);
       } else if (circuitType === 'register') {
         actor!.send({ type: 'COMPLETED' });
       } else if (circuitType === 'disclose') {

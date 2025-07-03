@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { StaticScreenProps } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -16,15 +15,12 @@ import { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME } from '../../utils/cloudBackup';
 import { black, slate400, white } from '../../utils/colors';
-import { useProvingStore } from '../../utils/proving/provingMachine';
 
-type NextScreen = keyof RootStackParamList;
-interface SaveRecoveryPhraseScreenProps
-  extends StaticScreenProps<{ nextScreen?: NextScreen } | undefined> {}
+interface SaveRecoveryPhraseScreenProps {}
 
-const SaveRecoveryPhraseScreen: React.FC<SaveRecoveryPhraseScreenProps> = ({
-  route,
-}) => {
+const SaveRecoveryPhraseScreen: React.FC<
+  SaveRecoveryPhraseScreenProps
+> = ({}) => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
   const { cloudBackupEnabled } = useSettingStore();
@@ -34,19 +30,12 @@ const SaveRecoveryPhraseScreen: React.FC<SaveRecoveryPhraseScreenProps> = ({
     setUserHasSeenMnemonic(true);
   }, []);
 
-  const nextScreen = route.params?.nextScreen ?? 'AccountVerifiedSuccess';
-
   const onCloudBackupPress = useHapticNavigation('CloudBackupSettings', {
     params: { nextScreen: 'SaveRecoveryPhrase' },
   });
-
-  const navigateNext = useHapticNavigation(nextScreen, { action: 'confirm' });
-  const onSkipPress = useCallback(() => {
-    if (nextScreen === 'LoadingScreen') {
-      useProvingStore.getState().init('register', true);
-    }
-    navigateNext();
-  }, [navigateNext, nextScreen]);
+  const onSkipPress = useHapticNavigation('AccountVerifiedSuccess', {
+    action: 'confirm',
+  });
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>

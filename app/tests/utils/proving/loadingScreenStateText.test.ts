@@ -95,63 +95,6 @@ describe('stateLoadingScreenText', () => {
       // Should use RSA (4 SECONDS)
       expect(result.estimatedTime).toBe('4 SECONDS');
     });
-
-    it('should use DSC timing when type is specified as dsc', () => {
-      const result = getLoadingScreenText('proving', rsaMetadata, 'dsc');
-
-      // Should use RSA DSC (2 SECONDS) instead of register (4 SECONDS)
-      expect(result.estimatedTime).toBe('2 SECONDS');
-    });
-
-    it('should use register timing when type is specified as register', () => {
-      const result = getLoadingScreenText('proving', rsaMetadata, 'register');
-
-      // Should use RSA register (4 SECONDS)
-      expect(result.estimatedTime).toBe('4 SECONDS');
-    });
-
-    it('should default to register timing when no type is specified', () => {
-      const result = getLoadingScreenText('proving', rsaMetadata);
-
-      // Should default to register timing (4 SECONDS)
-      expect(result.estimatedTime).toBe('4 SECONDS');
-    });
-  });
-
-  describe('Circuit type specific timing estimates', () => {
-    const ecdsaMetadata: PassportMetadata = {
-      signatureAlgorithm: 'ECDSA',
-      curveOrExponent: 'secp256r1',
-    };
-
-    it('should provide correct DSC timing for ECDSA', () => {
-      const result = getLoadingScreenText('proving', ecdsaMetadata, 'dsc');
-      expect(result.estimatedTime).toBe('25 SECONDS');
-    });
-
-    it('should provide correct register timing for ECDSA', () => {
-      const result = getLoadingScreenText('proving', ecdsaMetadata, 'register');
-      expect(result.estimatedTime).toBe('50 SECONDS');
-    });
-
-    const rsaPssMetadata: PassportMetadata = {
-      signatureAlgorithm: 'RSAPSS',
-      curveOrExponent: '65537',
-    };
-
-    it('should provide correct DSC timing for RSA-PSS', () => {
-      const result = getLoadingScreenText('proving', rsaPssMetadata, 'dsc');
-      expect(result.estimatedTime).toBe('3 SECONDS');
-    });
-
-    it('should provide correct register timing for RSA-PSS', () => {
-      const result = getLoadingScreenText(
-        'proving',
-        rsaPssMetadata,
-        'register',
-      );
-      expect(result.estimatedTime).toBe('6 SECONDS');
-    });
   });
 
   describe('getProvingTimeEstimate', () => {
