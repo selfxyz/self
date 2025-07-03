@@ -3,21 +3,25 @@ module Fastlane
     module Android
       @@android_has_permissions = false
 
+      def self.set_permissions(value)
+        @@android_has_permissions = value
+      end
+
       # Decode keystore from ENV for local development
       def android_create_keystore(path)
-        if ENV["ANDROID_KEYSTORE"]
-          FileUtils.mkdir_p(File.dirname(path))
-          File.write(path, Base64.decode64(ENV["ANDROID_KEYSTORE"]))
-        end
+        return nil unless ENV["ANDROID_KEYSTORE"]
+
+        FileUtils.mkdir_p(File.dirname(path))
+        File.write(path, Base64.decode64(ENV["ANDROID_KEYSTORE"]))
         File.realpath(path)
       end
 
       # Decode Play Store JSON key from ENV
       def android_create_play_store_key(path)
-        if ENV["ANDROID_PLAY_STORE_JSON_KEY_BASE64"]
-          FileUtils.mkdir_p(File.dirname(path))
-          File.write(path, Base64.decode64(ENV["ANDROID_PLAY_STORE_JSON_KEY_BASE64"]))
-        end
+        return nil unless ENV["ANDROID_PLAY_STORE_JSON_KEY_BASE64"]
+
+        FileUtils.mkdir_p(File.dirname(path))
+        File.write(path, Base64.decode64(ENV["ANDROID_PLAY_STORE_JSON_KEY_BASE64"]))
         File.realpath(path)
       end
 
@@ -45,7 +49,7 @@ module Fastlane
 
       # Increment version code locally (Play Store fetch disabled)
       def android_increment_version_code(gradle_file)
-        full = File.expand_path(gradle_file, File.dirname(__FILE__))
+        full = File.expand_path(gradle_file)
         raise "Could not find build.gradle" unless File.exist?(full)
         content = File.read(full)
         match = content.match(/versionCode\s+(\d+)/)

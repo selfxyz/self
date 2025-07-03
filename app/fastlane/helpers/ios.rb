@@ -3,12 +3,7 @@ module Fastlane
     module IOS
       # Verify the build number is higher than TestFlight
       def ios_verify_app_store_build_number(xcodeproj)
-        api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
-          key_id: ENV["IOS_CONNECT_KEY_ID"],
-          issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
-          key_filepath: ENV["IOS_CONNECT_API_KEY_PATH"],
-          in_house: false
-        )
+        api_key = ios_connect_api_key
 
         latest = Fastlane::Actions::LatestTestflightBuildNumberAction.run(
           api_key: api_key,
@@ -18,7 +13,13 @@ module Fastlane
 
         project = Xcodeproj::Project.open(xcodeproj)
         target = project.targets.first
-        current = target.build_configurations.first.build_settings["CURRENT_PROJECT_VERSION"]
+        report_error("No targets found in Xcode project") unless target
+
+        config = target.build_configurations.first
+        report_error("No build configurations found for target") unless config
+
+        current = config.build_settings["CURRENT_PROJECT_VERSION"]
+        report_error("CURRENT_PROJECT_VERSION not set in build settings") unless current
 
         if current.to_i <= latest.to_i
           report_error(
@@ -46,15 +47,19 @@ module Fastlane
         report_success("Enabled Apple Generic Versioning in Xcode project")
       end
 
-      # Increment the build number based on latest TestFlight build
-      def ios_increment_build_number(xcodeproj)
-        ios_ensure_generic_versioning(xcodeproj)
-        api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
+      def ios_connect_api_key
+        Fastlane::Actions::AppStoreConnectApiKeyAction.run(
           key_id: ENV["IOS_CONNECT_KEY_ID"],
           issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
           key_filepath: ENV["IOS_CONNECT_API_KEY_PATH"],
-          in_house: false
+          in_house: false,
         )
+      end
+
+      # Increment the build number based on latest TestFlight build
+      def ios_increment_build_number(xcodeproj)
+        ios_ensure_generic_versioning(xcodeproj)
+        api_key = ios_connect_api_key
 
         latest = Fastlane::Actions::LatestTestflightBuildNumberAction.run(
           api_key: api_key,
@@ -74,13 +79,15 @@ module Fastlane
       # Decode certificate from ENV and import into keychain
       def ios_dev_setup_certificate
         data = ENV["IOS_DIST_CERT_BASE64"]
-        pass = ENV["IOS_P12_PASSWORD"] || ""
+        pass = ENV["IOS_P12_PASSWORD"]
+        report_error("Missing IOS_P12_PASSWORD") unless pass
         report_error("Missing IOS_DIST_CERT_BASE64") unless data
         tmp = Tempfile.new(["fastlane_local_cert", ".p12"])
         tmp.binmode
         tmp.write(Base64.decode64(data))
         tmp.close
-        system("security import #{Shellwords.escape(tmp.path)} -P #{Shellwords.escape(pass)} -T /usr/bin/codesign")
+        success = system("security import #{Shellwords.escape(tmp.path)} -P #{Shellwords.escape(pass)} -T /usr/bin/codesign")
+        report_error("Failed to import certificate into keychain") unless success
         report_success("Certificate imported successfully into default keychain")
       ensure
         tmp&.unlink
@@ -93,6 +100,7 @@ module Fastlane
         if ENV["IOS_CONNECT_API_KEY_BASE64"]
           FileUtils.mkdir_p(File.dirname(full))
           File.write(full, Base64.decode64(ENV["IOS_CONNECT_API_KEY_BASE64"]))
+          File.chmod(0600, full)
           report_success("Connect API Key written to: #{full}")
         end
         File.realpath(full)
@@ -109,8 +117,10 @@ module Fastlane
         tmp_profile.close
 
         tmp_plist = Tempfile.new(["fastlane_temp_plist", ".plist"])
-        system("security cms -D -i #{Shellwords.escape(tmp_profile.path)} -o #{Shellwords.escape(tmp_plist.path)}")
-        uuid = `/usr/libexec/PlistBuddy -c "Print :UUID" #{Shellwords.escape(tmp_plist.path)}`.strip
+        success = system("security cms -D -i #{Shellwords.escape(tmp_profile.path)} -o #{Shellwords.escape(tmp_plist.path)}")
+        report_error("Failed to decode provisioning profile") unless success
+        uuid = `/usr/libexec/PlistBuddy -c "Print :UUID" #{Shellwords.escape(tmp_plist.path)} 2>/dev/null`.strip
+        report_error("Failed to extract UUID from provisioning profile") if uuid.empty?
 
         target_dir = File.expand_path(dir)
         FileUtils.mkdir_p(target_dir)
