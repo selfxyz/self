@@ -8,5 +8,6 @@ module.exports = {
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$',
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
+    '^react-native-safe-area-context$': '<rootDir>/src/utils/safeArea.tsx',
   },
 };
