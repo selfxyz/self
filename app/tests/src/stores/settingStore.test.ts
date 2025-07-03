@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import { act } from '@testing-library/react-native';
+
 import { useSettingStore } from '../../../src/stores/settingStore';
 
 describe('settingStore', () => {
   beforeEach(() => {
-    useSettingStore.setState({
-      loginCount: 0,
-      cloudBackupEnabled: false,
-      hasViewedRecoveryPhrase: false,
+    act(() => {
+      useSettingStore.setState({
+        loginCount: 0,
+        cloudBackupEnabled: false,
+        hasViewedRecoveryPhrase: false,
+      });
     });
   });
 
@@ -24,34 +28,47 @@ describe('settingStore', () => {
   });
 
   it('increments login count from non-zero initial value', () => {
-    useSettingStore.setState({ loginCount: 5 });
+    act(() => {
+      useSettingStore.setState({ loginCount: 5 });
+    });
     useSettingStore.getState().incrementLoginCount();
     expect(useSettingStore.getState().loginCount).toBe(6);
   });
 
   it('resets login count when recovery phrase viewed', () => {
-    useSettingStore.setState({ loginCount: 2 });
+    act(() => {
+      useSettingStore.setState({ loginCount: 2 });
+    });
     useSettingStore.getState().setHasViewedRecoveryPhrase(true);
     expect(useSettingStore.getState().hasViewedRecoveryPhrase).toBe(true);
     expect(useSettingStore.getState().loginCount).toBe(0);
   });
 
   it('does not reset login count when setting recovery phrase viewed to false', () => {
-    useSettingStore.setState({ loginCount: 3, hasViewedRecoveryPhrase: true });
+    act(() => {
+      useSettingStore.setState({
+        loginCount: 3,
+        hasViewedRecoveryPhrase: true,
+      });
+    });
     useSettingStore.getState().setHasViewedRecoveryPhrase(false);
     expect(useSettingStore.getState().hasViewedRecoveryPhrase).toBe(false);
     expect(useSettingStore.getState().loginCount).toBe(3);
   });
 
   it('resets login count when enabling cloud backup', () => {
-    useSettingStore.setState({ loginCount: 3, cloudBackupEnabled: false });
+    act(() => {
+      useSettingStore.setState({ loginCount: 3, cloudBackupEnabled: false });
+    });
     useSettingStore.getState().toggleCloudBackupEnabled();
     expect(useSettingStore.getState().cloudBackupEnabled).toBe(true);
     expect(useSettingStore.getState().loginCount).toBe(0);
   });
 
   it('does not reset login count when disabling cloud backup', () => {
-    useSettingStore.setState({ loginCount: 4, cloudBackupEnabled: true });
+    act(() => {
+      useSettingStore.setState({ loginCount: 4, cloudBackupEnabled: true });
+    });
     useSettingStore.getState().toggleCloudBackupEnabled();
     expect(useSettingStore.getState().cloudBackupEnabled).toBe(false);
     expect(useSettingStore.getState().loginCount).toBe(4);
@@ -79,7 +96,12 @@ describe('settingStore', () => {
   });
 
   it('does not reset login count when setting recovery phrase viewed to true when already true', () => {
-    useSettingStore.setState({ loginCount: 5, hasViewedRecoveryPhrase: true });
+    act(() => {
+      useSettingStore.setState({
+        loginCount: 5,
+        hasViewedRecoveryPhrase: true,
+      });
+    });
     useSettingStore.getState().setHasViewedRecoveryPhrase(true);
     expect(useSettingStore.getState().hasViewedRecoveryPhrase).toBe(true);
     expect(useSettingStore.getState().loginCount).toBe(5);
@@ -93,13 +115,17 @@ describe('settingStore', () => {
     expect(useSettingStore.getState().loginCount).toBe(3);
 
     // Disable cloud backup (should not reset)
-    useSettingStore.setState({ cloudBackupEnabled: true });
+    act(() => {
+      useSettingStore.setState({ cloudBackupEnabled: true });
+    });
     useSettingStore.getState().toggleCloudBackupEnabled();
     expect(useSettingStore.getState().cloudBackupEnabled).toBe(false);
     expect(useSettingStore.getState().loginCount).toBe(3);
 
     // Set recovery phrase viewed to false (should not reset)
-    useSettingStore.setState({ hasViewedRecoveryPhrase: true });
+    act(() => {
+      useSettingStore.setState({ hasViewedRecoveryPhrase: true });
+    });
     useSettingStore.getState().setHasViewedRecoveryPhrase(false);
     expect(useSettingStore.getState().hasViewedRecoveryPhrase).toBe(false);
     expect(useSettingStore.getState().loginCount).toBe(3);
@@ -112,7 +138,9 @@ describe('settingStore', () => {
 
   it('maintains login count when toggling cloud backup from true to false then back to true', () => {
     // Start with cloud backup enabled and some login count
-    useSettingStore.setState({ loginCount: 2, cloudBackupEnabled: true });
+    act(() => {
+      useSettingStore.setState({ loginCount: 2, cloudBackupEnabled: true });
+    });
 
     // Toggle to disable (should not reset)
     useSettingStore.getState().toggleCloudBackupEnabled();
