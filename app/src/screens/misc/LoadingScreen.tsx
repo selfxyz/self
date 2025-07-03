@@ -11,14 +11,14 @@ import { Text, YStack } from 'tamagui';
 import failAnimation from '../../assets/animations/loading/fail.json';
 import proveLoadingAnimation from '../../assets/animations/loading/prove.json';
 import successAnimation from '../../assets/animations/loading/success.json';
-import { PassportEvents, ProofEvents } from '../../consts/analytics';
+
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import CloseWarningIcon from '../../images/icons/close-warning.svg';
 import {
   clearPassportData,
   loadPassportDataAndSecret,
 } from '../../providers/passportDataProvider';
-import analytics from '../../utils/analytics';
+
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { advercase, dinot } from '../../utils/fonts';
@@ -30,8 +30,6 @@ import {
   useProvingStore,
 } from '../../utils/proving/provingMachine';
 import { checkPassportSupported } from '../../utils/proving/validateDocument';
-
-const { trackEvent } = analytics();
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 
@@ -75,11 +73,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const canCloseApp = safeToCloseStates.includes(currentState);
 
   const handleUnsupportedPassport = async (_passportData: PassportData) => {
-    const isSupported = await checkPassportSupported(_passportData);
-    trackEvent(PassportEvents.UNSUPPORTED_PASSPORT, {
-      reason: isSupported.status,
-      details: isSupported.details,
-    });
+    await checkPassportSupported(_passportData);
     console.log('Passport not supported');
     clearPassportData();
     goToUnsupportedScreen();
@@ -105,9 +99,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
           }
         } catch (error: any) {
           console.error('Error loading passport data:', error);
-          trackEvent(PassportEvents.DATA_LOAD_ERROR, {
-            error: error?.message || 'Unknown error',
-          });
         }
       }
 
@@ -136,11 +127,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     console.log('[LoadingScreen] Current proving state:', currentState);
     console.log('[LoadingScreen] FCM token available:', !!fcmToken);
 
-    trackEvent(ProofEvents.PROVING_STATE_CHANGE, {
-      state: currentState,
-      fcmTokenAvailable: !!fcmToken,
-      passportDataAvailable: !!passportData,
-    });
 
     // Update UI if passport data is available
     if (passportData?.passportMetadata) {
