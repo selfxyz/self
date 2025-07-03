@@ -25,16 +25,34 @@ module Fastlane
         File.realpath(path)
       end
 
-      # Verify version code against Play Store (unused)
+      # Verify that the current version code is greater than the latest version on Play Store
+      # This method compares the versionCode in the gradle file against the latest version
+      # published on the Play Store internal track to ensure no version conflicts occur
+      #
+      # @param gradle_file [String] Path to the build.gradle file containing versionCode
+      # @return [void] Reports success or error based on version comparison
       def android_verify_version_code(gradle_file)
         latest = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
           track: "internal",
           json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
-          package_name: ENV["ANDROID_PACKAGE_NAME"]
+          package_name: ENV["ANDROID_PACKAGE_NAME"],
         ).first
 
         line = File.readlines(gradle_file).find { |l| l.include?("versionCode") }
-        current = line.match(/versionCode\s+(\d+)/)[1].to_i
+        return report_error(
+                 "Could not find versionCode in gradle file",
+                 "Please ensure the gradle file contains a valid versionCode declaration",
+                 "Version code verification failed"
+               ) unless line
+
+        match = line.match(/versionCode\s+(\d+)/)
+        return report_error(
+                 "Could not parse versionCode from gradle file",
+                 "Expected format: versionCode <number>",
+                 "Version code verification failed"
+               ) unless match
+
+        current = match[1].to_i
 
         if current <= latest
           report_error(
