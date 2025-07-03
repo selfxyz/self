@@ -11,6 +11,20 @@ module Fastlane
         file_size = File.size(file_path)
         file_title = title || file_name
 
+        upload_url, file_id = request_upload_url(slack_token, file_name, file_size)
+        upload_file_content(upload_url, file_path, file_size)
+        final_info = complete_upload(slack_token, file_id, file_title, channel_id, initial_comment, thread_ts)
+
+        report_success("Successfully uploaded and shared #{file_name} to Slack channel #{channel_id}")
+        final_info
+      rescue => e
+        report_error("Error during Slack upload process: #{e.message}", e.backtrace.join("\n"), "Slack Upload Failed")
+        false
+      end
+
+      private
+
+      def request_upload_url(slack_token, file_name, file_size)
         upload_url = nil
         file_id = nil
         with_retry(max_retries: 3, delay: 5) do
@@ -27,11 +41,16 @@ module Fastlane
           upload_url = json["upload_url"]
           file_id = json["file_id"]
         end
+        [upload_url, file_id]
+      end
 
+      def upload_file_content(upload_url, file_path, file_size)
         with_retry(max_retries: 3, delay: 5) do
           upload_uri = URI.parse(upload_url)
           upload_request = Net::HTTP::Post.new(upload_uri)
-          upload_request.body = File.binread(file_path)
+          File.open(file_path, "rb") do |file|
+            upload_request.body_stream = file
+          end
           upload_request["Content-Type"] = "application/octet-stream"
           upload_request["Content-Length"] = file_size.to_s
           upload_http = Net::HTTP.new(upload_uri.host, upload_uri.port)
@@ -39,7 +58,9 @@ module Fastlane
           upload_response = upload_http.request(upload_request)
           raise "File upload failed: #{upload_response.code} #{upload_response.message}" unless upload_response.is_a?(Net::HTTPOK)
         end
+      end
 
+      def complete_upload(slack_token, file_id, file_title, channel_id, initial_comment, thread_ts)
         final_info = nil
         with_retry(max_retries: 3, delay: 5) do
           complete_uri = URI.parse("https://slack.com/api/files.completeUploadExternal")
@@ -58,11 +79,7 @@ module Fastlane
           raise "Slack API Error: #{json["error"]}" unless json["ok"]
           final_info = json["files"]&.first
         end
-        report_success("Successfully uploaded and shared #{file_name} to Slack channel #{channel_id}")
         final_info
-      rescue => e
-        report_error("Error during Slack upload process: #{e.message}", e.backtrace.join("\n"), "Slack Upload Failed")
-        false
       end
     end
   end

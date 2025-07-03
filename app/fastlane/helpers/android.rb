@@ -78,9 +78,12 @@ module Fastlane
         new_version = current + 1
         if @@android_has_permissions
           File.write(full, content.gsub(/versionCode\s+\d+/, "versionCode #{new_version}"))
+          report_success("Version code incremented from #{current} to #{new_version} and written to file")
+          new_version
+        else
+          report_success("Version code incremented from #{current} to #{new_version} (read-only mode)")
+          current
         end
-        report_success("Version code incremented from #{current} to #{new_version}")
-        @@android_has_permissions ? new_version : current
       end
     end
   end

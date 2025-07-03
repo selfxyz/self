@@ -47,7 +47,7 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-latest-xlarge
     steps:
       - name: Mobile deployment status
         run: |
@@ -382,7 +382,7 @@ jobs:
           commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
 
   build-android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-8-cores
     steps:
       - name: Mobile deployment status
         run: |
@@ -415,7 +415,7 @@ jobs:
       # android specific steps
       - name: Setup Java environment
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}

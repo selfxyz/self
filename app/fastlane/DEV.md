@@ -143,12 +143,24 @@ Several scripts in `app/package.json` facilitate common Fastlane and versioning 
 
 #### Debug Builds 🐞
 
-**`yarn ios:fastlane-debug`** / **`yarn android:fastlane-debug`**
+**`yarn ios:fastlane-debug`**
 
-* Executes the `internal_test` Fastlane lane for the respective platforms
+* Executes the `internal_test` Fastlane lane for iOS
 * Builds the app in a debug configuration for internal testing
-* Uploads to TestFlight (iOS) or Google Play Internal Testing (Android) if permissions allow
-* Cleans build directories (`ios/build`, `android/app/build`) before running
+* Uploads to TestFlight if permissions allow
+* Cleans build directories (`ios/build`) before running
+
+**Direct Fastlane Commands**
+
+For Android builds, use Fastlane directly:
+
+* `bundle exec fastlane android internal_test` - Build and upload to Google Play Internal Testing
+* `bundle exec fastlane android deploy` - Build and upload to Google Play Production
+
+For iOS builds, you can also use Fastlane directly:
+
+* `bundle exec fastlane ios internal_test` - Build and upload to TestFlight
+* `bundle exec fastlane ios deploy` - Build and upload to App Store Connect
 
 #### Forced Local Deployment 🚀
 
@@ -171,6 +183,13 @@ Several scripts in `app/package.json` facilitate common Fastlane and versioning 
 * Similar to deploy version, but runs `internal_test` lane locally
 * Useful for testing the internal distribution process
 * Uses `FORCE_UPLOAD_LOCAL_DEV=true` flag
+
+**Alternative: Direct Fastlane Commands**
+
+For more control, you can run Fastlane directly with local development settings:
+
+* `FORCE_UPLOAD_LOCAL_DEV=true bundle exec fastlane ios internal_test` - Force local iOS testing
+* `FORCE_UPLOAD_LOCAL_DEV=true bundle exec fastlane android internal_test` - Force local Android testing
 
 ### Version Management 🏷️
 
@@ -320,6 +339,7 @@ The CI/CD pipeline automatically manages build numbers/version codes with sophis
      2. Sign in to the Google Play Console and create a new release
      3. Upload the downloaded AAB file and follow the console prompts
      4. Complete the release process in the Play Console UI
+   * The CI/CD pipeline uses `bundle exec fastlane android internal_test` directly
 
 3. **Version Code Management:**
    * The system increments version codes locally but cannot verify against Google Play
