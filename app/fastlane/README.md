@@ -72,7 +72,9 @@ Push a new build to Google Play Store
 
 # GitHub Actions Workflow
 
-The mobile deployment pipeline is configured to run **manually only**. To trigger a deployment:
+The mobile deployment pipeline appears in pull requests but is **disabled by default**. Deployment steps are skipped to save resources while keeping the pipeline visible for transparency.
+
+**To trigger a deployment manually:**
 
 1. Go to your repository on GitHub
 2. Click on the **Actions** tab
@@ -80,6 +82,11 @@ The mobile deployment pipeline is configured to run **manually only**. To trigge
 4. Click **Run workflow** button
 5. Choose your platform (iOS, Android, or both)
 6. Click **Run workflow**
+
+**In Pull Requests:**
+- The pipeline shows up as a check but deployment steps are skipped
+- You can view the complete pipeline structure and see what would be deployed
+- Provides visibility into the mobile deployment process without consuming CI resources
 
 **What happens when you deploy:**
 - **iOS**: Uploads to App Store Connect and makes available in TestFlight for testing. You can manually release to the App Store later.

@@ -71,7 +71,10 @@ module Fastlane
         raise "Could not find build.gradle" unless File.exist?(full)
         content = File.read(full)
         match = content.match(/versionCode\s+(\d+)/)
-        current = match ? match[1].to_i : 0
+
+        raise "Could not find versionCode in gradle file. Expected format: versionCode <number>" unless match
+
+        current = match[1].to_i
         new_version = current + 1
         if @@android_has_permissions
           File.write(full, content.gsub(/versionCode\s+\d+/, "versionCode #{new_version}"))
