@@ -1,12 +1,10 @@
 module Fastlane
   module Helpers
     module Slack
-      SLACK_TOKEN = ENV["SLACK_API_TOKEN"]
-      CHANNEL_NAME = ENV["SLACK_ANNOUNCE_CHANNEL_NAME"] || "deploy-mobile"
-
       # Upload a file to Slack using the files.upload API
       def upload_file_to_slack(file_path:, channel_id:, initial_comment: nil, thread_ts: nil, title: nil)
-        report_error("Missing SLACK_API_TOKEN environment variable.", nil, "Slack Upload Failed") if SLACK_TOKEN.to_s.strip.empty?
+        slack_token = ENV["SLACK_API_TOKEN"]
+        report_error("Missing SLACK_API_TOKEN environment variable.", nil, "Slack Upload Failed") if slack_token.to_s.strip.empty?
         report_error("File not found at path: #{file_path}", nil, "Slack Upload Failed") unless File.exist?(file_path)
 
         file_name = File.basename(file_path)
@@ -18,14 +16,14 @@ module Fastlane
         with_retry(max_retries: 3, delay: 5) do
           uri = URI.parse("https://slack.com/api/files.getUploadURLExternal")
           request = Net::HTTP::Post.new(uri)
-          request["Authorization"] = "Bearer #{SLACK_TOKEN}"
+          request["Authorization"] = "Bearer #{slack_token}"
           request.set_form_data(filename: file_name, length: file_size)
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = true
           response = http.request(request)
           raise "Slack API failed: #{response.code} #{response.body}" unless response.is_a?(Net::HTTPSuccess)
           json = JSON.parse(response.body)
-          raise "Slack API Error: #{json['error']}" unless json["ok"]
+          raise "Slack API Error: #{json["error"]}" unless json["ok"]
           upload_url = json["upload_url"]
           file_id = json["file_id"]
         end
@@ -46,7 +44,7 @@ module Fastlane
         with_retry(max_retries: 3, delay: 5) do
           complete_uri = URI.parse("https://slack.com/api/files.completeUploadExternal")
           complete_request = Net::HTTP::Post.new(complete_uri)
-          complete_request["Authorization"] = "Bearer #{SLACK_TOKEN}"
+          complete_request["Authorization"] = "Bearer #{slack_token}"
           complete_request["Content-Type"] = "application/json; charset=utf-8"
           payload = { files: [{ id: file_id, title: file_title }], channel_id: channel_id }
           payload[:initial_comment] = initial_comment if initial_comment
@@ -57,7 +55,7 @@ module Fastlane
           complete_response = complete_http.request(complete_request)
           raise "Slack API failed: #{complete_response.code} #{complete_response.body}" unless complete_response.is_a?(Net::HTTPSuccess)
           json = JSON.parse(complete_response.body)
-          raise "Slack API Error: #{json['error']}" unless json["ok"]
+          raise "Slack API Error: #{json["error"]}" unless json["ok"]
           final_info = json["files"]&.first
         end
         report_success("Successfully uploaded and shared #{file_name} to Slack channel #{channel_id}")

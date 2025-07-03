@@ -70,34 +70,6 @@ Push a new build to Google Play Store
 
 ----
 
-# GitHub Actions Workflow
-
-The mobile deployment pipeline appears in pull requests but is **disabled by default**. Deployment steps are skipped to save resources while keeping the pipeline visible for transparency.
-
-**To trigger a deployment manually:**
-
-1. Go to your repository on GitHub
-2. Click on the **Actions** tab
-3. Select **Mobile App Deployments** from the workflows list
-4. Click **Run workflow** button
-5. Choose your platform (iOS, Android, or both)
-6. Click **Run workflow**
-
-**In Pull Requests:**
-- The pipeline shows up as a check but deployment steps are skipped
-- You can view the complete pipeline structure and see what would be deployed
-- Provides visibility into the mobile deployment process without consuming CI resources
-
-**What happens when you deploy:**
-- **iOS**: Uploads to App Store Connect and makes available in TestFlight for testing. You can manually release to the App Store later.
-- **Android**: Uploads to Google Play Internal Testing. You can manually promote to production later.
-
-**No automatic deployments!** You have full control over when builds are created and when they're released to production.
-
-Before running these lanes or triggering the GitHub Actions workflow, bump the
-project version with the `yarn bump-version:*` scripts and manually increment
-the native build numbers in `ios` and `android`.
-
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
 More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
