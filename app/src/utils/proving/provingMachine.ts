@@ -24,7 +24,6 @@ import {
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
-import { useSettingStore } from '../../stores/settingStore';
 import analytics from '../analytics';
 import { getPublicKey, verifyAttestation } from './attest';
 import {
@@ -51,8 +50,10 @@ import {
 const { trackEvent } = analytics();
 
 export const getPostVerificationRoute = () => {
-  const { cloudBackupEnabled } = useSettingStore.getState();
-  return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
+  return 'AccountVerifiedSuccess';
+  // disable for now
+  // const { cloudBackupEnabled } = useSettingStore.getState();
+  // return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
 };
 
 const provingMachine = createMachine({

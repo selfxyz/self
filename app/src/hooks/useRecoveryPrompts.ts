@@ -7,6 +7,7 @@ import { usePassport } from '../providers/passportDataProvider';
 import { useSettingStore } from '../stores/settingStore';
 import { useModal } from './useModal';
 
+// TODO: need to debug and test the logic. it pops up too often.
 export default function useRecoveryPrompts() {
   const { loginCount, cloudBackupEnabled, hasViewedRecoveryPhrase } =
     useSettingStore();
