@@ -1428,6 +1428,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-safe-area-context (5.4.1):
+    - React-Core
   - react-native-sqlite-storage (6.0.1):
     - React-Core
   - React-nativeconfig (0.75.4)
@@ -1867,6 +1869,7 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../../node_modules/react-native-nfc-manager`)
   - react-native-quick-crypto (from `../../node_modules/react-native-quick-crypto`)
+  - react-native-safe-area-context (from `../../node_modules/react-native-safe-area-context`)
   - react-native-sqlite-storage (from `../../node_modules/react-native-sqlite-storage`)
   - React-nativeconfig (from `../../node_modules/react-native/ReactCommon`)
   - React-NativeModulesApple (from `../../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -2025,6 +2028,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-nfc-manager"
   react-native-quick-crypto:
     :path: "../../node_modules/react-native-quick-crypto"
+  react-native-safe-area-context:
+    :path: "../../node_modules/react-native-safe-area-context"
   react-native-sqlite-storage:
     :path: "../../node_modules/react-native-sqlite-storage"
   React-nativeconfig:
@@ -2180,6 +2185,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: a280ef94cd4871a471b052f0dc70381cf1223049
   react-native-quick-crypto: c42da02f2832626ec0b8d8465f2f9b3889a317f6
+  react-native-safe-area-context: dde2052b903c11d677c320b599c3244021c34ce8
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   React-nativeconfig: 31072ab0146e643594f6959c7f970a04b6c9ddd0
   React-NativeModulesApple: 4ffcab4cdf34002540799bffbedd6466e8023c3a
