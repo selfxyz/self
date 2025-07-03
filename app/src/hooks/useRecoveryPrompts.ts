@@ -49,7 +49,7 @@ export default function useRecoveryPrompts() {
         }
       }
     }
-    void maybePrompt();
+    maybePrompt().catch(() => {});
   }, [
     loginCount,
     cloudBackupEnabled,

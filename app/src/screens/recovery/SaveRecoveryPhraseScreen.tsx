@@ -11,7 +11,6 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import useMnemonic from '../../hooks/useMnemonic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME } from '../../utils/cloudBackup';
 import { black, slate400, white } from '../../utils/colors';

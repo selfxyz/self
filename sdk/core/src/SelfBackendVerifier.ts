@@ -72,7 +72,9 @@ export class SelfBackendVerifier {
       });
     }
 
-    const publicSignals = pubSignals.map(String).map((x) => (/[a-f]/g.test(x) && x.length > 0 ? '0x' + x : x));
+    const publicSignals = pubSignals
+      .map(String)
+      .map((x) => (/[a-f]/g.test(x) && x.length > 0 ? '0x' + x : x));
     //check if user context hash matches
     const userContextHashInCircuit = BigInt(
       publicSignals[discloseIndices[attestationId].userIdentifierIndex]
