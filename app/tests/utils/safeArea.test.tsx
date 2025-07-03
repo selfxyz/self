@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { render, renderHook } from '@testing-library/react-native';
+import { act, render, renderHook } from '@testing-library/react-native';
 import React from 'react';
 import { Dimensions, Platform, StatusBar } from 'react-native';
 
@@ -15,14 +15,22 @@ jest.mock('react-native', () => ({
   },
   Dimensions: {
     get: jest.fn(),
+    addEventListener: jest.fn(),
   },
   StatusBar: {
     currentHeight: undefined,
   },
 }));
 
+// Mock react-native-device-info
+jest.mock('react-native-device-info', () => ({
+  getApiLevel: jest.fn(),
+}));
+
 const mockDimensions = Dimensions.get as jest.Mock;
 const mockStatusBar = StatusBar as jest.Mocked<typeof StatusBar>;
+const mockDimensionsAddEventListener = Dimensions.addEventListener as jest.Mock;
+const mockDeviceInfo = require('react-native-device-info');
 
 describe('safeArea', () => {
   let originalPlatform: any;
@@ -35,6 +43,14 @@ describe('safeArea', () => {
     (Platform as any).isPad = false;
     (Platform as any).isTV = false;
     mockStatusBar.currentHeight = undefined;
+
+    // Mock dimension event listener
+    mockDimensionsAddEventListener.mockReturnValue({
+      remove: jest.fn(),
+    });
+
+    // Reset native modules mocks
+    mockDeviceInfo.getApiLevel.mockResolvedValue(29);
   });
 
   afterEach(() => {
@@ -108,6 +124,71 @@ describe('safeArea', () => {
         const { result } = renderHook(() => useSafeAreaInsets());
 
         expect(result.current.bottom).toBe(0);
+      });
+
+      it('should enhance calculation for Android API 28+ with modern device dimensions', async () => {
+        // Mock Android API 29 with tall device dimensions (modern phone with possible notch)
+        mockDeviceInfo.getApiLevel.mockResolvedValue(29);
+        mockStatusBar.currentHeight = 20; // Low status bar height
+        mockDimensions.mockReturnValue({ height: 2400, width: 1080 }); // Tall aspect ratio
+
+        const { result } = renderHook(() => useSafeAreaInsets());
+
+        // Wait for the async Android calculation
+        await act(async () => {
+          await new Promise(resolve => setTimeout(resolve, 0));
+        });
+
+        expect(result.current).toEqual({
+          top: 24, // Enhanced to minimum 24 for modern devices
+          bottom: 0,
+          left: 0,
+          right: 0,
+        });
+      });
+
+      it('should fall back to StatusBar.currentHeight on Android API < 28', async () => {
+        // Mock Android API 27 (below 28)
+        mockDeviceInfo.getApiLevel.mockResolvedValue(27);
+        mockStatusBar.currentHeight = 24;
+        mockDimensions.mockReturnValue({ height: 800, width: 400 });
+
+        const { result } = renderHook(() => useSafeAreaInsets());
+
+        // Wait for the async Android calculation
+        await act(async () => {
+          await new Promise(resolve => setTimeout(resolve, 0));
+        });
+
+        expect(result.current).toEqual({
+          top: 24,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        });
+      });
+
+      it('should fall back to StatusBar.currentHeight when DeviceInfo.getApiLevel fails', async () => {
+        // Mock DeviceInfo.getApiLevel to throw error
+        mockDeviceInfo.getApiLevel.mockRejectedValue(
+          new Error('DeviceInfo not available'),
+        );
+        mockStatusBar.currentHeight = 24;
+        mockDimensions.mockReturnValue({ height: 800, width: 400 });
+
+        const { result } = renderHook(() => useSafeAreaInsets());
+
+        // Wait for the async Android calculation
+        await act(async () => {
+          await new Promise(resolve => setTimeout(resolve, 0));
+        });
+
+        expect(result.current).toEqual({
+          top: 24,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        });
       });
     });
 
@@ -361,26 +442,35 @@ describe('safeArea', () => {
         expect(firstResult).toBe(secondResult);
       });
 
-      it('should NOT recalculate when dimensions change due to empty dependency array', () => {
-        // This test documents the current behavior - hasNotch has empty deps so it won't recalculate
+      it('should recalculate when dimensions change', async () => {
+        // Mock dimension changes to simulate device rotation
         let mockDimensionsCall = 0;
         mockDimensions.mockImplementation(() => {
           mockDimensionsCall++;
           return mockDimensionsCall === 1
-            ? { height: 667, width: 375 }
-            : { height: 812, width: 375 };
+            ? { height: 667, width: 375 } // iPhone 8 dimensions (no notch)
+            : { height: 812, width: 375 }; // iPhone X dimensions (with notch)
         });
 
-        const { result, rerender } = renderHook(() => useSafeAreaInsets());
+        const { result } = renderHook(() => useSafeAreaInsets());
         const firstResult = result.current;
 
-        rerender({});
-        const secondResult = result.current;
-
-        // Currently, results are the same because hasNotch is memoized with empty deps
-        expect(firstResult).toBe(secondResult);
+        // Initial result should be for iPhone 8 (no notch)
         expect(firstResult.top).toBe(20);
-        expect(secondResult.top).toBe(20);
+        expect(firstResult.bottom).toBe(0);
+
+        // Simulate dimension change event
+        const dimensionChangeCallback =
+          mockDimensionsAddEventListener.mock.calls[0][1];
+
+        await act(async () => {
+          dimensionChangeCallback();
+        });
+
+        const secondResult = result.current;
+        // After dimension change, should detect notch and update insets
+        expect(secondResult.top).toBe(44);
+        expect(secondResult.bottom).toBe(34);
       });
     });
 
