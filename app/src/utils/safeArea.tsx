@@ -15,7 +15,7 @@ export const SafeAreaProvider = ({ children }: PropsWithChildren) => (
 );
 
 export function useSafeAreaInsets(): EdgeInsets {
-  const hasNotch = (() => {
+  const hasNotch = useMemo(() => {
     if (Platform.OS !== 'ios' || Platform.isPad || Platform.isTV) {
       return false;
     }
@@ -41,7 +41,7 @@ export function useSafeAreaInsets(): EdgeInsets {
     }
 
     return false;
-  })();
+  }, []);
 
   const top = useMemo(() => {
     if (Platform.OS === 'android') {
