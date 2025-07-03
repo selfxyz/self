@@ -102,7 +102,8 @@ export async function isUserRegisteredWithAlternativeCSCA(
     return { isRegistered: false, csca: null };
   }
   const document: DocumentCategory = passportData.documentCategory;
-  const alternativeCSCA = useProtocolStore.getState()[document].alternative_csca;
+  const alternativeCSCA =
+    useProtocolStore.getState()[document].alternative_csca;
   console.log('alternativeCSCA: ', alternativeCSCA);
   const { commitment_list, csca_list } = generateCommitmentInApp(
     secret,
