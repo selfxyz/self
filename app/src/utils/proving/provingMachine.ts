@@ -233,7 +233,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }, 3000);
       }
       if (state.value === 'completed') {
-        trackEvent(ProofEvents.PROOF_COMPLETED, { circuitType: get().circuitType });
+        trackEvent(ProofEvents.PROOF_COMPLETED, {
+          circuitType: get().circuitType,
+        });
         if (get().circuitType !== 'disclose' && navigationRef.isReady()) {
           setTimeout(() => {
             navigationRef.navigate('AccountVerifiedSuccess');
@@ -354,7 +356,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             console.error(
               'Cannot start Socket.IO listener: endpointType not set.',
             );
-            trackEvent(ProofEvents.PROOF_FAILED, { circuitType: get().circuitType, error: get().error_code ?? 'unknown' });
+            trackEvent(ProofEvents.PROOF_FAILED, {
+              circuitType: get().circuitType,
+              error: get().error_code ?? 'unknown',
+            });
             actor!.send({ type: 'PROVE_ERROR' });
             return;
           }
@@ -362,7 +367,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         } else if (result.error) {
           console.error('Received error from TEE:', result.error);
           trackEvent(ProofEvents.TEE_WS_ERROR, { error: result.error });
-          trackEvent(ProofEvents.PROOF_FAILED, { circuitType: get().circuitType, error: get().error_code ?? 'unknown' });
+          trackEvent(ProofEvents.PROOF_FAILED, {
+            circuitType: get().circuitType,
+            error: get().error_code ?? 'unknown',
+          });
           actor!.send({ type: 'PROVE_ERROR' });
         } else {
           console.warn('Received unknown message format from TEE:', result);
@@ -370,11 +378,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       } catch (error) {
         console.error('Error processing WebSocket message:', error);
         if (get().currentState === 'init_tee_connexion') {
-          trackEvent(ProofEvents.TEE_CONN_FAILED, { message: (error as any).message });
+          trackEvent(ProofEvents.TEE_CONN_FAILED, {
+            message: (error as any).message,
+          });
           actor!.send({ type: 'CONNECT_ERROR' });
         } else {
-          trackEvent(ProofEvents.TEE_WS_ERROR, { error: (error as any).message });
-          trackEvent(ProofEvents.PROOF_FAILED, { circuitType: get().circuitType, error: get().error_code ?? 'unknown' });
+          trackEvent(ProofEvents.TEE_WS_ERROR, {
+            error: (error as any).message,
+          });
+          trackEvent(ProofEvents.PROOF_FAILED, {
+            circuitType: get().circuitType,
+            error: get().error_code ?? 'unknown',
+          });
           actor!.send({ type: 'PROVE_ERROR' });
         }
       }
@@ -406,15 +421,23 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         const data =
           typeof message === 'string' ? JSON.parse(message) : message;
         console.log('Received status update with status:', data.status);
-        trackEvent(ProofEvents.SOCKETIO_STATUS_RECEIVED, { status: data.status });
+        trackEvent(ProofEvents.SOCKETIO_STATUS_RECEIVED, {
+          status: data.status,
+        });
         if (data.status === 3 || data.status === 5) {
           console.error(
             'Proof generation/verification failed (status 3 or 5).',
           );
           console.error(data);
           set({ error_code: data.error_code, reason: data.reason });
-          trackEvent(ProofEvents.SOCKETIO_PROOF_FAILURE, { error_code: data.error_code, reason: data.reason });
-          trackEvent(ProofEvents.PROOF_FAILED, { circuitType: get().circuitType, error: data.error_code ?? 'unknown' });
+          trackEvent(ProofEvents.SOCKETIO_PROOF_FAILURE, {
+            error_code: data.error_code,
+            reason: data.reason,
+          });
+          trackEvent(ProofEvents.PROOF_FAILED, {
+            circuitType: get().circuitType,
+            error: data.error_code ?? 'unknown',
+          });
           actor!.send({ type: 'PROVE_FAILURE' });
           socket?.disconnect();
           set({ socketConnection: null });
@@ -438,7 +461,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             'SocketIO disconnected unexpectedly during proof listening.',
           );
           trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
-          trackEvent(ProofEvents.PROOF_FAILED, { circuitType: get().circuitType, error: get().error_code ?? 'unknown' });
+          trackEvent(ProofEvents.PROOF_FAILED, {
+            circuitType: get().circuitType,
+            error: get().error_code ?? 'unknown',
+          });
           currentActor.send({ type: 'PROVE_ERROR' });
         }
         set({ socketConnection: null });
@@ -446,8 +472,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       socket.on('connect_error', error => {
         console.error('SocketIO connection error:', error);
-        trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, { message: (error as any).message });
-        trackEvent(ProofEvents.PROOF_FAILED, { circuitType: get().circuitType, error: get().error_code ?? 'unknown' });
+        trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
+          message: (error as any).message,
+        });
+        trackEvent(ProofEvents.PROOF_FAILED, {
+          circuitType: get().circuitType,
+          error: get().error_code ?? 'unknown',
+        });
         actor!.send({ type: 'PROVE_ERROR' });
         set({ socketConnection: null });
       });
@@ -495,7 +526,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       console.log(
         `TEE WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`,
       );
-      trackEvent(ProofEvents.TEE_WS_CLOSED, { code: event.code, reason: event.reason });
+      trackEvent(ProofEvents.TEE_WS_CLOSED, {
+        code: event.code,
+        reason: event.reason,
+      });
       if (!actor) {
         return;
       }
@@ -596,7 +630,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         actor!.send({ type: 'FETCH_SUCCESS' });
       } catch (error) {
         console.error('Error fetching data:', error);
-        trackEvent(ProofEvents.FETCH_DATA_FAILED, { message: (error as any).message });
+        trackEvent(ProofEvents.FETCH_DATA_FAILED, {
+          message: (error as any).message,
+        });
         actor!.send({ type: 'FETCH_ERROR' });
       }
     },
@@ -678,7 +714,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
       } catch (error) {
         console.error('Error validating passport:', error);
-        trackEvent(ProofEvents.VALIDATION_FAILED, { message: (error as any).message });
+        trackEvent(ProofEvents.VALIDATION_FAILED, {
+          message: (error as any).message,
+        });
         actor!.send({ type: 'VALIDATION_ERROR' });
       }
     },
@@ -775,7 +813,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         console.error(
           'Cannot start proving: Missing wsConnection, sharedKey, passportData, secret, or uuid.',
         );
-        trackEvent(ProofEvents.PROOF_FAILED, { circuitType: get().circuitType, error: get().error_code ?? 'unknown' });
+        trackEvent(ProofEvents.PROOF_FAILED, {
+          circuitType: get().circuitType,
+          error: get().error_code ?? 'unknown',
+        });
         actor!.send({ type: 'PROVE_ERROR' });
         return;
       }
@@ -793,7 +834,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             trackEvent(ProofEvents.DEVICE_TOKEN_REG_SUCCESS);
           } catch (error) {
             console.error('Error registering device token:', error);
-            trackEvent(ProofEvents.DEVICE_TOKEN_REG_FAILED, { message: (error as any).message });
+            trackEvent(ProofEvents.DEVICE_TOKEN_REG_FAILED, {
+              message: (error as any).message,
+            });
             // Continue with the proving process even if token registration fails
           }
         }
@@ -806,7 +849,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         trackEvent(ProofEvents.PROOF_VERIFICATION_STARTED);
       } catch (error) {
         console.error('Error during startProving preparation/send:', error);
-        trackEvent(ProofEvents.PROOF_FAILED, { circuitType: get().circuitType, error: get().error_code ?? 'unknown' });
+        trackEvent(ProofEvents.PROOF_FAILED, {
+          circuitType: get().circuitType,
+          error: get().error_code ?? 'unknown',
+        });
         actor!.send({ type: 'PROVE_ERROR' });
       }
     },
@@ -825,7 +871,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       trackEvent(ProofEvents.POST_PROVING_STARTED);
       if (circuitType === 'dsc') {
         setTimeout(() => {
-          trackEvent(ProofEvents.POST_PROVING_CHAIN_STEP, { from: 'dsc', to: 'register' });
+          trackEvent(ProofEvents.POST_PROVING_CHAIN_STEP, {
+            from: 'dsc',
+            to: 'register',
+          });
           get().init('register', true);
         }, 1500);
       } else if (circuitType === 'register') {

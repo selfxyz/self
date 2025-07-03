@@ -11,14 +11,12 @@ import { Text, YStack } from 'tamagui';
 import failAnimation from '../../assets/animations/loading/fail.json';
 import proveLoadingAnimation from '../../assets/animations/loading/prove.json';
 import successAnimation from '../../assets/animations/loading/success.json';
-
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import CloseWarningIcon from '../../images/icons/close-warning.svg';
 import {
   clearPassportData,
   loadPassportDataAndSecret,
 } from '../../providers/passportDataProvider';
-
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { advercase, dinot } from '../../utils/fonts';
@@ -126,7 +124,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
 
     console.log('[LoadingScreen] Current proving state:', currentState);
     console.log('[LoadingScreen] FCM token available:', !!fcmToken);
-
 
     // Update UI if passport data is available
     if (passportData?.passportMetadata) {
