@@ -11,7 +11,7 @@ import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import {
   Button,
   Input,

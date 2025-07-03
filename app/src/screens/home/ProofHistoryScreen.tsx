@@ -9,7 +9,7 @@ import {
   SectionList,
   StyleSheet,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 
 import { BodyText } from '../../components/typography/BodyText';

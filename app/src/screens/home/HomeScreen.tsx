@@ -6,7 +6,7 @@ import {
   usePreventRemove,
 } from '@react-navigation/native';
 import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Button, styled, YStack } from 'tamagui';
 
 import { pressedStyle } from '../../components/buttons/pressedStyle';

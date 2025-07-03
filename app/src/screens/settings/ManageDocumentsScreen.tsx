@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 import React, { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';

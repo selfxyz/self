@@ -3,7 +3,7 @@
 import React from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Anchor, Text, YStack } from 'tamagui';
 
 import AbstractButton from '../../components/buttons/AbstractButton';

@@ -5,7 +5,7 @@ import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Text, YStack } from 'tamagui';
 
 import failAnimation from '../../assets/animations/loading/fail.json';

@@ -28,7 +28,7 @@ jest.mock('react-native-gesture-handler', () => ({
   GestureHandlerRootView: ({ children }: any) => children,
 }));
 
-jest.mock('react-native-safe-area-context', () => ({
+jest.mock('../../../../src/utils/safeArea', () => ({
   useSafeAreaInsets: () => ({
     top: 0,
     bottom: 0,

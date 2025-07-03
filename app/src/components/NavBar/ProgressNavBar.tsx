@@ -5,7 +5,7 @@ import {
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
 import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { TextStyle, ViewStyle, XStack, YStack } from 'tamagui';
 
 import { cyan300, slate200, white } from '../../utils/colors';
