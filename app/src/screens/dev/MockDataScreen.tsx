@@ -11,7 +11,6 @@ import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import {
   Button,
   Input,
@@ -39,8 +38,9 @@ import {
   textBlack,
   white,
 } from '../../utils/colors';
-import { buttonTap, selectionChange } from '../../utils/haptic';
 import { extraYPadding } from '../../utils/constants';
+import { buttonTap, selectionChange } from '../../utils/haptic';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 
 const { trackEvent } = analytics();
 

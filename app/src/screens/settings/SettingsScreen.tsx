@@ -7,7 +7,6 @@ import React, { PropsWithChildren, useCallback, useMemo } from 'react';
 import { Linking, Platform, Share } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
@@ -41,6 +40,7 @@ import {
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {

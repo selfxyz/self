@@ -5,7 +5,6 @@ import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Text, YStack } from 'tamagui';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
@@ -20,9 +19,9 @@ import {
 } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 import { advercase, dinot } from '../../utils/fonts';
 import { loadingScreenProgress } from '../../utils/haptic';
-import { extraYPadding } from '../../utils/constants';
 import { setupNotifications } from '../../utils/notifications/notificationService';
 import { getLoadingScreenText } from '../../utils/proving/loadingScreenStateText';
 import {
@@ -30,6 +29,7 @@ import {
   useProvingStore,
 } from '../../utils/proving/provingMachine';
 import { checkPassportSupported } from '../../utils/proving/validateDocument';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 
 const { trackEvent } = analytics();
 

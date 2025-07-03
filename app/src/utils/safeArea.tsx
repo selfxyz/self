@@ -1,5 +1,8 @@
-import { PropsWithChildren, useMemo } from 'react';
-import { Dimensions, Platform, StatusBar } from 'react-native';
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
+import React, { PropsWithChildren, useMemo } from 'react';
+import { Platform, StatusBar } from 'react-native';
+import { useSafeAreaInsets as useRNSafeAreaInsets } from 'react-native-safe-area-context';
 
 export interface EdgeInsets {
   top: number;
@@ -8,16 +11,19 @@ export interface EdgeInsets {
   right: number;
 }
 
-export const SafeAreaProvider = ({ children }: PropsWithChildren) => <>{children}</>;
+export const SafeAreaProvider = ({ children }: PropsWithChildren) => (
+  <>{children}</>
+);
 
 export function useSafeAreaInsets(): EdgeInsets {
+  const rnSafeAreaInsets = useRNSafeAreaInsets();
+
   const hasNotch = useMemo(() => {
     if (Platform.OS !== 'ios' || Platform.isPad || Platform.isTV) {
       return false;
     }
-    const dimen = Dimensions.get('window');
-    return dimen.height >= 812 || dimen.width >= 812;
-  }, []);
+    return rnSafeAreaInsets.top > 20;
+  }, [rnSafeAreaInsets.top]);
 
   const top = useMemo(() => {
     if (Platform.OS === 'android') {

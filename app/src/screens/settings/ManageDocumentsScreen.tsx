@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 import React, { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -16,6 +15,7 @@ import analytics from '../../utils/analytics';
 import { borderColor, textBlack, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 
 const { trackEvent } = analytics();
 

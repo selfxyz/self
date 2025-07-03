@@ -7,7 +7,6 @@ import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -20,6 +19,7 @@ import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import { black, borderColor, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 
 const MockDataScreenDeepLink: React.FC = () => {
   const navigation = useNavigation();

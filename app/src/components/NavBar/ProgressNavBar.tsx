@@ -5,11 +5,11 @@ import {
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
 import React from 'react';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { TextStyle, ViewStyle, XStack, YStack } from 'tamagui';
 
 import { cyan300, slate200, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { NavBar } from './BaseNavBar';
 
 interface ProgressNavBarProps extends NativeStackHeaderProps {

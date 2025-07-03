@@ -3,7 +3,6 @@
 import React from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Anchor, Text, YStack } from 'tamagui';
 
 import AbstractButton from '../../components/buttons/AbstractButton';
@@ -21,6 +20,7 @@ import Logo from '../../images/logo.svg';
 import { black, slate400, white, zinc800, zinc900 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { advercase, dinot } from '../../utils/fonts';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 
 const LaunchScreen: React.FC = () => {
   useConnectionModal();

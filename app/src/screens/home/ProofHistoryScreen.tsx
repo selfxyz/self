@@ -9,7 +9,6 @@ import {
   SectionList,
   StyleSheet,
 } from 'react-native';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 
 import { BodyText } from '../../components/typography/BodyText';
@@ -31,6 +30,7 @@ import {
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { dinot } from '../../utils/fonts';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 
 type Section = {
   title: string;

@@ -2,7 +2,6 @@
 
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import React from 'react';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Button } from 'tamagui';
 
 import ActivityIcon from '../../images/icons/activity.svg';
@@ -10,6 +9,7 @@ import SettingsIcon from '../../images/icons/settings.svg';
 import { black, neutral400, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { buttonTap } from '../../utils/haptic';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { NavBar } from './BaseNavBar';
 
 export const HomeNavBar = (props: NativeStackHeaderProps) => {

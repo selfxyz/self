@@ -2,12 +2,12 @@
 
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import React from 'react';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { TextStyle, ViewStyle } from 'tamagui';
 
 import { white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { buttonTap } from '../../utils/haptic';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 import { NavBar } from './BaseNavBar';
 
 export const DefaultNavBar = (props: NativeStackHeaderProps) => {

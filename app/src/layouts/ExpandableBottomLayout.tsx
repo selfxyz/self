@@ -8,11 +8,11 @@ import {
   StatusBar,
   StyleSheet,
 } from 'react-native';
-import { useSafeAreaInsets } from '../utils/safeArea';
 import { View, ViewProps } from 'tamagui';
 
 import { black, white } from '../utils/colors';
 import { extraYPadding } from '../utils/constants';
+import { useSafeAreaInsets } from '../utils/safeArea';
 
 // Get the current font scale factor
 const fontScale = PixelRatio.getFontScale();

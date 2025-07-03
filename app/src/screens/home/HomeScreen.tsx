@@ -6,7 +6,6 @@ import {
   usePreventRemove,
 } from '@react-navigation/native';
 import React from 'react';
-import { useSafeAreaInsets } from '../../utils/safeArea';
 import { Button, styled, YStack } from 'tamagui';
 
 import { pressedStyle } from '../../components/buttons/pressedStyle';
@@ -29,6 +28,7 @@ import {
   white,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
+import { useSafeAreaInsets } from '../../utils/safeArea';
 const ScanButton = styled(Button, {
   borderRadius: 20,
   width: 90,
