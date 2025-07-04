@@ -44,6 +44,7 @@ const CONSOLE_SYMBOLS = {
 const REGEX_PATTERNS = {
   IOS_VERSION:
     /<key>CFBundleShortVersionString<\/key>\s*<string>(.*?)<\/string>/,
+  IOS_BUILD: /CURRENT_PROJECT_VERSION = (\d+);/,
   ANDROID_VERSION: /versionName\s+"(.+?)"/,
   ANDROID_VERSION_CODE: /versionCode\s+(\d+)/,
 };
@@ -160,7 +161,7 @@ function getMainVersion() {
 }
 
 /**
- * Reads iOS version information from Info.plist
+ * Reads iOS version information from Info.plist and project.pbxproj
  * @returns {Object} iOS version information
  */
 function getIOSVersion() {
@@ -168,13 +169,26 @@ function getIOSVersion() {
   const infoPlist = safeReadFile(infoPlistPath, 'iOS Info.plist');
 
   if (!infoPlist) {
-    return { version: 'Unknown' };
+    return { version: 'Unknown', build: 'Unknown' };
   }
 
   const iosVersionMatch = infoPlist.match(REGEX_PATTERNS.IOS_VERSION);
-  return {
-    version: iosVersionMatch ? iosVersionMatch[1] : 'Unknown',
-  };
+  const version = iosVersionMatch ? iosVersionMatch[1] : 'Unknown';
+
+  // Extract build number from project.pbxproj
+  const projectPath = path.join(
+    __dirname,
+    '../ios/Self.xcodeproj/project.pbxproj',
+  );
+  const projectFile = safeReadFile(projectPath, 'iOS project.pbxproj');
+
+  let build = 'Unknown';
+  if (projectFile) {
+    const buildMatch = projectFile.match(REGEX_PATTERNS.IOS_BUILD);
+    build = buildMatch ? buildMatch[1] : 'Unknown';
+  }
+
+  return { version, build };
 }
 
 /**
@@ -236,23 +250,6 @@ function hasUncommittedChanges() {
   return gitStatus && gitStatus.trim().length > 0;
 }
 
-/**
- * Displays git status information
- */
-function displayGitStatus() {
-  const currentBranch = getCurrentBranch();
-  if (currentBranch) {
-    console.log(`${CONSOLE_SYMBOLS.MEMO} Current branch: ${currentBranch}`);
-  }
-
-  if (hasUncommittedChanges()) {
-    console.log(
-      `${CONSOLE_SYMBOLS.WARNING} WARNING: You have uncommitted changes!`,
-    );
-    console.log('   Consider committing your changes before deployment.');
-  }
-}
-
 // Display Functions
 
 /**
@@ -263,8 +260,21 @@ function displayGitStatus() {
 function displayDeploymentHeader(platform, versions) {
   console.log(`\n${CONSOLE_SYMBOLS.MOBILE} Mobile App Deployment Confirmation`);
   console.log('=====================================');
-  console.log(`Platform: ${platform.toUpperCase()}`);
-  console.log(`Main Version: ${versions.main}`);
+  console.log(`${CONSOLE_SYMBOLS.ROCKET} Platform: ${platform.toUpperCase()}`);
+}
+
+/**
+ * Displays deployment method information
+ * @param {string} deploymentMethod - The deployment method to use
+ */
+function displayDeploymentMethod(deploymentMethod) {
+  if (deploymentMethod === DEPLOYMENT_METHODS.LOCAL_FASTLANE) {
+    console.log(
+      `${CONSOLE_SYMBOLS.LOCATION} Deployment: Local fastlane upload`,
+    );
+  } else {
+    console.log(`${CONSOLE_SYMBOLS.CLOUD} Deployment: GitHub Actions workflow`);
+  }
 }
 
 /**
@@ -273,79 +283,22 @@ function displayDeploymentHeader(platform, versions) {
  * @param {Object} versions - Version information object
  */
 function displayPlatformVersions(platform, versions) {
+  console.log(`${CONSOLE_SYMBOLS.PACKAGE} Main Version: ${versions.main}`);
+
   if (platform === PLATFORMS.IOS || platform === PLATFORMS.BOTH) {
-    console.log(`iOS Version: ${versions.ios.version}`);
     console.log(
-      'iOS Build: Current build number will be used (manually increment if needed)',
+      `${CONSOLE_SYMBOLS.APPLE} iOS Version: ${versions.ios.version}`,
     );
+    console.log(`${CONSOLE_SYMBOLS.APPLE} iOS Build: ${versions.ios.build}`);
   }
 
   if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH) {
-    console.log(`Android Version: ${versions.android.version}`);
     console.log(
-      `Android Version Code: ${versions.android.versionCode} (current - manually increment if needed)`,
+      `${CONSOLE_SYMBOLS.ANDROID} Android Version: ${versions.android.version}`,
     );
-  }
-}
-
-/**
- * Displays deployment destination information
- * @param {string} platform - Target platform
- */
-function displayDeploymentDestination(platform) {
-  console.log(`\n${CONSOLE_SYMBOLS.PACKAGE} Deployment Destination:`);
-  if (platform === PLATFORMS.IOS || platform === PLATFORMS.BOTH) {
-    console.log(`   ${CONSOLE_SYMBOLS.APPLE} iOS: TestFlight Internal Testing`);
-  }
-  if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH) {
     console.log(
-      `   ${CONSOLE_SYMBOLS.ANDROID} Android: Google Play Internal Testing`,
+      `${CONSOLE_SYMBOLS.ANDROID} Android Version Code: ${versions.android.versionCode}`,
     );
-  }
-}
-
-/**
- * Displays local fastlane deployment information
- */
-function displayLocalFastlaneInfo() {
-  console.log(`   ${CONSOLE_SYMBOLS.LOCATION} LOCAL FASTLANE UPLOAD`);
-  console.log(
-    `   ${CONSOLE_SYMBOLS.WARNING} This will upload directly from your machine using fastlane`,
-  );
-  console.log(`   ${CONSOLE_SYMBOLS.WARNING} Make sure you have:`);
-  console.log('      - Valid certificates and provisioning profiles');
-  console.log('      - App Store Connect API key configured');
-  console.log('      - Google Play Store service account key (for Android)');
-  console.log('      - Set FORCE_UPLOAD_LOCAL_DEV=true in your environment');
-}
-
-/**
- * Displays GitHub runner deployment information
- */
-function displayGithubRunnerInfo() {
-  console.log(`   ${CONSOLE_SYMBOLS.CLOUD} GITHUB RUNNER DEPLOYMENT`);
-  console.log(
-    `   ${CONSOLE_SYMBOLS.WARNING} This will trigger a GitHub Actions workflow`,
-  );
-  console.log(
-    `   ${CONSOLE_SYMBOLS.WARNING} The build will be created and uploaded by GitHub runners`,
-  );
-  console.log(
-    `   ${CONSOLE_SYMBOLS.WARNING} Make sure repository secrets are configured`,
-  );
-}
-
-/**
- * Displays deployment method information
- * @param {string} deploymentMethod - The deployment method to use
- */
-function displayDeploymentMethod(deploymentMethod) {
-  console.log(`\n${CONSOLE_SYMBOLS.ROCKET} Deployment Method:`);
-
-  if (deploymentMethod === DEPLOYMENT_METHODS.LOCAL_FASTLANE) {
-    displayLocalFastlaneInfo();
-  } else {
-    displayGithubRunnerInfo();
   }
 }
 
@@ -353,17 +306,19 @@ function displayDeploymentMethod(deploymentMethod) {
  * Displays warnings and git status information
  */
 function displayWarningsAndGitStatus() {
-  console.log(
-    `\n${CONSOLE_SYMBOLS.WARNING} This will deploy to INTERNAL TESTING stores!`,
-  );
-  console.log(
-    `${CONSOLE_SYMBOLS.WARNING} (TestFlight Internal Testing / Google Play Internal Testing)`,
-  );
-  console.log(
-    `${CONSOLE_SYMBOLS.WARNING} Make sure you have committed all your changes.`,
-  );
+  const currentBranch = getCurrentBranch();
+  const hasUncommitted = hasUncommittedChanges();
 
-  displayGitStatus();
+  console.log(`\n${CONSOLE_SYMBOLS.WARNING} Important Notes:`);
+  console.log(
+    '• Deploys to internal testing (TestFlight/Google Play Internal)',
+  );
+  if (currentBranch) {
+    console.log(`• Current branch: ${currentBranch}`);
+  }
+  if (hasUncommitted) {
+    console.log('• You have uncommitted changes - consider committing first');
+  }
 }
 
 /**
@@ -374,9 +329,8 @@ function displayWarningsAndGitStatus() {
  */
 function displayFullConfirmation(platform, versions, deploymentMethod) {
   displayDeploymentHeader(platform, versions);
-  displayPlatformVersions(platform, versions);
-  displayDeploymentDestination(platform);
   displayDeploymentMethod(deploymentMethod);
+  displayPlatformVersions(platform, versions);
   displayWarningsAndGitStatus();
 }
 
