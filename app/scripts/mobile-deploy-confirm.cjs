@@ -171,6 +171,16 @@ async function executeDeployment(platform, deploymentMethod) {
     process.env.FORCE_UPLOAD_LOCAL_DEV = 'true';
 
     try {
+      // Clean yarn install to ensure no weird build artifacts
+      console.log(
+        '\n🧹 Performing yarn reinstall to ensure clean dependencies...',
+      );
+      execSync('yarn reinstall', {
+        stdio: 'inherit',
+        cwd: path.join(__dirname, '..'),
+      });
+      console.log('✅ Yarn reinstall completed successfully!');
+
       const commands = [];
 
       if (platform === 'ios' || platform === 'both') {
