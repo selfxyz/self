@@ -77,14 +77,14 @@ function displayVersionInfo(platform, versions, deploymentMethod) {
   if (platform === 'ios' || platform === 'both') {
     console.log(`iOS Version: ${versions.ios.version}`);
     console.log(
-      `iOS Build: Will be auto-incremented from latest TestFlight build`,
+      `iOS Build: Current build number will be used (manually increment if needed)`,
     );
   }
 
   if (platform === 'android' || platform === 'both') {
     console.log(`Android Version: ${versions.android.version}`);
     console.log(
-      `Android Version Code: ${versions.android.versionCode} → ${parseInt(versions.android.versionCode, 10) + 1} (will be incremented)`,
+      `Android Version Code: ${versions.android.versionCode} (current - manually increment if needed)`,
     );
   }
 

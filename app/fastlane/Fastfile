@@ -9,6 +9,7 @@ opt_out_usage
 
 require "bundler/setup"
 require "base64"
+require "xcodeproj"
 require_relative "helpers"
 
 # load secrets before project configuration
@@ -135,7 +136,14 @@ platform :ios do
     ios_signing_certificate_name = "iPhone Distribution: #{ENV["IOS_TEAM_NAME"]} (#{ENV["IOS_TEAM_ID"]})"
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    build_number = Fastlane::Helpers.ios_increment_build_number(ios_xcode_profile_path)
+
+    # Get current build number without auto-incrementing
+    project = Xcodeproj::Project.open(ios_xcode_profile_path)
+    target = project.targets.first
+    config = target.build_configurations.first
+    build_number = config.build_settings["CURRENT_PROJECT_VERSION"]
+
+    # Verify build number is higher than TestFlight (but don't auto-increment)
     Fastlane::Helpers.ios_verify_app_store_build_number(ios_xcode_profile_path)
     Fastlane::Helpers.ios_verify_provisioning_profile
 
@@ -238,7 +246,12 @@ platform :android do
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    version_code = Fastlane::Helpers.android_increment_version_code(android_gradle_file_path)
+
+    # Get current version code without auto-incrementing
+    content = File.read(android_gradle_file_path)
+    match = content.match(/versionCode\s+(\d+)/)
+    version_code = match ? match[1].to_i : 1
+
     # TODO: uncomment when we have the permissions to run this action
     # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
 
