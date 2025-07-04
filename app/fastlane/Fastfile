@@ -51,14 +51,14 @@ platform :ios do
   lane :internal_test do
     result = prepare_ios_build(prod_release: false)
 
-    upload_to_testflight(
-      api_key: result[:api_key],
-      distribute_external: true,
-      # TODO: fix error about the groups not being set correctly, fwiw groups are set in the app store connect
-      groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
-      changelog: "",
-      skip_waiting_for_build_processing: false,
-    ) if result[:should_upload]
+    # upload_to_testflight(
+    #   api_key: result[:api_key],
+    #   distribute_external: true,
+    #   # TODO: fix error about the groups not being set correctly, fwiw groups are set in the app store connect
+    #   groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
+    #   changelog: "",
+    #   skip_waiting_for_build_processing: false,
+    # ) if result[:should_upload]
 
     # Notify Slack about the new build
     if ENV["SLACK_CHANNEL_ID"]
@@ -66,32 +66,6 @@ platform :ios do
         file_path: result[:ipa_path],
         channel_id: ENV["SLACK_CHANNEL_ID"],
         initial_comment: "🍎 iOS v#{package_version} (Build #{result[:build_number]}) deployed to TestFlight",
-        title: "#{PROJECT_NAME}-#{package_version}-#{result[:build_number]}.ipa",
-      )
-    else
-      UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
-    end
-  end
-
-  desc "Prepare a new build for App Store submission"
-  lane :deploy do
-    result = prepare_ios_build(prod_release: true)
-
-    upload_to_app_store(
-      api_key: result[:api_key],
-      skip_screenshots: true,
-      skip_metadata: true,
-      submit_for_review: false,
-      automatic_release: false,
-      skip_app_version_update: true,
-    ) if result[:should_upload]
-
-    # Notify Slack about the new build
-    if ENV["SLACK_CHANNEL_ID"]
-      Fastlane::Helpers.upload_file_to_slack(
-        file_path: result[:ipa_path],
-        channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "🍎 iOS (Ready for Submission) v#{package_version} (Build #{result[:build_number]}) deployed to App Store Connect",
         title: "#{PROJECT_NAME}-#{package_version}-#{result[:build_number]}.ipa",
       )
     else
