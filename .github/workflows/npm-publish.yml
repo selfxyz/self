@@ -8,6 +8,7 @@ on:
       - 'sdk/core/package.json'
       - 'sdk/qrcode/package.json'
       - 'common/package.json'
+  workflow_dispatch:
 
 jobs:
   detect-changes:
@@ -28,15 +29,16 @@ jobs:
           git diff HEAD^ HEAD --name-only | grep -q "sdk/qrcode/package.json" && echo "qrcode_changed=true" >> $GITHUB_OUTPUT || echo "qrcode_changed=false" >> $GITHUB_OUTPUT
           git diff HEAD^ HEAD --name-only | grep -q "common/package.json" && echo "common_changed=true" >> $GITHUB_OUTPUT || echo "common_changed=false" >> $GITHUB_OUTPUT
 
-          if git diff HEAD^ HEAD -- sdk/core/package.json | grep -q '"version":'; then
+          # check if it was dispatched manually as well
+          if git diff HEAD^ HEAD -- sdk/core/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "core_changed=true" >> $GITHUB_OUTPUT
           fi
 
-          if git diff HEAD^ HEAD -- sdk/qrcode/package.json | grep -q '"version":'; then
+          if git diff HEAD^ HEAD -- sdk/qrcode/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "qrcode_changed=true" >> $GITHUB_OUTPUT
           fi
 
-          if git diff HEAD^ HEAD -- common/package.json | grep -q '"version":'; then
+          if git diff HEAD^ HEAD -- common/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "common_changed=true" >> $GITHUB_OUTPUT
           fi
 
@@ -63,7 +65,9 @@ jobs:
       - name: Publish to npm
         working-directory: sdk/core
         run: |
-          npm publish --access public
+          yarn config set npmScopes.selfxyz.npmAuthToken ${{ secrets.NPM_TOKEN }}
+          yarn config set npmPublishAccess public
+          yarn npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -86,12 +90,14 @@ jobs:
 
       - name: Build package
         run: |
-          yarn workspace @sdk/qrcode build:deps
+          yarn workspace @selfxyz/qrcode build:deps
 
       - name: Publish to npm
         working-directory: sdk/qrcode
         run: |
-          npm publish --access public
+          yarn config set npmScopes.selfxyz.npmAuthToken ${{ secrets.NPM_TOKEN }}
+          yarn config set npmPublishAccess public
+          yarn npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -118,7 +124,9 @@ jobs:
       - name: Publish to npm
         working-directory: common
         run: |
-          npm publish --access public
+          yarn config set npmScopes.selfxyz.npmAuthToken ${{ secrets.NPM_TOKEN }}
+          yarn config set npmPublishAccess public
+          yarn npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

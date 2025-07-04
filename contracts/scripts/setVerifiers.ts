@@ -19,7 +19,7 @@ console.log(
 
 // Debug logs for environment variables (redacted for security)
 console.log("CELO_RPC_URL configured:", !!process.env.CELO_RPC_URL);
-console.log("CELO_KEY configured:", !!process.env.CELO_KEY);
+console.log("PRIVATE_KEY configured:", !!process.env.PRIVATE_KEY);
 
 try {
   const deployedAddresses = JSON.parse(
@@ -51,7 +51,7 @@ try {
     const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL as string);
     console.log("Provider created");
 
-    const wallet = new ethers.Wallet(process.env.CELO_KEY as string, provider);
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
     console.log("Wallet created");
 
     // const hubAddress = deployedAddresses["DeployHub#IdentityVerificationHub"];

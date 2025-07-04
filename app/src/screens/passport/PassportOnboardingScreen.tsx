@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
@@ -56,13 +58,13 @@ const PassportOnboardingScreen: React.FC<
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <TextsContainer>
-          <Title>Scan your passport</Title>
+          <Title>Scan your ID</Title>
           <Description textBreakStrategy="balanced">
-            Open your passport to the first page to scan it.
+            Open to the photo page
           </Description>
           <Additional textBreakStrategy="balanced">
-            Self will not capture an image of your passport. Our system is only
-            reading the fields.
+            Lay your document flat and position the machine readable text in the
+            viewfinder
           </Additional>
         </TextsContainer>
         <ButtonsContainer>

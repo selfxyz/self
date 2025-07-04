@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { ethers } from 'ethers';
 import React, {
   createContext,
@@ -11,6 +13,7 @@ import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
 
 import { AuthEvents } from '../consts/analytics';
+import { useSettingStore } from '../stores/settingStore';
 import { Mnemonic } from '../types/mnemonic';
 import analytics from '../utils/analytics';
 
@@ -206,6 +209,7 @@ export const AuthProvider = ({
 
     setIsAuthenticatingPromise(null);
     setIsAuthenticated(true);
+    useSettingStore.getState().incrementLoginCount();
     trackEvent(AuthEvents.BIOMETRIC_LOGIN_SUCCESS);
     setAuthenticatedTimeout(previousTimeout => {
       if (previousTimeout) {

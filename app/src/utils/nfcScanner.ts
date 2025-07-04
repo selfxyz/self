@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import { PassportData } from '@selfxyz/common';
@@ -14,6 +16,7 @@ interface Inputs {
   skipPACE?: boolean;
   skipCA?: boolean;
   extendedMode?: boolean;
+  usePacePolling?: boolean;
 }
 
 export const scan = async (inputs: Inputs) => {
@@ -54,6 +57,7 @@ const scanIOS = async (inputs: Inputs) => {
     inputs.skipPACE ?? false,
     inputs.skipCA ?? false,
     inputs.extendedMode ?? false,
+    inputs.usePacePolling ?? false,
   );
 };
 

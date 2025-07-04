@@ -1,19 +1,23 @@
-import { SelfBackendVerifier } from './src/SelfBackendVerifier';
-import { getUserIdentifier } from './src/utils/utils';
+import { SelfBackendVerifier } from './src/SelfBackendVerifier.js';
 import { countryCodes } from '@selfxyz/common/constants/constants';
-import { SelfApp, getUniversalLink, SelfAppBuilder } from '@selfxyz/common/utils/appType';
+import { getUniversalLink } from '@selfxyz/common/utils/appType';
 import { countries } from '@selfxyz/common';
-import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
-import { getPackedForbiddenCountries } from '@selfxyz/common/utils/contracts/forbiddenCountries';
+import type { AttestationId, VerificationResult, VerificationConfig } from 'src/types/types.js';
+import type { IConfigStorage } from 'src/store/interface.js';
+import { DefaultConfigStore } from 'src/store/DefaultConfigStore.js';
+import { AllIds } from 'src/utils/constants.js';
+import { InMemoryConfigStore } from 'src/store/InMemoryConfigStore.js';
 
 export {
   SelfBackendVerifier,
-  getUserIdentifier,
   countryCodes,
-  SelfApp,
   getUniversalLink,
   countries,
-  hashEndpointWithScope,
-  SelfAppBuilder,
-  getPackedForbiddenCountries,
+  AttestationId,
+  IConfigStorage,
+  DefaultConfigStore,
+  InMemoryConfigStore,
+  AllIds,
+  VerificationResult,
+  VerificationConfig,
 };

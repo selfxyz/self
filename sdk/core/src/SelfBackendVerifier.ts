@@ -1,285 +1,330 @@
-import { registryAbi } from './abi/IdentityRegistryImplV1';
-import { verifyAllAbi } from './abi/VerifyAll';
-import {
-  REGISTRY_ADDRESS,
-  VERIFYALL_ADDRESS,
-  REGISTRY_ADDRESS_STAGING,
-  VERIFYALL_ADDRESS_STAGING,
-} from './constants/contractAddresses';
 import { ethers } from 'ethers';
-import { PublicSignals } from 'snarkjs';
-import type { SelfVerificationResult } from '@selfxyz/common/utils/selfAttestation';
-import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
-import {
-  CIRCUIT_CONSTANTS,
-  revealedDataTypes,
-  Country3LetterCode,
-  commonNames,
-} from '@selfxyz/common';
-import { packForbiddenCountriesList } from '@selfxyz/common/utils/contracts/formatCallData';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+import {
+  IdentityVerificationHubImpl,
+  IdentityVerificationHubImpl__factory,
+  Registry__factory,
+  Verifier,
+  Verifier__factory,
+} from './typechain-types/index.js';
+import { discloseIndices } from './utils/constants.js';
+import { formatRevealedDataPacked } from './utils/id.js';
+import { AttestationId, VcAndDiscloseProof, VerificationConfig } from './types/types.js';
+import { Country3LetterCode } from '@selfxyz/common';
+import { calculateUserIdentifierHash } from './utils/hash.js';
+import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
+import { ConfigMismatch, ConfigMismatchError } from './errors.js';
+import { IConfigStorage } from './store/interface.js';
+import { unpackForbiddenCountriesList } from './utils/utils.js';
+import { BigNumberish } from 'ethers';
 
 const CELO_MAINNET_RPC_URL = 'https://forno.celo.org';
 const CELO_TESTNET_RPC_URL = 'https://alfajores-forno.celo-testnet.org';
 
+const IDENTITY_VERIFICATION_HUB_ADDRESS = '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF';
+const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x68c931C9a534D37aa78094877F46fE46a49F1A51';
+
 export class SelfBackendVerifier {
   protected scope: string;
-  protected attestationId: number = 1;
-  protected user_identifier_type: UserIdType = 'uuid';
-  protected targetRootTimestamp: { enabled: boolean; value: number } = {
-    enabled: false,
-    value: 0,
-  };
-
-  protected nationality: {
-    enabled: boolean;
-    value: Country3LetterCode;
-  } = {
-    enabled: false,
-    value: '' as Country3LetterCode,
-  };
-  protected minimumAge: { enabled: boolean; value: string } = {
-    enabled: false,
-    value: '18',
-  };
-  protected excludedCountries: {
-    enabled: boolean;
-    value: Country3LetterCode[];
-  } = {
-    enabled: false,
-    value: [],
-  };
-  protected passportNoOfac: boolean = false;
-  protected nameAndDobOfac: boolean = false;
-  protected nameAndYobOfac: boolean = false;
-
-  protected registryContract: ethers.Contract;
-  protected verifyAllContract: ethers.Contract;
-  protected mockPassport: boolean;
+  protected identityVerificationHubContract: IdentityVerificationHubImpl;
+  protected configStorage: IConfigStorage;
+  protected provider: ethers.JsonRpcProvider;
+  protected allowedIds: Map<AttestationId, boolean>;
+  protected userIdentifierType: UserIdType;
 
   constructor(
     scope: string,
     endpoint: string,
-    user_identifier_type: UserIdType = 'uuid',
-    mockPassport: boolean = false
+    mockPassport: boolean = false,
+    allowedIds: Map<AttestationId, boolean>,
+    configStorage: IConfigStorage,
+    userIdentifierType: UserIdType
   ) {
     const rpcUrl = mockPassport ? CELO_TESTNET_RPC_URL : CELO_MAINNET_RPC_URL;
     const provider = new ethers.JsonRpcProvider(rpcUrl);
-    const registryAddress = mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
-    const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
-    this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
-    this.verifyAllContract = new ethers.Contract(verifyAllAddress, verifyAllAbi, provider);
+    const identityVerificationHubAddress = mockPassport
+      ? IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING
+      : IDENTITY_VERIFICATION_HUB_ADDRESS;
+    this.identityVerificationHubContract = IdentityVerificationHubImpl__factory.connect(
+      identityVerificationHubAddress,
+      provider
+    );
+    this.provider = provider;
     this.scope = hashEndpointWithScope(endpoint, scope);
-    this.user_identifier_type = user_identifier_type;
-    this.mockPassport = mockPassport;
+    this.allowedIds = allowedIds;
+    this.configStorage = configStorage;
+    this.userIdentifierType = userIdentifierType;
   }
 
-  public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
-    const forbiddenCountriesListPacked = packForbiddenCountriesList(this.excludedCountries.value);
+  public async verify(
+    attestationId: AttestationId,
+    proof: VcAndDiscloseProof,
+    pubSignals: BigNumberish[],
+    userContextData: string
+  ) {
+    //check if attestation id is allowed
+    const allowedId = this.allowedIds.get(attestationId);
+    let issues: Array<{ type: ConfigMismatch; message: string }> = [];
+    if (!allowedId) {
+      issues.push({
+        type: ConfigMismatch.InvalidId,
+        message: 'Attestation ID is not allowed, received: ' + attestationId,
+      });
+    }
 
-    const isValidScope =
-      this.scope === publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX];
+    const publicSignals = pubSignals
+      .map(String)
+      .map((x) => (/[a-f]/g.test(x) && x.length > 0 ? '0x' + x : x));
+    //check if user context hash matches
+    const userContextHashInCircuit = BigInt(
+      publicSignals[discloseIndices[attestationId].userIdentifierIndex]
+    );
+    const userContextHash = BigInt(
+      calculateUserIdentifierHash(Buffer.from(userContextData, 'hex'))
+    );
 
+    if (userContextHashInCircuit !== userContextHash) {
+      issues.push({
+        type: ConfigMismatch.InvalidUserContextHash,
+        message:
+          'User context hash does not match with the one in the circuit\nCircuit: ' +
+          userContextHashInCircuit +
+          '\nUser context hash: ' +
+          userContextHash,
+      });
+    }
+
+    //check if scope matches
+    const isValidScope = this.scope === publicSignals[discloseIndices[attestationId].scopeIndex];
+    if (!isValidScope) {
+      issues.push({
+        type: ConfigMismatch.InvalidScope,
+        message:
+          'Scope does not match with the one in the circuit\nCircuit: ' +
+          publicSignals[discloseIndices[attestationId].scopeIndex] +
+          '\nScope: ' +
+          this.scope,
+      });
+    }
+
+    //check the root
+    try {
+      const registryAddress = await this.identityVerificationHubContract.registry(
+        '0x' + attestationId.toString(16).padStart(64, '0')
+      );
+      if (registryAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Registry contract not found');
+      }
+      const registryContract = Registry__factory.connect(registryAddress, this.provider);
+      const currentRoot = await registryContract.checkIdentityCommitmentRoot(
+        publicSignals[discloseIndices[attestationId].merkleRootIndex]
+      );
+      if (!currentRoot) {
+        issues.push({
+          type: ConfigMismatch.InvalidRoot,
+          message:
+            'Onchain root does not exist, received: ' +
+            publicSignals[discloseIndices[attestationId].merkleRootIndex],
+        });
+      }
+    } catch (error) {
+      throw new Error('Registry contract not found');
+    }
+
+    //check if attestation id matches
     const isValidAttestationId =
-      this.attestationId.toString() ===
-      publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
+      attestationId.toString() === publicSignals[discloseIndices[attestationId].attestationIdIndex];
+    if (!isValidAttestationId) {
+      issues.push({
+        type: ConfigMismatch.InvalidAttestationId,
+        message: 'Attestation ID does not match with the one in the circuit',
+      });
+    }
 
-    const vcAndDiscloseHubProof = {
-      olderThanEnabled: this.minimumAge.enabled,
-      olderThan: this.minimumAge.value,
-      forbiddenCountriesEnabled: this.excludedCountries.enabled,
-      forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-      ofacEnabled: [this.passportNoOfac, this.nameAndDobOfac, this.nameAndYobOfac],
-      vcAndDiscloseProof: {
-        a: proof.a,
-        b: [
+    const userIdentifier = castToUserIdentifier(
+      BigInt('0x' + userContextData.slice(64, 128)),
+      this.userIdentifierType
+    );
+    const userDefinedData = userContextData.slice(128);
+    const configId = await this.configStorage.getActionId(userIdentifier, userDefinedData);
+    if (!configId) {
+      issues.push({
+        type: ConfigMismatch.ConfigNotFound,
+        message: 'Config Id not found',
+      });
+    }
+
+    let verificationConfig: VerificationConfig | null;
+    try {
+      verificationConfig = await this.configStorage.getConfig(configId);
+    } catch (error) {
+      issues.push({
+        type: ConfigMismatch.ConfigNotFound,
+        message: `Config not found for ${configId}`,
+      });
+    } finally {
+      if (!verificationConfig) {
+        issues.push({
+          type: ConfigMismatch.ConfigNotFound,
+          message: `Config not found for ${configId}`,
+        });
+        throw new ConfigMismatchError(issues);
+      }
+    }
+
+    //check if forbidden countries list matches
+    const forbiddenCountriesList: string[] = unpackForbiddenCountriesList(
+      [0, 1, 2, 3].map(
+        (x) => publicSignals[discloseIndices[attestationId].forbiddenCountriesListPackedIndex + x]
+      )
+    );
+    const forbiddenCountriesListVerificationConfig = verificationConfig.excludedCountries;
+
+    const isForbiddenCountryListValid = forbiddenCountriesListVerificationConfig.every((country) =>
+      forbiddenCountriesList.includes(country as Country3LetterCode)
+    );
+    if (!isForbiddenCountryListValid) {
+      issues.push({
+        type: ConfigMismatch.InvalidForbiddenCountriesList,
+        message:
+          'Forbidden countries list in config does not match with the one in the circuit\nCircuit: ' +
+          forbiddenCountriesList.join(', ') +
+          '\nConfig: ' +
+          forbiddenCountriesListVerificationConfig.join(', '),
+      });
+    }
+
+    const genericDiscloseOutput = formatRevealedDataPacked(attestationId, publicSignals);
+    //check if minimum age matches
+    const isMinimumAgeValid =
+      verificationConfig.minimumAge !== undefined
+        ? verificationConfig.minimumAge === Number.parseInt(genericDiscloseOutput.minimumAge, 10) ||
+          genericDiscloseOutput.minimumAge === '00'
+        : true;
+    if (!isMinimumAgeValid) {
+      issues.push({
+        type: ConfigMismatch.InvalidMinimumAge,
+        message:
+          'Minimum age in config does not match with the one in the circuit\nCircuit: ' +
+          genericDiscloseOutput.minimumAge +
+          '\nConfig: ' +
+          verificationConfig.minimumAge,
+      });
+    }
+
+    const circuitTimestampYy = [
+      2,
+      0,
+      publicSignals[discloseIndices[attestationId].currentDateIndex],
+      publicSignals[discloseIndices[attestationId].currentDateIndex + 1],
+    ];
+    const circuitTimestampMm = [
+      publicSignals[discloseIndices[attestationId].currentDateIndex + 2],
+      publicSignals[discloseIndices[attestationId].currentDateIndex + 3],
+    ];
+    const circuitTimestampDd = [
+      publicSignals[discloseIndices[attestationId].currentDateIndex + 4],
+      publicSignals[discloseIndices[attestationId].currentDateIndex + 5],
+    ];
+    const circuitTimestamp = new Date(
+      Number(circuitTimestampYy.join('')),
+      Number(circuitTimestampMm.join('')) - 1,
+      Number(circuitTimestampDd.join(''))
+    );
+    const currentTimestamp = new Date();
+
+    //check if timestamp is in the future
+    const oneDayAhead = new Date(currentTimestamp.getTime() + 24 * 60 * 60 * 1000);
+    if (circuitTimestamp > oneDayAhead) {
+      issues.push({
+        type: ConfigMismatch.InvalidTimestamp,
+        message: 'Circuit timestamp is in the future',
+      });
+    }
+
+    //check if timestamp is 1 day in the past
+    const oneDayAgo = new Date(currentTimestamp.getTime() - 24 * 60 * 60 * 1000);
+    if (circuitTimestamp < oneDayAgo) {
+      issues.push({
+        type: ConfigMismatch.InvalidTimestamp,
+        message: 'Circuit timestamp is too old',
+      });
+    }
+
+    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[0]) {
+      issues.push({
+        type: ConfigMismatch.InvalidOfac,
+        message: 'Passport number OFAC check is not allowed',
+      });
+    }
+
+    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[1]) {
+      issues.push({
+        type: ConfigMismatch.InvalidOfac,
+        message: 'Name and DOB OFAC check is not allowed',
+      });
+    }
+
+    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[2]) {
+      issues.push({
+        type: ConfigMismatch.InvalidOfac,
+        message: 'Name and YOB OFAC check is not allowed',
+      });
+    }
+
+    if (issues.length > 0) {
+      throw new ConfigMismatchError(issues);
+    }
+
+    let verifierContract: Verifier;
+    try {
+      const verifierAddress = await this.identityVerificationHubContract.discloseVerifier(
+        '0x' + attestationId.toString(16).padStart(64, '0')
+      );
+      if (verifierAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error('Verifier contract not found');
+      }
+      verifierContract = Verifier__factory.connect(verifierAddress, this.provider);
+    } catch (error) {
+      throw new Error('Verifier contract not found');
+    }
+
+    let isValid = false;
+    try {
+      isValid = await verifierContract.verifyProof(
+        proof.a,
+        [
           [proof.b[0][1], proof.b[0][0]],
           [proof.b[1][1], proof.b[1][0]],
         ],
-        c: proof.c,
-        pubSignals: publicSignals,
-      },
-    };
-
-    const types = [
-      revealedDataTypes.issuing_state,
-      revealedDataTypes.name,
-      revealedDataTypes.passport_number,
-      revealedDataTypes.nationality,
-      revealedDataTypes.date_of_birth,
-      revealedDataTypes.gender,
-      revealedDataTypes.expiry_date,
-    ];
-
-    if (this.minimumAge.enabled) {
-      types.push(revealedDataTypes.older_than);
-    }
-
-    if (this.passportNoOfac) {
-      types.push(revealedDataTypes.passport_no_ofac);
-    }
-
-    if (this.nameAndDobOfac) {
-      types.push(revealedDataTypes.name_and_dob_ofac);
-    }
-
-    if (this.nameAndYobOfac) {
-      types.push(revealedDataTypes.name_and_yob_ofac);
-    }
-
-    const currentRoot = await this.registryContract.getIdentityCommitmentMerkleRoot();
-    const timestamp = await this.registryContract.rootTimestamps(currentRoot);
-
-    const user_identifier = castToUserIdentifier(
-      BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]),
-      this.user_identifier_type
-    );
-
-    let result: any;
-    try {
-      result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
-    } catch (error: any) {
-      let errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (
-        error &&
-        typeof error === 'object' &&
-        error.message &&
-        error.message.includes('INVALID_FORBIDDEN_COUNTRIES')
-      ) {
-        errorMessage =
-          'The forbidden countries list in the backend does not match the list provided in the frontend SDK. Please ensure both lists are identical.';
-      }
-
-      return {
-        isValid: false,
-        isValidDetails: {
-          isValidScope: false,
-          isValidAttestationId: false,
-          isValidProof: false,
-          isValidNationality: false,
-        },
-        userId: user_identifier,
-        application: this.scope,
-        nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
-        credentialSubject: {},
-        proof: {
-          value: {
-            proof: proof,
-            publicSignals: publicSignals,
-          },
-        },
-        error: errorMessage,
-      };
-    }
-
-    let isValidNationality = true;
-    if (this.nationality.enabled) {
-      const nationality = result[0][revealedDataTypes.nationality];
-      isValidNationality = nationality === this.nationality.value;
-    }
-
-    const credentialSubject = {
-      merkle_root: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX],
-      attestation_id: this.attestationId.toString(),
-      current_date: new Date().toISOString(),
-      issuing_state: result[0][revealedDataTypes.issuing_state],
-      name: result[0][revealedDataTypes.name],
-      passport_number: result[0][revealedDataTypes.passport_number],
-      nationality: result[0][revealedDataTypes.nationality],
-      date_of_birth: result[0][revealedDataTypes.date_of_birth],
-      gender: result[0][revealedDataTypes.gender],
-      expiry_date: result[0][revealedDataTypes.expiry_date],
-      older_than: result[0][revealedDataTypes.older_than].toString(),
-      passport_no_ofac: result[0][revealedDataTypes.passport_no_ofac].toString() === '1',
-      name_and_dob_ofac: result[0][revealedDataTypes.name_and_dob_ofac].toString() === '1',
-      name_and_yob_ofac: result[0][revealedDataTypes.name_and_yob_ofac].toString() === '1',
-    };
-
-    const attestation: SelfVerificationResult = {
-      isValid: result[1] && isValidScope && isValidAttestationId && isValidNationality,
-      isValidDetails: {
-        isValidScope: isValidScope,
-        isValidAttestationId: isValidAttestationId,
-        isValidProof: result[1],
-        isValidNationality: isValidNationality,
-      },
-      userId: user_identifier,
-      application: this.scope,
-      nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
-      credentialSubject: credentialSubject,
-      proof: {
-        value: {
-          proof: proof,
-          publicSignals: publicSignals,
-        },
-      },
-      error: result[2],
-    };
-
-    return attestation;
-  }
-
-  setMinimumAge(age: number): this {
-    if (age <= 0) {
-      throw new Error('Minimum age must be positive');
-    }
-    if (age > 100) {
-      throw new Error('Minimum age must be at most 100 years old');
-    }
-    this.minimumAge = { enabled: true, value: age.toString() };
-    return this;
-  }
-
-  setNationality(country: Country3LetterCode): this {
-    this.nationality = { enabled: true, value: country };
-    return this;
-  }
-
-  /**
-   * Sets the list of countries to be excluded in the verification.
-   * This list must exactly match the list configured in the backend.
-   *
-   * @param countries Array of 3-letter country codes to exclude
-   * @returns This instance for method chaining
-   * @throws Error if more than 40 countries are provided or if any country code is invalid
-   */
-  excludeCountries(...countries: Country3LetterCode[]): this {
-    if (countries.length > 40) {
-      throw new Error('Number of excluded countries cannot exceed 40');
-    }
-    // Validate country codes
-    for (const country of countries) {
-      if (!country || country.length !== 3) {
-        throw new Error(
-          `Invalid country code: "${country}". Country codes must be exactly 3 characters long.`
-        );
-      }
-      // Check if the country code exists in the list of valid codes (additional check)
-      const isValidCountry = Object.values(commonNames).some(
-        (name) => name === country || country in commonNames
+        proof.c,
+        publicSignals
       );
-      if (!isValidCountry) {
-        throw new Error(
-          `Unknown country code: "${country}". Please use valid 3-letter ISO country codes.`
-        );
-      }
+    } catch (error) {
+      isValid = false;
     }
-    this.excludedCountries = { enabled: true, value: countries };
-    return this;
-  }
 
-  enablePassportNoOfacCheck(): this {
-    this.passportNoOfac = true;
-    return this;
-  }
-
-  enableNameAndDobOfacCheck(): this {
-    this.nameAndDobOfac = true;
-    return this;
-  }
-
-  enableNameAndYobOfacCheck(): this {
-    this.nameAndYobOfac = true;
-    return this;
+    return {
+      attestationId,
+      isValidDetails: {
+        isValid,
+        isMinimumAgeValid:
+          verificationConfig.minimumAge !== undefined
+            ? verificationConfig.minimumAge <= Number.parseInt(genericDiscloseOutput.minimumAge, 10)
+            : true,
+        isOfacValid:
+          verificationConfig.ofac !== undefined && verificationConfig.ofac
+            ? genericDiscloseOutput.ofac.every((enabled: boolean, index: number) =>
+                enabled ? genericDiscloseOutput.ofac[index] : true
+              )
+            : true,
+      },
+      forbiddenCountriesList,
+      discloseOutput: genericDiscloseOutput,
+      userData: {
+        userIdentifier,
+        userDefinedData,
+      },
+    };
   }
 }

@@ -87,9 +87,9 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
      * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | proof data |
-     * @param userContextData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+     * @param userContextData User-defined data in format: | 32 bytes destChainId | 32 bytes userIdentifier | data |
      * @custom:data-format proofPayload = | 32 bytes attestationId | proofData |
-     * @custom:data-format userContextData = | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
+     * @custom:data-format userContextData = | 32 bytes destChainId | 32 bytes userIdentifier | data |
      * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
      */
     function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) public {
@@ -98,8 +98,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             revert InvalidDataFormat();
         }
 
-        // Minimum userDefinedData length: 32 (configId) + 32 (destChainId) + 32 (userIdentifier) = 96 bytes
-        if (userContextData.length < 96) {
+        // Minimum userDefinedData length: 32 (destChainId) + 32 (userIdentifier) + 0 (userDefinedData) = 64 bytes
+        if (userContextData.length < 64) {
             revert InvalidDataFormat();
         }
 
@@ -108,6 +108,12 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             // Load attestationId from the beginning of proofData (first 32 bytes)
             attestationId := calldataload(proofPayload.offset)
         }
+
+        bytes32 destinationChainId = bytes32(userContextData[0:32]);
+        bytes32 userIdentifier = bytes32(userContextData[32:64]);
+        bytes memory userDefinedData = userContextData[64:];
+
+        bytes32 configId = getConfigId(destinationChainId, userIdentifier, userDefinedData);
 
         // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proof data
         bytes memory baseVerificationInput = abi.encodePacked(
@@ -124,7 +130,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         );
 
         // Call hub V2 verification
-        _identityVerificationHubV2.verify(baseVerificationInput, userContextData);
+        _identityVerificationHubV2.verify(baseVerificationInput, bytes.concat(configId, userContextData));
     }
 
     /**
@@ -148,6 +154,23 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
         // Call the customizable verification hook
         customVerificationHook(genericDiscloseOutput, userData);
+    }
+
+    /**
+     * @notice Generates a configId for the user
+     * @dev This function should be overridden by the implementing contract to provide custom configId logic
+     * @param destinationChainId The destination chain ID
+     * @param userIdentifier The user identifier
+     * @param userDefinedData The user defined data
+     * @return The configId
+     */
+    function getConfigId(
+        bytes32 destinationChainId,
+        bytes32 userIdentifier,
+        bytes memory userDefinedData
+    ) public view virtual returns (bytes32) {
+        // Default implementation reverts; must be overridden in derived contract
+        revert("SelfVerificationRoot: getConfigId must be overridden");
     }
 
     /**

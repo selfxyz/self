@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 // CameraView.swift
 // SwiftUI camera preview with frame capture callback
 
@@ -69,27 +71,27 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         guard let previewLayer = previewLayer else { return .zero }
         let videoRect = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
         let visibleRect = videoRect.intersection(view.bounds)
-        
+
         //Lottie animation frame
         let lottieWidth = visibleRect.width * 1.3  // 130% of width
         let lottieHeight = visibleRect.height * 1.3  // 130% of height
-        
+
         //bottom 25% of the Lottie animation
         let boxHeight = lottieHeight * 0.25
-        
+
         // Center the box horizontally and ensure it's within bounds
         let boxX = max(0, (visibleRect.width - lottieWidth) / 2)
         let boxWidth = min(lottieWidth, visibleRect.width)
-        
+
         //Vertical offset to move the ROI a bit up. 15% in this case
         let verticalOffset = visibleRect.height * 0.15
-        
+
         //GreenBox should stay within the visible area
         let maxY = visibleRect.maxY - verticalOffset
         let minY = visibleRect.minY
         let boxY = max(minY, min(maxY - boxHeight, maxY - boxHeight))
         // let boxY = visibleRect.maxY - boxHeight
-        
+
         return CGRect(x: boxX, y: boxY, width: boxWidth, height: boxHeight)
     }
 
@@ -97,23 +99,23 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         guard let previewLayer = previewLayer else { return .zero }
         let videoRect = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
         let greenBox = calculateGreenBoxFrame()
-        
+
         // map greenBox to normalized coordinates within videoRect
         let normX = (greenBox.minX - videoRect.minX) / videoRect.width
         let normY = (greenBox.minY - videoRect.minY) / videoRect.height
         let normWidth = greenBox.width / videoRect.width
         let normHeight = greenBox.height / videoRect.height
-        
+
         // Ensure normalized coordinates are within [0,1] bounds as vision's max ROI is (0,0) to (1,1)
         let clampedX = max(0, min(1, normX))
         let clampedY = max(0, min(1, normY))
         let clampedWidth = max(0, min(1 - clampedX, normWidth))
         let clampedHeight = max(0, min(1 - clampedY, normHeight))
-        
+
         // Vision expects (0,0) at bottom-left, so flip Y
         let roiYVision = 1.0 - clampedY - clampedHeight
         let roi = CGRect(x: clampedX, y: roiYVision, width: clampedWidth, height: clampedHeight)
-        
+
         // print("[CameraViewController] FINAL ROI for Vision (flipped Y, visible only): \(roi)")
         return roi
     }
@@ -157,4 +159,4 @@ extension UIImage {
         UIGraphicsEndImageContext()
         return normalizedImage
     }
-} 
+}

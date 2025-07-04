@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
@@ -93,7 +95,9 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
           <Title textAlign="center">Confirm your identity</Title>
           <Description textAlign="center" paddingBottom={20}>
             By continuing, you certify that this passport belongs to you and is
-            not stolen or forged.
+            not stolen or forged. Once registered with Self, this document will
+            be permanently linked to your identity and can't be linked to
+            another one.
           </Description>
           <PrimaryButton
             trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}

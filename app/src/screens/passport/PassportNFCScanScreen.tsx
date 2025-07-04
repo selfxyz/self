@@ -1,11 +1,16 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import {
   useFocusEffect,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { getSKIPEM } from '@selfxyz/common';
-import { initPassportDataParsing } from '@selfxyz/common';
-import { PassportData } from '@selfxyz/common';
+import {
+  getSKIPEM,
+  initPassportDataParsing,
+  PassportData,
+} from '@selfxyz/common';
+import { CircleHelp } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -17,7 +22,7 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
-import { Image } from 'tamagui';
+import { Button, Image, XStack } from 'tamagui';
 
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -25,7 +30,6 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
 import { BodyText } from '../../components/typography/BodyText';
-import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
@@ -34,8 +38,10 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
-import { black, slate100, white } from '../../utils/colors';
+import { black, slate100, slate400, slate500, white } from '../../utils/colors';
+import { dinot } from '../../utils/fonts';
 import { buttonTap } from '../../utils/haptic';
+import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 
 const { trackEvent } = analytics();
@@ -50,11 +56,18 @@ const emitter =
 const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore();
-  const [dialogMessage, setDialogMessage] = useState('');
+  const {
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
+    documentType,
+    countryCode,
+  } = useUserStore();
+
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
 
   const animationRef = useRef<LottieView>(null);
 
@@ -65,33 +78,67 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const goToNFCMethodSelection = useHapticNavigation(
     'PassportNFCMethodSelection',
   );
+  const goToNFCTrouble = useHapticNavigation('PassportNFCTrouble');
 
-  // 5-taps with 2 fingers
-  const twoFingerTap = Gesture.Tap()
-    .minPointers(2)
+  // 5-taps with a single finger
+  const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
       goToNFCMethodSelection();
     });
+
+  const openErrorModal = useCallback(
+    (message: string) => {
+      const callbackId = registerModalCallbacks({
+        onButtonPress: () => {},
+        onModalDismiss: goToNFCTrouble,
+      });
+      navigation.navigate('Modal', {
+        titleText: 'NFC Scan Error',
+        bodyText: message,
+        buttonText: 'Dismiss',
+        secondaryButtonText: 'Help',
+        preventDismiss: true,
+        callbackId,
+      });
+    },
+    [navigation, goToNFCTrouble],
+  );
 
   const checkNfcSupport = useCallback(async () => {
     const isSupported = await NfcManager.isSupported();
     if (isSupported) {
       const isEnabled = await NfcManager.isEnabled();
       if (!isEnabled) {
-        setDialogMessage(
-          'NFC is not enabled. Would you like to enable it in settings?',
-        );
         setIsNfcEnabled(false);
+        setDialogMessage('NFC is not enabled. Please enable it in settings.');
       }
       setIsNfcSupported(true);
     } else {
       setDialogMessage(
         "Sorry, your device doesn't seem to have an NFC reader.",
       );
+      // Set isNfcEnabled to false so the message is shown on the screen
+      // near the disabled button when NFC isn't supported
+      setIsNfcEnabled(false);
       setIsNfcSupported(false);
     }
   }, []);
+
+  const usePacePolling = (): boolean => {
+    const { usePacePolling: usePacePollingParam } = (route.params || {}) as any;
+    const shouldUsePacePolling = documentType + countryCode === 'IDFRA';
+
+    if (usePacePollingParam !== undefined) {
+      return usePacePollingParam;
+    } else if (shouldUsePacePolling) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const isPacePolling = usePacePolling();
 
   const onVerifyPress = useCallback(async () => {
     buttonTap();
@@ -113,6 +160,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           skipPACE,
           skipCA,
           extendedMode,
+          usePacePolling: isPacePolling,
         });
 
         const scanDurationSeconds = (
@@ -200,34 +248,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           error: e.message,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
-
-        if (e.message.includes('InvalidMRZKey')) {
-          // iOS
-          // This works and even says "MRZ key not valid for this document"
-          navigation.navigate('PassportCamera');
-        } else if (e.message.includes('Tag response error / no response')) {
-          // iOS
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('UserCanceled')) {
-          // iOS
-          // Do nothing
-        } else if (e.message.includes('UnexpectedError')) {
-          // iOS
-          // Timeout reached, do nothing
-        } else if (
-          e.message.includes('Error: Lost connection to chip on card')
-        ) {
-          // android
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('Could not tranceive APDU')) {
-          // android
-          navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('SODNotFound')) {
-          // developer defined error - not part of the library
-          navigation.navigate('PassportNFCTrouble');
-        } else {
-          // TODO: Handle other error types
-        }
+        openErrorModal(e.message);
       } finally {
         setIsNfcSheetOpen(false);
       }
@@ -245,6 +266,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     dateOfBirth,
     dateOfExpiry,
     route.params,
+    isPacePolling,
   ]);
 
   const onCancelPress = useHapticNavigation('Launch', {
@@ -316,16 +338,41 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         ) : (
           <>
             <TextsContainer>
-              <GestureDetector gesture={twoFingerTap}>
-                <Title>Verify your passport</Title>
+              <GestureDetector gesture={devModeTap}>
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap="$1.5"
+                >
+                  <Title>Verify your ID</Title>
+                  <Button
+                    unstyled
+                    onPress={goToNFCTrouble}
+                    icon={<CircleHelp size={28} color={slate500} />}
+                    aria-label="Help"
+                  />
+                </XStack>
               </GestureDetector>
-              <Description
-                children={
-                  isNfcEnabled
-                    ? 'Open your passport to the last page to access the NFC chip. Place your phone against the page'
-                    : dialogMessage
-                }
-              />
+              {isNfcEnabled ? (
+                <>
+                  <Title style={styles.title} mt="$2">
+                    Find the RFID chip in your ID
+                  </Title>
+                  <BodyText style={styles.bodyText} mt="$2" mb="$2">
+                    Place your phone against the chip and keep it still until
+                    the sensor reads it.
+                  </BodyText>
+                  <BodyText style={styles.disclaimer} mt="$2">
+                    SELF DOES NOT STORE THIS INFORMATION.
+                  </BodyText>
+                </>
+              ) : (
+                <>
+                  <BodyText style={styles.disclaimer} mt="$2">
+                    {dialogMessage}
+                  </BodyText>
+                </>
+              )}
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton
@@ -358,6 +405,27 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
 export default PassportNFCScanScreen;
 
 const styles = StyleSheet.create({
+  title: {
+    fontFamily: dinot,
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  bodyText: {
+    fontFamily: dinot,
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+    color: slate500,
+  },
+  disclaimer: {
+    fontFamily: dinot,
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
+    color: slate400,
+    letterSpacing: 0.44,
+  },
   animation: {
     color: slate100,
     width: '115%',

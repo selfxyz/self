@@ -13,7 +13,6 @@ import crypto from 'crypto';
 import { SMT } from '@openpassport/zk-kit-smt';
 import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.json' with { type: 'json' };
 import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
-import passportNojson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,
@@ -23,6 +22,7 @@ import { generateCommitment } from '@selfxyz/common/utils/passports/passport';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports/genMockIdDoc';
 import { fileURLToPath } from 'url';
+import { castFromUUID } from '@selfxyz/common/utils/circuits/uuid';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -39,7 +39,7 @@ describe('Disclose', function () {
 
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
   const majority = '18';
-  const user_identifier = crypto.randomUUID();
+  const user_identifier = castFromUUID(crypto.randomUUID());
   const selector_dg1 = Array(90).fill('1');
   const selector_older_than = '1';
   const endpoint = 'https://example.com';
@@ -52,9 +52,6 @@ describe('Disclose', function () {
   console.log('commitment in js ', commitment);
   const tree: any = new LeanIMT((a, b) => poseidon2([a, b]), []);
   tree.insert(BigInt(commitment));
-
-  const passportNo_smt = new SMT(poseidon2, true);
-  passportNo_smt.import(passportNojson);
 
   const nameAndDob_smt = new SMT(poseidon2, true);
   nameAndDob_smt.import(nameAndDobjson);
@@ -85,7 +82,7 @@ describe('Disclose', function () {
       selector_older_than,
       tree,
       majority,
-      passportNo_smt,
+      null,
       nameAndDob_smt,
       nameAndYob_smt,
       selector_ofac,
@@ -141,7 +138,7 @@ describe('Disclose', function () {
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[4]']);
         const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'id');
 
-        for (let i = 0; i < 88; i++) {
+        for (let i = 0; i < 90; i++) {
           if (selector_dg1[i] == '1') {
             const char = String.fromCharCode(Number(inputs.dg1[i + 5]));
             assert(reveal_unpacked[i] == char, 'Should reveal the right character');
@@ -187,8 +184,8 @@ describe('Disclose', function () {
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[4]']);
 
     const reveal_unpacked = formatAndUnpackReveal(revealedData_packed, 'id');
-    expect(reveal_unpacked[88]).to.equal('\x00');
-    expect(reveal_unpacked[89]).to.equal('\x00');
+    expect(reveal_unpacked[90]).to.equal('\x00');
+    expect(reveal_unpacked[91]).to.equal('\x00');
   });
 
   describe('OFAC disclosure', function () {
@@ -269,7 +266,7 @@ describe('Disclose', function () {
           selector_older_than,
           tree,
           majority,
-          passportNo_smt,
+          null,
           nameAndDob_smt,
           nameAndYob_smt,
           '1', // selector_ofac

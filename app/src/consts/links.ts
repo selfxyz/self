@@ -1,8 +1,13 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 export const selfUrl = 'https://self.xyz';
 
 export const termsUrl = 'https://self.xyz/terms';
 
 export const privacyUrl = 'https://self.xyz/privacy';
+
+export const supportedBiometricIdsUrl =
+  'https://docs.self.xyz/use-self/self-map-countries-list';
 
 export const telegramUrl = 'https://t.me/self_xyz';
 

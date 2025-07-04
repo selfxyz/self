@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 //
 //  MRZScannerModule.swift
 //  OpenPassport
@@ -23,13 +25,13 @@ struct QKMRZScannerViewRepresentable: UIViewRepresentable {
         }
 
         func mrzScannerView(_ mrzScannerView: QKMRZScannerView, didFind scanResult: QKMRZScanResult) {
-          
+
             // Call the closure with the scan result
             parent.onScanResult?(scanResult)
-            
+
             DispatchQueue.main.async {
                 mrzScannerView.stopScanning()
-            
+
             }
         }
     }

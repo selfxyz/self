@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
@@ -64,7 +66,7 @@ const AccountRecoveryChoiceScreen: React.FC<
       console.log('User is registered:', isRegistered);
       if (!isRegistered) {
         console.log(
-          'Secret provided did not match a registered passport. Please try again.',
+          'Secret provided did not match a registered ID. Please try again.',
         );
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);
         navigation.navigate('Launch');

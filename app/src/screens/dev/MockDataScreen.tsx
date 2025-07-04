@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { useNavigation } from '@react-navigation/native';
 import { countryCodes } from '@selfxyz/common';
 import { getSKIPEM } from '@selfxyz/common';
@@ -37,6 +39,7 @@ import {
   textBlack,
   white,
 } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 import { buttonTap, selectionChange } from '../../utils/haptic';
 
 const { trackEvent } = analytics();
@@ -212,14 +215,19 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         .substring(2, 11)
         .replace(/[^a-z0-9]/gi, '')
         .toUpperCase();
-      const signatureTypeForGeneration =
+      const algorithmMapping =
         signatureAlgorithmToStrictSignatureAlgorithm[
           selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-        ][2];
+        ];
+      const dgHashAlgo = algorithmMapping[0];
+      const eContentHashAlgo = algorithmMapping[1];
+      const signatureTypeForGeneration = algorithmMapping[2];
 
       const idDocInput: Partial<IdDocInput> = {
         nationality: selectedCountry as IdDocInput['nationality'],
         idType: selectedDocumentType,
+        dgHashAlgo: dgHashAlgo as IdDocInput['dgHashAlgo'],
+        eContentHashAlgo: eContentHashAlgo as IdDocInput['eContentHashAlgo'],
         signatureType:
           signatureTypeForGeneration as IdDocInput['signatureType'],
         expiryDate: castDateToYYMMDDForExpiry(expiryYears),
@@ -260,9 +268,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     selectedDocumentType,
   ]);
 
-  const twoFingerTripleTap = Gesture.Tap()
-    .minPointers(2)
-    .numberOfTaps(3)
+  const devModeTap = Gesture.Tap()
+    .numberOfTaps(5)
     .onStart(() => {
       setAdvancedMode(true);
       buttonTap();
@@ -271,10 +278,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack f={1} bg={white} pt={top} pb={bottom}>
+    <YStack f={1} bg={white} pt={top} pb={bottom + extraYPadding}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack px="$4" pb="$4" gap="$5">
-          <GestureDetector gesture={twoFingerTripleTap}>
+          <GestureDetector gesture={devModeTap}>
             <YStack ai="center" mb={'$10'}>
               <Title>Generate Document Data</Title>
               <BodyText textAlign="center">
@@ -283,76 +290,71 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </YStack>
           </GestureDetector>
 
+          <XStack ai="center" jc="space-between">
+            <BodyText>Document Type</BodyText>
+            <XStack space="$2" ai="center">
+              <Button
+                size="$3"
+                onPress={() => {
+                  buttonTap();
+                  setSelectedDocumentType('mock_passport');
+                }}
+                bg={
+                  selectedDocumentType === 'mock_passport'
+                    ? '$blue7Light'
+                    : white
+                }
+                borderColor={borderColor}
+                borderWidth={1}
+                color={
+                  selectedDocumentType === 'mock_passport' ? white : textBlack
+                }
+              >
+                Passport
+              </Button>
+              <Button
+                size="$3"
+                onPress={() => {
+                  buttonTap();
+                  setSelectedDocumentType('mock_id_card');
+                }}
+                bg={
+                  selectedDocumentType === 'mock_id_card'
+                    ? '$blue7Light'
+                    : white
+                }
+                borderColor={borderColor}
+                borderWidth={1}
+                color={
+                  selectedDocumentType === 'mock_id_card' ? white : textBlack
+                }
+              >
+                ID Card
+              </Button>
+            </XStack>
+          </XStack>
+
           {advancedMode && (
-            <>
-              <XStack ai="center" jc="space-between">
-                <BodyText>Document Type</BodyText>
-                <XStack space="$2" ai="center">
-                  <Button
-                    size="$3"
-                    onPress={() => {
-                      buttonTap();
-                      setSelectedDocumentType('mock_passport');
-                    }}
-                    bg={
-                      selectedDocumentType === 'mock_passport'
-                        ? '$blue7Light'
-                        : white
-                    }
-                    borderColor={borderColor}
-                    borderWidth={1}
-                    color={
-                      selectedDocumentType === 'mock_passport'
-                        ? white
-                        : textBlack
-                    }
-                  >
-                    Passport
-                  </Button>
-                  <Button
-                    size="$3"
-                    onPress={() => {
-                      buttonTap();
-                      setSelectedDocumentType('mock_id_card');
-                    }}
-                    bg={
-                      selectedDocumentType === 'mock_id_card'
-                        ? '$blue7Light'
-                        : white
-                    }
-                    borderColor={borderColor}
-                    borderWidth={1}
-                    color={
-                      selectedDocumentType === 'mock_id_card'
-                        ? white
-                        : textBlack
-                    }
-                  >
-                    ID Card
-                  </Button>
+            <XStack ai="center" jc="space-between">
+              <BodyText>Encryption</BodyText>
+              <Button
+                onPress={() => {
+                  buttonTap();
+                  setAlgorithmSheetOpen(true);
+                }}
+                p="$2"
+                px="$3"
+                bg="white"
+                borderColor={borderColor}
+                borderWidth={1}
+                borderRadius="$4"
+              >
+                <XStack ai="center" gap="$2">
+                  <Text fontSize="$4">{selectedAlgorithm}</Text>
+                  <ChevronDown size={20} />
                 </XStack>
-              </XStack>
-              <XStack ai="center" jc="space-between">
-                <BodyText>Encryption</BodyText>
-                <Button
-                  onPress={() => {
-                    buttonTap();
-                    setAlgorithmSheetOpen(true);
-                  }}
-                  p="$2"
-                  px="$3"
-                  bg="white"
-                  borderColor={borderColor}
-                  borderWidth={1}
-                  borderRadius="$4"
-                >
-                  <XStack ai="center" gap="$2">
-                    <Text fontSize="$4">{selectedAlgorithm}</Text>
-                    <ChevronDown size={20} />
-                  </XStack>
-                </Button>
-              </XStack>
-            </>
+              </Button>
+            </XStack>
           )}
 
           <XStack ai="center" jc="space-between">

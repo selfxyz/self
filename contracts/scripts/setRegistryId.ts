@@ -10,7 +10,7 @@ dotenv.config();
 // Environment configuration
 const NETWORK = process.env.NETWORK || "localhost"; // Default to localhost
 const RPC_URL_KEY = NETWORK === "celo" ? "CELO_RPC_URL" : "CELO_ALFAJORES_RPC_URL";
-const PRIVATE_KEY = process.env.CELO_KEY;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SKIP_CSCA_UPDATE = process.env.SKIP_CSCA_UPDATE === "true";
 const CSCA_ROOT = process.env.CSCA_ROOT; // Allow manual CSCA root setting
 
@@ -44,7 +44,7 @@ console.log("Contract ABI path:", contractAbiPath);
 
 // Debug logs for environment variables (redacted for security)
 console.log(`${RPC_URL_KEY} configured:`, !!process.env[RPC_URL_KEY]);
-console.log("CELO_KEY configured:", !!PRIVATE_KEY);
+console.log("PRIVATE_KEY configured:", !!PRIVATE_KEY);
 
 try {
   const deployedAddresses = JSON.parse(fs.readFileSync(deployedAddressesPath, "utf-8"));

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -9,6 +11,10 @@ interface PersistedSettingsState {
   setBiometricsAvailable: (biometricsAvailable: boolean) => void;
   cloudBackupEnabled: boolean;
   toggleCloudBackupEnabled: () => void;
+  loginCount: number;
+  incrementLoginCount: () => void;
+  hasViewedRecoveryPhrase: boolean;
+  setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   isDevMode: boolean;
   setDevModeOn: () => void;
   setDevModeOff: () => void;
@@ -41,6 +47,20 @@ export const useSettingStore = create<SettingsState>()(
       toggleCloudBackupEnabled: () =>
         set(oldState => ({
           cloudBackupEnabled: !oldState.cloudBackupEnabled,
+          loginCount: oldState.cloudBackupEnabled ? oldState.loginCount : 0,
+        })),
+
+      loginCount: 0,
+      incrementLoginCount: () =>
+        set(oldState => ({ loginCount: oldState.loginCount + 1 })),
+      hasViewedRecoveryPhrase: false,
+      setHasViewedRecoveryPhrase: viewed =>
+        set(oldState => ({
+          hasViewedRecoveryPhrase: viewed,
+          loginCount:
+            viewed && !oldState.hasViewedRecoveryPhrase
+              ? 0
+              : oldState.loginCount,
         })),
 
       isDevMode: false,

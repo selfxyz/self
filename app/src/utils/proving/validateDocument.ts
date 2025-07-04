@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import {
   API_URL,
@@ -7,6 +9,7 @@ import {
   getCircuitNameFromPassportData,
   getLeafDscTree,
   Hash,
+  ID_CARD_ATTESTATION_ID,
   parseCertificateSimple,
   PASSPORT_ATTESTATION_ID,
   type PassportData,
@@ -78,11 +81,11 @@ export async function isUserRegistered(
   if (!passportData) {
     return false;
   }
-  const commitment = generateCommitment(
-    secret,
-    PASSPORT_ATTESTATION_ID,
-    passportData,
-  );
+  const attestationId =
+    passportData.documentCategory === 'passport'
+      ? PASSPORT_ATTESTATION_ID
+      : ID_CARD_ATTESTATION_ID;
+  const commitment = generateCommitment(secret, attestationId, passportData);
   const document: DocumentCategory = passportData.documentCategory;
   const serializedTree = useProtocolStore.getState()[document].commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
@@ -98,11 +101,13 @@ export async function isUserRegisteredWithAlternativeCSCA(
     console.error('Passport data is null');
     return { isRegistered: false, csca: null };
   }
-  const alternativeCSCA = useProtocolStore.getState().passport.alternative_csca;
+  const document: DocumentCategory = passportData.documentCategory;
+  const alternativeCSCA =
+    useProtocolStore.getState()[document].alternative_csca;
   console.log('alternativeCSCA: ', alternativeCSCA);
   const { commitment_list, csca_list } = generateCommitmentInApp(
     secret,
-    PASSPORT_ATTESTATION_ID,
+    document === 'passport' ? PASSPORT_ATTESTATION_ID : ID_CARD_ATTESTATION_ID,
     passportData,
     alternativeCSCA,
   );
@@ -114,7 +119,7 @@ export async function isUserRegisteredWithAlternativeCSCA(
     return { isRegistered: false, csca: null };
   }
 
-  const serializedTree = useProtocolStore.getState().passport.commitment_tree;
+  const serializedTree = useProtocolStore.getState()[document].commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   for (let i = 0; i < commitment_list.length; i++) {
     const commitment = commitment_list[i];

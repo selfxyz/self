@@ -1,21 +1,33 @@
 {
   "name": "@selfxyz/core",
-  "version": "0.0.25",
+  "version": "1.0.5-beta.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
   },
   "license": "MIT",
   "author": "motemotech",
-  "main": "dist/sdk/core/index.js",
-  "types": "dist/sdk/core/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.cts",
   "files": [
-    "dist",
-    "common",
-    "circuits/**/*.json"
+    "dist"
   ],
   "scripts": {
-    "build": "tsc -build",
+    "build": "typechain --target ethers-v6 --node16-modules --out-dir src/typechain-types src/abi/**.json && tsup index.ts --format cjs,esm --dts --clean --sourcemap",
     "build:deps": "yarn workspaces foreach --from @selfxyz/core --topological-dev --recursive run build",
     "copy-abi": "bash scripts/copyAbi.sh",
     "format": "prettier --write .",
@@ -38,6 +50,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@typechain/ethers-v6": "^0.5.1",
     "@types/chai": "^4.3.6",
     "@types/chai-as-promised": "^7.1.8",
     "@types/circomlibjs": "^0.1.6",
@@ -51,6 +64,8 @@
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
+    "typechain": "^8.3.2",
     "typescript": "^5.4.5"
   },
   "publishConfig": {

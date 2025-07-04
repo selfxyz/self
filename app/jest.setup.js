@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 /* global jest */
 /** @jest-environment jsdom */
 require('react-native-gesture-handler/jestSetup');
@@ -47,6 +49,11 @@ jest.mock('@segment/analytics-react-native', () => {
     reset: jest.fn(),
   };
 
+  // Mock flush policy classes
+  const MockFlushPolicy = class {
+    constructor() {}
+  };
+
   return {
     createClient: jest.fn(() => mockClient),
     EventPlugin: jest.fn(),
@@ -54,7 +61,10 @@ jest.mock('@segment/analytics-react-native', () => {
       ENRICHMENT: 'enrichment',
       DESTINATION: 'destination',
       BEFORE: 'before',
+      before: 'before',
     },
+    StartupFlushPolicy: MockFlushPolicy,
+    BackgroundFlushPolicy: MockFlushPolicy,
   };
 });
 
@@ -189,34 +199,47 @@ jest.mock('@stablelib/utf8', () => ({
   decode: jest.fn(),
 }));
 
-// Mock @react-native-google-signin/google-signin
-jest.mock('@react-native-google-signin/google-signin', () => ({
-  GoogleSignin: {
-    configure: jest.fn(),
-    hasPlayServices: jest.fn().mockResolvedValue(true),
-    signIn: jest.fn().mockResolvedValue({
-      user: {
-        id: 'mock-user-id',
-        email: 'mock@example.com',
-        name: 'Mock User',
-        photo: 'mock-photo-url',
-      },
-    }),
-    signOut: jest.fn(),
-    revokeAccess: jest.fn(),
-    isSignedIn: jest.fn().mockResolvedValue(false),
-    getCurrentUser: jest.fn().mockResolvedValue(null),
-    getTokens: jest.fn().mockResolvedValue({
-      accessToken: 'mock-access-token',
-      idToken: 'mock-id-token',
-    }),
-  },
-  statusCodes: {
-    SIGN_IN_REQUIRED: 'SIGN_IN_REQUIRED',
-    IN_PROGRESS: 'IN_PROGRESS',
-    PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
-  },
+// Mock react-native-app-auth
+jest.mock('react-native-app-auth', () => ({
+  authorize: jest.fn().mockResolvedValue({ accessToken: 'mock-access-token' }),
 }));
+
+// Mock @robinbobin/react-native-google-drive-api-wrapper
+jest.mock('@robinbobin/react-native-google-drive-api-wrapper', () => {
+  class MockUploader {
+    setData() {
+      return this;
+    }
+    setDataMimeType() {
+      return this;
+    }
+    setRequestBody() {
+      return this;
+    }
+    execute = jest.fn();
+  }
+
+  class MockFiles {
+    newMultipartUploader() {
+      return new MockUploader();
+    }
+    list = jest.fn().mockResolvedValue({ files: [] });
+    delete = jest.fn();
+    getText = jest.fn().mockResolvedValue('');
+  }
+
+  class GDrive {
+    accessToken = '';
+    files = new MockFiles();
+  }
+
+  return {
+    __esModule: true,
+    GDrive,
+    MIME_TYPES: { application: { json: 'application/json' } },
+    APP_DATA_FOLDER_ID: 'appDataFolder',
+  };
+});
 
 // Mock react-native-cloud-storage
 jest.mock('react-native-cloud-storage', () => {

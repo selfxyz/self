@@ -2,7 +2,7 @@
 
 Monorepo for Self.
 
-Self is an identity wallet that lets users generate privacy-preserving proofs from government-issued IDs such as passports.
+Self is an identity wallet that lets users generate privacy-preserving proofs from government-issued IDs such as passports and ID cards.
 By scanning the NFC chip in their ID document, users can prove their validity while only revealing specific attributes such as age, nationality or simply humanity.
 Under the hood, Self uses zk-SNARKs to make sure personal data is redacted, but the document is verified.
 
@@ -13,17 +13,21 @@ Use cases unlocked include:
 - **Wallet recovery**: Safeguard assets using IDs as recovery sources
 - **Compliance**: Check a user is not part of a sanctioned entity list
 
+Currently, Self supports electronic passports and biometric ID cards following the ICAO standards. Support for new identity documents is on the way!
+
+[Checkout the docs](https://docs.self.xyz/) to add Self to your project.
+
 ## FAQ
 
 #### Is my passport supported?
 
-Checkout our [coverage map here](http://map.self.xyz/)
+Biometric passports have the [biometric passport logo](https://en.wikipedia.org/wiki/Biometric_passport) on their front cover.
+Checkout our [coverage map here](http://map.self.xyz/).
 
-#### What exactly is being signed ?
+#### What can I request/prove with Self?
 
-When a country issues a passport, they sign datagroups that include at least:
-- First name
-- Last name
+When a country issues a passport or a compliant ID document, they sign datagroups that include at least:
+- First and last name
 - Nationality
 - Date of birth
 - Gender
@@ -31,17 +35,15 @@ When a country issues a passport, they sign datagroups that include at least:
 - Passport number
 - Photo
 
+Applications are able to request each of those data points.
+
 #### What is the signature algorithm ?
 
-Countries use different signature algorithms to sign passports. Check out our [coverage map](http://map.self.xyz/) to see which
-
-#### I just read my passport but it says my signature algorithm is not implemented. What do I do ?
-
-Not all signature algorithms are currently supported. To help us add support for yours, please contact us.
+Countries use different signature algorithms to sign ID documents. Check out our [coverage map](http://map.self.xyz/) to see which.
 
 #### Where can I find the countries' public keys ?
 
-You can download the full list of public keys on the [ICAO website](https://download.pkd.icao.int/). Our parsed list is at [`/registry`](https://github.com/zk-passport/openpassport/tree/main/registry).
+The main list of public keys can be downloaded from the [ICAO website](https://download.pkd.icao.int/). We use multiple lists published by different ICAO members.
 
 #### What's the ICAO ?
 
@@ -49,30 +51,31 @@ The International Civil Aviation Organization (ICAO) is a specialized agency of 
 
 ## Project Ideas
 
-- Integrate Self to Gitcoin passport or a similar system to allow better sybil resistance in quadratic funding
-- Combine with other sources of identity to provide quantified levels of uniqueness, [totem](https://github.com/0xturboblitz/totem)-style. Examples can be [anon aadhaar](https://github.com/anon-aadhaar), [Japan's my number cards](https://github.com/MynaWallet/monorepo) or [Taiwan DID](https://github.com/tw-did/tw-did/)
-- Add Self as a [Zupass](https://github.com/proofcarryingdata/zupass) PCD
-- Build a social network/anonymous message board for people from one specific country
-- Create a sybil-resistance tool to protect social networks against spambots
-- Do an airdrop farming protection tool
-- Allow DeFi protocols to check if the nationality of a user is included in a set of forbidden states
-- Gate an adult content website to a specific age
-- Create a petition system or a survey portal
-- Use for proof of location using place of birth and/or address
+- Combine Self with other identification mechanisms as in [Vitalik's pluralistic identity regime](https://vitalik.eth.limo/general/2025/06/28/zkid.html).
+- Help adding support for other identity documents to Self, such as [Aadhaar](https://github.com/anon-aadhaar), [Japan's my number cards](https://github.com/MynaWallet/monorepo) or [Taiwan DID](https://github.com/tw-did/tw-did/).
+- Build a social network/anonymous message board for people from one specific country.
+- Create a sybil-resistance tool to protect social networks against spambots.
+- Build an airdrop farming protection tool.
+- Allow DeFi protocols to check if the nationality of a user is included in a set of forbidden states.
+- Gate an adult content website to a specific age.
+- Create a petition system or a survey portal.
 - Passport Wallet: use [active authentication](https://en.wikipedia.org/wiki/Biometric_passport#:~:text=Active%20Authentication%20(AA),Using%20AA%20is%20optional.) to build a wallet, a multisig or a recovery module using passport signatures
 
-We will provide bounties for all those applications. Those are not fixed right now, so please contact us if you're interested.
+We provide bounties for new and interesting applications using Self.
 
-## Licensing
+## Development Setup
 
-Everything we write is MIT licensed. Circom and circomlib are GPL tho.
+Run `yarn install` to bootstrap dependencies and husky hooks.
+Gitleaks will scan staged changes on each commit via `yarn gitleaks`.
 
 ## Contributing
 
-We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know were to start! We offer bounties for any significant contribution.
+We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know were to start! We offer bounties for significant contributions.
 
 ## Contact us
 
-Contact me [@FlorentTavernier](https://t.me/FlorentTavernier) on telegram for any feedback or questions.
+[Contact us](https://t.me/selfprotocolbuilder) on telegram for feedback or questions.
 
-Thanks [Rémi](https://github.com/remicolin), [Youssef](https://github.com/yssf-io), [Aayush](https://twitter.com/yush_g), [Andy](https://twitter.com/AndyGuzmanEth), [Vivek](https://twitter.com/viv_boop) and [Andrew](https://github.com/AndrewCLu) for contributing ideas and helping build this technology, and [PSE](https://pse.dev/) for supporting this work through grants!
+Thanks [Rémi](https://github.com/remicolin), [Florent](https://github.com/0xturboblitz), [Ayman](https://github.com/Nesopie), [Justin](https://github.com/transphorm), [Seshanth](https://github.com/seshanthS), [Nico](https://github.com/motemotech) and all other contributors for building Self.
+
+Thanks [Aayush](https://twitter.com/yush_g), [Vivek](https://twitter.com/viv_boop), [Andy](https://twitter.com/AndyGuzmanEth) and [Vitalik](https://github.com/vbuterin) for contributing ideas and inspiring us to build this technology, and [PSE](https://pse.dev/) for supporting the initial work through grants!

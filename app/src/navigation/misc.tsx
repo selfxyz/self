@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React from 'react';
 import { StatusBar } from 'react-native';
@@ -12,8 +14,10 @@ const miscScreens = {
   Launch: {
     screen: LaunchScreen,
     options: {
-      headerShown: false,
-      gestureEnabled: false,
+      header: () => (
+        <StatusBar barStyle="light-content" backgroundColor={black} />
+      ),
+      navigationBarColor: black,
     },
   },
   LoadingScreen: {
@@ -31,6 +35,7 @@ const miscScreens = {
       animation: 'fade',
     } as NativeStackNavigationOptions,
   },
+
   Splash: {
     screen: SplashScreen,
     options: {

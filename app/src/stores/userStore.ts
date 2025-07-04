@@ -1,7 +1,11 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 import { create } from 'zustand';
 
 interface UserState {
+  documentType: string;
+  countryCode: string;
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
@@ -22,6 +26,8 @@ interface UserState {
 
 const useUserStore = create<UserState>((set, _get) => ({
   passportNumber: DEFAULT_PNUMBER ?? '',
+  documentType: '',
+  countryCode: '',
   dateOfBirth: DEFAULT_DOB ?? '',
   dateOfExpiry: DEFAULT_DOE ?? '',
   deepLinkName: undefined,
@@ -35,7 +41,9 @@ const useUserStore = create<UserState>((set, _get) => ({
 
   deleteMrzFields: () =>
     set({
+      documentType: '',
       passportNumber: '',
+      countryCode: '',
       dateOfBirth: '',
       dateOfExpiry: '',
     }),

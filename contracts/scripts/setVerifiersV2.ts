@@ -1,218 +1,274 @@
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
-import * as fs from "fs";
-import * as path from "path";
-import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/constants";
+import { RegisterVerifierId, DscVerifierId } from "@selfxyz/common";
+import {
+  getContractAbi,
+  getDeployedAddresses,
+  getSavedRepo,
+  getContractAddress,
+  ATTESTATION_ID,
+  log,
+} from "./constants";
 
 dotenv.config();
 
-// Define AttestationId constants directly based on values from AttestationId.sol
-const AttestationId = {
-  // Pad with zeros to create full 32 bytes length
-  E_PASSPORT: "0x0000000000000000000000000000000000000000000000000000000000000001",
-  EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002",
+// Configuration for which verifiers to set
+const setVerifiers = {
+  vcAndDisclose: true, // VC and Disclose verifier for E_PASSPORT
+  vcAndDiscloseId: true, // VC and Disclose ID verifier for EU_ID_CARD
+  register: true, // Register verifiers for E_PASSPORT
+  registerId: true, // Register ID verifiers for EU_ID_CARD
+  dsc: false, // DSC verifiers for both E_PASSPORT and EU_ID_CARD
 };
 
-// Debug logs for paths and files
-console.log("Current directory:", __dirname);
-console.log(
-  "Deployed addresses path:",
-  path.join(__dirname, "../ignition/deployments/staging/deployed_addresses.json"),
-);
-console.log(
-  "Contract ABI path:",
-  path.join(__dirname, "../ignition/deployments/staging/artifacts/DeployV2#IdentityVerificationHubImplV2.json"),
-);
+const NETWORK = process.env.NETWORK;
+const RPC_URL = process.env.RPC_URL;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
-// Debug logs for environment variables (redacted for security)
-console.log("CELO_RPC_URL configured:", !!process.env.CELO_ALFAJORES_RPC_URL);
-console.log("CELO_KEY configured:", !!process.env.CELO_KEY);
+if (!NETWORK) {
+  throw new Error("One of the following parameter is null: NETWORK, RPC_URL, PRIVATE_KEY");
+}
+
+const repoName = getSavedRepo(NETWORK);
+const deployedAddresses = getDeployedAddresses(repoName);
+
+log.info(`Network: ${NETWORK}, Repo: ${repoName}`);
 
 try {
-  const deployedAddresses = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "../ignition/deployments/staging/deployed_addresses.json"), "utf-8"),
-  );
-  console.log("Deployed addresses loaded:", deployedAddresses);
+  const hubABI = getContractAbi(repoName, "DeployHubV2#IdentityVerificationHubImplV2");
+  const prefix = "DeployAllVerifiers";
 
-  const identityVerificationHubAbiFile = fs.readFileSync(
-    path.join(__dirname, "../ignition/deployments/staging/artifacts/DeployV2#IdentityVerificationHubImplV2.json"),
-    "utf-8",
-  );
-  console.log("ABI file loaded");
+  function getContractAddressByPartialName(partialName: string): string | undefined {
+    const fullKey = `${prefix}#${partialName}`;
+    console.log(`🔍 Searching for contract with exact key: "${fullKey}"`);
 
-  const identityVerificationHubAbi = JSON.parse(identityVerificationHubAbiFile).abi;
-  console.log("ABI parsed");
-
-  function getContractAddressByPartialName(partialName: string): string | unknown {
-    for (const [key, value] of Object.entries(deployedAddresses)) {
-      if (key.includes(partialName)) {
-        return value;
-      }
+    if (deployedAddresses[fullKey]) {
+      console.log(`   ✅ Found exact match: ${fullKey} -> ${deployedAddresses[fullKey]}`);
+      return deployedAddresses[fullKey] as string;
     }
-    return undefined;
-  }
 
-  function getContractAddressByExactName(exactName: string): string | unknown {
-    if (exactName in deployedAddresses) {
-      return deployedAddresses[exactName];
-    }
+    console.log(`   ❌ No exact match found for: "${fullKey}"`);
     return undefined;
-  }
-
-  function getAttestationIdBytes32(attestationIdName: string): string {
-    return AttestationId[attestationIdName as keyof typeof AttestationId];
   }
 
   async function main() {
-    const provider = new ethers.JsonRpcProvider(process.env.CELO_ALFAJORES_RPC_URL as string);
-    console.log("Provider created");
-
-    const wallet = new ethers.Wallet(process.env.CELO_KEY as string, provider);
-    console.log("Wallet created");
-
-    // const hubAddress = deployedAddresses["DeployHub#IdentityVerificationHub"];
-    const hubAddress = "0xbaB9B3c376e84FEB4aFD9423e3aB278B47d34a0a"; // Update with your actual hub address
-    console.log("Hub address:", hubAddress);
+    const provider = new ethers.JsonRpcProvider(RPC_URL as string);
+    const wallet = new ethers.Wallet(PRIVATE_KEY as string, provider);
+    console.log(`Wallet address: ${wallet.address}`);
+    const hubAddress = getContractAddress("DeployHubV2#IdentityVerificationHub", deployedAddresses);
 
     if (!hubAddress) {
-      throw new Error("Hub address not found in deployed_addresses.json");
+      throw new Error("❌ Hub address not found in deployed_addresses.json");
     }
+    const identityVerificationHub = new ethers.Contract(hubAddress, hubABI, wallet);
+    console.log(`   Hub contract address: ${hubAddress}`);
 
-    const identityVerificationHub = new ethers.Contract(hubAddress, identityVerificationHubAbi, wallet);
-    console.log("Contract instance created");
+    let totalUpdates = 0;
+    let successfulUpdates = 0;
 
-    // Update registry addresses for different attestation types
-    const attestationTypes = ["E_PASSPORT", "EU_ID_CARD"];
-    for (const attestationType of attestationTypes) {
-      let registryName: any;
-      if (attestationType == "E_PASSPORT") {
-        registryName = "DeployRegistryModule#IdentityRegistry";
-      } else if (attestationType == "EU_ID_CARD") {
-        registryName = "DeployIdCardRegistryModule#IdentityRegistryIdCard";
-      }
-
-      const registryAddress = getContractAddressByExactName(registryName);
-
-      if (!registryAddress) {
-        console.log(`Skipping registry update for ${attestationType} because no deployed address was found.`);
-        continue;
-      }
-
-      console.log(`Updating registry for ${attestationType}`);
-      const attestationId = getAttestationIdBytes32(attestationType);
+    // Update VC and Disclose verifier for E_PASSPORT
+    if (setVerifiers.vcAndDisclose) {
+      log.step("Updating VC and Disclose verifier for E_PASSPORT");
 
       try {
-        const tx = await identityVerificationHub.updateRegistry(attestationId, registryAddress);
-        const receipt = await tx.wait();
-        console.log(`Registry for ${attestationType} updated with tx: ${receipt.hash}`);
-      } catch (error) {
-        console.error(`Error updating registry for ${attestationType}:`, error);
-      }
-    }
+        const verifierAddress = getContractAddress("DeployAllVerifiers#Verifier_vc_and_disclose", deployedAddresses);
+        const attestationId = ATTESTATION_ID.E_PASSPORT;
 
-    // Update VC and Disclose circuit verifiers for different attestation types
-    for (const attestationType of attestationTypes) {
-      let verifierName: any;
-      if (attestationType == "E_PASSPORT") {
-        verifierName = "DeployAllVerifiers#Verifier_vc_and_disclose";
-      } else if (attestationType == "EU_ID_CARD") {
-        verifierName = "";
-      }
-      const verifierAddress = getContractAddressByExactName(verifierName);
-
-      if (!verifierAddress) {
-        console.log(
-          `Skipping VC and Disclose circuit update for ${attestationType} because no deployed address was found.`,
-        );
-        continue;
-      }
-
-      console.log(`Updating VC and Disclose circuit for ${attestationType}`);
-      const attestationId = getAttestationIdBytes32(attestationType);
-
-      try {
+        totalUpdates++;
         const tx = await identityVerificationHub.updateVcAndDiscloseCircuit(attestationId, verifierAddress);
         const receipt = await tx.wait();
-        console.log(`VC and Disclose circuit for ${attestationType} updated with tx: ${receipt.hash}`);
+
+        log.success(`VC verifier for E_PASSPORT updated (tx: ${receipt.hash})`);
+        successfulUpdates++;
       } catch (error) {
-        console.error(`Error updating VC and Disclose circuit for ${attestationType}:`, error);
+        log.error(`Failed to update VC verifier for E_PASSPORT: ${error}`);
       }
     }
 
-    // Batch update register circuit verifiers
-    const registerVerifierKeys = Object.keys(RegisterVerifierId).filter((key) => isNaN(Number(key)));
-    const registerCircuitVerifierIds: number[] = [];
-    const registerCircuitVerifierAddresses: string[] = [];
-
-    for (const key of registerVerifierKeys) {
-      const verifierName = `Verifier_${key}`;
-      const verifierAddress = getContractAddressByPartialName(verifierName);
-
-      if (!verifierAddress) {
-        console.log(`Skipping ${verifierName} because no deployed address was found.`);
-        continue;
-      }
-
-      const verifierId = RegisterVerifierId[key as keyof typeof RegisterVerifierId];
-      registerCircuitVerifierIds.push(verifierId);
-      registerCircuitVerifierAddresses.push(verifierAddress as string);
-    }
-
-    if (registerCircuitVerifierIds.length > 0) {
-      console.log("Batch updating register circuit verifiers");
+    // Update VC and Disclose ID verifier for EU_ID_CARD
+    if (setVerifiers.vcAndDiscloseId) {
+      log.step("Updating VC and Disclose ID verifier for EU_ID_CARD");
 
       try {
-        const tx = await identityVerificationHub.batchUpdateRegisterCircuitVerifiers(
-          registerCircuitVerifierIds,
-          registerCircuitVerifierAddresses,
-        );
+        const verifierAddress = getContractAddress("DeployAllVerifiers#Verifier_vc_and_disclose_id", deployedAddresses);
+        const attestationId = ATTESTATION_ID.EU_ID_CARD;
+
+        totalUpdates++;
+        const tx = await identityVerificationHub.updateVcAndDiscloseCircuit(attestationId, verifierAddress);
         const receipt = await tx.wait();
-        console.log(`Register circuit verifiers updated with tx: ${receipt.hash}`);
+
+        log.success(`VC ID verifier for EU_ID_CARD updated (tx: ${receipt.hash})`);
+        successfulUpdates++;
       } catch (error) {
-        console.error("Error batch updating register circuit verifiers:", error);
+        log.error(`Failed to update VC ID verifier for EU_ID_CARD: ${error}`);
+      }
+    }
+
+    // Batch update register circuit verifiers for E_PASSPORT
+    if (setVerifiers.register) {
+      log.step("Updating register circuit verifiers for E_PASSPORT");
+
+      const registerVerifierKeys = Object.keys(RegisterVerifierId).filter((key) => isNaN(Number(key)));
+      const regularRegisterKeys = registerVerifierKeys.filter((key) => !key.startsWith("register_id_"));
+
+      const registerAttestationIds: string[] = [];
+      const registerCircuitVerifierIds: number[] = [];
+      const registerCircuitVerifierAddresses: string[] = [];
+
+      for (const key of regularRegisterKeys) {
+        const verifierName = `Verifier_${key}`;
+        const verifierAddress = getContractAddressByPartialName(verifierName);
+
+        if (!verifierAddress) {
+          log.warning(`Skipping ${verifierName} - not found`);
+          continue;
+        }
+
+        const verifierId = RegisterVerifierId[key as keyof typeof RegisterVerifierId];
+        registerAttestationIds.push(ATTESTATION_ID.E_PASSPORT);
+        registerCircuitVerifierIds.push(verifierId);
+        registerCircuitVerifierAddresses.push(verifierAddress);
+      }
+
+      if (registerCircuitVerifierIds.length > 0) {
+        try {
+          totalUpdates++;
+          const tx = await identityVerificationHub.batchUpdateRegisterCircuitVerifiers(
+            registerAttestationIds,
+            registerCircuitVerifierIds,
+            registerCircuitVerifierAddresses,
+          );
+          const receipt = await tx.wait();
+          log.success(
+            `Register verifiers for E_PASSPORT updated: ${registerCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`,
+          );
+          successfulUpdates++;
+        } catch (error) {
+          log.error(`Failed to update register verifiers for E_PASSPORT: ${error}`);
+        }
+      } else {
+        log.warning("No register circuit verifiers found for E_PASSPORT");
+      }
+    }
+
+    // Batch update register circuit verifiers for EU_ID_CARD (using register_id verifiers)
+    if (setVerifiers.registerId) {
+      log.step("Updating register_id circuit verifiers for EU_ID_CARD");
+
+      // Get all register_id verifiers from deployed addresses
+      const registerIdVerifiers: string[] = [];
+      for (const key of Object.keys(deployedAddresses)) {
+        if (key.includes("Verifier_register_id_")) {
+          const circuitName = key.replace("DeployAllVerifiers#Verifier_", "");
+          registerIdVerifiers.push(circuitName);
+        }
+      }
+
+      const registerIdAttestationIds: string[] = [];
+      const registerIdCircuitVerifierIds: number[] = [];
+      const registerIdCircuitVerifierAddresses: string[] = [];
+
+      for (const registerIdCircuitName of registerIdVerifiers) {
+        const verifierName = `DeployAllVerifiers#Verifier_${registerIdCircuitName}`;
+
+        try {
+          const verifierAddress = getContractAddress(verifierName, deployedAddresses);
+
+          // Map circuit name to RegisterVerifierId
+          if (registerIdCircuitName in RegisterVerifierId) {
+            const verifierId = RegisterVerifierId[registerIdCircuitName as keyof typeof RegisterVerifierId];
+            registerIdAttestationIds.push(ATTESTATION_ID.EU_ID_CARD);
+            registerIdCircuitVerifierIds.push(verifierId as number);
+            registerIdCircuitVerifierAddresses.push(verifierAddress);
+          } else {
+            log.warning(`No RegisterVerifierId mapping found for: ${registerIdCircuitName}`);
+          }
+        } catch (error) {
+          log.warning(`Skipping ${verifierName} - not found`);
+        }
+      }
+
+      if (registerIdCircuitVerifierIds.length > 0) {
+        try {
+          totalUpdates++;
+          const tx = await identityVerificationHub.batchUpdateRegisterCircuitVerifiers(
+            registerIdAttestationIds,
+            registerIdCircuitVerifierIds,
+            registerIdCircuitVerifierAddresses,
+          );
+          const receipt = await tx.wait();
+          log.success(
+            `Register_id verifiers for EU_ID_CARD updated: ${registerIdCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`,
+          );
+          successfulUpdates++;
+        } catch (error) {
+          log.error(`Failed to update register_id verifiers for EU_ID_CARD: ${error}`);
+        }
+      } else {
+        log.warning("No register_id circuit verifiers found for EU_ID_CARD");
       }
     }
 
     // Batch update DSC circuit verifiers
-    const dscKeys = Object.keys(DscVerifierId).filter((key) => isNaN(Number(key)));
-    const dscCircuitVerifierIds: number[] = [];
-    const dscCircuitVerifierAddresses: string[] = [];
+    if (setVerifiers.dsc) {
+      log.step("Updating DSC circuit verifiers");
 
-    for (const key of dscKeys) {
-      const verifierName = `Verifier_${key}`;
-      const verifierAddress = getContractAddressByPartialName(verifierName);
+      const dscKeys = Object.keys(DscVerifierId).filter((key) => isNaN(Number(key)));
 
-      if (!verifierAddress) {
-        console.log(`Skipping ${verifierName} because no deployed address was found.`);
-        continue;
+      // Update for both E_PASSPORT and EU_ID_CARD
+      const attestationTypes = ["E_PASSPORT", "EU_ID_CARD"] as const;
+
+      for (const attestationType of attestationTypes) {
+        const dscAttestationIds: string[] = [];
+        const dscCircuitVerifierIds: number[] = [];
+        const dscCircuitVerifierAddresses: string[] = [];
+
+        for (const key of dscKeys) {
+          const verifierName = `Verifier_${key}`;
+          const verifierAddress = getContractAddressByPartialName(verifierName);
+
+          if (!verifierAddress) {
+            log.warning(`Skipping ${verifierName} - not found`);
+            continue;
+          }
+
+          const verifierId = DscVerifierId[key as keyof typeof DscVerifierId];
+          dscAttestationIds.push(ATTESTATION_ID[attestationType]);
+          dscCircuitVerifierIds.push(verifierId);
+          dscCircuitVerifierAddresses.push(verifierAddress);
+        }
+
+        if (dscCircuitVerifierIds.length > 0) {
+          try {
+            totalUpdates++;
+            const tx = await identityVerificationHub.batchUpdateDscCircuitVerifiers(
+              dscAttestationIds,
+              dscCircuitVerifierIds,
+              dscCircuitVerifierAddresses,
+            );
+            const receipt = await tx.wait();
+            log.success(
+              `DSC verifiers for ${attestationType} updated: ${dscCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`,
+            );
+            successfulUpdates++;
+          } catch (error) {
+            log.error(`Failed to update DSC verifiers for ${attestationType}: ${error}`);
+          }
+        } else {
+          log.warning(`No DSC circuit verifiers found for ${attestationType}`);
+        }
       }
-
-      const verifierId = DscVerifierId[key as keyof typeof DscVerifierId];
-      dscCircuitVerifierIds.push(verifierId);
-      dscCircuitVerifierAddresses.push(verifierAddress as string);
     }
 
-    if (dscCircuitVerifierIds.length > 0) {
-      console.log("Batch updating DSC circuit verifiers");
-
-      try {
-        const tx = await identityVerificationHub.batchUpdateDscCircuitVerifiers(
-          dscCircuitVerifierIds,
-          dscCircuitVerifierAddresses,
-        );
-        const receipt = await tx.wait();
-        console.log(`DSC circuit verifiers updated with tx: ${receipt.hash}`);
-      } catch (error) {
-        console.error("Error batch updating DSC circuit verifiers:", error);
-      }
-    }
+    log.info(`Verifier update summary: ${successfulUpdates}/${totalUpdates} successful`);
   }
 
   main().catch((error) => {
-    console.error("Execution error:", error);
+    log.error(`Execution failed: ${error}`);
+    if (error.reason) log.error(`Reason: ${error.reason}`);
     process.exitCode = 1;
   });
 } catch (error) {
-  console.error("Initial setup error:", error);
+  log.error(`Setup failed: ${error}`);
   process.exitCode = 1;
 }

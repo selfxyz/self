@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 /// NEW
 export const amber50 = '#FFFBEB';
 export const amber500 = '#F2E3C8';
@@ -24,6 +26,7 @@ export const neutral700 = '#404040';
 
 export const zinc400 = '#A1A1AA';
 export const zinc500 = '#71717A';
+export const zinc800 = '#27272A';
 export const zinc900 = '#18181B';
 export const blue100 = '#DBEAFE';
 export const blue600 = '#2563EB';

@@ -39,10 +39,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
   let forbiddenCountriesList: Country3LetterCode[];
   let forbiddenCountriesListPacked: string[];
   let verificationConfigV2: any;
-  let configId: string;
 
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
+    snapshotId = await ethers.provider.send("evm_snapshot", []);
 
     // Generate mock ID card data
     mockIdCardData = genMockIdDocAndInitDataParsing({
@@ -90,16 +90,15 @@ describe("Self Verification Flow V2 - ID Card", () => {
       ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
     };
 
-    await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-    configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+    await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
     const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
     const user1Address = await deployedActors.user1.getAddress();
     const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
     const tempUserContextData = ethers.solidityPacked(
-      ["bytes32", "bytes32", "bytes32", "bytes"],
-      [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+      ["bytes32", "bytes32", "bytes"],
+      [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
     );
 
     const userIdentifierHash = calculateUserIdentifierHash(tempUserContextData);
@@ -123,11 +122,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
       undefined,
       undefined,
       forbiddenCountriesList,
-      userIdentifierBigInt.toString(16).padStart(64, "0"),
+      "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
     );
 
     pristineBaseVcAndDiscloseProof = structuredClone(baseVcAndDiscloseProof);
-    snapshotId = await ethers.provider.send("evm_snapshot", []);
   });
 
   beforeEach(async () => {
@@ -165,8 +163,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
@@ -194,14 +192,42 @@ describe("Self Verification Flow V2 - ID Card", () => {
       expect(actualUserData).to.equal(expectedUserData);
     });
 
+    it("should fail verification with invalid configId", async () => {
+      const tx = await deployedActors.testSelfVerificationRoot.setVerificationConfigNoHub(verificationConfigV2);
+      await tx.wait();
+      const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+      const user1Address = await deployedActors.user1.getAddress();
+      const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
+
+      const userContextData = ethers.solidityPacked(
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+      );
+
+      const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
+
+      const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
+      );
+
+      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+
+      await deployedActors.testSelfVerificationRoot.resetTestState();
+
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hub, "ConfigNotSet");
+    });
+
     it("should fail verification with invalid length of proofData", async () => {
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       // Create proofData with less than 32 bytes (invalid)
@@ -230,29 +256,13 @@ describe("Self Verification Flow V2 - ID Card", () => {
     });
 
     it("should fail verification with invalid scope", async () => {
-      const verificationConfigV2 = {
-        olderThanEnabled: true,
-        olderThan: "20",
-        forbiddenCountriesEnabled: true,
-        forbiddenCountriesListPacked: forbiddenCountriesListPacked as [
-          BigNumberish,
-          BigNumberish,
-          BigNumberish,
-          BigNumberish,
-        ],
-        ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
-      };
-
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
-
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
@@ -299,7 +309,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         undefined,
         undefined,
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -324,9 +334,6 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
-
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
@@ -334,8 +341,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
       // Create invalid userContextData by changing the user address to a different value
       const invalidUserAddress = await deployedActors.user2.getAddress();
       const invalidUserContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(invalidUserAddress, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(invalidUserAddress, 32), userData],
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
@@ -368,16 +375,13 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
-
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
@@ -419,16 +423,13 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
-
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
@@ -487,8 +488,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
@@ -547,8 +548,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
@@ -599,8 +600,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       // Use invalid attestation ID
@@ -628,16 +629,15 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, true, false] as [boolean, boolean, boolean], // ID card: [passport_no: false, name_dob: true, name_yob: false]
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
@@ -668,7 +668,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         nameAndYob_smt,
         "0", // This will make OFAC verification fail
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -693,16 +693,15 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean], // All OFAC checks disabled
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
@@ -733,7 +732,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         nameAndYob_smt,
         "1",
         forbiddenCountriesList, // Use the original forbidden countries list (different from config)
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -759,16 +758,15 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean], // All OFAC checks disabled
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
 
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
@@ -799,7 +797,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         nameAndYob_smt,
         "1",
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
@@ -824,8 +822,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean], // All OFAC checks disabled
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
@@ -833,8 +830,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
       // Use an invalid destination chain ID that's different from current chain (31337)
       const invalidDestChainId = ethers.zeroPadValue(ethers.toBeHex(999999), 32);
       const userContextData = ethers.solidityPacked(
-        ["bytes32", "bytes32", "bytes32", "bytes"],
-        [configId, invalidDestChainId, ethers.zeroPadValue(user1Address, 32), userData],
+        ["bytes32", "bytes32", "bytes"],
+        [invalidDestChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
@@ -865,7 +862,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         nameAndYob_smt,
         "1",
         forbiddenCountriesList,
-        userIdentifierBigInt.toString(16).padStart(64, "0"),
+        "0x" + userIdentifierBigInt.toString(16).padStart(64, "0"),
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(

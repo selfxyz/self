@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 //
 //  MRZScanner.swift
 
@@ -15,7 +17,7 @@ struct MRZScanner {
             if let error = error {
                 print("Vision error: \(error)")
             }
-            
+
             guard let observations = request.results as? [VNRecognizedTextObservation] else {
                 print("No text observations found")
                 completion("No text found", [])
@@ -23,29 +25,29 @@ struct MRZScanner {
             }
 
             // print("Found \(observations.count) text observations")
-            
+
             var mrzLines: [String] = []
             var boxes: [CGRect] = []
-            
+
             // Sort lines from top to bottom
             let sortedObservations = observations.sorted { $0.boundingBox.minY > $1.boundingBox.minY }
-            
+
             for (index, obs) in sortedObservations.enumerated() {
                 if let candidate = obs.topCandidates(1).first {
                     let text = candidate.string
                     let confidence = candidate.confidence
                     // print("Line \(index): '\(text)' (confidence: \(confidence), position: \(obs.boundingBox))")
-                    
+
                     // Check if this looks like an MRZ line (either contains "<" or matches MRZ pattern)
                     // TD1 format (ID cards): 30 chars, TD3 format (passports): 44 chars
-                    if text.contains("<") || 
+                    if text.contains("<") ||
                        text.matches(pattern: "^[A-Z0-9<]{30}$") || //TD1 //case where there's no '<' in MRZ
                        text.matches(pattern: "^[A-Z0-9<]{44}$")  //TD3
                        {
                         // print("Matched MRZ pattern: \(text)")
                         mrzLines.append(text)
                         boxes.append(obs.boundingBox)
-                        
+
                         // Check if we have a complete MRZ
                         if (mrzLines.count == 2 && mrzLines.allSatisfy { $0.count == 44 }) || // TD3 - passport
                            (mrzLines.count == 3 && mrzLines.allSatisfy { $0.count == 30 }) {  // TD1 - ID card
@@ -68,7 +70,7 @@ struct MRZScanner {
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = false
         request.recognitionLanguages = ["en"]
-        
+
         // Use provided ROI. If not use as bottom 20%
         if let roi = roi {
             // print("[MRZScanner] Using provided ROI: \(roi) (image size: \(cgImage.width)x\(cgImage.height))")
@@ -80,7 +82,7 @@ struct MRZScanner {
             // print("[MRZScanner] Using default ROI: \(defaultRoi) (image size: \(cgImage.width)x\(cgImage.height), roi height: \(roiHeight))")
             request.regionOfInterest = defaultRoi
         }
-        
+
         let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
         DispatchQueue.global(qos: .userInitiated).async {
             do {

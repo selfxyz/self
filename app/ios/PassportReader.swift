@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 //
 //  PassportReader.swift
 //  OpenPassport
@@ -33,44 +35,44 @@ extension Dictionary {
 @objc(PassportReader)
 class PassportReader: NSObject {
     private var passportReader: NFCPassportReader.PassportReader
-    
+
     override init() {
         self.passportReader = NFCPassportReader.PassportReader()
         super.init()
     }
-    
+
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
         let analytics = Analytics(token: token, enableDebugLogs: enableDebugLogs)
         self.passportReader = NFCPassportReader.PassportReader(analytics: analytics)
     }
-    
+
     func getMRZKey(passportNumber: String, dateOfBirth: String, dateOfExpiry: String ) -> String {
-    
+
     // Pad fields if necessary
     let pptNr = pad( passportNumber, fieldLength:9)
     let dob = pad( dateOfBirth, fieldLength:6)
     let exp = pad( dateOfExpiry, fieldLength:6)
-    
+
     // Calculate checksums
     let passportNrChksum = calcCheckSum(pptNr)
     let dateOfBirthChksum = calcCheckSum(dob)
     let expiryDateChksum = calcCheckSum(exp)
-    
+
     let mrzKey = "\(pptNr)\(passportNrChksum)\(dob)\(dateOfBirthChksum)\(exp)\(expiryDateChksum)"
-    
+
     return mrzKey
   }
-  
+
   func pad( _ value : String, fieldLength:Int ) -> String {
     // Pad out field lengths with < if they are too short
     let paddedValue = (value + String(repeating: "<", count: fieldLength)).prefix(fieldLength)
     return String(paddedValue)
   }
-      
+
   func calcCheckSum( _ checkString : String ) -> Int {
     let characterDict  = ["0" : "0", "1" : "1", "2" : "2", "3" : "3", "4" : "4", "5" : "5", "6" : "6", "7" : "7", "8" : "8", "9" : "9", "<" : "0", " " : "0", "A" : "10", "B" : "11", "C" : "12", "D" : "13", "E" : "14", "F" : "15", "G" : "16", "H" : "17", "I" : "18", "J" : "19", "K" : "20", "L" : "21", "M" : "22", "N" : "23", "O" : "24", "P" : "25", "Q" : "26", "R" : "27", "S" : "28","T" : "29", "U" : "30", "V" : "31", "W" : "32", "X" : "33", "Y" : "34", "Z" : "35"]
-    
+
     var sum = 0
     var m = 0
     let multipliers : [Int] = [7, 3, 1]
@@ -81,11 +83,11 @@ class PassportReader: NSObject {
       sum += product
       m = (m+1) % 3
     }
-    
+
     return (sum % 10)
   }
-  
-  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:resolve:reject:)
+
+  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:resolve:reject:)
   func scanPassport(
     _ passportNumber: String,
     dateOfBirth: String,
@@ -95,12 +97,14 @@ class PassportReader: NSObject {
     skipPACE: NSNumber,
     skipCA: NSNumber,
     extendedMode: NSNumber,
+    usePacePolling: NSNumber,
     resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
    let useCANBool = useCan.boolValue
-   let skipPACEBool = skipPACE.boolValue 
+   let skipPACEBool = skipPACE.boolValue
    let skipCABool = skipCA.boolValue
    let extendedModeBool = extendedMode.boolValue
-   
+   let usePacePollingBool = usePacePolling.boolValue
+
     let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
       switch displayMessage {
         case .requestPresentPassport:
@@ -134,12 +138,13 @@ class PassportReader: NSObject {
         // passportReader.setMasterListURL( masterListURL! )
 
         let passport = try await self.passportReader.readPassport(
-          password: password, 
-          type: passwordType, 
-          tags: [.COM, .DG1, .SOD], 
+          password: password,
+          type: passwordType,
+          tags: [.COM, .DG1, .SOD],
           skipCA: skipCABool,
           skipPACE: skipPACEBool,
           useExtendedMode: extendedModeBool,
+          usePacePolling: usePacePollingBool,
           customDisplayMessage: customMessageHandler
         )
 
@@ -166,8 +171,8 @@ class PassportReader: NSObject {
         // if let passportPhotoData = passport.passportPhoto {
         //   let data = Data(passportPhotoData)
         //   let base64String = data.base64EncodedString()
-          
-        //   ret["passportPhoto"] = base64String 
+
+        //   ret["passportPhoto"] = base64String
         // }
 
         // documentSigningCertificate
@@ -248,14 +253,14 @@ class PassportReader: NSObject {
           if let sod = try passport.getDataGroup(DataGroupId.SOD) as? SOD {
              // ret["concatenatedDataHashes"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
             ret["eContentBase64"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
-  
+
             ret["signatureAlgorithm"] = try sod.getSignatureAlgorithm()
             ret["encapsulatedContentDigestAlgorithm"] = try sod.getEncapsulatedContentDigestAlgorithm()
-            
+
             let messageDigestFromSignedAttributes = try sod.getMessageDigestFromSignedAttributes()
             let signedAttributes = try sod.getSignedAttributes()
             //print("messageDigestFromSignedAttributes", messageDigestFromSignedAttributes)
-  
+
             ret["signedAttributes"] = signedAttributes.base64EncodedString()
             // if let pubKey = convertOpaquePointerToSecKey(opaquePointer: sod.pubKey),
             //   let serializedPublicKey = serializePublicKey(pubKey) {
@@ -263,7 +268,7 @@ class PassportReader: NSObject {
             // } else {
             //     // Handle the case where pubKey is nil
             // }
-  
+
             if let serializedSignature = serializeSignature(from: sod) {
               ret["signatureBase64"] = serializedSignature
             }
@@ -358,7 +363,7 @@ func serializePublicKey(_ publicKey: SecKey) -> String? {
       return nil
     }
   }
-  
+
   func encodeX509WrapperToJsonString(_ certificate: X509Wrapper?) -> String? {
     guard let certificate = certificate else { return nil }
     let certificateItems = certificate.getItemsAsDict()

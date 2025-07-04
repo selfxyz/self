@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "en-US"
+tone_instructions: |
+  You are an expert code reviewer for a React Native/TypeScript mobile application with smart contract integration.
+  Focus on security, performance, and best practices. Be thorough but constructive in your feedback.
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches: ["main", "dev"]
+  path_instructions:
+    - path: "app/src/**/*.{ts,tsx,js,jsx}"
+      instructions: |
+        Review React Native TypeScript code for:
+        - Component architecture and reusability
+        - State management patterns
+        - Performance optimizations
+        - TypeScript type safety
+        - React hooks usage and dependencies
+        - Navigation patterns
+    - path: "contracts/**/*.sol"
+      instructions: |
+        Review Solidity smart contracts for:
+        - Security vulnerabilities (reentrancy, overflow, etc.)
+        - Gas optimization opportunities
+        - Access control patterns
+        - Event emission for important state changes
+        - Code documentation and NatSpec comments
+    - path: "circuits/**/*.circom"
+      instructions: |
+        Review ZK circuit code for:
+        - Circuit correctness and completeness
+        - Constraint efficiency
+        - Input validation
+        - Security considerations for zero-knowledge proofs
+    - path: "**/*.{test,spec}.{ts,js,tsx,jsx}"
+      instructions: |
+        Review test files for:
+        - Test coverage completeness
+        - Test case quality and edge cases
+        - Mock usage appropriateness
+        - Test readability and maintainability
+    - path: "app/android/**/*"
+      instructions: |
+        Review Android-specific code for:
+        - Platform-specific implementations
+        - Performance considerations
+        - Security best practices for mobile
+    - path: "app/ios/**/*"
+      instructions: |
+        Review iOS-specific code for:
+        - Platform-specific implementations
+        - Performance considerations
+        - Security best practices for mobile
+
+chat:
+  auto_reply: true

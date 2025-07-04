@@ -4,6 +4,8 @@ include "../utils/passport/customHashers.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/date/isValid.circom";
 include "circomlib/circuits/poseidon.circom";
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../utils/passport/constants.circom";
 include "../utils/crypto/bitify/splitWordsToBytes.circom";
@@ -55,7 +57,7 @@ template REGISTER(
     var nLevels = getMaxDSCLevels();
 
     assert(MAX_DSC_LENGTH % 64 == 0);
-    
+
     // This means the attestation is a passport
     var attestation_id = 1;
 
@@ -91,17 +93,33 @@ template REGISTER(
     signal input siblings[nLevels];
 
     signal input csca_tree_leaf;
-    
+
     signal input secret;
 
     // assert only bytes are used in raw_dsc
     AssertBytes(MAX_DSC_LENGTH)(raw_dsc);
 
+    // Assert `dsc_pubKey_offset` fits in 2^12
+    component is_dsc_pk_offset_valid = Num2Bits(12);
+    is_dsc_pk_offset_valid.in <== dsc_pubKey_offset;
+
+    // Assert `dsc_pubKey_actual_size` fits in 2^12
+    component is_dsc_pk_actual_size_valid = Num2Bits(12);
+    is_dsc_pk_actual_size_valid.in <== dsc_pubKey_actual_size;
+
+    // Assert `dsc_pubKey_offset + dsc_pubKey_actual_size` fits in 2^12
+    component is_dsc_pk_offset_plus_actual_size_valid = Num2Bits(12);
+    is_dsc_pk_offset_plus_actual_size_valid.in <== dsc_pubKey_offset + dsc_pubKey_actual_size;
+
+    //Assert 'raw_dsc_actual_length' fits in 2^12
+    component is_raw_dsc_actual_length_valid = Num2Bits(12);
+    is_raw_dsc_actual_length_valid.in <== raw_dsc_actual_length;
+
     // check offsets refer to valid ranges
     signal dsc_pubKey_offset_in_range <== LessEqThan(12)([
         dsc_pubKey_offset + dsc_pubKey_actual_size,
         raw_dsc_actual_length
-    ]); 
+    ]);
     dsc_pubKey_offset_in_range === 1;
 
     // generate DSC leaf as poseidon(dsc_hash, csca_tree_leaf)
@@ -114,14 +132,36 @@ template REGISTER(
     var prefixLength = 33;
     var suffixLength = kLengthFactor == 1 ? getSuffixLength(signatureAlgorithm) : 0;
 
+    signal dsc_pubKey_prefix_start_index <== dsc_pubKey_offset - prefixLength;
+    signal dsc_pubKey_net_length <== prefixLength + dsc_pubKey_actual_size + suffixLength;
+
+    // Assert `dsc_pubKey_prefix_start_index` fits in ceil(MAX_DSC_LENGTH) bits
+    component is_dsc_pk_prefix_start_idx_valid = Num2Bits(log2Ceil(MAX_DSC_LENGTH));
+    is_dsc_pk_prefix_start_idx_valid.in <== dsc_pubKey_prefix_start_index;
+
+    // Assert `dsc_pubKey_net_length` fits in ceil(MAX_DSC_LENGTH) bits
+    component is_dsc_pk_net_len_valid = Num2Bits(log2Ceil(MAX_DSC_LENGTH));
+    is_dsc_pk_net_len_valid.in <== dsc_pubKey_net_length;
+
+    //Assert dsc_pubKey_prefix_start_index + dsc_pubKey_net_length is less than ceil(MAX_DSC_LENGTH) bits
+    component is_dsc_pk_prefix_plus_net_len_valid = Num2Bits(log2Ceil(MAX_DSC_LENGTH));
+    is_dsc_pk_prefix_plus_net_len_valid.in <== dsc_pubKey_prefix_start_index + dsc_pubKey_net_length;
+
+    // Assert end index (prefix start index + net length) is within MAX_DSC_LENGTH
+    signal is_prefix_end_idx_valid <== LessEqThan(log2Ceil(MAX_DSC_LENGTH))([
+        dsc_pubKey_prefix_start_index + dsc_pubKey_net_length,
+        raw_dsc_actual_length
+    ]);
+    is_prefix_end_idx_valid === 1;
+
     // get DSC public key from the certificate, along with its prefix and suffix
     signal pubkey_with_prefix_and_suffix[prefixLength + MAX_DSC_PUBKEY_LENGTH + suffixLength] <== SelectSubArray(
         MAX_DSC_LENGTH,
         prefixLength + MAX_DSC_PUBKEY_LENGTH + suffixLength
     )(
         raw_dsc,
-        dsc_pubKey_offset - prefixLength,
-        prefixLength + dsc_pubKey_actual_size + suffixLength
+        dsc_pubKey_prefix_start_index,
+        dsc_pubKey_net_length
     );
 
     CheckPubkeyPosition(
@@ -174,7 +214,7 @@ template REGISTER(
     // generate commitment
     signal dg1_packed_hash <== PackBytesAndPoseidon(DG1_LEN)(dg1);
     signal eContent_shaBytes_packed_hash <== PackBytesAndPoseidon(ECONTENT_HASH_ALGO_BYTES)(passportVerifier.eContentShaBytes);
-    
+
     signal output commitment <== Poseidon(5)([
         secret,
         attestation_id,

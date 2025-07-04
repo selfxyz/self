@@ -161,6 +161,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev Ensures that the user context data hash matches the user identifier in the proof.
     error InvalidUserIdentifierInProof();
 
+    /// @notice Thrown when the verification config is not set.
+    /// @dev Ensures that the verification config is set before performing verification.
+    error ConfigNotSet();
+
     // ====================================================
     // Constructor
     // ====================================================
@@ -263,7 +267,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function setVerificationConfigV2(
         SelfStructs.VerificationConfigV2 memory config
-    ) external virtual onlyProxy onlyOwner returns (bytes32 configId) {
+    ) external virtual onlyProxy returns (bytes32 configId) {
         configId = generateConfigId(config);
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         $v2._v2VerificationConfigs[configId] = config;
@@ -626,7 +630,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function getVerificationConfigV2(
         bytes32 configId
-    ) internal view virtual onlyProxy returns (SelfStructs.VerificationConfigV2 memory) {
+    ) public view virtual onlyProxy returns (SelfStructs.VerificationConfigV2 memory) {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         return $v2._v2VerificationConfigs[configId];
     }
@@ -638,6 +642,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         IdentityVerificationHubV2Storage storage $v2 = _getIdentityVerificationHubV2Storage();
         SelfStructs.VerificationConfigV2 memory verificationConfig = $v2._v2VerificationConfigs[configId];
         config = GenericFormatter.formatV2Config(verificationConfig);
+        if (generateConfigId(verificationConfig) != configId) {
+            revert ConfigNotSet();
+        }
+        return config;
     }
 
     /**
@@ -1025,7 +1033,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Get the user identifier index for this attestation type
         uint256 proofUserIdentifier = vcAndDiscloseProof.pubSignals[indices.userIdentifierIndex];
 
-        bytes32 sha256Hash = sha256(userContextData);
+        bytes memory userContextDataWithoutConfigId = userContextData[32:];
+        bytes32 sha256Hash = sha256(userContextDataWithoutConfigId);
         bytes20 ripemdHash = ripemd160(abi.encodePacked(sha256Hash));
         uint256 hashedValue = uint256(uint160(ripemdHash));
 

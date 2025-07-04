@@ -1,6 +1,7 @@
 pragma circom 2.1.9;
 
 include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
 include "constants.circom";
 
 /// @title CheckPubkeyPosition
@@ -11,7 +12,11 @@ include "constants.circom";
 /// @param signatureAlgorithm Algorithm ID indicating RSA/RSAPSS and key length
 /// @input array Array containing [prefix + pubkey + suffix]
 /// @input pubkey_actual_length Actual length of the public key
+/// @dev Assumes that the suffixLength is less than ceil(maxPubkeyLength + suffixLength) bits
 template CheckPubkeyPosition(prefixLength, maxPubkeyLength, suffixLength, signatureAlgorithm) {
+
+    assert(suffixLength < log2Ceil(maxPubkeyLength + suffixLength));
+
     signal input pubkey_with_prefix_and_suffix[prefixLength + maxPubkeyLength + suffixLength];
     signal input pubkey_actual_length;
 
@@ -80,6 +85,17 @@ template CheckPubkeyPosition(prefixLength, maxPubkeyLength, suffixLength, signat
         for (var i = 0; i < maxPubkeyLength + suffixLength; i++) {
             key_and_suffix[i] <== pubkey_with_prefix_and_suffix[prefixLength + i];
         }
+
+        //Assert pubkey_actual_length + suffixLength is less than ceil(maxPubkeyLength + suffixLength) bits
+        component is_pk_actual_len_plus_suffix_len_valid = Num2Bits(log2Ceil(maxPubkeyLength + suffixLength));
+        is_pk_actual_len_plus_suffix_len_valid.in <== pubkey_actual_length + suffixLength;
+
+        // Assert `pubkey_actual_length + suffixLength` is less than maxPubkeyLength + suffixLength
+        signal is_pubkey_actual_length_in_range <== LessEqThan(log2Ceil(maxPubkeyLength + suffixLength))([
+            pubkey_actual_length + suffixLength,
+            maxPubkeyLength + suffixLength
+        ]);
+        is_pubkey_actual_length_in_range === 1;
 
         // Extract the suffix
         signal suffix[suffixLength] <== SelectSubArray(

@@ -9,6 +9,7 @@ opt_out_usage
 
 require "bundler/setup"
 require "base64"
+require "xcodeproj"
 require_relative "helpers"
 
 # load secrets before project configuration
@@ -17,13 +18,7 @@ is_ci = Fastlane::Helpers.is_ci_environment?
 local_development = !is_ci
 
 # checks after calling Dotenv.load
-attempt_force_upload_local_dev = ENV["FORCE_UPLOAD_LOCAL_DEV"] == "true"
 android_has_permissions = false
-
-if local_development
-  # confirm that we want to force upload
-  Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
-end
 
 # Project configuration
 PROJECT_NAME = ENV["IOS_PROJECT_NAME"]
@@ -78,36 +73,10 @@ platform :ios do
     end
   end
 
-  desc "Prepare a new build for App Store submission"
-  lane :deploy do
-    result = prepare_ios_build(prod_release: true)
-
-    upload_to_app_store(
-      api_key: result[:api_key],
-      skip_screenshots: true,
-      skip_metadata: true,
-      submit_for_review: false,
-      automatic_release: false,
-      skip_app_version_update: true,
-    ) if result[:should_upload]
-
-    # Notify Slack about the new build
-    if ENV["SLACK_CHANNEL_ID"]
-      Fastlane::Helpers.upload_file_to_slack(
-        file_path: result[:ipa_path],
-        channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "🍎 iOS (Ready for Submission) v#{package_version} (Build #{result[:build_number]}) deployed to App Store Connect",
-        title: "#{PROJECT_NAME}-#{package_version}-#{result[:build_number]}.ipa",
-      )
-    else
-      UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
-    end
-  end
-
   private_lane :prepare_ios_build do |options|
     if local_development
       # app breaks with Xcode 16.3
-      xcode_select "/Applications/Xcode-16-2.app"
+      xcode_select "/Applications/Xcode.app"
 
       # Set up API key, profile, and potentially certificate for local dev
       Fastlane::Helpers.ios_dev_setup_connect_api_key(ios_connect_api_key_path)
@@ -141,7 +110,14 @@ platform :ios do
     ios_signing_certificate_name = "iPhone Distribution: #{ENV["IOS_TEAM_NAME"]} (#{ENV["IOS_TEAM_ID"]})"
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    build_number = Fastlane::Helpers.ios_increment_build_number(ios_xcode_profile_path)
+
+    # Get current build number without auto-incrementing
+    project = Xcodeproj::Project.open(ios_xcode_profile_path)
+    target = project.targets.first
+    config = target.build_configurations.first
+    build_number = config.build_settings["CURRENT_PROJECT_VERSION"]
+
+    # Verify build number is higher than TestFlight (but don't auto-increment)
     Fastlane::Helpers.ios_verify_app_store_build_number(ios_xcode_profile_path)
     Fastlane::Helpers.ios_verify_provisioning_profile
 
@@ -244,7 +220,12 @@ platform :android do
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    version_code = Fastlane::Helpers.android_increment_version_code(android_gradle_file_path)
+
+    # Get current version code without auto-incrementing
+    content = File.read(android_gradle_file_path)
+    match = content.match(/versionCode\s+(\d+)/)
+    version_code = match ? match[1].to_i : 1
+
     # TODO: uncomment when we have the permissions to run this action
     # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
 
