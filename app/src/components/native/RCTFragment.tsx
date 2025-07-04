@@ -4,6 +4,14 @@ import React, { useEffect, useRef } from 'react';
 import { NativeSyntheticEvent, requireNativeComponent } from 'react-native';
 import { findNodeHandle, UIManager } from 'react-native';
 
+// Type definition for the view manager config structure
+interface ViewManagerConfig {
+  Commands: {
+    [commandName: string]: number;
+  };
+  [key: string]: any;
+}
+
 export interface RCTFragmentViewManagerProps {
   RCTFragmentViewManager: ReturnType<typeof requireNativeComponent>;
   fragmentComponentName: string;
@@ -33,9 +41,11 @@ function dispatchCommand(
   try {
     UIManager.dispatchViewManagerCommand(
       viewId,
-      UIManager.getViewManagerConfig(fragmentComponentName).Commands[
-        command
-      ].toString(),
+      (
+        UIManager.getViewManagerConfig(
+          fragmentComponentName,
+        ) as ViewManagerConfig
+      ).Commands[command],
       [viewId],
     );
   } catch (e) {

@@ -48,6 +48,21 @@ const { trackEvent } = analytics();
 
 interface PassportNFCScanScreenProps {}
 
+/**
+ * Type definition for native events emitted by the Android NFC module.
+ * These events represent the current status of the NFC scanning process.
+ */
+type NativeEventData =
+  | 'Scanning.....'
+  | 'Stop moving.....'
+  | 'Auth.....'
+  | 'Reading DG1.....'
+  | 'Reading SOD.....'
+  | 'Reading DG14.....'
+  | 'Comparing.....'
+  | 'Scanning completed'
+  | ''; // Empty string for reset
+
 const emitter =
   Platform.OS === 'android'
     ? new NativeEventEmitter(NativeModules.nativeModule)
@@ -286,7 +301,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
           'NativeEvent',
-          (event: string) => console.info(event),
+          (event: Object) => {
+            // Type assertion is safe as we know the native module emits NativeEventData
+            const eventData = event as NativeEventData;
+            console.info(eventData);
+          },
         );
 
         return () => {

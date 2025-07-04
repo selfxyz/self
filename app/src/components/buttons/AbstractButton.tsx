@@ -19,7 +19,7 @@ interface AbstractButtonProps extends ButtonProps {
   bgColor: string;
   borderColor?: string;
   color: string;
-  onPress?: ((e: any) => void) | null | undefined;
+  onPress?: (e: any) => void;
 }
 
 const { trackEvent: analyticsTrackEvent } = analytics();

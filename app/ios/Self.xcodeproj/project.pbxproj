@@ -19,9 +19,6 @@
 		1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */; };
 		1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */; };
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
-		1686F0E42C500FBD00841CDE /* DocumentScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0E12C500FBD00841CDE /* DocumentScanner.swift */; };
-		1686F0E52C500FBD00841CDE /* DocumentScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0E22C500FBD00841CDE /* DocumentScannerBridge.m */; };
-		1686F0E62C500FBD00841CDE /* DocumentScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0E32C500FBD00841CDE /* DocumentScannerViewController.swift */; };
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		16E884A52C5BD764003B7125 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 16E884A42C5BD764003B7125 /* passport.json */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -55,9 +52,6 @@
 		1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = "<group>"; };
 		1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
 		1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = "<group>"; };
-		1686F0E12C500FBD00841CDE /* DocumentScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScanner.swift; sourceTree = "<group>"; };
-		1686F0E22C500FBD00841CDE /* DocumentScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DocumentScannerBridge.m; sourceTree = "<group>"; };
-		1686F0E32C500FBD00841CDE /* DocumentScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScannerViewController.swift; sourceTree = "<group>"; };
 		169349842CC694DA00166F21 /* OpenPassportDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassportDebug.entitlements; path = OpenPassport/OpenPassportDebug.entitlements; sourceTree = "<group>"; };
 		16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = "<group>"; };
 		16E884A42C5BD764003B7125 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = "<group>"; };
@@ -123,9 +117,6 @@
 				1648EB772CC9564D003BEA7D /* LottieView.swift */,
 				164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */,
 				164FD9682D569C1F0067E63B /* QRCodeScannerViewManager.m */,
-				1686F0E12C500FBD00841CDE /* DocumentScanner.swift */,
-				1686F0E22C500FBD00841CDE /* DocumentScannerBridge.m */,
-				1686F0E32C500FBD00841CDE /* DocumentScannerViewController.swift */,
 			);
 			name = OpenPassport;
 			sourceTree = "<group>";
@@ -393,9 +384,6 @@
 				165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */,
 				BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */,
 				164FD9692D569C1F0067E63B /* QRCodeScannerViewManager.m in Sources */,
-				1686F0E42C500FBD00841CDE /* DocumentScanner.swift in Sources */,
-				1686F0E52C500FBD00841CDE /* DocumentScannerBridge.m in Sources */,
-				1686F0E62C500FBD00841CDE /* DocumentScannerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
