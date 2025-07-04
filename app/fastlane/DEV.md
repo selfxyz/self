@@ -12,17 +12,17 @@ This document outlines how to work with the Fastlane setup and the GitHub Action
 > **Deployments will fail** if version numbers are not manually incremented first.
 
 ## Table of Contents
-- [Quick Start](#quick-start-)
-- [Prerequisites](#prerequisites-)
-- [Setup](#setup-)
-- [Workflow Overview](#workflow-overview-)
-- [Local Development](#local-development-)
-- [CI/CD Pipeline](#cicd-pipeline-)
-- [Version Management](#version-management-)
-- [Platform-Specific Notes](#platform-specific-notes-)
-- [Advanced Features](#advanced-features-)
-- [Troubleshooting](#troubleshooting-)
-- [Additional Resources](#additional-resources-)
+- [Quick Start](#quick-start)
+- [Prerequisites](#prerequisites)
+- [Setup](#setup)
+- [Workflow Overview](#workflow-overview)
+- [Local Development](#local-development)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [Version Management](#manual-build-number-management)
+- [Platform-Specific Notes](#platform-specific-notes)
+- [Advanced Features](#advanced-features)
+- [Troubleshooting](#troubleshooting)
+- [Additional Resources](#additional-resources)
 
 ## Quick Start 🚀
 

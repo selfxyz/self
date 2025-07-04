@@ -21,6 +21,7 @@ const SUPPORTED_PLATFORMS = Object.values(PLATFORMS);
 const FILE_PATHS = {
   PACKAGE_JSON: '../package.json',
   IOS_INFO_PLIST: '../ios/OpenPassport/Info.plist',
+  IOS_PROJECT_PBXPROJ: '../ios/Self.xcodeproj/project.pbxproj',
   ANDROID_BUILD_GRADLE: '../android/app/build.gradle',
 };
 
@@ -73,6 +74,20 @@ function safeReadFile(filePath, description) {
  * @returns {string|null} Command output or null if failed
  */
 function safeExecSync(command, description) {
+  // Whitelist of allowed commands to prevent command injection
+  const allowedCommands = [
+    'git branch --show-current',
+    'git status --porcelain',
+  ];
+
+  // Validate that the command is in the whitelist
+  if (!allowedCommands.includes(command)) {
+    console.warn(
+      `Warning: Command '${command}' is not allowed for security reasons`,
+    );
+    return null;
+  }
+
   try {
     return execSync(command, { encoding: 'utf8' }).trim();
   } catch (error) {
@@ -124,6 +139,9 @@ function displayUsageAndExit() {
   console.error('Environment Variables:');
   console.error(
     '  FORCE_UPLOAD_LOCAL_DEV=true   Use local fastlane instead of GitHub runner',
+  );
+  console.error(
+    '  IOS_PROJECT_PBXPROJ_PATH      Override iOS project.pbxproj path',
   );
   process.exit(1);
 }
@@ -181,10 +199,10 @@ function getIOSVersion() {
   const version = iosVersionMatch ? iosVersionMatch[1] : 'Unknown';
 
   // Extract build number from project.pbxproj
-  const projectPath = path.join(
-    __dirname,
-    '../ios/Self.xcodeproj/project.pbxproj',
-  );
+  // Allow iOS project path to be overridden by environment variable
+  const iosProjectPath =
+    process.env.IOS_PROJECT_PBXPROJ_PATH || FILE_PATHS.IOS_PROJECT_PBXPROJ;
+  const projectPath = path.join(__dirname, iosProjectPath);
   const projectFile = safeReadFile(projectPath, 'iOS project.pbxproj');
 
   let build = 'Unknown';
@@ -352,7 +370,9 @@ function promptConfirmation() {
   return new Promise(resolve => {
     readline.question('\nDo you want to proceed? (y/N): ', answer => {
       readline.close();
-      resolve(answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes');
+      // Trim whitespace and normalize to lowercase for robust comparison
+      const normalizedAnswer = answer.trim().toLowerCase();
+      resolve(normalizedAnswer === 'y' || normalizedAnswer === 'yes');
     });
   });
 }
@@ -403,17 +423,24 @@ async function executeLocalFastlaneDeployment(platform) {
     `\n${CONSOLE_SYMBOLS.ROCKET} Starting local fastlane deployment...`,
   );
 
-  // Set the environment variable to allow local upload
-  process.env.FORCE_UPLOAD_LOCAL_DEV = 'true';
-
   try {
     performYarnReinstall();
 
     const commands = getFastlaneCommands(platform);
 
+    // Create environment with FORCE_UPLOAD_LOCAL_DEV set for child processes
+    const envWithForceUpload = {
+      ...process.env,
+      FORCE_UPLOAD_LOCAL_DEV: 'true',
+    };
+
     for (const command of commands) {
       console.log(`\n${CONSOLE_SYMBOLS.REPEAT} Running: ${command}`);
-      execSync(command, { stdio: 'inherit', cwd: __dirname });
+      execSync(command, {
+        stdio: 'inherit',
+        cwd: __dirname,
+        env: envWithForceUpload,
+      });
     }
 
     console.log(
@@ -439,7 +466,17 @@ async function executeGithubRunnerDeployment(platform) {
   console.log(
     `\n${CONSOLE_SYMBOLS.ROCKET} Starting GitHub runner deployment...`,
   );
-  const command = `gh workflow run mobile-deploy.yml --ref $(git branch --show-current) -f platform=${platform}`;
+
+  // Safely get the current branch name to avoid command injection
+  const currentBranch = getCurrentBranch();
+  if (!currentBranch) {
+    console.error(
+      `${CONSOLE_SYMBOLS.ERROR} Could not determine current git branch`,
+    );
+    process.exit(1);
+  }
+
+  const command = `gh workflow run mobile-deploy.yml --ref ${currentBranch} -f platform=${platform}`;
 
   try {
     execSync(command, { stdio: 'inherit' });
