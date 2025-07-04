@@ -1,15 +1,10 @@
 {
   "extends": "@react-native/typescript-config",
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "esnext"
-    ],
+    "lib": ["dom", "esnext"],
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "customConditions": [
-      "react-native-strict-api"
-    ],
+    "customConditions": ["react-native-strict-api"],
     "skipLibCheck": true,
     "allowJs": false
   },
