@@ -236,7 +236,7 @@ describe('Mobile Deploy Confirm - File Parsing', () => {
         const content = fs.readFileSync(packageJsonPath, 'utf8');
         const packageJson = JSON.parse(content);
 
-        assert.ok(packageJson.hasOwnProperty('version'));
+        assert.ok(Object.hasOwn(packageJson, 'version'));
         assert.strictEqual(typeof packageJson.version, 'string');
         assert.ok(packageJson.version.match(/^\d+\.\d+\.\d+/)); // Basic semver check
       } else {
