@@ -3,6 +3,7 @@
 This document outlines how to work with the Fastlane setup and the GitHub Actions CI/CD pipeline for this mobile application.
 
 ## Table of Contents
+- [Quick Start](#quick-start-)
 - [Prerequisites](#prerequisites-)
 - [Setup](#setup-)
 - [Workflow Overview](#workflow-overview-)
@@ -13,6 +14,98 @@ This document outlines how to work with the Fastlane setup and the GitHub Action
 - [Advanced Features](#advanced-features-)
 - [Troubleshooting](#troubleshooting-)
 - [Additional Resources](#additional-resources-)
+
+## Quick Start 🚀
+
+**🚀 To deploy a mobile build, use these yarn commands:**
+
+```sh
+yarn mobile-deploy              # Deploy to both iOS and Android
+yarn mobile-deploy:ios          # Deploy to iOS TestFlight only
+yarn mobile-deploy:android      # Deploy to Android Internal Testing only
+```
+
+These commands will show you a confirmation dialog with deployment details before proceeding.
+
+### ✅ Preferred Method: Yarn Commands
+
+**⚠️ Always use the yarn deployment commands instead of running fastlane directly.**
+
+The yarn commands provide safety checks and handle both local and GitHub runner deployments:
+
+```sh
+# Deploy to both platforms (recommended)
+yarn mobile-deploy
+
+# Deploy to iOS TestFlight only
+yarn mobile-deploy:ios
+
+# Deploy to Android Internal Testing only
+yarn mobile-deploy:android
+```
+
+### Alternative: Direct Script Usage
+
+If you prefer to call the script directly:
+
+```sh
+# Deploy to iOS TestFlight
+node scripts/mobile-deploy-confirm.cjs ios
+
+# Deploy to Android Internal Testing
+node scripts/mobile-deploy-confirm.cjs android
+
+# Deploy to both platforms
+node scripts/mobile-deploy-confirm.cjs both
+```
+
+### Deployment Methods
+
+**GitHub Runner (Default):**
+- Triggers GitHub Actions workflow
+- Builds and uploads using GitHub infrastructure
+- Requires repository secrets to be configured
+- Recommended for most developers
+
+**Local Fastlane:**
+- Builds and uploads directly from your machine
+- Requires local certificates and API keys
+- Set `FORCE_UPLOAD_LOCAL_DEV=true` to enable
+- Only use if you have local development setup
+
+### Local Deployment (Advanced Users)
+
+If you have local certificates and API keys set up, you can use local deployment:
+
+```sh
+# Deploy to internal testing using local fastlane (with confirmation)
+yarn mobile-local-deploy          # Deploy to both platforms using local fastlane
+yarn mobile-local-deploy:ios      # Deploy iOS to TestFlight Internal Testing
+yarn mobile-local-deploy:android  # Deploy Android to Google Play Internal Testing
+```
+
+**Important Notes:**
+- All `mobile-local-deploy` commands use the same confirmation script as regular deployment
+- Local deployment goes to **internal testing** (TestFlight Internal Testing / Google Play Internal Testing)
+- This is safer than the previous behavior which went directly to production stores
+- For production deployment, use the GitHub runner method or call fastlane directly (not recommended)
+
+**Why internal testing?** This provides the same safety as GitHub runner deployments while allowing you to use your local machine for building.
+
+### Direct Fastlane Commands (Not Recommended)
+
+⚠️ **Use the confirmation script above instead of these direct commands.**
+
+The available fastlane lanes are documented in the auto-generated `README.md`, but you should prefer the yarn commands for safety and consistency.
+
+### Deployment Status
+
+After deployment, you can check the status:
+
+- **GitHub Runner:** Check [GitHub Actions](https://github.com/YOUR_ORG/YOUR_REPO/actions) for build progress
+- **Local Fastlane:** Check the terminal output and app store dashboards directly
+- **iOS:** Check [App Store Connect](https://appstoreconnect.apple.com) for TestFlight builds
+- **Android:** Check [Google Play Console](https://play.google.com/console) for Internal Testing builds
 
 ## Prerequisites 🛠️
 
@@ -162,27 +255,18 @@ For iOS builds, you can also use Fastlane directly:
 * `bundle exec fastlane ios internal_test` - Build and upload to TestFlight
 * `bundle exec fastlane ios deploy` - Build and upload to App Store Connect
 
-#### Forced Local Deployment 🚀
+#### Local Deployment with Confirmation 🚀
 
-**`yarn force-local-upload-deploy`**
-**`yarn force-local-upload-deploy:ios`**
-**`yarn force-local-upload-deploy:android`**
+**`yarn mobile-local-deploy`**
+**`yarn mobile-local-deploy:ios`**
+**`yarn mobile-local-deploy:android`**
 
-* Runs the `deploy` Fastlane lane with local development settings
+* Runs the `internal_test` Fastlane lane with local development settings
 * Uses `FORCE_UPLOAD_LOCAL_DEV=true` to bypass CI checks
-* Useful for testing deployment process locally or manual deploys
-* Cleans build directories first
-* **Use with caution!** Will attempt to upload to production if you have permissions
-
-#### Forced Local Testing 🧪
-
-**`yarn force-local-upload-test`**
-**`yarn force-local-upload-test:ios`**
-**`yarn force-local-upload-test:android`**
-
-* Similar to deploy version, but runs `internal_test` lane locally
-* Useful for testing the internal distribution process
-* Uses `FORCE_UPLOAD_LOCAL_DEV=true` flag
+* Shows confirmation dialog before proceeding
+* Deploys to **internal testing** (TestFlight Internal Testing / Google Play Internal Testing)
+* Requires local certificates and API keys to be configured
+* **Use with caution!** Make sure you have proper local setup
 
 **Alternative: Direct Fastlane Commands**
 
@@ -352,15 +436,11 @@ The CI/CD pipeline automatically manages build numbers/version codes with sophis
 
 ### iOS Development Notes 🍏
 
-1. **Xcode Version Compatibility:**
-   * Local development currently requires Xcode 16.2 due to compatibility issues with 16.3
-   * The Fastfile includes `xcode_select "/Applications/Xcode-16-2.app"` for local builds
-
-2. **Code Signing:**
+1. **Code Signing:**
    * The system automatically sets up manual code signing for consistency
    * Certificates and provisioning profiles are automatically decoded and installed for local development
 
-3. **Build Configuration:**
+2. **Build Configuration:**
    * Uses Apple Generic Versioning system for build number management
    * Automatically configures export options for App Store distribution
 
