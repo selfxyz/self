@@ -298,6 +298,7 @@ jobs:
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
           NODE_OPTIONS: "--max-old-space-size=8192"
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
         timeout-minutes: 90
         run: |
@@ -490,6 +491,7 @@ jobs:
           ANDROID_PLAY_STORE_JSON_KEY_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
           NODE_OPTIONS: "--max-old-space-size=8192"
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
         run: |
           cd ${{ env.APP_PATH }}
