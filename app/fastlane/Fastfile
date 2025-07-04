@@ -102,7 +102,7 @@ platform :ios do
   private_lane :prepare_ios_build do |options|
     if local_development
       # app breaks with Xcode 16.3
-      xcode_select "/Applications/Xcode-16-2.app"
+      xcode_select "/Applications/Xcode.app"
 
       # Set up API key, profile, and potentially certificate for local dev
       Fastlane::Helpers.ios_dev_setup_connect_api_key(ios_connect_api_key_path)
