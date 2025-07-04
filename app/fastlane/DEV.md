@@ -2,6 +2,15 @@
 
 This document outlines how to work with the Fastlane setup and the GitHub Actions CI/CD pipeline for this mobile application.
 
+> **⚠️ IMPORTANT - Manual Version Management Required**
+>
+> Build numbers are **manually managed** in this project. Before every deployment, you **must**:
+> 1. Run `yarn bump-version:patch|minor|major` to increment the version
+> 2. Run `yarn sync-versions` to update native files
+> 3. Commit and push the changes
+>
+> **Deployments will fail** if version numbers are not manually incremented first.
+
 ## Table of Contents
 - [Quick Start](#quick-start-)
 - [Prerequisites](#prerequisites-)
@@ -17,7 +26,22 @@ This document outlines how to work with the Fastlane setup and the GitHub Action
 
 ## Quick Start 🚀
 
-**🚀 To deploy a mobile build, use these yarn commands:**
+**⚠️ Important:** Before deploying, you must manually increment the build version:
+
+```sh
+# 1. First, bump the version (choose one)
+yarn bump-version:patch         # For patch releases (1.0.0 → 1.0.1)
+yarn bump-version:minor         # For minor releases (1.0.0 → 1.1.0)
+yarn bump-version:major         # For major releases (1.0.0 → 2.0.0)
+
+# 2. Sync version to native files
+yarn sync-versions
+
+# 3. Commit the changes
+git add . && git commit -m "Bump version" && git push
+```
+
+**🚀 Then deploy with these yarn commands:**
 
 ```sh
 yarn mobile-deploy              # Deploy to both iOS and Android
@@ -223,10 +247,11 @@ The project uses several custom Fastlane lanes to handle different build and dep
 ### Deployment Flow
 
 1. **Version Management**: Update version in package.json using bump scripts
-2. **Build Process**: Run the appropriate lane for internal testing or production
-3. **Auto Build Numbers**: System automatically fetches latest build number from stores and increments
-4. **Upload**: Artifacts are uploaded to respective app stores (subject to permissions)
-5. **Notification**: Slack notifications sent with build artifacts upon successful builds
+2. **Version Sync**: Run sync-versions to update native files
+3. **Commit Changes**: Commit version changes to repository
+4. **Build Process**: Run the appropriate lane for internal testing or production
+5. **Upload**: Artifacts are uploaded to respective app stores (subject to permissions)
+6. **Notification**: Slack notifications sent with build artifacts upon successful builds
 
 ## Local Development 💻
 
@@ -277,17 +302,40 @@ For more control, you can run Fastlane directly with local development settings:
 
 ### Version Management 🏷️
 
+**⚠️ Required before every deployment:**
+
 **`yarn bump-version:major|minor|patch`**
 
 * Increments version in `package.json` according to semantic versioning
 * Creates version commit and tag automatically
-* Calls `sync-versions` afterwards
+* **Must be run before deployment** to ensure unique version numbers
 
 **`yarn sync-versions`**
 
 * Synchronizes the version from `package.json` to native files
 * Updates iOS `Info.plist` and Android `build.gradle`
 * Ensures consistency across JS bundle and native app wrappers
+* **Must be run after bump-version** and before deployment
+
+**Complete Version Update Workflow:**
+
+```bash
+# 1. Bump version (choose appropriate level)
+yarn bump-version:patch         # For bug fixes
+yarn bump-version:minor         # For new features
+yarn bump-version:major         # For breaking changes
+
+# 2. Sync to native files
+yarn sync-versions
+
+# 3. Commit changes
+git add .
+git commit -m "Bump version to $(node -p "require('./package.json').version")"
+git push
+
+# 4. Now you can deploy
+yarn mobile-deploy
+```
 
 ### Local Testing with `act` 🧰
 
@@ -340,7 +388,7 @@ Runs on `macos-latest` and performs the following steps:
 1. Sets up the environment (Node.js, Ruby, CocoaPods)
 2. Processes iOS secrets and certificates
 3. Runs appropriate Fastlane lane based on branch
-4. Commits updated build numbers back to the repository
+4. Builds and deploys the application using the manually set version
 
 #### `build-android` Job
 
@@ -348,7 +396,7 @@ Runs on `ubuntu-latest` and performs the following steps:
 1. Sets up the environment (Node.js, Java, Android SDK)
 2. Processes Android secrets
 3. Runs appropriate Fastlane lane based on branch
-4. Commits updated version code back to the repository
+4. Builds and deploys the application using the manually set version
 
 ### Deployment Destinations
 
@@ -362,48 +410,56 @@ Runs on `ubuntu-latest` and performs the following steps:
   * Android: Google Play Production track
   * Triggered on pushes to `main` branch
 
-## Auto Build Number Management 🔢
+## Manual Build Number Management 🔢
 
-The CI/CD pipeline automatically manages build numbers/version codes with sophisticated logic:
+Build numbers and version codes must be manually incremented before deployment using the provided scripts:
+
+### Prerequisites for Deployment
+
+**⚠️ Important:** Before running any deployment commands, you must manually increment the build version using these steps:
+
+1. **Update Version Number:**
+   ```bash
+   # Increment version in package.json (choose one)
+   yarn bump-version:major    # For major releases (1.0.0 → 2.0.0)
+   yarn bump-version:minor    # For minor releases (1.0.0 → 1.1.0)
+   yarn bump-version:patch    # For patch releases (1.0.0 → 1.0.1)
+   ```
+
+2. **Sync to Native Files:**
+   ```bash
+   # Synchronize version from package.json to native files
+   yarn sync-versions
+   ```
+
+3. **Commit Changes:**
+   ```bash
+   # Commit the version changes
+   git add .
+   git commit -m "Bump version to $(node -p "require('./package.json').version")"
+   git push
+   ```
 
 ### iOS Build Numbers
 
-1. **Automatic Fetching:**
-   * The pipeline fetches the latest build number from TestFlight via the App Store Connect API
-   * Increments by 1 for the new build
-   * Includes verification to ensure the new build number is higher than the current TestFlight version
+1. **Manual Management:**
+   * Build numbers are managed through the version bump scripts
+   * The `sync-versions` script updates `Info.plist` and Xcode project files
+   * Each deployment requires a unique build number higher than the previous version
 
-2. **Implementation:**
-   ```ruby
-   latest = Fastlane::Actions::LatestTestflightBuildNumberAction.run(
-     api_key: api_key,
-     app_identifier: ENV["IOS_APP_IDENTIFIER"],
-     platform: "ios"
-   )
-   new_build_number = latest + 1
-   ```
-
-3. **Commit Back to Repository:**
-   * After incrementing, changes are automatically committed back to the branch
-   * Files affected: `./app/ios/OpenPassport/Info.plist` and `./app/ios/Self.xcodeproj/project.pbxproj`
+2. **Files Updated:**
+   * `./app/ios/OpenPassport/Info.plist` - `CFBundleVersion`
+   * `./app/ios/Self.xcodeproj/project.pbxproj` - `CURRENT_PROJECT_VERSION`
 
 ### Android Version Code
 
-1. **Local Incrementing:**
-   * The pipeline increments the version code in the Gradle file locally
-   * **Note:** Cannot verify against Google Play due to permission limitations (see Android Caveats)
-   * Uses sophisticated logic to parse and update the `versionCode` field
+1. **Manual Management:**
+   * Version codes are managed through the version bump scripts
+   * The `sync-versions` script updates the `build.gradle` file
+   * Each deployment requires a unique version code higher than the previous version
 
-2. **Implementation:**
-   ```ruby
-   # Parses current version code from build.gradle
-   current = content.match(/versionCode\s+(\d+)/)[1].to_i
-   new_version = current + 1
-   ```
-
-3. **Commit Back to Repository:**
-   * After building, the workflow commits the incremented version code
-   * File affected: `./app/android/app/build.gradle`
+2. **Files Updated:**
+   * `./app/android/app/build.gradle` - `versionCode` and `versionName`
 
 ## Platform-Specific Notes 📱
 
@@ -426,9 +482,9 @@ The CI/CD pipeline automatically manages build numbers/version codes with sophis
    * The CI/CD pipeline uses `bundle exec fastlane android internal_test` directly
 
 3. **Version Code Management:**
-   * The system increments version codes locally but cannot verify against Google Play
-   * The `android_verify_version_code` function exists but is commented out due to permission issues
-   * Version codes are still properly incremented and committed back to the repository
+   * Version codes must be manually incremented using the `bump-version` scripts before deployment
+   * The `sync-versions` script updates the version code in the Gradle file
+   * Ensure version codes are properly incremented and committed before running deployment commands
 
 4. **For Local Developers:**
    * When testing Android deployment locally, the AAB file will be generated but upload will be skipped
@@ -515,6 +571,9 @@ If you encounter issues with version syncing between `package.json` and native p
 
 2. **Version Mismatch Checking:**
    ```bash
+   # Check version in package.json
+   node -p "require('./package.json').version"
+
    # Check version in Info.plist
    /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" app/ios/OpenPassport/Info.plist
 
@@ -523,9 +582,21 @@ If you encounter issues with version syncing between `package.json` and native p
    ```
 
 3. **Fixing Discrepancies:**
-   * Always update `package.json` version first using the `bump-version` scripts
-   * Then run `sync-versions` to update native files
-   * For manual fixes, edit the version in each file and commit the changes
+   * **Always update `package.json` version first** using the `bump-version` scripts:
+     ```bash
+     yarn bump-version:patch  # or minor/major
+     ```
+   * Then run `sync-versions` to update native files:
+     ```bash
+     yarn sync-versions
+     ```
+   * Commit all changes before deploying:
+     ```bash
+     git add .
+     git commit -m "Bump version to $(node -p "require('./package.json').version")"
+     git push
+     ```
+   * **Never manually edit version numbers** in native files - always use the scripts to prevent inconsistencies
 
 ### iOS Build Issues
 
@@ -537,7 +608,7 @@ If you encounter issues with version syncing between `package.json` and native p
 
 2. **TestFlight Upload Failures**
    * Check that your App Store Connect API key has sufficient permissions
-   * Verify build number increment logic is working correctly
+   * Verify build number was manually incremented using bump-version scripts
    * Ensure binary is properly signed with distribution certificate
 
 3. **Xcode Version Issues**
@@ -554,7 +625,7 @@ If you encounter issues with version syncing between `package.json` and native p
 2. **Google Play Upload Limitations**
    * Remember that uploads are currently disabled due to permission limitations
    * Manual upload via Google Play Console is required
-   * Version codes are still properly incremented for manual uploads
+   * Ensure version codes are manually incremented using bump-version scripts before building
 
 3. **Build Failures**
    * Check that all required environment variables are set
