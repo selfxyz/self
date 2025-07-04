@@ -135,11 +135,17 @@ After deployment, you can check the status:
 
 Before working with this setup, ensure you have the following installed:
 
+* **Node.js** - Version 18 or higher (for JavaScript dependencies and deployment scripts)
+* **Yarn** - Package manager for JavaScript dependencies
+* **Git** - Required for branch detection and status checking during deployments
+* **GitHub CLI (`gh`)** - **Required** for GitHub runner deployments (default method)
+  - Install from [https://cli.github.com/](https://cli.github.com/)
+  - Authenticate with `gh auth login` after installation
+  - Used to trigger GitHub Actions workflows for deployments
 * **Ruby** - Fastlane requires Ruby (version 2.6.0 or higher recommended)
 * **Bundler** - For managing Ruby dependencies
 * **Xcode** - For iOS development (Note: Local development currently requires Xcode 16.2 due to compatibility issues with 16.3)
 * **Android Studio** - For Android development
-* **Node.js & Yarn** - For JavaScript dependencies
 * **Docker** - Optional, required for local testing with `act`
 
 ## Setup ⚙️
