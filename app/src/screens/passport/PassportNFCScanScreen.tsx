@@ -286,7 +286,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
           'NativeEvent',
-          (event: string) => console.info(event),
+          (event: any) => console.info(event),
         );
 
         return () => {

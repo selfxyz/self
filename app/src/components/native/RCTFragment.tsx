@@ -33,7 +33,7 @@ function dispatchCommand(
   try {
     UIManager.dispatchViewManagerCommand(
       viewId,
-      UIManager.getViewManagerConfig(fragmentComponentName).Commands[
+      (UIManager.getViewManagerConfig(fragmentComponentName) as any).Commands[
         command
       ].toString(),
       [viewId],
