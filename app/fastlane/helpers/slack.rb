@@ -48,9 +48,7 @@ module Fastlane
         with_retry(max_retries: 3, delay: 5) do
           upload_uri = URI.parse(upload_url)
           upload_request = Net::HTTP::Post.new(upload_uri)
-          File.open(file_path, "rb") do |file|
-            upload_request.body_stream = file
-          end
+          upload_request.body = File.binread(file_path)
           upload_request["Content-Type"] = "application/octet-stream"
           upload_request["Content-Length"] = file_size.to_s
           upload_http = Net::HTTP.new(upload_uri.host, upload_uri.port)
