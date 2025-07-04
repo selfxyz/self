@@ -51,14 +51,14 @@ platform :ios do
   lane :internal_test do
     result = prepare_ios_build(prod_release: false)
 
-    # upload_to_testflight(
-    #   api_key: result[:api_key],
-    #   distribute_external: true,
-    #   # TODO: fix error about the groups not being set correctly, fwiw groups are set in the app store connect
-    #   groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
-    #   changelog: "",
-    #   skip_waiting_for_build_processing: false,
-    # ) if result[:should_upload]
+    upload_to_testflight(
+      api_key: result[:api_key],
+      distribute_external: true,
+      # TODO: fix error about the groups not being set correctly, fwiw groups are set in the app store connect
+      groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
+      changelog: "",
+      skip_waiting_for_build_processing: false,
+    ) if result[:should_upload]
 
     # Notify Slack about the new build
     if ENV["SLACK_CHANNEL_ID"]
