@@ -40,6 +40,7 @@ on:
 jobs:
   build-ios:
     runs-on: macos-latest
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
         run: |
@@ -50,12 +51,6 @@ jobs:
           else
             echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
           fi
-
-      - name: Verify platform selection
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'android'
-        run: |
-          echo "🤖 Skipping iOS build - Android platform selected"
-          exit 0
 
       - name: Set up Xcode
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
@@ -375,6 +370,7 @@ jobs:
 
   build-android:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
         run: |
@@ -385,12 +381,6 @@ jobs:
           else
             echo "🚀 Mobile deployment is enabled - proceeding with Android build"
           fi
-
-      - name: Verify platform selection
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform == 'ios'
-        run: |
-          echo "🍎 Skipping Android build - iOS platform selected"
-          exit 0
 
       - uses: actions/checkout@v4
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
