@@ -5,12 +5,6 @@ const path = require('path');
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 
-// Mock data for testing
-const MOCK_PACKAGE_JSON = {
-  name: 'test-app',
-  version: '1.2.3',
-};
-
 const MOCK_IOS_INFO_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -200,7 +194,7 @@ describe('Mobile Deploy Confirm - File Parsing', () => {
 
         // If it's a number, it should be positive
         if (build !== 'Unknown') {
-          assert.ok(parseInt(build) > 0);
+          assert.ok(parseInt(build, 10) > 0);
         }
       } else {
         console.warn('iOS project.pbxproj not found - skipping real file test');
@@ -226,7 +220,7 @@ describe('Mobile Deploy Confirm - File Parsing', () => {
 
         // If versionCode is a number, it should be positive
         if (versionCode !== 'Unknown') {
-          assert.ok(parseInt(versionCode) > 0);
+          assert.ok(parseInt(versionCode, 10) > 0);
         }
       } else {
         console.warn(

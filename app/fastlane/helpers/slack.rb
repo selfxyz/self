@@ -35,6 +35,12 @@ module Fastlane
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl = true
           response = http.request(request)
+
+          # Handle rate limiting specifically
+          if response.code == "429"
+            raise "HTTP 429 Rate limit exceeded for Slack API"
+          end
+
           raise "Slack API failed: #{response.code} #{response.body}" unless response.is_a?(Net::HTTPSuccess)
           json = JSON.parse(response.body)
           raise "Slack API Error: #{json["error"]}" unless json["ok"]
@@ -54,6 +60,12 @@ module Fastlane
           upload_http = Net::HTTP.new(upload_uri.host, upload_uri.port)
           upload_http.use_ssl = true
           upload_response = upload_http.request(upload_request)
+
+          # Handle rate limiting specifically
+          if upload_response.code == "429"
+            raise "HTTP 429 Rate limit exceeded for file upload"
+          end
+
           raise "File upload failed: #{upload_response.code} #{upload_response.message}" unless upload_response.is_a?(Net::HTTPOK)
         end
       end
@@ -72,6 +84,12 @@ module Fastlane
           complete_http = Net::HTTP.new(complete_uri.host, complete_uri.port)
           complete_http.use_ssl = true
           complete_response = complete_http.request(complete_request)
+
+          # Handle rate limiting specifically
+          if complete_response.code == "429"
+            raise "HTTP 429 Rate limit exceeded for Slack API"
+          end
+
           raise "Slack API failed: #{complete_response.code} #{complete_response.body}" unless complete_response.is_a?(Net::HTTPSuccess)
           json = JSON.parse(complete_response.body)
           raise "Slack API Error: #{json["error"]}" unless json["ok"]

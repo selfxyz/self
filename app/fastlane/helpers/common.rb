@@ -46,7 +46,7 @@ module Fastlane
         ENV["CI"] == "true" || ENV["FORCE_UPLOAD_LOCAL_DEV"] == "true"
       end
 
-      # Helper wrapper to retry a block
+      # Helper wrapper to retry a block with exponential backoff for rate limits
       def with_retry(max_retries: 3, delay: 5)
         attempts = 0
         begin
@@ -54,8 +54,19 @@ module Fastlane
         rescue => e
           attempts += 1
           if attempts < max_retries
-            UI.important("Retry ##{attempts} after error: #{e.message}")
-            sleep(delay)
+            # Check if this is a rate limit error (HTTP 429)
+            is_rate_limit = e.message.include?("429") || e.message.downcase.include?("rate limit")
+
+            if is_rate_limit
+              # Exponential backoff for rate limits: 5s, 10s, 20s, 40s...
+              backoff_delay = delay * (2 ** (attempts - 1))
+              UI.important("Rate limit hit. Retry ##{attempts} after #{backoff_delay}s: #{e.message}")
+              sleep(backoff_delay)
+            else
+              # Regular retry with fixed delay for other errors
+              UI.important("Retry ##{attempts} after #{delay}s: #{e.message}")
+              sleep(delay)
+            end
             retry
           else
             UI.user_error!("Failed after #{max_retries} retries: #{e.message}")

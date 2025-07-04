@@ -156,8 +156,13 @@ function getDeploymentMethod() {
  */
 function getMainVersion() {
   const packageJsonPath = path.join(__dirname, FILE_PATHS.PACKAGE_JSON);
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  return packageJson.version;
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    return packageJson.version || 'Unknown';
+  } catch (error) {
+    console.warn(`Warning: Could not parse package.json: ${error.message}`);
+    return 'Unknown';
+  }
 }
 
 /**
