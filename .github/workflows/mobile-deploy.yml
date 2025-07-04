@@ -36,18 +36,10 @@ on:
           - ios
           - android
           - both
-  pull_request:
-    branches:
-      - main
-      - dev
-    paths:
-      - "app/**"
-      - ".github/workflows/mobile-deploy.yml"
-      - ".github/actions/**"
 
 jobs:
   build-ios:
-    runs-on: macos-latest-xlarge
+    runs-on: macos-latest
     steps:
       - name: Mobile deployment status
         run: |
@@ -68,9 +60,9 @@ jobs:
       - name: Set up Xcode
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
         uses: maxim-lobanov/setup-xcode@v1
-        with:
-          # some cocoapods won't compile with xcode 16.3
-          xcode-version: "16.2"
+        # with:
+        #   # some cocoapods won't compile with xcode 16.3
+        #   xcode-version: "16.2"
 
       - uses: actions/checkout@v4
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
@@ -382,7 +374,7 @@ jobs:
           commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
 
   build-android:
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     steps:
       - name: Mobile deployment status
         run: |
