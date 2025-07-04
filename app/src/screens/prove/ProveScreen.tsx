@@ -49,7 +49,7 @@ const ProveScreen: React.FC = () => {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
-  const scrollViewRef = useRef<any>(null);
+  const scrollViewRef = useRef<ScrollView | null>(null);
 
   const isContentShorterThanScrollView = useMemo(
     () => scrollViewContentHeight <= scrollViewHeight,
