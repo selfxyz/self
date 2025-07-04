@@ -17,13 +17,7 @@ is_ci = Fastlane::Helpers.is_ci_environment?
 local_development = !is_ci
 
 # checks after calling Dotenv.load
-attempt_force_upload_local_dev = ENV["FORCE_UPLOAD_LOCAL_DEV"] == "true"
 android_has_permissions = false
-
-if local_development
-  # confirm that we want to force upload
-  Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
-end
 
 # Project configuration
 PROJECT_NAME = ENV["IOS_PROJECT_NAME"]

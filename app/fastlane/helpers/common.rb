@@ -31,7 +31,7 @@ module Fastlane
         missing = required_vars.select { |var| ENV[var].to_s.strip.empty? }
         if missing.any?
           report_error(
-            "Missing required environment variables: #{missing.join(', ')}",
+            "Missing required environment variables: #{missing.join(", ")}",
             "Please check your secrets",
             "Environment verification failed"
           )
@@ -44,13 +44,6 @@ module Fastlane
       def should_upload_app(platform)
         return false if ENV["ACT"] == "true" || ENV["IS_PR"] == "true"
         ENV["CI"] == "true" || ENV["FORCE_UPLOAD_LOCAL_DEV"] == "true"
-      end
-
-      # Confirm with developer before forcing an upload locally
-      def confirm_force_upload
-        UI.important "⚠️  FORCE_UPLOAD_LOCAL_DEV is set to true. This will upload the build to the store."
-        UI.important "Are you sure you want to continue? (y/n)"
-        abort("Upload cancelled by user") unless STDIN.gets.chomp.downcase == "y"
       end
 
       # Helper wrapper to retry a block
