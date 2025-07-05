@@ -63,6 +63,10 @@ type NativeEventData =
   | 'Scanning completed'
   | ''; // Empty string for reset
 
+interface NativeEvent {
+  [key: string]: any;
+}
+
 const emitter =
   Platform.OS === 'android'
     ? new NativeEventEmitter(NativeModules.nativeModule)
@@ -301,9 +305,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
           'NativeEvent',
-          (event: Object) => {
+          (event: NativeEvent) => {
             // Type assertion is safe as we know the native module emits NativeEventData
-            const eventData = event as NativeEventData;
+            const eventData = event as unknown as NativeEventData;
             console.info(eventData);
           },
         );
