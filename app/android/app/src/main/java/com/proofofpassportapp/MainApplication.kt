@@ -12,6 +12,7 @@ import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultReactNativeHost
+import com.facebook.soloader.SoLoader
 
 class MainApplication : Application(), ReactApplication {
 
@@ -37,7 +38,10 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
 
-    // ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
+    // - Initialize SoLoader BEFORE any React Native initialization
+    // - This prevents "SoLoader.init() not yet called" crashes
+    // - Must be called before reactNativeHost is accessed
+    SoLoader.init(this, false)
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val channel = NotificationChannel(
