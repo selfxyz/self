@@ -18,6 +18,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    
+    // Check if app was launched from a notification
+    if let notificationOption = launchOptions?[.remoteNotification] as? [String: Any] {
+      // Handle initial notification data
+      handleNotificationData(notificationOption)
+    }
 
     // Initialize Firebase
     FirebaseApp.configure()
