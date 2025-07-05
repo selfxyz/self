@@ -3,14 +3,42 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import remoteConfig from '@react-native-firebase/remote-config';
 
+export type FeatureFlagValue = string | boolean | number;
+
 interface LocalOverride {
-  [key: string]: boolean;
+  [key: string]: FeatureFlagValue;
 }
 
 const LOCAL_OVERRIDES_KEY = 'feature_flag_overrides';
 
-const defaultFlags: Record<string, boolean> = {
+const defaultFlags: Record<string, FeatureFlagValue> = {
   aesop: false,
+};
+
+// Helper function to detect and parse remote config values
+const getRemoteConfigValue = (
+  key: string,
+  defaultValue: FeatureFlagValue,
+): FeatureFlagValue => {
+  const configValue = remoteConfig().getValue(key);
+
+  if (typeof defaultValue === 'boolean') {
+    return configValue.asBoolean();
+  } else if (typeof defaultValue === 'number') {
+    return configValue.asNumber();
+  } else if (typeof defaultValue === 'string') {
+    return configValue.asString();
+  }
+
+  // Fallback: try to infer type from the remote config value
+  const stringValue = configValue.asString();
+  if (stringValue === 'true' || stringValue === 'false') {
+    return configValue.asBoolean();
+  }
+  if (!isNaN(Number(stringValue)) && stringValue !== '') {
+    return configValue.asNumber();
+  }
+  return stringValue;
 };
 
 // Local override management
@@ -26,7 +54,7 @@ export const getLocalOverrides = async (): Promise<LocalOverride> => {
 
 export const setLocalOverride = async (
   flag: string,
-  value: boolean,
+  value: FeatureFlagValue,
 ): Promise<void> => {
   try {
     const overrides = await getLocalOverrides();
@@ -67,19 +95,19 @@ export const initRemoteConfig = async () => {
   }
 };
 
-export const getFeatureFlag = async (
+export const getFeatureFlag = async <T extends FeatureFlagValue>(
   flag: string,
-  defaultValue = false,
-): Promise<boolean> => {
+  defaultValue: T,
+): Promise<T> => {
   try {
     // Check local overrides first
     const localOverrides = await getLocalOverrides();
     if (localOverrides.hasOwnProperty(flag)) {
-      return localOverrides[flag];
+      return localOverrides[flag] as T;
     }
 
     // Fall back to remote config
-    return remoteConfig().getValue(flag).asBoolean() ?? defaultValue;
+    return getRemoteConfigValue(flag, defaultValue) as T;
   } catch (error) {
     console.error('Failed to get feature flag:', error);
     return defaultValue;
@@ -89,10 +117,11 @@ export const getFeatureFlag = async (
 export const getAllFeatureFlags = async (): Promise<
   Array<{
     key: string;
-    remoteValue?: boolean;
-    overrideValue?: boolean;
-    value: boolean;
+    remoteValue?: FeatureFlagValue;
+    overrideValue?: FeatureFlagValue;
+    value: FeatureFlagValue;
     source: string;
+    type: 'boolean' | 'string' | 'number';
   }>
 > => {
   try {
@@ -102,16 +131,32 @@ export const getAllFeatureFlags = async (): Promise<
     // Get all remote/default flags
     const remoteFlags = Object.keys(keys).map(key => {
       const configValue = keys[key];
-      const remoteVal = configValue.asBoolean();
+
+      // Try to determine the type from default flags or infer from value
+      const defaultValue = defaultFlags[key];
+      const remoteVal =
+        defaultValue !== undefined
+          ? getRemoteConfigValue(key, defaultValue)
+          : configValue.asString(); // Default to string if no default defined
+
       const hasLocalOverride = localOverrides.hasOwnProperty(key);
       const overrideVal = hasLocalOverride ? localOverrides[key] : undefined;
       const effectiveVal = hasLocalOverride ? overrideVal! : remoteVal;
+
+      // Determine type
+      const type =
+        typeof effectiveVal === 'boolean'
+          ? 'boolean'
+          : typeof effectiveVal === 'number'
+            ? 'number'
+            : 'string';
 
       return {
         key,
         remoteValue: remoteVal,
         overrideValue: overrideVal,
         value: effectiveVal,
+        type: type as 'boolean' | 'string' | 'number',
         source: hasLocalOverride
           ? 'Local Override'
           : configValue.getSource() === 'remote'
@@ -127,13 +172,24 @@ export const getAllFeatureFlags = async (): Promise<
     // Add any local overrides that don't exist in remote config
     const localOnlyFlags = Object.keys(localOverrides)
       .filter(key => !keys.hasOwnProperty(key))
-      .map(key => ({
-        key,
-        remoteValue: undefined,
-        overrideValue: localOverrides[key],
-        value: localOverrides[key],
-        source: 'Local Override',
-      }));
+      .map(key => {
+        const value = localOverrides[key];
+        const type =
+          typeof value === 'boolean'
+            ? 'boolean'
+            : typeof value === 'number'
+              ? 'number'
+              : 'string';
+
+        return {
+          key,
+          remoteValue: undefined,
+          overrideValue: value,
+          value: value,
+          type: type as 'boolean' | 'string' | 'number',
+          source: 'Local Override',
+        };
+      });
 
     return [...remoteFlags, ...localOnlyFlags].sort((a, b) =>
       a.key.localeCompare(b.key),

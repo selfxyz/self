@@ -1,10 +1,19 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, ScrollView, Switch, Text, XStack, YStack } from 'tamagui';
+import {
+  Button,
+  Input,
+  ScrollView,
+  Switch,
+  Text,
+  XStack,
+  YStack,
+} from 'tamagui';
 
 import {
   clearAllLocalOverrides,
+  FeatureFlagValue,
   getAllFeatureFlags,
   refreshRemoteConfig,
   setLocalOverride,
@@ -13,10 +22,11 @@ import { textBlack } from '../../utils/colors';
 
 interface FeatureFlag {
   key: string;
-  value: boolean;
+  value: FeatureFlagValue;
   source: string;
-  remoteValue?: boolean;
-  overrideValue?: boolean;
+  type: 'boolean' | 'string' | 'number';
+  remoteValue?: FeatureFlagValue;
+  overrideValue?: FeatureFlagValue;
 }
 
 const DevFeatureFlagsScreen: React.FC = () => {
@@ -24,12 +34,24 @@ const DevFeatureFlagsScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isTogglingFlag, setIsTogglingFlag] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [textInputValues, setTextInputValues] = useState<
+    Record<string, string>
+  >({});
 
   const loadFeatureFlags = useCallback(async () => {
     try {
       const flags = await getAllFeatureFlags();
       setFeatureFlags(flags);
       setLastRefresh(new Date());
+
+      // Initialize text input values for non-boolean flags
+      const initialTextValues: Record<string, string> = {};
+      flags.forEach(flag => {
+        if (flag.type !== 'boolean') {
+          initialTextValues[flag.key] = String(flag.value);
+        }
+      });
+      setTextInputValues(initialTextValues);
     } catch (error) {
       console.error('Failed to load feature flags:', error);
     }
@@ -62,6 +84,44 @@ const DevFeatureFlagsScreen: React.FC = () => {
     [loadFeatureFlags],
   );
 
+  const handleSaveTextFlag = useCallback(
+    async (flagKey: string, type: 'string' | 'number') => {
+      setIsTogglingFlag(flagKey);
+      try {
+        const rawValue = textInputValues[flagKey] || '';
+        let value: FeatureFlagValue;
+
+        if (type === 'number') {
+          value = Number(rawValue);
+          if (isNaN(value)) {
+            console.error('Invalid number value');
+            return;
+          }
+        } else {
+          value = rawValue;
+        }
+
+        await setLocalOverride(flagKey, value);
+        await loadFeatureFlags();
+      } catch (error) {
+        console.error('Failed to save flag:', error);
+      } finally {
+        setIsTogglingFlag(null);
+      }
+    },
+    [textInputValues, loadFeatureFlags],
+  );
+
+  const handleTextInputChange = useCallback(
+    (flagKey: string, value: string) => {
+      setTextInputValues(prev => ({
+        ...prev,
+        [flagKey]: value,
+      }));
+    },
+    [],
+  );
+
   const handleClearAllOverrides = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -81,6 +141,76 @@ const DevFeatureFlagsScreen: React.FC = () => {
   const hasLocalOverrides = featureFlags.some(
     flag => flag.source === 'Local Override',
   );
+
+  const formatDisplayValue = (
+    value: FeatureFlagValue,
+    type: string,
+  ): string => {
+    if (type === 'boolean') {
+      return value ? 'Enabled' : 'Disabled';
+    }
+    return String(value);
+  };
+
+  const renderFlagInput = (flag: FeatureFlag) => {
+    switch (flag.type) {
+      case 'boolean':
+        return (
+          <Switch
+            size="$4"
+            checked={flag.value as boolean}
+            onCheckedChange={() =>
+              handleToggleFlag(flag.key, flag.value as boolean)
+            }
+            disabled={isTogglingFlag === flag.key}
+            bg={flag.value ? '$green7Light' : '$gray4'}
+          >
+            <Switch.Thumb animation="quick" bc="$white" />
+          </Switch>
+        );
+      case 'string':
+        return (
+          <XStack alignItems="center" gap="$2" f={1}>
+            <Input
+              value={textInputValues[flag.key] || ''}
+              onChangeText={value => handleTextInputChange(flag.key, value)}
+              placeholder="Enter text value"
+              f={1}
+              disabled={isTogglingFlag === flag.key}
+            />
+            <Button
+              size="$3"
+              onPress={() => handleSaveTextFlag(flag.key, 'string')}
+              disabled={isTogglingFlag === flag.key}
+            >
+              Save
+            </Button>
+          </XStack>
+        );
+      case 'number':
+        return (
+          <XStack alignItems="center" gap="$2" f={1}>
+            <Input
+              value={textInputValues[flag.key] || ''}
+              onChangeText={value => handleTextInputChange(flag.key, value)}
+              placeholder="Enter number value"
+              keyboardType="numeric"
+              f={1}
+              disabled={isTogglingFlag === flag.key}
+            />
+            <Button
+              size="$3"
+              onPress={() => handleSaveTextFlag(flag.key, 'number')}
+              disabled={isTogglingFlag === flag.key}
+            >
+              Save
+            </Button>
+          </XStack>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <YStack f={1} bg="white" px="$4" pt="$4">
@@ -143,25 +273,33 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 borderRadius="$4"
                 mb="$2"
               >
-                <XStack justifyContent="space-between" alignItems="center">
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb="$2"
+                >
                   <Text fontSize="$4" fontWeight="500">
                     {flag.key}
                   </Text>
-                  <Switch
-                    size="$4"
-                    checked={flag.value}
-                    onCheckedChange={() =>
-                      handleToggleFlag(flag.key, flag.value)
-                    }
-                    disabled={isTogglingFlag === flag.key}
-                    bg={flag.value ? '$green7Light' : '$gray4'}
-                  >
-                    <Switch.Thumb animation="quick" bc="$white" />
-                  </Switch>
+                  <Text fontSize="$2" color="$gray9" textTransform="capitalize">
+                    {flag.type}
+                  </Text>
                 </XStack>
+
+                <XStack alignItems="center" gap="$3">
+                  {renderFlagInput(flag)}
+                </XStack>
+
                 {flag.remoteValue !== undefined && (
                   <Text fontSize="$2" color="$gray9" mt="$2">
-                    Default: {flag.remoteValue ? 'Enabled' : 'Disabled'}
+                    Default: {formatDisplayValue(flag.remoteValue, flag.type)}
+                  </Text>
+                )}
+
+                {flag.overrideValue !== undefined && (
+                  <Text fontSize="$2" color="$orange9" mt="$1">
+                    Override:{' '}
+                    {formatDisplayValue(flag.overrideValue, flag.type)}
                   </Text>
                 )}
               </YStack>
