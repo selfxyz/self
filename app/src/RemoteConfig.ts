@@ -20,6 +20,37 @@ export const getFeatureFlag = (flag: string, defaultValue = false): boolean => {
   return remoteConfig().getValue(flag).asBoolean() ?? defaultValue;
 };
 
+export const getAllFeatureFlags = async (): Promise<
+  Array<{
+    key: string;
+    value: boolean;
+    source: string;
+  }>
+> => {
+  try {
+    const keys = remoteConfig().getAll();
+    const flags = Object.keys(keys).map(key => {
+      const configValue = keys[key];
+      return {
+        key,
+        value: configValue.asBoolean(),
+        source:
+          configValue.getSource() === 'remote'
+            ? 'Remote Config'
+            : configValue.getSource() === 'default'
+              ? 'Default'
+              : configValue.getSource() === 'static'
+                ? 'Static'
+                : 'Unknown',
+      };
+    }).sort((a, b) => a.key.localeCompare(b.key));
+    return flags;
+  } catch (error) {
+    console.error('Failed to get all feature flags:', error);
+    return [];
+  }
+};
+
 export const refreshRemoteConfig = async () => {
   try {
     await remoteConfig().fetchAndActivate();
