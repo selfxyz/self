@@ -9,7 +9,7 @@ import {
   SelfApp,
 } from '@selfxyz/common';
 import forge from 'node-forge';
-import io, { Socket } from 'socket.io-client';
+import socketIo, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
@@ -405,7 +405,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       const url = getWSDbRelayerUrl(endpointType);
-      let socket: Socket | null = io(url, {
+      const socket: Socket = socketIo(url, {
         path: '/',
         transports: ['websocket'],
       });

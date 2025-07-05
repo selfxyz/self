@@ -65,12 +65,13 @@ module.exports = {
     'react-hooks/exhaustive-deps': 'off',
 
     // General JavaScript Rules
-    'no-console': 'off',
+    // Warn on common issues but don't block development
+    'no-console': 'warn',
     'no-empty-pattern': 'off',
     'prefer-const': 'warn',
-    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': 'warn',
     'no-redeclare': 'off',
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-namespace': 'off',
