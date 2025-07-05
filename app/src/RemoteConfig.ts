@@ -3,11 +3,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import remoteConfig from '@react-native-firebase/remote-config';
 
-const LOCAL_OVERRIDES_KEY = 'feature_flag_overrides';
-
 interface LocalOverride {
   [key: string]: boolean;
 }
+
+const LOCAL_OVERRIDES_KEY = 'feature_flag_overrides';
+
+const defaultFlags: Record<string, boolean> = {
+  aesop: false,
+};
 
 // Local override management
 export const getLocalOverrides = async (): Promise<LocalOverride> => {
@@ -52,9 +56,7 @@ export const clearAllLocalOverrides = async (): Promise<void> => {
 };
 
 export const initRemoteConfig = async () => {
-  await remoteConfig().setDefaults({
-    test_feature: false,
-  });
+  await remoteConfig().setDefaults(defaultFlags);
   await remoteConfig().setConfigSettings({
     minimumFetchIntervalMillis: __DEV__ ? 0 : 3600000,
   });
@@ -87,6 +89,8 @@ export const getFeatureFlag = async (
 export const getAllFeatureFlags = async (): Promise<
   Array<{
     key: string;
+    remoteValue?: boolean;
+    overrideValue?: boolean;
     value: boolean;
     source: string;
   }>
@@ -98,11 +102,16 @@ export const getAllFeatureFlags = async (): Promise<
     // Get all remote/default flags
     const remoteFlags = Object.keys(keys).map(key => {
       const configValue = keys[key];
+      const remoteVal = configValue.asBoolean();
       const hasLocalOverride = localOverrides.hasOwnProperty(key);
+      const overrideVal = hasLocalOverride ? localOverrides[key] : undefined;
+      const effectiveVal = hasLocalOverride ? overrideVal! : remoteVal;
 
       return {
         key,
-        value: hasLocalOverride ? localOverrides[key] : configValue.asBoolean(),
+        remoteValue: remoteVal,
+        overrideValue: overrideVal,
+        value: effectiveVal,
         source: hasLocalOverride
           ? 'Local Override'
           : configValue.getSource() === 'remote'
@@ -120,6 +129,8 @@ export const getAllFeatureFlags = async (): Promise<
       .filter(key => !keys.hasOwnProperty(key))
       .map(key => ({
         key,
+        remoteValue: undefined,
+        overrideValue: localOverrides[key],
         value: localOverrides[key],
         source: 'Local Override',
       }));
