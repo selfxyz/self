@@ -164,48 +164,39 @@ const DevFeatureFlagsScreen: React.FC = () => {
             }
             disabled={isTogglingFlag === flag.key}
             bg={flag.value ? '$green7Light' : '$gray4'}
+            style={{ minWidth: 48, minHeight: 36, alignSelf: 'flex-end' }}
           >
             <Switch.Thumb animation="quick" bc="$white" />
           </Switch>
         );
       case 'string':
-        return (
-          <XStack alignItems="center" gap="$2" f={1}>
-            <Input
-              value={textInputValues[flag.key] || ''}
-              onChangeText={value => handleTextInputChange(flag.key, value)}
-              placeholder="Enter text value"
-              f={1}
-              disabled={isTogglingFlag === flag.key}
-            />
-            <Button
-              size="$3"
-              onPress={() => handleSaveTextFlag(flag.key, 'string')}
-              disabled={isTogglingFlag === flag.key}
-            >
-              Save
-            </Button>
-          </XStack>
-        );
       case 'number':
         return (
-          <XStack alignItems="center" gap="$2" f={1}>
-            <Input
-              value={textInputValues[flag.key] || ''}
-              onChangeText={value => handleTextInputChange(flag.key, value)}
-              placeholder="Enter number value"
-              keyboardType="numeric"
-              f={1}
-              disabled={isTogglingFlag === flag.key}
-            />
-            <Button
-              size="$3"
-              onPress={() => handleSaveTextFlag(flag.key, 'number')}
-              disabled={isTogglingFlag === flag.key}
-            >
-              Save
-            </Button>
-          </XStack>
+          <Input
+            value={textInputValues[flag.key] || ''}
+            onChangeText={async value => {
+              handleTextInputChange(flag.key, value);
+              // Autosave on change
+              await handleSaveTextFlag(
+                flag.key,
+                flag.type as 'string' | 'number',
+              );
+            }}
+            placeholder={
+              flag.type === 'number' ? 'Enter number value' : 'Enter text value'
+            }
+            keyboardType={flag.type === 'number' ? 'numeric' : 'default'}
+            f={1}
+            disabled={isTogglingFlag === flag.key}
+            borderRadius={12}
+            borderWidth={1}
+            borderColor="$gray6"
+            bg="$gray2"
+            px="$3"
+            py="$2"
+            fontSize="$4"
+            style={{ minHeight: 36, alignSelf: 'flex-end' }}
+          />
         );
       default:
         return null;
@@ -274,7 +265,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 mb="$2"
               >
                 <XStack justifyContent="space-between" alignItems="center">
-                  <YStack>
+                  <YStack f={1} mr="$4">
                     <Text fontSize="$4" fontWeight="500">
                       {flag.key}
                     </Text>
@@ -285,7 +276,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
                       </Text>
                     )}
                   </YStack>
-                  <XStack alignItems="center" gap="$3">
+                  <XStack alignItems="center" gap="$3" f={1} jc="flex-end">
                     {renderFlagInput(flag)}
                   </XStack>
                 </XStack>
