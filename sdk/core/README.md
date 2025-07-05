@@ -40,7 +40,7 @@ import { DefaultConfigStore, InMemoryConfigStore } from '@selfxyz/core';
 const configStore = new DefaultConfigStore({
   minimumAge: 18,
   excludedCountries: ['IRN', 'PRK', 'RUS', 'SYR'],
-  ofac: true
+  ofac: true,
 });
 
 // For dynamic config management
@@ -117,7 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (!attestationId || !proof || !publicSignals || !userContextData) {
         return res.status(400).json({
-          message: 'attestationId, proof, publicSignals, and userContextData are required'
+          message: 'attestationId, proof, publicSignals, and userContextData are required',
         });
       }
 
@@ -125,7 +125,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const configStore = new DefaultConfigStore({
         minimumAge: 18,
         excludedCountries: ['IRN', 'PRK', 'RUS', 'SYR'],
-        ofac: true
+        ofac: true,
       });
 
       // Initialize the verifier
@@ -194,7 +194,7 @@ const iranName = countryCodes.IRN; // "Iran (Islamic Republic of)"
 // Use in configuration
 const configStore = new DefaultConfigStore({
   excludedCountries: [countries.IRAN, countries.NORTH_KOREA, countries.SYRIA],
-  ofac: true
+  ofac: true,
 });
 ```
 
@@ -237,7 +237,7 @@ import {
   AttestationId,
   VerificationResult,
   VerificationConfig,
-  IConfigStorage
+  IConfigStorage,
 } from '@selfxyz/core';
 ```
 
