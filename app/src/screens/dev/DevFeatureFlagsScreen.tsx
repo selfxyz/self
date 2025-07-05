@@ -214,9 +214,12 @@ const DevFeatureFlagsScreen: React.FC = () => {
 
   return (
     <YStack f={1} bg="white" px="$4" pt="$4">
-      <YStack p="$4" mb="$4">
+      <YStack mb="$4">
         <XStack justifyContent="space-between" alignItems="center">
           <XStack alignItems="center" gap="$2">
+            <Button size="$3" onPress={handleRefresh} disabled={isLoading}>
+              {isLoading ? 'Refreshing...' : 'Refresh'}
+            </Button>
             {hasLocalOverrides && (
               <Button
                 size="$3"
@@ -226,9 +229,6 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 Reset
               </Button>
             )}
-            <Button size="$3" onPress={handleRefresh} disabled={isLoading}>
-              {isLoading ? 'Refreshing...' : 'Refresh'}
-            </Button>
           </XStack>
           {lastRefresh && (
             <Text fontSize="$2" color="$gray9">
@@ -273,35 +273,22 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 borderRadius="$4"
                 mb="$2"
               >
-                <XStack
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mb="$2"
-                >
-                  <Text fontSize="$4" fontWeight="500">
-                    {flag.key}
-                  </Text>
-                  <Text fontSize="$2" color="$gray9" textTransform="capitalize">
-                    {flag.type}
-                  </Text>
+                <XStack justifyContent="space-between" alignItems="center">
+                  <YStack>
+                    <Text fontSize="$4" fontWeight="500">
+                      {flag.key}
+                    </Text>
+                    {flag.remoteValue !== undefined && (
+                      <Text fontSize="$2" color="$gray9" mt="$1">
+                        Default:{' '}
+                        {formatDisplayValue(flag.remoteValue, flag.type)}
+                      </Text>
+                    )}
+                  </YStack>
+                  <XStack alignItems="center" gap="$3">
+                    {renderFlagInput(flag)}
+                  </XStack>
                 </XStack>
-
-                <XStack alignItems="center" gap="$3">
-                  {renderFlagInput(flag)}
-                </XStack>
-
-                {flag.remoteValue !== undefined && (
-                  <Text fontSize="$2" color="$gray9" mt="$2">
-                    Default: {formatDisplayValue(flag.remoteValue, flag.type)}
-                  </Text>
-                )}
-
-                {flag.overrideValue !== undefined && (
-                  <Text fontSize="$2" color="$orange9" mt="$1">
-                    Override:{' '}
-                    {formatDisplayValue(flag.overrideValue, flag.type)}
-                  </Text>
-                )}
               </YStack>
             ))
           )}
