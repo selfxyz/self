@@ -26,6 +26,6 @@
   },
   "packageManager": "yarn@4.6.0",
   "resolutions": {
-    "@react-native/gradle-plugin": "0.75.4"
+    "@react-native/gradle-plugin": "0.80.1"
   }
 }

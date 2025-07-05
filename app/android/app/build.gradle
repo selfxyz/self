@@ -162,6 +162,13 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
+        // - Ensure React Native feature flags JNI library is included
+        // - Handle any duplicate library conflicts by picking the first one found
+        pickFirst "lib/**/libreact_featureflagsjni.so"
+        // - Include other common React Native JNI libraries that might have conflicts
+        pickFirst "lib/**/libreact_render_debug.so"
+        pickFirst "lib/**/libreact_nativemodule_core.so"
+        pickFirst "lib/**/libfbjni.so"
     }
 }
 
