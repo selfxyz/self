@@ -284,9 +284,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       checkNfcSupport();
 
       if (Platform.OS === 'android' && emitter) {
-        const subscription = emitter.addListener(
-          'NativeEvent',
-          (event: string) => console.info(event),
+        const subscription = emitter.addListener('NativeEvent', (event: any) =>
+          console.info(event),
         );
 
         return () => {

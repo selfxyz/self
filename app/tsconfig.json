@@ -5,7 +5,8 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "customConditions": ["react-native-strict-api"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowJs": false
   },
   "exclude": [
     "node_modules",

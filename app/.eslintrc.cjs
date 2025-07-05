@@ -41,6 +41,12 @@ module.exports = {
 
     // Override any ESLint rules that conflict with the TypeScript union type formatting
     '@typescript-eslint/indent': 'off',
+
+    // Enable key linting rules with warnings so violations surface without
+    // blocking development
+    'no-console': 'warn',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
   },
   overrides: [
     {
