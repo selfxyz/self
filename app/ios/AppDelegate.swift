@@ -6,6 +6,8 @@ import Firebase
 import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
+import RCTLinkingManager
+import AnalyticsReactNative
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
@@ -40,34 +42,50 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       in: window,
       launchOptions: launchOptions
     )
+    window?.makeKeyAndVisible()
 
     return true
   }
 
   func setupNotifications(application: UIApplication) {
-    // Set notification delegate
-    UNUserNotificationCenter.current().delegate = self
-
-    // Set messaging delegate
+    // Set notification delegate and messaging delegate
+    let center = UNUserNotificationCenter.current()
+    center.delegate = self
     Messaging.messaging().delegate = self
 
-    // Request notification permissions
-    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
-      if let error = error {
-        print("Error requesting notification permissions: \(error)")
-      } else {
-        print("Notification permissions granted: \(granted)")
+    // Check current authorization status first
+    UNUserNotificationCenter.current().getNotificationSettings { settings in
+      switch settings.authorizationStatus {
+      case .notDetermined:
+        // Request notification permissions
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+          if let error = error {
+            print("Error requesting notification permissions: \(error)")
+            // Consider analytics or user feedback
+          } else if granted {
+            DispatchQueue.main.async {
+              application.registerForRemoteNotifications()
+            }
+          }
+        }
+      case .authorized:
+        DispatchQueue.main.async {
+          application.registerForRemoteNotifications()
+        }
+      case .denied, .provisional, .ephemeral:
+        print("Notifications not authorized: \(settings.authorizationStatus)")
+      @unknown default:
+        break
       }
     }
-
-    // Register for remote notifications
-    application.registerForRemoteNotifications()
   }
 
   // MARK: - Push Notification Methods
 
   func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    print("Successfully registered for remote notifications")
+    // Convert device token to hex string and log
+    let tokenString = deviceToken.map { String(format: "%02X", $0) }.joined()
+    print("APNs device token: \(tokenString)")
 
     // Set APNs token for Firebase Messaging
     Messaging.messaging().apnsToken = deviceToken
@@ -80,8 +98,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
   // MARK: - URL Scheme Handling
 
   func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-    // Handle URL schemes here if needed
-    return true
+    // Validate URL scheme
+    guard let scheme = url.scheme else { return false }
+
+    // Replace with your actual URL schemes
+    let validSchemes = ["openpassport", "openpassport-auth"]
+
+    if validSchemes.contains(scheme.lowercased()) {
+      // TODO: Parse and handle the URL
+      // Consider using a URL router or deep linking library
+      return true
+    }
+
+    return false
   }
 
   // MARK: - UNUserNotificationCenterDelegate
@@ -92,7 +121,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
   }
 
   func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-    // Handle notification tap
+    // Extract and handle notification data
+    let userInfo = response.notification.request.content.userInfo
+
+    // Send to React Native for handling
+    NotificationCenter.default.post(
+      name: Notification.Name("NotificationTapped"),
+      object: nil,
+      userInfo: userInfo
+    )
     completionHandler()
   }
 
@@ -126,6 +163,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
   func applicationWillTerminate(_ application: UIApplication) {
     // Called when the application is about to terminate.
+  }
+
+  // MARK: - Deep Link Continuation
+
+  func application(_ application: UIApplication, continueUserActivity userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+    return RCTLinkingManager.application(application, continueUserActivity: userActivity, restorationHandler: restorationHandler)
   }
 }
 
