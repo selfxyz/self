@@ -30,30 +30,30 @@ describe('RemoteConfig Business Logic', () => {
   });
 
   describe('getFeatureFlag', () => {
-    it('should return default value when Firebase getValue fails', () => {
+    it('should return default value when Firebase getValue fails', async () => {
       mockRemoteConfig.getValue.mockImplementation(() => {
         throw new Error('Firebase error');
       });
 
-      const result = getFeatureFlag('test_feature', true);
+      const result = await getFeatureFlag('test_feature', true);
       expect(result).toBe(true);
     });
 
-    it('should return default value when asBoolean returns null', () => {
+    it('should return default value when asBoolean returns null', async () => {
       mockRemoteConfig.getValue.mockReturnValue({
         asBoolean: () => null,
       });
 
-      const result = getFeatureFlag('test_feature', true);
+      const result = await getFeatureFlag('test_feature', true);
       expect(result).toBe(true);
     });
 
-    it('should return false when no default is provided and value is null', () => {
+    it('should return false when no default is provided and value is null', async () => {
       mockRemoteConfig.getValue.mockReturnValue({
         asBoolean: () => null,
       });
 
-      const result = getFeatureFlag('test_feature');
+      const result = await getFeatureFlag('test_feature');
       expect(result).toBe(false);
     });
   });

@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { RefreshCw } from '@tamagui/lucide-icons';
+import { RefreshCw, RotateCcw, Trash2 } from '@tamagui/lucide-icons';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { Button, ScrollView, Switch, Text, XStack, YStack } from 'tamagui';
 
-import { getAllFeatureFlags, refreshRemoteConfig } from '../../RemoteConfig';
+import {
+  clearAllLocalOverrides,
+  clearLocalOverride,
+  getAllFeatureFlags,
+  refreshRemoteConfig,
+  setLocalOverride,
+} from '../../RemoteConfig';
 import { textBlack } from '../../utils/colors';
 
 interface FeatureFlag {
@@ -16,6 +22,7 @@ interface FeatureFlag {
 const DevFeatureFlagsScreen: React.FC = () => {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTogglingFlag, setIsTogglingFlag] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const loadFeatureFlags = useCallback(async () => {
@@ -40,9 +47,55 @@ const DevFeatureFlagsScreen: React.FC = () => {
     }
   }, [loadFeatureFlags]);
 
+  const handleToggleFlag = useCallback(
+    async (flagKey: string, currentValue: boolean) => {
+      setIsTogglingFlag(flagKey);
+      try {
+        await setLocalOverride(flagKey, !currentValue);
+        await loadFeatureFlags();
+      } catch (error) {
+        console.error('Failed to toggle flag:', error);
+      } finally {
+        setIsTogglingFlag(null);
+      }
+    },
+    [loadFeatureFlags],
+  );
+
+  const handleClearOverride = useCallback(
+    async (flagKey: string) => {
+      setIsTogglingFlag(flagKey);
+      try {
+        await clearLocalOverride(flagKey);
+        await loadFeatureFlags();
+      } catch (error) {
+        console.error('Failed to clear override:', error);
+      } finally {
+        setIsTogglingFlag(null);
+      }
+    },
+    [loadFeatureFlags],
+  );
+
+  const handleClearAllOverrides = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await clearAllLocalOverrides();
+      await loadFeatureFlags();
+    } catch (error) {
+      console.error('Failed to clear all overrides:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadFeatureFlags]);
+
   useEffect(() => {
     loadFeatureFlags();
   }, [loadFeatureFlags]);
+
+  const hasLocalOverrides = featureFlags.some(
+    flag => flag.source === 'Local Override',
+  );
 
   return (
     <YStack bg="white" f={1} px="$4" pt="$4">
@@ -64,17 +117,32 @@ const DevFeatureFlagsScreen: React.FC = () => {
           >
             🏴 Feature Flags
           </Text>
-          <Button
-            size="$3"
-            onPress={handleRefresh}
-            bg="$blue8"
-            color="white"
-            disabled={isLoading}
-            icon={RefreshCw}
-            scaleIcon={1.5}
-          >
-            {isLoading ? 'Refreshing...' : 'Refresh'}
-          </Button>
+          <XStack gap="$2">
+            {hasLocalOverrides && (
+              <Button
+                size="$3"
+                onPress={handleClearAllOverrides}
+                bg="$red8"
+                color="white"
+                disabled={isLoading}
+                icon={Trash2}
+                scaleIcon={1.2}
+              >
+                Clear All
+              </Button>
+            )}
+            <Button
+              size="$3"
+              onPress={handleRefresh}
+              bg="$blue8"
+              color="white"
+              disabled={isLoading}
+              icon={RefreshCw}
+              scaleIcon={1.5}
+            >
+              {isLoading ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </XStack>
         </XStack>
 
         {lastRefresh && (
@@ -82,6 +150,10 @@ const DevFeatureFlagsScreen: React.FC = () => {
             Last updated: {lastRefresh.toLocaleTimeString()}
           </Text>
         )}
+
+        <Text color="$blue9" fontSize="$3" textAlign="center" opacity={0.9}>
+          Toggle flags to test locally. Local overrides persist until cleared.
+        </Text>
       </YStack>
 
       <ScrollView showsVerticalScrollIndicator={false} mt="$4">
@@ -115,10 +187,22 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 key={flag.key}
                 p="$4"
                 borderWidth={1}
-                borderColor={flag.value ? '$green8' : '$gray6'}
+                borderColor={
+                  flag.source === 'Local Override'
+                    ? '$purple8'
+                    : flag.value
+                      ? '$green8'
+                      : '$gray6'
+                }
                 borderRadius="$4"
-                bg={flag.value ? '$green1' : '$gray2'}
-                gap="$2"
+                bg={
+                  flag.source === 'Local Override'
+                    ? '$purple1'
+                    : flag.value
+                      ? '$green1'
+                      : '$gray2'
+                }
+                gap="$3"
               >
                 <XStack justifyContent="space-between" alignItems="center">
                   <Text
@@ -131,7 +215,13 @@ const DevFeatureFlagsScreen: React.FC = () => {
                   </Text>
                   <YStack alignItems="flex-end" gap="$1">
                     <Text
-                      color={flag.value ? '$green10' : '$gray10'}
+                      color={
+                        flag.source === 'Local Override'
+                          ? '$purple10'
+                          : flag.value
+                            ? '$green10'
+                            : '$gray10'
+                      }
                       fontSize="$3"
                       fontWeight="bold"
                     >
@@ -141,6 +231,36 @@ const DevFeatureFlagsScreen: React.FC = () => {
                       {flag.source}
                     </Text>
                   </YStack>
+                </XStack>
+
+                <XStack justifyContent="space-between" alignItems="center">
+                  <XStack alignItems="center" gap="$3">
+                    <Switch
+                      size="$3"
+                      checked={flag.value}
+                      onCheckedChange={() =>
+                        handleToggleFlag(flag.key, flag.value)
+                      }
+                      disabled={isTogglingFlag === flag.key}
+                    />
+                    <Text color={textBlack} fontSize="$3">
+                      {flag.value ? 'Enabled' : 'Disabled'}
+                    </Text>
+                  </XStack>
+
+                  {flag.source === 'Local Override' && (
+                    <Button
+                      size="$2"
+                      onPress={() => handleClearOverride(flag.key)}
+                      bg="$orange8"
+                      color="white"
+                      disabled={isTogglingFlag === flag.key}
+                      icon={RotateCcw}
+                      scaleIcon={1.2}
+                    >
+                      Reset
+                    </Button>
+                  )}
                 </XStack>
               </YStack>
             ))
