@@ -153,6 +153,45 @@ describe('RemoteConfig', () => {
       const result = await getAllFeatureFlags();
       expect(result).toEqual([]);
     });
+
+    it('should return complete feature flag structure', async () => {
+      // Reset all mocks to clean state
+      jest.clearAllMocks();
+
+      const mockRemoteFlags = {
+        testFlag: {
+          asString: () => 'test value',
+          asBoolean: () => false,
+          asNumber: () => 0,
+          getSource: () => 'remote' as const,
+        },
+      };
+
+      const mockLocalOverrides = {
+        testFlag: 'overridden value',
+        localOnlyFlag: 'local only',
+      };
+
+      // Configure mocks
+      mockRemoteConfig.getAll.mockReturnValue(mockRemoteFlags);
+      mockAsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify(mockLocalOverrides),
+      );
+
+      const result = await getAllFeatureFlags();
+
+      // Check that the function returns an array
+      expect(Array.isArray(result)).toBe(true);
+
+      // Check that each flag has the expected structure
+      result.forEach(flag => {
+        expect(flag).toHaveProperty('key');
+        expect(flag).toHaveProperty('value');
+        expect(flag).toHaveProperty('type');
+        expect(flag).toHaveProperty('source');
+        expect(['boolean', 'string', 'number']).toContain(flag.type);
+      });
+    });
   });
 
   describe('Local Override Management', () => {

@@ -35,7 +35,7 @@ const getRemoteConfigValue = (
   if (stringValue === 'true' || stringValue === 'false') {
     return configValue.asBoolean();
   }
-  if (!isNaN(Number(stringValue)) && stringValue !== '') {
+  if (!Number.isNaN(Number(stringValue)) && stringValue !== '') {
     return configValue.asNumber();
   }
   return stringValue;
@@ -102,7 +102,7 @@ export const getFeatureFlag = async <T extends FeatureFlagValue>(
   try {
     // Check local overrides first
     const localOverrides = await getLocalOverrides();
-    if (localOverrides.hasOwnProperty(flag)) {
+    if (Object.hasOwn(localOverrides, flag)) {
       return localOverrides[flag] as T;
     }
 
@@ -139,7 +139,7 @@ export const getAllFeatureFlags = async (): Promise<
           ? getRemoteConfigValue(key, defaultValue)
           : configValue.asString(); // Default to string if no default defined
 
-      const hasLocalOverride = localOverrides.hasOwnProperty(key);
+      const hasLocalOverride = Object.hasOwn(localOverrides, key);
       const overrideVal = hasLocalOverride ? localOverrides[key] : undefined;
       const effectiveVal = hasLocalOverride ? overrideVal! : remoteVal;
 
@@ -171,7 +171,7 @@ export const getAllFeatureFlags = async (): Promise<
 
     // Add any local overrides that don't exist in remote config
     const localOnlyFlags = Object.keys(localOverrides)
-      .filter(key => !keys.hasOwnProperty(key))
+      .filter(key => !Object.hasOwn(keys, key))
       .map(key => {
         const value = localOverrides[key];
         const type =

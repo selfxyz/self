@@ -37,9 +37,15 @@ const DevFeatureFlagsScreen: React.FC = () => {
   const [textInputValues, setTextInputValues] = useState<
     Record<string, string>
   >({});
+  const [errorState, setErrorState] = useState<string | null>(null);
+  const [inputErrors, setInputErrors] = useState<Record<string, string>>({});
+  const [debounceTimers, setDebounceTimers] = useState<
+    Record<string, NodeJS.Timeout>
+  >({});
 
   const loadFeatureFlags = useCallback(async () => {
     try {
+      setErrorState(null);
       const flags = await getAllFeatureFlags();
       setFeatureFlags(flags);
       setLastRefresh(new Date());
@@ -54,6 +60,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
       setTextInputValues(initialTextValues);
     } catch (error) {
       console.error('Failed to load feature flags:', error);
+      setErrorState('Failed to load feature flags. Please try refreshing.');
     }
   }, []);
 
@@ -93,18 +100,32 @@ const DevFeatureFlagsScreen: React.FC = () => {
 
         if (type === 'number') {
           value = Number(rawValue);
-          if (isNaN(value)) {
-            console.error('Invalid number value');
+          if (Number.isNaN(value)) {
+            setInputErrors(prev => ({
+              ...prev,
+              [flagKey]: 'Please enter a valid number',
+            }));
             return;
           }
         } else {
           value = rawValue;
         }
 
+        // Clear any previous error for this field
+        setInputErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[flagKey];
+          return newErrors;
+        });
+
         await setLocalOverride(flagKey, value);
         await loadFeatureFlags();
       } catch (error) {
         console.error('Failed to save flag:', error);
+        setInputErrors(prev => ({
+          ...prev,
+          [flagKey]: 'Failed to save value',
+        }));
       } finally {
         setIsTogglingFlag(null);
       }
@@ -122,6 +143,31 @@ const DevFeatureFlagsScreen: React.FC = () => {
     [],
   );
 
+  const debouncedSave = useCallback(
+    (flagKey: string, type: 'string' | 'number') => {
+      // Clear existing timer for this flag if it exists
+      if (debounceTimers[flagKey]) {
+        clearTimeout(debounceTimers[flagKey]);
+      }
+
+      // Set a new timer
+      const timer = setTimeout(() => {
+        handleSaveTextFlag(flagKey, type);
+        setDebounceTimers(prev => {
+          const newTimers = { ...prev };
+          delete newTimers[flagKey];
+          return newTimers;
+        });
+      }, 500); // 500ms debounce delay
+
+      setDebounceTimers(prev => ({
+        ...prev,
+        [flagKey]: timer,
+      }));
+    },
+    [debounceTimers, handleSaveTextFlag],
+  );
+
   const handleClearAllOverrides = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -137,6 +183,17 @@ const DevFeatureFlagsScreen: React.FC = () => {
   useEffect(() => {
     loadFeatureFlags();
   }, [loadFeatureFlags]);
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers).forEach(timer => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      });
+    };
+  }, [debounceTimers]);
 
   const hasLocalOverrides = featureFlags.some(
     flag => flag.source === 'Local Override',
@@ -172,31 +229,36 @@ const DevFeatureFlagsScreen: React.FC = () => {
       case 'string':
       case 'number':
         return (
-          <Input
-            value={textInputValues[flag.key] || ''}
-            onChangeText={async value => {
-              handleTextInputChange(flag.key, value);
-              // Autosave on change
-              await handleSaveTextFlag(
-                flag.key,
-                flag.type as 'string' | 'number',
-              );
-            }}
-            placeholder={
-              flag.type === 'number' ? 'Enter number value' : 'Enter text value'
-            }
-            keyboardType={flag.type === 'number' ? 'numeric' : 'default'}
-            f={1}
-            disabled={isTogglingFlag === flag.key}
-            borderRadius={12}
-            borderWidth={1}
-            borderColor="$gray6"
-            bg="$gray2"
-            px="$3"
-            py="$2"
-            fontSize="$4"
-            style={{ minHeight: 36, alignSelf: 'flex-end' }}
-          />
+          <YStack f={1} gap="$1">
+            <Input
+              value={textInputValues[flag.key] || ''}
+              onChangeText={value => {
+                handleTextInputChange(flag.key, value);
+                // Debounced autosave
+                debouncedSave(flag.key, flag.type as 'string' | 'number');
+              }}
+              placeholder={
+                flag.type === 'number'
+                  ? 'Enter number value'
+                  : 'Enter text value'
+              }
+              keyboardType={flag.type === 'number' ? 'numeric' : 'default'}
+              disabled={isTogglingFlag === flag.key}
+              borderRadius={12}
+              borderWidth={1}
+              borderColor={inputErrors[flag.key] ? '$red6' : '$gray6'}
+              bg="$gray2"
+              px="$3"
+              py="$2"
+              fontSize="$4"
+              style={{ minHeight: 36 }}
+            />
+            {inputErrors[flag.key] && (
+              <Text color="$red11" fontSize="$2" pl="$2">
+                {inputErrors[flag.key]}
+              </Text>
+            )}
+          </YStack>
         );
       default:
         return null;
@@ -231,6 +293,21 @@ const DevFeatureFlagsScreen: React.FC = () => {
 
       <ScrollView showsVerticalScrollIndicator={false} mt="$4">
         <YStack gap="$3" pb="$8">
+          {errorState && (
+            <YStack
+              p="$4"
+              borderWidth={1}
+              borderColor="$red6"
+              borderRadius="$4"
+              bg="$red2"
+              alignItems="center"
+              gap="$2"
+            >
+              <Text color="$red11" fontSize="$4" textAlign="center">
+                {errorState}
+              </Text>
+            </YStack>
+          )}
           {featureFlags.length === 0 ? (
             <YStack
               p="$4"
