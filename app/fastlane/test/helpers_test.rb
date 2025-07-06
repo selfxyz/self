@@ -328,6 +328,20 @@ class HelpersTest < Minitest::Test
     assert_equal ["MISSING_VAR1", "EMPTY_VAR", "WHITESPACE_VAR"], missing
   end
 
+  def test_upload_file_to_slack_missing_channel
+    ENV["SLACK_API_TOKEN"] = "token"
+    file = Tempfile.new(["artifact", ".txt"])
+    file.write("data")
+    file.close
+
+    assert_raises(FastlaneCore::Interface::FastlaneCommonException) do
+      Fastlane::Helpers.upload_file_to_slack(file_path: file.path, channel_id: "")
+    end
+  ensure
+    file.unlink
+    ENV.delete("SLACK_API_TOKEN")
+  end
+
   private
 
   def clear_test_env_vars
