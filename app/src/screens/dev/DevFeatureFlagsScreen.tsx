@@ -193,7 +193,8 @@ const DevFeatureFlagsScreen: React.FC = () => {
         }
       });
     };
-  }, [debounceTimers]);
+    // only clean up on unmount
+  }, []);
 
   const hasLocalOverrides = featureFlags.some(
     flag => flag.source === 'Local Override',

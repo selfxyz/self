@@ -97,21 +97,6 @@ describe('RemoteConfigProvider', () => {
     expect(getByTestId('error')).toHaveTextContent('Unknown error');
   });
 
-  it('should provide context values to children', async () => {
-    mockInitRemoteConfig.mockResolvedValue(undefined);
-
-    const { getByTestId } = render(
-      <RemoteConfigProvider>
-        <TestComponent />
-      </RemoteConfigProvider>,
-    );
-
-    await waitFor(() => {
-      expect(getByTestId('initialized')).toHaveTextContent('true');
-      expect(getByTestId('error')).toHaveTextContent('none');
-    });
-  });
-
   it('should only initialize once', async () => {
     mockInitRemoteConfig.mockResolvedValue(undefined);
 

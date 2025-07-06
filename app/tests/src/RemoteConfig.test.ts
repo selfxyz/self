@@ -13,25 +13,26 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 // Mock Firebase Remote Config with proper setup
+const mockRemoteConfigInstance = {
+  setDefaults: jest.fn(),
+  setConfigSettings: jest.fn(),
+  fetchAndActivate: jest.fn(),
+  getValue: jest.fn(),
+  getAll: jest.fn(),
+};
+
 jest.mock('@react-native-firebase/remote-config', () => ({
   __esModule: true,
-  default: () => ({
-    setDefaults: jest.fn(),
-    setConfigSettings: jest.fn(),
-    fetchAndActivate: jest.fn(),
-    getValue: jest.fn(),
-    getAll: jest.fn(),
-  }),
+  default: () => mockRemoteConfigInstance,
 }));
 
 // Import the mocked AsyncStorage for test controls
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import remoteConfig from '@react-native-firebase/remote-config';
 
 // Get the mock instances
 const mockAsyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;
-const mockRemoteConfig = remoteConfig() as jest.Mocked<
-  ReturnType<typeof remoteConfig>
+const mockRemoteConfig = mockRemoteConfigInstance as jest.Mocked<
+  typeof mockRemoteConfigInstance
 >;
 
 // Now import the module under test
@@ -189,8 +190,105 @@ describe('RemoteConfig', () => {
         expect(flag).toHaveProperty('value');
         expect(flag).toHaveProperty('type');
         expect(flag).toHaveProperty('source');
+        expect(flag).toHaveProperty('remoteValue');
+        expect(flag).toHaveProperty('overrideValue');
         expect(['boolean', 'string', 'number']).toContain(flag.type);
       });
+    });
+
+    it('should return correct flag values with overrides', async () => {
+      const mockRemoteFlags = {
+        test_flag: {
+          asString: () => 'test value',
+          asBoolean: () => false,
+          asNumber: () => 0,
+          getSource: () => 'remote' as const,
+        },
+      };
+
+      const mockLocalOverrides = {};
+
+      // Configure mocks
+      mockRemoteConfig.getAll.mockReturnValue(mockRemoteFlags);
+      mockRemoteConfig.getValue.mockReturnValue(mockRemoteFlags.test_flag);
+      mockAsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify(mockLocalOverrides),
+      );
+
+      const result = await getAllFeatureFlags();
+
+      expect(result).toEqual([
+        {
+          key: 'test_flag',
+          value: 'test value',
+          source: 'Remote Config',
+          type: 'string',
+          remoteValue: 'test value',
+          overrideValue: undefined,
+        },
+      ]);
+    });
+
+    it('should return correct flag values with local overrides', async () => {
+      const mockRemoteFlags = {
+        test_flag: {
+          asString: () => 'true',
+          asBoolean: () => true,
+          asNumber: () => 1,
+          getSource: () => 'remote' as const,
+        },
+      };
+
+      const mockLocalOverrides = {
+        test_flag: false,
+      };
+
+      // Configure mocks
+      mockRemoteConfig.getAll.mockReturnValue(mockRemoteFlags);
+      mockRemoteConfig.getValue.mockReturnValue(mockRemoteFlags.test_flag);
+      mockAsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify(mockLocalOverrides),
+      );
+
+      const result = await getAllFeatureFlags();
+
+      expect(result).toEqual([
+        {
+          key: 'test_flag',
+          value: false,
+          source: 'Local Override',
+          type: 'boolean',
+          remoteValue: 'true',
+          overrideValue: false,
+        },
+      ]);
+    });
+
+    it('should handle local-only flags correctly', async () => {
+      const mockRemoteFlags = {};
+
+      const mockLocalOverrides = {
+        local_only_flag: 'local value',
+      };
+
+      // Configure mocks
+      mockRemoteConfig.getAll.mockReturnValue(mockRemoteFlags);
+      mockAsyncStorage.getItem.mockResolvedValue(
+        JSON.stringify(mockLocalOverrides),
+      );
+
+      const result = await getAllFeatureFlags();
+
+      expect(result).toEqual([
+        {
+          key: 'local_only_flag',
+          value: 'local value',
+          source: 'Local Override',
+          type: 'string',
+          remoteValue: undefined,
+          overrideValue: 'local value',
+        },
+      ]);
     });
   });
 
@@ -269,6 +367,21 @@ describe('RemoteConfig', () => {
       mockAsyncStorage.getItem.mockRejectedValue(new Error('Storage error'));
 
       const result = await getLocalOverrides();
+      expect(result).toEqual({});
+    });
+
+    it('should clear AsyncStorage entry when JSON parsing fails', async () => {
+      // Mock AsyncStorage.getItem to return invalid JSON
+      mockAsyncStorage.getItem.mockResolvedValue('invalid JSON {');
+
+      const result = await getLocalOverrides();
+
+      // Should call removeItem to clear the corrupt data
+      expect(mockAsyncStorage.removeItem).toHaveBeenCalledWith(
+        'feature_flag_overrides',
+      );
+
+      // Should return empty object
       expect(result).toEqual({});
     });
   });

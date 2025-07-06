@@ -45,9 +45,22 @@ const getRemoteConfigValue = (
 export const getLocalOverrides = async (): Promise<LocalOverride> => {
   try {
     const overrides = await AsyncStorage.getItem(LOCAL_OVERRIDES_KEY);
-    return overrides ? JSON.parse(overrides) : {};
+    if (!overrides) {
+      return {};
+    }
+    return JSON.parse(overrides);
   } catch (error) {
     console.error('Failed to get local overrides:', error);
+
+    // If JSON parsing fails, clear the corrupt data
+    if (error instanceof SyntaxError) {
+      try {
+        await AsyncStorage.removeItem(LOCAL_OVERRIDES_KEY);
+      } catch (removeError) {
+        console.error('Failed to clear corrupt local overrides:', removeError);
+      }
+    }
+
     return {};
   }
 };
@@ -102,11 +115,16 @@ export const getFeatureFlag = async <T extends FeatureFlagValue>(
   try {
     // Check local overrides first
     const localOverrides = await getLocalOverrides();
-    if (Object.hasOwn(localOverrides, flag)) {
+    if (Object.prototype.hasOwnProperty.call(localOverrides, flag)) {
       return localOverrides[flag] as T;
     }
 
-    // Fall back to remote config
+    // Return default value for string flags
+    if (typeof defaultValue === 'string') {
+      return defaultValue;
+    }
+
+    // Fall back to remote config for number and boolean flags
     return getRemoteConfigValue(flag, defaultValue) as T;
   } catch (error) {
     console.error('Failed to get feature flag:', error);
@@ -139,7 +157,10 @@ export const getAllFeatureFlags = async (): Promise<
           ? getRemoteConfigValue(key, defaultValue)
           : configValue.asString(); // Default to string if no default defined
 
-      const hasLocalOverride = Object.hasOwn(localOverrides, key);
+      const hasLocalOverride = Object.prototype.hasOwnProperty.call(
+        localOverrides,
+        key,
+      );
       const overrideVal = hasLocalOverride ? localOverrides[key] : undefined;
       const effectiveVal = hasLocalOverride ? overrideVal! : remoteVal;
 
@@ -171,7 +192,7 @@ export const getAllFeatureFlags = async (): Promise<
 
     // Add any local overrides that don't exist in remote config
     const localOnlyFlags = Object.keys(localOverrides)
-      .filter(key => !Object.hasOwn(keys, key))
+      .filter(key => !Object.prototype.hasOwnProperty.call(keys, key))
       .map(key => {
         const value = localOverrides[key];
         const type =
