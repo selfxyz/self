@@ -23,8 +23,13 @@ android_has_permissions = false
 # Project configuration
 PROJECT_NAME = ENV["IOS_PROJECT_NAME"]
 APP_NAME = ENV["IOS_PROJECT_NAME"] || begin
-  JSON.parse(File.read("../app.json"))["displayName"]
-rescue
+  app_json_path = File.expand_path("../app.json", __dir__)
+  if File.exist?(app_json_path)
+    app_config = JSON.parse(File.read(app_json_path))
+    app_config["displayName"] if app_config.is_a?(Hash)
+  end
+rescue JSON::ParserError, Errno::ENOENT
+  UI.important("Could not read app.json or invalid JSON format, using default app name")
   nil
 end || "MobileApp"
 PROJECT_SCHEME = ENV["IOS_PROJECT_SCHEME"]
