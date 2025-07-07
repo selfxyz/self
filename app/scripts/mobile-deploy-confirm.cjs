@@ -427,8 +427,9 @@ let performIOSBuildCleanup = function (platform) {
   console.log(`\n${CONSOLE_SYMBOLS.BROOM} Cleaning up iOS build artifacts...`);
 
   try {
-    const cleanupScript = path.join(__dirname, 'cleanup-ios-build.sh');
-    execSync(`bash "${cleanupScript}"`, {
+    const cleanupScript = path.join(__dirname, 'cleanup-ios-build.ts');
+    const loader = require.resolve('ts-node/esm');
+    execSync(`node --loader ${loader} "${cleanupScript}"`, {
       stdio: 'inherit',
       cwd: __dirname,
     });

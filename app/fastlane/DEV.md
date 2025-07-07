@@ -119,7 +119,7 @@ yarn mobile-local-deploy:android  # Deploy Android to Google Play Internal Testi
 After running a local iOS deploy, reset the Xcode project to avoid committing build artifacts:
 
 ```bash
-./scripts/cleanup-ios-build.sh
+npx ts-node ./scripts/cleanup-ios-build.ts
 ```
 
 ### Direct Fastlane Commands (Not Recommended)
