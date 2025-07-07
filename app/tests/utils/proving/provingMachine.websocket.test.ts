@@ -5,7 +5,7 @@ import { jest } from '@jest/globals';
 import { useProvingStore } from '../../../src/utils/proving/provingMachine';
 
 jest.mock('xstate', () => {
-  const actual = jest.requireActual('xstate');
+  const actual = jest.requireActual('xstate') as any;
   const { actorMock } = require('./actorMock');
   return { ...actual, createActor: jest.fn(() => actorMock) };
 });
@@ -77,7 +77,9 @@ describe('websocket handlers', () => {
     await useProvingStore.getState()._handleWebSocketMessage(message);
     expect(verifyAttestation).toHaveBeenCalled();
     expect(
-      actorMock.send.mock.calls.some(c => c[0].type === 'CONNECT_SUCCESS'),
+      actorMock.send.mock.calls.some(
+        (c: any) => c[0].type === 'CONNECT_SUCCESS',
+      ),
     ).toBe(true);
   });
 

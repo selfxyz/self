@@ -6,7 +6,7 @@ import { useProvingStore } from '../../../src/utils/proving/provingMachine';
 import { emitState } from './actorMock';
 
 jest.mock('xstate', () => {
-  const actual = jest.requireActual('xstate');
+  const actual = jest.requireActual('xstate') as any;
   const { actorMock } = require('./actorMock');
   return { ...actual, createActor: jest.fn(() => actorMock) };
 });
