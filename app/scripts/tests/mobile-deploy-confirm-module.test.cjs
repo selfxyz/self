@@ -12,7 +12,7 @@ describe('performIOSBuildCleanup', () => {
     });
     deploy.performIOSBuildCleanup('ios');
     deploy._setExecSync(original);
-    assert(called && called.includes('cleanup-ios-build.sh'));
+    assert(called && called.includes('cleanup-ios-build.cjs'));
   });
 
   it('does nothing for android', () => {
