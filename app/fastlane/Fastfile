@@ -73,10 +73,11 @@ platform :ios do
 
     # Notify Slack about the new build
     if ENV["SLACK_CHANNEL_ID"]
+      deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Workflow" : "Local Deploy"
       Fastlane::Helpers.upload_file_to_slack(
         file_path: result[:ipa_path],
         channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "🍎 iOS v#{package_version} (Build #{result[:build_number]}) deployed to TestFlight",
+        initial_comment: "🍎 iOS v#{package_version} (Build #{result[:build_number]}) deployed to TestFlight via #{deploy_source}",
         title: "#{APP_NAME}-#{package_version}-#{result[:build_number]}.ipa",
       )
     else
@@ -274,10 +275,11 @@ platform :android do
 
     # Notify Slack about the new build
     if ENV["SLACK_CHANNEL_ID"]
+      deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Workflow" : "Local Deploy"
       Fastlane::Helpers.upload_file_to_slack(
         file_path: android_aab_path,
         channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "🤖 Android v#{package_version} (Build #{version_code}) deployed to #{target_platform}",
+        initial_comment: "🤖 Android v#{package_version} (Build #{version_code}) deployed to #{target_platform} via #{deploy_source}",
         title: "#{APP_NAME}-#{package_version}-#{version_code}.aab",
       )
     else
