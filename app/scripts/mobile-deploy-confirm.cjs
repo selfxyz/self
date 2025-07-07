@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+let { execSync } = require('child_process');
 
 // Constants
 const DEPLOYMENT_METHODS = {
@@ -418,7 +418,7 @@ function getFastlaneCommands(platform) {
  * Executes iOS build cleanup script
  * @param {string} platform - Target platform
  */
-function performIOSBuildCleanup(platform) {
+let performIOSBuildCleanup = function (platform) {
   // Only run cleanup for iOS deployments
   if (platform !== PLATFORMS.IOS && platform !== PLATFORMS.BOTH) {
     return;
@@ -442,7 +442,7 @@ function performIOSBuildCleanup(platform) {
     );
     // Don't exit on cleanup failure - it's not critical
   }
-}
+};
 
 /**
  * Executes local fastlane deployment
@@ -576,7 +576,20 @@ async function main() {
 }
 
 // Execute main function
-main().catch(error => {
-  console.error(`${CONSOLE_SYMBOLS.ERROR} Error:`, error.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(error => {
+    console.error(`${CONSOLE_SYMBOLS.ERROR} Error:`, error.message);
+    process.exit(1);
+  });
+} else {
+  module.exports = {
+    performIOSBuildCleanup,
+    executeLocalFastlaneDeployment,
+    _setExecSync: fn => {
+      execSync = fn;
+    },
+    _setPerformIOSBuildCleanup: fn => {
+      performIOSBuildCleanup = fn;
+    },
+  };
+}
