@@ -25,6 +25,12 @@ if (!marketingMatch?.[1] || !currentMatch?.[1]) {
 const marketing = marketingMatch[1];
 const current = currentMatch[1];
 
+// Validate pbxproj path doesn't contain dangerous characters
+if (pbxproj.includes('..') || pbxproj.includes('|') || pbxproj.includes('&')) {
+  console.error(`Invalid project file path: ${pbxproj}`);
+  process.exit(1);
+}
+
 try {
   execSync(`git checkout -- "${pbxproj}"`, { stdio: 'inherit' });
 } catch {
