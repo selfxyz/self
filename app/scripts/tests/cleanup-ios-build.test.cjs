@@ -2,10 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { execSync } = require('child_process');
+const { spawnSync } = require('child_process');
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 
-const SCRIPT = path.join(__dirname, '../cleanup-ios-build.sh');
+const SCRIPT = path.resolve(__dirname, '../cleanup-ios-build.sh');
 
 describe('cleanup-ios-build.sh', () => {
   it('resets pbxproj and reapplies versions', () => {
@@ -39,5 +40,49 @@ describe('cleanup-ios-build.sh', () => {
     assert(result.includes('CURRENT_PROJECT_VERSION = 2;'));
     assert(result.includes('MARKETING_VERSION = 2.0.0;'));
     assert(!result.includes('SomeArtifact'));
+  });
+
+  it('fails when the pbxproj file does not exist', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cleanup-test-'));
+
+    const result = spawnSync('bash', [SCRIPT], {
+      cwd: tmp,
+      env: { ...process.env, IOS_PROJECT_NAME: 'MissingProject' },
+      encoding: 'utf8',
+    });
+
+    assert.notStrictEqual(result.status, 0);
+    assert(result.stderr.includes('Project file not found'));
+  });
+
+  it('fails when version information cannot be extracted', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cleanup-test-'));
+    const projectName = 'BadApp';
+    const iosDir = path.join(tmp, 'ios', `${projectName}.xcodeproj`);
+    fs.mkdirSync(iosDir, { recursive: true });
+    const pbxPath = path.join(iosDir, 'project.pbxproj');
+    fs.writeFileSync(
+      pbxPath,
+      'CURRENT_PROJECT_VERSION = ;\nMARKETING_VERSION = ;\n',
+    );
+
+    const cwd = process.cwd();
+    process.chdir(tmp);
+    execSync('git init -q');
+    execSync('git config user.email "test@example.com"');
+    execSync('git config user.name "Test"');
+    execSync(`git add ${pbxPath}`);
+    execSync('git commit -m init -q');
+
+    const result = spawnSync('bash', [SCRIPT], {
+      cwd: tmp,
+      env: { ...process.env, IOS_PROJECT_NAME: projectName },
+      encoding: 'utf8',
+    });
+
+    process.chdir(cwd);
+
+    assert.notStrictEqual(result.status, 0);
+    assert(result.stderr.includes('Failed to extract version information'));
   });
 });
