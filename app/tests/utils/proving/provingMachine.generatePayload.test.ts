@@ -7,7 +7,7 @@ import { useSelfAppStore } from '../../../src/stores/selfAppStore';
 import { useProvingStore } from '../../../src/utils/proving/provingMachine';
 
 jest.mock('xstate', () => {
-  const actual = jest.requireActual('xstate');
+  const actual = jest.requireActual('xstate') as any;
   const { actorMock } = require('./actorMock');
   return { ...actual, createActor: jest.fn(() => actorMock) };
 });
@@ -17,7 +17,7 @@ jest.mock('../../../src/utils/analytics', () => () => ({
 }));
 
 jest.mock('@selfxyz/common', () => {
-  const actual = jest.requireActual('@selfxyz/common');
+  const actual = jest.requireActual('@selfxyz/common') as any;
   return {
     ...actual,
     getSolidityPackedUserContextData: jest.fn(() => '0x1234'),
@@ -46,7 +46,9 @@ jest.mock('../../../src/utils/proving/provingInputs', () => ({
 }));
 
 jest.mock('../../../src/utils/proving/provingUtils', () => {
-  const actual = jest.requireActual('../../../src/utils/proving/provingUtils');
+  const actual = jest.requireActual(
+    '../../../src/utils/proving/provingUtils',
+  ) as any;
   return {
     ...actual,
     getPayload: jest.fn(() => ({ mocked: true })),
@@ -81,7 +83,7 @@ describe('_generatePayload', () => {
     });
     useSelfAppStore.setState({
       selfApp: {
-        chainID: 1,
+        chainID: 42220,
         userId: 'u',
         userDefinedData: '0x0',
         endpointType: 'https',
@@ -105,6 +107,13 @@ describe('_generatePayload', () => {
         deployed_circuits: null,
         circuits_dns_mapping: null,
         alternative_csca: {},
+        fetch_deployed_circuits: jest.fn(),
+        fetch_circuits_dns_mapping: jest.fn(),
+        fetch_csca_tree: jest.fn(),
+        fetch_dsc_tree: jest.fn(),
+        fetch_identity_tree: jest.fn(),
+        fetch_alternative_csca: jest.fn(),
+        fetch_all: jest.fn(),
       },
       id_card: {
         commitment_tree: null,
@@ -113,8 +122,15 @@ describe('_generatePayload', () => {
         deployed_circuits: null,
         circuits_dns_mapping: null,
         alternative_csca: {},
+        fetch_deployed_circuits: jest.fn(),
+        fetch_circuits_dns_mapping: jest.fn(),
+        fetch_csca_tree: jest.fn(),
+        fetch_dsc_tree: jest.fn(),
+        fetch_identity_tree: jest.fn(),
+        fetch_alternative_csca: jest.fn(),
+        fetch_all: jest.fn(),
       },
-    });
+    } as any);
   });
 
   it('register circuit', async () => {
