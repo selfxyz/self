@@ -10,10 +10,7 @@ describe('parseScanResponse', () => {
   });
 
   it('parses iOS response', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'ios',
-      writable: true,
-    });
+    jest.spyOn(Platform, 'OS', 'get').mockReturnValue('ios');
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
     const response = JSON.stringify({
@@ -38,10 +35,7 @@ describe('parseScanResponse', () => {
   });
 
   it('parses Android response', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'android',
-      writable: true,
-    });
+    jest.spyOn(Platform, 'OS', 'get').mockReturnValue('android');
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
     const response = {
@@ -61,20 +55,25 @@ describe('parseScanResponse', () => {
   });
 
   it('handles malformed iOS response', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'ios',
-      writable: true,
-    });
+    jest.spyOn(Platform, 'OS', 'get').mockReturnValue('ios');
     const response = '{"invalid": "json"';
 
     expect(() => parseScanResponse(response)).toThrow();
   });
 
+  it('handles malformed Android response', () => {
+    jest.spyOn(Platform, 'OS', 'get').mockReturnValue('android');
+    const response = {
+      mrz: 'valid_mrz',
+      eContent: 'invalid_json_string',
+      dataGroupHashes: JSON.stringify({ '1': 'abcd' }),
+    };
+
+    expect(() => parseScanResponse(response)).toThrow();
+  });
+
   it('handles missing required fields', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'ios',
-      writable: true,
-    });
+    jest.spyOn(Platform, 'OS', 'get').mockReturnValue('ios');
     const response = JSON.stringify({
       // Providing minimal data but missing critical passportMRZ field
       dataGroupHashes: JSON.stringify({
@@ -93,10 +92,7 @@ describe('parseScanResponse', () => {
   });
 
   it('handles invalid hex data in dataGroupHashes', () => {
-    Object.defineProperty(Platform, 'OS', {
-      value: 'ios',
-      writable: true,
-    });
+    jest.spyOn(Platform, 'OS', 'get').mockReturnValue('ios');
     const response = JSON.stringify({
       dataGroupHashes: JSON.stringify({
         DG1: { sodHash: 'invalid_hex' },
