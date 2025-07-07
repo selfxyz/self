@@ -13,6 +13,7 @@ interface UserState {
   deepLinkSurname?: string;
   deepLinkNationality?: string;
   deepLinkBirthDate?: string;
+  deepLinkGender?: string;
   update: (patch: Partial<UserState>) => void;
   deleteMrzFields: () => void;
   setDeepLinkUserDetails: (details: {
@@ -20,6 +21,7 @@ interface UserState {
     surname?: string;
     nationality?: string;
     birthDate?: string;
+    gender?: string;
   }) => void;
   clearDeepLinkUserDetails: () => void;
 }
@@ -34,6 +36,7 @@ const useUserStore = create<UserState>((set, _get) => ({
   deepLinkSurname: undefined,
   deepLinkNationality: undefined,
   deepLinkBirthDate: undefined,
+  deepLinkGender: undefined,
 
   update: patch => {
     set(state => ({ ...state, ...patch }));
@@ -54,6 +57,7 @@ const useUserStore = create<UserState>((set, _get) => ({
       deepLinkSurname: details.surname,
       deepLinkNationality: details.nationality,
       deepLinkBirthDate: details.birthDate,
+      deepLinkGender: details.gender,
     }),
 
   clearDeepLinkUserDetails: () =>
@@ -62,6 +66,7 @@ const useUserStore = create<UserState>((set, _get) => ({
       deepLinkSurname: undefined,
       deepLinkNationality: undefined,
       deepLinkBirthDate: undefined,
+      deepLinkGender: undefined,
     }),
 }));
 

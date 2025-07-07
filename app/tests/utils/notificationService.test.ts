@@ -1,0 +1,139 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
+jest.unmock('../../src/utils/notifications/notificationService');
+
+import { PermissionsAndroid, Platform } from 'react-native';
+
+jest.mock('@react-native-firebase/messaging', () => {
+  const instance = {
+    requestPermission: jest.fn(),
+    getToken: jest.fn(),
+  };
+  const mockFn: any = () => instance;
+  mockFn._instance = instance;
+  mockFn.AuthorizationStatus = { AUTHORIZED: 1, PROVISIONAL: 2 };
+  return { __esModule: true, default: mockFn };
+});
+
+let messagingMock: any;
+
+global.fetch = jest.fn();
+
+describe('notificationService', () => {
+  let service: typeof import('../../src/utils/notifications/notificationService');
+
+  beforeEach(() => {
+    jest.resetModules();
+    messagingMock = require('@react-native-firebase/messaging').default
+      ._instance;
+    messagingMock.requestPermission.mockReset();
+    messagingMock.getToken.mockReset();
+    service = require('../../src/utils/notifications/notificationService');
+    (fetch as jest.Mock).mockResolvedValue({ ok: true, text: jest.fn() });
+    messagingMock.requestPermission.mockResolvedValue(1);
+    messagingMock.getToken.mockResolvedValue('token');
+    (PermissionsAndroid.request as jest.Mock | undefined)?.mockReset?.();
+  });
+
+  describe('requestNotificationPermission', () => {
+    it('grants permission on Android', async () => {
+      Object.defineProperty(Platform, 'OS', {
+        value: 'android',
+        writable: true,
+      });
+      Object.defineProperty(Platform, 'Version', {
+        value: 34,
+        writable: true,
+      });
+      PermissionsAndroid.request = jest.fn().mockResolvedValue('granted');
+      PermissionsAndroid.PERMISSIONS = { POST_NOTIFICATIONS: 'post' } as any;
+      PermissionsAndroid.RESULTS = { GRANTED: 'granted' } as any;
+
+      const result = await service.requestNotificationPermission();
+      expect(result).toBe(true);
+      expect(messagingMock.requestPermission).toHaveBeenCalled();
+    });
+
+    it('handles denied permission on Android', async () => {
+      Object.defineProperty(Platform, 'OS', {
+        value: 'android',
+        writable: true,
+      });
+      Object.defineProperty(Platform, 'Version', {
+        value: 34,
+        writable: true,
+      });
+      PermissionsAndroid.request = jest.fn().mockResolvedValue('denied');
+      PermissionsAndroid.PERMISSIONS = { POST_NOTIFICATIONS: 'post' } as any;
+      PermissionsAndroid.RESULTS = {
+        GRANTED: 'granted',
+        DENIED: 'denied',
+      } as any;
+
+      const result = await service.requestNotificationPermission();
+      expect(result).toBe(false);
+    });
+
+    it('handles never_ask_again permission on Android', async () => {
+      Object.defineProperty(Platform, 'OS', {
+        value: 'android',
+        writable: true,
+      });
+      Object.defineProperty(Platform, 'Version', {
+        value: 34,
+        writable: true,
+      });
+      PermissionsAndroid.request = jest
+        .fn()
+        .mockResolvedValue('never_ask_again');
+      PermissionsAndroid.PERMISSIONS = { POST_NOTIFICATIONS: 'post' } as any;
+      PermissionsAndroid.RESULTS = {
+        GRANTED: 'granted',
+        NEVER_ASK_AGAIN: 'never_ask_again',
+      } as any;
+
+      const result = await service.requestNotificationPermission();
+      expect(result).toBe(false);
+    });
+
+    it('returns false on error', async () => {
+      Object.defineProperty(Platform, 'OS', {
+        value: 'ios',
+        writable: true,
+      });
+      messagingMock.requestPermission.mockRejectedValueOnce(new Error('fail'));
+      const result = await service.requestNotificationPermission();
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('getFCMToken', () => {
+    it('returns token', async () => {
+      messagingMock.getToken.mockResolvedValueOnce('abc');
+      const token = await service.getFCMToken();
+      expect(token).toBe('abc');
+    });
+
+    it('returns null when error', async () => {
+      messagingMock.getToken.mockRejectedValueOnce(new Error('err'));
+      const token = await service.getFCMToken();
+      expect(token).toBeNull();
+    });
+  });
+
+  describe('registerDeviceToken', () => {
+    it('posts token', async () => {
+      Object.defineProperty(Platform, 'OS', {
+        value: 'ios',
+        writable: true,
+      });
+      const response = { ok: true, text: jest.fn() };
+      (fetch as jest.Mock).mockResolvedValue(response);
+      await service.registerDeviceToken('123', 'tok', true);
+      expect(fetch).toHaveBeenCalledWith(
+        'https://notification.staging.self.xyz/register-token',
+        expect.objectContaining({ method: 'POST' }),
+      );
+    });
+  });
+});

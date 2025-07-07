@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+let { execSync } = require('child_process');
 
 // Constants
 const DEPLOYMENT_METHODS = {
@@ -415,6 +415,36 @@ function getFastlaneCommands(platform) {
 }
 
 /**
+ * Executes iOS build cleanup script
+ * @param {string} platform - Target platform
+ */
+let performIOSBuildCleanup = function (platform) {
+  // Only run cleanup for iOS deployments
+  if (platform !== PLATFORMS.IOS && platform !== PLATFORMS.BOTH) {
+    return;
+  }
+
+  console.log(`\n${CONSOLE_SYMBOLS.BROOM} Cleaning up iOS build artifacts...`);
+
+  try {
+    const cleanupScript = path.join(__dirname, 'cleanup-ios-build.sh');
+    execSync(`bash "${cleanupScript}"`, {
+      stdio: 'inherit',
+      cwd: __dirname,
+    });
+    console.log(
+      `${CONSOLE_SYMBOLS.SUCCESS} iOS build cleanup completed successfully!`,
+    );
+  } catch (error) {
+    console.error(
+      `${CONSOLE_SYMBOLS.WARNING} iOS build cleanup failed (non-fatal):`,
+      error.message,
+    );
+    // Don't exit on cleanup failure - it's not critical
+  }
+};
+
+/**
  * Executes local fastlane deployment
  * @param {string} platform - Target platform
  */
@@ -422,6 +452,8 @@ async function executeLocalFastlaneDeployment(platform) {
   console.log(
     `\n${CONSOLE_SYMBOLS.ROCKET} Starting local fastlane deployment...`,
   );
+
+  let deploymentSuccessful = false;
 
   try {
     performYarnReinstall();
@@ -443,6 +475,7 @@ async function executeLocalFastlaneDeployment(platform) {
       });
     }
 
+    deploymentSuccessful = true;
     console.log(
       `${CONSOLE_SYMBOLS.SUCCESS} Local fastlane deployment completed successfully!`,
     );
@@ -454,7 +487,14 @@ async function executeLocalFastlaneDeployment(platform) {
       `${CONSOLE_SYMBOLS.ERROR} Local fastlane deployment failed:`,
       error.message,
     );
-    process.exit(1);
+  } finally {
+    // Always run cleanup after deployment, regardless of success/failure
+    performIOSBuildCleanup(platform);
+
+    // Only exit with error code if deployment failed
+    if (!deploymentSuccessful) {
+      process.exit(1);
+    }
   }
 }
 
@@ -536,7 +576,20 @@ async function main() {
 }
 
 // Execute main function
-main().catch(error => {
-  console.error(`${CONSOLE_SYMBOLS.ERROR} Error:`, error.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(error => {
+    console.error(`${CONSOLE_SYMBOLS.ERROR} Error:`, error.message);
+    process.exit(1);
+  });
+} else {
+  module.exports = {
+    performIOSBuildCleanup,
+    executeLocalFastlaneDeployment,
+    _setExecSync: fn => {
+      execSync = fn;
+    },
+    _setPerformIOSBuildCleanup: fn => {
+      performIOSBuildCleanup = fn;
+    },
+  };
+}

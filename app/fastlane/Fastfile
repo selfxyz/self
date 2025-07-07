@@ -22,6 +22,16 @@ android_has_permissions = false
 
 # Project configuration
 PROJECT_NAME = ENV["IOS_PROJECT_NAME"]
+APP_NAME = ENV["IOS_PROJECT_NAME"] || begin
+  app_json_path = File.expand_path("../app.json", __dir__)
+  if File.exist?(app_json_path)
+    app_config = JSON.parse(File.read(app_json_path))
+    app_config["displayName"] if app_config.is_a?(Hash)
+  end
+rescue JSON::ParserError, Errno::ENOENT
+  UI.important("Could not read app.json or invalid JSON format, using default app name")
+  nil
+end || "MobileApp"
 PROJECT_SCHEME = ENV["IOS_PROJECT_SCHEME"]
 SIGNING_CERTIFICATE = ENV["IOS_SIGNING_CERTIFICATE"]
 
@@ -54,7 +64,7 @@ platform :ios do
     upload_to_testflight(
       api_key: result[:api_key],
       distribute_external: true,
-      # TODO: fix error about the groups not being set correctly, fwiw groups are set in the app store connect
+      # Only external TestFlight groups are valid here
       groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
       changelog: "",
       skip_waiting_for_build_processing: false,
@@ -62,11 +72,12 @@ platform :ios do
 
     # Notify Slack about the new build
     if ENV["SLACK_CHANNEL_ID"]
+      deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Workflow" : "Local Deploy"
       Fastlane::Helpers.upload_file_to_slack(
         file_path: result[:ipa_path],
         channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "🍎 iOS v#{package_version} (Build #{result[:build_number]}) deployed to TestFlight",
-        title: "#{PROJECT_NAME}-#{package_version}-#{result[:build_number]}.ipa",
+        initial_comment: "🍎 iOS v#{package_version} (Build #{result[:build_number]}) deployed to TestFlight via #{deploy_source}",
+        title: "#{APP_NAME}-#{package_version}-#{result[:build_number]}.ipa",
       )
     else
       UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
@@ -262,11 +273,12 @@ platform :android do
 
     # Notify Slack about the new build
     if ENV["SLACK_CHANNEL_ID"]
+      deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Workflow" : "Local Deploy"
       Fastlane::Helpers.upload_file_to_slack(
         file_path: android_aab_path,
         channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "🤖 Android v#{package_version} (Build #{version_code}) deployed to #{target_platform}",
-        title: "#{PROJECT_NAME}-#{package_version}-#{version_code}.aab",
+        initial_comment: "🤖 Android v#{package_version} (Build #{version_code}) deployed to #{target_platform} via #{deploy_source}",
+        title: "#{APP_NAME}-#{package_version}-#{version_code}.aab",
       )
     else
       UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")

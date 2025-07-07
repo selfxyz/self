@@ -2,6 +2,7 @@
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import DevFeatureFlagsScreen from '../screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '../screens/dev/DevHapticFeedback';
 import DevSettingsScreen from '../screens/dev/DevSettingsScreen';
 import MockDataScreen from '../screens/dev/MockDataScreen';
@@ -31,6 +32,15 @@ const devScreens = {
     screen: DevSettingsScreen,
     options: {
       title: 'Developer Settings',
+      headerStyle: {
+        backgroundColor: white,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  DevFeatureFlags: {
+    screen: DevFeatureFlagsScreen,
+    options: {
+      title: 'Feature Flags',
       headerStyle: {
         backgroundColor: white,
       },

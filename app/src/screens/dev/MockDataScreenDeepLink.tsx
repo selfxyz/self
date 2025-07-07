@@ -31,11 +31,13 @@ const MockDataScreenDeepLink: React.FC = () => {
     deepLinkSurname,
     deepLinkNationality,
     deepLinkBirthDate,
+    deepLinkGender,
   } = useUserStore(state => ({
     deepLinkName: state.deepLinkName,
     deepLinkSurname: state.deepLinkSurname,
     deepLinkNationality: state.deepLinkNationality,
     deepLinkBirthDate: state.deepLinkBirthDate,
+    deepLinkGender: state.deepLinkGender,
   }));
 
   useEffect(() => {
@@ -64,6 +66,8 @@ const MockDataScreenDeepLink: React.FC = () => {
       firstName: storeState.deepLinkName,
       lastName: storeState.deepLinkSurname,
       birthDate: storeState.deepLinkBirthDate,
+      sex: storeState.deepLinkGender as 'M' | 'F',
+      nationality: storeState.deepLinkNationality as any,
     };
     const passportData = genMockIdDocAndInitDataParsing(idDocInput);
     await storePassportData(passportData);
@@ -122,6 +126,22 @@ const MockDataScreenDeepLink: React.FC = () => {
               borderRadius="$4"
             >
               <Text fontSize="$4">{deepLinkBirthDate}</Text>
+            </XStack>
+          </XStack>
+
+          <XStack ai="center" jc="space-between">
+            <BodyText>Gender</BodyText>
+            <XStack
+              ai="center"
+              gap="$2"
+              p="$2"
+              px="$3"
+              bg="$gray2"
+              borderColor={borderColor}
+              borderWidth={1}
+              borderRadius="$4"
+            >
+              <Text fontSize="$4">{deepLinkGender?.toUpperCase()}</Text>
             </XStack>
           </XStack>
 

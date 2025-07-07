@@ -116,6 +116,12 @@ yarn mobile-local-deploy:android  # Deploy Android to Google Play Internal Testi
 
 **Why internal testing?** This provides the same safety as GitHub runner deployments while allowing you to use your local machine for building.
 
+After running a local iOS deploy, reset the Xcode project to avoid committing build artifacts:
+
+```bash
+./scripts/cleanup-ios-build.sh
+```
+
 ### Direct Fastlane Commands (Not Recommended)
 
 ⚠️ **Use the confirmation script above instead of these direct commands.**
@@ -218,7 +224,7 @@ Fastlane requires various secrets to interact with the app stores and sign appli
 | `IOS_P12_PASSWORD` | Password for the p12 certificate file |
 | `IOS_TEAM_ID` | Apple Developer Team ID |
 | `IOS_TEAM_NAME` | Apple Developer Team name |
-| `IOS_TESTFLIGHT_GROUPS` | Comma-separated list of TestFlight groups to distribute the app to |
+| `IOS_TESTFLIGHT_GROUPS` | Comma-separated list of **external** TestFlight groups to distribute the app to |
 
 #### Slack Integration Secrets 📱
 

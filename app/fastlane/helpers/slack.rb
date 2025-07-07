@@ -5,6 +5,7 @@ module Fastlane
       def upload_file_to_slack(file_path:, channel_id:, initial_comment: nil, thread_ts: nil, title: nil)
         slack_token = ENV["SLACK_API_TOKEN"]
         report_error("Missing SLACK_API_TOKEN environment variable.", nil, "Slack Upload Failed") if slack_token.to_s.strip.empty?
+        report_error("Missing SLACK_CHANNEL_ID environment variable.", nil, "Slack Upload Failed") if channel_id.to_s.strip.empty?
         report_error("File not found at path: #{file_path}", nil, "Slack Upload Failed") unless File.exist?(file_path)
 
         file_name = File.basename(file_path)

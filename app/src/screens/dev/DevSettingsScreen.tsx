@@ -52,6 +52,7 @@ function SelectableText({ children, ...props }: DevSettingsScreenProps) {
 
 const items = [
   'DevSettings',
+  'DevFeatureFlags',
   'DevHapticFeedback',
   'Splash',
   'Launch',

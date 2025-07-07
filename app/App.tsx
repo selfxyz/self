@@ -12,6 +12,7 @@ import { AuthProvider } from './src/providers/authProvider';
 import { DatabaseProvider } from './src/providers/databaseProvider';
 import { NotificationTrackingProvider } from './src/providers/notificationTrackingProvider';
 import { PassportProvider } from './src/providers/passportDataProvider';
+import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
 import { initSentry, wrapWithSentry } from './src/Sentry';
 
 initSentry();
@@ -22,15 +23,17 @@ function App(): React.JSX.Element {
   return (
     <ErrorBoundary>
       <YStack f={1} h="100%" w="100%">
-        <AuthProvider>
-          <PassportProvider>
-            <DatabaseProvider>
-              <NotificationTrackingProvider>
-                <AppNavigation />
-              </NotificationTrackingProvider>
-            </DatabaseProvider>
-          </PassportProvider>
-        </AuthProvider>
+        <RemoteConfigProvider>
+          <AuthProvider>
+            <PassportProvider>
+              <DatabaseProvider>
+                <NotificationTrackingProvider>
+                  <AppNavigation />
+                </NotificationTrackingProvider>
+              </DatabaseProvider>
+            </PassportProvider>
+          </AuthProvider>
+        </RemoteConfigProvider>
       </YStack>
     </ErrorBoundary>
   );

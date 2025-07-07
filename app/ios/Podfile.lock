@@ -19,6 +19,11 @@ PODS:
   - Firebase/Messaging (10.24.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 10.24.0)
+  - Firebase/RemoteConfig (10.24.0):
+    - Firebase/CoreOnly
+    - FirebaseRemoteConfig (~> 10.24.0)
+  - FirebaseABTesting (10.29.0):
+    - FirebaseCore (~> 10.0)
   - FirebaseAnalytics (10.24.0):
     - FirebaseAnalytics/AdIdSupport (= 10.24.0)
     - FirebaseCore (~> 10.0)
@@ -59,7 +64,17 @@ PODS:
     - GoogleUtilities/Reachability (~> 7.8)
     - GoogleUtilities/UserDefaults (~> 7.8)
     - nanopb (< 2.30911.0, >= 2.30908.0)
-  - fmt (11.0.2)
+  - FirebaseRemoteConfig (10.24.0):
+    - FirebaseABTesting (~> 10.0)
+    - FirebaseCore (~> 10.0)
+    - FirebaseInstallations (~> 10.0)
+    - FirebaseRemoteConfigInterop (~> 10.23)
+    - FirebaseSharedSwift (~> 10.0)
+    - GoogleUtilities/Environment (~> 7.8)
+    - "GoogleUtilities/NSData+zlib (~> 7.8)"
+  - FirebaseRemoteConfigInterop (10.29.0)
+  - FirebaseSharedSwift (10.29.0)
+  - fmt (9.1.0)
   - glog (0.3.5)
   - GoogleAppMeasurement (10.24.0):
     - GoogleAppMeasurement/AdIdSupport (= 10.24.0)
@@ -2403,8 +2418,11 @@ PODS:
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
-  - RNGestureHandler (2.27.1):
-    - boost
+  - RNFBRemoteConfig (19.3.0):
+    - Firebase/RemoteConfig (= 10.24.0)
+    - React-Core
+    - RNFBApp
+  - RNGestureHandler (2.24.0):
     - DoubleConversion
     - fast_float
     - fmt
@@ -2771,6 +2789,7 @@ DEPENDENCIES:
   - "RNCClipboard (from `../../node_modules/@react-native-clipboard/clipboard`)"
   - "RNFBApp (from `../../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../../node_modules/@react-native-firebase/messaging`)"
+  - "RNFBRemoteConfig (from `../../node_modules/@react-native-firebase/remote-config`)"
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../../node_modules/react-native-keychain`)
   - RNLocalize (from `../../node_modules/react-native-localize`)
@@ -2790,12 +2809,16 @@ SPEC REPOS:
   trunk:
     - AppAuth
     - Firebase
+    - FirebaseABTesting
     - FirebaseAnalytics
     - FirebaseCore
     - FirebaseCoreExtension
     - FirebaseCoreInternal
     - FirebaseInstallations
     - FirebaseMessaging
+    - FirebaseRemoteConfig
+    - FirebaseRemoteConfigInterop
+    - FirebaseSharedSwift
     - GoogleAppMeasurement
     - GoogleDataTransport
     - GoogleUtilities
@@ -2981,6 +3004,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@react-native-firebase/app"
   RNFBMessaging:
     :path: "../../node_modules/@react-native-firebase/messaging"
+  RNFBRemoteConfig:
+    :path: "../../node_modules/@react-native-firebase/remote-config"
   RNGestureHandler:
     :path: "../../node_modules/react-native-gesture-handler"
   RNKeychain:
@@ -3019,14 +3044,18 @@ SPEC CHECKSUMS:
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
   FBLazyVector: 09f03e4b6f42f955734b64a118f86509cc719427
   Firebase: 91fefd38712feb9186ea8996af6cbdef41473442
+  FirebaseABTesting: d87f56707159bae64e269757a6e963d490f2eebe
   FirebaseAnalytics: b5efc493eb0f40ec560b04a472e3e1a15d39ca13
   FirebaseCore: 11dc8a16dfb7c5e3c3f45ba0e191a33ac4f50894
   FirebaseCoreExtension: 705ca5b14bf71d2564a0ddc677df1fc86ffa600f
   FirebaseCoreInternal: df84dd300b561c27d5571684f389bf60b0a5c934
   FirebaseInstallations: 913cf60d0400ebd5d6b63a28b290372ab44590dd
   FirebaseMessaging: 4d52717dd820707cc4eadec5eb981b4832ec8d5d
-  fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
-  glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  FirebaseRemoteConfig: 95dddc50496b37eef199dadce850d5652b534b43
+  FirebaseRemoteConfigInterop: 6efda51fb5e2f15b16585197e26eaa09574e8a4d
+  FirebaseSharedSwift: 20530f495084b8d840f78a100d8c5ee613375f6e
+  fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
+  glog: 69ef571f3de08433d766d614c73a9838a06bf7eb
   GoogleAppMeasurement: f3abf08495ef2cba7829f15318c373b8d9226491
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
@@ -3115,15 +3144,16 @@ SPEC CHECKSUMS:
   RNCClipboard: b7818eb063eae5e67f1010fa6704d95d61fd9939
   RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
-  RNGestureHandler: 85143dc91efa1f40bda6bd1ac005f47d87adef13
-  RNKeychain: e17b9ea7154aa35b270b472dd65c1a62b52532ce
-  RNLocalize: c361562084b742028be30eed3696333f4c5353f4
-  RNReactNativeHapticFeedback: 5d32f63232a598051d65e515e34f30e7df257b65
-  RNScreens: ff8fe1576225916304802e8457648d0aa51d4f03
-  RNSentry: ffbfefd4a9b00f2f15d7d31cd17f73bd66b815cd
-  RNSVG: 0d0ec81ef121b70be8bbf7817de7c7e614b22425
-  segment-analytics-react-native: bad4c2c7b63818bd493caa2b5759fca59e4ae9a7
-  Sentry: 1e4e974d45f09d153af4b30b42acfb1c79e957d3
+  RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
+  RNGestureHandler: 9c3877d98d4584891b69d16ebca855ac46507f4d
+  RNKeychain: 4990d9be2916c60f9ed4f8c484fcd7ced4828b86
+  RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
+  RNReactNativeHapticFeedback: e19b9b2e2ecf5593de8c4ef1496e1e31ae227514
+  RNScreens: b7e8d29c6be98f478bc3fb4a97cc770aa9ba7509
+  RNSentry: c462461c0a5aaba206265f1f3db01b237cd33239
+  RNSVG: e3ad69848b6357587545e0a49628b1148acf082c
+  segment-analytics-react-native: 5c3e8a4ee6d7532a011ed862d7c7d4fb5e5303e2
+  Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594

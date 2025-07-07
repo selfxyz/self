@@ -36,6 +36,15 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
 
+      <intent-filter android:autoVerify="true">
+          <action android:name="android.intent.action.VIEW" />
+          <category android:name="android.intent.category.DEFAULT"/>
+          <category android:name="android.intent.category.BROWSABLE" />
+          <data
+              android:scheme="https"
+              android:host="redirect.self.xyz" />
+      </intent-filter>
+
       <meta-data
         android:name="android.nfc.action.TECH_DISCOVERED"
         android:resource="@xml/nfc_tech_filter" />
