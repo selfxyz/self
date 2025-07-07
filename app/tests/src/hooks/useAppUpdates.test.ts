@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
+import { useNavigation } from '@react-navigation/native';
+import { act, renderHook } from '@testing-library/react-native';
+
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(),
+}));
+
+jest.mock('react-native-check-version', () => ({
+  checkVersion: jest.fn(),
+}));
+
+jest.mock('../../../src/utils/modalCallbackRegistry', () => ({
+  registerModalCallbacks: jest.fn().mockReturnValue(1),
+}));
+
+jest.mock('../../../src/utils/analytics', () => () => ({
+  trackEvent: jest.fn(),
+}));
+
+import { checkVersion } from 'react-native-check-version';
+
+import { useAppUpdates } from '../../../src/hooks/useAppUpdates';
+import { registerModalCallbacks } from '../../../src/utils/modalCallbackRegistry';
+
+const navigate = jest.fn();
+(useNavigation as jest.Mock).mockReturnValue({ navigate });
+
+describe('useAppUpdates', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('indicates update available', async () => {
+    (checkVersion as jest.Mock).mockResolvedValue({
+      needsUpdate: true,
+      url: 'u',
+    });
+    const { result } = renderHook(() => useAppUpdates());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(result.current[0]).toBe(true);
+  });
+
+  it('shows modal when triggered', () => {
+    (checkVersion as jest.Mock).mockResolvedValue({
+      needsUpdate: true,
+      url: 'u',
+    });
+    const { result } = renderHook(() => useAppUpdates());
+    act(() => {
+      result.current[1]();
+    });
+    expect(registerModalCallbacks).toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith('Modal', expect.any(Object));
+  });
+});

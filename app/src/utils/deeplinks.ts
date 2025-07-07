@@ -21,7 +21,7 @@ const decodeUrl = (encodedUrl: string): string => {
   }
 };
 
-const handleUrl = (uri: string) => {
+export const handleUrl = (uri: string) => {
   const decodedUri = decodeUrl(uri);
   const encodedData = queryString.parseUrl(decodedUri).query;
   const sessionId = encodedData.sessionId;
