@@ -1,7 +1,10 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import { jest } from '@jest/globals';
-import { useProvingStore } from '../../../src/utils/proving/provingMachine';
+
 import { useProtocolStore } from '../../../src/stores/protocolStore';
 import { useSelfAppStore } from '../../../src/stores/selfAppStore';
+import { useProvingStore } from '../../../src/utils/proving/provingMachine';
 
 jest.mock('xstate', () => {
   const actual = jest.requireActual('xstate');
@@ -9,11 +12,16 @@ jest.mock('xstate', () => {
   return { ...actual, createActor: jest.fn(() => actorMock) };
 });
 
-jest.mock('../../../src/utils/analytics', () => () => ({ trackEvent: jest.fn() }));
+jest.mock('../../../src/utils/analytics', () => () => ({
+  trackEvent: jest.fn(),
+}));
 
 jest.mock('@selfxyz/common', () => {
   const actual = jest.requireActual('@selfxyz/common');
-  return { ...actual, getSolidityPackedUserContextData: jest.fn(() => '0x1234') };
+  return {
+    ...actual,
+    getSolidityPackedUserContextData: jest.fn(() => '0x1234'),
+  };
 });
 
 jest.mock('../../../src/utils/proving/provingInputs', () => ({
@@ -42,12 +50,23 @@ jest.mock('../../../src/utils/proving/provingUtils', () => {
   return {
     ...actual,
     getPayload: jest.fn(() => ({ mocked: true })),
-    encryptAES256GCM: jest.fn(() => ({ nonce: [0], cipher_text: [1], auth_tag: [2] })),
+    encryptAES256GCM: jest.fn(() => ({
+      nonce: [0],
+      cipher_text: [1],
+      auth_tag: [2],
+    })),
   };
 });
 
-const { getPayload, encryptAES256GCM } = require('../../../src/utils/proving/provingUtils');
-const { generateTEEInputsRegister, generateTEEInputsDSC, generateTEEInputsDisclose } = require('../../../src/utils/proving/provingInputs');
+const {
+  getPayload,
+  encryptAES256GCM,
+} = require('../../../src/utils/proving/provingUtils');
+const {
+  generateTEEInputsRegister,
+  generateTEEInputsDSC,
+  generateTEEInputsDisclose,
+} = require('../../../src/utils/proving/provingInputs');
 
 describe('_generatePayload', () => {
   beforeEach(() => {
@@ -60,8 +79,42 @@ describe('_generatePayload', () => {
       sharedKey: Buffer.alloc(32, 1),
       env: 'prod',
     });
-    useSelfAppStore.setState({ selfApp: { chainID: 1, userId: 'u', userDefinedData: '0x0', endpointType: 'https', endpoint: 'https://e', scope: 's', sessionId: '', appName: '', logoBase64: '', header: '', userIdType: 'uuid', devMode: false, disclosures: {}, version: 1 } });
-    useProtocolStore.setState({ passport: { dsc_tree: 'tree', csca_tree: [['a']], commitment_tree: null, deployed_circuits: null, circuits_dns_mapping: null, alternative_csca: {} }, id_card: { commitment_tree: null, dsc_tree: null, csca_tree: null, deployed_circuits: null, circuits_dns_mapping: null, alternative_csca: {} } });
+    useSelfAppStore.setState({
+      selfApp: {
+        chainID: 1,
+        userId: 'u',
+        userDefinedData: '0x0',
+        endpointType: 'https',
+        endpoint: 'https://e',
+        scope: 's',
+        sessionId: '',
+        appName: '',
+        logoBase64: '',
+        header: '',
+        userIdType: 'uuid',
+        devMode: false,
+        disclosures: {},
+        version: 1,
+      },
+    });
+    useProtocolStore.setState({
+      passport: {
+        dsc_tree: 'tree',
+        csca_tree: [['a']],
+        commitment_tree: null,
+        deployed_circuits: null,
+        circuits_dns_mapping: null,
+        alternative_csca: {},
+      },
+      id_card: {
+        commitment_tree: null,
+        dsc_tree: null,
+        csca_tree: null,
+        deployed_circuits: null,
+        circuits_dns_mapping: null,
+        alternative_csca: {},
+      },
+    });
   });
 
   it('register circuit', async () => {
@@ -71,7 +124,12 @@ describe('_generatePayload', () => {
     expect(getPayload).toHaveBeenCalled();
     expect(encryptAES256GCM).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('celo');
-    expect(payload.params).toEqual({ uuid: '123', nonce: [0], cipher_text: [1], auth_tag: [2] });
+    expect(payload.params).toEqual({
+      uuid: '123',
+      nonce: [0],
+      cipher_text: [1],
+      auth_tag: [2],
+    });
   });
 
   it('dsc circuit', async () => {

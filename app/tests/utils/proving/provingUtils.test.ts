@@ -1,4 +1,7 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import forge from 'node-forge';
+
 import {
   encryptAES256GCM,
   getPayload,
@@ -11,14 +14,21 @@ describe('provingUtils', () => {
     const plaintext = 'hello world';
     const encrypted = encryptAES256GCM(plaintext, forge.util.createBuffer(key));
 
-    const decipher = forge.cipher.createDecipher('AES-GCM', forge.util.createBuffer(key));
+    const decipher = forge.cipher.createDecipher(
+      'AES-GCM',
+      forge.util.createBuffer(key),
+    );
     decipher.start({
       iv: Buffer.from(encrypted.nonce).toString('binary'),
       tagLength: 128,
-      tag: forge.util.createBuffer(Buffer.from(encrypted.auth_tag).toString('binary')),
+      tag: forge.util.createBuffer(
+        Buffer.from(encrypted.auth_tag).toString('binary'),
+      ),
     });
     decipher.update(
-      forge.util.createBuffer(Buffer.from(encrypted.cipher_text).toString('binary')),
+      forge.util.createBuffer(
+        Buffer.from(encrypted.cipher_text).toString('binary'),
+      ),
     );
     const success = decipher.finish();
     const decrypted = decipher.output.toString();
@@ -68,6 +78,8 @@ describe('provingUtils', () => {
   it('getWSDbRelayerUrl handles endpoint types', () => {
     expect(getWSDbRelayerUrl('celo')).toContain('websocket.self.xyz');
     expect(getWSDbRelayerUrl('https')).toContain('websocket.self.xyz');
-    expect(getWSDbRelayerUrl('staging_celo')).toContain('websocket.staging.self.xyz');
+    expect(getWSDbRelayerUrl('staging_celo')).toContain(
+      'websocket.staging.self.xyz',
+    );
   });
 });

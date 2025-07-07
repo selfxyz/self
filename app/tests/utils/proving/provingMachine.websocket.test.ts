@@ -1,6 +1,8 @@
-import { jest } from '@jest/globals';
-import { useProvingStore } from '../../../src/utils/proving/provingMachine';
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import { jest } from '@jest/globals';
+
+import { useProvingStore } from '../../../src/utils/proving/provingMachine';
 
 jest.mock('xstate', () => {
   const actual = jest.requireActual('xstate');
@@ -8,7 +10,9 @@ jest.mock('xstate', () => {
   return { ...actual, createActor: jest.fn(() => actorMock) };
 });
 
-jest.mock('../../../src/utils/analytics', () => () => ({ trackEvent: jest.fn() }));
+jest.mock('../../../src/utils/analytics', () => () => ({
+  trackEvent: jest.fn(),
+}));
 jest.mock('uuid', () => ({ v4: jest.fn(() => 'uuid') }));
 
 jest.mock('../../../src/utils/proving/attest', () => ({
@@ -22,7 +26,9 @@ jest.mock('../../../src/utils/proving/provingUtils', () => ({
 }));
 
 jest.mock('../../../src/providers/passportDataProvider', () => ({
-  loadSelectedDocument: jest.fn(() => Promise.resolve({ data: { documentCategory: 'passport', mock: false } })),
+  loadSelectedDocument: jest.fn(() =>
+    Promise.resolve({ data: { documentCategory: 'passport', mock: false } }),
+  ),
 }));
 
 jest.mock('../../../src/providers/authProvider', () => ({
@@ -36,9 +42,23 @@ const { verifyAttestation } = require('../../../src/utils/proving/attest');
 describe('websocket handlers', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
-    useProvingStore.setState({ wsConnection: { send: jest.fn(), addEventListener: jest.fn(), removeEventListener: jest.fn(), close: jest.fn() } as any });
+    useProvingStore.setState({
+      wsConnection: {
+        send: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        close: jest.fn(),
+      } as any,
+    });
     await useProvingStore.getState().init('register');
-    useProvingStore.setState({ wsConnection: { send: jest.fn(), addEventListener: jest.fn(), removeEventListener: jest.fn(), close: jest.fn() } as any });
+    useProvingStore.setState({
+      wsConnection: {
+        send: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        close: jest.fn(),
+      } as any,
+    });
   });
 
   it('_handleWsOpen sends hello', () => {
@@ -51,14 +71,20 @@ describe('websocket handlers', () => {
   });
 
   it('_handleWebSocketMessage processes attestation', async () => {
-    const message = new MessageEvent('message', { data: JSON.stringify({ result: { attestation: 'a' } }) });
+    const message = new MessageEvent('message', {
+      data: JSON.stringify({ result: { attestation: 'a' } }),
+    });
     await useProvingStore.getState()._handleWebSocketMessage(message);
     expect(verifyAttestation).toHaveBeenCalled();
-    expect(actorMock.send.mock.calls.some(c => c[0].type === 'CONNECT_SUCCESS')).toBe(true);
+    expect(
+      actorMock.send.mock.calls.some(c => c[0].type === 'CONNECT_SUCCESS'),
+    ).toBe(true);
   });
 
   it('_handleWebSocketMessage handles error', async () => {
-    const message = new MessageEvent('message', { data: JSON.stringify({ error: 'oops' }) });
+    const message = new MessageEvent('message', {
+      data: JSON.stringify({ error: 'oops' }),
+    });
     await useProvingStore.getState()._handleWebSocketMessage(message);
     const lastCall = actorMock.send.mock.calls.pop();
     expect(lastCall[0]).toEqual({ type: 'PROVE_ERROR' });
