@@ -76,10 +76,75 @@ describe('provingUtils', () => {
   });
 
   it('getWSDbRelayerUrl handles endpoint types', () => {
-    expect(getWSDbRelayerUrl('celo')).toContain('websocket.self.xyz');
-    expect(getWSDbRelayerUrl('https')).toContain('websocket.self.xyz');
-    expect(getWSDbRelayerUrl('staging_celo')).toContain(
-      'websocket.staging.self.xyz',
+    expect(getWSDbRelayerUrl('celo')).toBe('wss://websocket.self.xyz');
+    expect(getWSDbRelayerUrl('https')).toBe('wss://websocket.self.xyz');
+    expect(getWSDbRelayerUrl('staging_celo')).toBe(
+      'wss://websocket.staging.self.xyz',
     );
+  });
+
+  it('getPayload handles various inputs', () => {
+    // Test with null input - should work since JSON.stringify handles it
+    const payload1 = getPayload(
+      null,
+      'disclose',
+      'vc_and_disclose',
+      'https',
+      'https://example.com',
+    );
+    expect(payload1.circuit.inputs).toBe('null');
+
+    // Test with empty string circuit type - should work since it's just used as-is
+    const payload2 = getPayload(
+      {},
+      'disclose',
+      'vc_and_disclose',
+      'https',
+      'https://example.com',
+    );
+    expect(payload2.circuit.inputs).toBe('{}');
+
+    // Test with empty circuit name - should work since it's just used as-is
+    const payload3 = getPayload(
+      {},
+      'disclose',
+      '',
+      'https',
+      'https://example.com',
+    );
+    expect(payload3.circuit.name).toBe('');
+  });
+
+  it('getPayload handles special characters in inputs', () => {
+    const inputs = { message: 'Hello "World" & <script>alert("xss")</script>' };
+    const payload = getPayload(
+      inputs,
+      'disclose',
+      'vc_and_disclose',
+      'https',
+      'https://example.com',
+    );
+
+    // JSON.stringify will escape quotes, so we should expect the escaped version
+    expect(payload.circuit.inputs).toContain('Hello \\"World\\"');
+    expect(JSON.parse(payload.circuit.inputs)).toEqual(inputs);
+  });
+
+  it('encryptAES256GCM handles empty plaintext', () => {
+    const key = forge.random.getBytesSync(32);
+    const plaintext = '';
+    const encrypted = encryptAES256GCM(plaintext, forge.util.createBuffer(key));
+
+    expect(encrypted.cipher_text).toBeDefined();
+    expect(encrypted.nonce).toBeDefined();
+    expect(encrypted.auth_tag).toBeDefined();
+  });
+
+  it('encryptAES256GCM handles large plaintext', () => {
+    const key = forge.random.getBytesSync(32);
+    const plaintext = 'a'.repeat(10000);
+    const encrypted = encryptAES256GCM(plaintext, forge.util.createBuffer(key));
+
+    expect(encrypted.cipher_text.length).toBeGreaterThan(0);
   });
 });
