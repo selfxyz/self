@@ -46,15 +46,24 @@ describe('useAppUpdates', () => {
     });
   });
 
-  it('shows modal when triggered', () => {
+  it('shows modal when triggered', async () => {
     (checkVersion as jest.Mock).mockResolvedValue({
       needsUpdate: true,
       url: 'u',
     });
+
     const { result } = renderHook(() => useAppUpdates());
+
+    // Wait for the async checkVersion to complete first
+    await waitFor(() => {
+      expect(result.current[0]).toBe(true);
+    });
+
+    // Now test the modal trigger
     act(() => {
       result.current[1]();
     });
+
     expect(registerModalCallbacks).toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledWith('Modal', expect.any(Object));
   });
