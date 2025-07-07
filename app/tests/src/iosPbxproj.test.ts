@@ -15,7 +15,13 @@ describe('iOS project.pbxproj Configuration', () => {
   let projectContent: string;
 
   beforeAll(() => {
-    projectContent = fs.readFileSync(projectPath, 'utf8');
+    try {
+      projectContent = fs.readFileSync(projectPath, 'utf8');
+    } catch (error) {
+      throw new Error(
+        `Failed to read iOS project file at ${projectPath}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   });
 
   it('uses the correct bundle identifier', () => {
