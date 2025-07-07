@@ -15,15 +15,20 @@ This repository is a Yarn v4 monorepo with several workspaces:
 
 ### Commit Checks
 Before committing, run the following commands:
-  - `yarn lint` – lints all packages in parallel.
-  - `yarn gitleaks` – scan staged changes for secrets. If the script fails
-    because the `gitleaks` binary cannot be found, you can install it with
-    `yarn dlx gitleaks` or skip this step.
-  - `yarn build` – build all workspaces except `contracts`.
-  - `yarn workspace @selfxyz/contracts build` – compile Solidity contracts.
-    This build occasionally fails with a Hardhat config error; if so, note the
-    error but continue.
-  - `yarn types` – run type checking across the repo.
+
+```bash
+# Lint all packages in parallel
+yarn lint
+
+# Build all workspaces except `contracts`
+yarn build
+
+# Compile Solidity contracts (may occasionally throw a Hardhat config error)
+yarn workspace @selfxyz/contracts build
+
+# Run type-checking across the repo
+yarn types
+```
 
 ### Tests
 - Run unit tests where available:
