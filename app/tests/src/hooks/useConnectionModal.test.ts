@@ -39,4 +39,47 @@ describe('useConnectionModal', () => {
     expect(showModal).toHaveBeenCalled();
     expect(result.current.visible).toBe(false);
   });
+
+  it('dismisses modal when connection is restored', () => {
+    (useModal as jest.Mock).mockReturnValue({
+      showModal,
+      dismissModal,
+      visible: true,
+    });
+
+    const { useNetInfo } = require('@react-native-community/netinfo');
+    useNetInfo.mockReturnValue({
+      isConnected: true,
+      isInternetReachable: true,
+    });
+
+    renderHook(() => useConnectionModal());
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+    expect(dismissModal).toHaveBeenCalled();
+  });
+
+  it('does not show modal when hideNetworkModal is true', () => {
+    jest.doMock('../../../src/stores/settingStore', () => ({
+      useSettingStore: jest.fn(() => true),
+    }));
+
+    renderHook(() => useConnectionModal());
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+    expect(showModal).not.toHaveBeenCalled();
+  });
+
+  it('does not show modal when navigation is not ready', () => {
+    const { navigationRef } = require('../../../src/navigation');
+    navigationRef.isReady.mockReturnValue(false);
+
+    renderHook(() => useConnectionModal());
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+    expect(showModal).not.toHaveBeenCalled();
+  });
 });

@@ -6,6 +6,15 @@ import { PermissionsAndroid, Platform } from 'react-native';
 const API_URL = 'https://notification.self.xyz';
 const API_URL_STAGING = 'https://notification.staging.self.xyz';
 
+// Determine if running in test environment
+const isTestEnv = process.env.NODE_ENV === 'test';
+const log = (...args: any[]) => {
+  if (!isTestEnv) console.log(...args);
+};
+const error = (...args: any[]) => {
+  if (!isTestEnv) console.error(...args);
+};
+
 export const getStateMessage = (state: string): string => {
   switch (state) {
     case 'idle':
@@ -47,7 +56,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         );
         if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Notification permission denied');
+          log('Notification permission denied');
           return false;
         }
       }
@@ -58,11 +67,11 @@ export async function requestNotificationPermission(): Promise<boolean> {
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    console.log('Notification permission status:', enabled);
+    log('Notification permission status:', enabled);
 
     return enabled;
-  } catch (error) {
-    console.error('Failed to request notification permission:', error);
+  } catch (err) {
+    error('Failed to request notification permission:', err);
     return false;
   }
 }
@@ -71,12 +80,12 @@ export async function getFCMToken(): Promise<string | null> {
   try {
     const token = await messaging().getToken();
     if (token) {
-      console.log('FCM Token received');
+      log('FCM Token received');
       return token;
     }
     return null;
-  } catch (error) {
-    console.error('Failed to get FCM token:', error);
+  } catch (err) {
+    error('Failed to get FCM token:', err);
     return null;
   }
 }
@@ -91,7 +100,7 @@ export async function registerDeviceToken(
     if (!token) {
       token = await messaging().getToken();
       if (!token) {
-        console.log('No FCM token available');
+        log('No FCM token available');
         return;
       }
     }
@@ -106,7 +115,7 @@ export async function registerDeviceToken(
     };
 
     if (cleanedToken.length > 10) {
-      console.log(
+      log(
         'Registering device token:',
         `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(
           cleanedToken.length - 5,
@@ -125,19 +134,12 @@ export async function registerDeviceToken(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        'Failed to register device token:',
-        response.status,
-        errorText,
-      );
+      error('Failed to register device token:', response.status, errorText);
     } else {
-      console.log(
-        'Device token registered successfully with session_id:',
-        sessionId,
-      );
+      log('Device token registered successfully with session_id:', sessionId);
     }
-  } catch (error) {
-    console.error('Error registering device token:', error);
+  } catch (err) {
+    error('Error registering device token:', err);
   }
 }
 
@@ -154,13 +156,13 @@ export interface RemoteMessage {
 export function setupNotifications(): () => void {
   messaging().setBackgroundMessageHandler(
     async (remoteMessage: RemoteMessage) => {
-      console.log('Message handled in the background!', remoteMessage);
+      log('Message handled in the background!', remoteMessage);
     },
   );
 
   const unsubscribeForeground = messaging().onMessage(
     async (remoteMessage: RemoteMessage) => {
-      console.log('Foreground message received:', remoteMessage);
+      log('Foreground message received:', remoteMessage);
     },
   );
 

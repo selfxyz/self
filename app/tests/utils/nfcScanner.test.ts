@@ -10,7 +10,10 @@ describe('parseScanResponse', () => {
   });
 
   it('parses iOS response', () => {
-    Platform.OS = 'ios';
+    Object.defineProperty(Platform, 'OS', {
+      value: 'ios',
+      writable: true,
+    });
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
     const response = JSON.stringify({
@@ -35,7 +38,10 @@ describe('parseScanResponse', () => {
   });
 
   it('parses Android response', () => {
-    Platform.OS = 'android';
+    Object.defineProperty(Platform, 'OS', {
+      value: 'android',
+      writable: true,
+    });
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
     const response = {
@@ -52,5 +58,52 @@ describe('parseScanResponse', () => {
     expect(result.mrz).toBe(mrz);
     expect(result.dg1Hash).toEqual([171, 205]);
     expect(result.dgPresents).toEqual([1, 2]);
+  });
+
+  it('handles malformed iOS response', () => {
+    Object.defineProperty(Platform, 'OS', {
+      value: 'ios',
+      writable: true,
+    });
+    const response = '{"invalid": "json"';
+
+    expect(() => parseScanResponse(response)).toThrow();
+  });
+
+  it('handles missing required fields', () => {
+    Object.defineProperty(Platform, 'OS', {
+      value: 'ios',
+      writable: true,
+    });
+    const response = JSON.stringify({
+      // Providing minimal data but missing critical passportMRZ field
+      dataGroupHashes: JSON.stringify({
+        DG1: { sodHash: '00' }, // Minimal valid hex
+        DG2: { sodHash: '00' }, // Minimal valid hex
+      }),
+      eContentBase64: Buffer.from('').toString('base64'),
+      signedAttributes: Buffer.from('').toString('base64'),
+      signatureBase64: Buffer.from('').toString('base64'),
+      dataGroupsPresent: [],
+      documentSigningCertificate: JSON.stringify({ PEM: 'CERT' }),
+      // Missing passportMRZ which should cause an error
+    });
+
+    expect(() => parseScanResponse(response)).toThrow();
+  });
+
+  it('handles invalid hex data in dataGroupHashes', () => {
+    Object.defineProperty(Platform, 'OS', {
+      value: 'ios',
+      writable: true,
+    });
+    const response = JSON.stringify({
+      dataGroupHashes: JSON.stringify({
+        DG1: { sodHash: 'invalid_hex' },
+      }),
+      passportMRZ: 'valid_mrz',
+    });
+
+    expect(() => parseScanResponse(response)).toThrow();
   });
 });

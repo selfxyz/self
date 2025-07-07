@@ -85,10 +85,21 @@ describe('deeplinks', () => {
   });
 
   it('navigates to QRCodeTrouble for invalid data', () => {
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
     const url = 'scheme://open?selfApp=%7Binvalid';
     handleUrl(url);
+
     const { navigationRef } = require('../../src/navigation');
     expect(navigationRef.navigate).toHaveBeenCalledWith('QRCodeTrouble');
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error parsing selfApp:',
+      expect.any(Error),
+    );
+
+    consoleErrorSpy.mockRestore();
   });
 
   it('setup listener registers and cleans up', () => {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
-import { act, renderHook } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -37,11 +37,13 @@ describe('useAppUpdates', () => {
       needsUpdate: true,
       url: 'u',
     });
+
     const { result } = renderHook(() => useAppUpdates());
-    await act(async () => {
-      await Promise.resolve();
+
+    // Wait for the async state update to complete
+    await waitFor(() => {
+      expect(result.current[0]).toBe(true);
     });
-    expect(result.current[0]).toBe(true);
   });
 
   it('shows modal when triggered', () => {
