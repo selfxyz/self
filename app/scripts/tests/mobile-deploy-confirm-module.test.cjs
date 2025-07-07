@@ -2,7 +2,6 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const child_process = require('child_process');
 
-
 describe('performIOSBuildCleanup', () => {
   it('executes cleanup script for ios', () => {
     const deploy = require('../mobile-deploy-confirm.cjs');
