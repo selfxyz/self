@@ -21,8 +21,6 @@ const error = (...args: any[]) => {
   if (!isTestEnv) console.error(...args);
 };
 
-
-
 export async function requestNotificationPermission(): Promise<boolean> {
   try {
     if (Platform.OS === 'android') {

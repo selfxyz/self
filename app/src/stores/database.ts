@@ -25,7 +25,9 @@ async function openDatabase() {
 }
 
 export const database: ProofDB = {
-  updateStaleProofs: async (setProofStatus: (id: string, status: ProofStatus) => Promise<void>) => {
+  updateStaleProofs: async (
+    setProofStatus: (id: string, status: ProofStatus) => Promise<void>,
+  ) => {
     const db = await openDatabase();
     const staleTimestamp = Date.now() - STALE_PROOF_TIMEOUT_MS;
     const [stalePending] = await db.executeSql(
@@ -61,8 +63,7 @@ export const database: ProofDB = {
   getPendingProofs: async (): Promise<ProofDBResult> => {
     const db = await openDatabase();
 
-
-      const [pendingProofs] = await db.executeSql(`
+    const [pendingProofs] = await db.executeSql(`
         SELECT * FROM ${TABLE_NAME} WHERE status = '${ProofStatus.PENDING}'
       `);
 

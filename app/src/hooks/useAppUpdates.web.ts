@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { AppEvents } from '../consts/analytics';
 import analytics from '../utils/analytics';
+import { registerModalCallbacks } from '../utils/modalCallbackRegistry';
 
 const { trackEvent } = analytics();
 
@@ -13,18 +14,23 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
   const [isModalDismissed, setIsModalDismissed] = useState(false);
 
   const showAppUpdateModal = () => {
-    navigation.navigate('Modal', {
-      titleText: 'New Version Available',
-      bodyText:
-        "We've improved performance, fixed bugs, and added new features. Update now to install the latest version of Self.",
-      buttonText: 'Update and restart',
+    const callbackId = registerModalCallbacks({
       onButtonPress: async () => {
         window.location.reload();
+        trackEvent(AppEvents.UPDATE_STARTED);
       },
       onModalDismiss: () => {
         setIsModalDismissed(true);
         trackEvent(AppEvents.UPDATE_MODAL_CLOSED);
       },
+    });
+
+    navigation.navigate('Modal', {
+      titleText: 'New Version Available',
+      bodyText:
+        "We've improved performance, fixed bugs, and added new features. Update now to install the latest version of Self.",
+      buttonText: 'Update and restart',
+      callbackId,
     });
     trackEvent(AppEvents.UPDATE_MODAL_OPENED);
   };

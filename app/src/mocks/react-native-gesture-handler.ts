@@ -1,4 +1,9 @@
-// Web-compatible mock for react-native-gesture-handler
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
+/*
+ * Web-compatible mock for react-native-gesture-handler
+ */
+
 import React from 'react';
 
 // Mock GestureHandlerRootView as a simple wrapper

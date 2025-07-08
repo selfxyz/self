@@ -6,7 +6,6 @@ import { create } from 'zustand';
 
 import { database } from './database';
 import { ProofHistory, ProofStatus } from './proof-types';
-import { Platform } from 'react-native';
 
 interface ProofHistoryState {
   proofHistory: ProofHistory[];
@@ -27,7 +26,6 @@ interface ProofHistoryState {
   resetHistory: () => void;
 }
 
-
 const SYNC_THROTTLE_MS = 30 * 1000; // 30 seconds throttle for sync calls
 
 export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
@@ -45,9 +43,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
 
       set({ isLoading: true });
 
-    await database.updateStaleProofs(get().updateProofStatus)
-
-
+      await database.updateStaleProofs(get().updateProofStatus);
 
       const pendingProofs = await database.getPendingProofs();
 
@@ -165,11 +161,9 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         const results = await database.getHistory(state.currentPage);
 
         const proofs: ProofHistory[] = [];
-        let totalCount = 0;
-
+        let totalCount = results.rows.length ?? 0;
         for (let i = 0; i < results.rows.length; i++) {
           const row = results.rows[i];
-          totalCount = results.total_count ?? 0;
           proofs.push({
             id: row.id.toString(),
             sessionId: row.sessionId,

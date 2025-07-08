@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 import {
   ProofDB,
   ProofDBResult,
@@ -46,7 +48,9 @@ class IndexedDBDatabase implements ProofDB {
     });
   }
 
-  async updateStaleProofs(setProofStatus: (id: string, status: ProofStatus) => Promise<void>): Promise<void> {
+  async updateStaleProofs(
+    setProofStatus: (id: string, status: ProofStatus) => Promise<void>,
+  ): Promise<void> {
     const db = await this.openDatabase();
 
     const staleTimestamp = Date.now() - 10 * 60 * 1000; // 10 minutes
