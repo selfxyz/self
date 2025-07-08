@@ -150,8 +150,6 @@ const SelfQRcode = ({
 
   return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
-// Export the wrapper component as the default export
-export default SelfQRcodeWrapper;
 
 // Also export other components/types that might be needed
-export { SelfQRcode, SelfApp, SelfAppBuilder };
+export { SelfQRcodeWrapper, SelfQRcode, SelfApp, SelfAppBuilder };

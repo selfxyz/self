@@ -46,6 +46,38 @@ class IndexedDBDatabase implements ProofDB {
     });
   }
 
+  async updateStaleProofs(setProofStatus: (id: string, status: ProofStatus) => Promise<void>): Promise<void> {
+    const db = await this.openDatabase();
+
+    const staleTimestamp = Date.now() - 10 * 60 * 1000; // 10 minutes
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORE_NAME], 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const statusIndex = store.index('status');
+      const request = statusIndex.getAll(ProofStatus.PENDING);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = async () => {
+        const staleProofs = request.result.filter(
+          proof => proof.timestamp <= staleTimestamp,
+        );
+
+        for (const proof of staleProofs) {
+          try {
+            await setProofStatus(proof.sessionId, ProofStatus.FAILURE);
+          } catch (error) {
+            console.error(
+              `Failed to update proof status for session ${proof.sessionId}:`,
+              error,
+            );
+          }
+        }
+        resolve();
+      };
+    });
+  }
+
   async getPendingProofs(): Promise<ProofDBResult> {
     const db = await this.openDatabase();
 

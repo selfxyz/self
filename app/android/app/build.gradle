@@ -48,7 +48,35 @@ react {
 
     /* Hermes Commands */
     // The hermes compiler command to run. By default it is 'hermesc'
-    hermesCommand = "../node_modules/react-native/sdks/hermesc/osx-bin/hermesc"
+    // Dynamic path that works across different platforms (macOS, Linux, Windows)
+    hermesCommand = {
+        def hermesPath = "../node_modules/react-native/sdks/hermesc"
+        def osName = System.getProperty('os.name').toLowerCase()
+        def platformDir
+        def executableName = "hermesc"
+
+        if (osName.contains('mac')) {
+            platformDir = "osx-bin"
+        } else if (osName.contains('linux')) {
+            platformDir = "linux64-bin"
+        } else if (osName.contains('windows')) {
+            platformDir = "win64-bin"
+            executableName = "hermesc.exe"
+        } else {
+            // Fallback to trying common locations
+            platformDir = "linux64-bin"
+        }
+
+        def dynamicPath = "${hermesPath}/${platformDir}/${executableName}"
+
+        // Check if the dynamic path exists, otherwise fallback to just 'hermesc'
+        if (new File(dynamicPath).exists()) {
+            return dynamicPath
+        } else {
+            // Fallback to system PATH
+            return "hermesc"
+        }
+    }()
 
     // The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     hermesFlags = ["-O", "-output-source-map"]
@@ -86,8 +114,9 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 73
-        versionName "2.5.4"
+        versionCode 82
+        versionName "2.6.1"
+        manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
             cmake {
                 cppFlags += "-fexceptions -frtti -std=c++11"

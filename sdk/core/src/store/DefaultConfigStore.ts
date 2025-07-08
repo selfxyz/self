@@ -14,6 +14,6 @@ export class DefaultConfigStore implements IConfigStorage {
   }
 
   async getActionId(_userIdentifier: string, _data: string): Promise<string> {
-    return '';
+    return 'random-id';
   }
 }

@@ -7,9 +7,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 
 import { Caption } from '../../components/typography/Caption';
+import { DocumentEvents } from '../../consts/analytics';
 import { usePassport } from '../../providers/passportDataProvider';
+import analytics from '../../utils/analytics';
 import { black, slate200, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
+
+const { trackEvent } = analytics();
 
 // TODO clarify if we need more/less keys to be displayed
 const dataKeysToLabels: Record<
@@ -74,9 +78,11 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
     }
 
     setMetadata(result.data.passportMetadata!);
+    trackEvent(DocumentEvents.PASSPORT_METADATA_LOADED);
   }, [metadata, getData]);
 
   useFocusEffect(() => {
+    trackEvent(DocumentEvents.PASSPORT_INFO_OPENED);
     loadData();
   });
 

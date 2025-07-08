@@ -14,7 +14,7 @@ export default buildModule("DeployIdCardRegistryModule", (m) => {
     "0x0000000000000000000000000000000000000000",
   ]);
 
-  const idCardRegistry = m.contract("IdentityRegistryIdCard", [identityRegistryIdCardImpl, registryInitData]);
+  const idCardRegistry = m.contract("IdentityRegistry", [identityRegistryIdCardImpl, registryInitData]);
 
   return {
     poseidonT3,

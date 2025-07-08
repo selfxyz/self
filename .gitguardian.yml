@@ -1,0 +1,4 @@
+version: 2
+exclusion_globs:
+  - "common/src/mock_certificates/**"
+  - "common/src/constants/mockCertificates.ts"

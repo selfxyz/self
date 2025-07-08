@@ -7,27 +7,26 @@ import {
   getSavedRepo,
   getContractAddress,
   ATTESTATION_ID,
-  log
+  log,
 } from "./constants";
 
 dotenv.config();
 
 // Configuration for which verifiers to set
 const setVerifiers = {
-  vcAndDisclose: true,        // VC and Disclose verifier for E_PASSPORT
-  vcAndDiscloseId: true,      // VC and Disclose ID verifier for EU_ID_CARD
-  register: true,             // Register verifiers for E_PASSPORT
-  registerId: true,           // Register ID verifiers for EU_ID_CARD
-  dsc: true,                  // DSC verifiers for both E_PASSPORT and EU_ID_CARD
+  vcAndDisclose: true, // VC and Disclose verifier for E_PASSPORT
+  vcAndDiscloseId: true, // VC and Disclose ID verifier for EU_ID_CARD
+  register: true, // Register verifiers for E_PASSPORT
+  registerId: true, // Register ID verifiers for EU_ID_CARD
+  dsc: false, // DSC verifiers for both E_PASSPORT and EU_ID_CARD
 };
-
 
 const NETWORK = process.env.NETWORK;
 const RPC_URL = process.env.RPC_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 
-if (!NETWORK){
-  throw new Error('One of the following parameter is null: NETWORK, RPC_URL, PRIVATE_KEY')
+if (!NETWORK) {
+  throw new Error("One of the following parameter is null: NETWORK, RPC_URL, PRIVATE_KEY");
 }
 
 const repoName = getSavedRepo(NETWORK);
@@ -36,17 +35,19 @@ const deployedAddresses = getDeployedAddresses(repoName);
 log.info(`Network: ${NETWORK}, Repo: ${repoName}`);
 
 try {
-  const hubABI = getContractAbi(repoName,'DeployHubV2#IdentityVerificationHubImplV2')
+  const hubABI = getContractAbi(repoName, "DeployHubV2#IdentityVerificationHubImplV2");
+  const prefix = "DeployAllVerifiers";
 
   function getContractAddressByPartialName(partialName: string): string | undefined {
-    console.log(`🔍 Searching for contract with partial name: "${partialName}"`);
-    for (const [key, value] of Object.entries(deployedAddresses)) {
-      if (key.includes(partialName)) {
-        console.log(`   ✅ Found match: ${key} -> ${value}`);
-        return value as string;
-      }
+    const fullKey = `${prefix}#${partialName}`;
+    console.log(`🔍 Searching for contract with exact key: "${fullKey}"`);
+
+    if (deployedAddresses[fullKey]) {
+      console.log(`   ✅ Found exact match: ${fullKey} -> ${deployedAddresses[fullKey]}`);
+      return deployedAddresses[fullKey] as string;
     }
-    console.log(`   ❌ No match found for: "${partialName}"`);
+
+    console.log(`   ❌ No exact match found for: "${fullKey}"`);
     return undefined;
   }
 
@@ -65,7 +66,7 @@ try {
     let totalUpdates = 0;
     let successfulUpdates = 0;
 
-        // Update VC and Disclose verifier for E_PASSPORT
+    // Update VC and Disclose verifier for E_PASSPORT
     if (setVerifiers.vcAndDisclose) {
       log.step("Updating VC and Disclose verifier for E_PASSPORT");
 
@@ -108,7 +109,7 @@ try {
       log.step("Updating register circuit verifiers for E_PASSPORT");
 
       const registerVerifierKeys = Object.keys(RegisterVerifierId).filter((key) => isNaN(Number(key)));
-      const regularRegisterKeys = registerVerifierKeys.filter(key => !key.startsWith('register_id_'));
+      const regularRegisterKeys = registerVerifierKeys.filter((key) => !key.startsWith("register_id_"));
 
       const registerAttestationIds: string[] = [];
       const registerCircuitVerifierIds: number[] = [];
@@ -138,7 +139,9 @@ try {
             registerCircuitVerifierAddresses,
           );
           const receipt = await tx.wait();
-          log.success(`Register verifiers for E_PASSPORT updated: ${registerCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`);
+          log.success(
+            `Register verifiers for E_PASSPORT updated: ${registerCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`,
+          );
           successfulUpdates++;
         } catch (error) {
           log.error(`Failed to update register verifiers for E_PASSPORT: ${error}`);
@@ -194,7 +197,9 @@ try {
             registerIdCircuitVerifierAddresses,
           );
           const receipt = await tx.wait();
-          log.success(`Register_id verifiers for EU_ID_CARD updated: ${registerIdCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`);
+          log.success(
+            `Register_id verifiers for EU_ID_CARD updated: ${registerIdCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`,
+          );
           successfulUpdates++;
         } catch (error) {
           log.error(`Failed to update register_id verifiers for EU_ID_CARD: ${error}`);
@@ -242,7 +247,9 @@ try {
               dscCircuitVerifierAddresses,
             );
             const receipt = await tx.wait();
-            log.success(`DSC verifiers for ${attestationType} updated: ${dscCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`);
+            log.success(
+              `DSC verifiers for ${attestationType} updated: ${dscCircuitVerifierIds.length} verifiers (tx: ${receipt.hash})`,
+            );
             successfulUpdates++;
           } catch (error) {
             log.error(`Failed to update DSC verifiers for ${attestationType}: ${error}`);

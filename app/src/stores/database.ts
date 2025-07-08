@@ -11,6 +11,7 @@ import {
 const PAGE_SIZE = 20;
 const DB_NAME = Platform.OS === 'ios' ? 'proof_history.db' : 'proof_history.db';
 const TABLE_NAME = 'proof_history';
+const STALE_PROOF_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 SQLite.enablePromise(true);
 
@@ -22,9 +23,44 @@ async function openDatabase() {
 }
 
 export const database: ProofDB = {
+  updateStaleProofs: async (setProofStatus: (id: string, status: ProofStatus) => Promise<void>) => {
+    const db = await openDatabase();
+    const staleTimestamp = Date.now() - STALE_PROOF_TIMEOUT_MS;
+    const [stalePending] = await db.executeSql(
+      `SELECT sessionId FROM ${TABLE_NAME} WHERE status = ? AND timestamp <= ?`,
+      [ProofStatus.PENDING, staleTimestamp],
+    );
+
+    // Improved error handling - wrap each setProofStatus call in try-catch
+    let successfulUpdates = 0;
+    let failedUpdates = 0;
+
+    for (let i = 0; i < stalePending.rows.length; i++) {
+      const { sessionId } = stalePending.rows.item(i);
+      try {
+        await setProofStatus(sessionId, ProofStatus.FAILURE);
+        successfulUpdates++;
+      } catch (error) {
+        console.error(
+          `Failed to update proof status for session ${sessionId}:`,
+          error,
+        );
+        failedUpdates++;
+        // Continue with the next iteration instead of stopping the entire loop
+      }
+    }
+
+    if (stalePending.rows.length > 0) {
+      console.log(
+        `Stale proof cleanup: ${successfulUpdates} successful, ${failedUpdates} failed`,
+      );
+    }
+  },
   getPendingProofs: async (): Promise<ProofDBResult> => {
     const db = await openDatabase();
-    const [pendingProofs] = await db.executeSql(`
+
+
+      const [pendingProofs] = await db.executeSql(`
         SELECT * FROM ${TABLE_NAME} WHERE status = '${ProofStatus.PENDING}'
       `);
 

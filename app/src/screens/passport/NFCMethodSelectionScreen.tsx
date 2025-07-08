@@ -21,6 +21,7 @@ type NFCParams = {
   useCan?: boolean;
   skipCA?: boolean;
   extendedMode?: boolean;
+  usePacePolling?: boolean;
 };
 
 const NFC_METHODS = [
@@ -30,6 +31,13 @@ const NFC_METHODS = [
     description: 'Use the default NFC scan method (MRZ-based authentication).',
     platform: ['ios'],
     params: {},
+  },
+  {
+    key: 'usePacePolling',
+    label: 'Use PACE Polling',
+    description: 'To be used with certain ID cards.',
+    platform: ['ios'],
+    params: { usePacePolling: true },
   },
   {
     // We try PACE first, but if it fails, we try BAC authentication.

@@ -87,7 +87,7 @@ class PassportReader: NSObject {
     return (sum % 10)
   }
 
-  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:resolve:reject:)
+  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:resolve:reject:)
   func scanPassport(
     _ passportNumber: String,
     dateOfBirth: String,
@@ -97,11 +97,13 @@ class PassportReader: NSObject {
     skipPACE: NSNumber,
     skipCA: NSNumber,
     extendedMode: NSNumber,
+    usePacePolling: NSNumber,
     resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
    let useCANBool = useCan.boolValue
    let skipPACEBool = skipPACE.boolValue
    let skipCABool = skipCA.boolValue
    let extendedModeBool = extendedMode.boolValue
+   let usePacePollingBool = usePacePolling.boolValue
 
     let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
       switch displayMessage {
@@ -142,6 +144,7 @@ class PassportReader: NSObject {
           skipCA: skipCABool,
           skipPACE: skipPACEBool,
           useExtendedMode: extendedModeBool,
+          usePacePolling: usePacePollingBool,
           customDisplayMessage: customMessageHandler
         )
 

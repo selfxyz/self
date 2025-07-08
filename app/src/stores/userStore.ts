@@ -4,6 +4,8 @@ import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 import { create } from 'zustand';
 
 interface UserState {
+  documentType: string;
+  countryCode: string;
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
@@ -11,6 +13,7 @@ interface UserState {
   deepLinkSurname?: string;
   deepLinkNationality?: string;
   deepLinkBirthDate?: string;
+  deepLinkGender?: string;
   update: (patch: Partial<UserState>) => void;
   deleteMrzFields: () => void;
   setDeepLinkUserDetails: (details: {
@@ -18,18 +21,22 @@ interface UserState {
     surname?: string;
     nationality?: string;
     birthDate?: string;
+    gender?: string;
   }) => void;
   clearDeepLinkUserDetails: () => void;
 }
 
 const useUserStore = create<UserState>((set, _get) => ({
   passportNumber: DEFAULT_PNUMBER ?? '',
+  documentType: '',
+  countryCode: '',
   dateOfBirth: DEFAULT_DOB ?? '',
   dateOfExpiry: DEFAULT_DOE ?? '',
   deepLinkName: undefined,
   deepLinkSurname: undefined,
   deepLinkNationality: undefined,
   deepLinkBirthDate: undefined,
+  deepLinkGender: undefined,
 
   update: patch => {
     set(state => ({ ...state, ...patch }));
@@ -37,7 +44,9 @@ const useUserStore = create<UserState>((set, _get) => ({
 
   deleteMrzFields: () =>
     set({
+      documentType: '',
       passportNumber: '',
+      countryCode: '',
       dateOfBirth: '',
       dateOfExpiry: '',
     }),
@@ -48,6 +57,7 @@ const useUserStore = create<UserState>((set, _get) => ({
       deepLinkSurname: details.surname,
       deepLinkNationality: details.nationality,
       deepLinkBirthDate: details.birthDate,
+      deepLinkGender: details.gender,
     }),
 
   clearDeepLinkUserDetails: () =>
@@ -56,6 +66,7 @@ const useUserStore = create<UserState>((set, _get) => ({
       deepLinkSurname: undefined,
       deepLinkNationality: undefined,
       deepLinkBirthDate: undefined,
+      deepLinkGender: undefined,
     }),
 }));
 

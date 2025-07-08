@@ -15,6 +15,9 @@ reviews:
     enabled: true
     drafts: false
     base_branches: ["main", "dev"]
+  tools:
+    github-checks:
+      timeout_ms: 300000
   path_instructions:
     - path: "app/src/**/*.{ts,tsx,js,jsx}"
       instructions: |

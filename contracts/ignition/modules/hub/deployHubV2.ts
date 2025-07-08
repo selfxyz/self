@@ -38,10 +38,10 @@ function getHubImplV2InitializeData() {
  *
  * Troubleshooting Verification Issues:
  * If contracts are not verified during deployment (common with API issues):
- * 
+ *
  * 1. Manual verification for CustomVerifier library:
  *    `npx hardhat verify --network <network-name> <CUSTOM_VERIFIER_ADDRESS>`
- * 
+ *
  * 2. Manual verification for IdentityVerificationHubImplV2 (requires library linkage):
  *    Create a libraries file (e.g., verify-libs.js):
  *    ```
@@ -50,18 +50,18 @@ function getHubImplV2InitializeData() {
  *    };
  *    ```
  *    Then verify: `npx hardhat verify --network <network-name> --libraries verify-libs.js <IMPL_V2_ADDRESS>`
- * 
+ *
  * 3. Manual verification for proxy contract:
  *    `npx hardhat verify --network <network-name> <PROXY_ADDRESS> <IMPL_V2_ADDRESS> <INIT_DATA>`
- * 
+ *
  * 4. Alternative verification command:
  *    `npx hardhat ignition verify chain-<chainId> --include-unrelated-contracts`
- * 
+ *
  * Common verification failure reasons:
  * - API rate limits or temporary service issues
  * - Library linkage not properly detected
  * - Etherscan API v1/v2 configuration issues
- * 
+ *
  * Note: Verification failures do NOT affect contract functionality - contracts work normally even if unverified.
  * Verification only affects source code display on block explorers.
  */

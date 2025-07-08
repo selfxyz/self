@@ -10,10 +10,14 @@ import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
+import { DocumentEvents } from '../../consts/analytics';
 import { usePassport } from '../../providers/passportDataProvider';
+import analytics from '../../utils/analytics';
 import { borderColor, textBlack, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
+
+const { trackEvent } = analytics();
 
 interface ManageDocumentsScreenProps {}
 
@@ -40,6 +44,12 @@ const PassportDataSelector = () => {
     const docs = await getAllDocuments();
     setDocumentCatalog(catalog);
     setAllDocuments(docs);
+    trackEvent(DocumentEvents.DOCUMENTS_FETCHED, {
+      count: catalog.documents.length,
+    });
+    if (catalog.documents.length === 0) {
+      trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
+    }
     setLoading(false);
   };
 
@@ -50,11 +60,13 @@ const PassportDataSelector = () => {
     const docs = await getAllDocuments();
     setDocumentCatalog(catalog);
     setAllDocuments(docs);
+    trackEvent(DocumentEvents.DOCUMENT_SELECTED);
   };
 
   const handleDeleteSpecific = async (documentId: string) => {
     setLoading(true);
     await deleteDocument(documentId);
+    trackEvent(DocumentEvents.DOCUMENT_DELETED);
     await loadPassportDataInfo();
   };
 
@@ -240,13 +252,19 @@ const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
   const navigation = useNavigation();
   const { bottom } = useSafeAreaInsets();
 
+  useEffect(() => {
+    trackEvent(DocumentEvents.MANAGE_SCREEN_OPENED);
+  }, []);
+
   const handleScanDocument = () => {
     impactLight();
+    trackEvent(DocumentEvents.ADD_NEW_SCAN_SELECTED);
     navigation.navigate('PassportOnboarding' as any);
   };
 
   const handleGenerateMock = () => {
     impactLight();
+    trackEvent(DocumentEvents.ADD_NEW_MOCK_SELECTED);
     navigation.navigate('CreateMock' as any);
   };
 

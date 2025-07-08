@@ -30,7 +30,6 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
 import { BodyText } from '../../components/typography/BodyText';
-import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { PassportEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
@@ -39,8 +38,10 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { storePassportData } from '../../providers/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
-import { black, slate100, slate500, white } from '../../utils/colors';
+import { black, slate100, slate400, slate500, white } from '../../utils/colors';
+import { dinot } from '../../utils/fonts';
 import { buttonTap } from '../../utils/haptic';
+import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 
 const { trackEvent } = analytics();
@@ -55,11 +56,18 @@ const emitter =
 const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore();
-  const [dialogMessage, setDialogMessage] = useState('');
+  const {
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
+    documentType,
+    countryCode,
+  } = useUserStore();
+
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
 
   const animationRef = useRef<LottieView>(null);
 
@@ -81,14 +89,17 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
 
   const openErrorModal = useCallback(
     (message: string) => {
+      const callbackId = registerModalCallbacks({
+        onButtonPress: () => {},
+        onModalDismiss: goToNFCTrouble,
+      });
       navigation.navigate('Modal', {
         titleText: 'NFC Scan Error',
         bodyText: message,
         buttonText: 'Dismiss',
         secondaryButtonText: 'Help',
-        onButtonPress: () => {},
-        onModalDismiss: goToNFCTrouble,
         preventDismiss: true,
+        callbackId,
       });
     },
     [navigation, goToNFCTrouble],
@@ -99,19 +110,35 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     if (isSupported) {
       const isEnabled = await NfcManager.isEnabled();
       if (!isEnabled) {
-        setDialogMessage(
-          'NFC is not enabled. Would you like to enable it in settings?',
-        );
         setIsNfcEnabled(false);
+        setDialogMessage('NFC is not enabled. Please enable it in settings.');
       }
       setIsNfcSupported(true);
     } else {
       setDialogMessage(
         "Sorry, your device doesn't seem to have an NFC reader.",
       );
+      // Set isNfcEnabled to false so the message is shown on the screen
+      // near the disabled button when NFC isn't supported
+      setIsNfcEnabled(false);
       setIsNfcSupported(false);
     }
   }, []);
+
+  const usePacePolling = (): boolean => {
+    const { usePacePolling: usePacePollingParam } = (route.params || {}) as any;
+    const shouldUsePacePolling = documentType + countryCode === 'IDFRA';
+
+    if (usePacePollingParam !== undefined) {
+      return usePacePollingParam;
+    } else if (shouldUsePacePolling) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const isPacePolling = usePacePolling();
 
   const onVerifyPress = useCallback(async () => {
     buttonTap();
@@ -133,6 +160,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           skipPACE,
           skipCA,
           extendedMode,
+          usePacePolling: isPacePolling,
         });
 
         const scanDurationSeconds = (
@@ -238,6 +266,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     dateOfBirth,
     dateOfExpiry,
     route.params,
+    isPacePolling,
   ]);
 
   const onCancelPress = useHapticNavigation('Launch', {
@@ -315,7 +344,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
                   alignItems="center"
                   gap="$1.5"
                 >
-                  <Title>Verify your passport</Title>
+                  <Title>Verify your ID</Title>
                   <Button
                     unstyled
                     onPress={goToNFCTrouble}
@@ -324,13 +353,26 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
                   />
                 </XStack>
               </GestureDetector>
-              <Description
-                children={
-                  isNfcEnabled
-                    ? 'Open your passport to the last page to access the NFC chip. Place your phone against the page'
-                    : dialogMessage
-                }
-              />
+              {isNfcEnabled ? (
+                <>
+                  <Title style={styles.title} mt="$2">
+                    Find the RFID chip in your ID
+                  </Title>
+                  <BodyText style={styles.bodyText} mt="$2" mb="$2">
+                    Place your phone against the chip and keep it still until
+                    the sensor reads it.
+                  </BodyText>
+                  <BodyText style={styles.disclaimer} mt="$2">
+                    SELF DOES NOT STORE THIS INFORMATION.
+                  </BodyText>
+                </>
+              ) : (
+                <>
+                  <BodyText style={styles.disclaimer} mt="$2">
+                    {dialogMessage}
+                  </BodyText>
+                </>
+              )}
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton
@@ -363,6 +405,27 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
 export default PassportNFCScanScreen;
 
 const styles = StyleSheet.create({
+  title: {
+    fontFamily: dinot,
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  bodyText: {
+    fontFamily: dinot,
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+    color: slate500,
+  },
+  disclaimer: {
+    fontFamily: dinot,
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
+    color: slate400,
+    letterSpacing: 0.44,
+  },
   animation: {
     color: slate100,
     width: '115%',

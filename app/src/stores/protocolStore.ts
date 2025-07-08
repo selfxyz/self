@@ -79,7 +79,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       environment: 'prod' | 'stg',
       ski: string,
     ) => {
-      const url = `${environment === 'prod' && false ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`; // TODO: remove false once we have the endpoint in production
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`; // TODO: remove false once we have the endpoint in production
       try {
         const response = await fetch(url, {
           method: 'GET',
@@ -328,7 +328,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       environment: 'prod' | 'stg',
       ski: string,
     ) => {
-      const url = `${environment === 'prod' && false ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`; // TODO: remove false once we have the endpoint in production
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`; // TODO: remove false once we have the endpoint in production
       try {
         const response = await fetch(url, {
           method: 'GET',

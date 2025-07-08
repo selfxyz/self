@@ -39,6 +39,7 @@ import {
   textBlack,
   white,
 } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 import { buttonTap, selectionChange } from '../../utils/haptic';
 
 const { trackEvent } = analytics();
@@ -214,14 +215,19 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         .substring(2, 11)
         .replace(/[^a-z0-9]/gi, '')
         .toUpperCase();
-      const signatureTypeForGeneration =
+      const algorithmMapping =
         signatureAlgorithmToStrictSignatureAlgorithm[
           selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-        ][2];
+        ];
+      const dgHashAlgo = algorithmMapping[0];
+      const eContentHashAlgo = algorithmMapping[1];
+      const signatureTypeForGeneration = algorithmMapping[2];
 
       const idDocInput: Partial<IdDocInput> = {
         nationality: selectedCountry as IdDocInput['nationality'],
         idType: selectedDocumentType,
+        dgHashAlgo: dgHashAlgo as IdDocInput['dgHashAlgo'],
+        eContentHashAlgo: eContentHashAlgo as IdDocInput['eContentHashAlgo'],
         signatureType:
           signatureTypeForGeneration as IdDocInput['signatureType'],
         expiryDate: castDateToYYMMDDForExpiry(expiryYears),
@@ -272,7 +278,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack f={1} bg={white} pt={top} pb={bottom}>
+    <YStack f={1} bg={white} pt={top} pb={bottom + extraYPadding}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack px="$4" pb="$4" gap="$5">
           <GestureDetector gesture={devModeTap}>
@@ -284,76 +290,71 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </YStack>
           </GestureDetector>
 
+          <XStack ai="center" jc="space-between">
+            <BodyText>Document Type</BodyText>
+            <XStack space="$2" ai="center">
+              <Button
+                size="$3"
+                onPress={() => {
+                  buttonTap();
+                  setSelectedDocumentType('mock_passport');
+                }}
+                bg={
+                  selectedDocumentType === 'mock_passport'
+                    ? '$blue7Light'
+                    : white
+                }
+                borderColor={borderColor}
+                borderWidth={1}
+                color={
+                  selectedDocumentType === 'mock_passport' ? white : textBlack
+                }
+              >
+                Passport
+              </Button>
+              <Button
+                size="$3"
+                onPress={() => {
+                  buttonTap();
+                  setSelectedDocumentType('mock_id_card');
+                }}
+                bg={
+                  selectedDocumentType === 'mock_id_card'
+                    ? '$blue7Light'
+                    : white
+                }
+                borderColor={borderColor}
+                borderWidth={1}
+                color={
+                  selectedDocumentType === 'mock_id_card' ? white : textBlack
+                }
+              >
+                ID Card
+              </Button>
+            </XStack>
+          </XStack>
+
           {advancedMode && (
-            <>
-              <XStack ai="center" jc="space-between">
-                <BodyText>Document Type</BodyText>
-                <XStack space="$2" ai="center">
-                  <Button
-                    size="$3"
-                    onPress={() => {
-                      buttonTap();
-                      setSelectedDocumentType('mock_passport');
-                    }}
-                    bg={
-                      selectedDocumentType === 'mock_passport'
-                        ? '$blue7Light'
-                        : white
-                    }
-                    borderColor={borderColor}
-                    borderWidth={1}
-                    color={
-                      selectedDocumentType === 'mock_passport'
-                        ? white
-                        : textBlack
-                    }
-                  >
-                    Passport
-                  </Button>
-                  <Button
-                    size="$3"
-                    onPress={() => {
-                      buttonTap();
-                      setSelectedDocumentType('mock_id_card');
-                    }}
-                    bg={
-                      selectedDocumentType === 'mock_id_card'
-                        ? '$blue7Light'
-                        : white
-                    }
-                    borderColor={borderColor}
-                    borderWidth={1}
-                    color={
-                      selectedDocumentType === 'mock_id_card'
-                        ? white
-                        : textBlack
-                    }
-                  >
-                    ID Card
-                  </Button>
+            <XStack ai="center" jc="space-between">
+              <BodyText>Encryption</BodyText>
+              <Button
+                onPress={() => {
+                  buttonTap();
+                  setAlgorithmSheetOpen(true);
+                }}
+                p="$2"
+                px="$3"
+                bg="white"
+                borderColor={borderColor}
+                borderWidth={1}
+                borderRadius="$4"
+              >
+                <XStack ai="center" gap="$2">
+                  <Text fontSize="$4">{selectedAlgorithm}</Text>
+                  <ChevronDown size={20} />
                 </XStack>
-              </XStack>
-              <XStack ai="center" jc="space-between">
-                <BodyText>Encryption</BodyText>
-                <Button
-                  onPress={() => {
-                    buttonTap();
-                    setAlgorithmSheetOpen(true);
-                  }}
-                  p="$2"
-                  px="$3"
-                  bg="white"
-                  borderColor={borderColor}
-                  borderWidth={1}
-                  borderRadius="$4"
-                >
-                  <XStack ai="center" gap="$2">
-                    <Text fontSize="$4">{selectedAlgorithm}</Text>
-                    <ChevronDown size={20} />
-                  </XStack>
-                </Button>
-              </XStack>
-            </>
+              </Button>
+            </XStack>
           )}
 
           <XStack ai="center" jc="space-between">

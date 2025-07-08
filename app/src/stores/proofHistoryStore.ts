@@ -6,6 +6,7 @@ import { create } from 'zustand';
 
 import { database } from './database';
 import { ProofHistory, ProofStatus } from './proof-types';
+import { Platform } from 'react-native';
 
 interface ProofHistoryState {
   proofHistory: ProofHistory[];
@@ -26,10 +27,27 @@ interface ProofHistoryState {
   resetHistory: () => void;
 }
 
+
+const SYNC_THROTTLE_MS = 30 * 1000; // 30 seconds throttle for sync calls
+
 export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
+  let lastSyncTime = 0; // Track last sync time for throttling
+
   const syncProofHistoryStatus = async () => {
     try {
+      // Throttling mechanism - prevent sync if called too frequently
+      const now = Date.now();
+      if (now - lastSyncTime < SYNC_THROTTLE_MS) {
+        console.log('Sync throttled - too soon since last sync');
+        return;
+      }
+      lastSyncTime = now;
+
       set({ isLoading: true });
+
+    await database.updateStaleProofs(get().updateProofStatus)
+
+
 
       const pendingProofs = await database.getPendingProofs();
 

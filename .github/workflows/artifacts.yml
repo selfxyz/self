@@ -1,6 +1,5 @@
 name: OpenPassport CI/CD
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
@@ -13,6 +12,7 @@ on:
     paths:
       - "circuits/circuits/**"
       - ".github/workflows/artifacts.yml"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -61,6 +61,7 @@ jobs:
         run: |
           chmod +x circuits/scripts/build/build_cpp.sh && \
           ./circuits/scripts/build/build_cpp.sh register &&
+          ./circuits/scripts/build/build_cpp.sh register_id &&
           ./circuits/scripts/build/build_cpp.sh disclose &&
           ./circuits/scripts/build/build_cpp.sh dsc
 

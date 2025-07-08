@@ -47,6 +47,9 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
     /// @notice Tracks users who have claimed to prevent double claims
     mapping(uint256 nullifier => bool hasClaimed) public hasClaimed;
 
+    /// @notice Verification config ID for identity verification
+    bytes32 public verificationConfigId;
+
     // ====================================================
     // Events
     // ====================================================
@@ -118,6 +121,31 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
      */
     function withdrawUSDC(address to, uint256 amount) external onlyOwner {
         usdc.safeTransfer(to, amount);
+    }
+
+    /**
+     * @notice Sets the verification config ID
+     * @dev Only callable by the contract owner
+     * @param configId The verification config ID to set
+     */
+    function setConfigId(bytes32 configId) external onlyOwner {
+        verificationConfigId = configId;
+    }
+
+    /**
+     * @notice Generates a configId for the user
+     * @dev Override of the SelfVerificationRoot virtual function
+     * @param destinationChainId The destination chain ID
+     * @param userIdentifier The user identifier
+     * @param userDefinedData The user defined data
+     * @return The stored verification config ID
+     */
+    function getConfigId(
+        bytes32 destinationChainId,
+        bytes32 userIdentifier,
+        bytes memory userDefinedData
+    ) public view override returns (bytes32) {
+        return verificationConfigId;
     }
 
     // ====================================================

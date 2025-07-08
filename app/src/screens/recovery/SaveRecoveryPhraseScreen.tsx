@@ -11,6 +11,7 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import useMnemonic from '../../hooks/useMnemonic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME } from '../../utils/cloudBackup';
 import { black, slate400, white } from '../../utils/colors';
 
@@ -21,6 +22,7 @@ const SaveRecoveryPhraseScreen: React.FC<
 > = ({}) => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
+  const { cloudBackupEnabled } = useSettingStore();
 
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
@@ -63,7 +65,9 @@ const SaveRecoveryPhraseScreen: React.FC<
           Manage {STORAGE_NAME} backups
         </PrimaryButton>
         <SecondaryButton onPress={onSkipPress}>
-          {userHasSeenMnemonic ? 'Continue' : 'Skip making a backup'}
+          {userHasSeenMnemonic || cloudBackupEnabled
+            ? 'Continue'
+            : 'Skip making a backup'}
         </SecondaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

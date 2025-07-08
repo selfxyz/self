@@ -29,6 +29,7 @@ export interface ProofDBResult {
 }
 
 export interface ProofDB {
+  updateStaleProofs: (updateProofStatus: (id: string, status: ProofStatus) => Promise<void>) => Promise<void>;
   getPendingProofs: () => Promise<ProofDBResult>;
   getHistory: (page?: number) => Promise<ProofDBResult>;
   init: () => Promise<void>;

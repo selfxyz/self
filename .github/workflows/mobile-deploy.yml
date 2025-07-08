@@ -1,11 +1,6 @@
 name: Mobile App Deployments
 
 env:
-  # Branch configuration
-  IS_PR: ${{ github.event.pull_request.number != null }}
-  STAGING_BRANCH: dev
-  MAIN_BRANCH: main
-
   # Build environment versions
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
@@ -30,32 +25,45 @@ permissions:
   pull-requests: write
 
 on:
-  push:
-    branches:
-      - dev
-      - main
-    paths:
-      - "app/**"
-      - ".github/workflows/mobile-deploy.yml"
-  pull_request:
-    paths:
-      - "app/**"
-      - ".github/workflows/mobile-deploy.yml"
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Select platform to build"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - ios
+          - android
+          - both
 
 jobs:
   build-ios:
-    # disable for now, will fix soon
-    if: false
     runs-on: macos-latest
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both')
     steps:
+      - name: Mobile deployment status
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "📱 Mobile deployment is disabled for pull requests"
+            echo "🚀 To deploy, use the workflow_dispatch trigger (Run workflow button)"
+            echo "✅ Deployment steps will be skipped for this PR"
+          else
+            echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
+          fi
+
       - name: Set up Xcode
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
         uses: maxim-lobanov/setup-xcode@v1
-        with:
-          # some cocoapods won't compile with xcode 16.3
-          xcode-version: "16.2"
+        # with:
+        #   # some cocoapods won't compile with xcode 16.3
+        #   xcode-version: "16.2"
 
       - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
+
       - name: Install Mobile Dependencies
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
@@ -64,6 +72,7 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
 
       - name: Verify iOS Secrets
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
         run: |
           # Verify App Store Connect API Key exists and contains PEM header
           if [ -z "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" ]; then
@@ -97,6 +106,7 @@ jobs:
           echo "✅ All iOS secrets verified successfully!"
 
       - name: Decode certificate and profile
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
         run: |
           mkdir -p "${{ env.APP_PATH }}$(dirname "${{ env.IOS_DIST_CERT_PATH }}")"
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
@@ -128,7 +138,7 @@ jobs:
           fi
 
       - name: Verify iOS certificate and environment
-        if: ${{ !env.ACT }}
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android' && !env.ACT
         run: |
           # Check if certificate directory exists
           if [ ! -d "${{ env.APP_PATH }}/ios/certs" ]; then
@@ -168,7 +178,7 @@ jobs:
           echo "✅ Certificate and environment verification passed!"
 
       - name: Install certificate
-        if: ${{ !env.ACT }}
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android' && !env.ACT
         run: |
           security create-keychain -p "" build.keychain >/dev/null 2>&1
           security default-keychain -s build.keychain >/dev/null 2>&1
@@ -177,7 +187,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain >/dev/null 2>&1
 
       - name: Install provisioning profile
-        if: ${{ !env.ACT }}
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android' && !env.ACT
         env:
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
           IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
@@ -268,10 +278,9 @@ jobs:
           echo "✅ Provisioning profile installation steps completed."
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
-      - name: Build and upload to TestFlight (Internal)
-        if: ${{ !env.ACT }}
+      - name: Build and upload to App Store Connect/TestFlight
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android' && !env.ACT
         env:
-          IS_PR: ${{ env.IS_PR }}
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
           IOS_CONNECT_API_KEY_BASE64: ${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}
           IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
@@ -289,6 +298,7 @@ jobs:
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
           NODE_OPTIONS: "--max-old-space-size=8192"
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
         timeout-minutes: 90
         run: |
@@ -300,15 +310,11 @@ jobs:
           echo "Identities in build.keychain:"
           security find-identity -v -p codesigning build.keychain || echo "Failed to find identities in build.keychain"
           echo "--- Starting Fastlane ---"
-          # if pushing to main, deploy to App Store
-          if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
-            bundle exec fastlane ios deploy --verbose
-          # else to upload to TestFlight Internal Testing
-          else
-            bundle exec fastlane ios internal_test --verbose
-          fi
+          echo "🚀 Uploading to App Store Connect/TestFlight..."
+          bundle exec fastlane ios internal_test --verbose
 
       - name: Remove project.pbxproj updates we don't want to commit
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
         run: |
           PBXPROJ_FILE="app/ios/Self.xcodeproj/project.pbxproj"
 
@@ -350,6 +356,7 @@ jobs:
           rm -f versions.txt
 
       - name: Get version from package.json
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
         uses: ./.github/actions/get-version
         with:
           app_path: ${{ env.APP_PATH }}
@@ -363,12 +370,24 @@ jobs:
           commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
 
   build-android:
-    # disable for now, will fix soon
-    if: false
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both')
     steps:
+      - name: Mobile deployment status
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            echo "📱 Mobile deployment is disabled for pull requests"
+            echo "🚀 To deploy, use the workflow_dispatch trigger (Run workflow button)"
+            echo "✅ Deployment steps will be skipped for this PR"
+          else
+            echo "🚀 Mobile deployment is enabled - proceeding with Android build"
+          fi
+
       - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+
       - name: Install Mobile Dependencies
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
@@ -378,17 +397,20 @@ jobs:
 
       # android specific steps
       - name: Setup Java environment
-        uses: actions/setup-java@v3
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Android SDK
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
 
       - name: Install NDK
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
         run: |
           max_attempts=5
           attempt=1
@@ -411,17 +433,19 @@ jobs:
           done
 
       - name: Set Gradle JVM options
-        if: ${{ env.ACT }} # run when testing locally with act to prevent gradle crashes
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios' && env.ACT
         run: |
           echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8" >> ${{ env.APP_PATH }}/android/gradle.properties
 
       - name: Decode Android Secrets
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
           echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
 
       # run secrets check after keytool has been setup
       - name: Verify Android Secrets
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
         run: |
           # Verify Play Store JSON key base64 secret exists and is valid
           if [ -z "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" ]; then
@@ -456,8 +480,8 @@ jobs:
           echo "✅ All Android secrets verified successfully!"
 
       - name: Build and upload to Google Play Internal Testing
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
         env:
-          IS_PR: ${{ env.IS_PR }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
@@ -467,18 +491,15 @@ jobs:
           ANDROID_PLAY_STORE_JSON_KEY_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
           NODE_OPTIONS: "--max-old-space-size=8192"
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
         run: |
           cd ${{ env.APP_PATH }}
-          # if pushing to main, deploy to Play Store
-          if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
-            bundle exec fastlane android deploy --verbose
-          # else to upload to Play Store Internal Testing
-          else
-            bundle exec fastlane android internal_test --verbose
-          fi
+          echo "🚀 Uploading to Google Play Internal Testing..."
+          bundle exec fastlane android internal_test --verbose
 
       - name: Get version from package.json
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
         uses: ./.github/actions/get-version
         with:
           app_path: ${{ env.APP_PATH }}

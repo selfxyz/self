@@ -34,13 +34,11 @@ export function generateTEEInputsRegister(
   secret: string,
   passportData: PassportData,
   dscTree: string,
+  env: 'prod' | 'stg',
 ) {
   const inputs = generateCircuitInputsRegister(secret, passportData, dscTree);
   const circuitName = getCircuitNameFromPassportData(passportData, 'register');
-  const endpointType =
-    passportData.documentType && passportData.documentType !== 'passport'
-      ? 'staging_celo'
-      : 'celo';
+  const endpointType = env === 'stg' ? 'staging_celo' : 'celo';
   const endpoint = 'https://self.xyz';
   return { inputs, circuitName, endpointType, endpoint };
 }
@@ -48,13 +46,11 @@ export function generateTEEInputsRegister(
 export function generateTEEInputsDSC(
   passportData: PassportData,
   cscaTree: string[][],
+  env: 'prod' | 'stg',
 ) {
   const inputs = generateCircuitInputsDSC(passportData, cscaTree);
   const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
-  const endpointType =
-    passportData.documentType && passportData.documentType !== 'passport'
-      ? 'staging_celo'
-      : 'celo';
+  const endpointType = env === 'stg' ? 'staging_celo' : 'celo';
   const endpoint = 'https://self.xyz';
   return { inputs, circuitName, endpointType, endpoint };
 }

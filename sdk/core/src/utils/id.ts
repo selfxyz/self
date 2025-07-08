@@ -59,12 +59,10 @@ export const formatRevealedDataPacked = (
     )
     .toString('utf-8');
   const olderThan = Buffer.from(
-    revealedDataPackedString
-      .subarray(
-        revealedDataIndices[attestationId].olderThanStart,
-        revealedDataIndices[attestationId].olderThanEnd + 1
-      )
-      .map((x) => x + 48)
+    revealedDataPackedString.subarray(
+      revealedDataIndices[attestationId].olderThanStart,
+      revealedDataIndices[attestationId].olderThanEnd + 1
+    )
   ).toString('utf-8');
   const ofac = Array.from(
     revealedDataPackedString.subarray(
@@ -72,7 +70,6 @@ export const formatRevealedDataPacked = (
       revealedDataIndices[attestationId].ofacEnd + 1
     )
   ).map(Boolean);
-  console.log('ofac', ofac);
 
   return {
     nullifier: nullifier.toString(),
@@ -84,7 +81,7 @@ export const formatRevealedDataPacked = (
     dateOfBirth: dateOfBirth,
     gender: gender,
     expiryDate: expiryDate,
-    olderThan: olderThan,
+    minimumAge: olderThan,
     ofac: ofac,
   };
 };
