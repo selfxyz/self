@@ -38,7 +38,7 @@
     "types": "yarn build"
   },
   "dependencies": {
-    "@selfxyz/common": "workspace:^",
+    "@selfxyz/common": "workspace:*",
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",
