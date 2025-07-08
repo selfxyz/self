@@ -76,7 +76,7 @@ const routes =
         [Data, 'View passport info', 'PassportDataInfo'],
         [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
         [Cloud, 'Cloud backup', 'CloudBackupSettings'],
-        [Feedback, 'Send feeback', 'email_feedback'],
+        [Feedback, 'Send feedback', 'email_feedback'],
         [ShareIcon, 'Share Self app', 'share'],
         [
           FileText as React.FC<SvgProps>,
