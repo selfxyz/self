@@ -1,5 +1,6 @@
 export function getCountry() {
-  return;
+  const locale = new Intl.Locale(navigator.language);
+  return locale.region ?? '';
 }
 
 type Locale = {
