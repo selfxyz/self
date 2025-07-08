@@ -17,13 +17,6 @@ export function SafeAreaView(props) {
   return React.createElement('div', props, props.children);
 }
 
-export const SafeAreaContext = React.createContext({
-  top: 0,
-  bottom: 0,
-  left: 0,
-  right: 0,
-});
-
 export const initialWindowMetrics = {
   insets: {
     top: 0,
@@ -39,4 +32,11 @@ export const initialWindowMetrics = {
   },
 };
 
-export const SafeAreaInsetsContext = React.createContext(initialWindowMetrics);
+export const SafeAreaContext = React.createContext(initialWindowMetrics);
+
+export const SafeAreaInsetsContext = React.createContext({
+  top: 0,
+  bottom: 0,
+  left: 0,
+  right: 0,
+});

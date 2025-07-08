@@ -17,9 +17,6 @@ const { trackEvent } = analytics();
 
 type SignedPayload<T> = { signature: string; data: T };
 
-// In-memory storage for web (not secure, but better than sessionStorage)
-let inMemorySecret: string | null = null;
-
 // Check if Android bridge is available
 const isAndroidBridgeAvailable = (): boolean => {
   return typeof window !== 'undefined' && 'Android' in window;
@@ -51,13 +48,11 @@ const promptUserForPrivateKey = async (): Promise<string | null> => {
 // Get private key from Android bridge or prompt user
 const getPrivateKey = async (): Promise<string | null> => {
   // Try Android bridge first
-  inMemorySecret = await getPrivateKeyFromAndroidBridge();
-  if (inMemorySecret) {
-    return inMemorySecret;
+  const key = await getPrivateKeyFromAndroidBridge();
+  if (key) {
+    return key;
   }
-
-  // Fall back to user prompt
-  return (inMemorySecret = await promptUserForPrivateKey());
+  return promptUserForPrivateKey();
 };
 
 const _getSecurely = async function <T>(
@@ -241,8 +236,8 @@ export const useAuth = () => {
 };
 
 export async function hasSecretStored() {
-  // Check in-memory storage for web
-  return !!inMemorySecret;
+  // TODO implement a way to check if the private key is stored
+  return true;
 }
 
 /**
@@ -250,11 +245,5 @@ export async function hasSecretStored() {
  * to access both the privatekey and the passport data with the user only authenticating once
  */
 export async function unsafe_getPrivateKey() {
-  return inMemorySecret;
-}
-
-export async function unsafe_clearSecrets() {
-  if (__DEV__) {
-    inMemorySecret = null;
-  }
+  return getPrivateKey();
 }
