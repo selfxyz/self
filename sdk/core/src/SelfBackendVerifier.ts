@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers, type BigNumberish } from 'ethers';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import {
   IdentityVerificationHubImpl,
@@ -16,7 +16,6 @@ import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits
 import { ConfigMismatch, ConfigMismatchError } from './errors.js';
 import { IConfigStorage } from './store/interface.js';
 import { unpackForbiddenCountriesList } from './utils/utils.js';
-import type { BigNumberish } from 'ethers';
 
 const CELO_MAINNET_RPC_URL = 'https://forno.celo.org';
 const CELO_TESTNET_RPC_URL = 'https://alfajores-forno.celo-testnet.org';
