@@ -70,6 +70,9 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
         if (typeof value === 'string') return value;
         return String(value);
       },
+      getSource: () => {
+        return value;
+      },
     };
   }
 
