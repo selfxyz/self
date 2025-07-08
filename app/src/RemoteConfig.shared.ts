@@ -35,6 +35,7 @@ export interface RemoteConfigBackend {
     asBoolean(): boolean;
     asNumber(): number;
     asString(): string;
+    getSource(): string;
   };
   getAll(): Record<string, any>;
   setDefaults(defaults: Record<string, any>): Promise<void> | void;
