@@ -247,3 +247,10 @@ export async function hasSecretStored() {
 export async function unsafe_getPrivateKey() {
   return getPrivateKey();
 }
+
+export async function unsafe_clearSecrets() {
+  if (__DEV__) {
+    console.warn('unsafe_clearSecrets is not implemented for web');
+    // In a real implementation, you would clear any stored secrets here
+  }
+}
