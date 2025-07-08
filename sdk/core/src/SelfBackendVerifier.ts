@@ -79,12 +79,9 @@ export class SelfBackendVerifier {
     const userContextHashInCircuit = BigInt(
       publicSignals[discloseIndices[attestationId].userIdentifierIndex]
     );
-    // Calculate the SHA-256 hash of the userContextData using the new Web Crypto implementation
-    const hashBytes = await calculateUserIdentifierHash(userContextData);
-    const hashHex = Array.from(hashBytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-    const userContextHash = BigInt('0x' + hashHex);
+    // Calculate RIPEMD160(SHA256(userContextData)) using the new Web-Crypto-based helper
+    const hashHexString = await calculateUserIdentifierHash(userContextData);
+    const userContextHash = BigInt(hashHexString);
 
     if (userContextHashInCircuit !== userContextHash) {
       issues.push({
