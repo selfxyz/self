@@ -79,9 +79,12 @@ export class SelfBackendVerifier {
     const userContextHashInCircuit = BigInt(
       publicSignals[discloseIndices[attestationId].userIdentifierIndex]
     );
-    const userContextHash = BigInt(
-      calculateUserIdentifierHash(Buffer.from(userContextData, 'hex'))
-    );
+    // Calculate the SHA-256 hash of the userContextData using the new Web Crypto implementation
+    const hashBytes = await calculateUserIdentifierHash(userContextData);
+    const hashHex = Array.from(hashBytes)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    const userContextHash = BigInt('0x' + hashHex);
 
     if (userContextHashInCircuit !== userContextHash) {
       issues.push({

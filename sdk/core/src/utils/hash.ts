@@ -1,18 +1,17 @@
-import { ethers } from 'ethers';
-
 /**
- * Generates a deterministic user identifier hash from the provided context data.
+ * Generates a deterministic user identifier hash from the provided context data using the
+ * Web Crypto API. This implementation works seamlessly in both browsers and modern versions
+ * of Node.js that expose the Web Crypto API (v20+).
  *
- * The function computes a SHA-256 hash of the input buffer, then applies a RIPEMD-160 hash to the result. The final output is a hexadecimal string, left-padded with zeros to 40 characters and prefixed with "0x".
+ * The function computes the SHA-256 digest of the input string and returns the raw bytes as a
+ * Uint8Array.
  *
- * @param userContextData - The buffer containing user context data to hash
- * @returns A 40-character hexadecimal user identifier string prefixed with "0x"
+ * @param input - The string to hash.
+ * @returns A promise that resolves to a Uint8Array containing the 32-byte SHA-256 digest.
  */
-export function calculateUserIdentifierHash(userContextData: Buffer): string {
-  // Using ethers.js which works in both Node.js and browsers without Node built-ins
-  // ethers.sha256 / ripemd160 return hex strings (prefixed with 0x)
-  const sha256Hash = ethers.sha256(userContextData);
-  const ripemdHash = ethers.ripemd160(sha256Hash);
-  // Ensure the output matches the previous format: 0x + 40-character hex string
-  return '0x' + ripemdHash.slice(2).padStart(40, '0');
+export async function calculateUserIdentifierHash(input: string): Promise<Uint8Array> {
+  // TextEncoder encodes the string as UTF-8 bytes, matching previous Buffer.from(..., 'utf8') behaviour.
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return new Uint8Array(digest);
 }
