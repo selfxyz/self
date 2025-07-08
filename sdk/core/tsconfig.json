@@ -13,7 +13,11 @@
     "moduleResolution": "node16",
     "baseUrl": ".",
     "lib": ["ES2020", "DOM"],
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@selfxyz/common": ["../../common"],
+      "@selfxyz/common/*": ["../../common/*"]
+    }
   },
   "include": ["index.ts", "src/**/*", "circuits/**/*", "circuits/**/*.json", "utils/utils.ts"],
   "exclude": ["node_modules", "**/__tests__/*", "dist"],
