@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { Platform } from 'react-native';
 import SQLite from 'react-native-sqlite-storage';
 
 import {
@@ -11,7 +10,7 @@ import {
 } from './proof-types';
 
 const PAGE_SIZE = 20;
-const DB_NAME = Platform.OS === 'ios' ? 'proof_history.db' : 'proof_history.db';
+const DB_NAME = 'proof_history.db';
 const TABLE_NAME = 'proof_history';
 const STALE_PROOF_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -67,7 +66,10 @@ export const database: ProofDB = {
         SELECT * FROM ${TABLE_NAME} WHERE status = '${ProofStatus.PENDING}'
       `);
 
-    return { rows: pendingProofs.rows.raw() };
+    return {
+      rows: pendingProofs.rows.raw(),
+      total_count: pendingProofs.rows.item(0)?.total_count,
+    };
   },
   getHistory: async (page: number = 1): Promise<ProofDBResult> => {
     const db = await openDatabase();
@@ -83,7 +85,10 @@ export const database: ProofDB = {
           SELECT * FROM data`,
       [PAGE_SIZE, offset],
     );
-    return { rows: results.rows.raw() };
+    return {
+      rows: results.rows.raw(),
+      total_count: results.rows.item(0)?.total_count,
+    };
   },
   init: async () => {
     const db = await openDatabase();

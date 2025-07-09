@@ -7,7 +7,7 @@ import {
   ProofStatus,
 } from './proof-types';
 
-const DB_NAME = 'proof_history_db';
+export const DB_NAME = 'proof_history_db';
 const STORE_NAME = 'proof_history';
 const DB_VERSION = 1;
 const PAGE_SIZE = 20;
@@ -137,14 +137,14 @@ class IndexedDBDatabase implements ProofDB {
               const resultWithCount = results.map((item, index) =>
                 index === 0 ? { ...item, total_count: totalCount } : item,
               );
-              resolve({ rows: resultWithCount });
+              resolve({ rows: resultWithCount, total_count: totalCount });
             }
           } else {
             // Add total count to the first result for compatibility
             const resultWithCount = results.map((item, index) =>
               index === 0 ? { ...item, total_count: totalCount } : item,
             );
-            resolve({ rows: resultWithCount });
+            resolve({ rows: resultWithCount, total_count: totalCount });
           }
         };
       };
