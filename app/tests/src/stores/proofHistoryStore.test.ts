@@ -187,6 +187,44 @@ describe('proofHistoryStore', () => {
         'session-123',
       );
     });
+
+    it('handles status update errors gracefully', async () => {
+      const mockProof = {
+        appName: 'TestApp',
+        sessionId: 'session-123',
+        userId: 'user-456',
+        userIdType: 'uuid',
+        endpointType: 'celo',
+        status: ProofStatus.PENDING,
+        disclosures: '{"test": "data"}',
+      } as const;
+
+      mockDatabase.insertProof.mockResolvedValue({
+        id: '1',
+        timestamp: Date.now(),
+        rowsAffected: 1,
+      });
+
+      await act(async () => {
+        await useProofHistoryStore.getState().addProofHistory(mockProof);
+      });
+
+      mockDatabase.updateProofStatus.mockRejectedValue(new Error('Update failed'));
+
+      await act(async () => {
+        await useProofHistoryStore
+          .getState()
+          .updateProofStatus(
+            'session-123',
+            ProofStatus.SUCCESS,
+            'SUCCESS_001',
+            'Operation completed',
+          );
+      });
+
+      expect(mockDatabase.updateProofStatus).toHaveBeenCalled();
+      // Store should handle the error gracefully without crashing
+    });
   });
 
   describe('loadMoreHistory', () => {
