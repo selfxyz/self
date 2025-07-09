@@ -56,13 +56,18 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         path: '/',
         transports: ['websocket'],
       });
+      setTimeout(() => {
+        websocket.connected && websocket.disconnect();
+        console.log('WebSocket disconnected after timeout');
+        // disconnect after 2 minutes
+      }, SYNC_THROTTLE_MS * 4);
 
       for (let i = 0; i < pendingProofs.rows.length; i++) {
         const proof = pendingProofs.rows[i];
         websocket.emit('subscribe', proof.sessionId);
       }
 
-      websocket.on('status', message => {
+      websocket.timeout(SYNC_THROTTLE_MS * 3).on('status', message => {
         const data =
           typeof message === 'string' ? JSON.parse(message) : message;
 
@@ -76,6 +81,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
           console.log('Failed to verify proof');
           get().updateProofStatus(data.request_id, ProofStatus.FAILURE);
         }
+        websocket.emit('unsubscribe', data.request_id);
       });
     } catch (error) {
       console.error('Error syncing proof status', error);
