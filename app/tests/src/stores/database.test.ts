@@ -58,7 +58,7 @@ describe('database (SQLite)', () => {
 
       await expect(database.init()).rejects.toThrow('Table creation failed');
       expect(mockDb.executeSql).toHaveBeenCalledWith(
-        expect.stringContaining('CREATE TABLE IF NOT EXISTS proof_history')
+        expect.stringContaining('CREATE TABLE IF NOT EXISTS proof_history'),
       );
     });
   });

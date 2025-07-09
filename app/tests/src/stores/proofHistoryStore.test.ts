@@ -194,7 +194,7 @@ describe('proofHistoryStore', () => {
         sessionId: 'session-123',
         userId: 'user-456',
         userIdType: 'uuid',
-        endpointType: 'celo',
+        endpointType: 'https',
         status: ProofStatus.PENDING,
         disclosures: '{"test": "data"}',
       } as const;
@@ -209,7 +209,9 @@ describe('proofHistoryStore', () => {
         await useProofHistoryStore.getState().addProofHistory(mockProof);
       });
 
-      mockDatabase.updateProofStatus.mockRejectedValue(new Error('Update failed'));
+      mockDatabase.updateProofStatus.mockRejectedValue(
+        new Error('Update failed'),
+      );
 
       await act(async () => {
         await useProofHistoryStore
