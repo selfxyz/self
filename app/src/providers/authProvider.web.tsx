@@ -1,5 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+/*
+ * This entire file is a stub and MUST be replaced
+ *
+ */
+
 import React, {
   createContext,
   PropsWithChildren,
@@ -24,6 +29,7 @@ interface AndroidBridge {
 
 declare global {
   interface Window {
+    // TODO ios Bridge
     Android?: AndroidBridge;
   }
 }
@@ -69,12 +75,20 @@ const getPrivateKey = async (): Promise<string | null> => {
   return promptUserForPrivateKey();
 };
 
+/*
+ * This function is not implemented yet
+ * and is only a placeholder for the web implementation.
+ * it doesnt do anything
+ */
 const _getSecurely = async function <T>(
   fn: () => Promise<string | false>,
   formatter: (dataString: string) => T,
 ): Promise<SignedPayload<T> | null> {
   console.log('Starting _getSecurely (web)');
 
+  console.warn(
+    'This is a stub for _getSecurely on web. It does not implement secure storage or biometric authentication.',
+  );
   const dataString = await fn();
   console.log('Got data string:', dataString ? 'exists' : 'not found');
 
@@ -84,8 +98,8 @@ const _getSecurely = async function <T>(
   }
 
   try {
-    // For web, we consider the user authenticated if they can provide the private key
-    // This is a simplified approach - in a real implementation you might want more security
+    // For web, we need to figure out exactly how this will interact with the
+    // Android bridge or any other secure storage mechanism.
     trackEvent(AuthEvents.BIOMETRIC_AUTH_SUCCESS);
     return {
       signature: 'authenticated',

@@ -59,8 +59,8 @@ describe('database (SQLite)', () => {
         appName: 'TestApp',
         sessionId: 'session-123',
         userId: 'user-456',
-        userIdType: 'email' as const,
-        endpointType: 'register' as const,
+        userIdType: 'uuid' as const,
+        endpointType: 'https' as const,
         status: ProofStatus.PENDING,
         disclosures: '{"test": "data"}',
         logoBase64: 'base64-logo',
@@ -104,8 +104,8 @@ describe('database (SQLite)', () => {
         appName: 'TestApp',
         sessionId: 'session-123',
         userId: 'user-456',
-        userIdType: 'email' as const,
-        endpointType: 'register' as const,
+        userIdType: 'uuid' as const,
+        endpointType: 'https' as const,
         status: ProofStatus.FAILURE,
         errorCode: 'ERROR_001',
         errorReason: 'Test error',
@@ -324,7 +324,6 @@ describe('database (SQLite)', () => {
   describe('updateStaleProofs', () => {
     it('updates stale pending proofs to failure', async () => {
       const mockSetProofStatus = jest.fn().mockResolvedValue(undefined);
-      const staleTimestamp = Date.now() - 10 * 60 * 1000; // 10 minutes ago
 
       const mockStaleRows = [
         { sessionId: 'session-123' },
