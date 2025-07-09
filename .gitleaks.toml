@@ -24,6 +24,7 @@ paths = [
     '''common/src/constants/mockCertificates.ts''',
     '''Database.refactorlog''',
     '''vendor''',
+    '''.*tamagui-components\.config\.cjs$''',
 ]
 
 [[rules]]
