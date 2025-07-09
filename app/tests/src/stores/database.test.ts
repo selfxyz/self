@@ -51,6 +51,16 @@ describe('database (SQLite)', () => {
         ),
       );
     });
+
+    it('handles initialization errors gracefully', async () => {
+      const initError = new Error('Table creation failed');
+      mockDb.executeSql.mockRejectedValueOnce(initError);
+
+      await expect(database.init()).rejects.toThrow('Table creation failed');
+      expect(mockDb.executeSql).toHaveBeenCalledWith(
+        expect.stringContaining('CREATE TABLE IF NOT EXISTS proof_history')
+      );
+    });
   });
 
   describe('insertProof', () => {
