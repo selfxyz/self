@@ -18,6 +18,16 @@ const { trackEvent } = analytics();
 type SignedPayload<T> = { signature: string; data: T };
 
 // Check if Android bridge is available
+interface AndroidBridge {
+  getPrivateKey(): Promise<string>;
+}
+
+declare global {
+  interface Window {
+    Android?: AndroidBridge;
+  }
+}
+
 const isAndroidBridgeAvailable = (): boolean => {
   return typeof window !== 'undefined' && 'Android' in window;
 };
@@ -29,9 +39,13 @@ const getPrivateKeyFromAndroidBridge = async (): Promise<string | null> => {
   }
 
   try {
-    // Assuming the Android bridge exposes a method to get the private key
-    // This would need to be implemented on the Android side
-    const privateKey = await (window as any).Android.getPrivateKey();
+    const privateKey = await window.Android!.getPrivateKey();
+
+    // Validate the returned private key
+    if (typeof privateKey !== 'string' || privateKey.length === 0) {
+      throw new Error('Invalid private key received from Android bridge');
+    }
+
     return privateKey;
   } catch (error) {
     console.error('Failed to get private key from Android bridge:', error);
