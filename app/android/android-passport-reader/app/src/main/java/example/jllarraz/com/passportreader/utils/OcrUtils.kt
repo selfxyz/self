@@ -80,14 +80,12 @@ object OcrUtils {
             val checkDigitDateOfBirth = if (hasDateOfBirth) matcherDateOfBirth.group("checkDigitDateOfBirth")?.toIntOrNull() else null
             val gender = if (hasDateOfBirth) matcherDateOfBirth.group("gender") else null
 
-            val expirationDateRegex = "(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})${Pattern.quote(countryCode)}" 
-            val patternExpirationDate = Pattern.compile(expirationDateRegex)
-            val matcherExpirationDate = patternExpirationDate.matcher(fullRead)
-
-
-            val hasExpirationDate = matcherExpirationDate.find()
-            val expirationDate = if (hasExpirationDate) matcherExpirationDate.group("expirationDate") else null
-            val checkDigitExpiration = if (hasExpirationDate) matcherExpirationDate.group("checkDigitExpiration")?.toIntOrNull() else null
+            val expirationDate: String? = if (!countryCode.isNullOrEmpty()) {
+                val expirationDateRegex = "(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})" + Pattern.quote(countryCode)
+                val patternExpirationDate = Pattern.compile(expirationDateRegex)
+                val matcherExpirationDate = patternExpirationDate.matcher(fullRead)
+                if (matcherExpirationDate.find()) matcherExpirationDate.group("expirationDate") else null
+            } else null
 
             // Only proceed if all required fields are present and non-empty
             if (!countryCode.isNullOrEmpty() && !documentNumber.isNullOrEmpty() && !dateOfBirth.isNullOrEmpty() && !expirationDate.isNullOrEmpty() && checkDigitDocumentNumber != null) {
