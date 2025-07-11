@@ -4211,6 +4211,7 @@ __metadata:
     react-native-keychain: "npm:^10.0.0"
     react-native-localize: "npm:^3.4.2"
     react-native-nfc-manager: "npm:^3.16.1"
+    react-native-nitro-modules: "npm:^0.26.3"
     react-native-passport-reader: "npm:^1.0.3"
     react-native-quick-crypto: "npm:^0.7.15"
     react-native-safe-area-context: "npm:^5.5.1"
@@ -18890,6 +18891,16 @@ __metadata:
     "@expo/config-plugins":
       optional: true
   checksum: 10c0/5ef6ed403bc2b349c94bf7e2b711ae08652ff25df11159d2a354b712936a28007ecd03c81f78d6aa6873d010473554e1dbcc8e75f8dd17a886d6ebccec510785
+  languageName: node
+  linkType: hard
+
+"react-native-nitro-modules@npm:^0.26.3":
+  version: 0.26.3
+  resolution: "react-native-nitro-modules@npm:0.26.3"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/04e8654759cf524bcd8886204935c00e44d2b92daae90cb591e33af86aab0d4ae51a238f55bdee063b630605401fc628849b24e902273b5c7ca7236d9f3ff6eb
   languageName: node
   linkType: hard
 

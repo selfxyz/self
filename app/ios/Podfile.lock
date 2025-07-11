@@ -185,6 +185,35 @@ PODS:
   - NFCPassportReader (2.1.1):
     - Mixpanel-swift (~> 5.0.0)
     - OpenSSL-Universal (= 1.1.1900)
+  - NitroModules (0.26.3):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsc
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - OpenSSL-Universal (1.1.1900)
   - PromisesObjC (2.4.0)
   - QKMRZParser (2.0.0)
@@ -2711,6 +2740,7 @@ DEPENDENCIES:
   - lottie-react-native (from `../../node_modules/lottie-react-native`)
   - Mixpanel-swift (~> 5.0.0)
   - NFCPassportReader (from `https://github.com/seshanthS/NFCPassportReader`, commit `cd18444e6d7dbf5a665f8a5b4809c5c655a9114d`)
+  - NitroModules (from `../../node_modules/react-native-nitro-modules`)
   - QKMRZScanner
   - RCT-Folly (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -2853,6 +2883,8 @@ EXTERNAL SOURCES:
   NFCPassportReader:
     :commit: cd18444e6d7dbf5a665f8a5b4809c5c655a9114d
     :git: https://github.com/seshanthS/NFCPassportReader
+  NitroModules:
+    :path: "../../node_modules/react-native-nitro-modules"
   RCT-Folly:
     :podspec: "../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3065,6 +3097,7 @@ SPEC CHECKSUMS:
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   NFCPassportReader: 48873f856f91215dbfa1eaaec20eae639672862e
+  NitroModules: e798465a7a537c4b6c524fc24ea163bb900d04c2
   OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29

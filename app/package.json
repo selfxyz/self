@@ -96,6 +96,7 @@
     "react-native-keychain": "^10.0.0",
     "react-native-localize": "^3.4.2",
     "react-native-nfc-manager": "^3.16.1",
+    "react-native-nitro-modules": "^0.26.3",
     "react-native-passport-reader": "^1.0.3",
     "react-native-quick-crypto": "^0.7.15",
     "react-native-safe-area-context": "^5.5.1",
