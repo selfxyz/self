@@ -22,7 +22,14 @@ object OcrUtils {
     private val REGEX_TD1_LINE3 ="(?<names>[A-Z<]{30})"
 
     // TD1 (ID Card)
-    private val documentCodeRegex = "(?<documentCode>[IP]{1}[DM<]{1})"
+    private val REGEX_ID_DOCUMENT_CODE = "(?<documentCode>[IP]{1}[DM<]{1})"
+    private val REGEX_ID_DOCUMENT_NUMBER = "(ID)(?<country>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})"
+    private val REGEX_ID_DATE_OF_BIRTH = "(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<gender>[FM<]{1})"
+            
+    private val patternDocumentNumber = Pattern.compile(REGEX_ID_DOCUMENT_NUMBER)
+    private val patternDateOfBirth = Pattern.compile(REGEX_ID_DATE_OF_BIRTH)
+    private val patternDocumentCode = Pattern.compile(REGEX_ID_DOCUMENT_CODE)
+
 
     fun processOcr(
         results: Text,
@@ -50,7 +57,6 @@ object OcrUtils {
         val patternTD1Line2 = Pattern.compile(REGEX_TD1_LINE2)
         val patternTD1Line3 = Pattern.compile(REGEX_TD1_LINE3)
 
-        val patternDocumentCode = Pattern.compile(documentCodeRegex)
 
         val matcherTD1Line1 = patternTD1Line1.matcher(fullRead)
         val matcherTD1Line2 = patternTD1Line2.matcher(fullRead)
@@ -60,11 +66,6 @@ object OcrUtils {
 
         if (matcherDocumentCode.find() && matcherDocumentCode.group("documentCode") == "ID") {
             Log.d(TAG, "ID card found")
-            val documentNumberRegex = "(ID)(?<country>[A-Z]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})"
-            val dateOfBirthRegex = "(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<gender>[FM<]{1})"
-            
-            val patternDocumentNumber = Pattern.compile(documentNumberRegex)
-            val patternDateOfBirth = Pattern.compile(dateOfBirthRegex)
 
             val matcherDocumentNumber = patternDocumentNumber.matcher(fullRead)
             val matcherDateOfBirth = patternDateOfBirth.matcher(fullRead)
@@ -79,7 +80,7 @@ object OcrUtils {
             val checkDigitDateOfBirth = if (hasDateOfBirth) matcherDateOfBirth.group("checkDigitDateOfBirth")?.toIntOrNull() else null
             val gender = if (hasDateOfBirth) matcherDateOfBirth.group("gender") else null
 
-            val expirationDateRegex = "(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})$countryCode" 
+            val expirationDateRegex = "(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})${Pattern.quote(countryCode)}" 
             val patternExpirationDate = Pattern.compile(expirationDateRegex)
             val matcherExpirationDate = patternExpirationDate.matcher(fullRead)
 
