@@ -133,7 +133,7 @@ const FormSection: React.FC<FormSectionProps> = ({ title, endSection=false, chil
   const borderBottomWidth = endSection ? 0 : 1;
   return (
     <YStack p={20}jc="space-between" gap={10} borderBottomWidth={borderBottomWidth} borderColor={slate200}>
-        <Text fontWeight={500} textTransform="uppercase" color={slate400}>
+        <Text fontWeight={500} textTransform="uppercase" color={slate400} fontSize="$2">
           {title}
         </Text>
         {children}
@@ -401,7 +401,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 borderRadius={5}
               >
                 <XStack jc="space-between" w="100%">
-                  <Text fontSize="$4" fontFamily={plexMono} color={black}>{selectedAlgorithm}</Text>
+                  <Text fontSize="$2" fontFamily={plexMono} color={black}>{selectedAlgorithm}</Text>
                   <ChevronDown size={20} color={slate500} />
                 </XStack>
               </Button>
@@ -489,7 +489,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   borderRadius={5}
                 >
                   <XStack jc="space-between" w="100%">
-                    <Text fontSize="$4" fontFamily={plexMono} color={black}>
+                    <Text fontSize="$2" fontFamily={plexMono} color={black}>
                       {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
                       {flag(getCountryISO2(selectedCountry))}
                     </Text>
@@ -533,9 +533,16 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   }}
                   disabled={expiryYears <= 0}
                 >
-                  <Minus />
+                  <Minus color={slate500} />
                 </Button>
-                <Text textAlign="center" w="$6" color={textBlack} fontSize="$5" fontFamily={plexMono}>
+                <Text
+                  textTransform="uppercase"
+                  textAlign="center"
+                  color={textBlack}
+                  fontWeight="500"
+                  fontSize="$2"
+                  fontFamily={plexMono}
+                >
                   {expiryYears} years
                 </Text>
                 <Button
@@ -551,7 +558,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                     trackEvent(MockDataEvents.INCREASE_EXPIRY_YEARS);
                   }}
                 >
-                  <Plus />
+                  <Plus color={slate500} />
                 </Button>
               </XStack>
             </FormSection>
