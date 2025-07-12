@@ -33,6 +33,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.text.Text
 
 
@@ -56,9 +57,11 @@ import io.reactivex.schedulers.Schedulers
 
 class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFragment() {
 
-//    private lateinit var customView: CustomView
-
-    ////////////////////////////////////////
+    companion object {
+        private const val TAG = "CameraMLKitFragment"
+        private const val REQUEST_CAMERA_PERMISSION = 1
+        private const val FRAGMENT_DIALOG = "CameraMLKitFragment"
+    }
 
     private var cameraMLKitCallback: CameraMLKitCallback? = cameraMLKitCallback
     private var frameProcessor: OcrMrzDetectorProcessor? = null
@@ -67,10 +70,16 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
 
     private var isDecoding = false
 
-    private var binding:FragmentCameraMrzBinding?=null
+    private var binding: FragmentCameraMrzBinding? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         binding = FragmentCameraMrzBinding.inflate(inflater, container, false)
         return binding?.root
     }
@@ -79,52 +88,75 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
         super.onViewCreated(view, savedInstanceState)
     }
 
-
     override fun onResume() {
+        // React Native already handles camera permission, so we can proceed directly
         MRZUtil.cleanStorage()
         frameProcessor = textProcessor
-        super.onResume()
+
+        try {
+            // Ensure camera view is available
+            val cameraView = binding?.cameraPreview
+            if (cameraView == null) {
+                Log.e(TAG, "Camera view is null, cannot start camera")
+                cameraMLKitCallback?.onError(IllegalStateException("Camera view is not available"))
+                return
+            }
+
+            rotation = getRotation(requireContext(), initialLensPosition)
+            buildCamera(cameraView, initialLensPosition)
+
+            // Start the camera since React Native already verified permission
+            fotoapparat?.start()
+            configureZoom()
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting camera", e)
+            cameraMLKitCallback?.onError(e)
+        }
+
+        // Verify camera startup
+        mHandler.postDelayed({
+            if (fotoapparat == null) {
+                Log.e(TAG, "Camera failed to start")
+            }
+        }, 1000)
     }
 
-
-
     override fun onPause() {
+        // Stop frame processor
         frameProcessor?.stop()
         frameProcessor = null
 
+        // Stop camera properly
+        try {
+            fotoapparat?.stop()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error stopping camera", e)
+        }
+
+        // Clean up camera reference
+        fotoapparat = null
         super.onPause()
     }
 
     override fun onDestroyView() {
-        if (!disposable.isDisposed()) {
-            disposable.dispose();
+        if (!disposable.isDisposed) {
+            disposable.dispose()
         }
+        binding = null
         super.onDestroyView()
-//        customView.onDestroy()
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-//        val activity = activity
-//        if (activity is CameraMLKitCallback) {
-//            cameraMLKitCallback = activity
-//        }
     }
 
     override fun onDetach() {
         cameraMLKitCallback = null
         super.onDetach()
-
     }
-
-
 
     ////////////////////////////////////////////////////////////////////////////////////////
     //
     //        Events from camera fragment
     //
     ////////////////////////////////////////////////////////////////////////////////////////
-
 
     override val callbackFrameProcessor: io.fotoapparat.preview.FrameProcessor
         get() {
@@ -135,7 +167,7 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
                             isDecoding = true
 
                             if (frameProcessor != null) {
-                                val subscribe = Single.fromCallable({
+                                val subscribe = Single.fromCallable {
                                     frameProcessor?.process(
                                         frame = frame,
                                         rotation = rotation,
@@ -143,25 +175,31 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
                                         true,
                                         listener = ocrListener
                                     )
-                                }).subscribeOn(Schedulers.io())
+                                }.subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe({ success ->
                                         //Don't do anything
 
-                                    },{error->
+                                    }, { error ->
                                         isDecoding = false
-                                        Toast.makeText(requireContext(), "Error: "+error, Toast.LENGTH_SHORT).show()
+                                        Log.e(TAG, "Frame processing error: $error")
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "Error: " + error,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     })
                                 disposable.add(subscribe)
                             }
                         }
-                    }catch (e:Exception){
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Exception in frame processor", e)
                         e.printStackTrace()
                     }
 
                 }
             }
-            return  callbackFrameProcessor2
+            return callbackFrameProcessor2
 
         }
 
@@ -172,8 +210,13 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
     ////////////////////////////////////////////////////////////////////////////////////////
 
     override val cameraPreview: CameraView
-        get(){
-            return binding?.cameraPreview!!
+        get() {
+            val cameraView = binding?.cameraPreview
+            if (cameraView == null) {
+                Log.e(TAG, "Camera view is null!")
+                throw IllegalStateException("Camera view is not available")
+            }
+            return cameraView
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -188,10 +231,12 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
             return ArrayList<String>()
         }
 
-    override fun onRequestPermissionsResult(permissionsDenied: ArrayList<String>, permissionsGranted: ArrayList<String>) {
+    override fun onRequestPermissionsResult(
+        permissionsDenied: ArrayList<String>,
+        permissionsGranted: ArrayList<String>
+    ) {
+        // No-op - permissions handled by React Native
     }
-
-
 
     ////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -231,6 +276,7 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
             if (!isAdded) {
                 return
             }
+            Log.e(TAG, "OCR processing failed", e)
             mrzListener.onFailure(e, timeRequired)
         }
 
@@ -247,85 +293,68 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
     var mrzListener = object : OcrUtils.MRZCallback {
         override fun onMRZRead(mrzInfo: MRZInfo, timeRequired: Long) {
             isDecoding = false
-            if(!isAdded){
+            if (!isAdded) {
                 return
             }
             mHandler.post {
                 try {
-
-//                    binding?.statusViewTop?.text = getString(R.string.status_bar_ocr, mrzInfo.documentNumber, mrzInfo.dateOfBirth, mrzInfo.dateOfExpiry)
-//                    binding?.statusViewBottom?.text = getString(R.string.status_bar_success, timeRequired)
                     binding?.statusViewBottom?.setTextColor(resources.getColor(R.color.status_text))
-                    cameraMLKitCallback.onPassportRead(mrzInfo)
+                    cameraMLKitCallback?.onPassportRead(mrzInfo)
 
                 } catch (e: IllegalStateException) {
-                    //The fragment is destroyed
+                    Log.e(TAG, "Fragment is destroyed", e)
                 }
             }
         }
 
         override fun onMRZReadFailure(timeRequired: Long) {
             isDecoding = false
-            if(!isAdded){
+            if (!isAdded) {
                 return
             }
             mHandler.post {
                 try {
-//                    binding?.statusViewBottom?.text = getString(R.string.status_bar_failure, timeRequired)
-//                    binding?.statusViewBottom?.setTextColor(Color.RED)
                     binding?.statusViewTop?.text = ""
                 } catch (e: IllegalStateException) {
-                    //The fragment is destroyed
+                    Log.e(TAG, "Fragment is destroyed", e)
                 }
             }
         }
 
         override fun onFailure(e: Exception, timeRequired: Long) {
             isDecoding = false
-            if(!isAdded){
+            if (!isAdded) {
                 return
             }
+            Log.e(TAG, "MRZ processing failed", e)
             e.printStackTrace()
             mHandler.post {
-                cameraMLKitCallback.onError(e)
+                cameraMLKitCallback?.onError(e)
             }
         }
     }
 
-
-
-
     protected val textProcessor: OcrMrzDetectorProcessor
-        get() = OcrMrzDetectorProcessor()
-
-
+        get() {
+            return OcrMrzDetectorProcessor()
+        }
 
     ////////////////////////////////////////////////////////////////////////////////////////
     //
-    //        Permissions
+    //        Permissions (No longer needed - handled by React Native)
     //
     ////////////////////////////////////////////////////////////////////////////////////////
 
     private fun requestCameraPermission() {
-        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            ConfirmationDialog().show(childFragmentManager, FRAGMENT_DIALOG)
-        } else {
-            requestPermissions(arrayOf(Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
-        }
+        // This method is kept for compatibility but no longer needed
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
-                                            grantResults: IntArray) {
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.size != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                ErrorDialog.newInstance(getString(R.string.permission_camera_rationale))
-                    .show(childFragmentManager, FRAGMENT_DIALOG)
-            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        }
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        // This method is kept for compatibility but no longer needed
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -358,7 +387,7 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
 
         companion object {
 
-            private val ARG_MESSAGE = "message"
+            private const val ARG_MESSAGE = "message"
 
             fun newInstance(message: String): ErrorDialog {
                 val dialog = ErrorDialog()
@@ -381,7 +410,8 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
             return AlertDialog.Builder(activity)
                 .setMessage(R.string.permission_camera_rationale)
                 .setPositiveButton(android.R.string.ok) { dialog, which ->
-                    parent!!.requestPermissions(arrayOf(Manifest.permission.CAMERA),
+                    parent!!.requestPermissions(
+                        arrayOf(Manifest.permission.CAMERA),
                         REQUEST_CAMERA_PERMISSION
                     )
                 }
@@ -394,7 +424,6 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
         }
     }
 
-
     ////////////////////////////////////////////////////////////////////////////////////////
     //
     //        Listener
@@ -405,17 +434,5 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
         fun onPassportRead(mrzInfo: MRZInfo)
         fun onError(e: Exception)
     }
-
-    companion object {
-
-        /**
-         * Tag for the [Log].
-         */
-        private val TAG = CameraMLKitFragment::class.java.simpleName
-
-        private val REQUEST_CAMERA_PERMISSION = 1
-        private val FRAGMENT_DIALOG = "CameraMLKitFragment"
-    }
-
 
 }

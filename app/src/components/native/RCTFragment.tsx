@@ -39,19 +39,14 @@ function dispatchCommand(
   command: 'create' | 'destroy',
 ) {
   try {
-    UIManager.dispatchViewManagerCommand(
-      viewId,
-      (
-        UIManager.getViewManagerConfig(
-          fragmentComponentName,
-        ) as ViewManagerConfig
-      ).Commands[command],
-      [viewId],
-    );
+    const config = UIManager.getViewManagerConfig(
+      fragmentComponentName,
+    ) as ViewManagerConfig;
+
+    const commandId = config.Commands[command];
+    UIManager.dispatchViewManagerCommand(viewId, commandId, [viewId]);
   } catch (e) {
-    // Error creatingthe fragment
-    // TODO: assert this only happens in dev mode when the fragment is already mounted
-    console.log(e);
+    console.error(`[RCTFragment] Error dispatching command '${command}':`, e);
     if (command === 'create') {
       dispatchCommand(fragmentComponentName, viewId, 'destroy');
     }
@@ -68,6 +63,7 @@ export const RCTFragment: React.FC<RCTFragmentViewManagerProps> = ({
 
   useEffect(() => {
     const viewId = findNodeHandle(ref.current);
+
     if (!viewId) {
       return;
     }

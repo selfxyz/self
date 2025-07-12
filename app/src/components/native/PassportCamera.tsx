@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   NativeSyntheticEvent,
+  PermissionsAndroid,
   PixelRatio,
   Platform,
   requireNativeComponent,
@@ -58,6 +59,78 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   onPassportRead,
   isMounted,
 }) => {
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [permissionRequested, setPermissionRequested] = useState(false);
+
+  const requestCameraPermission = useCallback(async () => {
+    if (Platform.OS !== 'android') {
+      setHasPermission(true);
+      return;
+    }
+
+    if (permissionRequested) {
+      return;
+    }
+
+    setPermissionRequested(true);
+
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message:
+            'This app needs access to your camera to scan passport documents.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+
+      const permissionGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
+      setHasPermission(permissionGranted);
+
+      if (!permissionGranted) {
+        const error = new Error('Camera permission denied');
+        onPassportRead(error);
+      }
+    } catch (err) {
+      console.warn('Camera permission error:', err);
+      const error = new Error('Camera permission request failed');
+      onPassportRead(error);
+      setHasPermission(false);
+    }
+  }, [onPassportRead, permissionRequested]);
+
+  const checkCameraPermission = useCallback(async () => {
+    if (Platform.OS !== 'android') {
+      setHasPermission(true);
+      return;
+    }
+
+    try {
+      const hasPermission = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+      );
+
+      if (hasPermission) {
+        setHasPermission(true);
+      } else {
+        await requestCameraPermission();
+      }
+    } catch (err) {
+      console.warn('Camera permission check error:', err);
+      await requestCameraPermission();
+    }
+  }, [requestCameraPermission]);
+
+  // Check permission on mount
+  React.useEffect(() => {
+    if (isMounted && hasPermission === null) {
+      checkCameraPermission();
+    }
+  }, [isMounted, hasPermission, checkCameraPermission]);
+
   const _onError = useCallback(
     (
       event: NativeSyntheticEvent<{
@@ -69,8 +142,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
       if (!isMounted) {
         return;
       }
-      /* eslint-disable @typescript-eslint/no-unused-vars */
-      const { error, errorMessage, stackTrace } = event.nativeEvent;
+      const { errorMessage, stackTrace } = event.nativeEvent;
       const e = new Error(errorMessage);
       e.stack = stackTrace;
       onPassportRead(e);
@@ -110,6 +182,18 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
     [onPassportRead, isMounted],
   );
 
+  // Don't render the camera component until permission is granted
+  if (hasPermission === null) {
+    // Still loading permission status
+    return null;
+  }
+
+  if (hasPermission === false) {
+    // Permission denied, don't render camera
+    return null;
+  }
+
+  // Permission granted, render camera component
   if (Platform.OS === 'ios') {
     return (
       <RCTPassportOCRViewNativeComponent
