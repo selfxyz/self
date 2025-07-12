@@ -514,17 +514,15 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               />
             </XStack>
 
-            <XStack ai="center" jc="space-between">
-              <BodyText>Passport expires in</BodyText>
-              <XStack ai="center" gap="$2">
+            <FormSection title="Passport Expires In">
+              <XStack ai="center" gap="$2" jc="space-between">
                 <Button
                   h="$3.5"
-                  w="$3.5"
+                  w="$6"
                   bg="white"
                   jc="center"
-                  borderColor={borderColor}
+                  borderColor={slate200}
                   borderWidth={1}
-                  borderRadius="$10"
                   onPress={() => {
                     buttonTap();
                     setExpiryYears(expiryYears - 1);
@@ -534,17 +532,16 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 >
                   <Minus />
                 </Button>
-                <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
+                <Text textAlign="center" w="$6" color={textBlack} fontSize="$5" fontFamily={plexMono}>
                   {expiryYears} years
                 </Text>
                 <Button
                   h="$3.5"
-                  w="$3.5"
+                  w="$6"
                   bg="white"
                   jc="center"
-                  borderColor={borderColor}
+                  borderColor={slate200}
                   borderWidth={1}
-                  borderRadius="$10"
                   onPress={() => {
                     buttonTap();
                     setExpiryYears(expiryYears + 1);
@@ -554,7 +551,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   <Plus />
                 </Button>
               </XStack>
-            </XStack>
+            </FormSection>
 
             <XStack ai="center" jc="space-between">
               <BodyText>In OFAC list</BodyText>
