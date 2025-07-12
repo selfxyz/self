@@ -9,7 +9,7 @@ import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -24,7 +24,9 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
+// import { LinearGradient } from 'tamagui/linear-gradient';
 import SelfCard from '../../images/card-style-1.svg';
+import IdIcon from '../../images/icons/id_icon.svg';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -39,14 +41,53 @@ import {
   separatorColor,
   textBlack,
   white,
-  black
+  black,
+  zinc400,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { buttonTap, selectionChange } from '../../utils/haptic';
 
+import { Caption } from '../../components/typography/Caption';
+import { dinot } from '../../utils/fonts';
+
+
 const { trackEvent } = analytics();
 
 interface MockDataScreenProps {}
+
+const MockPassportTitleCard = () => {
+  return (
+    <View
+      backgroundColor="#18181B"
+      borderRadius={12}
+      borderColor="#27272A"
+      borderWidth={1}
+      flexDirection="column"
+      alignItems="flex-start"
+      padding={20}
+      gap={20}
+    >
+      <View
+        minWidth={46}
+        minHeight={46}
+        backgroundColor="#606060"
+        justifyContent="center"
+        alignItems="center"
+        borderRadius={3}
+      >
+        <IdIcon />
+      </View>
+      <View flex={1} flexDirection="column" gap={2}>
+        <Text fontFamily={dinot} fontWeight={500} fontSize="$6" color={white}>
+          Generate mock passport data
+        </Text>
+        <Caption fontFamily={dinot} fontSize="$5" color={zinc400}>
+          Configure data parameters to generate a mock passport for testing purposes on the Self Protocol.
+        </Caption>
+      </View>
+    </View>
+  );
+};
 
 const HeroBanner = () => {
   return (
@@ -62,7 +103,7 @@ const HeroBanner = () => {
       />
       <YStack zIndex={2}>
         <YStack p="$4">
-          <Text color={white}>Tip Component</Text>
+          <MockPassportTitleCard />
         </YStack>
         <YStack
           shadowColor={black}
@@ -321,6 +362,28 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               </BodyText>
             </YStack>
           </GestureDetector>
+
+          <YStack p={10} jc="space-between">
+              <BodyText>Encryption</BodyText>
+              <Button
+                onPress={() => {
+                  buttonTap();
+                  setAlgorithmSheetOpen(true);
+                }}
+                // p="$2"
+                // px="$3"
+                bg="white"
+                borderColor={borderColor}
+                borderWidth={1}
+                borderRadius="none"
+              >
+                <XStack jc="space-between">
+                  <Text fontSize="$4">{selectedAlgorithm}</Text>
+                  <ChevronDown size={20} />
+                </XStack>
+              </Button>
+
+          </YStack>
 
           <XStack ai="center" jc="space-between">
             <BodyText>Document Type</BodyText>
