@@ -24,6 +24,7 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
+import SelfCard from '../../images/card-style-1.svg';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -38,6 +39,7 @@ import {
   separatorColor,
   textBlack,
   white,
+  black
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { buttonTap, selectionChange } from '../../utils/haptic';
@@ -45,6 +47,35 @@ import { buttonTap, selectionChange } from '../../utils/haptic';
 const { trackEvent } = analytics();
 
 interface MockDataScreenProps {}
+
+const HeroBanner = () => {
+  return (
+    <YStack bg={white} marginBottom="$8" position='relative'>
+      <YStack
+        bg={black}
+        zIndex={1}
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom="15%"
+      />
+      <YStack zIndex={2}>
+        <YStack p="$4">
+          <Text color={white}>Tip Component</Text>
+        </YStack>
+        <YStack
+          shadowColor={black}
+          shadowOffset={{ width: 0, height: 2 }}
+          shadowOpacity={0.5}
+          shadowRadius={5}
+        >
+          <SelfCard width="100%" />
+        </YStack>
+      </YStack>
+    </YStack>
+  );
+};
 
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const navigation = useNavigation();
@@ -278,8 +309,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack f={1} bg={white} pt={top} pb={bottom + extraYPadding}>
+    <YStack f={1} bg={white} pb={bottom + extraYPadding}>
       <ScrollView showsVerticalScrollIndicator={false}>
+        <HeroBanner />
         <YStack px="$4" pb="$4" gap="$5">
           <GestureDetector gesture={devModeTap}>
             <YStack ai="center" mb={'$10'}>
