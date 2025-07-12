@@ -1,48 +1,41 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { PermissionsAndroid, Platform } from 'react-native';
+import { Platform } from 'react-native';
+import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
 export interface CameraPermissionResult {
   granted: boolean;
   error?: Error;
 }
 
+function getCameraPermissionConstant() {
+  return Platform.select({
+    ios: PERMISSIONS.IOS.CAMERA,
+    android: PERMISSIONS.ANDROID.CAMERA,
+  });
+}
+
 /**
- * Requests camera permission for the app.
- * On iOS, camera permissions are handled automatically by the native component.
- * On Android, explicitly requests the CAMERA permission.
+ * Requests camera permission for the app (iOS & Android).
+ * Uses react-native-permissions for unified handling.
  *
  * @returns Promise<CameraPermissionResult> - Object containing permission status and optional error
  */
 export async function requestCameraPermission(): Promise<CameraPermissionResult> {
-  // iOS handles camera permissions automatically through the native component
-  if (Platform.OS !== 'android') {
-    return { granted: true };
-  }
-
   try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.CAMERA,
-      {
-        title: 'Camera Permission',
-        message:
-          'This app needs access to your camera to scan passport documents.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-
-    const permissionGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
-
-    if (!permissionGranted) {
+    const status = await check(getCameraPermissionConstant()!);
+    if (status === RESULTS.GRANTED) {
+      return { granted: true };
+    }
+    const requestStatus = await request(getCameraPermissionConstant()!);
+    if (requestStatus === RESULTS.GRANTED) {
+      return { granted: true };
+    } else {
       return {
         granted: false,
         error: new Error('Camera permission denied'),
       };
     }
-
-    return { granted: true };
   } catch (err) {
     console.warn('Camera permission error:', err);
     return {
@@ -53,21 +46,15 @@ export async function requestCameraPermission(): Promise<CameraPermissionResult>
 }
 
 /**
- * Checks if camera permission is already granted.
- * On iOS, returns true as permissions are handled automatically.
- * On Android, checks the current permission status.
+ * Checks if camera permission is already granted (iOS & Android).
+ * Uses react-native-permissions for unified handling.
  *
  * @returns Promise<boolean> - True if permission is granted, false otherwise
  */
 export async function checkCameraPermission(): Promise<boolean> {
-  if (Platform.OS !== 'android') {
-    return true;
-  }
-
   try {
-    return await PermissionsAndroid.check(
-      PermissionsAndroid.PERMISSIONS.CAMERA,
-    );
+    const status = await check(getCameraPermissionConstant()!);
+    return status === RESULTS.GRANTED;
   } catch (err) {
     console.warn('Camera permission check error:', err);
     return false;
@@ -82,10 +69,8 @@ export async function checkCameraPermission(): Promise<boolean> {
  */
 export async function ensureCameraPermission(): Promise<CameraPermissionResult> {
   const hasPermission = await checkCameraPermission();
-
   if (hasPermission) {
     return { granted: true };
   }
-
   return await requestCameraPermission();
 }

@@ -98,6 +98,7 @@
     "react-native-nfc-manager": "^3.16.1",
     "react-native-nitro-modules": "^0.26.3",
     "react-native-passport-reader": "^1.0.3",
+    "react-native-permissions": "^5.4.1",
     "react-native-quick-crypto": "^0.7.15",
     "react-native-safe-area-context": "^5.5.1",
     "react-native-screens": "^4.11.1",

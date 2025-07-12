@@ -4213,6 +4213,7 @@ __metadata:
     react-native-nfc-manager: "npm:^3.16.1"
     react-native-nitro-modules: "npm:^0.26.3"
     react-native-passport-reader: "npm:^1.0.3"
+    react-native-permissions: "npm:^5.4.1"
     react-native-quick-crypto: "npm:^0.7.15"
     react-native-safe-area-context: "npm:^5.5.1"
     react-native-screens: "npm:^4.11.1"
@@ -18908,6 +18909,20 @@ __metadata:
   version: 1.0.3
   resolution: "react-native-passport-reader@npm:1.0.3"
   checksum: 10c0/bfb7454d4859d40c10a28faacb279e135faec215b29ee7965592651ed205dd298ae5282aba9c403c729d0c8a78cadab46b7d8825c6782e29248f1cadf0a1e794
+  languageName: node
+  linkType: hard
+
+"react-native-permissions@npm:^5.4.1":
+  version: 5.4.1
+  resolution: "react-native-permissions@npm:5.4.1"
+  peerDependencies:
+    react: ">=18.1.0"
+    react-native: ">=0.70.0"
+    react-native-windows: ">=0.70.0"
+  peerDependenciesMeta:
+    react-native-windows:
+      optional: true
+  checksum: 10c0/9b56261eeb22ac57fe5e30a65bab0c06306fb022170fdddc5227979495002c2468671e74b74f75e8c97b7c3015e5c54cf6f1b3edd1abf922fda5b6a654bd5c88
   languageName: node
   linkType: hard
 

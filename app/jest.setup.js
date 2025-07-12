@@ -1,5 +1,21 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+// Global mock for react-native-permissions to prevent TurboModule errors in all tests
+jest.mock('react-native-permissions', () => ({
+  check: jest.fn(() => Promise.resolve('granted')),
+  request: jest.fn(() => Promise.resolve('granted')),
+  PERMISSIONS: {
+    IOS: { CAMERA: 'ios.permission.CAMERA' },
+    ANDROID: { CAMERA: 'android.permission.CAMERA' },
+  },
+  RESULTS: {
+    GRANTED: 'granted',
+    DENIED: 'denied',
+    BLOCKED: 'blocked',
+    UNAVAILABLE: 'unavailable',
+  },
+}));
+
 /* global jest */
 /** @jest-environment jsdom */
 require('react-native-gesture-handler/jestSetup');

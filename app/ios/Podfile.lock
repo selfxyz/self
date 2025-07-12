@@ -2536,6 +2536,34 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNPermissions (5.4.1):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsc
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNReactNativeHapticFeedback (2.3.3):
     - boost
     - DoubleConversion
@@ -2824,6 +2852,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../../node_modules/react-native-keychain`)
   - RNLocalize (from `../../node_modules/react-native-localize`)
+  - RNPermissions (from `../../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../../node_modules/react-native-haptic-feedback`)
   - RNScreens (from `../../node_modules/react-native-screens`)
   - "RNSentry (from `../../node_modules/@sentry/react-native`)"
@@ -3045,6 +3074,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../../node_modules/react-native-localize"
+  RNPermissions:
+    :path: "../../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
     :path: "../../node_modules/react-native-haptic-feedback"
   RNScreens:
@@ -3182,6 +3213,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 85143dc91efa1f40bda6bd1ac005f47d87adef13
   RNKeychain: e17b9ea7154aa35b270b472dd65c1a62b52532ce
   RNLocalize: c361562084b742028be30eed3696333f4c5353f4
+  RNPermissions: 48d53705e6452ec2655264595557508e409520b8
   RNReactNativeHapticFeedback: 5d32f63232a598051d65e515e34f30e7df257b65
   RNScreens: ff8fe1576225916304802e8457648d0aa51d4f03
   RNSentry: ffbfefd4a9b00f2f15d7d31cd17f73bd66b815cd

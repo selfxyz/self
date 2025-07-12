@@ -2,9 +2,34 @@
 
 jest.unmock('../../src/utils/cameraPermission');
 
-import { PermissionsAndroid, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
 import type { CameraPermissionResult } from '../../src/utils/cameraPermission';
+
+// Mock react-native-permissions
+const mockCheck = jest.fn();
+const mockRequest = jest.fn();
+const mockPermissions = {
+  IOS: {
+    CAMERA: 'ios.permission.CAMERA',
+  },
+  ANDROID: {
+    CAMERA: 'android.permission.CAMERA',
+  },
+};
+const mockResults = {
+  GRANTED: 'granted',
+  DENIED: 'denied',
+  BLOCKED: 'blocked',
+  UNAVAILABLE: 'unavailable',
+};
+
+jest.mock('react-native-permissions', () => ({
+  check: mockCheck,
+  request: mockRequest,
+  PERMISSIONS: mockPermissions,
+  RESULTS: mockResults,
+}));
 
 // Mock console.warn to avoid noise in tests
 const originalWarn = console.warn;
@@ -22,9 +47,9 @@ describe('cameraPermission', () => {
   beforeEach(() => {
     jest.resetModules();
     cameraPermission = require('../../src/utils/cameraPermission');
-
-    // Reset mocks
     (console.warn as jest.Mock).mockClear();
+    mockCheck.mockClear();
+    mockRequest.mockClear();
   });
 
   describe('requestCameraPermission', () => {
@@ -34,17 +59,66 @@ describe('cameraPermission', () => {
           value: 'ios',
           writable: true,
         });
-
-        // Mock PermissionsAndroid methods for iOS tests
-        PermissionsAndroid.request = jest.fn();
-        PermissionsAndroid.check = jest.fn();
+        // Mock Platform.select to return iOS permission
+        jest.spyOn(Platform, 'select').mockImplementation(obj => obj.ios);
       });
 
-      it('returns granted: true on iOS', async () => {
+      it('returns granted: true when permission is already granted', async () => {
+        mockCheck.mockResolvedValue('granted');
         const result = await cameraPermission.requestCameraPermission();
-
         expect(result).toEqual({ granted: true });
-        expect(PermissionsAndroid.request).not.toHaveBeenCalled();
+        expect(mockCheck).toHaveBeenCalledWith('ios.permission.CAMERA');
+        expect(mockRequest).not.toHaveBeenCalled();
+      });
+
+      it('requests permission and returns granted: true when permission is granted', async () => {
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockResolvedValue('granted');
+        const result = await cameraPermission.requestCameraPermission();
+        expect(result).toEqual({ granted: true });
+        expect(mockCheck).toHaveBeenCalledWith('ios.permission.CAMERA');
+        expect(mockRequest).toHaveBeenCalledWith('ios.permission.CAMERA');
+      });
+
+      it('requests permission and returns granted: false when permission is denied', async () => {
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockResolvedValue('denied');
+        const result = await cameraPermission.requestCameraPermission();
+        expect(result).toEqual({
+          granted: false,
+          error: new Error('Camera permission denied'),
+        });
+        expect(mockCheck).toHaveBeenCalledWith('ios.permission.CAMERA');
+        expect(mockRequest).toHaveBeenCalledWith('ios.permission.CAMERA');
+      });
+
+      it('returns granted: false with error when permission check throws', async () => {
+        const error = new Error('Permission check failed');
+        mockCheck.mockRejectedValue(error);
+        const result = await cameraPermission.requestCameraPermission();
+        expect(result).toEqual({
+          granted: false,
+          error: new Error('Camera permission request failed'),
+        });
+        expect(console.warn).toHaveBeenCalledWith(
+          'Camera permission error:',
+          error,
+        );
+      });
+
+      it('returns granted: false with error when permission request throws', async () => {
+        const error = new Error('Permission request failed');
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockRejectedValue(error);
+        const result = await cameraPermission.requestCameraPermission();
+        expect(result).toEqual({
+          granted: false,
+          error: new Error('Camera permission request failed'),
+        });
+        expect(console.warn).toHaveBeenCalledWith(
+          'Camera permission error:',
+          error,
+        );
       });
     });
 
@@ -54,64 +128,58 @@ describe('cameraPermission', () => {
           value: 'android',
           writable: true,
         });
-
-        // Setup PermissionsAndroid mock
-        PermissionsAndroid.request = jest.fn();
-        PermissionsAndroid.PERMISSIONS = {
-          CAMERA: 'android.permission.CAMERA',
-        } as any;
-        PermissionsAndroid.RESULTS = { GRANTED: 'granted' } as any;
+        // Mock Platform.select to return Android permission
+        jest.spyOn(Platform, 'select').mockImplementation(obj => obj.android);
       });
 
-      it('returns granted: true when permission is granted', async () => {
-        (PermissionsAndroid.request as jest.Mock).mockResolvedValue('granted');
-
+      it('returns granted: true when permission is already granted', async () => {
+        mockCheck.mockResolvedValue('granted');
         const result = await cameraPermission.requestCameraPermission();
-
         expect(result).toEqual({ granted: true });
-        expect(PermissionsAndroid.request).toHaveBeenCalledWith(
-          'android.permission.CAMERA',
-          {
-            title: 'Camera Permission',
-            message:
-              'This app needs access to your camera to scan passport documents.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
-        );
+        expect(mockCheck).toHaveBeenCalledWith('android.permission.CAMERA');
+        expect(mockRequest).not.toHaveBeenCalled();
       });
 
-      it('returns granted: false with error when permission is denied', async () => {
-        (PermissionsAndroid.request as jest.Mock).mockResolvedValue('denied');
-
+      it('requests permission and returns granted: true when permission is granted', async () => {
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockResolvedValue('granted');
         const result = await cameraPermission.requestCameraPermission();
+        expect(result).toEqual({ granted: true });
+        expect(mockCheck).toHaveBeenCalledWith('android.permission.CAMERA');
+        expect(mockRequest).toHaveBeenCalledWith('android.permission.CAMERA');
+      });
 
+      it('requests permission and returns granted: false when permission is denied', async () => {
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockResolvedValue('denied');
+        const result = await cameraPermission.requestCameraPermission();
         expect(result).toEqual({
           granted: false,
           error: new Error('Camera permission denied'),
         });
+        expect(mockCheck).toHaveBeenCalledWith('android.permission.CAMERA');
+        expect(mockRequest).toHaveBeenCalledWith('android.permission.CAMERA');
       });
 
-      it('returns granted: false with error when permission is never_ask_again', async () => {
-        (PermissionsAndroid.request as jest.Mock).mockResolvedValue(
-          'never_ask_again',
-        );
-
+      it('returns granted: false with error when permission check throws', async () => {
+        const error = new Error('Permission check failed');
+        mockCheck.mockRejectedValue(error);
         const result = await cameraPermission.requestCameraPermission();
-
         expect(result).toEqual({
           granted: false,
-          error: new Error('Camera permission denied'),
+          error: new Error('Camera permission request failed'),
         });
+        expect(console.warn).toHaveBeenCalledWith(
+          'Camera permission error:',
+          error,
+        );
       });
 
       it('returns granted: false with error when permission request throws', async () => {
         const error = new Error('Permission request failed');
-        (PermissionsAndroid.request as jest.Mock).mockRejectedValue(error);
-
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockRejectedValue(error);
         const result = await cameraPermission.requestCameraPermission();
-
         expect(result).toEqual({
           granted: false,
           error: new Error('Camera permission request failed'),
@@ -131,16 +199,33 @@ describe('cameraPermission', () => {
           value: 'ios',
           writable: true,
         });
-
-        // Mock PermissionsAndroid methods for iOS tests
-        PermissionsAndroid.check = jest.fn();
+        // Mock Platform.select to return iOS permission
+        jest.spyOn(Platform, 'select').mockImplementation(obj => obj.ios);
       });
 
-      it('returns true on iOS', async () => {
+      it('returns true when permission is granted', async () => {
+        mockCheck.mockResolvedValue('granted');
         const result = await cameraPermission.checkCameraPermission();
-
         expect(result).toBe(true);
-        expect(PermissionsAndroid.check).not.toHaveBeenCalled();
+        expect(mockCheck).toHaveBeenCalledWith('ios.permission.CAMERA');
+      });
+
+      it('returns false when permission is not granted', async () => {
+        mockCheck.mockResolvedValue('denied');
+        const result = await cameraPermission.checkCameraPermission();
+        expect(result).toBe(false);
+        expect(mockCheck).toHaveBeenCalledWith('ios.permission.CAMERA');
+      });
+
+      it('returns false when permission check throws', async () => {
+        const error = new Error('Permission check failed');
+        mockCheck.mockRejectedValue(error);
+        const result = await cameraPermission.checkCameraPermission();
+        expect(result).toBe(false);
+        expect(console.warn).toHaveBeenCalledWith(
+          'Camera permission check error:',
+          error,
+        );
       });
     });
 
@@ -150,42 +235,28 @@ describe('cameraPermission', () => {
           value: 'android',
           writable: true,
         });
-
-        // Setup PermissionsAndroid mock
-        PermissionsAndroid.check = jest.fn();
-        PermissionsAndroid.PERMISSIONS = {
-          CAMERA: 'android.permission.CAMERA',
-        } as any;
+        // Mock Platform.select to return Android permission
+        jest.spyOn(Platform, 'select').mockImplementation(obj => obj.android);
       });
 
-      it('returns true when permission is already granted', async () => {
-        (PermissionsAndroid.check as jest.Mock).mockResolvedValue(true);
-
+      it('returns true when permission is granted', async () => {
+        mockCheck.mockResolvedValue('granted');
         const result = await cameraPermission.checkCameraPermission();
-
         expect(result).toBe(true);
-        expect(PermissionsAndroid.check).toHaveBeenCalledWith(
-          'android.permission.CAMERA',
-        );
+        expect(mockCheck).toHaveBeenCalledWith('android.permission.CAMERA');
       });
 
       it('returns false when permission is not granted', async () => {
-        (PermissionsAndroid.check as jest.Mock).mockResolvedValue(false);
-
+        mockCheck.mockResolvedValue('denied');
         const result = await cameraPermission.checkCameraPermission();
-
         expect(result).toBe(false);
-        expect(PermissionsAndroid.check).toHaveBeenCalledWith(
-          'android.permission.CAMERA',
-        );
+        expect(mockCheck).toHaveBeenCalledWith('android.permission.CAMERA');
       });
 
       it('returns false when permission check throws', async () => {
         const error = new Error('Permission check failed');
-        (PermissionsAndroid.check as jest.Mock).mockRejectedValue(error);
-
+        mockCheck.mockRejectedValue(error);
         const result = await cameraPermission.checkCameraPermission();
-
         expect(result).toBe(false);
         expect(console.warn).toHaveBeenCalledWith(
           'Camera permission check error:',
@@ -202,12 +273,37 @@ describe('cameraPermission', () => {
           value: 'ios',
           writable: true,
         });
+        // Mock Platform.select to return iOS permission
+        jest.spyOn(Platform, 'select').mockImplementation(obj => obj.ios);
       });
 
-      it('returns granted: true on iOS', async () => {
+      it('returns granted: true when permission is already granted', async () => {
+        mockCheck.mockResolvedValue('granted');
         const result = await cameraPermission.ensureCameraPermission();
-
         expect(result).toEqual({ granted: true });
+        expect(mockCheck).toHaveBeenCalledWith('ios.permission.CAMERA');
+        expect(mockRequest).not.toHaveBeenCalled();
+      });
+
+      it('requests permission when not already granted and returns granted: true', async () => {
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockResolvedValue('granted');
+        const result = await cameraPermission.ensureCameraPermission();
+        expect(result).toEqual({ granted: true });
+        expect(mockCheck).toHaveBeenCalledWith('ios.permission.CAMERA');
+        expect(mockRequest).toHaveBeenCalledWith('ios.permission.CAMERA');
+      });
+
+      it('requests permission when not already granted and returns granted: false', async () => {
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockResolvedValue('denied');
+        const result = await cameraPermission.ensureCameraPermission();
+        expect(result).toEqual({
+          granted: false,
+          error: new Error('Camera permission denied'),
+        });
+        expect(mockCheck).toHaveBeenCalledWith('ios.permission.CAMERA');
+        expect(mockRequest).toHaveBeenCalledWith('ios.permission.CAMERA');
       });
     });
 
@@ -217,81 +313,37 @@ describe('cameraPermission', () => {
           value: 'android',
           writable: true,
         });
-
-        // Setup PermissionsAndroid mock
-        PermissionsAndroid.check = jest.fn();
-        PermissionsAndroid.request = jest.fn();
-        PermissionsAndroid.PERMISSIONS = {
-          CAMERA: 'android.permission.CAMERA',
-        } as any;
-        PermissionsAndroid.RESULTS = { GRANTED: 'granted' } as any;
+        // Mock Platform.select to return Android permission
+        jest.spyOn(Platform, 'select').mockImplementation(obj => obj.android);
       });
 
       it('returns granted: true when permission is already granted', async () => {
-        (PermissionsAndroid.check as jest.Mock).mockResolvedValue(true);
-
+        mockCheck.mockResolvedValue('granted');
         const result = await cameraPermission.ensureCameraPermission();
-
         expect(result).toEqual({ granted: true });
-        expect(PermissionsAndroid.check).toHaveBeenCalledWith(
-          'android.permission.CAMERA',
-        );
-        expect(PermissionsAndroid.request).not.toHaveBeenCalled();
+        expect(mockCheck).toHaveBeenCalledWith('android.permission.CAMERA');
+        expect(mockRequest).not.toHaveBeenCalled();
       });
 
       it('requests permission when not already granted and returns granted: true', async () => {
-        (PermissionsAndroid.check as jest.Mock).mockResolvedValue(false);
-        (PermissionsAndroid.request as jest.Mock).mockResolvedValue('granted');
-
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockResolvedValue('granted');
         const result = await cameraPermission.ensureCameraPermission();
-
         expect(result).toEqual({ granted: true });
-        expect(PermissionsAndroid.check).toHaveBeenCalledWith(
-          'android.permission.CAMERA',
-        );
-        expect(PermissionsAndroid.request).toHaveBeenCalledWith(
-          'android.permission.CAMERA',
-          {
-            title: 'Camera Permission',
-            message:
-              'This app needs access to your camera to scan passport documents.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
-        );
+        expect(mockCheck).toHaveBeenCalledWith('android.permission.CAMERA');
+        expect(mockRequest).toHaveBeenCalledWith('android.permission.CAMERA');
       });
 
       it('requests permission when not already granted and returns granted: false', async () => {
-        (PermissionsAndroid.check as jest.Mock).mockResolvedValue(false);
-        (PermissionsAndroid.request as jest.Mock).mockResolvedValue('denied');
-
+        mockCheck.mockResolvedValue('denied');
+        mockRequest.mockResolvedValue('denied');
         const result = await cameraPermission.ensureCameraPermission();
-
         expect(result).toEqual({
           granted: false,
           error: new Error('Camera permission denied'),
         });
-        expect(PermissionsAndroid.check).toHaveBeenCalledWith(
-          'android.permission.CAMERA',
-        );
-        expect(PermissionsAndroid.request).toHaveBeenCalled();
-      });
-
-      it('handles error when permission check throws', async () => {
-        const error = new Error('Permission check failed');
-        (PermissionsAndroid.check as jest.Mock).mockRejectedValue(error);
-
-        const result = await cameraPermission.ensureCameraPermission();
-
-        expect(result).toEqual({
-          granted: false,
-          error: new Error('Camera permission denied'),
-        });
-        expect(console.warn).toHaveBeenCalledWith(
-          'Camera permission check error:',
-          error,
-        );
+        expect(mockCheck).toHaveBeenCalledWith('android.permission.CAMERA');
+        expect(mockRequest).toHaveBeenCalledWith('android.permission.CAMERA');
       });
     });
   });
