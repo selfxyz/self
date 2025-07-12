@@ -28,6 +28,7 @@ interface TopSectionProps extends ViewProps {
   children: React.ReactNode;
   backgroundColor: string;
   roundTop?: boolean;
+  noPadding?: boolean;
 }
 
 interface BottomSectionProps extends ViewProps {
@@ -53,6 +54,7 @@ const Layout: React.FC<ExpandableBottomLayoutProps> = ({
 const TopSection: React.FC<TopSectionProps> = ({
   children,
   backgroundColor,
+  noPadding,
   ...props
 }) => {
   const { top } = useSafeAreaInsets();
@@ -65,6 +67,7 @@ const TopSection: React.FC<TopSectionProps> = ({
         props.roundTop && styles.roundTop,
         props.roundTop ? { marginTop: top } : { paddingTop: top },
         { backgroundColor },
+        noPadding && styles.noPadding,
       ]}
     >
       {children}
@@ -186,5 +189,8 @@ const styles = StyleSheet.create({
     paddingTop: 30,
     paddingLeft: 20,
     paddingRight: 20,
+  },
+  noPadding: {
+    padding: 0,
   },
 });

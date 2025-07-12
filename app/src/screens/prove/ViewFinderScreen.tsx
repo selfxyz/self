@@ -120,7 +120,11 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   return (
     <>
       <ExpandableBottomLayout.Layout backgroundColor={white}>
-        <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
+        <ExpandableBottomLayout.TopSection
+          roundTop
+          backgroundColor={black}
+          noPadding
+        >
           {shouldRenderCamera && (
             <>
               <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />

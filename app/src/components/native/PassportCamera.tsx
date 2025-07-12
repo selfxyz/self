@@ -2,8 +2,8 @@
 
 import React, { useCallback, useState } from 'react';
 import {
+  Dimensions,
   NativeSyntheticEvent,
-  PixelRatio,
   Platform,
   requireNativeComponent,
 } from 'react-native';
@@ -156,6 +156,13 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
     const Fragment = RCTFragment as React.FC<
       React.ComponentProps<typeof RCTFragment> & NativePassportOCRViewProps
     >;
+
+    // Use optimized dimensions for wide screen camera view
+    const screenWidth = Dimensions.get('window').width;
+    const screenHeight = Dimensions.get('window').height;
+    const cameraWidth = Math.round(screenWidth * 1.3);
+    const cameraHeight = Math.round(screenHeight * 0.8);
+
     return (
       <Fragment
         RCTFragmentViewManager={
@@ -166,8 +173,8 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
         fragmentComponentName="PassportOCRViewManager"
         isMounted={isMounted}
         style={{
-          height: PixelRatio.getPixelSizeForLayoutSize(800),
-          width: PixelRatio.getPixelSizeForLayoutSize(400),
+          width: cameraWidth,
+          height: cameraHeight,
         }}
         onError={_onError}
         onPassportRead={_onPassportRead}
