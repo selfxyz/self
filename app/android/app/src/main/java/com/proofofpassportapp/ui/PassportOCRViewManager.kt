@@ -9,9 +9,7 @@ import android.widget.FrameLayout
 import androidx.fragment.app.FragmentActivity
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.common.MapBuilder
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -25,11 +23,15 @@ class PassportOCRViewManager(private val reactContext: ReactApplicationContext) 
     companion object {
         private const val TAG = "PassportOCRViewManager"
         private const val REACT_CLASS = "PassportOCRViewManager"
+        // Android-only commands used to manage the camera fragment
+        private const val COMMAND_CREATE = 1
+        private const val COMMAND_DESTROY = 2
     }
 
     private var fragmentCreated = false
     private var propWidth: Int? = null
     private var propHeight: Int? = null
+    private var reactNativeViewId: Int? = null
 
     override fun getName(): String {
         return REACT_CLASS
@@ -61,14 +63,18 @@ class PassportOCRViewManager(private val reactContext: ReactApplicationContext) 
     }
 
     override fun getCommandsMap(): Map<String, Int> {
-        return MapBuilder.of(
-            "create", 1
+        return mapOf(
+            "create" to COMMAND_CREATE,
+            "destroy" to COMMAND_DESTROY
         )
     }
 
     override fun receiveCommand(view: FrameLayout, commandId: Int, args: ReadableArray?) {
+        val reactId = args?.getInt(0) ?: return
+        reactNativeViewId = reactId
         when (commandId) {
-            1 -> createFragmentInContainer(view)
+            COMMAND_CREATE -> createFragmentInContainer(view)
+            COMMAND_DESTROY -> destroyFragment()
         }
     }
 
@@ -88,6 +94,7 @@ class PassportOCRViewManager(private val reactContext: ReactApplicationContext) 
             if (container.id == View.NO_ID) {
                 container.id = View.generateViewId()
             }
+            reactNativeViewId = container.id
 
             val fragmentManager = activity.supportFragmentManager
             setupLayout(container)
@@ -198,7 +205,7 @@ class PassportOCRViewManager(private val reactContext: ReactApplicationContext) 
 
         val eventEmitter = reactContext.getJSModule(RCTEventEmitter::class.java)
         eventEmitter.receiveEvent(
-            -1,
+            reactNativeViewId!!,
             "onPassportRead",
             eventData
         )
@@ -214,9 +221,16 @@ class PassportOCRViewManager(private val reactContext: ReactApplicationContext) 
 
         val eventEmitter = reactContext.getJSModule(RCTEventEmitter::class.java)
         eventEmitter.receiveEvent(
-            -1,
+            reactNativeViewId!!,
             "onError",
             eventData
+        )
+    }
+
+    override fun getExportedCustomDirectEventTypeConstants(): Map<String, Any> {
+        return mapOf(
+            "onPassportRead" to mapOf("registrationName" to "onPassportRead"),
+            "onError" to mapOf("registrationName" to "onError")
         )
     }
 }
