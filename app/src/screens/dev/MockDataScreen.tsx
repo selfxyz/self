@@ -27,6 +27,7 @@ import {
 // import { LinearGradient } from 'tamagui/linear-gradient';
 import SelfCard from '../../images/card-style-1.svg';
 import IdIcon from '../../images/icons/id_icon.svg';
+import NoteIcon from '../../images/icons/note.svg';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -124,12 +125,14 @@ const HeroBanner = () => {
 
 type FormSectionProps = {
   title: string;
+  endSection?: boolean;
   children: React.ReactNode;
 };
 
-const FormSection: React.FC<FormSectionProps> = ({ title, children }) => {
+const FormSection: React.FC<FormSectionProps> = ({ title, endSection=false, children }) => {
+  const borderBottomWidth = endSection ? 0 : 1;
   return (
-    <YStack p={20}jc="space-between" gap={10} borderBottomWidth={1} borderColor={slate200}>
+    <YStack p={20}jc="space-between" gap={10} borderBottomWidth={borderBottomWidth} borderColor={slate200}>
         <Text fontWeight={500} textTransform="uppercase" color={slate400}>
           {title}
         </Text>
@@ -553,28 +556,42 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               </XStack>
             </FormSection>
 
-            <XStack ai="center" jc="space-between">
-              <BodyText>In OFAC list</BodyText>
-              <Switch
-                size="$3.5"
-                checked={isInOfacList}
-                onCheckedChange={() => {
-                  buttonTap();
-                  setIsInOfacList(!isInOfacList);
-                  trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
-                }}
-                bg={isInOfacList ? '$green7Light' : '$gray4'}
-              >
-                <Switch.Thumb animation="quick" bc="white" />
-              </Switch>
-            </XStack>
-
-            {isInOfacList && (
-              <Text color="$red10" fontSize="$3">
-                OFAC list is a list of people who are suspected of being involved
-                in terrorism or other illegal activities.
-              </Text>
-            )}
+            <FormSection title="In OFAC sanction list" endSection={true}>
+              <YStack flexDirection="column" gap="$2">
+                <YStack
+                  flexDirection="row"
+                  jc="space-between"
+                  ai="center"
+                  w="100%"
+                  borderWidth={1}
+                  borderColor={slate200}
+                  borderRadius={5}
+                  backgroundColor={white}
+                  p="$4"
+                >
+                  <Text textTransform="uppercase">Not on list</Text>
+                  <Switch
+                    size="$3.5"
+                    checked={isInOfacList}
+                    onCheckedChange={() => {
+                      buttonTap();
+                      setIsInOfacList(!isInOfacList);
+                      trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
+                    }}
+                    bg={isInOfacList ? '$green7Light' : '$gray4'}
+                  >
+                    <Switch.Thumb animation="quick" bc="white" />
+                  </Switch>
+                </YStack>
+                <YStack flexDirection="row" gap="$3" ai="center" w="100%">
+                  <NoteIcon width={25} height={25} color={slate400} />
+                  <Text color={slate400} fontSize="$3" textTransform="uppercase" flex={1}>
+                    OFAC list is a list of people who are suspected of being involved
+                    in terrorism or other illegal activities.
+                  </Text>
+                </YStack>
+              </YStack>
+            </FormSection>
           </YStack>
         </YStack>
 
