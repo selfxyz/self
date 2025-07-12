@@ -46,12 +46,13 @@ import {
   slate100,
   slate200,
   slate400,
+  slate500,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { buttonTap, selectionChange } from '../../utils/haptic';
 
 import { Caption } from '../../components/typography/Caption';
-import { dinot } from '../../utils/fonts';
+import { dinot, plexMono } from '../../utils/fonts';
 
 
 const { trackEvent } = analytics();
@@ -378,30 +379,27 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         <YStack px="$4" pb="$4" gap="$5">
           <Text>Mock Passport Parameters</Text>
           <YStack
-            // px="$4"
-            // pb="$4"
-            // gap="$5"
             borderRadius={10}
             borderWidth={1}
             borderColor={slate200}
             backgroundColor={slate100}
           >
-            <FormSection title="Encryption">
+            <FormSection title="Encryption Preference">
               <Button
                 onPress={() => {
                   buttonTap();
                   setAlgorithmSheetOpen(true);
                 }}
-                // p="$2"
-                // px="$3"
+                py="$5"
+                px="$3"
                 bg="white"
-                borderColor={borderColor}
+                borderColor={slate200}
                 borderWidth={1}
-                borderRadius="none"
+                borderRadius={5}
               >
-                <XStack jc="space-between">
-                  <Text fontSize="$4">{selectedAlgorithm}</Text>
-                  <ChevronDown size={20} />
+                <XStack jc="space-between" w="100%">
+                  <Text fontSize="$4" fontFamily={plexMono} color={black}>{selectedAlgorithm}</Text>
+                  <ChevronDown size={20} color={slate500} />
                 </XStack>
               </Button>
             </FormSection>
@@ -473,30 +471,29 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               </XStack>
             )}
 
-            <XStack ai="center" jc="space-between">
-              <BodyText>Nationality</BodyText>
-              <Button
-                onPress={() => {
-                  buttonTap();
-                  setCountrySheetOpen(true);
-                  trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
-                }}
-                p="$2"
-                px="$3"
-                bg="white"
-                borderColor={borderColor}
-                borderWidth={1}
-                borderRadius="$4"
-              >
-                <XStack ai="center" gap="$2">
-                  <Text fontSize="$4">
-                    {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
-                    {flag(getCountryISO2(selectedCountry))}
-                  </Text>
-                  <ChevronDown size={20} />
-                </XStack>
-              </Button>
-            </XStack>
+            <FormSection title="Nationality">
+                <Button
+                  onPress={() => {
+                    buttonTap();
+                    setCountrySheetOpen(true);
+                    trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
+                  }}
+                  py="$5"
+                  px="$3"
+                  bg="white"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  borderRadius={5}
+                >
+                  <XStack jc="space-between" w="100%">
+                    <Text fontSize="$4" fontFamily={plexMono} color={black}>
+                      {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
+                      {flag(getCountryISO2(selectedCountry))}
+                    </Text>
+                    <ChevronDown size={20} color={slate500} />
+                  </XStack>
+                </Button>
+            </FormSection>
 
             <XStack ai="center" jc="space-between">
               <BodyText>Birth Date (YYYY/MM/DD)</BodyText>
