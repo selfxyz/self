@@ -3,12 +3,12 @@
 import React, { useCallback, useState } from 'react';
 import {
   NativeSyntheticEvent,
-  PermissionsAndroid,
   PixelRatio,
   Platform,
   requireNativeComponent,
 } from 'react-native';
 
+import { ensureCameraPermission } from '../../utils/cameraPermission';
 import { extractMRZInfo } from '../../utils/utils';
 import { RCTFragment } from './RCTFragment';
 
@@ -60,76 +60,22 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   isMounted,
 }) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [permissionRequested, setPermissionRequested] = useState(false);
 
-  const requestCameraPermission = useCallback(async () => {
-    if (Platform.OS !== 'android') {
-      setHasPermission(true);
-      return;
+  const checkAndRequestPermission = useCallback(async () => {
+    const result = await ensureCameraPermission();
+    setHasPermission(result.granted);
+
+    if (!result.granted && result.error) {
+      onPassportRead(result.error);
     }
-
-    if (permissionRequested) {
-      return;
-    }
-
-    setPermissionRequested(true);
-
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        {
-          title: 'Camera Permission',
-          message:
-            'This app needs access to your camera to scan passport documents.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
-
-      const permissionGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
-      setHasPermission(permissionGranted);
-
-      if (!permissionGranted) {
-        const error = new Error('Camera permission denied');
-        onPassportRead(error);
-      }
-    } catch (err) {
-      console.warn('Camera permission error:', err);
-      const error = new Error('Camera permission request failed');
-      onPassportRead(error);
-      setHasPermission(false);
-    }
-  }, [onPassportRead, permissionRequested]);
-
-  const checkCameraPermission = useCallback(async () => {
-    if (Platform.OS !== 'android') {
-      setHasPermission(true);
-      return;
-    }
-
-    try {
-      const hasPermission = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-      );
-
-      if (hasPermission) {
-        setHasPermission(true);
-      } else {
-        await requestCameraPermission();
-      }
-    } catch (err) {
-      console.warn('Camera permission check error:', err);
-      await requestCameraPermission();
-    }
-  }, [requestCameraPermission]);
+  }, [onPassportRead]);
 
   // Check permission on mount
   React.useEffect(() => {
     if (isMounted && hasPermission === null) {
-      checkCameraPermission();
+      checkAndRequestPermission();
     }
-  }, [isMounted, hasPermission, checkCameraPermission]);
+  }, [isMounted, hasPermission, checkAndRequestPermission]);
 
   const _onError = useCallback(
     (
