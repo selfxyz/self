@@ -119,7 +119,11 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <ExpandableBottomLayout.TopSection roundTop backgroundColor={black} noPadding>
+      <ExpandableBottomLayout.TopSection
+        roundTop
+        backgroundColor={black}
+        noPadding
+      >
         <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
         <LottieView
           autoPlay

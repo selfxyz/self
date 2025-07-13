@@ -2,10 +2,10 @@
 
 import React, { useCallback } from 'react';
 import {
-  Dimensions,
   NativeSyntheticEvent,
   Platform,
   requireNativeComponent,
+  useWindowDimensions,
 } from 'react-native';
 
 import { RCTFragment } from './RCTFragment';
@@ -44,6 +44,8 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
   onQRData,
   isMounted,
 }) => {
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
   const _onError = useCallback(
     (
       event: NativeSyntheticEvent<{
@@ -93,8 +95,6 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     >;
 
     // Use optimized dimensions for wide screen camera view
-    const screenWidth = Dimensions.get('window').width;
-    const screenHeight = Dimensions.get('window').height;
     const cameraWidth = Math.round(screenWidth * 1.3);
     const cameraHeight = Math.round(screenHeight * 0.8);
 
