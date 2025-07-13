@@ -51,6 +51,13 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     onError: onQRData,
   });
 
+  console.log('[QRCodeScannerView] Render:', {
+    isMounted,
+    hasPermission,
+    screenWidth,
+    screenHeight,
+  });
+
   const _onError = useCallback(
     (
       event: NativeSyntheticEvent<{
@@ -60,10 +67,12 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
       }>,
     ) => {
       if (!isMounted) {
+        console.log('[QRCodeScannerView] Ignoring error - not mounted');
         return;
       }
-      /* eslint-disable @typescript-eslint/no-unused-vars */
+
       const { error, errorMessage, stackTrace } = event.nativeEvent;
+      console.log('[QRCodeScannerView] Error event:', { error, errorMessage });
       const e = new Error(errorMessage);
       e.stack = stackTrace;
       onQRData(e);
@@ -74,9 +83,13 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
   const _onQRData = useCallback(
     (event: NativeSyntheticEvent<{ data: string }>) => {
       if (!isMounted) {
+        console.log('[QRCodeScannerView] Ignoring QR data - not mounted');
         return;
       }
-      console.log(event.nativeEvent.data);
+      console.log(
+        '[QRCodeScannerView] QR data received:',
+        event.nativeEvent.data,
+      );
       onQRData(null, event.nativeEvent.data);
     },
     [onQRData, isMounted],
@@ -84,14 +97,18 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
 
   // Don't render the camera component until permission is granted
   if (hasPermission === null) {
+    console.log('[QRCodeScannerView] Permission still loading');
     // Still loading permission status
     return null;
   }
 
   if (hasPermission === false) {
+    console.log('[QRCodeScannerView] Permission denied');
     // Permission denied, don't render camera
     return null;
   }
+
+  console.log('[QRCodeScannerView] Permission granted, rendering camera');
 
   // Permission granted, render camera component
   if (Platform.OS === 'ios') {
@@ -102,12 +119,13 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
         style={{
           width: '110%',
           height: '110%',
+          backgroundColor: 'transparent',
         }}
       />
     );
   } else {
-    // For Android, wrap the native component inside your RCTFragment to preserve existing functionality.
-    const Fragment = RCTFragment as React.FC<
+    // For Android, properly type the Fragment component
+    const FragmentWithProps = RCTFragment as React.FC<
       React.ComponentProps<typeof RCTFragment> & NativeQRCodeScannerViewProps
     >;
 
@@ -115,8 +133,13 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     const cameraWidth = Math.round(screenWidth * 1.3);
     const cameraHeight = Math.round(screenHeight * 0.8);
 
+    console.log(
+      '[QRCodeScannerView] Rendering Android camera with dimensions:',
+      { cameraWidth, cameraHeight },
+    );
+
     return (
-      <Fragment
+      <FragmentWithProps
         RCTFragmentViewManager={
           QRCodeNativeComponent as ReturnType<typeof requireNativeComponent>
         }
@@ -125,6 +148,7 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
         style={{
           width: cameraWidth,
           height: cameraHeight,
+          backgroundColor: 'transparent',
         }}
         onError={_onError}
         onQRData={_onQRData}

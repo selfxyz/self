@@ -14,9 +14,10 @@ import java.util.List;
 public class QRCodeScannerPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return List.of(
-                new com.proofofpassportapp.ui.QRCodeScannerViewManager(reactContext)
-        );
+        com.proofofpassportapp.ui.QRCodeScannerViewManager viewManager =
+            new com.proofofpassportapp.ui.QRCodeScannerViewManager(reactContext);
+
+        return List.of(viewManager);
     }
 
     @Override

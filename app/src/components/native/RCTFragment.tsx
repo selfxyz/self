@@ -39,15 +39,23 @@ function dispatchCommand(
   command: 'create' | 'destroy',
 ) {
   try {
+    console.log(
+      `[RCTFragment] Dispatching command '${command}' for ${fragmentComponentName}, viewId: ${viewId}`,
+    );
     const config = UIManager.getViewManagerConfig(
       fragmentComponentName,
     ) as ViewManagerConfig;
 
     const commandId = config.Commands[command];
+    console.log(`[RCTFragment] Command ID for '${command}': ${commandId}`);
     UIManager.dispatchViewManagerCommand(viewId, commandId, [viewId]);
+    console.log(`[RCTFragment] Command '${command}' dispatched successfully`);
   } catch (e) {
     console.error(`[RCTFragment] Error dispatching command '${command}':`, e);
     if (command === 'create') {
+      console.log(
+        `[RCTFragment] Attempting to destroy fragment after create error`,
+      );
       dispatchCommand(fragmentComponentName, viewId, 'destroy');
     }
   }
@@ -63,17 +71,29 @@ export const RCTFragment: React.FC<RCTFragmentViewManagerProps> = ({
 
   useEffect(() => {
     const viewId = findNodeHandle(ref.current);
+    console.log(
+      `[RCTFragment] useEffect - isMounted: ${isMounted}, viewId: ${viewId}, fragmentComponentName: ${fragmentComponentName}`,
+    );
 
     if (!viewId) {
+      console.log(
+        `[RCTFragment] No viewId available, skipping command dispatch`,
+      );
       return;
     }
 
     if (isMounted) {
+      console.log(`[RCTFragment] Creating fragment`);
       dispatchCommand(fragmentComponentName, viewId, 'create');
     } else {
+      console.log(`[RCTFragment] Destroying fragment`);
       dispatchCommand(fragmentComponentName, viewId, 'destroy');
     }
   }, [ref, fragmentComponentName, isMounted]);
 
+  console.log(
+    `[RCTFragment] Rendering RCTFragmentViewManager with props:`,
+    props,
+  );
   return <RCTFragmentViewManager ref={ref} {...props} />;
 };

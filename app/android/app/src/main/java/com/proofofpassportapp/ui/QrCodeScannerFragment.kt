@@ -24,6 +24,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -58,24 +59,34 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        Log.d(TAG, "onCreateView: Creating QR scanner fragment view")
         binding = FragmentCameraMrzBinding.inflate(inflater, container, false)
+        Log.d(TAG, "onCreateView: Binding created, cameraPreview=${binding?.cameraPreview != null}")
         return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated: Initializing camera preview")
+        binding?.cameraPreview?.apply {
+            // Ensure camera preview is properly initialized
+            setBackgroundColor(Color.TRANSPARENT)
+        }
     }
 
 
     override fun onResume() {
+        Log.d(TAG, "onResume: Starting QR scanner fragment")
         MRZUtil.cleanStorage()
         frameProcessor = qrProcessor
+        Log.d(TAG, "onResume: Frame processor initialized")
         super.onResume()
     }
 
 
 
     override fun onPause() {
+        Log.d(TAG, "onPause: Pausing QR scanner fragment")
         frameProcessor?.stop()
         frameProcessor = null
 
@@ -83,6 +94,7 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     }
 
     override fun onDestroyView() {
+        Log.d(TAG, "onDestroyView: Destroying QR scanner fragment view")
         if (!disposable.isDisposed) {
             disposable.dispose();
         }
@@ -90,6 +102,7 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     }
 
     override fun onDetach() {
+        Log.d(TAG, "onDetach: Detaching QR scanner fragment")
         callback = null
         super.onDetach()
 
@@ -104,6 +117,7 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
 
     override val callbackFrameProcessor: io.fotoapparat.preview.FrameProcessor
         get() {
+            Log.d(TAG, "callbackFrameProcessor: Creating frame processor")
             val callbackFrameProcessor2 = object : io.fotoapparat.preview.FrameProcessor {
                 override fun process(frame: Frame) {
                     try {
@@ -124,12 +138,14 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
                                         //Don't do anything
                                     },{error->
                                         isDecoding = false
+                                        Log.e(TAG, "Frame processing error", error)
                                         Toast.makeText(requireContext(), "Error: "+error, Toast.LENGTH_SHORT).show()
                                     })
                                 disposable.add(subscribe)
                             }
                         }
                     }catch (e:Exception){
+                        Log.e(TAG, "Exception in frame processor", e)
                         e.printStackTrace()
                     }
 
@@ -147,7 +163,9 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
 
     override val cameraPreview: CameraView
         get(){
-            return binding?.cameraPreview!!
+            val cameraView = binding?.cameraPreview
+            Log.d(TAG, "cameraPreview: Camera view=${cameraView != null}")
+            return cameraView!!
         }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -173,18 +191,20 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
             timeRequired: Long,
             bitmap: Bitmap?
         ) {
+            Log.d(TAG, "onSuccess: QR code detected: $results")
             isDecoding = false
             if (!isAdded) {
+                Log.w(TAG, "onSuccess: Fragment not added, ignoring result")
                 return
             }
             mHandler.post {
                 try {
                     binding?.statusViewBottom?.setTextColor(resources.getColor(R.color.status_text))
-                    callback.onQRData(results)
+                    callback?.onQRData(results)
                     frameProcessor?.stop()
 
                 } catch (e: IllegalStateException) {
-                    //The fragment is destroyed
+                    Log.e(TAG, "onSuccess: Fragment is destroyed", e)
                 }
             }
         }
@@ -200,13 +220,15 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
             e: Exception,
             timeRequired: Long
         ) {
+            Log.e(TAG, "onFailure: QR detection failed", e)
             isDecoding = false
             if (!isAdded) {
+                Log.w(TAG, "onFailure: Fragment not added, ignoring error")
                 return
             }
             e.printStackTrace()
             mHandler.post {
-                callback.onError(e)
+                callback?.onError(e)
             }
         }
 
