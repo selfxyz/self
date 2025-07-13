@@ -53,11 +53,13 @@ export interface PassportCameraProps {
     error: Error | null,
     mrzData?: ReturnType<typeof extractMRZInfo>,
   ) => void;
+  resetTrigger?: number; // Add reset trigger prop
 }
 
 export const PassportCamera: React.FC<PassportCameraProps> = ({
   onPassportRead,
   isMounted,
+  resetTrigger = 0, // Default value
 }) => {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const { hasPermission } = useCameraPermission({
@@ -131,6 +133,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   if (Platform.OS === 'ios') {
     return (
       <RCTPassportOCRViewNativeComponent
+        key={`camera-${resetTrigger}`} // Add key to force remount
         onPassportRead={_onPassportRead}
         onError={_onError}
         style={{
@@ -151,6 +154,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
 
     return (
       <Fragment
+        key={`camera-${resetTrigger}`} // Add key to force remount
         RCTFragmentViewManager={
           RCTPassportOCRViewNativeComponent as ReturnType<
             typeof requireNativeComponent
