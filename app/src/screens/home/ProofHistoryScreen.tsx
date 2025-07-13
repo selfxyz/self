@@ -13,11 +13,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 
 import { BodyText } from '../../components/typography/BodyText';
-import {
-  ProofHistory,
-  ProofStatus,
-  useProofHistoryStore,
-} from '../../stores/proofHistoryStore';
+import { ProofHistory, ProofStatus } from '../../stores/proof-types';
+import { useProofHistoryStore } from '../../stores/proofHistoryStore';
 import {
   black,
   blue100,

@@ -1,30 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { Platform, Vibration } from 'react-native';
-import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
-export type HapticType =
-  | 'selection'
-  | 'impactLight'
-  | 'impactMedium'
-  | 'impactHeavy'
-  | 'notificationSuccess'
-  | 'notificationWarning'
-  | 'notificationError';
-
-export type HapticOptions = {
-  enableVibrateFallback?: boolean;
-  ignoreAndroidSystemSettings?: boolean;
-  pattern?: number[];
-  increaseIosIntensity?: boolean;
-};
-
-const defaultOptions: HapticOptions = {
-  enableVibrateFallback: true,
-  ignoreAndroidSystemSettings: false,
-  pattern: [50, 100, 50],
-  increaseIosIntensity: true,
-};
+import { triggerFeedback } from './trigger';
 
 // Keep track of the loading screen interval
 let loadingScreenInterval: NodeJS.Timeout | null = null;
@@ -181,34 +159,4 @@ export const feedbackUnsuccessful = () => {
   }, 1000);
 };
 
-/**
- * Triggers haptic feedback or vibration based on platform.
- * @param type - The haptic feedback type.
- * @param options - Custom options (optional).
- */
-export const triggerFeedback = (
-  type: HapticType | 'custom',
-  options: HapticOptions = {},
-) => {
-  const mergedOptions = { ...defaultOptions, ...options };
-  if (Platform.OS === 'ios' && type !== 'custom') {
-    if (mergedOptions.increaseIosIntensity) {
-      if (type === 'impactLight') {
-        type = 'impactMedium';
-      } else if (type === 'impactMedium') {
-        type = 'impactHeavy';
-      }
-    }
-
-    ReactNativeHapticFeedback.trigger(type, {
-      enableVibrateFallback: mergedOptions.enableVibrateFallback,
-      ignoreAndroidSystemSettings: mergedOptions.ignoreAndroidSystemSettings,
-    });
-  } else {
-    if (mergedOptions.pattern) {
-      Vibration.vibrate(mergedOptions.pattern, false);
-    } else {
-      Vibration.vibrate(100);
-    }
-  }
-};
+export { triggerFeedback } from './trigger';

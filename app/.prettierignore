@@ -6,4 +6,6 @@ src/assets/animations/
 witnesscalc/
 vendor/
 android/
+.tamagui/
+web/dist/
 *.md

@@ -8,7 +8,6 @@ import HomeScreen from '../screens/home/HomeScreen';
 import ProofHistoryDetailScreen from '../screens/home/ProofHistoryDetailScreen';
 import ProofHistoryScreen from '../screens/home/ProofHistoryScreen';
 import { black } from '../utils/colors';
-
 const homeScreens = {
   Disclaimer: {
     screen: DisclaimerScreen,

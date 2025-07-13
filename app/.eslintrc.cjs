@@ -11,6 +11,8 @@ module.exports = {
     'android/',
     'deployments/',
     'node_modules/',
+    'web/dist/',
+    '.tamagui/*',
     'metro.config.cjs',
   ],
   rules: {

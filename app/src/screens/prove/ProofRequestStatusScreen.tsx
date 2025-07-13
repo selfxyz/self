@@ -17,10 +17,8 @@ import { Title } from '../../components/typography/Title';
 import { ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import {
-  ProofStatus,
-  useProofHistoryStore,
-} from '../../stores/proofHistoryStore';
+import { ProofStatus } from '../../stores/proof-types';
+import { useProofHistoryStore } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';

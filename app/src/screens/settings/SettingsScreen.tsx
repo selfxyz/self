@@ -6,7 +6,6 @@ import { FileText } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useCallback, useMemo } from 'react';
 import { Linking, Platform, Share } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
@@ -41,6 +40,7 @@ import {
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
+import { getCountry, getLocales, getTimeZone } from '../../utils/locale';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {
@@ -70,14 +70,29 @@ const goToStore = () => {
   Linking.openURL(storeURL);
 };
 
-const routes = [
-  [Data, 'View passport info', 'PassportDataInfo'],
-  [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
-  [Cloud, 'Cloud backup', 'CloudBackupSettings'],
-  [Feedback, 'Send feeback', 'email_feedback'],
-  [ShareIcon, 'Share Self app', 'share'],
-  [FileText as React.FC<SvgProps>, 'Manage ID documents', 'ManageDocuments'],
-] satisfies [React.FC<SvgProps>, string, RouteOption][];
+const routes =
+  Platform.OS !== 'web'
+    ? ([
+        [Data, 'View passport info', 'PassportDataInfo'],
+        [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
+        [Cloud, 'Cloud backup', 'CloudBackupSettings'],
+        [Feedback, 'Send feedback', 'email_feedback'],
+        [ShareIcon, 'Share Self app', 'share'],
+        [
+          FileText as React.FC<SvgProps>,
+          'Manage ID documents',
+          'ManageDocuments',
+        ],
+      ] satisfies [React.FC<SvgProps>, string, RouteOption][])
+    : ([
+        [Data, 'View passport info', 'PassportDataInfo'],
+        [Feedback, 'Send feeback', 'email_feedback'],
+        [
+          FileText as React.FC<SvgProps>,
+          'Manage ID documents',
+          'ManageDocuments',
+        ],
+      ] satisfies [React.FC<SvgProps>, string, RouteOption][]);
 
 // get the actual type of the routes so we can use in the onMenuPress function so it
 // doesnt worry about us linking to screens with required props which we dont want to go to anyway

@@ -28,6 +28,9 @@ class ErrorBoundary extends React.Component<Props, State> {
   componentDidCatch() {
     // Flush analytics before the app crashes
     flushAnalytics();
+    // TODO Sentry React docs recommend Sentry.captureReactException(error, info);
+    // https://docs.sentry.io/platforms/javascript/guides/react/features/error-boundary/
+    // but ill wait so as to have few changes on native app
   }
 
   render() {
