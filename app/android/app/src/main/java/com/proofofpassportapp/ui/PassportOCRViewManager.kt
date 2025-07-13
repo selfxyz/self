@@ -204,8 +204,9 @@ class PassportOCRViewManager(private val reactContext: ReactApplicationContext) 
         eventData.putMap("data", dataMap)
 
         val eventEmitter = reactContext.getJSModule(RCTEventEmitter::class.java)
+        val viewId = reactNativeViewId ?: -1
         eventEmitter.receiveEvent(
-            reactNativeViewId!!,
+            viewId,
             "onPassportRead",
             eventData
         )
@@ -220,8 +221,9 @@ class PassportOCRViewManager(private val reactContext: ReactApplicationContext) 
         eventData.putString("stackTrace", e.stackTraceToString())
 
         val eventEmitter = reactContext.getJSModule(RCTEventEmitter::class.java)
+        val viewId = reactNativeViewId ?: -1
         eventEmitter.receiveEvent(
-            reactNativeViewId!!,
+            viewId,
             "onError",
             eventData
         )

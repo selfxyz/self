@@ -89,7 +89,13 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
     }
 
     override fun onResume() {
-        // React Native already handles camera permission, so we can proceed directly
+        // Check camera permission before proceeding
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "Camera permission not granted")
+            cameraMLKitCallback?.onError(SecurityException("Camera permission not granted"))
+            return
+        }
+
         MRZUtil.cleanStorage()
         frameProcessor = textProcessor
 
@@ -105,7 +111,7 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
             rotation = getRotation(requireContext(), initialLensPosition)
             buildCamera(cameraView, initialLensPosition)
 
-            // Start the camera since React Native already verified permission
+            // Start the camera since permission is confirmed
             fotoapparat?.start()
             configureZoom()
 
