@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   NativeSyntheticEvent,
   Platform,
@@ -8,7 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { ensureCameraPermission } from '../../utils/cameraPermission';
+import { useCameraPermission } from '../../hooks/useCameraPermission';
 import { extractMRZInfo } from '../../utils/utils';
 import { RCTFragment } from './RCTFragment';
 
@@ -60,23 +60,10 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   isMounted,
 }) => {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-
-  const checkAndRequestPermission = useCallback(async () => {
-    const result = await ensureCameraPermission();
-    setHasPermission(result.granted);
-
-    if (!result.granted && result.error) {
-      onPassportRead(result.error);
-    }
-  }, [onPassportRead]);
-
-  // Check permission on mount
-  React.useEffect(() => {
-    if (isMounted && hasPermission === null) {
-      checkAndRequestPermission();
-    }
-  }, [isMounted, hasPermission, checkAndRequestPermission]);
+  const { hasPermission } = useCameraPermission({
+    isMounted,
+    onError: onPassportRead,
+  });
 
   const _onError = useCallback(
     (

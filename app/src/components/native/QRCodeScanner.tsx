@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
+import { useCameraPermission } from '../../hooks/useCameraPermission';
 import { RCTFragment } from './RCTFragment';
 
 interface NativeQRCodeScannerViewProps {
@@ -45,6 +46,10 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
   isMounted,
 }) => {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { hasPermission } = useCameraPermission({
+    isMounted,
+    onError: onQRData,
+  });
 
   const _onError = useCallback(
     (
@@ -77,6 +82,18 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     [onQRData, isMounted],
   );
 
+  // Don't render the camera component until permission is granted
+  if (hasPermission === null) {
+    // Still loading permission status
+    return null;
+  }
+
+  if (hasPermission === false) {
+    // Permission denied, don't render camera
+    return null;
+  }
+
+  // Permission granted, render camera component
   if (Platform.OS === 'ios') {
     return (
       <QRCodeNativeComponent
