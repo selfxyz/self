@@ -16,11 +16,17 @@ export const useCameraPermission = ({
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
   const checkAndRequestPermission = useCallback(async () => {
-    const result = await ensureCameraPermission();
-    setHasPermission(result.granted);
+    try {
+      const result = await ensureCameraPermission();
+      setHasPermission(result.granted);
 
-    if (!result.granted && result.error) {
-      onError(result.error);
+      if (!result.granted && result.error) {
+        onError(result.error);
+      }
+    } catch (error) {
+      onError(
+        error instanceof Error ? error : new Error('Unknown error occurred'),
+      );
     }
   }, [onError]);
 
