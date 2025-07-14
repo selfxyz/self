@@ -130,8 +130,8 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     >;
 
     // Use optimized dimensions for wide screen camera view
-    const cameraWidth = Math.round(screenWidth * 1.3);
-    const cameraHeight = Math.round(screenHeight * 0.8);
+    const cameraWidth = Math.round(screenWidth * 3);
+    const cameraHeight = Math.round(screenHeight * 2);
 
     console.log(
       '[QRCodeScannerView] Rendering Android camera with dimensions:',
