@@ -40,7 +40,12 @@ import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate100, slate400, slate500, white } from '../../utils/colors';
 import { dinot } from '../../utils/fonts';
-import { buttonTap } from '../../utils/haptic';
+import {
+  buttonTap,
+  feedbackSuccess,
+  feedbackUnsuccessful,
+  impactLight,
+} from '../../utils/haptic';
 import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 
@@ -68,6 +73,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
+  const [nfcMessage, setNfcMessage] = useState<string | null>(null);
 
   const animationRef = useRef<LottieView>(null);
 
@@ -286,7 +292,32 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
           'NativeEvent',
-          (event: string) => console.info(event),
+          (event: string) => {
+            console.info(event);
+            setNfcMessage(event);
+            // Haptic feedback mapping for completion/error only
+            if (
+              event === 'PACE succeeded' ||
+              event === 'BAC succeeded' ||
+              event === 'Chip authentication succeeded'
+            ) {
+              feedbackSuccess(); // Major success
+            } else if (
+              event === 'Reading DG1 succeeded' ||
+              event === 'Reading DG2 succeeded' ||
+              event === 'Reading SOD succeeded' ||
+              event === 'Reading COM succeeded'
+            ) {
+              impactLight(); // Minor DG step
+            } else if (
+              event === 'BAC failed' ||
+              event === 'PACE failed' ||
+              event.toLowerCase().includes('failed') ||
+              event.toLowerCase().includes('error')
+            ) {
+              feedbackUnsuccessful(); // Error
+            }
+          },
         );
 
         return () => {
@@ -308,7 +339,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               animationRef.current?.play();
             }, 5000); // Pause 5 seconds before playing again
           }}
-          source={passportVerifyAnimation}
+          source={passportVerifyAnimation as any}
           style={styles.animation}
           cacheComposition={true}
           renderMode="HARDWARE"
@@ -320,8 +351,14 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
             <TextsContainer>
               <Title children="Ready to scan" />
               <BodyText textAlign="center">
-                Hold your device near the NFC tag and stop moving when it
-                vibrates.
+                {nfcMessage && nfcMessage.trim().length > 0 ? (
+                  nfcMessage
+                ) : (
+                  <>
+                    Hold your device near the NFC tag and stop moving when it
+                    vibrates.
+                  </>
+                )}
               </BodyText>
             </TextsContainer>
             <Image
