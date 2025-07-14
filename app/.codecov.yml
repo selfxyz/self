@@ -1,0 +1,53 @@
+codecov:
+  require_ci_to_pass: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "80...100"
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 5%
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
+
+flags:
+  screens:
+    paths:
+      - "src/screens/"
+  stores:
+    paths:
+      - "src/stores/"
+  providers:
+    paths:
+      - "src/providers/"
+  components:
+    paths:
+      - "src/components/"
+  utils:
+    paths:
+      - "src/utils/"
+  hooks:
+    paths:
+      - "src/hooks/"
+  navigation:
+    paths:
+      - "src/navigation/"
+  layouts:
+    paths:
+      - "src/layouts/"
+
+ignore:
+  - "src/mocks/**"
+  - "src/types/**"
+  - "src/**/*.d.ts"
+  - "src/**/index.{ts,tsx}"
+  - "src/**/*.test.{ts,tsx}"
+  - "src/**/*.spec.{ts,tsx}"
+  - "src/**/__tests__/**"
+  - "src/**/__mocks__/**"
+  - "tests/**"
