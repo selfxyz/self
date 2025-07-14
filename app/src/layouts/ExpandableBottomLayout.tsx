@@ -4,6 +4,7 @@ import React from 'react';
 import {
   Dimensions,
   PixelRatio,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -174,7 +175,7 @@ const styles = StyleSheet.create({
   topSection: {
     alignSelf: 'stretch',
     flexGrow: 1,
-    flexShrink: 1,
+    flexShrink: Platform.select({ web: 0, default: 1 }),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: black,

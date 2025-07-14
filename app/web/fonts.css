@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'Advercase-Regular';
+  src: url('./fonts/Advercase-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DINOT-Medium';
+  src: url('./fonts/DINOT-Medium.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexMono-Regular';
+  src: url('./fonts/IBMPlexMono-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
