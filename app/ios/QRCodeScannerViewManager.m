@@ -12,4 +12,5 @@
 
 @interface RCT_EXTERN_MODULE(QRCodeScannerViewManager, RCTViewManager)
 RCT_EXPORT_VIEW_PROPERTY(onQRData, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(isMounted, BOOL)
 @end

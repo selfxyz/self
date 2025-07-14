@@ -33,6 +33,7 @@ interface NativePassportOCRViewProps {
       stackTrace: string;
     }>,
   ) => void;
+  isMounted?: boolean; // Add this prop for iOS lifecycle management
   style?: any; // Or a more specific style type if available
 }
 
@@ -134,6 +135,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
     return (
       <RCTPassportOCRViewNativeComponent
         key={`camera-${resetTrigger}`} // Add key to force remount
+        isMounted={isMounted}
         onPassportRead={_onPassportRead}
         onError={_onError}
         style={{

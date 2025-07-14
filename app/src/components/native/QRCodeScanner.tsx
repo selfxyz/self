@@ -20,6 +20,7 @@ interface NativeQRCodeScannerViewProps {
       stackTrace: string;
     }>,
   ) => void;
+  isMounted?: boolean; // Add this prop for iOS lifecycle management
   style?: any; // Or a more specific style type
 }
 
@@ -114,6 +115,7 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
   if (Platform.OS === 'ios') {
     return (
       <QRCodeNativeComponent
+        isMounted={isMounted}
         onQRData={_onQRData}
         onError={_onError}
         style={{

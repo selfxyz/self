@@ -6,5 +6,6 @@
 @interface RCT_EXTERN_MODULE(PassportOCRViewManager, RCTViewManager)
 RCT_EXPORT_VIEW_PROPERTY(onPassportRead, RCTDirectEventBlock)
 RCT_EXPORT_VIEW_PROPERTY(onError, RCTDirectEventBlock)
+RCT_EXPORT_VIEW_PROPERTY(isMounted, BOOL)
 
 @end

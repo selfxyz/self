@@ -68,6 +68,15 @@ export async function checkCameraPermission(): Promise<boolean> {
  * @returns Promise<CameraPermissionResult> - Object containing permission status and optional error
  */
 export async function ensureCameraPermission(): Promise<CameraPermissionResult> {
+  // On iOS, camera permissions are handled automatically by AVFoundation
+  // when the camera is first accessed. We shouldn't block camera access
+  // based on permission checks since iOS will show the permission prompt
+  // automatically when needed.
+  if (Platform.OS === 'ios') {
+    return { granted: true };
+  }
+
+  // On Android, we need explicit permission checking
   const hasPermission = await checkCameraPermission();
   if (hasPermission) {
     return { granted: true };

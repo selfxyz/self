@@ -19,32 +19,100 @@ class PassportOCRViewManager: RCTViewManager {
 class PassportOCRView: UIView {
     @objc var onPassportRead: RCTDirectEventBlock?
     @objc var onError: RCTDirectEventBlock?
+    private var shouldBeScanning = true
 
     private var hostingController: UIHostingController<LiveMRZScannerView>?
 
+    // Property to control scanning state from React Native
+    @objc var isMounted: Bool = true {
+        didSet {
+            shouldBeScanning = isMounted
+            updateScannerState()
+        }
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setupLifecycleObservers()
         initializeScanner()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupLifecycleObservers()
         initializeScanner()
     }
 
+    deinit {
+        removeLifecycleObservers()
+    }
+
+    private func setupLifecycleObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+    }
+
+    private func removeLifecycleObservers() {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func appDidEnterBackground() {
+        shouldBeScanning = false
+        updateScannerState()
+    }
+
+    @objc private func appWillEnterForeground() {
+        shouldBeScanning = isMounted
+        updateScannerState()
+    }
+
+    private func updateScannerState() {
+        // For now, we'll recreate the scanner when state changes
+        // This is a simple approach - could be optimized later
+        if shouldBeScanning {
+            initializeScanner()
+        } else {
+            hostingController?.view.removeFromSuperview()
+            hostingController = nil
+        }
+    }
+
     private func initializeScanner() {
+        // Only initialize if we should be scanning
+        guard shouldBeScanning else { return }
+
+        // Remove existing scanner if any
+        hostingController?.view.removeFromSuperview()
+        hostingController = nil
+
         let scannerView = LiveMRZScannerView(
             onScanResultAsDict: { [weak self] resultDict in
-              self?.onPassportRead?([
-                "data": [
-                  "documentNumber": resultDict["documentNumber"] as? String ?? "",
-                  "expiryDate": resultDict["expiryDate"] as? String ?? "",
-                  "birthDate": resultDict["dateOfBirth"] as? String ?? "",
-                  "documentType": resultDict["documentType"] as? String ?? "",
-                  "countryCode": resultDict["countryCode"] as? String ?? ""
-                ]])
+                // Only process results if we should be scanning
+                guard let self = self, self.shouldBeScanning else { return }
+
+                self.onPassportRead?([
+                    "data": [
+                        "documentNumber": resultDict["documentNumber"] as? String ?? "",
+                        "expiryDate": resultDict["expiryDate"] as? String ?? "",
+                        "birthDate": resultDict["dateOfBirth"] as? String ?? "",
+                        "documentType": resultDict["documentType"] as? String ?? "",
+                        "countryCode": resultDict["countryCode"] as? String ?? ""
+                    ]
+                ])
             }
         )
+
         let hostingController = UIHostingController(rootView: scannerView)
         hostingController.view.backgroundColor = .clear
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false

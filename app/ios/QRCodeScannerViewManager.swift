@@ -25,18 +25,69 @@ class QRCodeScannerViewManager: RCTViewManager {
 class QRCodeScannerView: UIView, AVCaptureMetadataOutputObjectsDelegate {
   var captureSession: AVCaptureSession?
   var previewLayer: AVCaptureVideoPreviewLayer?
+  private var isSessionRunning = false
+  private var shouldBeScanning = true
 
   // This property will hold the callback from JS
   @objc var onQRData: RCTDirectEventBlock?
 
+  // Property to control scanning state from React Native
+  @objc var isMounted: Bool = true {
+    didSet {
+      shouldBeScanning = isMounted
+      if shouldBeScanning {
+        startCameraSession()
+      } else {
+        stopCameraSession()
+      }
+    }
+  }
+
   override init(frame: CGRect) {
     super.init(frame: frame)
     initializeScanner()
+    setupLifecycleObservers()
   }
 
   required init?(coder: NSCoder) {
     super.init(coder: coder)
     initializeScanner()
+    setupLifecycleObservers()
+  }
+
+  deinit {
+    stopCameraSession()
+    removeLifecycleObservers()
+  }
+
+  private func setupLifecycleObservers() {
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(appDidEnterBackground),
+      name: UIApplication.didEnterBackgroundNotification,
+      object: nil
+    )
+
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(appWillEnterForeground),
+      name: UIApplication.willEnterForegroundNotification,
+      object: nil
+    )
+  }
+
+  private func removeLifecycleObservers() {
+    NotificationCenter.default.removeObserver(self)
+  }
+
+  @objc private func appDidEnterBackground() {
+    stopCameraSession()
+  }
+
+  @objc private func appWillEnterForeground() {
+    if shouldBeScanning {
+      startCameraSession()
+    }
   }
 
   func initializeScanner() {
@@ -65,8 +116,31 @@ class QRCodeScannerView: UIView, AVCaptureMetadataOutputObjectsDelegate {
       self.layer.addSublayer(previewLayer)
     }
 
+    // Start the session only if we should be scanning
+    if shouldBeScanning {
+      startCameraSession()
+    }
+  }
+
+  private func startCameraSession() {
+    guard let captureSession = captureSession, !isSessionRunning, shouldBeScanning else { return }
+
     DispatchQueue.global(qos: .background).async {
-      self.captureSession!.startRunning()
+      captureSession.startRunning()
+      DispatchQueue.main.async {
+        self.isSessionRunning = true
+      }
+    }
+  }
+
+  private func stopCameraSession() {
+    guard let captureSession = captureSession, isSessionRunning else { return }
+
+    DispatchQueue.global(qos: .background).async {
+      captureSession.stopRunning()
+      DispatchQueue.main.async {
+        self.isSessionRunning = false
+      }
     }
   }
 
@@ -74,13 +148,16 @@ class QRCodeScannerView: UIView, AVCaptureMetadataOutputObjectsDelegate {
     _ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject],
     from connection: AVCaptureConnection
   ) {
+    // Only process QR codes if we should be scanning
+    guard shouldBeScanning else { return }
+
     if let metadataObject = metadataObjects.first,
       let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject,
       let stringValue = readableObject.stringValue
     {
       // Send the scanned QR code data to JS
       onQRData?(["data": stringValue])
-      captureSession?.stopRunning()
+      stopCameraSession()
     }
   }
 
