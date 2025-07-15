@@ -57,14 +57,15 @@ const TopSection: React.FC<TopSectionProps> = ({
   ...props
 }) => {
   const { top } = useSafeAreaInsets();
+  const { roundTop, ...restProps } = props;
   return (
     <View
-      {...props}
+      {...restProps}
       backgroundColor={backgroundColor}
       style={[
         styles.topSection,
-        props.roundTop && styles.roundTop,
-        props.roundTop ? { marginTop: top } : { paddingTop: top },
+        roundTop && styles.roundTop,
+        roundTop ? { marginTop: top } : { paddingTop: top },
         { backgroundColor },
       ]}
     >
