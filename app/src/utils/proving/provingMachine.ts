@@ -967,13 +967,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);
       }
-      const userDefinedData = selfApp?.userDefinedData
-        ? getSolidityPackedUserContextData(
-            selfApp.chainID,
-            selfApp.userId,
-            selfApp.userDefinedData,
-          ).slice(2)
-        : '';
+      const userDefinedData = getSolidityPackedUserContextData(
+        selfApp?.chainID ?? 0,
+        selfApp?.userId ?? '',
+        selfApp?.userDefinedData ?? '',
+      ).slice(2);
       const payload = getPayload(
         inputs,
         circuitTypeWithDocumentExtension as
