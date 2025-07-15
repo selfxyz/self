@@ -129,6 +129,7 @@ object Messages {
     const val BAC_STARTED = "BAC started"
     const val BAC_SUCCEEDED = "BAC succeeded"
     const val BAC_FAILED = "BAC failed"
+    const val READING_COM = "Reading COM....."
     const val READING_DG1 = "Reading DG1....."
     const val READING_DG1_SUCCEEDED = "Reading DG1 succeeded"
     const val READING_DG2 = "Reading DG2....."
@@ -375,6 +376,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             
                             // Try to read EF_COM first
                             try {
+                                eventMessageEmitter(Messages.READING_COM)
                                 service.getInputStream(PassportService.EF_COM).read()
                             } catch (e: Exception) {
                                 // EF_COM failed, do BAC
@@ -387,11 +389,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                         } catch (e: Exception) {
                             Log.e("MY_LOGS", "BAC attempt $attempts failed: ${e.message}")
                             if (attempts == maxAttempts) {
+                                eventMessageEmitter(Messages.BAC_FAILED)
                                 throw e // Re-throw on final attempt
                             }
                         }
                     }
-                    eventMessageEmitter(Messages.BAC_FAILED)
                 }
 
                 eventMessageEmitter(Messages.READING_DG1)
