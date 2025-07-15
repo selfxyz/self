@@ -197,23 +197,16 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     setBirthDate(formattedValue);
   };
 
-  const formatBirthDateForGeneration = (inputDate: string): string => {
-    if (inputDate && inputDate.length === 10 && inputDate.includes('/')) {
-      const parts = inputDate.split('/');
-      if (
-        parts.length === 3 &&
-        parts[0].length === 4 &&
-        parts[1].length === 2 &&
-        parts[2].length === 2
-      ) {
-        return `${parts[0].slice(2)}${parts[1]}${parts[2]}`;
-      }
-    }
-    console.warn(
-      'Birth date is not in YYYY/MM/DD format for generation. Using default.',
-    );
-    return '900101';
-  };
+  const getBirthDateFromAge = (age: number): string => {
+    const today = new Date();
+    today.setFullYear(today.getFullYear() - age);
+    // Format as 'YYMMDD' using toLocaleDateString and string manipulation
+    const parts = today.toLocaleDateString('en-CA').split('-'); // ['YYYY','MM','DD']
+    const year = parts[0].slice(-2);
+    const month = parts[1];
+    const day = parts[2];
+    return year + month + day;
+  }
 
   const signatureAlgorithmToStrictSignatureAlgorithm = {
     'sha256 rsa 65537 4096': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
@@ -337,13 +330,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         idDocInput.lastName = 'HENAO MONTOYA';
         idDocInput.firstName = 'ARCANGEL DE JESUS';
       } else {
-        // TODO: Add age generation
-        if (birthDate.length === 10 && birthDate.split('/').length === 3) {
-          dobForGeneration = formatBirthDateForGeneration(birthDate);
-        } else {
-          console.warn('Using default birth date 000101 (January 1, 2000)');
-          dobForGeneration = '000101';
-        }
+        dobForGeneration = getBirthDateFromAge(age);
       }
       idDocInput.birthDate = dobForGeneration;
       let rawMockData = genMockIdDoc(idDocInput);
