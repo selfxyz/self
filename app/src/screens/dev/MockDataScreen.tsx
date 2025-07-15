@@ -145,6 +145,7 @@ const FormSection: React.FC<FormSectionProps> = ({ title, endSection=false, chil
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const navigation = useNavigation();
   const [birthDate, setBirthDate] = useState('2000/01/01');
+  const [age, setAge] = useState(21);
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
@@ -336,6 +337,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         idDocInput.lastName = 'HENAO MONTOYA';
         idDocInput.firstName = 'ARCANGEL DE JESUS';
       } else {
+        // TODO: Add age generation
         if (birthDate.length === 10 && birthDate.split('/').length === 3) {
           dobForGeneration = formatBirthDateForGeneration(birthDate);
         } else {
@@ -357,7 +359,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   }, [
     selectedAlgorithm,
     selectedCountry,
-    birthDate,
+    age,
     expiryYears,
     isInOfacList,
     navigation,
@@ -516,6 +518,52 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 opacity={isInOfacList ? 0.7 : 1}
               />
             </XStack>
+
+            <FormSection title="Age">
+              <XStack ai="center" gap="$2" jc="space-between">
+                <Button
+                  h="$3.5"
+                  w="$6"
+                  bg="white"
+                  jc="center"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  onPress={() => {
+                    buttonTap();
+                    setAge(age - 1);
+                    trackEvent(MockDataEvents.DECREASE_AGE);
+                  }}
+                  disabled={expiryYears <= 0}
+                >
+                  <Minus color={slate500} />
+                </Button>
+                <Text
+                  textTransform="uppercase"
+                  textAlign="center"
+                  color={textBlack}
+                  fontWeight="500"
+                  fontSize="$2"
+                  fontFamily={plexMono}
+                >
+                  {age} years or older
+                </Text>
+                <Button
+                  h="$3.5"
+                  w="$6"
+                  bg="white"
+                  jc="center"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  onPress={() => {
+                    buttonTap();
+                    setAge(age + 1);
+                    trackEvent(MockDataEvents.INCREASE_AGE);
+                  }}
+                >
+                  <Plus color={slate500} />
+                </Button>
+              </XStack>
+            </FormSection>
 
             <FormSection title="Passport Expires In">
               <XStack ai="center" gap="$2" jc="space-between">
