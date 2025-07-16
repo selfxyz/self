@@ -155,10 +155,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
   const [advancedMode, setAdvancedMode] = useState(false);
-  const [selectedDocumentType, setSelectedDocumentType] = useState<
-    'mock_passport' | 'mock_id_card'
-  >('mock_passport');
-  // use a {displayText: '', type: 'mock_passport' } for this
+  const [selectedDocumentType, setSelectedDocumentType] = useState('mock_passport');
   const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + yearsOffset);
@@ -636,7 +633,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </XStack>
             <Separator borderColor={separatorColor} mb="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
-              {Object.keys(documentTypes).map(docType => (
+              {Object.entries(documentTypes).map(([docType, displayText]) => (
                 <TouchableOpacity
                   key={docType}
                   onPress={() => {
@@ -648,7 +645,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 >
                   <XStack py="$3" px="$2">
                     <Text fontSize="$4">
-                      {documentTypes[docType as keyof typeof documentTypes]}
+                      {displayText}
                     </Text>
                   </XStack>
                 </TouchableOpacity>
