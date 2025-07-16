@@ -30,6 +30,7 @@
 		BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */; };
 		BF1044832DD5354F009B3688 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044822DD5354F009B3688 /* CameraView.swift */; };
 		BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MRZScanner.swift */; };
+                CFF36480F43D4BDFB1A7B986 /* CameraCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF36480F43D4BDFB1A7B985 /* CameraCoordinator.swift */; };
 		D427791AA5714251A5EAF8AD /* DINOT-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */; };
 		DAC618BCA5874DD8AD74FFFC /* Advercase-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7E5C3CEF7EDA4871B3D0EBE1 /* Advercase-Regular.otf */; };
 		E22663FB18F719ECF0AE06FA /* Pods_Self.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EAC0B7C7F11A8D9277EE52EC /* Pods_Self.framework */; };
@@ -69,6 +70,7 @@
 		BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMRZScannerView.swift; sourceTree = "<group>"; };
 		BF1044822DD5354F009B3688 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		BF1044842DD53570009B3688 /* MRZScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScanner.swift; sourceTree = "<group>"; };
+                CFF36480F43D4BDFB1A7B985 /* CameraCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCoordinator.swift; sourceTree = "<group>"; };
 		E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = OpenPassport/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportOCRViewManager.m; sourceTree = "<group>"; };
 		E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportOCRViewManager.swift; sourceTree = "<group>"; };
@@ -95,6 +97,7 @@
 			children = (
 				09F026E52E18B12100AF93E7 /* AppDelegate.swift */,
 				BF1044842DD53570009B3688 /* MRZScanner.swift */,
+                                CFF36480F43D4BDFB1A7B985 /* CameraCoordinator.swift */,
 				BF1044822DD5354F009B3688 /* CameraView.swift */,
 				BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */,
 				AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */,
@@ -377,6 +380,7 @@
 				905B70072A72774000AFA232 /* PassportReader.m in Sources */,
 				16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */,
 				BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */,
+                                CFF36480F43D4BDFB1A7B986 /* CameraCoordinator.swift in Sources */,
 				165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */,
 				905B70052A72767900AFA232 /* PassportReader.swift in Sources */,
 				165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */,

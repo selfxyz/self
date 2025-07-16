@@ -2,9 +2,8 @@
 
 package com.proofofpassportapp.ui
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
+import android.view.Choreographer
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -24,8 +23,18 @@ class QRCodeScannerViewManager(
     private var propWidth: Int? = null
     private var propHeight: Int? = null
     private var reactNativeViewId: Int? = null
-    private var layoutHandler: Handler? = null
-    private var layoutRunnable: Runnable? = null
+    private var weakView: WeakReference<View>? = null
+    private val frameCallback = object : Choreographer.FrameCallback {
+        override fun doFrame(frameTimeNanos: Long) {
+            weakView?.get()?.let { view ->
+                if (view.parent != null) {
+                    manuallyLayoutChildren(view)
+                    view.viewTreeObserver.dispatchOnGlobalLayout()
+                    Choreographer.getInstance().postFrameCallback(this)
+                }
+            }
+        }
+    }
 
     override fun getName() = REACT_CLASS
 
@@ -94,6 +103,7 @@ class QRCodeScannerViewManager(
             Log.d(TAG, "createFragment: Fragment transaction committed successfully")
         } catch (e: Exception) {
             Log.e(TAG, "createFragment: Error during fragment transaction", e)
+            sendInitializationError("Failed to create QR scanner fragment", e)
         }
     }
 
@@ -116,6 +126,7 @@ class QRCodeScannerViewManager(
                 Log.d(TAG, "destroyFragment: Fragment removed successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "destroyFragment: Error removing fragment", e)
+                sendInitializationError("Failed to destroy QR scanner fragment", e)
             }
         }
     }
@@ -123,37 +134,18 @@ class QRCodeScannerViewManager(
     private fun setupLayout(view: View) {
         Log.d(TAG, "setupLayout: Setting up layout for view")
         stopLayoutLoop()
-
-        val weakView = WeakReference(view)
-        layoutHandler = Handler(Looper.getMainLooper())
-        layoutRunnable = object : Runnable {
-            override fun run() {
-                val currentView = weakView.get()
-                if (currentView != null && currentView.parent != null) {
-                    // Critical: Always update both layout and surface for camera preview
-                    manuallyLayoutChildren(currentView)
-                    currentView.viewTreeObserver.dispatchOnGlobalLayout()
-                    // Maintain frame-by-frame updates for camera preview
-                    layoutHandler?.post(this)
-                } else {
-                    Log.d(TAG, "setupLayout: View no longer valid, stopping layout loop")
-                    layoutRunnable = null
-                }
-            }
-        }
+        weakView = WeakReference(view)
         // Initial setup
         manuallyLayoutChildren(view)
         view.viewTreeObserver.dispatchOnGlobalLayout()
-        layoutHandler?.post(layoutRunnable!!)
+        // Start VSYNC-synced loop
+        Choreographer.getInstance().postFrameCallback(frameCallback)
     }
 
     private fun stopLayoutLoop() {
-        layoutRunnable?.let { runnable ->
-            layoutHandler?.removeCallbacks(runnable)
-            Log.d(TAG, "stopLayoutLoop: Stopped layout callback")
-        }
-        layoutRunnable = null
-        layoutHandler = null
+        Choreographer.getInstance().removeFrameCallback(frameCallback)
+        weakView = null
+        Log.d(TAG, "stopLayoutLoop: Stopped VSYNC-synced layout callback")
     }
 
     /**
@@ -184,6 +176,7 @@ class QRCodeScannerViewManager(
         private const val COMMAND_DESTROY = 2
         private const val SUCCESS_EVENT = "onQRCodeReadResult"
         private const val FAILURE_EVENT = "onQRCodeReadError"
+        private const val INIT_ERROR_EVENT = "onInitializationError"
         private const val TAG = "QRCodeScannerViewManager"
     }
 
@@ -207,6 +200,21 @@ class QRCodeScannerViewManager(
             .receiveEvent(this.reactNativeViewId!!, FAILURE_EVENT, event)
     }
 
+    private fun sendInitializationError(errorMessage: String, e: Exception) {
+        Log.e(TAG, "sendInitializationError: $errorMessage", e)
+        val event = Arguments.createMap()
+        event.putString("errorMessage", errorMessage)
+        event.putString("error", e.toString())
+        event.putString("stackTrace", e.stackTraceToString())
+        event.putString("type", "initialization")
+
+        reactNativeViewId?.let { viewId ->
+            reactContext
+                .getJSModule(RCTEventEmitter::class.java)
+                .receiveEvent(viewId, INIT_ERROR_EVENT, event)
+        }
+    }
+
     override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> {
         return mapOf(
             SUCCESS_EVENT to mapOf(
@@ -217,6 +225,11 @@ class QRCodeScannerViewManager(
             FAILURE_EVENT to mapOf(
                 "phasedRegistrationNames" to mapOf(
                     "bubbled" to "onError"
+                )
+            ),
+            INIT_ERROR_EVENT to mapOf(
+                "phasedRegistrationNames" to mapOf(
+                    "bubbled" to "onInitializationError"
                 )
             )
         )

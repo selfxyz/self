@@ -5,15 +5,16 @@
 import SwiftUI
 import QKMRZParser
 
-struct LiveMRZScannerView: View {
+public struct LiveMRZScannerView: View {
     @State private var recognizedText: String = ""
     @State private var lastMRZDetection: Date = Date()
     @State private var parsedMRZ: QKMRZResult? = nil
     @State private var scanComplete: Bool = false
-    var onScanComplete: ((QKMRZResult) -> Void)? = nil
-    var onScanResultAsDict: (([String: Any]) -> Void)? = nil
+    public var onScanComplete: ((QKMRZResult) -> Void)? = nil
+    public var onScanResultAsDict: (([String: Any]) -> Void)? = nil
+    public var cameraCoordinator: CameraCoordinator?
 
-    func singleCorrectDocumentNumberInMRZ(result: String, docNumber: String, parser: QKMRZParser) -> QKMRZResult? {
+    public func singleCorrectDocumentNumberInMRZ(result: String, docNumber: String, parser: QKMRZParser) -> QKMRZResult? {
         let replacements: [Character: [Character]] = [
             // "0": ["O", "D"],
             // "1": ["I"],
@@ -80,7 +81,7 @@ struct LiveMRZScannerView: View {
         ]
     }
 
-    var body: some View {
+    public var body: some View {
         ZStack(alignment: .bottom) {
                 CameraView(
                     frameHandler: { image, roi in
@@ -115,7 +116,8 @@ struct LiveMRZScannerView: View {
                             }
                         }
                     },
-                    showOverlay: false
+                    showOverlay: false,
+                    coordinator: cameraCoordinator
                 )
 
             VStack {

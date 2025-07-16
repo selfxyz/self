@@ -22,6 +22,7 @@ class PassportOCRView: UIView {
     private var shouldBeScanning = true
 
     private var hostingController: UIHostingController<LiveMRZScannerView>?
+    private var cameraCoordinator: CameraCoordinator?
 
     // Property to control scanning state from React Native
     @objc var isMounted: Bool = true {
@@ -78,13 +79,10 @@ class PassportOCRView: UIView {
     }
 
     private func updateScannerState() {
-        // For now, we'll recreate the scanner when state changes
-        // This is a simple approach - could be optimized later
         if shouldBeScanning {
-            initializeScanner()
+            cameraCoordinator?.resumeCamera()
         } else {
-            hostingController?.view.removeFromSuperview()
-            hostingController = nil
+            cameraCoordinator?.pauseCamera()
         }
     }
 
@@ -95,6 +93,9 @@ class PassportOCRView: UIView {
         // Remove existing scanner if any
         hostingController?.view.removeFromSuperview()
         hostingController = nil
+
+        // Create camera coordinator
+        cameraCoordinator = CameraCoordinator()
 
         let scannerView = LiveMRZScannerView(
             onScanResultAsDict: { [weak self] resultDict in
@@ -110,7 +111,8 @@ class PassportOCRView: UIView {
                         "countryCode": resultDict["countryCode"] as? String ?? ""
                     ]
                 ])
-            }
+            },
+            cameraCoordinator: cameraCoordinator
         )
 
         let hostingController = UIHostingController(rootView: scannerView)

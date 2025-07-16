@@ -7,25 +7,27 @@ import UIKit
 import SwiftUI
 import AVFoundation
 
-struct CameraView: UIViewControllerRepresentable {
-    var frameHandler: (UIImage, CGRect) -> Void
-    var captureInterval: TimeInterval = 0.5 // seconds
-    var showOverlay: Bool = true  // For debug purposes. Set this value in LiveMRZScannerView.swift
+public struct CameraView: UIViewControllerRepresentable {
+    public var frameHandler: (UIImage, CGRect) -> Void
+    public var captureInterval: TimeInterval = 0.5 // seconds
+    public var showOverlay: Bool = true  // For debug purposes. Set this value in LiveMRZScannerView.swift
+    public var coordinator: CameraCoordinator?
 
-    func makeUIViewController(context: Context) -> CameraViewController {
+    public func makeUIViewController(context: Context) -> CameraViewController {
         let controller = CameraViewController()
         controller.frameHandler = frameHandler
         controller.captureInterval = captureInterval
         controller.showOverlay = showOverlay
+        coordinator?.cameraController = controller
         return controller
     }
 
-    func updateUIViewController(_ uiViewController: CameraViewController, context: Context) {
+    public func updateUIViewController(_ uiViewController: CameraViewController, context: Context) {
         uiViewController.showOverlay = showOverlay
     }
 }
 
-class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+public class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
     var frameHandler: ((UIImage, CGRect) -> Void)?
     var captureInterval: TimeInterval = 0.5
     var showOverlay: Bool = false
@@ -34,16 +36,49 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
     private var lastCaptureTime = Date(timeIntervalSince1970: 0)
     private var previewLayer: AVCaptureVideoPreviewLayer?
     private var roiOverlay: UIView? = nil
+    private var isSessionRunning = false
 
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         setupCamera()
+
+        // Add observer for when app becomes active - this helps restart camera after permission grant
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    @objc private func appDidBecomeActive() {
+        // Check if camera permission was granted and restart session if needed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.checkPermissionAndRestartCamera()
+        }
+    }
+
+    private func checkPermissionAndRestartCamera() {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        if status == .authorized && !isSessionRunning {
+            startCameraSession()
+        }
     }
 
     private func setupCamera() {
+        // Check camera permission first
+        let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
+        if authStatus == .denied || authStatus == .restricted {
+            print("[CameraViewController] Camera access denied or restricted")
+            return
+        }
+
         session.beginConfiguration()
         guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-              let input = try? AVCaptureDeviceInput(device: device) else { return }
+              let input = try? AVCaptureDeviceInput(device: device) else {
+            print("[CameraViewController] Failed to create camera device or input")
+            return
+        }
         if session.canAddInput(input) { session.addInput(input) }
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "camera.frame.queue"))
         if session.canAddOutput(videoOutput) { session.addOutput(videoOutput) }
@@ -64,7 +99,43 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
             view.addSubview(overlay)
             roiOverlay = overlay
         }
-        session.startRunning()
+
+        // Only start camera if permission is already granted or not determined
+        if authStatus == .authorized || authStatus == .notDetermined {
+            startCameraSession()
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Check permission again when view appears - handles permission grant case
+        checkPermissionAndRestartCamera()
+    }
+
+    public func startCameraSession() {
+        guard !isSessionRunning else { return }
+
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            self?.session.startRunning()
+            DispatchQueue.main.async {
+                self?.isSessionRunning = true
+            }
+        }
+    }
+
+    public func stopCameraSession() {
+        guard isSessionRunning else { return }
+
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            self?.session.stopRunning()
+            DispatchQueue.main.async {
+                self?.isSessionRunning = false
+            }
+        }
     }
 
     private func calculateGreenBoxFrame() -> CGRect {
@@ -120,7 +191,7 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         return roi
     }
 
-    override func viewDidLayoutSubviews() {
+    public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         // Ensure previewLayer matches the visible area
         previewLayer?.frame = view.bounds
@@ -131,7 +202,7 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         }
     }
 
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         let now = Date()
         guard now.timeIntervalSince(lastCaptureTime) >= captureInterval else { return }
         lastCaptureTime = now
