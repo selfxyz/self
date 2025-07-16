@@ -324,7 +324,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
       const idDocInput: Partial<IdDocInput> = {
         nationality: selectedCountry as IdDocInput['nationality'],
-        idType: selectedDocumentType,
+        idType: selectedDocumentType as IdDocInput['idType'],
         dgHashAlgo: dgHashAlgo as IdDocInput['dgHashAlgo'],
         eContentHashAlgo: eContentHashAlgo as IdDocInput['eContentHashAlgo'],
         signatureType:
