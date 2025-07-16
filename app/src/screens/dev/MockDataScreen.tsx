@@ -487,25 +487,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 </Button>
             </FormSection>
 
-            <XStack ai="center" jc="space-between">
-              <BodyText>Birth Date (YYYY/MM/DD)</BodyText>
-              <Input
-                placeholder="YYYY/MM/DD"
-                value={isInOfacList ? '1954/10/07' : birthDate}
-                onChangeText={handleBirthDateChange}
-                keyboardType="numeric"
-                maxLength={10}
-                width={150}
-                textAlign="center"
-                borderColor={borderColor}
-                borderWidth={1}
-                borderRadius="$4"
-                p="$2"
-                disabled={isInOfacList}
-                opacity={isInOfacList ? 0.7 : 1}
-              />
-            </XStack>
-
             <FormSection title="Age">
               <XStack ai="center" gap="$2" jc="space-between">
                 <Button
