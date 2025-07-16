@@ -60,6 +60,11 @@ const { trackEvent } = analytics();
 
 interface MockDataScreenProps {}
 
+const documentTypes = {
+  mock_passport: 'Passport',
+  mock_id_card: 'ID Card',
+};
+
 const MockPassportTitleCard = () => {
   return (
     <View
@@ -153,6 +158,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [selectedDocumentType, setSelectedDocumentType] = useState<
     'mock_passport' | 'mock_id_card'
   >('mock_passport');
+  // use a {displayText: '', type: 'mock_passport' } for this
   const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + yearsOffset);
@@ -168,6 +174,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   );
   const [isCountrySheetOpen, setCountrySheetOpen] = useState(false);
   const [isAlgorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
+  const [isDocumentTypeSheetOpen, setDocumentTypeSheetOpen] = useState(false);
 
   const handleCountrySelect = (countryCode: string) => {
     setSelectedCountry(countryCode);
@@ -177,6 +184,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const handleAlgorithmSelect = (algorithm: string) => {
     setSelectedAlgorithm(algorithm);
     setAlgorithmSheetOpen(false);
+  };
+
+  const handleDocumentTypeSelect = (documentType: string) => {
+    setSelectedDocumentType(documentType);
+    setDocumentTypeSheetOpen(false);
   };
 
   const handleBirthDateChange = (text: string) => {
@@ -396,49 +408,25 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               </Button>
             </FormSection>
 
-            <XStack ai="center" jc="space-between">
-              <BodyText>Document Type</BodyText>
-              <XStack space="$2" ai="center">
-                <Button
-                  size="$3"
-                  onPress={() => {
-                    buttonTap();
-                    setSelectedDocumentType('mock_passport');
-                  }}
-                  bg={
-                    selectedDocumentType === 'mock_passport'
-                      ? '$blue7Light'
-                      : white
-                  }
-                  borderColor={borderColor}
-                  borderWidth={1}
-                  color={
-                    selectedDocumentType === 'mock_passport' ? white : textBlack
-                  }
-                >
-                  Passport
-                </Button>
-                <Button
-                  size="$3"
-                  onPress={() => {
-                    buttonTap();
-                    setSelectedDocumentType('mock_id_card');
-                  }}
-                  bg={
-                    selectedDocumentType === 'mock_id_card'
-                      ? '$blue7Light'
-                      : white
-                  }
-                  borderColor={borderColor}
-                  borderWidth={1}
-                  color={
-                    selectedDocumentType === 'mock_id_card' ? white : textBlack
-                  }
-                >
-                  ID Card
-                </Button>
-              </XStack>
-            </XStack>
+            <FormSection title="Document Type">
+              <Button
+                onPress={() => {
+                  buttonTap();
+                  setDocumentTypeSheetOpen(true);
+                }}
+                py="$5"
+                px="$3"
+                bg="white"
+                borderColor={slate200}
+                borderWidth={1}
+                borderRadius={5}
+              >
+                <XStack jc="space-between" w="100%">
+                  <Text fontSize="$2" fontFamily={plexMono} color={black}>{documentTypes[selectedDocumentType as keyof typeof documentTypes]}</Text>
+                  <ChevronDown size={20} color={slate500} />
+                </XStack>
+              </Button>
+            </FormSection>
 
             <FormSection title="Nationality">
                 <Button
@@ -618,6 +606,57 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           </SecondaryButton>
         </ButtonsContainer>
       </YStack>
+
+      <Sheet
+        modal
+        open={isDocumentTypeSheetOpen}
+        onOpenChange={setDocumentTypeSheetOpen}
+        snapPoints={[60]}
+        animation="medium"
+        disableDrag
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame
+          bg={white}
+          borderTopLeftRadius="$9"
+          borderTopRightRadius="$9"
+        >
+          <YStack p="$4">
+            <XStack ai="center" jc="space-between" mb="$4">
+              <Text fontSize="$8">Select a document type</Text>
+              <XStack
+                onPress={() => {
+                  selectionChange();
+                  setDocumentTypeSheetOpen(false);
+                }}
+                p="$2"
+              >
+                <X color={borderColor} size="$1.5" mr="$2" />
+              </XStack>
+            </XStack>
+            <Separator borderColor={separatorColor} mb="$4" />
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {Object.keys(documentTypes).map(docType => (
+                <TouchableOpacity
+                  key={docType}
+                  onPress={() => {
+                    buttonTap();
+                    handleDocumentTypeSelect(docType);
+                    setDocumentTypeSheetOpen(false);
+                    trackEvent(MockDataEvents.SELECT_DOCUMENT_TYPE);
+                  }}
+                >
+                  <XStack py="$3" px="$2">
+                    <Text fontSize="$4">
+                      {documentTypes[docType as keyof typeof documentTypes]}
+                    </Text>
+                  </XStack>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
 
       <Sheet
         modal
