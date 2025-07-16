@@ -286,6 +286,10 @@ export function migratePassportData(passportData: PassportData): PassportData {
   return migratedData as PassportData;
 }
 
+/**
+ * This function sequentially checks all documents for a valid registered document.
+ * Since it uses fetch_all and loadSelectedDocument, it cannot be parallelised.
+ */
 export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
   const allDocuments = await getAllDocuments();
   for (const documentId of Object.keys(allDocuments)) {
