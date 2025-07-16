@@ -5,7 +5,7 @@ import { countryCodes } from '@selfxyz/common';
 import { getSKIPEM } from '@selfxyz/common';
 import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
 import { initPassportDataParsing } from '@selfxyz/common';
-import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
+import { ChevronDown, Minus, Plus, Rows, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
@@ -28,6 +28,8 @@ import {
 import SelfCard from '../../images/card-style-1.svg';
 import IdIcon from '../../images/icons/id_icon.svg';
 import NoteIcon from '../../images/icons/note.svg';
+import WarningIcon from '../../images/icons/warning.svg';
+import { yellow500 } from '../../utils/colors';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -138,7 +140,7 @@ const FormSection: React.FC<FormSectionProps> = ({ title, endSection=false, chil
   const borderBottomWidth = endSection ? 0 : 1;
   return (
     <YStack p={20}jc="space-between" gap={10} borderBottomWidth={borderBottomWidth} borderColor={slate200}>
-        <Text fontWeight={500} textTransform="uppercase" color={slate400} fontSize="$2">
+        <Text fontWeight={500} textTransform="uppercase" color={slate400} fontSize="$4">
           {title}
         </Text>
         {children}
@@ -377,8 +379,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         <GestureDetector gesture={devModeTap}>
           <HeroBanner />
         </GestureDetector>
-        <YStack px="$4" pb="$4" gap="$5">
-          <Text>Mock Passport Parameters</Text>
+        <YStack px="$4" pb="$4" gap="$4">
+          <Text fontWeight={500} fontSize="$6">Mock Passport Parameters</Text>
           <YStack
             borderRadius={10}
             borderWidth={1}
@@ -399,7 +401,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 borderRadius={5}
               >
                 <XStack jc="space-between" w="100%">
-                  <Text fontSize="$2" fontFamily={plexMono} color={black}>{selectedAlgorithm}</Text>
+                  <Text fontSize="$4" fontFamily={plexMono} color={black}>{selectedAlgorithm}</Text>
                   <ChevronDown size={20} color={slate500} />
                 </XStack>
               </Button>
@@ -419,7 +421,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 borderRadius={5}
               >
                 <XStack jc="space-between" w="100%">
-                  <Text fontSize="$2" fontFamily={plexMono} color={black}>{documentTypes[selectedDocumentType as keyof typeof documentTypes]}</Text>
+                  <Text fontSize="$4" fontFamily={plexMono} color={black} textTransform="uppercase">
+                    {documentTypes[selectedDocumentType as keyof typeof documentTypes]}
+                  </Text>
                   <ChevronDown size={20} color={slate500} />
                 </XStack>
               </Button>
@@ -440,9 +444,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   borderRadius={5}
                 >
                   <XStack jc="space-between" w="100%">
-                    <Text fontSize="$2" fontFamily={plexMono} color={black}>
-                      {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
-                      {flag(getCountryISO2(selectedCountry))}
+                    <Text fontSize="$4" fontFamily={plexMono} color={black} textTransform="uppercase">
+                      {flag(getCountryISO2(selectedCountry))}{'   '}
+                      {countryCodes[selectedCountry as keyof typeof countryCodes]}
                     </Text>
                     <ChevronDown size={20} color={slate500} />
                   </XStack>
@@ -472,7 +476,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   textAlign="center"
                   color={textBlack}
                   fontWeight="500"
-                  fontSize="$2"
+                  fontSize="$4"
                   fontFamily={plexMono}
                 >
                   {age} years or older
@@ -518,7 +522,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   textAlign="center"
                   color={textBlack}
                   fontWeight="500"
-                  fontSize="$2"
+                  fontSize="$4"
                   fontFamily={plexMono}
                 >
                   {expiryYears} years
@@ -570,7 +574,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 </YStack>
                 <YStack flexDirection="row" gap="$3" ai="center" w="100%">
                   <NoteIcon width={25} height={25} color={slate400} />
-                  <Text color={slate400} fontSize="$3" textTransform="uppercase" flex={1}>
+                  <Text
+                    color={slate400}
+                    fontSize="$2"
+                    textTransform="uppercase"
+                    flex={1}
+                    letterSpacing={0.04}
+                  >
                     OFAC list is a list of people who are suspected of being involved
                     in terrorism or other illegal activities.
                   </Text>
@@ -578,31 +588,53 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               </YStack>
             </FormSection>
           </YStack>
+
+          <YStack
+            px="$4"
+            pb="$4"
+            borderRadius="$4"
+            bg={black}
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+            gap="$4"
+            p="$5"
+          >
+            <YStack
+              backgroundColor="gray"
+              borderRadius={5}
+              width={46}
+              height={46}
+              jc="center"
+              ai="center"
+            >
+              <WarningIcon width={30} height={30} color={yellow500} />
+            </YStack>
+            <YStack width="100%" height='100%' flex={1}>
+              <Text fontSize="$5" color={white}>Proceed with caution</Text>
+              <Text fontSize="$4" color={slate400}>
+                Generating a mock passport will wipe all Self app data stored on this device
+              </Text>
+            </YStack>
+          </YStack>
         </YStack>
 
+        <YStack px="$4" pb="$4">
+          <ButtonsContainer>
+            <PrimaryButton
+              trackEvent={MockDataEvents.GENERATE_DATA}
+              onPress={handleGenerate}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <Spinner color="gray" size="small" />
+              ) : (
+                'Generate Mock Passport'
+              )}
+            </PrimaryButton>
+          </ButtonsContainer>
+        </YStack>
       </ScrollView>
-
-      <YStack px="$4" pb="$4">
-        <ButtonsContainer>
-          <PrimaryButton
-            trackEvent={MockDataEvents.GENERATE_DATA}
-            onPress={handleGenerate}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <Spinner color="gray" size="small" />
-            ) : (
-              'Generate Passport Data'
-            )}
-          </PrimaryButton>
-          <SecondaryButton
-            trackEvent={MockDataEvents.CANCEL_GENERATION}
-            onPress={() => navigation.goBack()}
-          >
-            Cancel
-          </SecondaryButton>
-        </ButtonsContainer>
-      </YStack>
 
       <Sheet
         modal
