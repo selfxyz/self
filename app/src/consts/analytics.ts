@@ -149,6 +149,7 @@ export const MockDataEvents = {
   SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
   SELECT_COUNTRY: 'Mock Data: Select Country',
   TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
+  SELECT_DOCUMENT_TYPE: 'Mock Data: Select Document Type',
 };
 
 export const DocumentEvents = {
