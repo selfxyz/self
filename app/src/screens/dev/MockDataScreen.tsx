@@ -440,29 +440,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               </XStack>
             </XStack>
 
-            {advancedMode && (
-              <XStack ai="center" jc="space-between">
-                <BodyText>Encryption</BodyText>
-                <Button
-                  onPress={() => {
-                    buttonTap();
-                    setAlgorithmSheetOpen(true);
-                  }}
-                  p="$2"
-                  px="$3"
-                  bg="white"
-                  borderColor={borderColor}
-                  borderWidth={1}
-                  borderRadius="$4"
-                >
-                  <XStack ai="center" gap="$2">
-                    <Text fontSize="$4">{selectedAlgorithm}</Text>
-                    <ChevronDown size={20} />
-                  </XStack>
-                </Button>
-              </XStack>
-            )}
-
             <FormSection title="Nationality">
                 <Button
                   onPress={() => {
