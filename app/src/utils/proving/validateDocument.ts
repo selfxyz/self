@@ -319,7 +319,6 @@ export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
       if (isRegistered) return true;
     } catch (error) {
       console.error(`Error in hasAnyValidRegisteredDocument: ${error}`);
-      continue;
     }
   }
   return false;
