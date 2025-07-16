@@ -142,6 +142,8 @@ export const MockDataEvents = {
   ENABLE_ADVANCED_MODE: 'Mock Data: Enable Advanced Mode',
   GENERATE_DATA: 'Mock Data: Generate Data',
   INCREASE_EXPIRY_YEARS: 'Mock Data: Increase Expiry Years',
+  INCREASE_AGE: 'Mock Data: Increase Age',
+  DECREASE_AGE: 'Mock Data: Decrease Age',
   OPEN_ALGORITHM_SELECTION: 'Mock Data: Open Algorithm Selection',
   OPEN_COUNTRY_SELECTION: 'Mock Data: Open Country Selection',
   SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
