@@ -17,6 +17,13 @@ import {
 import { DocumentCategory } from '@selfxyz/common';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
+import {
+  getAllDocuments,
+  loadPassportDataAndSecret,
+  loadSelectedDocument,
+  setSelectedDocument,
+  storePassportData,
+} from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 
 export type PassportSupportStatus =
@@ -238,4 +245,78 @@ function formatCSCAPem(cscaPem: string): string {
     cleanedPem = `-----BEGIN CERTIFICATE-----\n${cleanedPem}\n-----END CERTIFICATE-----`;
   }
   return cleanedPem;
+}
+
+export function isPassportDataValid(passportData: PassportData) {
+  if (!passportData) {
+    return false;
+  }
+  if (!passportData.passportMetadata) {
+    return false;
+  }
+  if (!passportData.passportMetadata.dg1HashFunction) {
+    return false;
+  }
+  if (!passportData.passportMetadata.eContentHashFunction) {
+    return false;
+  }
+  if (!passportData.passportMetadata.signedAttrHashFunction) {
+    return false;
+  }
+  return true;
+}
+
+export function migratePassportData(passportData: PassportData): PassportData {
+  const migratedData = { ...passportData } as any;
+  if (!('documentCategory' in migratedData) || !('mock' in migratedData)) {
+    if ('documentType' in migratedData && migratedData.documentType) {
+      migratedData.mock = migratedData.documentType.startsWith('mock');
+      migratedData.documentCategory = migratedData.documentType.includes(
+        'passport',
+      )
+        ? 'passport'
+        : 'id_card';
+    } else {
+      migratedData.documentType = 'passport';
+      migratedData.documentCategory = 'passport';
+      migratedData.mock = false;
+    }
+    // console.log('Migrated passport data:', migratedData);
+  }
+  return migratedData as PassportData;
+}
+
+export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
+  const allDocuments = await getAllDocuments();
+  for (const documentId of Object.keys(allDocuments)) {
+    try {
+      await setSelectedDocument(documentId);
+      const selectedDocument = await loadSelectedDocument();
+      if (!selectedDocument) continue;
+      let { data: passportData } = selectedDocument;
+      if (!isPassportDataValid(passportData)) continue;
+      const migratedPassportData = migratePassportData(passportData);
+      if (migratedPassportData !== passportData) {
+        await storePassportData(migratedPassportData);
+        passportData = migratedPassportData;
+      }
+      const environment = migratedPassportData.mock ? 'stg' : 'prod';
+      const documentCategory = migratedPassportData.documentCategory;
+      const authorityKeyIdentifier =
+        migratedPassportData.dsc_parsed?.authorityKeyIdentifier;
+      if (!authorityKeyIdentifier) continue;
+      await useProtocolStore
+        .getState()
+        [documentCategory].fetch_all(environment, authorityKeyIdentifier);
+      const passportDataAndSecret = await loadPassportDataAndSecret();
+      if (!passportDataAndSecret) continue;
+      const { secret } = JSON.parse(passportDataAndSecret);
+      const isRegistered = await isUserRegistered(migratedPassportData, secret);
+      if (isRegistered) return true;
+    } catch (error) {
+      console.error(`Error in hasAnyValidRegisteredDocument: ${error}`);
+      continue;
+    }
+  }
+  return false;
 }

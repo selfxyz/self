@@ -42,6 +42,7 @@ import {
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
+  hasAnyValidRegisteredDocument,
   isPassportNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
@@ -186,6 +187,7 @@ interface ProvingState {
   _closeConnections: () => void;
   _generatePayload: () => Promise<any>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
+  _handleRegisterErrorOrFailure: () => void;
   _startSocketIOStatusListener: (
     receivedUuid: string,
     endpointType: EndpointType,
@@ -228,7 +230,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       ) {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            navigationRef.navigate('Launch');
+            get()._handleRegisterErrorOrFailure();
           }
         }, 3000);
       }
@@ -391,6 +393,23 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             error: get().error_code ?? 'unknown',
           });
           actor!.send({ type: 'PROVE_ERROR' });
+        }
+      }
+    },
+
+    _handleRegisterErrorOrFailure: async () => {
+      try {
+        const hasValid = await hasAnyValidRegisteredDocument();
+        if (navigationRef.isReady()) {
+          if (hasValid) {
+            navigationRef.navigate('Home');
+          } else {
+            navigationRef.navigate('Launch');
+          }
+        }
+      } catch (error) {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('Launch');
         }
       }
     },
