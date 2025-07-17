@@ -15,10 +15,10 @@ import {
   IDENTITY_TREE_URL_ID_CARD,
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
-  TREE_URL,
-  TREE_URL_STAGING,
 } from '@selfxyz/common';
 import { create } from 'zustand';
+
+import { fetchOfacTrees } from '../utils/ofac';
 
 interface ProtocolState {
   passport: {
@@ -213,44 +213,9 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       }
     },
     fetch_ofac_trees: async (environment: 'prod' | 'stg') => {
-      const baseUrl = environment === 'prod' ? TREE_URL : TREE_URL_STAGING;
-      const ppNoNatUrl = `${baseUrl}/ofac/passport-no-nationality`;
-      const nameDobUrl = `${baseUrl}/ofac/name-dob`;
-      const nameYobUrl = `${baseUrl}/ofac/name-yob`;
-
-      const fetchTree = async (url: string) => {
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error(`HTTP error fetching ${url}! status: ${res.status}`);
-        }
-        const responseData = await res.json();
-        if (responseData.status !== 'success' || !responseData.data) {
-          throw new Error(
-            `Failed to fetch tree from ${url}: ${
-              responseData.message || 'Invalid response format'
-            }`,
-          );
-        }
-        return responseData.data;
-      };
-
       try {
-        const [ppNoNatData, nameDobData, nameYobData] = await Promise.all([
-          fetchTree(ppNoNatUrl),
-          fetchTree(nameDobUrl),
-          fetchTree(nameYobUrl),
-        ]);
-
-        set({
-          passport: {
-            ...get().passport,
-            ofac_trees: {
-              passportNoAndNationality: ppNoNatData,
-              nameAndDob: nameDobData,
-              nameAndYob: nameYobData,
-            },
-          },
-        });
+        const trees = await fetchOfacTrees(environment, 'passport');
+        set({ passport: { ...get().passport, ofac_trees: trees } });
       } catch (error) {
         console.error('Failed fetching OFAC trees:', error);
         set({ passport: { ...get().passport, ofac_trees: null } });
@@ -408,44 +373,9 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       }
     },
     fetch_ofac_trees: async (environment: 'prod' | 'stg') => {
-      const baseUrl = environment === 'prod' ? TREE_URL : TREE_URL_STAGING;
-      const ppNoNatUrl = `${baseUrl}/ofac/passport-no-nationality`;
-      const nameDobUrl = `${baseUrl}/ofac/name-dob-id`;
-      const nameYobUrl = `${baseUrl}/ofac/name-yob-id`;
-
-      const fetchTree = async (url: string) => {
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error(`HTTP error fetching ${url}! status: ${res.status}`);
-        }
-        const responseData = await res.json();
-        if (responseData.status !== 'success' || !responseData.data) {
-          throw new Error(
-            `Failed to fetch tree from ${url}: ${
-              responseData.message || 'Invalid response format'
-            }`,
-          );
-        }
-        return responseData.data;
-      };
-
       try {
-        const [ppNoNatData, nameDobData, nameYobData] = await Promise.all([
-          fetchTree(ppNoNatUrl),
-          fetchTree(nameDobUrl),
-          fetchTree(nameYobUrl),
-        ]);
-
-        set({
-          id_card: {
-            ...get().id_card,
-            ofac_trees: {
-              passportNoAndNationality: ppNoNatData,
-              nameAndDob: nameDobData,
-              nameAndYob: nameYobData,
-            },
-          },
-        });
+        const trees = await fetchOfacTrees(environment, 'id_card');
+        set({ id_card: { ...get().id_card, ofac_trees: trees } });
       } catch (error) {
         console.error('Failed fetching OFAC trees:', error);
         set({ id_card: { ...get().id_card, ofac_trees: null } });
