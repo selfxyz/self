@@ -18,6 +18,7 @@ import { parseDscCertificateData } from './src/utils/passports/passport_parsing/
 import { getLeafCscaTree, getLeafDscTree } from './src/utils/trees.js';
 import {
   genMockIdDoc,
+  generateMockDSC,
   genMockIdDocAndInitDataParsing,
   IdDocInput,
 } from './src/utils/passports/genMockIdDoc.js';
@@ -62,6 +63,7 @@ export {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
   genMockIdDoc,
+  generateMockDSC,
   genMockIdDocAndInitDataParsing,
   buildSMT,
   calculateUserIdentifierHash,

@@ -3,7 +3,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { countryCodes } from '@selfxyz/common';
 import { getSKIPEM } from '@selfxyz/common';
-import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
+import { generateMockDSC, genMockIdDoc, IdDocInput } from '@selfxyz/common';
 import { initPassportDataParsing } from '@selfxyz/common';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
@@ -248,7 +248,19 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         }
       }
       idDocInput.birthDate = dobForGeneration;
-      let rawMockData = genMockIdDoc(idDocInput);
+      let mockDSC, rawMockData;
+      try {
+        mockDSC = await generateMockDSC(
+          idDocInput.signatureType || 'rsa_sha256_65537_2048',
+        );
+        rawMockData = genMockIdDoc(idDocInput, mockDSC);
+      } catch (error) {
+        console.warn(
+          'Falling back to default mock DSC. Error during mock DSC generation:',
+          error,
+        );
+        rawMockData = genMockIdDoc(idDocInput);
+      }
       const skiPem = await getSKIPEM('staging');
       let parsedMockData = initPassportDataParsing(rawMockData, skiPem);
       await storePassportData(parsedMockData);
