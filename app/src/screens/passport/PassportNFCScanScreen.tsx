@@ -300,7 +300,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
 
   useFocusEffect(
     useCallback(() => {
-      checkNfcSupport();
+      checkNfcSupport().then(() => {
+        setTimeout(() => {
+          onVerifyPress();
+        }, 100);
+      });
 
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
@@ -316,7 +320,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           subscription.remove();
         };
       }
-    }, [checkNfcSupport]),
+    }, [checkNfcSupport, onVerifyPress]),
   );
 
   return (
