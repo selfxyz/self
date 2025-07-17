@@ -8,6 +8,10 @@
     {
       "path": "src/assets/fonts/DINOT-Medium.otf",
       "sha1": "e993d15a13bc4e2c66dac255d7fa569486345f88"
+    },
+    {
+      "path": "src/assets/fonts/IBMPlexMono-Regular.otf",
+      "sha1": "placeholder-sha1-hash"
     }
   ]
 }

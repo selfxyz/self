@@ -64,6 +64,7 @@
 	<array>
 		<string>Advercase-Regular.otf</string>
 		<string>DINOT-Medium.otf</string>
+		<string>IBMPlexMono-Regular.otf</string>
 	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
