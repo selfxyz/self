@@ -140,7 +140,7 @@ const FormSection: React.FC<FormSectionProps> = ({ title, endSection=false, chil
   const borderBottomWidth = endSection ? 0 : 1;
   return (
     <YStack p={20}jc="space-between" gap={10} borderBottomWidth={borderBottomWidth} borderColor={slate200}>
-        <Text fontWeight={500} textTransform="uppercase" color={slate400} fontSize="$4">
+        <Text fontFamily={dinot} textTransform="uppercase" color={slate400} fontSize="$4">
           {title}
         </Text>
         {children}
@@ -155,7 +155,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [age, setAge] = useState(21);
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isInOfacList, setIsInOfacList] = useState(false);
+  const [isInOfacList, setIsInOfacList] = useState(true);
   const [advancedMode, setAdvancedMode] = useState(false);
   const [selectedDocumentType, setSelectedDocumentType] = useState('mock_passport');
   const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
@@ -174,6 +174,16 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [isCountrySheetOpen, setCountrySheetOpen] = useState(false);
   const [isAlgorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
   const [isDocumentTypeSheetOpen, setDocumentTypeSheetOpen] = useState(false);
+
+  const resetFormValues = () => {
+    setBirthDate('2000/01/01');
+    setAge(21);
+    setExpiryYears(5);
+    setIsInOfacList(true);
+    setSelectedDocumentType('mock_passport');
+    setSelectedAlgorithm('sha256 rsa 65537 2048');
+    setSelectedCountry('USA');
+  }
 
   const handleCountrySelect = (countryCode: string) => {
     setSelectedCountry(countryCode);
@@ -380,7 +390,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           <HeroBanner />
         </GestureDetector>
         <YStack px="$4" pb="$4" gap="$4">
-          <Text fontWeight={500} fontSize="$6">Mock Passport Parameters</Text>
+          <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>Mock Passport Parameters</Text>
           <YStack
             borderRadius={10}
             borderWidth={1}
@@ -556,20 +566,36 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   borderColor={slate200}
                   borderRadius={5}
                   backgroundColor={white}
-                  p="$4"
+                  py="$3"
+                  px="$4"
                 >
                   <Text textTransform="uppercase">Not on list</Text>
                   <Switch
                     size="$3.5"
-                    checked={isInOfacList}
+                    checked={!isInOfacList}
                     onCheckedChange={() => {
                       buttonTap();
                       setIsInOfacList(!isInOfacList);
                       trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
                     }}
-                    bg={isInOfacList ? '$green7Light' : '$gray4'}
+                    bg='$gray12'
+                    borderRadius={10}
+                    h={34}
+                    w={65}
+                    p="$1.5"
+                    flexDirection='row'
+                    justifyContent="center"
+                    alignSelf="center"
+                    unstyled={true}
                   >
-                    <Switch.Thumb animation="quick" bc="white" />
+                    <Switch.Thumb
+                      animation="quick"
+                      bc="white"
+                      h={26}
+                      w={26}
+                      borderRadius={6}
+                      unstyled={true}
+                    />
                   </Switch>
                 </YStack>
                 <YStack flexDirection="row" gap="$3" ai="center" w="100%">
@@ -587,6 +613,19 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 </YStack>
               </YStack>
             </FormSection>
+            <YStack px="$4" py="$2" mb="$3">
+              <Button
+                backgroundColor={slate200}
+                color={slate500}
+                fontFamily={dinot}
+                onPress={() => {
+                  buttonTap();
+                  resetFormValues();
+                }}
+              >
+                Reset all values
+              </Button>
+            </YStack>
           </YStack>
 
           <YStack
