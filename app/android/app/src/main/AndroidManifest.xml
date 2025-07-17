@@ -10,6 +10,11 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Declare NFC hardware feature -->
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
     <application
       android:name=".MainApplication"
@@ -36,6 +41,16 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
 
+        <!-- NFC intent filter for IsoDep technology (passports) -->
+        <intent-filter>
+            <action android:name="android.nfc.action.TECH_DISCOVERED" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+
+        <meta-data
+            android:name="android.nfc.action.TECH_DISCOVERED"
+            android:resource="@xml/nfc_tech_filter" />
+
       <intent-filter android:autoVerify="true">
           <action android:name="android.intent.action.VIEW" />
           <category android:name="android.intent.category.DEFAULT"/>
@@ -44,10 +59,6 @@
               android:scheme="https"
               android:host="redirect.self.xyz" />
       </intent-filter>
-
-      <meta-data
-        android:name="android.nfc.action.TECH_DISCOVERED"
-        android:resource="@xml/nfc_tech_filter" />
       </activity>
 
       <activity

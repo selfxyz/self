@@ -21,12 +21,15 @@ package io.tradle.nfc
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
@@ -118,7 +121,7 @@ import com.facebook.react.bridge.Callback
 
 object Messages {
     const val SCANNING = "Scanning....."
-    const val STOP_MOVING = "Stop moving....." 
+    const val STOP_MOVING = "Stop moving....."
     const val AUTH = "Auth....."
     const val COMPARING = "Comparing....."
     const val COMPLETED = "Scanning completed"
@@ -142,6 +145,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     // private var encodePhotoToBase64 = false
     private var scanPromise: Promise? = null
     private var opts: ReadableMap? = null
+    private var isNfcEnabled: Boolean = false
+    // private var shouldEnableNfcOnResume: Boolean = false // This is no longer needed
 
     data class Data(val id: String, val digest: String, val signature: String, val publicKey: String)
 
@@ -154,7 +159,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     interface DataCallback {
       fun onDataReceived(data: String)
     }
-      
+
     init {
       instance = this
       reactContext.addLifecycleEventListener(this)
@@ -182,6 +187,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
     @ReactMethod
     fun scan(opts: ReadableMap, promise: Promise) {
+        Log.e("RNPassportReaderModule", "🚀 SCAN INITIATED: User pressed scan button at ${System.currentTimeMillis()}")
+        Log.e("RNPassportReaderModule", "🚀 SCAN: Current activity: ${currentActivity?.javaClass?.simpleName}")
+        eventMessageEmitter("🚀 SCAN STARTED: User clicked scan button")
         eventMessageEmitter(Messages.SCANNING)
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(reactApplicationContext)
         // val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
@@ -200,64 +208,264 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             return
         }
 
+        // Step 1: Set up scan parameters
         this.opts = opts
         this.scanPromise = promise
         Log.d("RNPassportReaderModule", "opts set to: " + opts.toString())
+
+        // Step 2: Enable NFC with focus check - this replaces the disruptive background/foreground cycle
+        Log.e("RNPassportReaderModule", "🚀 SCAN: About to call enableNfcWithFocusCheck()")
+        eventMessageEmitter("🚀 SCAN: Starting NFC with focus check")
+        enableNfcWithFocusCheck()
     }
+
+
 
     private fun resetState() {
+        Log.e("RNPassportReaderModule", "🔄 RESET STATE: Resetting scan state, NFC enabled: $isNfcEnabled")
+        eventMessageEmitter("🔄 RESET STATE: Resetting scan state, NFC enabled: $isNfcEnabled")
         scanPromise = null
         opts = null
+
+        // Disable NFC when scanning completes or is cancelled
+        if (isNfcEnabled) {
+            Log.e("RNPassportReaderModule", "🔄 RESET STATE: Disabling NFC after scan completion")
+            eventMessageEmitter("🔄 RESET STATE: Disabling NFC after scan completion")
+            disableNfcForScanning()
+        }
+        // shouldEnableNfcOnResume = false // No longer needed
+        Log.e("RNPassportReaderModule", "🔄 RESET STATE: Reset complete")
     }
 
-    override fun onHostDestroy() {
-        resetState()
+    /**
+     * Enable NFC with window focus checking - replaces the disruptive resetNfcAdapter approach.
+     * This method checks if the activity has window focus before enabling NFC foreground dispatch.
+     * If the activity lacks focus, it retries with a delay to give the UI time to settle.
+     */
+    private fun enableNfcWithFocusCheck(attempt: Int = 1) {
+        val maxAttempts = 10 // Allow up to 10 attempts (1 second total)
+        val retryDelayMs = 100L // 100ms between attempts
+
+        Log.e("RNPassportReaderModule", "🔍 FOCUS CHECK: Attempt $attempt/$maxAttempts - checking window focus")
+        eventMessageEmitter("🔍 FOCUS CHECK: Attempt $attempt/$maxAttempts")
+
+        val activity = currentActivity
+        if (activity == null) {
+            Log.e("RNPassportReaderModule", "🔍 FOCUS CHECK: FAILED - Current activity is null")
+            eventMessageEmitter("🔍 FOCUS CHECK: FAILED - Current activity is null")
+            scanPromise?.reject("E_NO_ACTIVITY", "No current activity available")
+            resetState()
+            return
+        }
+
+        val hasWindowFocus = activity.hasWindowFocus()
+        Log.e("RNPassportReaderModule", "🔍 FOCUS CHECK: Activity=${activity.javaClass.simpleName}, hasWindowFocus=$hasWindowFocus")
+        eventMessageEmitter("🔍 FOCUS CHECK: Activity=${activity.javaClass.simpleName}, hasWindowFocus=$hasWindowFocus")
+
+        if (hasWindowFocus) {
+            // Activity has focus - we can safely enable NFC
+            Log.e("RNPassportReaderModule", "✅ FOCUS CHECK: SUCCESS - Activity has window focus, enabling NFC")
+            eventMessageEmitter("✅ FOCUS CHECK: SUCCESS - Activity has window focus, enabling NFC")
+            enableNfcForScanning()
+        } else if (attempt < maxAttempts) {
+            // Activity lacks focus - retry after a delay
+            Log.e("RNPassportReaderModule", "⏳ FOCUS CHECK: RETRY - Activity lacks focus, retrying in ${retryDelayMs}ms")
+            eventMessageEmitter("⏳ FOCUS CHECK: RETRY - Activity lacks focus, retrying in ${retryDelayMs}ms")
+            Handler(Looper.getMainLooper()).postDelayed({
+                enableNfcWithFocusCheck(attempt + 1)
+            }, retryDelayMs)
+        } else {
+            // Max attempts reached - give up
+            Log.e("RNPassportReaderModule", "❌ FOCUS CHECK: FAILED - Max attempts reached, activity never gained focus")
+            eventMessageEmitter("❌ FOCUS CHECK: FAILED - Max attempts reached, activity never gained focus")
+            scanPromise?.reject("E_NO_WINDOW_FOCUS", "Activity never gained window focus after $maxAttempts attempts")
+            resetState()
+        }
     }
 
-    override fun onHostResume() {
+    /**
+     * Enable NFC foreground dispatch for scanning - should only be called when user explicitly starts scanning
+     */
+    private fun enableNfcForScanning() {
+        val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
+        Log.e("RNPassportReaderModule", "📡 NFC STATE: Adapter exists=${mNfcAdapter != null}, enabled=${mNfcAdapter?.isEnabled}")
+
+        Log.e("RNPassportReaderModule", "📡 NFC ENABLED: Explicitly enabling NFC for scanning")
+        eventMessageEmitter("📡 NFC ENABLED: Starting foreground dispatch")
+        if (isNfcEnabled) {
+            Log.w("RNPassportReaderModule", "enableNfcForScanning: NFC already enabled, skipping")
+            return
+        }
+
+        mNfcAdapter?.let {
+            val activity = currentActivity
+            Log.e("RNPassportReaderModule", "📡 NFC STATE: Activity=${activity?.javaClass?.simpleName}, hasWindowFocus=${activity?.hasWindowFocus()}")
+            activity?.let {
+                try {
+                    Log.e("RNPassportReaderModule", "📡 NFC ENABLE: Setting up foreground dispatch, activity state: ${it.javaClass.simpleName}")
+                    eventMessageEmitter("📡 NFC ENABLE: Setting up foreground dispatch")
+                    val intent = Intent(it.applicationContext, it.javaClass)
+                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    val pendingIntent = PendingIntent.getActivity(it, 0, intent, PendingIntent.FLAG_MUTABLE)
+
+                    // Create proper intent filters for NFC tech discovery
+                    val techFilter = IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED)
+                    val intentFiltersArray = arrayOf(techFilter)
+                    val techListsArray = arrayOf(arrayOf(IsoDep::class.java.name))
+
+                    mNfcAdapter.enableForegroundDispatch(it, pendingIntent, intentFiltersArray, techListsArray)
+                    Log.e("RNPassportReaderModule", "📡 NFC ENABLE: enableForegroundDispatch() called successfully")
+                    isNfcEnabled = true
+                    Log.e("RNPassportReaderModule", "📡 NFC ENABLE: SUCCESS - NFC enabled successfully")
+                    Log.e("RNPassportReaderModule", "📡 NFC STATE: Adapter enabled=${mNfcAdapter.isEnabled}, Activity=${it.javaClass.simpleName}, hasWindowFocus=${it.hasWindowFocus()}")
+
+                    // Simple verification that NFC is ready
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        Log.e("RNPassportReaderModule", "📡 NFC READY: Scanner should be active - place passport to test")
+                        eventMessageEmitter("📡 NFC READY: Scanner should be active")
+                    }, 500)
+
+                    eventMessageEmitter("📡 NFC ENABLE: SUCCESS - NFC enabled successfully")
+                } catch (e: Exception) {
+                    Log.e("RNPassportReaderModule", "📡 NFC ENABLE: enableForegroundDispatch() FAILED: ${e.message}")
+                    Log.e("RNPassportReaderModule", "📡 NFC ENABLE: ERROR - ${e.message}", e)
+                    eventMessageEmitter("📡 NFC ENABLE: ERROR - ${e.message}")
+                    if (e.message?.contains("Caller not in foreground") == true) {
+                        Log.e("RNPassportReaderModule", "🚨 FOREGROUND ERROR: Activity not in foreground when trying to enable NFC!")
+                        eventMessageEmitter("🚨 FOREGROUND ERROR: Activity not in foreground!")
+                    }
+                }
+            }?: Log.e("RNPassportReaderModule", "enableNfcForScanning: Current activity is null")
+        } ?: Log.e("RNPassportReaderModule", "enableNfcForScanning: NFC adapter is null")
+    }
+
+    /**
+     * Disable NFC foreground dispatch - should be called when scanning completes or is cancelled
+     */
+    private fun disableNfcForScanning() {
+        Log.d("RNPassportReaderModule", "disableNfcForScanning: Explicitly disabling NFC")
+        if (!isNfcEnabled) {
+            Log.w("RNPassportReaderModule", "disableNfcForScanning: NFC not enabled, skipping")
+            return
+        }
+
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
         mNfcAdapter?.let {
             val activity = currentActivity
             activity?.let {
-                val intent = Intent(it.applicationContext, it.javaClass)
-                intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-                val pendingIntent = PendingIntent.getActivity(it, 0, intent, PendingIntent.FLAG_MUTABLE) // PendingIntent.FLAG_UPDATE_CURRENT
-                val filter = arrayOf(arrayOf(IsoDep::class.java.name))
-                mNfcAdapter.enableForegroundDispatch(it, pendingIntent, null, filter)
-            }
+                try {
+                    Log.e("RNPassportReaderModule", "📡 NFC DISABLE: Disabling foreground dispatch, activity state: ${it.javaClass.simpleName}")
+                    eventMessageEmitter("📡 NFC DISABLE: Disabling foreground dispatch")
+                    mNfcAdapter.disableForegroundDispatch(it)
+                    isNfcEnabled = false
+                    Log.e("RNPassportReaderModule", "📡 NFC DISABLE: SUCCESS - NFC disabled successfully")
+                    eventMessageEmitter("📡 NFC DISABLE: SUCCESS - NFC disabled successfully")
+                } catch (e: Exception) {
+                    Log.e("RNPassportReaderModule", "📡 NFC DISABLE: ERROR - ${e.message}", e)
+                    eventMessageEmitter("📡 NFC DISABLE: ERROR - ${e.message}")
+                    // Force reset state even if disable failed to prevent inconsistent state
+                    isNfcEnabled = false
+                    Log.e("RNPassportReaderModule", "📡 NFC DISABLE: Forced state reset due to error")
+                }
+            } ?: Log.e("RNPassportReaderModule", "disableNfcForScanning: Current activity is null")
+        } ?: Log.e("RNPassportReaderModule", "disableNfcForScanning: NFC adapter is null")
+    }
+
+    override fun onHostDestroy() {
+        Log.e("RNPassportReaderModule", "💀 HOST DESTROY: Host being destroyed, NFC enabled: $isNfcEnabled")
+        eventMessageEmitter("💀 HOST DESTROY: Host being destroyed, NFC enabled: $isNfcEnabled")
+
+        // Ensure NFC is disabled when host is destroyed
+        if (isNfcEnabled) {
+            Log.e("RNPassportReaderModule", "💀 HOST DESTROY: Disabling NFC for cleanup")
+            eventMessageEmitter("💀 HOST DESTROY: Disabling NFC for cleanup")
+            disableNfcForScanning()
+        }
+
+        resetState()
+        Log.e("RNPassportReaderModule", "💀 HOST DESTROY: Cleanup complete")
+        eventMessageEmitter("💀 HOST DESTROY: Cleanup complete")
+    }
+
+    override fun onHostResume() {
+        Log.e("RNPassportReaderModule", "🏠 HOST RESUMED: Activity resumed. Scan promise is ${if (scanPromise != null) "not null" else "null"}.")
+
+        // If a scan is in progress (scanPromise exists), we need to ensure NFC is enabled.
+        // This handles resumes after screen lock/unlock.
+        if (scanPromise != null) {
+            Log.e("RNPassportReaderModule", "🏠 HOST RESUMED: Scan in progress, enabling NFC with focus check.")
+            eventMessageEmitter("🏠 HOST RESUMED: Scan in progress, enabling NFC.")
+
+            // Use the new focus-aware method instead of a simple delay
+            enableNfcWithFocusCheck()
+        } else {
+            Log.e("RNPassportReaderModule", "🏠 HOST RESUMED: No active scan, no action needed.")
         }
     }
 
     override fun onHostPause() {
-        val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
-        mNfcAdapter?.disableForegroundDispatch(currentActivity)
+        Log.e("RNPassportReaderModule", "⏸️ HOST PAUSED: Activity paused, NFC enabled: $isNfcEnabled")
+        eventMessageEmitter("⏸️ HOST PAUSED: Activity backgrounding, NFC enabled: $isNfcEnabled")
+
+        // Only disable NFC if it was explicitly enabled for scanning
+        if (isNfcEnabled) {
+            Log.e("RNPassportReaderModule", "⏸️ HOST PAUSED: Disabling NFC due to pause")
+            eventMessageEmitter("⏸️ HOST PAUSED: Disabling NFC due to pause")
+            disableNfcForScanning()
+        } else {
+            Log.e("RNPassportReaderModule", "⏸️ HOST PAUSED: NFC not enabled, no action needed")
+            eventMessageEmitter("⏸️ HOST PAUSED: NFC not enabled, no action needed")
+        }
     }
 
     fun receiveIntent(intent: Intent) {
-        Log.d("RNPassportReaderModule", "receiveIntent: " + intent.action)
-        if (scanPromise == null) return
+        Log.e("RNPassportReaderModule", "📱 INTENT RECEIVED: ${intent.action}, scanPromise: ${if (scanPromise != null) "EXISTS" else "NULL"}, NFC enabled: $isNfcEnabled")
+        eventMessageEmitter("📱 INTENT RECEIVED: ${intent.action}, scanPromise: ${if (scanPromise != null) "EXISTS" else "NULL"}")
+        if (scanPromise == null) {
+            Log.e("RNPassportReaderModule", "📱 INTENT IGNORED: No scan promise - intent received when not scanning")
+            return
+        }
         if (NfcAdapter.ACTION_TECH_DISCOVERED == intent.action) {
+            Log.e("RNPassportReaderModule", "📱 NFC TECH DISCOVERED: Processing NFC tag")
+            eventMessageEmitter("📱 NFC TECH DISCOVERED: Processing NFC tag")
+
             val tag: Tag? = intent.extras?.getParcelable(NfcAdapter.EXTRA_TAG)
             if (tag?.techList?.contains("android.nfc.tech.IsoDep") == true) {
+                Log.e("RNPassportReaderModule", "📱 ISODEP TAG FOUND: Starting passport read task")
+                eventMessageEmitter("📱 ISODEP TAG FOUND: Starting passport read task")
+
                 val passportNumber = opts?.getString(PARAM_DOC_NUM)
                 val expirationDate = opts?.getString(PARAM_DOE)
                 val birthDate = opts?.getString(PARAM_DOB)
                 val cardAccessNumber = opts?.getString(PARAM_CAN)
                 val useCan = opts?.getBoolean(PARAM_USE_CAN) ?: false
 
+                Log.e("RNPassportReaderModule", "📱 PASSPORT PARAMS: useCAN=$useCan, hasPassportNum=${!passportNumber.isNullOrEmpty()}, hasExpiry=${!expirationDate.isNullOrEmpty()}, hasBirth=${!birthDate.isNullOrEmpty()}")
+                eventMessageEmitter("📱 PASSPORT PARAMS: useCAN=$useCan, hasPassportNum=${!passportNumber.isNullOrEmpty()}")
+
                 if (useCan && !cardAccessNumber.isNullOrEmpty()) {
+                    Log.e("RNPassportReaderModule", "📱 USING CAN: Starting PACE authentication")
+                    eventMessageEmitter("📱 USING CAN: Starting PACE authentication")
                     val paceKey: PACEKeySpec = PACEKeySpec.createCANKey(cardAccessNumber)
                     ReadTask(IsoDep.get(tag), paceKey).execute()
                 }
                 else if (!passportNumber.isNullOrEmpty() && !expirationDate.isNullOrEmpty() && !birthDate.isNullOrEmpty()) {
+                    Log.e("RNPassportReaderModule", "📱 USING BAC: Starting BAC authentication")
+                    eventMessageEmitter("📱 USING BAC: Starting BAC authentication")
                     val bacKey: BACKeySpec = BACKey(passportNumber, birthDate, expirationDate)
                     ReadTask(IsoDep.get(tag), bacKey).execute()
+                } else {
+                    Log.e("RNPassportReaderModule", "📱 MISSING PARAMS: Cannot authenticate - missing required passport parameters")
+                    eventMessageEmitter("📱 MISSING PARAMS: Cannot authenticate - missing required passport parameters")
                 }
+            } else {
+                Log.e("RNPassportReaderModule", "📱 NON-ISODEP TAG: Tag does not support IsoDep")
+                eventMessageEmitter("📱 NON-ISODEP TAG: Tag does not support IsoDep")
             }
         }
     }
 
-    
+
     private fun toBase64(bitmap: Bitmap, quality: Int): String {
       val byteArrayOutputStream = ByteArrayOutputStream()
       bitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream)
@@ -267,7 +475,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
     @SuppressLint("StaticFieldLeak")
     private inner class ReadTask(
-        private val isoDep: IsoDep, 
+        private val isoDep: IsoDep,
         private val authKey: AccessKeySpec
     ) : AsyncTask<Void?, Void?, Exception?>() {
 
@@ -292,7 +500,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     Log.e("MY_LOGS", "Failed to get CardService instance", e)
                     throw e
                 }
-                
+
                 try {
                     cardService.open()
                 } catch (e: Exception) {
@@ -343,17 +551,17 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     var bacSucceeded = false
                     var attempts = 0
                     val maxAttempts = 3
-                    
+
                     while (!bacSucceeded && attempts < maxAttempts) {
                         try {
                             attempts++
                             Log.e("MY_LOGS", "BAC attempt $attempts of $maxAttempts")
-                            
+
                             if (attempts > 1) {
                                 // Wait before retry
                                 Thread.sleep(500)
                             }
-                            
+
                             // Try to read EF_COM first
                             try {
                                 service.getInputStream(PassportService.EF_COM).read()
@@ -361,10 +569,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                                 // EF_COM failed, do BAC
                                 service.doBAC(authKey)
                             }
-                            
+
                             bacSucceeded = true
                             Log.e("MY_LOGS", "BAC succeeded on attempt $attempts")
-                            
+
                         } catch (e: Exception) {
                             Log.e("MY_LOGS", "BAC attempt $attempts failed: ${e.message}")
                             if (attempts == maxAttempts) {
@@ -383,7 +591,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 eventMessageEmitter("Reading SOD.....")
                 val sodIn = service.getInputStream(PassportService.EF_SOD)
                 sodFile = SODFile(sodIn)
-                
+
                 // val gson = Gson()
                 // Log.d(TAG, "============FIRST CONSOLE LOG=============")
                 // Log.d(TAG, "dg1File: " + gson.toJson(dg1File))
@@ -471,13 +679,13 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 val digest = MessageDigest.getInstance(sodFile.digestAlgorithm)
                 Log.d(TAG, "Using digest algorithm: ${sodFile.digestAlgorithm}")
 
-                
+
                 val dataHashes = sodFile.dataGroupHashes
-                
+
                 val dg14Hash = if (chipAuthSucceeded) digest.digest(dg14Encoded) else ByteArray(0)
                 val dg1Hash = digest.digest(dg1File.encoded)
                 val dg2Hash = digest.digest(dg2File.encoded)
-                
+
                 // val gson = Gson()
                 // Log.d(TAG, "dataHashes " + gson.toJson(dataHashes))
                 // val hexMap = sodFile.dataGroupHashes.mapValues { (_, value) ->
@@ -590,12 +798,12 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
             // val signedDataField = SODFile::class.java.getDeclaredField("signedData")
             // signedDataField.isAccessible = true
-            
+
           //   val signedData = signedDataField.get(sodFile) as SignedData
-            
+
             val eContentAsn1InputStream = ASN1InputStream(sodFile.eContent.inputStream())
           //   val eContentDecomposed: ASN1Primitive = eContentAsn1InputStream.readObject()
-  
+
             val passport = Arguments.createMap()
             passport.putString("mrz", mrzInfo.toString())
             passport.putString("signatureAlgorithm", sodFile.docSigningCertificate.sigAlgName) // this one is new
@@ -605,7 +813,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             val certificateBytes = certificate.encoded
             val certificateBase64 = Base64.encodeToString(certificateBytes, Base64.DEFAULT)
             Log.d(TAG, "certificateBase64: ${certificateBase64}")
-            
+
 
             passport.putString("documentSigningCertificate", certificateBase64)
 
@@ -614,10 +822,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 passport.putString("modulus", publicKey.modulus.toString())
             } else if (publicKey is ECPublicKey) {
               // Handle the elliptic curve public key case
-              
+
               // val w = publicKey.getW()
               // passport.putString("publicKeyW", w.toString())
-              
+
               // val ecParams = publicKey.getParams()
               // passport.putInt("cofactor", ecParams.getCofactor())
               // passport.putString("curve", ecParams.getCurve().toString())
@@ -626,7 +834,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
               // if (ecParams is ECNamedCurveSpec) {
               //     passport.putString("curveName", ecParams.getName())
               // }
-  
+
             //   Old one, probably wrong:
             //     passport.putString("curveName", (publicKey.parameters as ECNamedCurveSpec).name)
             //     passport.putString("curveName", (publicKey.parameters.algorithm)) or maybe this
@@ -664,15 +872,15 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             // passport.putString("getDocSigningCertificate", gson.toJson(sodFile.getDocSigningCertificate))
             // passport.putString("getIssuerX500Principal", gson.toJson(sodFile.getIssuerX500Principal))
             // passport.putString("getSerialNumber", gson.toJson(sodFile.getSerialNumber))
-  
-  
-            // Another way to get signing time is to get into signedData.signerInfos, then search for the ICO identifier 1.2.840.113549.1.9.5 
+
+
+            // Another way to get signing time is to get into signedData.signerInfos, then search for the ICO identifier 1.2.840.113549.1.9.5
             // passport.putString("signerInfos", gson.toJson(signedData.signerInfos))
-            
+
             //   Log.d(TAG, "signedData.digestAlgorithms: ${gson.toJson(signedData.digestAlgorithms)}")
             //   Log.d(TAG, "signedData.signerInfos: ${gson.toJson(signedData.signerInfos)}")
             //   Log.d(TAG, "signedData.certificates: ${gson.toJson(signedData.certificates)}")
-            
+
             // var quality = 100
             // val base64 = bitmap?.let { toBase64(it, quality) }
             // val photo = Arguments.createMap()
@@ -681,7 +889,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             // photo.putInt("height", bitmap?.height ?: 0)
             // passport.putMap("photo", photo)
             // passport.putString("dg2File", gson.toJson(dg2File))
-            
+
             eventMessageEmitter(Messages.COMPLETED)
             scanPromise?.resolve(passport)
             eventMessageEmitter(Messages.RESET)
@@ -731,4 +939,6 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             return instance ?: throw IllegalStateException("RNPassportReaderModule instance is not initialized")
         }
     }
+
+
 }
