@@ -67,7 +67,6 @@ export function genMockIdDoc(
   userInput: Partial<IdDocInput> = {},
   mockDSC?: { dsc: string; privateKeyPem: string }
 ): PassportData {
-  console.log('userInput', userInput);
   const mergedInput: IdDocInput = {
     ...defaultIdDocInput,
     ...userInput,
