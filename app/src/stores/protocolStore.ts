@@ -15,18 +15,8 @@ import {
   IDENTITY_TREE_URL_ID_CARD,
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
-  OFAC_PASSPORT_NO_NATIONALITY_SMT_URL,
-  OFAC_PASSPORT_NO_NATIONALITY_SMT_URL_STAGING,
-  OFAC_NAME_AND_DOB_SMT_URL,
-  OFAC_NAME_AND_DOB_SMT_URL_STAGING,
-  OFAC_NAME_AND_YOB_SMT_URL,
-  OFAC_NAME_AND_YOB_SMT_URL_STAGING,
-  OFAC_NAME_AND_DOB_SMT_URL_ID,
-  OFAC_NAME_AND_DOB_SMT_URL_STAGING_ID,
-  OFAC_NAME_AND_YOB_SMT_URL_ID,
-  OFAC_NAME_AND_YOB_SMT_URL_STAGING_ID,
-  TREE_URL_STAGING,
   TREE_URL,
+  TREE_URL_STAGING,
 } from '@selfxyz/common';
 import { create } from 'zustand';
 
@@ -38,7 +28,11 @@ interface ProtocolState {
     deployed_circuits: any;
     circuits_dns_mapping: any;
     alternative_csca: Record<string, string>;
-    ofac_trees: { passportNoAndNationality: any; nameAndDob: any; nameAndYob: any; } | null;
+    ofac_trees: {
+      passportNoAndNationality: any;
+      nameAndDob: any;
+      nameAndYob: any;
+    } | null;
     fetch_deployed_circuits: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_circuits_dns_mapping: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_csca_tree: (environment: 'prod' | 'stg') => Promise<void>;
@@ -58,7 +52,11 @@ interface ProtocolState {
     deployed_circuits: any;
     circuits_dns_mapping: any;
     alternative_csca: Record<string, string>;
-    ofac_trees: { passportNoAndNationality: any; nameAndDob: any; nameAndYob: any; } | null;
+    ofac_trees: {
+      passportNoAndNationality: any;
+      nameAndDob: any;
+      nameAndYob: any;
+    } | null;
     fetch_deployed_circuits: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_circuits_dns_mapping: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_csca_tree: (environment: 'prod' | 'stg') => Promise<void>;

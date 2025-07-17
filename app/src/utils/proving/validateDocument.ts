@@ -143,15 +143,20 @@ export async function isDocumentNullified(passportData: PassportData) {
       ? '0x0000000000000000000000000000000000000000000000000000000000000001'
       : '0x0000000000000000000000000000000000000000000000000000000000000002';
   console.log('checking for nullifier', nullifierHex, attestationId);
-  const baseUrl =
-    passportData.mock === false ? API_URL : API_URL_STAGING;
-  const response = await fetch(`${baseUrl}/is-nullifier-onchain-with-attestation-id`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const baseUrl = passportData.mock === false ? API_URL : API_URL_STAGING;
+  const response = await fetch(
+    `${baseUrl}/is-nullifier-onchain-with-attestation-id`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        nullifier: nullifierHex,
+        attestation_id: attestationId,
+      }),
     },
-    body: JSON.stringify({ nullifier: nullifierHex , attestation_id: attestationId}),
-  });
+  );
   const data = await response.json();
   console.log('isDocumentNullified', data);
   return data.data;

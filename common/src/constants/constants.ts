@@ -567,19 +567,3 @@ qzOBhID0Nxk4k9sW1uT6ocW1xp1SB2WotORssOKIAOLJM8IbPl6n/DkYNcfvyXI7
 export const DEFAULT_RPC_URL = 'https://mainnet.optimism.io';
 export const REGISTER_CONTRACT_ADDRESS = '0x3F346FFdC5d583e4126AF01A02Ac5b9CdB3f1909';
 export const SBT_CONTRACT_ADDRESS = '0x601Fd54FD11C5E77DE84d877e55B829aff20f0A6';
-
-// Added OFAC SMT URLs
-export const OFAC_PASSPORT_NO_NATIONALITY_SMT_URL = `${TREE_URL}/ofac/passport-no-nationality`;
-export const OFAC_PASSPORT_NO_NATIONALITY_SMT_URL_STAGING = `${TREE_URL_STAGING}/ofac/passport-no-nationality`;
-
-export const OFAC_NAME_AND_DOB_SMT_URL = `${TREE_URL}/ofac/name-dob`;
-export const OFAC_NAME_AND_DOB_SMT_URL_STAGING = `${TREE_URL_STAGING}/ofac/name-dob`;
-
-export const OFAC_NAME_AND_YOB_SMT_URL = `${TREE_URL}/ofac/name-yob`;
-export const OFAC_NAME_AND_YOB_SMT_URL_STAGING = `${TREE_URL_STAGING}/ofac/name-yob`;
-
-export const OFAC_NAME_AND_DOB_SMT_URL_ID = `${TREE_URL}/ofac/name-dob-id`;
-export const OFAC_NAME_AND_DOB_SMT_URL_STAGING_ID = `${TREE_URL_STAGING}/ofac/name-dob-id`;
-
-export const OFAC_NAME_AND_YOB_SMT_URL_ID = `${TREE_URL}/ofac/name-yob-id`;
-export const OFAC_NAME_AND_YOB_SMT_URL_STAGING_ID = `${TREE_URL_STAGING}/ofac/name-yob-id`;
