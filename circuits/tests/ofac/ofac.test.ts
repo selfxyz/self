@@ -9,7 +9,7 @@ import nameAndYobjson from '../consts/ofac/nameAndYobSMT.json' with { type: 'jso
 import nameAndDobIdCardJson from '../consts/ofac/nameAndDobSMT_ID.json' with { type: 'json' };
 import nameAndYobIdCardJson from '../consts/ofac/nameAndYobSMT_ID.json' with { type: 'json' };
 import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
-import passportNoAndNationalityjson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
+import passportNoAndNationalityjson from '../consts/ofac/passportNoAndNationalitySMT.json' with { type: 'json' };
 import { generateCircuitInputsOfac } from '@selfxyz/common/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 
