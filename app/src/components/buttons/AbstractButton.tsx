@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React from 'react';
-import { StyleSheet, ViewStyle } from 'react-native';
+import { Platform, StyleSheet, ViewStyle } from 'react-native';
 import { Button, Text, ViewProps } from 'tamagui';
 
 import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
@@ -65,7 +65,9 @@ export default function AbstractButton({
       style={[
         styles.container,
         { backgroundColor: bgColor, borderColor: borderColor },
-        hasBorder ? styles.withBorder : {},
+        hasBorder
+          ? styles.withBorder
+          : Platform.select({ web: { borderWidth: 0 }, default: {} }),
         style as ViewStyle,
       ]}
       pressStyle={!animatedComponent ? pressedStyle : {}}

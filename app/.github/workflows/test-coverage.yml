@@ -1,0 +1,43 @@
+name: Test and Coverage
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - 'app/**'
+      - '.github/workflows/test-coverage.yml'
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'app/**'
+      - '.github/workflows/test-coverage.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: |
+          yarn install
+          yarn build:deps
+        working-directory: ./app
+
+      - name: Run tests with coverage
+        run: yarn test:coverage:ci
+        working-directory: ./app
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./app/coverage/lcov.info
+          flags: screens,stores,providers,components,utils,hooks,navigation,layouts
+          token: ${{ secrets.CODECOV_TOKEN }}

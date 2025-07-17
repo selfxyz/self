@@ -22,7 +22,7 @@ global.Buffer = Buffer;
 function App(): React.JSX.Element {
   return (
     <ErrorBoundary>
-      <YStack f={1} h="100%" w="100%">
+      <YStack flex={1} height="100%" width="100%">
         <RemoteConfigProvider>
           <AuthProvider>
             <PassportProvider>
