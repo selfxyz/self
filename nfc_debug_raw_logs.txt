@@ -1,0 +1,193 @@
+# NFC Scanning Debug Raw Logs
+# Issue: First scan attempt fails on app startup, works after lock/unlock cycle
+# Device: Android with NFC capability
+# App: React Native with native Android NFC module
+# Test: Place passport on device immediately after app startup
+
+## Test Session 1: 10:30:13 - 10:31:11 (Successful scan after 65.81 seconds)
+
+[CERTIFICATE DATA REMOVED FOR PUBLIC SHARING - Contains passport document signing certificate]
+07-17 10:30:13.559  3315  3315 E RNPassportReaderModule: 🔄 RESET STATE: Resetting scan state, NFC enabled: true
+07-17 10:30:13.559  3315  3315 E RNPassportReaderModule: 🔄 RESET STATE: Disabling NFC after scan completion
+07-17 10:30:13.559  3315  3315 D RNPassportReaderModule: disableNfcForScanning: Explicitly disabling NFC
+07-17 10:30:13.560  3315  3315 E RNPassportReaderModule: 📡 NFC DISABLE: Disabling foreground dispatch, activity state: MainActivity
+07-17 10:30:13.560  3315  3315 E RNPassportReaderModule: 📡 NFC DISABLE: SUCCESS - NFC disabled successfully
+07-17 10:30:13.560  3315  3315 E RNPassportReaderModule: 🔄 RESET STATE: Reset complete
+07-17 10:30:13.561  3315  3611 I ReactNativeJS: 'NFC Scan Successful - Duration:', '65.81', 'seconds'
+07-17 10:30:13.562  3315  3611 I ReactNativeJS: '[DEV: Analytics EVENT]', { name: 'Passport: NFC Scan Success',
+07-17 10:30:13.607  3315  3611 I ReactNativeJS: 🔄 RESET STATE: Resetting scan state, NFC enabled: true
+07-17 10:30:13.608  3315  3611 I ReactNativeJS: 🔄 RESET STATE: Disabling NFC after scan completion
+07-17 10:30:13.608  3315  3611 I ReactNativeJS: 📡 NFC DISABLE: Disabling foreground dispatch
+07-17 10:30:13.608  3315  3611 I ReactNativeJS: 📡 NFC DISABLE: SUCCESS - NFC disabled successfully
+07-17 10:31:11.948  3315  3315 E RNPassportReaderModule: ⏸️ HOST PAUSED: Activity paused, NFC enabled: false
+07-17 10:31:11.948  3315  3315 E RNPassportReaderModule: ⏸️ HOST PAUSED: NFC not enabled, no action needed
+07-17 10:31:11.949  3315  3315 E MAIN_ACTIVITY: ⏸️ MainActivity onPause called
+
+## Test Session 2: 10:36:05 - 10:36:12 (Hardware detection only, no app-level response)
+
+07-17 10:36:05.854  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:05.980  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:05.984  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:05.985  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:06.110  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:06.115  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:06.115  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:06.241  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:06.248  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:06.248  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:06.374  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:06.379  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:06.379  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:06.505  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:06.509  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:06.509  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:06.635  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:06.640  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:06.640  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:06.765  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:06.769  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:06.769  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:06.894  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:06.898  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:06.898  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:07.024  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:07.032  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:07.032  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:07.158  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:07.165  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:07.165  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:07.291  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:07.297  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:07.297  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:07.423  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:07.427  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:07.427  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:07.553  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:07.558  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:07.558  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:07.683  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:07.687  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:07.687  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:07.813  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:07.818  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:07.818  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:07.944  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:07.950  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:07.950  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:08.076  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:08.081  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:08.081  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:08.206  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:08.211  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:08.211  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:08.337  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:08.342  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:08.342  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:08.467  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:08.473  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:08.473  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:08.599  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:08.604  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:08.604  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:08.730  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:08.735  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:08.735  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:08.860  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:08.867  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:08.867  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:08.993  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:08.998  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:08.998  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:09.123  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:09.128  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:09.128  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:09.254  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:09.260  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:09.260  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:09.386  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:09.390  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:09.390  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:09.516  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:09.521  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:09.521  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:09.646  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:09.652  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:09.652  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:09.778  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:09.783  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:09.783  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:09.909  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:09.915  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:09.915  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:10.041  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:10.045  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:10.046  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:10.171  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:10.176  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:10.176  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:10.302  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:10.307  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:10.307  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:10.433  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:10.438  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:10.438  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:10.563  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:10.568  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:10.568  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:10.694  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:10.698  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:10.699  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:10.824  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:10.829  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:10.829  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:10.955  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:10.961  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:10.961  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:11.086  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:11.091  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:11.091  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:11.216  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:11.221  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:11.221  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:11.347  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:11.352  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:11.352  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:11.477  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:11.483  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:11.483  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:11.608  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:11.613  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:11.614  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:11.739  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:11.744  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:11.744  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:11.869  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:11.874  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:11.874  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:12.000  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:12.004  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:12.004  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+07-17 10:36:12.130  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck
+07-17 10:36:12.136  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck(1748): isPresent = 1
+07-17 10:36:12.136  4868  9224 D libnfc_nci: nativeNfcTag_doPresenceCheck exit
+
+## Test Session 3: 11:24:20 - 11:24:34+ (Enhanced Debug Logging Active)
+
+07-17 11:24:20.627 19476 19476 E RNPassportReaderModule: 🏠 HOST RESUMED: Activity resumed. Scan promise is null.
+07-17 11:24:20.627 19476 19476 E RNPassportReaderModule: 🏠 HOST RESUMED: No active scan, no action needed.
+07-17 11:24:34.851 19476 19841 E RNPassportReaderModule: 🔄 RESET STATE: Resetting scan state, NFC enabled: false
+07-17 11:24:34.854 19476 19841 E RNPassportReaderModule: 🔄 RESET STATE: Reset complete
+07-17 11:24:34.854 19476 19841 E RNPassportReaderModule: 🚀 SCAN INITIATED: User pressed scan button at 1752776674854
+07-17 11:24:34.854 19476 19841 E RNPassportReaderModule: 🚀 SCAN: Current activity: MainActivity
+07-17 11:24:34.855 19476 19841 E RNPassportReaderModule: 🚀 SCAN: About to call enableNfcWithFocusCheck()
+
+[CONTINUATION NEEDED - Please add remaining logs from this test session]
+
+## Summary:
+
+- Session 1: Shows successful scan completion after 65.81 seconds with full certificate parsing
+- Session 2: Shows hardware-level NFC detection (6+ seconds of continuous presence checks) with ZERO application-level response
+- Session 3: **✅ ENHANCED LOGGING WORKING!** Shows detailed scan initiation flow with our new debug logs
+- No MainActivity intent logs captured in Sessions 1-2
+- Session 3 demonstrates the strategic debug logging is now active and providing detailed flow information
+- Still need to capture the complete flow from scan initiation through NFC enablement to intent reception

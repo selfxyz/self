@@ -10,9 +10,3 @@ showcase
 output/*
 *.tsbuildinfo
 sdk/tests/web-app
-
-# NFC Debug logs - device specific, shouldn't be committed
-*_raw_logs.txt
-*_debug_logs.txt
-nfc_debug_*.txt
-complete_debug_logs.txt
