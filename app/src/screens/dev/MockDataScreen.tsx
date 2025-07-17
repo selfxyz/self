@@ -25,7 +25,7 @@ import {
   YStack,
 } from 'tamagui';
 // import { LinearGradient } from 'tamagui/linear-gradient';
-import SelfCard from '../../images/card-style-1.svg';
+import SelfDevCard from '../../images/card-dev.svg';
 import IdIcon from '../../images/icons/id_icon.svg';
 import NoteIcon from '../../images/icons/note.svg';
 import WarningIcon from '../../images/icons/warning.svg';
@@ -103,7 +103,7 @@ const MockPassportTitleCard = () => {
 
 const HeroBanner = () => {
   return (
-    <YStack bg={white} marginBottom="$8" position='relative'>
+    <YStack bg={white} marginBottom="$6" position='relative'>
       <YStack
         bg={black}
         zIndex={1}
@@ -123,7 +123,7 @@ const HeroBanner = () => {
           shadowOpacity={0.5}
           shadowRadius={5}
         >
-          <SelfCard width="100%" />
+          <SelfDevCard width="100%" />
         </YStack>
       </YStack>
     </YStack>
