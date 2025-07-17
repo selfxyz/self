@@ -5,7 +5,7 @@
   "DeployHubV2#CustomVerifier": "0xC95e53bB0d26295c5814F4cE1d72fB4c2df0Fd4f",
   "DeployHubV2#IdentityVerificationHubImplV2": "0xC3b7D434C08311eCF437b54A5d4c5Ecd88FB505A",
   "DeployHubV2#IdentityVerificationHub": "0x68c931C9a534D37aa78094877F46fE46a49F1A51",
-  "DeployIdCardRegistryModule#IdentityRegistryIdCard": "0xF77Be82318F11392Efb5F1062D954911d6086537",
+  "DeployIdCardRegistryModule#IdentityRegistry": "0xF77Be82318F11392Efb5F1062D954911d6086537",
   "UpdateRegistryHubV2#IdentityRegistryIdCardImplV1": "0xF77Be82318F11392Efb5F1062D954911d6086537",
   "UpdateRegistryHubV2#IdentityRegistryImplV1": "0xE1A05bbee7D8DF2ee2A81dEE8FB22e07B07D1084",
   "DeployTestSelfVerificationRoot#TestSelfVerificationRoot": "0x9633b661082BaB295Ff4883bc47E175e06afB5Bf",

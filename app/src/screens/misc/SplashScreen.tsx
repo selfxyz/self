@@ -92,7 +92,7 @@ const SplashScreen: React.FC = ({}) => {
             setNextScreen('Home');
             return;
           }
-          // Currently, we dont check isPassportNullified(passportData);
+          // Currently, we dont check isDocumentNullified(passportData);
           // This could lead to AccountRecoveryChoice just like in LoadingScreen
           // But it looks better right now to keep the LaunchScreen flow
           // In case user wants to try with another passport.

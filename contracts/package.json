@@ -65,7 +65,7 @@
     "types": "tsc -noEmit",
     "update:cscaroot": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/scripts/updateRegistryCscaRoot.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "update:hub": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK:-staging} npx ts-node scripts/setRegistry.ts'",
-    "update:ofacroot": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/scripts/updateRegistryOfacRoot.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
+    "update:ofacroot": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK:-alfajores} npx tsx scripts/updateRegistryOfacRoot.ts'",
     "update:pcr0": "npx dotenv-cli -- bash -c 'PCR0_ACTION=${PCR0_ACTION:-add} PCR0_KEY=${PCR0_KEY} yarn hardhat ignition deploy ignition/modules/scripts/updatePCR0.ts --network ${NETWORK:-localhost} --reset'",
     "upgrade:hub": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/upgrade/deployNewHubAndUpgrade.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "upgrade:registry": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/upgrade/deployNewRegistryAndUpgrade.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'"

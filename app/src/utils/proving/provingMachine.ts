@@ -42,7 +42,7 @@ import {
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
-  isPassportNullified,
+  isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
@@ -690,7 +690,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;
           }
-          const isNullifierOnchain = await isPassportNullified(passportData);
+          const isNullifierOnchain = await isDocumentNullified(passportData);
           if (isNullifierOnchain) {
             console.log(
               'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
