@@ -1,12 +1,6 @@
 import { ethers } from "ethers";
 import * as dotenv from "dotenv";
-import {
-  getContractAbi,
-  getDeployedAddresses,
-  getSavedRepo,
-  getContractAddress,
-  log,
-} from "./constants";
+import { getContractAbi, getDeployedAddresses, getSavedRepo, getContractAddress, log } from "./constants";
 
 dotenv.config();
 
