@@ -87,6 +87,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
+  const [hasStarted, setHasStarted] = useState(false);
 
   const animationRef = useRef<LottieView>(null);
 
@@ -302,6 +303,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     useCallback(() => {
       checkNfcSupport();
 
+      if (!hasStarted && isNfcEnabled) {
+        setHasStarted(true);
+        onVerifyPress();
+      }
+
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
           'NativeEvent',
@@ -316,7 +322,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           subscription.remove();
         };
       }
-    }, [checkNfcSupport]),
+    }, [checkNfcSupport, hasStarted, isNfcEnabled, onVerifyPress]),
   );
 
   return (
