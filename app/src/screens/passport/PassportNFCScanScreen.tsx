@@ -288,6 +288,15 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     isPacePolling,
   ]);
 
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setTimeout(() => {
+        onVerifyPress();
+      }, 150); // short delay to ensure window focus
+      return () => clearTimeout(timer);
+    }, [onVerifyPress]),
+  );
+
   const onCancelPress = useHapticNavigation('Launch', {
     action: 'cancel',
   });
