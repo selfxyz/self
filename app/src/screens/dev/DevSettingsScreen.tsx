@@ -17,9 +17,10 @@ import {
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
-import { slate200, slate100, textBlack, slate400, slate600, slate500 } from '../../utils/colors';
+import { slate200, slate100, textBlack, slate400, slate600, slate500, yellow500 } from '../../utils/colors';
 import IdIcon from '../../images/icons/id_icon.svg';
 import BugIcon from '../../images/icons/bug_icon.svg';
+import WarningIcon from '../../images/icons/warning.svg';
 import { dinot } from '../../utils/fonts';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -40,41 +41,69 @@ interface DevSettingsScreenProps extends PropsWithChildren {
   style?: StyleProp<any>;
 }
 
-const ParameterSection = ({ icon, title, description, children }: { icon: React.ReactNode, title: string, description: string, children: React.ReactNode }) => (
-  <YStack
-    w="100%"
-    backgroundColor={slate100}
-    borderRadius="$4"
-    borderWidth={1}
-    borderColor={slate200}
-    p="$4"
-    flexDirection="column"
-    gap="$3"
-  >
-    <XStack
+function ParameterSection({
+  icon,
+  title,
+  description,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  const renderIcon = () => {
+    const iconElement =
+      typeof icon === 'function'
+        ? icon() : React.isValidElement(icon)
+        ? icon : icon
+        ? React.createElement(icon) : null
+
+    return iconElement
+      ? React.cloneElement(iconElement, {
+          width: '100%',
+          height: '100%'
+        })
+      : null
+  }
+
+  return (
+    <YStack
       w="100%"
-      flexDirection="row"
-      justifyContent="flex-start"
-      gap="$4"
+      backgroundColor={slate100}
+      borderRadius="$4"
+      borderWidth={1}
+      borderColor={slate200}
+      p="$4"
+      flexDirection="column"
+      gap="$3"
     >
-      <YStack
-        backgroundColor="gray"
-        borderRadius={5}
-        width={46}
-        height={46}
-        jc="center"
-        ai="center"
+      <XStack
+        w="100%"
+        flexDirection="row"
+        justifyContent="flex-start"
+        gap="$4"
       >
-        {icon}
-      </YStack>
-      <YStack flexDirection='column' gap="$1">
-        <Text fontSize="$5" color={slate600} fontFamily={dinot}>{title}</Text>
-        <Text fontSize="$3" color={slate400} fontFamily={dinot}>{description}</Text>
-      </YStack>
-    </XStack>
-    {children}
-  </YStack>
-)
+        <YStack
+          backgroundColor="gray"
+          borderRadius={5}
+          width={46}
+          height={46}
+          jc="center"
+          ai="center"
+          p="$2"
+        >
+          {renderIcon()}
+        </YStack>
+        <YStack flexDirection='column' gap="$1">
+          <Text fontSize="$5" color={slate600} fontFamily={dinot}>{title}</Text>
+          <Text fontSize="$3" color={slate400} fontFamily={dinot}>{description}</Text>
+        </YStack>
+      </XStack>
+      {children}
+    </YStack>
+  );
+}
 
 function SelectableText({ children, ...props }: DevSettingsScreenProps) {
   if (Platform.OS === 'ios') {
@@ -333,39 +362,39 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         >
           <ScreenSelector />
         </ParameterSection>
-        <YStack
-          p="$4"
-          borderWidth={2}
-          borderColor="$blue8"
-          borderRadius="$4"
-          bg="$blue1"
-          w="100%"
-          gap="$3"
-          mt="$3"
+
+        <ParameterSection
+          icon={<WarningIcon color={yellow500}/>}
+          title="Danger Zone"
+          description="These actions are sensitive"
         >
-          <Text
-            color="$blue10"
-            fontWeight="bold"
-            fontSize="$5"
-            textAlign="center"
-            mb="$2"
-          >
-            🚀 Developer Shortcuts
-          </Text>
-          <YStack alignItems="center" gap="$3">
-            <YStack alignItems="center" gap="$3" w="100%">
-              <Text
-                color={textBlack}
-                fontSize="$3"
-                textAlign="center"
-                opacity={0.7}
+          {
+            [
+              {
+                label: 'Display your private key',
+                onPress: () => {},
+              },
+              {
+                label: 'Delete your private key',
+                onPress: () => {},
+              },
+              {
+                label: 'Clear document catalog',
+                onPress: () => {},
+              },
+            ].map(({ label, onPress}) => (
+              <Button
+                bg="white"
+                borderColor={slate200}
+                borderRadius="$2"
+                height='$5'
               >
-                Jump directly to any screen for testing
-              </Text>
-              <ScreenSelector />
-            </YStack>
-          </YStack>
-        </YStack>
+                <Text>{label}</Text>
+              </Button>
+            ))
+          }
+        </ParameterSection>
+
         <YStack
           mt="$3"
           mb="$10"
