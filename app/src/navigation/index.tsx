@@ -38,7 +38,7 @@ export const navigationScreens = {
 };
 
 const AppNavigation = createNativeStackNavigator({
-  initialRouteName: 'Splash',
+  initialRouteName: 'DevSettings',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,
