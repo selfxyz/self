@@ -44,7 +44,9 @@ const defaultIdDocInput: IdDocInput = {
   sex: 'M',
 };
 
-export async function generateMockDSC(signatureType: string): Promise<{ privateKeyPem: string, dsc: string }> {
+export async function generateMockDSC(
+  signatureType: string
+): Promise<{ privateKeyPem: string; dsc: string }> {
   const response = await fetch(`${API_URL_STAGING}/api/v2/generate-dsc`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
