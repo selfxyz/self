@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
-import { Check, ChevronDown, Eraser } from '@tamagui/lucide-icons';
+import { Check, ChevronDown, ChevronRight, Eraser } from '@tamagui/lucide-icons';
 import React, {
   PropsWithChildren,
   useCallback,
@@ -17,7 +17,7 @@ import {
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
-import { slate200, slate100, textBlack, slate400, slate600 } from '../../utils/colors';
+import { slate200, slate100, textBlack, slate400, slate600, slate500 } from '../../utils/colors';
 import IdIcon from '../../images/icons/id_icon.svg';
 import BugIcon from '../../images/icons/bug_icon.svg';
 import { dinot } from '../../utils/fonts';
@@ -257,14 +257,49 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         title="Manage ID Documents"
         description="Register new IDs and generate test IDs"
       >
-        <YStack>
-          <Button>
-            <Text>Register New ID</Text>
-          </Button>
-          <Button>
-            <Text>Generate Test ID</Text>
-          </Button>
-        </YStack>
+        {
+          [
+            {
+              label: 'Manage available IDs',
+              onPress: () => {
+                navigation.navigate('ManageDocs');
+              }
+            },
+            {
+              label: 'Generate Test ID',
+              onPress: () => {
+                navigation.navigate('GenerateTestID');
+              }
+            },
+            {
+              label: 'Scan new ID Document',
+              onPress: () => {
+                navigation.navigate('GenerateTestID');
+              }
+            }
+          ].map(({ label, onPress}) => (
+            <YStack gap="$2">
+              <Button
+                bg="white"
+                borderColor={slate200}
+                borderRadius="$2"
+                height='$5'
+                p={0}
+              >
+                <XStack
+                  w="100%"
+                  justifyContent='space-between'
+                  py='$3'
+                  paddingLeft='$4'
+                  paddingRight='$1.5'
+                >
+                  <Text fontSize="$5" color={slate500} fontFamily={dinot}>{label}</Text>
+                  <ChevronRight color={slate500} strokeWidth={2.5} />
+                </XStack>
+              </Button>
+            </YStack>
+          ))
+        }
       </ParameterSection>
       {/* <ParameterSection icon={<BugIcon />} title="Bug Report" description="Report a bug to the team" /> */}
       <YStack
