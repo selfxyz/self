@@ -357,6 +357,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             ))
           }
         </ParameterSection>
+
         <ParameterSection
           icon={<BugIcon />}
           title="Debug Shortcuts"
@@ -402,111 +403,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             ))
           }
         </ParameterSection>
-
-        <YStack
-          mt="$3"
-          mb="$10"
-          p="$4"
-          borderWidth={2}
-          borderColor="$red8"
-          borderRadius="$4"
-          bg="$red1"
-          w="100%"
-          gap="$3"
-        >
-          <Text
-            color="$red10"
-            fontWeight="bold"
-            fontSize="$5"
-            textAlign="center"
-            mb="$2"
-          >
-            ⚠️ Danger Zone ⚠️
-          </Text>
-
-          <YStack alignItems="center" gap="$3">
-            {!isPrivateKeyRevealed ? (
-              <YStack alignItems="center" gap="$3" w="100%">
-                <Text
-                  color={textBlack}
-                  textAlign="center"
-                  style={{
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                    backgroundColor: 'white',
-                    padding: 12,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: '#e0e0e0',
-                    wordBreak: 'break-all',
-                    lineHeight: 18,
-                  }}
-                >
-                  {getRedactedPrivateKey()}
-                </Text>
-                <Button
-                  bg="$gray12"
-                  color="white"
-                  size="$3"
-                  mt="$2"
-                  onPress={handleRevealPrivateKey}
-                >
-                  Tap to reveal private key
-                </Button>
-              </YStack>
-            ) : (
-              <SelectableText
-                textAlign="center"
-                color={textBlack}
-                userSelect="all"
-                style={{
-                  fontFamily: 'monospace',
-                  fontWeight: 'bold',
-                  fontSize: 12,
-                  backgroundColor: 'white',
-                  padding: 12,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: '#e0e0e0',
-                  wordBreak: 'break-all',
-                  lineHeight: 18,
-                }}
-              >
-                {privateKey}
-              </SelectableText>
-            )}
-          </YStack>
-
-          <YStack alignItems="center" gap="$3" mt="$2">
-            <XStack alignItems="center" gap="$3">
-              <Text color={textBlack} fontSize="$3">
-                Delete Private Key
-              </Text>
-              <Button
-                bg="$red8"
-                color="white"
-                size="$3"
-                onPress={handleClearSecretsPress}
-              >
-                <Eraser color="white" size={16} />
-              </Button>
-            </XStack>
-            <XStack alignItems="center" gap="$3">
-              <Text color={textBlack} fontSize="$3">
-                Clear Document Catalog
-              </Text>
-              <Button
-                bg="$red8"
-                color="white"
-                size="$3"
-                onPress={handleClearDocumentCatalogPress}
-              >
-                <Eraser color="white" size={16} />
-              </Button>
-            </XStack>
-          </YStack>
-        </YStack>
-      </YStack>
     </ScrollView>
   );
 };
