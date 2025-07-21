@@ -17,7 +17,12 @@ import {
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
-import { textBlack } from '../../utils/colors';
+import { slate200, slate100, textBlack, slate400, slate600 } from '../../utils/colors';
+import IdIcon from '../../images/icons/id_icon.svg';
+import BugIcon from '../../images/icons/bug_icon.svg';
+import { dinot } from '../../utils/fonts';
+
+
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
   width?: number;
@@ -33,6 +38,42 @@ interface DevSettingsScreenProps extends PropsWithChildren {
   textAlign?: 'center' | 'left' | 'right';
   style?: StyleProp<any>;
 }
+
+const ParameterSection = ({ icon, title, description, children }: { icon: React.ReactNode, title: string, description: string, children: React.ReactNode }) => (
+  <YStack
+    w="100%"
+    backgroundColor={slate100}
+    borderRadius="$4"
+    borderWidth={1}
+    borderColor={slate200}
+    p="$4"
+    flexDirection="column"
+    gap="$3"
+  >
+    <XStack
+      w="100%"
+      flexDirection="row"
+      justifyContent="flex-start"
+      gap="$4"
+    >
+      <YStack
+        backgroundColor="gray"
+        borderRadius={5}
+        width={46}
+        height={46}
+        jc="center"
+        ai="center"
+      >
+        {icon}
+      </YStack>
+      <YStack flexDirection='column' gap="$1">
+        <Text fontSize="$5" color={slate600} fontFamily={dinot}>{title}</Text>
+        <Text fontSize="$3" color={slate400} fontFamily={dinot}>{description}</Text>
+      </YStack>
+    </XStack>
+    {children}
+  </YStack>
+)
 
 function SelectableText({ children, ...props }: DevSettingsScreenProps) {
   if (Platform.OS === 'ios') {
@@ -211,6 +252,21 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
 
   return (
     <YStack gap="$3" ai="center" bg="white" f={1} px="$4" pt="$4">
+      <ParameterSection
+        icon={<IdIcon />}
+        title="Manage ID Documents"
+        description="Register new IDs and generate test IDs"
+      >
+        <YStack>
+          <Button>
+            <Text>Register New ID</Text>
+          </Button>
+          <Button>
+            <Text>Generate Test ID</Text>
+          </Button>
+        </YStack>
+      </ParameterSection>
+      {/* <ParameterSection icon={<BugIcon />} title="Bug Report" description="Report a bug to the team" /> */}
       <YStack
         p="$4"
         borderWidth={2}
