@@ -25,27 +25,27 @@ class MainActivity : ReactActivity() {
    * which allows you to enable New Architecture with a single boolean flags [fabricEnabled]
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
-    DefaultReactActivityDelegate(this, mainComponentName, false) // - Explicitly disable new architecture
+    DefaultReactActivityDelegate(this, mainComponentName, BuildConfig.IS_NEW_ARCHITECTURE_ENABLED)
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
-    Log.e("MAIN_ACTIVITY", "🔥 onNewIntent: Received at ${System.currentTimeMillis()}")
-    Log.e("MAIN_ACTIVITY", "🔥 onNewIntent: Action=${intent.action}, extras=${intent.extras?.keySet()}")
-    Log.e("MAIN_ACTIVITY", "🔥 Intent data: " + intent.data?.toString())
-    Log.e("MAIN_ACTIVITY", "🔥 Intent type: " + intent.type)
-    Log.e("MAIN_ACTIVITY", "🔥 Intent categories: " + intent.categories?.toString())
+    Log.e("MAIN_ACTIVITY", "🔥🔥🔥 onNewIntent: Received at ${System.currentTimeMillis()}")
+    Log.e("MAIN_ACTIVITY", "🔥🔥🔥 onNewIntent: Action=${intent.action}, extras=${intent.extras?.keySet()}")
+    Log.e("MAIN_ACTIVITY", "🔥🔥🔥 Intent data: " + intent.data?.toString())
+    Log.e("MAIN_ACTIVITY", "🔥🔥🔥 Intent type: " + intent.type)
+    Log.e("MAIN_ACTIVITY", "🔥🔥🔥 Intent categories: " + intent.categories?.toString())
 
     // Check if it's an NFC intent
     if (intent.action == "android.nfc.action.TECH_DISCOVERED") {
-      Log.e("MAIN_ACTIVITY", "🚀 NFC TECH DISCOVERED! Forwarding to RNPassportReaderModule")
+      Log.e("MAIN_ACTIVITY", "🚀🚀🚀 NFC TECH DISCOVERED! Forwarding to RNPassportReaderModule")
       try {
         RNPassportReaderModule.getInstance().receiveIntent(intent)
-        Log.e("MAIN_ACTIVITY", "✅ Successfully forwarded to RNPassportReaderModule")
+        Log.e("MAIN_ACTIVITY", "✅✅✅ Successfully forwarded to RNPassportReaderModule")
       } catch (e: Exception) {
-        Log.e("MAIN_ACTIVITY", "❌ Error forwarding to RNPassportReaderModule: ${e.message}", e)
+        Log.e("MAIN_ACTIVITY", "❌❌❌ Error forwarding to RNPassportReaderModule: ${e.message}", e)
       }
     } else {
-      Log.e("MAIN_ACTIVITY", "ℹ️ Non-NFC intent, not forwarding")
+      Log.e("MAIN_ACTIVITY", "ℹ️ℹ️ℹ️ Non-NFC intent, not forwarding")
     }
   }
 
@@ -67,9 +67,34 @@ class MainActivity : ReactActivity() {
   override fun onWindowFocusChanged(hasFocus: Boolean) {
     super.onWindowFocusChanged(hasFocus)
     Log.e("MAIN_ACTIVITY", "🏙️ onWindowFocusChanged: hasFocus=$hasFocus")
+
+    // React Native 0.80.1 fix: Wait for module to be initialized before accessing
     if (hasFocus) {
       try {
-        RNPassportReaderModule.getInstance().onWindowFocusChanged(true)
+        // Check if React Native bridge and modules are ready
+        val moduleInstance = try {
+          RNPassportReaderModule.getInstance()
+        } catch (e: IllegalStateException) {
+          Log.w("MAIN_ACTIVITY", "⏳ RNPassportReaderModule not yet initialized, will retry when ready")
+          null
+        }
+
+        moduleInstance?.let { module ->
+          module.onWindowFocusChanged(true)
+          Log.e("MAIN_ACTIVITY", "✅ Successfully notified RNPassportReaderModule of focus change")
+        } ?: run {
+          // If module is not ready, schedule a retry
+          Log.w("MAIN_ACTIVITY", "⏳ Scheduling retry for RNPassportReaderModule initialization")
+          android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            try {
+              val retryModule = RNPassportReaderModule.getInstance()
+              retryModule.onWindowFocusChanged(true)
+              Log.e("MAIN_ACTIVITY", "✅ Successfully notified RNPassportReaderModule after retry")
+            } catch (e: Exception) {
+              Log.e("MAIN_ACTIVITY", "❌ Failed to initialize RNPassportReaderModule after retry", e)
+            }
+          }, 1000) // Retry after 1 second
+        }
       } catch (e: Exception) {
         Log.e("MAIN_ACTIVITY", "❌ Error notifying RNPassportReaderModule: ${e.message}", e)
       }

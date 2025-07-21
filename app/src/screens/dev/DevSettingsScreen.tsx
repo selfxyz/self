@@ -345,6 +345,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
               <Eraser color="white" size={16} />
             </Button>
           </XStack>
+
         </YStack>
       </YStack>
     </YStack>

@@ -125,20 +125,47 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   );
 
   const checkNfcSupport = useCallback(async () => {
-    const isSupported = await NfcManager.isSupported();
-    if (isSupported) {
-      const isEnabled = await NfcManager.isEnabled();
-      if (!isEnabled) {
-        setIsNfcEnabled(false);
-        setDialogMessage('NFC is not enabled. Please enable it in settings.');
-      }
-      setIsNfcSupported(true);
-    } else {
-      setDialogMessage(
-        "Sorry, your device doesn't seem to have an NFC reader.",
+    try {
+      console.log(
+        '🔍 Checking NFC support - React Native 0.80.1 compatibility',
       );
-      // Set isNfcEnabled to false so the message is shown on the screen
-      // near the disabled button when NFC isn't supported
+
+      // React Native 0.80.1 fix: Add timeout for native module calls
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('NFC check timeout')), 3000),
+      );
+
+      const nfcCheckPromise = NfcManager.isSupported();
+      const isSupported = (await Promise.race([
+        nfcCheckPromise,
+        timeoutPromise,
+      ])) as boolean;
+
+      if (isSupported) {
+        const isEnabled = await NfcManager.isEnabled();
+        if (!isEnabled) {
+          setIsNfcEnabled(false);
+          setDialogMessage('NFC is not enabled. Please enable it in settings.');
+        }
+        setIsNfcSupported(true);
+        console.log('✅ NFC support check completed successfully');
+      } else {
+        setDialogMessage(
+          "Sorry, your device doesn't seem to have an NFC reader.",
+        );
+        // Set isNfcEnabled to false so the message is shown on the screen
+        // near the disabled button when NFC isn't supported
+        setIsNfcEnabled(false);
+        setIsNfcSupported(false);
+      }
+    } catch (error) {
+      console.error(
+        '❌ NFC support check failed (React Native 0.80.1 issue):',
+        error,
+      );
+      setDialogMessage(
+        'NFC initialization failed. This may be a React Native 0.80.1 compatibility issue. Please restart the app.',
+      );
       setIsNfcEnabled(false);
       setIsNfcSupported(false);
     }

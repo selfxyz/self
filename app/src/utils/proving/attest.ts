@@ -6,10 +6,10 @@ import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
 import elliptic from 'elliptic';
-import { ethers } from 'ethers';
 import { sha384 } from 'js-sha512';
 import { Certificate } from 'pkijs';
 
+import { ethers } from '../ethers';
 import { AWS_ROOT_PEM } from './awsRootPem';
 import cose from './cose';
 

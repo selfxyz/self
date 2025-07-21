@@ -4,9 +4,9 @@ apply plugin: 'kotlin-android'
 android {
     namespace "io.tradle.nfc"
     ndkVersion = "26.1.10909125"
-    compileSdkVersion 33
+    compileSdkVersion 35
     defaultConfig {
-        targetSdkVersion 33
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         multiDexEnabled = true
@@ -65,7 +65,7 @@ cargo {
     // module  = "/Users/turboblitz/code/my-code/passport-sbt/app/halo2-passport"
     libname = "ark_circom_passport"          // Or whatever matches Cargo.toml's [package] name.
     // targets = ["arm", "x86"]  // failing
-    // targets = ["arm64", "darwin-aarch64"]  // add this one for apple later 
+    // targets = ["arm64", "darwin-aarch64"]  // add this one for apple later
     targets = ["arm64"]  // Those work
     apiLevel = 29
     profile = 'release'

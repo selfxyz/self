@@ -56,7 +56,7 @@ class NfcActivity : androidx.fragment.app.FragmentActivity(), NfcFragment.NfcFra
             return
         }
 
-        Log.d(TAG, "onCreate: NFC adapter state - isEnabled: ${nfcAdapter!!.isEnabled}, isNdefPushEnabled: ${nfcAdapter!!.isNdefPushEnabled}")
+        Log.d(TAG, "onCreate: NFC adapter state - isEnabled: ${nfcAdapter!!.isEnabled}")
 
         pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             PendingIntent.getActivity(this, 0, Intent(this, javaClass).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_MUTABLE)

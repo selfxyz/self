@@ -19,7 +19,58 @@ interface Inputs {
   usePacePolling?: boolean;
 }
 
+// React Native 0.80.1 fix: Wait for native module to be ready
+const waitForNativeModule = async (maxWaitMs = 5000): Promise<boolean> => {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxWaitMs) {
+    try {
+      if (Platform.OS === 'android') {
+        // Check if RNPassportReader module is available
+        const module = NativeModules.RNPassportReader;
+        if (module && typeof module.scan === 'function') {
+          console.log(
+            '✅ NFC Module ready after',
+            Date.now() - startTime,
+            'ms',
+          );
+          return true;
+        }
+      } else {
+        // iOS check
+        const module = NativeModules.PassportReader;
+        if (module && typeof module.configure === 'function') {
+          console.log(
+            '✅ NFC Module ready after',
+            Date.now() - startTime,
+            'ms',
+          );
+          return true;
+        }
+      }
+    } catch (e) {
+      // Module not ready yet
+    }
+
+    // Wait 50ms before trying again
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+
+  console.warn('⚠️ NFC Module not ready after', maxWaitMs, 'ms');
+  return false;
+};
+
 export const scan = async (inputs: Inputs) => {
+  console.log('🚀 NFC Scan starting - React Native 0.80.1 compatibility mode');
+
+  // React Native 0.80.1 fix: Wait for native module initialization
+  const moduleReady = await waitForNativeModule();
+  if (!moduleReady) {
+    throw new Error(
+      'NFC module failed to initialize - React Native 0.80.1 timing issue',
+    );
+  }
+
   if (MIXPANEL_NFC_PROJECT_TOKEN) {
     if (Platform.OS === 'ios') {
       const enableDebugLogs = ENABLE_DEBUG_LOGS === 'true';

@@ -13,6 +13,10 @@
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- Android 14+ foreground service permissions for NFC operations -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+
     <!-- Declare NFC hardware feature -->
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
 

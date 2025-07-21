@@ -2,7 +2,6 @@
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
-import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
@@ -25,6 +24,7 @@ import {
   slate700,
   white,
 } from '../../utils/colors';
+import { ethers } from '../../utils/ethers';
 import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
 
 interface RecoverWithPhraseScreenProps {}

@@ -704,7 +704,7 @@ class TouchImageView : androidx.appcompat.widget.AppCompatImageView {
             performLongClick()
         }
 
-        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+        override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
             if (fling != null) {
                 //
                 // If a previous fling is still active, it should be cancelled so that two flings

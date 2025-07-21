@@ -163,6 +163,15 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     init {
       instance = this
       reactContext.addLifecycleEventListener(this)
+
+      // React Native 0.80.1 fix: Ensure proper initialization timing
+      Log.d(TAG, "🏗️ RNPassportReaderModule initializing for React Native 0.80.1")
+
+      // Add a small delay to ensure React Native context is fully ready
+      Handler(Looper.getMainLooper()).postDelayed({
+        Log.d(TAG, "✅ RNPassportReaderModule initialization complete")
+        eventMessageEmitter("📱 NFC MODULE: Initialized successfully for React Native 0.80.1")
+      }, 100)
     }
 
     override fun onCatalystInstanceDestroy() {
@@ -324,8 +333,20 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 try {
                     Log.e("RNPassportReaderModule", "📡 NFC ENABLE: Setting up foreground dispatch, activity state: ${it.javaClass.simpleName}")
                     eventMessageEmitter("📡 NFC ENABLE: Setting up foreground dispatch")
-                    val intent = Intent(it.applicationContext, it.javaClass)
-                    intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+                    // React Native 0.80.1 fix: Reset NFC dispatcher state first
+                    try {
+                        Log.e("RNPassportReaderModule", "🔄 DISPATCHER RESET: Clearing previous foreground dispatch")
+                        mNfcAdapter.disableForegroundDispatch(it)
+                        Thread.sleep(100) // Small delay to ensure state is reset
+                    } catch (e: Exception) {
+                        Log.d("RNPassportReaderModule", "🔄 DISPATCHER RESET: No previous dispatch to clear (expected)")
+                    }
+
+                    val intent = Intent(it, it.javaClass).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    }
                     val pendingIntent = PendingIntent.getActivity(it, 0, intent, PendingIntent.FLAG_MUTABLE)
 
                     // Create proper intent filters for NFC tech discovery
@@ -339,10 +360,24 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     Log.e("RNPassportReaderModule", "📡 NFC ENABLE: SUCCESS - NFC enabled successfully")
                     Log.e("RNPassportReaderModule", "📡 NFC STATE: Adapter enabled=${mNfcAdapter.isEnabled}, Activity=${it.javaClass.simpleName}, hasWindowFocus=${it.hasWindowFocus()}")
 
-                    // Simple verification that NFC is ready
+                    // Extended verification with dispatcher state reset
                     Handler(Looper.getMainLooper()).postDelayed({
                         Log.e("RNPassportReaderModule", "📡 NFC READY: Scanner should be active - place passport to test")
                         eventMessageEmitter("📡 NFC READY: Scanner should be active")
+
+                        // Force a second setup to ensure dispatcher state is correct
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            if (isNfcEnabled && scanPromise != null) {
+                                Log.e("RNPassportReaderModule", "🔄 VERIFY SETUP: Double-checking NFC dispatcher state")
+                                try {
+                                    mNfcAdapter.disableForegroundDispatch(it)
+                                    mNfcAdapter.enableForegroundDispatch(it, pendingIntent, intentFiltersArray, techListsArray)
+                                    Log.e("RNPassportReaderModule", "🔄 VERIFY SETUP: Dispatcher state refreshed")
+                                } catch (e: Exception) {
+                                    Log.w("RNPassportReaderModule", "🔄 VERIFY SETUP: Refresh failed: ${e.message}")
+                                }
+                            }
+                        }, 1000)
                     }, 500)
 
                     eventMessageEmitter("📡 NFC ENABLE: SUCCESS - NFC enabled successfully")
