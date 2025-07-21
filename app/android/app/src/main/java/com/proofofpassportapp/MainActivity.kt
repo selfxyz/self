@@ -64,6 +64,18 @@ class MainActivity : ReactActivity() {
     Log.e("MAIN_ACTIVITY", "🔄 onResume: Window focus: ${hasWindowFocus()}")
   }
 
+  override fun onWindowFocusChanged(hasFocus: Boolean) {
+    super.onWindowFocusChanged(hasFocus)
+    Log.e("MAIN_ACTIVITY", "🏙️ onWindowFocusChanged: hasFocus=$hasFocus")
+    if (hasFocus) {
+      try {
+        RNPassportReaderModule.getInstance().onWindowFocusChanged(true)
+      } catch (e: Exception) {
+        Log.e("MAIN_ACTIVITY", "❌ Error notifying RNPassportReaderModule: ${e.message}", e)
+      }
+    }
+  }
+
   override fun onPause() {
     super.onPause()
     Log.e("MAIN_ACTIVITY", "⏸️ MainActivity onPause called")

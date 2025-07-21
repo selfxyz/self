@@ -178,6 +178,8 @@ adb logcat -s MAIN_ACTIVITY:D -s RNPassportReaderModule:D -s libnfc_nci:D
 
 3. **AndroidManifest Configuration:** The `DEFAULT` category is required for NFC intent filters, not just the action.
 
+4. **Focus-driven Lifecycle:** `MainActivity.onWindowFocusChanged()` now forwards focus events to `RNPassportReaderModule` so NFC enabling happens immediately when focus is gained.
+
 4. **Background/Foreground Cycles are Harmful:** They disrupt the user experience and create race conditions.
 
 ### **User Preferences:**

@@ -213,10 +213,19 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         this.scanPromise = promise
         Log.d("RNPassportReaderModule", "opts set to: " + opts.toString())
 
-        // Step 2: Enable NFC with focus check - this replaces the disruptive background/foreground cycle
-        Log.e("RNPassportReaderModule", "🚀 SCAN: About to call enableNfcWithFocusCheck()")
-        eventMessageEmitter("🚀 SCAN: Starting NFC with focus check")
-        enableNfcWithFocusCheck()
+        // Step 2: Enable NFC once the activity has focus
+        val hasFocus = currentActivity?.hasWindowFocus() ?: false
+        Log.e("RNPassportReaderModule", "🚀 SCAN: Activity has focus=$hasFocus")
+        eventMessageEmitter("🚀 SCAN: Activity focus=$hasFocus")
+        onWindowFocusChanged(hasFocus)
+        if (!hasFocus) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (scanPromise != null && !isNfcEnabled) {
+                    Log.e("RNPassportReaderModule", "⏰ SCAN FOCUS TIMEOUT: Falling back to enableNfcWithFocusCheck")
+                    enableNfcWithFocusCheck()
+                }
+            }, 3000)
+        }
     }
 
 
@@ -393,11 +402,19 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         // If a scan is in progress (scanPromise exists), we need to ensure NFC is enabled.
         // This handles resumes after screen lock/unlock.
         if (scanPromise != null) {
-            Log.e("RNPassportReaderModule", "🏠 HOST RESUMED: Scan in progress, enabling NFC with focus check.")
-            eventMessageEmitter("🏠 HOST RESUMED: Scan in progress, enabling NFC.")
+            Log.e("RNPassportReaderModule", "🏠 HOST RESUMED: Scan in progress, checking window focus.")
+            eventMessageEmitter("🏠 HOST RESUMED: Scan in progress, checking focus.")
 
-            // Use the new focus-aware method instead of a simple delay
-            enableNfcWithFocusCheck()
+            val hasFocus = currentActivity?.hasWindowFocus() ?: false
+            onWindowFocusChanged(hasFocus)
+            if (!hasFocus) {
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (scanPromise != null && !isNfcEnabled) {
+                        Log.e("RNPassportReaderModule", "⏰ RESUME FOCUS TIMEOUT: Falling back to enableNfcWithFocusCheck")
+                        enableNfcWithFocusCheck()
+                    }
+                }, 3000)
+            }
         } else {
             Log.e("RNPassportReaderModule", "🏠 HOST RESUMED: No active scan, no action needed.")
         }
@@ -415,6 +432,15 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         } else {
             Log.e("RNPassportReaderModule", "⏸️ HOST PAUSED: NFC not enabled, no action needed")
             eventMessageEmitter("⏸️ HOST PAUSED: NFC not enabled, no action needed")
+        }
+    }
+
+    fun onWindowFocusChanged(hasFocus: Boolean) {
+        Log.e("RNPassportReaderModule", "🏙️ WINDOW FOCUS: hasFocus=$hasFocus, scanPromise=${scanPromise != null}, nfcEnabled=$isNfcEnabled")
+        eventMessageEmitter("🏙️ WINDOW FOCUS: hasFocus=$hasFocus")
+        if (hasFocus && scanPromise != null && !isNfcEnabled) {
+            Log.e("RNPassportReaderModule", "🏙️ WINDOW FOCUS: Enabling NFC after focus gained")
+            enableNfcForScanning()
         }
     }
 
