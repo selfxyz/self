@@ -124,15 +124,36 @@ const items = [
 
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
+  const [open, setOpen] = useState(false);
   return (
     <Select
+      open={open}
+      onOpenChange={setOpen}
       onValueChange={(screen: any) => {
         navigation.navigate(screen);
       }}
       disablePreventBodyScroll
     >
-      <Select.Trigger width={220} iconAfter={ChevronDown}>
-        <Select.Value placeholder="Select screen to jump to" />
+      <Select.Trigger asChild>
+        <Button
+          bg="white"
+          borderColor={slate200}
+          borderRadius="$2"
+          height='$5'
+          p={0}
+          onPress={() => setOpen(true)}
+        >
+          <XStack
+            w="100%"
+            justifyContent='space-between'
+            py='$3'
+            paddingLeft='$4'
+            paddingRight='$1.5'
+          >
+            <Text fontSize="$5" color={slate500} fontFamily={dinot}>Select screen</Text>
+            <ChevronDown color={slate500} strokeWidth={2.5} />
+          </XStack>
+        </Button>
       </Select.Trigger>
 
       <Adapt when="sm" platform="touch">
@@ -305,7 +326,13 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             ))
           }
         </ParameterSection>
-        {/* <ParameterSection icon={<BugIcon />} title="Bug Report" description="Report a bug to the team" /> */}
+        <ParameterSection
+          icon={<BugIcon />}
+          title="Debug Shortcuts"
+          description="Jump directly to any screen for testing"
+        >
+          <ScreenSelector />
+        </ParameterSection>
         <YStack
           p="$4"
           borderWidth={2}
