@@ -376,7 +376,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             [
               {
                 label: 'Display your private key',
-                onPress: () => {},
+                onPress: () => navigation.navigate('DevPrivateKey'),
                 dangerTheme: false
               },
               {
