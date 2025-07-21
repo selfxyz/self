@@ -17,7 +17,7 @@ import {
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
-import { slate200, slate100, textBlack, slate400, slate600, slate500, yellow500 } from '../../utils/colors';
+import { slate200, slate100, textBlack, slate400, slate600, slate500, yellow500, red500, white, slate900, slate800 } from '../../utils/colors';
 import IdIcon from '../../images/icons/id_icon.svg';
 import BugIcon from '../../images/icons/bug_icon.svg';
 import WarningIcon from '../../images/icons/warning.svg';
@@ -45,11 +45,13 @@ function ParameterSection({
   icon,
   title,
   description,
+  darkMode,
   children,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
+  darkMode?: boolean;
   children: React.ReactNode;
 }) {
   const renderIcon = () => {
@@ -70,10 +72,10 @@ function ParameterSection({
   return (
     <YStack
       w="100%"
-      backgroundColor={slate100}
+      backgroundColor={darkMode ? slate900 : slate100}
       borderRadius="$4"
       borderWidth={1}
-      borderColor={slate200}
+      borderColor={darkMode ? slate800 : slate200}
       p="$4"
       flexDirection="column"
       gap="$3"
@@ -96,7 +98,7 @@ function ParameterSection({
           {renderIcon()}
         </YStack>
         <YStack flexDirection='column' gap="$1">
-          <Text fontSize="$5" color={slate600} fontFamily={dinot}>{title}</Text>
+          <Text fontSize="$5" color={darkMode ? white : slate600} fontFamily={dinot}>{title}</Text>
           <Text fontSize="$3" color={slate400} fontFamily={dinot}>{description}</Text>
         </YStack>
       </XStack>
@@ -367,29 +369,35 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           icon={<WarningIcon color={yellow500}/>}
           title="Danger Zone"
           description="These actions are sensitive"
+          darkMode={true}
         >
           {
             [
               {
                 label: 'Display your private key',
                 onPress: () => {},
+                dangerTheme: false
               },
               {
                 label: 'Delete your private key',
-                onPress: () => {},
+                onPress: handleClearSecretsPress,
+                dangerTheme: true
               },
               {
                 label: 'Clear document catalog',
-                onPress: () => {},
+                onPress: handleClearDocumentCatalogPress,
+                dangerTheme: true
               },
-            ].map(({ label, onPress}) => (
+            ].map(({ label, onPress, dangerTheme}) => (
               <Button
-                bg="white"
-                borderColor={slate200}
+                bg={dangerTheme ? red500 : white}
                 borderRadius="$2"
                 height='$5'
+                onPress={onPress}
+                flexDirection="row"
+                justifyContent="flex-start"
               >
-                <Text>{label}</Text>
+                <Text color={dangerTheme ? white : slate500} fontSize="$5" fontFamily={dinot}>{label}</Text>
               </Button>
             ))
           }
