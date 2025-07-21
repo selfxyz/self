@@ -25,6 +25,10 @@ android {
     lintOptions {
        warning 'InvalidPackage'
     }
+
+    testOptions {
+        unitTests.includeAndroidResources = true
+    }
 }
 
 dependencies {
@@ -47,6 +51,10 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     // implementation 'edu.ucar:jj2000:5.2'
     implementation 'com.facebook.react:react-native:+'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'io.mockk:mockk:1.13.10'
+    testImplementation 'org.robolectric:robolectric:4.11.1'
 }
 
 

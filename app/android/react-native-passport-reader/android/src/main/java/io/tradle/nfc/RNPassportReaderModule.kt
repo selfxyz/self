@@ -143,9 +143,9 @@ class Foo(json: String) : JSONObject(json) {
 class RNPassportReaderModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), LifecycleEventListener {
     // private var passportNumberFromIntent = false
     // private var encodePhotoToBase64 = false
-    private var scanPromise: Promise? = null
+    internal var scanPromise: Promise? = null
     private var opts: ReadableMap? = null
-    private var isNfcEnabled: Boolean = false
+    internal var isNfcEnabled: Boolean = false
     // private var shouldEnableNfcOnResume: Boolean = false // This is no longer needed
 
     data class Data(val id: String, val digest: String, val signature: String, val publicKey: String)
@@ -295,7 +295,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     /**
      * Enable NFC foreground dispatch for scanning - should only be called when user explicitly starts scanning
      */
-    private fun enableNfcForScanning() {
+    internal open fun enableNfcForScanning() {
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
         Log.e("RNPassportReaderModule", "📡 NFC STATE: Adapter exists=${mNfcAdapter != null}, enabled=${mNfcAdapter?.isEnabled}")
 
@@ -347,6 +347,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             }?: Log.e("RNPassportReaderModule", "enableNfcForScanning: Current activity is null")
         } ?: Log.e("RNPassportReaderModule", "enableNfcForScanning: NFC adapter is null")
     }
+
+    internal fun isNfcEnabledForTest(): Boolean = isNfcEnabled
 
     /**
      * Disable NFC foreground dispatch - should be called when scanning completes or is cancelled
