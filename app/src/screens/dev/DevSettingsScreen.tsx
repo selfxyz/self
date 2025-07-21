@@ -8,7 +8,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { Alert, Platform, StyleProp, TextInput } from 'react-native';
+import { Alert, Platform, ScrollView, StyleProp, TextInput } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
 import { RootStackParamList } from '../../navigation';
@@ -21,6 +21,7 @@ import { slate200, slate100, textBlack, slate400, slate600, slate500 } from '../
 import IdIcon from '../../images/icons/id_icon.svg';
 import BugIcon from '../../images/icons/bug_icon.svg';
 import { dinot } from '../../utils/fonts';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 
 interface DevSettingsScreenProps extends PropsWithChildren {
@@ -180,6 +181,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     'Loading private key…',
   );
   const [isPrivateKeyRevealed, setIsPrivateKeyRevealed] = useState(false);
+  const navigation = useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
 
   useEffect(() => {
     unsafe_getPrivateKey().then(key =>
@@ -251,119 +253,151 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   };
 
   return (
-    <YStack gap="$3" ai="center" bg="white" f={1} px="$4" pt="$4">
-      <ParameterSection
-        icon={<IdIcon />}
-        title="Manage ID Documents"
-        description="Register new IDs and generate test IDs"
-      >
-        {
-          [
-            {
-              label: 'Manage available IDs',
-              onPress: () => {
-                navigation.navigate('ManageDocs');
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <YStack gap="$3" ai="center" bg="white" f={1} px="$4" pt="$4">
+        <ParameterSection
+          icon={<IdIcon />}
+          title="Manage ID Documents"
+          description="Register new IDs and generate test IDs"
+        >
+          {
+            [
+              {
+                label: 'Manage available IDs',
+                onPress: () => {
+                  navigation.navigate('ManageDocuments');
+                }
+              },
+              {
+                label: 'Generate Test ID',
+                onPress: () => {
+                  navigation.navigate('CreateMock');
+                }
+              },
+              {
+                label: 'Scan new ID Document',
+                onPress: () => {
+                  navigation.navigate('PassportOnboarding');
+                }
               }
-            },
-            {
-              label: 'Generate Test ID',
-              onPress: () => {
-                navigation.navigate('GenerateTestID');
-              }
-            },
-            {
-              label: 'Scan new ID Document',
-              onPress: () => {
-                navigation.navigate('GenerateTestID');
-              }
-            }
-          ].map(({ label, onPress}) => (
-            <YStack gap="$2">
-              <Button
-                bg="white"
-                borderColor={slate200}
-                borderRadius="$2"
-                height='$5'
-                p={0}
-              >
-                <XStack
-                  w="100%"
-                  justifyContent='space-between'
-                  py='$3'
-                  paddingLeft='$4'
-                  paddingRight='$1.5'
+            ].map(({ label, onPress}) => (
+              <YStack gap="$2">
+                <Button
+                  bg="white"
+                  borderColor={slate200}
+                  borderRadius="$2"
+                  height='$5'
+                  p={0}
+                  onPress={onPress}
                 >
-                  <Text fontSize="$5" color={slate500} fontFamily={dinot}>{label}</Text>
-                  <ChevronRight color={slate500} strokeWidth={2.5} />
-                </XStack>
-              </Button>
-            </YStack>
-          ))
-        }
-      </ParameterSection>
-      {/* <ParameterSection icon={<BugIcon />} title="Bug Report" description="Report a bug to the team" /> */}
-      <YStack
-        p="$4"
-        borderWidth={2}
-        borderColor="$blue8"
-        borderRadius="$4"
-        bg="$blue1"
-        w="100%"
-        gap="$3"
-        mt="$3"
-      >
-        <Text
-          color="$blue10"
-          fontWeight="bold"
-          fontSize="$5"
-          textAlign="center"
-          mb="$2"
+                  <XStack
+                    w="100%"
+                    justifyContent='space-between'
+                    py='$3'
+                    paddingLeft='$4'
+                    paddingRight='$1.5'
+                  >
+                    <Text fontSize="$5" color={slate500} fontFamily={dinot}>{label}</Text>
+                    <ChevronRight color={slate500} strokeWidth={2.5} />
+                  </XStack>
+                </Button>
+              </YStack>
+            ))
+          }
+        </ParameterSection>
+        {/* <ParameterSection icon={<BugIcon />} title="Bug Report" description="Report a bug to the team" /> */}
+        <YStack
+          p="$4"
+          borderWidth={2}
+          borderColor="$blue8"
+          borderRadius="$4"
+          bg="$blue1"
+          w="100%"
+          gap="$3"
+          mt="$3"
         >
-          🚀 Developer Shortcuts
-        </Text>
-        <YStack alignItems="center" gap="$3">
-          <YStack alignItems="center" gap="$3" w="100%">
-            <Text
-              color={textBlack}
-              fontSize="$3"
-              textAlign="center"
-              opacity={0.7}
-            >
-              Jump directly to any screen for testing
-            </Text>
-            <ScreenSelector />
-          </YStack>
-        </YStack>
-      </YStack>
-      <YStack
-        mt="$3"
-        mb="$10"
-        p="$4"
-        borderWidth={2}
-        borderColor="$red8"
-        borderRadius="$4"
-        bg="$red1"
-        w="100%"
-        gap="$3"
-      >
-        <Text
-          color="$red10"
-          fontWeight="bold"
-          fontSize="$5"
-          textAlign="center"
-          mb="$2"
-        >
-          ⚠️ Danger Zone ⚠️
-        </Text>
-
-        <YStack alignItems="center" gap="$3">
-          {!isPrivateKeyRevealed ? (
+          <Text
+            color="$blue10"
+            fontWeight="bold"
+            fontSize="$5"
+            textAlign="center"
+            mb="$2"
+          >
+            🚀 Developer Shortcuts
+          </Text>
+          <YStack alignItems="center" gap="$3">
             <YStack alignItems="center" gap="$3" w="100%">
               <Text
                 color={textBlack}
+                fontSize="$3"
                 textAlign="center"
+                opacity={0.7}
+              >
+                Jump directly to any screen for testing
+              </Text>
+              <ScreenSelector />
+            </YStack>
+          </YStack>
+        </YStack>
+        <YStack
+          mt="$3"
+          mb="$10"
+          p="$4"
+          borderWidth={2}
+          borderColor="$red8"
+          borderRadius="$4"
+          bg="$red1"
+          w="100%"
+          gap="$3"
+        >
+          <Text
+            color="$red10"
+            fontWeight="bold"
+            fontSize="$5"
+            textAlign="center"
+            mb="$2"
+          >
+            ⚠️ Danger Zone ⚠️
+          </Text>
+
+          <YStack alignItems="center" gap="$3">
+            {!isPrivateKeyRevealed ? (
+              <YStack alignItems="center" gap="$3" w="100%">
+                <Text
+                  color={textBlack}
+                  textAlign="center"
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    backgroundColor: 'white',
+                    padding: 12,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#e0e0e0',
+                    wordBreak: 'break-all',
+                    lineHeight: 18,
+                  }}
+                >
+                  {getRedactedPrivateKey()}
+                </Text>
+                <Button
+                  bg="$gray12"
+                  color="white"
+                  size="$3"
+                  mt="$2"
+                  onPress={handleRevealPrivateKey}
+                >
+                  Tap to reveal private key
+                </Button>
+              </YStack>
+            ) : (
+              <SelectableText
+                textAlign="center"
+                color={textBlack}
+                userSelect="all"
                 style={{
                   fontFamily: 'monospace',
+                  fontWeight: 'bold',
                   fontSize: 12,
                   backgroundColor: 'white',
                   padding: 12,
@@ -374,71 +408,42 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                   lineHeight: 18,
                 }}
               >
-                {getRedactedPrivateKey()}
+                {privateKey}
+              </SelectableText>
+            )}
+          </YStack>
+
+          <YStack alignItems="center" gap="$3" mt="$2">
+            <XStack alignItems="center" gap="$3">
+              <Text color={textBlack} fontSize="$3">
+                Delete Private Key
               </Text>
               <Button
-                bg="$gray12"
+                bg="$red8"
                 color="white"
                 size="$3"
-                mt="$2"
-                onPress={handleRevealPrivateKey}
+                onPress={handleClearSecretsPress}
               >
-                Tap to reveal private key
+                <Eraser color="white" size={16} />
               </Button>
-            </YStack>
-          ) : (
-            <SelectableText
-              textAlign="center"
-              color={textBlack}
-              userSelect="all"
-              style={{
-                fontFamily: 'monospace',
-                fontWeight: 'bold',
-                fontSize: 12,
-                backgroundColor: 'white',
-                padding: 12,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: '#e0e0e0',
-                wordBreak: 'break-all',
-                lineHeight: 18,
-              }}
-            >
-              {privateKey}
-            </SelectableText>
-          )}
-        </YStack>
-
-        <YStack alignItems="center" gap="$3" mt="$2">
-          <XStack alignItems="center" gap="$3">
-            <Text color={textBlack} fontSize="$3">
-              Delete Private Key
-            </Text>
-            <Button
-              bg="$red8"
-              color="white"
-              size="$3"
-              onPress={handleClearSecretsPress}
-            >
-              <Eraser color="white" size={16} />
-            </Button>
-          </XStack>
-          <XStack alignItems="center" gap="$3">
-            <Text color={textBlack} fontSize="$3">
-              Clear Document Catalog
-            </Text>
-            <Button
-              bg="$red8"
-              color="white"
-              size="$3"
-              onPress={handleClearDocumentCatalogPress}
-            >
-              <Eraser color="white" size={16} />
-            </Button>
-          </XStack>
+            </XStack>
+            <XStack alignItems="center" gap="$3">
+              <Text color={textBlack} fontSize="$3">
+                Clear Document Catalog
+              </Text>
+              <Button
+                bg="$red8"
+                color="white"
+                size="$3"
+                onPress={handleClearDocumentCatalogPress}
+              >
+                <Eraser color="white" size={16} />
+              </Button>
+            </XStack>
+          </YStack>
         </YStack>
       </YStack>
-    </YStack>
+    </ScrollView>
   );
 };
 
