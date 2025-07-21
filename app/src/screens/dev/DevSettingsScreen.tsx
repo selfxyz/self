@@ -333,7 +333,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 }
               }
             ].map(({ label, onPress}) => (
-              <YStack gap="$2">
+              <YStack gap="$2" key={label}>
                 <Button
                   bg="white"
                   borderColor={slate200}
@@ -391,6 +391,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
               },
             ].map(({ label, onPress, dangerTheme}) => (
               <Button
+                key={label}
                 bg={dangerTheme ? red500 : white}
                 borderRadius="$2"
                 height='$5'
