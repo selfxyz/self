@@ -403,6 +403,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             ))
           }
         </ParameterSection>
+      </YStack>
     </ScrollView>
   );
 };
