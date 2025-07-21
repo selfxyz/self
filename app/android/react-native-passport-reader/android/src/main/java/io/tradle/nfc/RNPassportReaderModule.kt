@@ -219,12 +219,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         eventMessageEmitter("🚀 SCAN: Activity focus=$hasFocus")
         onWindowFocusChanged(hasFocus)
         if (!hasFocus) {
-            Handler(Looper.getMainLooper()).postDelayed({
-                if (scanPromise != null && !isNfcEnabled) {
-                    Log.e("RNPassportReaderModule", "⏰ SCAN FOCUS TIMEOUT: Falling back to enableNfcWithFocusCheck")
-                    enableNfcWithFocusCheck()
-                }
-            }, 3000)
+            scheduleFocusTimeout("SCAN")
         }
     }
 
@@ -290,6 +285,22 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             scanPromise?.reject("E_NO_WINDOW_FOCUS", "Activity never gained window focus after $maxAttempts attempts")
             resetState()
         }
+    }
+
+    /**
+     * Schedule a fallback to {@code enableNfcWithFocusCheck()} if the window
+     * does not gain focus within three seconds.
+     */
+    private fun scheduleFocusTimeout(context: String) {
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (scanPromise != null && !isNfcEnabled) {
+                Log.e(
+                    "RNPassportReaderModule",
+                    "⏰ $context FOCUS TIMEOUT: Falling back to enableNfcWithFocusCheck"
+                )
+                enableNfcWithFocusCheck()
+            }
+        }, 3000)
     }
 
     /**
@@ -410,12 +421,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             val hasFocus = currentActivity?.hasWindowFocus() ?: false
             onWindowFocusChanged(hasFocus)
             if (!hasFocus) {
-                Handler(Looper.getMainLooper()).postDelayed({
-                    if (scanPromise != null && !isNfcEnabled) {
-                        Log.e("RNPassportReaderModule", "⏰ RESUME FOCUS TIMEOUT: Falling back to enableNfcWithFocusCheck")
-                        enableNfcWithFocusCheck()
-                    }
-                }, 3000)
+                scheduleFocusTimeout("RESUME")
             }
         } else {
             Log.e("RNPassportReaderModule", "🏠 HOST RESUMED: No active scan, no action needed.")
