@@ -7,6 +7,7 @@ import DevHapticFeedbackScreen from '../screens/dev/DevHapticFeedback';
 import DevSettingsScreen from '../screens/dev/DevSettingsScreen';
 import MockDataScreen from '../screens/dev/MockDataScreen';
 import MockDataScreenDeepLink from '../screens/dev/MockDataScreenDeepLink';
+import DevPrivateKeyScreen from '../screens/dev/DevPrivateKeyScreen';
 import { black, slate300, white } from '../utils/colors';
 
 const devScreens = {
@@ -14,6 +15,12 @@ const devScreens = {
     screen: MockDataScreen,
     options: {
       title: 'Mock Passport',
+      headerStyle: {
+        backgroundColor: black,
+      },
+      headerTitleStyle: {
+        color: white,
+      },
     } as NativeStackNavigationOptions,
   },
   MockDataDeepLink: {
@@ -47,6 +54,18 @@ const devScreens = {
       title: 'Feature Flags',
       headerStyle: {
         backgroundColor: white,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  DevPrivateKey: {
+    screen: DevPrivateKeyScreen,
+    options: {
+      title: 'Private Key',
+      headerStyle: {
+        backgroundColor: black,
+      },
+      headerTitleStyle: {
+        color: white,
       },
     } as NativeStackNavigationOptions,
   },
