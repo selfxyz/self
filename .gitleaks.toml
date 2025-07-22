@@ -20,6 +20,7 @@ paths = [
     '''node_modules''',
     '''package-lock.json''',
     '''pnpm-lock.yaml''',
+    '''Podfile.lock''',
     '''common/src/mock_certificates/.*''',
     '''common/src/constants/mockCertificates.ts''',
     '''Database.refactorlog''',
