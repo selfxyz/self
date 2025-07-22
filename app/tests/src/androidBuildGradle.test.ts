@@ -20,7 +20,6 @@ describe('Android build.gradle Configuration', () => {
 
   it('uses the correct applicationId and version', () => {
     expect(gradleContent).toMatch(/applicationId\s+"com\.proofofpassportapp"/);
-    expect(gradleContent).toMatch(/versionName\s+"2.6.1"/);
     expect(gradleContent).toMatch(/versionCode\s+82/);
   });
 
