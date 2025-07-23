@@ -10,11 +10,9 @@ import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../providers/authProvider';
 import {
   loadPassportDataAndSecret,
-  storePassportData,
-} from '../../providers/passportDataProvider';
-import {
   loadSelectedDocument,
   migrateFromLegacyStorage,
+  storePassportData,
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSettingStore } from '../../stores/settingStore';

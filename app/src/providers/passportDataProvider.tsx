@@ -39,13 +39,13 @@
  */
 
 import {
+  brutforceSignatureAlgorithmDsc,
   DocumentCategory,
+  parseCertificateSimple,
+  PassportData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from '@selfxyz/common';
-import { parseCertificateSimple } from '@selfxyz/common';
-import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common';
-import { PassportData } from '@selfxyz/common';
 import { sha256 } from 'js-sha256';
 import React, {
   createContext,
@@ -56,8 +56,7 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { unsafe_getPrivateKey } from '../providers/authProvider';
-import { useAuth } from './authProvider';
+import { unsafe_getPrivateKey, useAuth } from '../providers/authProvider';
 interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication
   documentType: string; // passport, mock_passport, id_card, etc.

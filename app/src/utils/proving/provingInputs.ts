@@ -5,22 +5,20 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import {
   attributeToPosition,
   attributeToPosition_ID,
+  calculateUserIdentifierHash,
   DEFAULT_MAJORITY,
   DocumentCategory,
-  ID_CARD_ATTESTATION_ID,
-  PASSPORT_ATTESTATION_ID,
-  SelfAppDisclosureConfig,
-} from '@selfxyz/common';
-import { SelfApp } from '@selfxyz/common';
-import { getCircuitNameFromPassportData } from '@selfxyz/common';
-import {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
+  getCircuitNameFromPassportData,
+  hashEndpointWithScope,
+  ID_CARD_ATTESTATION_ID,
+  PASSPORT_ATTESTATION_ID,
+  PassportData,
+  SelfApp,
+  SelfAppDisclosureConfig,
 } from '@selfxyz/common';
-import { hashEndpointWithScope } from '@selfxyz/common';
-import { calculateUserIdentifierHash } from '@selfxyz/common';
-import { PassportData } from '@selfxyz/common';
 import { poseidon2 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';
@@ -79,14 +77,13 @@ export function generateTEEInputsDisclose(
     throw new Error('OFAC trees not loaded');
   }
   let passportNoAndNationalitySMT: SMT | null = null;
-  let nameAndDobSMT, nameAndYobSMT;
+  const nameAndDobSMT = new SMT(poseidon2, true);
+  const nameAndYobSMT = new SMT(poseidon2, true);
   if (document === 'passport') {
     passportNoAndNationalitySMT = new SMT(poseidon2, true);
     passportNoAndNationalitySMT.import(ofac_trees.passportNoAndNationality);
   }
-  nameAndDobSMT = new SMT(poseidon2, true);
   nameAndDobSMT.import(ofac_trees.nameAndDob);
-  nameAndYobSMT = new SMT(poseidon2, true);
   nameAndYobSMT.import(ofac_trees.nameAndYob);
 
   const serialized_tree = useProtocolStore.getState()[document].commitment_tree;

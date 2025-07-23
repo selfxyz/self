@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
-import { countryCodes } from '@selfxyz/common';
-import { getSKIPEM } from '@selfxyz/common';
-import { genMockIdDoc, IdDocInput } from '@selfxyz/common';
-import { initPassportDataParsing } from '@selfxyz/common';
+import {
+  countryCodes,
+  genMockIdDoc,
+  getSKIPEM,
+  IdDocInput,
+  initPassportDataParsing,
+} from '@selfxyz/common';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
@@ -85,7 +88,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const handleBirthDateChange = (text: string) => {
     if (isInOfacList) return;
 
-    let value = text.replace(/[^0-9]/g, '');
+    const value = text.replace(/[^0-9]/g, '');
     let formattedValue = '';
 
     if (value.length > 0) {
@@ -248,9 +251,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         }
       }
       idDocInput.birthDate = dobForGeneration;
-      let rawMockData = genMockIdDoc(idDocInput);
+      const rawMockData = genMockIdDoc(idDocInput);
       const skiPem = await getSKIPEM('staging');
-      let parsedMockData = initPassportDataParsing(rawMockData, skiPem);
+      const parsedMockData = initPassportDataParsing(rawMockData, skiPem);
       await storePassportData(parsedMockData);
       navigation.navigate('ConfirmBelongingScreen', {});
     } catch (error) {
