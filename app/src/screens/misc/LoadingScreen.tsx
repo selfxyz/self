@@ -26,6 +26,16 @@ import {
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 
+// Define all terminal states that should stop animations and haptics
+const terminalStates: ProvingStateType[] = [
+  'completed',
+  'error',
+  'failure',
+  'passport_not_supported',
+  'account_recovery_choice',
+  'passport_data_not_found',
+];
+
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   // Animation states
   const [animationSource, setAnimationSource] = useState<any>(
@@ -49,16 +59,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const fcmToken = useProvingStore(state => state.fcmToken);
   const isFocused = useIsFocused();
   const { bottom } = useSafeAreaInsets();
-
-  // Define all terminal states that should stop animations and haptics
-  const terminalStates: ProvingStateType[] = [
-    'completed',
-    'error',
-    'failure',
-    'passport_not_supported',
-    'account_recovery_choice',
-    'passport_data_not_found',
-  ];
 
   // States where it's safe to close the app
   const safeToCloseStates = ['proving', 'post_proving', 'completed'];
@@ -154,13 +154,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     return () => {
       loadingScreenProgress(false);
     };
-  }, [
-    currentState,
-    isFocused,
-    fcmToken,
-    passportData?.passportMetadata,
-    terminalStates,
-  ]);
+  }, [currentState, isFocused, fcmToken, passportData?.passportMetadata]);
 
   // Determine if animation should loop based on terminal states
   const shouldLoopAnimation = !terminalStates.includes(

@@ -107,7 +107,7 @@ const SplashScreen: React.FC = ({}) => {
 
       loadDataAndDetermineNextScreen();
     }
-  }, []);
+  }, [checkBiometricsAvailable, setBiometricsAvailable]);
 
   const handleAnimationFinish = useCallback(() => {
     impactLight();

@@ -113,6 +113,16 @@ const signatureAlgorithmToStrictSignatureAlgorithm = {
   'sha512 poland': ['sha512', 'sha512', 'rsa_sha256_65537_4096'],
 } as const;
 
+const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + yearsOffset);
+  return (
+    date.toISOString().slice(2, 4) +
+    date.toISOString().slice(5, 7) +
+    date.toISOString().slice(8, 10)
+  ).toString();
+};
+
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const navigation = useNavigation();
   const [birthDate, setBirthDate] = useState('2000/01/01');
@@ -123,15 +133,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [selectedDocumentType, setSelectedDocumentType] = useState<
     'mock_passport' | 'mock_id_card'
   >('mock_passport');
-  const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
-    const date = new Date();
-    date.setFullYear(date.getFullYear() + yearsOffset);
-    return (
-      date.toISOString().slice(2, 4) +
-      date.toISOString().slice(5, 7) +
-      date.toISOString().slice(8, 10)
-    ).toString();
-  };
   const [selectedCountry, setSelectedCountry] = useState('USA');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(
     'sha256 rsa 65537 2048',
@@ -239,7 +240,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     }
   }, [
     birthDate,
-    castDateToYYMMDDForExpiry,
     expiryYears,
     isInOfacList,
     navigation,
