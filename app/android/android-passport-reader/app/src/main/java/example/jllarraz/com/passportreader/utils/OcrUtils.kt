@@ -25,7 +25,7 @@ object OcrUtils {
     private val REGEX_ID_DOCUMENT_CODE = "(?<documentCode>[IP]{1}[DM<]{1})"
     private val REGEX_ID_DOCUMENT_NUMBER = "(ID)(?<country>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})"
     private val REGEX_ID_DATE_OF_BIRTH = "(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<gender>[FM<]{1})"
-            
+
     private val patternDocumentNumber = Pattern.compile(REGEX_ID_DOCUMENT_NUMBER)
     private val patternDateOfBirth = Pattern.compile(REGEX_ID_DATE_OF_BIRTH)
     private val patternDocumentCode = Pattern.compile(REGEX_ID_DOCUMENT_CODE)
@@ -92,7 +92,7 @@ object OcrUtils {
                 val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
                 Log.d(TAG, "cleanDocumentNumber")
                 if (cleanDocumentNumber != null) {
-                    val mrzInfo = createDummyMrz("ID", countryCode, documentNumber, dateOfBirth, expirationDate)
+                    val mrzInfo = createDummyMrz("ID", countryCode, cleanDocumentNumber, dateOfBirth, expirationDate)
                     // Log.d(TAG, "MRZ-TD1: $mrzInfo")
                     callback.onMRZRead(mrzInfo, timeRequired)
                     return
@@ -117,7 +117,7 @@ object OcrUtils {
 
             val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
             if (cleanDocumentNumber != null) {
-                val mrzInfo = createDummyMrz(documentType, issuingState, documentNumber, dateOfBirth, expirationDate)
+                val mrzInfo = createDummyMrz(documentType, issuingState, cleanDocumentNumber, dateOfBirth, expirationDate)
                 Log.d(TAG, "cleanDocumentNumber")
                 callback.onMRZRead(mrzInfo, timeRequired)
                 return
@@ -138,7 +138,7 @@ object OcrUtils {
 
             val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
             if (cleanDocumentNumber!=null){
-                val mrzInfo = createDummyMrz("P", "ESP", documentNumber, dateOfBirthDay, expirationDate)
+                val mrzInfo = createDummyMrz("P", "ESP", cleanDocumentNumber, dateOfBirthDay, expirationDate)
                 // Log.d(TAG, "MRZ: $mrzInfo")
                 callback.onMRZRead(mrzInfo, timeRequired)
                 return
@@ -160,7 +160,7 @@ object OcrUtils {
 
             val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
             if (cleanDocumentNumber != null) {
-                val mrzInfo = createDummyMrz("P", "ESP", documentNumber, dateOfBirthDay, expirationDate)
+                val mrzInfo = createDummyMrz("P", "ESP", cleanDocumentNumber, dateOfBirthDay, expirationDate)
                 callback.onMRZRead(mrzInfo, timeRequired)
                 return
             }
