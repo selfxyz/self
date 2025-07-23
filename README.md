@@ -68,12 +68,6 @@ We provide bounties for new and interesting applications using Self.
 Run `yarn install` to bootstrap dependencies and husky hooks.
 Gitleaks will scan staged changes on each commit via `yarn gitleaks`.
 
-### Security
-
-We lock `eslint-config-prettier` to version 10.1.8 due to a recent supply chain
-attack on popular ESLint packages. [Bleeping Computer reported the
-incident](https://www.bleepingcomputer.com/news/security/popular-npm-linter-packages-hijacked-via-phishing-to-drop-malware/).
-
 ## Contributing
 
 We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know were to start! We offer bounties for significant contributions.
