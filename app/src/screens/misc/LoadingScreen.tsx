@@ -154,13 +154,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     return () => {
       loadingScreenProgress(false);
     };
-  }, [
-    currentState,
-    isFocused,
-    fcmToken,
-    passportData?.passportMetadata,
-    terminalStates,
-  ]);
+  }, [currentState, isFocused, fcmToken, passportData?.passportMetadata]);
 
   // Determine if animation should loop based on terminal states
   const shouldLoopAnimation = !terminalStates.includes(
