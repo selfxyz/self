@@ -64,7 +64,7 @@ module.exports = {
     'react-native/no-inline-styles': 'off',
 
     // React Hooks Rules
-    'react-hooks/exhaustive-deps': 'off',
+    'react-hooks/exhaustive-deps': 'warn',
 
     // General JavaScript Rules
     // Warn on common issues but don't block development
@@ -73,13 +73,13 @@ module.exports = {
     'prefer-const': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': 'error',
     'no-redeclare': 'off',
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-namespace': 'off',
     'no-case-declarations': 'off',
     'react/no-children-prop': 'off',
-    'import/no-unresolved': 'warn',
+    'import/no-unresolved': 'error',
     '@typescript-eslint/ban-ts-comment': 'off',
     'no-empty': 'off',
 

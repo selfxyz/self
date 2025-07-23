@@ -3,7 +3,10 @@
   "compilerOptions": {
     "lib": ["dom", "esnext"],
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "paths": {
+      "@env": ["./env.ts"]
+    }
   },
   "exclude": ["node_modules", "vite.config.ts", ".tamagui/*"]
 }
