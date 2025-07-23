@@ -159,4 +159,6 @@ export const DocumentEvents = {
   NO_DOCUMENTS_FOUND: 'Document: No Documents Found',
   PASSPORT_INFO_OPENED: 'Document: Passport Info Screen Opened',
   PASSPORT_METADATA_LOADED: 'Document: Passport Metadata Loaded',
+  VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
+  DOCUMENT_VALIDATED: 'Document: Document Validated',
 };

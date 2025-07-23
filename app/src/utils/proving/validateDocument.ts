@@ -17,6 +17,7 @@ import {
 import { DocumentCategory } from '@selfxyz/common';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
+import { DocumentEvents } from '../../consts/analytics';
 import {
   getAllDocuments,
   loadPassportDataAndSecret,
@@ -25,6 +26,9 @@ import {
   storePassportData,
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
+import analytics from '../../utils/analytics';
+
+const { trackEvent } = analytics();
 
 export type PassportSupportStatus =
   | 'passport_metadata_missing'
@@ -249,18 +253,41 @@ function formatCSCAPem(cscaPem: string): string {
 
 export function isPassportDataValid(passportData: PassportData) {
   if (!passportData) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      error: 'Passport data is null',
+    });
     return false;
   }
   if (!passportData.passportMetadata) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      error: 'Passport metadata is null',
+    });
     return false;
   }
   if (!passportData.passportMetadata.dg1HashFunction) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      mock: passportData.mock,
+      dsc: passportData.dsc,
+      error: 'DG1 hash function is null',
+    });
     return false;
   }
   if (!passportData.passportMetadata.eContentHashFunction) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      mock: passportData.mock,
+      dsc: passportData.dsc,
+      documentCategory: passportData.documentCategory,
+      error: 'EContent hash function is null',
+    });
     return false;
   }
   if (!passportData.passportMetadata.signedAttrHashFunction) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      mock: passportData.mock,
+      dsc: passportData.dsc,
+      documentCategory: passportData.documentCategory,
+      error: 'Signed attribute hash function is null',
+    });
     return false;
   }
   return true;
@@ -298,7 +325,13 @@ export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
       const selectedDocument = await loadSelectedDocument();
       if (!selectedDocument) continue;
       let { data: passportData } = selectedDocument;
-      if (!isPassportDataValid(passportData)) continue;
+      if (!isPassportDataValid(passportData)) {
+        trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+          error: 'Passport data is not valid',
+          documentId,
+        });
+        continue;
+      }
       const migratedPassportData = migratePassportData(passportData);
       if (migratedPassportData !== passportData) {
         await storePassportData(migratedPassportData);
@@ -308,7 +341,15 @@ export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
       const documentCategory = migratedPassportData.documentCategory;
       const authorityKeyIdentifier =
         migratedPassportData.dsc_parsed?.authorityKeyIdentifier;
-      if (!authorityKeyIdentifier) continue;
+      if (!authorityKeyIdentifier) {
+        trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+          error: 'Authority key identifier is null',
+          documentId,
+          documentCategory,
+          mock: migratedPassportData.mock,
+        });
+        continue;
+      }
       await useProtocolStore
         .getState()
         [documentCategory].fetch_all(environment, authorityKeyIdentifier);
@@ -316,9 +357,20 @@ export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
       if (!passportDataAndSecret) continue;
       const { secret } = JSON.parse(passportDataAndSecret);
       const isRegistered = await isUserRegistered(migratedPassportData, secret);
-      if (isRegistered) return true;
+      if (isRegistered) {
+        trackEvent(DocumentEvents.DOCUMENT_VALIDATED, {
+          documentId,
+          documentCategory,
+          mock: migratedPassportData.mock,
+        });
+        return true;
+      }
     } catch (error) {
       console.error(`Error in hasAnyValidRegisteredDocument: ${error}`);
+      trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        documentId,
+      });
     }
   }
   return false;
