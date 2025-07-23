@@ -69,7 +69,7 @@ export const LeftAction: React.FC<LeftActionProps> = ({
           </Button>
         );
     }
-  }, [component]);
+  }, [color, component, onPress]);
 
   if (!children) {
     return null;

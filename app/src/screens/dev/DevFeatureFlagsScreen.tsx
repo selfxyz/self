@@ -194,6 +194,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
       });
     };
     // only clean up on unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const hasLocalOverrides = featureFlags.some(

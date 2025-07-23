@@ -6,6 +6,7 @@ import React, {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { Alert, Platform, StyleProp, TextInput } from 'react-native';
@@ -112,7 +113,7 @@ const ScreenSelector = ({}) => {
       <Select.Content zIndex={200000}>
         <Select.Viewport minWidth={200}>
           <Select.Group>
-            {React.useMemo(
+            {useMemo(
               () =>
                 items.map((item, i) => {
                   return (
@@ -124,7 +125,7 @@ const ScreenSelector = ({}) => {
                     </Select.Item>
                   );
                 }),
-              [items],
+              [],
             )}
           </Select.Group>
         </Select.Viewport>
