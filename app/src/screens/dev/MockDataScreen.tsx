@@ -240,6 +240,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     }
   }, [
     birthDate,
+    castDateToYYMMDDForExpiry,
     expiryYears,
     isInOfacList,
     navigation,
