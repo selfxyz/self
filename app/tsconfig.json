@@ -8,5 +8,6 @@
       "@env": ["./env.ts"]
     }
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "vite.config.ts", ".tamagui/*"]
 }
