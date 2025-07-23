@@ -260,13 +260,15 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       }
     }
   }, [
-    isNfcSupported,
     isNfcEnabled,
+    isNfcSupported,
+    route.params,
     passportNumber,
     dateOfBirth,
     dateOfExpiry,
-    route.params,
     isPacePolling,
+    navigation,
+    openErrorModal,
   ]);
 
   const onCancelPress = useHapticNavigation('Launch', {
@@ -277,7 +279,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const _cancelScanIfRunning = useCallback(async () => {
     // // TODO: cancel if scanning
     // setIsNfcSheetOpen(false);
-  }, [isNfcSheetOpen]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {

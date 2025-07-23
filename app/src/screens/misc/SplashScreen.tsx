@@ -3,7 +3,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
@@ -24,8 +24,8 @@ const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { checkBiometricsAvailable } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
-  const [isAnimationFinished, setIsAnimationFinished] = React.useState(false);
-  const [nextScreen, setNextScreen] = React.useState<string | null>(null);
+  const [isAnimationFinished, setIsAnimationFinished] = useState(false);
+  const [nextScreen, setNextScreen] = useState<string | null>(null);
   const dataLoadInitiatedRef = useRef(false);
 
   useEffect(() => {

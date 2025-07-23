@@ -2,7 +2,7 @@
 
 import { useNavigation } from '@react-navigation/native';
 import { Check, Eraser } from '@tamagui/lucide-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
@@ -34,11 +34,7 @@ const PassportDataSelector = () => {
   const [_allDocuments, setAllDocuments] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadPassportDataInfo();
-  }, []);
-
-  const loadPassportDataInfo = async () => {
+  const loadPassportDataInfo = useCallback(async () => {
     setLoading(true);
     const catalog = await loadDocumentCatalog();
     const docs = await getAllDocuments();
@@ -51,7 +47,16 @@ const PassportDataSelector = () => {
       trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
     }
     setLoading(false);
-  };
+  }, [
+    loadDocumentCatalog,
+    getAllDocuments,
+    setDocumentCatalog,
+    setAllDocuments,
+  ]);
+
+  useEffect(() => {
+    loadPassportDataInfo();
+  }, [loadPassportDataInfo]);
 
   const handleDocumentSelection = async (documentId: string) => {
     await setSelectedDocument(documentId);

@@ -72,7 +72,7 @@ const ProveScreen: React.FC = () => {
         disclosures: JSON.stringify(selectedApp.disclosures),
       });
     }
-  }, [provingStore.uuid, selectedApp]);
+  }, [addProofHistory, provingStore.uuid, selectedApp]);
 
   useEffect(() => {
     if (isContentShorterThanScrollView) {
@@ -94,7 +94,7 @@ const ProveScreen: React.FC = () => {
       provingStore.init('disclose');
     }
     selectedAppRef.current = selectedApp;
-  }, [selectedApp, isFocused]);
+  }, [selectedApp, isFocused, provingStore]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];

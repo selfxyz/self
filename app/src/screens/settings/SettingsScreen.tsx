@@ -132,7 +132,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
   const onPress = useCallback(() => {
     impactLight();
     Linking.openURL(href);
-  }, []);
+  }, [href]);
 
   return (
     <Button

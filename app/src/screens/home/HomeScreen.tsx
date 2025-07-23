@@ -5,7 +5,7 @@ import {
   useNavigation,
   usePreventRemove,
 } from '@react-navigation/native';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, styled, YStack } from 'tamagui';
 
@@ -53,7 +53,7 @@ const HomeScreen: React.FC = () => {
   });
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       async function checkDocs() {
         try {
           const docs = await getAllDocuments();

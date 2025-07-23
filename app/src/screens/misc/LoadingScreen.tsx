@@ -99,6 +99,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFocused]); // Only depend on isFocused
 
   // Handle UI updates and haptic feedback based on state changes
@@ -153,7 +154,13 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     return () => {
       loadingScreenProgress(false);
     };
-  }, [currentState, isFocused, fcmToken, passportData?.passportMetadata]);
+  }, [
+    currentState,
+    isFocused,
+    fcmToken,
+    passportData?.passportMetadata,
+    terminalStates,
+  ]);
 
   // Determine if animation should loop based on terminal states
   const shouldLoopAnimation = !terminalStates.includes(

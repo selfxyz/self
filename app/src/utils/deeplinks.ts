@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import queryString from 'query-string';
+import { parseUrl } from 'query-string';
 import { Linking, Platform } from 'react-native';
 
 import { navigationRef } from '../navigation';
@@ -25,7 +25,7 @@ const decodeUrl = (encodedUrl: string): string => {
 
 export const handleUrl = (uri: string) => {
   const decodedUri = decodeUrl(uri);
-  const encodedData = queryString.parseUrl(decodedUri).query;
+  const encodedData = parseUrl(decodedUri).query;
   const sessionId = encodedData.sessionId;
   const selfAppStr = encodedData.selfApp as string | undefined;
   const mock_passport = encodedData.mock_passport as string | undefined;

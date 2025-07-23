@@ -88,10 +88,12 @@ const AccountRecoveryChoiceScreen: React.FC<
       throw new Error('Something wrong happened during cloud recovery');
     }
   }, [
-    cloudBackupEnabled,
     download,
     restoreAccountFromMnemonic,
+    cloudBackupEnabled,
     onRestoreFromCloudNext,
+    navigation,
+    toggleCloudBackupEnabled,
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {

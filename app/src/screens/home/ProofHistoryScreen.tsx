@@ -298,7 +298,7 @@ const ProofHistoryScreen: React.FC = () => {
         return null;
       }
     },
-    [],
+    [navigation],
   );
 
   const renderSectionHeader = useCallback(

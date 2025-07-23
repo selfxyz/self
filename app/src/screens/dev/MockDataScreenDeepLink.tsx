@@ -60,7 +60,13 @@ const MockDataScreenDeepLink: React.FC = () => {
         handleGenerate();
       }, 0);
     }
-  }, [deepLinkName, deepLinkSurname, deepLinkNationality, deepLinkBirthDate]);
+  }, [
+    deepLinkName,
+    deepLinkSurname,
+    deepLinkNationality,
+    deepLinkBirthDate,
+    handleGenerate,
+  ]);
 
   const handleGenerate = useCallback(async () => {
     const storeState = useUserStore.getState();
