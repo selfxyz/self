@@ -25,7 +25,8 @@
     "postinstall-postinstall": "^2.1.0"
   },
   "resolutions": {
-    "eslint-config-prettier": "10.1.8"
+    "eslint-config-prettier": "10.1.8",
+    "@react-native/eslint-config>eslint-config-prettier": "10.1.8"
   },
   "packageManager": "yarn@4.6.0"
 }
