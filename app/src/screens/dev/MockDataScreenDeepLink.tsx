@@ -43,6 +43,22 @@ const MockDataScreenDeepLink: React.FC = () => {
     deepLinkGender: state.deepLinkGender,
   }));
 
+  const handleGenerate = useCallback(async () => {
+    const storeState = useUserStore.getState();
+    const idDocInput: Partial<IdDocInput> = {
+      idType: 'mock_passport',
+      firstName: storeState.deepLinkName,
+      lastName: storeState.deepLinkSurname,
+      birthDate: storeState.deepLinkBirthDate,
+      sex: storeState.deepLinkGender as 'M' | 'F',
+      nationality: storeState.deepLinkNationality as any,
+    };
+    const passportData = genMockIdDocAndInitDataParsing(idDocInput);
+    await storePassportData(passportData);
+    navigation.navigate('ConfirmBelongingScreen', {});
+    useUserStore.getState().clearDeepLinkUserDetails();
+  }, [navigation]);
+
   useEffect(() => {
     if (deepLinkNationality) {
       setSelectedCountry(deepLinkNationality);
@@ -67,22 +83,6 @@ const MockDataScreenDeepLink: React.FC = () => {
     deepLinkBirthDate,
     handleGenerate,
   ]);
-
-  const handleGenerate = useCallback(async () => {
-    const storeState = useUserStore.getState();
-    const idDocInput: Partial<IdDocInput> = {
-      idType: 'mock_passport',
-      firstName: storeState.deepLinkName,
-      lastName: storeState.deepLinkSurname,
-      birthDate: storeState.deepLinkBirthDate,
-      sex: storeState.deepLinkGender as 'M' | 'F',
-      nationality: storeState.deepLinkNationality as any,
-    };
-    const passportData = genMockIdDocAndInitDataParsing(idDocInput);
-    await storePassportData(passportData);
-    navigation.navigate('ConfirmBelongingScreen', {});
-    useUserStore.getState().clearDeepLinkUserDetails();
-  }, [navigation]);
 
   const { top, bottom } = useSafeAreaInsets();
   return (
