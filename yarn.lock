@@ -80,8 +80,8 @@ __metadata:
   linkType: hard
 
 "@babel/eslint-parser@npm:^7.20.0":
-  version: 7.27.5
-  resolution: "@babel/eslint-parser@npm:7.27.5"
+  version: 7.28.0
+  resolution: "@babel/eslint-parser@npm:7.28.0"
   dependencies:
     "@nicolo-ribaudo/eslint-scope-5-internals": "npm:5.1.1-v1"
     eslint-visitor-keys: "npm:^2.1.0"
@@ -89,7 +89,7 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.11.0
     eslint: ^7.5.0 || ^8.0.0 || ^9.0.0
-  checksum: 10c0/c1159946c0b41687945adbc7457f9c0895e0a439d59eb7020f03f08fb471ebf67ca9c6a799f667f869c93a846c627d709ec9da4b51afccd52be51f97ec26ddf0
+  checksum: 10c0/ca25b8ce38026f22ef875bf45a7bf96601446461d245dabfd8422c4e9d17a8fbe48149b97f5adc58147962118b22acf7f45c54effef8501232f88b3e5eb7c62e
   languageName: node
   linkType: hard
 
@@ -3892,7 +3892,7 @@ __metadata:
     "@react-native/eslint-plugin": "npm:0.75.4"
     "@typescript-eslint/eslint-plugin": "npm:^7.1.1"
     "@typescript-eslint/parser": "npm:^7.1.1"
-    eslint-config-prettier: "npm:^8.5.0"
+    eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-eslint-comments: "npm:^3.2.0"
     eslint-plugin-ft-flow: "npm:^2.0.1"
     eslint-plugin-jest: "npm:^27.9.0"
@@ -13942,17 +13942,6 @@ __metadata:
   bin:
     eslint-config-prettier: bin/cli.js
   checksum: 10c0/e1bcfadc9eccd526c240056b1e59c5cd26544fe59feb85f38f4f1f116caed96aea0b3b87868e68b3099e55caaac3f2e5b9f58110f85db893e83a332751192682
-  languageName: node
-  linkType: hard
-
-"eslint-config-prettier@npm:^8.5.0":
-  version: 8.10.0
-  resolution: "eslint-config-prettier@npm:8.10.0"
-  peerDependencies:
-    eslint: ">=7.0.0"
-  bin:
-    eslint-config-prettier: bin/cli.js
-  checksum: 10c0/19f8c497d9bdc111a17a61b25ded97217be3755bbc4714477dfe535ed539dddcaf42ef5cf8bb97908b058260cf89a3d7c565cb0be31096cbcd39f4c2fa5fe43c
   languageName: node
   linkType: hard
 
