@@ -31,7 +31,7 @@ const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
         </View>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack alignItems="center" gap="$2.5" pb="$2.5">
+        <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
           <Title>Restore your Self account</Title>
           <Description>
             By continuing, you certify that this passport belongs to you and is

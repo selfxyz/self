@@ -258,11 +258,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack f={1} bg={white} pt={top} pb={bottom + extraYPadding}>
+    <YStack flex={1} backgroundColor={white} paddingTop={top} paddingBottom={bottom + extraYPadding}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <YStack px="$4" pb="$4" gap="$5">
+        <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
           <GestureDetector gesture={devModeTap}>
-            <YStack ai="center" mb={'$10'}>
+            <YStack alignItems="center" marginBottom={'$10'}>
               <Title>Generate Document Data</Title>
               <BodyText textAlign="center">
                 Configure the document data parameters below
@@ -270,16 +270,16 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </YStack>
           </GestureDetector>
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Document Type</BodyText>
-            <XStack space="$2" ai="center">
+            <XStack space="$2" alignItems="center">
               <Button
                 size="$3"
                 onPress={() => {
                   buttonTap();
                   setSelectedDocumentType('mock_passport');
                 }}
-                bg={
+                backgroundColor={
                   selectedDocumentType === 'mock_passport'
                     ? '$blue7Light'
                     : white
@@ -298,7 +298,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   buttonTap();
                   setSelectedDocumentType('mock_id_card');
                 }}
-                bg={
+                backgroundColor={
                   selectedDocumentType === 'mock_id_card'
                     ? '$blue7Light'
                     : white
@@ -315,7 +315,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           </XStack>
 
           {advancedMode && (
-            <XStack ai="center" jc="space-between">
+            <XStack alignItems="center" justifyContent="space-between">
               <BodyText>Encryption</BodyText>
               <Button
                 onPress={() => {
@@ -323,13 +323,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   setAlgorithmSheetOpen(true);
                 }}
                 p="$2"
-                px="$3"
-                bg="white"
+                paddingHorizontal="$3"
+                backgroundColor="white"
                 borderColor={borderColor}
                 borderWidth={1}
                 borderRadius="$4"
               >
-                <XStack ai="center" gap="$2">
+                <XStack alignItems="center" gap="$2">
                   <Text fontSize="$4">{selectedAlgorithm}</Text>
                   <ChevronDown size={20} />
                 </XStack>
@@ -337,7 +337,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </XStack>
           )}
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Nationality</BodyText>
             <Button
               onPress={() => {
@@ -346,13 +346,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
               }}
               p="$2"
-              px="$3"
-              bg="white"
+              paddingHorizontal="$3"
+              backgroundColor="white"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
             >
-              <XStack ai="center" gap="$2">
+              <XStack alignItems="center" gap="$2">
                 <Text fontSize="$4">
                   {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
                   {flag(getCountryISO2(selectedCountry))}
@@ -362,7 +362,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </Button>
           </XStack>
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Birth Date (YYYY/MM/DD)</BodyText>
             <Input
               placeholder="YYYY/MM/DD"
@@ -381,14 +381,14 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             />
           </XStack>
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Passport expires in</BodyText>
-            <XStack ai="center" gap="$2">
+            <XStack alignItems="center" gap="$2">
               <Button
-                h="$3.5"
-                w="$3.5"
-                bg="white"
-                jc="center"
+                height="$3.5"
+                width="$3.5"
+                backgroundColor="white"
+                justifyContent="center"
                 borderColor={borderColor}
                 borderWidth={1}
                 borderRadius="$10"
@@ -401,14 +401,14 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               >
                 <Minus />
               </Button>
-              <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
+              <Text textAlign="center" width="$6" color={textBlack} fontSize="$5">
                 {expiryYears} years
               </Text>
               <Button
-                h="$3.5"
-                w="$3.5"
-                bg="white"
-                jc="center"
+                height="$3.5"
+                width="$3.5"
+                backgroundColor="white"
+                justifyContent="center"
                 borderColor={borderColor}
                 borderWidth={1}
                 borderRadius="$10"
@@ -423,7 +423,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </XStack>
           </XStack>
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>In OFAC list</BodyText>
             <Switch
               size="$3.5"
@@ -433,7 +433,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 setIsInOfacList(!isInOfacList);
                 trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
               }}
-              bg={isInOfacList ? '$green7Light' : '$gray4'}
+              backgroundColor={isInOfacList ? '$green7Light' : '$gray4'}
             >
               <Switch.Thumb animation="quick" bc="white" />
             </Switch>
@@ -448,7 +448,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         </YStack>
       </ScrollView>
 
-      <YStack px="$4" pb="$4">
+      <YStack paddingHorizontal="$4" paddingBottom="$4">
         <ButtonsContainer>
           <PrimaryButton
             trackEvent={MockDataEvents.GENERATE_DATA}
@@ -480,12 +480,12 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       >
         <Sheet.Overlay />
         <Sheet.Frame
-          bg={white}
+          backgroundColor={white}
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
           <YStack p="$4">
-            <XStack ai="center" jc="space-between" mb="$4">
+            <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
               <Text fontSize="$8">Select a country</Text>
               <XStack
                 onPress={() => {
@@ -497,7 +497,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 <X color={borderColor} size="$1.5" mr="$2" />
               </XStack>
             </XStack>
-            <Separator borderColor={separatorColor} mb="$4" />
+            <Separator borderColor={separatorColor} marginBottom="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
               {Object.keys(countryCodes).map(countryCode => (
                 <TouchableOpacity
@@ -509,7 +509,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                     trackEvent(MockDataEvents.SELECT_COUNTRY);
                   }}
                 >
-                  <XStack py="$3" px="$2">
+                  <XStack paddingVertical="$3" paddingHorizontal="$2">
                     <Text fontSize="$4">
                       {countryCodes[countryCode as keyof typeof countryCodes]}{' '}
                       {flag(getCountryISO2(countryCode))}
@@ -532,12 +532,12 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       >
         <Sheet.Overlay />
         <Sheet.Frame
-          bg={white}
+          backgroundColor={white}
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
           <YStack p="$4">
-            <XStack ai="center" jc="space-between" mb="$4">
+            <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
               <Text fontSize="$8">Select an algorithm</Text>
               <XStack
                 onPress={() => {
@@ -549,9 +549,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 <X color={borderColor} size="$1.5" mr="$2" />
               </XStack>
             </XStack>
-            <Separator borderColor={separatorColor} mb="$4" />
+            <Separator borderColor={separatorColor} marginBottom="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
-              <YStack pb="$10">
+              <YStack paddingBottom="$10">
                 {Object.keys(signatureAlgorithmToStrictSignatureAlgorithm).map(
                   algorithm => (
                     <TouchableOpacity
@@ -563,7 +563,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                         trackEvent(MockDataEvents.SELECT_ALGORITHM);
                       }}
                     >
-                      <XStack py="$3" px="$2">
+                      <XStack paddingVertical="$3" paddingHorizontal="$2">
                         <Text fontSize="$4">{algorithm}</Text>
                       </XStack>
                     </TouchableOpacity>

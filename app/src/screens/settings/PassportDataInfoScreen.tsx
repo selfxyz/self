@@ -48,7 +48,7 @@ const InfoRow: React.FC<{
   value: string | number;
 }> = ({ label, value }) => (
   <YStack>
-    <XStack py="$4" justifyContent="space-between">
+    <XStack paddingVertical="$4" justifyContent="space-between">
       <Caption size="large">{label}</Caption>
       <Caption color={black} size="large">
         {value}
@@ -88,13 +88,13 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
 
   return (
     <YStack
-      f={1}
+      flex={1}
       gap="$2"
-      jc="flex-start"
+      justifyContent="flex-start"
       paddingBottom={bottom + extraYPadding}
       backgroundColor={white}
     >
-      <ScrollView backgroundColor={white} px="$4">
+      <ScrollView backgroundColor={white} paddingHorizontal="$4">
         {Object.entries(dataKeysToLabels).map(([key, label]) => (
           <InfoRow
             key={key}

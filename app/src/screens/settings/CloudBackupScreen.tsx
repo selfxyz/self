@@ -110,7 +110,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         flexGrow={1}
         backgroundColor={white}
       >
-        <YStack alignItems="center" gap="$2.5" pb="$2.5">
+        <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
           <Title>
             {cloudBackupEnabled
               ? `${STORAGE_NAME} is enabled`

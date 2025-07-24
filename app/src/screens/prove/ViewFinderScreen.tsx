@@ -138,7 +138,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
         </ExpandableBottomLayout.TopSection>
         <ExpandableBottomLayout.BottomSection backgroundColor={white}>
           <YStack alignItems="center" gap="$2.5" paddingBottom={20}>
-            <YStack alignItems="center" gap="$6" pb="$2.5">
+            <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
               <Title>Verify your ID</Title>
               <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
                 <View pt="$2">

@@ -86,20 +86,20 @@ const MockDataScreenDeepLink: React.FC = () => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack f={1} bg={white} pt={top} pb={bottom + extraYPadding}>
+    <YStack flex={1} backgroundColor={white} paddingTop={top} paddingBottom={bottom + extraYPadding}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <YStack px="$4" pb="$4" gap="$5">
-          <YStack ai="center" mb={'$5'} mt={'$14'}>
+        <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
+          <YStack alignItems="center" marginBottom={'$5'} mt={'$14'}>
             <Title>Onboard your Developer ID</Title>
           </YStack>
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Name</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
               p="$2"
-              px="$3"
-              bg="$gray2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -107,14 +107,14 @@ const MockDataScreenDeepLink: React.FC = () => {
               <Text fontSize="$4">{deepLinkName}</Text>
             </XStack>
           </XStack>
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Surname</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
               p="$2"
-              px="$3"
-              bg="$gray2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -122,14 +122,14 @@ const MockDataScreenDeepLink: React.FC = () => {
               <Text fontSize="$4">{deepLinkSurname}</Text>
             </XStack>
           </XStack>
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Birth Date (YYMMDD)</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
               p="$2"
-              px="$3"
-              bg="$gray2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -138,14 +138,14 @@ const MockDataScreenDeepLink: React.FC = () => {
             </XStack>
           </XStack>
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Gender</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
               p="$2"
-              px="$3"
-              bg="$gray2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -154,14 +154,14 @@ const MockDataScreenDeepLink: React.FC = () => {
             </XStack>
           </XStack>
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Nationality</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
               p="$2"
-              px="$3"
-              bg="$gray2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -179,7 +179,7 @@ const MockDataScreenDeepLink: React.FC = () => {
         </YStack>
       </ScrollView>
 
-      <YStack px="$4" pb="$4">
+      <YStack paddingHorizontal="$4" paddingBottom="$4">
         <ButtonsContainer>
           <PrimaryButton
             trackEvent={MockDataEvents.CREATE_DEEP_LINK}
