@@ -22156,6 +22156,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "self-workspace-root@workspace:."
   dependencies:
+    eslint-config-prettier: "npm:10.1.8"
     gitleaks: "npm:1.0.0"
     husky: "npm:9.1.7"
     patch-package: "npm:^8.0.0"

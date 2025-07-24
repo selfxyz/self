@@ -19,6 +19,7 @@
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
   "devDependencies": {
+    "eslint-config-prettier": "10.1.8",
     "gitleaks": "1.0.0",
     "husky": "9.1.7",
     "patch-package": "^8.0.0",
