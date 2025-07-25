@@ -89,7 +89,7 @@ const MockDataScreenDeepLink: React.FC = () => {
     <YStack flex={1} backgroundColor={white} paddingTop={top} paddingBottom={bottom + extraYPadding}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
-          <YStack alignItems="center" marginBottom={'$5'} mt={'$14'}>
+          <YStack alignItems="center" marginBottom={'$5'} marginTop={'$14'}>
             <Title>Onboard your Developer ID</Title>
           </YStack>
           <XStack alignItems="center" justifyContent="space-between">
@@ -97,7 +97,7 @@ const MockDataScreenDeepLink: React.FC = () => {
             <XStack
               alignItems="center"
               gap="$2"
-              p="$2"
+              padding="$2"
               paddingHorizontal="$3"
               backgroundColor="$gray2"
               borderColor={borderColor}
@@ -112,7 +112,7 @@ const MockDataScreenDeepLink: React.FC = () => {
             <XStack
               alignItems="center"
               gap="$2"
-              p="$2"
+              padding="$2"
               paddingHorizontal="$3"
               backgroundColor="$gray2"
               borderColor={borderColor}
@@ -127,7 +127,7 @@ const MockDataScreenDeepLink: React.FC = () => {
             <XStack
               alignItems="center"
               gap="$2"
-              p="$2"
+              padding="$2"
               paddingHorizontal="$3"
               backgroundColor="$gray2"
               borderColor={borderColor}
@@ -143,7 +143,7 @@ const MockDataScreenDeepLink: React.FC = () => {
             <XStack
               alignItems="center"
               gap="$2"
-              p="$2"
+              padding="$2"
               paddingHorizontal="$3"
               backgroundColor="$gray2"
               borderColor={borderColor}
@@ -159,7 +159,7 @@ const MockDataScreenDeepLink: React.FC = () => {
             <XStack
               alignItems="center"
               gap="$2"
-              p="$2"
+              padding="$2"
               paddingHorizontal="$3"
               backgroundColor="$gray2"
               borderColor={borderColor}

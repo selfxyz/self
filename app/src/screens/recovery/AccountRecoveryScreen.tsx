@@ -26,7 +26,7 @@ const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <View borderColor={slate600} borderWidth="$1" borderRadius="$10" p="$5">
+        <View borderColor={slate600} borderWidth="$1" borderRadius="$10" padding="$5">
           <RestoreAccountSvg height={80} width={80} color={white} />
         </View>
       </ExpandableBottomLayout.TopSection>
@@ -38,7 +38,7 @@ const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
             not stolen or forged.
           </Description>
 
-          <YStack gap="$2.5" width="100%" pt="$6">
+          <YStack gap="$2.5" width="100%" paddingTop="$6">
             <PrimaryButton
               trackEvent={BackupEvents.ACCOUNT_RECOVERY_STARTED}
               onPress={onRestoreAccountPress}

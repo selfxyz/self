@@ -26,7 +26,7 @@ const PassportDataNotFound: React.FC = () => {
         <Title textAlign="center" style={{ color: white }}>
           ✨ Are you new here?
         </Title>
-        <Description mt={8} textAlign="center" style={{ color: slate200 }}>
+        <Description marginTop={8} textAlign="center" style={{ color: slate200 }}>
           It seems like you need to go through the registration flow first.
         </Description>
       </ExpandableBottomLayout.TopSection>

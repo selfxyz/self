@@ -357,20 +357,20 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               </GestureDetector>
               {isNfcEnabled ? (
                 <>
-                  <Title style={styles.title} mt="$2">
+                  <Title style={styles.title} marginTop="$2">
                     Find the RFID chip in your ID
                   </Title>
-                  <BodyText style={styles.bodyText} mt="$2" marginBottom="$2">
+                  <BodyText style={styles.bodyText} marginTop="$2" marginBottom="$2">
                     Place your phone against the chip and keep it still until
                     the sensor reads it.
                   </BodyText>
-                  <BodyText style={styles.disclaimer} mt="$2">
+                  <BodyText style={styles.disclaimer} marginTop="$2">
                     SELF DOES NOT STORE THIS INFORMATION.
                   </BodyText>
                 </>
               ) : (
                 <>
-                  <BodyText style={styles.disclaimer} mt="$2">
+                  <BodyText style={styles.disclaimer} marginTop="$2">
                     {dialogMessage}
                   </BodyText>
                 </>

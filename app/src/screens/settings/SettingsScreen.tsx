@@ -115,8 +115,8 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
     width="100%"
     flexDirection="row"
     gap={6}
-    py={20}
-    px={10}
+    paddingVertical={20}
+    paddingHorizontal={10}
     borderBottomColor={neutral700}
     borderBottomWidth={1}
     hitSlop={4}

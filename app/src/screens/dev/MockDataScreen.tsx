@@ -322,7 +322,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   buttonTap();
                   setAlgorithmSheetOpen(true);
                 }}
-                p="$2"
+                padding="$2"
                 paddingHorizontal="$3"
                 backgroundColor="white"
                 borderColor={borderColor}
@@ -345,7 +345,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 setCountrySheetOpen(true);
                 trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
               }}
-              p="$2"
+              padding="$2"
               paddingHorizontal="$3"
               backgroundColor="white"
               borderColor={borderColor}
@@ -375,7 +375,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
-              p="$2"
+              padding="$2"
               disabled={isInOfacList}
               opacity={isInOfacList ? 0.7 : 1}
             />
@@ -435,7 +435,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               }}
               backgroundColor={isInOfacList ? '$green7Light' : '$gray4'}
             >
-              <Switch.Thumb animation="quick" bc="white" />
+              <Switch.Thumb animation="quick" backgroundColor="white" />
             </Switch>
           </XStack>
 
@@ -484,7 +484,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
-          <YStack p="$4">
+          <YStack padding="$4">
             <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
               <Text fontSize="$8">Select a country</Text>
               <XStack
@@ -492,9 +492,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   selectionChange();
                   setCountrySheetOpen(false);
                 }}
-                p="$2"
+                padding="$2"
               >
-                <X color={borderColor} size="$1.5" mr="$2" />
+                <X color={borderColor} size="$1.5" marginRight="$2" />
               </XStack>
             </XStack>
             <Separator borderColor={separatorColor} marginBottom="$4" />
@@ -536,7 +536,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
-          <YStack p="$4">
+          <YStack padding="$4">
             <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
               <Text fontSize="$8">Select an algorithm</Text>
               <XStack
@@ -544,9 +544,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   selectionChange();
                   setAlgorithmSheetOpen(false);
                 }}
-                p="$2"
+                padding="$2"
               >
-                <X color={borderColor} size="$1.5" mr="$2" />
+                <X color={borderColor} size="$1.5" marginRight="$2" />
               </XStack>
             </XStack>
             <Separator borderColor={separatorColor} marginBottom="$4" />

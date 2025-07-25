@@ -134,7 +134,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
             )}
           </Caption>
 
-          <YStack gap="$2.5" width="100%" pt="$6">
+          <YStack gap="$2.5" width="100%" paddingTop="$6">
             {cloudBackupEnabled ? (
               <SecondaryButton
                 onPress={disableCloudBackups}

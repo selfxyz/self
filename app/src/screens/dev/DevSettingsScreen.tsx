@@ -94,7 +94,7 @@ const ScreenSelector = ({}) => {
         <Select.Value placeholder="Select screen to jump to" />
       </Select.Trigger>
 
-      <Adapt when="sm" platform="touch">
+      <Adapt when={"sm" as any} platform="touch">
         <Sheet native modal dismissOnSnapToBottom animation="medium">
           <Sheet.Frame>
             <Sheet.ScrollView>
@@ -211,16 +211,16 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   };
 
   return (
-    <YStack gap="$3" alignItems="center" backgroundColor="white" flex={1} paddingHorizontal="$4" paddingTop="$4">
+  <YStack gap="$3" alignItems="center" backgroundColor="white" flex={1} paddingHorizontal="$4" paddingTop="$4">
       <YStack
-        p="$4"
+        padding="$4"
         borderWidth={2}
         borderColor="$blue8"
         borderRadius="$4"
         backgroundColor="$blue1"
         width="100%"
         gap="$3"
-        mt="$3"
+        marginTop="$3"
       >
         <Text
           color="$blue10"
@@ -246,9 +246,9 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         </YStack>
       </YStack>
       <YStack
-        mt="$3"
+        marginTop="$3"
         marginBottom="$10"
-        p="$4"
+        padding="$4"
         borderWidth={2}
         borderColor="$red8"
         borderRadius="$4"
@@ -290,7 +290,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 backgroundColor="$gray12"
                 color="white"
                 size="$3"
-                mt="$2"
+                marginTop="$2"
                 onPress={handleRevealPrivateKey}
               >
                 Tap to reveal private key
@@ -319,7 +319,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           )}
         </YStack>
 
-        <YStack alignItems="center" gap="$3" mt="$2">
+        <YStack alignItems="center" gap="$3" marginTop="$2">
           <XStack alignItems="center" gap="$3">
             <Text color={textBlack} fontSize="$3">
               Delete Private Key

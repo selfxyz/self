@@ -139,7 +139,7 @@ const PassportDataSelector = () => {
 
   if (loading) {
     return (
-      <YStack gap="$3" alignItems="center" p="$4">
+      <YStack gap="$3" alignItems="center" padding="$4">
         <Text
           color={textBlack}
           fontWeight="bold"
@@ -190,7 +190,7 @@ const PassportDataSelector = () => {
       {documentCatalog.documents.map((metadata: any) => (
         <YStack
           key={metadata.id}
-          p="$3"
+          padding="$3"
           borderWidth={1}
           borderColor={
             documentCatalog.selectedDocumentId === metadata.id
@@ -280,7 +280,7 @@ const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
           <PassportDataSelector />
         </ScrollView>
 
-        <YStack gap="$3" mt="$4">
+        <YStack gap="$3" marginTop="$4">
           <Text
             color={textBlack}
             fontWeight="bold"

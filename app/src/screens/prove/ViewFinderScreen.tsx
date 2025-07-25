@@ -141,7 +141,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
             <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
               <Title>Verify your ID</Title>
               <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
-                <View pt="$2">
+                <View paddingTop="$2">
                   <QRScan height={40} width={40} color={slate800} />
                 </View>
                 <View maxWidth="75%">
