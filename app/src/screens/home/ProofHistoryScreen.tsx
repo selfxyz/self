@@ -298,7 +298,7 @@ const ProofHistoryScreen: React.FC = () => {
         return null;
       }
     },
-    [],
+    [navigation],
   );
 
   const renderSectionHeader = useCallback(
@@ -370,7 +370,11 @@ const ProofHistoryScreen: React.FC = () => {
   }, [isLoading, refreshing]);
 
   return (
-    <YStack flex={1} bg={slate50} pb={bottom + extraYPadding}>
+    <YStack
+      flex={1}
+      backgroundColor={slate50}
+      paddingBottom={bottom + extraYPadding}
+    >
       <SectionList
         sections={groupedProofs}
         renderItem={renderItem}

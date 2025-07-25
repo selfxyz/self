@@ -11,8 +11,8 @@ import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils/circuits/generateInputs';
 import crypto from 'crypto';
 import { SMT } from '@openpassport/zk-kit-smt';
-import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.json' with { type: 'json' };
-import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
+import nameAndDobjson from '../consts/ofac/nameAndDobSMT_ID.json' with { type: 'json' };
+import nameAndYobjson from '../consts/ofac/nameAndYobSMT_ID.json' with { type: 'json' };
 import {
   formatAndUnpackForbiddenCountriesList,
   formatAndUnpackReveal,

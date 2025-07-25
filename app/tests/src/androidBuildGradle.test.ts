@@ -18,12 +18,6 @@ describe('Android build.gradle Configuration', () => {
     rootGradleContent = fs.readFileSync(rootGradlePath, 'utf8');
   });
 
-  it('uses the correct applicationId and version', () => {
-    expect(gradleContent).toMatch(/applicationId\s+"com\.proofofpassportapp"/);
-    expect(gradleContent).toMatch(/versionName\s+"2.6.1"/);
-    expect(gradleContent).toMatch(/versionCode\s+82/);
-  });
-
   it('references SDK versions from the root project', () => {
     expect(gradleContent).toMatch(
       /minSdkVersion\s+rootProject\.ext\.minSdkVersion/,

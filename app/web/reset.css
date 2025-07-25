@@ -1,0 +1,6 @@
+/* just a few resets for web so that it looks more like the native app */
+
+button {
+  background-color: transparent;
+  border: none;
+}

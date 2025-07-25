@@ -63,7 +63,7 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
     Clipboard.setString(words.join(' '));
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-  }, [words, revealWords]);
+  }, [onRevealWords, revealWords, setHasViewedRecoveryPhrase, words]);
 
   return (
     <YStack position="relative" alignItems="stretch" gap={0}>
@@ -98,7 +98,7 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
           borderTopWidth={0}
           borderBottomLeftRadius="$5"
           borderBottomRightRadius="$5"
-          py="$2"
+          paddingVertical={16}
           onPress={copyToClipboardOrReveal}
           width="100%"
           textAlign="center"

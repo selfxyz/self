@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { SelfAppDisclosureConfig } from '@selfxyz/common';
-import { formatEndpoint } from '@selfxyz/common';
+import { formatEndpoint, SelfAppDisclosureConfig } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
@@ -73,7 +72,7 @@ const ProveScreen: React.FC = () => {
         disclosures: JSON.stringify(selectedApp.disclosures),
       });
     }
-  }, [provingStore.uuid, selectedApp]);
+  }, [addProofHistory, provingStore.uuid, selectedApp]);
 
   useEffect(() => {
     if (isContentShorterThanScrollView) {
@@ -95,7 +94,7 @@ const ProveScreen: React.FC = () => {
       provingStore.init('disclose');
     }
     selectedAppRef.current = selectedApp;
-  }, [selectedApp, isFocused]);
+  }, [selectedApp, isFocused, provingStore]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
@@ -202,14 +201,14 @@ const ProveScreen: React.FC = () => {
             <YStack alignItems="center" justifyContent="center">
               {logoSource && (
                 <Image
-                  mb={20}
+                  marginBottom={20}
                   source={logoSource}
                   width={100}
                   height={100}
                   objectFit="contain"
                 />
               )}
-              <BodyText fontSize={12} color={slate300} mb={20}>
+              <BodyText fontSize={12} color={slate300} marginBottom={20}>
                 {url}
               </BodyText>
               <BodyText fontSize={24} color={slate300} textAlign="center">

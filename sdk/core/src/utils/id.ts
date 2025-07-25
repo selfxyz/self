@@ -26,8 +26,9 @@ export const formatRevealedDataPacked = (
       revealedDataIndices[attestationId].nameEnd + 1
     )
     .toString('utf-8')
-    .replace('<<', ' ')
-    .replace(/<*/g, '');
+    .replace(/([A-Z])<+([A-Z])/g, '$1 $2')
+    .replace(/</g, '')
+    .trim();
   const idNumber = revealedDataPackedString
     .subarray(
       revealedDataIndices[attestationId].idNumberStart,

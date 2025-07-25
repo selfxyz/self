@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import React from 'react';
+import { createContext, createElement, Fragment } from 'react';
 // On web we dont need safe context area since we will be inside another app. (and it doesnt work)
 
 export function SafeAreaProvider({ children }) {
-  return React.createElement(React.Fragment, null, children);
+  return createElement(Fragment, null, children);
 }
 
 export function useSafeAreaInsets() {
@@ -16,7 +16,7 @@ export function useSafeAreaFrame() {
 }
 
 export function SafeAreaView(props) {
-  return React.createElement('div', props, props.children);
+  return createElement('div', props, props.children);
 }
 
 export const initialWindowMetrics = {
@@ -34,9 +34,9 @@ export const initialWindowMetrics = {
   },
 };
 
-export const SafeAreaContext = React.createContext(initialWindowMetrics);
+export const SafeAreaContext = createContext(initialWindowMetrics);
 
-export const SafeAreaInsetsContext = React.createContext({
+export const SafeAreaInsetsContext = createContext({
   top: 0,
   bottom: 0,
   left: 0,

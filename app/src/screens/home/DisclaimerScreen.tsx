@@ -35,7 +35,7 @@ const DisclaimerScreen: React.FC = () => {
           cacheComposition={true}
           renderMode="HARDWARE"
         />
-        <YStack f={1} jc="flex-end" pb="$4">
+        <YStack flex={1} justifyContent="flex-end" paddingBottom="$4">
           <SubHeader style={{ color: white }}>Caution</SubHeader>
         </YStack>
       </ExpandableBottomLayout.TopSection>

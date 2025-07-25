@@ -19,7 +19,7 @@ import { sha384 } from 'js-sha512';
  *         to ensure that the TEE's COSE_Sign1 attestation document has not been tampered with.
  * @see https://docs.aws.amazon.com/enclaves/latest/user/set-up-attestation.html for p384 sha384 usage
  */
-export const cose = {
+const cose = {
   sign: {
     verify: async (
       data: Buffer,

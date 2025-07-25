@@ -194,6 +194,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
       });
     };
     // only clean up on unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const hasLocalOverrides = featureFlags.some(
@@ -221,16 +222,16 @@ const DevFeatureFlagsScreen: React.FC = () => {
               handleToggleFlag(flag.key, flag.value as boolean)
             }
             disabled={isTogglingFlag === flag.key}
-            bg={flag.value ? '$green7Light' : '$gray4'}
+            backgroundColor={flag.value ? '$green7Light' : '$gray4'}
             style={{ minWidth: 48, minHeight: 36, alignSelf: 'flex-end' }}
           >
-            <Switch.Thumb animation="quick" bc="$white" />
+            <Switch.Thumb animation="quick" backgroundColor="$white" />
           </Switch>
         );
       case 'string':
       case 'number':
         return (
-          <YStack f={1} gap="$1">
+          <YStack flex={1} gap="$1">
             <Input
               value={textInputValues[flag.key] || ''}
               onChangeText={value => {
@@ -248,14 +249,14 @@ const DevFeatureFlagsScreen: React.FC = () => {
               borderRadius={12}
               borderWidth={1}
               borderColor={inputErrors[flag.key] ? '$red6' : '$gray6'}
-              bg="$gray2"
-              px="$3"
-              py="$2"
+              backgroundColor="$gray2"
+              paddingHorizontal="$3"
+              paddingVertical="$2"
               fontSize="$4"
               style={{ minHeight: 36 }}
             />
             {inputErrors[flag.key] && (
-              <Text color="$red11" fontSize="$2" pl="$2">
+              <Text color="$red11" fontSize="$2" paddingLeft="$2">
                 {inputErrors[flag.key]}
               </Text>
             )}
@@ -267,8 +268,13 @@ const DevFeatureFlagsScreen: React.FC = () => {
   };
 
   return (
-    <YStack f={1} bg="white" px="$4" pt="$4">
-      <YStack mb="$4">
+    <YStack
+      flex={1}
+      backgroundColor="white"
+      paddingHorizontal="$4"
+      paddingTop="$4"
+    >
+      <YStack marginBottom="$4">
         <XStack justifyContent="space-between" alignItems="center">
           <XStack alignItems="center" gap="$2">
             <Button size="$3" onPress={handleRefresh} disabled={isLoading}>
@@ -292,15 +298,15 @@ const DevFeatureFlagsScreen: React.FC = () => {
         </XStack>
       </YStack>
 
-      <ScrollView showsVerticalScrollIndicator={false} mt="$4">
-        <YStack gap="$3" pb="$8">
+      <ScrollView showsVerticalScrollIndicator={false} marginTop="$4">
+        <YStack gap="$3" paddingBottom="$8">
           {errorState && (
             <YStack
-              p="$4"
+              padding="$4"
               borderWidth={1}
               borderColor="$red6"
               borderRadius="$4"
-              bg="$red2"
+              backgroundColor="$red2"
               alignItems="center"
               gap="$2"
             >
@@ -311,11 +317,11 @@ const DevFeatureFlagsScreen: React.FC = () => {
           )}
           {featureFlags.length === 0 ? (
             <YStack
-              p="$4"
+              padding="$4"
               borderWidth={1}
               borderColor="$gray6"
               borderRadius="$4"
-              bg="$gray2"
+              backgroundColor="$gray2"
               alignItems="center"
               gap="$2"
             >
@@ -336,25 +342,30 @@ const DevFeatureFlagsScreen: React.FC = () => {
             featureFlags.map(flag => (
               <YStack
                 key={flag.key}
-                p="$3"
+                padding="$3"
                 borderWidth={1}
                 borderColor="$gray6"
                 borderRadius="$4"
-                mb="$2"
+                marginBottom="$2"
               >
                 <XStack justifyContent="space-between" alignItems="center">
-                  <YStack f={1} mr="$4">
+                  <YStack flex={1} marginRight="$4">
                     <Text fontSize="$4" fontWeight="500">
                       {flag.key}
                     </Text>
                     {flag.remoteValue !== undefined && (
-                      <Text fontSize="$2" color="$gray9" mt="$1">
+                      <Text fontSize="$2" color="$gray9" marginTop="$1">
                         Default:{' '}
                         {formatDisplayValue(flag.remoteValue, flag.type)}
                       </Text>
                     )}
                   </YStack>
-                  <XStack alignItems="center" gap="$3" f={1} jc="flex-end">
+                  <XStack
+                    alignItems="center"
+                    gap="$3"
+                    flex={1}
+                    justifyContent="flex-end"
+                  >
                     {renderFlagInput(flag)}
                   </XStack>
                 </XStack>

@@ -22,7 +22,7 @@ interface Inputs {
 export const scan = async (inputs: Inputs) => {
   if (MIXPANEL_NFC_PROJECT_TOKEN) {
     if (Platform.OS === 'ios') {
-      const enableDebugLogs = ENABLE_DEBUG_LOGS === 'true';
+      const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
       NativeModules.PassportReader.configure(
         MIXPANEL_NFC_PROJECT_TOKEN,
         enableDebugLogs,
