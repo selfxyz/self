@@ -13,6 +13,7 @@ export interface SelfApp {
   logoBase64: string;
   endpointType: EndpointType;
   endpoint: string;
+  deeplinkCallback: string;
   header: string;
   scope: string;
   sessionId: string;
@@ -95,6 +96,7 @@ export class SelfAppBuilder {
       endpointType: 'https',
       header: '',
       logoBase64: '',
+      deeplinkCallback: '',
       disclosures: {},
       chainID: config.endpointType === 'staging_celo' ? 44787 : 42220,
       version: config.version ?? 2,

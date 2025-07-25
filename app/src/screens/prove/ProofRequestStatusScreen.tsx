@@ -3,7 +3,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { StatusBar, StyleSheet, View, Linking } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
@@ -46,6 +46,7 @@ const SuccessScreen: React.FC = () => {
   const isFocused = useIsFocused();
 
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   function onOkPress() {
     buttonTap();
@@ -53,6 +54,10 @@ const SuccessScreen: React.FC = () => {
     setTimeout(() => {
       cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
+  }
+
+  function cancelDeeplinkCallbackRedirect() {
+  setCountdown(null);
   }
 
   useEffect(() => {
@@ -70,6 +75,9 @@ const SuccessScreen: React.FC = () => {
         sessionId,
         appName,
       });
+      if (selfApp?.deeplinkCallback) {
+        setCountdown(5);
+      }
     } else if (currentState === 'failure' || currentState === 'error') {
       notificationError();
       setAnimationSource(failAnimation);
@@ -97,7 +105,25 @@ const SuccessScreen: React.FC = () => {
     errorCode,
     reason,
     updateProofStatus,
+    selfApp?.deeplinkCallback,
   ]);
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCountdown(null);
+      if (selfApp?.deeplinkCallback) {
+        Linking.openURL(selfApp.deeplinkCallback).catch(err => {
+          console.error('Failed to open deep link:', err);
+        });
+      }
+    }
+  }, [countdown, selfApp?.deeplinkCallback]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -128,6 +154,8 @@ const SuccessScreen: React.FC = () => {
             currentState={currentState}
             appName={appName ?? 'The app'}
             reason={reason ?? undefined}
+            countdown={countdown}
+            deeplinkCallback={selfApp?.deeplinkCallback?.replace(/^https?:\/\//, '')}
           />
         </View>
         <PrimaryButton
@@ -137,14 +165,18 @@ const SuccessScreen: React.FC = () => {
             currentState !== 'error' &&
             currentState !== 'failure'
           }
-          onPress={onOkPress}
+          onPress={
+            countdown !== null && countdown > 0
+              ? cancelDeeplinkCallbackRedirect
+              : onOkPress
+          }
         >
           {currentState !== 'completed' &&
           currentState !== 'error' &&
           currentState !== 'failure' ? (
             <Spinner />
           ) : (
-            'OK'
+            (countdown !== null && countdown > 0) ? 'Cancel' : 'OK'
           )}
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
@@ -168,12 +200,33 @@ function Info({
   currentState,
   appName,
   reason,
+  countdown,
+  deeplinkCallback,
 }: {
   currentState: string;
   appName: string;
   reason?: string;
+  countdown?: number | null;
+  deeplinkCallback?: string;
 }) {
   if (currentState === 'completed') {
+    if (countdown !== null && countdown !== undefined && countdown > 0) {
+      return (
+        <View style={{ gap: 8 }}>
+          <Description>
+            You've successfully proved your identity to{' '}
+            <BodyText style={typography.strong}>{appName}</BodyText>
+          </Description>
+          <Description>
+            <BodyText style={typography.strong}>
+              Redirecting to
+              <BodyText style={[typography.strong, { color: '#007AFF' }]}> {deeplinkCallback} </BodyText>
+               in {countdown}
+            </BodyText>
+          </Description>
+        </View>
+      );
+    }
     return (
       <Description>
         You've successfully proved your identity to{' '}
