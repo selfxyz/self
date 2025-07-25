@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { GOOGLE_SIGNIN_ANDROID_CLIENT_ID, IS_TEST_BUILD } from '@env';
+import { GOOGLE_SIGNIN_ANDROID_CLIENT_ID } from '@env';
 import { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
 import {
   AuthConfiguration,
@@ -9,7 +9,10 @@ import {
 } from 'react-native-app-auth';
 
 // Ensure the client ID is available at runtime (skip in test environment)
-if (!IS_TEST_BUILD && !GOOGLE_SIGNIN_ANDROID_CLIENT_ID) {
+const isTestEnvironment =
+  process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
+
+if (!isTestEnvironment && !GOOGLE_SIGNIN_ANDROID_CLIENT_ID) {
   throw new Error(
     'GOOGLE_SIGNIN_ANDROID_CLIENT_ID environment variable is not set',
   );
