@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { GOOGLE_SIGNIN_ANDROID_CLIENT_ID } from '@env';
+import { GOOGLE_SIGNIN_ANDROID_CLIENT_ID, IS_TEST_BUILD } from '@env';
 import { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
 import {
   AuthConfiguration,
@@ -8,8 +8,8 @@ import {
   AuthorizeResult,
 } from 'react-native-app-auth';
 
-// Ensure the client ID is available at runtime
-if (!GOOGLE_SIGNIN_ANDROID_CLIENT_ID) {
+// Ensure the client ID is available at runtime (skip in test environment)
+if (!IS_TEST_BUILD && !GOOGLE_SIGNIN_ANDROID_CLIENT_ID) {
   throw new Error(
     'GOOGLE_SIGNIN_ANDROID_CLIENT_ID environment variable is not set',
   );
@@ -18,7 +18,7 @@ if (!GOOGLE_SIGNIN_ANDROID_CLIENT_ID) {
 const config: AuthConfiguration = {
   // DEBUG: log config for Auth
   // ensure this prints the correct values before calling authorize
-  clientId: GOOGLE_SIGNIN_ANDROID_CLIENT_ID,
+  clientId: GOOGLE_SIGNIN_ANDROID_CLIENT_ID || 'mock-client-id',
   redirectUrl: 'com.proofofpassportapp:/oauth2redirect',
   scopes: ['https://www.googleapis.com/auth/drive.appdata'],
   serviceConfiguration: {
