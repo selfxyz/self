@@ -3,7 +3,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, View, Linking } from 'react-native';
+import { Linking, StatusBar, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
@@ -57,7 +57,7 @@ const SuccessScreen: React.FC = () => {
   }
 
   function cancelDeeplinkCallbackRedirect() {
-  setCountdown(null);
+    setCountdown(null);
   }
 
   useEffect(() => {
@@ -155,7 +155,10 @@ const SuccessScreen: React.FC = () => {
             appName={appName ?? 'The app'}
             reason={reason ?? undefined}
             countdown={countdown}
-            deeplinkCallback={selfApp?.deeplinkCallback?.replace(/^https?:\/\//, '')}
+            deeplinkCallback={selfApp?.deeplinkCallback?.replace(
+              /^https?:\/\//,
+              '',
+            )}
           />
         </View>
         <PrimaryButton
@@ -175,8 +178,10 @@ const SuccessScreen: React.FC = () => {
           currentState !== 'error' &&
           currentState !== 'failure' ? (
             <Spinner />
+          ) : countdown !== null && countdown > 0 ? (
+            'Cancel'
           ) : (
-            (countdown !== null && countdown > 0) ? 'Cancel' : 'OK'
+            'OK'
           )}
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
@@ -220,8 +225,11 @@ function Info({
           <Description>
             <BodyText style={typography.strong}>
               Redirecting to
-              <BodyText style={[typography.strong, { color: '#007AFF' }]}> {deeplinkCallback} </BodyText>
-               in {countdown}
+              <BodyText style={[typography.strong, { color: '#007AFF' }]}>
+                {' '}
+                {deeplinkCallback}{' '}
+              </BodyText>
+              in {countdown}
             </BodyText>
           </Description>
         </View>
