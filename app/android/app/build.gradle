@@ -123,7 +123,7 @@ android {
                 arguments += "-DANDROID_STL=c++_shared"
             }
             ndk {
-                abiFilters += "arm64-v8a"
+                abiFilters = ["armeabi-v7a", "arm64-v8a", "x86", "x86_64"]
             }
         }
     }
@@ -158,6 +158,7 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
+        pickFirst '**/libc++_shared.so'
     }
 }
 
@@ -177,7 +178,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging'
 
     if (hermesEnabled.toBoolean()) {
-        implementation("com.facebook.react:hermes-android")
+        implementation("com.facebook.react:hermes-engine")
     } else {
         implementation jscFlavor
     }
