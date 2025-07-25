@@ -226,7 +226,11 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
           borderTopRightRadius={30}
         >
           <ScrollView>
-            <YStack alignItems="flex-start" justifyContent="flex-start" width="100%">
+            <YStack
+              alignItems="flex-start"
+              justifyContent="flex-start"
+              width="100%"
+            >
               {screenRoutes.map(([Icon, menuText, menuRoute]) => (
                 <MenuButton
                   key={menuRoute}

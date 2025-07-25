@@ -225,7 +225,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
             backgroundColor={flag.value ? '$green7Light' : '$gray4'}
             style={{ minWidth: 48, minHeight: 36, alignSelf: 'flex-end' }}
           >
-          <Switch.Thumb animation="quick" backgroundColor="$white" />
+            <Switch.Thumb animation="quick" backgroundColor="$white" />
           </Switch>
         );
       case 'string':
@@ -268,7 +268,12 @@ const DevFeatureFlagsScreen: React.FC = () => {
   };
 
   return (
-    <YStack flex={1} backgroundColor="white" paddingHorizontal="$4" paddingTop="$4">
+    <YStack
+      flex={1}
+      backgroundColor="white"
+      paddingHorizontal="$4"
+      paddingTop="$4"
+    >
       <YStack marginBottom="$4">
         <XStack justifyContent="space-between" alignItems="center">
           <XStack alignItems="center" gap="$2">
@@ -355,7 +360,12 @@ const DevFeatureFlagsScreen: React.FC = () => {
                       </Text>
                     )}
                   </YStack>
-                  <XStack alignItems="center" gap="$3" flex={1} justifyContent="flex-end">
+                  <XStack
+                    alignItems="center"
+                    gap="$3"
+                    flex={1}
+                    justifyContent="flex-end"
+                  >
                     {renderFlagInput(flag)}
                   </XStack>
                 </XStack>

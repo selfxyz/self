@@ -360,7 +360,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
                   <Title style={styles.title} marginTop="$2">
                     Find the RFID chip in your ID
                   </Title>
-                  <BodyText style={styles.bodyText} marginTop="$2" marginBottom="$2">
+                  <BodyText
+                    style={styles.bodyText}
+                    marginTop="$2"
+                    marginBottom="$2"
+                  >
                     Place your phone against the chip and keep it still until
                     the sensor reads it.
                   </BodyText>

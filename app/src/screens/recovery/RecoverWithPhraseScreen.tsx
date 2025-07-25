@@ -85,7 +85,12 @@ const RecoverWithPhraseScreen: React.FC<
   }, [mnemonic, navigation, restoreAccountFromMnemonic, trackEvent]);
 
   return (
-    <YStack alignItems="center" gap="$6" paddingBottom="$2.5" style={styles.layout}>
+    <YStack
+      alignItems="center"
+      gap="$6"
+      paddingBottom="$2.5"
+      style={styles.layout}
+    >
       <Description color={slate300}>
         Your recovery phrase has 24 words. Enter the words in the correct order,
         separated by spaces.

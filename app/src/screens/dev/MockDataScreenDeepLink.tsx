@@ -86,7 +86,12 @@ const MockDataScreenDeepLink: React.FC = () => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack flex={1} backgroundColor={white} paddingTop={top} paddingBottom={bottom + extraYPadding}>
+    <YStack
+      flex={1}
+      backgroundColor={white}
+      paddingTop={top}
+      paddingBottom={bottom + extraYPadding}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
           <YStack alignItems="center" marginBottom={'$5'} marginTop={'$14'}>

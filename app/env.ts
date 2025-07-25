@@ -5,6 +5,8 @@
  */
 
 export const IS_TEST_BUILD = process.env.IS_TEST_BUILD === 'true';
+export const GOOGLE_SIGNIN_ANDROID_CLIENT_ID =
+  process.env.GOOGLE_SIGNIN_ANDROID_CLIENT_ID;
 export const GOOGLE_SIGNIN_WEB_CLIENT_ID =
   process.env.GOOGLE_SIGNIN_WEB_CLIENT_ID;
 export const SENTRY_DSN = process.env.SENTRY_DSN;

@@ -206,7 +206,11 @@ const PassportDataSelector = () => {
           onPress={() => handleDocumentSelection(metadata.id)}
           pressStyle={{ opacity: 0.8 }}
         >
-          <XStack alignItems="center" justifyContent="space-between" marginBottom="$2">
+          <XStack
+            alignItems="center"
+            justifyContent="space-between"
+            marginBottom="$2"
+          >
             <XStack alignItems="center" gap="$3" flex={1}>
               <Button
                 size="$2"
@@ -274,7 +278,12 @@ const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
   };
 
   return (
-    <YStack flex={1} backgroundColor={white} paddingHorizontal="$4" paddingBottom={bottom + extraYPadding}>
+    <YStack
+      flex={1}
+      backgroundColor={white}
+      paddingHorizontal="$4"
+      paddingBottom={bottom + extraYPadding}
+    >
       <YStack gap="$6" paddingVertical="$4" flex={1}>
         <ScrollView showsVerticalScrollIndicator={false} flex={1}>
           <PassportDataSelector />

@@ -8,6 +8,13 @@ import {
   AuthorizeResult,
 } from 'react-native-app-auth';
 
+// Ensure the client ID is available at runtime
+if (!GOOGLE_SIGNIN_ANDROID_CLIENT_ID) {
+  throw new Error(
+    'GOOGLE_SIGNIN_ANDROID_CLIENT_ID environment variable is not set',
+  );
+}
+
 const config: AuthConfiguration = {
   // DEBUG: log config for Auth
   // ensure this prints the correct values before calling authorize

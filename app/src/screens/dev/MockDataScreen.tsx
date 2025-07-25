@@ -258,7 +258,12 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack flex={1} backgroundColor={white} paddingTop={top} paddingBottom={bottom + extraYPadding}>
+    <YStack
+      flex={1}
+      backgroundColor={white}
+      paddingTop={top}
+      paddingBottom={bottom + extraYPadding}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
           <GestureDetector gesture={devModeTap}>
@@ -401,7 +406,12 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               >
                 <Minus />
               </Button>
-              <Text textAlign="center" width="$6" color={textBlack} fontSize="$5">
+              <Text
+                textAlign="center"
+                width="$6"
+                color={textBlack}
+                fontSize="$5"
+              >
                 {expiryYears} years
               </Text>
               <Button
@@ -485,7 +495,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           borderTopRightRadius="$9"
         >
           <YStack padding="$4">
-            <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              marginBottom="$4"
+            >
               <Text fontSize="$8">Select a country</Text>
               <XStack
                 onPress={() => {
@@ -537,7 +551,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           borderTopRightRadius="$9"
         >
           <YStack padding="$4">
-            <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              marginBottom="$4"
+            >
               <Text fontSize="$8">Select an algorithm</Text>
               <XStack
                 onPress={() => {

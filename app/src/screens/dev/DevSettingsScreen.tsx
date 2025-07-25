@@ -94,7 +94,7 @@ const ScreenSelector = ({}) => {
         <Select.Value placeholder="Select screen to jump to" />
       </Select.Trigger>
 
-      <Adapt when={"sm" as any} platform="touch">
+      <Adapt when={'sm' as any} platform="touch">
         <Sheet native modal dismissOnSnapToBottom animation="medium">
           <Sheet.Frame>
             <Sheet.ScrollView>
@@ -211,7 +211,14 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   };
 
   return (
-  <YStack gap="$3" alignItems="center" backgroundColor="white" flex={1} paddingHorizontal="$4" paddingTop="$4">
+    <YStack
+      gap="$3"
+      alignItems="center"
+      backgroundColor="white"
+      flex={1}
+      paddingHorizontal="$4"
+      paddingTop="$4"
+    >
       <YStack
         padding="$4"
         borderWidth={2}
@@ -232,7 +239,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           🚀 Developer Shortcuts
         </Text>
         <YStack alignItems="center" gap="$3">
-        <YStack alignItems="center" gap="$3" width="100%">
+          <YStack alignItems="center" gap="$3" width="100%">
             <Text
               color={textBlack}
               fontSize="$3"

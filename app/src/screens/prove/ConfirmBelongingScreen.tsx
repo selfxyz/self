@@ -40,7 +40,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   useEffect(() => {
     notificationSuccess();
     init('dsc');
-  }, []);
+  }, [init]);
 
   const onOkPress = async () => {
     try {
