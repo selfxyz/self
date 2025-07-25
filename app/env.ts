@@ -10,6 +10,9 @@ export const GOOGLE_SIGNIN_WEB_CLIENT_ID =
 export const SENTRY_DSN = process.env.SENTRY_DSN;
 export const SEGMENT_KEY = process.env.SEGMENT_KEY;
 export const ENABLE_DEBUG_LOGS = process.env.ENABLE_DEBUG_LOGS === 'true';
+export const GRAFANA_LOKI_URL = process.env.GRAFANA_LOKI_URL;
+export const GRAFANA_LOKI_USERNAME = process.env.GRAFANA_LOKI_USERNAME;
+export const GRAFANA_LOKI_PASSWORD = process.env.GRAFANA_LOKI_PASSWORD;
 export const DEFAULT_PNUMBER = undefined;
 export const DEFAULT_DOB = undefined;
 export const DEFAULT_DOE = undefined;

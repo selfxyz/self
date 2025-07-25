@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../providers/authProvider';
+import { useLogger } from '../../providers/loggerProvider';
 import {
   loadPassportDataAndSecret,
   storePassportData,
@@ -29,8 +30,13 @@ const SplashScreen: React.FC = ({}) => {
   const [isAnimationFinished, setIsAnimationFinished] = React.useState(false);
   const [nextScreen, setNextScreen] = React.useState<string | null>(null);
   const dataLoadInitiatedRef = useRef(false);
+  const { AppLogger } = useLogger();
 
   useEffect(() => {
+    //TODO: Remove this
+    AppLogger.info('SplashScreen mounted', {
+      test: 'test',
+    });
     if (!dataLoadInitiatedRef.current) {
       dataLoadInitiatedRef.current = true;
       console.log('Starting data loading and validation...');
