@@ -128,6 +128,21 @@ const ProveScreen: React.FC = () => {
     return formatEndpoint(selectedApp.endpoint);
   }, [selectedApp?.endpoint]);
 
+  const formattedUserId = useMemo(() => {
+    if (!selectedApp?.userId) {
+      return null;
+    }
+
+    if (selectedApp.userIdType === 'hex') {
+      const address = selectedApp.userId.startsWith('0x')
+        ? selectedApp.userId
+        : `0x${selectedApp.userId}`;
+      return `${address.slice(0, 4)}...${address.slice(-4)}`;
+    }
+
+    return selectedApp.userId;
+  }, [selectedApp?.userId, selectedApp?.userIdType]);
+
   function onVerify() {
     provingStore.setUserConfirmed();
     buttonTap();
@@ -232,6 +247,30 @@ const ProveScreen: React.FC = () => {
           onLayout={handleScrollViewLayout}
         >
           <Disclosures disclosures={disclosureOptions} />
+
+          {/* Display connected wallet or UUID */}
+          {formattedUserId && (
+            <View marginTop={20} paddingHorizontal={20}>
+              <BodyText
+                fontSize={16}
+                color={black}
+                fontWeight="600"
+                marginBottom={10}
+              >
+                Connected ID:
+              </BodyText>
+              <View
+                backgroundColor={slate300}
+                padding={15}
+                borderRadius={8}
+                marginBottom={10}
+              >
+                <BodyText fontSize={14} color={black} lineHeight={20}>
+                  {formattedUserId}
+                </BodyText>
+              </View>
+            </View>
+          )}
 
           {/* Display userDefinedData if it exists */}
           {selectedApp?.userDefinedData && (
