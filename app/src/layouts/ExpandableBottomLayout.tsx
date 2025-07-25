@@ -104,7 +104,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   ...props
 }) => {
   const { bottom: safeAreaBottom } = useSafeAreaInsets();
-  const incomingBottom = props.paddingBottom ?? props.pb ?? 0;
+  const incomingBottom = props.paddingBottom ?? 0;
   const minBottom = safeAreaBottom + extraYPadding;
   const totalBottom =
     typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;

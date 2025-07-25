@@ -75,21 +75,21 @@ const HomeScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
   return (
     <YStack
-      bg={black}
+      backgroundColor={black}
       gap={20}
-      jc="space-between"
+      justifyContent="space-between"
       flex={1}
       paddingHorizontal={20}
       paddingBottom={bottom + extraYPadding}
     >
-      <YStack ai="center" gap={20} justifyContent="flex-start">
+      <YStack alignItems="center" gap={20} justifyContent="flex-start">
         <SelfCard width="100%" />
         <Caption color={amber500} opacity={0.3} textTransform="uppercase">
           Only visible to you
         </Caption>
         <PrivacyNote />
       </YStack>
-      <YStack ai="center" gap={20} justifyContent="flex-end">
+      <YStack alignItems="center" gap={20} justifyContent="flex-end">
         <ScanButton
           onPress={onScanButtonPress}
           hitSlop={100}

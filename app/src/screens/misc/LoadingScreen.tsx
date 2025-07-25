@@ -163,9 +163,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
 
   return (
     <YStack
-      bg={black}
+      backgroundColor={black}
       gap={20}
-      jc="space-between"
+      justifyContent="space-between"
       flex={1}
       paddingHorizontal={20}
       paddingBottom={bottom + extraYPadding}

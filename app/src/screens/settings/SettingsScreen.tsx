@@ -115,8 +115,8 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
     width="100%"
     flexDirection="row"
     gap={6}
-    py={20}
-    px={10}
+    paddingVertical={20}
+    paddingHorizontal={10}
     borderBottomColor={neutral700}
     borderBottomWidth={1}
     hitSlop={4}
@@ -216,9 +216,9 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
     <GestureDetector gesture={devModeTap}>
       <View backgroundColor={white}>
         <YStack
-          bg={black}
+          backgroundColor={black}
           gap={20}
-          jc="space-between"
+          justifyContent="space-between"
           height={'100%'}
           paddingHorizontal={20}
           paddingBottom={bottom + extraYPadding}
@@ -226,7 +226,11 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
           borderTopRightRadius={30}
         >
           <ScrollView>
-            <YStack ai="flex-start" justifyContent="flex-start" width="100%">
+            <YStack
+              alignItems="flex-start"
+              justifyContent="flex-start"
+              width="100%"
+            >
               {screenRoutes.map(([Icon, menuText, menuRoute]) => (
                 <MenuButton
                   key={menuRoute}
@@ -239,7 +243,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             </YStack>
           </ScrollView>
           <YStack
-            ai="center"
+            alignItems="center"
             gap={20}
             justifyContent="center"
             paddingBottom={50}
@@ -252,8 +256,8 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
               backgroundColor={slate800}
               color={white}
               flexDirection="row"
-              jc="center"
-              ai="center"
+              justifyContent="center"
+              alignItems="center"
               gap={6}
               borderRadius={4}
               pressStyle={pressedStyle}

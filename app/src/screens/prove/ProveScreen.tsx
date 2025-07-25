@@ -201,14 +201,14 @@ const ProveScreen: React.FC = () => {
             <YStack alignItems="center" justifyContent="center">
               {logoSource && (
                 <Image
-                  mb={20}
+                  marginBottom={20}
                   source={logoSource}
                   width={100}
                   height={100}
                   objectFit="contain"
                 />
               )}
-              <BodyText fontSize={12} color={slate300} mb={20}>
+              <BodyText fontSize={12} color={slate300} marginBottom={20}>
                 {url}
               </BodyText>
               <BodyText fontSize={24} color={slate300} textAlign="center">
