@@ -89,7 +89,15 @@ const SuccessScreen: React.FC = () => {
     } else {
       setAnimationSource(loadingAnimation);
     }
-  }, [currentState, isFocused]);
+  }, [
+    currentState,
+    isFocused,
+    appName,
+    sessionId,
+    errorCode,
+    reason,
+    updateProofStatus,
+  ]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>

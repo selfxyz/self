@@ -33,8 +33,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
             <BodyText textAlign="center">TODO implement</BodyText>
           </TextsContainer>
           <Image
-            h="$8"
-            w="$8"
+            height="$8"
+            width="$8"
             alignSelf="center"
             borderRadius={1000}
             source={{

@@ -40,7 +40,12 @@ import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate100, slate400, slate500, white } from '../../utils/colors';
 import { dinot } from '../../utils/fonts';
-import { buttonTap } from '../../utils/haptic';
+import {
+  buttonTap,
+  feedbackSuccess,
+  feedbackUnsuccessful,
+  impactLight,
+} from '../../utils/haptic';
 import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 
@@ -68,6 +73,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
+  const [nfcMessage, setNfcMessage] = useState<string | null>(null);
 
   const animationRef = useRef<LottieView>(null);
 
@@ -260,13 +266,15 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       }
     }
   }, [
-    isNfcSupported,
     isNfcEnabled,
+    isNfcSupported,
+    route.params,
     passportNumber,
     dateOfBirth,
     dateOfExpiry,
-    route.params,
     isPacePolling,
+    navigation,
+    openErrorModal,
   ]);
 
   const onCancelPress = useHapticNavigation('Launch', {
@@ -277,7 +285,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const _cancelScanIfRunning = useCallback(async () => {
     // // TODO: cancel if scanning
     // setIsNfcSheetOpen(false);
-  }, [isNfcSheetOpen]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -286,7 +294,32 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
           'NativeEvent',
-          (event: string) => console.info(event),
+          (event: string) => {
+            console.info(event);
+            setNfcMessage(event);
+            // Haptic feedback mapping for completion/error only
+            if (
+              event === 'PACE succeeded' ||
+              event === 'BAC succeeded' ||
+              event === 'Chip authentication succeeded'
+            ) {
+              feedbackSuccess(); // Major success
+            } else if (
+              event === 'Reading DG1 succeeded' ||
+              event === 'Reading DG2 succeeded' ||
+              event === 'Reading SOD succeeded' ||
+              event === 'Reading COM succeeded'
+            ) {
+              impactLight(); // Minor DG step
+            } else if (
+              event === 'BAC failed' ||
+              event === 'PACE failed' ||
+              event.toLowerCase().includes('failed') ||
+              event.toLowerCase().includes('error')
+            ) {
+              feedbackUnsuccessful(); // Error
+            }
+          },
         );
 
         return () => {
@@ -308,7 +341,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               animationRef.current?.play();
             }, 5000); // Pause 5 seconds before playing again
           }}
-          source={passportVerifyAnimation}
+          source={passportVerifyAnimation as any}
           style={styles.animation}
           cacheComposition={true}
           renderMode="HARDWARE"
@@ -320,13 +353,19 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
             <TextsContainer>
               <Title children="Ready to scan" />
               <BodyText textAlign="center">
-                Hold your device near the NFC tag and stop moving when it
-                vibrates.
+                {nfcMessage && nfcMessage.trim().length > 0 ? (
+                  nfcMessage
+                ) : (
+                  <>
+                    Hold your device near the NFC tag and stop moving when it
+                    vibrates.
+                  </>
+                )}
               </BodyText>
             </TextsContainer>
             <Image
-              h="$8"
-              w="$8"
+              height="$8"
+              width="$8"
               alignSelf="center"
               borderRadius={1000}
               source={{
@@ -355,20 +394,24 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               </GestureDetector>
               {isNfcEnabled ? (
                 <>
-                  <Title style={styles.title} mt="$2">
+                  <Title style={styles.title} marginTop="$2">
                     Find the RFID chip in your ID
                   </Title>
-                  <BodyText style={styles.bodyText} mt="$2" mb="$2">
+                  <BodyText
+                    style={styles.bodyText}
+                    marginTop="$2"
+                    marginBottom="$2"
+                  >
                     Place your phone against the chip and keep it still until
                     the sensor reads it.
                   </BodyText>
-                  <BodyText style={styles.disclaimer} mt="$2">
+                  <BodyText style={styles.disclaimer} marginTop="$2">
                     SELF DOES NOT STORE THIS INFORMATION.
                   </BodyText>
                 </>
               ) : (
                 <>
-                  <BodyText style={styles.disclaimer} mt="$2">
+                  <BodyText style={styles.disclaimer} marginTop="$2">
                     {dialogMessage}
                   </BodyText>
                 </>

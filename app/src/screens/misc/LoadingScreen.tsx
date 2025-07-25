@@ -26,6 +26,16 @@ import {
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 
+// Define all terminal states that should stop animations and haptics
+const terminalStates: ProvingStateType[] = [
+  'completed',
+  'error',
+  'failure',
+  'passport_not_supported',
+  'account_recovery_choice',
+  'passport_data_not_found',
+];
+
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   // Animation states
   const [animationSource, setAnimationSource] = useState<any>(
@@ -49,16 +59,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const fcmToken = useProvingStore(state => state.fcmToken);
   const isFocused = useIsFocused();
   const { bottom } = useSafeAreaInsets();
-
-  // Define all terminal states that should stop animations and haptics
-  const terminalStates: ProvingStateType[] = [
-    'completed',
-    'error',
-    'failure',
-    'passport_not_supported',
-    'account_recovery_choice',
-    'passport_data_not_found',
-  ];
 
   // States where it's safe to close the app
   const safeToCloseStates = ['proving', 'post_proving', 'completed'];
@@ -99,6 +99,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFocused]); // Only depend on isFocused
 
   // Handle UI updates and haptic feedback based on state changes
@@ -162,9 +163,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
 
   return (
     <YStack
-      bg={black}
+      backgroundColor={black}
       gap={20}
-      jc="space-between"
+      justifyContent="space-between"
       flex={1}
       paddingHorizontal={20}
       paddingBottom={bottom + extraYPadding}

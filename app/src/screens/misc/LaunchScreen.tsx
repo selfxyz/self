@@ -36,7 +36,7 @@ const LaunchScreen: React.FC = () => {
 
   return (
     <YStack
-      bg={black}
+      backgroundColor={black}
       flex={1}
       justifyContent="space-between"
       alignItems="center"

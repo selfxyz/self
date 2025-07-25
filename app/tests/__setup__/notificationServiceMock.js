@@ -3,7 +3,7 @@
 /* global jest */
 
 // Mock for notificationService.ts
-export const getStateMessage = jest.fn().mockImplementation(state => {
+export const getStateMessage = jest.fn().mockImplementation(() => {
   return 'Mock state message';
 });
 

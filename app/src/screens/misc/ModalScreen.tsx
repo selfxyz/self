@@ -97,7 +97,12 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
 
   return (
     <ModalBackDrop>
-      <View backgroundColor={white} padding={20} borderRadius={10} mx={8}>
+      <View
+        backgroundColor={white}
+        padding={20}
+        borderRadius={10}
+        marginHorizontal={8}
+      >
         <YStack gap={40}>
           <XStack alignItems="center" justifyContent="space-between">
             <LogoInversed />

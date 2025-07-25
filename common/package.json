@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/common",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Constants and utils for self sdks",
   "license": "MIT",
   "author": "@Selfxyz Team",
@@ -21,11 +21,6 @@
       "require": "./dist/cjs/src/utils/*.js",
       "types": "./dist/cjs/src/utils/*.d.ts"
     },
-    "./ofacdata/outputs/nameAndDobSMT.json": "./ofacdata/outputs/nameAndDobSMT.json",
-    "./ofacdata/outputs/nameAndYobSMT.json": "./ofacdata/outputs/nameAndYobSMT.json",
-    "./ofacdata/outputs/nameAndDobSMT_ID.json": "./ofacdata/outputs/nameAndDobSMT_ID.json",
-    "./ofacdata/outputs/nameAndYobSMT_ID.json": "./ofacdata/outputs/nameAndYobSMT_ID.json",
-    "./ofacdata/outputs/passportNoAndNationalitySMT.json": "./ofacdata/outputs/passportNoAndNationalitySMT.json",
     "./pubkeys/serialized_dsc_tree.json": "./pubkeys/serialized_dsc_tree.json",
     "./mock_certificates/*": "./src/mock_certificates/*",
     "./mock_certificates/**/*": "./src/mock_certificates/**/*"

@@ -12,6 +12,8 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   root: 'web',
+  publicDir: 'web',
+  envDir: '..', // This is the directory where Vite will look for .env files relative to the root
   resolve: {
     extensions: [
       '.web.tsx',
@@ -46,6 +48,7 @@ export default defineConfig({
     tamaguiPlugin({
       config: path.resolve(__dirname, 'tamagui.config.ts'),
       components: ['tamagui'],
+      enableDynamicEvaluation: true,
       excludeReactNativeWebExports: [
         'Switch',
         'ProgressBar',

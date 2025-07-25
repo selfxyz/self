@@ -88,10 +88,12 @@ const AccountRecoveryChoiceScreen: React.FC<
       throw new Error('Something wrong happened during cloud recovery');
     }
   }, [
-    cloudBackupEnabled,
     download,
     restoreAccountFromMnemonic,
+    cloudBackupEnabled,
     onRestoreFromCloudNext,
+    navigation,
+    toggleCloudBackupEnabled,
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {
@@ -102,12 +104,17 @@ const AccountRecoveryChoiceScreen: React.FC<
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <View borderColor={slate600} borderWidth="$1" borderRadius="$10" p="$5">
+        <View
+          borderColor={slate600}
+          borderWidth="$1"
+          borderRadius="$10"
+          padding="$5"
+        >
           <RestoreAccountSvg height={80} width={80} color={white} />
         </View>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack alignItems="center" gap="$2.5" pb="$2.5">
+        <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
           <Title>Restore your Self account</Title>
           <Description>
             By continuing, you certify that this passport belongs to you and is
@@ -120,7 +127,7 @@ const AccountRecoveryChoiceScreen: React.FC<
             )}
           </Description>
 
-          <YStack gap="$2.5" width="100%" pt="$6">
+          <YStack gap="$2.5" width="100%" paddingTop="$6">
             <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}
@@ -129,7 +136,7 @@ const AccountRecoveryChoiceScreen: React.FC<
               {restoring ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
               {restoring ? '…' : ''}
             </PrimaryButton>
-            <XStack gap={64} ai="center" justifyContent="space-between">
+            <XStack gap={64} alignItems="center" justifyContent="space-between">
               <Separator flexGrow={1} />
               <Caption>OR</Caption>
               <Separator flexGrow={1} />
@@ -141,7 +148,7 @@ const AccountRecoveryChoiceScreen: React.FC<
             >
               <XStack alignItems="center" justifyContent="center">
                 <Keyboard height={25} width={40} color={slate500} />
-                <View pl={12}>
+                <View paddingLeft={12}>
                   <Description>Enter recovery phrase</Description>
                 </View>
               </XStack>

@@ -3,18 +3,16 @@
 import { useNavigation } from '@react-navigation/native';
 import { PassportData } from '@selfxyz/common';
 import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../providers/authProvider';
 import {
   loadPassportDataAndSecret,
-  storePassportData,
-} from '../../providers/passportDataProvider';
-import {
   loadSelectedDocument,
   migrateFromLegacyStorage,
+  storePassportData,
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSettingStore } from '../../stores/settingStore';
@@ -26,8 +24,8 @@ const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { checkBiometricsAvailable } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
-  const [isAnimationFinished, setIsAnimationFinished] = React.useState(false);
-  const [nextScreen, setNextScreen] = React.useState<string | null>(null);
+  const [isAnimationFinished, setIsAnimationFinished] = useState(false);
+  const [nextScreen, setNextScreen] = useState<string | null>(null);
   const dataLoadInitiatedRef = useRef(false);
 
   useEffect(() => {
@@ -92,7 +90,7 @@ const SplashScreen: React.FC = ({}) => {
             setNextScreen('Home');
             return;
           }
-          // Currently, we dont check isPassportNullified(passportData);
+          // Currently, we dont check isDocumentNullified(passportData);
           // This could lead to AccountRecoveryChoice just like in LoadingScreen
           // But it looks better right now to keep the LaunchScreen flow
           // In case user wants to try with another passport.
@@ -109,7 +107,7 @@ const SplashScreen: React.FC = ({}) => {
 
       loadDataAndDetermineNextScreen();
     }
-  }, []);
+  }, [checkBiometricsAvailable, setBiometricsAvailable]);
 
   const handleAnimationFinish = useCallback(() => {
     impactLight();

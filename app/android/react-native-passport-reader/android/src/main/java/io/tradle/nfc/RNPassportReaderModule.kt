@@ -123,6 +123,21 @@ object Messages {
     const val COMPARING = "Comparing....."
     const val COMPLETED = "Scanning completed"
     const val RESET = ""
+    const val PACE_STARTED = "PACE started"
+    const val PACE_SUCCEEDED = "PACE succeeded"
+    const val PACE_FAILED = "PACE failed"
+    const val BAC_STARTED = "BAC started"
+    const val BAC_SUCCEEDED = "BAC succeeded"
+    const val BAC_FAILED = "BAC failed"
+    const val READING_COM = "Reading COM....."
+    const val READING_DG1 = "Reading DG1....."
+    const val READING_DG1_SUCCEEDED = "Reading DG1 succeeded"
+    const val READING_DG2 = "Reading DG2....."
+    const val READING_DG2_SUCCEEDED = "Reading DG2 succeeded"
+    const val READING_SOD = "Reading SOD....."
+    const val READING_SOD_SUCCEEDED = "Reading SOD succeeded"
+    const val READING_DG14 = "Reading DG14....."
+    const val CHIP_AUTH_SUCCEEDED = "Chip authentication succeeded"
 }
 
 class Response(json: String) : JSONObject(json) {
@@ -323,6 +338,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     for (securityInfo: SecurityInfo in securityInfoCollection) {
                         if (securityInfo is PACEInfo) {
                             Log.e("MY_LOGS", "trying PACE...")
+                            eventMessageEmitter(Messages.PACE_STARTED)
                             service.doPACE(
                                 authKey,
                                 securityInfo.objectIdentifier,
@@ -331,10 +347,12 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             )
                             Log.e("MY_LOGS", "PACE succeeded")
                             paceSucceeded = true
+                            eventMessageEmitter(Messages.PACE_SUCCEEDED)
                         }
                     }
                 } catch (e: Exception) {
                     Log.w("MY_LOGS", e)
+                    eventMessageEmitter(Messages.PACE_FAILED)
                 }
                 Log.e("MY_LOGS", "Sending select applet command with paceSucceeded: ${paceSucceeded}") // this is false so PACE doesn't succeed
                 service.sendSelectApplet(paceSucceeded)
@@ -343,6 +361,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     var bacSucceeded = false
                     var attempts = 0
                     val maxAttempts = 3
+
+                    eventMessageEmitter(Messages.BAC_STARTED)
                     
                     while (!bacSucceeded && attempts < maxAttempts) {
                         try {
@@ -356,6 +376,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             
                             // Try to read EF_COM first
                             try {
+                                eventMessageEmitter(Messages.READING_COM)
                                 service.getInputStream(PassportService.EF_COM).read()
                             } catch (e: Exception) {
                                 // EF_COM failed, do BAC
@@ -364,26 +385,28 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             
                             bacSucceeded = true
                             Log.e("MY_LOGS", "BAC succeeded on attempt $attempts")
-                            
+                            eventMessageEmitter(Messages.BAC_SUCCEEDED)
                         } catch (e: Exception) {
                             Log.e("MY_LOGS", "BAC attempt $attempts failed: ${e.message}")
                             if (attempts == maxAttempts) {
+                                eventMessageEmitter(Messages.BAC_FAILED)
                                 throw e // Re-throw on final attempt
                             }
                         }
                     }
                 }
 
-                eventMessageEmitter("Reading DG1.....")
+                eventMessageEmitter(Messages.READING_DG1)
                 val dg1In = service.getInputStream(PassportService.EF_DG1)
                 dg1File = DG1File(dg1In)
+                eventMessageEmitter(Messages.READING_DG1_SUCCEEDED)
                 // eventMessageEmitter("Reading DG2.....")
                 // val dg2In = service.getInputStream(PassportService.EF_DG2)
                 // dg2File = DG2File(dg2In)
-                eventMessageEmitter("Reading SOD.....")
+                eventMessageEmitter(Messages.READING_SOD)
                 val sodIn = service.getInputStream(PassportService.EF_SOD)
                 sodFile = SODFile(sodIn)
-                
+                eventMessageEmitter(Messages.READING_SOD_SUCCEEDED)
                 // val gson = Gson()
                 // Log.d(TAG, "============FIRST CONSOLE LOG=============")
                 // Log.d(TAG, "dg1File: " + gson.toJson(dg1File))
@@ -443,7 +466,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         private fun doChipAuth(service: PassportService) {
             try {
-                eventMessageEmitter("Reading DG14.....")
+                eventMessageEmitter(Messages.READING_DG14)
                 val dg14In = service.getInputStream(PassportService.EF_DG14)
                 dg14Encoded = IOUtils.toByteArray(dg14In)
                 val dg14InByte = ByteArrayInputStream(dg14Encoded)
@@ -458,6 +481,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             securityInfo.subjectPublicKey,
                         )
                         chipAuthSucceeded = true
+                        eventMessageEmitter(Messages.CHIP_AUTH_SUCCEEDED)
                     }
                 }
             } catch (e: Exception) {

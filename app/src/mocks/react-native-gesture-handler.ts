@@ -4,14 +4,14 @@
  * Web-compatible mock for react-native-gesture-handler
  */
 
-import React from 'react';
+import React, { createElement } from 'react';
 
 // Mock GestureHandlerRootView as a simple wrapper
 export const GestureHandlerRootView: React.FC<{
   children: React.ReactNode;
   [key: string]: any;
 }> = ({ children, ...props }) => {
-  return React.createElement('div', props, children);
+  return createElement('div', props, children);
 };
 
 const returnValue = {
@@ -44,7 +44,7 @@ export const GestureDetector: React.FC<{
   children: React.ReactNode;
   gesture?: any;
 }> = ({ children, gesture: _gesture }) => {
-  return React.createElement('div', {}, children);
+  return createElement('div', {}, children);
 };
 
 // Mock other commonly used exports

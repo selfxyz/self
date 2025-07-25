@@ -4,6 +4,7 @@
  * @format
  */
 import './src/utils/ethers';
+import 'react-native-gesture-handler';
 
 import { config } from '@tamagui/config/v2-native';
 import React from 'react';

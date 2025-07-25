@@ -3,6 +3,7 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import {
   API_URL,
+  API_URL_STAGING,
   formatMrz,
   generateCommitment,
   generateNullifier,
@@ -134,20 +135,30 @@ export async function isUserRegisteredWithAlternativeCSCA(
   );
   return { isRegistered: false, csca: null };
 }
-
-export async function isPassportNullified(passportData: PassportData) {
+export async function isDocumentNullified(passportData: PassportData) {
   const nullifier = generateNullifier(passportData);
   const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
-  console.log('checking for nullifier', nullifierHex);
-  const response = await fetch(`${API_URL}/is-nullifier-onchain/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const attestationId =
+    passportData.documentCategory === 'passport'
+      ? '0x0000000000000000000000000000000000000000000000000000000000000001'
+      : '0x0000000000000000000000000000000000000000000000000000000000000002';
+  console.log('checking for nullifier', nullifierHex, attestationId);
+  const baseUrl = passportData.mock === false ? API_URL : API_URL_STAGING;
+  const response = await fetch(
+    `${baseUrl}/is-nullifier-onchain-with-attestation-id`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        nullifier: nullifierHex,
+        attestation_id: attestationId,
+      }),
     },
-    body: JSON.stringify({ nullifier: nullifierHex }),
-  });
+  );
   const data = await response.json();
-  console.log('isPassportNullified', data);
+  console.log('isDocumentNullified', data);
   return data.data;
 }
 
