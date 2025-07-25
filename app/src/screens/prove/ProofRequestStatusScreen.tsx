@@ -47,6 +47,8 @@ const SuccessScreen: React.FC = () => {
 
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
+  const [countdownStarted, setCountdownStarted] = useState(false);
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   function onOkPress() {
     buttonTap();
@@ -57,6 +59,15 @@ const SuccessScreen: React.FC = () => {
   }
 
   function cancelDeeplinkCallbackRedirect() {
+    setCountdown(null);
+  }
+
+  function cancelCountdown() {
+    console.log('[ProofRequestStatusScreen] Cancelling countdown');
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     setCountdown(null);
   }
 
@@ -75,8 +86,10 @@ const SuccessScreen: React.FC = () => {
         sessionId,
         appName,
       });
-      if (selfApp?.deeplinkCallback) {
+      // Start countdown for redirect (only if we are on this screen and haven't started yet)
+      if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
         setCountdown(5);
+        setCountdownStarted(true);
       }
     } else if (currentState === 'failure' || currentState === 'error') {
       notificationError();
@@ -106,24 +119,39 @@ const SuccessScreen: React.FC = () => {
     reason,
     updateProofStatus,
     selfApp?.deeplinkCallback,
+    countdownStarted,
   ]);
 
   useEffect(() => {
     if (countdown === null) return;
     if (countdown > 0) {
-      const timer = setTimeout(() => {
-        setCountdown(countdown - 1);
+      timerRef.current = setTimeout(() => {
+        setCountdown(prev => (prev !== null ? prev - 1 : null));
       }, 1000);
-      return () => clearTimeout(timer);
+      return () => {
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+        }
+      };
     } else {
       setCountdown(null);
       if (selfApp?.deeplinkCallback) {
         Linking.openURL(selfApp.deeplinkCallback).catch(err => {
           console.error('Failed to open deep link:', err);
+          onOkPress();
         });
       }
     }
-  }, [countdown, selfApp?.deeplinkCallback]);
+  }, [countdown, selfApp?.deeplinkCallback, onOkPress]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      cancelCountdown();
+    }
+    return () => {
+      cancelCountdown();
+    };
+  }, [isFocused]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
