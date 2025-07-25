@@ -258,7 +258,10 @@ const ProveScreen: React.FC = () => {
                 fontWeight="600"
                 marginBottom={10}
               >
-                Connected ID:
+                {selectedApp?.userIdType === 'hex'
+                  ? 'Connected Wallet'
+                  : 'Connected ID'}
+                :
               </BodyText>
               <TouchableOpacity
                 onPress={handleAddressToggle}
