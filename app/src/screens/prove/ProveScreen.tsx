@@ -2,6 +2,7 @@
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { formatEndpoint, SelfAppDisclosureConfig } from '@selfxyz/common';
+import { formatUserId } from '../../utils/formatUserId';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
@@ -128,20 +129,10 @@ const ProveScreen: React.FC = () => {
     return formatEndpoint(selectedApp.endpoint);
   }, [selectedApp?.endpoint]);
 
-  const formattedUserId = useMemo(() => {
-    if (!selectedApp?.userId) {
-      return null;
-    }
-
-    if (selectedApp.userIdType === 'hex') {
-      const address = selectedApp.userId.startsWith('0x')
-        ? selectedApp.userId
-        : `0x${selectedApp.userId}`;
-      return `${address.slice(0, 4)}...${address.slice(-4)}`;
-    }
-
-    return selectedApp.userId;
-  }, [selectedApp?.userId, selectedApp?.userIdType]);
+  const formattedUserId = useMemo(
+    () => formatUserId(selectedApp?.userId, selectedApp?.userIdType),
+    [selectedApp?.userId, selectedApp?.userIdType],
+  );
 
   function onVerify() {
     provingStore.setUserConfirmed();
