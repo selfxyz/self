@@ -71,7 +71,6 @@ const sendBatch = async (
       'Content-Type': 'application/json',
     };
 
-
     if (GRAFANA_LOKI_USERNAME && GRAFANA_LOKI_PASSWORD) {
       const auth = Buffer.from(
         `${GRAFANA_LOKI_USERNAME}:${GRAFANA_LOKI_PASSWORD}`,
