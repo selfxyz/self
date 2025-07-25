@@ -3,19 +3,21 @@
 import { formatUserId } from '../../../src/utils/formatUserId';
 
 describe('formatUserId', () => {
+  // Test data constants for better maintainability
+  const VALID_HEX_WITH_PREFIX = '0x1234567890abcdef1234567890abcdef12345678';
+  const VALID_HEX_WITHOUT_PREFIX = 'abcdef1234567890abcdef1234567890abcdef1234';
+  const VALID_UUID = '550e8400-e29b-41d4-a716-446655440000';
+
   it('truncates hex addresses', () => {
-    const addr = '0x1234567890abcdef1234567890abcdef12345678';
-    expect(formatUserId(addr, 'hex')).toBe('0x12...5678');
+    expect(formatUserId(VALID_HEX_WITH_PREFIX, 'hex')).toBe('0x12...5678');
   });
 
   it('adds prefix for hex without 0x', () => {
-    const addr = 'abcdef1234567890abcdef1234567890abcdef1234';
-    expect(formatUserId(addr, 'hex')).toBe('0xab...1234');
+    expect(formatUserId(VALID_HEX_WITHOUT_PREFIX, 'hex')).toBe('0xab...1234');
   });
 
   it('returns uuid as is', () => {
-    const uuid = '550e8400-e29b-41d4-a716-446655440000';
-    expect(formatUserId(uuid, 'uuid')).toBe(uuid);
+    expect(formatUserId(VALID_UUID, 'uuid')).toBe(VALID_UUID);
   });
 
   it('returns null when userId is missing', () => {
@@ -152,5 +154,40 @@ describe('formatUserId', () => {
   it('handles three character hex', () => {
     const threeChar = 'abc';
     expect(formatUserId(threeChar, 'hex')).toBe('0xab...xabc');
+  });
+
+  describe('Security Edge Cases', () => {
+    it('handles potential XSS attempts in user IDs', () => {
+      const maliciousId = '<script>alert("xss")</script>';
+      // For hex type, the function truncates and should not contain the full script tag
+      expect(formatUserId(maliciousId, 'hex')).not.toContain('<script>');
+      // For uuid type, the function returns as-is (which is correct behavior)
+      expect(formatUserId(maliciousId, 'uuid')).toBe(maliciousId);
+    });
+
+    it('handles extremely long inputs without performance issues', () => {
+      const longInput = 'a'.repeat(10000);
+      expect(() => formatUserId(longInput, 'hex')).not.toThrow();
+      expect(() => formatUserId(longInput, 'uuid')).not.toThrow();
+    });
+
+    it('handles special characters safely', () => {
+      const specialChars = '\\n\\r\\t"\'`;DROP TABLE users;--';
+      expect(() => formatUserId(specialChars, 'hex')).not.toThrow();
+      expect(() => formatUserId(specialChars, 'uuid')).not.toThrow();
+    });
+
+    it('handles null bytes and control characters', () => {
+      const nullBytes = '\x00\x01\x02\x03\x04\x05';
+      expect(() => formatUserId(nullBytes, 'hex')).not.toThrow();
+      expect(() => formatUserId(nullBytes, 'uuid')).not.toThrow();
+    });
+
+    it('handles unicode characters safely', () => {
+      const unicodeChars =
+        '🚀🎉💻🔥✨🎊🎈🎁🎂🎄🎃🎗️🎟️🎫🎪🎭🎨🎬🎤🎧🎼🎹🎸🎺🎻🥁🎷🎺🎻🎼🎹🎸🎤🎧🎼🎹🎸🎺🎻🥁🎷';
+      expect(() => formatUserId(unicodeChars, 'hex')).not.toThrow();
+      expect(() => formatUserId(unicodeChars, 'uuid')).not.toThrow();
+    });
   });
 });
