@@ -2,7 +2,6 @@
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { formatEndpoint, SelfAppDisclosureConfig } from '@selfxyz/common';
-import { formatUserId } from '../../utils/formatUserId';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
@@ -33,6 +32,7 @@ import { useProofHistoryStore } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
 import { black, slate300, white } from '../../utils/colors';
+import { formatUserId } from '../../utils/formatUserId';
 import { buttonTap } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
