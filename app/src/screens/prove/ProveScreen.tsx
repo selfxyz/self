@@ -2,6 +2,7 @@
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { formatEndpoint, SelfAppDisclosureConfig } from '@selfxyz/common';
+import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
@@ -16,8 +17,9 @@ import {
   NativeSyntheticEvent,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
-import { Image, Text, View, YStack } from 'tamagui';
+import { Image, Text, View, XStack, YStack } from 'tamagui';
 
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrimaryButtonProveScreen';
@@ -47,6 +49,7 @@ const ProveScreen: React.FC = () => {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
+  const [showFullAddress, setShowFullAddress] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const isContentShorterThanScrollView = useMemo(
@@ -187,6 +190,13 @@ const ProveScreen: React.FC = () => {
     setScrollViewHeight(event.nativeEvent.layout.height);
   }, []);
 
+  const handleAddressToggle = useCallback(() => {
+    if (selectedApp?.userIdType === 'hex') {
+      setShowFullAddress(!showFullAddress);
+      buttonTap();
+    }
+  }, [selectedApp?.userIdType, showFullAddress]);
+
   return (
     <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
@@ -250,16 +260,62 @@ const ProveScreen: React.FC = () => {
               >
                 Connected ID:
               </BodyText>
-              <View
-                backgroundColor={slate300}
-                padding={15}
-                borderRadius={8}
-                marginBottom={10}
+              <TouchableOpacity
+                onPress={handleAddressToggle}
+                activeOpacity={selectedApp?.userIdType === 'hex' ? 0.7 : 1}
+                style={{ minHeight: 44 }}
               >
-                <BodyText fontSize={14} color={black} lineHeight={20}>
-                  {formattedUserId}
-                </BodyText>
-              </View>
+                <View
+                  backgroundColor={slate300}
+                  padding={15}
+                  borderRadius={8}
+                  marginBottom={10}
+                >
+                  <XStack alignItems="center" justifyContent="space-between">
+                    <View
+                      flex={1}
+                      marginRight={selectedApp?.userIdType === 'hex' ? 12 : 0}
+                    >
+                      <BodyText
+                        fontSize={14}
+                        color={black}
+                        lineHeight={20}
+                        fontFamily={
+                          showFullAddress && selectedApp?.userIdType === 'hex'
+                            ? 'monospace'
+                            : 'normal'
+                        }
+                        flexWrap={showFullAddress ? 'wrap' : 'nowrap'}
+                      >
+                        {selectedApp?.userIdType === 'hex' && showFullAddress
+                          ? selectedApp.userId
+                          : formattedUserId}
+                      </BodyText>
+                    </View>
+                    {selectedApp?.userIdType === 'hex' && (
+                      <View alignItems="center" justifyContent="center">
+                        {showFullAddress ? (
+                          <EyeOff size={16} color={black} />
+                        ) : (
+                          <Eye size={16} color={black} />
+                        )}
+                      </View>
+                    )}
+                  </XStack>
+                  {selectedApp?.userIdType === 'hex' && (
+                    <BodyText
+                      fontSize={12}
+                      color={black}
+                      opacity={0.6}
+                      marginTop={4}
+                    >
+                      {showFullAddress
+                        ? 'Tap to hide address'
+                        : 'Tap to show full address'}
+                    </BodyText>
+                  )}
+                </View>
+              </TouchableOpacity>
             </View>
           )}
 
