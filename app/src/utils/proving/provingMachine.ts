@@ -417,6 +417,37 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         trackEvent(ProofEvents.SOCKETIO_SUBSCRIBED);
       });
 
+      socket.on('connect_error', error => {
+        console.error('SocketIO connection error:', error);
+        trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
+          message: (error as any).message,
+        });
+        trackEvent(ProofEvents.PROOF_FAILED, {
+          circuitType: get().circuitType,
+          error: get().error_code ?? 'unknown',
+        });
+        actor!.send({ type: 'PROVE_ERROR' });
+        set({ socketConnection: null });
+      });
+
+      socket.on('disconnect', (reason: string) => {
+        console.log(`SocketIO disconnected. Reason: ${reason}`);
+        const currentActor = actor;
+
+        if (get().currentState === 'ready_to_prove' && currentActor) {
+          console.error(
+            'SocketIO disconnected unexpectedly during proof listening.',
+          );
+          trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
+          trackEvent(ProofEvents.PROOF_FAILED, {
+            circuitType: get().circuitType,
+            error: get().error_code ?? 'unknown',
+          });
+          currentActor.send({ type: 'PROVE_ERROR' });
+        }
+        set({ socketConnection: null });
+      });
+
       socket.on('status', (message: any) => {
         const data =
           typeof message === 'string' ? JSON.parse(message) : message;
@@ -450,37 +481,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           trackEvent(ProofEvents.SOCKETIO_PROOF_SUCCESS);
           actor!.send({ type: 'PROVE_SUCCESS' });
         }
-      });
-
-      socket.on('disconnect', (reason: string) => {
-        console.log(`SocketIO disconnected. Reason: ${reason}`);
-        const currentActor = actor;
-
-        if (get().currentState === 'ready_to_prove' && currentActor) {
-          console.error(
-            'SocketIO disconnected unexpectedly during proof listening.',
-          );
-          trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
-          trackEvent(ProofEvents.PROOF_FAILED, {
-            circuitType: get().circuitType,
-            error: get().error_code ?? 'unknown',
-          });
-          currentActor.send({ type: 'PROVE_ERROR' });
-        }
-        set({ socketConnection: null });
-      });
-
-      socket.on('connect_error', error => {
-        console.error('SocketIO connection error:', error);
-        trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
-          message: (error as any).message,
-        });
-        trackEvent(ProofEvents.PROOF_FAILED, {
-          circuitType: get().circuitType,
-          error: get().error_code ?? 'unknown',
-        });
-        actor!.send({ type: 'PROVE_ERROR' });
-        set({ socketConnection: null });
       });
     },
 
