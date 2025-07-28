@@ -88,8 +88,22 @@ const SuccessScreen: React.FC = () => {
       });
       // Start countdown for redirect (only if we are on this screen and haven't started yet)
       if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
-        setCountdown(5);
-        setCountdownStarted(true);
+        if (selfApp?.deeplinkCallback) {
+          try {
+            new URL(selfApp.deeplinkCallback);
+            setCountdown(5);
+            setCountdownStarted(true);
+            console.log(
+              '[ProofRequestStatusScreen] Countdown started:',
+              countdown,
+            );
+          } catch (error) {
+            console.warn(
+              'Invalid deep link URL provided:',
+              selfApp.deeplinkCallback,
+            );
+          }
+        }
       }
     } else if (currentState === 'failure' || currentState === 'error') {
       notificationError();
