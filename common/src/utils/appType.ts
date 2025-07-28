@@ -78,6 +78,13 @@ export class SelfAppBuilder {
     if (config.endpointType === 'celo' && !config.endpoint.startsWith('0x')) {
       throw new Error('endpoint must be a valid address');
     }
+    // Validate that localhost endpoints are not allowed
+    if (
+      config.endpoint &&
+      (config.endpoint.includes('localhost') || config.endpoint.includes('127.0.0.1'))
+    ) {
+      throw new Error('localhost endpoints are not allowed');
+    }
     if (config.userIdType === 'hex') {
       if (!config.userId.startsWith('0x')) {
         throw new Error('userId as hex must start with 0x');

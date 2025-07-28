@@ -11,6 +11,15 @@ export interface WebAppInfo {
 // Log once when this module loads
 console.log('[WebSocket] Initializing websocket module.');
 
+const validateWebSocketUrl = (websocketUrl: string) => {
+  if (
+    websocketUrl.includes('localhost') ||
+    websocketUrl.includes('127.0.0.1')
+  ) {
+    throw new Error('localhost websocket URLs are not allowed');
+  }
+};
+
 const newSocket = (websocketUrl: string, sessionId: string) => {
   const fullUrl = `${websocketUrl}/websocket`;
   console.log(
@@ -88,6 +97,7 @@ export function initWebSocket(
   onSuccess: () => void,
   onError: (data: { error_code?: string; reason?: string }) => void,
 ) {
+  validateWebSocketUrl(websocketUrl);
   const sessionId = selfApp.sessionId;
   console.log(
     `[WebSocket] Initializing WebSocket connection for sessionId: ${sessionId}`,
