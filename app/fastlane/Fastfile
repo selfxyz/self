@@ -38,7 +38,7 @@ SIGNING_CERTIFICATE = ENV["IOS_SIGNING_CERTIFICATE"]
 # Environment setup
 package_version = JSON.parse(File.read("../package.json"))["version"]
 # most of these values are for local development
-android_aab_path = "../android/app/build/outputs/bundle/release/app-release.aab"
+android_aab_path = "android/app/build/outputs/bundle/release/app-release.aab"
 android_gradle_file_path = "../android/app/build.gradle"
 android_keystore_path = "../android/app/upload-keystore.jks"
 android_play_store_json_key_path = "../android/app/play-store-key.json"
@@ -135,9 +135,7 @@ platform :ios do
     elsif deployment_track == 'internal'
       upload_to_testflight(
         api_key: result[:api_key],
-        distribute_external: true,
-        groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
-        changelog: "",
+        distribute_external: false,
         skip_waiting_for_build_processing: false,
       ) if result[:should_upload]
     elsif deployment_track == 'production'
