@@ -113,15 +113,15 @@ platform :ios do
     # Handle version bumping
     if !test_mode
       require_relative "helpers/version_manager"
-      version_manager = Fastlane::Helpers::VersionManager.new
 
       case version_bump
       when 'major', 'minor', 'patch'
-        version_manager.bump_version(version_bump)
+        # VersionManager doesn't handle semantic versions, use npm
+        sh("cd .. && npm version #{version_bump} --no-git-tag-version")
         UI.success("✅ Bumped #{version_bump} version")
       when 'build'
-        # Build number is automatically incremented during build
-        UI.message("📦 Build number will be incremented")
+        # Build number is handled in prepare_ios_build
+        UI.message("📦 Build number will be incremented during build")
       end
     end
 
@@ -313,15 +313,16 @@ platform :android do
     # Handle version bumping
     if !test_mode
       require_relative "helpers/version_manager"
-      version_manager = Fastlane::Helpers::VersionManager.new
 
       case version_bump
       when 'major', 'minor', 'patch'
-        version_manager.bump_version(version_bump)
+        # For semantic version bumps, we need to use npm version
+        sh("cd .. && npm version #{version_bump} --no-git-tag-version")
         UI.success("✅ Bumped #{version_bump} version")
-        # Sync the new version to build.gradle
+        # Get the new version and sync to build.gradle
+        new_version = Fastlane::Helpers::VersionManager.get_current_version
         android_set_version_name(
-          version_name: version_manager.get_current_version,
+          version_name: new_version,
           gradle_file: android_gradle_file_path.gsub("../", ""),
         )
       when 'build'
