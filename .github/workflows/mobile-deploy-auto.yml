@@ -59,7 +59,7 @@ jobs:
           fi
           
           # Always deploy both platforms for now (can be enhanced later)
-          echo "platforms=both" >> $GITHUB_OUTPUT
+          echo 'platforms=["ios", "android"]' >> $GITHUB_OUTPUT
           echo "should_deploy=true" >> $GITHUB_OUTPUT
           
       - name: Log deployment info
@@ -72,12 +72,23 @@ jobs:
           echo "PR: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
           echo "Merged by: ${{ github.event.pull_request.merged_by.login }}"
 
-  deploy:
+  deploy-ios:
     needs: check-and-deploy
-    if: needs.check-and-deploy.outputs.should_deploy == 'true'
+    if: needs.check-and-deploy.outputs.should_deploy == 'true' && contains(fromJson(needs.check-and-deploy.outputs.platforms), 'ios')
     uses: ./.github/workflows/mobile-deploy.yml
     with:
-      platform: ${{ needs.check-and-deploy.outputs.platforms }}
+      platform: ios
+      deployment_track: ${{ needs.check-and-deploy.outputs.deployment_track }}
+      version_bump: ${{ needs.check-and-deploy.outputs.version_bump }}
+      auto_deploy: true
+    secrets: inherit
+
+  deploy-android:
+    needs: check-and-deploy
+    if: needs.check-and-deploy.outputs.should_deploy == 'true' && contains(fromJson(needs.check-and-deploy.outputs.platforms), 'android')
+    uses: ./.github/workflows/mobile-deploy.yml
+    with:
+      platform: android
       deployment_track: ${{ needs.check-and-deploy.outputs.deployment_track }}
       version_bump: ${{ needs.check-and-deploy.outputs.version_bump }}
       auto_deploy: true
