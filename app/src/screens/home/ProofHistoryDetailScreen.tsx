@@ -5,7 +5,7 @@ import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 
-import { ProofHistory, ProofStatus } from '../../stores/proofHistoryStore';
+import { ProofHistory, ProofStatus } from '../../stores/proof-types';
 import {
   black,
   blue100,
@@ -89,7 +89,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
       }
     });
     return result;
-  }, [data.disclosures]);
+  }, [data.appName, data.disclosures]);
 
   // TODO: fix timestamp format
   const formattedDate = useMemo(() => {

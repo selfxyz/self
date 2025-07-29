@@ -9,7 +9,7 @@ import {
   SelfApp,
 } from '@selfxyz/common';
 import forge from 'node-forge';
-import io, { Socket } from 'socket.io-client';
+import socketIo, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
@@ -42,7 +42,8 @@ import {
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
-  isPassportNullified,
+  hasAnyValidRegisteredDocument,
+  isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
@@ -186,6 +187,7 @@ interface ProvingState {
   _closeConnections: () => void;
   _generatePayload: () => Promise<any>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
+  _handleRegisterErrorOrFailure: () => void;
   _startSocketIOStatusListener: (
     receivedUuid: string,
     endpointType: EndpointType,
@@ -228,7 +230,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       ) {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            navigationRef.navigate('Launch');
+            get()._handleRegisterErrorOrFailure();
           }
         }, 3000);
       }
@@ -395,6 +397,23 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
+    _handleRegisterErrorOrFailure: async () => {
+      try {
+        const hasValid = await hasAnyValidRegisteredDocument();
+        if (navigationRef.isReady()) {
+          if (hasValid) {
+            navigationRef.navigate('Home');
+          } else {
+            navigationRef.navigate('Launch');
+          }
+        }
+      } catch (error) {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('Launch');
+        }
+      }
+    },
+
     _startSocketIOStatusListener: (
       receivedUuid: string,
       endpointType: EndpointType,
@@ -405,7 +424,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       const url = getWSDbRelayerUrl(endpointType);
-      let socket: Socket | null = io(url, {
+      const socket: Socket = socketIo(url, {
         path: '/',
         transports: ['websocket'],
       });
@@ -415,6 +434,37 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       socket.on('connect', () => {
         socket?.emit('subscribe', receivedUuid);
         trackEvent(ProofEvents.SOCKETIO_SUBSCRIBED);
+      });
+
+      socket.on('connect_error', error => {
+        console.error('SocketIO connection error:', error);
+        trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
+          message: (error as any).message,
+        });
+        trackEvent(ProofEvents.PROOF_FAILED, {
+          circuitType: get().circuitType,
+          error: get().error_code ?? 'unknown',
+        });
+        actor!.send({ type: 'PROVE_ERROR' });
+        set({ socketConnection: null });
+      });
+
+      socket.on('disconnect', (reason: string) => {
+        console.log(`SocketIO disconnected. Reason: ${reason}`);
+        const currentActor = actor;
+
+        if (get().currentState === 'ready_to_prove' && currentActor) {
+          console.error(
+            'SocketIO disconnected unexpectedly during proof listening.',
+          );
+          trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
+          trackEvent(ProofEvents.PROOF_FAILED, {
+            circuitType: get().circuitType,
+            error: get().error_code ?? 'unknown',
+          });
+          currentActor.send({ type: 'PROVE_ERROR' });
+        }
+        set({ socketConnection: null });
       });
 
       socket.on('status', (message: any) => {
@@ -450,37 +500,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           trackEvent(ProofEvents.SOCKETIO_PROOF_SUCCESS);
           actor!.send({ type: 'PROVE_SUCCESS' });
         }
-      });
-
-      socket.on('disconnect', (reason: string) => {
-        console.log(`SocketIO disconnected. Reason: ${reason}`);
-        const currentActor = actor;
-
-        if (get().currentState === 'ready_to_prove' && currentActor) {
-          console.error(
-            'SocketIO disconnected unexpectedly during proof listening.',
-          );
-          trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
-          trackEvent(ProofEvents.PROOF_FAILED, {
-            circuitType: get().circuitType,
-            error: get().error_code ?? 'unknown',
-          });
-          currentActor.send({ type: 'PROVE_ERROR' });
-        }
-        set({ socketConnection: null });
-      });
-
-      socket.on('connect_error', error => {
-        console.error('SocketIO connection error:', error);
-        trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
-          message: (error as any).message,
-        });
-        trackEvent(ProofEvents.PROOF_FAILED, {
-          circuitType: get().circuitType,
-          error: get().error_code ?? 'unknown',
-        });
-        actor!.send({ type: 'PROVE_ERROR' });
-        set({ socketConnection: null });
       });
     },
 
@@ -690,7 +709,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;
           }
-          const isNullifierOnchain = await isPassportNullified(passportData);
+          const isNullifierOnchain = await isDocumentNullified(passportData);
           if (isNullifierOnchain) {
             console.log(
               'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
@@ -967,13 +986,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);
       }
-      const userDefinedData = selfApp?.userDefinedData
-        ? getSolidityPackedUserContextData(
-            selfApp.chainID,
-            selfApp.userId,
-            selfApp.userDefinedData,
-          ).slice(2)
-        : '';
+      const userDefinedData = getSolidityPackedUserContextData(
+        selfApp?.chainID ?? 0,
+        selfApp?.userId ?? '',
+        selfApp?.userDefinedData ?? '',
+      ).slice(2);
       const payload = getPayload(
         inputs,
         circuitTypeWithDocumentExtension as

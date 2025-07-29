@@ -1,35 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import type { EndpointType } from '@selfxyz/common';
 import { WS_DB_RELAYER } from '@selfxyz/common';
-import { UserIdType } from '@selfxyz/common';
-import { Platform } from 'react-native';
-import SQLite from 'react-native-sqlite-storage';
 import { io } from 'socket.io-client';
 import { create } from 'zustand';
 
-SQLite.enablePromise(true);
-
-export interface ProofHistory {
-  id: string;
-  appName: string;
-  sessionId: string;
-  userId: string;
-  userIdType: UserIdType;
-  endpointType: EndpointType;
-  status: ProofStatus;
-  errorCode?: string;
-  errorReason?: string;
-  timestamp: number;
-  disclosures: string;
-  logoBase64?: string;
-}
-
-export enum ProofStatus {
-  PENDING = 'pending',
-  SUCCESS = 'success',
-  FAILURE = 'failure',
-}
+import { database } from './database';
+import { ProofHistory, ProofStatus } from './proof-types';
 
 interface ProofHistoryState {
   proofHistory: ProofHistory[];
@@ -50,10 +26,6 @@ interface ProofHistoryState {
   resetHistory: () => void;
 }
 
-const PAGE_SIZE = 20;
-const DB_NAME = Platform.OS === 'ios' ? 'proof_history.db' : 'proof_history.db';
-const TABLE_NAME = 'proof_history';
-const STALE_PROOF_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 const SYNC_THROTTLE_MS = 30 * 1000; // 30 seconds throttle for sync calls
 
 export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
@@ -70,45 +42,10 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       lastSyncTime = now;
 
       set({ isLoading: true });
-      const db = await SQLite.openDatabase({
-        name: DB_NAME,
-        location: 'default',
-      });
 
-      const tenMinutesAgo = Date.now() - STALE_PROOF_TIMEOUT_MS;
-      const [stalePending] = await db.executeSql(
-        `SELECT sessionId FROM ${TABLE_NAME} WHERE status = ? AND timestamp <= ?`,
-        [ProofStatus.PENDING, tenMinutesAgo],
-      );
+      await database.updateStaleProofs(get().updateProofStatus);
 
-      // Improved error handling - wrap each updateProofStatus call in try-catch
-      let successfulUpdates = 0;
-      let failedUpdates = 0;
-
-      for (let i = 0; i < stalePending.rows.length; i++) {
-        const { sessionId } = stalePending.rows.item(i);
-        try {
-          await get().updateProofStatus(sessionId, ProofStatus.FAILURE);
-          successfulUpdates++;
-        } catch (error) {
-          console.error(
-            `Failed to update proof status for session ${sessionId}:`,
-            error,
-          );
-          failedUpdates++;
-          // Continue with the next iteration instead of stopping the entire loop
-        }
-      }
-
-      if (stalePending.rows.length > 0) {
-        console.log(
-          `Stale proof cleanup: ${successfulUpdates} successful, ${failedUpdates} failed`,
-        );
-      }
-
-      const [pendingProofs] = await db.executeSql(`
-        SELECT * FROM ${TABLE_NAME} WHERE status = '${ProofStatus.PENDING}'
-      `);
+      const pendingProofs = await database.getPendingProofs();
 
       if (pendingProofs.rows.length === 0) {
         console.log('No pending proofs to sync');
@@ -119,13 +56,18 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         path: '/',
         transports: ['websocket'],
       });
+      setTimeout(() => {
+        websocket.connected && websocket.disconnect();
+        console.log('WebSocket disconnected after timeout');
+        // disconnect after 2 minutes
+      }, SYNC_THROTTLE_MS * 4);
 
       for (let i = 0; i < pendingProofs.rows.length; i++) {
-        const proof = pendingProofs.rows.item(i);
+        const proof = pendingProofs.rows[i];
         websocket.emit('subscribe', proof.sessionId);
       }
 
-      websocket.on('status', message => {
+      websocket.timeout(SYNC_THROTTLE_MS * 3).on('status', message => {
         const data =
           typeof message === 'string' ? JSON.parse(message) : message;
 
@@ -139,6 +81,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
           console.log('Failed to verify proof');
           get().updateProofStatus(data.request_id, ProofStatus.FAILURE);
         }
+        websocket.emit('unsubscribe', data.request_id);
       });
     } catch (error) {
       console.error('Error syncing proof status', error);
@@ -155,31 +98,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
 
     initDatabase: async () => {
       try {
-        const db = await SQLite.openDatabase({
-          name: DB_NAME,
-          location: 'default',
-        });
-
-        await db.executeSql(`
-          CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            appName TEXT NOT NULL,
-            sessionId TEXT NOT NULL UNIQUE,
-            userId TEXT NOT NULL,
-            userIdType TEXT NOT NULL,
-            endpointType TEXT NOT NULL,
-            status TEXT NOT NULL,
-            errorCode TEXT,
-            errorReason TEXT,
-            timestamp INTEGER NOT NULL,
-            disclosures TEXT NOT NULL,
-            logoBase64 TEXT
-          )
-        `);
-
-        await db.executeSql(`
-          CREATE INDEX IF NOT EXISTS idx_proof_history_timestamp ON ${TABLE_NAME} (timestamp)
-        `);
+        await database.init();
 
         // Load initial data
         const state = get();
@@ -196,33 +115,10 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
 
     addProofHistory: async proof => {
       try {
-        const db = await SQLite.openDatabase({
-          name: DB_NAME,
-          location: 'default',
-        });
+        const insertResult = await database.insertProof(proof);
 
-        const timestamp = Date.now();
-
-        const [insertResult] = await db.executeSql(
-          `INSERT OR IGNORE INTO ${TABLE_NAME} (appName, endpointType, status, errorCode, errorReason, timestamp, disclosures, logoBase64, userId, userIdType, sessionId)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            proof.appName,
-            proof.endpointType,
-            proof.status,
-            proof.errorCode || null,
-            proof.errorReason || null,
-            timestamp,
-            proof.disclosures,
-            proof.logoBase64 || null,
-            proof.userId,
-            proof.userIdType,
-            proof.sessionId,
-          ],
-        );
-
-        if (insertResult.rowsAffected > 0 && insertResult.insertId) {
-          const id = insertResult.insertId.toString();
+        if (insertResult.rowsAffected > 0 && insertResult.id) {
+          const { id, timestamp } = insertResult;
           set(state => ({
             proofHistory: [
               {
@@ -242,17 +138,12 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
 
     updateProofStatus: async (sessionId, status, errorCode, errorReason) => {
       try {
-        const db = await SQLite.openDatabase({
-          name: DB_NAME,
-          location: 'default',
-        });
-        await db.executeSql(
-          `
-          UPDATE ${TABLE_NAME} SET status = ?, errorCode = ?, errorReason = ? WHERE sessionId = ?
-        `,
-          [status, errorCode, errorReason, sessionId],
+        await database.updateProofStatus(
+          status,
+          errorCode,
+          errorReason,
+          sessionId,
         );
-
         // Update the status in the state
         set(state => ({
           proofHistory: state.proofHistory.map(proof =>
@@ -273,29 +164,12 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       set({ isLoading: true });
 
       try {
-        const db = await SQLite.openDatabase({
-          name: DB_NAME,
-          location: 'default',
-        });
-        const offset = (state.currentPage - 1) * PAGE_SIZE;
-
-        const [results] = await db.executeSql(
-          `WITH data AS (
-            SELECT *, COUNT(*) OVER() as total_count
-            FROM ${TABLE_NAME}
-            ORDER BY timestamp DESC
-            LIMIT ? OFFSET ?
-          )
-          SELECT * FROM data`,
-          [PAGE_SIZE, offset],
-        );
+        const results = await database.getHistory(state.currentPage);
 
         const proofs: ProofHistory[] = [];
-        let totalCount = 0;
-
+        const totalCount = results.total_count || 0;
         for (let i = 0; i < results.rows.length; i++) {
-          const row = results.rows.item(i);
-          totalCount = row.total_count; // same for all rows
+          const row = results.rows[i];
           proofs.push({
             id: row.id.toString(),
             sessionId: row.sessionId,

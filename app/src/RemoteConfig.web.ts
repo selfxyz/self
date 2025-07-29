@@ -1,0 +1,115 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
+// Web-compatible version using LocalStorage and Firebase Web SDK
+// This file provides the same API as RemoteConfig.ts but for web environments
+
+import {
+  clearAllLocalOverrides as clearAllLocalOverridesShared,
+  clearLocalOverride as clearLocalOverrideShared,
+  FeatureFlagValue,
+  getAllFeatureFlags as getAllFeatureFlagsShared,
+  getFeatureFlag as getFeatureFlagShared,
+  getLocalOverrides as getLocalOverridesShared,
+  initRemoteConfig as initRemoteConfigShared,
+  refreshRemoteConfig as refreshRemoteConfigShared,
+  RemoteConfigBackend,
+  setLocalOverride as setLocalOverrideShared,
+  StorageBackend,
+} from './RemoteConfig.shared';
+
+// Web-specific storage backend using LocalStorage
+const webStorageBackend: StorageBackend = {
+  getItem: async (key: string): Promise<string | null> => {
+    return localStorage.getItem(key);
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    localStorage.setItem(key, value);
+  },
+  removeItem: async (key: string): Promise<void> => {
+    localStorage.removeItem(key);
+  },
+};
+
+// Mock Firebase Remote Config for web (since Firebase Web SDK for Remote Config is not installed)
+// In a real implementation, you would import and use the Firebase Web SDK
+class MockFirebaseRemoteConfig implements RemoteConfigBackend {
+  private config: Record<string, any> = {};
+  private settings: any = {};
+
+  setDefaults(defaults: Record<string, any>) {
+    this.config = { ...defaults };
+  }
+
+  setConfigSettings(settings: any) {
+    this.settings = settings;
+  }
+
+  async fetchAndActivate(): Promise<boolean> {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return true;
+  }
+
+  getValue(key: string) {
+    const value = this.config[key] || '';
+    return {
+      asBoolean: () => {
+        if (typeof value === 'boolean') return value;
+        if (typeof value === 'string') return value === 'true';
+        return false;
+      },
+      asNumber: () => {
+        if (typeof value === 'number') return value;
+        if (typeof value === 'string') {
+          const num = Number(value);
+          return isNaN(num) ? 0 : num;
+        }
+        return 0;
+      },
+      asString: () => {
+        if (typeof value === 'string') return value;
+        return String(value);
+      },
+      getSource: () => {
+        return value;
+      },
+    };
+  }
+
+  getAll() {
+    return this.config;
+  }
+}
+
+// Web-specific remote config backend using mock Firebase
+const webRemoteConfigBackend: RemoteConfigBackend =
+  new MockFirebaseRemoteConfig();
+
+// Export the shared functions with web-specific backends
+export const getLocalOverrides = () =>
+  getLocalOverridesShared(webStorageBackend);
+export const setLocalOverride = (flag: string, value: FeatureFlagValue) =>
+  setLocalOverrideShared(webStorageBackend, flag, value);
+export const clearLocalOverride = (flag: string) =>
+  clearLocalOverrideShared(webStorageBackend, flag);
+export const clearAllLocalOverrides = () =>
+  clearAllLocalOverridesShared(webStorageBackend);
+export const initRemoteConfig = () =>
+  initRemoteConfigShared(webRemoteConfigBackend);
+export const getFeatureFlag = <T extends FeatureFlagValue>(
+  flag: string,
+  defaultValue: T,
+) =>
+  getFeatureFlagShared(
+    webRemoteConfigBackend,
+    webStorageBackend,
+    flag,
+    defaultValue,
+  );
+export const getAllFeatureFlags = () =>
+  getAllFeatureFlagsShared(webRemoteConfigBackend, webStorageBackend);
+export const refreshRemoteConfig = () =>
+  refreshRemoteConfigShared(webRemoteConfigBackend);
+
+// Re-export types for convenience
+export type { FeatureFlagValue } from './RemoteConfig.shared';

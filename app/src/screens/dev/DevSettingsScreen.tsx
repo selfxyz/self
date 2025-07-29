@@ -6,6 +6,7 @@ import React, {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { Alert, Platform, ScrollView, StyleProp, TextInput } from 'react-native';
@@ -187,7 +188,7 @@ const ScreenSelector = ({}) => {
         </Button>
       </Select.Trigger>
 
-      <Adapt when="sm" platform="touch">
+      <Adapt when={'sm' as any} platform="touch">
         <Sheet native modal dismissOnSnapToBottom animation="medium">
           <Sheet.Frame>
             <Sheet.ScrollView>
@@ -206,7 +207,7 @@ const ScreenSelector = ({}) => {
       <Select.Content zIndex={200000}>
         <Select.Viewport minWidth={200}>
           <Select.Group>
-            {React.useMemo(
+            {useMemo(
               () =>
                 items.map((item, i) => {
                   return (
@@ -218,7 +219,7 @@ const ScreenSelector = ({}) => {
                     </Select.Item>
                   );
                 }),
-              [items],
+              [],
             )}
           </Select.Group>
         </Select.Viewport>
@@ -363,8 +364,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           title="Debug Shortcuts"
           description="Jump directly to any screen for testing"
         >
-          <ScreenSelector />
-        </ParameterSection>
 
         <ParameterSection
           icon={<WarningIcon color={yellow500}/>}

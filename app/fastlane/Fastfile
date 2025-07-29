@@ -58,20 +58,33 @@ platform :ios do
   end
 
   desc "Push a new build to TestFlight Internal Testing"
-  lane :internal_test do
+  lane :internal_test do |options|
+    test_mode = options[:test_mode] == true || options[:test_mode] == "true"
+    
     result = prepare_ios_build(prod_release: false)
 
-    upload_to_testflight(
-      api_key: result[:api_key],
-      distribute_external: true,
-      # Only external TestFlight groups are valid here
-      groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
-      changelog: "",
-      skip_waiting_for_build_processing: false,
-    ) if result[:should_upload]
+    if test_mode
+      UI.important("🧪 TEST MODE: Skipping TestFlight upload")
+      UI.success("✅ Build completed successfully!")
+      UI.message("📦 IPA path: #{result[:ipa_path]}")
+    else
+      upload_to_testflight(
+        api_key: result[:api_key],
+        distribute_external: true,
+        # Only external TestFlight groups are valid here
+        groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
+        changelog: "",
+        skip_waiting_for_build_processing: false,
+      ) if result[:should_upload]
+    end
+    
+    # Update deployment timestamp in version.json
+    if result[:should_upload]
+      Fastlane::Helpers.update_deployment_timestamp('ios')
+    end
 
     # Notify Slack about the new build
-    if ENV["SLACK_CHANNEL_ID"]
+    if ENV["SLACK_CHANNEL_ID"] && !test_mode
       deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Workflow" : "Local Deploy"
       Fastlane::Helpers.upload_file_to_slack(
         file_path: result[:ipa_path],
@@ -79,6 +92,8 @@ platform :ios do
         initial_comment: "🍎 iOS v#{package_version} (Build #{result[:build_number]}) deployed to TestFlight via #{deploy_source}",
         title: "#{APP_NAME}-#{package_version}-#{result[:build_number]}.ipa",
       )
+    elsif test_mode
+      UI.important("🧪 TEST MODE: Skipping Slack notification")
     else
       UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
     end
@@ -122,13 +137,16 @@ platform :ios do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
 
-    # Get current build number without auto-incrementing
-    project = Xcodeproj::Project.open(ios_xcode_profile_path)
-    target = project.targets.first
-    config = target.build_configurations.first
-    build_number = config.build_settings["CURRENT_PROJECT_VERSION"]
-
-    # Verify build number is higher than TestFlight (but don't auto-increment)
+    # Get build number from version.json and increment it
+    build_number = Fastlane::Helpers.bump_ios_build_number
+    
+    # Update Xcode project with new build number
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj: "ios/#{ENV["IOS_PROJECT_NAME"]}.xcodeproj"
+    )
+    
+    # Verify build number is higher than TestFlight
     Fastlane::Helpers.ios_verify_app_store_build_number(ios_xcode_profile_path)
     Fastlane::Helpers.ios_verify_provisioning_profile
 
@@ -200,8 +218,8 @@ platform :android do
   end
 
   desc "Push a new build to Google Play Internal Testing"
-  lane :internal_test do
-    upload_android_build(track: "internal")
+  lane :internal_test do |options|
+    upload_android_build(track: "internal", test_mode: options[:test_mode])
   end
 
   desc "Push a new build to Google Play Store"
@@ -210,6 +228,7 @@ platform :android do
   end
 
   private_lane :upload_android_build do |options|
+    test_mode = options[:test_mode] == true || options[:test_mode] == "true"
     if local_development
       if ENV["ANDROID_KEYSTORE_PATH"].nil?
         ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.android_create_keystore(android_keystore_path)
@@ -232,10 +251,14 @@ platform :android do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
 
-    # Get current version code without auto-incrementing
-    content = File.read(android_gradle_file_path)
-    match = content.match(/versionCode\s+(\d+)/)
-    version_code = match ? match[1].to_i : 1
+    # Get version code from version.json and increment it
+    version_code = Fastlane::Helpers.bump_android_build_number
+    
+    # Update build.gradle with new version code
+    increment_version_code(
+      version_code: version_code,
+      gradle_file_path: android_gradle_file_path.gsub("../", "")
+    )
 
     # TODO: uncomment when we have the permissions to run this action
     # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
@@ -260,19 +283,30 @@ platform :android do
       )
     end
 
-    upload_to_play_store(
-      track: options[:track],
-      json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
-      package_name: ENV["ANDROID_PACKAGE_NAME"],
-      skip_upload_changelogs: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      track_promote_release_status: "completed",
-      aab: android_aab_path,
-    ) if should_upload && android_has_permissions
+    if test_mode
+      UI.important("🧪 TEST MODE: Skipping Play Store upload")
+      UI.success("✅ Build completed successfully!")
+      UI.message("📦 AAB path: #{android_aab_path}")
+    else
+      upload_to_play_store(
+        track: options[:track],
+        json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
+        package_name: ENV["ANDROID_PACKAGE_NAME"],
+        skip_upload_changelogs: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        track_promote_release_status: "completed",
+        aab: android_aab_path,
+      ) if should_upload && android_has_permissions
+    end
+    
+    # Update deployment timestamp in version.json
+    if should_upload
+      Fastlane::Helpers.update_deployment_timestamp('android')
+    end
 
     # Notify Slack about the new build
-    if ENV["SLACK_CHANNEL_ID"]
+    if ENV["SLACK_CHANNEL_ID"] && !test_mode
       deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Workflow" : "Local Deploy"
       Fastlane::Helpers.upload_file_to_slack(
         file_path: android_aab_path,
@@ -280,6 +314,8 @@ platform :android do
         initial_comment: "🤖 Android v#{package_version} (Build #{version_code}) deployed to #{target_platform} via #{deploy_source}",
         title: "#{APP_NAME}-#{package_version}-#{version_code}.aab",
       )
+    elsif test_mode
+      UI.important("🧪 TEST MODE: Skipping Slack notification")
     else
       UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
     end

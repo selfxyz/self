@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import 'react-native-gesture-handler';
-
 import {
   createNavigationContainerRef,
   createStaticNavigation,
   StaticParamList,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DefaultNavBar } from '../components/NavBar';
@@ -38,7 +37,8 @@ export const navigationScreens = {
 };
 
 const AppNavigation = createNativeStackNavigator({
-  initialRouteName: 'Splash',
+  id: undefined,
+  initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,
@@ -73,7 +73,7 @@ const NavigationWithTracking = () => {
   };
 
   // Setup universal link handling at the navigation level
-  React.useEffect(() => {
+  useEffect(() => {
     const cleanup = setupUniversalLinkListenerInNavigation();
 
     return () => {

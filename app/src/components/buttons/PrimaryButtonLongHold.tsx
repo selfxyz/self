@@ -8,22 +8,23 @@ import {
   useAnimatedValue,
 } from 'react-native';
 
-import { ButtonProps } from './AbstractButton';
 import { PrimaryButton } from './PrimaryButton';
+import {
+  ACTION_TIMER,
+  COLORS,
+  HeldPrimaryButtonProps,
+} from './PrimaryButtonLongHold.shared';
 
-type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
-
-const ACTION_TIMER = 600; // time in ms
-//slate400 to slate800 but in rgb
-const COLORS: RGBA[] = ['rgba(30, 41, 59, 0.3)', 'rgba(30, 41, 59, 1)'];
 export function HeldPrimaryButton({
   children,
   onLongPress,
   ...props
-}: ButtonProps & { onLongPress: () => void }) {
-  const animation = useAnimatedValue(0);
+}: HeldPrimaryButtonProps) {
   const [hasTriggered, setHasTriggered] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
+
+  // React Native animation setup
+  const animation = useAnimatedValue(0);
 
   const onPressIn = () => {
     setHasTriggered(false);
@@ -50,23 +51,8 @@ export function HeldPrimaryButton({
     setSize({ width, height });
   };
 
-  const getProgressStyles = () => {
-    const scaleX = animation.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-    });
-    const bgColor = animation.interpolate({
-      inputRange: [0, 1],
-      outputRange: COLORS,
-    });
-    return {
-      transform: [{ scaleX }],
-      backgroundColor: bgColor,
-      height: size.height,
-    };
-  };
-
   useEffect(() => {
+    // Mobile: Use React Native animation listener
     animation.addListener(({ value }) => {
       if (value >= 0.95 && !hasTriggered) {
         setHasTriggered(true);
@@ -78,6 +64,32 @@ export function HeldPrimaryButton({
     };
   }, [animation, hasTriggered, onLongPress]);
 
+  const renderAnimatedComponent = () => {
+    // Mobile: Use React Native Animated.View
+    const scaleX = animation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1],
+    });
+    const bgColor = animation.interpolate({
+      inputRange: [0, 1],
+      outputRange: COLORS,
+    });
+
+    return (
+      <Animated.View
+        style={[
+          styles.fill,
+          size,
+          {
+            transform: [{ scaleX }],
+            backgroundColor: bgColor,
+            height: size.height,
+          },
+        ]}
+      />
+    );
+  };
+
   return (
     <PrimaryButton
       {...props}
@@ -85,14 +97,13 @@ export function HeldPrimaryButton({
       onPressOut={onPressOut}
       // @ts-expect-error actually it is there
       onLayout={getButtonSize}
-      animatedComponent={
-        <Animated.View style={[styles.fill, size, getProgressStyles()]} />
-      }
+      animatedComponent={renderAnimatedComponent()}
     >
       {children}
     </PrimaryButton>
   );
 }
+
 const styles = StyleSheet.create({
   fill: {
     transformOrigin: 'left',

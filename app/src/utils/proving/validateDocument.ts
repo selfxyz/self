@@ -3,6 +3,7 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import {
   API_URL,
+  API_URL_STAGING,
   formatMrz,
   generateCommitment,
   generateNullifier,
@@ -17,7 +18,18 @@ import {
 import { DocumentCategory } from '@selfxyz/common';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
+import { DocumentEvents } from '../../consts/analytics';
+import {
+  getAllDocuments,
+  loadPassportDataAndSecret,
+  loadSelectedDocument,
+  setSelectedDocument,
+  storePassportData,
+} from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
+import analytics from '../../utils/analytics';
+
+const { trackEvent } = analytics();
 
 export type PassportSupportStatus =
   | 'passport_metadata_missing'
@@ -134,20 +146,30 @@ export async function isUserRegisteredWithAlternativeCSCA(
   );
   return { isRegistered: false, csca: null };
 }
-
-export async function isPassportNullified(passportData: PassportData) {
+export async function isDocumentNullified(passportData: PassportData) {
   const nullifier = generateNullifier(passportData);
   const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
-  console.log('checking for nullifier', nullifierHex);
-  const response = await fetch(`${API_URL}/is-nullifier-onchain/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
+  const attestationId =
+    passportData.documentCategory === 'passport'
+      ? '0x0000000000000000000000000000000000000000000000000000000000000001'
+      : '0x0000000000000000000000000000000000000000000000000000000000000002';
+  console.log('checking for nullifier', nullifierHex, attestationId);
+  const baseUrl = passportData.mock === false ? API_URL : API_URL_STAGING;
+  const response = await fetch(
+    `${baseUrl}/is-nullifier-onchain-with-attestation-id`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        nullifier: nullifierHex,
+        attestation_id: attestationId,
+      }),
     },
-    body: JSON.stringify({ nullifier: nullifierHex }),
-  });
+  );
   const data = await response.json();
-  console.log('isPassportNullified', data);
+  console.log('isDocumentNullified', data);
   return data.data;
 }
 
@@ -238,4 +260,129 @@ function formatCSCAPem(cscaPem: string): string {
     cleanedPem = `-----BEGIN CERTIFICATE-----\n${cleanedPem}\n-----END CERTIFICATE-----`;
   }
   return cleanedPem;
+}
+
+export function isPassportDataValid(passportData: PassportData) {
+  if (!passportData) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      error: 'Passport data is null',
+    });
+    return false;
+  }
+  if (!passportData.passportMetadata) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      error: 'Passport metadata is null',
+    });
+    return false;
+  }
+  if (!passportData.passportMetadata.dg1HashFunction) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      mock: passportData.mock,
+      dsc: passportData.dsc,
+      error: 'DG1 hash function is null',
+    });
+    return false;
+  }
+  if (!passportData.passportMetadata.eContentHashFunction) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      mock: passportData.mock,
+      dsc: passportData.dsc,
+      documentCategory: passportData.documentCategory,
+      error: 'EContent hash function is null',
+    });
+    return false;
+  }
+  if (!passportData.passportMetadata.signedAttrHashFunction) {
+    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+      mock: passportData.mock,
+      dsc: passportData.dsc,
+      documentCategory: passportData.documentCategory,
+      error: 'Signed attribute hash function is null',
+    });
+    return false;
+  }
+  return true;
+}
+
+export function migratePassportData(passportData: PassportData): PassportData {
+  const migratedData = { ...passportData } as any;
+  if (!('documentCategory' in migratedData) || !('mock' in migratedData)) {
+    if ('documentType' in migratedData && migratedData.documentType) {
+      migratedData.mock = migratedData.documentType.startsWith('mock');
+      migratedData.documentCategory = migratedData.documentType.includes(
+        'passport',
+      )
+        ? 'passport'
+        : 'id_card';
+    } else {
+      migratedData.documentType = 'passport';
+      migratedData.documentCategory = 'passport';
+      migratedData.mock = false;
+    }
+    // console.log('Migrated passport data:', migratedData);
+  }
+  return migratedData as PassportData;
+}
+
+/**
+ * This function sequentially checks all documents for a valid registered document.
+ * Since it uses fetch_all and loadSelectedDocument, it cannot be parallelised.
+ */
+export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
+  const allDocuments = await getAllDocuments();
+  for (const documentId of Object.keys(allDocuments)) {
+    try {
+      await setSelectedDocument(documentId);
+      const selectedDocument = await loadSelectedDocument();
+      if (!selectedDocument) continue;
+      let { data: passportData } = selectedDocument;
+      if (!isPassportDataValid(passportData)) {
+        trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+          error: 'Passport data is not valid',
+          documentId,
+        });
+        continue;
+      }
+      const migratedPassportData = migratePassportData(passportData);
+      if (migratedPassportData !== passportData) {
+        await storePassportData(migratedPassportData);
+        passportData = migratedPassportData;
+      }
+      const environment = migratedPassportData.mock ? 'stg' : 'prod';
+      const documentCategory = migratedPassportData.documentCategory;
+      const authorityKeyIdentifier =
+        migratedPassportData.dsc_parsed?.authorityKeyIdentifier;
+      if (!authorityKeyIdentifier) {
+        trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+          error: 'Authority key identifier is null',
+          documentId,
+          documentCategory,
+          mock: migratedPassportData.mock,
+        });
+        continue;
+      }
+      await useProtocolStore
+        .getState()
+        [documentCategory].fetch_all(environment, authorityKeyIdentifier);
+      const passportDataAndSecret = await loadPassportDataAndSecret();
+      if (!passportDataAndSecret) continue;
+      const { secret } = JSON.parse(passportDataAndSecret);
+      const isRegistered = await isUserRegistered(migratedPassportData, secret);
+      if (isRegistered) {
+        trackEvent(DocumentEvents.DOCUMENT_VALIDATED, {
+          documentId,
+          documentCategory,
+          mock: migratedPassportData.mock,
+        });
+        return true;
+      }
+    } catch (error) {
+      console.error(`Error in hasAnyValidRegisteredDocument: ${error}`);
+      trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        documentId,
+      });
+    }
+  }
+  return false;
 }

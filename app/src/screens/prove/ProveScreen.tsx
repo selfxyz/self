@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { SelfAppDisclosureConfig } from '@selfxyz/common';
-import { formatEndpoint } from '@selfxyz/common';
+import { formatEndpoint, SelfAppDisclosureConfig } from '@selfxyz/common';
+import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
@@ -17,8 +17,9 @@ import {
   NativeSyntheticEvent,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
-import { Image, Text, View, YStack } from 'tamagui';
+import { Image, Text, View, XStack, YStack } from 'tamagui';
 
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrimaryButtonProveScreen';
@@ -28,13 +29,12 @@ import { Caption } from '../../components/typography/Caption';
 import { ProofEvents } from '../../consts/analytics';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { setDefaultDocumentTypeIfNeeded } from '../../providers/passportDataProvider';
-import {
-  ProofStatus,
-  useProofHistoryStore,
-} from '../../stores/proofHistoryStore';
+import { ProofStatus } from '../../stores/proof-types';
+import { useProofHistoryStore } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
 import { black, slate300, white } from '../../utils/colors';
+import { formatUserId } from '../../utils/formatUserId';
 import { buttonTap } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
@@ -49,6 +49,7 @@ const ProveScreen: React.FC = () => {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
+  const [showFullAddress, setShowFullAddress] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const isContentShorterThanScrollView = useMemo(
@@ -75,7 +76,7 @@ const ProveScreen: React.FC = () => {
         disclosures: JSON.stringify(selectedApp.disclosures),
       });
     }
-  }, [provingStore.uuid, selectedApp]);
+  }, [addProofHistory, provingStore.uuid, selectedApp]);
 
   useEffect(() => {
     if (isContentShorterThanScrollView) {
@@ -97,7 +98,7 @@ const ProveScreen: React.FC = () => {
       provingStore.init('disclose');
     }
     selectedAppRef.current = selectedApp;
-  }, [selectedApp, isFocused]);
+  }, [selectedApp, isFocused, provingStore]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
@@ -130,6 +131,11 @@ const ProveScreen: React.FC = () => {
     }
     return formatEndpoint(selectedApp.endpoint);
   }, [selectedApp?.endpoint]);
+
+  const formattedUserId = useMemo(
+    () => formatUserId(selectedApp?.userId, selectedApp?.userIdType),
+    [selectedApp?.userId, selectedApp?.userIdType],
+  );
 
   function onVerify() {
     provingStore.setUserConfirmed();
@@ -184,6 +190,13 @@ const ProveScreen: React.FC = () => {
     setScrollViewHeight(event.nativeEvent.layout.height);
   }, []);
 
+  const handleAddressToggle = useCallback(() => {
+    if (selectedApp?.userIdType === 'hex') {
+      setShowFullAddress(!showFullAddress);
+      buttonTap();
+    }
+  }, [selectedApp?.userIdType, showFullAddress]);
+
   return (
     <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
@@ -204,14 +217,14 @@ const ProveScreen: React.FC = () => {
             <YStack alignItems="center" justifyContent="center">
               {logoSource && (
                 <Image
-                  mb={20}
+                  marginBottom={20}
                   source={logoSource}
                   width={100}
                   height={100}
                   objectFit="contain"
                 />
               )}
-              <BodyText fontSize={12} color={slate300} mb={20}>
+              <BodyText fontSize={12} color={slate300} marginBottom={20}>
                 {url}
               </BodyText>
               <BodyText fontSize={24} color={slate300} textAlign="center">
@@ -235,6 +248,79 @@ const ProveScreen: React.FC = () => {
           onLayout={handleScrollViewLayout}
         >
           <Disclosures disclosures={disclosureOptions} />
+
+          {/* Display connected wallet or UUID */}
+          {formattedUserId && (
+            <View marginTop={20} paddingHorizontal={20}>
+              <BodyText
+                fontSize={16}
+                color={black}
+                fontWeight="600"
+                marginBottom={10}
+              >
+                {selectedApp?.userIdType === 'hex'
+                  ? 'Connected Wallet'
+                  : 'Connected ID'}
+                :
+              </BodyText>
+              <TouchableOpacity
+                onPress={handleAddressToggle}
+                activeOpacity={selectedApp?.userIdType === 'hex' ? 0.7 : 1}
+                style={{ minHeight: 44 }}
+              >
+                <View
+                  backgroundColor={slate300}
+                  padding={15}
+                  borderRadius={8}
+                  marginBottom={10}
+                >
+                  <XStack alignItems="center" justifyContent="space-between">
+                    <View
+                      flex={1}
+                      marginRight={selectedApp?.userIdType === 'hex' ? 12 : 0}
+                    >
+                      <BodyText
+                        fontSize={14}
+                        color={black}
+                        lineHeight={20}
+                        fontFamily={
+                          showFullAddress && selectedApp?.userIdType === 'hex'
+                            ? 'monospace'
+                            : 'normal'
+                        }
+                        flexWrap={showFullAddress ? 'wrap' : 'nowrap'}
+                      >
+                        {selectedApp?.userIdType === 'hex' && showFullAddress
+                          ? selectedApp.userId
+                          : formattedUserId}
+                      </BodyText>
+                    </View>
+                    {selectedApp?.userIdType === 'hex' && (
+                      <View alignItems="center" justifyContent="center">
+                        {showFullAddress ? (
+                          <EyeOff size={16} color={black} />
+                        ) : (
+                          <Eye size={16} color={black} />
+                        )}
+                      </View>
+                    )}
+                  </XStack>
+                  {selectedApp?.userIdType === 'hex' && (
+                    <BodyText
+                      fontSize={12}
+                      color={black}
+                      opacity={0.6}
+                      marginTop={4}
+                    >
+                      {showFullAddress
+                        ? 'Tap to hide address'
+                        : 'Tap to show full address'}
+                    </BodyText>
+                  )}
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Display userDefinedData if it exists */}
           {selectedApp?.userDefinedData && (

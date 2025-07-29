@@ -21,6 +21,16 @@ object OcrUtils {
     private val REGEX_TD1_LINE2 = "(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<sex>[FM<]{1})(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})(?<nationality>[A-Z<]{3})(?<optionalData2>[A-Z0-9<]{7})"
     private val REGEX_TD1_LINE3 ="(?<names>[A-Z<]{30})"
 
+    // TD1 (ID Card)
+    private val REGEX_ID_DOCUMENT_CODE = "(?<documentCode>[IP]{1}[DM<]{1})"
+    private val REGEX_ID_DOCUMENT_NUMBER = "(ID)(?<country>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})"
+    private val REGEX_ID_DATE_OF_BIRTH = "(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<gender>[FM<]{1})"
+
+    private val patternDocumentNumber = Pattern.compile(REGEX_ID_DOCUMENT_NUMBER)
+    private val patternDateOfBirth = Pattern.compile(REGEX_ID_DATE_OF_BIRTH)
+    private val patternDocumentCode = Pattern.compile(REGEX_ID_DOCUMENT_CODE)
+
+
     fun processOcr(
         results: Text,
         timeRequired: Long,
@@ -47,11 +57,57 @@ object OcrUtils {
         val patternTD1Line2 = Pattern.compile(REGEX_TD1_LINE2)
         val patternTD1Line3 = Pattern.compile(REGEX_TD1_LINE3)
 
+
         val matcherTD1Line1 = patternTD1Line1.matcher(fullRead)
         val matcherTD1Line2 = patternTD1Line2.matcher(fullRead)
         val matcherTD1Line3 = patternTD1Line3.matcher(fullRead)
 
+        val matcherDocumentCode = patternDocumentCode.matcher(fullRead)
+
+        if (matcherDocumentCode.find() && matcherDocumentCode.group("documentCode") == "ID") {
+            Log.d(TAG, "ID card found")
+
+            val matcherDocumentNumber = patternDocumentNumber.matcher(fullRead)
+            val matcherDateOfBirth = patternDateOfBirth.matcher(fullRead)
+
+            val hasDocumentNumber = matcherDocumentNumber.find()
+            val hasDateOfBirth = matcherDateOfBirth.find()
+
+            val documentNumber = if (hasDocumentNumber) matcherDocumentNumber.group("documentNumber") else null
+            val checkDigitDocumentNumber = if (hasDocumentNumber) matcherDocumentNumber.group("checkDigitDocumentNumber")?.toIntOrNull() else null
+            val countryCode = if (hasDocumentNumber) matcherDocumentNumber.group("country") else null
+            val dateOfBirth = if (hasDateOfBirth) matcherDateOfBirth.group("dateOfBirth") else null
+            val checkDigitDateOfBirth = if (hasDateOfBirth) matcherDateOfBirth.group("checkDigitDateOfBirth")?.toIntOrNull() else null
+            val gender = if (hasDateOfBirth) matcherDateOfBirth.group("gender") else null
+
+            val expirationDate: String? = if (!countryCode.isNullOrEmpty()) {
+                val expirationDateRegex = "(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})" + Pattern.quote(countryCode)
+                val patternExpirationDate = Pattern.compile(expirationDateRegex)
+                val matcherExpirationDate = patternExpirationDate.matcher(fullRead)
+                if (matcherExpirationDate.find()) matcherExpirationDate.group("expirationDate") else null
+            } else null
+
+            // Only proceed if all required fields are present and non-empty
+            if (!countryCode.isNullOrEmpty() && !documentNumber.isNullOrEmpty() && !dateOfBirth.isNullOrEmpty() && !expirationDate.isNullOrEmpty() && checkDigitDocumentNumber != null) {
+                val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
+                Log.d(TAG, "cleanDocumentNumber")
+                if (cleanDocumentNumber != null) {
+                    val mrzInfo = createDummyMrz("ID", countryCode, cleanDocumentNumber, dateOfBirth, expirationDate)
+                    // Log.d(TAG, "MRZ-TD1: $mrzInfo")
+                    callback.onMRZRead(mrzInfo, timeRequired)
+                    return
+                }
+            } else {
+                if (countryCode.isNullOrEmpty()) Log.d(TAG, "Missing or invalid countryCode")
+                if (documentNumber.isNullOrEmpty()) Log.d(TAG, "Missing or invalid documentNumber")
+                if (dateOfBirth.isNullOrEmpty()) Log.d(TAG, "Missing or invalid dateOfBirth")
+                if (expirationDate.isNullOrEmpty()) Log.d(TAG, "Missing or invalid expirationDate")
+                if (checkDigitDocumentNumber == null) Log.d(TAG, "Missing or invalid checkDigitDocumentNumber")
+            }
+        }
+
         if (matcherTD1Line1.find() && matcherTD1Line2.find()) {
+            Log.d(TAG, "TD1Line1 and TD1Line2 found")
             val documentNumber = matcherTD1Line1.group("documentNumber")
             val checkDigitDocumentNumber = matcherTD1Line1.group("checkDigitDocumentNumber").toInt()
             val dateOfBirth = matcherTD1Line2.group("dateOfBirth")
@@ -61,8 +117,8 @@ object OcrUtils {
 
             val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
             if (cleanDocumentNumber != null) {
-                val mrzInfo = createDummyMrz(documentType, issuingState, documentNumber, dateOfBirth, expirationDate)
-                Log.d(TAG, "MRZ-TD1: $mrzInfo")
+                val mrzInfo = createDummyMrz(documentType, issuingState, cleanDocumentNumber, dateOfBirth, expirationDate)
+                Log.d(TAG, "cleanDocumentNumber")
                 callback.onMRZRead(mrzInfo, timeRequired)
                 return
             }
@@ -82,7 +138,7 @@ object OcrUtils {
 
             val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
             if (cleanDocumentNumber!=null){
-                val mrzInfo = createDummyMrz("P", "ESP", documentNumber, dateOfBirthDay, expirationDate)
+                val mrzInfo = createDummyMrz("P", "ESP", cleanDocumentNumber, dateOfBirthDay, expirationDate)
                 // Log.d(TAG, "MRZ: $mrzInfo")
                 callback.onMRZRead(mrzInfo, timeRequired)
                 return
@@ -104,7 +160,7 @@ object OcrUtils {
 
             val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
             if (cleanDocumentNumber != null) {
-                val mrzInfo = createDummyMrz("P", "ESP", documentNumber, dateOfBirthDay, expirationDate)
+                val mrzInfo = createDummyMrz("P", "ESP", cleanDocumentNumber, dateOfBirthDay, expirationDate)
                 callback.onMRZRead(mrzInfo, timeRequired)
                 return
             }

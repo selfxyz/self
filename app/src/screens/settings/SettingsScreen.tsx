@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
-import { Bug } from '@tamagui/lucide-icons';
-import { FileText } from '@tamagui/lucide-icons';
+import { Bug, FileText } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useCallback, useMemo } from 'react';
 import { Linking, Platform, Share } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
@@ -41,6 +39,7 @@ import {
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
+import { getCountry, getLocales, getTimeZone } from '../../utils/locale';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {
@@ -70,14 +69,29 @@ const goToStore = () => {
   Linking.openURL(storeURL);
 };
 
-const routes = [
-  [Data, 'View passport info', 'PassportDataInfo'],
-  [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
-  [Cloud, 'Cloud backup', 'CloudBackupSettings'],
-  [Feedback, 'Send feeback', 'email_feedback'],
-  [ShareIcon, 'Share Self app', 'share'],
-  [FileText as React.FC<SvgProps>, 'Manage ID documents', 'ManageDocuments'],
-] satisfies [React.FC<SvgProps>, string, RouteOption][];
+const routes =
+  Platform.OS !== 'web'
+    ? ([
+        [Data, 'View passport info', 'PassportDataInfo'],
+        [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
+        [Cloud, 'Cloud backup', 'CloudBackupSettings'],
+        [Feedback, 'Send feedback', 'email_feedback'],
+        [ShareIcon, 'Share Self app', 'share'],
+        [
+          FileText as React.FC<SvgProps>,
+          'Manage ID documents',
+          'ManageDocuments',
+        ],
+      ] satisfies [React.FC<SvgProps>, string, RouteOption][])
+    : ([
+        [Data, 'View passport info', 'PassportDataInfo'],
+        [Feedback, 'Send feeback', 'email_feedback'],
+        [
+          FileText as React.FC<SvgProps>,
+          'Manage ID documents',
+          'ManageDocuments',
+        ],
+      ] satisfies [React.FC<SvgProps>, string, RouteOption][]);
 
 // get the actual type of the routes so we can use in the onMenuPress function so it
 // doesnt worry about us linking to screens with required props which we dont want to go to anyway
@@ -101,8 +115,8 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
     width="100%"
     flexDirection="row"
     gap={6}
-    py={20}
-    px={10}
+    paddingVertical={20}
+    paddingHorizontal={10}
     borderBottomColor={neutral700}
     borderBottomWidth={1}
     hitSlop={4}
@@ -118,7 +132,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
   const onPress = useCallback(() => {
     impactLight();
     Linking.openURL(href);
-  }, []);
+  }, [href]);
 
   return (
     <Button
@@ -202,9 +216,9 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
     <GestureDetector gesture={devModeTap}>
       <View backgroundColor={white}>
         <YStack
-          bg={black}
+          backgroundColor={black}
           gap={20}
-          jc="space-between"
+          justifyContent="space-between"
           height={'100%'}
           paddingHorizontal={20}
           paddingBottom={bottom + extraYPadding}
@@ -212,7 +226,11 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
           borderTopRightRadius={30}
         >
           <ScrollView>
-            <YStack ai="flex-start" justifyContent="flex-start" width="100%">
+            <YStack
+              alignItems="flex-start"
+              justifyContent="flex-start"
+              width="100%"
+            >
               {screenRoutes.map(([Icon, menuText, menuRoute]) => (
                 <MenuButton
                   key={menuRoute}
@@ -225,7 +243,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             </YStack>
           </ScrollView>
           <YStack
-            ai="center"
+            alignItems="center"
             gap={20}
             justifyContent="center"
             paddingBottom={50}
@@ -238,8 +256,8 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
               backgroundColor={slate800}
               color={white}
               flexDirection="row"
-              jc="center"
-              ai="center"
+              justifyContent="center"
+              alignItems="center"
               gap={6}
               borderRadius={4}
               pressStyle={pressedStyle}

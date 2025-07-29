@@ -27,7 +27,7 @@ const SaveRecoveryPhraseScreen: React.FC<
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
     setUserHasSeenMnemonic(true);
-  }, []);
+  }, [loadMnemonic]);
 
   const onCloudBackupPress = useHapticNavigation('CloudBackupSettings', {
     params: { nextScreen: 'SaveRecoveryPhrase' },

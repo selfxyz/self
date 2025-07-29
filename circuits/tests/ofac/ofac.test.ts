@@ -4,12 +4,12 @@ import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { poseidon2 } from 'poseidon-lite';
-import nameAndDobjson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT.json' with { type: 'json' };
-import nameAndYobjson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT.json' with { type: 'json' };
-import nameAndDobIdCardJson from '@selfxyz/common/ofacdata/outputs/nameAndDobSMT_ID.json' with { type: 'json' };
-import nameAndYobIdCardJson from '@selfxyz/common/ofacdata/outputs/nameAndYobSMT_ID.json' with { type: 'json' };
+import nameAndDobjson from '../consts/ofac/nameAndDobSMT.json' with { type: 'json' };
+import nameAndYobjson from '../consts/ofac/nameAndYobSMT.json' with { type: 'json' };
+import nameAndDobIdCardJson from '../consts/ofac/nameAndDobSMT_ID.json' with { type: 'json' };
+import nameAndYobIdCardJson from '../consts/ofac/nameAndYobSMT_ID.json' with { type: 'json' };
 import { genMockIdDoc } from '@selfxyz/common/utils/passports/genMockIdDoc';
-import passportNoAndNationalityjson from '@selfxyz/common/ofacdata/outputs/passportNoAndNationalitySMT.json' with { type: 'json' };
+import passportNoAndNationalityjson from '../consts/ofac/passportNoAndNationalitySMT.json' with { type: 'json' };
 import { generateCircuitInputsOfac } from '@selfxyz/common/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 

@@ -2,7 +2,7 @@
 
 import type { SelfApp } from '@selfxyz/common';
 import { WS_DB_RELAYER } from '@selfxyz/common';
-import io, { Socket } from 'socket.io-client';
+import socketIo, { Socket } from 'socket.io-client';
 import { create } from 'zustand';
 
 interface SelfAppState {
@@ -32,7 +32,7 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
     const socketUrl = `${connectionUrl}/websocket`;
 
     // Create a new socket connection using the updated URL.
-    const socket = io(socketUrl, {
+    const socket = socketIo(socketUrl, {
       path: '/',
       transports: ['websocket'],
       forceNew: true, // Ensure a new connection is established

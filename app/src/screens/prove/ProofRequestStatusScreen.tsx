@@ -3,7 +3,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { Linking, StatusBar, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
@@ -17,10 +17,8 @@ import { Title } from '../../components/typography/Title';
 import { ProofEvents } from '../../consts/analytics';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import {
-  ProofStatus,
-  useProofHistoryStore,
-} from '../../stores/proofHistoryStore';
+import { ProofStatus } from '../../stores/proof-types';
+import { useProofHistoryStore } from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
@@ -48,6 +46,9 @@ const SuccessScreen: React.FC = () => {
   const isFocused = useIsFocused();
 
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [countdownStarted, setCountdownStarted] = useState(false);
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   function onOkPress() {
     buttonTap();
@@ -55,6 +56,19 @@ const SuccessScreen: React.FC = () => {
     setTimeout(() => {
       cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
+  }
+
+  function cancelDeeplinkCallbackRedirect() {
+    setCountdown(null);
+  }
+
+  function cancelCountdown() {
+    console.log('[ProofRequestStatusScreen] Cancelling countdown');
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setCountdown(null);
   }
 
   useEffect(() => {
@@ -72,6 +86,25 @@ const SuccessScreen: React.FC = () => {
         sessionId,
         appName,
       });
+      // Start countdown for redirect (only if we are on this screen and haven't started yet)
+      if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
+        if (selfApp?.deeplinkCallback) {
+          try {
+            new URL(selfApp.deeplinkCallback);
+            setCountdown(5);
+            setCountdownStarted(true);
+            console.log(
+              '[ProofRequestStatusScreen] Countdown started:',
+              countdown,
+            );
+          } catch (error) {
+            console.warn(
+              'Invalid deep link URL provided:',
+              selfApp.deeplinkCallback,
+            );
+          }
+        }
+      }
     } else if (currentState === 'failure' || currentState === 'error') {
       notificationError();
       setAnimationSource(failAnimation);
@@ -91,7 +124,48 @@ const SuccessScreen: React.FC = () => {
     } else {
       setAnimationSource(loadingAnimation);
     }
-  }, [currentState, isFocused]);
+  }, [
+    currentState,
+    isFocused,
+    appName,
+    sessionId,
+    errorCode,
+    reason,
+    updateProofStatus,
+    selfApp?.deeplinkCallback,
+    countdownStarted,
+  ]);
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown > 0) {
+      timerRef.current = setTimeout(() => {
+        setCountdown(prev => (prev !== null ? prev - 1 : null));
+      }, 1000);
+      return () => {
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+        }
+      };
+    } else {
+      setCountdown(null);
+      if (selfApp?.deeplinkCallback) {
+        Linking.openURL(selfApp.deeplinkCallback).catch(err => {
+          console.error('Failed to open deep link:', err);
+          onOkPress();
+        });
+      }
+    }
+  }, [countdown, selfApp?.deeplinkCallback, onOkPress]);
+
+  useEffect(() => {
+    if (!isFocused) {
+      cancelCountdown();
+    }
+    return () => {
+      cancelCountdown();
+    };
+  }, [isFocused]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -122,6 +196,11 @@ const SuccessScreen: React.FC = () => {
             currentState={currentState}
             appName={appName ?? 'The app'}
             reason={reason ?? undefined}
+            countdown={countdown}
+            deeplinkCallback={selfApp?.deeplinkCallback?.replace(
+              /^https?:\/\//,
+              '',
+            )}
           />
         </View>
         <PrimaryButton
@@ -131,12 +210,18 @@ const SuccessScreen: React.FC = () => {
             currentState !== 'error' &&
             currentState !== 'failure'
           }
-          onPress={onOkPress}
+          onPress={
+            countdown !== null && countdown > 0
+              ? cancelDeeplinkCallbackRedirect
+              : onOkPress
+          }
         >
           {currentState !== 'completed' &&
           currentState !== 'error' &&
           currentState !== 'failure' ? (
             <Spinner />
+          ) : countdown !== null && countdown > 0 ? (
+            'Cancel'
           ) : (
             'OK'
           )}
@@ -162,12 +247,36 @@ function Info({
   currentState,
   appName,
   reason,
+  countdown,
+  deeplinkCallback,
 }: {
   currentState: string;
   appName: string;
   reason?: string;
+  countdown?: number | null;
+  deeplinkCallback?: string;
 }) {
   if (currentState === 'completed') {
+    if (countdown !== null && countdown !== undefined && countdown > 0) {
+      return (
+        <View style={{ gap: 8 }}>
+          <Description>
+            You've successfully proved your identity to{' '}
+            <BodyText style={typography.strong}>{appName}</BodyText>
+          </Description>
+          <Description>
+            <BodyText style={typography.strong}>
+              Redirecting to
+              <BodyText style={[typography.strong, { color: '#007AFF' }]}>
+                {' '}
+                {deeplinkCallback}{' '}
+              </BodyText>
+              in {countdown}
+            </BodyText>
+          </Description>
+        </View>
+      );
+    }
     return (
       <Description>
         You've successfully proved your identity to{' '}

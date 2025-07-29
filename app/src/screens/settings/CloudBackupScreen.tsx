@@ -110,7 +110,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         flexGrow={1}
         backgroundColor={white}
       >
-        <YStack alignItems="center" gap="$2.5" pb="$2.5">
+        <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
           <Title>
             {cloudBackupEnabled
               ? `${STORAGE_NAME} is enabled`
@@ -134,7 +134,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
             )}
           </Caption>
 
-          <YStack gap="$2.5" width="100%" pt="$6">
+          <YStack gap="$2.5" width="100%" paddingTop="$6">
             {cloudBackupEnabled ? (
               <SecondaryButton
                 onPress={disableCloudBackups}

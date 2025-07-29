@@ -1,22 +1,52 @@
 module.exports = {
   root: true,
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 2021,
+    sourceType: 'module',
+    ecmaFeatures: { jsx: true },
+  },
   extends: [
     '@react-native',
-    'plugin:prettier/recommended',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
     'plugin:jest/recommended',
+    'plugin:prettier/recommended',
   ],
-  plugins: ['header', 'jest', 'prettier', 'simple-import-sort'],
+  plugins: ['header', 'simple-import-sort', 'import'],
   ignorePatterns: [
     'ios/',
     'android/',
     'deployments/',
     'node_modules/',
+    'web/dist/',
+    '.tamagui/*',
+    '*.js.map',
+    '*.d.ts',
     'metro.config.cjs',
   ],
+  settings: {
+    react: { version: 'detect' },
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: './tsconfig.json',
+      },
+    },
+    'import/ignore': ['react-native'],
+  },
   rules: {
-    // Import sorting rules
-    'simple-import-sort/imports': 'warn',
+    // Import/Export Rules
+    'import/order': 'off',
+    'no-duplicate-imports': 'off',
     'simple-import-sort/exports': 'warn',
+    'simple-import-sort/imports': 'warn',
+
+    // Header rule
     'header/header': [
       2,
       'line',
@@ -25,21 +55,35 @@ module.exports = {
     ],
 
     // Add prettier rule to show prettier errors as ESLint errors
-    'prettier/prettier': [
-      'warn',
-      {
-        // Fix for TypeScript union types indentation
-        typescriptBracketSpacing: true,
-        typeAssertionStyle: 'as',
-      },
-      { usePrettierrc: true },
-    ],
+    'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
 
-    // Preserve project-specific rule exemptions
+    // React Core Rules
+    'react/no-unescaped-entities': 'off',
+    'react/prop-types': 'off',
+    'react/react-in-jsx-scope': 'off',
     'react-native/no-inline-styles': 'off',
-    'react-hooks/exhaustive-deps': 'off',
 
-    // Override any ESLint rules that conflict with the TypeScript union type formatting
+    // React Hooks Rules
+    'react-hooks/exhaustive-deps': 'warn',
+
+    // General JavaScript Rules
+    // Warn on common issues but don't block development
+    'no-console': 'warn',
+    'no-empty-pattern': 'off',
+    'prefer-const': 'warn',
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-unused-vars': 'error',
+    'no-redeclare': 'off',
+    '@typescript-eslint/ban-types': 'off',
+    '@typescript-eslint/no-namespace': 'off',
+    'no-case-declarations': 'off',
+    'react/no-children-prop': 'off',
+    'import/no-unresolved': 'error',
+    '@typescript-eslint/ban-ts-comment': 'off',
+    'no-empty': 'off',
+
+    // Override rules conflicting with TypeScript union formatting
     '@typescript-eslint/indent': 'off',
   },
   overrides: [

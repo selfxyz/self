@@ -13,6 +13,7 @@ export interface SelfApp {
   logoBase64: string;
   endpointType: EndpointType;
   endpoint: string;
+  deeplinkCallback: string;
   header: string;
   scope: string;
   sessionId: string;
@@ -78,6 +79,13 @@ export class SelfAppBuilder {
     if (config.endpointType === 'celo' && !config.endpoint.startsWith('0x')) {
       throw new Error('endpoint must be a valid address');
     }
+    // Validate that localhost endpoints are not allowed
+    if (
+      config.endpoint &&
+      (config.endpoint.includes('localhost') || config.endpoint.includes('127.0.0.1'))
+    ) {
+      throw new Error('localhost endpoints are not allowed');
+    }
     if (config.userIdType === 'hex') {
       if (!config.userId.startsWith('0x')) {
         throw new Error('userId as hex must start with 0x');
@@ -95,6 +103,7 @@ export class SelfAppBuilder {
       endpointType: 'https',
       header: '',
       logoBase64: '',
+      deeplinkCallback: '',
       disclosures: {},
       chainID: config.endpointType === 'staging_celo' ? 44787 : 42220,
       version: config.version ?? 2,

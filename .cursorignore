@@ -1,0 +1,298 @@
+# .cursorignore - Cursor AI editor ignore file
+# This file prevents Cursor from accessing sensitive files and improves performance
+# Note: .gitignore files are automatically included
+
+# ========================================
+# Security & Sensitive Files
+# ========================================
+
+# Environment and secrets
+**/.env
+**/.env.*
+**/env.sample
+**/*secrets*
+**/*credentials*
+**/*private*
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Keys and certificates
+**/*.key
+**/*.pem
+**/*.p12
+**/*.jks
+**/*.keystore
+**/*.cer
+**/*.crt
+**/*.cert
+**/mock_*.key
+**/mock_*.pem
+**/debug.keystore
+**/dev-keystore
+
+# Mobile app sensitive files
+app/android/app/google-services.json
+app/ios/GoogleService-Info.plist
+app/android/app/debug.keystore
+app/android/dev-keystore
+
+# Deployment scripts and CI/CD
+circuits/scripts/server/*.sh
+**/*.sh
+!node_modules/**/*.sh
+
+# Fastlane configuration (may contain secrets)
+app/fastlane/Fastfile
+app/fastlane/helpers.rb
+app/Gemfile.lock
+
+# Test wallets and mock data
+app/ios/passport.json
+app/ios/OpenPassport/passport.json
+
+# Environment sample files
+app/env.sample
+sdk/.env
+
+# ========================================
+# Build Outputs & Generated Files
+# ========================================
+
+# General build outputs
+**/dist/
+**/build/
+**/out/
+**/.next/
+**/*.tsbuildinfo
+
+# Mobile build outputs
+app/android/app/build/
+app/android/build/
+app/ios/build/
+app/ios/Pods/
+app/ios/DerivedData/
+app/android/.gradle/
+app/android/gradle/
+app/android/gradlew
+app/android/gradlew.bat
+
+# Circuit build outputs
+circuits/build/
+circuits/**/*.r1cs
+circuits/**/*.sym
+circuits/**/*.json
+circuits/**/*.wasm
+circuits/**/*.zkey
+circuits/**/*.vkey
+circuits/**/*.wtns
+circuits/ptau/
+
+# Contract artifacts
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+contracts/ignition/deployments/
+
+# ========================================
+# Dependencies & Package Management
+# ========================================
+
+# Node modules - everywhere
+**/node_modules/
+**/pnpm-lock.yaml
+**/yarn.lock
+**/package-lock.json
+**/.yarn/
+**/.pnp.*
+
+# Mobile specific
+app/ios/Podfile.lock
+app/android/link-assets-manifest.json
+app/ios/link-assets-manifest.json
+
+# ========================================
+# Large Data Files
+# ========================================
+
+# Circuit deployment artifacts (large JSON files)
+app/deployments/artifacts/
+
+# Public keys and trees (large JSON files)
+common/pubkeys/public_keys_parsed.json
+common/pubkeys/serialized_*.json
+common/pubkeys/serialized_csca_tree.json
+common/pubkeys/serialized_dsc_tree.json
+common/pubkeys/serialized_tree.json
+
+# OFAC and sanctions data
+common/ofacdata/
+common/sanctionedCountries/
+common/ofacdata/original/*.csv
+common/ofacdata/scripts/cleaned_sdn.csv
+common/sanctionedCountries/outputs/sc_SMT.json
+
+# Mock certificates (numerous files)
+common/src/mock_certificates/
+
+# Large SMT (Sparse Merkle Tree) files
+contracts/test/utils/smt.json
+
+# Circuit power files
+circuits/circuits/utils/crypto/ec/powers/
+
+# Test data files
+app/android/android-passport-reader/app/src/main/assets/tessdata/
+
+# ========================================
+# Development & Testing
+# ========================================
+
+# Test coverage
+**/coverage/
+**/.nyc_output/
+
+# Test files (optional - you might want AI to see tests)
+# **/*.test.ts
+# **/*.test.tsx
+# **/*.spec.ts
+# **/*.spec.tsx
+
+# Temporary files
+**/.tmp/
+**/tmp/
+**/.cache/
+**/*.log
+**/*.tmp
+
+# ========================================
+# IDE & Editor Files
+# ========================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.cursor/
+
+# ========================================
+# Documentation Build
+# ========================================
+
+# Documentation builds (if any)
+docs/build/
+docs/.docusaurus/
+documentation/build/
+documentation/.docusaurus/
+
+# Development documentation
+app/fastlane/DEV.md
+common/ofacdata/original/dataspec.txt
+
+# Generated constants from certificates
+common/src/constants/skiPem.ts
+
+# Circuit test cases (large)
+circuits/tests/**/test_cases.ts
+
+# ========================================
+# Platform Specific
+# ========================================
+
+# iOS
+*.xcworkspace/
+*.xcodeproj/
+*.pbxproj
+app/ios/App Thinning Size Report.txt
+
+# Android
+*.iml
+.gradle/
+local.properties
+app/android/android-passport-reader/examples/
+
+# React Native config
+app/react-native.config.cjs
+
+# ========================================
+# Miscellaneous
+# ========================================
+
+# License files (AI doesn't need these)
+LICENSE
+NOTICE
+
+# Large media files
+**/*.mp4
+**/*.mov
+**/*.avi
+**/*.zip
+**/*.tar.gz
+
+# Patch files
+patches/
+
+# ========================================
+# Project Specific Patterns
+# ========================================
+
+# Deployment addresses (might contain sensitive info)
+contracts/deployed_addresses.json
+contracts/ignition/deployments/staging/deployed_addresses.json
+contracts/ignition/deployments/*/artifacts/
+contracts/deployments/*/
+!contracts/deployments/prod/
+
+# Error selectors (generated)
+contracts/error-selectors.json
+
+# Hardhat network fork data
+contracts/.hardhat_fork_cache/
+
+# Lottie animation files (large JSON)
+app/src/assets/animations/*.json
+
+# Font files
+app/src/assets/fonts/
+
+# Yarn configuration
+.yarnrc.yml
+**/.yarn/
+
+# Ruby dependencies
+app/Gemfile
+app/Gemfile.lock
+
+# Certificate generation config
+common/src/scripts/extensions.cnf
+
+# Powers of Tau files
+circuits/ptau/
+
+# ========================================
+# Allow Important Files
+# ========================================
+
+# Ensure important config files are accessible
+!tsconfig.json
+!**/tsconfig.json
+!package.json
+!**/package.json
+!hardhat.config.ts
+!jest.config.*
+!babel.config.*
+!metro.config.*
+!tamagui.config.ts
+
+# Ensure source code is accessible
+!**/*.ts
+!**/*.tsx
+!**/*.js
+!**/*.jsx
+!**/*.sol
+!**/*.circom
+
+# But exclude generated TypeScript declaration files
+**/*.d.ts
+!**/types/*.d.ts
+!**/src/types/*.d.ts
