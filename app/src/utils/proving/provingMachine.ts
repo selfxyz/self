@@ -512,6 +512,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         return;
       }
       const connectionUuid = v4();
+
+      trackEvent(ProofEvents.CONNECTION_UUID_GENERATED, {
+        connection_uuid: connectionUuid,
+      });
+
       set({ uuid: connectionUuid });
       const helloBody = {
         jsonrpc: '2.0',
