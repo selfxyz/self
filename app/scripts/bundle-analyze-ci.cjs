@@ -18,11 +18,15 @@ function sanitize(str) {
 
 function getAppName() {
   try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+    const pkg = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'),
+    );
     if (pkg.name) return sanitize(pkg.name);
   } catch {}
   try {
-    const appJson = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'app.json'), 'utf8'));
+    const appJson = JSON.parse(
+      fs.readFileSync(path.join(__dirname, '..', 'app.json'), 'utf8'),
+    );
     return sanitize(appJson.name || (appJson.expo && appJson.expo.name));
   } catch {}
   return 'UnknownApp';
@@ -34,12 +38,16 @@ const bundleFile = path.join(tmpDir, `${platform}.bundle`);
 let prevSize = 0;
 if (fs.existsSync(bundleFile)) prevSize = fs.statSync(bundleFile).size;
 
-execSync(`react-native-bundle-visualizer --platform ${platform} --dev`, { stdio: 'inherit' });
+execSync(`react-native-bundle-visualizer --platform ${platform} --dev`, {
+  stdio: 'inherit',
+});
 
 if (fs.existsSync(bundleFile) && warning > 0) {
   const newSize = fs.statSync(bundleFile).size;
   const delta = newSize - prevSize;
   if (delta > warning) {
-    console.warn(`\u26A0\uFE0F Bundle increased by ${delta} bytes (threshold ${warning}).`);
+    console.warn(
+      `\u26A0\uFE0F Bundle increased by ${delta} bytes (threshold ${warning}).`,
+    );
   }
 }
