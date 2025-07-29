@@ -796,7 +796,7 @@ jobs:
     needs: [build-ios, build-android]
     if: |
       always() &&
-      github.event.inputs.test_mode != 'true' &&
+      inputs.test_mode != true &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
       NODE_VERSION: 18
@@ -872,12 +872,12 @@ jobs:
 
   # Create git tags after successful deployment
   create-release-tags:
-    needs: [build-ios, build-android, update-version-files]
+    needs: [build-ios, build-android, update-version]
     if: |
       always() &&
-      needs.update-version-files.result == 'success' &&
+      needs.update-version.result == 'success' &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
-      (inputs.deployment_track == 'production' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deployment_track == 'production'))
+      inputs.deployment_track == 'production'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
