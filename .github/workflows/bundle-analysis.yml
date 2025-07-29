@@ -1,4 +1,4 @@
-name: Mobile Bundle Analysis
+name: mobile-bundle-analysis
 
 env:
   NODE_VERSION: 18
@@ -9,11 +9,6 @@ env:
   WARNING_INCREASE: 0
 
 on:
-  push:
-    paths:
-      - "app/**"
-      - ".github/workflows/bundle-analysis.yml"
-      - ".github/actions/**"
   pull_request:
     paths:
       - "app/**"
