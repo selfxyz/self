@@ -12,7 +12,7 @@ on:
   pull_request:
     paths:
       - "app/**"
-      - ".github/workflows/bundle-analysis.yml"
+      - ".github/workflows/mobile-bundle-analysis.yml"
       - ".github/actions/**"
   workflow_dispatch:
 
