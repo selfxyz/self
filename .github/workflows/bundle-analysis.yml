@@ -28,7 +28,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
       - name: Run Android analysis
-        run: yarn analyze:android
+        run: yarn analyze:android:ci
         working-directory: ./app
       - name: Upload Android bundle report
         uses: actions/upload-artifact@v4
@@ -48,7 +48,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
       - name: Run iOS analysis
-        run: yarn analyze:ios
+        run: yarn analyze:ios:ci
         working-directory: ./app
       - name: Upload iOS bundle report
         uses: actions/upload-artifact@v4

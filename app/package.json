@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "analyze:android": "yarn reinstall && react-native-bundle-visualizer --platform android --dev",
+    "analyze:android:ci": "react-native-bundle-visualizer --platform android --dev",
     "analyze:ios": "yarn reinstall && react-native-bundle-visualizer --platform ios --dev",
+    "analyze:ios:ci": "react-native-bundle-visualizer --platform ios --dev",
     "android": "react-native run-android",
     "build:deps": "yarn workspaces foreach --from @selfxyz/mobile-app --topological --recursive run build",
     "bump-version:major": "npm version major && yarn sync-versions",
