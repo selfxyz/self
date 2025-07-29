@@ -364,6 +364,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           title="Debug Shortcuts"
           description="Jump directly to any screen for testing"
         >
+          <ScreenSelector />
+        </ParameterSection>
 
         <ParameterSection
           icon={<WarningIcon color={yellow500}/>}
