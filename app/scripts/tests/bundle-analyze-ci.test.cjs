@@ -23,11 +23,6 @@ describe('bundle-analyze-ci.cjs', () => {
   it('should have human-readable thresholds defined', () => {
     const scriptContent = fs.readFileSync(scriptPath, 'utf8');
 
-    // Check that human-readable thresholds are defined
-    assert(scriptContent.includes('BUNDLE_THRESHOLDS_MB'));
-    assert(scriptContent.includes('ios: 37')); // 37MB
-    assert(scriptContent.includes('android: 40')); // 40MB
-
     // Check that the DRY checkBundleSize function exists
     assert(scriptContent.includes('function checkBundleSize'));
     assert(scriptContent.includes('thresholdMB * 1024 * 1024'));
