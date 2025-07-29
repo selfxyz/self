@@ -6,7 +6,6 @@ env:
   JAVA_VERSION: 17
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
-  WARNING_INCREASE: 0
 
 on:
   pull_request:
@@ -29,7 +28,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
       - name: Run Android analysis
-        run: BUNDLE_WARNING_INCREASE=${{ env.WARNING_INCREASE }} yarn analyze:android:ci
+        run: yarn analyze:android:ci
         working-directory: ./app
       - name: Upload Android bundle report
         uses: actions/upload-artifact@v4
@@ -49,7 +48,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
       - name: Run iOS analysis
-        run: BUNDLE_WARNING_INCREASE=${{ env.WARNING_INCREASE }} yarn analyze:ios:ci
+        run: yarn analyze:ios:ci
         working-directory: ./app
       - name: Upload iOS bundle report
         uses: actions/upload-artifact@v4
