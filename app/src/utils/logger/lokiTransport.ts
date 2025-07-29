@@ -141,7 +141,7 @@ export const lokiTransport: transportFunctionType<any> = props => {
   const { msg, rawMsg, level, extension } = props;
 
   if (isCurrentPassportMockFlag) {
-    return; // Skip Loki transport for mock passports
+    // return; // Skip Loki transport for mock passports
   }
 
   // Extract namespace from extension
