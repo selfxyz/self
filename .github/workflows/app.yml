@@ -23,7 +23,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build Dependencies
-        run: yarn build:deps
+        run: yarn build
         working-directory: ./app
       - name: Run linter
         run: yarn lint

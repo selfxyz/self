@@ -3,10 +3,12 @@
 import type {
   DocumentCategory,
   EndpointType,
-  getCircuitNameFromPassportData,
-  getSolidityPackedUserContextData,
   PassportData,
   SelfApp,
+} from '@selfxyz/common';
+import {
+  getCircuitNameFromPassportData,
+  getSolidityPackedUserContextData,
 } from '@selfxyz/common';
 import forge from 'node-forge';
 import socketIo, { Socket } from 'socket.io-client';
