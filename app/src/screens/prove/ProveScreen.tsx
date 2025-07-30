@@ -2,7 +2,7 @@
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common';
-import { formatEndpoint } from '@selfxyz/common/utils/scope';
+import { formatEndpoint } from '@selfxyz/common';
 import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, {
