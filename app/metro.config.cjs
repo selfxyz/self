@@ -47,19 +47,21 @@ const config = {
     platforms: ['ios', 'android', 'native', 'web'],
     // Custom resolver to handle .js imports that should resolve to .ts files
     resolveRequest: (context, moduleName, platform) => {
-      // Only process .js imports from the common package source
-      const isFromCommonSrc = context.originModulePath.includes(path.join('common', 'src'));
-      if (moduleName.endsWith('.js') && isFromCommonSrc) {
+      // If this is a relative import ending in .js from within the common package
+      if (
+        moduleName.endsWith('.js') &&
+        context.originModulePath.includes('/common/src/')
+      ) {
         const tsModuleName = moduleName.replace(/\.js$/, '.ts');
         const tsxModuleName = moduleName.replace(/\.js$/, '.tsx');
 
         // Try to resolve as .ts first, then .tsx
         try {
           return context.resolveRequest(context, tsModuleName, platform);
-        } catch (tsError) {
+        } catch {
           try {
             return context.resolveRequest(context, tsxModuleName, platform);
-          } catch (tsxError) {
+          } catch {
             // Fall back to default resolution
             return context.resolveRequest(context, moduleName, platform);
           }
