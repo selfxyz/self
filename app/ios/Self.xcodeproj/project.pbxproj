@@ -514,7 +514,7 @@
 				INFOPLIST_FILE = OpenPassport/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -655,7 +655,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
