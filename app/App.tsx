@@ -29,7 +29,8 @@ global.Buffer = Buffer;
 
 function App(): React.JSX.Element {
   // Only use SimpleLoadingFallback on web platform
-  const suspenseFallback = Platform.OS === 'web' ? <SimpleLoadingFallback /> : null;
+  const suspenseFallback =
+    Platform.OS === 'web' ? <SimpleLoadingFallback /> : null;
 
   return (
     <ErrorBoundary>

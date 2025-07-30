@@ -13,7 +13,13 @@ const SimpleLoadingFallback = () => {
   }
 
   return (
-    <YStack flex={1} height="100%" width="100%" justifyContent="center" alignItems="center">
+    <YStack
+      flex={1}
+      height="100%"
+      width="100%"
+      justifyContent="center"
+      alignItems="center"
+    >
       <div>Loading...</div>
     </YStack>
   );

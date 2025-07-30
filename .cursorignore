@@ -44,7 +44,6 @@ circuits/scripts/server/*.sh
 # Fastlane configuration (may contain secrets)
 app/fastlane/Fastfile
 app/fastlane/helpers.rb
-app/Gemfile.lock
 
 # Test wallets and mock data
 app/ios/passport.json
@@ -258,10 +257,6 @@ app/src/assets/fonts/
 # Yarn configuration
 .yarnrc.yml
 **/.yarn/
-
-# Ruby dependencies
-app/Gemfile
-app/Gemfile.lock
 
 # Certificate generation config
 common/src/scripts/extensions.cnf

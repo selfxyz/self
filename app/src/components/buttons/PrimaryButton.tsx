@@ -6,13 +6,19 @@ import { amber50, black, slate300, white } from '../../utils/colors';
 import AbstractButton, { ButtonProps } from './AbstractButton';
 
 export function PrimaryButton({ children, ...props }: ButtonProps) {
-  const isDisabled = props.disabled;
+  const { borderWidth, ...restProps } = props;
+  const isDisabled = restProps.disabled;
   const bgColor = isDisabled ? white : black;
   const color = isDisabled ? slate300 : amber50;
   const borderColor = isDisabled ? slate300 : undefined;
+
+  const numericBorderWidth =
+    typeof borderWidth === 'number' ? borderWidth : undefined;
+
   return (
     <AbstractButton
-      {...props}
+      {...restProps}
+      borderWidth={numericBorderWidth}
       borderColor={borderColor}
       bgColor={bgColor}
       color={color}

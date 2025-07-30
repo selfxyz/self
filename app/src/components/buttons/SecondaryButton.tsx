@@ -6,13 +6,19 @@ import { slate200, slate300, slate500, white } from '../../utils/colors';
 import AbstractButton, { ButtonProps } from './AbstractButton';
 
 export function SecondaryButton({ children, ...props }: ButtonProps) {
-  const isDisabled = props.disabled;
+  const { borderWidth, ...restProps } = props;
+  const isDisabled = restProps.disabled;
   const bgColor = isDisabled ? white : slate200;
   const color = isDisabled ? slate300 : slate500;
   const borderColor = isDisabled ? slate200 : undefined;
+
+  const numericBorderWidth =
+    typeof borderWidth === 'number' ? borderWidth : undefined;
+
   return (
     <AbstractButton
-      {...props}
+      {...restProps}
+      borderWidth={numericBorderWidth}
       bgColor={bgColor}
       color={color}
       borderColor={borderColor}

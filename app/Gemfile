@@ -12,8 +12,7 @@ gem "fastlane", "~> 2.228.0"
 
 group :development do
   gem "dotenv"
-  # Exclude nokogiri for GitHub Actions and Act
-  gem "nokogiri", "~> 1.18", platform: :ruby unless ENV["GITHUB_ACTIONS"] || ENV["ACT"]
+  gem "nokogiri", "~> 1.18", platform: :ruby
 end
 
 plugins_path = File.join(File.dirname(__FILE__), "fastlane", "Pluginfile")

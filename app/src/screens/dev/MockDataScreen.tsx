@@ -2,13 +2,13 @@
 
 import { useNavigation } from '@react-navigation/native';
 import {
+  countryCodes,
   generateMockDSC,
   genMockIdDoc,
   getSKIPEM,
   IdDocInput,
   initPassportDataParsing,
 } from '@selfxyz/common';
-import { countryCodes } from '@selfxyz/common';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';

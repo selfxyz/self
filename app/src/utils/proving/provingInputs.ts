@@ -2,6 +2,12 @@
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
+import type {
+  DocumentCategory,
+  PassportData,
+  SelfApp,
+  SelfAppDisclosureConfig,
+} from '@selfxyz/common';
 import {
   attributeToPosition,
   attributeToPosition_ID,
@@ -14,12 +20,6 @@ import {
   hashEndpointWithScope,
   ID_CARD_ATTESTATION_ID,
   PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common';
-import type {
-  DocumentCategory,
-  PassportData,
-  SelfApp,
-  SelfAppDisclosureConfig,
 } from '@selfxyz/common';
 import { poseidon2 } from 'poseidon-lite';
 
