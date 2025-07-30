@@ -308,7 +308,7 @@ DEPENDENCIES
   fastlane (~> 2.228.0)
   fastlane-plugin-increment_version_code
   fastlane-plugin-versioning_android
-  nokogiri (~> 1.18.9)
+  nokogiri (~> 1.18)
 
 RUBY VERSION
    ruby 3.2.7p253
