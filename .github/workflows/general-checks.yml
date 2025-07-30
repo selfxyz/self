@@ -9,8 +9,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-      - name: Build Dependencies
-        run: yarn build:deps
       - name: Run linter
         run: yarn lint
 
