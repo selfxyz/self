@@ -8,7 +8,7 @@ import DevSettingsScreen from '../screens/dev/DevSettingsScreen';
 import MockDataScreen from '../screens/dev/MockDataScreen';
 import MockDataScreenDeepLink from '../screens/dev/MockDataScreenDeepLink';
 import DevPrivateKeyScreen from '../screens/dev/DevPrivateKeyScreen';
-import { black, slate300, white } from '../utils/colors';
+import { black, white } from '../utils/colors';
 
 const devScreens = {
   CreateMock: {
