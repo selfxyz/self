@@ -143,7 +143,6 @@
     "@react-native/gradle-plugin": "^0.79.2",
     "@react-native/metro-config": "0.75.4",
     "@react-native/typescript-config": "0.75.4",
-    "@tamagui/babel-plugin": "^1.132.15",
     "@tamagui/types": "1.126.14",
     "@testing-library/react-hooks": "^8.0.1",
     "@testing-library/react-native": "^13.2.0",

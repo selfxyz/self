@@ -32,7 +32,6 @@ const config = {
       'react-native-svg-transformer/react-native',
     ),
     disableImportExportTransform: true,
-    inlineRequires: true,
   },
   resolver: {
     extraNodeModules,
