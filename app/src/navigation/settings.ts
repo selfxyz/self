@@ -1,19 +1,22 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import { lazy } from 'react';
 
-const CloudBackupScreen = lazy(
+import { lazyScreen } from './lazyScreen';
+
+const CloudBackupScreen = lazyScreen(
   () => import('../screens/settings/CloudBackupScreen'),
 );
-const ManageDocumentsScreen = lazy(
+const ManageDocumentsScreen = lazyScreen(
   () => import('../screens/settings/ManageDocumentsScreen'),
 );
-const PassportDataInfoScreen = lazy(
+const PassportDataInfoScreen = lazyScreen(
   () => import('../screens/settings/PassportDataInfoScreen'),
 );
-const SettingsScreen = lazy(() => import('../screens/settings/SettingsScreen'));
-const ShowRecoveryPhraseScreen = lazy(
+const SettingsScreen = lazyScreen(
+  () => import('../screens/settings/SettingsScreen'),
+);
+const ShowRecoveryPhraseScreen = lazyScreen(
   () => import('../screens/settings/ShowRecoveryPhraseScreen'),
 );
 import { black, slate300, white } from '../utils/colors';

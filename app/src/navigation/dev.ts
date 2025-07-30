@@ -1,19 +1,22 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import { lazy } from 'react';
 
-const DevFeatureFlagsScreen = lazy(
+import { lazyScreen } from './lazyScreen';
+
+const DevFeatureFlagsScreen = lazyScreen(
   () => import('../screens/dev/DevFeatureFlagsScreen'),
 );
-const DevHapticFeedbackScreen = lazy(
+const DevHapticFeedbackScreen = lazyScreen(
   () => import('../screens/dev/DevHapticFeedback'),
 );
-const DevSettingsScreen = lazy(
+const DevSettingsScreen = lazyScreen(
   () => import('../screens/dev/DevSettingsScreen'),
 );
-const MockDataScreen = lazy(() => import('../screens/dev/MockDataScreen'));
-const MockDataScreenDeepLink = lazy(
+const MockDataScreen = lazyScreen(
+  () => import('../screens/dev/MockDataScreen'),
+);
+const MockDataScreenDeepLink = lazyScreen(
   () => import('../screens/dev/MockDataScreenDeepLink'),
 );
 import { white } from '../utils/colors';
