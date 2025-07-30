@@ -146,6 +146,13 @@ pod install
 
 And run the app in Xcode.
 
+#### Simulator Build
+> **Note:** iOS Simulator on Apple Silicon Macs requires Rosetta (x86_64) mode due to simulator architecture compatibility. If you're using a Silicon Mac (M1/M2/M3/M4), you may find that the Rosetta simulator build option is not available by default in Xcode.
+
+To enable it, open Xcode and go to **Product > Destination > Show All Run Destinations**. This will unlock the ability to select the Rosetta build simulator, allowing you to run the app in the iOS Simulator.
+
+> **Note:** This is a simulator-specific issue - the app itself runs natively on ARM64 devices and builds without issues.
+
 #### react-native-haptic-feedback v2.3.3
 
 To create a successful build, "Target Membership" for the AudioToolbox.framework needs to be updated.
@@ -216,7 +223,7 @@ Deployments happen automatically when you merge PRs:
 
 To control versions with PR labels:
 - `version:major` - Major version bump
-- `version:minor` - Minor version bump  
+- `version:minor` - Minor version bump
 - `version:patch` - Patch version bump (default for main)
 - `no-deploy` - Skip deployment
 
