@@ -6,13 +6,12 @@ import {
   StaticParamList,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { Suspense, useEffect } from 'react';
-import { Platform, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DefaultNavBar } from '../components/NavBar';
 import AppLayout from '../layouts/AppLayout';
-const SuspenseFallback = () => <View>Loading...</View>;
 import analytics from '../utils/analytics';
 import { white } from '../utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
@@ -84,9 +83,7 @@ const NavigationWithTracking = () => {
 
   return (
     <GestureHandlerRootView>
-      <Suspense fallback={<SuspenseFallback />}>
-        <Navigation ref={navigationRef} onStateChange={trackScreen} />
-      </Suspense>
+      <Navigation ref={navigationRef} onStateChange={trackScreen} />
     </GestureHandlerRootView>
   );
 };
