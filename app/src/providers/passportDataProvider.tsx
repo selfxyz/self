@@ -40,12 +40,11 @@
 
 import {
   brutforceSignatureAlgorithmDsc,
-  DocumentCategory,
   parseCertificateSimple,
-  PassportData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from '@selfxyz/common';
+import { DocumentCategory, PassportData } from '@selfxyz/common';
 import { sha256 } from 'js-sha256';
 import React, {
   createContext,
