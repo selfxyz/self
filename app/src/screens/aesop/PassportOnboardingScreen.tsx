@@ -17,6 +17,7 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '../../utils/colors';
+import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
 
 interface PassportOnboardingScreenProps {}
 
@@ -24,7 +25,20 @@ const PassportOnboardingScreen: React.FC<
   PassportOnboardingScreenProps
 > = ({}) => {
   const handleCameraPress = useHapticNavigation('PassportCamera');
-  const onCancelPress = useHapticNavigation('Launch', { action: 'cancel' });
+  const navigateToLaunch = useHapticNavigation('Launch', {
+    action: 'cancel',
+  });
+  const navigateToHome = useHapticNavigation('Home', {
+    action: 'cancel',
+  });
+  const onCancelPress = async () => {
+    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    if (hasValidDocument) {
+      navigateToHome();
+    } else {
+      navigateToLaunch();
+    }
+  };
   const animationRef = useRef<LottieView>(null);
 
   useEffect(() => {

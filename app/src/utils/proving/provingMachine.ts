@@ -19,6 +19,7 @@ import { unsafe_getPrivateKey } from '../../providers/authProvider';
 import {
   clearPassportData,
   loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
@@ -237,6 +238,20 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         trackEvent(ProofEvents.PROOF_COMPLETED, {
           circuitType: get().circuitType,
         });
+
+        // Mark document as registered onChain
+        if (get().circuitType === 'register') {
+          (async () => {
+            try {
+              await markCurrentDocumentAsRegistered();
+              console.log('Document marked as registered on-chain');
+            } catch (error) {
+              //This will be checked and updated when the app launches the next time
+              console.error('Error marking document as registered:', error);
+            }
+          })();
+        }
+
         if (get().circuitType !== 'disclose' && navigationRef.isReady()) {
           setTimeout(() => {
             navigationRef.navigate('AccountVerifiedSuccess');
@@ -709,6 +724,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             );
           if (isRegistered) {
             reStorePassportDataWithRightCSCA(passportData, csca as string);
+
+            // Mark document as registered since its already onChain
+            (async () => {
+              try {
+                await markCurrentDocumentAsRegistered();
+                console.log('Document marked as registered (already on-chain)');
+              } catch (error) {
+                //it will be checked and marked as registered during next app launch
+                console.error('Error marking document as registered:', error);
+              }
+            })();
+
             trackEvent(ProofEvents.ALREADY_REGISTERED);
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;
