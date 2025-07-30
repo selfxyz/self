@@ -38,16 +38,14 @@
  * - Display format determined by documentCategory
  */
 
-import type {
+import {
+  brutforceSignatureAlgorithmDsc,
+  DocumentCategory,
+  parseCertificateSimple,
+  PassportData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-} from '@selfxyz/common/utils/certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common/utils/passports/passport_parsing/brutForceDscSignature';
-import type {
-  DocumentCategory,
-  PassportData,
-} from '@selfxyz/common/utils/types';
+} from '@selfxyz/common';
 import { sha256 } from 'js-sha256';
 import React, {
   createContext,

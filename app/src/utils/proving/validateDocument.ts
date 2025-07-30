@@ -1,25 +1,21 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import type { PassportData } from '@selfxyz/common';
 import {
   API_URL,
   API_URL_STAGING,
-  ID_CARD_ATTESTATION_ID,
-  PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common/constants/constants';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
-import * as Hash from '@selfxyz/common/utils/hash';
-import { formatMrz } from '@selfxyz/common/utils/passports/format';
-import {
+  DocumentCategory,
+  formatMrz,
   generateCommitment,
   generateNullifier,
-} from '@selfxyz/common/utils/passports/passport';
-import { getLeafDscTree } from '@selfxyz/common/utils/trees';
-import type {
-  DocumentCategory,
-  PassportData,
-} from '@selfxyz/common/utils/types';
+  getCircuitNameFromPassportData,
+  getLeafDscTree,
+  Hash,
+  ID_CARD_ATTESTATION_ID,
+  parseCertificateSimple,
+  PASSPORT_ATTESTATION_ID,
+} from '@selfxyz/common';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import { DocumentEvents } from '../../consts/analytics';
