@@ -28,39 +28,37 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
-// import { LinearGradient } from 'tamagui/linear-gradient';
-import SelfDevCard from '../../images/card-dev.svg';
-import IdIcon from '../../images/icons/id_icon.svg';
-import NoteIcon from '../../images/icons/note.svg';
-import WarningIcon from '../../images/icons/warning.svg';
-import { yellow500 } from '../../utils/colors';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { BodyText } from '../../components/typography/BodyText';
+import { Caption } from '../../components/typography/Caption';
 import { Title } from '../../components/typography/Title';
 import { MockDataEvents } from '../../consts/analytics';
+// import { LinearGradient } from 'tamagui/linear-gradient';
+import SelfDevCard from '../../images/card-dev.svg';
+import IdIcon from '../../images/icons/id_icon.svg';
+import NoteIcon from '../../images/icons/note.svg';
+import WarningIcon from '../../images/icons/warning.svg';
 import { storePassportData } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import {
+  black,
   borderColor,
   separatorColor,
-  textBlack,
-  white,
-  black,
-  zinc400,
   slate100,
   slate200,
   slate400,
   slate500,
+  textBlack,
+  white,
+  yellow500,
+  zinc400,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
-import { buttonTap, selectionChange } from '../../utils/haptic';
-
-import { Caption } from '../../components/typography/Caption';
 import { dinot, plexMono } from '../../utils/fonts';
-
+import { buttonTap, selectionChange } from '../../utils/haptic';
 
 const { trackEvent } = analytics();
 
@@ -147,13 +145,13 @@ const getBirthDateFromAge = (age: number): string => {
   const date = new Date();
   date.setFullYear(date.getFullYear() - age);
   return formatDateToYYMMDD(date);
-}
+};
 
 const getExpiryDateFromYears = (years: number): string => {
   const date = new Date();
   date.setFullYear(date.getFullYear() + years);
   return formatDateToYYMMDD(date);
-}
+};
 
 const MockPassportTitleCard = () => {
   return (
@@ -182,7 +180,8 @@ const MockPassportTitleCard = () => {
           Generate mock passport data
         </Text>
         <Caption fontFamily={dinot} fontSize="$5" color={zinc400}>
-          Configure data parameters to generate a mock passport for testing purposes on the Self Protocol.
+          Configure data parameters to generate a mock passport for testing
+          purposes on the Self Protocol.
         </Caption>
       </YStack>
     </YStack>
@@ -191,7 +190,7 @@ const MockPassportTitleCard = () => {
 
 const HeroBanner = () => {
   return (
-    <YStack backgroundColor={white} marginBottom="$6" position='relative'>
+    <YStack backgroundColor={white} marginBottom="$6" position="relative">
       <YStack
         backgroundColor={black}
         zIndex={1}
@@ -224,14 +223,29 @@ type FormSectionProps = {
   children: React.ReactNode;
 };
 
-const FormSection: React.FC<FormSectionProps> = ({ title, endSection=false, children }) => {
+const FormSection: React.FC<FormSectionProps> = ({
+  title,
+  endSection = false,
+  children,
+}) => {
   const borderBottomWidth = endSection ? 0 : 1;
   return (
-    <YStack padding={20} justifyContent="space-between" gap={10} borderBottomWidth={borderBottomWidth} borderColor={slate200}>
-        <Text fontFamily={dinot} textTransform="uppercase" color={slate400} fontSize="$4">
-          {title}
-        </Text>
-        {children}
+    <YStack
+      padding={20}
+      justifyContent="space-between"
+      gap={10}
+      borderBottomWidth={borderBottomWidth}
+      borderColor={slate200}
+    >
+      <Text
+        fontFamily={dinot}
+        textTransform="uppercase"
+        color={slate400}
+        fontSize="$4"
+      >
+        {title}
+      </Text>
+      {children}
     </YStack>
   );
 };
@@ -261,7 +275,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     setSelectedDocumentType('mock_passport');
     setSelectedAlgorithm('sha256 rsa 65537 2048');
     setSelectedCountry('USA');
-  }
+  };
 
   const handleCountrySelect = (countryCode: string) => {
     setSelectedCountry(countryCode);
@@ -273,7 +287,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     setAlgorithmSheetOpen(false);
   };
 
-  const handleDocumentTypeSelect = (documentType: 'mock_passport' | 'mock_id_card') => {
+  const handleDocumentTypeSelect = (
+    documentType: 'mock_passport' | 'mock_id_card',
+  ) => {
     setSelectedDocumentType(documentType);
     setDocumentTypeSheetOpen(false);
   };
@@ -357,13 +373,19 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack flex={1} backgroundColor={white} paddingBottom={bottom + extraYPadding}>
+    <YStack
+      flex={1}
+      backgroundColor={white}
+      paddingBottom={bottom + extraYPadding}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
         <GestureDetector gesture={devModeTap}>
           <HeroBanner />
         </GestureDetector>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
-          <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>Mock Passport Parameters</Text>
+          <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
+            Mock Passport Parameters
+          </Text>
           <YStack
             borderRadius={10}
             borderWidth={1}
@@ -384,7 +406,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 borderRadius={5}
               >
                 <XStack justifyContent="space-between" width="100%">
-                  <Text fontSize="$4" fontFamily={plexMono} color={black}>{selectedAlgorithm}</Text>
+                  <Text fontSize="$4" fontFamily={plexMono} color={black}>
+                    {selectedAlgorithm}
+                  </Text>
                   <ChevronDown size={20} color={slate500} />
                 </XStack>
               </Button>
@@ -404,8 +428,17 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 borderRadius={5}
               >
                 <XStack justifyContent="space-between" width="100%">
-                  <Text fontSize="$4" fontFamily={plexMono} color={black} textTransform="uppercase">
-                    {documentTypes[selectedDocumentType as keyof typeof documentTypes]}
+                  <Text
+                    fontSize="$4"
+                    fontFamily={plexMono}
+                    color={black}
+                    textTransform="uppercase"
+                  >
+                    {
+                      documentTypes[
+                        selectedDocumentType as keyof typeof documentTypes
+                      ]
+                    }
                   </Text>
                   <ChevronDown size={20} color={slate500} />
                 </XStack>
@@ -413,31 +446,41 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </FormSection>
 
             <FormSection title="Nationality">
-                <Button
-                  onPress={() => {
-                    buttonTap();
-                    setCountrySheetOpen(true);
-                    trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
-                  }}
-                  paddingVertical="$5"
-                  paddingHorizontal="$3"
-                  backgroundColor="white"
-                  borderColor={slate200}
-                  borderWidth={1}
-                  borderRadius={5}
-                >
-                  <XStack justifyContent="space-between" width="100%">
-                    <Text fontSize="$4" fontFamily={plexMono} color={black} textTransform="uppercase">
-                      {flag(getCountryISO2(selectedCountry))}{'   '}
-                      {countryCodes[selectedCountry as keyof typeof countryCodes]}
-                    </Text>
-                    <ChevronDown size={20} color={slate500} />
-                  </XStack>
-                </Button>
+              <Button
+                onPress={() => {
+                  buttonTap();
+                  setCountrySheetOpen(true);
+                  trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
+                }}
+                paddingVertical="$5"
+                paddingHorizontal="$3"
+                backgroundColor="white"
+                borderColor={slate200}
+                borderWidth={1}
+                borderRadius={5}
+              >
+                <XStack justifyContent="space-between" width="100%">
+                  <Text
+                    fontSize="$4"
+                    fontFamily={plexMono}
+                    color={black}
+                    textTransform="uppercase"
+                  >
+                    {flag(getCountryISO2(selectedCountry))}
+                    {'   '}
+                    {countryCodes[selectedCountry as keyof typeof countryCodes]}
+                  </Text>
+                  <ChevronDown size={20} color={slate500} />
+                </XStack>
+              </Button>
             </FormSection>
 
             <FormSection title="Age">
-              <XStack alignItems="center" gap="$2" justifyContent="space-between">
+              <XStack
+                alignItems="center"
+                gap="$2"
+                justifyContent="space-between"
+              >
                 <Button
                   height="$3.5"
                   width="$6"
@@ -483,7 +526,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </FormSection>
 
             <FormSection title="Passport Expires In">
-              <XStack alignItems="center" gap="$2" justifyContent="space-between">
+              <XStack
+                alignItems="center"
+                gap="$2"
+                justifyContent="space-between"
+              >
                 <Button
                   height="$3.5"
                   width="$6"
@@ -551,12 +598,12 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                       setIsInOfacList(!isInOfacList);
                       trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
                     }}
-                    backgroundColor='$gray12'
+                    backgroundColor="$gray12"
                     borderRadius={10}
                     height={34}
                     width={65}
                     padding="$1.5"
-                    flexDirection='row'
+                    flexDirection="row"
                     justifyContent="center"
                     alignSelf="center"
                     unstyled={true}
@@ -571,7 +618,12 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                     />
                   </Switch>
                 </YStack>
-                <YStack flexDirection="row" gap="$3" alignItems="center" width="100%">
+                <YStack
+                  flexDirection="row"
+                  gap="$3"
+                  alignItems="center"
+                  width="100%"
+                >
                   <NoteIcon width={25} height={25} color={slate400} />
                   <Text
                     color={slate400}
@@ -580,13 +632,17 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                     flex={1}
                     letterSpacing={0.04}
                   >
-                    OFAC list is a list of people who are suspected of being involved
-                    in terrorism or other illegal activities.
+                    OFAC list is a list of people who are suspected of being
+                    involved in terrorism or other illegal activities.
                   </Text>
                 </YStack>
               </YStack>
             </FormSection>
-            <YStack paddingHorizontal="$4" paddingVertical="$2" marginBottom="$3">
+            <YStack
+              paddingHorizontal="$4"
+              paddingVertical="$2"
+              marginBottom="$3"
+            >
               <Button
                 backgroundColor={slate200}
                 color={slate500}
@@ -622,10 +678,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             >
               <WarningIcon width={30} height={30} color={yellow500} />
             </YStack>
-            <YStack width="100%" height='100%' flex={1}>
-              <Text fontSize="$5" color={white}>Proceed with caution</Text>
+            <YStack width="100%" height="100%" flex={1}>
+              <Text fontSize="$5" color={white}>
+                Proceed with caution
+              </Text>
               <Text fontSize="$4" color={slate400}>
-                Generating a mock passport will wipe all Self app data stored on this device
+                Generating a mock passport will wipe all Self app data stored on
+                this device
               </Text>
             </YStack>
           </YStack>
@@ -663,7 +722,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           borderTopRightRadius="$9"
         >
           <YStack padding="$4">
-            <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              marginBottom="$4"
+            >
               <Text fontSize="$8">Select a document type</Text>
               <XStack
                 onPress={() => {
@@ -682,15 +745,15 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                   key={docType}
                   onPress={() => {
                     buttonTap();
-                    handleDocumentTypeSelect(docType as 'mock_passport' | 'mock_id_card');
+                    handleDocumentTypeSelect(
+                      docType as 'mock_passport' | 'mock_id_card',
+                    );
                     setDocumentTypeSheetOpen(false);
                     trackEvent(MockDataEvents.SELECT_DOCUMENT_TYPE);
                   }}
                 >
                   <XStack paddingVertical="$3" paddingHorizontal="$2">
-                    <Text fontSize="$4">
-                      {displayText}
-                    </Text>
+                    <Text fontSize="$4">{displayText}</Text>
                   </XStack>
                 </TouchableOpacity>
               ))}

@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
-import { Check, ChevronDown, ChevronRight, Eraser } from '@tamagui/lucide-icons';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Eraser,
+} from '@tamagui/lucide-icons';
 import React, {
   PropsWithChildren,
   useCallback,
@@ -9,22 +15,38 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Alert, Platform, ScrollView, StyleProp, TextInput } from 'react-native';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleProp,
+  TextInput,
+} from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
+import BugIcon from '../../images/icons/bug_icon.svg';
+import IdIcon from '../../images/icons/id_icon.svg';
+import WarningIcon from '../../images/icons/warning.svg';
 import { RootStackParamList } from '../../navigation';
 import {
   unsafe_clearSecrets,
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
-import { slate200, slate100, textBlack, slate400, slate600, slate500, yellow500, red500, white, slate900, slate800 } from '../../utils/colors';
-import IdIcon from '../../images/icons/id_icon.svg';
-import BugIcon from '../../images/icons/bug_icon.svg';
-import WarningIcon from '../../images/icons/warning.svg';
+import {
+  red500,
+  slate100,
+  slate200,
+  slate400,
+  slate500,
+  slate600,
+  slate800,
+  slate900,
+  textBlack,
+  white,
+  yellow500,
+} from '../../utils/colors';
 import { dinot } from '../../utils/fonts';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
 
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
@@ -58,17 +80,20 @@ function ParameterSection({
   const renderIcon = () => {
     const iconElement =
       typeof icon === 'function'
-        ? icon() : React.isValidElement(icon)
-        ? icon : icon
-        ? React.createElement(icon) : null
+        ? icon()
+        : React.isValidElement(icon)
+          ? icon
+          : icon
+            ? React.createElement(icon)
+            : null;
 
     return iconElement
       ? React.cloneElement(iconElement, {
           width: '100%',
-          height: '100%'
+          height: '100%',
         })
-      : null
-  }
+      : null;
+  };
 
   return (
     <YStack
@@ -81,12 +106,7 @@ function ParameterSection({
       flexDirection="column"
       gap="$3"
     >
-      <XStack
-        w="100%"
-        flexDirection="row"
-        justifyContent="flex-start"
-        gap="$4"
-      >
+      <XStack w="100%" flexDirection="row" justifyContent="flex-start" gap="$4">
         <YStack
           backgroundColor="gray"
           borderRadius={5}
@@ -98,9 +118,17 @@ function ParameterSection({
         >
           {renderIcon()}
         </YStack>
-        <YStack flexDirection='column' gap="$1">
-          <Text fontSize="$5" color={darkMode ? white : slate600} fontFamily={dinot}>{title}</Text>
-          <Text fontSize="$3" color={slate400} fontFamily={dinot}>{description}</Text>
+        <YStack flexDirection="column" gap="$1">
+          <Text
+            fontSize="$5"
+            color={darkMode ? white : slate600}
+            fontFamily={dinot}
+          >
+            {title}
+          </Text>
+          <Text fontSize="$3" color={slate400} fontFamily={dinot}>
+            {description}
+          </Text>
         </YStack>
       </XStack>
       {children}
@@ -171,18 +199,20 @@ const ScreenSelector = ({}) => {
           bg="white"
           borderColor={slate200}
           borderRadius="$2"
-          height='$5'
+          height="$5"
           p={0}
           onPress={() => setOpen(true)}
         >
           <XStack
             w="100%"
-            justifyContent='space-between'
-            py='$3'
-            paddingLeft='$4'
-            paddingRight='$1.5'
+            justifyContent="space-between"
+            py="$3"
+            paddingLeft="$4"
+            paddingRight="$1.5"
           >
-            <Text fontSize="$5" color={slate500} fontFamily={dinot}>Select screen</Text>
+            <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+              Select screen
+            </Text>
             <ChevronDown color={slate500} strokeWidth={2.5} />
           </XStack>
         </Button>
@@ -234,7 +264,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     'Loading private key…',
   );
   const [isPrivateKeyRevealed, setIsPrivateKeyRevealed] = useState(false);
-  const navigation = useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
+  const navigation =
+    useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
 
   useEffect(() => {
     unsafe_getPrivateKey().then(key =>
@@ -313,50 +344,50 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           title="Manage ID Documents"
           description="Register new IDs and generate test IDs"
         >
-          {
-            [
-              {
-                label: 'Manage available IDs',
-                onPress: () => {
-                  navigation.navigate('ManageDocuments');
-                }
+          {[
+            {
+              label: 'Manage available IDs',
+              onPress: () => {
+                navigation.navigate('ManageDocuments');
               },
-              {
-                label: 'Generate Test ID',
-                onPress: () => {
-                  navigation.navigate('CreateMock');
-                }
+            },
+            {
+              label: 'Generate Test ID',
+              onPress: () => {
+                navigation.navigate('CreateMock');
               },
-              {
-                label: 'Scan new ID Document',
-                onPress: () => {
-                  navigation.navigate('PassportOnboarding');
-                }
-              }
-            ].map(({ label, onPress}) => (
-              <YStack gap="$2" key={label}>
-                <Button
-                  bg="white"
-                  borderColor={slate200}
-                  borderRadius="$2"
-                  height='$5'
-                  p={0}
-                  onPress={onPress}
+            },
+            {
+              label: 'Scan new ID Document',
+              onPress: () => {
+                navigation.navigate('PassportOnboarding');
+              },
+            },
+          ].map(({ label, onPress }) => (
+            <YStack gap="$2" key={label}>
+              <Button
+                bg="white"
+                borderColor={slate200}
+                borderRadius="$2"
+                height="$5"
+                p={0}
+                onPress={onPress}
+              >
+                <XStack
+                  w="100%"
+                  justifyContent="space-between"
+                  py="$3"
+                  paddingLeft="$4"
+                  paddingRight="$1.5"
                 >
-                  <XStack
-                    w="100%"
-                    justifyContent='space-between'
-                    py='$3'
-                    paddingLeft='$4'
-                    paddingRight='$1.5'
-                  >
-                    <Text fontSize="$5" color={slate500} fontFamily={dinot}>{label}</Text>
-                    <ChevronRight color={slate500} strokeWidth={2.5} />
-                  </XStack>
-                </Button>
-              </YStack>
-            ))
-          }
+                  <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+                    {label}
+                  </Text>
+                  <ChevronRight color={slate500} strokeWidth={2.5} />
+                </XStack>
+              </Button>
+            </YStack>
+          ))}
         </ParameterSection>
 
         <ParameterSection
@@ -368,42 +399,46 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         </ParameterSection>
 
         <ParameterSection
-          icon={<WarningIcon color={yellow500}/>}
+          icon={<WarningIcon color={yellow500} />}
           title="Danger Zone"
           description="These actions are sensitive"
           darkMode={true}
         >
-          {
-            [
-              {
-                label: 'Display your private key',
-                onPress: () => navigation.navigate('DevPrivateKey'),
-                dangerTheme: false
-              },
-              {
-                label: 'Delete your private key',
-                onPress: handleClearSecretsPress,
-                dangerTheme: true
-              },
-              {
-                label: 'Clear document catalog',
-                onPress: handleClearDocumentCatalogPress,
-                dangerTheme: true
-              },
-            ].map(({ label, onPress, dangerTheme}) => (
-              <Button
-                key={label}
-                bg={dangerTheme ? red500 : white}
-                borderRadius="$2"
-                height='$5'
-                onPress={onPress}
-                flexDirection="row"
-                justifyContent="flex-start"
+          {[
+            {
+              label: 'Display your private key',
+              onPress: () => navigation.navigate('DevPrivateKey'),
+              dangerTheme: false,
+            },
+            {
+              label: 'Delete your private key',
+              onPress: handleClearSecretsPress,
+              dangerTheme: true,
+            },
+            {
+              label: 'Clear document catalog',
+              onPress: handleClearDocumentCatalogPress,
+              dangerTheme: true,
+            },
+          ].map(({ label, onPress, dangerTheme }) => (
+            <Button
+              key={label}
+              bg={dangerTheme ? red500 : white}
+              borderRadius="$2"
+              height="$5"
+              onPress={onPress}
+              flexDirection="row"
+              justifyContent="flex-start"
+            >
+              <Text
+                color={dangerTheme ? white : slate500}
+                fontSize="$5"
+                fontFamily={dinot}
               >
-                <Text color={dangerTheme ? white : slate500} fontSize="$5" fontFamily={dinot}>{label}</Text>
-              </Button>
-            ))
-          }
+                {label}
+              </Text>
+            </Button>
+          ))}
         </ParameterSection>
       </YStack>
     </ScrollView>
