@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import type { PassportData } from '@selfxyz/common';
 import {
   API_URL,
   API_URL_STAGING,
@@ -15,6 +14,7 @@ import {
   ID_CARD_ATTESTATION_ID,
   parseCertificateSimple,
   PASSPORT_ATTESTATION_ID,
+  PassportData,
 } from '@selfxyz/common';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
