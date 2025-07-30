@@ -5,20 +5,26 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import {
   attributeToPosition,
   attributeToPosition_ID,
-  calculateUserIdentifierHash,
   DEFAULT_MAJORITY,
-  DocumentCategory,
+  ID_CARD_ATTESTATION_ID,
+  PASSPORT_ATTESTATION_ID,
+} from '@selfxyz/common/constants/constants';
+import type {
+  SelfApp,
+  SelfAppDisclosureConfig,
+} from '@selfxyz/common/utils/appType';
+import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
+import {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
-  getCircuitNameFromPassportData,
-  hashEndpointWithScope,
-  ID_CARD_ATTESTATION_ID,
-  PASSPORT_ATTESTATION_ID,
+} from '@selfxyz/common/utils/circuits/generateInputs';
+import { calculateUserIdentifierHash } from '@selfxyz/common/utils/hash';
+import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+import type {
+  DocumentCategory,
   PassportData,
-  SelfApp,
-  SelfAppDisclosureConfig,
-} from '@selfxyz/common';
+} from '@selfxyz/common/utils/types';
 import { poseidon2 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';

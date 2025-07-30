@@ -183,42 +183,156 @@ export DEVELOPMENT_TEAM="<your-development-team-id>"
 ./scripts/build_ios_module.sh
 ```
 
-## Export a new release
+## 🚀 Deployment & Release
 
-### Android
+### Quick Commands
 
-#### Export as apk
+```bash
+# View current version info
+node scripts/version.cjs status
 
+# Create a new release (interactive)
+yarn release              # Patch release (1.0.0 → 1.0.1)
+yarn release:minor        # Minor release (1.0.0 → 1.1.0)
+yarn release:major        # Major release (1.0.0 → 2.0.0)
+
+# Deploy manually (with prompts)
+yarn mobile-deploy        # Deploy both platforms
+yarn mobile-deploy:ios    # Deploy iOS only
+yarn mobile-deploy:android # Deploy Android only
+
+# Version management
+node scripts/version.cjs bump patch    # Bump version
+node scripts/version.cjs bump-build ios # Increment iOS build
+node scripts/version.cjs bump-build android # Increment Android build
 ```
-cd android
-./gradlew assembleRelease
+
+### Automated Deployments
+
+Deployments happen automatically when you merge PRs:
+
+1. **Merge to `dev`** → Deploys to internal testing
+2. **Merge to `main`** → Deploys to production
+
+To control versions with PR labels:
+- `version:major` - Major version bump
+- `version:minor` - Minor version bump  
+- `version:patch` - Patch version bump (default for main)
+- `no-deploy` - Skip deployment
+
+See [CI/CD Documentation](../.github/MOBILE_DEPLOYMENT.md) for details.
+
+### Manual Release Process
+
+For hotfixes or manual releases:
+
+```bash
+# 1. Create a release (bumps version, creates tag, generates changelog)
+yarn release:patch
+
+# 2. Push to remote
+git push && git push --tags
+
+# 3. Deploy via GitHub Actions (happens automatically on merge to main)
 ```
 
-The built apk it located at `android/app/build/outputs/apk/release/app-release.apk`
+The release script will:
+- Check for uncommitted changes
+- Bump the version in package.json
+- Update iOS and Android native versions
+- Generate a changelog
+- Create a git tag
+- Optionally push everything to remote
 
-#### Publish on the Play Store
+### Version Management
 
-As explained [here](https://reactnative.dev/docs/signed-apk-android), first setup `android/app/my-upload-key.keystore` and the private vars in `~/.gradle/gradle.properties`, then run:
+Versions are tracked in multiple places:
 
-```
-npx react-native build-android --mode=release
-```
+1. **`package.json`** - Semantic version (e.g., "2.5.5")
+2. **`version.json`** - Platform build numbers:
+   ```json
+   {
+     "ios": { "build": 148 },
+     "android": { "build": 82 }
+   }
+   ```
+3. **Native files** - Auto-synced during build:
+   - iOS: `Info.plist`, `project.pbxproj`
+   - Android: `build.gradle`
 
-This builds `android/app/build/outputs/bundle/release/app-release.aab`.
+### Local Testing
 
-Then to test the release on an android phone, delete the previous version of the app and run:
+#### Android Release Build
 
-```
+```bash
+# Build release APK
+cd android && ./gradlew assembleRelease
+
+# Or build AAB for Play Store
+cd android && ./gradlew bundleRelease
+
+# Test release build on device
 yarn android --mode release
 ```
 
-Don't forget to bump `versionCode` in `android/app/build.gradle`.
+#### iOS Release Build
 
-### iOS
+```bash
+# Using Fastlane (recommended)
+bundle exec fastlane ios build_local
 
-In Xcode, go to `Product>Archive` then follow the flow.
+# Or using Xcode
+# 1. Open ios/OpenPassport.xcworkspace
+# 2. Product → Archive
+# 3. Follow the wizard
+```
 
-Don't forget to bump the build number.
+### Troubleshooting Deployments
+
+#### Version Already Exists
+The build system auto-increments build numbers. If you get version conflicts:
+```bash
+# Check current versions
+node scripts/version.cjs status
+
+# Force bump build numbers
+node scripts/version.cjs bump-build ios
+node scripts/version.cjs bump-build android
+```
+
+#### Certificate Issues (iOS)
+```bash
+# Check certificate validity
+bundle exec fastlane ios check_certs
+
+# For local development, ensure you have:
+# - Valid Apple Developer account
+# - Certificates in Keychain
+# - Correct provisioning profiles
+```
+
+#### Play Store Upload Issues
+If automated upload fails, the AAB is saved locally:
+- Location: `android/app/build/outputs/bundle/release/app-release.aab`
+- Upload manually via Play Console
+
+### Build Optimization
+
+The CI/CD pipeline uses extensive caching:
+- **iOS builds**: ~15 minutes (with cache)
+- **Android builds**: ~10 minutes (with cache)
+- **First build**: ~25 minutes (no cache)
+
+To speed up local builds:
+```bash
+# Clean only what's necessary
+yarn clean:build  # Clean build artifacts only
+yarn clean        # Full clean (use sparingly)
+
+# Use Fastlane for consistent builds
+bundle exec fastlane ios internal_test test_mode:true
+bundle exec fastlane android internal_test test_mode:true
+```
 
 ## FAQ
 

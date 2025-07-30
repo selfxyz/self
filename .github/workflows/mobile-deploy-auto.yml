@@ -1,0 +1,109 @@
+name: Mobile Auto Deploy
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main, dev]
+    paths:
+      - 'app/**'
+      - '!app/**/*.md'
+      - '!app/docs/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-and-deploy:
+    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'no-deploy')
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+      deployment_track: ${{ steps.check.outputs.deployment_track }}
+      version_bump: ${{ steps.check.outputs.version_bump }}
+      platforms: ${{ steps.check.outputs.platforms }}
+    
+    steps:
+      - name: Check deployment conditions
+        id: check
+        run: |
+          echo "🔍 Checking deployment conditions..."
+          
+          # Skip if PR has skip-deploy in title or body
+          if [[ "${{ github.event.pull_request.title }}" =~ \[skip-deploy\] ]] || 
+             [[ "${{ github.event.pull_request.body }}" =~ \[skip-deploy\] ]]; then
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+            echo "⏭️ Skipping deployment due to [skip-deploy] flag"
+            exit 0
+          fi
+          
+          # Determine deployment track based on target branch
+          if [[ "${{ github.base_ref }}" == "main" ]]; then
+            echo "deployment_track=production" >> $GITHUB_OUTPUT
+            echo "🚀 Deployment track: production"
+          elif [[ "${{ github.base_ref }}" == "dev" ]]; then
+            echo "deployment_track=internal" >> $GITHUB_OUTPUT
+            echo "🧪 Deployment track: internal testing"
+          fi
+          
+          # Determine version bump from PR labels
+          labels="${{ join(github.event.pull_request.labels.*.name, ',') }}"
+          if [[ "$labels" =~ version:major ]]; then
+            echo "version_bump=major" >> $GITHUB_OUTPUT
+            echo "📈 Version bump: major"
+          elif [[ "$labels" =~ version:minor ]]; then
+            echo "version_bump=minor" >> $GITHUB_OUTPUT
+            echo "📈 Version bump: minor"
+          elif [[ "$labels" =~ version:patch ]] || [[ "${{ github.base_ref }}" == "main" ]]; then
+            echo "version_bump=patch" >> $GITHUB_OUTPUT
+            echo "📈 Version bump: patch"
+          else
+            echo "version_bump=build" >> $GITHUB_OUTPUT
+            echo "📈 Version bump: build only"
+          fi
+          
+          # Always deploy both platforms for now (can be enhanced later)
+          echo 'platforms=["ios", "android"]' >> $GITHUB_OUTPUT
+          echo "should_deploy=true" >> $GITHUB_OUTPUT
+          
+      - name: Log deployment info
+        if: steps.check.outputs.should_deploy == 'true'
+        run: |
+          echo "📱 Auto-deployment triggered!"
+          echo "Branch: ${{ github.base_ref }}"
+          echo "Track: ${{ steps.check.outputs.deployment_track }}"
+          echo "Version bump: ${{ steps.check.outputs.version_bump }}"
+          echo "PR: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+          echo "Merged by: ${{ github.event.pull_request.merged_by.login }}"
+
+  deploy-ios:
+    needs: check-and-deploy
+    if: needs.check-and-deploy.outputs.should_deploy == 'true' && contains(fromJson(needs.check-and-deploy.outputs.platforms), 'ios')
+    uses: ./.github/workflows/mobile-deploy.yml
+    with:
+      platform: ios
+      deployment_track: ${{ needs.check-and-deploy.outputs.deployment_track }}
+      version_bump: ${{ needs.check-and-deploy.outputs.version_bump }}
+      auto_deploy: true
+    secrets: inherit
+
+  deploy-android:
+    needs: check-and-deploy
+    if: needs.check-and-deploy.outputs.should_deploy == 'true' && contains(fromJson(needs.check-and-deploy.outputs.platforms), 'android')
+    uses: ./.github/workflows/mobile-deploy.yml
+    with:
+      platform: android
+      deployment_track: ${{ needs.check-and-deploy.outputs.deployment_track }}
+      version_bump: ${{ needs.check-and-deploy.outputs.version_bump }}
+      auto_deploy: true
+    secrets: inherit
+
+  notify-skip:
+    needs: check-and-deploy
+    if: needs.check-and-deploy.outputs.should_deploy == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify skip
+        run: |
+          echo "📱 Mobile deployment was skipped for this PR"
+          echo "To deploy manually, use the 'Run workflow' button on the Mobile App Deployments workflow"

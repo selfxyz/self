@@ -63,4 +63,52 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': [
+            'react',
+            'react-dom',
+            '@react-navigation/native',
+            '@react-navigation/native-stack',
+          ],
+          'vendor-ui': ['tamagui', '@tamagui/lucide-icons', '@tamagui/toast'],
+          'vendor-crypto': [
+            'elliptic',
+            'node-forge',
+            'ethers',
+            '@peculiar/x509',
+            'pkijs',
+            'asn1js',
+            '@stablelib/cbor',
+          ],
+          'vendor-device': [
+            'react-native-nfc-manager',
+            'react-native-gesture-handler',
+            'react-native-haptic-feedback',
+          ],
+          'vendor-analytics': [
+            '@segment/analytics-react-native',
+            '@sentry/react',
+            '@sentry/react-native',
+          ],
+          'vendor-animations': ['lottie-react-native', 'lottie-react'],
+          'vendor-cloud': [
+            '@robinbobin/react-native-google-drive-api-wrapper',
+            'react-native-cloud-storage',
+          ],
+          'screens-passport': [
+            './src/screens/passport',
+            './src/utils/nfcScanner',
+          ],
+          'screens-prove': ['./src/screens/prove', './src/utils/proving'],
+          'screens-settings': ['./src/screens/settings'],
+          'screens-recovery': ['./src/screens/recovery'],
+          'screens-dev': ['./src/screens/dev'],
+          'screens-aesop': ['./src/screens/aesop'],
+        },
+      },
+    },
+  },
 });

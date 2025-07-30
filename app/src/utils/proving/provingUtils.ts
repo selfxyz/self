@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import type { EndpointType } from '@selfxyz/common';
 import {
-  initElliptic,
   WS_DB_RELAYER,
   WS_DB_RELAYER_STAGING,
-} from '@selfxyz/common';
+} from '@selfxyz/common/constants/constants';
+import type { EndpointType } from '@selfxyz/common/utils/appType';
+import { initElliptic } from '@selfxyz/common/utils/certificate_parsing/elliptic';
 import forge from 'node-forge';
 
 const elliptic = initElliptic();

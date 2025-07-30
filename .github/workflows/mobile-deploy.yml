@@ -48,27 +48,64 @@ on:
         required: false
         type: boolean
         default: false
+      deployment_track:
+        description: "Deployment track (internal/production)"
+        required: false
+        type: choice
+        default: "internal"
+        options:
+          - internal
+          - production
+      version_bump:
+        description: "Version bump type"
+        required: false
+        type: choice
+        default: "build"
+        options:
+          - build
+          - patch
+          - minor
+          - major
+
+  workflow_call:
+    inputs:
+      platform:
+        type: string
+        required: true
+      deployment_track:
+        type: string
+        required: false
+        default: "internal"
+      version_bump:
+        type: string
+        required: false
+        default: "build"
+      auto_deploy:
+        type: boolean
+        required: false
+        default: false
+      test_mode:
+        type: boolean
+        required: false
+        default: false
 
 jobs:
   build-ios:
     runs-on: macos-latest
-    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'both')
+    if: (inputs.platform == 'ios' || inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
         run: |
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            echo "📱 Mobile deployment is disabled for pull requests"
-            echo "🚀 To deploy, use the workflow_dispatch trigger (Run workflow button)"
-            echo "✅ Deployment steps will be skipped for this PR"
-          else
-            echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
-          fi
+          echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
+          echo "📱 Platform: ${{ inputs.platform }}"
+          echo "🎯 Track: ${{ inputs.deployment_track }}"
+          echo "📦 Version bump: ${{ inputs.version_bump }}"
 
       - uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
+        if: inputs.platform != 'android'
 
       - name: Set up Xcode
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
+        if: inputs.platform != 'android'
         uses: maxim-lobanov/setup-xcode@v1
         # with:
         #   # some cocoapods won't compile with xcode 16.3
@@ -134,7 +171,7 @@ jobs:
           echo "✅ Lock files exist"
 
       - name: Install Mobile Dependencies
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
+        if: inputs.platform != 'android'
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
@@ -143,7 +180,7 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
 
       - name: Verify iOS Secrets
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
+        if: inputs.platform != 'android'
         run: |
           # Verify App Store Connect API Key exists and contains PEM header
           if [ -z "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" ]; then
@@ -177,7 +214,7 @@ jobs:
           echo "✅ All iOS secrets verified successfully!"
 
       - name: Decode certificate and profile
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
+        if: inputs.platform != 'android'
         run: |
           mkdir -p "${{ env.APP_PATH }}$(dirname "${{ env.IOS_DIST_CERT_PATH }}")"
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
@@ -209,7 +246,7 @@ jobs:
           fi
 
       - name: Verify iOS certificate and environment
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android' && !env.ACT
+        if: inputs.platform != 'android' && !env.ACT
         run: |
           # Check if certificate directory exists
           if [ ! -d "${{ env.APP_PATH }}/ios/certs" ]; then
@@ -249,7 +286,7 @@ jobs:
           echo "✅ Certificate and environment verification passed!"
 
       - name: Install certificate
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android' && !env.ACT
+        if: inputs.platform != 'android' && !env.ACT
         run: |
           security create-keychain -p "" build.keychain >/dev/null 2>&1
           security default-keychain -s build.keychain >/dev/null 2>&1
@@ -258,7 +295,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain >/dev/null 2>&1
 
       - name: Install provisioning profile
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android' && !env.ACT
+        if: inputs.platform != 'android' && !env.ACT
         env:
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
           IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
@@ -350,7 +387,7 @@ jobs:
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
       - name: Build and upload to App Store Connect/TestFlight
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android' && !env.ACT
+        if: inputs.platform != 'android' && !env.ACT
         env:
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
           IOS_CONNECT_API_KEY_BASE64: ${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}
@@ -381,18 +418,36 @@ jobs:
           echo "Identities in build.keychain:"
           security find-identity -v -p codesigning build.keychain || echo "Failed to find identities in build.keychain"
           echo "--- Starting Fastlane ---"
-          if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
+
+          # Determine deployment track and version bump
+          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+          VERSION_BUMP="${{ inputs.version_bump || 'build' }}"
+          TEST_MODE="${{ inputs.test_mode || false }}"
+
+          echo "📱 Deployment Configuration:"
+          echo "  - Track: $DEPLOYMENT_TRACK"
+          echo "  - Version Bump: $VERSION_BUMP"
+          echo "  - Test Mode: $TEST_MODE"
+
+          if [ "$TEST_MODE" = "true" ]; then
             echo "🧪 Running in TEST MODE - will skip upload to TestFlight"
-            bundle exec fastlane ios internal_test --verbose test_mode:true
+            bundle exec fastlane ios deploy_auto \
+              deployment_track:$DEPLOYMENT_TRACK \
+              version_bump:$VERSION_BUMP \
+              test_mode:true \
+              --verbose
           else
-            echo "🚀 Uploading to App Store Connect/TestFlight..."
-            bundle exec fastlane ios internal_test --verbose
+            echo "🚀 Deploying to App Store Connect..."
+            bundle exec fastlane ios deploy_auto \
+              deployment_track:$DEPLOYMENT_TRACK \
+              version_bump:$VERSION_BUMP \
+              --verbose
           fi
 
       # Version updates moved to separate job to avoid race conditions
 
       - name: Remove project.pbxproj updates we don't want to commit
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
+        if: inputs.platform != 'android'
         run: |
           PBXPROJ_FILE="app/ios/Self.xcodeproj/project.pbxproj"
 
@@ -434,7 +489,7 @@ jobs:
           rm -f versions.txt
 
       - name: Get version from package.json
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'android'
+        if: inputs.platform != 'android'
         uses: ./.github/actions/get-version
         with:
           app_path: ${{ env.APP_PATH }}
@@ -473,20 +528,17 @@ jobs:
 
   build-android:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.platform == 'android' || github.event.inputs.platform == 'both')
+    if: (inputs.platform == 'android' || inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
         run: |
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            echo "📱 Mobile deployment is disabled for pull requests"
-            echo "🚀 To deploy, use the workflow_dispatch trigger (Run workflow button)"
-            echo "✅ Deployment steps will be skipped for this PR"
-          else
-            echo "🚀 Mobile deployment is enabled - proceeding with Android build"
-          fi
+          echo "🚀 Mobile deployment is enabled - proceeding with Android build"
+          echo "📱 Platform: ${{ inputs.platform }}"
+          echo "🎯 Track: ${{ inputs.deployment_track }}"
+          echo "📦 Version bump: ${{ inputs.version_bump }}"
 
       - uses: actions/checkout@v4
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        if: inputs.platform != 'ios'
 
       - name: Cache Yarn dependencies
         id: yarn-cache
@@ -558,7 +610,7 @@ jobs:
           echo "✅ Lock files exist"
 
       - name: Install Mobile Dependencies
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        if: inputs.platform != 'ios'
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
@@ -568,20 +620,20 @@ jobs:
 
       # android specific steps
       - name: Setup Java environment
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        if: inputs.platform != 'ios'
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Android SDK
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        if: inputs.platform != 'ios'
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
 
       - name: Install NDK
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios' && steps.ndk-cache.outputs.cache-hit != 'true'
+        if: inputs.platform != 'ios' && steps.ndk-cache.outputs.cache-hit != 'true'
         run: |
           max_attempts=5
           attempt=1
@@ -604,19 +656,19 @@ jobs:
           done
 
       - name: Set Gradle JVM options
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios' && env.ACT
+        if: inputs.platform != 'ios' && env.ACT
         run: |
           echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8" >> ${{ env.APP_PATH }}/android/gradle.properties
 
       - name: Decode Android Secrets
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        if: inputs.platform != 'ios'
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
           echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
 
       # run secrets check after keytool has been setup
       - name: Verify Android Secrets
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        if: inputs.platform != 'ios'
         run: |
           # Verify Play Store JSON key base64 secret exists and is valid
           if [ -z "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" ]; then
@@ -651,7 +703,7 @@ jobs:
           echo "✅ All Android secrets verified successfully!"
 
       - name: Build and upload to Google Play Internal Testing
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        if: inputs.platform != 'ios'
         env:
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -666,18 +718,36 @@ jobs:
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
         run: |
           cd ${{ env.APP_PATH }}
-          if [ "${{ github.event.inputs.test_mode }}" = "true" ]; then
+
+          # Determine deployment track and version bump
+          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+          VERSION_BUMP="${{ inputs.version_bump || 'build' }}"
+          TEST_MODE="${{ inputs.test_mode || false }}"
+
+          echo "🤖 Deployment Configuration:"
+          echo "  - Track: $DEPLOYMENT_TRACK"
+          echo "  - Version Bump: $VERSION_BUMP"
+          echo "  - Test Mode: $TEST_MODE"
+
+          if [ "$TEST_MODE" = "true" ]; then
             echo "🧪 Running in TEST MODE - will skip upload to Play Store"
-            bundle exec fastlane android internal_test --verbose test_mode:true
+            bundle exec fastlane android deploy_auto \
+              deployment_track:$DEPLOYMENT_TRACK \
+              version_bump:$VERSION_BUMP \
+              test_mode:true \
+              --verbose
           else
-            echo "🚀 Uploading to Google Play Internal Testing..."
-            bundle exec fastlane android internal_test --verbose
+            echo "🚀 Deploying to Google Play Store..."
+            bundle exec fastlane android deploy_auto \
+              deployment_track:$DEPLOYMENT_TRACK \
+              version_bump:$VERSION_BUMP \
+              --verbose
           fi
 
       # Version updates moved to separate job to avoid race conditions
 
       - name: Get version from package.json
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'ios'
+        if: inputs.platform != 'ios'
         uses: ./.github/actions/get-version
         with:
           app_path: ${{ env.APP_PATH }}
@@ -726,7 +796,7 @@ jobs:
     needs: [build-ios, build-android]
     if: |
       always() &&
-      github.event.inputs.test_mode != 'true' &&
+      inputs.test_mode != true &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
       NODE_VERSION: 18
@@ -799,3 +869,100 @@ jobs:
             git push
             echo "✅ Committed version file changes"
           fi
+
+  # Create git tags after successful deployment
+  create-release-tags:
+    needs: [build-ios, build-android, update-version]
+    if: |
+      always() &&
+      needs.update-version.result == 'success' &&
+      (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
+      inputs.deployment_track == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Create and push tags
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          # Read current version info
+          VERSION=$(cat package.json | jq -r .version)
+          IOS_BUILD=$(cat version.json | jq -r .ios.build)
+          ANDROID_BUILD=$(cat version.json | jq -r .android.build)
+
+          echo "📦 Creating tags for version $VERSION"
+
+          # Create main version tag
+          if ! git tag -l | grep -q "^v${VERSION}$"; then
+            git tag -a "v${VERSION}" -m "Release ${VERSION}"
+            echo "✅ Created tag: v${VERSION}"
+          else
+            echo "⏭️  Tag v${VERSION} already exists"
+          fi
+
+          # Create platform-specific tags if deployments succeeded
+          if [ "${{ needs.build-ios.result }}" = "success" ]; then
+            TAG_NAME="v${VERSION}-ios-${IOS_BUILD}"
+            if ! git tag -l | grep -q "^${TAG_NAME}$"; then
+              git tag -a "${TAG_NAME}" -m "iOS Release ${VERSION} (Build ${IOS_BUILD})"
+              echo "✅ Created tag: ${TAG_NAME}"
+            fi
+          fi
+
+          if [ "${{ needs.build-android.result }}" = "success" ]; then
+            TAG_NAME="v${VERSION}-android-${ANDROID_BUILD}"
+            if ! git tag -l | grep -q "^${TAG_NAME}$"; then
+              git tag -a "${TAG_NAME}" -m "Android Release ${VERSION} (Build ${ANDROID_BUILD})"
+              echo "✅ Created tag: ${TAG_NAME}"
+            fi
+          fi
+
+          # Push all tags
+          git push origin --tags
+          echo "🚀 Tags pushed to repository"
+
+      - name: Generate changelog for release
+        id: changelog
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          # Find the previous version tag
+          PREV_TAG=$(git tag -l "v*" | grep -v "-" | sort -V | tail -2 | head -1 || echo "")
+
+          # Generate simple changelog
+          echo "## What's Changed" > release_notes.md
+          echo "" >> release_notes.md
+
+          if [ -n "$PREV_TAG" ]; then
+            git log --pretty=format:"- %s" ${PREV_TAG}..HEAD --no-merges | grep -v "^- Merge" >> release_notes.md
+          else
+            echo "Initial release" >> release_notes.md
+          fi
+
+          echo "" >> release_notes.md
+          echo "## Build Information" >> release_notes.md
+          echo "- iOS Build: ${IOS_BUILD}" >> release_notes.md
+          echo "- Android Build: ${ANDROID_BUILD}" >> release_notes.md
+
+          # Set output for next step
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.changelog.outputs.version }}
+          name: Release ${{ steps.changelog.outputs.version }}
+          body_path: ${{ env.APP_PATH }}/release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

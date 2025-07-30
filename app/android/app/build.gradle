@@ -50,7 +50,7 @@ react {
     // The hermes compiler command to run. By default it is 'hermesc'
     // Dynamic path that works across different platforms (macOS, Linux, Windows)
     hermesCommand = {
-        def hermesPath = "../node_modules/react-native/sdks/hermesc"
+        def hermesPath = file("${rootProject.projectDir}/../../node_modules/react-native/sdks/hermesc").absolutePath
         def osName = System.getProperty('os.name').toLowerCase()
         def platformDir
         def executableName = "hermesc"
@@ -110,6 +110,12 @@ android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     namespace "com.proofofpassportapp"
+
+    // Build optimizations
+    dexOptions {
+        javaMaxHeapSize "4g"
+        preDexLibraries false
+    }
     defaultConfig {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -148,7 +154,8 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.release
+            // Only use release signing config if the properties are available, otherwise fall back to debug
+            signingConfig project.hasProperty('MYAPP_UPLOAD_STORE_FILE') ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

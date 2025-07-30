@@ -15,7 +15,7 @@ import {
   IDENTITY_TREE_URL_ID_CARD,
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
-} from '@selfxyz/common';
+} from '@selfxyz/common/constants/constants';
 import { create } from 'zustand';
 
 import { fetchOfacTrees } from '../utils/ofac';

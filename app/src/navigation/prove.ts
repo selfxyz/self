@@ -1,12 +1,21 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { lazy } from 'react';
 
-import ConfirmBelongingScreen from '../screens/prove/ConfirmBelongingScreen';
-import ProofRequestStatusScreen from '../screens/prove/ProofRequestStatusScreen';
-import ProveScreen from '../screens/prove/ProveScreen';
-import QRCodeTroubleScreen from '../screens/prove/QRCodeTroubleScreen';
-import QRCodeViewFinderScreen from '../screens/prove/ViewFinderScreen';
+const ConfirmBelongingScreen = lazy(
+  () => import('../screens/prove/ConfirmBelongingScreen'),
+);
+const ProofRequestStatusScreen = lazy(
+  () => import('../screens/prove/ProofRequestStatusScreen'),
+);
+const ProveScreen = lazy(() => import('../screens/prove/ProveScreen'));
+const QRCodeTroubleScreen = lazy(
+  () => import('../screens/prove/QRCodeTroubleScreen'),
+);
+const QRCodeViewFinderScreen = lazy(
+  () => import('../screens/prove/ViewFinderScreen'),
+);
 import { black, white } from '../utils/colors';
 
 const proveScreens = {

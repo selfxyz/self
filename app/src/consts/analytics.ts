@@ -108,6 +108,7 @@ export const ProofEvents = {
   VALIDATION_SUCCESS: 'Proof: Validation Succeeded',
   WS_HELLO_ACK: 'Proof: WS Hello Acknowledged',
   WS_HELLO_SENT: 'Proof: WS Hello Sent',
+  CONNECTION_UUID_GENERATED: 'Proof: Connection UUID Generated',
 };
 
 export const SettingsEvents = {

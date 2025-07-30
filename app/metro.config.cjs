@@ -12,6 +12,7 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  '@selfxyz/common': path.resolve(commonPath, 'src'),
 };
 const watchFolders = [
   path.resolve(commonPath),
@@ -30,6 +31,8 @@ const config = {
     babelTransformerPath: require.resolve(
       'react-native-svg-transformer/react-native',
     ),
+    disableImportExportTransform: true,
+    inlineRequires: true,
   },
   resolver: {
     extraNodeModules,
@@ -41,6 +44,34 @@ const config = {
     ],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
+    resolverMainFields: ['react-native', 'browser', 'main'],
+    platforms: ['ios', 'android', 'native', 'web'],
+    // Custom resolver to handle .js imports that should resolve to .ts files
+    resolveRequest: (context, moduleName, platform) => {
+      // Only process .js imports from the common package source
+      const isFromCommonSrc = context.originModulePath.includes(
+        path.join('common', 'src'),
+      );
+      if (moduleName.endsWith('.js') && isFromCommonSrc) {
+        const tsModuleName = moduleName.replace(/\.js$/, '.ts');
+        const tsxModuleName = moduleName.replace(/\.js$/, '.tsx');
+
+        // Try to resolve as .ts first, then .tsx
+        try {
+          return context.resolveRequest(context, tsModuleName, platform);
+        } catch (tsError) {
+          try {
+            return context.resolveRequest(context, tsxModuleName, platform);
+          } catch (tsxError) {
+            // Fall back to default resolution
+            return context.resolveRequest(context, moduleName, platform);
+          }
+        }
+      }
+
+      // Default resolution for everything else
+      return context.resolveRequest(context, moduleName, platform);
+    },
   },
   watchFolders,
 };

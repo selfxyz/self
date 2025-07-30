@@ -2,7 +2,7 @@
 
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StatusBar, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 
@@ -48,15 +48,15 @@ const SuccessScreen: React.FC = () => {
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  function onOkPress() {
+  const onOkPress = useCallback(() => {
     buttonTap();
     goHome();
     setTimeout(() => {
       cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
-  }
+  }, [goHome, cleanSelfApp]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -132,8 +132,9 @@ const SuccessScreen: React.FC = () => {
     errorCode,
     reason,
     updateProofStatus,
-    selfApp?.deeplinkCallback,
+    selfApp,
     countdownStarted,
+    countdown,
   ]);
 
   useEffect(() => {
