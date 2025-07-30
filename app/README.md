@@ -355,3 +355,11 @@ You might want to try [this](https://stackoverflow.com/questions/49443341/watchm
 watchman watch-del-all
 watchman shutdown-server
 ```
+
+### Note on `yarn reinstall`
+
+The `yarn reinstall` command deletes your `yarn.lock` and `package-lock.json` files and re-installs all dependencies from scratch. **This means you may get newer versions of packages than before, even if your `package.json` specifies loose version ranges.** This can sometimes introduce breaking changes or incompatibilities.
+
+For example, as of this writing (July 29, 2024), a minor update to the Sentry Cocoa SDK (`sentry-cocoa`) breaks Xcode builds ([see issue](https://github.com/getsentry/sentry-cocoa/issues/5648)). If you run into unexpected build failures after a reinstall, check for updated dependencies and consider pinning versions or restoring your previous lockfile.
+
+**Tip:** After running `yarn reinstall`, if you encounter new build issues, compare your new `yarn.lock` (or `package-lock.json`) with the previous version. Look for any package version changes, especially for critical dependencies. Sometimes, a seemingly minor update can introduce breaking changes. If you find a problematic update, you may need to revert to the previous lockfile or explicitly pin the affected package version in your `package.json` to restore a working build.
