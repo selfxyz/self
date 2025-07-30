@@ -135,15 +135,25 @@ const signatureAlgorithmToStrictSignatureAlgorithm = {
   'sha512 poland': ['sha512', 'sha512', 'rsa_sha256_65537_4096'],
 } as const;
 
-const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() + yearsOffset);
+const formatDateToYYMMDD = (date: Date): string => {
   return (
     date.toISOString().slice(2, 4) +
     date.toISOString().slice(5, 7) +
     date.toISOString().slice(8, 10)
   ).toString();
 };
+
+const getBirthDateFromAge = (age: number): string => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - age);
+  return formatDateToYYMMDD(date);
+}
+
+const getExpiryDateFromYears = (years: number): string => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + years);
+  return formatDateToYYMMDD(date);
+}
 
 const MockPassportTitleCard = () => {
   return (
@@ -228,7 +238,6 @@ const FormSection: React.FC<FormSectionProps> = ({ title, endSection=false, chil
 
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const navigation = useNavigation();
-  const [birthDate, setBirthDate] = useState('2000/01/01');
   const [age, setAge] = useState(21);
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -246,7 +255,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [isDocumentTypeSheetOpen, setDocumentTypeSheetOpen] = useState(false);
 
   const resetFormValues = () => {
-    setBirthDate('2000/01/01');
     setAge(21);
     setExpiryYears(5);
     setIsInOfacList(true);
@@ -269,35 +277,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     setSelectedDocumentType(documentType);
     setDocumentTypeSheetOpen(false);
   };
-
-  const handleBirthDateChange = (text: string) => {
-    if (isInOfacList) return;
-
-    const value = text.replace(/[^0-9]/g, '');
-    let formattedValue = '';
-
-    if (value.length > 0) {
-      formattedValue += value.substring(0, Math.min(4, value.length));
-    }
-    if (value.length > 4) {
-      formattedValue += '/' + value.substring(4, Math.min(6, value.length));
-    }
-    if (value.length > 6) {
-      formattedValue += '/' + value.substring(6, Math.min(8, value.length));
-    }
-    setBirthDate(formattedValue);
-  };
-
-  const getBirthDateFromAge = (age: number): string => {
-    const today = new Date();
-    today.setFullYear(today.getFullYear() - age);
-    // Format as 'YYMMDD' using toLocaleDateString and string manipulation
-    const parts = today.toLocaleDateString('en-CA').split('-'); // ['YYYY','MM','DD']
-    const year = parts[0].slice(-2);
-    const month = parts[1];
-    const day = parts[2];
-    return year + month + day;
-  }
 
   const handleGenerate = useCallback(async () => {
     console.log('selectedDocumentType', selectedDocumentType);
@@ -323,7 +302,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         eContentHashAlgo: eContentHashAlgo as IdDocInput['eContentHashAlgo'],
         signatureType:
           signatureTypeForGeneration as IdDocInput['signatureType'],
-        expiryDate: castDateToYYMMDDForExpiry(expiryYears),
+        expiryDate: getExpiryDateFromYears(expiryYears),
         passportNumber: randomPassportNumber,
       };
 
@@ -359,7 +338,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       setIsGenerating(false);
     }
   }, [
-    birthDate,
+    age,
     expiryYears,
     isInOfacList,
     navigation,
