@@ -48,10 +48,7 @@ const config = {
     // Custom resolver to handle .js imports that should resolve to .ts files
     resolveRequest: (context, moduleName, platform) => {
       // If this is a relative import ending in .js from within the common package
-      if (
-        moduleName.endsWith('.js') &&
-        context.originModulePath.includes('/common/src/')
-      ) {
+      if (moduleName.endsWith('.js') && context.originModulePath.includes('/common/src/')) {
         const tsModuleName = moduleName.replace(/\.js$/, '.ts');
         const tsxModuleName = moduleName.replace(/\.js$/, '.tsx');
 
