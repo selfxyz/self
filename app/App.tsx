@@ -4,22 +4,15 @@
 import 'react-native-get-random-values';
 
 import { Buffer } from 'buffer';
-import React, { lazy, Suspense } from 'react';
-import { Platform } from 'react-native';
+import React from 'react';
 import { YStack } from 'tamagui';
 
 import ErrorBoundary from './src/components/ErrorBoundary';
-import SimpleLoadingFallback from './src/components/SimpleLoadingFallback';
 import AppNavigation from './src/navigation';
 import { AuthProvider } from './src/providers/authProvider';
 import { DatabaseProvider } from './src/providers/databaseProvider';
 import { NotificationTrackingProvider } from './src/providers/notificationTrackingProvider';
-
-const PassportProvider = lazy(() =>
-  import('./src/providers/passportDataProvider').then(m => ({
-    default: m.PassportProvider,
-  })),
-);
+import { PassportProvider } from './src/providers/passportDataProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
 import { initSentry, wrapWithSentry } from './src/Sentry';
 
@@ -28,24 +21,18 @@ initSentry();
 global.Buffer = Buffer;
 
 function App(): React.JSX.Element {
-  // Only use SimpleLoadingFallback on web platform
-  const suspenseFallback =
-    Platform.OS === 'web' ? <SimpleLoadingFallback /> : null;
-
   return (
     <ErrorBoundary>
       <YStack flex={1} height="100%" width="100%">
         <RemoteConfigProvider>
           <AuthProvider>
-            <Suspense fallback={suspenseFallback}>
-              <PassportProvider>
-                <DatabaseProvider>
-                  <NotificationTrackingProvider>
-                    <AppNavigation />
-                  </NotificationTrackingProvider>
-                </DatabaseProvider>
-              </PassportProvider>
-            </Suspense>
+            <PassportProvider>
+              <DatabaseProvider>
+                <NotificationTrackingProvider>
+                  <AppNavigation />
+                </NotificationTrackingProvider>
+              </DatabaseProvider>
+            </PassportProvider>
           </AuthProvider>
         </RemoteConfigProvider>
       </YStack>

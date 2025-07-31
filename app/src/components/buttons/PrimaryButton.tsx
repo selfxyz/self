@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { useBorderWidth } from '../../hooks/useBorderWidth';
 import { amber50, black, slate300, white } from '../../utils/colors';
 import AbstractButton, { ButtonProps } from './AbstractButton';
 
@@ -12,8 +13,7 @@ export function PrimaryButton({ children, ...props }: ButtonProps) {
   const color = isDisabled ? slate300 : amber50;
   const borderColor = isDisabled ? slate300 : undefined;
 
-  const numericBorderWidth =
-    typeof borderWidth === 'number' ? borderWidth : undefined;
+  const numericBorderWidth = useBorderWidth(borderWidth);
 
   return (
     <AbstractButton

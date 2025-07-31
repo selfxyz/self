@@ -20,7 +20,11 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
         shell: bash
+        run: yarn workspace @selfxyz/common build
+      - name: Yarn types
+        shell: bash
         run: yarn types
+
   test-common:
     runs-on: ubuntu-latest
     steps:
