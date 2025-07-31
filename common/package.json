@@ -12,30 +12,15 @@
       "require": "./dist/cjs/index.js",
       "types": "./dist/cjs/index.d.ts"
     },
-    "./constants/*": {
-      "import": "./dist/esm/src/constants/*.js",
-      "require": "./dist/cjs/src/constants/*.js",
-      "types": "./dist/cjs/src/constants/*.d.ts"
-    },
     "./constants": {
       "import": "./dist/esm/src/constants/index.js",
       "require": "./dist/cjs/src/constants/index.js",
       "types": "./dist/cjs/src/constants/index.d.ts"
     },
-    "./utils/*": {
-      "import": "./dist/esm/src/utils/*.js",
-      "require": "./dist/cjs/src/utils/*.js",
-      "types": "./dist/cjs/src/utils/*.d.ts"
-    },
     "./utils": {
       "import": "./dist/esm/src/utils/index.js",
       "require": "./dist/cjs/src/utils/index.js",
       "types": "./dist/cjs/src/utils/index.d.ts"
-    },
-    "./types/*": {
-      "import": "./dist/esm/src/types/*.js",
-      "require": "./dist/cjs/src/types/*.js",
-      "types": "./dist/cjs/src/types/*.d.ts"
     },
     "./types": {
       "import": "./dist/esm/src/types/index.js",

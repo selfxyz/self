@@ -33,5 +33,18 @@ export {
 } from './circuits/generateInputs.js';
 export type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 export type { UserIdType } from './circuits/uuid.js';
-export * from './appType.js';
-export * from './scope.js';
+export type { PassportData, DocumentCategory } from './types.js';
+export {
+  Mode,
+  EndpointType,
+  SelfApp,
+  SelfAppDisclosureConfig,
+  SelfAppBuilder,
+  getUniversalLink,
+} from './appType.js';
+export {
+  formatEndpoint,
+  hashEndpointWithScope,
+  stringToBigInt,
+  bigIntToString,
+} from './scope.js';
