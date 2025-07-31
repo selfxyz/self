@@ -8,13 +8,6 @@ env:
   ANDROID_API_LEVEL: 35
   ANDROID_NDK_VERSION: 26.1.10909125
 
-  # Cache versioning - increment these to bust caches when needed
-  GH_CACHE_VERSION: v1  # Global cache version
-  GH_YARN_CACHE_VERSION: v1  # Yarn-specific cache version
-  GH_GEMS_CACHE_VERSION: v1  # Ruby gems cache version
-  GH_PODS_CACHE_VERSION: v1  # CocoaPods cache version
-  GH_GRADLE_CACHE_VERSION: v1  # Gradle cache version
-
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
@@ -118,10 +111,6 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           platform: 'ios'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
-          gems_cache_version: ${{ env.GH_GEMS_CACHE_VERSION }}
-          pods_cache_version: ${{ env.GH_PODS_CACHE_VERSION }}
 
       - name: Cache CocoaPods
         id: pods-cache
@@ -529,10 +518,6 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           platform: 'android'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
-          gems_cache_version: ${{ env.GH_GEMS_CACHE_VERSION }}
-          gradle_cache_version: ${{ env.GH_GRADLE_CACHE_VERSION }}
 
       - name: Cache Android NDK
         id: ndk-cache

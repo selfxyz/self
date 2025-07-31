@@ -1,9 +1,6 @@
 name: Publish to npm
 
-env:
-  # Cache versions
-  GH_CACHE_VERSION: v1
-  GH_YARN_CACHE_VERSION: v1
+env: {}
 
 on:
   push:
@@ -66,8 +63,6 @@ jobs:
           app_path: '.'
           node_version: '18'
           platform: 'linux'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
 
       - name: Build package
         run: |
@@ -102,8 +97,6 @@ jobs:
           app_path: '.'
           node_version: '18'
           platform: 'linux'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
 
       - name: Build package
         run: |
@@ -137,8 +130,6 @@ jobs:
           app_path: '.'
           node_version: '18'
           platform: 'linux'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
 
       - name: Build package
         run: |

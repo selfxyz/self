@@ -6,12 +6,6 @@ env:
   JAVA_VERSION: 17
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
-  # Cache versions
-  GH_CACHE_VERSION: v1
-  GH_YARN_CACHE_VERSION: v1
-  GH_GEMS_CACHE_VERSION: v1
-  GH_GRADLE_CACHE_VERSION: v1
-  GH_PODS_CACHE_VERSION: v1
 
 on:
   pull_request:
@@ -33,10 +27,6 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           platform: 'android'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
-          gems_cache_version: ${{ env.GH_GEMS_CACHE_VERSION }}
-          gradle_cache_version: ${{ env.GH_GRADLE_CACHE_VERSION }}
       - name: Run Android analysis
         run: yarn analyze:android:ci
         working-directory: ./app
@@ -57,10 +47,6 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           platform: 'ios'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
-          gems_cache_version: ${{ env.GH_GEMS_CACHE_VERSION }}
-          pods_cache_version: ${{ env.GH_PODS_CACHE_VERSION }}
       - name: Run iOS analysis
         run: yarn analyze:ios:ci
         working-directory: ./app

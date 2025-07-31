@@ -1,8 +1,6 @@
 name: General Self CI
 
-env:
-  GH_CACHE_VERSION: v1
-  GH_YARN_CACHE_VERSION: v1
+env: {}
 
 on:
   pull_request:
@@ -18,8 +16,6 @@ jobs:
           app_path: app
           node_version: '18'
           platform: 'linux'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
       - name: Build dependencies
         shell: bash
         run: yarn workspace @selfxyz/common build
@@ -37,8 +33,6 @@ jobs:
           app_path: app
           node_version: '18'
           platform: 'linux'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
       - name: Yarn types
         shell: bash
         run: yarn types
@@ -54,8 +48,6 @@ jobs:
           app_path: app
           node_version: '18'
           platform: 'linux'
-          cache_version: ${{ env.GH_CACHE_VERSION }}
-          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
       - name: Build dependencies
         shell: bash
         run: yarn workspace @selfxyz/common build
