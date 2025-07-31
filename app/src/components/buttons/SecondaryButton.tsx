@@ -2,8 +2,8 @@
 
 import React from 'react';
 
-import { useBorderWidth } from '../../hooks/useBorderWidth';
 import { slate200, slate300, slate500, white } from '../../utils/colors';
+import { normalizeBorderWidth } from '../../utils/styleUtils';
 import AbstractButton, { ButtonProps } from './AbstractButton';
 
 export function SecondaryButton({ children, ...props }: ButtonProps) {
@@ -13,7 +13,7 @@ export function SecondaryButton({ children, ...props }: ButtonProps) {
   const color = isDisabled ? slate300 : slate500;
   const borderColor = isDisabled ? slate200 : undefined;
 
-  const numericBorderWidth = useBorderWidth(borderWidth);
+  const numericBorderWidth = normalizeBorderWidth(borderWidth);
 
   return (
     <AbstractButton
