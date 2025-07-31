@@ -9,14 +9,6 @@ writeFileSync(
   JSON.stringify({ type: 'commonjs' }, null, 4)
 );
 
-// Create missing index files for constants directory
-const constantsIndexContent = `export * from './constants.js';
-export { commonNames, countries } from './countries.js';
-export type { Country3LetterCode as CountriesCountry3LetterCode } from './countries.js';`;
-
-writeFileSync(path.join(DIST, 'esm', 'src', 'constants', 'index.js'), constantsIndexContent);
-writeFileSync(path.join(DIST, 'cjs', 'src', 'constants', 'index.js'), constantsIndexContent);
-
 // Create a package.json in the dist root for Metro compatibility
 const distPackageJson = {
   name: '@selfxyz/common',
