@@ -4,9 +4,9 @@
  * @jest-environment node
  */
 
+import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
 import { execSync, spawn } from 'child_process';
 import { chromium, Page } from 'playwright';
-import { beforeAll, afterAll, describe, expect, test } from '@jest/globals';
 
 // Increase default timeouts for build and page load
 const BUILD_TIMEOUT = 120_000;
@@ -20,16 +20,27 @@ describe('Web Build and Render', () => {
 
   beforeAll(async () => {
     // Build the web app
-    execSync('yarn web:build', { stdio: 'inherit', timeout: BUILD_TIMEOUT, cwd: process.cwd() });
-
-    // Start preview server
-    previewProcess = spawn('yarn', ['web:preview', '--port', '4173', '--host'], {
+    execSync('yarn web:build', {
+      stdio: 'inherit',
+      timeout: BUILD_TIMEOUT,
       cwd: process.cwd(),
-      stdio: 'pipe',
     });
 
+    // Start preview server
+    previewProcess = spawn(
+      'yarn',
+      ['web:preview', '--port', '4173', '--host'],
+      {
+        cwd: process.cwd(),
+        stdio: 'pipe',
+      },
+    );
+
     await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Preview server failed to start')), 10_000);
+      const timeout = setTimeout(
+        () => reject(new Error('Preview server failed to start')),
+        10_000,
+      );
       previewProcess!.stdout.on('data', (data: Buffer) => {
         if (data.toString().includes('Local:')) {
           clearTimeout(timeout);
@@ -58,7 +69,7 @@ describe('Web Build and Render', () => {
       const consoleWarnings: string[] = [];
       const pageErrors: string[] = [];
 
-      page!.on('console', (msg) => {
+      page!.on('console', msg => {
         if (msg.type() === 'error') {
           consoleErrors.push(msg.text());
         } else if (msg.type() === 'warning') {
@@ -66,9 +77,12 @@ describe('Web Build and Render', () => {
         }
       });
 
-      page!.on('pageerror', (err) => pageErrors.push(err.message));
+      page!.on('pageerror', err => pageErrors.push(err.message));
 
-      await page!.goto(PREVIEW_URL, { waitUntil: 'networkidle', timeout: PAGE_LOAD_TIMEOUT });
+      await page!.goto(PREVIEW_URL, {
+        waitUntil: 'networkidle',
+        timeout: PAGE_LOAD_TIMEOUT,
+      });
       await page!.waitForSelector('#root', { timeout: 5_000 });
 
       const rootContent = await page!.locator('#root').innerHTML();
@@ -80,7 +94,7 @@ describe('Web Build and Render', () => {
       await page!.waitForTimeout(2_000);
 
       const criticalErrors = consoleErrors.filter(
-        (e) => !e.includes('favicon.ico') && !e.includes('DevTools'),
+        e => !e.includes('favicon.ico') && !e.includes('DevTools'),
       );
 
       if (consoleWarnings.length) {
