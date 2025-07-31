@@ -26,12 +26,9 @@ end
 target "Self" do
   config = use_native_modules!
 
-  # Fallback if use_native_modules! returns nil
-  if config.nil?
-    config = {
-      reactNativePath: "../node_modules/react-native",
-    }
-  end
+  # Ensure config is properly set
+  config ||= {}
+  config[:reactNativePath] ||= "../node_modules/react-native"
 
   use_frameworks!
   pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "74098a5e29c23b3f5a58dc14a336556fa89c0ad6"
