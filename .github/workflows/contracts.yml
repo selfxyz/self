@@ -33,6 +33,8 @@ jobs:
           app_path: '.'
           node_version: '20'
           platform: 'linux'
+          cache_version: ${{ env.GH_CACHE_VERSION }}
+          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
       - name: Prettier Check - Code Formatting
         run: yarn prettier:check
         working-directory: ./contracts

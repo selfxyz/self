@@ -32,6 +32,9 @@ jobs:
           app_path: app
           node_version: ${{ env.NODE_VERSION }}
           platform: 'ios'
+          cache_version: ${{ env.GH_CACHE_VERSION }}
+          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
+          pods_cache_version: ${{ env.GH_PODS_CACHE_VERSION }}
       - name: Build Dependencies
         run: yarn build:deps
         working-directory: ./app
@@ -52,6 +55,9 @@ jobs:
           app_path: app
           node_version: ${{ env.NODE_VERSION }}
           platform: 'ios'
+          cache_version: ${{ env.GH_CACHE_VERSION }}
+          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
+          pods_cache_version: ${{ env.GH_PODS_CACHE_VERSION }}
 
       - name: Build
         run: yarn build:deps
@@ -78,6 +84,10 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           platform: 'ios'
+          cache_version: ${{ env.GH_CACHE_VERSION }}
+          yarn_cache_version: ${{ env.GH_YARN_CACHE_VERSION }}
+          gems_cache_version: ${{ env.GH_GEMS_CACHE_VERSION }}
+          pods_cache_version: ${{ env.GH_PODS_CACHE_VERSION }}
       - name: Install And Build
         run: yarn install-app
         working-directory: ./app

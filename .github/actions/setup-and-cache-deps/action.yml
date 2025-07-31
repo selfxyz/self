@@ -15,6 +15,26 @@ inputs:
   platform:
     description: Target platform (ios|android|linux)
     required: true
+  cache_version:
+    description: Global cache version
+    required: false
+    default: 'v1'
+  yarn_cache_version:
+    description: Yarn cache version
+    required: false
+    default: 'v1'
+  gems_cache_version:
+    description: Gems cache version
+    required: false
+    default: 'v1'
+  gradle_cache_version:
+    description: Gradle cache version
+    required: false
+    default: 'v1'
+  pods_cache_version:
+    description: CocoaPods cache version
+    required: false
+    default: 'v1'
 
 outputs:
   yarn-cache-hit:
@@ -42,10 +62,10 @@ runs:
           ~/.yarn/cache
           .yarn/cache
           ${{ inputs.app_path }}/.yarn/cache
-        key: ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock', format('{0}/yarn.lock', inputs.app_path)) }}
+        key: ${{ runner.os }}-yarn-${{ inputs.cache_version }}-${{ inputs.yarn_cache_version }}-${{ hashFiles('yarn.lock', format('{0}/yarn.lock', inputs.app_path)) }}
         restore-keys: |
-          ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
-          ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-
+          ${{ runner.os }}-yarn-${{ inputs.cache_version }}-${{ inputs.yarn_cache_version }}-
+          ${{ runner.os }}-yarn-${{ inputs.cache_version }}-
 
     - name: Cache Ruby gems
       id: gems-cache
@@ -53,10 +73,10 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ inputs.app_path }}/vendor/bundle
-        key: ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles(format('{0}/Gemfile.lock', inputs.app_path)) }}
+        key: ${{ runner.os }}-gems-${{ inputs.cache_version }}-${{ inputs.gems_cache_version }}-${{ hashFiles(format('{0}/Gemfile.lock', inputs.app_path)) }}
         restore-keys: |
-          ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
-          ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-
+          ${{ runner.os }}-gems-${{ inputs.cache_version }}-${{ inputs.gems_cache_version }}-
+          ${{ runner.os }}-gems-${{ inputs.cache_version }}-
 
     - name: Cache Gradle dependencies
       id: gradle-cache
@@ -66,10 +86,10 @@ runs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-${{ hashFiles(format('{0}/android/**/*.gradle*', inputs.app_path), format('{0}/android/gradle/wrapper/gradle-wrapper.properties', inputs.app_path)) }}
+        key: ${{ runner.os }}-gradle-${{ inputs.cache_version }}-${{ inputs.gradle_cache_version }}-${{ hashFiles(format('{0}/android/**/*.gradle*', inputs.app_path), format('{0}/android/gradle/wrapper/gradle-wrapper.properties', inputs.app_path)) }}
         restore-keys: |
-          ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-
-          ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-
+          ${{ runner.os }}-gradle-${{ inputs.cache_version }}-${{ inputs.gradle_cache_version }}-
+          ${{ runner.os }}-gradle-${{ inputs.cache_version }}-
 
     - name: Cache CocoaPods
       id: pods-cache
@@ -79,10 +99,10 @@ runs:
         path: |
           ${{ inputs.app_path }}/ios/Pods
           ~/.cocoapods
-        key: ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-${{ hashFiles(format('{0}/ios/Podfile.lock', inputs.app_path)) }}
+        key: ${{ runner.os }}-pods-${{ inputs.cache_version }}-${{ inputs.pods_cache_version }}-${{ hashFiles(format('{0}/ios/Podfile.lock', inputs.app_path)) }}
         restore-keys: |
-          ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-
-          ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-
+          ${{ runner.os }}-pods-${{ inputs.cache_version }}-${{ inputs.pods_cache_version }}-
+          ${{ runner.os }}-pods-${{ inputs.cache_version }}-
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
