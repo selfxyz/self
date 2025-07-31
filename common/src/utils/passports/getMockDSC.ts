@@ -167,4 +167,4 @@ function getMockDSC(signatureType: SignatureAlgorithm) {
   return { privateKeyPem, dsc };
 }
 
-export default getMockDSC;
+export { getMockDSC };

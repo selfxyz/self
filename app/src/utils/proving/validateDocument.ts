@@ -10,8 +10,9 @@ import {
   generateNullifier,
   getCircuitNameFromPassportData,
   getLeafDscTree,
-  Hash,
+  hash,
   ID_CARD_ATTESTATION_ID,
+  packBytesAndPoseidon,
   parseCertificateSimple,
   PASSPORT_ATTESTATION_ID,
   PassportData,
@@ -201,12 +202,10 @@ export function generateCommitmentInApp(
   passportData: PassportData,
   alternativeCSCA: Record<string, string>,
 ) {
-  const dg1_packed_hash = Hash.packBytesAndPoseidon(
-    formatMrz(passportData.mrz),
-  );
-  const eContent_packed_hash = Hash.packBytesAndPoseidon(
+  const dg1_packed_hash = packBytesAndPoseidon(formatMrz(passportData.mrz));
+  const eContent_packed_hash = packBytesAndPoseidon(
     (
-      Hash.hash(
+      hash(
         passportData.passportMetadata!.eContentHashFunction,
         Array.from(passportData.eContent),
         'bytes',
