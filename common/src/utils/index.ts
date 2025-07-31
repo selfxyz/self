@@ -8,8 +8,8 @@ export {
   genMockIdDoc,
   generateMockDSC,
   genMockIdDocAndInitDataParsing,
-  IdDocInput,
 } from './passports/genMockIdDoc.js';
+export type { IdDocInput } from './passports/genMockIdDoc.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
 export { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData.js';
 export { brutforceSignatureAlgorithmDsc } from './passports/passport_parsing/brutForceDscSignature.js';

@@ -32,6 +32,11 @@
       "require": "./dist/cjs/src/utils/index.js",
       "types": "./dist/cjs/src/utils/index.d.ts"
     },
+    "./types/*": {
+      "import": "./dist/esm/src/types/*.js",
+      "require": "./dist/cjs/src/types/*.js",
+      "types": "./dist/cjs/src/types/*.d.ts"
+    },
     "./types": {
       "import": "./dist/esm/src/types/index.js",
       "require": "./dist/cjs/src/types/index.js",
