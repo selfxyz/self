@@ -49,7 +49,7 @@ function formatBytes(bytes) {
   return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
-function createTestApp(config, testDir) {
+function createTestApp(config, testDir, commonPackagePath) {
   const appDir = path.join(testDir, config.name);
   fs.mkdirSync(appDir, { recursive: true });
 
@@ -60,7 +60,7 @@ function createTestApp(config, testDir) {
     private: true,
     type: 'module',
     dependencies: {
-      '@selfxyz/common': 'workspace:*',
+      '@selfxyz/common': `file:${commonPackagePath}`,
     },
   };
 
@@ -111,14 +111,14 @@ module.exports = {
 };
 `;
 
-  fs.writeFileSync(path.join(appDir, 'webpack.config.js'), webpackConfig);
+  fs.writeFileSync(path.join(appDir, 'webpack.config.cjs'), webpackConfig);
 }
 
-function runTest(config, testDir) {
+function runTest(config, testDir, commonPackagePath) {
   console.log(`\n🧪 Testing: ${config.name}`);
   console.log(`📝 ${config.description}`);
 
-  const appDir = createTestApp(config, testDir);
+  const appDir = createTestApp(config, testDir, commonPackagePath);
 
   try {
     // Install dependencies
@@ -135,12 +135,14 @@ function runTest(config, testDir) {
     execSync('yarn add -D webpack webpack-cli webpack-node-externals', {
       cwd: appDir,
       stdio: 'pipe',
+      env: { ...process.env, CI: 'true' }, // Set CI environment to prevent interactive prompts
     });
 
     console.log('   🔨 Building bundle...');
-    execSync('npx webpack --mode=production', {
+    execSync('yarn webpack --mode=production', {
       cwd: appDir,
       stdio: 'pipe',
+      env: { ...process.env, CI: 'true' }, // Set CI environment to prevent interactive prompts
     });
 
     // Measure bundle size
@@ -182,12 +184,12 @@ function generateReport(results) {
     let comparison = '';
 
     if (baseline && result.config !== 'full-import') {
-      const reduction = (
-        ((baseline.size - result.size) / baseline.size) *
-        100
-      ).toFixed(1);
-      const savedBytes = formatBytes(baseline.size - result.size);
-      comparison = ` (${reduction}% smaller, saves ${savedBytes})`;
+      const rawDiff = baseline.size - result.size;
+      if (rawDiff > 0) {
+        const reduction = ((rawDiff / baseline.size) * 100).toFixed(1);
+        const savedBytes = formatBytes(rawDiff);
+        comparison = ` (${reduction}% smaller, saves ${savedBytes})`;
+      }
     }
 
     console.log(
@@ -196,14 +198,14 @@ function generateReport(results) {
   });
 
   if (baseline && smallest.config !== 'full-import') {
-    const maxReduction = (
-      ((baseline.size - smallest.size) / baseline.size) *
-      100
-    ).toFixed(1);
-    const maxSaved = formatBytes(baseline.size - smallest.size);
-    console.log(
-      `\n🎯 Maximum tree shaking benefit: ${maxReduction}% reduction (${maxSaved} saved)`,
-    );
+    const rawMaxDiff = baseline.size - smallest.size;
+    if (rawMaxDiff > 0) {
+      const maxReduction = ((rawMaxDiff / baseline.size) * 100).toFixed(1);
+      const maxSaved = formatBytes(rawMaxDiff);
+      console.log(
+        `\n🎯 Maximum tree shaking benefit: ${maxReduction}% reduction (${maxSaved} saved)`,
+      );
+    }
   }
 
   // Recommendations
@@ -251,15 +253,44 @@ async function main() {
   try {
     // Ensure @selfxyz/common is built
     console.log('\n🔨 Building @selfxyz/common...');
+    const commonDir = path.join(__dirname, '..', '..', 'common');
     execSync('yarn workspace @selfxyz/common build', {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..', '..'),
     });
 
+    // Copy the built common package to test directory for file:// reference
+    const commonPackagePath = path.join(testDir, 'common-package');
+    console.log(`📦 Copying @selfxyz/common to test directory...`);
+
+    // Copy package.json, dist folder, and other necessary files
+    fs.mkdirSync(commonPackagePath, { recursive: true });
+    fs.copyFileSync(
+      path.join(commonDir, 'package.json'),
+      path.join(commonPackagePath, 'package.json'),
+    );
+
+    // Copy dist directory recursively
+    const copyDir = (src, dest) => {
+      fs.mkdirSync(dest, { recursive: true });
+      const entries = fs.readdirSync(src, { withFileTypes: true });
+      for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+        if (entry.isDirectory()) {
+          copyDir(srcPath, destPath);
+        } else {
+          fs.copyFileSync(srcPath, destPath);
+        }
+      }
+    };
+
+    copyDir(path.join(commonDir, 'dist'), path.join(commonPackagePath, 'dist'));
+
     // Run all tests
     const results = [];
     for (const config of TEST_CONFIGS) {
-      const result = runTest(config, testDir);
+      const result = runTest(config, testDir, commonPackagePath);
       results.push(result);
     }
 
@@ -277,4 +308,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { TEST_CONFIGS, runTest, generateReport };
+module.exports = { TEST_CONFIGS, runTest, generateReport, createTestApp };
