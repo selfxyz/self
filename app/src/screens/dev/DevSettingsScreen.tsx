@@ -6,21 +6,16 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
-  Eraser,
 } from '@tamagui/lucide-icons';
 import React, {
   PropsWithChildren,
-  useCallback,
-  useEffect,
   useMemo,
   useState,
 } from 'react';
 import {
   Alert,
-  Platform,
   ScrollView,
   StyleProp,
-  TextInput,
 } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
@@ -30,7 +25,6 @@ import WarningIcon from '../../images/icons/warning.svg';
 import { RootStackParamList } from '../../navigation';
 import {
   unsafe_clearSecrets,
-  unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
 import {
@@ -42,7 +36,6 @@ import {
   slate600,
   slate800,
   slate900,
-  textBlack,
   white,
   yellow500,
 } from '../../utils/colors';
@@ -134,22 +127,6 @@ function ParameterSection({
       {children}
     </YStack>
   );
-}
-
-function SelectableText({ children, ...props }: DevSettingsScreenProps) {
-  if (Platform.OS === 'ios') {
-    return (
-      <TextInput multiline editable={false} {...props}>
-        {children}
-      </TextInput>
-    );
-  } else {
-    return (
-      <Text selectable {...props}>
-        {children}
-      </Text>
-    );
-  }
 }
 
 const items = [
@@ -260,41 +237,8 @@ const ScreenSelector = ({}) => {
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const { clearDocumentCatalogForMigrationTesting } = usePassport();
-  const [privateKey, setPrivateKey] = useState<string | null>(
-    'Loading private key…',
-  );
-  const [isPrivateKeyRevealed, setIsPrivateKeyRevealed] = useState(false);
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
-
-  useEffect(() => {
-    unsafe_getPrivateKey().then(key =>
-      setPrivateKey(key || 'No private key found'),
-    );
-  }, []);
-
-  const handleRevealPrivateKey = useCallback(() => {
-    setIsPrivateKeyRevealed(true);
-  }, []);
-
-  const getRedactedPrivateKey = useCallback(() => {
-    if (
-      !privateKey ||
-      privateKey === 'Loading private key…' ||
-      privateKey === 'No private key found'
-    ) {
-      return privateKey;
-    }
-
-    // If it starts with 0x, show 0x followed by asterisks for the rest
-    if (privateKey.startsWith('0x')) {
-      const restLength = privateKey.length - 2;
-      return '0x' + '*'.repeat(restLength);
-    }
-
-    // Otherwise, show asterisks for the entire length
-    return '*'.repeat(privateKey.length);
-  }, [privateKey]);
 
   const handleClearSecretsPress = () => {
     Alert.alert(

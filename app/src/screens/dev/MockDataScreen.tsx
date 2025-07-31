@@ -13,12 +13,11 @@ import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
-  Input,
   ScrollView,
   Separator,
   Sheet,
@@ -30,13 +29,9 @@ import {
 } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
-import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
-import { Title } from '../../components/typography/Title';
 import { MockDataEvents } from '../../consts/analytics';
-// import { LinearGradient } from 'tamagui/linear-gradient';
 import SelfDevCard from '../../images/card-dev.svg';
 import IdIcon from '../../images/icons/id_icon.svg';
 import NoteIcon from '../../images/icons/note.svg';
@@ -256,7 +251,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(true);
-  const [advancedMode, setAdvancedMode] = useState(false);
   const [selectedDocumentType, setSelectedDocumentType] = useState<
     'mock_passport' | 'mock_id_card'
   >('mock_passport');
@@ -366,12 +360,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
-      setAdvancedMode(true);
       buttonTap();
       trackEvent(MockDataEvents.ENABLE_ADVANCED_MODE);
     });
 
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
   return (
     <YStack
       flex={1}
