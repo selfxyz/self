@@ -91,7 +91,7 @@ runs:
       run: |
         corepack enable
         yarn set version 4.x
-        yarn install --immutable --cwd ${{ inputs.app_path }}
+        yarn install --immutable
         if [ "${{ inputs.ruby_version }}" != "" ]; then
           (cd ${{ inputs.app_path }} && bundle install --jobs 4 --retry 3)
         fi
