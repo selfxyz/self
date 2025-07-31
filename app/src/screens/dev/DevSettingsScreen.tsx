@@ -73,15 +73,13 @@ function ParameterSection({
   const renderIcon = () => {
     const iconElement =
       typeof icon === 'function'
-        ? icon()
+        ? (icon as () => React.ReactNode)()
         : React.isValidElement(icon)
           ? icon
-          : icon
-            ? React.createElement(icon)
-            : null;
+          : null;
 
     return iconElement
-      ? React.cloneElement(iconElement, {
+      ? React.cloneElement(iconElement as React.ReactElement, {
           width: '100%',
           height: '100%',
         })
@@ -90,24 +88,24 @@ function ParameterSection({
 
   return (
     <YStack
-      w="100%"
+      width="100%"
       backgroundColor={darkMode ? slate900 : slate100}
       borderRadius="$4"
       borderWidth={1}
       borderColor={darkMode ? slate800 : slate200}
-      p="$4"
+      padding="$4"
       flexDirection="column"
       gap="$3"
     >
-      <XStack w="100%" flexDirection="row" justifyContent="flex-start" gap="$4">
+      <XStack width="100%" flexDirection="row" justifyContent="flex-start" gap="$4">
         <YStack
           backgroundColor="gray"
           borderRadius={5}
           width={46}
           height={46}
-          jc="center"
-          ai="center"
-          p="$2"
+          justifyContent="center"
+          alignItems="center"
+          padding="$2"
         >
           {renderIcon()}
         </YStack>
@@ -173,17 +171,17 @@ const ScreenSelector = ({}) => {
     >
       <Select.Trigger asChild>
         <Button
-          bg="white"
+          style={{ backgroundColor: 'white' }}
           borderColor={slate200}
           borderRadius="$2"
           height="$5"
-          p={0}
+          padding={0}
           onPress={() => setOpen(true)}
         >
           <XStack
-            w="100%"
+            width="100%"
             justifyContent="space-between"
-            py="$3"
+            paddingVertical="$3"
             paddingLeft="$4"
             paddingRight="$1.5"
           >
@@ -282,7 +280,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack gap="$3" ai="center" bg="white" f={1} px="$4" pt="$4">
+      <YStack gap="$3" alignItems="center" backgroundColor="white" flex={1} paddingHorizontal="$4" paddingTop="$4">
         <ParameterSection
           icon={<IdIcon />}
           title="Manage ID Documents"
@@ -310,17 +308,17 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           ].map(({ label, onPress }) => (
             <YStack gap="$2" key={label}>
               <Button
-                bg="white"
+                style={{ backgroundColor: 'white' }}
                 borderColor={slate200}
                 borderRadius="$2"
                 height="$5"
-                p={0}
+                padding={0}
                 onPress={onPress}
               >
                 <XStack
-                  w="100%"
+                  width="100%"
                   justifyContent="space-between"
-                  py="$3"
+                  paddingVertical="$3"
                   paddingLeft="$4"
                   paddingRight="$1.5"
                 >
@@ -367,7 +365,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           ].map(({ label, onPress, dangerTheme }) => (
             <Button
               key={label}
-              bg={dangerTheme ? red500 : white}
+              style={{ backgroundColor: dangerTheme ? red500 : white }}
               borderRadius="$2"
               height="$5"
               onPress={onPress}

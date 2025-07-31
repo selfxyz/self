@@ -55,7 +55,7 @@ const DevPrivateKeyScreen: React.FC<DevPrivateKeyScreen> = ({}) => {
   }, [privateKey]);
 
   return (
-    <YStack p="$4">
+    <YStack padding="$4">
       <YStack position="relative" alignItems="stretch" gap={0}>
         <XStack
           borderColor={slate200}
@@ -92,7 +92,7 @@ const DevPrivateKeyScreen: React.FC<DevPrivateKeyScreen> = ({}) => {
             borderTopWidth={0}
             borderBottomLeftRadius="$5"
             borderBottomRightRadius="$5"
-            py="$2"
+            paddingVertical="$2"
             onPress={handleRevealPrivateKey}
             width="100%"
             textAlign="center"
