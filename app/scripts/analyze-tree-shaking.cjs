@@ -25,7 +25,10 @@ function analyzeWebBundle() {
   // Analyze chunk sizes - check both dist/ and dist/assets/
   let files = [];
   if (fs.existsSync(assetsDir)) {
-    files = fs.readdirSync(assetsDir).filter(f => f.endsWith('.js')).map(f => path.join('assets', f));
+    files = fs
+      .readdirSync(assetsDir)
+      .filter(f => f.endsWith('.js'))
+      .map(f => path.join('assets', f));
   }
   if (files.length === 0) {
     files = fs.readdirSync(distDir).filter(f => f.endsWith('.js'));
@@ -79,7 +82,9 @@ function analyzeWebBundle() {
 
   try {
     // Check if chunks are split (good for tree shaking)
-    const nonVendorChunks = files.filter(f => !path.basename(f).includes('vendor-'));
+    const nonVendorChunks = files.filter(
+      f => !path.basename(f).includes('vendor-'),
+    );
     if (nonVendorChunks.length > 1) {
       console.log('✅ Code splitting enabled - helps with tree shaking');
     }
@@ -100,7 +105,9 @@ function analyzeWebBundle() {
       largeChunks.forEach(chunk => {
         const size = fs.statSync(path.join(distDir, chunk)).size;
         const chunkName = path.basename(chunk);
-        console.log(`   ${chunkName}: ${formatBytes(size)} - Consider tree shaking optimization`);
+        console.log(
+          `   ${chunkName}: ${formatBytes(size)} - Consider tree shaking optimization`,
+        );
       });
     }
 
@@ -111,7 +118,9 @@ function analyzeWebBundle() {
         '✅ Reasonable total bundle size - tree shaking likely working',
       );
     } else {
-      console.log(`⚠️  Large total bundle size (${formatBytes(totalSize)}) - significant tree shaking potential`);
+      console.log(
+        `⚠️  Large total bundle size (${formatBytes(totalSize)}) - significant tree shaking potential`,
+      );
     }
   } catch (error) {
     console.log('❌ Could not analyze bundle details:', error.message);
@@ -157,37 +166,79 @@ function analyzeReactNativeBundle(platform) {
 
 function categorizeImports(imports) {
   const constants = [
-    'API_URL', 'API_URL_STAGING', 'countryCodes', 'commonNames', 'countries',
-    'PASSPORT_ATTESTATION_ID', 'ID_CARD_ATTESTATION_ID', 'DEFAULT_MAJORITY',
-    'CSCA_TREE_URL', 'DSC_TREE_URL', 'TREE_URL', 'TREE_URL_STAGING',
-    'PCR0_MANAGER_ADDRESS', 'RPC_URL', 'WS_DB_RELAYER'
+    'API_URL',
+    'API_URL_STAGING',
+    'countryCodes',
+    'commonNames',
+    'countries',
+    'PASSPORT_ATTESTATION_ID',
+    'ID_CARD_ATTESTATION_ID',
+    'DEFAULT_MAJORITY',
+    'CSCA_TREE_URL',
+    'DSC_TREE_URL',
+    'TREE_URL',
+    'TREE_URL_STAGING',
+    'PCR0_MANAGER_ADDRESS',
+    'RPC_URL',
+    'WS_DB_RELAYER',
   ];
 
   const utils = [
-    'hash', 'flexiblePoseidon', 'customHasher', 'generateCommitment', 'generateNullifier',
-    'formatMrz', 'initPassportDataParsing', 'buildSMT', 'getLeafCscaTree', 'getLeafDscTree',
-    'generateCircuitInputsDSC', 'generateCircuitInputsRegister', 'generateCircuitInputsVCandDisclose',
-    'formatEndpoint', 'hashEndpointWithScope', 'stringToBigInt', 'bigIntToString',
-    'genMockIdDoc', 'generateMockDSC', 'genAndInitMockPassportData'
+    'hash',
+    'flexiblePoseidon',
+    'customHasher',
+    'generateCommitment',
+    'generateNullifier',
+    'formatMrz',
+    'initPassportDataParsing',
+    'buildSMT',
+    'getLeafCscaTree',
+    'getLeafDscTree',
+    'generateCircuitInputsDSC',
+    'generateCircuitInputsRegister',
+    'generateCircuitInputsVCandDisclose',
+    'formatEndpoint',
+    'hashEndpointWithScope',
+    'stringToBigInt',
+    'bigIntToString',
+    'genMockIdDoc',
+    'generateMockDSC',
+    'genAndInitMockPassportData',
   ];
 
   const types = [
-    'PassportData', 'DocumentCategory', 'CertificateData', 'PublicKeyDetailsECDSA', 'PublicKeyDetailsRSA',
-    'PassportMetadata', 'UserIdType', 'EndpointType', 'SelfApp', 'SelfAppDisclosureConfig',
-    'IdDocInput', 'Country3LetterCode'
+    'PassportData',
+    'DocumentCategory',
+    'CertificateData',
+    'PublicKeyDetailsECDSA',
+    'PublicKeyDetailsRSA',
+    'PassportMetadata',
+    'UserIdType',
+    'EndpointType',
+    'SelfApp',
+    'SelfAppDisclosureConfig',
+    'IdDocInput',
+    'Country3LetterCode',
   ];
 
   const suggestions = [];
 
-  const constantImports = imports.filter(imp => constants.includes(imp.replace(/^type\s+/, '')));
-  const utilImports = imports.filter(imp => utils.includes(imp.replace(/^type\s+/, '')));
-  const typeImports = imports.filter(imp => types.includes(imp.replace(/^type\s+/, '')) || imp.startsWith('type '));
+  const constantImports = imports.filter(imp =>
+    constants.includes(imp.replace(/^type\s+/, '')),
+  );
+  const utilImports = imports.filter(imp =>
+    utils.includes(imp.replace(/^type\s+/, '')),
+  );
+  const typeImports = imports.filter(
+    imp =>
+      types.includes(imp.replace(/^type\s+/, '')) || imp.startsWith('type '),
+  );
 
   if (constantImports.length > 0) {
     suggestions.push({
       category: 'constants',
       imports: constantImports,
-      suggestion: `import { ${constantImports.join(', ')} } from '@selfxyz/common/constants';`
+      suggestion: `import { ${constantImports.join(', ')} } from '@selfxyz/common/constants';`,
     });
   }
 
@@ -195,7 +246,7 @@ function categorizeImports(imports) {
     suggestions.push({
       category: 'utils',
       imports: utilImports,
-      suggestion: `import { ${utilImports.join(', ')} } from '@selfxyz/common/utils';`
+      suggestion: `import { ${utilImports.join(', ')} } from '@selfxyz/common/utils';`,
     });
   }
 
@@ -203,7 +254,7 @@ function categorizeImports(imports) {
     suggestions.push({
       category: 'types',
       imports: typeImports,
-      suggestion: `import type { ${typeImports.map(t => t.replace(/^type\s+/, '')).join(', ')} } from '@selfxyz/common/types';`
+      suggestion: `import type { ${typeImports.map(t => t.replace(/^type\s+/, '')).join(', ')} } from '@selfxyz/common/types';`,
     });
   }
 
@@ -361,10 +412,9 @@ function compareImportPatterns() {
   const totalImports = starImports + namedImports + granularImports;
   let score = 0;
   if (totalImports > 0) {
-    score = (
+    score =
       ((granularImports * 100 + namedImports * 50) / (totalImports * 100)) *
-      100
-    );
+      100;
     console.log(`\n📊 Tree Shaking Score: ${score.toFixed(1)}%`);
 
     if (score < 50) {
@@ -383,34 +433,49 @@ function compareImportPatterns() {
 
     // Group files by opportunity type
     const opportunityGroups = {
-      highImpact: fileConversionOpportunities.filter(f => f.imports.length >= 2),
-      constantsOnly: fileConversionOpportunities.filter(f =>
-        f.conversionOpportunities.some(opp => opp.category === 'constants') &&
-        f.conversionOpportunities.length === 1
+      highImpact: fileConversionOpportunities.filter(
+        f => f.imports.length >= 2,
       ),
-      utilsOnly: fileConversionOpportunities.filter(f =>
-        f.conversionOpportunities.some(opp => opp.category === 'utils') &&
-        f.conversionOpportunities.length === 1
+      constantsOnly: fileConversionOpportunities.filter(
+        f =>
+          f.conversionOpportunities.some(opp => opp.category === 'constants') &&
+          f.conversionOpportunities.length === 1,
       ),
-      typesOnly: fileConversionOpportunities.filter(f =>
-        f.conversionOpportunities.some(opp => opp.category === 'types') &&
-        f.conversionOpportunities.length === 1
+      utilsOnly: fileConversionOpportunities.filter(
+        f =>
+          f.conversionOpportunities.some(opp => opp.category === 'utils') &&
+          f.conversionOpportunities.length === 1,
       ),
-      mixedCategories: fileConversionOpportunities.filter(f => f.conversionOpportunities.length > 1),
-      needsAnalysis: fileConversionOpportunities.filter(f => f.conversionOpportunities.length === 0)
+      typesOnly: fileConversionOpportunities.filter(
+        f =>
+          f.conversionOpportunities.some(opp => opp.category === 'types') &&
+          f.conversionOpportunities.length === 1,
+      ),
+      mixedCategories: fileConversionOpportunities.filter(
+        f => f.conversionOpportunities.length > 1,
+      ),
+      needsAnalysis: fileConversionOpportunities.filter(
+        f => f.conversionOpportunities.length === 0,
+      ),
     };
 
     // Show High Impact Opportunities (multiple imports)
     if (opportunityGroups.highImpact.length > 0) {
-      console.log('\n🚀 HIGH IMPACT OPPORTUNITIES (Multiple imports per file):');
+      console.log(
+        '\n🚀 HIGH IMPACT OPPORTUNITIES (Multiple imports per file):',
+      );
       opportunityGroups.highImpact
         .sort((a, b) => b.imports.length - a.imports.length)
         .forEach((fileInfo, index) => {
-          console.log(`\n${index + 1}. 📄 ${fileInfo.file} (${fileInfo.imports.length} imports)`);
+          console.log(
+            `\n${index + 1}. 📄 ${fileInfo.file} (${fileInfo.imports.length} imports)`,
+          );
 
-          fileInfo.imports.filter(imp => imp.type === 'mixed').forEach(imp => {
-            console.log(`   ⚠️  ${imp.import}`);
-          });
+          fileInfo.imports
+            .filter(imp => imp.type === 'mixed')
+            .forEach(imp => {
+              console.log(`   ⚠️  ${imp.import}`);
+            });
 
           if (fileInfo.conversionOpportunities.length > 0) {
             console.log('   ✅ Convert to:');
@@ -420,7 +485,9 @@ function compareImportPatterns() {
           }
 
           const estimatedImprovement = fileInfo.imports.length * 2.5;
-          console.log(`   📈 Estimated score improvement: +${estimatedImprovement.toFixed(1)}%`);
+          console.log(
+            `   📈 Estimated score improvement: +${estimatedImprovement.toFixed(1)}%`,
+          );
         });
     }
 
@@ -429,7 +496,9 @@ function compareImportPatterns() {
       console.log('\n🔧 CONSTANTS CONVERSION OPPORTUNITIES:');
       console.log('   (Convert these together for consistency)');
       opportunityGroups.constantsOnly.forEach(fileInfo => {
-        const suggestion = fileInfo.conversionOpportunities.find(opp => opp.category === 'constants');
+        const suggestion = fileInfo.conversionOpportunities.find(
+          opp => opp.category === 'constants',
+        );
         console.log(`   📄 ${fileInfo.file}`);
         console.log(`      ${suggestion.suggestion}`);
       });
@@ -439,7 +508,9 @@ function compareImportPatterns() {
       console.log('\n⚙️  UTILS CONVERSION OPPORTUNITIES:');
       console.log('   (Convert these together for consistency)');
       opportunityGroups.utilsOnly.forEach(fileInfo => {
-        const suggestion = fileInfo.conversionOpportunities.find(opp => opp.category === 'utils');
+        const suggestion = fileInfo.conversionOpportunities.find(
+          opp => opp.category === 'utils',
+        );
         console.log(`   📄 ${fileInfo.file}`);
         console.log(`      ${suggestion.suggestion}`);
       });
@@ -449,7 +520,9 @@ function compareImportPatterns() {
       console.log('\n🏷️  TYPES CONVERSION OPPORTUNITIES:');
       console.log('   (Convert these together for consistency)');
       opportunityGroups.typesOnly.forEach(fileInfo => {
-        const suggestion = fileInfo.conversionOpportunities.find(opp => opp.category === 'types');
+        const suggestion = fileInfo.conversionOpportunities.find(
+          opp => opp.category === 'types',
+        );
         console.log(`   📄 ${fileInfo.file}`);
         console.log(`      ${suggestion.suggestion}`);
       });
@@ -471,23 +544,40 @@ function compareImportPatterns() {
       console.log('   (Imports not automatically categorized)');
       opportunityGroups.needsAnalysis.forEach(fileInfo => {
         console.log(`   📄 ${fileInfo.file}`);
-        fileInfo.imports.filter(imp => imp.type === 'mixed').forEach(imp => {
-          console.log(`      ${imp.import}`);
-        });
+        fileInfo.imports
+          .filter(imp => imp.type === 'mixed')
+          .forEach(imp => {
+            console.log(`      ${imp.import}`);
+          });
       });
     }
 
     // Summary stats
     console.log('\n📈 CONVERSION SUMMARY:');
-    console.log(`🚀 High Impact: ${opportunityGroups.highImpact.length} files (multiple imports each)`);
-    console.log(`🔧 Constants Only: ${opportunityGroups.constantsOnly.length} files`);
+    console.log(
+      `🚀 High Impact: ${opportunityGroups.highImpact.length} files (multiple imports each)`,
+    );
+    console.log(
+      `🔧 Constants Only: ${opportunityGroups.constantsOnly.length} files`,
+    );
     console.log(`⚙️  Utils Only: ${opportunityGroups.utilsOnly.length} files`);
     console.log(`🏷️  Types Only: ${opportunityGroups.typesOnly.length} files`);
-    console.log(`🔀 Mixed Categories: ${opportunityGroups.mixedCategories.length} files`);
-    console.log(`❓ Needs Analysis: ${opportunityGroups.needsAnalysis.length} files`);
+    console.log(
+      `🔀 Mixed Categories: ${opportunityGroups.mixedCategories.length} files`,
+    );
+    console.log(
+      `❓ Needs Analysis: ${opportunityGroups.needsAnalysis.length} files`,
+    );
 
-    const potentialScoreImprovement = Math.min(95, score + (opportunityGroups.highImpact.length * 5) + (fileConversionOpportunities.length * 2));
-    console.log(`🎯 Potential score after conversion: ~${potentialScoreImprovement.toFixed(1)}%`);
+    const potentialScoreImprovement = Math.min(
+      95,
+      score +
+        opportunityGroups.highImpact.length * 5 +
+        fileConversionOpportunities.length * 2,
+    );
+    console.log(
+      `🎯 Potential score after conversion: ~${potentialScoreImprovement.toFixed(1)}%`,
+    );
 
     console.log('\n💡 RECOMMENDED CONVERSION ORDER:');
     console.log('1. Start with HIGH IMPACT files (biggest score improvement)');

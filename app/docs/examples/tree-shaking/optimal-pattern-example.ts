@@ -24,7 +24,9 @@ export function processPassportData(passportData: PassportData): {
     hash: 'mock-hash', // hash needs hashFunction, bytesArray, format parameters
     apiEndpoint: API_URL,
     // Extract country code from MRZ (positions 2-4 in passport MRZ)
-    isValidCountry: Object.keys(countryCodes).includes(passportData.mrz?.slice(2, 5) || ''),
+    isValidCountry: Object.keys(countryCodes).includes(
+      passportData.mrz?.slice(2, 5) || '',
+    ),
   };
 }
 
