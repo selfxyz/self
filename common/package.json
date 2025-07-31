@@ -199,8 +199,9 @@
     "src/mock_certificates"
   ],
   "scripts": {
-    "build": "tsup && yarn postbuild",
+    "build": "tsup && yarn build:types && yarn postbuild",
     "build:watch": "tsup --watch",
+    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "postbuild": "node ./scripts/post-build.mjs",
     "format": "prettier --write .",
     "lint": "prettier --check .",
