@@ -55,7 +55,14 @@ describe('Tree Shaking Tests', () => {
   });
 
   it('should have example files that demonstrate different import patterns', () => {
-    const examplesDir = path.join(__dirname, '..', '..', 'docs', 'examples', 'tree-shaking');
+    const examplesDir = path.join(
+      __dirname,
+      '..',
+      '..',
+      'docs',
+      'examples',
+      'tree-shaking',
+    );
     assert(
       fs.existsSync(examplesDir),
       'Tree shaking examples directory should exist',
@@ -82,7 +89,14 @@ describe('Tree Shaking Tests', () => {
   });
 
   it('should have different import patterns in examples', () => {
-    const examplesDir = path.join(__dirname, '..', '..', 'docs', 'examples', 'tree-shaking');
+    const examplesDir = path.join(
+      __dirname,
+      '..',
+      '..',
+      'docs',
+      'examples',
+      'tree-shaking',
+    );
 
     // Check full import example
     const fullImport = fs.readFileSync(
