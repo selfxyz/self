@@ -2,7 +2,7 @@
 
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
