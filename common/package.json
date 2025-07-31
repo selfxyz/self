@@ -39,7 +39,8 @@
     "src/mock_certificates"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && yarn postbuild",
+    "build": "tsup && yarn postbuild",
+    "build:watch": "tsup --watch",
     "postbuild": "node ./scripts/post-build.mjs",
     "format": "prettier --write .",
     "lint": "prettier --check .",
@@ -83,6 +84,7 @@
     "mocha": "^10.7.3",
     "prettier": "^3.3.3",
     "ts-mocha": "^10.0.0",
+    "tsup": "^8.5.0",
     "typescript": "^5.4.5"
   }
 }
