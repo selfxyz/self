@@ -23,8 +23,15 @@ export type {
 export { getSKIPEM } from './csca.js';
 export { formatMrz } from './passports/format.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
-export * as Hash from './hash.js';
-export { calculateUserIdentifierHash, getSolidityPackedUserContextData } from './hash.js';
+export {
+  flexiblePoseidon,
+  hash,
+  getHashLen,
+  customHasher,
+  packBytesAndPoseidon,
+  calculateUserIdentifierHash,
+  getSolidityPackedUserContextData,
+} from './hash.js';
 export { getLeafCscaTree, getLeafDscTree, buildSMT } from './trees.js';
 export {
   generateCircuitInputsDSC,
@@ -42,9 +49,4 @@ export {
   SelfAppBuilder,
   getUniversalLink,
 } from './appType.js';
-export {
-  formatEndpoint,
-  hashEndpointWithScope,
-  stringToBigInt,
-  bigIntToString,
-} from './scope.js';
+export { formatEndpoint, hashEndpointWithScope, stringToBigInt, bigIntToString } from './scope.js';

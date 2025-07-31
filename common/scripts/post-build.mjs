@@ -18,7 +18,7 @@ const distPackageJson = {
     '.': './esm/index.js',
     './constants': './esm/src/constants/index.js',
     './utils': './esm/src/utils/index.js',
-    './types': './esm/src/types/index.js'
-  }
+    './types': './esm/src/types/index.js',
+  },
 };
 writeFileSync(path.join(DIST, 'package.json'), JSON.stringify(distPackageJson, null, 4));

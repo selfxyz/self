@@ -12,7 +12,7 @@ import { getHashLen, hash } from '../hash.js';
 import { PassportData, SignatureAlgorithm } from '../types.js';
 import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
 import { initPassportDataParsing } from './passport.js';
-import getMockDSC from './getMockDSC.js';
+import { getMockDSC } from './getMockDSC.js';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format
