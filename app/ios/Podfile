@@ -24,16 +24,18 @@ if linkage != nil
 end
 
 target "Self" do
+  # Initialize config with defaults first
+  config = {
+    :reactNativePath => "../node_modules/react-native",
+  }
+
   begin
-    config = use_native_modules!
+    native_config = use_native_modules!
+    # Merge with native modules config if successful
+    config = config.merge(native_config) if native_config.is_a?(Hash)
   rescue StandardError => e
     Pod::UI.warn("use_native_modules! failed: #{e}. Continuing with manual configuration")
-    config = {}
   end
-
-  # Ensure config is properly set
-  config ||= {}
-  config[:reactNativePath] ||= "../node_modules/react-native"
 
   use_frameworks!
   pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "74098a5e29c23b3f5a58dc14a336556fa89c0ad6"
