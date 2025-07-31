@@ -227,7 +227,7 @@ To control versions with PR labels:
 - `version:patch` - Patch version bump (default for main)
 - `no-deploy` - Skip deployment
 
-See [CI/CD Documentation](../.github/MOBILE_DEPLOYMENT.md) for details.
+See [CI/CD Documentation](./docs/MOBILE_DEPLOYMENT.md) for details.
 
 ### Manual Release Process
 

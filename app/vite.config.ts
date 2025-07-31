@@ -3,6 +3,7 @@
 import { tamaguiPlugin } from '@tamagui/vite-plugin';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
@@ -58,6 +59,14 @@ export default defineConfig({
       ],
       platform: 'web',
       optimize: true,
+    }),
+    // Bundle analyzer for tree shaking analysis
+    visualizer({
+      filename: 'dist/bundle-analysis.html',
+      open: false, // Don't auto-open in CI
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap', // Shows tree shaking effectiveness visually
     }),
   ].filter(Boolean),
   define: {
