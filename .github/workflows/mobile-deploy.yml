@@ -102,7 +102,6 @@ jobs:
           echo "📦 Version bump: ${{ inputs.version_bump }}"
 
       - uses: actions/checkout@v4
-        if: inputs.platform != 'android'
 
       - name: Set up Xcode
         if: inputs.platform != 'android'
