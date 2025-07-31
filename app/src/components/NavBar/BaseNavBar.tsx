@@ -39,7 +39,7 @@ export const LeftAction: React.FC<LeftActionProps> = ({
   onPress,
   ...props
 }) => {
-  let children: React.ReactNode = useMemo(() => {
+  const children: React.ReactNode = useMemo(() => {
     switch (component) {
       case 'back':
         return (
@@ -69,7 +69,7 @@ export const LeftAction: React.FC<LeftActionProps> = ({
           </Button>
         );
     }
-  }, [component]);
+  }, [color, component, onPress]);
 
   if (!children) {
     return null;

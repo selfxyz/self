@@ -20,6 +20,7 @@ const SUPPORTED_PLATFORMS = Object.values(PLATFORMS);
 
 const FILE_PATHS = {
   PACKAGE_JSON: '../package.json',
+  VERSION_JSON: '../version.json',
   IOS_INFO_PLIST: '../ios/OpenPassport/Info.plist',
   IOS_PROJECT_PBXPROJ: '../ios/Self.xcodeproj/project.pbxproj',
   ANDROID_BUILD_GRADLE: '../android/app/build.gradle',
@@ -240,14 +241,55 @@ function getAndroidVersion() {
 }
 
 /**
+ * Reads version.json for build numbers and deployment history
+ * @returns {Object|null} Version data or null if not found
+ */
+function getVersionJsonData() {
+  const versionJsonPath = path.join(__dirname, FILE_PATHS.VERSION_JSON);
+  try {
+    const versionData = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
+    return versionData;
+  } catch (error) {
+    console.warn(`Warning: Could not read version.json: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Formats time elapsed since last deployment
+ * @param {string} timestamp - ISO timestamp of last deployment
+ * @returns {string} Human-readable time elapsed
+ */
+function getTimeAgo(timestamp) {
+  if (!timestamp) return 'Never deployed';
+
+  const now = new Date();
+  const then = new Date(timestamp);
+  const diffMs = now - then;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) {
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  } else if (diffHours > 0) {
+    return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  } else {
+    return 'Less than an hour ago';
+  }
+}
+
+/**
  * Reads version information from package.json, iOS Info.plist, and Android build.gradle
  * @returns {Object} Object containing version information for all platforms
  */
 function getCurrentVersions() {
+  const versionJson = getVersionJsonData();
+
   return {
     main: getMainVersion(),
     ios: getIOSVersion(),
     android: getAndroidVersion(),
+    versionJson: versionJson,
   };
 }
 
@@ -278,9 +320,8 @@ function hasUncommittedChanges() {
 /**
  * Displays the header and platform information
  * @param {string} platform - Target platform
- * @param {Object} versions - Version information object
  */
-function displayDeploymentHeader(platform, versions) {
+function displayDeploymentHeader(platform) {
   console.log(`\n${CONSOLE_SYMBOLS.MOBILE} Mobile App Deployment Confirmation`);
   console.log('=====================================');
   console.log(`${CONSOLE_SYMBOLS.ROCKET} Platform: ${platform.toUpperCase()}`);
@@ -309,19 +350,64 @@ function displayPlatformVersions(platform, versions) {
   console.log(`${CONSOLE_SYMBOLS.PACKAGE} Main Version: ${versions.main}`);
 
   if (platform === PLATFORMS.IOS || platform === PLATFORMS.BOTH) {
+    const currentBuild = versions.ios.build;
+    const nextBuild = versions.versionJson
+      ? versions.versionJson.ios.build + 1
+      : parseInt(currentBuild) + 1;
+    const lastDeployed = versions.versionJson
+      ? getTimeAgo(versions.versionJson.ios.lastDeployed)
+      : 'Unknown';
+
     console.log(
       `${CONSOLE_SYMBOLS.APPLE} iOS Version: ${versions.ios.version}`,
     );
-    console.log(`${CONSOLE_SYMBOLS.APPLE} iOS Build: ${versions.ios.build}`);
+    console.log(
+      `${CONSOLE_SYMBOLS.APPLE} iOS Build: ${currentBuild} → ${nextBuild}`,
+    );
+    console.log(`${CONSOLE_SYMBOLS.APPLE} Last iOS Deploy: ${lastDeployed}`);
   }
 
   if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH) {
+    const currentBuild = versions.android.versionCode;
+    const nextBuild = versions.versionJson
+      ? versions.versionJson.android.build + 1
+      : parseInt(currentBuild) + 1;
+    const lastDeployed = versions.versionJson
+      ? getTimeAgo(versions.versionJson.android.lastDeployed)
+      : 'Unknown';
+
     console.log(
       `${CONSOLE_SYMBOLS.ANDROID} Android Version: ${versions.android.version}`,
     );
     console.log(
-      `${CONSOLE_SYMBOLS.ANDROID} Android Version Code: ${versions.android.versionCode}`,
+      `${CONSOLE_SYMBOLS.ANDROID} Android Version Code: ${currentBuild} → ${nextBuild}`,
     );
+    console.log(
+      `${CONSOLE_SYMBOLS.ANDROID} Last Android Deploy: ${lastDeployed}`,
+    );
+  }
+
+  // Check for potential issues
+  if (versions.versionJson) {
+    if (platform === PLATFORMS.IOS || platform === PLATFORMS.BOTH) {
+      const jsonBuild = versions.versionJson.ios.build;
+      const actualBuild = parseInt(versions.ios.build);
+      if (jsonBuild !== actualBuild) {
+        console.log(
+          `\n${CONSOLE_SYMBOLS.WARNING} iOS build mismatch: version.json has ${jsonBuild}, but Xcode has ${actualBuild}`,
+        );
+      }
+    }
+
+    if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH) {
+      const jsonBuild = versions.versionJson.android.build;
+      const actualBuild = parseInt(versions.android.versionCode);
+      if (jsonBuild !== actualBuild) {
+        console.log(
+          `\n${CONSOLE_SYMBOLS.WARNING} Android build mismatch: version.json has ${jsonBuild}, but gradle has ${actualBuild}`,
+        );
+      }
+    }
   }
 }
 
@@ -351,7 +437,7 @@ function displayWarningsAndGitStatus() {
  * @param {string} deploymentMethod - The deployment method to use
  */
 function displayFullConfirmation(platform, versions, deploymentMethod) {
-  displayDeploymentHeader(platform, versions);
+  displayDeploymentHeader(platform);
   displayDeploymentMethod(deploymentMethod);
   displayPlatformVersions(platform, versions);
   displayWarningsAndGitStatus();

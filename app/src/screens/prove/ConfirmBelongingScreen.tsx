@@ -30,15 +30,17 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   const navigate = useHapticNavigation('LoadingScreen', {
     params: {},
   });
-  const provingStore = useProvingStore();
   const [_requestingPermission, setRequestingPermission] = useState(false);
   const currentState = useProvingStore(state => state.currentState);
+  const init = useProvingStore(state => state.init);
+  const setFcmToken = useProvingStore(state => state.setFcmToken);
+  const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
   const isReadyToProve = currentState === 'ready_to_prove';
 
   useEffect(() => {
     notificationSuccess();
-    provingStore.init('dsc');
-  }, []);
+    init('dsc');
+  }, [init]);
 
   const onOkPress = async () => {
     try {
@@ -50,14 +52,14 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
       if (permissionGranted) {
         const token = await getFCMToken();
         if (token) {
-          provingStore.setFcmToken(token);
+          setFcmToken(token);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
           console.log('FCM token stored in proving store');
         }
       }
 
       // Mark as user confirmed - proving will start automatically when ready
-      provingStore.setUserConfirmed();
+      setUserConfirmed();
 
       // Navigate to loading screen
       navigate();

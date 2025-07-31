@@ -13,13 +13,26 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '../../utils/colors';
+import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
 
 interface PassportNFCScanScreenProps {}
 
 const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
-  const onCancelPress = useHapticNavigation('Launch', {
+  const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
   });
+  const navigateToHome = useHapticNavigation('Home', {
+    action: 'cancel',
+  });
+
+  const onCancelPress = async () => {
+    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    if (hasValidDocument) {
+      navigateToHome();
+    } else {
+      navigateToLaunch();
+    }
+  };
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
@@ -33,8 +46,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
             <BodyText textAlign="center">TODO implement</BodyText>
           </TextsContainer>
           <Image
-            h="$8"
-            w="$8"
+            height="$8"
+            width="$8"
             alignSelf="center"
             borderRadius={1000}
             source={{

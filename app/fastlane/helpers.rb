@@ -13,6 +13,7 @@ require_relative "helpers/common"
 require_relative "helpers/ios"
 require_relative "helpers/android"
 require_relative "helpers/slack"
+require_relative "helpers/version_manager"
 
 module Fastlane
   module Helpers
@@ -20,6 +21,7 @@ module Fastlane
     extend Fastlane::Helpers::IOS
     extend Fastlane::Helpers::Android
     extend Fastlane::Helpers::Slack
+    extend Fastlane::Helpers::VersionManager
   end
 end
 

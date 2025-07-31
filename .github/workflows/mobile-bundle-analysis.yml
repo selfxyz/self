@@ -1,0 +1,57 @@
+name: mobile-bundle-analysis
+
+env:
+  NODE_VERSION: 18
+  RUBY_VERSION: 3.2
+  JAVA_VERSION: 17
+  WORKSPACE: ${{ github.workspace }}
+  APP_PATH: ${{ github.workspace }}/app
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/mobile-bundle-analysis.yml"
+      - ".github/actions/**"
+  workflow_dispatch:
+
+jobs:
+  analyze-android:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+      - name: Run Android analysis
+        run: yarn analyze:android:ci
+        working-directory: ./app
+      - name: Upload Android bundle report
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-bundle-${{ github.sha }}
+          path: /tmp/react-native-bundle-visualizer/OpenPassport/output/explorer.html
+
+  analyze-ios:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+      - name: Run iOS analysis
+        run: yarn analyze:ios:ci
+        working-directory: ./app
+      - name: Upload iOS bundle report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-bundle-${{ github.sha }}
+          path: /tmp/react-native-bundle-visualizer/OpenPassport/output/explorer.html

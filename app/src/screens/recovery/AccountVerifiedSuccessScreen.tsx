@@ -32,12 +32,12 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack
-          pt={40}
-          px={10}
-          pb={20}
-          jc="center"
-          ai="center"
-          mb={20}
+          paddingTop={40}
+          paddingHorizontal={10}
+          paddingBottom={20}
+          justifyContent="center"
+          alignItems="center"
+          marginBottom={20}
           gap={10}
         >
           <Title size="large">ID Verified</Title>

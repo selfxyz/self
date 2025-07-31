@@ -6,6 +6,7 @@ import React, {
   PropsWithChildren,
   useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 import { Alert, Platform, StyleProp, TextInput } from 'react-native';
@@ -93,7 +94,7 @@ const ScreenSelector = ({}) => {
         <Select.Value placeholder="Select screen to jump to" />
       </Select.Trigger>
 
-      <Adapt when="sm" platform="touch">
+      <Adapt when={'sm' as any} platform="touch">
         <Sheet native modal dismissOnSnapToBottom animation="medium">
           <Sheet.Frame>
             <Sheet.ScrollView>
@@ -112,7 +113,7 @@ const ScreenSelector = ({}) => {
       <Select.Content zIndex={200000}>
         <Select.Viewport minWidth={200}>
           <Select.Group>
-            {React.useMemo(
+            {useMemo(
               () =>
                 items.map((item, i) => {
                   return (
@@ -124,7 +125,7 @@ const ScreenSelector = ({}) => {
                     </Select.Item>
                   );
                 }),
-              [items],
+              [],
             )}
           </Select.Group>
         </Select.Viewport>
@@ -210,28 +211,35 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   };
 
   return (
-    <YStack gap="$3" ai="center" bg="white" f={1} px="$4" pt="$4">
+    <YStack
+      gap="$3"
+      alignItems="center"
+      backgroundColor="white"
+      flex={1}
+      paddingHorizontal="$4"
+      paddingTop="$4"
+    >
       <YStack
-        p="$4"
+        padding="$4"
         borderWidth={2}
         borderColor="$blue8"
         borderRadius="$4"
-        bg="$blue1"
-        w="100%"
+        backgroundColor="$blue1"
+        width="100%"
         gap="$3"
-        mt="$3"
+        marginTop="$3"
       >
         <Text
           color="$blue10"
           fontWeight="bold"
           fontSize="$5"
           textAlign="center"
-          mb="$2"
+          marginBottom="$2"
         >
           🚀 Developer Shortcuts
         </Text>
         <YStack alignItems="center" gap="$3">
-          <YStack alignItems="center" gap="$3" w="100%">
+          <YStack alignItems="center" gap="$3" width="100%">
             <Text
               color={textBlack}
               fontSize="$3"
@@ -245,14 +253,14 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         </YStack>
       </YStack>
       <YStack
-        mt="$3"
-        mb="$10"
-        p="$4"
+        marginTop="$3"
+        marginBottom="$10"
+        padding="$4"
         borderWidth={2}
         borderColor="$red8"
         borderRadius="$4"
-        bg="$red1"
-        w="100%"
+        backgroundColor="$red1"
+        width="100%"
         gap="$3"
       >
         <Text
@@ -260,14 +268,14 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           fontWeight="bold"
           fontSize="$5"
           textAlign="center"
-          mb="$2"
+          marginBottom="$2"
         >
           ⚠️ Danger Zone ⚠️
         </Text>
 
         <YStack alignItems="center" gap="$3">
           {!isPrivateKeyRevealed ? (
-            <YStack alignItems="center" gap="$3" w="100%">
+            <YStack alignItems="center" gap="$3" width="100%">
               <Text
                 color={textBlack}
                 textAlign="center"
@@ -286,10 +294,10 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 {getRedactedPrivateKey()}
               </Text>
               <Button
-                bg="$gray12"
+                backgroundColor="$gray12"
                 color="white"
                 size="$3"
-                mt="$2"
+                marginTop="$2"
                 onPress={handleRevealPrivateKey}
               >
                 Tap to reveal private key
@@ -318,13 +326,13 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           )}
         </YStack>
 
-        <YStack alignItems="center" gap="$3" mt="$2">
+        <YStack alignItems="center" gap="$3" marginTop="$2">
           <XStack alignItems="center" gap="$3">
             <Text color={textBlack} fontSize="$3">
               Delete Private Key
             </Text>
             <Button
-              bg="$red8"
+              backgroundColor="$red8"
               color="white"
               size="$3"
               onPress={handleClearSecretsPress}
@@ -337,7 +345,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
               Clear Document Catalog
             </Text>
             <Button
-              bg="$red8"
+              backgroundColor="$red8"
               color="white"
               size="$3"
               onPress={handleClearDocumentCatalogPress}

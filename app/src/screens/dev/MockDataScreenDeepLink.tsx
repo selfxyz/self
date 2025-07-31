@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
-import { countryCodes } from '@selfxyz/common';
-import { genMockIdDocAndInitDataParsing, IdDocInput } from '@selfxyz/common';
+import {
+  countryCodes,
+  genMockIdDocAndInitDataParsing,
+  IdDocInput,
+} from '@selfxyz/common';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -40,6 +43,22 @@ const MockDataScreenDeepLink: React.FC = () => {
     deepLinkGender: state.deepLinkGender,
   }));
 
+  const handleGenerate = useCallback(async () => {
+    const storeState = useUserStore.getState();
+    const idDocInput: Partial<IdDocInput> = {
+      idType: 'mock_passport',
+      firstName: storeState.deepLinkName,
+      lastName: storeState.deepLinkSurname,
+      birthDate: storeState.deepLinkBirthDate,
+      sex: storeState.deepLinkGender as 'M' | 'F',
+      nationality: storeState.deepLinkNationality as any,
+    };
+    const passportData = genMockIdDocAndInitDataParsing(idDocInput);
+    await storePassportData(passportData);
+    navigation.navigate('ConfirmBelongingScreen', {});
+    useUserStore.getState().clearDeepLinkUserDetails();
+  }, [navigation]);
+
   useEffect(() => {
     if (deepLinkNationality) {
       setSelectedCountry(deepLinkNationality);
@@ -57,40 +76,35 @@ const MockDataScreenDeepLink: React.FC = () => {
         handleGenerate();
       }, 0);
     }
-  }, [deepLinkName, deepLinkSurname, deepLinkNationality, deepLinkBirthDate]);
-
-  const handleGenerate = useCallback(async () => {
-    const storeState = useUserStore.getState();
-    const idDocInput: Partial<IdDocInput> = {
-      idType: 'mock_passport',
-      firstName: storeState.deepLinkName,
-      lastName: storeState.deepLinkSurname,
-      birthDate: storeState.deepLinkBirthDate,
-      sex: storeState.deepLinkGender as 'M' | 'F',
-      nationality: storeState.deepLinkNationality as any,
-    };
-    const passportData = genMockIdDocAndInitDataParsing(idDocInput);
-    await storePassportData(passportData);
-    navigation.navigate('ConfirmBelongingScreen', {});
-    useUserStore.getState().clearDeepLinkUserDetails();
-  }, [navigation]);
+  }, [
+    deepLinkName,
+    deepLinkSurname,
+    deepLinkNationality,
+    deepLinkBirthDate,
+    handleGenerate,
+  ]);
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack f={1} bg={white} pt={top} pb={bottom + extraYPadding}>
+    <YStack
+      flex={1}
+      backgroundColor={white}
+      paddingTop={top}
+      paddingBottom={bottom + extraYPadding}
+    >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <YStack px="$4" pb="$4" gap="$5">
-          <YStack ai="center" mb={'$5'} mt={'$14'}>
+        <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
+          <YStack alignItems="center" marginBottom={'$5'} marginTop={'$14'}>
             <Title>Onboard your Developer ID</Title>
           </YStack>
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Name</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
-              p="$2"
-              px="$3"
-              bg="$gray2"
+              padding="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -98,14 +112,14 @@ const MockDataScreenDeepLink: React.FC = () => {
               <Text fontSize="$4">{deepLinkName}</Text>
             </XStack>
           </XStack>
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Surname</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
-              p="$2"
-              px="$3"
-              bg="$gray2"
+              padding="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -113,14 +127,14 @@ const MockDataScreenDeepLink: React.FC = () => {
               <Text fontSize="$4">{deepLinkSurname}</Text>
             </XStack>
           </XStack>
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Birth Date (YYMMDD)</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
-              p="$2"
-              px="$3"
-              bg="$gray2"
+              padding="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -129,14 +143,14 @@ const MockDataScreenDeepLink: React.FC = () => {
             </XStack>
           </XStack>
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Gender</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
-              p="$2"
-              px="$3"
-              bg="$gray2"
+              padding="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -145,14 +159,14 @@ const MockDataScreenDeepLink: React.FC = () => {
             </XStack>
           </XStack>
 
-          <XStack ai="center" jc="space-between">
+          <XStack alignItems="center" justifyContent="space-between">
             <BodyText>Nationality</BodyText>
             <XStack
-              ai="center"
+              alignItems="center"
               gap="$2"
-              p="$2"
-              px="$3"
-              bg="$gray2"
+              padding="$2"
+              paddingHorizontal="$3"
+              backgroundColor="$gray2"
               borderColor={borderColor}
               borderWidth={1}
               borderRadius="$4"
@@ -170,7 +184,7 @@ const MockDataScreenDeepLink: React.FC = () => {
         </YStack>
       </ScrollView>
 
-      <YStack px="$4" pb="$4">
+      <YStack paddingHorizontal="$4" paddingBottom="$4">
         <ButtonsContainer>
           <PrimaryButton
             trackEvent={MockDataEvents.CREATE_DEEP_LINK}

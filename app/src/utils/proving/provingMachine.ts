@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import {
+import type {
   DocumentCategory,
   EndpointType,
-  getCircuitNameFromPassportData,
-  getSolidityPackedUserContextData,
   PassportData,
   SelfApp,
 } from '@selfxyz/common';
+import {
+  getCircuitNameFromPassportData,
+  getSolidityPackedUserContextData,
+} from '@selfxyz/common';
 import forge from 'node-forge';
-import io, { Socket } from 'socket.io-client';
+import socketIo, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
@@ -20,6 +22,7 @@ import { unsafe_getPrivateKey } from '../../providers/authProvider';
 import {
   clearPassportData,
   loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
@@ -42,6 +45,7 @@ import {
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
+  hasAnyValidRegisteredDocument,
   isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
@@ -186,6 +190,7 @@ interface ProvingState {
   _closeConnections: () => void;
   _generatePayload: () => Promise<any>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
+  _handleRegisterErrorOrFailure: () => void;
   _startSocketIOStatusListener: (
     receivedUuid: string,
     endpointType: EndpointType,
@@ -228,7 +233,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       ) {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            navigationRef.navigate('Launch');
+            get()._handleRegisterErrorOrFailure();
           }
         }, 3000);
       }
@@ -236,6 +241,20 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         trackEvent(ProofEvents.PROOF_COMPLETED, {
           circuitType: get().circuitType,
         });
+
+        // Mark document as registered onChain
+        if (get().circuitType === 'register') {
+          (async () => {
+            try {
+              await markCurrentDocumentAsRegistered();
+              console.log('Document marked as registered on-chain');
+            } catch (error) {
+              //This will be checked and updated when the app launches the next time
+              console.error('Error marking document as registered:', error);
+            }
+          })();
+        }
+
         if (get().circuitType !== 'disclose' && navigationRef.isReady()) {
           setTimeout(() => {
             navigationRef.navigate('AccountVerifiedSuccess');
@@ -395,6 +414,23 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
+    _handleRegisterErrorOrFailure: async () => {
+      try {
+        const hasValid = await hasAnyValidRegisteredDocument();
+        if (navigationRef.isReady()) {
+          if (hasValid) {
+            navigationRef.navigate('Home');
+          } else {
+            navigationRef.navigate('Launch');
+          }
+        }
+      } catch (error) {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('Launch');
+        }
+      }
+    },
+
     _startSocketIOStatusListener: (
       receivedUuid: string,
       endpointType: EndpointType,
@@ -405,7 +441,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       const url = getWSDbRelayerUrl(endpointType);
-      let socket: Socket | null = io(url, {
+      const socket: Socket = socketIo(url, {
         path: '/',
         transports: ['websocket'],
       });
@@ -415,6 +451,37 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       socket.on('connect', () => {
         socket?.emit('subscribe', receivedUuid);
         trackEvent(ProofEvents.SOCKETIO_SUBSCRIBED);
+      });
+
+      socket.on('connect_error', error => {
+        console.error('SocketIO connection error:', error);
+        trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
+          message: (error as any).message,
+        });
+        trackEvent(ProofEvents.PROOF_FAILED, {
+          circuitType: get().circuitType,
+          error: get().error_code ?? 'unknown',
+        });
+        actor!.send({ type: 'PROVE_ERROR' });
+        set({ socketConnection: null });
+      });
+
+      socket.on('disconnect', (reason: string) => {
+        console.log(`SocketIO disconnected. Reason: ${reason}`);
+        const currentActor = actor;
+
+        if (get().currentState === 'ready_to_prove' && currentActor) {
+          console.error(
+            'SocketIO disconnected unexpectedly during proof listening.',
+          );
+          trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
+          trackEvent(ProofEvents.PROOF_FAILED, {
+            circuitType: get().circuitType,
+            error: get().error_code ?? 'unknown',
+          });
+          currentActor.send({ type: 'PROVE_ERROR' });
+        }
+        set({ socketConnection: null });
       });
 
       socket.on('status', (message: any) => {
@@ -451,37 +518,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           actor!.send({ type: 'PROVE_SUCCESS' });
         }
       });
-
-      socket.on('disconnect', (reason: string) => {
-        console.log(`SocketIO disconnected. Reason: ${reason}`);
-        const currentActor = actor;
-
-        if (get().currentState === 'ready_to_prove' && currentActor) {
-          console.error(
-            'SocketIO disconnected unexpectedly during proof listening.',
-          );
-          trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
-          trackEvent(ProofEvents.PROOF_FAILED, {
-            circuitType: get().circuitType,
-            error: get().error_code ?? 'unknown',
-          });
-          currentActor.send({ type: 'PROVE_ERROR' });
-        }
-        set({ socketConnection: null });
-      });
-
-      socket.on('connect_error', error => {
-        console.error('SocketIO connection error:', error);
-        trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
-          message: (error as any).message,
-        });
-        trackEvent(ProofEvents.PROOF_FAILED, {
-          circuitType: get().circuitType,
-          error: get().error_code ?? 'unknown',
-        });
-        actor!.send({ type: 'PROVE_ERROR' });
-        set({ socketConnection: null });
-      });
     },
 
     _handleWsOpen: () => {
@@ -493,6 +529,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         return;
       }
       const connectionUuid = v4();
+
+      trackEvent(ProofEvents.CONNECTION_UUID_GENERATED, {
+        connection_uuid: connectionUuid,
+      });
+
       set({ uuid: connectionUuid });
       const helloBody = {
         jsonrpc: '2.0',
@@ -686,6 +727,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             );
           if (isRegistered) {
             reStorePassportDataWithRightCSCA(passportData, csca as string);
+
+            // Mark document as registered since its already onChain
+            (async () => {
+              try {
+                await markCurrentDocumentAsRegistered();
+                console.log('Document marked as registered (already on-chain)');
+              } catch (error) {
+                //it will be checked and marked as registered during next app launch
+                console.error('Error marking document as registered:', error);
+              }
+            })();
+
             trackEvent(ProofEvents.ALREADY_REGISTERED);
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;

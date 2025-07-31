@@ -16,7 +16,7 @@ const ShowRecoveryPhraseScreen: React.FC<
 
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
-  }, []);
+  }, [loadMnemonic]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor="white">

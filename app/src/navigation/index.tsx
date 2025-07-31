@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import 'react-native-gesture-handler';
-
 import {
   createNavigationContainerRef,
   createStaticNavigation,
   StaticParamList,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
-import { Platform } from 'react-native';
+import React, { Suspense, useEffect } from 'react';
+import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Text } from 'tamagui';
 
 import { DefaultNavBar } from '../components/NavBar';
 import AppLayout from '../layouts/AppLayout';
@@ -61,8 +60,19 @@ declare global {
 export const navigationRef = createNavigationContainerRef();
 
 const { trackScreenView } = analytics();
-
 const Navigation = createStaticNavigation(AppNavigation);
+
+const SuspenseFallback = () => {
+  if (Platform.OS === 'web') {
+    return <div>Loading...</div>;
+  }
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Loading...</Text>
+    </View>
+  );
+};
+
 const NavigationWithTracking = () => {
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
@@ -75,7 +85,7 @@ const NavigationWithTracking = () => {
   };
 
   // Setup universal link handling at the navigation level
-  React.useEffect(() => {
+  useEffect(() => {
     const cleanup = setupUniversalLinkListenerInNavigation();
 
     return () => {
@@ -85,7 +95,9 @@ const NavigationWithTracking = () => {
 
   return (
     <GestureHandlerRootView>
-      <Navigation ref={navigationRef} onStateChange={trackScreen} />
+      <Suspense fallback={<SuspenseFallback />}>
+        <Navigation ref={navigationRef} onStateChange={trackScreen} />
+      </Suspense>
     </GestureHandlerRootView>
   );
 };
