@@ -5,6 +5,7 @@
   "license": "MIT",
   "author": "@Selfxyz Team",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -16,10 +17,25 @@
       "require": "./dist/cjs/src/constants/*.js",
       "types": "./dist/cjs/src/constants/*.d.ts"
     },
+    "./constants": {
+      "import": "./dist/esm/src/constants/index.js",
+      "require": "./dist/cjs/src/constants/index.js",
+      "types": "./dist/cjs/src/constants/index.d.ts"
+    },
     "./utils/*": {
       "import": "./dist/esm/src/utils/*.js",
       "require": "./dist/cjs/src/utils/*.js",
       "types": "./dist/cjs/src/utils/*.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/esm/src/utils/index.js",
+      "require": "./dist/cjs/src/utils/index.js",
+      "types": "./dist/cjs/src/utils/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/esm/src/types/index.js",
+      "require": "./dist/cjs/src/types/index.js",
+      "types": "./dist/cjs/src/types/index.d.ts"
     },
     "./pubkeys/serialized_dsc_tree.json": "./pubkeys/serialized_dsc_tree.json",
     "./mock_certificates/*": "./src/mock_certificates/*",
