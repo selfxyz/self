@@ -1,0 +1,21 @@
+name: Web CI
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - ".github/workflows/web.yml"
+      - ".github/actions/**"
+
+jobs:
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build dependencies
+        shell: bash
+        run: yarn workspace @selfxyz/common build
+      - name: Build web app
+        run: yarn web:build

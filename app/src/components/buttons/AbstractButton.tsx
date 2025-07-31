@@ -18,6 +18,7 @@ export interface ButtonProps extends ViewProps {
 interface AbstractButtonProps extends ButtonProps {
   bgColor: string;
   borderColor?: string;
+  borderWidth?: number;
   color: string;
   onPress?: ((e: any) => void) | null | undefined;
 }
@@ -35,6 +36,7 @@ export default function AbstractButton({
   bgColor,
   color,
   borderColor,
+  borderWidth = 4,
   style,
   animatedComponent,
   trackEvent,
@@ -64,9 +66,13 @@ export default function AbstractButton({
       onPress={handlePress}
       style={[
         styles.container,
-        { backgroundColor: bgColor, borderColor: borderColor },
+        { backgroundColor: bgColor },
         hasBorder
-          ? styles.withBorder
+          ? {
+              borderWidth: borderWidth,
+              borderColor: borderColor,
+              padding: 20 - borderWidth, // Adjust padding to maintain total size
+            }
           : Platform.select({ web: { borderWidth: 0 }, default: {} }),
         style as ViewStyle,
       ]}
@@ -91,10 +97,6 @@ const styles = StyleSheet.create({
     rowGap: 12,
     padding: 20,
     borderRadius: 5,
-  },
-  withBorder: {
-    borderWidth: 4,
-    padding: 16, // plus 4 of border = 20
   },
   text: {
     fontFamily: dinot,

@@ -49,15 +49,15 @@ const SuccessScreen: React.FC = () => {
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const onOkPress = useCallback(() => {
+  function onOkPress() {
     buttonTap();
     goHome();
     setTimeout(() => {
       cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
-  }, [goHome, cleanSelfApp]);
+  }
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -133,9 +133,8 @@ const SuccessScreen: React.FC = () => {
     errorCode,
     reason,
     updateProofStatus,
-    selfApp,
+    selfApp?.deeplinkCallback,
     countdownStarted,
-    countdown,
   ]);
 
   useEffect(() => {

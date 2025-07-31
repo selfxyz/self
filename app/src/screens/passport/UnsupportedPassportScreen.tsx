@@ -14,12 +14,23 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
 import { notificationError } from '../../utils/haptic';
+import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
 import { styles } from '../prove/ProofRequestStatusScreen';
 
 const { flush: flushAnalytics } = analytics();
 
 const UnsupportedPassportScreen: React.FC = () => {
-  const onPress = useHapticNavigation('Launch');
+  const navigateToLaunch = useHapticNavigation('Launch');
+  const navigateToHome = useHapticNavigation('Home');
+
+  const onPress = async () => {
+    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    if (hasValidDocument) {
+      navigateToHome();
+    } else {
+      navigateToLaunch();
+    }
+  };
   useEffect(() => {
     notificationError();
     // error screen, flush analytics

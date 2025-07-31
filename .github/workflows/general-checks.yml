@@ -24,6 +24,7 @@ jobs:
       - name: Yarn types
         shell: bash
         run: yarn types
+
   test-common:
     runs-on: ubuntu-latest
     steps:

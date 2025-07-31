@@ -3,16 +3,22 @@
 import React from 'react';
 
 import { slate200, slate300, slate500, white } from '../../utils/colors';
+import { normalizeBorderWidth } from '../../utils/styleUtils';
 import AbstractButton, { ButtonProps } from './AbstractButton';
 
 export function SecondaryButton({ children, ...props }: ButtonProps) {
-  const isDisabled = props.disabled;
+  const { borderWidth, ...restProps } = props;
+  const isDisabled = restProps.disabled;
   const bgColor = isDisabled ? white : slate200;
   const color = isDisabled ? slate300 : slate500;
   const borderColor = isDisabled ? slate200 : undefined;
+
+  const numericBorderWidth = normalizeBorderWidth(borderWidth);
+
   return (
     <AbstractButton
-      {...props}
+      {...restProps}
+      borderWidth={numericBorderWidth}
       bgColor={bgColor}
       color={color}
       borderColor={borderColor}

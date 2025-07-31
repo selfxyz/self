@@ -5,9 +5,11 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { initPassportDataParsing } from '@selfxyz/common/utils/passports/passport';
-import type { PassportData } from '@selfxyz/common/utils/types';
+import {
+  getSKIPEM,
+  initPassportDataParsing,
+  PassportData,
+} from '@selfxyz/common';
 import { CircleHelp } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -46,6 +48,7 @@ import {
 } from '../../utils/haptic';
 import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
+import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 
@@ -275,9 +278,21 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     openErrorModal,
   ]);
 
-  const onCancelPress = useHapticNavigation('Launch', {
+  const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
   });
+  const navigateToHome = useHapticNavigation('Home', {
+    action: 'cancel',
+  });
+
+  const onCancelPress = async () => {
+    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    if (hasValidDocument) {
+      navigateToHome();
+    } else {
+      navigateToLaunch();
+    }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _cancelScanIfRunning = useCallback(async () => {

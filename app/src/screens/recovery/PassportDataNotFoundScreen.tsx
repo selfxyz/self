@@ -9,11 +9,22 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import analytics from '../../utils/analytics';
 import { black, slate200, white } from '../../utils/colors';
+import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
 
 const { flush: flushAnalytics } = analytics();
 
 const PassportDataNotFound: React.FC = () => {
-  const onPress = useHapticNavigation('Launch');
+  const navigateToLaunch = useHapticNavigation('Launch');
+  const navigateToHome = useHapticNavigation('Home');
+
+  const onPress = async () => {
+    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    if (hasValidDocument) {
+      navigateToHome();
+    } else {
+      navigateToLaunch();
+    }
+  };
 
   // error screen, flush analytics
   useEffect(() => {

@@ -116,6 +116,7 @@ android {
         javaMaxHeapSize "4g"
         preDexLibraries false
     }
+
     defaultConfig {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -154,8 +155,7 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Only use release signing config if the properties are available, otherwise fall back to debug
-            signingConfig project.hasProperty('MYAPP_UPLOAD_STORE_FILE') ? signingConfigs.release : signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

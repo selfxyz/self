@@ -7,11 +7,17 @@ import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../providers/authProvider';
-import { migrateFromLegacyStorage } from '../../providers/passportDataProvider';
+import {
+  checkIfAnyDocumentsNeedMigration,
+  migrateFromLegacyStorage,
+} from '../../providers/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { black } from '../../utils/colors';
 import { impactLight } from '../../utils/haptic';
-import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
+import {
+  checkAndUpdateRegistrationStates,
+  hasAnyValidRegisteredDocument,
+} from '../../utils/proving/validateDocument';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
@@ -35,6 +41,19 @@ const SplashScreen: React.FC = ({}) => {
       const loadDataAndDetermineNextScreen = async () => {
         try {
           await migrateFromLegacyStorage();
+
+          const needsMigration = await checkIfAnyDocumentsNeedMigration();
+          if (needsMigration) {
+            console.log(
+              'Documents need registration state migration, running...',
+            );
+            await checkAndUpdateRegistrationStates();
+          } else {
+            console.log(
+              'No documents need registration state migration, skipping...',
+            );
+          }
+
           const hasValid = await hasAnyValidRegisteredDocument();
           setNextScreen(hasValid ? 'Home' : 'Launch');
         } catch (error) {

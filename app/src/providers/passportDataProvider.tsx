@@ -38,16 +38,14 @@
  * - Display format determined by documentCategory
  */
 
-import type {
+import {
+  brutforceSignatureAlgorithmDsc,
+  DocumentCategory,
+  parseCertificateSimple,
+  PassportData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-} from '@selfxyz/common/utils/certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import { brutforceSignatureAlgorithmDsc } from '@selfxyz/common/utils/passports/passport_parsing/brutForceDscSignature';
-import type {
-  DocumentCategory,
-  PassportData,
-} from '@selfxyz/common/utils/types';
+} from '@selfxyz/common';
 import { sha256 } from 'js-sha256';
 import React, {
   createContext,
@@ -65,6 +63,7 @@ interface DocumentMetadata {
   documentCategory: DocumentCategory; // passport, id_card, aadhaar
   data: string; // DG1/MRZ data for passports/IDs, relevant data for aadhaar
   mock: boolean; // whether this is a mock document
+  isRegistered?: boolean; // whether the document is registered onChain
 }
 
 interface DocumentCatalog {
@@ -185,6 +184,7 @@ export async function storeDocumentWithDeduplication(
       inferDocumentCategory(passportData.documentType),
     data: passportData.mrz || '', // Store MRZ for passports/IDs, relevant data for aadhaar
     mock: passportData.mock || false,
+    isRegistered: false,
   };
 
   catalog.documents.push(metadata);
@@ -522,6 +522,12 @@ interface IPassportContext {
   migrateFromLegacyStorage: () => Promise<void>;
   getCurrentDocumentType: () => Promise<string | null>;
   clearDocumentCatalogForMigrationTesting: () => Promise<void>;
+  markCurrentDocumentAsRegistered: () => Promise<void>;
+  updateDocumentRegistrationState: (
+    documentId: string,
+    isRegistered: boolean,
+  ) => Promise<void>;
+  checkIfAnyDocumentsNeedMigration: () => Promise<boolean>;
 }
 
 export const PassportContext = createContext<IPassportContext>({
@@ -542,6 +548,9 @@ export const PassportContext = createContext<IPassportContext>({
   getCurrentDocumentType: getCurrentDocumentType,
   clearDocumentCatalogForMigrationTesting:
     clearDocumentCatalogForMigrationTesting,
+  markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
+  updateDocumentRegistrationState: updateDocumentRegistrationState,
+  checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
@@ -598,6 +607,9 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       getCurrentDocumentType: getCurrentDocumentType,
       clearDocumentCatalogForMigrationTesting:
         clearDocumentCatalogForMigrationTesting,
+      markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
+      updateDocumentRegistrationState: updateDocumentRegistrationState,
+      checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
     }),
     [
       getData,
@@ -673,4 +685,36 @@ export async function getCurrentDocumentType(): Promise<string | null> {
     d => d.id === catalog.selectedDocumentId,
   );
   return metadata?.documentType || null;
+}
+
+export async function updateDocumentRegistrationState(
+  documentId: string,
+  isRegistered: boolean,
+): Promise<void> {
+  const catalog = await loadDocumentCatalog();
+  const documentIndex = catalog.documents.findIndex(d => d.id === documentId);
+
+  if (documentIndex !== -1) {
+    catalog.documents[documentIndex].isRegistered = isRegistered;
+    await saveDocumentCatalog(catalog);
+    console.log(
+      `Updated registration state for document ${documentId}: ${isRegistered}`,
+    );
+  } else {
+    console.warn(`Document ${documentId} not found in catalog`);
+  }
+}
+
+export async function markCurrentDocumentAsRegistered(): Promise<void> {
+  const catalog = await loadDocumentCatalog();
+  if (catalog.selectedDocumentId) {
+    await updateDocumentRegistrationState(catalog.selectedDocumentId, true);
+  } else {
+    console.warn('No selected document to mark as registered');
+  }
+}
+
+export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
+  const catalog = await loadDocumentCatalog();
+  return catalog.documents.some(doc => doc.isRegistered === undefined);
 }

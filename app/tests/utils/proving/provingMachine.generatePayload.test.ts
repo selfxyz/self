@@ -16,8 +16,8 @@ jest.mock('../../../src/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
 
-jest.mock('@selfxyz/common/utils/hash', () => {
-  const actual = jest.requireActual('@selfxyz/common/utils/hash') as any;
+jest.mock('@selfxyz/common', () => {
+  const actual = jest.requireActual('@selfxyz/common') as any;
   return {
     ...actual,
     getSolidityPackedUserContextData: jest.fn(() => '0x1234'),

@@ -9,10 +9,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { Suspense, useEffect } from 'react';
 import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Text } from 'tamagui';
 
 import { DefaultNavBar } from '../components/NavBar';
 import AppLayout from '../layouts/AppLayout';
-const SuspenseFallback = () => <View>Loading...</View>;
 import analytics from '../utils/analytics';
 import { white } from '../utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
@@ -60,8 +60,19 @@ declare global {
 export const navigationRef = createNavigationContainerRef();
 
 const { trackScreenView } = analytics();
-
 const Navigation = createStaticNavigation(AppNavigation);
+
+const SuspenseFallback = () => {
+  if (Platform.OS === 'web') {
+    return <div>Loading...</div>;
+  }
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Loading...</Text>
+    </View>
+  );
+};
+
 const NavigationWithTracking = () => {
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();

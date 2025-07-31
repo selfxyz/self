@@ -1,7 +1,6 @@
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
-    ['@tamagui/babel-plugin', { platform: 'native' }],
     ['@babel/plugin-transform-private-methods', { loose: true }],
     [
       'module:react-native-dotenv',

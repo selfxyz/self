@@ -65,8 +65,8 @@ const LaunchScreen: React.FC = () => {
           <AbstractButton
             bgColor={black}
             borderColor={zinc800}
-            color={white}
             borderWidth={1}
+            color={white}
             trackEvent={AppEvents.SUPPORTED_BIOMETRIC_IDS}
             onPress={async () => {
               try {

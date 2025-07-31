@@ -4,31 +4,29 @@ import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import {
   API_URL,
   API_URL_STAGING,
-  ID_CARD_ATTESTATION_ID,
-  PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common/constants/constants';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
-import * as Hash from '@selfxyz/common/utils/hash';
-import { formatMrz } from '@selfxyz/common/utils/passports/format';
-import {
+  DocumentCategory,
+  formatMrz,
   generateCommitment,
   generateNullifier,
-} from '@selfxyz/common/utils/passports/passport';
-import { getLeafDscTree } from '@selfxyz/common/utils/trees';
-import type {
-  DocumentCategory,
+  getCircuitNameFromPassportData,
+  getLeafDscTree,
+  Hash,
+  ID_CARD_ATTESTATION_ID,
+  parseCertificateSimple,
+  PASSPORT_ATTESTATION_ID,
   PassportData,
-} from '@selfxyz/common/utils/types';
+} from '@selfxyz/common';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import { DocumentEvents } from '../../consts/analytics';
 import {
   getAllDocuments,
+  loadDocumentCatalog,
   loadPassportDataAndSecret,
   loadSelectedDocument,
   setSelectedDocument,
   storePassportData,
+  updateDocumentRegistrationState,
 } from '../../providers/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import analytics from '../../utils/analytics';
@@ -328,11 +326,15 @@ export function migratePassportData(passportData: PassportData): PassportData {
   return migratedData as PassportData;
 }
 
-/**
- * This function sequentially checks all documents for a valid registered document.
- * Since it uses fetch_all and loadSelectedDocument, it cannot be parallelised.
- */
 export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
+  const catalog = await loadDocumentCatalog();
+  return catalog.documents.some(doc => doc.isRegistered === true);
+}
+
+/**
+ * This function checks and updates registration states for all documents and updates the `isRegistered`.
+ */
+export async function checkAndUpdateRegistrationStates(): Promise<void> {
   const allDocuments = await getAllDocuments();
   for (const documentId of Object.keys(allDocuments)) {
     try {
@@ -345,6 +347,7 @@ export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
           error: 'Passport data is not valid',
           documentId,
         });
+        console.log(`Skipping invalid document ${documentId}`);
         continue;
       }
       const migratedPassportData = migratePassportData(passportData);
@@ -363,30 +366,49 @@ export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
           documentCategory,
           mock: migratedPassportData.mock,
         });
+        console.log(
+          `Skipping document ${documentId} - no authority key identifier`,
+        );
         continue;
       }
       await useProtocolStore
         .getState()
         [documentCategory].fetch_all(environment, authorityKeyIdentifier);
       const passportDataAndSecret = await loadPassportDataAndSecret();
-      if (!passportDataAndSecret) continue;
+      if (!passportDataAndSecret) {
+        console.log(
+          `Skipping document ${documentId} - no passport data and secret`,
+        );
+        continue;
+      }
+
       const { secret } = JSON.parse(passportDataAndSecret);
       const isRegistered = await isUserRegistered(migratedPassportData, secret);
+
+      // Update the registration state in the document metadata
+      await updateDocumentRegistrationState(documentId, isRegistered);
+
       if (isRegistered) {
         trackEvent(DocumentEvents.DOCUMENT_VALIDATED, {
           documentId,
           documentCategory,
           mock: migratedPassportData.mock,
         });
-        return true;
       }
+
+      console.log(
+        `Updated registration state for document ${documentId}: ${isRegistered}`,
+      );
     } catch (error) {
-      console.error(`Error in hasAnyValidRegisteredDocument: ${error}`);
+      console.error(
+        `Error checking registration state for document ${documentId}: ${error}`,
+      );
       trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
         error: error instanceof Error ? error.message : 'Unknown error',
         documentId,
       });
     }
   }
-  return false;
+
+  console.log('Registration state check and update completed');
 }
