@@ -327,8 +327,13 @@ export function migratePassportData(passportData: PassportData): PassportData {
 }
 
 export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
-  const catalog = await loadDocumentCatalog();
-  return catalog.documents.some(doc => doc.isRegistered === true);
+  try {
+    const catalog = await loadDocumentCatalog();
+    return catalog.documents.some(doc => doc.isRegistered === true);
+  } catch (error) {
+    console.error('Error loading document catalog:', error);
+    return false;
+  }
 }
 
 /**
