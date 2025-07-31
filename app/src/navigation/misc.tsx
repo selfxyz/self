@@ -2,8 +2,8 @@
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React from 'react';
-import SystemBars from '../components/SystemBars';
 
+import SystemBars from '../components/SystemBars';
 // Important: SplashScreen is imported directly and not lazy-loaded.
 // This is because it's used as a fallback for the Suspense boundary in the root navigator,
 // ensuring it's immediately available at startup.
@@ -18,9 +18,7 @@ const miscScreens = {
   Launch: {
     screen: LaunchScreen,
     options: {
-      header: () => (
-        <SystemBars style="light" />
-      ),
+      header: () => <SystemBars style="light" />,
       navigationBarColor: black,
     },
   },
@@ -43,9 +41,7 @@ const miscScreens = {
   Splash: {
     screen: SplashScreen,
     options: {
-      header: () => (
-        <SystemBars style="light" />
-      ),
+      header: () => <SystemBars style="light" />,
       navigationBarColor: black,
     },
   },

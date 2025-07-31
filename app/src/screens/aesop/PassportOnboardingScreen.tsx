@@ -3,12 +3,12 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import SystemBars from '../../components/SystemBars';
 
 import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
+import SystemBars from '../../components/SystemBars';
 import TextsContainer from '../../components/TextsContainer';
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';

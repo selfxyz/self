@@ -3,7 +3,6 @@
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import React, { useMemo } from 'react';
 import { StatusBarStyle } from 'react-native';
-import SystemBars from '../SystemBars';
 import {
   Button,
   TextProps,
@@ -13,6 +12,7 @@ import {
   XStackProps,
 } from 'tamagui';
 
+import SystemBars from '../SystemBars';
 import { Title } from '../typography/Title';
 
 interface NavBarProps extends XStackProps {
@@ -115,7 +115,7 @@ const Container: React.FC<NavBarProps> = ({
 }) => {
   return (
     <>
-      <SystemBars style={barStyle === "light-content" ? "light" : "dark"} />
+      <SystemBars style={barStyle === 'light-content' ? 'light' : 'dark'} />
       <XStack
         backgroundColor={backgroundColor}
         flexGrow={1}

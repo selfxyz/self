@@ -8,7 +8,8 @@ export interface SystemBarsProps {
 }
 
 const SystemBars: React.FC<SystemBarsProps> = ({ style = 'light' }) => {
-  const barStyle: StatusBarStyle = style === 'light' ? 'light-content' : 'dark-content';
+  const barStyle: StatusBarStyle =
+    style === 'light' ? 'light-content' : 'dark-content';
   return <StatusBar barStyle={barStyle} />;
 };
 

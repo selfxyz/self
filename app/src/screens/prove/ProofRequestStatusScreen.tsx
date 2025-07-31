@@ -2,15 +2,15 @@
 
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
-import SystemBars from '../../components/SystemBars';
 import { ScrollView, Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
 import failAnimation from '../../assets/animations/proof_failed.json';
 import succesAnimation from '../../assets/animations/proof_success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import SystemBars from '../../components/SystemBars';
 import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { typography } from '../../components/typography/styles';

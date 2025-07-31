@@ -11,9 +11,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, ViewProps } from 'tamagui';
 
+import SystemBars from '../components/SystemBars';
 import { black, white } from '../utils/colors';
 import { extraYPadding } from '../utils/constants';
-import SystemBars from '../components/SystemBars';
 
 // Get the current font scale factor
 const fontScale = PixelRatio.getFontScale();
@@ -42,7 +42,7 @@ const Layout: React.FC<ExpandableBottomLayoutProps> = ({
 }) => {
   return (
     <View flex={1} flexDirection="column" backgroundColor={backgroundColor}>
-      <SystemBars style={backgroundColor === black ? "light" : "dark"} />
+      <SystemBars style={backgroundColor === black ? 'light' : 'dark'} />
       {children}
     </View>
   );
