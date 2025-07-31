@@ -3,7 +3,8 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace "io.tradle.nfc"
-    ndkVersion = "26.1.10909125"
+    // Use NDK that supports 16k page size
+    ndkVersion = "27.0.11718014"
     compileSdkVersion 33
     defaultConfig {
         targetSdkVersion 33
