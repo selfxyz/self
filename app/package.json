@@ -6,7 +6,7 @@
   "scripts": {
     "analyze:android": "yarn reinstall && react-native-bundle-visualizer --platform android --dev",
     "analyze:android:ci": "node ./scripts/bundle-analyze-ci.cjs android",
-    "analyze:ios": "yarn reinstall && yarn build:deps && react-native-bundle-visualizer --platform ios --dev",
+    "analyze:ios": "yarn reinstall && react-native-bundle-visualizer --platform ios --dev",
     "analyze:ios:ci": "node ./scripts/bundle-analyze-ci.cjs ios",
     "analyze:tree-shaking": "yarn web:build && node ./scripts/analyze-tree-shaking.cjs imports",
     "analyze:tree-shaking:imports": "node ./scripts/analyze-tree-shaking.cjs imports",

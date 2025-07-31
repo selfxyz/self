@@ -3,7 +3,7 @@ const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
 const fs = require('fs');
-const { runTest, TEST_CONFIGS } = require('../test-tree-shaking.cjs');
+const { TEST_CONFIGS } = require('../test-tree-shaking.cjs');
 
 describe('Tree Shaking Tests', () => {
   it('should have all required test configurations', () => {

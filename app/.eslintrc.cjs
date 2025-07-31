@@ -28,6 +28,7 @@ module.exports = {
     '*.js.map',
     '*.d.ts',
     'metro.config.cjs',
+    'docs/examples/',
   ],
   settings: {
     react: { version: 'detect' },
