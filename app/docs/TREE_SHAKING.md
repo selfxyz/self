@@ -104,18 +104,34 @@ import { API_URL, hash, buildSMT } from '@selfxyz/common';
 console.log(API_URL);
 ```
 
-### ✅ Recommended: Granular Imports
+### ✅ Recommended: Level 2 Granular Imports
 ```typescript
 // Optimal - only bundles exactly what you need
-import { API_URL } from '@selfxyz/common/constants';
-import { hash } from '@selfxyz/common/utils';
+import { API_URL } from '@selfxyz/common/constants/core';
+import { hash } from '@selfxyz/common/utils/hash';
 console.log(API_URL, hash('test'));
+```
+
+### ⚡ Level 2 Examples - Maximum Tree Shaking
+```typescript
+// Hash utilities only (no passport parsing, certificates, etc.)
+import { hash, poseidon } from '@selfxyz/common/utils/hash';
+
+// Passport operations only (no circuit generation, certificates, etc.)
+import { generateCommitment } from '@selfxyz/common/utils/passports';
+
+// Core constants only (no country data, vkeys, etc.)
+import { API_URL, PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/core';
+
+// App types only
+import type { SelfApp } from '@selfxyz/common/types/app';
 ```
 
 ## Available Import Paths
 
 The `@selfxyz/common` package provides these granular imports:
 
+### Level 1: Category-Based (Good)
 ```typescript
 // Constants (URLs, country codes, etc.)
 import { API_URL, countryCodes } from '@selfxyz/common/constants';
@@ -125,8 +141,77 @@ import { hash, generateCommitment } from '@selfxyz/common/utils';
 
 // Type definitions (eliminated at compile time)
 import type { PassportData } from '@selfxyz/common/types';
+```
 
-// Main export (less optimal for tree shaking)
+### Level 2: File-Based (Better - NEW!)
+```typescript
+// Core constants only (API URLs, attestation IDs)
+import { API_URL, PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/core';
+
+// Country data only
+import { countryCodes, commonNames } from '@selfxyz/common/constants/countries';
+
+// Hash utilities only
+import { hash, poseidon } from '@selfxyz/common/utils/hash';
+
+// Passport utilities only
+import { generateCommitment, generateNullifier } from '@selfxyz/common/utils/passports';
+
+// Circuit utilities only
+import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits';
+
+// Certificate parsing only
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificates';
+
+// App-related types
+import type { SelfApp } from '@selfxyz/common/types/app';
+
+// Passport-related types
+import type { PassportData } from '@selfxyz/common/types/passport';
+```
+
+### Complete Level 2 Import Reference
+
+#### Constants
+- `@selfxyz/common/constants/core` - API URLs, attestation IDs, basic constants
+- `@selfxyz/common/constants/countries` - Country codes and names
+- `@selfxyz/common/constants/vkeys` - Verification keys
+- `@selfxyz/common/constants/ski-pem` - SKI PEM data
+- `@selfxyz/common/constants/mock-certs` - Mock certificates
+- `@selfxyz/common/constants/hashes` - Sample data hashes
+
+#### Utilities
+- `@selfxyz/common/utils/hash` - Hash and Poseidon functions
+- `@selfxyz/common/utils/bytes` - Byte manipulation
+- `@selfxyz/common/utils/trees` - SMT and leaf operations
+- `@selfxyz/common/utils/scope` - Endpoint formatting
+- `@selfxyz/common/utils/app-type` - SelfApp definitions
+- `@selfxyz/common/utils/date` - Date utilities
+- `@selfxyz/common/utils/arrays` - Array helpers
+- `@selfxyz/common/utils/passports` - Core passport functions
+- `@selfxyz/common/utils/passport-format` - Passport formatting
+- `@selfxyz/common/utils/passport-mock` - Mock passport generation
+- `@selfxyz/common/utils/passport-dg1` - DG1 specific operations
+- `@selfxyz/common/utils/certificates` - Certificate parsing
+- `@selfxyz/common/utils/elliptic` - Elliptic curve operations
+- `@selfxyz/common/utils/curves` - Curve definitions
+- `@selfxyz/common/utils/oids` - OID handling
+- `@selfxyz/common/utils/circuits` - Circuit input generation
+- `@selfxyz/common/utils/circuit-names` - Circuit name logic
+- `@selfxyz/common/utils/circuit-format` - Circuit formatting
+- `@selfxyz/common/utils/uuid` - UUID utilities
+- `@selfxyz/common/utils/contracts` - Contract utilities
+- `@selfxyz/common/utils/sanctions` - OFAC/sanctions
+- `@selfxyz/common/utils/csca` - CSCA operations
+
+#### Types
+- `@selfxyz/common/types/passport` - Passport and document types
+- `@selfxyz/common/types/app` - SelfApp and disclosure types
+- `@selfxyz/common/types/certificates` - Certificate data types
+- `@selfxyz/common/types/circuits` - Circuit-related types
+
+### Main export (less optimal for tree shaking)
+```typescript
 import { API_URL } from '@selfxyz/common';
 ```
 
