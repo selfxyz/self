@@ -1,0 +1,101 @@
+name: Setup and Cache Dependencies
+
+description: Centralized dependency setup with caching for yarn, bundler, and gradle.
+
+inputs:
+  app_path:
+    description: Path to the app directory
+    required: true
+  node_version:
+    description: Node version to use
+    required: true
+  ruby_version:
+    description: Ruby version (optional)
+    required: false
+  platform:
+    description: Target platform (ios|android|linux)
+    required: true
+
+outputs:
+  yarn-cache-hit:
+    description: Yarn cache hit
+    value: ${{ steps.yarn-cache.outputs.cache-hit }}
+  gems-cache-hit:
+    description: Gems cache hit
+    value: ${{ steps.gems-cache.outputs.cache-hit }}
+  gradle-cache-hit:
+    description: Gradle cache hit
+    value: ${{ steps.gradle-cache.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache Yarn dependencies
+      id: yarn-cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          node_modules
+          ${{ inputs.app_path }}/node_modules
+          ~/.cache/yarn
+        key: ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
+          ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-
+
+    - name: Cache Ruby gems
+      id: gems-cache
+      if: inputs.ruby_version != ''
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.app_path }}/vendor/bundle
+        key: ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles(format('{0}/Gemfile.lock', inputs.app_path)) }}
+        restore-keys: |
+          ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
+          ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-
+
+    - name: Cache Gradle dependencies
+      id: gradle-cache
+      if: inputs.platform == 'android'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-${{ hashFiles(format('{0}/android/**/*.gradle*', inputs.app_path), format('{0}/android/gradle/wrapper/gradle-wrapper.properties', inputs.app_path)) }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-
+          ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+
+    - name: Setup Ruby
+      if: inputs.ruby_version != ''
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby_version }}
+
+    - name: Configure bundler
+      if: inputs.ruby_version != ''
+      shell: bash
+      run: |
+        cd ${{ inputs.app_path }}
+        bundle config set --local path 'vendor/bundle'
+        bundle config set --local deployment 'true'
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        cd ${{ inputs.app_path }}
+        corepack enable
+        yarn set version 4.x
+        yarn install --immutable
+        if [ "${{ inputs.ruby_version }}" != "" ]; then
+          bundle install --jobs 4 --retry 3
+        fi
+        if [ "${{ inputs.platform }}" = "ios" ]; then
+          cd ios && pod install
+        fi
