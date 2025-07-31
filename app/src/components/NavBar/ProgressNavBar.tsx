@@ -53,8 +53,8 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
         barStyle={
           options.headerTintColor === white ||
           (options.headerTitleStyle as TextStyle)?.color === white
-            ? 'light-content'
-            : 'dark-content'
+            ? 'light'
+            : 'dark'
         }
       >
         <XStack width="100%" alignItems="center">

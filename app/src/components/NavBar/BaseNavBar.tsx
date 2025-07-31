@@ -2,7 +2,7 @@
 
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import React, { useMemo } from 'react';
-import { StatusBar, StatusBarStyle } from 'react-native';
+import { SystemBars, SystemBarStyle } from 'react-native-edge-to-edge';
 import {
   Button,
   TextProps,
@@ -17,7 +17,7 @@ import { Title } from '../typography/Title';
 interface NavBarProps extends XStackProps {
   children: React.ReactNode;
   backgroundColor?: string;
-  barStyle?: StatusBarStyle;
+  barStyle?: SystemBarStyle;
 }
 interface LeftActionProps extends ViewProps {
   component?: 'back' | 'close' | React.ReactNode;
@@ -114,7 +114,7 @@ const Container: React.FC<NavBarProps> = ({
 }) => {
   return (
     <>
-      <StatusBar backgroundColor={backgroundColor} barStyle={barStyle} />
+      <SystemBars style={barStyle} />
       <XStack
         backgroundColor={backgroundColor}
         flexGrow={1}
