@@ -7,6 +7,11 @@ env:
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
+  # Cache versions
+  GH_CACHE_VERSION: v1
+  GH_YARN_CACHE_VERSION: v1
+  GH_GEMS_CACHE_VERSION: v1
+  GH_GRADLE_CACHE_VERSION: v1
 on:
   push:
     paths:

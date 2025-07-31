@@ -1,5 +1,10 @@
 name: Publish to npm
 
+env:
+  # Cache versions
+  GH_CACHE_VERSION: v1
+  GH_YARN_CACHE_VERSION: v1
+
 on:
   push:
     branches:
