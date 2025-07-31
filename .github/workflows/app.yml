@@ -20,8 +20,12 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
+        with:
+          app_path: app
+          node_version: ${{ env.NODE_VERSION }}
+          platform: 'linux'
       - name: Build Dependencies
         run: yarn build:deps
         working-directory: ./app
@@ -36,8 +40,12 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
+        with:
+          app_path: app
+          node_version: ${{ env.NODE_VERSION }}
+          platform: 'linux'
 
       - name: Build
         run: yarn build:deps
@@ -57,13 +65,13 @@ jobs:
           xcode-version: "16.2"
 
       - uses: actions/checkout@v4
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/mobile-setup
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
         with:
-          app_path: ${{ env.APP_PATH }}
+          app_path: app
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
-          workspace: ${{ env.WORKSPACE }}
+          platform: 'ios'
       - name: Install And Build
         run: yarn install-app
         working-directory: ./app

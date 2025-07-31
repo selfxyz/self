@@ -20,13 +20,13 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/mobile-setup
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
         with:
-          app_path: ${{ env.APP_PATH }}
+          app_path: app
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
-          workspace: ${{ env.WORKSPACE }}
+          platform: 'android'
       - name: Run Android analysis
         run: yarn analyze:android:ci
         working-directory: ./app
@@ -40,13 +40,13 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/mobile-setup
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
         with:
-          app_path: ${{ env.APP_PATH }}
+          app_path: app
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
-          workspace: ${{ env.WORKSPACE }}
+          platform: 'ios'
       - name: Run iOS analysis
         run: yarn analyze:ios:ci
         working-directory: ./app

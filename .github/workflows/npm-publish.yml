@@ -55,8 +55,12 @@ jobs:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
+        with:
+          app_path: '.'
+          node_version: '18'
+          platform: 'linux'
 
       - name: Build package
         run: |
@@ -85,8 +89,12 @@ jobs:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
+        with:
+          app_path: '.'
+          node_version: '18'
+          platform: 'linux'
 
       - name: Build package
         run: |
@@ -114,8 +122,12 @@ jobs:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
+        with:
+          app_path: '.'
+          node_version: '18'
+          platform: 'linux'
 
       - name: Build package
         run: |

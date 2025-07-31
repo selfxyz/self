@@ -22,12 +22,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set Node.js 20.x
-        uses: actions/setup-node@v4
+      - name: Setup and Cache Dependencies
+        uses: ./.github/actions/setup-and-cache-deps
         with:
-          node-version: 20
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+          app_path: '.'
+          node_version: '20'
+          platform: 'linux'
       - name: Prettier Check - Code Formatting
         run: yarn prettier:check
         working-directory: ./contracts
