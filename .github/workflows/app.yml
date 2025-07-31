@@ -30,7 +30,7 @@ jobs:
         with:
           app_path: app
           node_version: ${{ env.NODE_VERSION }}
-          platform: 'linux'
+          platform: 'ios'
       - name: Build Dependencies
         run: yarn build:deps
         working-directory: ./app
@@ -50,7 +50,7 @@ jobs:
         with:
           app_path: app
           node_version: ${{ env.NODE_VERSION }}
-          platform: 'linux'
+          platform: 'ios'
 
       - name: Build
         run: yarn build:deps
