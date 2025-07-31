@@ -42,9 +42,7 @@ const Layout: React.FC<ExpandableBottomLayoutProps> = ({
 }) => {
   return (
     <View flex={1} flexDirection="column" backgroundColor={backgroundColor}>
-      <SystemBars
-        style={backgroundColor === black ? 'light' : 'dark'}
-      />
+      <SystemBars style={backgroundColor === black ? 'light' : 'dark'} />
       {children}
     </View>
   );
