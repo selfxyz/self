@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "analyze:android": "yarn reinstall && yarn build:deps && react-native-bundle-visualizer --platform android --dev",
+    "analyze:android": "yarn reinstall && react-native-bundle-visualizer --platform android --dev",
     "analyze:android:ci": "node ./scripts/bundle-analyze-ci.cjs android",
     "analyze:ios": "yarn reinstall && yarn build:deps && react-native-bundle-visualizer --platform ios --dev",
     "analyze:ios:ci": "node ./scripts/bundle-analyze-ci.cjs ios",

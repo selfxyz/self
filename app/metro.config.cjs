@@ -12,6 +12,7 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  '@selfxyz/common': path.resolve(commonPath, 'dist'),
 };
 const watchFolders = [
   path.resolve(commonPath),
