@@ -5,11 +5,8 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import {
-  getSKIPEM,
-  initPassportDataParsing,
-  PassportData,
-} from '@selfxyz/common';
+import type { PassportData } from '@selfxyz/common/types';
+import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common/utils';
 import { CircleHelp } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';

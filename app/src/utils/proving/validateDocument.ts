@@ -4,19 +4,20 @@ import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import {
   API_URL,
   API_URL_STAGING,
-  DocumentCategory,
+  ID_CARD_ATTESTATION_ID,
+  PASSPORT_ATTESTATION_ID,
+} from '@selfxyz/common/constants';
+import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
+import {
   formatMrz,
   generateCommitment,
   generateNullifier,
   getCircuitNameFromPassportData,
   getLeafDscTree,
   hash,
-  ID_CARD_ATTESTATION_ID,
   packBytesAndPoseidon,
   parseCertificateSimple,
-  PASSPORT_ATTESTATION_ID,
-  PassportData,
-} from '@selfxyz/common';
+} from '@selfxyz/common/utils';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import { DocumentEvents } from '../../consts/analytics';
