@@ -220,7 +220,7 @@ export const AuthProvider = ({
         trackEvent(AuthEvents.AUTHENTICATION_TIMEOUT);
       }, authenticationTimeoutinMs);
     });
-  }, [isAuthenticatingPromise]);
+  }, [authenticationTimeoutinMs, isAuthenticatingPromise]);
 
   const getOrCreateMnemonic = useCallback(
     () => _getSecurely<Mnemonic>(loadOrCreateMnemonic, str => JSON.parse(str)),
@@ -246,7 +246,13 @@ export const AuthProvider = ({
       checkBiometricsAvailable,
       _getSecurely,
     }),
-    [isAuthenticated, isAuthenticatingPromise, loginWithBiometrics],
+    [
+      getOrCreateMnemonic,
+      isAuthenticated,
+      isAuthenticatingPromise,
+      loginWithBiometrics,
+      restoreAccountFromMnemonic,
+    ],
   );
 
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;

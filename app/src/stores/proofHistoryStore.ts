@@ -167,7 +167,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         const results = await database.getHistory(state.currentPage);
 
         const proofs: ProofHistory[] = [];
-        let totalCount = results.total_count || 0;
+        const totalCount = results.total_count || 0;
         for (let i = 0; i < results.rows.length; i++) {
           const row = results.rows[i];
           proofs.push({

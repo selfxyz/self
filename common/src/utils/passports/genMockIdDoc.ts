@@ -1,7 +1,7 @@
 // generate a mock id document
 
 import { DocumentType, PassportData, SignatureAlgorithm } from '../types.js';
-import { hashAlgosTypes } from '../../constants/constants.js';
+import { API_URL_STAGING, hashAlgosTypes } from '../../constants/constants.js';
 import { countries } from '../../constants/countries.js';
 import { genDG1 } from './dg1.js';
 import { getHashLen, hash } from '../hash.js';
@@ -44,12 +44,42 @@ const defaultIdDocInput: IdDocInput = {
   sex: 'M',
 };
 
-export function genMockIdDoc(userInput: Partial<IdDocInput> = {}): PassportData {
+export async function generateMockDSC(
+  signatureType: string
+): Promise<{ privateKeyPem: string; dsc: string }> {
+  const response = await fetch(`${API_URL_STAGING}/api/v2/generate-dsc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ signatureType }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to generate DSC: ${response.status} ${response.statusText}`);
+  }
+  const data = await response.json();
+  if (!data || !data.data) {
+    throw new Error('Missing data in server response');
+  }
+  if (typeof data.data.privateKeyPem !== 'string' || typeof data.data.dsc !== 'string') {
+    throw new Error('Invalid DSC response format from server');
+  }
+  return { privateKeyPem: data.data.privateKeyPem, dsc: data.data.dsc };
+}
+
+export function genMockIdDoc(
+  userInput: Partial<IdDocInput> = {},
+  mockDSC?: { dsc: string; privateKeyPem: string }
+): PassportData {
   const mergedInput: IdDocInput = {
     ...defaultIdDocInput,
     ...userInput,
   };
-  const { privateKeyPem, dsc } = getMockDSC(mergedInput.signatureType);
+  let privateKeyPem: string, dsc: string;
+  if (mockDSC) {
+    dsc = mockDSC.dsc;
+    privateKeyPem = mockDSC.privateKeyPem;
+  } else {
+    ({ privateKeyPem, dsc } = getMockDSC(mergedInput.signatureType));
+  }
 
   const dg1 = genDG1(mergedInput);
   const dg1_hash = hash(mergedInput.dgHashAlgo, formatMrz(dg1));

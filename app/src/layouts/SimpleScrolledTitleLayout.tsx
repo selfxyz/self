@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
 
@@ -11,7 +11,7 @@ import { white } from '../utils/colors';
 import { ExpandableBottomLayout } from './ExpandableBottomLayout';
 
 interface DetailListProps
-  extends React.PropsWithChildren<{
+  extends PropsWithChildren<{
     title: string;
     onDismiss: () => void;
     secondaryButtonText?: string;
@@ -44,7 +44,7 @@ export default function SimpleScrolledTitleLayout({
         </ScrollView>
         {footer && <YStack marginBottom={18}>{footer}</YStack>}
         {secondaryButtonText && onSecondaryButtonPress && (
-          <SecondaryButton onPress={onSecondaryButtonPress} mb="$2">
+          <SecondaryButton onPress={onSecondaryButtonPress} marginBottom={16}>
             {secondaryButtonText}
           </SecondaryButton>
         )}

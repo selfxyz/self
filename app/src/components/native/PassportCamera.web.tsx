@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import { extractMRZInfo } from '../../utils/utils';
 
@@ -27,7 +27,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   }, [onPassportRead, isMounted]);
 
   // Web stub - no functionality yet
-  React.useEffect(() => {
+  useEffect(() => {
     // Simulate that the component is not ready for web
     if (isMounted) {
       console.warn('PassportCamera: Web implementation not yet available');

@@ -56,7 +56,7 @@ export default function useConnectionModal() {
     }, 2000);
 
     return () => clearTimeout(timeoutId);
-  }, [hasNoConnection, dismissModal, visible, navigationRef.isReady()]);
+  }, [dismissModal, hasNoConnection, hideNetworkModal, showModal, visible]);
 
   return {
     visible,

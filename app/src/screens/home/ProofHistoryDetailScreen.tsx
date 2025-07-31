@@ -89,7 +89,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
       }
     });
     return result;
-  }, [data.disclosures]);
+  }, [data.appName, data.disclosures]);
 
   // TODO: fix timestamp format
   const formattedDate = useMemo(() => {

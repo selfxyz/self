@@ -23,6 +23,7 @@ import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate400, slate800, white } from '../../utils/colors';
 import { dinot } from '../../utils/fonts';
+import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
 
 interface PassportNFCScanScreen {}
@@ -113,9 +114,21 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
     },
     [store, navigation],
   );
-  const onCancelPress = useHapticNavigation('Launch', {
+  const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
   });
+  const navigateToHome = useHapticNavigation('Home', {
+    action: 'cancel',
+  });
+
+  const onCancelPress = async () => {
+    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    if (hasValidDocument) {
+      navigateToHome();
+    } else {
+      navigateToLaunch();
+    }
+  };
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -132,10 +145,10 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack alignItems="center" gap="$2.5">
-          <YStack alignItems="center" gap="$6" pb="$2.5">
+          <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
             <Title>Scan your ID</Title>
             <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
-              <View pt="$2">
+              <View paddingTop="$2">
                 <Scan height={40} width={40} color={slate800} />
               </View>
               <View maxWidth="75%">

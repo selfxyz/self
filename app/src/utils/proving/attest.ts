@@ -5,7 +5,7 @@ import { PCR0_MANAGER_ADDRESS, RPC_URL } from '@selfxyz/common';
 import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
-import elliptic from 'elliptic';
+import { ec as ellipticEc } from 'elliptic';
 import { ethers } from 'ethers';
 import { sha384 } from 'js-sha512';
 import { Certificate } from 'pkijs';
@@ -289,7 +289,7 @@ function getPublicKeyFromPem(pem: string) {
   const curve = 'p384';
   const publicKeyBuffer =
     cert.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
-  const ec = new elliptic.ec(curve);
+  const ec = new ellipticEc(curve);
   const key = ec.keyFromPublic(publicKeyBuffer);
   const x_point = key.getPublic().getX().toString('hex');
   const y_point = key.getPublic().getY().toString('hex');
@@ -337,7 +337,7 @@ function verifyCertificateSignature(child: string, parent: string): boolean {
   const publicKeyBuffer_csca =
     publicKeyInfo_csca.subjectPublicKey.valueBlock.valueHexView;
   const curve = 'p384';
-  const ec_csca = new elliptic.ec(curve);
+  const ec_csca = new ellipticEc(curve);
   const key_csca = ec_csca.keyFromPublic(publicKeyBuffer_csca);
 
   const tbsHash = getTBSHash(child);

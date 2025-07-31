@@ -1,13 +1,26 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { lazy } from 'react';
 
-import AccountRecoveryChoiceScreen from '../screens/recovery/AccountRecoveryChoiceScreen';
-import AccountRecoveryScreen from '../screens/recovery/AccountRecoveryScreen';
-import AccountVerifiedSuccessScreen from '../screens/recovery/AccountVerifiedSuccessScreen';
-import PassportDataNotFound from '../screens/recovery/PassportDataNotFoundScreen';
-import RecoverWithPhraseScreen from '../screens/recovery/RecoverWithPhraseScreen';
-import SaveRecoveryPhraseScreen from '../screens/recovery/SaveRecoveryPhraseScreen';
+const AccountRecoveryChoiceScreen = lazy(
+  () => import('../screens/recovery/AccountRecoveryChoiceScreen'),
+);
+const AccountRecoveryScreen = lazy(
+  () => import('../screens/recovery/AccountRecoveryScreen'),
+);
+const AccountVerifiedSuccessScreen = lazy(
+  () => import('../screens/recovery/AccountVerifiedSuccessScreen'),
+);
+const PassportDataNotFound = lazy(
+  () => import('../screens/recovery/PassportDataNotFoundScreen'),
+);
+const RecoverWithPhraseScreen = lazy(
+  () => import('../screens/recovery/RecoverWithPhraseScreen'),
+);
+const SaveRecoveryPhraseScreen = lazy(
+  () => import('../screens/recovery/SaveRecoveryPhraseScreen'),
+);
 import { black, slate300 } from '../utils/colors';
 
 const recoveryScreens = {

@@ -2,7 +2,7 @@
 
 import { useNavigation } from '@react-navigation/native';
 import { Check, Eraser } from '@tamagui/lucide-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
@@ -34,11 +34,7 @@ const PassportDataSelector = () => {
   const [_allDocuments, setAllDocuments] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadPassportDataInfo();
-  }, []);
-
-  const loadPassportDataInfo = async () => {
+  const loadPassportDataInfo = useCallback(async () => {
     setLoading(true);
     const catalog = await loadDocumentCatalog();
     const docs = await getAllDocuments();
@@ -51,7 +47,16 @@ const PassportDataSelector = () => {
       trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
     }
     setLoading(false);
-  };
+  }, [
+    loadDocumentCatalog,
+    getAllDocuments,
+    setDocumentCatalog,
+    setAllDocuments,
+  ]);
+
+  useEffect(() => {
+    loadPassportDataInfo();
+  }, [loadPassportDataInfo]);
 
   const handleDocumentSelection = async (documentId: string) => {
     await setSelectedDocument(documentId);
@@ -134,7 +139,7 @@ const PassportDataSelector = () => {
 
   if (loading) {
     return (
-      <YStack gap="$3" ai="center" p="$4">
+      <YStack gap="$3" alignItems="center" padding="$4">
         <Text
           color={textBlack}
           fontWeight="bold"
@@ -143,7 +148,7 @@ const PassportDataSelector = () => {
         >
           Available Documents
         </Text>
-        <YStack gap="$3" ai="center" py="$6">
+        <YStack gap="$3" alignItems="center" paddingVertical="$6">
           <Spinner size="large" />
           <Text color={textBlack} fontSize="$4" opacity={0.7}>
             Loading documents...
@@ -155,13 +160,13 @@ const PassportDataSelector = () => {
 
   if (documentCatalog.documents.length === 0) {
     return (
-      <YStack gap="$2" ai="center">
+      <YStack gap="$2" alignItems="center">
         <Text
           color={textBlack}
           fontWeight="bold"
           fontSize="$5"
           textAlign="center"
-          mb="$3"
+          marginBottom="$3"
         >
           Available Documents
         </Text>
@@ -173,7 +178,7 @@ const PassportDataSelector = () => {
   }
 
   return (
-    <YStack gap="$3" w="100%">
+    <YStack gap="$3" width="100%">
       <Text
         color={textBlack}
         fontWeight="bold"
@@ -185,7 +190,7 @@ const PassportDataSelector = () => {
       {documentCatalog.documents.map((metadata: any) => (
         <YStack
           key={metadata.id}
-          p="$3"
+          padding="$3"
           borderWidth={1}
           borderColor={
             documentCatalog.selectedDocumentId === metadata.id
@@ -193,7 +198,7 @@ const PassportDataSelector = () => {
               : borderColor
           }
           borderRadius="$3"
-          bg={
+          backgroundColor={
             documentCatalog.selectedDocumentId === metadata.id
               ? '$gray2'
               : 'white'
@@ -201,12 +206,16 @@ const PassportDataSelector = () => {
           onPress={() => handleDocumentSelection(metadata.id)}
           pressStyle={{ opacity: 0.8 }}
         >
-          <XStack ai="center" jc="space-between" mb="$2">
-            <XStack ai="center" gap="$3" flex={1}>
+          <XStack
+            alignItems="center"
+            justifyContent="space-between"
+            marginBottom="$2"
+          >
+            <XStack alignItems="center" gap="$3" flex={1}>
               <Button
                 size="$2"
                 circular
-                bg={
+                backgroundColor={
                   documentCatalog.selectedDocumentId === metadata.id
                     ? textBlack
                     : 'white'
@@ -229,8 +238,8 @@ const PassportDataSelector = () => {
               </YStack>
             </XStack>
             <Button
-              bg="white"
-              jc="center"
+              backgroundColor="white"
+              justifyContent="center"
               borderColor={borderColor}
               borderWidth={1}
               size="$3"
@@ -269,19 +278,24 @@ const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
   };
 
   return (
-    <YStack f={1} bg={white} px="$4" pb={bottom + extraYPadding}>
-      <YStack gap="$6" py="$4" f={1}>
+    <YStack
+      flex={1}
+      backgroundColor={white}
+      paddingHorizontal="$4"
+      paddingBottom={bottom + extraYPadding}
+    >
+      <YStack gap="$6" paddingVertical="$4" flex={1}>
         <ScrollView showsVerticalScrollIndicator={false} flex={1}>
           <PassportDataSelector />
         </ScrollView>
 
-        <YStack gap="$3" mt="$4">
+        <YStack gap="$3" marginTop="$4">
           <Text
             color={textBlack}
             fontWeight="bold"
             fontSize="$5"
             textAlign="center"
-            mb="$2"
+            marginBottom="$2"
           >
             Add New Document
           </Text>

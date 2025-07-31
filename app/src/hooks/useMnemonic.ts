@@ -16,7 +16,7 @@ export default function useMnemonic() {
     }
     const { entropy } = storedMnemonic.data;
     setMnemonic(ethers.Mnemonic.fromEntropy(entropy).phrase.split(' '));
-  }, []);
+  }, [getOrCreateMnemonic]);
 
   return {
     loadMnemonic,
