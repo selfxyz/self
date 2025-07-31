@@ -6,18 +6,17 @@ import {
   API_URL_STAGING,
   ID_CARD_ATTESTATION_ID,
   PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common/constants';
+} from '@selfxyz/common/constants/core';
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificates';
+import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuit-names';
+import { hash, packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
+import { formatMrz } from '@selfxyz/common/utils/passport-format';
 import {
-  formatMrz,
   generateCommitment,
   generateNullifier,
-  getCircuitNameFromPassportData,
-  getLeafDscTree,
-  hash,
-  packBytesAndPoseidon,
-  parseCertificateSimple,
-} from '@selfxyz/common/utils';
+} from '@selfxyz/common/utils/passports';
+import { getLeafDscTree } from '@selfxyz/common/utils/trees';
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 
 import { DocumentEvents } from '../../consts/analytics';
