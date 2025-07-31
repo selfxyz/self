@@ -17,7 +17,7 @@
 | Java                        | 17            | [Install Java](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)  |
 | Android Studio (Optional)*  | Latest        | [Install Android Studio](https://developer.android.com/studio)                        |
 | Android SDK                 | Latest        | See instructions for Android below                                                    |
-| Android NDK                 | 26.1.10909125 | See instructions for Android below                                                    |
+| Android NDK                 | 27.0.11718014 | See instructions for Android below                                                    |
 
 \* To facilitate the installation of the SDK and the NDK, and to pair with development devices with a conventient QR code, you can use Android Studio.
 
@@ -47,7 +47,7 @@ In Android Studio, go to **Tools** > **SDK Manager** in the menu
 
 Under **SDK Platforms**, install the platform with the highest API number
 
-Under **SDK Tools**, check the **Show Package Details** checkbox, expand **NDK (Side by side)**, select version **26.1.10909125** and install.
+Under **SDK Tools**, check the **Show Package Details** checkbox, expand **NDK (Side by side)**, select version **27.0.11718014** and install.
 
 
 #### Using sdkmanager via CLI
@@ -70,9 +70,9 @@ $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-N
 
 Install the NDK
 ```bash
-$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;26.1.10909125"
+$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
 ```
-Define the environment variable `ANDROID_NDK` to `$ANDROID_HOME/ndk/26.1.10909125`
+Define the environment variable `ANDROID_NDK` to `$ANDROID_HOME/ndk/27.0.11718014`
 
 Install Platform Tools, needed for the `adb` tool
 ```bash
