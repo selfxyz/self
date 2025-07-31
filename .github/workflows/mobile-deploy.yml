@@ -494,12 +494,11 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Commit updated build number
-        # disable for now, commit doesn't work as expected
-        if: false #${{ !env.ACT }}
+        if: ${{ !env.ACT && success() }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "incrementing ios build number for version ${{ env.VERSION }}"
-          commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
+          commit_paths: "./app/version.json"
 
       - name: Monitor cache usage
         if: always()
@@ -752,12 +751,11 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Commit updated build version
-        # disable for now, commit doesn't work as expected
-        if: false #${{ !env.ACT }}
+        if: ${{ !env.ACT && success() }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "incrementing android build version for version ${{ env.VERSION }}"
-          commit_paths: "./app/android/app/build.gradle"
+          commit_paths: "./app/version.json"
 
       - name: Monitor cache usage
         if: always()
