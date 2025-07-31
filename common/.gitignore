@@ -1,6 +1,6 @@
 inputs
 node_modules/
 
-# Generated TypeScript declarations  
+# Generated TypeScript declarations
 *.d.ts
 !src/**/*.d.ts
