@@ -8,24 +8,24 @@
   "sideEffects": false,
   "exports": {
     ".": {
+      "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "types": "./dist/cjs/index.d.ts"
+      "require": "./dist/cjs/index.js"
     },
     "./constants": {
+      "types": "./dist/esm/src/constants/index.d.ts",
       "import": "./dist/esm/src/constants/index.js",
-      "require": "./dist/cjs/src/constants/index.js",
-      "types": "./dist/cjs/src/constants/index.d.ts"
+      "require": "./dist/cjs/src/constants/index.js"
     },
     "./utils": {
+      "types": "./dist/esm/src/utils/index.d.ts",
       "import": "./dist/esm/src/utils/index.js",
-      "require": "./dist/cjs/src/utils/index.js",
-      "types": "./dist/cjs/src/utils/index.d.ts"
+      "require": "./dist/cjs/src/utils/index.js"
     },
     "./types": {
+      "types": "./dist/esm/src/types/index.d.ts",
       "import": "./dist/esm/src/types/index.js",
-      "require": "./dist/cjs/src/types/index.js",
-      "types": "./dist/cjs/src/types/index.d.ts"
+      "require": "./dist/cjs/src/types/index.js"
     },
     "./pubkeys/serialized_dsc_tree.json": "./pubkeys/serialized_dsc_tree.json",
     "./mock_certificates/*": "./src/mock_certificates/*",
@@ -33,7 +33,7 @@
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist/**/*",
     "src/mock_certificates"
