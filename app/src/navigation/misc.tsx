@@ -2,7 +2,7 @@
 
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React from 'react';
-import { StatusBar } from 'react-native';
+import SystemBars from '../components/SystemBars';
 
 import LaunchScreen from '../screens/misc/LaunchScreen';
 import LoadingScreen from '../screens/misc/LoadingScreen';
@@ -15,7 +15,7 @@ const miscScreens = {
     screen: LaunchScreen,
     options: {
       header: () => (
-        <StatusBar barStyle="light-content" backgroundColor={black} />
+        <SystemBars style="light" />
       ),
       navigationBarColor: black,
     },
@@ -40,7 +40,7 @@ const miscScreens = {
     screen: SplashScreen,
     options: {
       header: () => (
-        <StatusBar barStyle="light-content" backgroundColor={black} />
+        <SystemBars style="light" />
       ),
       navigationBarColor: black,
     },

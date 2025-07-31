@@ -3,7 +3,8 @@
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, StatusBar, StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
+import SystemBars from '../../components/SystemBars';
 import { ScrollView, Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
@@ -170,7 +171,7 @@ const SuccessScreen: React.FC = () => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <StatusBar barStyle="dark-content" backgroundColor={white} />
+      <SystemBars style="dark" />
       <ExpandableBottomLayout.TopSection
         roundTop
         marginTop={20}

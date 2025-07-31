@@ -26,8 +26,8 @@
         <activity android:name=".ui.activities.CameraActivity"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
-            android:windowSoftInputMode="stateAlwaysHidden" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
 
         <activity android:name=".ui.activities.NfcActivity"
             android:screenOrientation="nosensor"

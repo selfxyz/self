@@ -2,7 +2,8 @@
 
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import React, { useMemo } from 'react';
-import { StatusBar, StatusBarStyle } from 'react-native';
+import { StatusBarStyle } from 'react-native';
+import SystemBars from '../SystemBars';
 import {
   Button,
   TextProps,
@@ -114,7 +115,7 @@ const Container: React.FC<NavBarProps> = ({
 }) => {
   return (
     <>
-      <StatusBar backgroundColor={backgroundColor} barStyle={barStyle} />
+      <SystemBars style={barStyle === "light-content" ? "light" : "dark"} />
       <XStack
         backgroundColor={backgroundColor}
         flexGrow={1}
