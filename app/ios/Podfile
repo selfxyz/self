@@ -24,7 +24,12 @@ if linkage != nil
 end
 
 target "Self" do
-  config = use_native_modules!
+  begin
+    config = use_native_modules!
+  rescue StandardError => e
+    Pod::UI.warn("use_native_modules! failed: #{e}. Continuing with manual configuration")
+    config = {}
+  end
 
   # Ensure config is properly set
   config ||= {}
