@@ -146,6 +146,13 @@ pod install
 
 And run the app in Xcode.
 
+#### Simulator Build
+> **Note:** iOS Simulator on Apple Silicon Macs requires Rosetta (x86_64) mode due to simulator architecture compatibility. If you're using a Silicon Mac (M1/M2/M3/M4), you may find that the Rosetta simulator build option is not available by default in Xcode.
+
+To enable it, open Xcode and go to **Product > Destination > Show All Run Destinations**. This will unlock the ability to select the Rosetta build simulator, allowing you to run the app in the iOS Simulator.
+
+> **Note:** This is a simulator-specific issue - the app itself runs natively on ARM64 devices and builds without issues.
+
 #### react-native-haptic-feedback v2.3.3
 
 To create a successful build, "Target Membership" for the AudioToolbox.framework needs to be updated.
@@ -216,7 +223,7 @@ Deployments happen automatically when you merge PRs:
 
 To control versions with PR labels:
 - `version:major` - Major version bump
-- `version:minor` - Minor version bump  
+- `version:minor` - Minor version bump
 - `version:patch` - Patch version bump (default for main)
 - `no-deploy` - Skip deployment
 
@@ -348,3 +355,11 @@ You might want to try [this](https://stackoverflow.com/questions/49443341/watchm
 watchman watch-del-all
 watchman shutdown-server
 ```
+
+### Note on `yarn reinstall`
+
+The `yarn reinstall` command deletes your `yarn.lock` and `package-lock.json` files and re-installs all dependencies from scratch. **This means you may get newer versions of packages than before, even if your `package.json` specifies loose version ranges.** This can sometimes introduce breaking changes or incompatibilities.
+
+For example, as of this writing (July 29, 2024), a minor update to the Sentry Cocoa SDK (`sentry-cocoa`) breaks Xcode builds ([see issue](https://github.com/getsentry/sentry-cocoa/issues/5648)). If you run into unexpected build failures after a reinstall, check for updated dependencies and consider pinning versions or restoring your previous lockfile.
+
+**Tip:** After running `yarn reinstall`, if you encounter new build issues, compare your new `yarn.lock` (or `package-lock.json`) with the previous version. Look for any package version changes, especially for critical dependencies. Sometimes, a seemingly minor update can introduce breaking changes. If you find a problematic update, you may need to revert to the previous lockfile or explicitly pin the affected package version in your `package.json` to restore a working build.
