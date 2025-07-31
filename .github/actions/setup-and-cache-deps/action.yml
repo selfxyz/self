@@ -26,6 +26,9 @@ outputs:
   gradle-cache-hit:
     description: Gradle cache hit
     value: ${{ steps.gradle-cache.outputs.cache-hit }}
+  pods-cache-hit:
+    description: CocoaPods cache hit
+    value: ${{ steps.pods-cache.outputs.cache-hit }}
 
 runs:
   using: "composite"
@@ -35,10 +38,11 @@ runs:
       uses: actions/cache@v4
       with:
         path: |
-          node_modules
-          ${{ inputs.app_path }}/node_modules
           ~/.cache/yarn
-        key: ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          ~/.yarn/cache
+          .yarn/cache
+          ${{ inputs.app_path }}/.yarn/cache
+        key: ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock', format('{0}/yarn.lock', inputs.app_path)) }}
         restore-keys: |
           ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
           ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-
@@ -66,6 +70,19 @@ runs:
         restore-keys: |
           ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-
           ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-
+
+    - name: Cache CocoaPods
+      id: pods-cache
+      if: inputs.platform == 'ios'
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ inputs.app_path }}/ios/Pods
+          ~/.cocoapods
+        key: ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-${{ hashFiles(format('{0}/ios/Podfile.lock', inputs.app_path)) }}
+        restore-keys: |
+          ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-
+          ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -96,5 +113,16 @@ runs:
           (cd ${{ inputs.app_path }} && bundle install --jobs 4 --retry 3)
         fi
         if [ "${{ inputs.platform }}" = "ios" ]; then
-          pod install --project-directory="${{ inputs.app_path }}/ios"
+          cd ${{ inputs.app_path }}
+          # Always clear React Native cache to ensure fresh autolinking setup
+          npx react-native clean
+          # Only run pod install if cache was missed or Podfile changed
+          if [ "${{ steps.pods-cache.outputs.cache-hit }}" != "true" ]; then
+            echo "CocoaPods cache miss - running full pod install"
+            pod install --project-directory=ios
+          else
+            echo "CocoaPods cache hit - verifying setup"
+            # Quick validation that pods are properly set up
+            pod install --project-directory=ios --deployment
+          fi
         fi
