@@ -7,7 +7,6 @@
   },
   "license": "MIT",
   "author": "motemotech",
-  "type": "module",
   "sideEffects": [
     "**/SelfBackendVerifier.js",
     "**/SelfBackendVerifier.cjs",
@@ -15,6 +14,7 @@
     "**/typechain-types/**/*.cjs",
     "**/abi/*.json"
   ],
+  "type": "module",
   "exports": {
     ".": {
       "import": {
