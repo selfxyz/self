@@ -5,8 +5,8 @@ const os = require('os');
 const path = require('path');
 
 const platform = process.argv[2];
-if (!platform) {
-  console.error('Usage: bundle-analyze-ci.cjs <platform>');
+if (!platform || !['android', 'ios'].includes(platform)) {
+  console.error('Usage: bundle-analyze-ci.cjs <android|ios>');
   process.exit(1);
 }
 
@@ -15,26 +15,6 @@ const BUNDLE_THRESHOLDS_MB = {
   ios: 36,
   android: 36,
 };
-
-function sanitize(str) {
-  return str ? str.replace(/[^\w]/g, '') : str;
-}
-
-function getAppName() {
-  try {
-    const pkg = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'),
-    );
-    if (pkg.name) return sanitize(pkg.name);
-  } catch {}
-  try {
-    const appJson = JSON.parse(
-      fs.readFileSync(path.join(__dirname, '..', 'app.json'), 'utf8'),
-    );
-    return sanitize(appJson.name || (appJson.expo && appJson.expo.name));
-  } catch {}
-  return 'UnknownApp';
-}
 
 function formatBytes(bytes) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -73,19 +53,51 @@ function checkBundleSize(bundleSize, platform) {
   }
 }
 
-const baseDir = path.join(os.tmpdir(), 'react-native-bundle-visualizer');
-const tmpDir = path.join(baseDir, getAppName());
+// Use Metro's built-in bundle command
+const tmpDir = os.tmpdir();
 const bundleFile = path.join(tmpDir, `${platform}.bundle`);
+const sourcemapFile = path.join(tmpDir, `${platform}.bundle.map`);
 
-execSync(`react-native-bundle-visualizer --platform ${platform} --dev`, {
-  stdio: 'inherit',
-});
+console.log(`🔨 Generating ${platform} bundle using Metro...`);
+
+try {
+  execSync(
+    `npx react-native bundle ` +
+      `--platform ${platform} ` +
+      `--dev false ` +
+      `--entry-file index.js ` +
+      `--bundle-output ${bundleFile} ` +
+      `--sourcemap-output ${sourcemapFile} ` +
+      `--minify false ` +
+      `--config metro.config.cjs ` +
+      `--reset-cache`,
+    {
+      stdio: 'inherit',
+    },
+  );
+} catch (error) {
+  console.error(`❌ Failed to generate bundle: ${error.message}`);
+  process.exit(1);
+}
 
 // Check bundle size against threshold
 if (fs.existsSync(bundleFile)) {
   const bundleSize = fs.statSync(bundleFile).size;
+  console.log(`📁 Bundle generated at: ${bundleFile}`);
   if (!checkBundleSize(bundleSize, platform)) {
     process.exit(1);
+  }
+
+  // Clean up temporary files
+  try {
+    fs.unlinkSync(bundleFile);
+    fs.unlinkSync(sourcemapFile);
+    console.log('🧹 Cleaned up temporary bundle files');
+  } catch (cleanupError) {
+    console.warn(
+      '⚠️  Could not clean up temporary files:',
+      cleanupError.message,
+    );
   }
 } else {
   console.error(`❌ Bundle file not found at ${bundleFile}`);

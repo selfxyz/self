@@ -15,7 +15,9 @@ export async function parseCertificate(pem: string, fileName: string): Promise<C
 
   if (!isNode || isWeb) {
     // In web environment, fall back to parseCertificateSimple
-    console.warn('parseCertificate: Node.js features not available in web environment, using parseCertificateSimple');
+    console.warn(
+      'parseCertificate: Node.js features not available in web environment, using parseCertificateSimple'
+    );
     return parseCertificateSimple(pem);
   }
 

@@ -7,6 +7,4 @@ export {
   formatProof,
 } from './formatCallData.js';
 
-export {
-  getPackedForbiddenCountries,
-} from './forbiddenCountries.js';
+export { getPackedForbiddenCountries } from './forbiddenCountries.js';
