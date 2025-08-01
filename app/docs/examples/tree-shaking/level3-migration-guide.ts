@@ -18,7 +18,7 @@
 // import { generateCircuitInputsDSC, generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits';
 
 // Before - importing entire certificates module (~20KB)
-// import { parseCertificateSimple, initElliptic, identifyCurve } from '@selfxyz/common/utils/certificate_parsing';
+// import { parseCertificateSimple, initElliptic, identifyCurve } from '@selfxyz/common/utils/certificates';
 
 // ============================================================================
 // AFTER: Level 3 Function-Based Imports (Optimal tree-shaking)
@@ -35,9 +35,9 @@ import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/re
 // No need to import disclose or OFAC inputs if not used
 
 // ✅ Certificate Functions - Import specific parsing operations
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parse-simple'; // ~5KB instead of 20KB
-import { initElliptic } from '@selfxyz/common/utils/certificate_parsing/elliptic-init'; // ~2KB instead of 20KB
-import { identifyCurve } from '@selfxyz/common/utils/certificate_parsing/curve-utils'; // ~3KB instead of 20KB
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parse-simple'; // ~5KB instead of 20KB
+import { initElliptic } from '@selfxyz/common/utils/certificates/elliptic-init'; // ~2KB instead of 20KB
+import { identifyCurve } from '@selfxyz/common/utils/certificates/curve-utils'; // ~3KB instead of 20KB
 
 // ✅ Passport Functions - Import specific operations
 import { generateCommitment } from '@selfxyz/common/utils/passports/commitment'; // ~3KB instead of 15KB
@@ -81,9 +81,9 @@ export function circuitWorkerOptimalImports() {
  */
 export function certificateParserOptimalImports() {
   // Only import certificate-specific functions
-  // import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parse-simple';
-  // import { identifyCurve } from '@selfxyz/common/utils/certificate_parsing/curve-utils';
-  // import { getFriendlyName } from '@selfxyz/common/utils/certificate_parsing/oid-utils';
+  // import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parse-simple';
+  // import { identifyCurve } from '@selfxyz/common/utils/certificates/curve-utils';
+  // import { getFriendlyName } from '@selfxyz/common/utils/certificates/oid-utils';
   // Your certificate parsing code here...
 }
 
@@ -139,7 +139,7 @@ export function mockDataOptimalImports() {
  * 2. Replace with Granular Imports
  *    □ Hash functions → '@selfxyz/common/utils/hash/[sha|poseidon|custom]'
  *    □ Circuit functions → '@selfxyz/common/utils/circuits/[dsc|register|disclose|ofac]-inputs'
- *    □ Certificate functions → '@selfxyz/common/utils/certificate_parsing/[parse-simple|curve-utils|oid-utils]'
+ *    □ Certificate functions → '@selfxyz/common/utils/certificates/[parse-simple|curve-utils|oid-utils]'
  *    □ Passport functions → '@selfxyz/common/utils/passports/[core|commitment|signature|mock-*]'
  *
  * 3. Test Bundle Size
