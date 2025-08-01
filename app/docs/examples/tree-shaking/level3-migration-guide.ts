@@ -30,8 +30,8 @@ import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon'; // ~2KB 
 // No need to import custom hash functions if not used
 
 // ✅ Circuit Functions - Import specific circuit generators
-import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dsc-inputs'; // ~8KB instead of 25KB
-import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/register-inputs'; // ~7KB instead of 25KB
+import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs'; // ~8KB instead of 25KB
+import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/registerInputs'; // ~7KB instead of 25KB
 // No need to import disclose or OFAC inputs if not used
 
 // ✅ Certificate Functions - Import specific parsing operations
@@ -70,7 +70,7 @@ export function frontendOptimalImports() {
  */
 export function circuitWorkerOptimalImports() {
   // Only import the specific circuit generator needed
-  // import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dsc-inputs';
+  // import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs';
   // import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon';
   // Your circuit generation code here...
 }

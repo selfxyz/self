@@ -35,15 +35,15 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/constants/countries.js',
   ),
-  '@selfxyz/common/constants/vkeys': path.resolve(
+  '@selfxyz/common/constants/vkey': path.resolve(
     commonPath,
     'dist/esm/src/constants/vkey.js',
   ),
-  '@selfxyz/common/constants/ski-pem': path.resolve(
+  '@selfxyz/common/constants/skiPem': path.resolve(
     commonPath,
     'dist/esm/src/constants/skiPem.js',
   ),
-  '@selfxyz/common/constants/mock-certs': path.resolve(
+  '@selfxyz/common/constants/mockCerts': path.resolve(
     commonPath,
     'dist/esm/src/constants/mockCertificates.js',
   ),
@@ -68,7 +68,7 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/scope.js',
   ),
-  '@selfxyz/common/utils/app-type': path.resolve(
+  '@selfxyz/common/utils/appType': path.resolve(
     commonPath,
     'dist/esm/src/utils/appType.js',
   ),
@@ -84,15 +84,15 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/passports/index.js',
   ),
-  '@selfxyz/common/utils/passport-format': path.resolve(
+  '@selfxyz/common/utils/passportFormat': path.resolve(
     commonPath,
     'dist/esm/src/utils/passports/format.js',
   ),
-  '@selfxyz/common/utils/passport-mock': path.resolve(
+  '@selfxyz/common/utils/passportMock': path.resolve(
     commonPath,
     'dist/esm/src/utils/passports/mock.js',
   ),
-  '@selfxyz/common/utils/passport-dg1': path.resolve(
+  '@selfxyz/common/utils/passportDg1': path.resolve(
     commonPath,
     'dist/esm/src/utils/passports/dg1.js',
   ),
@@ -116,11 +116,11 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/circuits/index.js',
   ),
-  '@selfxyz/common/utils/circuit-names': path.resolve(
+  '@selfxyz/common/utils/circuitNames': path.resolve(
     commonPath,
     'dist/esm/src/utils/circuits/circuitsName.js',
   ),
-  '@selfxyz/common/utils/circuit-format': path.resolve(
+  '@selfxyz/common/utils/circuitFormat': path.resolve(
     commonPath,
     'dist/esm/src/utils/circuits/formatOutputs.js',
   ),

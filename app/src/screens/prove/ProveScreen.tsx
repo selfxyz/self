@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
-import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/app-type';
+import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';

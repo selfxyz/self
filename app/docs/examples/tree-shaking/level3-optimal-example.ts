@@ -7,7 +7,7 @@ import { hash } from '@selfxyz/common/utils/hash/sha';
 import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon';
 
 // ✅ LEVEL 3: Import only specific circuit generator (not entire circuits module)
-import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dsc-inputs';
+import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs';
 
 // ✅ LEVEL 3: Import only specific passport functions (not entire passports module)
 import { generateCommitment } from '@selfxyz/common/utils/passports/commitment';

@@ -1,11 +1,12 @@
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const __dirname = process.cwd();
-const DIST = path.resolve(__dirname, 'dist');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DIST = path.resolve(__dirname, '..', 'dist');
 
 // Read the version from the main package.json
-const packageJsonPath = path.resolve(__dirname, 'package.json');
+const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
 
 writeFileSync(path.join(DIST, 'esm', 'package.json'), JSON.stringify({ type: 'module' }, null, 4));
@@ -59,7 +60,7 @@ createShim('constants', '../esm/src/constants/index.js', 'constants');
 // Constants granular shims
 createShim('constants/core', '../../esm/src/constants/constants.js', 'constants/core');
 createShim('constants/countries', '../../esm/src/constants/countries.js', 'constants/countries');
-createShim('constants/vkeys', '../../esm/src/constants/vkey.js', 'constants/vkeys');
+createShim('constants/vkey', '../../esm/src/constants/vkey.js', 'constants/vkey');
 createShim('constants/skiPem', '../../esm/src/constants/skiPem.js', 'constants/skiPem');
 createShim(
   'constants/mockCerts',

@@ -43,17 +43,17 @@
       "import": "./dist/esm/src/constants/sampleDataHashes.js",
       "require": "./dist/cjs/src/constants/sampleDataHashes.cjs"
     },
-    "./constants/mock-certs": {
+    "./constants/mockCerts": {
       "types": "./dist/esm/src/constants/mockCertificates.d.ts",
       "import": "./dist/esm/src/constants/mockCertificates.js",
       "require": "./dist/cjs/src/constants/mockCertificates.cjs"
     },
-    "./constants/ski-pem": {
+    "./constants/skiPem": {
       "types": "./dist/esm/src/constants/skiPem.d.ts",
       "import": "./dist/esm/src/constants/skiPem.js",
       "require": "./dist/cjs/src/constants/skiPem.cjs"
     },
-    "./constants/vkeys": {
+    "./constants/vkey": {
       "types": "./dist/esm/src/constants/vkey.d.ts",
       "import": "./dist/esm/src/constants/vkey.js",
       "require": "./dist/cjs/src/constants/vkey.cjs"
@@ -90,11 +90,6 @@
       "types": "./dist/esm/src/utils/index.d.ts",
       "import": "./dist/esm/src/utils/index.js",
       "require": "./dist/cjs/src/utils/index.cjs"
-    },
-    "./utils/app-type": {
-      "types": "./dist/esm/src/utils/appType.d.ts",
-      "import": "./dist/esm/src/utils/appType.js",
-      "require": "./dist/cjs/src/utils/appType.cjs"
     },
     "./utils/appType": {
       "types": "./dist/esm/src/utils/appType.d.ts",
@@ -166,7 +161,7 @@
       "import": "./dist/esm/src/utils/circuits/index.js",
       "require": "./dist/cjs/src/utils/circuits/index.cjs"
     },
-    "./utils/circuit-names": {
+    "./utils/circuitNames": {
       "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
       "import": "./dist/esm/src/utils/circuits/circuitsName.js",
       "require": "./dist/cjs/src/utils/circuits/circuitsName.cjs"
@@ -266,17 +261,17 @@
       "import": "./dist/esm/src/utils/certificate_parsing/oids.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/oids.cjs"
     },
-    "./utils/passport-dg1": {
+    "./utils/passportDg1": {
       "types": "./dist/esm/src/utils/passports/dg1.d.ts",
       "import": "./dist/esm/src/utils/passports/dg1.js",
       "require": "./dist/cjs/src/utils/passports/dg1.cjs"
     },
-    "./utils/passport-format": {
+    "./utils/passportFormat": {
       "types": "./dist/esm/src/utils/passports/format.d.ts",
       "import": "./dist/esm/src/utils/passports/format.js",
       "require": "./dist/cjs/src/utils/passports/format.cjs"
     },
-    "./utils/passport-mock": {
+    "./utils/passportMock": {
       "types": "./dist/esm/src/utils/passports/mock.d.ts",
       "import": "./dist/esm/src/utils/passports/mock.js",
       "require": "./dist/cjs/src/utils/passports/mock.cjs"

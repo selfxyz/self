@@ -1,7 +1,7 @@
 // Level 2 Granular Import Example - Optimal Tree Shaking
 // This demonstrates the new file-based imports for maximum optimization
 
-// Import only core constants (no country data, vkeys, etc.)
+// Import only core constants (no country data, vkey, etc.)
 import {
   API_URL,
   PASSPORT_ATTESTATION_ID,

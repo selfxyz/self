@@ -10,10 +10,10 @@ import {
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 // ✅ LEVEL 3 OPTIMIZATION: Use function-level granular imports for better tree-shaking
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parseSimple';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuit-names';
+import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuitNames';
 import { packBytesAndPoseidon } from '@selfxyz/common/utils/hash/poseidon';
 import { hash } from '@selfxyz/common/utils/hash/sha';
-import { formatMrz } from '@selfxyz/common/utils/passport-format';
+import { formatMrz } from '@selfxyz/common/utils/passportFormat';
 import {
   generateCommitment,
   generateNullifier,

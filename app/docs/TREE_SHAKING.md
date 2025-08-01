@@ -128,7 +128,7 @@ import { hash, poseidon } from '@selfxyz/common/utils/hash';
 // Passport operations only (no circuit generation, certificates, etc.)
 import { generateCommitment } from '@selfxyz/common/utils/passports';
 
-// Core constants only (no country data, vkeys, etc.)
+// Core constants only (no country data, vkey, etc.)
 import { API_URL, PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/core';
 
 // App types only
@@ -147,7 +147,7 @@ import { generateCommitment } from '@selfxyz/common/utils/passports/commitment';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core';
 
 // Only specific circuit generators (not entire circuits module)
-import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dsc-inputs';
+import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs';
 
 // ✅ 60-90% smaller bundles vs Level 2
 // ✅ Zero regression risk from clean re-exports
@@ -201,9 +201,9 @@ import type { PassportData } from '@selfxyz/common/types/passport';
 #### Constants
 - `@selfxyz/common/constants/core` - API URLs, attestation IDs, basic constants
 - `@selfxyz/common/constants/countries` - Country codes and names
-- `@selfxyz/common/constants/vkeys` - Verification keys
-- `@selfxyz/common/constants/ski-pem` - SKI PEM data
-- `@selfxyz/common/constants/mock-certs` - Mock certificates
+- `@selfxyz/common/constants/vkey` - Verification keys
+- `@selfxyz/common/constants/skiPem` - SKI PEM data
+- `@selfxyz/common/constants/mockCerts` - Mock certificates
 - `@selfxyz/common/constants/hashes` - Sample data hashes
 
 #### Utilities
@@ -211,20 +211,20 @@ import type { PassportData } from '@selfxyz/common/types/passport';
 - `@selfxyz/common/utils/bytes` - Byte manipulation
 - `@selfxyz/common/utils/trees` - SMT and leaf operations
 - `@selfxyz/common/utils/scope` - Endpoint formatting
-- `@selfxyz/common/utils/app-type` - SelfApp definitions
+- `@selfxyz/common/utils/appType` - SelfApp definitions
 - `@selfxyz/common/utils/date` - Date utilities
 - `@selfxyz/common/utils/arrays` - Array helpers
 - `@selfxyz/common/utils/passports` - Core passport functions
-- `@selfxyz/common/utils/passport-format` - Passport formatting
-- `@selfxyz/common/utils/passport-mock` - Mock passport generation
-- `@selfxyz/common/utils/passport-dg1` - DG1 specific operations
+- `@selfxyz/common/utils/passportFormat` - Passport formatting
+- `@selfxyz/common/utils/passportMock` - Mock passport generation
+- `@selfxyz/common/utils/passportDg1` - DG1 specific operations
 - `@selfxyz/common/utils/certificates` - Certificate parsing
 - `@selfxyz/common/utils/elliptic` - Elliptic curve operations
 - `@selfxyz/common/utils/curves` - Curve definitions
 - `@selfxyz/common/utils/oids` - OID handling
 - `@selfxyz/common/utils/circuits` - Circuit input generation
-- `@selfxyz/common/utils/circuit-names` - Circuit name logic
-- `@selfxyz/common/utils/circuit-format` - Circuit formatting
+- `@selfxyz/common/utils/circuitNames` - Circuit name logic
+- `@selfxyz/common/utils/circuitFormat` - Circuit formatting
 - `@selfxyz/common/utils/uuid` - UUID utilities
 - `@selfxyz/common/utils/contracts` - Contract utilities
 - `@selfxyz/common/utils/sanctions` - OFAC/sanctions
