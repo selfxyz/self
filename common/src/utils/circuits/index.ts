@@ -1,4 +1,3 @@
-// Circuit utilities grouped export
 export {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
@@ -34,5 +33,4 @@ export {
   validateUserId,
 } from './uuid.js';
 
-// Re-export types
 export type { UserIdType } from './uuid.js';

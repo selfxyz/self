@@ -1,4 +1,3 @@
-// Core constants used by the app
 export {
   TREE_URL,
   TREE_URL_STAGING,
@@ -16,11 +15,9 @@ export {
   countryCodes,
 } from './constants.js';
 
-// Country and name data
 export { commonNames, countries } from './countries.js';
 export type { Country3LetterCode } from './constants.js';
 
-// Tree URLs for different document types
 export {
   CSCA_TREE_URL,
   DSC_TREE_URL,
