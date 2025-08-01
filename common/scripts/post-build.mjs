@@ -113,6 +113,11 @@ createShim(
   'utils/circuit-names'
 );
 createShim(
+  'utils/circuits/circuitsName',
+  '../../esm/src/utils/circuits/circuitsName.js',
+  'utils/circuits/circuitsName'
+);
+createShim(
   'utils/circuit-format',
   '../../esm/src/utils/circuits/formatOutputs.js',
   'utils/circuit-format'
