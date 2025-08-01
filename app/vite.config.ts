@@ -82,42 +82,82 @@ export default defineConfig({
       external: ['fs', 'path', 'child_process'],
       output: {
         manualChunks: {
-          'vendor-react': [
-            'react',
-            'react-dom',
+          // Core React and Navigation
+          'vendor-react-core': ['react', 'react-dom'],
+          'vendor-navigation': [
             '@react-navigation/native',
             '@react-navigation/native-stack',
           ],
-          'vendor-ui': ['tamagui', '@tamagui/lucide-icons', '@tamagui/toast'],
-          'vendor-crypto': [
-            'elliptic',
-            'node-forge',
-            'ethers',
-            '@peculiar/x509',
-            'pkijs',
-            'asn1js',
-            '@stablelib/cbor',
-          ],
-          'vendor-device': [
-            'react-native-nfc-manager',
-            'react-native-gesture-handler',
-            'react-native-haptic-feedback',
-          ],
-          'vendor-analytics': [
-            '@segment/analytics-react-native',
-            '@sentry/react',
-            '@sentry/react-native',
-          ],
-          'vendor-animations': ['lottie-react-native', 'lottie-react'],
-          'vendor-cloud': [
+
+          // UI Framework - split Tamagui into smaller chunks
+          'vendor-ui-core': ['tamagui'],
+          'vendor-ui-icons': ['@tamagui/lucide-icons'],
+          'vendor-ui-toast': ['@tamagui/toast'],
+
+          // Crypto libraries - split heavy crypto into smaller chunks
+          'vendor-crypto-core': ['elliptic', 'node-forge'],
+          'vendor-crypto-ethers': ['ethers'],
+          'vendor-crypto-x509': ['@peculiar/x509', 'pkijs', 'asn1js'],
+          'vendor-crypto-cbor': ['@stablelib/cbor'],
+
+          // Heavy crypto dependencies - split further
+          'vendor-crypto-poseidon': ['poseidon-lite'],
+          'vendor-crypto-lean-imt': ['@openpassport/zk-kit-lean-imt'],
+
+          // Device-specific libraries
+          'vendor-device-nfc': ['react-native-nfc-manager'],
+          'vendor-device-gesture': ['react-native-gesture-handler'],
+          'vendor-device-haptic': ['react-native-haptic-feedback'],
+
+          // Analytics - split by provider
+          'vendor-analytics-segment': ['@segment/analytics-react-native'],
+          'vendor-analytics-sentry': ['@sentry/react', '@sentry/react-native'],
+
+          // Animations
+          'vendor-animations-lottie': ['lottie-react-native', 'lottie-react'],
+
+          // Cloud storage
+          'vendor-cloud-google': [
             '@robinbobin/react-native-google-drive-api-wrapper',
-            'react-native-cloud-storage',
           ],
-          'screens-passport': [
-            './src/navigation/passport.ts',
-            './src/utils/nfcScanner.ts',
+          'vendor-cloud-storage': ['react-native-cloud-storage'],
+
+          // WebSocket and Socket.IO
+          'vendor-websocket': ['socket.io-client'],
+
+          // UUID generation
+          'vendor-uuid': ['uuid'],
+
+          // State management
+          'vendor-state-xstate': ['xstate'],
+          'vendor-state-zustand': ['zustand'],
+
+          // Screen-specific chunks - more granular
+          'screens-passport-core': ['./src/navigation/passport.ts'],
+          'screens-passport-nfc': ['./src/utils/nfcScanner.ts'],
+
+          // Proving - split into even smaller chunks
+          'screens-prove-core': ['./src/navigation/prove.ts'],
+          'screens-prove-machine-core': [
+            './src/utils/proving/provingMachine.ts',
           ],
-          'screens-prove': ['./src/navigation/prove.ts', './src/utils/proving'],
+          'screens-prove-validation-core': [
+            './src/utils/proving/validateDocument.ts',
+          ],
+          'screens-prove-attest': ['./src/utils/proving/attest.ts'],
+          'screens-prove-utils': [
+            './src/utils/proving/provingUtils.ts',
+            './src/utils/proving/provingInputs.ts',
+            './src/utils/proving/cose.ts',
+            './src/utils/proving/loadingScreenStateText.ts',
+          ],
+
+          // Large animations - split out heavy Lottie files
+          'animations-passport-onboarding': [
+            './src/assets/animations/passport_onboarding.json',
+          ],
+
+          // Other screens
           'screens-settings': ['./src/navigation/settings.ts'],
           'screens-recovery': ['./src/navigation/recovery.ts'],
           'screens-dev': ['./src/navigation/dev.ts'],
