@@ -45,6 +45,30 @@ export default defineConfig([
       'src/utils/contracts/index': 'src/utils/contracts/index.ts',
       'src/utils/contracts/forbiddenCountries': 'src/utils/contracts/forbiddenCountries.ts',
       'src/utils/csca': 'src/utils/csca.ts',
+      // Level 3 Hash Function Exports
+      'src/utils/hash/poseidon': 'src/utils/hash/poseidon.ts',
+      'src/utils/hash/sha': 'src/utils/hash/sha.ts',
+      'src/utils/hash/custom': 'src/utils/hash/custom.ts',
+      // Level 3 Circuit Function Exports
+      'src/utils/circuits/dsc-inputs': 'src/utils/circuits/dsc-inputs.ts',
+      'src/utils/circuits/register-inputs': 'src/utils/circuits/register-inputs.ts',
+      'src/utils/circuits/disclose-inputs': 'src/utils/circuits/disclose-inputs.ts',
+      'src/utils/circuits/ofac-inputs': 'src/utils/circuits/ofac-inputs.ts',
+      // Level 3 Certificate Function Exports
+      'src/utils/certificate_parsing/parse-simple': 'src/utils/certificate_parsing/parse-simple.ts',
+      'src/utils/certificate_parsing/parse-node': 'src/utils/certificate_parsing/parse-node.ts',
+      'src/utils/certificate_parsing/elliptic-init':
+        'src/utils/certificate_parsing/elliptic-init.ts',
+      'src/utils/certificate_parsing/curve-utils': 'src/utils/certificate_parsing/curve-utils.ts',
+      'src/utils/certificate_parsing/oid-utils': 'src/utils/certificate_parsing/oid-utils.ts',
+      'src/utils/certificate_parsing/cert-utils': 'src/utils/certificate_parsing/cert-utils.ts',
+      // Level 3 Passport Function Exports
+      'src/utils/passports/core': 'src/utils/passports/core.ts',
+      'src/utils/passports/commitment': 'src/utils/passports/commitment.ts',
+      'src/utils/passports/signature': 'src/utils/passports/signature.ts',
+      'src/utils/passports/parsing': 'src/utils/passports/parsing.ts',
+      'src/utils/passports/mock-generation': 'src/utils/passports/mock-generation.ts',
+      'src/utils/passports/mock-dsc': 'src/utils/passports/mock-dsc.ts',
       // Granular types exports
       'src/types/passport': 'src/types/passport.ts',
       'src/types/app': 'src/types/app.ts',
@@ -120,6 +144,30 @@ export default defineConfig([
       'src/utils/contracts/index': 'src/utils/contracts/index.ts',
       'src/utils/contracts/forbiddenCountries': 'src/utils/contracts/forbiddenCountries.ts',
       'src/utils/csca': 'src/utils/csca.ts',
+      // Level 3 Hash Function Exports
+      'src/utils/hash/poseidon': 'src/utils/hash/poseidon.ts',
+      'src/utils/hash/sha': 'src/utils/hash/sha.ts',
+      'src/utils/hash/custom': 'src/utils/hash/custom.ts',
+      // Level 3 Circuit Function Exports
+      'src/utils/circuits/dsc-inputs': 'src/utils/circuits/dsc-inputs.ts',
+      'src/utils/circuits/register-inputs': 'src/utils/circuits/register-inputs.ts',
+      'src/utils/circuits/disclose-inputs': 'src/utils/circuits/disclose-inputs.ts',
+      'src/utils/circuits/ofac-inputs': 'src/utils/circuits/ofac-inputs.ts',
+      // Level 3 Certificate Function Exports
+      'src/utils/certificate_parsing/parse-simple': 'src/utils/certificate_parsing/parse-simple.ts',
+      'src/utils/certificate_parsing/parse-node': 'src/utils/certificate_parsing/parse-node.ts',
+      'src/utils/certificate_parsing/elliptic-init':
+        'src/utils/certificate_parsing/elliptic-init.ts',
+      'src/utils/certificate_parsing/curve-utils': 'src/utils/certificate_parsing/curve-utils.ts',
+      'src/utils/certificate_parsing/oid-utils': 'src/utils/certificate_parsing/oid-utils.ts',
+      'src/utils/certificate_parsing/cert-utils': 'src/utils/certificate_parsing/cert-utils.ts',
+      // Level 3 Passport Function Exports
+      'src/utils/passports/core': 'src/utils/passports/core.ts',
+      'src/utils/passports/commitment': 'src/utils/passports/commitment.ts',
+      'src/utils/passports/signature': 'src/utils/passports/signature.ts',
+      'src/utils/passports/parsing': 'src/utils/passports/parsing.ts',
+      'src/utils/passports/mock-generation': 'src/utils/passports/mock-generation.ts',
+      'src/utils/passports/mock-dsc': 'src/utils/passports/mock-dsc.ts',
       // Granular types exports
       'src/types/passport': 'src/types/passport.ts',
       'src/types/app': 'src/types/app.ts',

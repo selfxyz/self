@@ -167,6 +167,101 @@
       "import": "./dist/esm/src/utils/csca.js",
       "require": "./dist/cjs/src/utils/csca.cjs"
     },
+    "./utils/hash/poseidon": {
+      "types": "./dist/esm/src/utils/hash/poseidon.d.ts",
+      "import": "./dist/esm/src/utils/hash/poseidon.js",
+      "require": "./dist/cjs/src/utils/hash/poseidon.cjs"
+    },
+    "./utils/hash/sha": {
+      "types": "./dist/esm/src/utils/hash/sha.d.ts",
+      "import": "./dist/esm/src/utils/hash/sha.js",
+      "require": "./dist/cjs/src/utils/hash/sha.cjs"
+    },
+    "./utils/hash/custom": {
+      "types": "./dist/esm/src/utils/hash/custom.d.ts",
+      "import": "./dist/esm/src/utils/hash/custom.js",
+      "require": "./dist/cjs/src/utils/hash/custom.cjs"
+    },
+    "./utils/circuits/dsc-inputs": {
+      "types": "./dist/esm/src/utils/circuits/dsc-inputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/dsc-inputs.js",
+      "require": "./dist/cjs/src/utils/circuits/dsc-inputs.cjs"
+    },
+    "./utils/circuits/register-inputs": {
+      "types": "./dist/esm/src/utils/circuits/register-inputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/register-inputs.js",
+      "require": "./dist/cjs/src/utils/circuits/register-inputs.cjs"
+    },
+    "./utils/circuits/disclose-inputs": {
+      "types": "./dist/esm/src/utils/circuits/disclose-inputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/disclose-inputs.js",
+      "require": "./dist/cjs/src/utils/circuits/disclose-inputs.cjs"
+    },
+    "./utils/circuits/ofac-inputs": {
+      "types": "./dist/esm/src/utils/circuits/ofac-inputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/ofac-inputs.js",
+      "require": "./dist/cjs/src/utils/circuits/ofac-inputs.cjs"
+    },
+    "./utils/certificates/parse-simple": {
+      "types": "./dist/esm/src/utils/certificate_parsing/parse-simple.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/parse-simple.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/parse-simple.cjs"
+    },
+    "./utils/certificates/parse-node": {
+      "types": "./dist/esm/src/utils/certificate_parsing/parse-node.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/parse-node.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/parse-node.cjs"
+    },
+    "./utils/certificates/elliptic-init": {
+      "types": "./dist/esm/src/utils/certificate_parsing/elliptic-init.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/elliptic-init.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/elliptic-init.cjs"
+    },
+    "./utils/certificates/curve-utils": {
+      "types": "./dist/esm/src/utils/certificate_parsing/curve-utils.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/curve-utils.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/curve-utils.cjs"
+    },
+    "./utils/certificates/oid-utils": {
+      "types": "./dist/esm/src/utils/certificate_parsing/oid-utils.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/oid-utils.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/oid-utils.cjs"
+    },
+    "./utils/certificates/cert-utils": {
+      "types": "./dist/esm/src/utils/certificate_parsing/cert-utils.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/cert-utils.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/cert-utils.cjs"
+    },
+    "./utils/passports/core": {
+      "types": "./dist/esm/src/utils/passports/core.d.ts",
+      "import": "./dist/esm/src/utils/passports/core.js",
+      "require": "./dist/cjs/src/utils/passports/core.cjs"
+    },
+    "./utils/passports/commitment": {
+      "types": "./dist/esm/src/utils/passports/commitment.d.ts",
+      "import": "./dist/esm/src/utils/passports/commitment.js",
+      "require": "./dist/cjs/src/utils/passports/commitment.cjs"
+    },
+    "./utils/passports/signature": {
+      "types": "./dist/esm/src/utils/passports/signature.d.ts",
+      "import": "./dist/esm/src/utils/passports/signature.js",
+      "require": "./dist/cjs/src/utils/passports/signature.cjs"
+    },
+    "./utils/passports/mock-generation": {
+      "types": "./dist/esm/src/utils/passports/mock-generation.d.ts",
+      "import": "./dist/esm/src/utils/passports/mock-generation.js",
+      "require": "./dist/cjs/src/utils/passports/mock-generation.cjs"
+    },
+    "./utils/passports/mock-dsc": {
+      "types": "./dist/esm/src/utils/passports/mock-dsc.d.ts",
+      "import": "./dist/esm/src/utils/passports/mock-dsc.js",
+      "require": "./dist/cjs/src/utils/passports/mock-dsc.cjs"
+    },
+    "./utils/passports/parsing": {
+      "types": "./dist/esm/src/utils/passports/parsing.d.ts",
+      "import": "./dist/esm/src/utils/passports/parsing.js",
+      "require": "./dist/cjs/src/utils/passports/parsing.cjs"
+    },
     "./types/passport": {
       "types": "./dist/esm/src/types/passport.d.ts",
       "import": "./dist/esm/src/types/passport.js",

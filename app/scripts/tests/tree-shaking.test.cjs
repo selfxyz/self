@@ -27,9 +27,6 @@ describe('Tree Shaking Infrastructure Tests', () => {
     });
   });
 
-
-
-
   it('should have Vite config with bundle analyzer', () => {
     const viteConfigPath = path.join(__dirname, '..', '..', 'vite.config.ts');
     assert(fs.existsSync(viteConfigPath), 'vite.config.ts should exist');
