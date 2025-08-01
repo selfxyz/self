@@ -31,13 +31,8 @@ jobs:
         shell: bash
         run: yarn workspace @selfxyz/common build
       - name: Run Android analysis
-        run: yarn analyze:android:ci
+        run: yarn analyze:bundle:android
         working-directory: ./app
-      - name: Upload Android bundle report
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-bundle-${{ github.sha }}
-          path: /tmp/react-native-bundle-visualizer/OpenPassport/output/explorer.html
 
   analyze-ios:
     runs-on: macos-14
@@ -54,10 +49,5 @@ jobs:
         shell: bash
         run: yarn workspace @selfxyz/common build
       - name: Run iOS analysis
-        run: yarn analyze:ios:ci
+        run: yarn analyze:bundle:ios
         working-directory: ./app
-      - name: Upload iOS bundle report
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-bundle-${{ github.sha }}
-          path: /tmp/react-native-bundle-visualizer/OpenPassport/output/explorer.html

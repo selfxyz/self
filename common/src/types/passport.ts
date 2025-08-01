@@ -1,10 +1,4 @@
 // Passport-related types
-export type {
-  PassportData,
-  DocumentType,
-  DocumentCategory,
-} from '../utils/types.js';
+export type { PassportData, DocumentType, DocumentCategory } from '../utils/types.js';
 
-export type {
-  PassportMetadata,
-} from '../utils/passports/passport_parsing/parsePassportData.js';
+export type { PassportMetadata } from '../utils/passports/passport_parsing/parsePassportData.js';

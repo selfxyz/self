@@ -1,6 +1,2 @@
 // App-related types
-export type {
-  SelfApp,
-  SelfAppDisclosureConfig,
-  EndpointType,
-} from '../utils/appType.js';
+export type { SelfApp, SelfAppDisclosureConfig, EndpointType } from '../utils/appType.js';

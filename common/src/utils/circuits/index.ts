@@ -6,9 +6,7 @@ export {
   generateCircuitInputsOfac,
 } from './generateInputs.js';
 
-export {
-  getCircuitNameFromPassportData,
-} from './circuitsName.js';
+export { getCircuitNameFromPassportData } from './circuitsName.js';
 
 export {
   formatForbiddenCountriesListFromCircuitOutput,
@@ -21,11 +19,7 @@ export {
   revealBitmapFromAttributes,
 } from './formatOutputs.js';
 
-export {
-  formatCountriesList,
-  reverseBytes,
-  reverseCountryBytes,
-} from './formatInputs.js';
+export { formatCountriesList, reverseBytes, reverseCountryBytes } from './formatInputs.js';
 
 export {
   castFromUUID,

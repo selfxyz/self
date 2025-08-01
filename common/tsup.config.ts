@@ -10,7 +10,7 @@ export default defineConfig([
   {
     tsconfig: './tsconfig.json',
     entry: {
-      'index': 'index.ts',
+      index: 'index.ts',
       // Existing grouped exports
       'src/constants/index': 'src/constants/index.ts',
       'src/utils/index': 'src/utils/index.ts',
@@ -85,7 +85,7 @@ export default defineConfig([
   {
     tsconfig: './tsconfig.cjs.json',
     entry: {
-      'index': 'index.ts',
+      index: 'index.ts',
       // Existing grouped exports
       'src/constants/index': 'src/constants/index.ts',
       'src/utils/index': 'src/utils/index.ts',
@@ -155,5 +155,5 @@ export default defineConfig([
       /^typescript-/,
       /^uuid/,
     ],
-  }
+  },
 ]);
