@@ -107,6 +107,11 @@ createShim(
 );
 createShim('utils/csca', '../../esm/src/utils/csca.js', 'utils/csca');
 
+// Level 3 Hash Function shims
+createShim('utils/hash/poseidon', '../../../esm/src/utils/hash/poseidon.js', 'utils/hash/poseidon');
+createShim('utils/hash/sha', '../../../esm/src/utils/hash/sha.js', 'utils/hash/sha');
+createShim('utils/hash/custom', '../../../esm/src/utils/hash/custom.js', 'utils/hash/custom');
+
 // Types granular shims
 createShim('types/passport', '../../esm/src/types/passport.js', 'types/passport');
 createShim('types/app', '../../esm/src/types/app.js', 'types/app');

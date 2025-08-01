@@ -8,9 +8,11 @@ import {
   PASSPORT_ATTESTATION_ID,
 } from '@selfxyz/common/constants/core';
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificates';
+// ✅ LEVEL 3 OPTIMIZATION: Use function-level granular imports for better tree-shaking
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parse-simple';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuit-names';
-import { hash, packBytesAndPoseidon } from '@selfxyz/common/utils/hash';
+import { packBytesAndPoseidon } from '@selfxyz/common/utils/hash/poseidon';
+import { hash } from '@selfxyz/common/utils/hash/sha';
 import { formatMrz } from '@selfxyz/common/utils/passport-format';
 import {
   generateCommitment,
