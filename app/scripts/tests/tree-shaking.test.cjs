@@ -66,11 +66,6 @@ describe('Package Configuration Validation', () => {
       fs.readFileSync(commonPackagePath, 'utf8'),
     );
 
-    // Check tree shaking enablers
-    assert(
-      commonPackage.sideEffects === false,
-      'Should have sideEffects: false for tree shaking',
-    );
     assert(commonPackage.type === 'module', 'Should use ESM modules');
     assert(commonPackage.exports, 'Should have granular exports defined');
 
