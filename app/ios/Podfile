@@ -43,9 +43,6 @@ target "Self" do
     # Flipper設定は削除
   )
 
-  pod "Sentry", :modular_headers => true
-  pod "SentryPrivate", :modular_headers => true
-
   pod "Firebase", :modular_headers => true
   pod "FirebaseCore", :modular_headers => true
   pod "FirebaseCoreInternal", :modular_headers => true
@@ -106,6 +103,15 @@ target "Self" do
         target.build_configurations.each do |config|
           config.build_settings["OTHER_LDFLAGS"] ||= ["$(inherited)"]
           config.build_settings["OTHER_LDFLAGS"] << "-framework AudioToolbox"
+        end
+      end
+
+      # Fix for React Native Sentry warnings
+      if target.name == "RNSentry"
+        target.build_configurations.each do |config|
+          config.build_settings["CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION"] = "NO"
+          config.build_settings["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = "NO"
+          config.build_settings["GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS"] = "NO"
         end
       end
     end
