@@ -62,7 +62,7 @@ export default defineConfig({
     }),
     // Bundle analyzer for tree shaking analysis
     visualizer({
-      filename: 'dist/bundle-analysis.html',
+      filename: 'web/dist/bundle-analysis.html',
       open: false, // Don't auto-open in CI
       gzipSize: true,
       brotliSize: true,
@@ -72,8 +72,14 @@ export default defineConfig({
   define: {
     global: 'globalThis',
   },
+  optimizeDeps: {
+    exclude: ['fs', 'path', 'child_process'],
+  },
   build: {
+    emptyOutDir: true,
+    outDir: path.resolve(__dirname, 'web/dist'),
     rollupOptions: {
+      external: ['fs', 'path', 'child_process'],
       output: {
         manualChunks: {
           'vendor-react': [
