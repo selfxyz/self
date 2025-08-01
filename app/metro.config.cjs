@@ -175,6 +175,8 @@ const config = {
     babelTransformerPath: require.resolve(
       'react-native-svg-transformer/react-native',
     ),
+    disableImportExportTransform: true,
+    inlineRequires: true,
   },
   resolver: {
     extraNodeModules,
