@@ -121,25 +121,25 @@
       "import": "./dist/esm/src/utils/certificate_parsing/index.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/index.cjs"
     },
-    "./utils/certificates/cert-utils": {
-      "types": "./dist/esm/src/utils/certificate_parsing/cert-utils.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/cert-utils.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/cert-utils.cjs"
+    "./utils/certificates/certUtils": {
+      "types": "./dist/esm/src/utils/certificate_parsing/certUtils.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/certUtils.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/certUtils.cjs"
     },
-    "./utils/certificates/curve-utils": {
-      "types": "./dist/esm/src/utils/certificate_parsing/curve-utils.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/curve-utils.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/curve-utils.cjs"
+    "./utils/certificates/curveUtils": {
+      "types": "./dist/esm/src/utils/certificate_parsing/curveUtils.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/curveUtils.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/curveUtils.cjs"
     },
-    "./utils/certificates/elliptic-init": {
-      "types": "./dist/esm/src/utils/certificate_parsing/elliptic-init.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/elliptic-init.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/elliptic-init.cjs"
+    "./utils/certificates/ellipticInit": {
+      "types": "./dist/esm/src/utils/certificate_parsing/ellipticInit.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/ellipticInit.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/ellipticInit.cjs"
     },
-    "./utils/certificates/oid-utils": {
-      "types": "./dist/esm/src/utils/certificate_parsing/oid-utils.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/oid-utils.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/oid-utils.cjs"
+    "./utils/certificates/oidUtils": {
+      "types": "./dist/esm/src/utils/certificate_parsing/oidUtils.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/oidUtils.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/oidUtils.cjs"
     },
     "./utils/certificate_parsing/elliptic": {
       "types": "./dist/esm/src/utils/certificate_parsing/elliptic.d.ts",
@@ -151,15 +151,15 @@
       "import": "./dist/esm/src/utils/certificate_parsing/parseCertificateSimple.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/parseCertificateSimple.cjs"
     },
-    "./utils/certificates/parse-node": {
-      "types": "./dist/esm/src/utils/certificate_parsing/parse-node.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/parse-node.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/parse-node.cjs"
+    "./utils/certificates/parseNode": {
+      "types": "./dist/esm/src/utils/certificate_parsing/parseNode.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/parseNode.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/parseNode.cjs"
     },
-    "./utils/certificates/parse-simple": {
-      "types": "./dist/esm/src/utils/certificate_parsing/parse-simple.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/parse-simple.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/parse-simple.cjs"
+    "./utils/certificates/parseSimple": {
+      "types": "./dist/esm/src/utils/certificate_parsing/parseSimple.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/parseSimple.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/parseSimple.cjs"
     },
     "./utils/circuits": {
       "types": "./dist/esm/src/utils/circuits/index.d.ts",
@@ -176,30 +176,30 @@
       "import": "./dist/esm/src/utils/circuits/circuitsName.js",
       "require": "./dist/cjs/src/utils/circuits/circuitsName.cjs"
     },
-    "./utils/circuits/disclose-inputs": {
-      "types": "./dist/esm/src/utils/circuits/disclose-inputs.d.ts",
-      "import": "./dist/esm/src/utils/circuits/disclose-inputs.js",
-      "require": "./dist/cjs/src/utils/circuits/disclose-inputs.cjs"
+    "./utils/circuits/discloseInputs": {
+      "types": "./dist/esm/src/utils/circuits/discloseInputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/discloseInputs.js",
+      "require": "./dist/cjs/src/utils/circuits/discloseInputs.cjs"
     },
-    "./utils/circuits/dsc-inputs": {
-      "types": "./dist/esm/src/utils/circuits/dsc-inputs.d.ts",
-      "import": "./dist/esm/src/utils/circuits/dsc-inputs.js",
-      "require": "./dist/cjs/src/utils/circuits/dsc-inputs.cjs"
+    "./utils/circuits/dscInputs": {
+      "types": "./dist/esm/src/utils/circuits/dscInputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/dscInputs.js",
+      "require": "./dist/cjs/src/utils/circuits/dscInputs.cjs"
     },
     "./utils/circuits/formatOutputs": {
       "types": "./dist/esm/src/utils/circuits/formatOutputs.d.ts",
       "import": "./dist/esm/src/utils/circuits/formatOutputs.js",
       "require": "./dist/cjs/src/utils/circuits/formatOutputs.cjs"
     },
-    "./utils/circuits/ofac-inputs": {
-      "types": "./dist/esm/src/utils/circuits/ofac-inputs.d.ts",
-      "import": "./dist/esm/src/utils/circuits/ofac-inputs.js",
-      "require": "./dist/cjs/src/utils/circuits/ofac-inputs.cjs"
+    "./utils/circuits/ofacInputs": {
+      "types": "./dist/esm/src/utils/circuits/ofacInputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/ofacInputs.js",
+      "require": "./dist/cjs/src/utils/circuits/ofacInputs.cjs"
     },
-    "./utils/circuits/register-inputs": {
-      "types": "./dist/esm/src/utils/circuits/register-inputs.d.ts",
-      "import": "./dist/esm/src/utils/circuits/register-inputs.js",
-      "require": "./dist/cjs/src/utils/circuits/register-inputs.cjs"
+    "./utils/circuits/registerInputs": {
+      "types": "./dist/esm/src/utils/circuits/registerInputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/registerInputs.js",
+      "require": "./dist/cjs/src/utils/circuits/registerInputs.cjs"
     },
     "./utils/circuits/uuid": {
       "types": "./dist/esm/src/utils/circuits/uuid.d.ts",
@@ -301,15 +301,15 @@
       "import": "./dist/esm/src/utils/passports/core.js",
       "require": "./dist/cjs/src/utils/passports/core.cjs"
     },
-    "./utils/passports/mock-dsc": {
-      "types": "./dist/esm/src/utils/passports/mock-dsc.d.ts",
-      "import": "./dist/esm/src/utils/passports/mock-dsc.js",
-      "require": "./dist/cjs/src/utils/passports/mock-dsc.cjs"
+    "./utils/passports/mockDsc": {
+      "types": "./dist/esm/src/utils/passports/mockDsc.d.ts",
+      "import": "./dist/esm/src/utils/passports/mockDsc.js",
+      "require": "./dist/cjs/src/utils/passports/mockDsc.cjs"
     },
-    "./utils/passports/mock-generation": {
-      "types": "./dist/esm/src/utils/passports/mock-generation.d.ts",
-      "import": "./dist/esm/src/utils/passports/mock-generation.js",
-      "require": "./dist/cjs/src/utils/passports/mock-generation.cjs"
+    "./utils/passports/mockGeneration": {
+      "types": "./dist/esm/src/utils/passports/mockGeneration.d.ts",
+      "import": "./dist/esm/src/utils/passports/mockGeneration.js",
+      "require": "./dist/cjs/src/utils/passports/mockGeneration.cjs"
     },
     "./utils/passports/parsing": {
       "types": "./dist/esm/src/utils/passports/parsing.d.ts",
@@ -367,7 +367,7 @@
   ],
   "scripts": {
     "build": "tsup && yarn build:types && yarn postbuild",
-    "postbuild": "node ./scripts/post-build.mjs",
+    "postbuild": "node ./scripts/postBuild.mjs",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "build:watch": "tsup --watch",
     "format": "prettier --write .",
@@ -375,6 +375,7 @@
     "prepublishOnly": "yarn build",
     "test": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/**/*.test.ts --exit",
     "test-base": "yarn ts-mocha -n import=tsx --max-old-space-size=8192 --paths -p tsconfig.json",
+    "test:exports": "node scripts/testExports.js",
     "test:scope": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/scope.test.ts --exit",
     "types": "tsc -p tsconfig.json"
   },

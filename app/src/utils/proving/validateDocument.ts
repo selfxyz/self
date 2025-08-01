@@ -9,7 +9,7 @@ import {
 } from '@selfxyz/common/constants/core';
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 // ✅ LEVEL 3 OPTIMIZATION: Use function-level granular imports for better tree-shaking
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parse-simple';
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parseSimple';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuit-names';
 import { packBytesAndPoseidon } from '@selfxyz/common/utils/hash/poseidon';
 import { hash } from '@selfxyz/common/utils/hash/sha';

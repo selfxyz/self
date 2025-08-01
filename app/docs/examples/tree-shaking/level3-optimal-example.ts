@@ -14,7 +14,7 @@ import { generateCommitment } from '@selfxyz/common/utils/passports/commitment';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core';
 
 // ✅ LEVEL 3: Import only specific certificate parsing (not entire certificates module)
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parse-simple';
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseSimple';
 
 // Import only core constants (same as Level 2)
 import {
