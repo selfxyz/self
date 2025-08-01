@@ -9,182 +9,182 @@
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
-      "import": "./dist/esm/index.cjs",
+      "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs"
     },
     "./constants": {
       "types": "./dist/esm/src/constants/index.d.ts",
-      "import": "./dist/esm/src/constants/index.cjs",
+      "import": "./dist/esm/src/constants/index.js",
       "require": "./dist/cjs/src/constants/index.cjs"
     },
     "./utils": {
       "types": "./dist/esm/src/utils/index.d.ts",
-      "import": "./dist/esm/src/utils/index.cjs",
+      "import": "./dist/esm/src/utils/index.js",
       "require": "./dist/cjs/src/utils/index.cjs"
     },
     "./types": {
       "types": "./dist/esm/src/types/index.d.ts",
-      "import": "./dist/esm/src/types/index.cjs",
+      "import": "./dist/esm/src/types/index.js",
       "require": "./dist/cjs/src/types/index.cjs"
     },
     "./constants/core": {
       "types": "./dist/esm/src/constants/constants.d.ts",
-      "import": "./dist/esm/src/constants/constants.cjs",
+      "import": "./dist/esm/src/constants/constants.js",
       "require": "./dist/cjs/src/constants/constants.cjs"
     },
     "./constants/countries": {
       "types": "./dist/esm/src/constants/countries.d.ts",
-      "import": "./dist/esm/src/constants/countries.cjs",
+      "import": "./dist/esm/src/constants/countries.js",
       "require": "./dist/cjs/src/constants/countries.cjs"
     },
     "./constants/vkeys": {
       "types": "./dist/esm/src/constants/vkey.d.ts",
-      "import": "./dist/esm/src/constants/vkey.cjs",
+      "import": "./dist/esm/src/constants/vkey.js",
       "require": "./dist/cjs/src/constants/vkey.cjs"
     },
     "./constants/ski-pem": {
       "types": "./dist/esm/src/constants/skiPem.d.ts",
-      "import": "./dist/esm/src/constants/skiPem.cjs",
+      "import": "./dist/esm/src/constants/skiPem.js",
       "require": "./dist/cjs/src/constants/skiPem.cjs"
     },
     "./constants/mock-certs": {
       "types": "./dist/esm/src/constants/mockCertificates.d.ts",
-      "import": "./dist/esm/src/constants/mockCertificates.cjs",
+      "import": "./dist/esm/src/constants/mockCertificates.js",
       "require": "./dist/cjs/src/constants/mockCertificates.cjs"
     },
     "./constants/hashes": {
       "types": "./dist/esm/src/constants/sampleDataHashes.d.ts",
-      "import": "./dist/esm/src/constants/sampleDataHashes.cjs",
+      "import": "./dist/esm/src/constants/sampleDataHashes.js",
       "require": "./dist/cjs/src/constants/sampleDataHashes.cjs"
     },
     "./utils/hash": {
       "types": "./dist/esm/src/utils/hash.d.ts",
-      "import": "./dist/esm/src/utils/hash.cjs",
+      "import": "./dist/esm/src/utils/hash.js",
       "require": "./dist/cjs/src/utils/hash.cjs"
     },
     "./utils/bytes": {
       "types": "./dist/esm/src/utils/bytes.d.ts",
-      "import": "./dist/esm/src/utils/bytes.cjs",
+      "import": "./dist/esm/src/utils/bytes.js",
       "require": "./dist/cjs/src/utils/bytes.cjs"
     },
     "./utils/trees": {
       "types": "./dist/esm/src/utils/trees.d.ts",
-      "import": "./dist/esm/src/utils/trees.cjs",
+      "import": "./dist/esm/src/utils/trees.js",
       "require": "./dist/cjs/src/utils/trees.cjs"
     },
     "./utils/scope": {
       "types": "./dist/esm/src/utils/scope.d.ts",
-      "import": "./dist/esm/src/utils/scope.cjs",
+      "import": "./dist/esm/src/utils/scope.js",
       "require": "./dist/cjs/src/utils/scope.cjs"
     },
     "./utils/app-type": {
       "types": "./dist/esm/src/utils/appType.d.ts",
-      "import": "./dist/esm/src/utils/appType.cjs",
+      "import": "./dist/esm/src/utils/appType.js",
       "require": "./dist/cjs/src/utils/appType.cjs"
     },
     "./utils/date": {
       "types": "./dist/esm/src/utils/date.d.ts",
-      "import": "./dist/esm/src/utils/date.cjs",
+      "import": "./dist/esm/src/utils/date.js",
       "require": "./dist/cjs/src/utils/date.cjs"
     },
     "./utils/arrays": {
       "types": "./dist/esm/src/utils/arrays.d.ts",
-      "import": "./dist/esm/src/utils/arrays.cjs",
+      "import": "./dist/esm/src/utils/arrays.js",
       "require": "./dist/cjs/src/utils/arrays.cjs"
     },
     "./utils/passports": {
       "types": "./dist/esm/src/utils/passports/index.d.ts",
-      "import": "./dist/esm/src/utils/passports/index.cjs",
+      "import": "./dist/esm/src/utils/passports/index.js",
       "require": "./dist/cjs/src/utils/passports/index.cjs"
     },
     "./utils/passport-format": {
       "types": "./dist/esm/src/utils/passports/format.d.ts",
-      "import": "./dist/esm/src/utils/passports/format.cjs",
+      "import": "./dist/esm/src/utils/passports/format.js",
       "require": "./dist/cjs/src/utils/passports/format.cjs"
     },
     "./utils/passport-mock": {
       "types": "./dist/esm/src/utils/passports/mock.d.ts",
-      "import": "./dist/esm/src/utils/passports/mock.cjs",
+      "import": "./dist/esm/src/utils/passports/mock.js",
       "require": "./dist/cjs/src/utils/passports/mock.cjs"
     },
     "./utils/passport-dg1": {
       "types": "./dist/esm/src/utils/passports/dg1.d.ts",
-      "import": "./dist/esm/src/utils/passports/dg1.cjs",
+      "import": "./dist/esm/src/utils/passports/dg1.js",
       "require": "./dist/cjs/src/utils/passports/dg1.cjs"
     },
     "./utils/certificates": {
       "types": "./dist/esm/src/utils/certificate_parsing/index.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/index.cjs",
+      "import": "./dist/esm/src/utils/certificate_parsing/index.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/index.cjs"
     },
     "./utils/elliptic": {
       "types": "./dist/esm/src/utils/certificate_parsing/elliptic.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/elliptic.cjs",
+      "import": "./dist/esm/src/utils/certificate_parsing/elliptic.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/elliptic.cjs"
     },
     "./utils/curves": {
       "types": "./dist/esm/src/utils/certificate_parsing/curves.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/curves.cjs",
+      "import": "./dist/esm/src/utils/certificate_parsing/curves.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/curves.cjs"
     },
     "./utils/oids": {
       "types": "./dist/esm/src/utils/certificate_parsing/oids.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/oids.cjs",
+      "import": "./dist/esm/src/utils/certificate_parsing/oids.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/oids.cjs"
     },
     "./utils/circuits": {
       "types": "./dist/esm/src/utils/circuits/index.d.ts",
-      "import": "./dist/esm/src/utils/circuits/index.cjs",
+      "import": "./dist/esm/src/utils/circuits/index.js",
       "require": "./dist/cjs/src/utils/circuits/index.cjs"
     },
     "./utils/circuit-names": {
       "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
-      "import": "./dist/esm/src/utils/circuits/circuitsName.cjs",
+      "import": "./dist/esm/src/utils/circuits/circuitsName.js",
       "require": "./dist/cjs/src/utils/circuits/circuitsName.cjs"
     },
     "./utils/circuit-format": {
       "types": "./dist/esm/src/utils/circuits/formatOutputs.d.ts",
-      "import": "./dist/esm/src/utils/circuits/formatOutputs.cjs",
+      "import": "./dist/esm/src/utils/circuits/formatOutputs.js",
       "require": "./dist/cjs/src/utils/circuits/formatOutputs.cjs"
     },
     "./utils/uuid": {
       "types": "./dist/esm/src/utils/circuits/uuid.d.ts",
-      "import": "./dist/esm/src/utils/circuits/uuid.cjs",
+      "import": "./dist/esm/src/utils/circuits/uuid.js",
       "require": "./dist/cjs/src/utils/circuits/uuid.cjs"
     },
     "./utils/contracts": {
       "types": "./dist/esm/src/utils/contracts/index.d.ts",
-      "import": "./dist/esm/src/utils/contracts/index.cjs",
+      "import": "./dist/esm/src/utils/contracts/index.js",
       "require": "./dist/cjs/src/utils/contracts/index.cjs"
     },
     "./utils/sanctions": {
       "types": "./dist/esm/src/utils/contracts/forbiddenCountries.d.ts",
-      "import": "./dist/esm/src/utils/contracts/forbiddenCountries.cjs",
+      "import": "./dist/esm/src/utils/contracts/forbiddenCountries.js",
       "require": "./dist/cjs/src/utils/contracts/forbiddenCountries.cjs"
     },
     "./utils/csca": {
       "types": "./dist/esm/src/utils/csca.d.ts",
-      "import": "./dist/esm/src/utils/csca.cjs",
+      "import": "./dist/esm/src/utils/csca.js",
       "require": "./dist/cjs/src/utils/csca.cjs"
     },
     "./types/passport": {
       "types": "./dist/esm/src/types/passport.d.ts",
-      "import": "./dist/esm/src/types/passport.cjs",
+      "import": "./dist/esm/src/types/passport.js",
       "require": "./dist/cjs/src/types/passport.cjs"
     },
     "./types/app": {
       "types": "./dist/esm/src/types/app.d.ts",
-      "import": "./dist/esm/src/types/app.cjs",
+      "import": "./dist/esm/src/types/app.js",
       "require": "./dist/cjs/src/types/app.cjs"
     },
     "./types/certificates": {
       "types": "./dist/esm/src/types/certificates.d.ts",
-      "import": "./dist/esm/src/types/certificates.cjs",
+      "import": "./dist/esm/src/types/certificates.js",
       "require": "./dist/cjs/src/types/certificates.cjs"
     },
     "./types/circuits": {
       "types": "./dist/esm/src/types/circuits.d.ts",
-      "import": "./dist/esm/src/types/circuits.cjs",
+      "import": "./dist/esm/src/types/circuits.js",
       "require": "./dist/cjs/src/types/circuits.cjs"
     },
     "./pubkeys/serialized_dsc_tree.json": "./pubkeys/serialized_dsc_tree.json",
@@ -195,14 +195,14 @@
   "module": "./dist/esm/index.cjs",
   "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist/**/*",
+    "./dist/**/*",
     "src/mock_certificates"
   ],
   "scripts": {
     "build": "tsup && yarn build:types && yarn postbuild",
-    "build:watch": "tsup --watch",
-    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "postbuild": "node ./scripts/post-build.mjs",
+    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
+    "build:watch": "tsup --watch",
     "format": "prettier --write .",
     "lint": "prettier --check .",
     "prepublishOnly": "yarn build",

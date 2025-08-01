@@ -3,9 +3,8 @@ export {
   parseCertificateSimple,
 } from './parseCertificateSimple.js';
 
-export {
-  parseCertificate,
-} from './parseCertificate.js';
+// parseCertificate requires Node.js modules - handle with environment detection
+export { parseCertificate } from './parseCertificate.js';
 
 export {
   initElliptic,

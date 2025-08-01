@@ -1,8 +1,24 @@
-import fs from 'fs';
-import { execSync } from 'child_process';
 import { parseCertificateSimple } from './parseCertificateSimple.js';
 import { CertificateData } from './dataStructure.js';
-export function parseCertificate(pem: string, fileName: string): CertificateData {
+
+// Dynamic imports for Node.js modules to avoid bundling in web environments
+async function getNodeModules() {
+  const fs = await import('fs');
+  const { execSync } = await import('child_process');
+  return { fs, execSync };
+}
+
+export async function parseCertificate(pem: string, fileName: string): Promise<CertificateData> {
+  // Check if we're in a Node.js environment
+  const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+  const isWeb = typeof window !== 'undefined';
+
+  if (!isNode || isWeb) {
+    // In web environment, fall back to parseCertificateSimple
+    console.warn('parseCertificate: Node.js features not available in web environment, using parseCertificateSimple');
+    return parseCertificateSimple(pem);
+  }
+
   let certificateData: CertificateData = {
     id: '',
     issuer: '',
@@ -21,6 +37,7 @@ export function parseCertificate(pem: string, fileName: string): CertificateData
     rawTxt: '',
     publicKeyAlgoOID: '',
   };
+
   try {
     certificateData = parseCertificateSimple(pem);
     const baseFileName = fileName.replace('.pem', '');
@@ -29,6 +46,9 @@ export function parseCertificate(pem: string, fileName: string): CertificateData
     const formattedPem = pem.includes('-----BEGIN CERTIFICATE-----')
       ? pem
       : `-----BEGIN CERTIFICATE-----\n${pem}\n-----END CERTIFICATE-----`;
+
+    // Dynamically import Node.js modules
+    const { fs, execSync } = await getNodeModules();
 
     fs.writeFileSync(tempCertPath, formattedPem);
     try {
