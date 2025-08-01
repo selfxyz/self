@@ -38,7 +38,6 @@ app/android/dev-keystore
 
 # Deployment scripts and CI/CD
 circuits/scripts/server/*.sh
-**/*.sh
 !node_modules/**/*.sh
 
 # Fastlane configuration (may contain secrets)
