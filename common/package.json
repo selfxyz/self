@@ -4,7 +4,6 @@
   "description": "Constants and utils for self sdks",
   "license": "MIT",
   "author": "@Selfxyz Team",
-  "sideEffects": false,
   "type": "module",
   "exports": {
     ".": {
@@ -18,6 +17,11 @@
       "require": "./dist/cjs/src/constants/index.cjs"
     },
     "./constants/core": {
+      "types": "./dist/esm/src/constants/constants.d.ts",
+      "import": "./dist/esm/src/constants/constants.js",
+      "require": "./dist/cjs/src/constants/constants.cjs"
+    },
+    "./constants/constants": {
       "types": "./dist/esm/src/constants/constants.d.ts",
       "import": "./dist/esm/src/constants/constants.js",
       "require": "./dist/cjs/src/constants/constants.cjs"
@@ -120,6 +124,16 @@
       "import": "./dist/esm/src/utils/certificate_parsing/oid-utils.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/oid-utils.cjs"
     },
+    "./utils/certificate_parsing/elliptic": {
+      "types": "./dist/esm/src/utils/certificate_parsing/elliptic.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/elliptic.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/elliptic.cjs"
+    },
+    "./utils/certificate_parsing/parseCertificateSimple": {
+      "types": "./dist/esm/src/utils/certificate_parsing/parseCertificateSimple.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/parseCertificateSimple.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/parseCertificateSimple.cjs"
+    },
     "./utils/certificates/parse-node": {
       "types": "./dist/esm/src/utils/certificate_parsing/parse-node.d.ts",
       "import": "./dist/esm/src/utils/certificate_parsing/parse-node.js",
@@ -135,7 +149,7 @@
       "import": "./dist/esm/src/utils/circuits/index.js",
       "require": "./dist/cjs/src/utils/circuits/index.cjs"
     },
-    "./utils/circuit-names": {
+    "./utils/circuits/circuitsName": {
       "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
       "import": "./dist/esm/src/utils/circuits/circuitsName.js",
       "require": "./dist/cjs/src/utils/circuits/circuitsName.cjs"
@@ -169,6 +183,16 @@
       "types": "./dist/esm/src/utils/circuits/uuid.d.ts",
       "import": "./dist/esm/src/utils/circuits/uuid.js",
       "require": "./dist/cjs/src/utils/circuits/uuid.cjs"
+    },
+    "./utils/circuits/generateInputs": {
+      "types": "./dist/esm/src/utils/circuits/generateInputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/generateInputs.js",
+      "require": "./dist/cjs/src/utils/circuits/generateInputs.cjs"
+    },
+    "./utils/circuits/formatInputs": {
+      "types": "./dist/esm/src/utils/circuits/formatInputs.d.ts",
+      "import": "./dist/esm/src/utils/circuits/formatInputs.js",
+      "require": "./dist/cjs/src/utils/circuits/formatInputs.cjs"
     },
     "./utils/contracts": {
       "types": "./dist/esm/src/utils/contracts/index.d.ts",
@@ -240,6 +264,11 @@
       "import": "./dist/esm/src/utils/passports/index.js",
       "require": "./dist/cjs/src/utils/passports/index.cjs"
     },
+    "./utils/passports/format": {
+      "types": "./dist/esm/src/utils/passports/format.d.ts",
+      "import": "./dist/esm/src/utils/passports/format.js",
+      "require": "./dist/cjs/src/utils/passports/format.cjs"
+    },
     "./utils/passports/commitment": {
       "types": "./dist/esm/src/utils/passports/commitment.d.ts",
       "import": "./dist/esm/src/utils/passports/commitment.js",
@@ -269,6 +298,26 @@
       "types": "./dist/esm/src/utils/passports/signature.d.ts",
       "import": "./dist/esm/src/utils/passports/signature.js",
       "require": "./dist/cjs/src/utils/passports/signature.cjs"
+    },
+    "./utils/passports/passport": {
+      "types": "./dist/esm/src/utils/passports/passport.d.ts",
+      "import": "./dist/esm/src/utils/passports/passport.js",
+      "require": "./dist/cjs/src/utils/passports/passport.cjs"
+    },
+    "./utils/passports/genMockIdDoc": {
+      "types": "./dist/esm/src/utils/passports/genMockIdDoc.d.ts",
+      "import": "./dist/esm/src/utils/passports/genMockIdDoc.js",
+      "require": "./dist/cjs/src/utils/passports/genMockIdDoc.cjs"
+    },
+    "./utils/passports/genMockPassportData": {
+      "types": "./dist/esm/src/utils/passports/genMockPassportData.d.ts",
+      "import": "./dist/esm/src/utils/passports/genMockPassportData.js",
+      "require": "./dist/cjs/src/utils/passports/genMockPassportData.cjs"
+    },
+    "./utils/passports/passport_parsing/parseDscCertificateData": {
+      "types": "./dist/esm/src/utils/passports/passport_parsing/parseDscCertificateData.d.ts",
+      "import": "./dist/esm/src/utils/passports/passport_parsing/parseDscCertificateData.js",
+      "require": "./dist/cjs/src/utils/passports/passport_parsing/parseDscCertificateData.cjs"
     },
     "./utils/sanctions": {
       "types": "./dist/esm/src/utils/contracts/forbiddenCountries.d.ts",

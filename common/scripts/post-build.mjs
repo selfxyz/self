@@ -1,8 +1,13 @@
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const __dirname = process.cwd();
 const DIST = path.resolve(__dirname, 'dist');
+
+// Read the version from the main package.json
+const packageJsonPath = path.resolve(__dirname, 'package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+
 writeFileSync(path.join(DIST, 'esm', 'package.json'), JSON.stringify({ type: 'module' }, null, 4));
 writeFileSync(
   path.join(DIST, 'cjs', 'package.json'),
@@ -12,7 +17,7 @@ writeFileSync(
 // Create a package.json in the dist root for Metro compatibility
 const distPackageJson = {
   name: '@selfxyz/common',
-  version: '0.0.7',
+  version: packageJson.version,
   type: 'module',
   exports: {
     '.': './esm/index.js',
@@ -30,10 +35,14 @@ writeFileSync(path.join(DIST, 'package.json'), JSON.stringify(distPackageJson, n
 function createShim(shimPath, targetPath, name) {
   const shimDir = path.join(DIST, shimPath);
   mkdirSync(shimDir, { recursive: true });
+
+  // Convert ESM path to CommonJS path for proper require() compatibility
+  const cjsTargetPath = targetPath.replace('/esm/', '/cjs/').replace('.js', '.cjs');
+
   writeFileSync(
     path.join(shimDir, 'index.js'),
     `// Shim file to help Metro resolve @selfxyz/common/${name}
-module.exports = require('${targetPath}');`
+module.exports = require('${cjsTargetPath}');`
   );
   writeFileSync(
     path.join(shimDir, 'index.d.ts'),
@@ -69,6 +78,11 @@ createShim('utils/date', '../../esm/src/utils/date.js', 'utils/date');
 createShim('utils/arrays', '../../esm/src/utils/arrays.js', 'utils/arrays');
 createShim('utils/passports', '../../esm/src/utils/passports/index.js', 'utils/passports');
 createShim(
+  'utils/passports/format',
+  '../../../esm/src/utils/passports/format.js',
+  'utils/passports/format'
+);
+createShim(
   'utils/passport-format',
   '../../esm/src/utils/passports/format.js',
   'utils/passport-format'
@@ -79,6 +93,11 @@ createShim(
   'utils/certificates',
   '../../esm/src/utils/certificate_parsing/index.js',
   'utils/certificates'
+);
+createShim(
+  'utils/certificate_parsing/elliptic',
+  '../../../esm/src/utils/certificate_parsing/elliptic.js',
+  'utils/certificate_parsing/elliptic'
 );
 createShim(
   'utils/elliptic',
