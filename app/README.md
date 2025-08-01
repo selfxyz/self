@@ -72,7 +72,7 @@ Install the NDK
 ```bash
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
 ```
-Define the environment variable `ANDROID_NDK` to `$ANDROID_HOME/ndk/27.0.11718014`
+Define the environment variable `ANDROID_NDK_VERSION` to `27.0.11718014` and `ANDROID_NDK` to `$ANDROID_HOME/ndk/27.0.11718014`
 
 Install Platform Tools, needed for the `adb` tool
 ```bash
@@ -175,7 +175,7 @@ Adapt the input generation in `common/src/utils/generateInputs.ts`, and adapt an
 
 ### Android
 
-Make sure that `ANDROID_NDK` is defined as per the instructions above. Then build the android native module:
+Make sure that `ANDROID_NDK_VERSION` and `ANDROID_NDK` are defined as per the instructions above. Then build the android native module:
 
 ```
 ./scripts/build_android_module.sh
