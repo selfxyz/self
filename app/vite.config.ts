@@ -74,13 +74,27 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['fs', 'path', 'child_process'],
+    esbuildOptions: {
+      // Optimize minification
+      minifyIdentifiers: true,
+      minifySyntax: true,
+      minifyWhitespace: true,
+    },
   },
+
   build: {
     emptyOutDir: true,
     outDir: path.resolve(__dirname, 'web/dist'),
+    // Optimize minification settings
+    minify: 'esbuild',
+    target: 'es2020',
+    cssMinify: true,
+    cssCodeSplit: true,
     rollupOptions: {
       external: ['fs', 'path', 'child_process'],
       output: {
+        // Optimize chunk size and minification
+        compact: true,
         manualChunks: {
           // Core React and Navigation
           'vendor-react-core': ['react', 'react-dom'],
@@ -115,12 +129,6 @@ export default defineConfig({
 
           // Animations
           'vendor-animations-lottie': ['lottie-react-native', 'lottie-react'],
-
-          // Cloud storage
-          'vendor-cloud-google': [
-            '@robinbobin/react-native-google-drive-api-wrapper',
-          ],
-          'vendor-cloud-storage': ['react-native-cloud-storage'],
 
           // WebSocket and Socket.IO
           'vendor-websocket': ['socket.io-client'],

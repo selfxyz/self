@@ -19,13 +19,25 @@ async function testCleanReExports() {
 
     // Test Circuit Re-Exports
     console.log('\n✅ Testing Circuit Re-Exports...');
-    const { generateCircuitInputsDSC } = await import('./dist/esm/src/utils/circuits/dsc-inputs.js');
-    const { generateCircuitInputsRegister } = await import('./dist/esm/src/utils/circuits/register-inputs.js');
-    const { generateCircuitInputsVCandDisclose } = await import('./dist/esm/src/utils/circuits/disclose-inputs.js');
-    const { generateCircuitInputsOfac } = await import('./dist/esm/src/utils/circuits/ofac-inputs.js');
+    const { generateCircuitInputsDSC } = await import(
+      './dist/esm/src/utils/circuits/dsc-inputs.js'
+    );
+    const { generateCircuitInputsRegister } = await import(
+      './dist/esm/src/utils/circuits/register-inputs.js'
+    );
+    const { generateCircuitInputsVCandDisclose } = await import(
+      './dist/esm/src/utils/circuits/disclose-inputs.js'
+    );
+    const { generateCircuitInputsOfac } = await import(
+      './dist/esm/src/utils/circuits/ofac-inputs.js'
+    );
     console.log('   - generateCircuitInputsDSC:', typeof generateCircuitInputsDSC, '✅');
     console.log('   - generateCircuitInputsRegister:', typeof generateCircuitInputsRegister, '✅');
-    console.log('   - generateCircuitInputsVCandDisclose:', typeof generateCircuitInputsVCandDisclose, '✅');
+    console.log(
+      '   - generateCircuitInputsVCandDisclose:',
+      typeof generateCircuitInputsVCandDisclose,
+      '✅'
+    );
     console.log('   - generateCircuitInputsOfac:', typeof generateCircuitInputsOfac, '✅');
 
     // Test Passport Re-Exports
@@ -45,8 +57,9 @@ async function testCleanReExports() {
     console.log('\n🔧 Ready-to-Use Level 3 Imports:');
     console.log('   import { hash } from "@selfxyz/common/utils/hash/sha";');
     console.log('   import { flexiblePoseidon } from "@selfxyz/common/utils/hash/poseidon";');
-    console.log('   import { generateCommitment } from "@selfxyz/common/utils/passports/commitment";');
-
+    console.log(
+      '   import { generateCommitment } from "@selfxyz/common/utils/passports/commitment";'
+    );
   } catch (error) {
     console.error('❌ Error testing clean re-exports:', error.message);
     process.exit(1);
