@@ -149,6 +149,11 @@
       "import": "./dist/esm/src/utils/circuits/index.js",
       "require": "./dist/cjs/src/utils/circuits/index.cjs"
     },
+    "./utils/circuit-names": {
+      "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
+      "import": "./dist/esm/src/utils/circuits/circuitsName.js",
+      "require": "./dist/cjs/src/utils/circuits/circuitsName.cjs"
+    },
     "./utils/circuits/circuitsName": {
       "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
       "import": "./dist/esm/src/utils/circuits/circuitsName.js",
