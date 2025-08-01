@@ -8,16 +8,15 @@ import { StyleSheet } from 'react-native';
 import splashAnimation from '../../assets/animations/splash.json';
 import { useAuth } from '../../providers/authProvider';
 import {
+  checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
+  hasAnyValidRegisteredDocument,
+  initializeNativeModules,
   migrateFromLegacyStorage,
 } from '../../providers/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { black } from '../../utils/colors';
 import { impactLight } from '../../utils/haptic';
-import {
-  checkAndUpdateRegistrationStates,
-  hasAnyValidRegisteredDocument,
-} from '../../utils/proving/validateDocument';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
@@ -40,6 +39,15 @@ const SplashScreen: React.FC = ({}) => {
 
       const loadDataAndDetermineNextScreen = async () => {
         try {
+          // Initialize native modules first, before any data operations
+          console.log('Initializing native modules...');
+          const modulesReady = await initializeNativeModules();
+          if (!modulesReady) {
+            console.warn(
+              'Native modules not ready, proceeding with limited functionality',
+            );
+          }
+
           await migrateFromLegacyStorage();
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
