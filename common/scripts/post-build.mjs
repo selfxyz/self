@@ -52,7 +52,11 @@ createShim('constants/core', '../../esm/src/constants/constants.js', 'constants/
 createShim('constants/countries', '../../esm/src/constants/countries.js', 'constants/countries');
 createShim('constants/vkeys', '../../esm/src/constants/vkey.js', 'constants/vkeys');
 createShim('constants/ski-pem', '../../esm/src/constants/skiPem.js', 'constants/ski-pem');
-createShim('constants/mock-certs', '../../esm/src/constants/mockCertificates.js', 'constants/mock-certs');
+createShim(
+  'constants/mock-certs',
+  '../../esm/src/constants/mockCertificates.js',
+  'constants/mock-certs'
+);
 createShim('constants/hashes', '../../esm/src/constants/sampleDataHashes.js', 'constants/hashes');
 
 // Utils granular shims
@@ -64,19 +68,43 @@ createShim('utils/app-type', '../../esm/src/utils/appType.js', 'utils/app-type')
 createShim('utils/date', '../../esm/src/utils/date.js', 'utils/date');
 createShim('utils/arrays', '../../esm/src/utils/arrays.js', 'utils/arrays');
 createShim('utils/passports', '../../esm/src/utils/passports/index.js', 'utils/passports');
-createShim('utils/passport-format', '../../esm/src/utils/passports/format.js', 'utils/passport-format');
+createShim(
+  'utils/passport-format',
+  '../../esm/src/utils/passports/format.js',
+  'utils/passport-format'
+);
 createShim('utils/passport-mock', '../../esm/src/utils/passports/mock.js', 'utils/passport-mock');
 createShim('utils/passport-dg1', '../../esm/src/utils/passports/dg1.js', 'utils/passport-dg1');
-createShim('utils/certificates', '../../esm/src/utils/certificate_parsing/index.js', 'utils/certificates');
-createShim('utils/elliptic', '../../esm/src/utils/certificate_parsing/elliptic.js', 'utils/elliptic');
+createShim(
+  'utils/certificates',
+  '../../esm/src/utils/certificate_parsing/index.js',
+  'utils/certificates'
+);
+createShim(
+  'utils/elliptic',
+  '../../esm/src/utils/certificate_parsing/elliptic.js',
+  'utils/elliptic'
+);
 createShim('utils/curves', '../../esm/src/utils/certificate_parsing/curves.js', 'utils/curves');
 createShim('utils/oids', '../../esm/src/utils/certificate_parsing/oids.js', 'utils/oids');
 createShim('utils/circuits', '../../esm/src/utils/circuits/index.js', 'utils/circuits');
-createShim('utils/circuit-names', '../../esm/src/utils/circuits/circuitsName.js', 'utils/circuit-names');
-createShim('utils/circuit-format', '../../esm/src/utils/circuits/formatOutputs.js', 'utils/circuit-format');
+createShim(
+  'utils/circuit-names',
+  '../../esm/src/utils/circuits/circuitsName.js',
+  'utils/circuit-names'
+);
+createShim(
+  'utils/circuit-format',
+  '../../esm/src/utils/circuits/formatOutputs.js',
+  'utils/circuit-format'
+);
 createShim('utils/uuid', '../../esm/src/utils/circuits/uuid.js', 'utils/uuid');
 createShim('utils/contracts', '../../esm/src/utils/contracts/index.js', 'utils/contracts');
-createShim('utils/sanctions', '../../esm/src/utils/contracts/forbiddenCountries.js', 'utils/sanctions');
+createShim(
+  'utils/sanctions',
+  '../../esm/src/utils/contracts/forbiddenCountries.js',
+  'utils/sanctions'
+);
 createShim('utils/csca', '../../esm/src/utils/csca.js', 'utils/csca');
 
 // Types granular shims
