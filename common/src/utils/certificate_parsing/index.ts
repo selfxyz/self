@@ -1,7 +1,5 @@
-// Certificate parsing utilities grouped export
 export { parseCertificateSimple } from './parseCertificateSimple.js';
 
-// parseCertificate requires Node.js modules - handle with environment detection
 export { parseCertificate } from './parseCertificate.js';
 
 export { initElliptic } from './elliptic.js';
@@ -28,7 +26,6 @@ export {
   getIssuerCountryCode,
 } from './utils.js';
 
-// Re-export types
 export type {
   CertificateData,
   PublicKeyDetailsECDSA,

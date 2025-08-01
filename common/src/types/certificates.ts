@@ -1,4 +1,3 @@
-// Certificate-related types
 export type {
   CertificateData,
   PublicKeyDetailsECDSA,

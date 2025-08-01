@@ -1,4 +1,3 @@
-// Contract utilities grouped export
 export {
   formatCallData_register,
   formatCallData_dsc,
