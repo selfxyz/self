@@ -8,6 +8,13 @@
   "license": "MIT",
   "author": "turnoffthiscomputer",
   "type": "module",
+  "sideEffects": [
+    "**/websocket.js",
+    "**/websocket.cjs",
+    "**/SelfQRcode.js",
+    "**/SelfQRcode.cjs",
+    "**/animations/*.json"
+  ],
   "exports": {
     ".": {
       "import": {

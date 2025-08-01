@@ -5,6 +5,13 @@
   "license": "MIT",
   "author": "@Selfxyz Team",
   "type": "module",
+  "sideEffects": [
+    "**/parseCertificateNode.*",
+    "**/passportData.*",
+    "**/csca.*",
+    "**/genMockIdDoc.*",
+    "**/generateCountryOptions.*"
+  ],
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
@@ -88,6 +95,16 @@
       "types": "./dist/esm/src/utils/appType.d.ts",
       "import": "./dist/esm/src/utils/appType.js",
       "require": "./dist/cjs/src/utils/appType.cjs"
+    },
+    "./utils/appType": {
+      "types": "./dist/esm/src/utils/appType.d.ts",
+      "import": "./dist/esm/src/utils/appType.js",
+      "require": "./dist/cjs/src/utils/appType.cjs"
+    },
+    "./utils/types": {
+      "types": "./dist/esm/src/utils/types.d.ts",
+      "import": "./dist/esm/src/utils/types.js",
+      "require": "./dist/cjs/src/utils/types.cjs"
     },
     "./utils/arrays": {
       "types": "./dist/esm/src/utils/arrays.d.ts",
@@ -341,11 +358,12 @@
     }
   },
   "main": "./dist/cjs/index.cjs",
-  "module": "./dist/esm/index.cjs",
+  "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
     "./dist/**/*",
-    "src/mock_certificates"
+    "src/mock_certificates",
+    "pubkeys/serialized_dsc_tree.json"
   ],
   "scripts": {
     "build": "tsup && yarn build:types && yarn postbuild",
