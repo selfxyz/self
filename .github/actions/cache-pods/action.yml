@@ -1,0 +1,20 @@
+name: Cache CocoaPods
+
+description: Restore CocoaPods cache
+
+inputs:
+  working_directory:
+    description: Directory containing iOS project
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Restore CocoaPods cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ inputs.working_directory }}/ios/Pods
+          ~/.cocoapods
+        key: pods-${{ hashFiles(format('{0}/ios/Podfile.lock', inputs.working_directory)) }}
+        restore-keys: pods-

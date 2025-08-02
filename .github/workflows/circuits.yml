@@ -23,8 +23,6 @@ jobs:
     environment: development
     steps:
       - uses: actions/checkout@v4
-
-      # Circom installation from https://github.com/erhant/circomkit/blob/main/.github/workflows/tests.yml
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -34,27 +32,30 @@ jobs:
             libsodium-dev \
             nasm \
             nlohmann-json3-dev
-
-      - name: Set Node.js 18.x
-        uses: actions/setup-node@v4
+      - uses: ./.github/actions/cache-yarn
         with:
-          node-version: 18
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
+          node_version: 18
+          workspace: circuits
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Restore cargo cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo
+          key: cargo-${{ hashFiles('circuits/Cargo.lock') }}
+      - name: Restore target cache
+        uses: actions/cache@v4
+        with:
+          path: circuits/target
+          key: target-${{ hashFiles('circuits/Cargo.lock') }}
       - name: Download Circom Binary v2.1.9
         run: |
           wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
           chmod +x /home/runner/work/circom
           sudo mv /home/runner/work/circom /bin/circom
-
       - name: Print Circom version
         run: circom --version
-      - name: "enable yarn"
-        run: corepack enable yarn
       - name: Install Yarn dependencies
         run: yarn workspaces focus @selfxyz/circuits
-
       - name: Run lint
         run: yarn workspace @selfxyz/circuits lint
       - name: Run Tests (Circuits)

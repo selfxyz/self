@@ -1,10 +1,8 @@
 name: App CI
 env:
-  # Build environment versions
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
-  # Path configuration
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
 on:
@@ -16,12 +14,37 @@ on:
       - ".github/actions/**"
 
 jobs:
-  lint:
+  deps:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - uses: ./.github/actions/cache-yarn
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+          workspace: app
+      - uses: ./.github/actions/cache-bundler
+        with:
+          ruby_version: ${{ env.RUBY_VERSION }}
+          working_directory: app
+      - uses: ./.github/actions/cache-pods
+        with:
+          working_directory: app
+      - uses: ./.github/actions/cache-gradle
+      - run: yarn install --immutable
+      - run: bundle install --jobs 4 --retry 3 --path vendor/bundle
+        working-directory: ./app
+      - run: bundle exec pod install
+        working-directory: ./app/ios
+
+  lint:
+    runs-on: macos-14
+    needs: deps
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/cache-yarn
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+          workspace: app
       - name: Build Dependencies
         run: yarn build:deps
         working-directory: ./app
@@ -34,36 +57,41 @@ jobs:
 
   test:
     runs-on: macos-14
+    needs: deps
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
-
+      - uses: ./.github/actions/cache-yarn
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+          workspace: app
       - name: Build
         run: yarn build:deps
         working-directory: ./app
       - name: Test
         run: yarn test
         working-directory: ./app
+
   build:
     runs-on: macos-14
+    needs: deps
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          # some cocoapods won't compile with xcode 16.3
           xcode-version: "16.2"
-
-      - uses: actions/checkout@v4
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/mobile-setup
+      - uses: ./.github/actions/cache-yarn
         with:
-          app_path: ${{ env.APP_PATH }}
           node_version: ${{ env.NODE_VERSION }}
+          workspace: app
+      - uses: ./.github/actions/cache-bundler
+        with:
           ruby_version: ${{ env.RUBY_VERSION }}
-          workspace: ${{ env.WORKSPACE }}
+          working_directory: app
+      - uses: ./.github/actions/cache-pods
+        with:
+          working_directory: app
+      - uses: ./.github/actions/cache-gradle
       - name: Install And Build
         run: yarn install-app
         working-directory: ./app

@@ -1,0 +1,33 @@
+name: Cache Yarn
+
+description: Setup Node and restore Yarn cache
+
+inputs:
+  node_version:
+    description: Node.js version
+    required: true
+  workspace:
+    description: Path to workspace directory
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - name: Restore Yarn cache
+      uses: actions/cache@v4
+      with:
+        path: .yarn/cache
+        key: |
+          yarn-${{ hashFiles('yarn.lock') }}${{ inputs.workspace != '' && format('-%s', hashFiles(format('{0}/package.json', inputs.workspace))) }}
+        restore-keys: |
+          yarn-
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+    - name: Enable Corepack
+      shell: bash
+      run: |
+        corepack enable
+        corepack prepare yarn@4.6.0 --activate

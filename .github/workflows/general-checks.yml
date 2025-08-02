@@ -2,37 +2,50 @@ name: General Self CI
 
 on:
   pull_request:
+
 jobs:
-  lint:
+  deps:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - uses: ./.github/actions/cache-yarn
+        with:
+          node_version: 20
+      - run: yarn install --immutable
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: deps
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/cache-yarn
+        with:
+          node_version: 20
       - name: Build dependencies
-        shell: bash
         run: yarn workspace @selfxyz/common build
       - name: Run linter
         run: yarn lint
 
   type-check:
     runs-on: ubuntu-latest
+    needs: deps
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - uses: ./.github/actions/cache-yarn
+        with:
+          node_version: 20
       - name: Yarn types
-        shell: bash
         run: yarn types
 
   test-common:
     runs-on: ubuntu-latest
+    needs: deps
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+      - uses: ./.github/actions/cache-yarn
+        with:
+          node_version: 20
       - name: Build dependencies
-        shell: bash
         run: yarn workspace @selfxyz/common build
       - name: Run @selfxyz/common tests
         run: yarn workspace @selfxyz/common test

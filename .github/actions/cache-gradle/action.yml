@@ -1,0 +1,22 @@
+name: Cache Gradle
+
+description: Restore Gradle caches
+
+inputs:
+  gradle_cache_version:
+    description: Manual cache version
+    required: false
+    default: v1
+
+runs:
+  using: composite
+  steps:
+    - name: Restore Gradle cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          **/gradle/wrapper
+        key: gradle-${{ inputs.gradle_cache_version }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: gradle-${{ inputs.gradle_cache_version }}-
