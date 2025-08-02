@@ -17,7 +17,10 @@ runs:
     - name: Restore Yarn cache
       uses: actions/cache@v4
       with:
-        path: .yarn/cache
+        path: |
+          .yarn/cache
+          .yarn/install-state.gz
+          node_modules
         key: |
           yarn-${{ hashFiles('yarn.lock') }}${{ inputs.workspace != '' && format('-%s', hashFiles(format('{0}/package.json', inputs.workspace))) }}
         restore-keys: |
