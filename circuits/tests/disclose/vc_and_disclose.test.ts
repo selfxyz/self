@@ -1,7 +1,7 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { assert, expect } from 'chai';
-import { wasm as wasm_tester } from 'circom_tester';
+import { loadCircuit } from '../helpers/loadCircuit.js';
 import crypto from 'crypto';
 import { describe } from 'mocha';
 import path from 'path';
@@ -67,7 +67,8 @@ describe('Disclose', function () {
   const selector_ofac = 1;
 
   before(async () => {
-    circuit = await wasm_tester(
+    circuit = await loadCircuit(
+      path.join(__dirname, '../../build/disclose/vc_and_disclose'),
       path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
       {
         include: [

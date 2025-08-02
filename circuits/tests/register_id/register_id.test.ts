@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import { expect } from 'chai';
 import path from 'path';
-import { wasm as wasm_tester } from 'circom_tester';
+import { loadCircuit } from '../helpers/loadCircuit.js';
 import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/generateInputs';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
@@ -52,11 +52,10 @@ testSuite.forEach(
       );
 
       before(async () => {
-        circuit = await wasm_tester(
-          path.join(
-            __dirname,
-            `../../circuits/register_id/instances/${getCircuitNameFromPassportData(passportData, 'register')}.circom`
-          ),
+        const circuitName = getCircuitNameFromPassportData(passportData, 'register');
+        circuit = await loadCircuit(
+          path.join(__dirname, `../../build/register_id/${circuitName}`),
+          path.join(__dirname, `../../circuits/register_id/instances/${circuitName}.circom`),
           {
             include: [
               '../node_modules',

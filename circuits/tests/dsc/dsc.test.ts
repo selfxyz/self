@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasm_tester } from 'circom_tester';
+import { loadCircuit } from '../helpers/loadCircuit.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import serialized_csca_tree from '../../../common/pubkeys/serialized_csca_tree.json' with { type: 'json' };
@@ -38,11 +38,10 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
     const inputs = generateCircuitInputsDSC(passportData, serialized_csca_tree);
 
     before(async () => {
-      circuit = await wasm_tester(
-        path.join(
-          __dirname,
-          `../../circuits/dsc/instances/${getCircuitNameFromPassportData(passportData, 'dsc')}.circom`
-        ),
+      const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
+      circuit = await loadCircuit(
+        path.join(__dirname, `../../build/dsc/${circuitName}`),
+        path.join(__dirname, `../../circuits/dsc/instances/${circuitName}.circom`),
         {
           include: [
             '../node_modules',

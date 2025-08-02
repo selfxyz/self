@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasm_tester } from 'circom_tester';
+import { loadCircuit } from '../helpers/loadCircuit.js';
 import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import path from 'path';
@@ -55,11 +55,10 @@ testSuite.forEach(
       );
 
       before(async () => {
-        circuit = await wasm_tester(
-          path.join(
-            __dirname,
-            `../../circuits/register/instances/${getCircuitNameFromPassportData(passportData, 'register')}.circom`
-          ),
+        const circuitName = getCircuitNameFromPassportData(passportData, 'register');
+        circuit = await loadCircuit(
+          path.join(__dirname, `../../build/register/${circuitName}`),
+          path.join(__dirname, `../../circuits/register/instances/${circuitName}.circom`),
           {
             include: [
               '../node_modules',
