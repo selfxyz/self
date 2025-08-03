@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import remoteConfig from '@react-native-firebase/remote-config';
+import remoteConfig, {
+  ConfigDefaults,
+  ConfigSettings,
+} from '@react-native-firebase/remote-config';
 
 import {
   clearAllLocalOverrides as clearAllLocalOverridesShared,
@@ -38,10 +41,10 @@ const mobileRemoteConfigBackend: RemoteConfigBackend = {
   getAll: () => {
     return remoteConfig().getAll();
   },
-  setDefaults: async (defaults: Record<string, any>) => {
+  setDefaults: async (defaults: ConfigDefaults) => {
     await remoteConfig().setDefaults(defaults);
   },
-  setConfigSettings: async (settings: any) => {
+  setConfigSettings: async (settings: ConfigSettings) => {
     await remoteConfig().setConfigSettings(settings);
   },
   fetchAndActivate: async (): Promise<boolean> => {

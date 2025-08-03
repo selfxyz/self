@@ -36,16 +36,16 @@ export interface EventParams {
   reason?: string | null;
   duration_seconds?: number;
   attempt_count?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const segmentClient = createSegmentClient();
 
-function cleanParams(params: Record<string, any>) {
-  const newParams = {};
+function cleanParams(params: Record<string, unknown>) {
+  const newParams: Record<string, unknown> = {};
   for (const key of Object.keys(params)) {
     if (typeof params[key] !== 'function') {
-      (newParams as Record<string, any>)[key] = params[key];
+      newParams[key] = params[key];
     }
   }
   return newParams;
@@ -56,23 +56,16 @@ function cleanParams(params: Record<string, any>) {
  * - Ensures numeric values are properly formatted
  */
 function validateParams(
-  properties?: Record<string, any>,
-): Record<string, any> | undefined {
+  properties?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
   if (!properties) return undefined;
 
-  const validatedProps = { ...properties };
+  const validatedProps = { ...properties } as EventParams;
 
   // Ensure duration is formatted as a number with at most 2 decimal places
   if (validatedProps.duration_seconds !== undefined) {
-    if (typeof validatedProps.duration_seconds === 'string') {
-      validatedProps.duration_seconds = parseFloat(
-        validatedProps.duration_seconds,
-      );
-    }
-    // Format to 2 decimal places
-    validatedProps.duration_seconds = parseFloat(
-      validatedProps.duration_seconds.toFixed(2),
-    );
+    const duration = Number(validatedProps.duration_seconds);
+    validatedProps.duration_seconds = parseFloat(duration.toFixed(2));
   }
 
   return cleanParams(validatedProps);
@@ -86,7 +79,7 @@ const analytics = () => {
   function _track(
     type: 'event' | 'screen',
     eventName: string,
-    properties?: Record<string, any>,
+    properties?: Record<string, unknown>,
   ) {
     // Validate and clean properties
     const validatedProps = validateParams(properties);
@@ -102,7 +95,7 @@ const analytics = () => {
     if (!segmentClient) {
       return;
     }
-    const trackMethod = (e: string, p?: Record<string, any>) =>
+    const trackMethod = (e: string, p?: Record<string, unknown>) =>
       type === 'screen'
         ? segmentClient.screen(e, p)
         : segmentClient.track(e, p);
@@ -121,7 +114,10 @@ const analytics = () => {
     trackEvent: (eventName: string, properties?: EventParams) => {
       _track('event', eventName, properties);
     },
-    trackScreenView: (screenName: string, properties?: Record<string, any>) => {
+    trackScreenView: (
+      screenName: string,
+      properties?: Record<string, unknown>,
+    ) => {
       _track('screen', screenName, properties);
     },
     flush: () => {

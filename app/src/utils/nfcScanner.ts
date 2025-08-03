@@ -61,13 +61,28 @@ const scanIOS = async (inputs: Inputs) => {
   );
 };
 
-export const parseScanResponse = (response: any) => {
+interface AndroidScanResponse {
+  mrz: string;
+  eContent: string;
+  encryptedDigest: string;
+  _photo?: string;
+  _digestAlgorithm?: string;
+  _signerInfoDigestAlgorithm?: string;
+  _digestEncryptionAlgorithm?: string;
+  _LDSVersion?: string;
+  _unicodeVersion?: string;
+  encapContent: string;
+  documentSigningCertificate: string;
+  dataGroupHashes: string;
+}
+
+export const parseScanResponse = (response: unknown) => {
   return Platform.OS === 'android'
-    ? handleResponseAndroid(response)
-    : handleResponseIOS(response);
+    ? handleResponseAndroid(response as AndroidScanResponse)
+    : handleResponseIOS(response as string);
 };
 
-const handleResponseIOS = (response: any) => {
+const handleResponseIOS = (response: string) => {
   const parsed = JSON.parse(response);
   const dgHashesObj = JSON.parse(parsed?.dataGroupHashes);
   const dg1HashString = dgHashesObj?.DG1?.sodHash;
@@ -124,7 +139,7 @@ const handleResponseIOS = (response: any) => {
   } as PassportData;
 };
 
-const handleResponseAndroid = (response: any): PassportData => {
+const handleResponseAndroid = (response: AndroidScanResponse): PassportData => {
   const {
     mrz,
     eContent,
