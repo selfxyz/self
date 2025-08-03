@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
+import { jest } from '@jest/globals';
+
+import { useProtocolStore } from '../../../src/stores/protocolStore';
+import { useProvingStore } from '../../../src/utils/proving/provingMachine';
+import { actorMock } from './actorMock';
+
+jest.mock('xstate', () => {
+  const actual = jest.requireActual('xstate') as any;
+  const { actorMock: mockActor } = require('./actorMock');
+  return { ...actual, createActor: jest.fn(() => mockActor) };
+});
+
+jest.mock('../../../src/utils/analytics', () => () => ({
+  trackEvent: jest.fn(),
+}));
+jest.mock('../../../src/providers/passportDataProvider', () => ({
+  loadSelectedDocument: jest.fn(),
+}));
+jest.mock('../../../src/providers/authProvider', () => ({
+  unsafe_getPrivateKey: jest.fn(),
+}));
+
+describe('startFetchingData', () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+    const {
+      loadSelectedDocument,
+    } = require('../../../src/providers/passportDataProvider');
+    loadSelectedDocument.mockResolvedValue({
+      data: {
+        documentCategory: 'passport',
+        mock: false,
+        dsc_parsed: { authorityKeyIdentifier: 'key' },
+      },
+    });
+    const {
+      unsafe_getPrivateKey,
+    } = require('../../../src/providers/authProvider');
+    unsafe_getPrivateKey.mockResolvedValue('secret');
+    useProtocolStore.setState({
+      passport: { fetch_all: jest.fn().mockResolvedValue(undefined) },
+    } as any);
+    await useProvingStore.getState().init('register');
+    actorMock.send.mockClear();
+    useProtocolStore.setState({
+      passport: { fetch_all: jest.fn() },
+    } as any);
+    useProvingStore.setState({
+      passportData: { documentCategory: 'passport', mock: false },
+      env: 'prod',
+    });
+  });
+
+  it('emits FETCH_ERROR when dsc_parsed is missing', async () => {
+    await useProvingStore.getState().startFetchingData();
+
+    expect(
+      useProtocolStore.getState().passport.fetch_all,
+    ).not.toHaveBeenCalled();
+    expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
+  });
+});
