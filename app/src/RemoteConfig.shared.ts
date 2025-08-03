@@ -143,7 +143,7 @@ export const initRemoteConfig = async (
   try {
     await remoteConfig.fetchAndActivate();
   } catch (err) {
-    console.log('Remote config fetch failed', err);
+    console.error('Remote config fetch failed', err);
   }
 };
 
@@ -262,6 +262,6 @@ export const refreshRemoteConfig = async (
   try {
     await remoteConfig.fetchAndActivate();
   } catch (err) {
-    console.log('Remote config refresh failed', err);
+    console.error('Remote config refresh failed', err);
   }
 };

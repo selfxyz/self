@@ -15,7 +15,6 @@ export const triggerFeedback = (
 
   // Check if Vibration API is available
   if (!navigator.vibrate) {
-    console.warn('Vibration API not supported in this browser');
     return;
   }
 

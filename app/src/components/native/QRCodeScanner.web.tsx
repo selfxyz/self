@@ -24,7 +24,6 @@ export function QRCodeScannerView({
       onUpdate={(err, result) => {
         if (result) {
           const url = result.getText();
-          console.log('SELF URL', url);
           onQRData(null, url);
         } else if (err && err instanceof Error) {
           // it will give NotFoundException2 every frame until a QR code is found so we ignore it because thats just noisy

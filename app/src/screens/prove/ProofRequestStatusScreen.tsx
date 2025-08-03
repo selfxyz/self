@@ -64,7 +64,6 @@ const SuccessScreen: React.FC = () => {
   }
 
   function cancelCountdown() {
-    console.log('[ProofRequestStatusScreen] Cancelling countdown');
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -74,10 +73,6 @@ const SuccessScreen: React.FC = () => {
 
   useEffect(() => {
     if (isFocused) {
-      console.log(
-        '[ProofRequestStatusScreen] State update while focused:',
-        currentState,
-      );
     }
     if (currentState === 'completed') {
       notificationSuccess();
@@ -94,10 +89,6 @@ const SuccessScreen: React.FC = () => {
             new URL(selfApp.deeplinkCallback);
             setCountdown(5);
             setCountdownStarted(true);
-            console.log(
-              '[ProofRequestStatusScreen] Countdown started:',
-              countdown,
-            );
           } catch (error) {
             console.warn(
               'Invalid deep link URL provided:',

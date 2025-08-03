@@ -36,7 +36,6 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       // Throttling mechanism - prevent sync if called too frequently
       const now = Date.now();
       if (now - lastSyncTime < SYNC_THROTTLE_MS) {
-        console.log('Sync throttled - too soon since last sync');
         return;
       }
       lastSyncTime = now;
@@ -48,7 +47,6 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       const pendingProofs = await database.getPendingProofs();
 
       if (pendingProofs.rows.length === 0) {
-        console.log('No pending proofs to sync');
         return;
       }
 
@@ -58,7 +56,6 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       });
       setTimeout(() => {
         websocket.connected && websocket.disconnect();
-        console.log('WebSocket disconnected after timeout');
         // disconnect after 2 minutes
       }, SYNC_THROTTLE_MS * 4);
 
@@ -72,13 +69,10 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
           typeof message === 'string' ? JSON.parse(message) : message;
 
         if (data.status === 3) {
-          console.log('Failed to generate proof');
           get().updateProofStatus(data.request_id, ProofStatus.FAILURE);
         } else if (data.status === 4) {
-          console.log('Proof verified');
           get().updateProofStatus(data.request_id, ProofStatus.SUCCESS);
         } else if (data.status === 5) {
-          console.log('Failed to verify proof');
           get().updateProofStatus(data.request_id, ProofStatus.FAILURE);
         }
         websocket.emit('unsubscribe', data.request_id);

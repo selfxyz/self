@@ -69,7 +69,6 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
       if (!isMounted) {
         return;
       }
-      console.log(event.nativeEvent.data);
       onQRData(null, event.nativeEvent.data);
     },
     [onQRData, isMounted],

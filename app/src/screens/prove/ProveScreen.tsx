@@ -95,7 +95,6 @@ const ProveScreen: React.FC = () => {
     setDefaultDocumentTypeIfNeeded();
 
     if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
-      console.log('[ProveScreen] Selected app updated:', selectedApp);
       provingStore.init('disclose');
     }
     selectedAppRef.current = selectedApp;
