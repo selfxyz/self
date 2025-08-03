@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
+import type { PassportData } from '@selfxyz/common/types';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -11,11 +12,11 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { DocumentEvents } from '../../consts/analytics';
-import {
-  type DocumentCatalog,
-  type DocumentMetadata,
-  usePassport,
+import type {
+  DocumentCatalog,
+  DocumentMetadata,
 } from '../../providers/passportDataProvider';
+import { usePassport } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { borderColor, textBlack, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
@@ -36,7 +37,7 @@ const PassportDataSelector = () => {
     documents: [],
   });
   const [_allDocuments, setAllDocuments] = useState<
-    Record<string, { metadata: DocumentMetadata }>
+    Record<string, { data: PassportData; metadata: DocumentMetadata }>
   >({});
   const [loading, setLoading] = useState(true);
 
