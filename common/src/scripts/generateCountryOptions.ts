@@ -1,8 +1,9 @@
-import { countryCodes } from '../constants/constants.js';
-import getCountryISO2 from 'country-iso-3-to-2';
 import { flag } from 'country-emoji';
+import getCountryISO2 from 'country-iso-3-to-2';
 import fs from 'fs';
 import path from 'path';
+
+import { countryCodes } from '../constants/constants.js';
 
 try {
   console.log('Generating country options...');

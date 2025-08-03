@@ -1,24 +1,6 @@
 import * as asn1js from 'asn1js';
-import { Certificate } from 'pkijs';
 import { sha256 } from 'js-sha256';
-
-export const getSubjectKeyIdentifier = (cert: Certificate): string => {
-  const subjectKeyIdentifier = cert.extensions.find((ext) => ext.extnID === '2.5.29.14');
-  if (subjectKeyIdentifier) {
-    let skiValue = Buffer.from(subjectKeyIdentifier.extnValue.valueBlock.valueHexView).toString(
-      'hex'
-    );
-
-    skiValue = skiValue.replace(/^(?:30(?:16|1E|22|32|42))?(?:04(?:08|14|1C|20|30|40))?/, '');
-    return skiValue;
-  } else {
-    // console.log('\x1b[31m%s\x1b[0m', 'no subject key identifier found'); // it's no big deal if this is not found
-    // do a sha1 of the certificate tbs
-    const hash = sha256.create();
-    hash.update(cert.tbsView);
-    return hash.hex();
-  }
-};
+import type { Certificate } from 'pkijs';
 
 export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
   const authorityKeyIdentifierExt = cert.extensions.find((ext) => ext.extnID === '2.5.29.35');
@@ -54,3 +36,21 @@ export function getIssuerCountryCode(cert: Certificate): string {
   }
   return issuerCountryCode.toUpperCase();
 }
+
+export const getSubjectKeyIdentifier = (cert: Certificate): string => {
+  const subjectKeyIdentifier = cert.extensions.find((ext) => ext.extnID === '2.5.29.14');
+  if (subjectKeyIdentifier) {
+    let skiValue = Buffer.from(subjectKeyIdentifier.extnValue.valueBlock.valueHexView).toString(
+      'hex'
+    );
+
+    skiValue = skiValue.replace(/^(?:30(?:16|1E|22|32|42))?(?:04(?:08|14|1C|20|30|40))?/, '');
+    return skiValue;
+  } else {
+    // console.log('\x1b[31m%s\x1b[0m', 'no subject key identifier found'); // it's no big deal if this is not found
+    // do a sha1 of the certificate tbs
+    const hash = sha256.create();
+    hash.update(cert.tbsView);
+    return hash.hex();
+  }
+};

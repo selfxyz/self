@@ -1,46 +1,113 @@
-export const TREE_TRACKER_URL = 'https://tree.self.xyz';
-export const CSCA_TREE_DEPTH = 12;
-export const DSC_TREE_DEPTH = 21;
-export const COMMITMENT_TREE_DEPTH = 33;
-export const DEFAULT_USER_ID_TYPE = 'uuid';
-
-export const REDIRECT_URL = 'https://redirect.self.xyz';
-export const WS_RPC_URL_VC_AND_DISCLOSE = 'ws://disclose.proving.self.xyz:8888/';
-export const WS_DB_RELAYER = 'wss://websocket.self.xyz';
-export const WS_DB_RELAYER_STAGING = 'wss://websocket.staging.self.xyz';
+export type Country3LetterCode = keyof typeof countryCodes;
+export type document_type = 'passport' | 'id_card';
+export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
 export const API_URL = 'https://api.self.xyz';
-export const TREE_URL = 'https://tree.self.xyz';
-export const TREE_URL_STAGING = 'https://tree.staging.self.xyz';
 export const API_URL_STAGING = 'https://api.staging.self.xyz';
+
+export const CHAIN_NAME = 'celo';
+
+// possible values because of sha1 constaints: 192,320,384, 448, 576, 640
+export const CIRCUIT_CONSTANTS = {
+  REGISTER_NULLIFIER_INDEX: 0,
+  REGISTER_COMMITMENT_INDEX: 1,
+  REGISTER_MERKLE_ROOT_INDEX: 2,
+
+  DSC_TREE_LEAF_INDEX: 0,
+  DSC_CSCA_ROOT_INDEX: 1,
+
+  VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX: 0,
+  VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX: 3,
+  VC_AND_DISCLOSE_NULLIFIER_INDEX: 7,
+  VC_AND_DISCLOSE_ATTESTATION_ID_INDEX: 8,
+  VC_AND_DISCLOSE_MERKLE_ROOT_INDEX: 9,
+  VC_AND_DISCLOSE_CURRENT_DATE_INDEX: 10,
+  VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX: 16,
+  VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX: 17,
+  VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX: 18,
+  VC_AND_DISCLOSE_SCOPE_INDEX: 19,
+  VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX: 20,
+};
+
+export const CIRCUIT_TYPES = ['dsc', 'register', 'vc_and_disclose'];
+
+export const COMMITMENT_TREE_DEPTH = 33;
+
+export const CSCA_TREE_DEPTH = 12;
+
 export const CSCA_TREE_URL = 'https://tree.self.xyz/csca';
-export const DSC_TREE_URL = 'https://tree.self.xyz/dsc';
-export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
-export const DSC_TREE_URL_STAGING = 'https://tree.staging.self.xyz/dsc';
-export const IDENTITY_TREE_URL = 'https://tree.self.xyz/identity';
-export const IDENTITY_TREE_URL_STAGING = 'https://tree.staging.self.xyz/identity';
 
 export const CSCA_TREE_URL_ID_CARD = 'https://tree.self.xyz/csca-id';
-export const DSC_TREE_URL_ID_CARD = 'https://tree.self.xyz/dsc-id';
+
+export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
+
 export const CSCA_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/csca-id';
-export const DSC_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/dsc-id';
-export const IDENTITY_TREE_URL_ID_CARD = 'https://tree.self.xyz/identity-id';
-export const IDENTITY_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/identity-id';
 
-export const PASSPORT_ATTESTATION_ID = '1'; //"8518753152044246090169372947057357973469996808638122125210848696986717482788"
-export const ID_CARD_ATTESTATION_ID = '2';
-export const CHAIN_NAME = 'celo';
-export const RPC_URL = 'https://forno.celo.org';
-export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8';
-
-// we make it global here because passing it to generateCircuitInputsRegister caused trouble
-export const DEVELOPMENT_MODE = true;
 export const DEFAULT_MAJORITY = '18';
 
-export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
-export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
-export const saltLengths = [64, 48, 32];
+export const DEFAULT_RPC_URL = 'https://mainnet.optimism.io';
 
-export type document_type = 'passport' | 'id_card';
+export const DEFAULT_USER_ID_TYPE = 'uuid';
+
+export const DEVELOPMENT_MODE = true;
+
+export const DSC_TREE_DEPTH = 21;
+
+export const DSC_TREE_URL = 'https://tree.self.xyz/dsc';
+
+export const DSC_TREE_URL_ID_CARD = 'https://tree.self.xyz/dsc-id';
+
+export const DSC_TREE_URL_STAGING = 'https://tree.staging.self.xyz/dsc';
+
+export const DSC_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/dsc-id';
+
+export enum DscVerifierId {
+  dsc_sha1_ecdsa_brainpoolP256r1 = 0,
+  dsc_sha1_rsa_65537_4096 = 1,
+  dsc_sha256_ecdsa_brainpoolP256r1 = 2,
+  dsc_sha256_ecdsa_brainpoolP384r1 = 3,
+  dsc_sha256_ecdsa_secp256r1 = 4,
+  dsc_sha256_ecdsa_secp384r1 = 5,
+  dsc_sha256_ecdsa_secp521r1 = 6,
+  dsc_sha256_rsa_65537_4096 = 7,
+  dsc_sha256_rsapss_3_32_3072 = 8,
+  dsc_sha256_rsapss_65537_32_3072 = 9,
+  dsc_sha256_rsapss_65537_32_4096 = 10,
+  dsc_sha384_ecdsa_brainpoolP384r1 = 11,
+  dsc_sha384_ecdsa_brainpoolP512r1 = 12,
+  dsc_sha384_ecdsa_secp384r1 = 13,
+  dsc_sha512_ecdsa_brainpoolP512r1 = 14,
+  dsc_sha512_ecdsa_secp521r1 = 15,
+  dsc_sha512_rsa_65537_4096 = 16,
+  dsc_sha512_rsapss_65537_64_4096 = 17,
+  dsc_sha256_rsapss_3_32_4096 = 18,
+  dsc_sha1_ecdsa_secp256r1 = 19,
+}
+
+export const ECDSA_K_LENGTH_FACTOR = 2;
+
+export const IDENTITY_TREE_URL = 'https://tree.self.xyz/identity';
+
+//"8518753152044246090169372947057357973469996808638122125210848696986717482788"
+export const IDENTITY_TREE_URL_ID_CARD = 'https://tree.self.xyz/identity-id';
+
+export const IDENTITY_TREE_URL_STAGING = 'https://tree.staging.self.xyz/identity';
+
+export const IDENTITY_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/identity-id';
+
+export const ID_CARD_ATTESTATION_ID = '2';
+
+export const MAX_BYTES_IN_FIELD = 31;
+
+export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
+  rsa_sha256_65537_4096: 512,
+  rsa_sha1_65537_4096: 640,
+  rsapss_sha256_65537_2048: 640,
+  rsapss_sha256_65537_3072: 640,
+  rsapss_sha256_65537_4096: 768,
+  rsapss_sha256_3_3072: 768,
+  rsapss_sha256_3_4096: 768,
+  rsapss_sha384_65537_3072: 768,
+};
 
 /**
  * Maximum number of countries in the forbidden countries list.
@@ -48,12 +115,9 @@ export type document_type = 'passport' | 'id_card';
  * IMPORTANT: This value must match in both backend and frontend SDK.
  * Any mismatch will result in an INVALID_FORBIDDEN_COUNTRIES error.
  */
+export const MAX_DATAHASHES_LEN = 320;
+
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 40;
-
-// Note: Circuit lists are now managed through RegisterVerifierId and DscVerifierId enums below
-// instead of separate arrays for better type safety and maintainability
-
-export const OFAC_TREE_LEVELS = 64;
 
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 384,
@@ -71,29 +135,22 @@ export const MAX_PADDED_SIGNED_ATTR_LEN: Record<(typeof hashAlgos)[number], numb
   sha512: 256,
 };
 
-export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
-  rsa_sha256_65537_4096: 512,
-  rsa_sha1_65537_4096: 640,
-  rsapss_sha256_65537_2048: 640,
-  rsapss_sha256_65537_3072: 640,
-  rsapss_sha256_65537_4096: 768,
-  rsapss_sha256_3_3072: 768,
-  rsapss_sha256_3_4096: 768,
-  rsapss_sha384_65537_3072: 768,
-};
+// Note: Circuit lists are now managed through RegisterVerifierId and DscVerifierId enums below
+// instead of separate arrays for better type safety and maintainability
+export const MAX_PUBKEY_DSC_BYTES = 525;
 
-export const ECDSA_K_LENGTH_FACTOR = 2;
-// possible values because of sha1 constaints: 192,320,384, 448, 576, 640
+export const OFAC_TREE_LEVELS = 64;
 
-export const CIRCUIT_TYPES = ['dsc', 'register', 'vc_and_disclose'];
-export const circuitNameFromMode = {
-  prove: 'prove',
-  prove_onchain: 'prove',
-  prove_offchain: 'prove',
-  register: 'prove',
-  vc_and_disclose: 'vc_and_disclose',
-  dsc: 'dsc',
-};
+// we make it global here because passing it to generateCircuitInputsRegister caused trouble
+export const PASSPORT_ATTESTATION_ID = '1';
+
+export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8';
+
+export const REDIRECT_URL = 'https://redirect.self.xyz';
+
+export const REGISTER_CONTRACT_ADDRESS = '0x3F346FFdC5d583e4126AF01A02Ac5b9CdB3f1909';
+
+export const RPC_URL = 'https://forno.celo.org';
 
 export enum RegisterVerifierId {
   register_sha256_sha256_sha256_rsa_65537_4096 = 0,
@@ -150,28 +207,7 @@ export enum RegisterVerifierId {
   register_id_sha512_sha512_sha512_rsapss_65537_64_2048 = 51,
 }
 
-export enum DscVerifierId {
-  dsc_sha1_ecdsa_brainpoolP256r1 = 0,
-  dsc_sha1_rsa_65537_4096 = 1,
-  dsc_sha256_ecdsa_brainpoolP256r1 = 2,
-  dsc_sha256_ecdsa_brainpoolP384r1 = 3,
-  dsc_sha256_ecdsa_secp256r1 = 4,
-  dsc_sha256_ecdsa_secp384r1 = 5,
-  dsc_sha256_ecdsa_secp521r1 = 6,
-  dsc_sha256_rsa_65537_4096 = 7,
-  dsc_sha256_rsapss_3_32_3072 = 8,
-  dsc_sha256_rsapss_65537_32_3072 = 9,
-  dsc_sha256_rsapss_65537_32_4096 = 10,
-  dsc_sha384_ecdsa_brainpoolP384r1 = 11,
-  dsc_sha384_ecdsa_brainpoolP512r1 = 12,
-  dsc_sha384_ecdsa_secp384r1 = 13,
-  dsc_sha512_ecdsa_brainpoolP512r1 = 14,
-  dsc_sha512_ecdsa_secp521r1 = 15,
-  dsc_sha512_rsa_65537_4096 = 16,
-  dsc_sha512_rsapss_65537_64_4096 = 17,
-  dsc_sha256_rsapss_3_32_4096 = 18,
-  dsc_sha1_ecdsa_secp256r1 = 19,
-}
+export const SBT_CONTRACT_ADDRESS = '0x601Fd54FD11C5E77DE84d877e55B829aff20f0A6';
 
 export enum SignatureAlgorithmIndex {
   rsa_sha256_65537_2048 = 1,
@@ -208,6 +244,17 @@ export enum SignatureAlgorithmIndex {
   ecdsa_sha512_secp521r1_521 = 41,
 }
 
+export const TREE_TRACKER_URL = 'https://tree.self.xyz';
+
+export const TREE_URL = 'https://tree.self.xyz';
+export const TREE_URL_STAGING = 'https://tree.staging.self.xyz';
+
+export const WS_DB_RELAYER = 'wss://websocket.self.xyz';
+
+export const WS_DB_RELAYER_STAGING = 'wss://websocket.staging.self.xyz';
+
+export const WS_RPC_URL_VC_AND_DISCLOSE = 'ws://disclose.proving.self.xyz:8888/';
+
 export const attributeToPosition = {
   issuing_state: [2, 4],
   name: [5, 43],
@@ -231,64 +278,35 @@ export const attributeToPosition_ID = {
   ofac: [92, 92],
 };
 
+export const circuitNameFromMode = {
+  prove: 'prove',
+  prove_onchain: 'prove',
+  prove_offchain: 'prove',
+  register: 'prove',
+  vc_and_disclose: 'vc_and_disclose',
+  dsc: 'dsc',
+};
 export const circuitToSelectorMode = {
   register: [0, 0],
   prove_onchain: [1, 0],
   prove_offchain: [1, 1],
 };
 
-export const revealedDataTypes = {
-  issuing_state: 0,
-  name: 1,
-  passport_number: 2,
-  nationality: 3,
-  date_of_birth: 4,
-  gender: 5,
-  expiry_date: 6,
-  older_than: 7,
-  passport_no_ofac: 8,
-  name_and_dob_ofac: 9,
-  name_and_yob_ofac: 10,
-};
+export const contribute_publicKey = `-----BEGIN RSA PUBLIC KEY-----
+MIICCgKCAgEAv/hm7FZZ2KBmaeDHmLoRwuWmCcNKT561RqbsW8ZuYSyPWJUldE9U
+Cf0lW3K1H5lsSDkl0Cq84cooL9f6X59Mffb/N24ZKTdL0xdcPwjk4LbcrVm8qubL
+0a/4uCNoZZ1my4nxbpLxYtbr8CNmUGvBOVKf8IcjsY6VghIZrO63G6BN/G44su1Z
+WcHpboGt9SDQK4enCyKxnCD+PbDYlewSA0n3GRajFfZex1bj1EvrS2hTLv8oNH5e
+9H+3TUke0uO6Ttl0bZepoMmPlpAXhJByISqC6SLth4WFIH+G1I/xt9AEM7hOfLMl
+KQv/3wlLEgEueRryKAHB2tqkaDKVJyw+tOyWj2iWA+nVgQKAxO4hOw01ljyVbcx6
+KboXwnamlZPFIx4tjEaZ+ClXCFqvXhE9LDFK11QsYzJZl0aRVfTNqcurhEt7SK0f
+qzOBhID0Nxk4k9sW1uT6ocW1xp1SB2WotORssOKIAOLJM8IbPl6n/DkYNcfvyXI7
+4BlUrf6M2DgZMYATabIy94AvopHJOyiRfh4NpQPDntWnShiI1em2MmtXiWFCdVFV
+6/QfJTKVixJpVfDh386ALXc97EPWDMWIalUwYoV/eRSMnuV8nZ0+Ctp3Qrtk/JYd
++FWhKbtlPeRjmGVr6mVlvDJ7KqtY5/RqqwfWeXhXezGhQqQ/OoQQCRkCAwEAAQ==
+-----END RSA PUBLIC KEY-----`;
 
-export const CIRCUIT_CONSTANTS = {
-  REGISTER_NULLIFIER_INDEX: 0,
-  REGISTER_COMMITMENT_INDEX: 1,
-  REGISTER_MERKLE_ROOT_INDEX: 2,
-
-  DSC_TREE_LEAF_INDEX: 0,
-  DSC_CSCA_ROOT_INDEX: 1,
-
-  VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX: 0,
-  VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX: 3,
-  VC_AND_DISCLOSE_NULLIFIER_INDEX: 7,
-  VC_AND_DISCLOSE_ATTESTATION_ID_INDEX: 8,
-  VC_AND_DISCLOSE_MERKLE_ROOT_INDEX: 9,
-  VC_AND_DISCLOSE_CURRENT_DATE_INDEX: 10,
-  VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX: 16,
-  VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX: 17,
-  VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX: 18,
-  VC_AND_DISCLOSE_SCOPE_INDEX: 19,
-  VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX: 20,
-};
-
-export const MAX_BYTES_IN_FIELD = 31;
-export const MAX_PUBKEY_DSC_BYTES = 525;
-
-export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
-export const n_dsc = 120;
-export const n_dsc_3072 = 120;
-export const n_dsc_4096 = 120;
-export const k_dsc = 35;
-export const k_dsc_3072 = 35; //48;
-export const k_dsc_4096 = 35;
-export const n_csca = 120;
-export const k_csca = 35;
-export const n_dsc_ecdsa = 64;
-export const k_dsc_ecdsa = 4;
-export const max_dsc_bytes = 1792;
-export const max_csca_bytes = 1792;
-
+// not using a library for this as the entry countries use can be differnt than the ISO 3166-1 alpha-3 standard
 export const countryCodes = {
   AFG: 'Afghanistan',
   ALA: 'Aland Islands',
@@ -541,8 +559,6 @@ export const countryCodes = {
   ZMB: 'Zambia',
   ZWE: 'Zimbabwe',
 };
-// not using a library for this as the entry countries use can be differnt than the ISO 3166-1 alpha-3 standard
-export type Country3LetterCode = keyof typeof countryCodes;
 
 export function getCountryCode(countryName: string): string | string {
   const entries = Object.entries(countryCodes);
@@ -550,20 +566,46 @@ export function getCountryCode(countryName: string): string | string {
   return found ? found[0] : 'undefined';
 }
 
-export const contribute_publicKey = `-----BEGIN RSA PUBLIC KEY-----
-MIICCgKCAgEAv/hm7FZZ2KBmaeDHmLoRwuWmCcNKT561RqbsW8ZuYSyPWJUldE9U
-Cf0lW3K1H5lsSDkl0Cq84cooL9f6X59Mffb/N24ZKTdL0xdcPwjk4LbcrVm8qubL
-0a/4uCNoZZ1my4nxbpLxYtbr8CNmUGvBOVKf8IcjsY6VghIZrO63G6BN/G44su1Z
-WcHpboGt9SDQK4enCyKxnCD+PbDYlewSA0n3GRajFfZex1bj1EvrS2hTLv8oNH5e
-9H+3TUke0uO6Ttl0bZepoMmPlpAXhJByISqC6SLth4WFIH+G1I/xt9AEM7hOfLMl
-KQv/3wlLEgEueRryKAHB2tqkaDKVJyw+tOyWj2iWA+nVgQKAxO4hOw01ljyVbcx6
-KboXwnamlZPFIx4tjEaZ+ClXCFqvXhE9LDFK11QsYzJZl0aRVfTNqcurhEt7SK0f
-qzOBhID0Nxk4k9sW1uT6ocW1xp1SB2WotORssOKIAOLJM8IbPl6n/DkYNcfvyXI7
-4BlUrf6M2DgZMYATabIy94AvopHJOyiRfh4NpQPDntWnShiI1em2MmtXiWFCdVFV
-6/QfJTKVixJpVfDh386ALXc97EPWDMWIalUwYoV/eRSMnuV8nZ0+Ctp3Qrtk/JYd
-+FWhKbtlPeRjmGVr6mVlvDJ7KqtY5/RqqwfWeXhXezGhQqQ/OoQQCRkCAwEAAQ==
------END RSA PUBLIC KEY-----`;
+export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 
-export const DEFAULT_RPC_URL = 'https://mainnet.optimism.io';
-export const REGISTER_CONTRACT_ADDRESS = '0x3F346FFdC5d583e4126AF01A02Ac5b9CdB3f1909';
-export const SBT_CONTRACT_ADDRESS = '0x601Fd54FD11C5E77DE84d877e55B829aff20f0A6';
+export const k_csca = 35;
+
+export const k_dsc = 35;
+
+//48;
+export const k_dsc_3072 = 35;
+
+export const k_dsc_4096 = 35;
+
+export const k_dsc_ecdsa = 4;
+
+export const max_csca_bytes = 1792;
+
+export const max_dsc_bytes = 1792;
+
+export const n_csca = 120;
+
+export const n_dsc = 120;
+
+export const n_dsc_3072 = 120;
+
+export const n_dsc_4096 = 120;
+
+export const n_dsc_ecdsa = 64;
+
+// max formatted and concatenated datagroup hashes length in bytes
+export const revealedDataTypes = {
+  issuing_state: 0,
+  name: 1,
+  passport_number: 2,
+  nationality: 3,
+  date_of_birth: 4,
+  gender: 5,
+  expiry_date: 6,
+  older_than: 7,
+  passport_no_ofac: 8,
+  name_and_dob_ofac: 9,
+  name_and_yob_ofac: 10,
+};
+
+export const saltLengths = [64, 48, 32];

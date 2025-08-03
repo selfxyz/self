@@ -1,6 +1,7 @@
-import { writeFileSync, unlinkSync } from 'fs';
 import { execSync } from 'child_process';
-import { CertificateData } from './dataStructure.js';
+import { unlinkSync, writeFileSync } from 'fs';
+
+import type { CertificateData } from './dataStructure.js';
 
 export function addOpenSslInfo(
   certificateData: CertificateData,

@@ -1,5 +1,5 @@
-import { Country3LetterCode } from '../../constants/countries.js';
 import { MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH } from '../../constants/constants.js';
+import type { Country3LetterCode } from '../../constants/countries.js';
 
 export function getPackedForbiddenCountries(
   forbiddenCountriesList: Array<Country3LetterCode | ''>

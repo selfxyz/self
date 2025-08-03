@@ -69,9 +69,8 @@ module.exports = {
       },
     ],
 
-    // Export sorting
+    // Export sorting - using sort-exports for better type prioritization
 
-    'simple-import-sort/exports': 'error',
     'sort-exports/sort-exports': [
       'error',
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
