@@ -90,7 +90,8 @@ module.exports = {
       'error',
       {
         selector: 'ExportAllDeclaration',
-        message: 'export * is forbidden. Use selective exports for better tree shaking. Example: export { specific1, specific2 } from "./module"',
+        message:
+          'export * is forbidden. Use selective exports for better tree shaking. Example: export { specific1, specific2 } from "./module"',
       },
     ],
   },
