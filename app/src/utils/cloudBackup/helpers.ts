@@ -7,9 +7,9 @@ import { CloudStorage, CloudStorageScope } from 'react-native-cloud-storage';
 import { name } from '../../../package.json';
 import type { Mnemonic } from '../../types/mnemonic';
 
+export const FOLDER = `/${name}`;
 export const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;
 export const FILE_NAME = 'encrypted-private-key';
-export const FOLDER = `/${name}`;
 
 if (Platform.OS === 'ios') {
   CloudStorage.setProviderOptions({ scope: CloudStorageScope.AppData });

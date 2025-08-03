@@ -55,6 +55,32 @@ import {
 
 import { unsafe_getPrivateKey, useAuth } from '../providers/authProvider';
 
+// Create safe wrapper functions to prevent undefined errors during early initialization
+// These need to be declared early to avoid dependency issues
+const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
+  try {
+    return await loadDocumentCatalog();
+  } catch (error) {
+    console.warn(
+      'Error in safeLoadDocumentCatalog, returning empty catalog:',
+      error,
+    );
+    return { documents: [] };
+  }
+};
+
+const safeGetAllDocuments = async () => {
+  try {
+    return await getAllDocuments();
+  } catch (error) {
+    console.warn(
+      'Error in safeGetAllDocuments, returning empty object:',
+      error,
+    );
+    return {};
+  }
+};
+
 interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication
   documentType: string; // passport, mock_passport, id_card, etc.
@@ -637,31 +663,6 @@ interface IPassportContext {
   hasAnyValidRegisteredDocument: () => Promise<boolean>;
   checkAndUpdateRegistrationStates: () => Promise<void>;
 }
-
-// Create safe wrapper functions to prevent undefined errors during early initialization
-const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
-  try {
-    return await loadDocumentCatalog();
-  } catch (error) {
-    console.warn(
-      'Error in safeLoadDocumentCatalog, returning empty catalog:',
-      error,
-    );
-    return { documents: [] };
-  }
-};
-
-const safeGetAllDocuments = async () => {
-  try {
-    return await getAllDocuments();
-  } catch (error) {
-    console.warn(
-      'Error in safeGetAllDocuments, returning empty object:',
-      error,
-    );
-    return {};
-  }
-};
 
 export async function markCurrentDocumentAsRegistered(): Promise<void> {
   const catalog = await loadDocumentCatalog();

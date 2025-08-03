@@ -5,12 +5,16 @@ import { Platform, Vibration } from 'react-native';
 import { triggerFeedback } from './trigger';
 
 // Keep track of the loading screen interval
-let loadingScreenInterval: NodeJS.Timeout | null = null;
+let loadingScreenInterval: ReturnType<typeof setInterval> | null = null;
 
+// Define the base functions first
+export const impactLight = () => triggerFeedback('impactLight');
+export const impactMedium = () => triggerFeedback('impactMedium');
+export const selectionChange = () => triggerFeedback('selection');
+
+// Then define the aliases
 export const buttonTap = impactLight;
-
 export const cancelTap = selectionChange;
-
 export const confirmTap = impactMedium;
 
 // consistent light feedback at a steady interval
@@ -104,9 +108,6 @@ export const feedbackUnsuccessful = () => {
 /**
  * Haptic actions
  */
-export const impactLight = () => triggerFeedback('impactLight');
-
-export const impactMedium = () => triggerFeedback('impactMedium');
 
 // Custom feedback events
 export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
@@ -163,7 +164,5 @@ export const notificationError = () => triggerFeedback('notificationError');
 export const notificationSuccess = () => triggerFeedback('notificationSuccess');
 
 export const notificationWarning = () => triggerFeedback('notificationWarning');
-
-export const selectionChange = () => triggerFeedback('selection');
 
 export { triggerFeedback } from './trigger';

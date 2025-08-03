@@ -74,13 +74,6 @@ export const LeftAction: React.FC<LeftActionProps> = ({
   return <View {...props}>{children}</View>;
 };
 
-export const NavBar = {
-  Container,
-  Title: NavBarTitle,
-  LeftAction,
-  RightAction,
-};
-
 const NavBarTitle: React.FC<NavBarTitleProps> = ({ children, ...props }) => {
   if (!children) {
     return null;
@@ -129,4 +122,11 @@ export const RightAction: React.FC<RightActionProps> = ({
       {component}
     </View>
   );
+};
+
+export const NavBar = {
+  Container,
+  Title: NavBarTitle,
+  LeftAction,
+  RightAction,
 };
