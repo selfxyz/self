@@ -4,8 +4,6 @@ import { useProtocolStore } from '../../../src/stores/protocolStore';
 import { useSelfAppStore } from '../../../src/stores/selfAppStore';
 import { useProvingStore } from '../../../src/utils/proving/provingMachine';
 
-import { jest } from '@jest/globals';
-
 jest.mock('xstate', () => {
   const actual = jest.requireActual('xstate') as any;
   const { actorMock } = require('./actorMock');
