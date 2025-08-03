@@ -22,6 +22,7 @@ export {
   PASSPORT_ATTESTATION_ID,
   PCR0_MANAGER_ADDRESS,
   RPC_URL,
+  REDIRECT_URL,
   RegisterVerifierId,
   SignatureAlgorithmIndex,
   TREE_URL,
