@@ -53,7 +53,7 @@
     "tag:release": "node scripts/tag.js release",
     "tag:remove": "node scripts/tag.js remove",
     "test": "jest --passWithNoTests && node --test scripts/tests/*.cjs",
-    "test:build": "yarn build:deps && yarn web:build && yarn types && yarn analyze:bundle:ios",
+    "test:build": "yarn build:deps && yarn web:build && yarn types && yarn analyze:bundle:ios && yarn test",
     "test:coverage": "jest --coverage --passWithNoTests",
     "test:coverage:ci": "jest --coverage --passWithNoTests --ci --coverageReporters=lcov --coverageReporters=text --coverageReporters=json",
     "test:e2e:android": "cd android && ./gradlew assembleDebug && cd .. && maestro test tests/e2e/launch.android.flow.yaml",

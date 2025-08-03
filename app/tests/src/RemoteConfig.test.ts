@@ -10,7 +10,6 @@ import {
   setLocalOverride,
 } from '../../src/RemoteConfig';
 
-import { jest } from '@jest/globals';
 // Import the mocked AsyncStorage for test controls
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
