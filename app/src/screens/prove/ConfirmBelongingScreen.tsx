@@ -65,8 +65,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
       navigate();
     } catch (error: unknown) {
       console.error('Error initializing proving process:', error);
-      const message =
-        error instanceof Error ? error.message : 'Unknown error';
+      const message = error instanceof Error ? error.message : 'Unknown error';
       trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
         error: message,
       });

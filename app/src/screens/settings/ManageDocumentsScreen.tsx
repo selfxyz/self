@@ -12,9 +12,9 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { DocumentEvents } from '../../consts/analytics';
 import {
-  usePassport,
   type DocumentCatalog,
   type DocumentMetadata,
+  usePassport,
 } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { borderColor, textBlack, white } from '../../utils/colors';

@@ -122,10 +122,10 @@ async function loadOrCreateMnemonic(): Promise<string | false> {
         e,
       );
       console.log('Creating a new one');
-        trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-          reason: 'unknown_error',
-          error: e instanceof Error ? e.message : String(e),
-        });
+      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+        reason: 'unknown_error',
+        error: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
