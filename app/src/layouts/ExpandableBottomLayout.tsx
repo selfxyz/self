@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { View, ViewProps } from 'tamagui';
+import type { ViewProps } from 'tamagui';
+import { View } from 'tamagui';
 
 import { black, white } from '../utils/colors';
 import { extraYPadding } from '../utils/constants';

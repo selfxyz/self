@@ -4,7 +4,8 @@ import React from 'react';
 
 import { amber50, black, slate300, white } from '../../utils/colors';
 import { normalizeBorderWidth } from '../../utils/styleUtils';
-import AbstractButton, { ButtonProps } from './AbstractButton';
+import type { ButtonProps } from './AbstractButton';
+import AbstractButton from './AbstractButton';
 
 export function PrimaryButton({ children, ...props }: ButtonProps) {
   const { borderWidth, ...restProps } = props;

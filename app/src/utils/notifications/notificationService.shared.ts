@@ -1,5 +1,24 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+export interface DeviceTokenRegistration {
+  session_id: string;
+  device_token: string;
+  platform: 'ios' | 'android' | 'web';
+}
+
+export interface RemoteMessage {
+  messageId?: string;
+  data?: { [key: string]: string | object };
+  notification?: {
+    title?: string;
+    body?: string;
+  };
+  [key: string]: any;
+}
+
+export const API_URL = 'https://notification.self.xyz';
+
+export const API_URL_STAGING = 'https://notification.staging.self.xyz';
 export const getStateMessage = (state: string): string => {
   switch (state) {
     case 'idle':
@@ -32,22 +51,3 @@ export const getStateMessage = (state: string): string => {
       return 'Processing...';
   }
 };
-
-export interface RemoteMessage {
-  messageId?: string;
-  data?: { [key: string]: string | object };
-  notification?: {
-    title?: string;
-    body?: string;
-  };
-  [key: string]: any;
-}
-
-export interface DeviceTokenRegistration {
-  session_id: string;
-  device_token: string;
-  platform: 'ios' | 'android' | 'web';
-}
-
-export const API_URL = 'https://notification.self.xyz';
-export const API_URL_STAGING = 'https://notification.staging.self.xyz';

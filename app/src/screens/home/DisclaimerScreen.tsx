@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
@@ -15,6 +14,8 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useSettingStore } from '../../stores/settingStore';
 import { black, white } from '../../utils/colors';
 import { confirmTap, notificationWarning } from '../../utils/haptic';
+
+import { useNavigation } from '@react-navigation/native';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation = useNavigation();

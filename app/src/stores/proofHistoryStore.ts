@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { WS_DB_RELAYER } from '@selfxyz/common/constants';
 import { io } from 'socket.io-client';
 import { create } from 'zustand';
 
+import { WS_DB_RELAYER } from '@selfxyz/common/constants';
+
 import { database } from './database';
-import { ProofHistory, ProofStatus } from './proof-types';
+import type { ProofHistory } from './proof-types';
+import { ProofStatus } from './proof-types';
 
 interface ProofHistoryState {
   proofHistory: ProofHistory[];
