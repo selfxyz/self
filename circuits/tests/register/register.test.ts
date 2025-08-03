@@ -62,10 +62,6 @@ testSuite.forEach(
           __dirname,
           `../../build/register/${circuitName}`
         );
-        if (!fs.existsSync(output)) {
-          // Skip test if prebuilt artifact is missing
-          this.skip();
-        }
         circuit = await wasm_tester(
           path.join(
             __dirname,
