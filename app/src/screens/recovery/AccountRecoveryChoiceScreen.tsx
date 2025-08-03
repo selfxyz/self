@@ -81,7 +81,7 @@ const AccountRecoveryChoiceScreen: React.FC<
       trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
       onRestoreFromCloudNext();
       setRestoring(false);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
       setRestoring(false);

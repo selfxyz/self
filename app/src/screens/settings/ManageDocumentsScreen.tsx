@@ -11,7 +11,11 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { DocumentEvents } from '../../consts/analytics';
-import { usePassport } from '../../providers/passportDataProvider';
+import {
+  usePassport,
+  type DocumentCatalog,
+  type DocumentMetadata,
+} from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { borderColor, textBlack, white } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
@@ -28,10 +32,12 @@ const PassportDataSelector = () => {
     deleteDocument,
     setSelectedDocument,
   } = usePassport();
-  const [documentCatalog, setDocumentCatalog] = useState<any>({
+  const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
     documents: [],
   });
-  const [_allDocuments, setAllDocuments] = useState<any>({});
+  const [_allDocuments, setAllDocuments] = useState<
+    Record<string, { metadata: DocumentMetadata }>
+  >({});
   const [loading, setLoading] = useState(true);
 
   const loadPassportDataInfo = useCallback(async () => {
@@ -110,7 +116,7 @@ const PassportDataSelector = () => {
     }
   };
 
-  const getDocumentInfo = (metadata: any): string => {
+  const getDocumentInfo = (metadata: DocumentMetadata): string => {
     const countryCode =
       extractCountryFromData(metadata.data, metadata.documentCategory) ||
       'Unknown';
@@ -187,7 +193,7 @@ const PassportDataSelector = () => {
       >
         Available Documents
       </Text>
-      {documentCatalog.documents.map((metadata: any) => (
+      {documentCatalog.documents.map((metadata: DocumentMetadata) => (
         <YStack
           key={metadata.id}
           padding="$3"

@@ -6,6 +6,8 @@ import {
   PixelRatio,
   Platform,
   requireNativeComponent,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 
 import { extractMRZInfo } from '../../utils/utils';
@@ -32,7 +34,7 @@ interface NativePassportOCRViewProps {
       stackTrace: string;
     }>,
   ) => void;
-  style?: any; // Or a more specific style type if available
+  style?: StyleProp<ViewStyle>;
 }
 
 const RCTPassportOCRViewNativeComponent = Platform.select({

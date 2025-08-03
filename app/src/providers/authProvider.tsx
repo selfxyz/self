@@ -54,11 +54,12 @@ const _getSecurely = async function <T>(
       signature: 'authenticated',
       data: formatter(dataString),
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in _getSecurely:', error);
+    const message = error instanceof Error ? error.message : String(error);
     trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
       reason: 'unknown_error',
-      error: error.message,
+      error: message,
     });
     throw error;
   }
@@ -69,11 +70,12 @@ async function checkBiometricsAvailable(): Promise<boolean> {
     const { available } = await biometrics.isSensorAvailable();
     trackEvent(AuthEvents.BIOMETRIC_CHECK, { available });
     return available;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error checking biometric availability:', error);
+    const message = error instanceof Error ? error.message : String(error);
     trackEvent(AuthEvents.BIOMETRIC_CHECK, {
       reason: 'unknown_error',
-      error: error.message,
+      error: message,
     });
     return false;
   }
@@ -95,10 +97,10 @@ async function restoreFromMnemonic(mnemonic: string): Promise<string | false> {
     });
     trackEvent(AuthEvents.MNEMONIC_RESTORE_SUCCESS);
     return data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
       reason: 'unknown_error',
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
     });
     return false;
   }
@@ -114,16 +116,16 @@ async function loadOrCreateMnemonic(): Promise<string | false> {
       console.log('Stored mnemonic parsed successfully');
       trackEvent(AuthEvents.MNEMONIC_LOADED);
       return storedMnemonic.password;
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.log(
         'Error parsing stored mnemonic, old secret format was used',
         e,
       );
       console.log('Creating a new one');
-      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-        reason: 'unknown_error',
-        error: e.message,
-      });
+        trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+          reason: 'unknown_error',
+          error: e instanceof Error ? e.message : String(e),
+        });
     }
   }
 
@@ -138,10 +140,10 @@ async function loadOrCreateMnemonic(): Promise<string | false> {
     });
     trackEvent(AuthEvents.MNEMONIC_CREATED);
     return data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
       reason: 'unknown_error',
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
     });
     return false;
   }
