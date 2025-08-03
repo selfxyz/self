@@ -4,7 +4,7 @@ import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
 import type { Country3LetterCode } from '@selfxyz/common/constants';
-import { countryCodes } from '@selfxyz/common/constants/core';
+import { countryCodes } from '@selfxyz/common/constants';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils';
 
 import { BodyText } from '../components/typography/BodyText';

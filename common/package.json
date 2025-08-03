@@ -23,11 +23,6 @@
       "import": "./dist/esm/src/constants/index.js",
       "require": "./dist/cjs/src/constants/index.cjs"
     },
-    "./constants/core": {
-      "types": "./dist/esm/src/constants/constants.d.ts",
-      "import": "./dist/esm/src/constants/constants.js",
-      "require": "./dist/cjs/src/constants/constants.cjs"
-    },
     "./constants/constants": {
       "types": "./dist/esm/src/constants/constants.d.ts",
       "import": "./dist/esm/src/constants/constants.js",
@@ -215,6 +210,11 @@
       "types": "./dist/esm/src/utils/contracts/index.d.ts",
       "import": "./dist/esm/src/utils/contracts/index.js",
       "require": "./dist/cjs/src/utils/contracts/index.cjs"
+    },
+    "./utils/contracts/forbiddenCountries": {
+      "types": "./dist/esm/src/utils/contracts/forbiddenCountries.d.ts",
+      "import": "./dist/esm/src/utils/contracts/forbiddenCountries.js",
+      "require": "./dist/cjs/src/utils/contracts/forbiddenCountries.cjs"
     },
     "./utils/csca": {
       "types": "./dist/esm/src/utils/csca.d.ts",

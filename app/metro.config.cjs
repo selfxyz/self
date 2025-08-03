@@ -27,10 +27,6 @@ const extraNodeModules = {
     'dist/esm/src/constants/index.js',
   ),
   // Constants subpaths
-  '@selfxyz/common/constants/core': path.resolve(
-    commonPath,
-    'dist/esm/src/constants/constants.js',
-  ),
   '@selfxyz/common/constants/countries': path.resolve(
     commonPath,
     'dist/esm/src/constants/countries.js',

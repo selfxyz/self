@@ -7,7 +7,7 @@ import {
   API_URL_STAGING,
   ID_CARD_ATTESTATION_ID,
   PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common/constants/core';
+} from '@selfxyz/common/constants';
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parseSimple';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuitNames';

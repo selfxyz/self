@@ -19,7 +19,7 @@ import {
   YStack,
 } from 'tamagui';
 
-import { countryCodes } from '@selfxyz/common/constants/core';
+import { countryCodes } from '@selfxyz/common/constants';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import {

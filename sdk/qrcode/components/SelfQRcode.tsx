@@ -7,7 +7,7 @@ import LED from './LED.js';
 import {
   REDIRECT_URL,
   WS_DB_RELAYER,
-} from '@selfxyz/common/constants/constants';
+} from '@selfxyz/common/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from '../utils/utils.js';
 import {
