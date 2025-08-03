@@ -32,6 +32,8 @@ export type TEEPayloadDisclose = TEEPayloadBase & {
   version: number;
 };
 
+export const ec = new EC('p256');
+
 export const clientKey = ec.genKeyPair();
 
 type RegisterSuffixes = '' | '_id';
@@ -47,8 +49,6 @@ type DiscloseProofType =
 export const clientPublicKeyHex =
   clientKey.getPublic().getX().toString('hex').padStart(64, '0') +
   clientKey.getPublic().getY().toString('hex').padStart(64, '0');
-
-export const ec = new EC('p256');
 
 export function encryptAES256GCM(
   plaintext: string,

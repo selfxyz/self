@@ -26,6 +26,18 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+export const navigationScreens = {
+  ...miscScreens,
+  ...passportScreens,
+  ...homeScreens,
+  ...proveScreens,
+  ...settingsScreens,
+  ...recoveryScreens,
+  ...devScreens,
+  // add last to override other screens
+  ...getAesopScreens(),
+};
+
 export type RootStackParamList = StaticParamList<typeof AppNavigation>;
 
 const AppNavigation = createNativeStackNavigator({
@@ -47,18 +59,6 @@ declare global {
     interface RootParamList extends RootStackParamList {}
   }
 }
-
-export const navigationScreens = {
-  ...miscScreens,
-  ...passportScreens,
-  ...homeScreens,
-  ...proveScreens,
-  ...settingsScreens,
-  ...recoveryScreens,
-  ...devScreens,
-  // add last to override other screens
-  ...getAesopScreens(),
-};
 
 const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);

@@ -107,7 +107,6 @@ module.exports = {
         maxBOF: 0,
       },
     ],
-
     // Enforce empty line after header comments (but not at file start)
 
     'lines-around-comment': [
@@ -182,6 +181,20 @@ module.exports = {
         'header/header': 'off',
         '@typescript-eslint/no-var-requires': 'off',
         'no-undef': 'off',
+      },
+    },
+    {
+      // Disable export sorting for files with dependency issues
+      files: [
+        'src/components/NavBar/BaseNavBar.tsx',
+        'src/navigation/index.tsx',
+        'src/providers/passportDataProvider.tsx',
+        'src/utils/cloudBackup/helpers.ts',
+        'src/utils/haptic/index.ts',
+        'src/utils/proving/provingUtils.ts',
+      ],
+      rules: {
+        'sort-exports/sort-exports': 'off',
       },
     },
   ],
