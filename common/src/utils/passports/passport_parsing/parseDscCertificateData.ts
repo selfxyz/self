@@ -1,4 +1,4 @@
-import { CertificateData } from '../../certificate_parsing/dataStructure.js';
+import type { CertificateData } from '../../certificate_parsing/dataStructure.js';
 import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple.js';
 import { getCSCAFromSKI } from '../../csca.js';
 import { brutforceSignatureAlgorithmDsc } from './brutForceDscSignature.js';

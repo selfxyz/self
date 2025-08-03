@@ -1,3 +1,5 @@
+export type Country3LetterCode = (typeof countries)[keyof typeof countries];
+
 export const commonNames = {
   AFG: 'Afghanistan',
   ALA: 'Aland Islands',
@@ -512,5 +514,3 @@ export const countries = {
   INTERPOL: 'XPO',
   SMOM: 'XOM',
 } as const;
-
-export type Country3LetterCode = (typeof countries)[keyof typeof countries];

@@ -4,9 +4,9 @@
  * Test Clean Re-Exports - Verify that safe re-exports work correctly
  */
 
-import { fileURLToPath } from 'url';
-import { dirname, join, resolve } from 'path';
 import { existsSync } from 'fs';
+import { dirname, join, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 // Get the directory of the current script
 const __filename = fileURLToPath(import.meta.url);

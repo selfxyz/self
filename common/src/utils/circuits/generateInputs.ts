@@ -1,13 +1,11 @@
 import {
+  COMMITMENT_TREE_DEPTH,
+  max_csca_bytes,
+  max_dsc_bytes,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
-  max_csca_bytes,
-  COMMITMENT_TREE_DEPTH,
   OFAC_TREE_LEVELS,
 } from '../../constants/constants.js';
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { SMT } from '@openpassport/zk-kit-smt';
-import { max_dsc_bytes } from '../../constants/constants.js';
 import { getCurrentDateYYMMDD } from '../date.js';
 import { hash, packBytesAndPoseidon } from '../hash.js';
 import { formatMrz } from '../passports/format.js';
@@ -33,9 +31,68 @@ import {
   getNameYobLeaf,
   getPassportNumberAndNationalityLeaf,
 } from '../trees.js';
-import { PassportData } from '../types.js';
+import type { PassportData } from '../types.js';
 import { formatCountriesList } from './formatInputs.js';
 import { stringToAsciiBigIntArray } from './uuid.js';
+
+import type { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import type { SMT } from '@openpassport/zk-kit-smt';
+
+// this get the commitment index whether it is a string or a bigint
+// this is necessary rn because when the tree is send from the server in a serialized form,
+// the bigints are converted to strings and I can't figure out how to use tree.import to load bigints there
+export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
+  let index = tree.indexOf(commitment);
+  if (index === -1) {
+    index = tree.indexOf(commitment.toString() as unknown as bigint);
+  }
+  if (index === -1) {
+    throw new Error('This commitment was not found in the tree');
+  } else {
+    //  console.log(`Index of commitment in the registry: ${index}`);
+  }
+  return index;
+}
+
+export function formatInput(input: any) {
+  if (Array.isArray(input)) {
+    return input.map((item) => BigInt(item).toString());
+  } else if (input instanceof Uint8Array) {
+    return Array.from(input).map((num) => BigInt(num).toString());
+  } else if (typeof input === 'string' && input.includes(',')) {
+    const numbers = input
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s !== '' && !isNaN(Number(s)))
+      .map(Number);
+
+    try {
+      return numbers.map((num) => BigInt(num).toString());
+    } catch (e) {
+      throw e;
+    }
+  } else {
+    return [BigInt(input).toString()];
+  }
+}
+
+export function generateCircuitInputsCountryVerifier(
+  passportData: PassportData,
+  sparsemerkletree: SMT
+) {
+  const mrz_bytes = formatMrz(passportData.mrz);
+  const usa_ascii = stringToAsciiBigIntArray('USA');
+  const country_leaf = getCountryLeaf(usa_ascii, mrz_bytes.slice(7, 10));
+  const { root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, country_leaf);
+
+  return {
+    dg1: formatInput(mrz_bytes),
+    hostCountry: formatInput(usa_ascii),
+    smt_leaf_key: formatInput(closestleaf),
+    smt_root: formatInput(root),
+    smt_siblings: formatInput(siblings),
+  };
+}
 
 export function generateCircuitInputsDSC(
   passportData: PassportData,
@@ -88,6 +145,58 @@ export function generateCircuitInputsDSC(
     merkle_root: root,
     path: path,
     siblings: siblings,
+  };
+}
+
+export function generateCircuitInputsOfac(
+  passportData: PassportData,
+  sparsemerkletree: SMT,
+  proofLevel: number
+) {
+  const { mrz, documentType } = passportData;
+  const isPassportType = documentType === 'passport' || documentType === 'mock_passport';
+
+  const mrz_bytes = formatMrz(mrz); // Assume formatMrz handles basic formatting
+  const nameSlice = isPassportType
+    ? mrz_bytes.slice(5 + 5, 44 + 5)
+    : mrz_bytes.slice(60 + 5, 90 + 5);
+  const dobSlice = isPassportType
+    ? mrz_bytes.slice(57 + 5, 63 + 5)
+    : mrz_bytes.slice(30 + 5, 36 + 5);
+  const yobSlice = isPassportType
+    ? mrz_bytes.slice(57 + 5, 59 + 5)
+    : mrz_bytes.slice(30 + 5, 32 + 5);
+  const nationalitySlice = isPassportType
+    ? mrz_bytes.slice(54 + 5, 57 + 5)
+    : mrz_bytes.slice(45 + 5, 48 + 5);
+  const passNoSlice = isPassportType
+    ? mrz_bytes.slice(44 + 5, 53 + 5)
+    : mrz_bytes.slice(5 + 5, 14 + 5);
+
+  let leafToProve: bigint;
+
+  if (proofLevel == 3) {
+    if (!isPassportType) {
+      throw new Error(
+        'Proof level 3 (Passport Number) is only applicable to passport document types.'
+      );
+    }
+    leafToProve = getPassportNumberAndNationalityLeaf(passNoSlice, nationalitySlice);
+  } else if (proofLevel == 2) {
+    leafToProve = getNameDobLeaf(nameSlice, dobSlice);
+  } else if (proofLevel == 1) {
+    leafToProve = getNameYobLeaf(nameSlice, yobSlice);
+  } else {
+    throw new Error('Invalid proof level specified for OFAC check.');
+  }
+
+  const { root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, leafToProve);
+
+  return {
+    dg1: formatInput(mrz_bytes),
+    smt_leaf_key: formatInput(closestleaf),
+    smt_root: formatInput(root),
+    smt_siblings: formatInput(siblings),
   };
 }
 
@@ -287,112 +396,4 @@ export function generateCircuitInputsVCandDisclose(
   };
 
   return finalInputs;
-}
-
-export function generateCircuitInputsOfac(
-  passportData: PassportData,
-  sparsemerkletree: SMT,
-  proofLevel: number
-) {
-  const { mrz, documentType } = passportData;
-  const isPassportType = documentType === 'passport' || documentType === 'mock_passport';
-
-  const mrz_bytes = formatMrz(mrz); // Assume formatMrz handles basic formatting
-  const nameSlice = isPassportType
-    ? mrz_bytes.slice(5 + 5, 44 + 5)
-    : mrz_bytes.slice(60 + 5, 90 + 5);
-  const dobSlice = isPassportType
-    ? mrz_bytes.slice(57 + 5, 63 + 5)
-    : mrz_bytes.slice(30 + 5, 36 + 5);
-  const yobSlice = isPassportType
-    ? mrz_bytes.slice(57 + 5, 59 + 5)
-    : mrz_bytes.slice(30 + 5, 32 + 5);
-  const nationalitySlice = isPassportType
-    ? mrz_bytes.slice(54 + 5, 57 + 5)
-    : mrz_bytes.slice(45 + 5, 48 + 5);
-  const passNoSlice = isPassportType
-    ? mrz_bytes.slice(44 + 5, 53 + 5)
-    : mrz_bytes.slice(5 + 5, 14 + 5);
-
-  let leafToProve: bigint;
-
-  if (proofLevel == 3) {
-    if (!isPassportType) {
-      throw new Error(
-        'Proof level 3 (Passport Number) is only applicable to passport document types.'
-      );
-    }
-    leafToProve = getPassportNumberAndNationalityLeaf(passNoSlice, nationalitySlice);
-  } else if (proofLevel == 2) {
-    leafToProve = getNameDobLeaf(nameSlice, dobSlice);
-  } else if (proofLevel == 1) {
-    leafToProve = getNameYobLeaf(nameSlice, yobSlice);
-  } else {
-    throw new Error('Invalid proof level specified for OFAC check.');
-  }
-
-  const { root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, leafToProve);
-
-  return {
-    dg1: formatInput(mrz_bytes),
-    smt_leaf_key: formatInput(closestleaf),
-    smt_root: formatInput(root),
-    smt_siblings: formatInput(siblings),
-  };
-}
-
-export function generateCircuitInputsCountryVerifier(
-  passportData: PassportData,
-  sparsemerkletree: SMT
-) {
-  const mrz_bytes = formatMrz(passportData.mrz);
-  const usa_ascii = stringToAsciiBigIntArray('USA');
-  const country_leaf = getCountryLeaf(usa_ascii, mrz_bytes.slice(7, 10));
-  const { root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, country_leaf);
-
-  return {
-    dg1: formatInput(mrz_bytes),
-    hostCountry: formatInput(usa_ascii),
-    smt_leaf_key: formatInput(closestleaf),
-    smt_root: formatInput(root),
-    smt_siblings: formatInput(siblings),
-  };
-}
-
-// this get the commitment index whether it is a string or a bigint
-// this is necessary rn because when the tree is send from the server in a serialized form,
-// the bigints are converted to strings and I can't figure out how to use tree.import to load bigints there
-export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
-  let index = tree.indexOf(commitment);
-  if (index === -1) {
-    index = tree.indexOf(commitment.toString() as unknown as bigint);
-  }
-  if (index === -1) {
-    throw new Error('This commitment was not found in the tree');
-  } else {
-    //  console.log(`Index of commitment in the registry: ${index}`);
-  }
-  return index;
-}
-
-export function formatInput(input: any) {
-  if (Array.isArray(input)) {
-    return input.map((item) => BigInt(item).toString());
-  } else if (input instanceof Uint8Array) {
-    return Array.from(input).map((num) => BigInt(num).toString());
-  } else if (typeof input === 'string' && input.includes(',')) {
-    const numbers = input
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s !== '' && !isNaN(Number(s)))
-      .map(Number);
-
-    try {
-      return numbers.map((num) => BigInt(num).toString());
-    } catch (e) {
-      throw e;
-    }
-  } else {
-    return [BigInt(input).toString()];
-  }
 }
