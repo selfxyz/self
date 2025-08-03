@@ -71,6 +71,7 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
         return String(value);
       },
       getSource: () => {
+        // Mock implementation returns 'static' since this is not real Firebase Remote Config
         return 'static';
       },
     };
