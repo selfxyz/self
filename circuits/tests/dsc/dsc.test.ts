@@ -37,18 +37,14 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
 
     const inputs = generateCircuitInputsDSC(passportData, serialized_csca_tree);
 
+    const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
+
     before(async () => {
       circuit = await wasm_tester(
-        path.join(
-          __dirname,
-          `../../circuits/dsc/instances/${getCircuitNameFromPassportData(passportData, 'dsc')}.circom`
-        ),
+        path.join(__dirname, `../../circuits/dsc/instances/${circuitName}.circom`),
         {
-          include: [
-            '../node_modules',
-            '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-            '../node_modules/circomlib/circuits',
-          ],
+          output: path.join(__dirname, `../../build/dsc/${circuitName}`),
+          recompile: false,
         }
       );
     });

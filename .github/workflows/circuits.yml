@@ -1,4 +1,5 @@
 name: Self Circuits CI/CD
+
 on:
   push:
     branches:
@@ -16,15 +17,33 @@ on:
     paths:
       - 'circuits/**'
       - 'common/**'
+
 jobs:
-  run_circuit_tests:
+  lint:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    environment: development
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: enable yarn
+        run: corepack enable yarn
+      - name: Install Yarn dependencies
+        run: yarn workspaces focus @selfxyz/circuits
+      - name: Run lint
+        run: yarn workspace @selfxyz/circuits lint
+
+  tests:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        script: [test-register, test-register-id, test-dsc, test-disclose, test-ofac]
     steps:
       - uses: actions/checkout@v4
 
-      # Circom installation from https://github.com/erhant/circomkit/blob/main/.github/workflows/tests.yml
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -39,6 +58,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -50,14 +70,18 @@ jobs:
 
       - name: Print Circom version
         run: circom --version
-      - name: "enable yarn"
+
+      - name: enable yarn
         run: corepack enable yarn
+
       - name: Install Yarn dependencies
         run: yarn workspaces focus @selfxyz/circuits
 
-      - name: Run lint
-        run: yarn workspace @selfxyz/circuits lint
+      - name: Build circuits
+        run: yarn workspace @selfxyz/circuits build-all
+
       - name: Run Tests (Circuits)
         env:
           FULL_TEST_SUITE: false
-        run: yarn workspace @selfxyz/circuits test
+        run: yarn workspace @selfxyz/circuits ${{ matrix.script }}
+

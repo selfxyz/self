@@ -9,7 +9,10 @@
     "allowJs": true,
     "checkJs": false,
     "outDir": "./dist",
+    "rootDir": ".",
     "baseUrl": ".",
+    "lib": ["ES2020"],
+    "types": ["node"],
     "paths": {
       "@selfxyz/common/utils/*": ["../common/src/utils/*"],
       "@selfxyz/common/constants/*": ["../common/src/constants/*"],

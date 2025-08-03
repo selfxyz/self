@@ -65,11 +65,8 @@ describe('Disclose', function () {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/disclose/vc_and_disclose_id.circom'),
       {
-        include: [
-          '../node_modules',
-          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-          '../node_modules/circomlib/circuits',
-        ],
+        output: path.join(__dirname, '../../build/disclose/vc_and_disclose_id'),
+        recompile: false,
       }
     );
 
