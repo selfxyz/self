@@ -197,11 +197,9 @@ interface ProvingState {
 }
 
 export const useProvingStore = create<ProvingState>((set, get) => {
-  let actor: AnyActorRef<StateFrom<typeof provingMachine>> | null = null;
+  let actor: AnyActorRef | null = null;
 
-  function setupActorSubscriptions(
-    newActor: AnyActorRef<StateFrom<typeof provingMachine>>,
-  ) {
+  function setupActorSubscriptions(newActor: AnyActorRef) {
     newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
       console.log(`State transition: ${state.value}`);
       trackEvent(ProofEvents.PROVING_STATE_CHANGE, { state: state.value });
@@ -659,6 +657,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       trackEvent(ProofEvents.FETCH_DATA_STARTED);
       try {
         const { passportData, env } = get();
+        if (!passportData) {
+          throw new Error('Passport data is null');
+        }
         const document: DocumentCategory = passportData.documentCategory;
         await useProtocolStore
           .getState()
@@ -682,6 +683,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       trackEvent(ProofEvents.VALIDATION_STARTED);
       try {
         const { passportData, secret, circuitType } = get();
+        if (!passportData) {
+          throw new Error('Passport data is null');
+        }
         const isSupported = await checkPassportSupported(passportData);
         if (isSupported.status !== 'passport_supported') {
           console.error(
@@ -773,7 +777,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     initTeeConnection: async (): Promise<boolean> => {
-      const { passportData }: { passportData: PassportData } = get();
+      const { passportData } = get();
+      if (!passportData) {
+        throw new Error('Passport data is null');
+      }
       const document: DocumentCategory = passportData.documentCategory;
       const circuitsMapping =
         useProtocolStore.getState()[document].circuits_dns_mapping;
@@ -839,15 +846,17 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (!actor) {
           return;
         }
-        const unsubscribe = actor.subscribe(state => {
-          if (state.matches('ready_to_prove')) {
-            handleConnectSuccess();
-            unsubscribe.unsubscribe();
-          } else if (state.matches('error')) {
-            handleConnectError();
-            unsubscribe.unsubscribe();
-          }
-        });
+        const unsubscribe = actor.subscribe(
+          (state: StateFrom<typeof provingMachine>) => {
+            if (state.matches('ready_to_prove')) {
+              handleConnectSuccess();
+              unsubscribe.unsubscribe();
+            } else if (state.matches('error')) {
+              handleConnectError();
+              unsubscribe.unsubscribe();
+            }
+          },
+        );
       });
     },
 
@@ -971,6 +980,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _generatePayload: async () => {
       const { circuitType, passportData, secret, uuid, sharedKey, env } = get();
+      if (!passportData) {
+        throw new Error('Passport data is null');
+      }
       const document: DocumentCategory = passportData.documentCategory;
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import type { JsonMap } from '@segment/analytics-react-native';
+
 import { createSegmentClient } from '../Segment';
 
 /**
@@ -97,8 +99,8 @@ const analytics = () => {
     }
     const trackMethod = (e: string, p?: Record<string, unknown>) =>
       type === 'screen'
-        ? segmentClient.screen(e, p)
-        : segmentClient.track(e, p);
+        ? segmentClient.screen(e, p as JsonMap)
+        : segmentClient.track(e, p as JsonMap);
 
     if (!validatedProps) {
       // you may need to remove the catch when debugging

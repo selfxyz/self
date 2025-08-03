@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, ChevronDown, Eraser } from '@tamagui/lucide-icons';
 import React, {
   PropsWithChildren,
@@ -86,14 +87,17 @@ const items = [
   'UnsupportedPassport',
   'PassportCameraTrouble',
   'PassportNFCTrouble',
-] satisfies (keyof RootStackParamList)[];
+] as const;
 
 const ScreenSelector = ({}) => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
     <Select
-      onValueChange={(screen: keyof RootStackParamList) => {
-        navigation.navigate(screen);
+      onValueChange={(screen: (typeof items)[number]) => {
+        // Type assertion needed because some screens might not be in the navigation type
+        // We know these screens exist in the navigation, but TypeScript can't verify it statically
+        (navigation.navigate as (screen: string) => void)(screen);
       }}
       disablePreventBodyScroll
     >
@@ -294,7 +298,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                   borderRadius: 8,
                   borderWidth: 1,
                   borderColor: '#e0e0e0',
-                  wordBreak: 'break-all',
                   lineHeight: 18,
                 }}
               >
@@ -324,7 +327,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 borderRadius: 8,
                 borderWidth: 1,
                 borderColor: '#e0e0e0',
-                wordBreak: 'break-all',
                 lineHeight: 18,
               }}
             >
