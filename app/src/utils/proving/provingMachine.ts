@@ -9,12 +9,7 @@ import {
 import forge from 'node-forge';
 import socketIo, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
-import {
-  AnyActorRef,
-  createActor,
-  createMachine,
-  StateFrom,
-} from 'xstate';
+import { AnyActorRef, createActor, createMachine, StateFrom } from 'xstate';
 import { create } from 'zustand';
 
 import { PassportEvents, ProofEvents } from '../../consts/analytics';
