@@ -290,6 +290,21 @@
       "types": "./dist/esm/src/utils/trees.d.ts",
       "import": "./dist/esm/src/utils/trees.js",
       "require": "./dist/cjs/src/utils/trees.cjs"
+    },
+    "./utils/certificates/parseSimple": {
+      "types": "./dist/esm/src/utils/certificate_parsing/parseSimple.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/parseSimple.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/parseSimple.cjs"
+    },
+    "./utils/circuitNames": {
+      "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
+      "import": "./dist/esm/src/utils/circuits/circuitsName.js",
+      "require": "./dist/cjs/src/utils/circuits/circuitsName.cjs"
+    },
+    "./utils/passportFormat": {
+      "types": "./dist/esm/src/utils/passports/format.d.ts",
+      "import": "./dist/esm/src/utils/passports/format.js",
+      "require": "./dist/cjs/src/utils/passports/format.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
