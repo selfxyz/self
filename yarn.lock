@@ -4678,6 +4678,7 @@ __metadata:
     eslint-plugin-jest: "npm:^28.11.1"
     eslint-plugin-prettier: "npm:^5.2.6"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
+    eslint-plugin-sort-exports: "npm:^0.9.1"
     ethers: "npm:^6.11.0"
     expo-modules-core: "npm:^2.2.1"
     jest: "npm:^29.6.3"
@@ -14211,6 +14212,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-sort-exports@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "eslint-plugin-sort-exports@npm:0.9.1"
+  dependencies:
+    minimatch: "npm:^9.0.3"
+  peerDependencies:
+    eslint: ">=5.0.0"
+  checksum: 10c0/f1ef9f51bcf17848b863fd6948e186361d298f7b5fabdb0b324008e0f7a1df67370df7cafd956d573e2888033afb3f190bae56c5698a600e372d2fb0f92ea7d5
+  languageName: node
+  linkType: hard
+
 "eslint-scope@npm:5.1.1, eslint-scope@npm:^5.1.1":
   version: 5.1.1
   resolution: "eslint-scope@npm:5.1.1"
@@ -19031,7 +19043,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimatch@npm:^9.0.4":
+"minimatch@npm:^9.0.3, minimatch@npm:^9.0.4":
   version: 9.0.5
   resolution: "minimatch@npm:9.0.5"
   dependencies:

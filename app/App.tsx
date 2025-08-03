@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 // CI/CD Pipeline Test - July 31, 2025 - With Permissions Fix
-import 'react-native-get-random-values';
-
 import { Buffer } from 'buffer';
 import React from 'react';
 import { YStack } from 'tamagui';
@@ -15,6 +13,8 @@ import { NotificationTrackingProvider } from './src/providers/notificationTracki
 import { PassportProvider } from './src/providers/passportDataProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
 import { initSentry, wrapWithSentry } from './src/Sentry';
+
+import 'react-native-get-random-values';
 
 initSentry();
 

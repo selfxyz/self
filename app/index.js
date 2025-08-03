@@ -3,16 +3,16 @@
 /**
  * @format
  */
-import './src/utils/ethers';
-import 'react-native-gesture-handler';
-
-import { config } from '@tamagui/config/v2-native';
 import React from 'react';
 import { AppRegistry, LogBox } from 'react-native';
 import { createTamagui, TamaguiProvider } from 'tamagui';
 
 import App from './App';
 import { name as appName } from './app.json';
+
+import './src/utils/ethers';
+import 'react-native-gesture-handler';
+import { config } from '@tamagui/config/v2-native';
 
 const tamaguiConfig = createTamagui(config);
 

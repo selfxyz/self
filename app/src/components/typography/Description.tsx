@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Text, TextProps } from 'tamagui';
+import type { TextProps } from 'tamagui';
+import { Text } from 'tamagui';
 
 import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
 import { slate500 } from '../../utils/colors';

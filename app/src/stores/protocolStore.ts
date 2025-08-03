@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import { create } from 'zustand';
+
 import {
   API_URL,
   API_URL_STAGING,
@@ -16,7 +18,6 @@ import {
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
 } from '@selfxyz/common/constants';
-import { create } from 'zustand';
 
 import { fetchOfacTrees } from '../utils/ofac';
 
