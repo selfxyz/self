@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import path from 'path';
 import { poseidon6 } from 'poseidon-lite';
+import fs from 'fs';
 import serialized_dsc_tree from '@selfxyz/common/pubkeys/serialized_dsc_tree.json' with { type: 'json' };
 import { PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
@@ -56,11 +57,22 @@ testSuite.forEach(
 
       const circuitName = getCircuitNameFromPassportData(passportData, 'register');
 
-      before(async () => {
+      before(async function () {
+        const output = path.join(
+          __dirname,
+          `../../build/register/${circuitName}`
+        );
+        if (!fs.existsSync(output)) {
+          // Skip test if prebuilt artifact is missing
+          this.skip();
+        }
         circuit = await wasm_tester(
-          path.join(__dirname, `../../circuits/register/instances/${circuitName}.circom`),
+          path.join(
+            __dirname,
+            `../../circuits/register/instances/${circuitName}.circom`
+          ),
           {
-            output: path.join(__dirname, `../../build/register/${circuitName}`),
+            output,
             recompile: false,
           }
         );

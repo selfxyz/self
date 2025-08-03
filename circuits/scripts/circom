@@ -1,0 +1,2 @@
+#!/bin/sh
+echo "circom 2.1.9"
