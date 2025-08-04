@@ -4,14 +4,14 @@ on:
     branches:
       - main
     paths:
-      - "circuits/circuits/**"
-      - ".github/workflows/artifacts.yml"
+      - 'circuits/circuits/**'
+      - '.github/workflows/artifacts.yml'
   pull_request:
     branches:
       - main
     paths:
-      - "circuits/circuits/**"
-      - ".github/workflows/artifacts.yml"
+      - 'circuits/circuits/**'
+      - '.github/workflows/artifacts.yml'
   workflow_dispatch:
 
 jobs:

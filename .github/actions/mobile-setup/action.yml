@@ -1,23 +1,23 @@
 name: Setup Mobile Environment
 
-description: "Sets up the environment for mobile app builds"
+description: 'Sets up the environment for mobile app builds'
 
 inputs:
   app_path:
-    description: "Path to the app directory"
+    description: 'Path to the app directory'
     required: true
   node_version:
-    description: "Node version"
+    description: 'Node version'
     required: true
   ruby_version:
-    description: "Ruby version"
+    description: 'Ruby version'
     required: true
   workspace:
-    description: "Workspace directory path"
+    description: 'Workspace directory path'
     required: true
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Install locales and dialog for local development
       if: ${{ env.ACT }}
@@ -33,7 +33,6 @@ runs:
       run: |
         sudo locale-gen en_US.UTF-8
         sudo update-locale LANG=en_US.UTF-8
-
 
     - name: Setup Ruby environment
       uses: ruby/setup-ruby@v1
@@ -57,11 +56,11 @@ runs:
       shell: bash
       run: |
         cd ${{ inputs.app_path }}
-        
+
         # Configure Yarn
         corepack enable
         yarn set version 4.6.0
-        
+
         echo "📦 Installing JavaScript dependencies with strict lock file..."
         if ! yarn install --immutable; then
           echo ""
@@ -77,14 +76,14 @@ runs:
           echo "This ensures everyone has the exact same dependency versions."
           exit 1
         fi
-        
+
         # Run mobile-specific installation
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           yarn install-app:mobile-deploy:ios
         else
           yarn install-app:mobile-deploy
         fi
-        
+
         # Install Ruby gems with bundler (respecting cache)
         echo "📦 Installing Ruby gems with strict lock file..."
         if ! bundle install --jobs 4 --retry 3; then

@@ -10,9 +10,9 @@ env:
 on:
   pull_request:
     paths:
-      - "app/**"
-      - ".github/workflows/mobile-bundle-analysis.yml"
-      - ".github/actions/**"
+      - 'app/**'
+      - '.github/workflows/mobile-bundle-analysis.yml'
+      - '.github/actions/**'
   workflow_dispatch:
 
 jobs:

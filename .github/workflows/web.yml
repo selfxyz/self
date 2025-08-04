@@ -3,9 +3,9 @@ name: Web CI
 on:
   push:
     paths:
-      - "app/**"
-      - ".github/workflows/web.yml"
-      - ".github/actions/**"
+      - 'app/**'
+      - '.github/workflows/web.yml'
+      - '.github/actions/**'
 
 jobs:
   web-build:

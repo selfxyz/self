@@ -6,10 +6,10 @@ inputs:
   working_directory:
     description: The directory to install dependencies in.
     required: false
-    default: "."
+    default: '.'
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Install Yarn v4
       shell: bash

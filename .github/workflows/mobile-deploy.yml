@@ -9,11 +9,11 @@ env:
   ANDROID_NDK_VERSION: 27.0.11718014
 
   # Cache versioning - increment these to bust caches when needed
-  GH_CACHE_VERSION: v1  # Global cache version
-  GH_YARN_CACHE_VERSION: v1  # Yarn-specific cache version
-  GH_GEMS_CACHE_VERSION: v1  # Ruby gems cache version
-  GH_PODS_CACHE_VERSION: v1  # CocoaPods cache version
-  GH_GRADLE_CACHE_VERSION: v1  # Gradle cache version
+  GH_CACHE_VERSION: v1 # Global cache version
+  GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
+  GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
+  GH_PODS_CACHE_VERSION: v1 # CocoaPods cache version
+  GH_GRADLE_CACHE_VERSION: v1 # Gradle cache version
 
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
@@ -35,32 +35,32 @@ on:
   workflow_dispatch:
     inputs:
       platform:
-        description: "Select platform to build"
+        description: 'Select platform to build'
         required: true
-        default: "both"
+        default: 'both'
         type: choice
         options:
           - ios
           - android
           - both
       test_mode:
-        description: "Test mode (skip upload to stores)"
+        description: 'Test mode (skip upload to stores)'
         required: false
         type: boolean
         default: false
       deployment_track:
-        description: "Deployment track (internal/production)"
+        description: 'Deployment track (internal/production)'
         required: false
         type: choice
-        default: "internal"
+        default: 'internal'
         options:
           - internal
           - production
       version_bump:
-        description: "Version bump type"
+        description: 'Version bump type'
         required: false
         type: choice
-        default: "build"
+        default: 'build'
         options:
           - build
           - patch
@@ -75,11 +75,11 @@ on:
       deployment_track:
         type: string
         required: false
-        default: "internal"
+        default: 'internal'
       version_bump:
         type: string
         required: false
-        default: "build"
+        default: 'build'
       auto_deploy:
         type: boolean
         required: false
@@ -403,7 +403,7 @@ jobs:
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
-          NODE_OPTIONS: "--max-old-space-size=8192"
+          NODE_OPTIONS: '--max-old-space-size=8192'
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
@@ -497,8 +497,8 @@ jobs:
         if: ${{ !env.ACT && success() }}
         uses: ./.github/actions/push-changes
         with:
-          commit_message: "incrementing ios build number for version ${{ env.VERSION }}"
-          commit_paths: "./app/version.json"
+          commit_message: 'incrementing ios build number for version ${{ env.VERSION }}'
+          commit_paths: './app/version.json'
 
       - name: Monitor cache usage
         if: always()
@@ -621,7 +621,7 @@ jobs:
         if: inputs.platform != 'ios'
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
+          distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Setup Android SDK
@@ -710,7 +710,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
           ANDROID_PLAY_STORE_JSON_KEY_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
-          NODE_OPTIONS: "--max-old-space-size=8192"
+          NODE_OPTIONS: '--max-old-space-size=8192'
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
@@ -754,8 +754,8 @@ jobs:
         if: ${{ !env.ACT && success() }}
         uses: ./.github/actions/push-changes
         with:
-          commit_message: "incrementing android build version for version ${{ env.VERSION }}"
-          commit_paths: "./app/version.json"
+          commit_message: 'incrementing android build version for version ${{ env.VERSION }}'
+          commit_paths: './app/version.json'
 
       - name: Monitor cache usage
         if: always()
