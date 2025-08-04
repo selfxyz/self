@@ -27,6 +27,7 @@ jobs:
   e2e:
     timeout-minutes: 45
     strategy:
+      fail-fast: false
       matrix:
         include:
           - platform: android
