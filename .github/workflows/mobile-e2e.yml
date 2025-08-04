@@ -78,12 +78,26 @@ jobs:
             adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
             echo "Emulator is ready"
             cd app
-            yarn build:deps
+            echo "Building dependencies..."
+            if ! yarn build:deps --silent; then
+              echo "❌ Dependency build failed"
+              exit 1
+            fi
             cd android
-            ./gradlew assembleDebug
+            echo "Building Android APK..."
+            if ! ./gradlew assembleDebug --quiet; then
+              echo "❌ Android build failed"
+              exit 1
+            fi
+            echo "✅ Android build succeeded"
             cd ..
-            # Install the app
-            adb install android/app/build/outputs/apk/debug/app-debug.apk
+            echo "Installing app on emulator..."
+            if ! adb install android/app/build/outputs/apk/debug/app-debug.apk; then
+              echo "❌ Android app installation failed"
+              exit 1
+            fi
+            echo "✅ App successfully installed"
+            echo "Running Maestro tests..."
             # Run Maestro test (no platform flag needed - auto-detects Android emulator)
             maestro test e2e/launch.flow.yaml --format junit --output maestro-results.xml || {
               echo "Maestro test failed, but continuing to upload results..."
@@ -93,9 +107,17 @@ jobs:
         if: matrix.platform == 'ios'
         run: |
           cd app
-          yarn build:deps
+          echo "Building dependencies..."
+          if ! yarn build:deps --silent; then
+            echo "❌ Dependency build failed"
+            exit 1
+          fi
           cd ios
-          pod install
+          echo "Installing iOS dependencies..."
+          if ! pod install --silent; then
+            echo "❌ Pod install failed"
+            exit 1
+          fi
           cd ..
 
           # Boot simulator and wait for it to be ready
@@ -103,20 +125,31 @@ jobs:
           xcrun simctl boot "iPhone 15" || true
           xcrun simctl bootstatus "iPhone 15" -b
 
-          # Build the app
+          # Build the app (silenced for cleaner e2e logs)
           echo "Building iOS app..."
-          xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets
+          if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets -quiet; then
+            echo "❌ iOS build failed"
+            exit 1
+          fi
+          echo "✅ iOS build succeeded"
 
           # Install the app on simulator
           echo "Installing app on simulator..."
           APP_PATH=$(find ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ Could not find built iOS app"
+            exit 1
+          fi
           echo "Found app at: $APP_PATH"
-          xcrun simctl install "iPhone 15" "$APP_PATH"
+          if ! xcrun simctl install "iPhone 15" "$APP_PATH"; then
+            echo "❌ iOS app installation failed"
+            exit 1
+          fi
 
           # Verify the app is installed
           echo "Verifying app installation..."
-          xcrun simctl listapps "iPhone 15" | grep -i "com.warroom.proofofpassport" || {
-            echo "App installation verification failed"
+          xcrun simctl listapps "iPhone 15" | grep -q "com.warroom.proofofpassport" && echo "✅ App successfully installed" || {
+            echo "❌ App installation verification failed"
             exit 1
           }
 
