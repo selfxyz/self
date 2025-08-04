@@ -4,7 +4,7 @@ env:
   # Build environment versions
   NODE_VERSION: 18
   JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 35
+  ANDROID_API_LEVEL: 33
   ANDROID_NDK_VERSION: 27.0.11718014
   # Performance optimizations
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
@@ -67,18 +67,23 @@ jobs:
         if: matrix.platform == 'android'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: ${{ env.ANDROID_API_LEVEL }}
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 4096
           disable-animations: true
           script: |
+            echo "Waiting for emulator to be ready..."
+            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
+            echo "Emulator is ready"
             cd app
             yarn build:deps
             cd android
             ./gradlew assembleDebug
             cd ..
+            # Install the app
+            adb install android/app/build/outputs/apk/debug/app-debug.apk
             # Run Maestro test (no platform flag needed - auto-detects Android emulator)
             maestro test e2e/launch.flow.yaml --format junit --output maestro-results.xml || {
               echo "Maestro test failed, but continuing to upload results..."
@@ -92,10 +97,31 @@ jobs:
           cd ios
           pod install
           cd ..
+
+          # Boot simulator and wait for it to be ready
+          echo "Setting up iOS Simulator..."
           xcrun simctl boot "iPhone 15" || true
-          # Optimized xcodebuild with parallel builds
+          xcrun simctl bootstatus "iPhone 15" -b
+
+          # Build the app
+          echo "Building iOS app..."
           xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets
+
+          # Install the app on simulator
+          echo "Installing app on simulator..."
+          APP_PATH=$(find ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
+          echo "Found app at: $APP_PATH"
+          xcrun simctl install "iPhone 15" "$APP_PATH"
+
+          # Verify the app is installed
+          echo "Verifying app installation..."
+          xcrun simctl listapps "iPhone 15" | grep -i "com.warroom.proofofpassport" || {
+            echo "App installation verification failed"
+            exit 1
+          }
+
           # Run Maestro test (no platform flag needed - auto-detects iOS simulator)
+          echo "Running Maestro tests..."
           maestro test e2e/launch.flow.yaml --format junit --output maestro-results.xml || {
             echo "Maestro test failed, but continuing to upload results..."
             exit 1
