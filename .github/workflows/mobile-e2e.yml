@@ -24,17 +24,9 @@ on:
       - ".github/workflows/mobile-e2e.yml"
 
 jobs:
-  e2e:
+  e2e-android:
     timeout-minutes: 45
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: android
-            os: ubuntu-latest
-          - platform: ios
-            os: macos-latest
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,22 +42,18 @@ jobs:
         env:
           MAESTRO_VERSION: 1.41.0
       - name: Setup Java environment
-        if: matrix.platform == 'android'
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
       - name: Setup Android SDK
-        if: matrix.platform == 'android'
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
 
       - name: Install NDK
-        if: matrix.platform == 'android'
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Run Android flow
-        if: matrix.platform == 'android'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
@@ -80,7 +68,6 @@ jobs:
             echo "Emulator is ready"
             echo "Building dependencies..."
             yarn workspace @selfxyz/mobile-app build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
-            # Ensure we're in the right directory and gradlew is accessible
             cd $GITHUB_WORKSPACE/app/android
             echo "Building Android APK..."
             # Note: Using Release builds to avoid Metro dependency in CI
@@ -103,13 +90,36 @@ jobs:
             adb install "$APK_PATH" || { echo "❌ Android app installation failed"; exit 1; }
             echo "✅ App successfully installed"
             echo "Running Maestro tests..."
-            # Run Maestro test (no platform flag needed - auto-detects Android emulator)
-            maestro test app/e2e/launch.flow.yaml --format junit --output app/maestro-results.xml || {
+            # Run Maestro test on Android
+            maestro test app/e2e/launch.flow.yaml --platform android --format junit --output app/maestro-results.xml || {
               echo "Maestro test failed, but continuing to upload results..."
               exit 1
             }
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-results-android
+          path: app/maestro-results.xml
+
+  e2e-ios:
+    timeout-minutes: 45
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable
+      - run: corepack prepare yarn@4.6.0 --activate
+      - run: yarn install --immutable --silent
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+        env:
+          MAESTRO_VERSION: 1.41.0
       - name: Run iOS flow
-        if: matrix.platform == 'ios'
         run: |
           echo "Building dependencies..."
           if ! yarn workspace @selfxyz/mobile-app build:deps --silent; then
@@ -191,12 +201,12 @@ jobs:
             echo "This might be expected if the app has launch conditions"
           }
 
-          # Run Maestro test (no platform flag needed - auto-detects iOS simulator)
+          # Run Maestro test on iOS
           echo "Running Maestro tests..."
           echo "Maestro device detection:"
           maestro status || echo "Maestro status check failed"
           echo "Starting test execution..."
-          maestro test app/e2e/launch.flow.yaml --format junit --output app/maestro-results.xml || {
+          maestro test app/e2e/launch.flow.yaml --platform ios --format junit --output app/maestro-results.xml || {
             echo "Maestro test failed, but continuing to upload results..."
             exit 1
           }
@@ -204,5 +214,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: maestro-results-${{ matrix.platform }}
+          name: maestro-results-ios
           path: app/maestro-results.xml
+
