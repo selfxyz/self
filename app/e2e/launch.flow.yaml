@@ -1,4 +1,4 @@
-appId: com.warroom.proofofpassport
+appId: com.proofofpassportapp
 ---
 - launchApp
 - assertVisible:

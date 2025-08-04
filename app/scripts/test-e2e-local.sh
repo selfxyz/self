@@ -359,15 +359,13 @@ setup_android_environment() {
 }
 
 build_android_app() {
-    cd android
-
     log_info "🔨 Building Android APK..."
+    cd android
     if ! ./gradlew assembleDebug; then
         log_error "Android build failed"
         exit 1
     fi
     log_success "Android build succeeded"
-
     cd ..
 }
 
