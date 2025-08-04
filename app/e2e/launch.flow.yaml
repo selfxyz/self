@@ -1,7 +1,14 @@
 appId: com.proofofpassportapp
 ---
 - launchApp
-- waitFor: { visible: { id: "home-screen" }, timeout: 10000 }
+- waitFor:
+    visible:
+      id: "home-screen"
+    timeout: 10000
   onTimeout:
-    - waitFor: { visible: { id: "launch-screen" }, timeout: 10000 }
-    - assertVisible: { id: "launch-screen" }
+    - waitFor:
+        visible:
+          id: "launch-screen"
+        timeout: 10000
+    - assertVisible:
+        id: "launch-screen"
