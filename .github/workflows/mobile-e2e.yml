@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: 18
       - run: corepack enable
-      - run: yarn install --immutable --cached --silent
+      - run: yarn install --immutable --silent
       - name: Install Maestro
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
