@@ -39,7 +39,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: "yarn"
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
       - run: yarn install --immutable --silent
@@ -55,7 +54,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
-          cache: "gradle"
       - name: Setup Android SDK
         if: matrix.platform == 'android'
         uses: android-actions/setup-android@v3
