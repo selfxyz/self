@@ -1,17 +1,17 @@
 name: Push Build Version Changes
 
-description: 'Commits and pushes build version changes for mobile platforms'
+description: "Commits and pushes build version changes for mobile platforms"
 
 inputs:
   commit_message:
-    description: 'Commit message'
+    description: "Commit message"
     required: true
   commit_paths:
     description: "Space-separated list of paths to check for changes (e.g. 'ios/file.txt android/another/file.xml')"
     required: true
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Configure Git
       shell: bash

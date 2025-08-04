@@ -11,12 +11,12 @@ on:
   push:
     branches: [main, release/**]
     paths:
-      - 'app/**'
-      - '.github/workflows/mobile-e2e.yml'
+      - "app/**"
+      - ".github/workflows/mobile-e2e.yml"
   pull_request:
     paths:
-      - 'app/**'
-      - '.github/workflows/mobile-e2e.yml'
+      - "app/**"
+      - ".github/workflows/mobile-e2e.yml"
 
 jobs:
   e2e:
@@ -43,7 +43,7 @@ jobs:
         if: matrix.platform == 'android'
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
       - name: Setup Android SDK
         if: matrix.platform == 'android'

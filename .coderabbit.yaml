@@ -1,12 +1,12 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 
-language: 'en-US'
+language: "en-US"
 tone_instructions: |
   You are an expert code reviewer for a React Native/TypeScript mobile application with smart contract integration.
   Focus on security, performance, and best practices. Be thorough but constructive in your feedback.
 
 reviews:
-  profile: 'chill'
+  profile: "chill"
   request_changes_workflow: false
   high_level_summary: true
   poem: true
@@ -14,12 +14,12 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-    base_branches: ['main', 'dev']
+    base_branches: ["main", "dev"]
   tools:
     github-checks:
       timeout_ms: 300000
   path_instructions:
-    - path: 'app/src/**/*.{ts,tsx,js,jsx}'
+    - path: "app/src/**/*.{ts,tsx,js,jsx}"
       instructions: |
         Review React Native TypeScript code for:
         - Component architecture and reusability
@@ -28,7 +28,7 @@ reviews:
         - TypeScript type safety
         - React hooks usage and dependencies
         - Navigation patterns
-    - path: 'contracts/**/*.sol'
+    - path: "contracts/**/*.sol"
       instructions: |
         Review Solidity smart contracts for:
         - Security vulnerabilities (reentrancy, overflow, etc.)
@@ -36,27 +36,27 @@ reviews:
         - Access control patterns
         - Event emission for important state changes
         - Code documentation and NatSpec comments
-    - path: 'circuits/**/*.circom'
+    - path: "circuits/**/*.circom"
       instructions: |
         Review ZK circuit code for:
         - Circuit correctness and completeness
         - Constraint efficiency
         - Input validation
         - Security considerations for zero-knowledge proofs
-    - path: '**/*.{test,spec}.{ts,js,tsx,jsx}'
+    - path: "**/*.{test,spec}.{ts,js,tsx,jsx}"
       instructions: |
         Review test files for:
         - Test coverage completeness
         - Test case quality and edge cases
         - Mock usage appropriateness
         - Test readability and maintainability
-    - path: 'app/android/**/*'
+    - path: "app/android/**/*"
       instructions: |
         Review Android-specific code for:
         - Platform-specific implementations
         - Performance considerations
         - Security best practices for mobile
-    - path: 'app/ios/**/*'
+    - path: "app/ios/**/*"
       instructions: |
         Review iOS-specific code for:
         - Platform-specific implementations

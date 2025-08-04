@@ -1,23 +1,23 @@
 name: Setup Mobile Environment
 
-description: 'Sets up the environment for mobile app builds'
+description: "Sets up the environment for mobile app builds"
 
 inputs:
   app_path:
-    description: 'Path to the app directory'
+    description: "Path to the app directory"
     required: true
   node_version:
-    description: 'Node version'
+    description: "Node version"
     required: true
   ruby_version:
-    description: 'Ruby version'
+    description: "Ruby version"
     required: true
   workspace:
-    description: 'Workspace directory path'
+    description: "Workspace directory path"
     required: true
 
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
     - name: Install locales and dialog for local development
       if: ${{ env.ACT }}

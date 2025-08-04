@@ -5,9 +5,9 @@ on:
     types: [closed]
     branches: [main, dev]
     paths:
-      - 'app/**'
-      - '!app/**/*.md'
-      - '!app/docs/**'
+      - "app/**"
+      - "!app/**/*.md"
+      - "!app/docs/**"
 
 permissions:
   contents: write

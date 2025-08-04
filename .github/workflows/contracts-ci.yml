@@ -4,19 +4,19 @@ on:
     branches:
       - main
     paths:
-      - 'circuits/circuits/**'
-      - '.github/workflows/artifacts.yml'
+      - "circuits/circuits/**"
+      - ".github/workflows/artifacts.yml"
   pull_request:
     branches:
       - main
     paths:
-      - 'circuits/circuits/**'
-      - '.github/workflows/artifacts.yml'
+      - "circuits/circuits/**"
+      - ".github/workflows/artifacts.yml"
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ['self-hosted', 'selfxyz-org', 'ubuntu-22-04', '128ram']
+    runs-on: ["self-hosted", "selfxyz-org", "ubuntu-22-04", "128ram"]
 
     steps:
       - name: Checkout Repository

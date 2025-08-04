@@ -6,16 +6,16 @@ on:
       - main
       - openpassportv2
     paths:
-      - 'circuits/**'
-      - 'common/**'
+      - "circuits/**"
+      - "common/**"
   pull_request:
     branches:
       - dev
       - main
       - openpassportv2
     paths:
-      - 'circuits/**'
-      - 'common/**'
+      - "circuits/**"
+      - "common/**"
 jobs:
   run_circuit_tests:
     if: github.event.pull_request.draft == false
@@ -50,7 +50,7 @@ jobs:
 
       - name: Print Circom version
         run: circom --version
-      - name: 'enable yarn'
+      - name: "enable yarn"
         run: corepack enable yarn
       - name: Install Yarn dependencies
         run: yarn workspaces focus @selfxyz/circuits
