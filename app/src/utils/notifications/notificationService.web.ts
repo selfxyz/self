@@ -14,19 +14,24 @@ export { getStateMessage };
 export async function requestNotificationPermission(): Promise<boolean> {
   try {
     if (!('Notification' in window)) {
+      console.log('This browser does not support notifications');
       return false;
     }
 
     if (Notification.permission === 'granted') {
+      console.log('Notification permission already granted');
       return true;
     }
 
     if (Notification.permission === 'denied') {
+      console.log('Notification permission denied');
       return false;
     }
 
     const permission = await Notification.requestPermission();
     const enabled = permission === 'granted';
+
+    console.log('Notification permission status:', enabled);
     return enabled;
   } catch (error) {
     console.error('Failed to request notification permission:', error);
@@ -45,12 +50,14 @@ export async function getFCMToken(): Promise<string | null> {
       if (registration) {
         // Generate a simple token based on registration
         const token = `web_${registration.active?.scriptURL || Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        console.log('Web FCM Token generated');
         return token;
       }
     }
 
     // Fallback: generate a simple token
     const token = `web_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log('Web FCM Token generated (fallback)');
     return token;
   } catch (error) {
     console.error('Failed to get FCM token:', error);
@@ -68,6 +75,7 @@ export async function registerDeviceToken(
     if (!token) {
       const fcmToken = await getFCMToken();
       if (!fcmToken) {
+        console.log('No FCM token available');
         return;
       }
       token = fcmToken;
@@ -83,7 +91,12 @@ export async function registerDeviceToken(
     };
 
     if (cleanedToken.length > 10) {
-      // noop
+      console.log(
+        'Registering device token:',
+        `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(
+          cleanedToken.length - 5,
+        )}`,
+      );
     }
 
     const response = await fetch(`${baseUrl}/register-token`, {
@@ -101,6 +114,11 @@ export async function registerDeviceToken(
         'Failed to register device token:',
         response.status,
         errorText,
+      );
+    } else {
+      console.log(
+        'Device token registered successfully with session_id:',
+        sessionId,
       );
     }
   } catch (error) {
@@ -121,5 +139,7 @@ export function setupNotifications(): () => void {
   // For web, we don't have a direct equivalent to Firebase messaging
   // You might want to implement WebSocket or Server-Sent Events for real-time notifications
   // For now, we'll return a no-op unsubscribe function
-  return () => {};
+  return () => {
+    console.log('Web notification service cleanup');
+  };
 }

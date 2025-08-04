@@ -84,8 +84,16 @@ const _getSecurely = async function <T>(
   fn: () => Promise<string | false>,
   formatter: (dataString: string) => T,
 ): Promise<SignedPayload<T> | null> {
+  console.log('Starting _getSecurely (web)');
+
+  console.warn(
+    'This is a stub for _getSecurely on web. It does not implement secure storage or biometric authentication.',
+  );
   const dataString = await fn();
+  console.log('Got data string:', dataString ? 'exists' : 'not found');
+
   if (dataString === false) {
+    console.log('No data string available');
     return null;
   }
 
@@ -116,6 +124,7 @@ async function checkBiometricsAvailable(): Promise<boolean> {
 
 async function restoreFromMnemonic(_mnemonic: string): Promise<string | false> {
   // No-op on web since we don't have access to mnemonics
+  console.log('restoreFromMnemonic: No-op on web');
   trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
     reason: 'not_supported_on_web',
   });
@@ -124,6 +133,7 @@ async function restoreFromMnemonic(_mnemonic: string): Promise<string | false> {
 
 async function loadOrCreateMnemonic(): Promise<string | false> {
   // No-op on web since we don't have access to mnemonics
+  console.log('loadOrCreateMnemonic: No-op on web');
   return false;
 }
 
@@ -268,6 +278,7 @@ export async function unsafe_getPrivateKey() {
 
 export async function unsafe_clearSecrets() {
   if (__DEV__) {
+    console.warn('unsafe_clearSecrets is not implemented for web');
     // In a real implementation, you would clear any stored secrets here
   }
 }

@@ -30,6 +30,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   useEffect(() => {
     // Simulate that the component is not ready for web
     if (isMounted) {
+      console.warn('PassportCamera: Web implementation not yet available');
       // Optionally trigger an error after a short delay to indicate not implemented
       const timer = setTimeout(() => {
         handleError();
