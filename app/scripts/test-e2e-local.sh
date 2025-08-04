@@ -180,7 +180,7 @@ build_ios_app() {
     # Set environment variable for e2e testing to enable OpenSSL fixes
     export E2E_TESTING=1
 
-    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="DEBUG E2E_TESTING"; then
+    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="DEBUG E2E_TESTING"; then
         log_error "iOS build failed"
         exit 1
     fi

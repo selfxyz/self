@@ -46,7 +46,7 @@ jobs:
       - name: Install Maestro
         run: |
           curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
         env:
           MAESTRO_VERSION: 1.41.0
       - name: Setup Java environment
@@ -124,7 +124,7 @@ jobs:
           echo "Building iOS app..."
           # Note: Using Release builds to avoid Metro dependency in CI
           # Debug builds require Metro server, Release builds have JS bundled
-          if ! xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets -quiet; then
+          if ! xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet; then
             echo "❌ iOS build failed"
             exit 1
           fi

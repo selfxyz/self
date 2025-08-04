@@ -435,8 +435,18 @@ class PassportReader: NSObject {
         // No-op for E2E testing
     }
 
-    @objc(scanPassport:resolver:rejecter:)
-    func scanPassport(requestBody: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:resolve:reject:)
+    func scanPassport(
+        _ passportNumber: String,
+        dateOfBirth: String,
+        dateOfExpiry: String,
+        canNumber: String,
+        useCan: NSNumber,
+        skipPACE: NSNumber,
+        skipCA: NSNumber,
+        extendedMode: NSNumber,
+        usePacePolling: NSNumber,
+        resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         reject("E2E_TESTING", "NFC scanning not available in E2E testing mode", nil)
     }
 
