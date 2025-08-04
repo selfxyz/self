@@ -62,8 +62,8 @@
     "web": "vite",
     "web:build": "vite build",
     "web:preview": "vite preview",
-    "test:e2e:android": "cd android && ./gradlew assembleDebug && cd .. && maestro test app/e2e/launch.flow.yaml --platform android",
-    "test:e2e:ios": "xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build && maestro test app/e2e/launch.flow.yaml --platform ios"
+    "test:e2e:android": "cd android && ./gradlew assembleDebug && cd .. && maestro test e2e/launch.flow.yaml --platform android",
+    "test:e2e:ios": "xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build && maestro test e2e/launch.flow.yaml --platform ios"
   },
   "dependencies": {
     "@babel/runtime": "^7.27.4",
