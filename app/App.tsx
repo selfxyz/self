@@ -14,8 +14,6 @@ import { PassportProvider } from './src/providers/passportDataProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
 import { initSentry, wrapWithSentry } from './src/Sentry';
 
-import 'react-native-get-random-values';
-
 initSentry();
 
 global.Buffer = Buffer;
