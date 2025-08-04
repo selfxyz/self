@@ -83,7 +83,7 @@ jobs:
           cd app
           yarn build:deps
           cd ios
-          pod install --jobs 4
+          pod install
           cd ..
           xcrun simctl boot "iPhone 15" || true
           # Optimized xcodebuild with parallel builds
