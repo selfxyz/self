@@ -59,6 +59,7 @@
     "test:tree-shaking": "node ./scripts/test-tree-shaking.cjs",
     "test:web-build": "jest tests/web-build-render.test.ts --testTimeout=180000",
     "test:e2e:android": "detox build -c android.emu.debug && detox test -c android.emu.debug",
+    "test:e2e:ios": "detox build -c ios.sim.debug && detox test -c ios.sim.debug",
     "types": "tsc --noEmit",
     "web": "vite",
     "web:build": "vite build",

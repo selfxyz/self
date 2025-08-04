@@ -13,6 +13,15 @@ const config: DetoxConfig = {
       binaryPath: 'android/app/build/outputs/apk/debug/app-debug.apk',
       build: 'cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug',
     },
+    'ios.sim.debug': {
+      type: 'ios.simulator',
+      device: {
+        type: 'iPhone 14',
+      },
+      binaryPath: 'ios/build/Build/Products/Debug-iphonesimulator/OpenPassport.app',
+      build:
+        "xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build",
+    },
   },
 };
 

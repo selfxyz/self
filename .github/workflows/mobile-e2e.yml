@@ -1,0 +1,38 @@
+name: mobile-e2e
+
+env:
+  NODE_VERSION: 18
+  RUBY_VERSION: 3.2
+  JAVA_VERSION: 17
+  WORKSPACE: ${{ github.workspace }}
+  APP_PATH: ${{ github.workspace }}/app
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/mobile-e2e.yml"
+      - ".github/actions/**"
+  workflow_dispatch:
+
+jobs:
+  detox:
+    runs-on: macos-14
+    strategy:
+      matrix:
+        platform: [android, ios]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.2"
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+      - name: Run Detox
+        run: yarn workspace @selfxyz/mobile-app test:e2e:${{ matrix.platform }}
