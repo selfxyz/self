@@ -1,0 +1,56 @@
+name: Mobile E2E
+
+on:
+  push:
+    paths:
+      - 'app/**'
+      - '.github/workflows/mobile-e2e.yml'
+  pull_request:
+    paths:
+      - 'app/**'
+      - '.github/workflows/mobile-e2e.yml'
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable
+      - run: yarn install
+      - name: Install Maestro
+        run: |
+          curl -Ls https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+      - name: Run Android flow
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          script: |
+            cd app
+            yarn build:deps
+            yarn test:e2e:android
+
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable
+      - run: yarn install
+      - name: Install Maestro
+        run: |
+          curl -Ls https://get.maestro.mobile.dev | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+      - name: Build and run iOS flow
+        run: |
+          cd app
+          yarn build:deps
+          xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build
+          xcrun simctl boot "iPhone 15" || true
+          yarn test:e2e:ios
