@@ -79,23 +79,16 @@ jobs:
             echo "Emulator is ready"
             cd app
             echo "Building dependencies..."
-            if ! yarn build:deps --silent; then
-              echo "❌ Dependency build failed"
-              exit 1
-            fi
+            yarn build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
             cd android
             echo "Building Android APK..."
-            if ! ./gradlew assembleDebug --quiet; then
-              echo "❌ Android build failed"
-              exit 1
-            fi
+            # Note: Using Release builds to avoid Metro dependency in CI
+            # Debug builds require Metro server, Release builds have JS bundled
+            ./gradlew assembleRelease --quiet || { echo "❌ Android build failed"; exit 1; }
             echo "✅ Android build succeeded"
             cd ..
             echo "Installing app on emulator..."
-            if ! adb install android/app/build/outputs/apk/debug/app-debug.apk; then
-              echo "❌ Android app installation failed"
-              exit 1
-            fi
+            adb install android/app/build/outputs/apk/release/app-release.apk || { echo "❌ Android app installation failed"; exit 1; }
             echo "✅ App successfully installed"
             echo "Running Maestro tests..."
             # Run Maestro test (no platform flag needed - auto-detects Android emulator)
@@ -122,12 +115,18 @@ jobs:
 
           # Boot simulator and wait for it to be ready
           echo "Setting up iOS Simulator..."
+          echo "Available simulators:"
+          xcrun simctl list devices | grep "iPhone 15"
           xcrun simctl boot "iPhone 15" || true
           xcrun simctl bootstatus "iPhone 15" -b
+          echo "Simulator status:"
+          xcrun simctl list devices | grep "iPhone 15"
 
           # Build the app (silenced for cleaner e2e logs)
           echo "Building iOS app..."
-          if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets -quiet; then
+          # Note: Using Release builds to avoid Metro dependency in CI
+          # Debug builds require Metro server, Release builds have JS bundled
+          if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets -quiet; then
             echo "❌ iOS build failed"
             exit 1
           fi
@@ -135,26 +134,57 @@ jobs:
 
           # Install the app on simulator
           echo "Installing app on simulator..."
-          APP_PATH=$(find ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
+          APP_PATH=$(find ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -1)
           if [ -z "$APP_PATH" ]; then
             echo "❌ Could not find built iOS app"
             exit 1
           fi
           echo "Found app at: $APP_PATH"
-          if ! xcrun simctl install "iPhone 15" "$APP_PATH"; then
-            echo "❌ iOS app installation failed"
+
+          # Check the app's bundle ID
+          echo "Checking app bundle info:"
+          /usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP_PATH/Info.plist" || echo "Could not read bundle ID"
+          /usr/libexec/PlistBuddy -c "Print CFBundleDisplayName" "$APP_PATH/Info.plist" || echo "Could not read display name"
+
+          # Uninstall any existing version first
+          echo "Removing any existing app installation..."
+          xcrun simctl uninstall "iPhone 15" "com.warroom.proofofpassport" 2>/dev/null || true
+
+          # Install the app with verbose output
+          echo "Installing app..."
+          xcrun simctl install "iPhone 15" "$APP_PATH"
+          INSTALL_EXIT_CODE=$?
+          if [ $INSTALL_EXIT_CODE -ne 0 ]; then
+            echo "❌ iOS app installation failed with exit code: $INSTALL_EXIT_CODE"
             exit 1
           fi
 
-          # Verify the app is installed
+          # Verify the app is installed and show details
           echo "Verifying app installation..."
-          xcrun simctl listapps "iPhone 15" | grep -q "com.warroom.proofofpassport" && echo "✅ App successfully installed" || {
+          echo "All installed apps with 'passport' in name:"
+          xcrun simctl listapps "iPhone 15" | grep -i passport || echo "No apps with 'passport' found"
+          echo "Checking for exact bundle ID:"
+          if xcrun simctl listapps "iPhone 15" | grep -q "com.warroom.proofofpassport"; then
+            echo "✅ App successfully installed"
+          else
             echo "❌ App installation verification failed"
+            echo "Full app list:"
+            xcrun simctl listapps "iPhone 15"
             exit 1
+          fi
+
+          # Test if the app can be launched directly
+          echo "Testing app launch capability..."
+          xcrun simctl launch "iPhone 15" "com.warroom.proofofpassport" || {
+            echo "⚠️ Direct app launch test failed - checking if app is launchable"
+            echo "This might be expected if the app has launch conditions"
           }
 
           # Run Maestro test (no platform flag needed - auto-detects iOS simulator)
           echo "Running Maestro tests..."
+          echo "Maestro device detection:"
+          maestro status || echo "Maestro status check failed"
+          echo "Starting test execution..."
           maestro test e2e/launch.flow.yaml --format junit --output maestro-results.xml || {
             echo "Maestro test failed, but continuing to upload results..."
             exit 1
