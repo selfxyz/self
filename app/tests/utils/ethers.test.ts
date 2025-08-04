@@ -2,10 +2,7 @@
 
 import { ethers } from 'ethers';
 
-// Replace the native module with Node's crypto for tests
-jest.mock('react-native-quick-crypto', () => require('crypto'));
-
-// Register react-native-quick-crypto bindings
+// Register crypto polyfills
 import '../../src/utils/ethers';
 
 describe('ethers crypto polyfills', () => {
