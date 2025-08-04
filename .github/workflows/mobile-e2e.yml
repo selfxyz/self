@@ -37,18 +37,14 @@ jobs:
         with:
           api-level: 34
           arch: x86_64
-          script: |
-            cd app
-            yarn build:deps
-            yarn test:e2e:android
+          script: cd app && yarn build:deps && yarn test:e2e:android
       - name: Run iOS flow
         if: matrix.platform == 'ios'
         run: |
           cd app
           yarn build:deps
           cd ios
-          bundle install
-          bundle exec pod install
+          pod install
           cd ..
           xcrun simctl boot "iPhone 15" || true
           yarn test:e2e:ios
