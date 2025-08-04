@@ -77,41 +77,39 @@ jobs:
             echo "Waiting for emulator to be ready..."
             adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
             echo "Emulator is ready"
-            cd app
             echo "Building dependencies..."
-            yarn build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
-            cd android
+            yarn workspace @selfxyz/mobile-app build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+            cd app/android
             echo "Building Android APK..."
             # Note: Using Release builds to avoid Metro dependency in CI
             # Debug builds require Metro server, Release builds have JS bundled
             ./gradlew assembleRelease --quiet || { echo "❌ Android build failed"; exit 1; }
             echo "✅ Android build succeeded"
-            cd ..
+            cd ../..
             echo "Installing app on emulator..."
-            adb install android/app/build/outputs/apk/release/app-release.apk || { echo "❌ Android app installation failed"; exit 1; }
+            adb install app/android/app/build/outputs/apk/release/app-release.apk || { echo "❌ Android app installation failed"; exit 1; }
             echo "✅ App successfully installed"
             echo "Running Maestro tests..."
             # Run Maestro test (no platform flag needed - auto-detects Android emulator)
-            maestro test e2e/launch.flow.yaml --format junit --output maestro-results.xml || {
+            maestro test app/e2e/launch.flow.yaml --format junit --output app/maestro-results.xml || {
               echo "Maestro test failed, but continuing to upload results..."
               exit 1
             }
       - name: Run iOS flow
         if: matrix.platform == 'ios'
         run: |
-          cd app
           echo "Building dependencies..."
-          if ! yarn build:deps --silent; then
+          if ! yarn workspace @selfxyz/mobile-app build:deps --silent; then
             echo "❌ Dependency build failed"
             exit 1
           fi
-          cd ios
+          cd app/ios
           echo "Installing iOS dependencies..."
           if ! pod install --silent; then
             echo "❌ Pod install failed"
             exit 1
           fi
-          cd ..
+          cd ../..
 
           # Boot simulator and wait for it to be ready
           echo "Setting up iOS Simulator..."
@@ -126,7 +124,7 @@ jobs:
           echo "Building iOS app..."
           # Note: Using Release builds to avoid Metro dependency in CI
           # Debug builds require Metro server, Release builds have JS bundled
-          if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets -quiet; then
+          if ! xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets -quiet; then
             echo "❌ iOS build failed"
             exit 1
           fi
@@ -134,7 +132,7 @@ jobs:
 
           # Install the app on simulator
           echo "Installing app on simulator..."
-          APP_PATH=$(find ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -1)
+          APP_PATH=$(find app/ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -1)
           if [ -z "$APP_PATH" ]; then
             echo "❌ Could not find built iOS app"
             exit 1
@@ -185,7 +183,7 @@ jobs:
           echo "Maestro device detection:"
           maestro status || echo "Maestro status check failed"
           echo "Starting test execution..."
-          maestro test e2e/launch.flow.yaml --format junit --output maestro-results.xml || {
+          maestro test app/e2e/launch.flow.yaml --format junit --output app/maestro-results.xml || {
             echo "Maestro test failed, but continuing to upload results..."
             exit 1
           }
