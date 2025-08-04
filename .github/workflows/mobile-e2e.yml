@@ -41,6 +41,7 @@ jobs:
           node-version: 18
           cache: "yarn"
       - run: corepack enable
+      - run: corepack prepare yarn@4.6.0 --activate
       - run: yarn install --immutable --silent
       - name: Install Maestro
         run: |
