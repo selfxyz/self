@@ -1,4 +1,4 @@
-name: Self Circuits CI/CD
+name: Circuits CI
 on:
   push:
     branches:

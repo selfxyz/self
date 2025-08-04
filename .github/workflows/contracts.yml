@@ -1,4 +1,4 @@
-name: Self Contracts CI/CD
+name: Contracts CI
 on:
   push:
     branches:

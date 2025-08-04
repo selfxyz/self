@@ -1,4 +1,4 @@
-name: OpenPassport CI/CD
+name: Circuits Build
 on:
   push:
     branches:

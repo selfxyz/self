@@ -1,4 +1,4 @@
-name: General Self CI
+name: Common CI
 
 on:
   pull_request:

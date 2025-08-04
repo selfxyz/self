@@ -1,4 +1,4 @@
-name: Mobile App Deployments
+name: Mobile Deploy
 
 env:
   # Build environment versions
