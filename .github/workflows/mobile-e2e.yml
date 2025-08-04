@@ -6,6 +6,9 @@ env:
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
   ANDROID_NDK_VERSION: 27.0.11718014
+  # Performance optimizations
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
+  CI: true
 
 on:
   push:
@@ -20,6 +23,7 @@ on:
 
 jobs:
   e2e:
+    timeout-minutes: 45
     strategy:
       matrix:
         include:
@@ -34,11 +38,13 @@ jobs:
         with:
           node-version: 18
       - run: corepack enable
-      - run: yarn install
+      - run: yarn install --frozen-lockfile --prefer-offline --silent
       - name: Install Maestro
         run: |
-          curl -Ls https://get.maestro.mobile.dev | bash
+          curl -Ls "https://get.maestro.mobile.dev" | bash
           echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+        env:
+          MAESTRO_VERSION: 1.37.8
       - name: Setup Java environment
         if: matrix.platform == 'android'
         uses: actions/setup-java@v4
@@ -52,40 +58,35 @@ jobs:
           accept-android-sdk-licenses: true
       - name: Install NDK
         if: matrix.platform == 'android'
-        run: |
-          max_attempts=5
-          attempt=1
-          while [ $attempt -le $max_attempts ]; do
-            echo "Attempt $attempt of $max_attempts to install NDK..."
-            if sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"; then
-              echo "Successfully installed NDK"
-              exit 0
-            fi
-            echo "Failed to install NDK on attempt $attempt"
-            if [ $attempt -eq $max_attempts ]; then
-              echo "All attempts to install NDK failed"
-              exit 1
-            fi
-            # Exponential backoff: 2^attempt seconds
-            wait_time=$((2 ** attempt))
-            echo "Waiting $wait_time seconds before retrying..."
-            sleep $wait_time
-            attempt=$((attempt + 1))
-          done
+        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Run Android flow
         if: matrix.platform == 'android'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
-          script: cd app && yarn build:deps && yarn test:e2e:android
+          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            cd app
+            yarn build:deps
+            cd android
+            ./gradlew assembleDebug
+            cd ..
+            # Run Maestro test (no platform flag needed - auto-detects Android emulator)
+            maestro test e2e/launch.flow.yaml
       - name: Run iOS flow
         if: matrix.platform == 'ios'
         run: |
           cd app
           yarn build:deps
           cd ios
-          pod install
+          pod install --jobs 4
           cd ..
           xcrun simctl boot "iPhone 15" || true
-          yarn test:e2e:ios
+          # Optimized xcodebuild with parallel builds
+          xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets
+          # Run Maestro test (no platform flag needed - auto-detects iOS simulator)
+          maestro test e2e/launch.flow.yaml
