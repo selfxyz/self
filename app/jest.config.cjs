@@ -6,6 +6,7 @@ module.exports = {
   ],
   setupFiles: ['<rootDir>/jest.setup.js'],
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.[jt]sx?$',
+  testPathIgnorePatterns: ['<rootDir>/e2e/'],
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',

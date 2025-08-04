@@ -75,6 +75,7 @@ const HomeScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
   return (
     <YStack
+      testID="home-screen"
       backgroundColor={black}
       gap={20}
       justifyContent="space-between"

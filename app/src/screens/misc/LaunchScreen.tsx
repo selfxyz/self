@@ -36,6 +36,7 @@ const LaunchScreen: React.FC = () => {
 
   return (
     <YStack
+      testID="launch-screen"
       backgroundColor={black}
       flex={1}
       justifyContent="space-between"
