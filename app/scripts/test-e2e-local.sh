@@ -5,6 +5,7 @@
 set -e
 
 PLATFORM=${1:-}
+EMULATOR_PID=""
 
 # Colors for better output
 RED='\033[0;31m'
@@ -133,11 +134,21 @@ setup_ios_simulator() {
     echo "Available simulators:"
     xcrun simctl list devices
 
-    # Find the first available iPhone simulator
-    AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone" | grep "(Shutdown)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+    # Find the first available iPhone simulator (prefer booted ones, then shutdown ones)
+    AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone" | grep "(Booted)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+
+    if [ -z "$AVAILABLE_SIMULATOR" ]; then
+        # Try to find any available iPhone simulator that's shutdown
+        AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone" | grep "(Shutdown)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+    fi
 
     if [ -z "$AVAILABLE_SIMULATOR" ]; then
         # Try to find any available simulator
+        AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "(Booted)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+    fi
+
+    if [ -z "$AVAILABLE_SIMULATOR" ]; then
+        # Last resort - any shutdown simulator
         AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "(Shutdown)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
     fi
 
@@ -169,7 +180,7 @@ build_ios_app() {
     # Set environment variable for e2e testing to enable OpenSSL fixes
     export E2E_TESTING=1
 
-    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets; then
+    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs $(sysctl -n hw.ncpu) -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="DEBUG E2E_TESTING"; then
         log_error "iOS build failed"
         exit 1
     fi
@@ -241,6 +252,10 @@ setup_android_environment() {
 
     # Check if emulator is running
     log_info "📱 Checking for Android emulator..."
+
+    # Set shorter wait time for emulator shutdown to reduce logging
+    export ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL=5
+
     RUNNING_EMULATOR=$(adb devices | grep emulator | head -1 | cut -f1)
 
     if [ -z "$RUNNING_EMULATOR" ]; then
@@ -282,9 +297,9 @@ setup_android_environment() {
         FIRST_AVD=$(echo "$AVAILABLE_AVDS" | head -1)
         log_info "Using emulator: $FIRST_AVD"
 
-        # Start the emulator in background
+        # Start the emulator in background with output silenced
         log_info "Starting emulator (this may take a minute)..."
-        emulator -avd "$FIRST_AVD" -no-snapshot-load &
+        emulator -avd "$FIRST_AVD" -no-snapshot-load >/dev/null 2>&1 &
         EMULATOR_PID=$!
 
         # Wait for emulator to start (similar to iOS bootstatus)
@@ -435,6 +450,24 @@ install_android_app() {
     }
 }
 
+# Cleanup function for Android emulator
+cleanup_android_emulator() {
+    if [ -n "$EMULATOR_PID" ] && kill -0 "$EMULATOR_PID" 2>/dev/null; then
+        log_info "Cleaning up Android emulator (PID: $EMULATOR_PID)..."
+        # Kill the emulator process silently
+        kill "$EMULATOR_PID" >/dev/null 2>&1
+        # Wait a moment for graceful shutdown
+        sleep 2
+        # Force kill if still running
+        if kill -0 "$EMULATOR_PID" 2>/dev/null; then
+            kill -9 "$EMULATOR_PID" >/dev/null 2>&1
+        fi
+    fi
+
+    # Also silence any remaining emulator processes that might be hanging
+    pkill -f "emulator.*$FIRST_AVD" >/dev/null 2>&1 || true
+}
+
 # Main platform runners
 run_ios_tests() {
     echo "🍎 Starting local iOS e2e testing..."
@@ -451,6 +484,9 @@ run_ios_tests() {
 
 run_android_tests() {
     echo "🤖 Starting local Android e2e testing..."
+
+    # Set up trap to cleanup emulator on script exit
+    trap cleanup_android_emulator EXIT
 
     check_metro_running
     setup_android_environment

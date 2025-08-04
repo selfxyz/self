@@ -9,9 +9,12 @@
 
 import Foundation
 import React
+#if !E2E_TESTING
 import NFCPassportReader
+#endif
 import Security
 
+#if !E2E_TESTING
 @available(iOS 13, macOS 10.15, *)
 extension CertificateType {
     func stringValue() -> String {
@@ -23,6 +26,7 @@ extension CertificateType {
         }
     }
 }
+#endif
 
 // Helper function to map the keys of a dictionary
 extension Dictionary {
@@ -31,6 +35,7 @@ extension Dictionary {
     }
 }
 
+#if !E2E_TESTING
 @available(iOS 15, *)
 @objc(PassportReader)
 class PassportReader: NSObject {
@@ -416,3 +421,28 @@ func serializePublicKey(_ publicKey: SecKey) -> String? {
     return true
   }
 }
+#else
+// E2E Testing stub implementation
+@available(iOS 15, *)
+@objc(PassportReader)
+class PassportReader: NSObject {
+    override init() {
+        super.init()
+    }
+
+    @objc(configure:enableDebugLogs:)
+    func configure(token: String, enableDebugLogs: Bool) {
+        // No-op for E2E testing
+    }
+
+    @objc(scanPassport:resolver:rejecter:)
+    func scanPassport(requestBody: [String: Any], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        reject("E2E_TESTING", "NFC scanning not available in E2E testing mode", nil)
+    }
+
+    @objc
+    static func requiresMainQueueSetup() -> Bool {
+        return true
+    }
+}
+#endif
