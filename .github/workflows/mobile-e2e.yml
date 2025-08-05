@@ -186,7 +186,7 @@ jobs:
           echo "Maestro device detection:"
           maestro status || echo "Maestro status check failed"
           echo "Starting test execution..."
-          maestro test app/e2e/launch.ios.flow.yaml --platform ios --format junit --output app/maestro-results.xml || {
+          maestro test app/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml || {
             echo "Maestro test failed, but continuing to upload results..."
             exit 1
           }
