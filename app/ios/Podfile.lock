@@ -177,7 +177,6 @@ PODS:
     - nanopb/encode (= 2.30910.0)
   - nanopb/decode (2.30910.0)
   - nanopb/encode (2.30910.0)
-  - OpenSSL-Universal (1.1.1900)
   - PromisesObjC (2.4.0)
   - QKMRZParser (2.0.0)
   - QKMRZScanner (3.0.0):
@@ -1969,7 +1968,6 @@ SPEC REPOS:
     - lottie-ios
     - Mixpanel-swift
     - nanopb
-    - OpenSSL-Universal
     - PromisesObjC
     - QKMRZParser
     - QKMRZScanner
@@ -2185,7 +2183,6 @@ SPEC CHECKSUMS:
   lottie-react-native: b0dc69202923f4baf341b360ab636f742b84a36a
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
-  OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
   QKMRZScanner: cf2348fd6ce441e758328da4adf231ef2b51d769
