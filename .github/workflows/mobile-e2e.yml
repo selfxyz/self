@@ -91,7 +91,7 @@ jobs:
             echo "✅ App successfully installed"
             echo "Running Maestro tests..."
             # Run Maestro test on Android
-            maestro test app/e2e/launch.flow.yaml --platform android --format junit --output app/maestro-results.xml || {
+            maestro test app/e2e/launch.android.flow.yaml --platform android --format junit --output app/maestro-results.xml || {
               echo "Maestro test failed, but continuing to upload results..."
               exit 1
             }
@@ -206,7 +206,7 @@ jobs:
           echo "Maestro device detection:"
           maestro status || echo "Maestro status check failed"
           echo "Starting test execution..."
-          maestro test app/e2e/launch.flow.yaml --platform ios --format junit --output app/maestro-results.xml || {
+          maestro test app/e2e/launch.ios.flow.yaml --platform ios --format junit --output app/maestro-results.xml || {
             echo "Maestro test failed, but continuing to upload results..."
             exit 1
           }

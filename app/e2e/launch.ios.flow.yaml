@@ -1,0 +1,9 @@
+appId: com.warroom.proofofpassport
+---
+- launchApp
+- assertVisible:
+    id: "home-screen"
+    optional: true
+- assertVisible:
+    id: "launch-screen"
+    optional: true

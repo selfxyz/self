@@ -115,7 +115,15 @@ build_dependencies() {
 run_maestro_tests() {
     log_info "🎭 Running Maestro tests..."
     echo "Starting test execution..."
-    if maestro test e2e/launch.flow.yaml --format junit --output maestro-results.xml; then
+
+    # Use platform-specific flow files
+    if [ "$PLATFORM" = "ios" ]; then
+        FLOW_FILE="e2e/launch.ios.flow.yaml"
+    else
+        FLOW_FILE="e2e/launch.android.flow.yaml"
+    fi
+
+    if maestro test "$FLOW_FILE" --format junit --output maestro-results.xml; then
         log_success "🎉 Maestro tests passed!"
     else
         log_error "Maestro tests failed"
