@@ -67,7 +67,7 @@ jobs:
           disable-animations: true
           script: |
             echo "Building dependencies..."
-            yarn build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+            yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
             echo "✅ Dependencies built successfully"
             echo "Running Android E2E tests..."
             cd app
@@ -100,7 +100,7 @@ jobs:
       - name: Run iOS flow
         run: |
           echo "Building dependencies..."
-          yarn build:deps --silent;
+          yarn workspace @selfxyz/mobile-app run build:deps --silent;
           if [ $? -ne 0 ]; then
             echo "❌ Dependency build failed"
             exit 1
