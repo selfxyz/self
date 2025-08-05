@@ -70,9 +70,7 @@ jobs:
             yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
             echo "✅ Dependencies built successfully"
             echo "Running Android E2E tests..."
-            cd app
-            chmod +x scripts/test-e2e-local.sh
-            ./scripts/test-e2e-local.sh android --workflow-match
+            cd app && chmod +x scripts/test-e2e-local.sh && ./scripts/test-e2e-local.sh android --workflow-match
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
