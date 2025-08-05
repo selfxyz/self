@@ -9,7 +9,14 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Alert, Platform, StyleProp, TextInput } from 'react-native';
+import {
+  Alert,
+  Platform,
+  StyleProp,
+  TextInput,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
 import { RootStackParamList } from '../../navigation';
@@ -32,7 +39,7 @@ interface DevSettingsScreenProps extends PropsWithChildren {
     | 'space-evenly';
   userSelect?: 'all' | 'text' | 'none' | 'contain';
   textAlign?: 'center' | 'left' | 'right';
-  style?: StyleProp<any>;
+  style?: StyleProp<TextStyle | ViewStyle>;
 }
 
 function SelectableText({ children, ...props }: DevSettingsScreenProps) {
@@ -85,7 +92,7 @@ const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   return (
     <Select
-      onValueChange={(screen: any) => {
+      onValueChange={(screen: keyof RootStackParamList) => {
         navigation.navigate(screen);
       }}
       disablePreventBodyScroll
@@ -94,7 +101,7 @@ const ScreenSelector = ({}) => {
         <Select.Value placeholder="Select screen to jump to" />
       </Select.Trigger>
 
-      <Adapt when={'sm' as any} platform="touch">
+      <Adapt when="sm" platform="touch">
         <Sheet native modal dismissOnSnapToBottom animation="medium">
           <Sheet.Frame>
             <Sheet.ScrollView>

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useCallback, useMemo } from 'react';
 import { Linking, Platform, Share } from 'react-native';
@@ -28,7 +29,7 @@ import ShareIcon from '../../images/icons/share.svg';
 import Star from '../../images/icons/star.svg';
 import Telegram from '../../images/icons/telegram.svg';
 import Web from '../../images/icons/webpage.svg';
-import { RootStackParamList } from '../../navigation';
+import type { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
 import {
   amber500,
@@ -43,10 +44,6 @@ import { getCountry, getLocales, getTimeZone } from '../../utils/locale';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {
-  Icon: React.FC<SvgProps>;
-  onPress: () => void;
-}
-interface MenuButtonProps {
   Icon: React.FC<SvgProps>;
   onPress: () => void;
 }
@@ -146,7 +143,8 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
 const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
   const { isDevMode, setDevModeOn } = useSettingStore();
   useSettingStore();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const screenRoutes = useMemo(() => {
     return isDevMode ? [...routes, ...DEBUG_MENU] : routes;
@@ -200,11 +198,11 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             break;
 
           case 'ManageDocuments':
-            navigation.navigate('ManageDocuments' as any);
+            navigation.navigate('ManageDocuments');
             break;
 
           default:
-            navigation.navigate(menuRoute as any);
+            navigation.navigate(menuRoute);
             break;
         }
       };

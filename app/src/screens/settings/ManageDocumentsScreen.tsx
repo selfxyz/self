@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -11,9 +12,14 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { DocumentEvents } from '../../consts/analytics';
-import { usePassport } from '../../providers/passportDataProvider';
+import {
+  usePassport,
+  type DocumentCatalog,
+  type DocumentMetadata,
+} from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { borderColor, textBlack, white } from '../../utils/colors';
+import type { RootStackParamList } from '../../navigation';
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
 
@@ -28,10 +34,12 @@ const PassportDataSelector = () => {
     deleteDocument,
     setSelectedDocument,
   } = usePassport();
-  const [documentCatalog, setDocumentCatalog] = useState<any>({
+  const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
     documents: [],
   });
-  const [_allDocuments, setAllDocuments] = useState<any>({});
+  const [_allDocuments, setAllDocuments] = useState<
+    Record<string, { metadata: DocumentMetadata }>
+  >({});
   const [loading, setLoading] = useState(true);
 
   const loadPassportDataInfo = useCallback(async () => {
@@ -110,7 +118,7 @@ const PassportDataSelector = () => {
     }
   };
 
-  const getDocumentInfo = (metadata: any): string => {
+  const getDocumentInfo = (metadata: DocumentMetadata): string => {
     const countryCode =
       extractCountryFromData(metadata.data, metadata.documentCategory) ||
       'Unknown';
@@ -187,7 +195,7 @@ const PassportDataSelector = () => {
       >
         Available Documents
       </Text>
-      {documentCatalog.documents.map((metadata: any) => (
+      {documentCatalog.documents.map((metadata: DocumentMetadata) => (
         <YStack
           key={metadata.id}
           padding="$3"
@@ -258,7 +266,8 @@ const PassportDataSelector = () => {
 };
 
 const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();
 
   useEffect(() => {
@@ -268,13 +277,13 @@ const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
   const handleScanDocument = () => {
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_SCAN_SELECTED);
-    navigation.navigate('PassportOnboarding' as any);
+    navigation.navigate('PassportOnboarding');
   };
 
   const handleGenerateMock = () => {
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_MOCK_SELECTED);
-    navigation.navigate('CreateMock' as any);
+    navigation.navigate('CreateMock');
   };
 
   return (

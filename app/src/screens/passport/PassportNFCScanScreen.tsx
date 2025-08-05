@@ -184,10 +184,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         let parsedPassportData: PassportData | null = null;
         try {
           passportData = parseScanResponse(scanResponse);
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
+          const message = e instanceof Error ? e.message : String(e);
           trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: e.message,
+            error: message,
           });
           return;
         }
@@ -241,24 +242,26 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           // Feels better somehow
           await new Promise(resolve => setTimeout(resolve, 1000));
           navigation.navigate('ConfirmBelongingScreen', {});
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error('Passport Parsed Failed:', e);
+          const message = e instanceof Error ? e.message : String(e);
           trackEvent(PassportEvents.PASSPORT_PARSE_FAILED, {
-            error: e.message,
+            error: message,
           });
           return;
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         const scanDurationSeconds = (
           (Date.now() - scanStartTime) /
           1000
         ).toFixed(2);
+        const message = e instanceof Error ? e.message : String(e);
         console.error('NFC Scan Unsuccessful:', e);
         trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: e.message,
+          error: message,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
-        openErrorModal(e.message);
+        openErrorModal(message);
       } finally {
         setIsNfcSheetOpen(false);
       }
