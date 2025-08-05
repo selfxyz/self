@@ -66,38 +66,8 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 4096
           disable-animations: true
           script: |
-            echo "Waiting for emulator to be ready..."
-            adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed | tr -d '\r') ]]; do sleep 1; done; input keyevent 82'
-            echo "Emulator is ready"
-            echo "Building dependencies..."
-            yarn workspace @selfxyz/mobile-app build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
-            echo "Building Android APK..."
-            # Note: Using Release builds to avoid Metro dependency in CI
-            # Debug builds require Metro server, Release builds have JS bundled
-            # Run the build inside the android directory so gradlew is available
-            echo "Current working directory: $(pwd)"
-            echo "Checking if gradlew exists:"
-            ls -la app/android/gradlew || echo "gradlew not found in app/android/"
-            (cd app/android && chmod +x ./gradlew && ./gradlew assembleRelease --quiet) || { echo "❌ Android build failed"; exit 1; }
-            echo "✅ Android build succeeded"
-            echo "Installing app on emulator..."
-            # Check if APK was built successfully
-            APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
-            echo "Looking for APK at: $APK_PATH"
-            if [ ! -f "$APK_PATH" ]; then
-              echo "❌ APK not found at expected location"
-              echo "Available files in build directory:"
-              find app/android/app/build -name "*.apk" 2>/dev/null || echo "No APK files found"
-              exit 1
-            fi
-            adb install "$APK_PATH" || { echo "❌ Android app installation failed"; exit 1; }
-            echo "✅ App successfully installed"
-            echo "Running Maestro tests..."
-            # Run Maestro test on Android
-            maestro test app/e2e/launch.android.flow.yaml --platform android --format junit --output app/maestro-results.xml || {
-              echo "Maestro test failed, but continuing to upload results..."
-              exit 1
-            }
+            chmod +x app/scripts/test-e2e-local.sh
+            ./app/scripts/test-e2e-local.sh android --workflow-match
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
