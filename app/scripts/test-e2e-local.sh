@@ -16,15 +16,20 @@ NC='\033[0m' # No Color
 
 print_usage() {
     echo "🎭 Local E2E Testing"
-    echo "Usage: $0 [ios|android]"
+    echo "Usage: $0 [ios|android] [--workflow-match]"
     echo ""
     echo "Examples:"
     echo "  $0 ios      - Run iOS e2e tests locally"
     echo "  $0 android  - Run Android e2e tests locally"
+    echo "  $0 android --workflow-match  - Run Android tests matching GitHub Actions workflow"
     echo ""
     echo "Prerequisites:"
     echo "  iOS:     Xcode, iOS Simulator, CocoaPods"
     echo "  Android: Android SDK, running emulator"
+    echo ""
+    echo "Workflow Match Mode:"
+    echo "  --workflow-match  - Use Release builds and exact workflow steps"
+    echo "                     (No Metro dependency, matches CI environment)"
 }
 
 log_info() {
@@ -72,6 +77,12 @@ setup_maestro() {
 
 # Check if Metro is running (required for debug builds)
 check_metro_running() {
+    # Skip Metro check if in workflow match mode (Release builds don't need Metro)
+    if [ "$WORKFLOW_MATCH" = "true" ]; then
+        log_info "🔍 Skipping Metro check (Release builds don't need Metro)"
+        return
+    fi
+
     log_info "🔍 Checking if Metro server is running..."
 
     # Check if Metro is running on port 8081
@@ -85,6 +96,9 @@ check_metro_running() {
         echo "  ${BLUE}yarn start${NC}"
         echo ""
         echo "Wait for Metro to show 'Metro waiting on exp://localhost:8081' then re-run this script."
+        echo ""
+        echo "Or use --workflow-match to use Release builds (no Metro needed):"
+        echo "  ${BLUE}$0 $PLATFORM --workflow-match${NC}"
         exit 1
     else
         log_success "Metro server is running on http://localhost:8081"
@@ -360,8 +374,15 @@ setup_android_environment() {
 
 build_android_app() {
     log_info "🔨 Building Android APK..."
+    # Note: Using Release builds to avoid Metro dependency in CI
+    # Debug builds require Metro server, Release builds have JS bundled
+    # Run the build inside the android directory so gradlew is available
+    echo "Current working directory: $(pwd)"
+    echo "Checking if gradlew exists:"
+    ls -la android/gradlew || echo "gradlew not found in android/"
+
     cd android
-    if ! ./gradlew assembleDebug; then
+    if ! ./gradlew assembleRelease --quiet; then
         log_error "Android build failed"
         exit 1
     fi
@@ -371,9 +392,13 @@ build_android_app() {
 
 install_android_app() {
     log_info "📦 Installing app on emulator..."
-    APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+    # Check if APK was built successfully (matching workflow)
+    APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+    log_info "Looking for APK at: $APK_PATH"
     if [ ! -f "$APK_PATH" ]; then
-        log_error "Could not find built APK at $APK_PATH"
+        log_error "APK not found at expected location"
+        echo "Available files in build directory:"
+        find android/app/build -name "*.apk" 2>/dev/null || echo "No APK files found"
         exit 1
     fi
 
@@ -486,7 +511,11 @@ run_android_tests() {
     # Set up trap to cleanup emulator on script exit
     trap cleanup_android_emulator EXIT
 
-    check_metro_running
+    # Only check Metro if not in workflow match mode
+    if [ "$WORKFLOW_MATCH" != "true" ]; then
+        check_metro_running
+    fi
+
     setup_android_environment
     build_android_app
     install_android_app
@@ -503,6 +532,16 @@ main() {
         print_usage
         exit 1
     fi
+
+    # Check for workflow match mode
+    WORKFLOW_MATCH="false"
+    for arg in "$@"; do
+        if [ "$arg" = "--workflow-match" ]; then
+            WORKFLOW_MATCH="true"
+            log_info "🔧 Running in workflow match mode (Release builds, no Metro)"
+            break
+        fi
+    done
 
     setup_maestro
     build_dependencies
@@ -523,4 +562,4 @@ main() {
 }
 
 # Run main function
-main
+main "$@"

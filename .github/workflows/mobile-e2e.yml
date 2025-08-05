@@ -72,6 +72,9 @@ jobs:
             # Note: Using Release builds to avoid Metro dependency in CI
             # Debug builds require Metro server, Release builds have JS bundled
             # Run the build inside the android directory so gradlew is available
+            echo "Current working directory: $(pwd)"
+            echo "Checking if gradlew exists:"
+            ls -la app/android/gradlew || echo "gradlew not found in app/android/"
             (cd app/android && chmod +x ./gradlew && ./gradlew assembleRelease --quiet) || { echo "❌ Android build failed"; exit 1; }
             echo "✅ Android build succeeded"
             echo "Installing app on emulator..."
@@ -213,4 +216,3 @@ jobs:
         with:
           name: maestro-results-ios
           path: app/maestro-results.xml
-
