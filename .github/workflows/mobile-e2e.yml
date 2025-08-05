@@ -11,6 +11,7 @@ env:
   CI: true
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
+  MAESTRO_VERSION: 1.41.0
 
 on:
   push:
@@ -37,18 +38,39 @@ jobs:
           node-version: 18
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v4
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - run: yarn install --immutable --silent
+      - name: Cache Maestro
+        id: cache-maestro
+        uses: actions/cache@v4
+        with:
+          path: ~/.maestro
+          key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
-        run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-        env:
-          MAESTRO_VERSION: 1.41.0
+        if: steps.cache-maestro.outputs.cache-hit != 'true'
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Add Maestro to path
+        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Setup Java environment
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -88,13 +110,41 @@ jobs:
           node-version: 18
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v4
+        with:
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - run: yarn install --immutable --silent
+      - name: Cache Maestro
+        id: cache-maestro
+        uses: actions/cache@v4
+        with:
+          path: ~/.maestro
+          key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
-        run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-        env:
-          MAESTRO_VERSION: 1.41.0
+        if: steps.cache-maestro.outputs.cache-hit != 'true'
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Add Maestro to path
+        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Cache Pods
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-pods-${{ hashFiles('app/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+      - name: Cache Xcode build
+        uses: actions/cache@v4
+        with:
+          path: app/ios/build
+          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-
       - name: Run iOS flow
         run: |
           echo "Building dependencies..."
