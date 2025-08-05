@@ -66,6 +66,10 @@ jobs:
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 4096
           disable-animations: true
           script: |
+            echo "Building dependencies..."
+            yarn workspace @selfxyz/mobile-app build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+            echo "✅ Dependencies built successfully"
+            echo "Running Android E2E tests..."
             chmod +x app/scripts/test-e2e-local.sh
             ./app/scripts/test-e2e-local.sh android --workflow-match
       - name: Upload test results
