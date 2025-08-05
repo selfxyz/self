@@ -67,10 +67,10 @@ jobs:
           disable-animations: true
           script: |
             echo "Building dependencies..."
-            cd app
             yarn build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
             echo "✅ Dependencies built successfully"
             echo "Running Android E2E tests..."
+            cd app
             chmod +x scripts/test-e2e-local.sh
             ./scripts/test-e2e-local.sh android --workflow-match
       - name: Upload test results
@@ -100,12 +100,11 @@ jobs:
       - name: Run iOS flow
         run: |
           echo "Building dependencies..."
-          cd app
-          if ! yarn build:deps --silent; then
+          yarn build:deps --silent;
+          if [ $? -ne 0 ]; then
             echo "❌ Dependency build failed"
             exit 1
           fi
-          cd ..
           cd app/ios
           echo "Installing iOS dependencies..."
           if ! pod install --silent; then
