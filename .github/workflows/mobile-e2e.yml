@@ -93,6 +93,8 @@ jobs:
             echo "✅ Dependencies built successfully"
             echo "Running Android E2E tests..."
             cd app && chmod +x scripts/test-e2e-local.sh && ./scripts/test-e2e-local.sh android --workflow-match
+        env:
+          E2E_BUILD: "true"
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
