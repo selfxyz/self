@@ -67,11 +67,11 @@ jobs:
           disable-animations: true
           script: |
             echo "Building dependencies..."
-            yarn workspace @selfxyz/mobile-app build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+            cd app && yarn build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
             echo "✅ Dependencies built successfully"
             echo "Running Android E2E tests..."
-            chmod +x app/scripts/test-e2e-local.sh
-            ./app/scripts/test-e2e-local.sh android --workflow-match
+            chmod +x scripts/test-e2e-local.sh
+            ./scripts/test-e2e-local.sh android --workflow-match
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -99,10 +99,12 @@ jobs:
       - name: Run iOS flow
         run: |
           echo "Building dependencies..."
-          if ! yarn workspace @selfxyz/mobile-app build:deps --silent; then
+          cd app
+          if ! yarn build:deps --silent; then
             echo "❌ Dependency build failed"
             exit 1
           fi
+          cd ..
           cd app/ios
           echo "Installing iOS dependencies..."
           if ! pod install --silent; then
