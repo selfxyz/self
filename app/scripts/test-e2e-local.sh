@@ -125,10 +125,11 @@ run_maestro_tests() {
 
     if maestro test "$FLOW_FILE" --format junit --output maestro-results.xml; then
         log_success "🎉 Maestro tests passed!"
+        return 0
     else
         log_error "Maestro tests failed"
         echo "Check maestro-results.xml for detailed results"
-        exit 1
+        return 1
     fi
 }
 
@@ -426,13 +427,12 @@ install_android_app() {
         ACTUAL_PACKAGE="com.proofofpassportapp"
     fi
 
-    # Uninstall any existing version first
-    echo "Removing any existing app installation..."
-    adb -s "$EMULATOR_ID" uninstall "$ACTUAL_PACKAGE" 2>/dev/null || true
-
-    # Install the app
+    # Install the app, replacing any existing installation.
+    # The -r flag allows adb to replace an existing app, which is safer than
+    # trying to uninstall first, especially in a CI environment where the
+    # emulator state might be inconsistent.
     echo "Installing app..."
-    if ! adb -s "$EMULATOR_ID" install "$APK_PATH"; then
+    if ! adb -s "$EMULATOR_ID" install -r "$APK_PATH"; then
         log_error "Android app installation failed"
         exit 1
     fi
@@ -509,8 +509,10 @@ run_ios_tests() {
     build_ios_app
     install_ios_app
     run_maestro_tests
+    MAESTRO_STATUS=$?
 
-    log_success "Local iOS e2e testing completed successfully!"
+    log_success "Local iOS e2e testing completed!"
+    exit $MAESTRO_STATUS
 }
 
 run_android_tests() {
@@ -528,8 +530,10 @@ run_android_tests() {
     build_android_app
     install_android_app
     run_maestro_tests
+    MAESTRO_STATUS=$?
 
-    log_success "Local Android e2e testing completed successfully!"
+    log_success "Local Android e2e testing completed!"
+    exit $MAESTRO_STATUS
 }
 
 # Main execution

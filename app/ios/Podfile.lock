@@ -177,6 +177,10 @@ PODS:
     - nanopb/encode (= 2.30910.0)
   - nanopb/decode (2.30910.0)
   - nanopb/encode (2.30910.0)
+  - NFCPassportReader (2.1.1):
+    - Mixpanel-swift (~> 5.0.0)
+    - OpenSSL-Universal (= 1.1.1900)
+  - OpenSSL-Universal (1.1.1900)
   - PromisesObjC (2.4.0)
   - QKMRZParser (2.0.0)
   - QKMRZScanner (3.0.0):
@@ -1864,6 +1868,7 @@ DEPENDENCIES:
   - lottie-ios
   - lottie-react-native (from `../../node_modules/lottie-react-native`)
   - Mixpanel-swift (~> 5.0.0)
+  - NFCPassportReader (from `https://github.com/seshanthS/NFCPassportReader`, commit `74098a5e29c23b3f5a58dc14a336556fa89c0ad6`)
   - QKMRZScanner
   - RCT-Folly (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1968,6 +1973,7 @@ SPEC REPOS:
     - lottie-ios
     - Mixpanel-swift
     - nanopb
+    - OpenSSL-Universal
     - PromisesObjC
     - QKMRZParser
     - QKMRZScanner
@@ -1991,6 +1997,9 @@ EXTERNAL SOURCES:
     :tag: hermes-2024-08-15-RNv0.75.1-4b3bf912cc0f705b51b71ce1a5b8bd79b93a451b
   lottie-react-native:
     :path: "../../node_modules/lottie-react-native"
+  NFCPassportReader:
+    :commit: 74098a5e29c23b3f5a58dc14a336556fa89c0ad6
+    :git: https://github.com/seshanthS/NFCPassportReader
   RCT-Folly:
     :podspec: "../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -2153,6 +2162,9 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native/ReactCommon/yoga"
 
 CHECKOUT OPTIONS:
+  NFCPassportReader:
+    :commit: 74098a5e29c23b3f5a58dc14a336556fa89c0ad6
+    :git: https://github.com/seshanthS/NFCPassportReader
   SwiftQRScanner:
     :commit: c71ff91297640a944de4bca61434155c3f9b0979
     :git: https://github.com/vinodiOS/SwiftQRScanner
@@ -2183,6 +2195,8 @@ SPEC CHECKSUMS:
   lottie-react-native: b0dc69202923f4baf341b360ab636f742b84a36a
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
+  NFCPassportReader: 48873f856f91215dbfa1eaaec20eae639672862e
+  OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
   QKMRZScanner: cf2348fd6ce441e758328da4adf231ef2b51d769
