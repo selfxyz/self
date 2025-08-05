@@ -29,7 +29,7 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     timeout-minutes: 45
-    runs-on: android
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,6 +44,18 @@ jobs:
           echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
         env:
           MAESTRO_VERSION: 1.41.0
+      - name: Setup Java environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+
+      - name: Install NDK
+        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Run Android flow
         uses: reactivecircus/android-emulator-runner@v2
         with:
