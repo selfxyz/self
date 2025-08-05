@@ -25,6 +25,9 @@ on:
 
 jobs:
   e2e-android:
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     timeout-minutes: 45
     runs-on: ubuntu-latest
     steps:
