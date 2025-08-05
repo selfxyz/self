@@ -68,23 +68,20 @@ jobs:
             echo "Emulator is ready"
             echo "Building dependencies..."
             yarn workspace @selfxyz/mobile-app build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
-            cd $GITHUB_WORKSPACE/app/android
             echo "Building Android APK..."
             # Note: Using Release builds to avoid Metro dependency in CI
             # Debug builds require Metro server, Release builds have JS bundled
-            # Ensure gradlew is executable and run the build
-            chmod +x ./gradlew
-            ./gradlew assembleRelease --quiet || { echo "❌ Android build failed"; exit 1; }
+            # Run the build inside the android directory so gradlew is available
+            (cd app/android && chmod +x ./gradlew && ./gradlew assembleRelease --quiet) || { echo "❌ Android build failed"; exit 1; }
             echo "✅ Android build succeeded"
-            cd $GITHUB_WORKSPACE
             echo "Installing app on emulator..."
             # Check if APK was built successfully
-            APK_PATH="$GITHUB_WORKSPACE/app/android/app/build/outputs/apk/release/app-release.apk"
+            APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
             echo "Looking for APK at: $APK_PATH"
             if [ ! -f "$APK_PATH" ]; then
               echo "❌ APK not found at expected location"
               echo "Available files in build directory:"
-              find $GITHUB_WORKSPACE/app/android/app/build -name "*.apk" 2>/dev/null || echo "No APK files found"
+              find app/android/app/build -name "*.apk" 2>/dev/null || echo "No APK files found"
               exit 1
             fi
             adb install "$APK_PATH" || { echo "❌ Android app installation failed"; exit 1; }
