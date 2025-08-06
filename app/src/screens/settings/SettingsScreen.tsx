@@ -17,6 +17,7 @@ import {
   playStoreUrl,
   selfUrl,
   telegramUrl,
+  xUrl,
 } from '../../consts/links';
 import Github from '../../images/icons/github.svg';
 import Cloud from '../../images/icons/settings_cloud_backup.svg';
@@ -26,6 +27,7 @@ import Lock from '../../images/icons/settings_lock.svg';
 import ShareIcon from '../../images/icons/share.svg';
 import Star from '../../images/icons/star.svg';
 import Telegram from '../../images/icons/telegram.svg';
+import X from '../../images/icons/x.svg';
 import Web from '../../images/icons/webpage.svg';
 import type { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
@@ -104,6 +106,7 @@ const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
 ];
 
 const social = [
+  [X, xUrl],
   [Github, gitHubUrl],
   [Web, selfUrl],
   [Telegram, telegramUrl],
@@ -140,7 +143,8 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
     <Button
       unstyled
       hitSlop={8}
-      icon={<Icon height={32} width={32} color={amber500} onPress={onPress} />}
+      onPress={onPress}
+      icon={<Icon height={32} width={32} color={amber500} />}
     />
   );
 };
