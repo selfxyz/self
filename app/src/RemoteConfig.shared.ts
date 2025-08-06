@@ -1,19 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-// Shared types and constants for RemoteConfig
-
-export type FeatureFlagValue = string | boolean | number;
-
-export interface LocalOverride {
-  [key: string]: FeatureFlagValue;
-}
-
-export const LOCAL_OVERRIDES_KEY = 'feature_flag_overrides';
-
-export const defaultFlags: Record<string, FeatureFlagValue> = {
-  aesop: false,
-};
-
 export interface FeatureFlagInfo {
   key: string;
   remoteValue?: FeatureFlagValue;
@@ -23,11 +9,11 @@ export interface FeatureFlagInfo {
   type: 'boolean' | 'string' | 'number';
 }
 
-// Shared interfaces for platform-specific implementations
-export interface StorageBackend {
-  getItem(key: string): Promise<string | null>;
-  setItem(key: string, value: string): Promise<void>;
-  removeItem(key: string): Promise<void>;
+// Shared types and constants for RemoteConfig
+export type FeatureFlagValue = string | boolean | number;
+
+export interface LocalOverride {
+  [key: string]: FeatureFlagValue;
 }
 
 export interface RemoteConfigBackend {
@@ -43,70 +29,21 @@ export interface RemoteConfigBackend {
   fetchAndActivate(): Promise<boolean>;
 }
 
-// Helper function to detect and parse remote config values
-export const getRemoteConfigValue = (
-  remoteConfig: RemoteConfigBackend,
-  key: string,
-  defaultValue: FeatureFlagValue,
-): FeatureFlagValue => {
-  const configValue = remoteConfig.getValue(key);
+export interface StorageBackend {
+  getItem(key: string): Promise<string | null>;
+  setItem(key: string, value: string): Promise<void>;
+  removeItem(key: string): Promise<void>;
+}
 
-  if (typeof defaultValue === 'boolean') {
-    return configValue.asBoolean();
-  } else if (typeof defaultValue === 'number') {
-    return configValue.asNumber();
-  } else if (typeof defaultValue === 'string') {
-    return configValue.asString();
-  }
+export const LOCAL_OVERRIDES_KEY = 'feature_flag_overrides';
 
-  // Fallback: try to infer type from the remote config value
-  const stringValue = configValue.asString();
-  if (stringValue === 'true' || stringValue === 'false') {
-    return configValue.asBoolean();
-  }
-  if (!Number.isNaN(Number(stringValue)) && stringValue !== '') {
-    return configValue.asNumber();
-  }
-  return stringValue;
-};
-
-// Local override management
-export const getLocalOverrides = async (
+export const clearAllLocalOverrides = async (
   storage: StorageBackend,
-): Promise<LocalOverride> => {
-  try {
-    const overrides = await storage.getItem(LOCAL_OVERRIDES_KEY);
-    if (!overrides) {
-      return {};
-    }
-    return JSON.parse(overrides);
-  } catch (error) {
-    console.error('Failed to get local overrides:', error);
-
-    // If JSON parsing fails, clear the corrupt data
-    if (error instanceof SyntaxError) {
-      try {
-        await storage.removeItem(LOCAL_OVERRIDES_KEY);
-      } catch (removeError) {
-        console.error('Failed to clear corrupt local overrides:', removeError);
-      }
-    }
-
-    return {};
-  }
-};
-
-export const setLocalOverride = async (
-  storage: StorageBackend,
-  flag: string,
-  value: FeatureFlagValue,
 ): Promise<void> => {
   try {
-    const overrides = await getLocalOverrides(storage);
-    overrides[flag] = value;
-    await storage.setItem(LOCAL_OVERRIDES_KEY, JSON.stringify(overrides));
+    await storage.removeItem(LOCAL_OVERRIDES_KEY);
   } catch (error) {
-    console.error('Failed to set local override:', error);
+    console.error('Failed to clear all local overrides:', error);
   }
 };
 
@@ -123,54 +60,9 @@ export const clearLocalOverride = async (
   }
 };
 
-export const clearAllLocalOverrides = async (
-  storage: StorageBackend,
-): Promise<void> => {
-  try {
-    await storage.removeItem(LOCAL_OVERRIDES_KEY);
-  } catch (error) {
-    console.error('Failed to clear all local overrides:', error);
-  }
-};
-
-export const initRemoteConfig = async (
-  remoteConfig: RemoteConfigBackend,
-): Promise<void> => {
-  await remoteConfig.setDefaults(defaultFlags);
-  await remoteConfig.setConfigSettings({
-    minimumFetchIntervalMillis: __DEV__ ? 0 : 3600000,
-  });
-  try {
-    await remoteConfig.fetchAndActivate();
-  } catch (err) {
-    console.log('Remote config fetch failed', err);
-  }
-};
-
-export const getFeatureFlag = async <T extends FeatureFlagValue>(
-  remoteConfig: RemoteConfigBackend,
-  storage: StorageBackend,
-  flag: string,
-  defaultValue: T,
-): Promise<T> => {
-  try {
-    // Check local overrides first
-    const localOverrides = await getLocalOverrides(storage);
-    if (Object.prototype.hasOwnProperty.call(localOverrides, flag)) {
-      return localOverrides[flag] as T;
-    }
-
-    // Return default value for string flags
-    if (typeof defaultValue === 'string') {
-      return defaultValue;
-    }
-
-    // Fall back to remote config for number and boolean flags
-    return getRemoteConfigValue(remoteConfig, flag, defaultValue) as T;
-  } catch (error) {
-    console.error('Failed to get feature flag:', error);
-    return defaultValue;
-  }
+// Shared interfaces for platform-specific implementations
+export const defaultFlags: Record<string, FeatureFlagValue> = {
+  aesop: false,
 };
 
 export const getAllFeatureFlags = async (
@@ -256,6 +148,99 @@ export const getAllFeatureFlags = async (
   }
 };
 
+export const getFeatureFlag = async <T extends FeatureFlagValue>(
+  remoteConfig: RemoteConfigBackend,
+  storage: StorageBackend,
+  flag: string,
+  defaultValue: T,
+): Promise<T> => {
+  try {
+    // Check local overrides first
+    const localOverrides = await getLocalOverrides(storage);
+    if (Object.prototype.hasOwnProperty.call(localOverrides, flag)) {
+      return localOverrides[flag] as T;
+    }
+
+    // Return default value for string flags
+    if (typeof defaultValue === 'string') {
+      return defaultValue;
+    }
+
+    // Fall back to remote config for number and boolean flags
+    return getRemoteConfigValue(remoteConfig, flag, defaultValue) as T;
+  } catch (error) {
+    console.error('Failed to get feature flag:', error);
+    return defaultValue;
+  }
+};
+
+// Local override management
+export const getLocalOverrides = async (
+  storage: StorageBackend,
+): Promise<LocalOverride> => {
+  try {
+    const overrides = await storage.getItem(LOCAL_OVERRIDES_KEY);
+    if (!overrides) {
+      return {};
+    }
+    return JSON.parse(overrides);
+  } catch (error) {
+    console.error('Failed to get local overrides:', error);
+
+    // If JSON parsing fails, clear the corrupt data
+    if (error instanceof SyntaxError) {
+      try {
+        await storage.removeItem(LOCAL_OVERRIDES_KEY);
+      } catch (removeError) {
+        console.error('Failed to clear corrupt local overrides:', removeError);
+      }
+    }
+
+    return {};
+  }
+};
+
+// Helper function to detect and parse remote config values
+export const getRemoteConfigValue = (
+  remoteConfig: RemoteConfigBackend,
+  key: string,
+  defaultValue: FeatureFlagValue,
+): FeatureFlagValue => {
+  const configValue = remoteConfig.getValue(key);
+
+  if (typeof defaultValue === 'boolean') {
+    return configValue.asBoolean();
+  } else if (typeof defaultValue === 'number') {
+    return configValue.asNumber();
+  } else if (typeof defaultValue === 'string') {
+    return configValue.asString();
+  }
+
+  // Fallback: try to infer type from the remote config value
+  const stringValue = configValue.asString();
+  if (stringValue === 'true' || stringValue === 'false') {
+    return configValue.asBoolean();
+  }
+  if (!Number.isNaN(Number(stringValue)) && stringValue !== '') {
+    return configValue.asNumber();
+  }
+  return stringValue;
+};
+
+export const initRemoteConfig = async (
+  remoteConfig: RemoteConfigBackend,
+): Promise<void> => {
+  await remoteConfig.setDefaults(defaultFlags);
+  await remoteConfig.setConfigSettings({
+    minimumFetchIntervalMillis: __DEV__ ? 0 : 3600000,
+  });
+  try {
+    await remoteConfig.fetchAndActivate();
+  } catch (err) {
+    console.log('Remote config fetch failed', err);
+  }
+};
+
 export const refreshRemoteConfig = async (
   remoteConfig: RemoteConfigBackend,
 ): Promise<void> => {
@@ -263,5 +248,19 @@ export const refreshRemoteConfig = async (
     await remoteConfig.fetchAndActivate();
   } catch (err) {
     console.log('Remote config refresh failed', err);
+  }
+};
+
+export const setLocalOverride = async (
+  storage: StorageBackend,
+  flag: string,
+  value: FeatureFlagValue,
+): Promise<void> => {
+  try {
+    const overrides = await getLocalOverrides(storage);
+    overrides[flag] = value;
+    await storage.setItem(LOCAL_OVERRIDES_KEY, JSON.stringify(overrides));
+  } catch (error) {
+    console.error('Failed to set local override:', error);
   }
 };

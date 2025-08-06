@@ -1,5 +1,5 @@
 import * as mockCertificates from '../../constants/mockCertificates.js';
-import { SignatureAlgorithm } from '../types.js';
+import type { SignatureAlgorithm } from '../types.js';
 
 function getMockDSC(signatureType: SignatureAlgorithm) {
   let privateKeyPem: string;

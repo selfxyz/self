@@ -92,3 +92,6 @@ yarn-error.log
 
 # web app
 .tamagui/*
+
+# Maestro
+maestro-results.xml

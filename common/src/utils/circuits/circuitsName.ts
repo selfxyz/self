@@ -1,4 +1,4 @@
-import { PassportData } from '../types.js';
+import type { PassportData } from '../types.js';
 
 export function getCircuitNameFromPassportData(
   passportData: PassportData,

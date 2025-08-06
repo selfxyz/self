@@ -1,19 +1,12 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React, { useEffect, useState } from 'react';
-import {
-  Animated,
-  LayoutChangeEvent,
-  StyleSheet,
-  useAnimatedValue,
-} from 'react-native';
+import type { LayoutChangeEvent } from 'react-native';
+import { Animated, StyleSheet, useAnimatedValue } from 'react-native';
 
 import { PrimaryButton } from './PrimaryButton';
-import {
-  ACTION_TIMER,
-  COLORS,
-  HeldPrimaryButtonProps,
-} from './PrimaryButtonLongHold.shared';
+import type { HeldPrimaryButtonProps } from './PrimaryButtonLongHold.shared';
+import { ACTION_TIMER, COLORS } from './PrimaryButtonLongHold.shared';
 
 export function HeldPrimaryButton({
   children,

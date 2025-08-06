@@ -1,6 +1,9 @@
-import { CertificateData } from './certificate_parsing/dataStructure.js';
-import { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
+import type { CertificateData } from './certificate_parsing/dataStructure.js';
+import type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 
+export type DocumentCategory = 'passport' | 'id_card';
+
+export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
 export type PassportData = {
   mrz: string;
   dg1Hash?: number[];
@@ -18,8 +21,14 @@ export type PassportData = {
   mock: boolean;
 };
 
-export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
-export type DocumentCategory = 'passport' | 'id_card';
+export type Proof = {
+  proof: {
+    a: [string, string];
+    b: [[string, string], [string, string]];
+    c: [string, string];
+  };
+  pub_signals: string[];
+};
 
 // Define the signature algorithm in "algorithm_hashfunction_domainPapameter_keyLength"
 export type SignatureAlgorithm =
@@ -69,15 +78,6 @@ export type SignatureAlgorithm =
   | 'ecdsa_sha256_brainpoolP224r1_224'
   | 'ecdsa_sha384_brainpoolP512r1_512'
   | 'ecdsa_sha512_brainpoolP512r1_512';
-
-export type Proof = {
-  proof: {
-    a: [string, string];
-    b: [[string, string], [string, string]];
-    c: [string, string];
-  };
-  pub_signals: string[];
-};
 
 export function castCSCAProof(proof: any): Proof {
   return {

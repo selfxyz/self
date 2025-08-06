@@ -1,10 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import {
-  useFocusEffect,
-  useNavigation,
-  usePreventRemove,
-} from '@react-navigation/native';
 import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, styled, YStack } from 'tamagui';
@@ -28,6 +23,13 @@ import {
   white,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
+
+import {
+  useFocusEffect,
+  useNavigation,
+  usePreventRemove,
+} from '@react-navigation/native';
+
 const ScanButton = styled(Button, {
   borderRadius: 20,
   width: 90,

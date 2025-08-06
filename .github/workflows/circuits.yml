@@ -1,4 +1,4 @@
-name: Self Circuits CI/CD
+name: Circuits CI
 on:
   push:
     branches:
@@ -6,16 +6,16 @@ on:
       - main
       - openpassportv2
     paths:
-      - 'circuits/**'
-      - 'common/**'
+      - "circuits/**"
+      - "common/**"
   pull_request:
     branches:
       - dev
       - main
       - openpassportv2
     paths:
-      - 'circuits/**'
-      - 'common/**'
+      - "circuits/**"
+      - "common/**"
 jobs:
   run_circuit_tests:
     if: github.event.pull_request.draft == false

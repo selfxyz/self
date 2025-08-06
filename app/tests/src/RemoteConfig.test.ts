@@ -1,6 +1,17 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { jest } from '@jest/globals';
+// Now import the module under test
+import {
+  clearAllLocalOverrides,
+  clearLocalOverride,
+  getAllFeatureFlags,
+  getFeatureFlag,
+  getLocalOverrides,
+  setLocalOverride,
+} from '../../src/RemoteConfig';
+
+// Import the mocked AsyncStorage for test controls
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock AsyncStorage with a default export
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -26,24 +37,11 @@ jest.mock('@react-native-firebase/remote-config', () => ({
   default: () => mockRemoteConfigInstance,
 }));
 
-// Import the mocked AsyncStorage for test controls
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 // Get the mock instances
 const mockAsyncStorage = AsyncStorage as jest.Mocked<typeof AsyncStorage>;
 const mockRemoteConfig = mockRemoteConfigInstance as jest.Mocked<
   typeof mockRemoteConfigInstance
 >;
-
-// Now import the module under test
-import {
-  clearAllLocalOverrides,
-  clearLocalOverride,
-  getAllFeatureFlags,
-  getFeatureFlag,
-  getLocalOverrides,
-  setLocalOverride,
-} from '../../src/RemoteConfig';
 
 describe('RemoteConfig', () => {
   beforeEach(() => {

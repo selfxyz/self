@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { ProvingStateType } from './provingMachine';
+import type { ProvingStateType } from './provingMachine';
 
 interface LoadingScreenText {
   actionText: string;
@@ -10,41 +10,6 @@ interface LoadingScreenText {
 export interface PassportMetadata {
   signatureAlgorithm: string;
   curveOrExponent: string;
-}
-
-export function getProvingTimeEstimate(
-  metadata: PassportMetadata | undefined,
-  type: 'dsc' | 'register',
-): string {
-  if (!metadata) return '30 - 90 SECONDS';
-
-  const algorithm = metadata.signatureAlgorithm?.toLowerCase();
-  const curveOrExponent = metadata.curveOrExponent;
-
-  // RSA algorithms
-  if (algorithm?.includes('rsa')) {
-    if (algorithm?.includes('pss')) {
-      return type === 'dsc' ? '3 SECONDS' : '6 SECONDS';
-    }
-    return type === 'dsc' ? '2 SECONDS' : '4 SECONDS';
-  }
-
-  // ECDSA algorithms
-  if (algorithm?.includes('ecdsa')) {
-    // Check bit size from curve name
-    if (curveOrExponent?.includes('224') || curveOrExponent?.includes('256')) {
-      return type === 'dsc' ? '25 SECONDS' : '50 SECONDS';
-    }
-    if (curveOrExponent?.includes('384')) {
-      return type === 'dsc' ? '45 SECONDS' : '90 SECONDS';
-    }
-    if (curveOrExponent?.includes('512') || curveOrExponent?.includes('521')) {
-      return type === 'dsc' ? '100 SECONDS' : '200 SECONDS';
-    }
-  }
-
-  // Default case
-  return '30 - 90 SECONDS';
 }
 
 export function getLoadingScreenText(
@@ -141,4 +106,39 @@ export function getLoadingScreenText(
         estimatedTime: '10 - 30 SECONDS',
       };
   }
+}
+
+export function getProvingTimeEstimate(
+  metadata: PassportMetadata | undefined,
+  type: 'dsc' | 'register',
+): string {
+  if (!metadata) return '30 - 90 SECONDS';
+
+  const algorithm = metadata.signatureAlgorithm?.toLowerCase();
+  const curveOrExponent = metadata.curveOrExponent;
+
+  // RSA algorithms
+  if (algorithm?.includes('rsa')) {
+    if (algorithm?.includes('pss')) {
+      return type === 'dsc' ? '3 SECONDS' : '6 SECONDS';
+    }
+    return type === 'dsc' ? '2 SECONDS' : '4 SECONDS';
+  }
+
+  // ECDSA algorithms
+  if (algorithm?.includes('ecdsa')) {
+    // Check bit size from curve name
+    if (curveOrExponent?.includes('224') || curveOrExponent?.includes('256')) {
+      return type === 'dsc' ? '25 SECONDS' : '50 SECONDS';
+    }
+    if (curveOrExponent?.includes('384')) {
+      return type === 'dsc' ? '45 SECONDS' : '90 SECONDS';
+    }
+    if (curveOrExponent?.includes('512') || curveOrExponent?.includes('521')) {
+      return type === 'dsc' ? '100 SECONDS' : '200 SECONDS';
+    }
+  }
+
+  // Default case
+  return '30 - 90 SECONDS';
 }

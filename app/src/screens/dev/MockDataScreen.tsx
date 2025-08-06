@@ -1,15 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useNavigation } from '@react-navigation/native';
-import { countryCodes } from '@selfxyz/common/constants/core';
-import type { IdDocInput } from '@selfxyz/common/utils';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import {
-  generateMockDSC,
-  genMockIdDoc,
-  initPassportDataParsing,
-} from '@selfxyz/common/utils/passports';
-import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
@@ -29,6 +19,15 @@ import {
   YStack,
 } from 'tamagui';
 
+import { countryCodes } from '@selfxyz/common/constants';
+import type { IdDocInput } from '@selfxyz/common/utils';
+import { getSKIPEM } from '@selfxyz/common/utils/csca';
+import {
+  generateMockDSC,
+  genMockIdDoc,
+  initPassportDataParsing,
+} from '@selfxyz/common/utils/passports';
+
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
@@ -45,6 +44,9 @@ import {
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
 import { buttonTap, selectionChange } from '../../utils/haptic';
+
+import { useNavigation } from '@react-navigation/native';
+import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();
 
