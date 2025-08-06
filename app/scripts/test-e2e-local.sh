@@ -263,13 +263,20 @@ install_ios_app() {
 
 # Android-specific functions
 setup_android_environment() {
-    # Check if Android tools are available
-    if ! command -v adb &> /dev/null; then
-        log_error "Android SDK not found. Please install Android SDK and set up PATH"
-        echo "Make sure you have:"
-        echo "  - Android SDK installed"
-        echo "  - ANDROID_HOME environment variable set"
-        echo "  - Android SDK tools in your PATH"
+    # Check if Android SDK is configured
+    if [ -z "$ANDROID_HOME" ]; then
+        log_error "ANDROID_HOME environment variable is not set."
+        echo "Please set ANDROID_HOME to your Android SDK directory."
+        exit 1
+    fi
+
+    # Define and export full paths to tools for robustness
+    export ADB_CMD="$ANDROID_HOME/platform-tools/adb"
+    export EMULATOR_CMD="$ANDROID_HOME/emulator/emulator"
+
+    if [ ! -f "$ADB_CMD" ]; then
+        log_error "adb not found at $ADB_CMD"
+        echo "Please ensure your ANDROID_HOME is set correctly."
         exit 1
     fi
 
@@ -279,57 +286,45 @@ setup_android_environment() {
     # Set shorter wait time for emulator shutdown to reduce logging
     export ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL=5
 
-    RUNNING_EMULATOR=$(adb devices | grep emulator | head -1 | cut -f1)
+    RUNNING_EMULATOR=$($ADB_CMD devices | grep emulator | head -1 | cut -f1)
 
     if [ -z "$RUNNING_EMULATOR" ]; then
         log_info "No Android emulator running. Attempting to start one..."
 
         # Check if emulator command is available
-        if ! command -v emulator &> /dev/null; then
-            log_error "emulator command not found in PATH"
-            echo "Please start an Android emulator manually:"
-            echo "  1. Open Android Studio"
-            echo "  2. Go to Tools > AVD Manager"
-            echo "  3. Start an emulator"
-            echo "  OR use command line:"
-            echo "     emulator -avd YOUR_AVD_NAME"
-            echo ""
-            echo "Available AVDs:"
-            if [ -n "$ANDROID_HOME" ] && [ -d "$ANDROID_HOME/emulator" ]; then
-                "$ANDROID_HOME/emulator/emulator" -list-avds 2>/dev/null || echo "No AVDs found"
-            else
-                echo "ANDROID_HOME not set or emulator not found"
-            fi
+        if [ ! -f "$EMULATOR_CMD" ]; then
+            log_error "emulator command not found at $EMULATOR_CMD"
+            echo "Please ensure your ANDROID_HOME is set correctly."
             exit 1
         fi
 
-        # Get available AVDs (similar to iOS approach)
+        # Get available AVDs
         log_info "Finding available Android Virtual Devices..."
-        AVAILABLE_AVDS=$(emulator -list-avds 2>/dev/null)
+        AVAILABLE_AVDS=$($EMULATOR_CMD -list-avds)
 
         if [ -z "$AVAILABLE_AVDS" ]; then
             log_error "No Android Virtual Devices (AVDs) found."
             echo "Please create an AVD in Android Studio:"
             echo "  1. Open Android Studio"
-            echo "  2. Go to Tools > AVD Manager"
+            echo "  2. Go to Tools > Device Manager"
             echo "  3. Create Virtual Device"
             exit 1
         fi
 
-        # Use the first available AVD (similar to iOS first available simulator)
+        # Use the first available AVD
         FIRST_AVD=$(echo "$AVAILABLE_AVDS" | head -1)
         log_info "Using emulator: $FIRST_AVD"
 
-        # Start the emulator in background with output silenced
+        # Start the emulator in background
         log_info "Starting emulator (this may take a minute)..."
-        emulator -avd "$FIRST_AVD" -no-snapshot-load >/dev/null 2>&1 &
+        "$EMULATOR_CMD" -avd "$FIRST_AVD" -no-snapshot-load >/dev/null 2>&1 &
         EMULATOR_PID=$!
 
-        # Wait for emulator to start (similar to iOS bootstatus)
+        # Wait for emulator to start
         log_info "Waiting for emulator to boot..."
         for i in {1..60}; do
-            if adb devices | grep -q emulator; then
-                RUNNING_EMULATOR=$(adb devices | grep emulator | head -1 | cut -f1)
+            if "$ADB_CMD" devices | grep -q emulator; then
+                RUNNING_EMULATOR=$("$ADB_CMD" devices | grep emulator | head -1 | cut -f1)
                 log_success "Emulator started: $RUNNING_EMULATOR"
                 break
             fi
@@ -340,14 +335,14 @@ setup_android_environment() {
         if [ -z "$RUNNING_EMULATOR" ]; then
             log_error "Emulator failed to start within 2 minutes"
             echo "You can try starting it manually:"
-            echo "  emulator -avd $FIRST_AVD"
+            echo "  $EMULATOR_CMD -avd $FIRST_AVD"
             exit 1
         fi
 
-        # Wait for emulator to be fully booted (similar to iOS bootstatus check)
+        # Wait for emulator to be fully booted
         log_info "Waiting for emulator to be fully booted..."
         for i in {1..30}; do
-            if adb -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+            if "$ADB_CMD" -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
                 log_success "Emulator fully booted and ready"
                 break
             fi
@@ -359,10 +354,10 @@ setup_android_environment() {
 
         # Ensure the running emulator is fully booted
         log_info "Checking if emulator is fully booted..."
-        if ! adb -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+        if ! "$ADB_CMD" -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
             log_warning "Emulator is running but not fully booted, waiting..."
             for i in {1..15}; do
-                if adb -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+                if "$ADB_CMD" -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
                     log_success "Emulator is now fully booted"
                     break
                 fi
@@ -378,7 +373,7 @@ setup_android_environment() {
     export ANDROID_EMULATOR_ID="$RUNNING_EMULATOR"
 
     log_success "Android emulator ready:"
-    adb devices
+    "$ADB_CMD" devices
 }
 
 build_android_app() {
@@ -419,7 +414,7 @@ install_android_app() {
 
     # Check the APK's actual package name
     echo "Checking APK package info:"
-    ACTUAL_PACKAGE=$(aapt dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed "s/.*name='\([^']*\)'.*/\1/" | head -1)
+    ACTUAL_PACKAGE=$("$ANDROID_HOME/build-tools/33.0.0/aapt" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed "s/.*name='\([^']*\)'.*/\1/" | head -1)
     if [ -n "$ACTUAL_PACKAGE" ]; then
         echo "APK package name: $ACTUAL_PACKAGE"
     else
@@ -432,7 +427,7 @@ install_android_app() {
     # trying to uninstall first, especially in a CI environment where the
     # emulator state might be inconsistent.
     echo "Installing app..."
-    if ! adb -s "$EMULATOR_ID" install -r "$APK_PATH"; then
+    if ! "$ADB_CMD" -s "$EMULATOR_ID" install -r "$APK_PATH"; then
         log_error "Android app installation failed"
         exit 1
     fi
@@ -446,7 +441,7 @@ install_android_app() {
 
     # Check if the package is installed using the detected package name
     echo "Checking installed packages for: $ACTUAL_PACKAGE"
-    PACKAGE_CHECK=$(adb -s "$EMULATOR_ID" shell pm list packages | grep "$ACTUAL_PACKAGE" || echo "")
+    PACKAGE_CHECK=$("$ADB_CMD" -s "$EMULATOR_ID" shell pm list packages | grep "$ACTUAL_PACKAGE" || echo "")
     if [ -n "$PACKAGE_CHECK" ]; then
         log_success "App package verified on device: $PACKAGE_CHECK"
     else
@@ -461,7 +456,7 @@ install_android_app() {
 
         FOUND_PACKAGE=""
         for PARTIAL in "${PARTIAL_CHECKS[@]}"; do
-            PARTIAL_RESULT=$(adb -s "$EMULATOR_ID" shell pm list packages | grep "$PARTIAL" || echo "")
+            PARTIAL_RESULT=$("$ADB_CMD" -s "$EMULATOR_ID" shell pm list packages | grep "$PARTIAL" || echo "")
             if [ -n "$PARTIAL_RESULT" ]; then
                 echo "Found packages containing '$PARTIAL': $PARTIAL_RESULT"
                 FOUND_PACKAGE="true"
@@ -476,7 +471,7 @@ install_android_app() {
 
     # Test if the app can be launched directly
     log_info "🚀 Testing app launch capability..."
-    adb -s "$EMULATOR_ID" shell am start -n "$ACTUAL_PACKAGE/.MainActivity" || {
+    "$ADB_CMD" -s "$EMULATOR_ID" shell am start -n "$ACTUAL_PACKAGE/.MainActivity" || {
         log_warning "Direct app launch test failed - this might be expected if the main activity name is different"
     }
 }
@@ -529,6 +524,10 @@ run_android_tests() {
     setup_android_environment
     build_android_app
     install_android_app
+
+    log_info "⏰ Giving the emulator a moment to settle before starting tests..."
+    sleep 45
+
     run_maestro_tests
     MAESTRO_STATUS=$?
 
