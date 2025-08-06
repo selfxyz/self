@@ -103,7 +103,7 @@ jobs:
           key: ${{ runner.os }}-android-build-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-android-build-
-      - name: Run Android flow
+      - name: Build Android APK
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
@@ -117,20 +117,25 @@ jobs:
             chmod +x app/android/gradlew
             (cd app/android && ./gradlew assembleRelease --quiet --parallel --build-cache --configuration-cache) || { echo "❌ Android build failed"; exit 1; }
             echo "✅ Android build succeeded"
-
+      - name: Install and Test on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: x86_64
+          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
+          disable-animations: true
+          script: |
             echo "Installing app on emulator..."
             APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
             [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
-
-            # Install the app
             adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
             echo "✅ App installed successfully"
 
-            # Give emulator time to settle
             echo "⏰ Giving the emulator a moment to settle..."
             sleep 5
 
-            # Run Maestro tests
             echo "🎭 Running Maestro tests..."
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
             maestro test tests/e2e/launch.android.flow.yaml --format junit --output maestro-results.xml
@@ -202,10 +207,8 @@ jobs:
           echo "Installing iOS dependencies..."
           (cd app/ios && pod install --silent) || { echo "❌ Pod install failed"; exit 1; }
           echo "✅ Pods installed successfully"
-      - name: Run iOS flow
+      - name: Setup iOS Simulator
         run: |
-
-          # Boot simulator and wait for it to be ready
           echo "Setting up iOS Simulator..."
           echo "Available simulators:"
           xcrun simctl list devices | grep "iPhone 15"
@@ -213,31 +216,26 @@ jobs:
           xcrun simctl bootstatus "iPhone 15" -b
           echo "Simulator status:"
           xcrun simctl list devices | grep "iPhone 15"
-
-          # Build the app (silenced for cleaner e2e logs)
+      - name: Build iOS App
+        run: |
           echo "Building iOS app..."
-          # Note: Using Release builds to avoid Metro dependency in CI
-          # Debug builds require Metro server, Release builds have JS bundled
           xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
-
-          # Install the app on simulator
+      - name: Install and Test on iOS
+        run: |
           echo "Installing app on simulator..."
           APP_PATH=$(find app/ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -1)
           [ -z "$APP_PATH" ] && { echo "❌ Could not find built iOS app"; exit 1; }
           echo "Found app at: $APP_PATH"
 
-          # Dynamically determine the bundle ID from the built app
           echo "🔍 Determining app bundle ID from built app..."
           IOS_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP_PATH/Info.plist")
           [ -z "$IOS_BUNDLE_ID" ] && { echo "❌ Could not determine bundle ID from $APP_PATH/Info.plist"; exit 1; }
           echo "✅ App Bundle ID: $IOS_BUNDLE_ID"
 
-          # Uninstall any existing version first
           echo "Removing any existing app installation..."
           xcrun simctl uninstall "iPhone 15" "$IOS_BUNDLE_ID" 2>/dev/null || true
 
-          # Install the app
           echo "Installing app..."
           xcrun simctl install "iPhone 15" "$APP_PATH"
           if [ $? -ne 0 ]; then
@@ -245,7 +243,6 @@ jobs:
             exit 1
           fi
 
-          # Verify the app is installed
           echo "Verifying app installation..."
           if xcrun simctl listapps "iPhone 15" | grep -q "$IOS_BUNDLE_ID"; then
             echo "✅ App successfully installed"
@@ -254,19 +251,15 @@ jobs:
             exit 1
           fi
 
-          # Test if the app can be launched directly
           echo "🚀 Testing app launch capability..."
           xcrun simctl launch "iPhone 15" "$IOS_BUNDLE_ID" || {
             echo "⚠️ Direct app launch test failed - this might be expected."
           }
 
-          # Quick simulator readiness check (reduced from 45s)
           echo "⏰ Checking simulator readiness..."
           sleep 10
-          # Verify simulator is responsive
           xcrun simctl listapps "iPhone 15" > /dev/null || sleep 5
 
-          # Run Maestro test on iOS
           echo "Running Maestro tests..."
           echo "Starting test execution..."
           maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml || {
