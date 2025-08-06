@@ -166,7 +166,6 @@ app/android/android-passport-reader/app/src/main/assets/tessdata/
 # IDE & Editor Files
 # ========================================
 
-.vscode/
 .idea/
 *.swp
 *.swo

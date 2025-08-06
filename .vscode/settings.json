@@ -1,4 +1,51 @@
 {
+  // Performance Optimizations
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.git/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/vendor/**": true,
+    "**/coverage/**": true,
+    "**/.nyc_output/**": true,
+    "**/android/app/build/**": true,
+    "**/ios/build/**": true,
+    "**/circuits/build/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/vendor": true,
+    "**/coverage": true,
+    "**/.nyc_output": true,
+    "**/android/app/build": true,
+    "**/ios/build": true,
+    "**/circuits/build": true
+  },
+  "files.exclude": {
+    "**/node_modules": false,
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true
+  },
+
+  // Memory and CPU Optimizations
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.suggest.autoImports": false,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.updateImportsOnFileMove.enabled": "never",
+  "workbench.settings.enableNaturalLanguageSearch": false,
+
+  // Editor Performance
+  "editor.semanticHighlighting.enabled": false,
+  "editor.minimap.enabled": false,
+  "editor.hover.delay": 1000,
+  "editor.parameterHints.cycle": false,
+  "editor.suggest.localityBonus": true,
+  "editor.suggest.shareSuggestSelections": false,
+  "editor.acceptSuggestionOnCommitCharacter": false,
+
   // Formatting & Linting
   "editor.formatOnSave": false,
   "editor.formatOnPaste": false,
@@ -8,8 +55,8 @@
     "editor.formatOnSave": true
   },
 
-  // ESLint Configuration
-  "eslint.run": "onType",
+  // ESLint Configuration - Optimized for Performance
+  "eslint.run": "onSave",
   "eslint.format.enable": true,
   "eslint.lintTask.enable": true,
   "eslint.quiet": false,
