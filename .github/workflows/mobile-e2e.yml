@@ -200,11 +200,8 @@ jobs:
       - name: Install iOS dependencies
         run: |
           echo "Installing iOS dependencies..."
-          cd app/ios
-          # Use parallel pod install for faster execution
-          pod install --silent || { echo "❌ Pod install failed"; exit 1; }
+          (cd app/ios && pod install --silent) || { echo "❌ Pod install failed"; exit 1; }
           echo "✅ Pods installed successfully"
-          cd ../..
       - name: Run iOS flow
         run: |
 
