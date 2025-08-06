@@ -262,7 +262,7 @@ jobs:
 
           echo "Running Maestro tests..."
           echo "Starting test execution..."
-          maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml || {
+          maestro test app/tests/e2e/launch.ios.flow.yaml --app "$APP_PATH" --format junit --output app/maestro-results.xml || {
             echo "Maestro test failed, but continuing to upload results..."
             exit 1
           }
