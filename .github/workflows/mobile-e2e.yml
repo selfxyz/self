@@ -198,43 +198,40 @@ jobs:
           fi
           echo "Found app at: $APP_PATH"
 
-          # Check the app's bundle ID
-          echo "Checking app bundle info:"
-          /usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP_PATH/Info.plist" || echo "Could not read bundle ID"
-          /usr/libexec/PlistBuddy -c "Print CFBundleDisplayName" "$APP_PATH/Info.plist" || echo "Could not read display name"
+          # Dynamically determine the bundle ID from the built app
+          echo "🔍 Determining app bundle ID from built app..."
+          IOS_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP_PATH/Info.plist")
+          if [ -z "$IOS_BUNDLE_ID" ]; then
+            echo "❌ Could not determine bundle ID from $APP_PATH/Info.plist"
+            exit 1
+          fi
+          echo "✅ App Bundle ID: $IOS_BUNDLE_ID"
 
           # Uninstall any existing version first
           echo "Removing any existing app installation..."
-          xcrun simctl uninstall "iPhone 15" "com.warroom.proofofpassport" 2>/dev/null || true
+          xcrun simctl uninstall "iPhone 15" "$IOS_BUNDLE_ID" 2>/dev/null || true
 
-          # Install the app with verbose output
+          # Install the app
           echo "Installing app..."
           xcrun simctl install "iPhone 15" "$APP_PATH"
-          INSTALL_EXIT_CODE=$?
-          if [ $INSTALL_EXIT_CODE -ne 0 ]; then
-            echo "❌ iOS app installation failed with exit code: $INSTALL_EXIT_CODE"
+          if [ $? -ne 0 ]; then
+            echo "❌ iOS app installation failed"
             exit 1
           fi
 
-          # Verify the app is installed and show details
+          # Verify the app is installed
           echo "Verifying app installation..."
-          echo "All installed apps with 'passport' in name:"
-          xcrun simctl listapps "iPhone 15" | grep -i passport || echo "No apps with 'passport' found"
-          echo "Checking for exact bundle ID:"
-          if xcrun simctl listapps "iPhone 15" | grep -q "com.warroom.proofofpassport"; then
+          if xcrun simctl listapps "iPhone 15" | grep -q "$IOS_BUNDLE_ID"; then
             echo "✅ App successfully installed"
           else
             echo "❌ App installation verification failed"
-            echo "Full app list:"
-            xcrun simctl listapps "iPhone 15"
             exit 1
           fi
 
           # Test if the app can be launched directly
-          echo "Testing app launch capability..."
-          xcrun simctl launch "iPhone 15" "com.warroom.proofofpassport" || {
-            echo "⚠️ Direct app launch test failed - checking if app is launchable"
-            echo "This might be expected if the app has launch conditions"
+          echo "🚀 Testing app launch capability..."
+          xcrun simctl launch "iPhone 15" "$IOS_BUNDLE_ID" || {
+            echo "⚠️ Direct app launch test failed - this might be expected."
           }
 
           # Run Maestro test on iOS

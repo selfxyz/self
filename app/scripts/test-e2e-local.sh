@@ -270,10 +270,15 @@ install_ios_app() {
 
     echo "Found app at: $APP_PATH"
 
-    # Check the app's bundle ID
-    echo "Checking app bundle info:"
-    /usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP_PATH/Info.plist" || echo "Could not read bundle ID"
-    /usr/libexec/PlistBuddy -c "Print CFBundleDisplayName" "$APP_PATH/Info.plist" || echo "Could not read display name"
+    # Dynamically determine the bundle ID from the built app
+    log_info "🔍 Determining app bundle ID from built app..."
+    IOS_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP_PATH/Info.plist")
+    if [ -z "$IOS_BUNDLE_ID" ]; then
+        log_error "Could not determine bundle ID from $APP_PATH/Info.plist"
+        exit 1
+    fi
+    export IOS_BUNDLE_ID
+    log_success "App Bundle ID: $IOS_BUNDLE_ID"
 
     # Use the dynamic simulator ID
     SIMULATOR_ID="${IOS_SIMULATOR_ID:-iPhone 15}"
@@ -281,7 +286,7 @@ install_ios_app() {
 
     # Uninstall any existing version first
     echo "Removing any existing app installation..."
-    xcrun simctl uninstall "$SIMULATOR_ID" "com.warroom.proofofpassport" 2>/dev/null || true
+    xcrun simctl uninstall "$SIMULATOR_ID" "$IOS_BUNDLE_ID" 2>/dev/null || true
 
     # Install the app
     echo "Installing app..."
@@ -292,23 +297,21 @@ install_ios_app() {
 
     # Verify the app is installed
     echo "Verifying app installation..."
-    echo "All installed apps with 'passport' in name:"
-    xcrun simctl listapps "$SIMULATOR_ID" | grep -i passport || echo "No apps with 'passport' found"
-    echo "Checking for exact bundle ID:"
-    if xcrun simctl listapps "$SIMULATOR_ID" | grep -q "com.warroom.proofofpassport"; then
+    echo "All installed apps on simulator:"
+    xcrun simctl listapps "$SIMULATOR_ID"
+    echo "Checking for exact bundle ID: $IOS_BUNDLE_ID"
+    if xcrun simctl listapps "$SIMULATOR_ID" | grep -q "$IOS_BUNDLE_ID"; then
         log_success "App successfully installed"
     else
         log_error "App installation verification failed"
-        echo "Full app list:"
-        xcrun simctl listapps "$SIMULATOR_ID"
         exit 1
     fi
 
     # Test if the app can be launched directly
     log_info "🚀 Testing app launch capability..."
-    xcrun simctl launch "$SIMULATOR_ID" "com.warroom.proofofpassport" || {
-        log_warning "Direct app launch test failed - this might be expected if the app has launch conditions"
-    }
+    if ! xcrun simctl launch "$SIMULATOR_ID" "$IOS_BUNDLE_ID"; then
+        log_warning "Direct app launch test failed - this might be expected if the app has launch conditions, but it could also indicate a problem."
+    fi
 }
 
 # Android-specific functions
