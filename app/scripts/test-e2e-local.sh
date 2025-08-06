@@ -579,6 +579,8 @@ run_ios_tests() {
 
     log_success "Local iOS e2e testing completed!"
     exit $MAESTRO_STATUS
+
+    shutdown_all_simulators
 }
 
 run_android_tests() {
