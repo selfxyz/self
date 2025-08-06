@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 // https://docs.ethers.org/v6/cookbook/react-native/
+// eslint-disable-next-line simple-import-sort/imports
+import { ethers } from 'ethers';
 import { hmac } from '@noble/hashes/hmac';
 import { pbkdf2 as noblePbkdf2 } from '@noble/hashes/pbkdf2';
 import { sha256 as nobleSha256 } from '@noble/hashes/sha256';
 import { sha512 as nobleSha512 } from '@noble/hashes/sha512';
-import { ethers } from 'ethers';
 
 function randomBytes(length: number): Uint8Array {
   if (typeof globalThis.crypto?.getRandomValues !== 'function') {

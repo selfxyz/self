@@ -1,4 +1,4 @@
-name: Mobile App Deployments
+name: Mobile Deploy
 
 env:
   # Build environment versions
@@ -9,11 +9,11 @@ env:
   ANDROID_NDK_VERSION: 27.0.11718014
 
   # Cache versioning - increment these to bust caches when needed
-  GH_CACHE_VERSION: v1  # Global cache version
-  GH_YARN_CACHE_VERSION: v1  # Yarn-specific cache version
-  GH_GEMS_CACHE_VERSION: v1  # Ruby gems cache version
-  GH_PODS_CACHE_VERSION: v1  # CocoaPods cache version
-  GH_GRADLE_CACHE_VERSION: v1  # Gradle cache version
+  GH_CACHE_VERSION: v1 # Global cache version
+  GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
+  GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
+  GH_PODS_CACHE_VERSION: v1 # CocoaPods cache version
+  GH_GRADLE_CACHE_VERSION: v1 # Gradle cache version
 
   # Path configuration
   WORKSPACE: ${{ github.workspace }}

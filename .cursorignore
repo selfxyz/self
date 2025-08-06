@@ -69,10 +69,6 @@ app/android/build/
 app/ios/build/
 app/ios/Pods/
 app/ios/DerivedData/
-app/android/.gradle/
-app/android/gradle/
-app/android/gradlew
-app/android/gradlew.bat
 
 # Circuit build outputs
 circuits/build/

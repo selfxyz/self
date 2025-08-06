@@ -341,6 +341,25 @@ bundle exec fastlane ios internal_test test_mode:true
 bundle exec fastlane android internal_test test_mode:true
 ```
 
+### Maestro end-to-end tests
+
+Install the Maestro CLI locally using curl or Homebrew:
+
+```bash
+curl -Ls https://get.maestro.mobile.dev | bash
+# or
+brew install maestro
+```
+
+Then build the app and run the flow:
+
+```bash
+yarn test:e2e:android  # Android
+yarn test:e2e:ios      # iOS
+```
+
+The flow definition for Android is in [`tests/e2e/launch.android.flow.yaml`](tests/e2e/launch.android.flow.yaml) and for iOS is in [`tests/e2e/launch.ios.flow.yaml`](tests/e2e/launch.ios.flow.yaml).
+
 ## FAQ
 
 If you get something like this:
