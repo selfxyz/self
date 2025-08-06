@@ -1838,18 +1838,14 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.53.2)
+    - Sentry/HybridSDK (= 8.52.1)
     - Yoga
   - RNSVG (15.12.0):
     - React-Core
   - segment-analytics-react-native (2.21.1):
     - React-Core
     - sovran-react-native
-  - Sentry (8.54.0):
-    - Sentry/Core (= 8.54.0)
-  - Sentry/Core (8.54.0)
-  - SentryPrivate (8.21.0)
-  - Sentry/HybridSDK (8.53.2)
+  - Sentry/HybridSDK (8.52.1)
   - SocketRocket (0.7.0)
   - sovran-react-native (1.1.3):
     - React-Core
@@ -2204,7 +2200,7 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
   QKMRZScanner: cf2348fd6ce441e758328da4adf231ef2b51d769
-  RCT-Folly: 34124ae2e667a0e5f0ea378db071d27548124321
+  RCT-Folly: 4464f4d875961fce86008d45f4ecf6cef6de0740
   RCTDeprecation: 726d24248aeab6d7180dac71a936bbca6a994ed1
   RCTRequired: a94e7febda6db0345d207e854323c37e3a31d93b
   RCTTypeSafety: 28e24a6e44f5cbf912c66dde6ab7e07d1059a205
@@ -2239,7 +2235,6 @@ SPEC CHECKSUMS:
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-nfc-manager: 5213321cf6c18d879c8092c0bf56806b771ec5ac
-  react-native-quick-crypto: bb0fba2aa928fcb689ed92f9a63729f6f90bc800
   react-native-safe-area-context: 657def25b5590dfbde705aec2925b06725f27450
   react-native-sqlite-storage: f6d515e1c446d1e6d026aa5352908a25d4de3261
   React-nativeconfig: 31072ab0146e643594f6959c7f970a04b6c9ddd0
@@ -2263,33 +2258,32 @@ SPEC CHECKSUMS:
   React-RuntimeApple: 90f1dfd648cae853afb60eb13a9579c942b2df33
   React-RuntimeCore: 355ee6b0c3a7f4e66afe44f757a7585fc6008c9e
   React-runtimeexecutor: ea90d8e3a9e0f4326939858dafc6ab17c031a5d3
-  React-RuntimeHermes: 6a5be21d1f8a603989d8734a0021c0534df23dd9
-  React-runtimescheduler: 21ad58e37e35a132f2a5ecad78e68ea7fbc8e2ba
-  React-utils: 0dbea1179726ad65a1b13470a3f3c73da98f4496
-  ReactCodegen: 688a0970a2fc6a4481718d8ca86ff504f2a21723
-  ReactCommon: 23eed247b5c8e57b59a823ce209353883da61dd2
-  RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
-  RNCClipboard: 4abb037e8fe3b98a952564c9e0474f91c492df6d
-  RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
-  RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
-  RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
-  RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
-  RNGestureHandler: 4a7cce66468343e82d601e8f6cdc0148b18b6c6b
-  RNKeychain: 42a94ceb08a6c33db453bc34cae46458b6a14a08
-  RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
-  RNReactNativeHapticFeedback: c873497ad3f9fa80447baa18daa9474e671d24bf
-  RNScreens: 584a35ba1a56a628fc564216b0b6f7b9f070c282
-  RNSentry: 1cc59685d5da06d8f772f0e3816a16d9cac3151a
-  RNSVG: e3ad69848b6357587545e0a49628b1148acf082c
-  segment-analytics-react-native: 5c3e8a4ee6d7532a011ed862d7c7d4fb5e5303e2
-  Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
-  SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
+  React-RuntimeHermes: 13d33b49355663bdbbca6719abcbc4f534f274b9
+  React-runtimescheduler: 1132af91176dcc8ac566b10f7b57b10873125564
+  React-utils: d1bae5ac6a5fb94a772ebfc7a7e1aba3a6706a3a
+  ReactCodegen: 18aa2cb03418f6ea9f318785e339128accab12f0
+  ReactCommon: 1007c09a406a451ddbd874e51511aa541d6034f6
+  RNCAsyncStorage: 23e56519cc41d3bade3c8d4479f7760cb1c11996
+  RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
+  RNDeviceInfo: feea80a690d2bde1fe51461cf548039258bd03f2
+  RNFBApp: dd35ba8340b89c36e42c4c137915c01d3c792143
+  RNFBMessaging: c8d34d9ad44a3258a77e548bba6dc3561af7cf2d
+  RNFBRemoteConfig: 7e219246c63c47f56cfe07eee1a044ed298261c8
+  RNGestureHandler: a52601cdccc6213650ad4a9eb2911360d13f4447
+  RNKeychain: a58690e4450434e8e900ed47032fa58c59cc5570
+  RNLocalize: 06991b9c31e7a898a9fa6ddb204ce0f53a967248
+  RNReactNativeHapticFeedback: 293365e4df1faef21be8b8efe22c7b217c5e695a
+  RNScreens: eee0beadb969b9c1c0ceca4e89744c8d69d782e0
+  RNSentry: 9ecfddd2650b783586da93871ca87561c61facf8
+  RNSVG: 28b61fc4856abe8eaea46794419f848986ee7e80
+  segment-analytics-react-native: de13f89e52d49c1f4ed33ba86ae24f055722a643
+  Sentry: 2cbbe3592f30050c60e916c63c7f5a2fa584005e
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   sovran-react-native: eec37f82e4429f0e3661f46aaf4fcd85d1b54f60
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
 
-PODFILE CHECKSUM: 644e3123cc913b8119a0bb63941e66225a9bdb60
+PODFILE CHECKSUM: 558a8b95f1ca0bd657ecdbe22eb0b6972605ad2b
 
 COCOAPODS: 1.16.2
