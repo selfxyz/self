@@ -2,4 +2,4 @@ appId: com.proofofpassportapp
 ---
 - launchApp
 - assertVisible:
-    id: "home-screen"
+    text: "I have a Passport or Biometric ID"

@@ -2,7 +2,4 @@ appId: com.warroom.proofofpassport
 ---
 - launchApp
 - assertVisible:
-    id: "home-screen"
-- assertVisible:
-    id: "launch-screen"
-    optional: true
+    text: "I have a Passport or Biometric ID"
