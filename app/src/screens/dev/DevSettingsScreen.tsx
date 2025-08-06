@@ -11,8 +11,8 @@ import {
   unsafe_clearSecrets,
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
-import { usePassport } from '../../providers/passportDataProvider';
 import { textBlack } from '../../utils/colors';
+import { clearDocumentCatalogForMigrationTesting } from '../../utils/testingUtils';
 
 import { useNavigation } from '@react-navigation/native';
 import { Check, ChevronDown, Eraser } from '@tamagui/lucide-icons';
@@ -133,7 +133,6 @@ const ScreenSelector = ({}) => {
 };
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
-  const { clearDocumentCatalogForMigrationTesting } = usePassport();
   const [privateKey, setPrivateKey] = useState<string | null>(
     'Loading private key…',
   );

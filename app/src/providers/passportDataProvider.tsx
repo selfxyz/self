@@ -54,6 +54,19 @@ import {
 } from '@selfxyz/common/utils';
 
 import { unsafe_getPrivateKey, useAuth } from '../providers/authProvider';
+import { safeJsonParse } from '../utils/jsonUtils';
+
+// Import testing utilities conditionally
+let clearDocumentCatalogForMigrationTesting: (() => Promise<void>) | undefined;
+if (__DEV__) {
+  try {
+    const testingUtils = require('../utils/testingUtils');
+    clearDocumentCatalogForMigrationTesting =
+      testingUtils.clearDocumentCatalogForMigrationTesting;
+  } catch (error) {
+    console.warn('Testing utilities not available:', error);
+  }
+}
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -647,7 +660,7 @@ export const PassportContext = createContext<IPassportContext>({
   migrateFromLegacyStorage: migrateFromLegacyStorage,
   getCurrentDocumentType: getCurrentDocumentType,
   clearDocumentCatalogForMigrationTesting:
-    clearDocumentCatalogForMigrationTesting,
+    clearDocumentCatalogForMigrationTesting || (() => Promise.resolve()),
   markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
   updateDocumentRegistrationState: updateDocumentRegistrationState,
   checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
@@ -659,14 +672,17 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const { _getSecurely } = useAuth();
 
   const getData = useCallback(
-    () => _getSecurely<PassportData>(loadPassportData, str => JSON.parse(str)),
+    () =>
+      _getSecurely<PassportData>(loadPassportData, str =>
+        safeJsonParse(str, null as any),
+      ),
     [_getSecurely],
   );
 
   const getSelectedData = useCallback(() => {
     return _getSecurely<PassportData>(
       () => loadSelectedPassportData(),
-      str => JSON.parse(str),
+      str => safeJsonParse(str, null as any),
     );
   }, [_getSecurely]);
 
@@ -678,7 +694,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     () =>
       _getSecurely<{ passportData: PassportData; secret: string }>(
         loadPassportDataAndSecret,
-        str => JSON.parse(str),
+        str => safeJsonParse(str, null as any),
       ),
     [_getSecurely],
   );
@@ -686,7 +702,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const getSelectedPassportDataAndSecret = useCallback(() => {
     return _getSecurely<{ passportData: PassportData; secret: string }>(
       () => loadSelectedPassportDataAndSecret(),
-      str => JSON.parse(str),
+      str => safeJsonParse(str, null as any),
     );
   }, [_getSecurely]);
 
@@ -708,7 +724,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       migrateFromLegacyStorage: migrateFromLegacyStorage,
       getCurrentDocumentType: getCurrentDocumentType,
       clearDocumentCatalogForMigrationTesting:
-        clearDocumentCatalogForMigrationTesting,
+        clearDocumentCatalogForMigrationTesting || (() => Promise.resolve()),
       markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
       updateDocumentRegistrationState: updateDocumentRegistrationState,
       checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
