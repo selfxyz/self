@@ -1448,29 +1448,6 @@ PODS:
     - React-Core
   - react-native-nfc-manager (3.16.1):
     - React-Core
-  - react-native-quick-crypto (0.7.14):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - OpenSSL-Universal
-    - RCT-Folly (= 2024.01.01.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - react-native-safe-area-context (5.5.1):
     - React-Core
   - react-native-sqlite-storage (6.0.1):
@@ -1930,7 +1907,6 @@ DEPENDENCIES:
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../../node_modules/react-native-nfc-manager`)
-  - react-native-quick-crypto (from `../../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../../node_modules/react-native-safe-area-context`)
   - react-native-sqlite-storage (from `../../node_modules/react-native-sqlite-storage`)
   - React-nativeconfig (from `../../node_modules/react-native/ReactCommon`)
@@ -2094,8 +2070,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@react-native-community/netinfo"
   react-native-nfc-manager:
     :path: "../../node_modules/react-native-nfc-manager"
-  react-native-quick-crypto:
-    :path: "../../node_modules/react-native-quick-crypto"
   react-native-safe-area-context:
     :path: "../../node_modules/react-native-safe-area-context"
   react-native-sqlite-storage:
@@ -2261,7 +2235,6 @@ SPEC CHECKSUMS:
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: a280ef94cd4871a471b052f0dc70381cf1223049
-  react-native-quick-crypto: 8c04031798c1902ec3c6f4def538911a8f744d03
   react-native-safe-area-context: 827032edf27079702cbd006f11dc79451a2d744b
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   React-nativeconfig: 31072ab0146e643594f6959c7f970a04b6c9ddd0

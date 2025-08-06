@@ -130,7 +130,11 @@ android {
                 arguments += "-DANDROID_STL=c++_shared"
             }
             ndk {
-                abiFilters += "arm64-v8a"
+                if (System.env.E2E_BUILD == "true") {
+                    abiFilters "x86_64"
+                } else {
+                    abiFilters "arm64-v8a", "x86_64"
+                }
             }
         }
     }

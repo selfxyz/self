@@ -16,15 +16,20 @@ NC='\033[0m' # No Color
 
 print_usage() {
     echo "🎭 Local E2E Testing"
-    echo "Usage: $0 [ios|android]"
+    echo "Usage: $0 [ios|android] [--workflow-match]"
     echo ""
     echo "Examples:"
     echo "  $0 ios      - Run iOS e2e tests locally"
     echo "  $0 android  - Run Android e2e tests locally"
+    echo "  $0 android --workflow-match  - Run Android tests matching GitHub Actions workflow"
     echo ""
     echo "Prerequisites:"
     echo "  iOS:     Xcode, iOS Simulator, CocoaPods"
     echo "  Android: Android SDK, running emulator"
+    echo ""
+    echo "Workflow Match Mode:"
+    echo "  --workflow-match  - Use Release builds and exact workflow steps"
+    echo "                     (No Metro dependency, matches CI environment)"
 }
 
 log_info() {
@@ -72,6 +77,12 @@ setup_maestro() {
 
 # Check if Metro is running (required for debug builds)
 check_metro_running() {
+    # Skip Metro check if in workflow match mode (Release builds don't need Metro)
+    if [ "$WORKFLOW_MATCH" = "true" ]; then
+        log_info "🔍 Skipping Metro check (Release builds don't need Metro)"
+        return
+    fi
+
     log_info "🔍 Checking if Metro server is running..."
 
     # Check if Metro is running on port 8081
@@ -85,6 +96,9 @@ check_metro_running() {
         echo "  ${BLUE}yarn start${NC}"
         echo ""
         echo "Wait for Metro to show 'Metro waiting on exp://localhost:8081' then re-run this script."
+        echo ""
+        echo "Or use --workflow-match to use Release builds (no Metro needed):"
+        echo "  ${BLUE}$0 $PLATFORM --workflow-match${NC}"
         exit 1
     else
         log_success "Metro server is running on http://localhost:8081"
@@ -101,12 +115,45 @@ build_dependencies() {
 run_maestro_tests() {
     log_info "🎭 Running Maestro tests..."
     echo "Starting test execution..."
-    if maestro test e2e/launch.flow.yaml --format junit --output maestro-results.xml; then
-        log_success "🎉 Maestro tests passed!"
+
+    # Use platform-specific flow files
+    if [ "$PLATFORM" = "ios" ]; then
+        FLOW_FILE="e2e/launch.ios.flow.yaml"
     else
-        log_error "Maestro tests failed"
-        echo "Check maestro-results.xml for detailed results"
-        exit 1
+        FLOW_FILE="e2e/launch.android.flow.yaml"
+    fi
+
+    # Attempt to run Maestro, capturing output to check for a specific error
+    MAESTRO_OUTPUT_FILE=$(mktemp)
+    if maestro test "$FLOW_FILE" --format junit --output maestro-results.xml > "$MAESTRO_OUTPUT_FILE" 2>&1; then
+        log_success "🎉 Maestro tests passed on the first attempt!"
+        cat "$MAESTRO_OUTPUT_FILE"
+        rm "$MAESTRO_OUTPUT_FILE"
+        return 0
+    else
+        # First attempt failed, check for the specific timeout error
+        cat "$MAESTRO_OUTPUT_FILE"
+        if grep -q "MaestroDriverStartupException" "$MAESTRO_OUTPUT_FILE"; then
+            log_warning "Maestro driver failed to start. Retrying in 30 seconds..."
+            sleep 30
+
+            # Second attempt
+            log_info "🎭 Retrying Maestro tests..."
+            if maestro test "$FLOW_FILE" --format junit --output maestro-results.xml; then
+                log_success "🎉 Maestro tests passed on the second attempt!"
+                rm "$MAESTRO_OUTPUT_FILE"
+                return 0
+            else
+                log_error "Maestro tests failed on the second attempt."
+                rm "$MAESTRO_OUTPUT_FILE"
+                return 1
+            fi
+        else
+            # Failed for a different reason, so don't retry
+            log_error "Maestro tests failed for a reason other than driver timeout."
+            rm "$MAESTRO_OUTPUT_FILE"
+            return 1
+        fi
     fi
 }
 
@@ -240,13 +287,20 @@ install_ios_app() {
 
 # Android-specific functions
 setup_android_environment() {
-    # Check if Android tools are available
-    if ! command -v adb &> /dev/null; then
-        log_error "Android SDK not found. Please install Android SDK and set up PATH"
-        echo "Make sure you have:"
-        echo "  - Android SDK installed"
-        echo "  - ANDROID_HOME environment variable set"
-        echo "  - Android SDK tools in your PATH"
+    # Check if Android SDK is configured
+    if [ -z "$ANDROID_HOME" ]; then
+        log_error "ANDROID_HOME environment variable is not set."
+        echo "Please set ANDROID_HOME to your Android SDK directory."
+        exit 1
+    fi
+
+    # Define and export full paths to tools for robustness
+    export ADB_CMD="$ANDROID_HOME/platform-tools/adb"
+    export EMULATOR_CMD="$ANDROID_HOME/emulator/emulator"
+
+    if [ ! -f "$ADB_CMD" ]; then
+        log_error "adb not found at $ADB_CMD"
+        echo "Please ensure your ANDROID_HOME is set correctly."
         exit 1
     fi
 
@@ -256,57 +310,45 @@ setup_android_environment() {
     # Set shorter wait time for emulator shutdown to reduce logging
     export ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL=5
 
-    RUNNING_EMULATOR=$(adb devices | grep emulator | head -1 | cut -f1)
+    RUNNING_EMULATOR=$($ADB_CMD devices | grep emulator | head -1 | cut -f1)
 
     if [ -z "$RUNNING_EMULATOR" ]; then
         log_info "No Android emulator running. Attempting to start one..."
 
         # Check if emulator command is available
-        if ! command -v emulator &> /dev/null; then
-            log_error "emulator command not found in PATH"
-            echo "Please start an Android emulator manually:"
-            echo "  1. Open Android Studio"
-            echo "  2. Go to Tools > AVD Manager"
-            echo "  3. Start an emulator"
-            echo "  OR use command line:"
-            echo "     emulator -avd YOUR_AVD_NAME"
-            echo ""
-            echo "Available AVDs:"
-            if [ -n "$ANDROID_HOME" ] && [ -d "$ANDROID_HOME/emulator" ]; then
-                "$ANDROID_HOME/emulator/emulator" -list-avds 2>/dev/null || echo "No AVDs found"
-            else
-                echo "ANDROID_HOME not set or emulator not found"
-            fi
+        if [ ! -f "$EMULATOR_CMD" ]; then
+            log_error "emulator command not found at $EMULATOR_CMD"
+            echo "Please ensure your ANDROID_HOME is set correctly."
             exit 1
         fi
 
-        # Get available AVDs (similar to iOS approach)
+        # Get available AVDs
         log_info "Finding available Android Virtual Devices..."
-        AVAILABLE_AVDS=$(emulator -list-avds 2>/dev/null)
+        AVAILABLE_AVDS=$($EMULATOR_CMD -list-avds)
 
         if [ -z "$AVAILABLE_AVDS" ]; then
             log_error "No Android Virtual Devices (AVDs) found."
             echo "Please create an AVD in Android Studio:"
             echo "  1. Open Android Studio"
-            echo "  2. Go to Tools > AVD Manager"
+            echo "  2. Go to Tools > Device Manager"
             echo "  3. Create Virtual Device"
             exit 1
         fi
 
-        # Use the first available AVD (similar to iOS first available simulator)
+        # Use the first available AVD
         FIRST_AVD=$(echo "$AVAILABLE_AVDS" | head -1)
         log_info "Using emulator: $FIRST_AVD"
 
-        # Start the emulator in background with output silenced
+        # Start the emulator in background
         log_info "Starting emulator (this may take a minute)..."
-        emulator -avd "$FIRST_AVD" -no-snapshot-load >/dev/null 2>&1 &
+        "$EMULATOR_CMD" -avd "$FIRST_AVD" -no-snapshot-load >/dev/null 2>&1 &
         EMULATOR_PID=$!
 
-        # Wait for emulator to start (similar to iOS bootstatus)
+        # Wait for emulator to start
         log_info "Waiting for emulator to boot..."
         for i in {1..60}; do
-            if adb devices | grep -q emulator; then
-                RUNNING_EMULATOR=$(adb devices | grep emulator | head -1 | cut -f1)
+            if "$ADB_CMD" devices | grep -q emulator; then
+                RUNNING_EMULATOR=$("$ADB_CMD" devices | grep emulator | head -1 | cut -f1)
                 log_success "Emulator started: $RUNNING_EMULATOR"
                 break
             fi
@@ -317,14 +359,14 @@ setup_android_environment() {
         if [ -z "$RUNNING_EMULATOR" ]; then
             log_error "Emulator failed to start within 2 minutes"
             echo "You can try starting it manually:"
-            echo "  emulator -avd $FIRST_AVD"
+            echo "  $EMULATOR_CMD -avd $FIRST_AVD"
             exit 1
         fi
 
-        # Wait for emulator to be fully booted (similar to iOS bootstatus check)
+        # Wait for emulator to be fully booted
         log_info "Waiting for emulator to be fully booted..."
         for i in {1..30}; do
-            if adb -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+            if "$ADB_CMD" -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
                 log_success "Emulator fully booted and ready"
                 break
             fi
@@ -336,10 +378,10 @@ setup_android_environment() {
 
         # Ensure the running emulator is fully booted
         log_info "Checking if emulator is fully booted..."
-        if ! adb -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+        if ! "$ADB_CMD" -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
             log_warning "Emulator is running but not fully booted, waiting..."
             for i in {1..15}; do
-                if adb -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+                if "$ADB_CMD" -s "$RUNNING_EMULATOR" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
                     log_success "Emulator is now fully booted"
                     break
                 fi
@@ -355,13 +397,20 @@ setup_android_environment() {
     export ANDROID_EMULATOR_ID="$RUNNING_EMULATOR"
 
     log_success "Android emulator ready:"
-    adb devices
+    "$ADB_CMD" devices
 }
 
 build_android_app() {
     log_info "🔨 Building Android APK..."
+    # Note: Using Release builds to avoid Metro dependency in CI
+    # Debug builds require Metro server, Release builds have JS bundled
+    # Run the build inside the android directory so gradlew is available
+    echo "Current working directory: $(pwd)"
+    echo "Checking if gradlew exists:"
+    ls -la android/gradlew || echo "gradlew not found in android/"
+
     cd android
-    if ! ./gradlew assembleDebug; then
+    if ! ./gradlew assembleRelease --quiet; then
         log_error "Android build failed"
         exit 1
     fi
@@ -371,9 +420,13 @@ build_android_app() {
 
 install_android_app() {
     log_info "📦 Installing app on emulator..."
-    APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+    # Check if APK was built successfully (matching workflow)
+    APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+    log_info "Looking for APK at: $APK_PATH"
     if [ ! -f "$APK_PATH" ]; then
-        log_error "Could not find built APK at $APK_PATH"
+        log_error "APK not found at expected location"
+        echo "Available files in build directory:"
+        find android/app/build -name "*.apk" 2>/dev/null || echo "No APK files found"
         exit 1
     fi
 
@@ -385,7 +438,7 @@ install_android_app() {
 
     # Check the APK's actual package name
     echo "Checking APK package info:"
-    ACTUAL_PACKAGE=$(aapt dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed "s/.*name='\([^']*\)'.*/\1/" | head -1)
+    ACTUAL_PACKAGE=$("$ANDROID_HOME/build-tools/33.0.0/aapt" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed "s/.*name='\([^']*\)'.*/\1/" | head -1)
     if [ -n "$ACTUAL_PACKAGE" ]; then
         echo "APK package name: $ACTUAL_PACKAGE"
     else
@@ -393,13 +446,12 @@ install_android_app() {
         ACTUAL_PACKAGE="com.proofofpassportapp"
     fi
 
-    # Uninstall any existing version first
-    echo "Removing any existing app installation..."
-    adb -s "$EMULATOR_ID" uninstall "$ACTUAL_PACKAGE" 2>/dev/null || true
-
-    # Install the app
+    # Install the app, replacing any existing installation.
+    # The -r flag allows adb to replace an existing app, which is safer than
+    # trying to uninstall first, especially in a CI environment where the
+    # emulator state might be inconsistent.
     echo "Installing app..."
-    if ! adb -s "$EMULATOR_ID" install "$APK_PATH"; then
+    if ! "$ADB_CMD" -s "$EMULATOR_ID" install -r "$APK_PATH"; then
         log_error "Android app installation failed"
         exit 1
     fi
@@ -413,7 +465,7 @@ install_android_app() {
 
     # Check if the package is installed using the detected package name
     echo "Checking installed packages for: $ACTUAL_PACKAGE"
-    PACKAGE_CHECK=$(adb -s "$EMULATOR_ID" shell pm list packages | grep "$ACTUAL_PACKAGE" || echo "")
+    PACKAGE_CHECK=$("$ADB_CMD" -s "$EMULATOR_ID" shell pm list packages | grep "$ACTUAL_PACKAGE" || echo "")
     if [ -n "$PACKAGE_CHECK" ]; then
         log_success "App package verified on device: $PACKAGE_CHECK"
     else
@@ -428,7 +480,7 @@ install_android_app() {
 
         FOUND_PACKAGE=""
         for PARTIAL in "${PARTIAL_CHECKS[@]}"; do
-            PARTIAL_RESULT=$(adb -s "$EMULATOR_ID" shell pm list packages | grep "$PARTIAL" || echo "")
+            PARTIAL_RESULT=$("$ADB_CMD" -s "$EMULATOR_ID" shell pm list packages | grep "$PARTIAL" || echo "")
             if [ -n "$PARTIAL_RESULT" ]; then
                 echo "Found packages containing '$PARTIAL': $PARTIAL_RESULT"
                 FOUND_PACKAGE="true"
@@ -443,7 +495,7 @@ install_android_app() {
 
     # Test if the app can be launched directly
     log_info "🚀 Testing app launch capability..."
-    adb -s "$EMULATOR_ID" shell am start -n "$ACTUAL_PACKAGE/.MainActivity" || {
+    "$ADB_CMD" -s "$EMULATOR_ID" shell am start -n "$ACTUAL_PACKAGE/.MainActivity" || {
         log_warning "Direct app launch test failed - this might be expected if the main activity name is different"
     }
 }
@@ -476,8 +528,10 @@ run_ios_tests() {
     build_ios_app
     install_ios_app
     run_maestro_tests
+    MAESTRO_STATUS=$?
 
-    log_success "Local iOS e2e testing completed successfully!"
+    log_success "Local iOS e2e testing completed!"
+    exit $MAESTRO_STATUS
 }
 
 run_android_tests() {
@@ -486,13 +540,23 @@ run_android_tests() {
     # Set up trap to cleanup emulator on script exit
     trap cleanup_android_emulator EXIT
 
-    check_metro_running
+    # Only check Metro if not in workflow match mode
+    if [ "$WORKFLOW_MATCH" != "true" ]; then
+        check_metro_running
+    fi
+
     setup_android_environment
     build_android_app
     install_android_app
-    run_maestro_tests
 
-    log_success "Local Android e2e testing completed successfully!"
+    log_info "⏰ Giving the emulator a moment to settle before starting tests..."
+    sleep 45
+
+    run_maestro_tests
+    MAESTRO_STATUS=$?
+
+    log_success "Local Android e2e testing completed!"
+    exit $MAESTRO_STATUS
 }
 
 # Main execution
@@ -503,6 +567,16 @@ main() {
         print_usage
         exit 1
     fi
+
+    # Check for workflow match mode
+    WORKFLOW_MATCH="false"
+    for arg in "$@"; do
+        if [ "$arg" = "--workflow-match" ]; then
+            WORKFLOW_MATCH="true"
+            log_info "🔧 Running in workflow match mode (Release builds, no Metro)"
+            break
+        fi
+    done
 
     setup_maestro
     build_dependencies
@@ -523,4 +597,4 @@ main() {
 }
 
 # Run main function
-main
+main "$@"
