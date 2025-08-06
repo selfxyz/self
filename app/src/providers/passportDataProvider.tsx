@@ -57,11 +57,13 @@ import { unsafe_getPrivateKey, useAuth } from '../providers/authProvider';
 import { safeJsonParse } from '../utils/jsonUtils';
 
 // Import testing utilities conditionally
-let clearDocumentCatalogForMigrationTesting: (() => Promise<void>) | undefined;
+let clearDocumentCatalogForMigrationTestingFromUtils:
+  | (() => Promise<void>)
+  | undefined;
 if (__DEV__) {
   try {
     const testingUtils = require('../utils/testingUtils');
-    clearDocumentCatalogForMigrationTesting =
+    clearDocumentCatalogForMigrationTestingFromUtils =
       testingUtils.clearDocumentCatalogForMigrationTesting;
   } catch (error) {
     console.warn('Testing utilities not available:', error);
@@ -141,6 +143,8 @@ function inferDocumentCategory(documentType: string): DocumentCategory {
 
 // Global flag to track if native modules are ready
 let nativeModulesReady = false;
+// Promise to prevent concurrent initialization
+let initializationPromise: Promise<boolean> | null = null;
 
 /**
  * Global initialization function to wait for native modules to be ready
@@ -153,6 +157,23 @@ export async function initializeNativeModules(
   if (nativeModulesReady) {
     return true;
   }
+
+  // If initialization is already in progress, wait for it
+  if (initializationPromise) {
+    return initializationPromise;
+  }
+
+  // Start initialization and store the promise
+  initializationPromise = performInitialization(maxRetries, delay);
+  const result = await initializationPromise;
+  initializationPromise = null; // Clear the promise when done
+  return result;
+}
+
+async function performInitialization(
+  maxRetries: number,
+  delay: number,
+): Promise<boolean> {
   for (let i = 0; i < maxRetries; i++) {
     try {
       if (typeof Keychain.getGenericPassword === 'function') {
@@ -660,7 +681,8 @@ export const PassportContext = createContext<IPassportContext>({
   migrateFromLegacyStorage: migrateFromLegacyStorage,
   getCurrentDocumentType: getCurrentDocumentType,
   clearDocumentCatalogForMigrationTesting:
-    clearDocumentCatalogForMigrationTesting || (() => Promise.resolve()),
+    clearDocumentCatalogForMigrationTestingFromUtils ||
+    (() => Promise.resolve()),
   markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
   updateDocumentRegistrationState: updateDocumentRegistrationState,
   checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
@@ -724,7 +746,8 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       migrateFromLegacyStorage: migrateFromLegacyStorage,
       getCurrentDocumentType: getCurrentDocumentType,
       clearDocumentCatalogForMigrationTesting:
-        clearDocumentCatalogForMigrationTesting || (() => Promise.resolve()),
+        clearDocumentCatalogForMigrationTestingFromUtils ||
+        (() => Promise.resolve()),
       markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
       updateDocumentRegistrationState: updateDocumentRegistrationState,
       checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
