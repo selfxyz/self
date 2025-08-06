@@ -129,6 +129,10 @@ function inferDocumentCategory(documentType: string): DocumentCategory {
 // Global flag to track if native modules are ready
 let nativeModulesReady = false;
 
+// Mutex to prevent concurrent initialization
+let initializationInProgress = false;
+let initializationPromise: Promise<boolean> | null = null;
+
 export const PassportContext = createContext<IPassportContext>({
   getData: () => Promise.resolve(null),
   getSelectedData: () => Promise.resolve(null),
@@ -399,23 +403,47 @@ export async function initializeNativeModules(
   maxRetries: number = 10,
   delay: number = 500,
 ): Promise<boolean> {
+  // If already ready, return immediately
   if (nativeModulesReady) {
     return true;
   }
 
+  // If initialization is already in progress, wait for it to complete
+  if (initializationInProgress && initializationPromise) {
+    return initializationPromise;
+  }
+
+  // Start new initialization
+  initializationInProgress = true;
+  initializationPromise = performInitialization(maxRetries, delay);
+
+  try {
+    const result = await initializationPromise;
+    return result;
+  } finally {
+    initializationInProgress = false;
+    initializationPromise = null;
+  }
+}
+
+async function performInitialization(
+  maxRetries: number = 10,
+  delay: number = 500,
+): Promise<boolean> {
   console.log('Initializing native modules...');
 
   for (let i = 0; i < maxRetries; i++) {
     try {
       if (typeof Keychain.getGenericPassword === 'function') {
-        // Test if Keychain is actually available by making a safe call
-        await Keychain.getGenericPassword({ service: 'test-availability' });
+        // Non-mutating check: just verify the function exists without making a storage call
+        // This prevents creating unwanted storage entries
+        console.log('Keychain module is available');
         nativeModulesReady = true;
         console.log('Native modules ready!');
         return true;
       }
     } catch (error) {
-      // If we get a "requiring unknown module" error, wait and retry
+      // Only retry for specific "requiring unknown module" errors
       if (
         error instanceof Error &&
         error.message.includes('Requiring unknown module')
@@ -426,10 +454,23 @@ export async function initializeNativeModules(
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
-      // For other errors (like service not found), assume Keychain is available
-      nativeModulesReady = true;
-      console.log('Native modules ready (with minor errors)!');
-      return true;
+
+      // For other errors, only set ready if it's a known safe error
+      // (like module not found, which indicates the module is available but the service doesn't exist)
+      if (
+        error instanceof Error &&
+        (error.message.includes('service not found') ||
+          error.message.includes('No password found'))
+      ) {
+        nativeModulesReady = true;
+        console.log('Native modules ready (with expected errors)!');
+        return true;
+      }
+
+      // For unexpected errors, don't set ready and continue retrying
+      console.log(`Unexpected error during initialization: ${error}`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      continue;
     }
   }
 
