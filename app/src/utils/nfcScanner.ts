@@ -2,6 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Buffer } from 'buffer';
+
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
+
+import { fromBER } from 'asn1js';
 import { ec as ellipticEc } from 'elliptic';
 import { ethers } from 'ethers';
 import { sha384 } from 'js-sha512';
