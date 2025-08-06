@@ -465,23 +465,29 @@ install_android_app() {
     EMULATOR_ID="${ANDROID_EMULATOR_ID:-emulator-5554}"
     log_info "Installing on emulator: $EMULATOR_ID"
 
-    # Dynamically find the latest 'aapt' tool path using 'find' and 'sort'
-    # This is more robust than relying on 'fd' and ensures we use the newest version.
-    AAPT_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt" | sort -r | head -n 1)
-    if [ -z "$AAPT_PATH" ]; then
-        log_error "aapt tool not found in $ANDROID_HOME/build-tools"
-        echo "Please ensure your Android build-tools are installed correctly."
-        exit 1
-    fi
-    log_info "Found aapt at: $AAPT_PATH"
-
-    # Check the APK's actual package name
-    echo "Checking APK package info:"
-    ACTUAL_PACKAGE=$("$AAPT_PATH" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed "s/.*name='\([^']*\)'.*/\1/" | head -1)
-    if [ -n "$ACTUAL_PACKAGE" ]; then
-        echo "APK package name: $ACTUAL_PACKAGE"
+    # Dynamically find the latest 'aapt' tool path and determine package name
+    # Prioritize 'aapt2' for reliability, then fall back to 'aapt'.
+    AAPT2_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt2" | sort -r | head -n 1)
+    if [ -n "$AAPT2_PATH" ]; then
+        log_info "Using aapt2 to get package name from $APK_PATH..."
+        ACTUAL_PACKAGE=$("$AAPT2_PATH" dump packagename "$APK_PATH" 2>/dev/null | head -1)
     else
-        log_warning "Could not determine package name from APK, assuming com.proofofpassportapp"
+        log_warning "aapt2 not found, falling back to aapt..."
+        AAPT_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt" | sort -r | head -n 1)
+        if [ -n "$AAPT_PATH" ]; then
+            log_info "Found aapt at: $AAPT_PATH"
+            ACTUAL_PACKAGE=$("$AAPT_PATH" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed -E "s/.*name='([^']+)'.*/\1/" | head -1)
+        else
+            log_error "Neither aapt2 nor aapt found in $ANDROID_HOME/build-tools"
+            echo "Please ensure your Android build-tools are installed correctly."
+            exit 1
+        fi
+    fi
+
+    if [ -n "$ACTUAL_PACKAGE" ]; then
+        log_success "Determined APK package name: $ACTUAL_PACKAGE"
+    else
+        log_warning "Could not determine package name from APK, assuming default: com.proofofpassportapp"
         ACTUAL_PACKAGE="com.proofofpassportapp"
     fi
 
