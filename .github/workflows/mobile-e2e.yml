@@ -261,7 +261,7 @@ jobs:
         run: |
           echo "Building iOS app..."
           # Use cached derived data and enable parallel builds for faster compilation
-          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet -enableIndexBuildArena -indexStorePath app/ios/build/Index.noindex || { echo "❌ iOS build failed"; exit 1; }
+          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet -indexStorePath app/ios/build/Index.noindex || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
