@@ -157,6 +157,13 @@ run_maestro_tests() {
     fi
 }
 
+
+shutdown_all_simulators() {
+    log_info "🔌 Shutting down all running iOS simulators..."
+    xcrun simctl shutdown all
+    log_success "All simulators shut down"
+}
+
 # iOS-specific functions
 setup_ios_environment() {
     # Check if Xcode is available
@@ -209,9 +216,16 @@ setup_ios_simulator() {
 
     log_info "Using simulator: $SIMULATOR_NAME ($AVAILABLE_SIMULATOR)"
 
-    # Boot the simulator
-    echo "Booting $SIMULATOR_NAME simulator..."
+    # Boot the simulator and ensure the Simulator app is open
+    log_info "Booting $SIMULATOR_NAME simulator..."
+    # This can fail if the device is already booted. The `|| true` handles this gracefully.
+    # Our shutdown command should prevent this, but we keep it for robustness.
     xcrun simctl boot "$AVAILABLE_SIMULATOR" || true
+
+    log_info "Opening Simulator app to ensure it is visible..."
+    open -a Simulator
+
+    log_info "Waiting for simulator to fully boot..."
     xcrun simctl bootstatus "$AVAILABLE_SIMULATOR" -b
 
     # Store the simulator ID for later use
@@ -547,6 +561,7 @@ cleanup_android_emulator() {
 run_ios_tests() {
     echo "🍎 Starting local iOS e2e testing..."
 
+    shutdown_all_simulators
     check_metro_running
     setup_ios_environment
     setup_ios_simulator
