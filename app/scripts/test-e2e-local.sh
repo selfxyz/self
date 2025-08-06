@@ -123,13 +123,37 @@ run_maestro_tests() {
         FLOW_FILE="e2e/launch.android.flow.yaml"
     fi
 
-    if maestro test "$FLOW_FILE" --format junit --output maestro-results.xml; then
-        log_success "🎉 Maestro tests passed!"
+    # Attempt to run Maestro, capturing output to check for a specific error
+    MAESTRO_OUTPUT_FILE=$(mktemp)
+    if maestro test "$FLOW_FILE" --format junit --output maestro-results.xml > "$MAESTRO_OUTPUT_FILE" 2>&1; then
+        log_success "🎉 Maestro tests passed on the first attempt!"
+        cat "$MAESTRO_OUTPUT_FILE"
+        rm "$MAESTRO_OUTPUT_FILE"
         return 0
     else
-        log_error "Maestro tests failed"
-        echo "Check maestro-results.xml for detailed results"
-        return 1
+        # First attempt failed, check for the specific timeout error
+        cat "$MAESTRO_OUTPUT_FILE"
+        if grep -q "MaestroDriverStartupException" "$MAESTRO_OUTPUT_FILE"; then
+            log_warning "Maestro driver failed to start. Retrying in 30 seconds..."
+            sleep 30
+
+            # Second attempt
+            log_info "🎭 Retrying Maestro tests..."
+            if maestro test "$FLOW_FILE" --format junit --output maestro-results.xml; then
+                log_success "🎉 Maestro tests passed on the second attempt!"
+                rm "$MAESTRO_OUTPUT_FILE"
+                return 0
+            else
+                log_error "Maestro tests failed on the second attempt."
+                rm "$MAESTRO_OUTPUT_FILE"
+                return 1
+            fi
+        else
+            # Failed for a different reason, so don't retry
+            log_error "Maestro tests failed for a reason other than driver timeout."
+            rm "$MAestro_OUTPUT_FILE"
+            return 1
+        fi
     fi
 }
 
