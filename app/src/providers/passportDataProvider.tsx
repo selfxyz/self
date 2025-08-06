@@ -54,6 +54,7 @@ import {
 } from '@selfxyz/common/utils';
 
 import { unsafe_getPrivateKey, useAuth } from '../providers/authProvider';
+import { safeJsonParse } from '../utils/jsonUtils';
 
 // Import testing utilities conditionally
 let clearDocumentCatalogForMigrationTesting: (() => Promise<void>) | undefined;
@@ -174,14 +175,17 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const { _getSecurely } = useAuth();
 
   const getData = useCallback(
-    () => _getSecurely<PassportData>(loadPassportData, str => JSON.parse(str)),
+    () =>
+      _getSecurely<PassportData>(loadPassportData, str =>
+        safeJsonParse(str, null as any),
+      ),
     [_getSecurely],
   );
 
   const getSelectedData = useCallback(() => {
     return _getSecurely<PassportData>(
       () => loadSelectedPassportData(),
-      str => JSON.parse(str),
+      str => safeJsonParse(str, null as any),
     );
   }, [_getSecurely]);
 
@@ -193,7 +197,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     () =>
       _getSecurely<{ passportData: PassportData; secret: string }>(
         loadPassportDataAndSecret,
-        str => JSON.parse(str),
+        str => safeJsonParse(str, null as any),
       ),
     [_getSecurely],
   );
@@ -201,7 +205,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const getSelectedPassportDataAndSecret = useCallback(() => {
     return _getSecurely<{ passportData: PassportData; secret: string }>(
       () => loadSelectedPassportDataAndSecret(),
-      str => JSON.parse(str),
+      str => safeJsonParse(str, null as any),
     );
   }, [_getSecurely]);
 
@@ -720,12 +724,17 @@ export async function migrateFromLegacyStorage(): Promise<void> {
     try {
       const passportDataCreds = await Keychain.getGenericPassword({ service });
       if (passportDataCreds !== false) {
-        const passportData: PassportData = JSON.parse(
+        const passportData: PassportData = safeJsonParse(
           passportDataCreds.password,
+          null as any,
         );
-        await storeDocumentWithDeduplication(passportData);
-        await Keychain.resetGenericPassword({ service });
-        console.log(`Migrated document from ${service}`);
+        if (passportData) {
+          await storeDocumentWithDeduplication(passportData);
+          await Keychain.resetGenericPassword({ service });
+          console.log(`Migrated document from ${service}`);
+        } else {
+          console.log(`Skipping corrupted data from ${service}`);
+        }
       }
     } catch (error) {
       console.log(`Could not migrate from service ${service}:`, error);

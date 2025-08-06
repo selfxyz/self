@@ -200,4 +200,58 @@ describe('PassportDataProvider', () => {
       expect(mockKeychain.getGenericPassword).not.toHaveBeenCalled();
     });
   });
+
+  describe('JSON Parsing Error Handling Tests', () => {
+    it('should handle corrupted JSON data gracefully', async () => {
+      // Mock console.warn to capture warnings
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // Mock corrupted data
+      mockKeychain.getGenericPassword = jest.fn().mockResolvedValue({
+        password: 'invalid json data',
+      });
+
+      // Import the module fresh
+      const {
+        migrateFromLegacyStorage,
+      } = require('../../../src/providers/passportDataProvider');
+
+      // This should not throw an error
+      await migrateFromLegacyStorage();
+
+      // Should have logged a warning about JSON parsing failure
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to parse JSON, using default value:',
+        expect.any(Error),
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle malformed JSON in legacy migration', async () => {
+      // Mock corrupted data for legacy migration
+      mockKeychain.getGenericPassword = jest.fn().mockResolvedValue({
+        password: '{invalid json}',
+      });
+
+      // Import the module fresh
+      const {
+        migrateFromLegacyStorage,
+      } = require('../../../src/providers/passportDataProvider');
+
+      // Mock console.warn
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // This should not throw an error and should skip corrupted data
+      await migrateFromLegacyStorage();
+
+      // Should have logged a warning about JSON parsing failure
+      expect(consoleSpy).toHaveBeenCalledWith(
+        'Failed to parse JSON, using default value:',
+        expect.any(Error),
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
 });

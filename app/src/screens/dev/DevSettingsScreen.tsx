@@ -11,7 +11,6 @@ import {
   unsafe_clearSecrets,
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
-import { usePassport } from '../../providers/passportDataProvider';
 import { textBlack } from '../../utils/colors';
 import { clearDocumentCatalogForMigrationTesting } from '../../utils/testingUtils';
 
