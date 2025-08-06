@@ -1,4 +1,4 @@
-name: mobile-bundle-analysis
+name: Mobile Bundle Analysis
 
 env:
   NODE_VERSION: 18

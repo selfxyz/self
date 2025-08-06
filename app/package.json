@@ -55,6 +55,8 @@
     "test:build": "yarn build:deps && yarn web:build && yarn types && yarn analyze:bundle:ios",
     "test:coverage": "jest --coverage --passWithNoTests",
     "test:coverage:ci": "jest --coverage --passWithNoTests --ci --coverageReporters=lcov --coverageReporters=text --coverageReporters=json",
+    "test:e2e:android": "cd android && ./gradlew assembleDebug && cd .. && maestro test tests/e2e/launch.android.flow.yaml",
+    "test:e2e:ios": "xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build && maestro test tests/e2e/launch.ios.flow.yaml",
     "test:fastlane": "bundle exec ruby -Itest fastlane/test/helpers_test.rb",
     "test:tree-shaking": "node ./scripts/test-tree-shaking.cjs",
     "test:web-build": "jest tests/web-build-render.test.ts --testTimeout=180000",

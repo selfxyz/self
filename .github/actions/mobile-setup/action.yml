@@ -34,7 +34,6 @@ runs:
         sudo locale-gen en_US.UTF-8
         sudo update-locale LANG=en_US.UTF-8
 
-
     - name: Setup Ruby environment
       uses: ruby/setup-ruby@v1
       with:
@@ -57,11 +56,11 @@ runs:
       shell: bash
       run: |
         cd ${{ inputs.app_path }}
-        
+
         # Configure Yarn
         corepack enable
         yarn set version 4.6.0
-        
+
         echo "📦 Installing JavaScript dependencies with strict lock file..."
         if ! yarn install --immutable; then
           echo ""
@@ -77,14 +76,14 @@ runs:
           echo "This ensures everyone has the exact same dependency versions."
           exit 1
         fi
-        
+
         # Run mobile-specific installation
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           yarn install-app:mobile-deploy:ios
         else
           yarn install-app:mobile-deploy
         fi
-        
+
         # Install Ruby gems with bundler (respecting cache)
         echo "📦 Installing Ruby gems with strict lock file..."
         if ! bundle install --jobs 4 --retry 3; then
