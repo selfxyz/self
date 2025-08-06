@@ -2,30 +2,16 @@
 
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {
-  Check,
-  ChevronDown,
-  ChevronRight,
-} from '@tamagui/lucide-icons';
-import React, {
-  PropsWithChildren,
-  useMemo,
-  useState,
-} from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleProp,
-} from 'react-native';
+import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
+import React, { PropsWithChildren, useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleProp } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
 import BugIcon from '../../images/icons/bug_icon.svg';
 import IdIcon from '../../images/icons/id_icon.svg';
 import WarningIcon from '../../images/icons/warning.svg';
 import { RootStackParamList } from '../../navigation';
-import {
-  unsafe_clearSecrets,
-} from '../../providers/authProvider';
+import { unsafe_clearSecrets } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
 import {
   red500,
@@ -97,7 +83,12 @@ function ParameterSection({
       flexDirection="column"
       gap="$3"
     >
-      <XStack width="100%" flexDirection="row" justifyContent="flex-start" gap="$4">
+      <XStack
+        width="100%"
+        flexDirection="row"
+        justifyContent="flex-start"
+        gap="$4"
+      >
         <YStack
           backgroundColor="gray"
           borderRadius={5}
@@ -280,7 +271,14 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack gap="$3" alignItems="center" backgroundColor="white" flex={1} paddingHorizontal="$4" paddingTop="$4">
+      <YStack
+        gap="$3"
+        alignItems="center"
+        backgroundColor="white"
+        flex={1}
+        paddingHorizontal="$4"
+        paddingTop="$4"
+      >
         <ParameterSection
           icon={<IdIcon />}
           title="Manage ID Documents"
