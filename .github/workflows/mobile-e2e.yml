@@ -114,13 +114,12 @@ jobs:
           disable-animations: true
           script: |
             echo "Building Android APK..."
-            cd app/android
-            ./gradlew assembleRelease --quiet --parallel --build-cache --configuration-cache || { echo "❌ Android build failed"; exit 1; }
+            chmod +x app/android/gradlew
+            (cd app/android && ./gradlew assembleRelease --quiet --parallel --build-cache --configuration-cache) || { echo "❌ Android build failed"; exit 1; }
             echo "✅ Android build succeeded"
-            cd ..
 
             echo "Installing app on emulator..."
-            APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+            APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
             [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
 
             # Install the app
