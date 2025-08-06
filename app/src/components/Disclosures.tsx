@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import type { Country3LetterCode } from '@selfxyz/common/constants/constants';
-import { countryCodes } from '@selfxyz/common/constants/constants';
-import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
+import type { Country3LetterCode } from '@selfxyz/common/constants';
+import { countryCodes } from '@selfxyz/common/constants/core';
+import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 

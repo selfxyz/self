@@ -116,6 +116,7 @@ android {
         javaMaxHeapSize "4g"
         preDexLibraries false
     }
+
     defaultConfig {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -129,7 +130,11 @@ android {
                 arguments += "-DANDROID_STL=c++_shared"
             }
             ndk {
-                abiFilters += "arm64-v8a"
+                if (System.env.E2E_BUILD == "true") {
+                    abiFilters "x86_64"
+                } else {
+                    abiFilters "arm64-v8a", "x86_64"
+                }
             }
         }
     }
@@ -146,6 +151,12 @@ android {
                 storePassword MYAPP_UPLOAD_STORE_PASSWORD
                 keyAlias MYAPP_UPLOAD_KEY_ALIAS
                 keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            } else {
+                // Fallback to debug signing for CI/local testing
+                storeFile file('debug.keystore')
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
             }
         }
     }
@@ -154,8 +165,7 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            // Only use release signing config if the properties are available, otherwise fall back to debug
-            signingConfig project.hasProperty('MYAPP_UPLOAD_STORE_FILE') ? signingConfigs.release : signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -165,6 +175,11 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
+        pickFirst '**/libc++_shared.so'
+        jniLibs {
+            // Legacy packaging keeps page alignment for 16k page size devices
+            useLegacyPackaging true
+        }
     }
 }
 

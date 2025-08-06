@@ -3,7 +3,8 @@
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { SystemBars } from 'react-native-edge-to-edge';
 
 import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -39,7 +40,7 @@ const PassportOnboardingScreen: React.FC<
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <StatusBar barStyle="light-content" backgroundColor={black} />
+      <SystemBars style="light" />
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <LottieView
           ref={animationRef}

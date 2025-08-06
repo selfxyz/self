@@ -1,4 +1,4 @@
-name: Mobile App Deployments
+name: Mobile Deploy
 
 env:
   # Build environment versions
@@ -6,14 +6,14 @@ env:
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
-  ANDROID_NDK_VERSION: 26.1.10909125
+  ANDROID_NDK_VERSION: 27.0.11718014
 
   # Cache versioning - increment these to bust caches when needed
-  GH_CACHE_VERSION: v1  # Global cache version
-  GH_YARN_CACHE_VERSION: v1  # Yarn-specific cache version
-  GH_GEMS_CACHE_VERSION: v1  # Ruby gems cache version
-  GH_PODS_CACHE_VERSION: v1  # CocoaPods cache version
-  GH_GRADLE_CACHE_VERSION: v1  # Gradle cache version
+  GH_CACHE_VERSION: v1 # Global cache version
+  GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
+  GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
+  GH_PODS_CACHE_VERSION: v1 # CocoaPods cache version
+  GH_GRADLE_CACHE_VERSION: v1 # Gradle cache version
 
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
@@ -102,7 +102,6 @@ jobs:
           echo "📦 Version bump: ${{ inputs.version_bump }}"
 
       - uses: actions/checkout@v4
-        if: inputs.platform != 'android'
 
       - name: Set up Xcode
         if: inputs.platform != 'android'
@@ -495,12 +494,11 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Commit updated build number
-        # disable for now, commit doesn't work as expected
-        if: false #${{ !env.ACT }}
+        if: ${{ !env.ACT && success() }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "incrementing ios build number for version ${{ env.VERSION }}"
-          commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
+          commit_paths: "./app/version.json"
 
       - name: Monitor cache usage
         if: always()
@@ -753,12 +751,11 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Commit updated build version
-        # disable for now, commit doesn't work as expected
-        if: false #${{ !env.ACT }}
+        if: ${{ !env.ACT && success() }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "incrementing android build version for version ${{ env.VERSION }}"
-          commit_paths: "./app/android/app/build.gradle"
+          commit_paths: "./app/version.json"
 
       - name: Monitor cache usage
         if: always()

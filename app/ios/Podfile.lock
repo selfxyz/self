@@ -1448,29 +1448,6 @@ PODS:
     - React-Core
   - react-native-nfc-manager (3.16.1):
     - React-Core
-  - react-native-quick-crypto (0.7.14):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - OpenSSL-Universal
-    - RCT-Folly (= 2024.01.01.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - react-native-safe-area-context (5.5.1):
     - React-Core
   - react-native-sqlite-storage (6.0.1):
@@ -1840,7 +1817,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (6.10.0):
+  - RNSentry (6.19.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1861,18 +1838,14 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.48.0)
+    - Sentry/HybridSDK (= 8.53.2)
     - Yoga
   - RNSVG (15.12.0):
     - React-Core
   - segment-analytics-react-native (2.21.1):
     - React-Core
     - sovran-react-native
-  - Sentry (8.53.1):
-    - Sentry/Core (= 8.53.1)
-  - Sentry/Core (8.53.1)
-  - Sentry/HybridSDK (8.48.0)
-  - SentryPrivate (8.21.0)
+  - Sentry/HybridSDK (8.53.2)
   - SocketRocket (0.7.0)
   - sovran-react-native (1.1.3):
     - React-Core
@@ -1934,7 +1907,6 @@ DEPENDENCIES:
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../../node_modules/react-native-nfc-manager`)
-  - react-native-quick-crypto (from `../../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../../node_modules/react-native-safe-area-context`)
   - react-native-sqlite-storage (from `../../node_modules/react-native-sqlite-storage`)
   - React-nativeconfig (from `../../node_modules/react-native/ReactCommon`)
@@ -1977,8 +1949,6 @@ DEPENDENCIES:
   - "RNSentry (from `../../node_modules/@sentry/react-native`)"
   - RNSVG (from `../../node_modules/react-native-svg`)
   - "segment-analytics-react-native (from `../../node_modules/@segment/analytics-react-native`)"
-  - Sentry
-  - SentryPrivate
   - "sovran-react-native (from `../../node_modules/@segment/sovran-react-native`)"
   - SwiftQRScanner (from `https://github.com/vinodiOS/SwiftQRScanner`)
   - Yoga (from `../../node_modules/react-native/ReactCommon/yoga`)
@@ -2008,7 +1978,6 @@ SPEC REPOS:
     - QKMRZParser
     - QKMRZScanner
     - Sentry
-    - SentryPrivate
     - SocketRocket
     - SwiftyTesseract
 
@@ -2101,8 +2070,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@react-native-community/netinfo"
   react-native-nfc-manager:
     :path: "../../node_modules/react-native-nfc-manager"
-  react-native-quick-crypto:
-    :path: "../../node_modules/react-native-quick-crypto"
   react-native-safe-area-context:
     :path: "../../node_modules/react-native-safe-area-context"
   react-native-sqlite-storage:
@@ -2268,7 +2235,6 @@ SPEC CHECKSUMS:
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: a280ef94cd4871a471b052f0dc70381cf1223049
-  react-native-quick-crypto: 8c04031798c1902ec3c6f4def538911a8f744d03
   react-native-safe-area-context: 827032edf27079702cbd006f11dc79451a2d744b
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   React-nativeconfig: 31072ab0146e643594f6959c7f970a04b6c9ddd0
@@ -2308,17 +2274,16 @@ SPEC CHECKSUMS:
   RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
   RNReactNativeHapticFeedback: c873497ad3f9fa80447baa18daa9474e671d24bf
   RNScreens: 584a35ba1a56a628fc564216b0b6f7b9f070c282
-  RNSentry: 1cc59685d5da06d8f772f0e3816a16d9cac3151a
+  RNSentry: 300cbbd29279f35df7c5d9cb0395a30d9afb56d0
   RNSVG: e3ad69848b6357587545e0a49628b1148acf082c
   segment-analytics-react-native: 5c3e8a4ee6d7532a011ed862d7c7d4fb5e5303e2
-  Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
-  SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
+  Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
 
-PODFILE CHECKSUM: 99a2fe1b63850931eea0c4a535d1fb74860e14b3
+PODFILE CHECKSUM: 8ed8bfe711f629f0a3f4d4fdacf04034737d609b
 
 COCOAPODS: 1.16.2

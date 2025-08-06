@@ -38,7 +38,6 @@ app/android/dev-keystore
 
 # Deployment scripts and CI/CD
 circuits/scripts/server/*.sh
-**/*.sh
 !node_modules/**/*.sh
 
 # Fastlane configuration (may contain secrets)
@@ -70,10 +69,6 @@ app/android/build/
 app/ios/build/
 app/ios/Pods/
 app/ios/DerivedData/
-app/android/.gradle/
-app/android/gradle/
-app/android/gradlew
-app/android/gradlew.bat
 
 # Circuit build outputs
 circuits/build/

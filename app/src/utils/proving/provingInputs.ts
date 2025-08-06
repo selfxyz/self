@@ -8,23 +8,17 @@ import {
   DEFAULT_MAJORITY,
   ID_CARD_ATTESTATION_ID,
   PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common/constants/constants';
-import type {
-  SelfApp,
-  SelfAppDisclosureConfig,
-} from '@selfxyz/common/utils/appType';
-import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
+} from '@selfxyz/common/constants';
+import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
+import type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/common/utils';
 import {
+  calculateUserIdentifierHash,
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
-} from '@selfxyz/common/utils/circuits/generateInputs';
-import { calculateUserIdentifierHash } from '@selfxyz/common/utils/hash';
-import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
-import type {
-  DocumentCategory,
-  PassportData,
-} from '@selfxyz/common/utils/types';
+  getCircuitNameFromPassportData,
+  hashEndpointWithScope,
+} from '@selfxyz/common/utils';
 import { poseidon2 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';

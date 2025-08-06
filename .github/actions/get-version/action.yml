@@ -14,4 +14,4 @@ runs:
       shell: bash
       run: |
         VERSION=$(node -p "require('${{ inputs.app_path }}/package.json').version")
-        echo "VERSION=$VERSION" >> $GITHUB_ENV 
+        echo "VERSION=$VERSION" >> $GITHUB_ENV

@@ -6,7 +6,9 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
-      "@env": ["./env.ts"]
+      "@env": ["./env.ts"],
+      "@selfxyz/common": ["../common"],
+      "@selfxyz/common/*": ["../common/*"]
     }
   },
   "include": ["src/**/*"],

@@ -8,7 +8,7 @@ import { getHashLen, hash } from '../hash.js';
 import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
 import forge from 'node-forge';
 import elliptic from 'elliptic';
-import getMockDSC from './getMockDSC.js';
+import { getMockDSC } from './getMockDSC.js';
 import { PublicKeyDetailsRSAPSS } from '../certificate_parsing/dataStructure.js';
 import { PublicKeyDetailsECDSA } from '../certificate_parsing/dataStructure.js';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple.js';

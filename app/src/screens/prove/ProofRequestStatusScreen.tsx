@@ -2,8 +2,9 @@
 
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, StatusBar, StyleSheet, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Linking, StyleSheet, View } from 'react-native';
+import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
@@ -48,15 +49,15 @@ const SuccessScreen: React.FC = () => {
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const onOkPress = useCallback(() => {
+  function onOkPress() {
     buttonTap();
     goHome();
     setTimeout(() => {
       cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
-  }, [goHome, cleanSelfApp]);
+  }
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -132,9 +133,8 @@ const SuccessScreen: React.FC = () => {
     errorCode,
     reason,
     updateProofStatus,
-    selfApp,
+    selfApp?.deeplinkCallback,
     countdownStarted,
-    countdown,
   ]);
 
   useEffect(() => {
@@ -170,7 +170,7 @@ const SuccessScreen: React.FC = () => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <StatusBar barStyle="dark-content" backgroundColor={white} />
+      <SystemBars style="dark" />
       <ExpandableBottomLayout.TopSection
         roundTop
         marginTop={20}

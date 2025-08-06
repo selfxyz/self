@@ -6,9 +6,9 @@ import {
   PixelRatio,
   Platform,
   ScrollView,
-  StatusBar,
   StyleSheet,
 } from 'react-native';
+import { SystemBars } from 'react-native-edge-to-edge';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, ViewProps } from 'tamagui';
 
@@ -42,10 +42,7 @@ const Layout: React.FC<ExpandableBottomLayoutProps> = ({
 }) => {
   return (
     <View flex={1} flexDirection="column" backgroundColor={backgroundColor}>
-      <StatusBar
-        barStyle={backgroundColor === black ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundColor}
-      />
+      <SystemBars style={backgroundColor === black ? 'light' : 'dark'} />
       {children}
     </View>
   );

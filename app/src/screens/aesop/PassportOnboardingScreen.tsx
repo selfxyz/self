@@ -2,7 +2,8 @@
 
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { SystemBars } from 'react-native-edge-to-edge';
 
 import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -17,6 +18,7 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '../../utils/colors';
+import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
 
 interface PassportOnboardingScreenProps {}
 
@@ -24,7 +26,20 @@ const PassportOnboardingScreen: React.FC<
   PassportOnboardingScreenProps
 > = ({}) => {
   const handleCameraPress = useHapticNavigation('PassportCamera');
-  const onCancelPress = useHapticNavigation('Launch', { action: 'cancel' });
+  const navigateToLaunch = useHapticNavigation('Launch', {
+    action: 'cancel',
+  });
+  const navigateToHome = useHapticNavigation('Home', {
+    action: 'cancel',
+  });
+  const onCancelPress = async () => {
+    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    if (hasValidDocument) {
+      navigateToHome();
+    } else {
+      navigateToLaunch();
+    }
+  };
   const animationRef = useRef<LottieView>(null);
 
   useEffect(() => {
@@ -33,7 +48,7 @@ const PassportOnboardingScreen: React.FC<
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <StatusBar barStyle="light-content" backgroundColor={white} />
+      <SystemBars style="light" />
       <ExpandableBottomLayout.TopSection backgroundColor={white}>
         <LottieView
           ref={animationRef}

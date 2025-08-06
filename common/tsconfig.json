@@ -12,10 +12,12 @@
     "resolveJsonModule": true,
     "moduleResolution": "NodeNext",
     "baseUrl": "./",
-    "composite": true,
+    "composite": true
   },
   "include": [
-    "src/**/*", "index.ts",
+    "src/**/*.ts",
+    "src/**/*.js",
+    "index.ts"
   ],
   "exclude": [
     "dist",

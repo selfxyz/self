@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useNavigation } from '@react-navigation/native';
-import { countryCodes } from '@selfxyz/common/constants/constants';
+import { countryCodes } from '@selfxyz/common/constants/core';
+import type { IdDocInput } from '@selfxyz/common/utils';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import type { IdDocInput } from '@selfxyz/common/utils/passports/genMockIdDoc';
 import {
   generateMockDSC,
   genMockIdDoc,
-} from '@selfxyz/common/utils/passports/genMockIdDoc';
-import { initPassportDataParsing } from '@selfxyz/common/utils/passports/passport';
+  initPassportDataParsing,
+} from '@selfxyz/common/utils/passports';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
