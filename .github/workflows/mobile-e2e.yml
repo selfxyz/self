@@ -115,19 +115,13 @@ jobs:
           script: |
             echo "Building Android APK..."
             cd app/android
-            if ! ./gradlew assembleRelease --quiet --parallel --build-cache --configuration-cache; then
-              echo "❌ Android build failed"
-              exit 1
-            fi
+            ./gradlew assembleRelease --quiet --parallel --build-cache --configuration-cache || { echo "❌ Android build failed"; exit 1; }
             echo "✅ Android build succeeded"
             cd ..
 
             echo "Installing app on emulator..."
             APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
-            if [ ! -f "$APK_PATH" ]; then
-              echo "❌ APK not found at $APK_PATH"
-              exit 1
-            fi
+            [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
 
             # Install the app
             adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
@@ -209,10 +203,7 @@ jobs:
           echo "Installing iOS dependencies..."
           cd app/ios
           # Use parallel pod install for faster execution
-          if ! pod install --silent --jobs=4; then
-            echo "❌ Pod install failed"
-            exit 1
-          fi
+          pod install --silent || { echo "❌ Pod install failed"; exit 1; }
           echo "✅ Pods installed successfully"
           cd ../..
       - name: Run iOS flow
@@ -231,28 +222,19 @@ jobs:
           echo "Building iOS app..."
           # Note: Using Release builds to avoid Metro dependency in CI
           # Debug builds require Metro server, Release builds have JS bundled
-          if ! xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet; then
-            echo "❌ iOS build failed"
-            exit 1
-          fi
+          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
 
           # Install the app on simulator
           echo "Installing app on simulator..."
           APP_PATH=$(find app/ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -1)
-          if [ -z "$APP_PATH" ]; then
-            echo "❌ Could not find built iOS app"
-            exit 1
-          fi
+          [ -z "$APP_PATH" ] && { echo "❌ Could not find built iOS app"; exit 1; }
           echo "Found app at: $APP_PATH"
 
           # Dynamically determine the bundle ID from the built app
           echo "🔍 Determining app bundle ID from built app..."
           IOS_BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print CFBundleIdentifier" "$APP_PATH/Info.plist")
-          if [ -z "$IOS_BUNDLE_ID" ]; then
-            echo "❌ Could not determine bundle ID from $APP_PATH/Info.plist"
-            exit 1
-          fi
+          [ -z "$IOS_BUNDLE_ID" ] && { echo "❌ Could not determine bundle ID from $APP_PATH/Info.plist"; exit 1; }
           echo "✅ App Bundle ID: $IOS_BUNDLE_ID"
 
           # Uninstall any existing version first
