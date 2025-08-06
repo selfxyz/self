@@ -115,7 +115,7 @@ jobs:
           script: |
             echo "Building Android APK..."
             chmod +x app/android/gradlew
-            (cd app/android && ./gradlew assembleRelease --quiet --parallel --build-cache --configuration-cache) || { echo "❌ Android build failed"; exit 1; }
+            (cd app/android && ./gradlew assembleRelease --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
             echo "✅ Android build succeeded"
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
