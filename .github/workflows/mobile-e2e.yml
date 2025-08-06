@@ -234,6 +234,10 @@ jobs:
             echo "⚠️ Direct app launch test failed - this might be expected."
           }
 
+          # Give the simulator a moment to settle before running tests
+          echo "⏰ Giving the simulator a moment to settle..."
+          sleep 45
+
           # Run Maestro test on iOS
           echo "Running Maestro tests..."
           echo "Starting test execution..."

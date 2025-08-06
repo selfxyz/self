@@ -465,15 +465,9 @@ install_android_app() {
     EMULATOR_ID="${ANDROID_EMULATOR_ID:-emulator-5554}"
     log_info "Installing on emulator: $EMULATOR_ID"
 
-    # Check if fd is installed for robust aapt tool lookup
-    if ! command -v fd &> /dev/null; then
-        log_error "fd command not found. Please install fd (e.g., 'brew install fd' or 'apt-get install fd-find')."
-        echo "fd is required to dynamically find the 'aapt' tool in your Android SDK."
-        exit 1
-    fi
-
-    # Dynamically find the aapt tool path
-    AAPT_PATH=$(fd --type f --full-path "^aapt$" "$ANDROID_HOME/build-tools" | head -n 1)
+    # Dynamically find the latest 'aapt' tool path using 'find' and 'sort'
+    # This is more robust than relying on 'fd' and ensures we use the newest version.
+    AAPT_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt" | sort -r | head -n 1)
     if [ -z "$AAPT_PATH" ]; then
         log_error "aapt tool not found in $ANDROID_HOME/build-tools"
         echo "Please ensure your Android build-tools are installed correctly."
@@ -581,9 +575,10 @@ run_ios_tests() {
     MAESTRO_STATUS=$?
 
     log_success "Local iOS e2e testing completed!"
-    exit $MAESTRO_STATUS
 
     shutdown_all_simulators
+
+    exit $MAESTRO_STATUS
 }
 
 run_android_tests() {

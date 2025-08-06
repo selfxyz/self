@@ -1,5 +1,6 @@
 appId: com.proofofpassportapp
 ---
 - launchApp
-- assertVisible:
-    text: "I have a Passport or Biometric ID"
+- extendedWaitUntil:
+    visible: "I have a Passport or Biometric ID"
+    timeout: 20000
