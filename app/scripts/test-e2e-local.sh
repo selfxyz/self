@@ -151,7 +151,7 @@ run_maestro_tests() {
         else
             # Failed for a different reason, so don't retry
             log_error "Maestro tests failed for a reason other than driver timeout."
-            rm "$MAestro_OUTPUT_FILE"
+            rm "$MAESTRO_OUTPUT_FILE"
             return 1
         fi
     fi
