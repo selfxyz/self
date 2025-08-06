@@ -2,8 +2,9 @@
 
 import './logger/nativeLoggerBridge';
 
-import { configLoggerType, consoleTransport, logger } from 'react-native-logs';
+import { configLoggerType, logger } from 'react-native-logs';
 
+import { interceptConsole } from './logger/consoleInterceptor';
 import { lokiTransport } from './logger/lokiTransport';
 
 // Define log levels
@@ -14,18 +15,10 @@ export const logLevels = {
   error: 3,
 };
 
-const shouldUseLokiTransport = (): boolean => {
-  if (__DEV__) {
-    return false;
-  }
-  return true;
-};
-
 const defaultConfig: configLoggerType<any, any> = {
+  enabled: __DEV__ ? false : true,
   severity: __DEV__ ? 'debug' : 'warn', //TODO configure this using remote-config
-  transport: shouldUseLokiTransport()
-    ? [consoleTransport, lokiTransport]
-    : consoleTransport,
+  transport: [lokiTransport],
   transportOptions: {
     colors: {
       info: 'blueBright',
@@ -37,10 +30,12 @@ const defaultConfig: configLoggerType<any, any> = {
   dateFormat: 'time',
   printLevel: true,
   printDate: true,
-  enabled: true,
 };
 
 const Logger = logger.createLogger(defaultConfig);
+
+// Initialize console interceptor to route console logs to Loki
+interceptConsole();
 
 // loggers based on src/consts/analytics.ts
 const AppLogger = Logger.extend('APP');

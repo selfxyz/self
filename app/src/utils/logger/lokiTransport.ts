@@ -35,7 +35,6 @@ const sendBatch = async (
   batchToSend: LokiLogEntry[],
   namespace: string = 'default',
 ) => {
-  console.log('sendBatch', batchToSend, namespace);
   if (!GRAFANA_LOKI_URL || batchToSend.length === 0) {
     return;
   }
@@ -64,7 +63,7 @@ const sendBatch = async (
         values,
       }),
     );
-    console.log('streams', streams.values);
+
     const payload: LokiPayload = { streams };
 
     const headers: Record<string, string> = {
@@ -78,15 +77,11 @@ const sendBatch = async (
       headers.Authorization = `Basic ${auth}`;
     }
 
-    console.log('headers', headers);
-
     const response = await fetch(`${GRAFANA_LOKI_URL}/loki/api/v1/push`, {
       method: 'POST',
       headers,
       body: JSON.stringify(payload),
     });
-
-    console.log('response', response);
 
     if (!response.ok) {
       console.warn(
@@ -141,7 +136,7 @@ export const lokiTransport: transportFunctionType<any> = props => {
   const { msg, rawMsg, level, extension } = props;
 
   if (isCurrentPassportMockFlag) {
-    // return; // Skip Loki transport for mock passports
+    return; // Skip Loki transport for mock passports
   }
 
   // Extract namespace from extension
