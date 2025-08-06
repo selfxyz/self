@@ -55,6 +55,18 @@ import {
 
 import { unsafe_getPrivateKey, useAuth } from '../providers/authProvider';
 
+// Import testing utilities conditionally
+let clearDocumentCatalogForMigrationTesting: (() => Promise<void>) | undefined;
+if (__DEV__) {
+  try {
+    const testingUtils = require('../utils/testingUtils');
+    clearDocumentCatalogForMigrationTesting =
+      testingUtils.clearDocumentCatalogForMigrationTesting;
+  } catch (error) {
+    console.warn('Testing utilities not available:', error);
+  }
+}
+
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
 const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
@@ -150,7 +162,7 @@ export const PassportContext = createContext<IPassportContext>({
   migrateFromLegacyStorage: migrateFromLegacyStorage,
   getCurrentDocumentType: getCurrentDocumentType,
   clearDocumentCatalogForMigrationTesting:
-    clearDocumentCatalogForMigrationTesting,
+    clearDocumentCatalogForMigrationTesting || (() => Promise.resolve()),
   markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
   updateDocumentRegistrationState: updateDocumentRegistrationState,
   checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
@@ -211,7 +223,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       migrateFromLegacyStorage: migrateFromLegacyStorage,
       getCurrentDocumentType: getCurrentDocumentType,
       clearDocumentCatalogForMigrationTesting:
-        clearDocumentCatalogForMigrationTesting,
+        clearDocumentCatalogForMigrationTesting || (() => Promise.resolve()),
       markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
       updateDocumentRegistrationState: updateDocumentRegistrationState,
       checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
@@ -252,34 +264,8 @@ export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
   }
 }
 
-export async function clearDocumentCatalogForMigrationTesting() {
-  console.log('Clearing document catalog for migration testing...');
-  const catalog = await loadDocumentCatalog();
-
-  // Delete all new-style documents
-  for (const doc of catalog.documents) {
-    try {
-      await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
-      console.log(`Cleared document: ${doc.id}`);
-    } catch (error) {
-      console.log(`Document ${doc.id} not found or already cleared`);
-    }
-  }
-
-  // Clear the catalog itself
-  try {
-    await Keychain.resetGenericPassword({ service: 'documentCatalog' });
-    console.log('Cleared document catalog');
-  } catch (error) {
-    console.log('Document catalog not found or already cleared');
-  }
-
-  // Note: We intentionally do NOT clear legacy storage entries
-  // (passportData, mockPassportData, etc.) so migration can be tested
-  console.log(
-    'Document catalog cleared. Legacy storage preserved for migration testing.',
-  );
-}
+// clearDocumentCatalogForMigrationTesting has been moved to utils/testingUtils.ts
+// to prevent it from being included in production builds
 
 export async function clearPassportData() {
   const catalog = await loadDocumentCatalog();
@@ -694,7 +680,7 @@ interface IPassportContext {
   deleteDocument: (documentId: string) => Promise<void>;
   migrateFromLegacyStorage: () => Promise<void>;
   getCurrentDocumentType: () => Promise<string | null>;
-  clearDocumentCatalogForMigrationTesting: () => Promise<void>;
+  clearDocumentCatalogForMigrationTesting?: () => Promise<void>;
   markCurrentDocumentAsRegistered: () => Promise<void>;
   updateDocumentRegistrationState: (
     documentId: string,
