@@ -107,6 +107,7 @@ jobs:
         with:
           name: maestro-results-android
           path: app/maestro-results.xml
+          if-no-files: warn
 
   e2e-ios:
     timeout-minutes: 45
@@ -249,3 +250,4 @@ jobs:
         with:
           name: maestro-results-ios
           path: app/maestro-results.xml
+          if-no-files: warn

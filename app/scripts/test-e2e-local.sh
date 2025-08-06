@@ -436,9 +436,25 @@ install_android_app() {
     EMULATOR_ID="${ANDROID_EMULATOR_ID:-emulator-5554}"
     log_info "Installing on emulator: $EMULATOR_ID"
 
+    # Check if fd is installed for robust aapt tool lookup
+    if ! command -v fd &> /dev/null; then
+        log_error "fd command not found. Please install fd (e.g., 'brew install fd' or 'apt-get install fd-find')."
+        echo "fd is required to dynamically find the 'aapt' tool in your Android SDK."
+        exit 1
+    fi
+
+    # Dynamically find the aapt tool path
+    AAPT_PATH=$(fd --type f --full-path "^aapt$" "$ANDROID_HOME/build-tools" | head -n 1)
+    if [ -z "$AAPT_PATH" ]; then
+        log_error "aapt tool not found in $ANDROID_HOME/build-tools"
+        echo "Please ensure your Android build-tools are installed correctly."
+        exit 1
+    fi
+    log_info "Found aapt at: $AAPT_PATH"
+
     # Check the APK's actual package name
     echo "Checking APK package info:"
-    ACTUAL_PACKAGE=$("$ANDROID_HOME/build-tools/33.0.0/aapt" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed "s/.*name='\([^']*\)'.*/\1/" | head -1)
+    ACTUAL_PACKAGE=$("$AAPT_PATH" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed "s/.*name='\([^']*\)'.*/\1/" | head -1)
     if [ -n "$ACTUAL_PACKAGE" ]; then
         echo "APK package name: $ACTUAL_PACKAGE"
     else
