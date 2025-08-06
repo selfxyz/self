@@ -60,56 +60,6 @@ export const clearLocalOverride = async (
   }
 };
 
-export const clearAllLocalOverrides = async (
-  storage: StorageBackend,
-): Promise<void> => {
-  try {
-    await storage.removeItem(LOCAL_OVERRIDES_KEY);
-  } catch (error) {
-    console.error('Failed to clear all local overrides:', error);
-  }
-};
-
-export const initRemoteConfig = async (
-  remoteConfig: RemoteConfigBackend,
-): Promise<void> => {
-  await remoteConfig.setDefaults(defaultFlags);
-  await remoteConfig.setConfigSettings({
-    minimumFetchIntervalMillis: __DEV__ ? 0 : 3600000,
-  });
-  try {
-    await remoteConfig.fetchAndActivate();
-  } catch (err) {
-    console.error('Remote config fetch failed', err);
-  }
-};
-
-export const getFeatureFlag = async <T extends FeatureFlagValue>(
-  remoteConfig: RemoteConfigBackend,
-  storage: StorageBackend,
-  flag: string,
-  defaultValue: T,
-): Promise<T> => {
-  try {
-    // Check local overrides first
-    const localOverrides = await getLocalOverrides(storage);
-    if (Object.prototype.hasOwnProperty.call(localOverrides, flag)) {
-      return localOverrides[flag] as T;
-    }
-
-    // Return default value for string flags
-    if (typeof defaultValue === 'string') {
-      return defaultValue;
-    }
-
-    // Fall back to remote config for number and boolean flags
-    return getRemoteConfigValue(remoteConfig, flag, defaultValue) as T;
-  } catch (error) {
-    console.error('Failed to get feature flag:', error);
-    return defaultValue;
-  }
-};
-
 export const getAllFeatureFlags = async (
   remoteConfig: RemoteConfigBackend,
   storage: StorageBackend,
@@ -282,7 +232,7 @@ export const initRemoteConfig = async (
   try {
     await remoteConfig.fetchAndActivate();
   } catch (err) {
-    console.log('Remote config fetch failed', err);
+    console.error('Remote config fetch failed', err);
   }
 };
 
