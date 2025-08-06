@@ -7,7 +7,7 @@ env:
   ANDROID_API_LEVEL: 33
   ANDROID_NDK_VERSION: 27.0.11718014
   # Performance optimizations
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
   CI: true
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
@@ -31,9 +31,9 @@ jobs:
     # unresponsive, preventing Maestro from connecting. This needs further
     # investigation, but has been disabled to unblock the pipeline.
     # To test locally, run `./scripts/test-e2e-local.sh android --workflow-match`
-    if: false
+    # if: false
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
     timeout-minutes: 45
     runs-on: ubuntu-latest
@@ -82,8 +82,27 @@ jobs:
         with:
           accept-android-sdk-licenses: true
 
+      - name: Cache NDK
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
+          key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
       - name: Install NDK
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: Build dependencies (outside emulator)
+        run: |
+          echo "Building dependencies..."
+          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          echo "✅ Dependencies built successfully"
+      - name: Cache Android build
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/android/app/build
+            app/android/.gradle
+          key: ${{ runner.os }}-android-build-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-android-build-
       - name: Run Android flow
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -91,14 +110,37 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 6144
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
           disable-animations: true
           script: |
-            echo "Building dependencies..."
-            yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
-            echo "✅ Dependencies built successfully"
-            echo "Running Android E2E tests..."
-            cd app && chmod +x scripts/test-e2e-local.sh && ./scripts/test-e2e-local.sh android --workflow-match
+            echo "Building Android APK..."
+            cd app/android
+            if ! ./gradlew assembleRelease --quiet --parallel --build-cache --configuration-cache; then
+              echo "❌ Android build failed"
+              exit 1
+            fi
+            echo "✅ Android build succeeded"
+            cd ..
+
+            echo "Installing app on emulator..."
+            APK_PATH="android/app/build/outputs/apk/release/app-release.apk"
+            if [ ! -f "$APK_PATH" ]; then
+              echo "❌ APK not found at $APK_PATH"
+              exit 1
+            fi
+
+            # Install the app
+            adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
+            echo "✅ App installed successfully"
+
+            # Give emulator time to settle
+            echo "⏰ Giving the emulator a moment to settle..."
+            sleep 5
+
+            # Run Maestro tests
+            echo "🎭 Running Maestro tests..."
+            export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
+            maestro test tests/e2e/launch.android.flow.yaml --format junit --output maestro-results.xml
         env:
           E2E_BUILD: "true"
       - name: Upload test results
@@ -112,6 +154,9 @@ jobs:
   e2e-ios:
     timeout-minutes: 45
     runs-on: macos-latest
+    concurrency:
+      group: ${{ github.workflow }}-ios-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -154,21 +199,24 @@ jobs:
           key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-xcode-
-      - name: Run iOS flow
+      - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
-          yarn workspace @selfxyz/mobile-app run build:deps --silent;
-          if [ $? -ne 0 ]; then
-            echo "❌ Dependency build failed"
-            exit 1
-          fi
-          cd app/ios
+          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          echo "✅ Dependencies built successfully"
+      - name: Install iOS dependencies
+        run: |
           echo "Installing iOS dependencies..."
-          if ! pod install --silent; then
+          cd app/ios
+          # Use parallel pod install for faster execution
+          if ! pod install --silent --jobs=4; then
             echo "❌ Pod install failed"
             exit 1
           fi
+          echo "✅ Pods installed successfully"
           cd ../..
+      - name: Run iOS flow
+        run: |
 
           # Boot simulator and wait for it to be ready
           echo "Setting up iOS Simulator..."
@@ -234,9 +282,11 @@ jobs:
             echo "⚠️ Direct app launch test failed - this might be expected."
           }
 
-          # Give the simulator a moment to settle before running tests
-          echo "⏰ Giving the simulator a moment to settle..."
-          sleep 45
+          # Quick simulator readiness check (reduced from 45s)
+          echo "⏰ Checking simulator readiness..."
+          sleep 10
+          # Verify simulator is responsive
+          xcrun simctl listapps "iPhone 15" > /dev/null || sleep 5
 
           # Run Maestro test on iOS
           echo "Running Maestro tests..."
