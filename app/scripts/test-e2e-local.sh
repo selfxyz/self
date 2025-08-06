@@ -124,7 +124,7 @@ run_maestro_tests() {
     fi
 
     # Set a longer timeout for the driver to start, especially for the first run
-    export MAESTRO_DRIVER_STARTUP_TIMEOUT=90000 # 90 seconds in ms
+    export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 # 180 seconds (3 minutes) in ms
 
     # Attempt to run Maestro, capturing output to check for a specific error
     MAESTRO_OUTPUT_FILE=$(mktemp)
