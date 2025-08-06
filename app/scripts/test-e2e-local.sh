@@ -123,6 +123,9 @@ run_maestro_tests() {
         FLOW_FILE="tests/e2e/launch.android.flow.yaml"
     fi
 
+    # Set a longer timeout for the driver to start, especially for the first run
+    export MAESTRO_DRIVER_STARTUP_TIMEOUT=90000 # 90 seconds in ms
+
     # Attempt to run Maestro, capturing output to check for a specific error
     MAESTRO_OUTPUT_FILE=$(mktemp)
     if maestro test "$FLOW_FILE" --format junit --output maestro-results.xml > "$MAESTRO_OUTPUT_FILE" 2>&1; then
@@ -131,9 +134,9 @@ run_maestro_tests() {
         rm "$MAESTRO_OUTPUT_FILE"
         return 0
     else
-        # First attempt failed, check for the specific timeout error
+        # First attempt failed, check for known timeout errors
         cat "$MAESTRO_OUTPUT_FILE"
-        if grep -q "MaestroDriverStartupException" "$MAESTRO_OUTPUT_FILE"; then
+        if grep -q "MaestroDriverStartupException\|IOSDriverTimeoutException" "$MAESTRO_OUTPUT_FILE"; then
             log_warning "Maestro driver failed to start. Retrying in 30 seconds..."
             sleep 30
 
@@ -567,6 +570,10 @@ run_ios_tests() {
     setup_ios_simulator
     build_ios_app
     install_ios_app
+
+    log_info "⏰ Giving the simulator a moment to settle before starting tests..."
+    sleep 15
+
     run_maestro_tests
     MAESTRO_STATUS=$?
 
