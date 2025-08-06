@@ -31,7 +31,7 @@ jobs:
     # unresponsive, preventing Maestro from connecting. This needs further
     # investigation, but has been disabled to unblock the pipeline.
     # To test locally, run `./scripts/test-e2e-local.sh android --workflow-match`
-    # if: false
+    if: false
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
@@ -138,7 +138,7 @@ jobs:
 
             echo "🎭 Running Maestro tests..."
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
-            maestro test tests/e2e/launch.android.flow.yaml --format junit --output maestro-results.xml
+            maestro test tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
         env:
           E2E_BUILD: "true"
       - name: Upload test results

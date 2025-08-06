@@ -108,7 +108,10 @@ check_metro_running() {
 # Build dependencies (shared by both platforms)
 build_dependencies() {
     log_info "🔨 Building dependencies..."
-    yarn build:deps
+    if ! yarn build:deps; then
+        log_error "Dependency build failed"
+        exit 1
+    fi
 }
 
 # Run Maestro tests (shared by both platforms)
@@ -253,7 +256,7 @@ build_ios_app() {
         BUILD_CONFIG="Debug"
     fi
 
-    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="$BUILD_CONFIG E2E_TESTING"; then
+    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
         log_error "iOS build failed"
         exit 1
     fi
@@ -466,19 +469,20 @@ install_android_app() {
     log_info "Installing on emulator: $EMULATOR_ID"
 
     # Dynamically find the latest 'aapt' tool path and determine package name
-    # Prioritize 'aapt2' for reliability, then fall back to 'aapt'.
-    AAPT2_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt2" | sort -r | head -n 1)
-    if [ -n "$AAPT2_PATH" ]; then
-        log_info "Using aapt2 to get package name from $APK_PATH..."
-        ACTUAL_PACKAGE=$("$AAPT2_PATH" dump packagename "$APK_PATH" 2>/dev/null | head -1)
+    # First try 'aapt' (classic tool) for package name extraction, then fall back to 'aapt2' with supported commands
+    AAPT_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt" | sort -r | head -n 1)
+    if [ -n "$AAPT_PATH" ]; then
+        log_info "Using aapt to get package name from $APK_PATH..."
+        ACTUAL_PACKAGE=$("$AAPT_PATH" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed -E "s/.*name='([^']+)'.*/\1/" | head -1)
     else
-        log_warning "aapt2 not found, falling back to aapt..."
-        AAPT_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt" | sort -r | head -n 1)
-        if [ -n "$AAPT_PATH" ]; then
-            log_info "Found aapt at: $AAPT_PATH"
-            ACTUAL_PACKAGE=$("$AAPT_PATH" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed -E "s/.*name='([^']+)'.*/\1/" | head -1)
+        log_warning "aapt not found, trying aapt2..."
+        AAPT2_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt2" | sort -r | head -n 1)
+        if [ -n "$AAPT2_PATH" ]; then
+            log_info "Found aapt2 at: $AAPT2_PATH"
+            # aapt2 doesn't support 'dump packagename', so we'll use 'dump xmltree' to parse the manifest
+            ACTUAL_PACKAGE=$("$AAPT2_PATH" dump xmltree "$APK_PATH" AndroidManifest.xml 2>/dev/null | grep -A1 "package=" | grep "A:" | sed -E "s/.*A: package=\"([^\"]+)\".*/\1/" | head -1)
         else
-            log_error "Neither aapt2 nor aapt found in $ANDROID_HOME/build-tools"
+            log_error "Neither aapt nor aapt2 found in $ANDROID_HOME/build-tools"
             echo "Please ensure your Android build-tools are installed correctly."
             exit 1
         fi
@@ -560,7 +564,9 @@ cleanup_android_emulator() {
     fi
 
     # Also silence any remaining emulator processes that might be hanging
-    pkill -f "emulator.*$FIRST_AVD" >/dev/null 2>&1 || true
+    if [ -n "$FIRST_AVD" ]; then
+        pkill -f "emulator.*$FIRST_AVD" >/dev/null 2>&1 || true
+    fi
 }
 
 # Main platform runners
