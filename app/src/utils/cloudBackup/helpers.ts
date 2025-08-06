@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 import { CloudStorage, CloudStorageScope } from 'react-native-cloud-storage';
 
 import { name } from '../../../package.json';
-import { Mnemonic } from '../../types/mnemonic';
+import type { Mnemonic } from '../../types/mnemonic';
 
 export const FOLDER = `/${name}`;
 export const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;

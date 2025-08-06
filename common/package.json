@@ -23,11 +23,6 @@
       "import": "./dist/esm/src/constants/index.js",
       "require": "./dist/cjs/src/constants/index.cjs"
     },
-    "./constants/core": {
-      "types": "./dist/esm/src/constants/constants.d.ts",
-      "import": "./dist/esm/src/constants/constants.js",
-      "require": "./dist/cjs/src/constants/constants.cjs"
-    },
     "./constants/constants": {
       "types": "./dist/esm/src/constants/constants.d.ts",
       "import": "./dist/esm/src/constants/constants.js",
@@ -38,12 +33,12 @@
       "import": "./dist/esm/src/constants/countries.js",
       "require": "./dist/cjs/src/constants/countries.cjs"
     },
-    "./constants/hashes": {
+    "./constants/sampleDataHashes": {
       "types": "./dist/esm/src/constants/sampleDataHashes.d.ts",
       "import": "./dist/esm/src/constants/sampleDataHashes.js",
       "require": "./dist/cjs/src/constants/sampleDataHashes.cjs"
     },
-    "./constants/mockCerts": {
+    "./constants/mockCertificates": {
       "types": "./dist/esm/src/constants/mockCertificates.d.ts",
       "import": "./dist/esm/src/constants/mockCertificates.js",
       "require": "./dist/cjs/src/constants/mockCertificates.cjs"
@@ -111,30 +106,10 @@
       "import": "./dist/esm/src/utils/bytes.js",
       "require": "./dist/cjs/src/utils/bytes.cjs"
     },
-    "./utils/certificates": {
+    "./utils/certificate_parsing": {
       "types": "./dist/esm/src/utils/certificate_parsing/index.d.ts",
       "import": "./dist/esm/src/utils/certificate_parsing/index.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/index.cjs"
-    },
-    "./utils/certificates/certUtils": {
-      "types": "./dist/esm/src/utils/certificate_parsing/certUtils.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/certUtils.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/certUtils.cjs"
-    },
-    "./utils/certificates/curveUtils": {
-      "types": "./dist/esm/src/utils/certificate_parsing/curveUtils.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/curveUtils.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/curveUtils.cjs"
-    },
-    "./utils/certificates/ellipticInit": {
-      "types": "./dist/esm/src/utils/certificate_parsing/ellipticInit.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/ellipticInit.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/ellipticInit.cjs"
-    },
-    "./utils/certificates/oidUtils": {
-      "types": "./dist/esm/src/utils/certificate_parsing/oidUtils.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/oidUtils.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/oidUtils.cjs"
     },
     "./utils/certificate_parsing/elliptic": {
       "types": "./dist/esm/src/utils/certificate_parsing/elliptic.d.ts",
@@ -146,12 +121,12 @@
       "import": "./dist/esm/src/utils/certificate_parsing/parseCertificateSimple.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/parseCertificateSimple.cjs"
     },
-    "./utils/certificates/parseNode": {
+    "./utils/certificate_parsing/parseNode": {
       "types": "./dist/esm/src/utils/certificate_parsing/parseNode.d.ts",
       "import": "./dist/esm/src/utils/certificate_parsing/parseNode.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/parseNode.cjs"
     },
-    "./utils/certificates/parseSimple": {
+    "./utils/certificate_parsing/parseSimple": {
       "types": "./dist/esm/src/utils/certificate_parsing/parseSimple.d.ts",
       "import": "./dist/esm/src/utils/certificate_parsing/parseSimple.js",
       "require": "./dist/cjs/src/utils/certificate_parsing/parseSimple.cjs"
@@ -160,11 +135,6 @@
       "types": "./dist/esm/src/utils/circuits/index.d.ts",
       "import": "./dist/esm/src/utils/circuits/index.js",
       "require": "./dist/cjs/src/utils/circuits/index.cjs"
-    },
-    "./utils/circuitNames": {
-      "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
-      "import": "./dist/esm/src/utils/circuits/circuitsName.js",
-      "require": "./dist/cjs/src/utils/circuits/circuitsName.cjs"
     },
     "./utils/circuits/circuitsName": {
       "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
@@ -216,25 +186,20 @@
       "import": "./dist/esm/src/utils/contracts/index.js",
       "require": "./dist/cjs/src/utils/contracts/index.cjs"
     },
+    "./utils/contracts/forbiddenCountries": {
+      "types": "./dist/esm/src/utils/contracts/forbiddenCountries.d.ts",
+      "import": "./dist/esm/src/utils/contracts/forbiddenCountries.js",
+      "require": "./dist/cjs/src/utils/contracts/forbiddenCountries.cjs"
+    },
     "./utils/csca": {
       "types": "./dist/esm/src/utils/csca.d.ts",
       "import": "./dist/esm/src/utils/csca.js",
       "require": "./dist/cjs/src/utils/csca.cjs"
     },
-    "./utils/curves": {
-      "types": "./dist/esm/src/utils/certificate_parsing/curves.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/curves.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/curves.cjs"
-    },
     "./utils/date": {
       "types": "./dist/esm/src/utils/date.d.ts",
       "import": "./dist/esm/src/utils/date.js",
       "require": "./dist/cjs/src/utils/date.cjs"
-    },
-    "./utils/elliptic": {
-      "types": "./dist/esm/src/utils/certificate_parsing/elliptic.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/elliptic.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/elliptic.cjs"
     },
     "./utils/hash": {
       "types": "./dist/esm/src/utils/hash.d.ts",
@@ -255,26 +220,6 @@
       "types": "./dist/esm/src/utils/hash/sha.d.ts",
       "import": "./dist/esm/src/utils/hash/sha.js",
       "require": "./dist/cjs/src/utils/hash/sha.cjs"
-    },
-    "./utils/oids": {
-      "types": "./dist/esm/src/utils/certificate_parsing/oids.d.ts",
-      "import": "./dist/esm/src/utils/certificate_parsing/oids.js",
-      "require": "./dist/cjs/src/utils/certificate_parsing/oids.cjs"
-    },
-    "./utils/passportDg1": {
-      "types": "./dist/esm/src/utils/passports/dg1.d.ts",
-      "import": "./dist/esm/src/utils/passports/dg1.js",
-      "require": "./dist/cjs/src/utils/passports/dg1.cjs"
-    },
-    "./utils/passportFormat": {
-      "types": "./dist/esm/src/utils/passports/format.d.ts",
-      "import": "./dist/esm/src/utils/passports/format.js",
-      "require": "./dist/cjs/src/utils/passports/format.cjs"
-    },
-    "./utils/passportMock": {
-      "types": "./dist/esm/src/utils/passports/mock.d.ts",
-      "import": "./dist/esm/src/utils/passports/mock.js",
-      "require": "./dist/cjs/src/utils/passports/mock.cjs"
     },
     "./utils/passports": {
       "types": "./dist/esm/src/utils/passports/index.d.ts",
@@ -336,11 +281,6 @@
       "import": "./dist/esm/src/utils/passports/passport_parsing/parseDscCertificateData.js",
       "require": "./dist/cjs/src/utils/passports/passport_parsing/parseDscCertificateData.cjs"
     },
-    "./utils/sanctions": {
-      "types": "./dist/esm/src/utils/contracts/forbiddenCountries.d.ts",
-      "import": "./dist/esm/src/utils/contracts/forbiddenCountries.js",
-      "require": "./dist/cjs/src/utils/contracts/forbiddenCountries.cjs"
-    },
     "./utils/scope": {
       "types": "./dist/esm/src/utils/scope.d.ts",
       "import": "./dist/esm/src/utils/scope.js",
@@ -350,6 +290,21 @@
       "types": "./dist/esm/src/utils/trees.d.ts",
       "import": "./dist/esm/src/utils/trees.js",
       "require": "./dist/cjs/src/utils/trees.cjs"
+    },
+    "./utils/certificates/parseSimple": {
+      "types": "./dist/esm/src/utils/certificate_parsing/parseSimple.d.ts",
+      "import": "./dist/esm/src/utils/certificate_parsing/parseSimple.js",
+      "require": "./dist/cjs/src/utils/certificate_parsing/parseSimple.cjs"
+    },
+    "./utils/circuitNames": {
+      "types": "./dist/esm/src/utils/circuits/circuitsName.d.ts",
+      "import": "./dist/esm/src/utils/circuits/circuitsName.js",
+      "require": "./dist/cjs/src/utils/circuits/circuitsName.cjs"
+    },
+    "./utils/passportFormat": {
+      "types": "./dist/esm/src/utils/passports/format.d.ts",
+      "import": "./dist/esm/src/utils/passports/format.js",
+      "require": "./dist/cjs/src/utils/passports/format.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -367,10 +322,14 @@
     "build:watch": "tsup --watch",
     "format": "prettier --write .",
     "lint": "prettier --check .",
+    "lint:imports": "eslint . --fix",
+    "lint:imports:check": "eslint .",
+    "nice": "yarn format && yarn lint:imports",
+    "nice:check": "yarn lint && yarn lint:imports:check",
     "prepublishOnly": "yarn build",
     "test": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/**/*.test.ts --exit",
     "test-base": "yarn ts-mocha -n import=tsx --max-old-space-size=8192 --paths -p tsconfig.json",
-    "test:exports": "node scripts/testExports.js",
+    "test:exports": "node scripts/validateExports.js && node scripts/testExports.js",
     "test:scope": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/scope.test.ts --exit",
     "types": "tsc -p tsconfig.json"
   },
@@ -405,6 +364,14 @@
   "devDependencies": {
     "@types/js-sha1": "^0.6.3",
     "@types/node-forge": "^1.3.10",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-sort-exports": "^0.9.1",
     "mocha": "^10.7.3",
     "prettier": "^3.3.3",
     "ts-mocha": "^10.0.0",

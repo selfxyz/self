@@ -1,5 +1,5 @@
+import type { CertificateData } from './dataStructure.js';
 import { parseCertificateSimple } from './parseCertificateSimple.js';
-import { CertificateData } from './dataStructure.js';
 
 export async function parseCertificate(pem: string, fileName: string): Promise<CertificateData> {
   // Check if we're in a Node.js environment

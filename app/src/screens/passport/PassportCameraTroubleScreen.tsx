@@ -2,7 +2,8 @@
 
 import React, { useEffect } from 'react';
 
-import Tips, { TipProps } from '../../components/Tips';
+import type { TipProps } from '../../components/Tips';
+import Tips from '../../components/Tips';
 import { Caption } from '../../components/typography/Caption';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Activity from '../../images/icons/activity.svg';

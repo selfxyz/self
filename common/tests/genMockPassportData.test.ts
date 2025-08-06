@@ -1,8 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
+
 import { genAndInitMockPassportData } from '../src/utils/passports/genMockPassportData.js';
 import { parsePassportData } from '../src/utils/passports/passport_parsing/parsePassportData.js';
-import { PassportData, SignatureAlgorithm } from '../src/utils/types.js';
+import type { PassportData, SignatureAlgorithm } from '../src/utils/types.js';
 
 const testCases = [
   { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'rsa_sha1_65537_2048' },

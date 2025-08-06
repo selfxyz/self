@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect } from 'react';
 
-import { extractMRZInfo } from '../../utils/utils';
+import type { extractMRZInfo } from '../../utils/utils';
 
 // TODO: Web find a lightweight ocr or mrz scanner.
 

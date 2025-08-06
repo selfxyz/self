@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import Clipboard from '@react-native-clipboard/clipboard';
-import { useNavigation } from '@react-navigation/native';
 import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
@@ -26,6 +24,9 @@ import {
   white,
 } from '../../utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
+
+import Clipboard from '@react-native-clipboard/clipboard';
+import { useNavigation } from '@react-navigation/native';
 
 interface RecoverWithPhraseScreenProps {}
 

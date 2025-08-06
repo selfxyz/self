@@ -1,52 +1,18 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import messaging from '@react-native-firebase/messaging';
 import { PermissionsAndroid, Platform } from 'react-native';
 
+import type {
+  DeviceTokenRegistration,
+  RemoteMessage,
+} from './notificationService.shared';
 import {
   API_URL,
   API_URL_STAGING,
-  DeviceTokenRegistration,
   getStateMessage,
-  RemoteMessage,
 } from './notificationService.shared';
 
-export { getStateMessage };
-// Determine if running in test environment
-const isTestEnv = process.env.NODE_ENV === 'test';
-const log = (...args: any[]) => {
-  if (!isTestEnv) console.log(...args);
-};
-const error = (...args: any[]) => {
-  if (!isTestEnv) console.error(...args);
-};
-
-export async function requestNotificationPermission(): Promise<boolean> {
-  try {
-    if (Platform.OS === 'android') {
-      if (Platform.Version >= 33) {
-        const permission = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-        );
-        if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
-          log('Notification permission denied');
-          return false;
-        }
-      }
-    }
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    log('Notification permission status:', enabled);
-
-    return enabled;
-  } catch (err) {
-    error('Failed to request notification permission:', err);
-    return false;
-  }
-}
+import messaging from '@react-native-firebase/messaging';
 
 export async function getFCMToken(): Promise<string | null> {
   try {
@@ -61,6 +27,16 @@ export async function getFCMToken(): Promise<string | null> {
     return null;
   }
 }
+// Determine if running in test environment
+const isTestEnv = process.env.NODE_ENV === 'test';
+const log = (...args: any[]) => {
+  if (!isTestEnv) console.log(...args);
+};
+const error = (...args: any[]) => {
+  if (!isTestEnv) console.error(...args);
+};
+
+export { getStateMessage };
 
 export async function registerDeviceToken(
   sessionId: string,
@@ -112,6 +88,33 @@ export async function registerDeviceToken(
     }
   } catch (err) {
     error('Error registering device token:', err);
+  }
+}
+
+export async function requestNotificationPermission(): Promise<boolean> {
+  try {
+    if (Platform.OS === 'android') {
+      if (Platform.Version >= 33) {
+        const permission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
+        if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
+          log('Notification permission denied');
+          return false;
+        }
+      }
+    }
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    log('Notification permission status:', enabled);
+
+    return enabled;
+  } catch (err) {
+    error('Failed to request notification permission:', err);
+    return false;
   }
 }
 

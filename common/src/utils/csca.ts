@@ -1,58 +1,6 @@
 import { API_URL, API_URL_STAGING } from '../constants/constants.js';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem.js';
 
-export function findStartIndexEC(point: string, messagePadded: number[]): [number, number] {
-  const pointNumArray = [];
-  for (let i = 0; i < point.length; i += 2) {
-    pointNumArray.push(parseInt(point.slice(i, i + 2), 16));
-  }
-
-  let startIndex = -1;
-
-  for (let i = 0; i < messagePadded.length - pointNumArray.length + 1; i++) {
-    const isMatch = pointNumArray.every((byte, j) => messagePadded[i + j] === byte);
-    if (isMatch) {
-      startIndex = i;
-      break;
-    }
-  }
-
-  if (startIndex === -1) {
-    throw new Error('DSC Pubkey not found in CSCA certificate');
-  }
-  return [startIndex, pointNumArray.length];
-}
-
-// @returns [startIndex, length] where startIndex is the index of the first byte of the modulus in the message and length is the length of the modulus in bytes
-export function findStartIndex(modulus: string, messagePaddedNumber: number[]): [number, number] {
-  const modulusNumArray = [];
-  for (let i = 0; i < modulus.length; i += 2) {
-    const hexPair = modulus.slice(i, i + 2);
-    const number = parseInt(hexPair, 16);
-    modulusNumArray.push(number);
-  }
-
-  // console.log('Modulus length:', modulusNumArray.length);
-  // console.log('Message length:', messagePaddedNumber.length);
-  // console.log('Modulus (hex):', modulusNumArray.map(n => n.toString(16).padStart(2, '0')).join(''));
-  // console.log('Message (hex):', messagePaddedNumber.map(n => n.toString(16).padStart(2, '0')).join(''));
-
-  for (let i = 0; i < messagePaddedNumber.length - modulusNumArray.length + 1; i++) {
-    let matched = true;
-    for (let j = 0; j < modulusNumArray.length; j++) {
-      if (modulusNumArray[j] !== messagePaddedNumber[i + j]) {
-        matched = false;
-        break;
-      }
-    }
-    if (matched) {
-      return [i, modulusNumArray.length];
-    }
-  }
-
-  throw new Error('DSC Pubkey not found in certificate');
-}
-
 export function findOIDPosition(
   oid: string,
   message: number[]
@@ -66,7 +14,7 @@ export function findOIDPosition(
   // Convert remaining parts to ASN.1 DER encoding
   for (let i = 2; i < oidParts.length; i++) {
     let value = oidParts[i];
-    let bytes = [];
+    const bytes = [];
 
     // Handle multi-byte values
     if (value >= 128) {
@@ -119,6 +67,58 @@ export function findOIDPosition(
   }
 
   throw new Error('OID not found in message');
+}
+
+// @returns [startIndex, length] where startIndex is the index of the first byte of the modulus in the message and length is the length of the modulus in bytes
+export function findStartIndex(modulus: string, messagePaddedNumber: number[]): [number, number] {
+  const modulusNumArray = [];
+  for (let i = 0; i < modulus.length; i += 2) {
+    const hexPair = modulus.slice(i, i + 2);
+    const number = parseInt(hexPair, 16);
+    modulusNumArray.push(number);
+  }
+
+  // console.log('Modulus length:', modulusNumArray.length);
+  // console.log('Message length:', messagePaddedNumber.length);
+  // console.log('Modulus (hex):', modulusNumArray.map(n => n.toString(16).padStart(2, '0')).join(''));
+  // console.log('Message (hex):', messagePaddedNumber.map(n => n.toString(16).padStart(2, '0')).join(''));
+
+  for (let i = 0; i < messagePaddedNumber.length - modulusNumArray.length + 1; i++) {
+    let matched = true;
+    for (let j = 0; j < modulusNumArray.length; j++) {
+      if (modulusNumArray[j] !== messagePaddedNumber[i + j]) {
+        matched = false;
+        break;
+      }
+    }
+    if (matched) {
+      return [i, modulusNumArray.length];
+    }
+  }
+
+  throw new Error('DSC Pubkey not found in certificate');
+}
+
+export function findStartIndexEC(point: string, messagePadded: number[]): [number, number] {
+  const pointNumArray = [];
+  for (let i = 0; i < point.length; i += 2) {
+    pointNumArray.push(parseInt(point.slice(i, i + 2), 16));
+  }
+
+  let startIndex = -1;
+
+  for (let i = 0; i < messagePadded.length - pointNumArray.length + 1; i++) {
+    const isMatch = pointNumArray.every((byte, j) => messagePadded[i + j] === byte);
+    if (isMatch) {
+      startIndex = i;
+      break;
+    }
+  }
+
+  if (startIndex === -1) {
+    throw new Error('DSC Pubkey not found in CSCA certificate');
+  }
+  return [startIndex, pointNumArray.length];
 }
 
 export function getCSCAFromSKI(ski: string, skiPem: any = null): string {

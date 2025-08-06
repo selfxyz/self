@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 
@@ -24,6 +23,8 @@ import analytics from '../../utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
+
+import { useNavigation } from '@react-navigation/native';
 
 const { trackEvent } = analytics();
 

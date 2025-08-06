@@ -1,24 +1,22 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useNavigation } from '@react-navigation/native';
-import { Check, ChevronDown, Eraser } from '@tamagui/lucide-icons';
-import React, {
-  PropsWithChildren,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { Alert, Platform, StyleProp, TextInput } from 'react-native';
+import type { PropsWithChildren } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import type { StyleProp } from 'react-native';
+import { Alert, Platform, TextInput } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
-import { RootStackParamList } from '../../navigation';
+import type { RootStackParamList } from '../../navigation';
 import {
   unsafe_clearSecrets,
   unsafe_getPrivateKey,
 } from '../../providers/authProvider';
 import { usePassport } from '../../providers/passportDataProvider';
 import { textBlack } from '../../utils/colors';
+
+import { useNavigation } from '@react-navigation/native';
+import { Check, ChevronDown, Eraser } from '@tamagui/lucide-icons';
+
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
   width?: number;

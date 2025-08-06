@@ -1,43 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import type { DeviceTokenRegistration } from './notificationService.shared';
 import {
   API_URL,
   API_URL_STAGING,
-  DeviceTokenRegistration,
   getStateMessage,
 } from './notificationService.shared';
-
-// TODO: web handle notifications better. this file is more or less a fancy placeholder
-
-export { getStateMessage };
-
-export async function requestNotificationPermission(): Promise<boolean> {
-  try {
-    if (!('Notification' in window)) {
-      console.log('This browser does not support notifications');
-      return false;
-    }
-
-    if (Notification.permission === 'granted') {
-      console.log('Notification permission already granted');
-      return true;
-    }
-
-    if (Notification.permission === 'denied') {
-      console.log('Notification permission denied');
-      return false;
-    }
-
-    const permission = await Notification.requestPermission();
-    const enabled = permission === 'granted';
-
-    console.log('Notification permission status:', enabled);
-    return enabled;
-  } catch (error) {
-    console.error('Failed to request notification permission:', error);
-    return false;
-  }
-}
 
 export async function getFCMToken(): Promise<string | null> {
   try {
@@ -64,6 +32,9 @@ export async function getFCMToken(): Promise<string | null> {
     return null;
   }
 }
+
+// TODO: web handle notifications better. this file is more or less a fancy placeholder
+export { getStateMessage };
 
 export async function registerDeviceToken(
   sessionId: string,
@@ -123,6 +94,34 @@ export async function registerDeviceToken(
     }
   } catch (error) {
     console.error('Error registering device token:', error);
+  }
+}
+
+export async function requestNotificationPermission(): Promise<boolean> {
+  try {
+    if (!('Notification' in window)) {
+      console.log('This browser does not support notifications');
+      return false;
+    }
+
+    if (Notification.permission === 'granted') {
+      console.log('Notification permission already granted');
+      return true;
+    }
+
+    if (Notification.permission === 'denied') {
+      console.log('Notification permission denied');
+      return false;
+    }
+
+    const permission = await Notification.requestPermission();
+    const enabled = permission === 'granted';
+
+    console.log('Notification permission status:', enabled);
+    return enabled;
+  } catch (error) {
+    console.error('Failed to request notification permission:', error);
+    return false;
   }
 }
 

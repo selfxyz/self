@@ -10,7 +10,7 @@ export function initElliptic(): typeof elliptic {
       configurable: true,
       enumerable: true,
       get: function () {
-        var curve = new PresetCurve(options);
+        const curve = new PresetCurve(options);
         Object.defineProperty(curves, name, {
           configurable: true,
           enumerable: true,

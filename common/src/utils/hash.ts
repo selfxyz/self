@@ -1,3 +1,9 @@
+import { ethers } from 'ethers';
+// @ts-ignore - ESLint incorrectly flags this as needing default import, but TypeScript definitions use named export
+import { sha1 } from 'js-sha1';
+import { sha224, sha256 } from 'js-sha256';
+import { sha384, sha512 } from 'js-sha512';
+import * as forge from 'node-forge';
 import {
   poseidon1,
   poseidon2,
@@ -16,13 +22,49 @@ import {
   poseidon15,
   poseidon16,
 } from 'poseidon-lite';
-import { sha224, sha256 } from 'js-sha256';
-// @ts-ignore - ESLint incorrectly flags this as needing default import, but TypeScript definitions use named export
-import { sha1 } from 'js-sha1';
-import { sha384, sha512 } from 'js-sha512';
+
 import { hexToSignedBytes, packBytesArray } from './bytes.js';
-import * as forge from 'node-forge';
-import { ethers } from 'ethers';
+
+export function calculateUserIdentifierHash(
+  destChainID: number,
+  userID: string,
+  userDefinedData: string
+): BigInt {
+  const solidityPackedUserContextData = getSolidityPackedUserContextData(
+    destChainID,
+    userID,
+    userDefinedData
+  );
+  const inputBytes = Buffer.from(solidityPackedUserContextData.slice(2), 'hex');
+  const sha256Hash = ethers.sha256(inputBytes);
+  const ripemdHash = ethers.ripemd160(sha256Hash);
+  return BigInt(ripemdHash);
+}
+
+export function customHasher(pubKeyFormatted: string[]) {
+  if (pubKeyFormatted.length < 16) {
+    // if k is less than 16, we can use a single poseidon hash
+    return flexiblePoseidon(pubKeyFormatted.map(BigInt)).toString();
+  } else {
+    const rounds = Math.ceil(pubKeyFormatted.length / 16); // do up to 16 rounds of poseidon
+    if (rounds > 16) {
+      throw new Error('Number of rounds is greater than 16');
+    }
+    const hash = new Array(rounds);
+    for (let i = 0; i < rounds; i++) {
+      hash[i] = { inputs: new Array(16).fill(BigInt(0)) };
+    }
+    for (let i = 0; i < rounds; i++) {
+      for (let j = 0; j < 16; j++) {
+        if (i * 16 + j < pubKeyFormatted.length) {
+          hash[i].inputs[j] = BigInt(pubKeyFormatted[i * 16 + j]);
+        }
+      }
+    }
+    const finalHash = flexiblePoseidon(hash.map((h) => poseidon16(h.inputs)));
+    return finalHash.toString();
+  }
+}
 
 export function flexiblePoseidon(inputs: bigint[]): bigint {
   switch (inputs.length) {
@@ -61,6 +103,40 @@ export function flexiblePoseidon(inputs: bigint[]): bigint {
     default:
       throw new Error(`Unsupported number of inputs: ${inputs.length}`);
   }
+}
+
+export function getHashLen(hashFunction: string) {
+  switch (hashFunction) {
+    case 'sha1':
+      return 20;
+    case 'sha224':
+      return 28;
+    case 'sha256':
+      return 32;
+    case 'sha384':
+      return 48;
+    case 'sha512':
+      return 64;
+    default:
+      console.log(`${hashFunction} not found in getHashLen`);
+      return 32;
+  }
+}
+
+export function getSolidityPackedUserContextData(
+  destChainID: number,
+  userID: string,
+  userDefinedData: string
+): string {
+  const userIdHex = userID.replace(/-/g, '');
+  return ethers.solidityPacked(
+    ['bytes32', 'bytes32', 'bytes'],
+    [
+      ethers.zeroPadValue(ethers.toBeHex(destChainID), 32),
+      ethers.zeroPadValue('0x' + userIdHex, 32),
+      ethers.toUtf8Bytes(userDefinedData),
+    ]
+  );
 }
 
 // hash function - crypto is not supported in react native
@@ -105,82 +181,7 @@ export function hash(
   throw new Error(`Invalid format: ${format}`);
 }
 
-export function getHashLen(hashFunction: string) {
-  switch (hashFunction) {
-    case 'sha1':
-      return 20;
-    case 'sha224':
-      return 28;
-    case 'sha256':
-      return 32;
-    case 'sha384':
-      return 48;
-    case 'sha512':
-      return 64;
-    default:
-      console.log(`${hashFunction} not found in getHashLen`);
-      return 32;
-  }
-}
-
-export function customHasher(pubKeyFormatted: string[]) {
-  if (pubKeyFormatted.length < 16) {
-    // if k is less than 16, we can use a single poseidon hash
-    return flexiblePoseidon(pubKeyFormatted.map(BigInt)).toString();
-  } else {
-    const rounds = Math.ceil(pubKeyFormatted.length / 16); // do up to 16 rounds of poseidon
-    if (rounds > 16) {
-      throw new Error('Number of rounds is greater than 16');
-    }
-    const hash = new Array(rounds);
-    for (let i = 0; i < rounds; i++) {
-      hash[i] = { inputs: new Array(16).fill(BigInt(0)) };
-    }
-    for (let i = 0; i < rounds; i++) {
-      for (let j = 0; j < 16; j++) {
-        if (i * 16 + j < pubKeyFormatted.length) {
-          hash[i].inputs[j] = BigInt(pubKeyFormatted[i * 16 + j]);
-        }
-      }
-    }
-    const finalHash = flexiblePoseidon(hash.map((h) => poseidon16(h.inputs)));
-    return finalHash.toString();
-  }
-}
-
 export function packBytesAndPoseidon(unpacked: number[]) {
   const packed = packBytesArray(unpacked);
   return customHasher(packed.map(String)).toString();
-}
-
-export function calculateUserIdentifierHash(
-  destChainID: number,
-  userID: string,
-  userDefinedData: string
-): BigInt {
-  const solidityPackedUserContextData = getSolidityPackedUserContextData(
-    destChainID,
-    userID,
-    userDefinedData
-  );
-  const inputBytes = Buffer.from(solidityPackedUserContextData.slice(2), 'hex');
-  const sha256Hash = ethers.sha256(inputBytes);
-  const ripemdHash = ethers.ripemd160(sha256Hash);
-  return BigInt(ripemdHash);
-}
-
-export function getSolidityPackedUserContextData(
-  destChainID: number,
-  userID: string,
-  userDefinedData: string
-): string {
-  const userIdHex = userID.replace(/-/g, '');
-  return ethers.solidityPacked(
-    ['bytes32', 'bytes32', 'bytes'],
-    [
-      ethers.zeroPadValue(ethers.toBeHex(destChainID), 32),
-      ethers.zeroPadValue('0x' + userIdHex, 32),
-      ethers.toUtf8Bytes(userDefinedData),
-    ]
-  );
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { SMT } from '@openpassport/zk-kit-smt';
+import { poseidon2 } from 'poseidon-lite';
+
 import {
   attributeToPosition,
   attributeToPosition_ID,
@@ -19,22 +19,11 @@ import {
   getCircuitNameFromPassportData,
   hashEndpointWithScope,
 } from '@selfxyz/common/utils';
-import { poseidon2 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';
 
-export function generateTEEInputsRegister(
-  secret: string,
-  passportData: PassportData,
-  dscTree: string,
-  env: 'prod' | 'stg',
-) {
-  const inputs = generateCircuitInputsRegister(secret, passportData, dscTree);
-  const circuitName = getCircuitNameFromPassportData(passportData, 'register');
-  const endpointType = env === 'stg' ? 'staging_celo' : 'celo';
-  const endpoint = 'https://self.xyz';
-  return { inputs, circuitName, endpointType, endpoint };
-}
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
 
 export function generateTEEInputsDSC(
   passportData: PassportData,
@@ -113,6 +102,19 @@ export function generateTEEInputsDisclose(
     endpointType: selfApp.endpointType,
     endpoint: selfApp.endpoint,
   };
+}
+
+export function generateTEEInputsRegister(
+  secret: string,
+  passportData: PassportData,
+  dscTree: string,
+  env: 'prod' | 'stg',
+) {
+  const inputs = generateCircuitInputsRegister(secret, passportData, dscTree);
+  const circuitName = getCircuitNameFromPassportData(passportData, 'register');
+  const endpointType = env === 'stg' ? 'staging_celo' : 'celo';
+  const endpoint = 'https://self.xyz';
+  return { inputs, circuitName, endpointType, endpoint };
 }
 
 /*** DISCLOSURE ***/

@@ -1,6 +1,5 @@
-import { formatName } from './format.js';
-import { formatDG1Attribute } from './format.js';
-import { IdDocInput } from './genMockIdDoc.js';
+import { formatDG1Attribute, formatName } from './format.js';
+import type { IdDocInput } from './genMockIdDoc.js';
 
 export function genDG1(idDocInput: IdDocInput) {
   switch (idDocInput.idType) {

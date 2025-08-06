@@ -58,34 +58,6 @@ const validateAndSanitizeParam = (
   return decodedValue;
 };
 
-/**
- * Parses and validates query parameters from a URL
- * @param uri - The URL to parse
- * @returns Validated and sanitized parameters
- */
-export const parseAndValidateUrlParams = (uri: string): ValidatedParams => {
-  // Parse the URL directly without pre-decoding to avoid issues with fragment separators
-  const parsed = parseUrl(uri);
-  const query = parsed.query || {};
-
-  const validatedParams: ValidatedParams = {};
-
-  // Only process expected parameters and validate them
-  for (const [key, value] of Object.entries(query)) {
-    if (key in VALIDATION_PATTERNS && typeof value === 'string') {
-      const sanitizedValue = validateAndSanitizeParam(key, value);
-      if (sanitizedValue !== undefined) {
-        validatedParams[key as keyof ValidatedParams] = sanitizedValue;
-      }
-    } else if (typeof __DEV__ !== 'undefined' && __DEV__) {
-      // Log unexpected parameters in development
-      console.warn(`Unexpected or invalid parameter ignored: ${key}`);
-    }
-  }
-
-  return validatedParams;
-};
-
 export const handleUrl = (uri: string) => {
   const validatedParams = parseAndValidateUrlParams(uri);
   const { sessionId, selfApp: selfAppStr, mock_passport } = validatedParams;
@@ -144,6 +116,34 @@ export const handleUrl = (uri: string) => {
     }
     navigationRef.navigate('QRCodeTrouble');
   }
+};
+
+/**
+ * Parses and validates query parameters from a URL
+ * @param uri - The URL to parse
+ * @returns Validated and sanitized parameters
+ */
+export const parseAndValidateUrlParams = (uri: string): ValidatedParams => {
+  // Parse the URL directly without pre-decoding to avoid issues with fragment separators
+  const parsed = parseUrl(uri);
+  const query = parsed.query || {};
+
+  const validatedParams: ValidatedParams = {};
+
+  // Only process expected parameters and validate them
+  for (const [key, value] of Object.entries(query)) {
+    if (key in VALIDATION_PATTERNS && typeof value === 'string') {
+      const sanitizedValue = validateAndSanitizeParam(key, value);
+      if (sanitizedValue !== undefined) {
+        validatedParams[key as keyof ValidatedParams] = sanitizedValue;
+      }
+    } else if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      // Log unexpected parameters in development
+      console.warn(`Unexpected or invalid parameter ignored: ${key}`);
+    }
+  }
+
+  return validatedParams;
 };
 
 export const setupUniversalLinkListenerInNavigation = () => {

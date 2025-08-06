@@ -1,17 +1,51 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import forge from 'node-forge';
+
 import {
   WS_DB_RELAYER,
   WS_DB_RELAYER_STAGING,
 } from '@selfxyz/common/constants';
 import type { EndpointType } from '@selfxyz/common/utils';
 import { initElliptic } from '@selfxyz/common/utils';
-import forge from 'node-forge';
 
 const elliptic = initElliptic();
 const { ec: EC } = elliptic;
+// Use a consistent client keypair for the session
+export type TEEPayload = TEEPayloadBase & {
+  type: RegisterProofType | DscProofType;
+  onchain: true;
+};
+
+export type TEEPayloadBase = {
+  endpointType: EndpointType;
+  circuit: {
+    name: string;
+    inputs: string;
+  };
+};
+export type TEEPayloadDisclose = TEEPayloadBase & {
+  type: DiscloseProofType;
+  onchain: boolean;
+  endpoint: string;
+  userDefinedData: string;
+  version: number;
+};
+
 export const ec = new EC('p256');
-export const clientKey = ec.genKeyPair(); // Use a consistent client keypair for the session
+
+export const clientKey = ec.genKeyPair();
+
+type RegisterSuffixes = '' | '_id';
+type DscSuffixes = '' | '_id';
+type DiscloseSuffixes = '' | '_id';
+type ProofTypes = 'register' | 'dsc' | 'disclose';
+type RegisterProofType =
+  `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
+type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
+type DiscloseProofType =
+  `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
+
 export const clientPublicKeyHex =
   clientKey.getPublic().getX().toString('hex').padStart(64, '0') +
   clientKey.getPublic().getY().toString('hex').padStart(64, '0');
@@ -33,37 +67,6 @@ export function encryptAES256GCM(
     auth_tag: Array.from(Buffer.from(authTag, 'binary')),
   };
 }
-
-type RegisterSuffixes = '' | '_id';
-type DscSuffixes = '' | '_id';
-type DiscloseSuffixes = '' | '_id';
-type ProofTypes = 'register' | 'dsc' | 'disclose';
-type RegisterProofType =
-  `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
-type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
-type DiscloseProofType =
-  `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
-
-export type TEEPayloadBase = {
-  endpointType: EndpointType;
-  circuit: {
-    name: string;
-    inputs: string;
-  };
-};
-
-export type TEEPayload = TEEPayloadBase & {
-  type: RegisterProofType | DscProofType;
-  onchain: true;
-};
-
-export type TEEPayloadDisclose = TEEPayloadBase & {
-  type: DiscloseProofType;
-  onchain: boolean;
-  endpoint: string;
-  userDefinedData: string;
-  version: number;
-};
 
 export function getPayload(
   inputs: any,
