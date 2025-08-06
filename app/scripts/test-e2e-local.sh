@@ -469,20 +469,19 @@ install_android_app() {
     log_info "Installing on emulator: $EMULATOR_ID"
 
     # Dynamically find the latest 'aapt' tool path and determine package name
-    # First try 'aapt' (classic tool) for package name extraction, then fall back to 'aapt2' with supported commands
-    AAPT_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt" | sort -r | head -n 1)
-    if [ -n "$AAPT_PATH" ]; then
-        log_info "Using aapt to get package name from $APK_PATH..."
-        ACTUAL_PACKAGE=$("$AAPT_PATH" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed -E "s/.*name='([^']+)'.*/\1/" | head -1)
+    # Prioritize 'aapt2' for reliability, then fall back to 'aapt'.
+    AAPT2_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt2" | sort -r | head -n 1)
+    if [ -n "$AAPT2_PATH" ]; then
+        log_info "Using aapt2 to get package name from $APK_PATH..."
+        ACTUAL_PACKAGE=$("$AAPT2_PATH" dump packagename "$APK_PATH" 2>/dev/null | head -1)
     else
-        log_warning "aapt not found, trying aapt2..."
-        AAPT2_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt2" | sort -r | head -n 1)
-        if [ -n "$AAPT2_PATH" ]; then
-            log_info "Found aapt2 at: $AAPT2_PATH"
-            # aapt2 doesn't support 'dump packagename', so we'll use 'dump xmltree' to parse the manifest
-            ACTUAL_PACKAGE=$("$AAPT2_PATH" dump xmltree "$APK_PATH" AndroidManifest.xml 2>/dev/null | grep -A1 "package=" | grep "A:" | sed -E "s/.*A: package=\"([^\"]+)\".*/\1/" | head -1)
+        log_warning "aapt2 not found, falling back to aapt..."
+        AAPT_PATH=$(find "$ANDROID_HOME/build-tools" -type f -name "aapt" | sort -r | head -n 1)
+        if [ -n "$AAPT_PATH" ]; then
+            log_info "Found aapt at: $AAPT_PATH"
+            ACTUAL_PACKAGE=$("$AAPT_PATH" dump badging "$APK_PATH" 2>/dev/null | grep "package:" | sed -E "s/.*name='([^']+)'.*/\1/" | head -1)
         else
-            log_error "Neither aapt nor aapt2 found in $ANDROID_HOME/build-tools"
+            log_error "Neither aapt2 nor aapt found in $ANDROID_HOME/build-tools"
             echo "Please ensure your Android build-tools are installed correctly."
             exit 1
         fi
