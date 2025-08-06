@@ -358,7 +358,7 @@ yarn test:e2e:android  # Android
 yarn test:e2e:ios      # iOS
 ```
 
-The flow definition lives in [`e2e/launch.flow.yaml`](e2e/launch.flow.yaml).
+The flow definition for Android is in [`tests/e2e/launch.android.flow.yaml`](tests/e2e/launch.android.flow.yaml) and for iOS is in [`tests/e2e/launch.ios.flow.yaml`](tests/e2e/launch.ios.flow.yaml).
 
 ## FAQ
 

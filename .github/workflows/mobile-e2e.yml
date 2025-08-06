@@ -107,7 +107,7 @@ jobs:
         with:
           name: maestro-results-android
           path: app/maestro-results.xml
-          if-no-files: warn
+          if-no-files-found: warn
 
   e2e-ios:
     timeout-minutes: 45
@@ -240,7 +240,7 @@ jobs:
           # Run Maestro test on iOS
           echo "Running Maestro tests..."
           echo "Starting test execution..."
-          maestro test app/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml || {
+          maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml || {
             echo "Maestro test failed, but continuing to upload results..."
             exit 1
           }
@@ -250,4 +250,4 @@ jobs:
         with:
           name: maestro-results-ios
           path: app/maestro-results.xml
-          if-no-files: warn
+          if-no-files-found: warn

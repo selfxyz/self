@@ -118,9 +118,9 @@ run_maestro_tests() {
 
     # Use platform-specific flow files
     if [ "$PLATFORM" = "ios" ]; then
-        FLOW_FILE="e2e/launch.ios.flow.yaml"
+        FLOW_FILE="tests/e2e/launch.ios.flow.yaml"
     else
-        FLOW_FILE="e2e/launch.android.flow.yaml"
+        FLOW_FILE="tests/e2e/launch.android.flow.yaml"
     fi
 
     # Attempt to run Maestro, capturing output to check for a specific error
@@ -227,7 +227,16 @@ build_ios_app() {
     # Set environment variable for e2e testing to enable OpenSSL fixes
     export E2E_TESTING=1
 
-    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="DEBUG E2E_TESTING"; then
+    # Set build configuration based on workflow match
+    if [ "$WORKFLOW_MATCH" = "true" ]; then
+        log_info "Using Release configuration for workflow match"
+        BUILD_CONFIG="Release"
+    else
+        log_info "Using Debug configuration for local development"
+        BUILD_CONFIG="Debug"
+    fi
+
+    if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="$BUILD_CONFIG E2E_TESTING"; then
         log_error "iOS build failed"
         exit 1
     fi
@@ -236,9 +245,9 @@ build_ios_app() {
 
 install_ios_app() {
     log_info "📦 Installing app on simulator..."
-    APP_PATH=$(find ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
+    APP_PATH=$(find "ios/build/Build/Products/$BUILD_CONFIG-iphonesimulator" -name "*.app" | head -1)
     if [ -z "$APP_PATH" ]; then
-        log_error "Could not find built iOS app"
+        log_error "Could not find built iOS app in ios/build/Build/Products/$BUILD_CONFIG-iphonesimulator"
         exit 1
     fi
 
