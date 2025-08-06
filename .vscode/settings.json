@@ -10,7 +10,10 @@
     "**/.nyc_output/**": true,
     "**/android/app/build/**": true,
     "**/ios/build/**": true,
-    "**/circuits/build/**": true
+    "**/circuits/build/**": true,
+    "**/Pods/**": true,
+    "**/.gradle/**": true,
+    "**/DerivedData/**": true
   },
   "search.exclude": {
     "**/node_modules": true,
@@ -30,21 +33,16 @@
     "**/Thumbs.db": true
   },
 
-  // Memory and CPU Optimizations
-  "typescript.preferences.includePackageJsonAutoImports": "off",
-  "typescript.suggest.autoImports": false,
+  // TypeScript Performance (Keep the good stuff)
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
   "typescript.disableAutomaticTypeAcquisition": true,
-  "typescript.updateImportsOnFileMove.enabled": "never",
-  "workbench.settings.enableNaturalLanguageSearch": false,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggestionActions.enabled": true,
 
-  // Editor Performance
-  "editor.semanticHighlighting.enabled": false,
+  // Editor Performance (Sensible optimizations only)
   "editor.minimap.enabled": false,
-  "editor.hover.delay": 1000,
-  "editor.parameterHints.cycle": false,
-  "editor.suggest.localityBonus": true,
-  "editor.suggest.shareSuggestSelections": false,
-  "editor.acceptSuggestionOnCommitCharacter": false,
+  "editor.hover.delay": 500,
 
   // Formatting & Linting
   "editor.formatOnSave": false,
