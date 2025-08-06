@@ -3,6 +3,7 @@
 import { tamaguiPlugin } from '@tamagui/vite-plugin';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
@@ -59,50 +60,112 @@ export default defineConfig({
       platform: 'web',
       optimize: true,
     }),
+    // Bundle analyzer for tree shaking analysis
+    visualizer({
+      filename: 'web/dist/bundle-analysis.html',
+      open: false, // Don't auto-open in CI
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap', // Shows tree shaking effectiveness visually
+    }),
   ].filter(Boolean),
   define: {
     global: 'globalThis',
   },
+  optimizeDeps: {
+    exclude: ['fs', 'path', 'child_process'],
+    esbuildOptions: {
+      // Optimize minification
+      minifyIdentifiers: true,
+      minifySyntax: true,
+      minifyWhitespace: true,
+    },
+  },
+
   build: {
+    emptyOutDir: true,
+    outDir: path.resolve(__dirname, 'web/dist'),
+    // Optimize minification settings
+    minify: 'esbuild',
+    target: 'es2020',
+    cssMinify: true,
+    cssCodeSplit: true,
     rollupOptions: {
+      external: ['fs', 'path', 'child_process'],
       output: {
+        // Optimize chunk size and minification
+        compact: true,
         manualChunks: {
-          'vendor-react': [
-            'react',
-            'react-dom',
+          // Core React and Navigation
+          'vendor-react-core': ['react', 'react-dom'],
+          'vendor-navigation': [
             '@react-navigation/native',
             '@react-navigation/native-stack',
           ],
-          'vendor-ui': ['tamagui', '@tamagui/lucide-icons', '@tamagui/toast'],
-          'vendor-crypto': [
-            'elliptic',
-            'node-forge',
-            'ethers',
-            '@peculiar/x509',
-            'pkijs',
-            'asn1js',
-            '@stablelib/cbor',
+
+          // UI Framework - split Tamagui into smaller chunks
+          'vendor-ui-core': ['tamagui'],
+          'vendor-ui-icons': ['@tamagui/lucide-icons'],
+          'vendor-ui-toast': ['@tamagui/toast'],
+
+          // Crypto libraries - split heavy crypto into smaller chunks
+          'vendor-crypto-core': ['elliptic', 'node-forge'],
+          'vendor-crypto-ethers': ['ethers'],
+          'vendor-crypto-x509': ['@peculiar/x509', 'pkijs', 'asn1js'],
+          'vendor-crypto-cbor': ['@stablelib/cbor'],
+
+          // Heavy crypto dependencies - split further
+          'vendor-crypto-poseidon': ['poseidon-lite'],
+          'vendor-crypto-lean-imt': ['@openpassport/zk-kit-lean-imt'],
+
+          // Device-specific libraries
+          'vendor-device-nfc': ['react-native-nfc-manager'],
+          'vendor-device-gesture': ['react-native-gesture-handler'],
+          'vendor-device-haptic': ['react-native-haptic-feedback'],
+
+          // Analytics - split by provider
+          'vendor-analytics-segment': ['@segment/analytics-react-native'],
+          'vendor-analytics-sentry': ['@sentry/react', '@sentry/react-native'],
+
+          // Animations
+          'vendor-animations-lottie': ['lottie-react-native', 'lottie-react'],
+
+          // WebSocket and Socket.IO
+          'vendor-websocket': ['socket.io-client'],
+
+          // UUID generation
+          'vendor-uuid': ['uuid'],
+
+          // State management
+          'vendor-state-xstate': ['xstate'],
+          'vendor-state-zustand': ['zustand'],
+
+          // Screen-specific chunks - more granular
+          'screens-passport-core': ['./src/navigation/passport.ts'],
+          'screens-passport-nfc': ['./src/utils/nfcScanner.ts'],
+
+          // Proving - split into even smaller chunks
+          'screens-prove-core': ['./src/navigation/prove.ts'],
+          'screens-prove-machine-core': [
+            './src/utils/proving/provingMachine.ts',
           ],
-          'vendor-device': [
-            'react-native-nfc-manager',
-            'react-native-gesture-handler',
-            'react-native-haptic-feedback',
+          'screens-prove-validation-core': [
+            './src/utils/proving/validateDocument.ts',
           ],
-          'vendor-analytics': [
-            '@segment/analytics-react-native',
-            '@sentry/react',
-            '@sentry/react-native',
+          'screens-prove-attest': ['./src/utils/proving/attest.ts'],
+          'screens-prove-utils': [
+            './src/utils/proving/provingUtils.ts',
+            './src/utils/proving/provingInputs.ts',
+            './src/utils/proving/cose.ts',
+            './src/utils/proving/loadingScreenStateText.ts',
           ],
-          'vendor-animations': ['lottie-react-native', 'lottie-react'],
-          'vendor-cloud': [
-            '@robinbobin/react-native-google-drive-api-wrapper',
-            'react-native-cloud-storage',
+
+          // Large animations - split out heavy Lottie files
+          'animations-passport-onboarding': [
+            './src/assets/animations/passport_onboarding.json',
           ],
-          'screens-passport': [
-            './src/navigation/passport.ts',
-            './src/utils/nfcScanner.ts',
-          ],
-          'screens-prove': ['./src/navigation/prove.ts', './src/utils/proving'],
+
+          // Other screens
           'screens-settings': ['./src/navigation/settings.ts'],
           'screens-recovery': ['./src/navigation/recovery.ts'],
           'screens-dev': ['./src/navigation/dev.ts'],

@@ -10,7 +10,7 @@ import {
 import { discloseIndices } from './utils/constants.js';
 import { formatRevealedDataPacked } from './utils/id.js';
 import { AttestationId, VcAndDiscloseProof, VerificationConfig } from './types/types.js';
-import { Country3LetterCode } from '@selfxyz/common';
+import { Country3LetterCode } from '@selfxyz/common/constants';
 import { calculateUserIdentifierHash } from './utils/hash.js';
 import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
 import { ConfigMismatch, ConfigMismatchError } from './errors.js';

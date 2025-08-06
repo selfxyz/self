@@ -12,6 +12,151 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  '@selfxyz/common': path.resolve(commonPath, 'dist'),
+  // Main exports
+  '@selfxyz/common/utils': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/index.js',
+  ),
+  '@selfxyz/common/types': path.resolve(
+    commonPath,
+    'dist/esm/src/types/index.js',
+  ),
+  '@selfxyz/common/constants': path.resolve(
+    commonPath,
+    'dist/esm/src/constants/index.js',
+  ),
+  // Constants subpaths
+  '@selfxyz/common/constants/core': path.resolve(
+    commonPath,
+    'dist/esm/src/constants/constants.js',
+  ),
+  '@selfxyz/common/constants/countries': path.resolve(
+    commonPath,
+    'dist/esm/src/constants/countries.js',
+  ),
+  '@selfxyz/common/constants/vkey': path.resolve(
+    commonPath,
+    'dist/esm/src/constants/vkey.js',
+  ),
+  '@selfxyz/common/constants/skiPem': path.resolve(
+    commonPath,
+    'dist/esm/src/constants/skiPem.js',
+  ),
+  '@selfxyz/common/constants/mockCerts': path.resolve(
+    commonPath,
+    'dist/esm/src/constants/mockCertificates.js',
+  ),
+  '@selfxyz/common/constants/hashes': path.resolve(
+    commonPath,
+    'dist/esm/src/constants/sampleDataHashes.js',
+  ),
+  // Utils subpaths
+  '@selfxyz/common/utils/hash': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/hash.js',
+  ),
+  '@selfxyz/common/utils/bytes': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/bytes.js',
+  ),
+  '@selfxyz/common/utils/trees': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/trees.js',
+  ),
+  '@selfxyz/common/utils/scope': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/scope.js',
+  ),
+  '@selfxyz/common/utils/appType': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/appType.js',
+  ),
+  '@selfxyz/common/utils/date': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/date.js',
+  ),
+  '@selfxyz/common/utils/arrays': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/arrays.js',
+  ),
+  '@selfxyz/common/utils/passports': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/passports/index.js',
+  ),
+  '@selfxyz/common/utils/passportFormat': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/passports/format.js',
+  ),
+  '@selfxyz/common/utils/passportMock': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/passports/mock.js',
+  ),
+  '@selfxyz/common/utils/passportDg1': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/passports/dg1.js',
+  ),
+  '@selfxyz/common/utils/certificates': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/certificate_parsing/index.js',
+  ),
+  '@selfxyz/common/utils/elliptic': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/certificate_parsing/elliptic.js',
+  ),
+  '@selfxyz/common/utils/curves': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/certificate_parsing/curves.js',
+  ),
+  '@selfxyz/common/utils/oids': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/certificate_parsing/oids.js',
+  ),
+  '@selfxyz/common/utils/circuits': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/circuits/index.js',
+  ),
+  '@selfxyz/common/utils/circuitNames': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/circuits/circuitsName.js',
+  ),
+  '@selfxyz/common/utils/circuitFormat': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/circuits/formatOutputs.js',
+  ),
+  '@selfxyz/common/utils/uuid': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/circuits/uuid.js',
+  ),
+  '@selfxyz/common/utils/contracts': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/contracts/index.js',
+  ),
+  '@selfxyz/common/utils/sanctions': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/contracts/forbiddenCountries.js',
+  ),
+  '@selfxyz/common/utils/csca': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/csca.js',
+  ),
+  // Types subpaths
+  '@selfxyz/common/types/passport': path.resolve(
+    commonPath,
+    'dist/esm/src/types/passport.js',
+  ),
+  '@selfxyz/common/types/app': path.resolve(
+    commonPath,
+    'dist/esm/src/types/app.js',
+  ),
+  '@selfxyz/common/types/certificates': path.resolve(
+    commonPath,
+    'dist/esm/src/types/certificates.js',
+  ),
+  '@selfxyz/common/types/circuits': path.resolve(
+    commonPath,
+    'dist/esm/src/types/circuits.js',
+  ),
 };
 const watchFolders = [
   path.resolve(commonPath),
@@ -30,6 +175,8 @@ const config = {
     babelTransformerPath: require.resolve(
       'react-native-svg-transformer/react-native',
     ),
+    disableImportExportTransform: true,
+    inlineRequires: true,
   },
   resolver: {
     extraNodeModules,

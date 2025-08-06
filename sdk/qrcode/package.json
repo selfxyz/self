@@ -7,6 +7,13 @@
   },
   "license": "MIT",
   "author": "turnoffthiscomputer",
+  "sideEffects": [
+    "**/websocket.js",
+    "**/websocket.cjs",
+    "**/SelfQRcode.js",
+    "**/SelfQRcode.cjs",
+    "**/animations/*.json"
+  ],
   "type": "module",
   "exports": {
     ".": {

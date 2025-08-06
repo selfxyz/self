@@ -1448,29 +1448,6 @@ PODS:
     - React-Core
   - react-native-nfc-manager (3.16.1):
     - React-Core
-  - react-native-quick-crypto (0.7.14):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - OpenSSL-Universal
-    - RCT-Folly (= 2024.01.01.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - react-native-safe-area-context (5.5.1):
     - React-Core
   - react-native-sqlite-storage (6.0.1):
@@ -1861,7 +1838,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.52.1)
+    - Sentry/HybridSDK (= 8.53.2)
     - Yoga
   - RNSVG (15.12.0):
     - React-Core
@@ -1871,8 +1848,8 @@ PODS:
   - Sentry (8.54.0):
     - Sentry/Core (= 8.54.0)
   - Sentry/Core (8.54.0)
-  - Sentry/HybridSDK (8.52.1)
   - SentryPrivate (8.21.0)
+  - Sentry/HybridSDK (8.53.2)
   - SocketRocket (0.7.0)
   - sovran-react-native (1.1.3):
     - React-Core
@@ -1934,7 +1911,6 @@ DEPENDENCIES:
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../../node_modules/react-native-nfc-manager`)
-  - react-native-quick-crypto (from `../../node_modules/react-native-quick-crypto`)
   - react-native-safe-area-context (from `../../node_modules/react-native-safe-area-context`)
   - react-native-sqlite-storage (from `../../node_modules/react-native-sqlite-storage`)
   - React-nativeconfig (from `../../node_modules/react-native/ReactCommon`)
@@ -1977,8 +1953,6 @@ DEPENDENCIES:
   - "RNSentry (from `../../node_modules/@sentry/react-native`)"
   - RNSVG (from `../../node_modules/react-native-svg`)
   - "segment-analytics-react-native (from `../../node_modules/@segment/analytics-react-native`)"
-  - Sentry
-  - SentryPrivate
   - "sovran-react-native (from `../../node_modules/@segment/sovran-react-native`)"
   - SwiftQRScanner (from `https://github.com/vinodiOS/SwiftQRScanner`)
   - Yoga (from `../../node_modules/react-native/ReactCommon/yoga`)
@@ -2008,7 +1982,6 @@ SPEC REPOS:
     - QKMRZParser
     - QKMRZScanner
     - Sentry
-    - SentryPrivate
     - SocketRocket
     - SwiftyTesseract
 
@@ -2101,8 +2074,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@react-native-community/netinfo"
   react-native-nfc-manager:
     :path: "../../node_modules/react-native-nfc-manager"
-  react-native-quick-crypto:
-    :path: "../../node_modules/react-native-quick-crypto"
   react-native-safe-area-context:
     :path: "../../node_modules/react-native-safe-area-context"
   react-native-sqlite-storage:
@@ -2292,26 +2263,26 @@ SPEC CHECKSUMS:
   React-RuntimeApple: 90f1dfd648cae853afb60eb13a9579c942b2df33
   React-RuntimeCore: 355ee6b0c3a7f4e66afe44f757a7585fc6008c9e
   React-runtimeexecutor: ea90d8e3a9e0f4326939858dafc6ab17c031a5d3
-  React-RuntimeHermes: 13d33b49355663bdbbca6719abcbc4f534f274b9
-  React-runtimescheduler: 1132af91176dcc8ac566b10f7b57b10873125564
-  React-utils: d1bae5ac6a5fb94a772ebfc7a7e1aba3a6706a3a
-  ReactCodegen: 18aa2cb03418f6ea9f318785e339128accab12f0
-  ReactCommon: 1007c09a406a451ddbd874e51511aa541d6034f6
-  RNCAsyncStorage: 23e56519cc41d3bade3c8d4479f7760cb1c11996
-  RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
-  RNDeviceInfo: feea80a690d2bde1fe51461cf548039258bd03f2
-  RNFBApp: dd35ba8340b89c36e42c4c137915c01d3c792143
-  RNFBMessaging: c8d34d9ad44a3258a77e548bba6dc3561af7cf2d
-  RNFBRemoteConfig: 7e219246c63c47f56cfe07eee1a044ed298261c8
-  RNGestureHandler: a52601cdccc6213650ad4a9eb2911360d13f4447
-  RNKeychain: a58690e4450434e8e900ed47032fa58c59cc5570
-  RNLocalize: 06991b9c31e7a898a9fa6ddb204ce0f53a967248
-  RNReactNativeHapticFeedback: 293365e4df1faef21be8b8efe22c7b217c5e695a
-  RNScreens: eee0beadb969b9c1c0ceca4e89744c8d69d782e0
-  RNSentry: 9ecfddd2650b783586da93871ca87561c61facf8
-  RNSVG: 28b61fc4856abe8eaea46794419f848986ee7e80
-  segment-analytics-react-native: de13f89e52d49c1f4ed33ba86ae24f055722a643
-  Sentry: 2cbbe3592f30050c60e916c63c7f5a2fa584005e
+  React-RuntimeHermes: 6a5be21d1f8a603989d8734a0021c0534df23dd9
+  React-runtimescheduler: 21ad58e37e35a132f2a5ecad78e68ea7fbc8e2ba
+  React-utils: 0dbea1179726ad65a1b13470a3f3c73da98f4496
+  ReactCodegen: 688a0970a2fc6a4481718d8ca86ff504f2a21723
+  ReactCommon: 23eed247b5c8e57b59a823ce209353883da61dd2
+  RNCAsyncStorage: b44e8a4e798c3e1f56bffccd0f591f674fb9198f
+  RNCClipboard: 4abb037e8fe3b98a952564c9e0474f91c492df6d
+  RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
+  RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
+  RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
+  RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
+  RNGestureHandler: 4a7cce66468343e82d601e8f6cdc0148b18b6c6b
+  RNKeychain: 42a94ceb08a6c33db453bc34cae46458b6a14a08
+  RNLocalize: 15463c4d79c7da45230064b4adcf5e9bb984667e
+  RNReactNativeHapticFeedback: c873497ad3f9fa80447baa18daa9474e671d24bf
+  RNScreens: 584a35ba1a56a628fc564216b0b6f7b9f070c282
+  RNSentry: 1cc59685d5da06d8f772f0e3816a16d9cac3151a
+  RNSVG: e3ad69848b6357587545e0a49628b1148acf082c
+  segment-analytics-react-native: 5c3e8a4ee6d7532a011ed862d7c7d4fb5e5303e2
+  Sentry: 1ca8405451040482877dcd344dfa3ef80b646631
   SentryPrivate: d651efb234cf385ec9a1cdd3eff94b5e78a0e0fe
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
   sovran-react-native: eec37f82e4429f0e3661f46aaf4fcd85d1b54f60
@@ -2319,6 +2290,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
 
-PODFILE CHECKSUM: 1cb6b0c3de4febd6c16c8f583c8be65ed2d631ee
+PODFILE CHECKSUM: 644e3123cc913b8119a0bb63941e66225a9bdb60
 
 COCOAPODS: 1.16.2

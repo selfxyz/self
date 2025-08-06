@@ -6,7 +6,8 @@ buildscript {
         minSdkVersion = 23
         compileSdkVersion = 35
         targetSdkVersion = 35
-        ndkVersion = "26.1.10909125"
+        // Updated NDK to support 16k page size devices
+        ndkVersion = "27.0.11718014"
         kotlinVersion = "1.9.24"
         firebaseMessagingVersion = "23.4.0"
         firebaseBomVersion = "32.7.3"

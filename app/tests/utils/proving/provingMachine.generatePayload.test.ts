@@ -16,14 +16,7 @@ jest.mock('../../../src/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
 
-jest.mock('@selfxyz/common', () => {
-  const actual = jest.requireActual('@selfxyz/common') as any;
-  return {
-    ...actual,
-    getSolidityPackedUserContextData: jest.fn(() => '0x1234'),
-  };
-});
-
+// Mock the proving inputs to return predictable data
 jest.mock('../../../src/utils/proving/provingInputs', () => ({
   generateTEEInputsRegister: jest.fn(() => ({
     inputs: { r: 1 },
@@ -45,6 +38,7 @@ jest.mock('../../../src/utils/proving/provingInputs', () => ({
   })),
 }));
 
+// Mock the proving utils
 jest.mock('../../../src/utils/proving/provingUtils', () => {
   const actual = jest.requireActual(
     '../../../src/utils/proving/provingUtils',
@@ -84,7 +78,7 @@ describe('_generatePayload', () => {
     useSelfAppStore.setState({
       selfApp: {
         chainID: 42220,
-        userId: 'u',
+        userId: '12345678-1234-1234-1234-123456789abc', // Valid UUID format
         userDefinedData: '0x0',
         endpointType: 'https',
         endpoint: 'https://e',
@@ -97,6 +91,7 @@ describe('_generatePayload', () => {
         devMode: false,
         disclosures: {},
         version: 1,
+        deeplinkCallback: '', // Required property
       },
     });
     useProtocolStore.setState({

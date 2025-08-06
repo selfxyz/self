@@ -5,11 +5,9 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
-import {
-  getSKIPEM,
-  initPassportDataParsing,
-  PassportData,
-} from '@selfxyz/common';
+import type { PassportData } from '@selfxyz/common/types';
+import { getSKIPEM } from '@selfxyz/common/utils/csca';
+import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
 import { CircleHelp } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -196,6 +194,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         try {
           const skiPem = await getSKIPEM('production');
           parsedPassportData = initPassportDataParsing(passportData, skiPem);
+          if (!parsedPassportData) {
+            throw new Error('Failed to parse passport data');
+          }
           const passportMetadata = parsedPassportData.passportMetadata!;
           let dscObject;
           try {
@@ -234,7 +235,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
             dsc_aki: passportData.dsc_parsed?.authorityKeyIdentifier,
             dsc_ski: passportData.dsc_parsed?.subjectKeyIdentifier,
           });
-          await storePassportData(parsedPassportData);
+          if (parsedPassportData) {
+            await storePassportData(parsedPassportData);
+          }
           // Feels better somehow
           await new Promise(resolve => setTimeout(resolve, 1000));
           navigation.navigate('ConfirmBelongingScreen', {});

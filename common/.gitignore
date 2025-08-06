@@ -1,2 +1,10 @@
 inputs
 node_modules/
+
+# Generated build outputs
+*.d.ts
+!src/**/*.d.ts
+constants.js
+types.js
+utils.js
+index.js

@@ -43,9 +43,6 @@ target "Self" do
     # Flipper設定は削除
   )
 
-  pod "Sentry", :modular_headers => true
-  pod "SentryPrivate", :modular_headers => true
-
   pod "Firebase", :modular_headers => true
   pod "FirebaseCore", :modular_headers => true
   pod "FirebaseCoreInternal", :modular_headers => true
@@ -108,20 +105,26 @@ target "Self" do
           config.build_settings["OTHER_LDFLAGS"] << "-framework AudioToolbox"
         end
       end
+
+      # Fix for React Native Sentry warnings
+      if target.name == "RNSentry"
+        target.build_configurations.each do |config|
+          config.build_settings["CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION"] = "NO"
+          config.build_settings["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = "NO"
+          config.build_settings["GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS"] = "NO"
+        end
+      end
     end
 
     # update QKCutoutView.swift to hide OCR border
     qkCutoutView = "Pods/QKMRZScanner/QKMRZScanner/QKCutoutView.swift"
-    if File.exist?(qkCutoutView) && File.writable?(qkCutoutView)
+    if File.exist?(qkCutoutView)
       text = File.read(qkCutoutView)
-      # Only modify if the line is not already commented
-      if text.match?(/^\s*[^\/]*addBorderAroundCutout\s*\(\s*\)/)
-        # Comment out the line containing "addBorderAroundCutout()"
-        new_text = text.gsub(/^(\s*addBorderAroundCutout\s*\(\s*\))/, '// \1')
-        File.open(qkCutoutView, "w") { |file| file.puts new_text }
+      # Only modify if the line exists and is not already commented
+      if text.include?("addBorderAroundCutout()") && !text.include?("// addBorderAroundCutout()")
+        new_text = text.gsub(/^(\s*)(addBorderAroundCutout\s*\(\s*\))/, '\1// \2')
+        File.write(qkCutoutView, new_text)
       end
-    else
-      puts "Warning: Could not find QKCutoutView.swift at #{qkCutoutView}"
     end
 
     # Disable code signing for Pod targets to avoid conflicts with main app signing

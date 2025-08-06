@@ -17,7 +17,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
   return (
     <NavBar.Container
       backgroundColor={black}
-      barStyle={'light-content'}
+      barStyle={'light'}
       padding={16}
       justifyContent="space-between"
       paddingTop={Math.max(insets.top, 15) + extraYPadding}

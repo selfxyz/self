@@ -1,0 +1,78 @@
+#!/usr/bin/env node
+const { describe, it } = require('node:test');
+const assert = require('node:assert');
+const path = require('path');
+const fs = require('fs');
+
+// Test the core tree-shaking infrastructure that's still valuable
+describe('Tree Shaking Infrastructure Tests', () => {
+  it('should have tree-shaking analysis scripts', () => {
+    const scriptsDir = path.join(__dirname, '..');
+
+    const expectedScripts = [
+      'test-tree-shaking.cjs',
+      'analyze-tree-shaking.cjs',
+    ];
+
+    expectedScripts.forEach(script => {
+      const scriptPath = path.join(scriptsDir, script);
+      assert(fs.existsSync(scriptPath), `Script ${script} should exist`);
+
+      const stats = fs.statSync(scriptPath);
+      assert(stats.isFile(), `${script} should be a file`);
+
+      // Check if file is executable (has execute permission)
+      const isExecutable = (stats.mode & parseInt('111', 8)) !== 0;
+      assert(isExecutable, `${script} should be executable`);
+    });
+  });
+
+  it('should have Vite config with bundle analyzer', () => {
+    const viteConfigPath = path.join(__dirname, '..', '..', 'vite.config.ts');
+    assert(fs.existsSync(viteConfigPath), 'vite.config.ts should exist');
+
+    const viteConfig = fs.readFileSync(viteConfigPath, 'utf8');
+    assert(
+      viteConfig.includes('rollup-plugin-visualizer'),
+      'Vite config should import visualizer',
+    );
+    assert(
+      viteConfig.includes('visualizer('),
+      'Vite config should use visualizer plugin',
+    );
+    assert(
+      viteConfig.includes('bundle-analysis.html'),
+      'Vite config should generate analysis HTML',
+    );
+  });
+});
+
+describe('Package Configuration Validation', () => {
+  it('should validate @selfxyz/common package configuration', () => {
+    const commonPackagePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'common',
+      'package.json',
+    );
+    assert(
+      fs.existsSync(commonPackagePath),
+      '@selfxyz/common package.json should exist',
+    );
+
+    const commonPackage = JSON.parse(
+      fs.readFileSync(commonPackagePath, 'utf8'),
+    );
+
+    assert(commonPackage.type === 'module', 'Should use ESM modules');
+    assert(commonPackage.exports, 'Should have granular exports defined');
+
+    // Check granular exports
+    const exports = commonPackage.exports;
+    assert(exports['./constants'], 'Should export ./constants');
+    assert(exports['./utils'], 'Should export ./utils');
+    assert(exports['./types'], 'Should export ./types');
+  });
+});

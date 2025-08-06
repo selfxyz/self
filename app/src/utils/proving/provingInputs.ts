@@ -2,25 +2,23 @@
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
-import type {
-  DocumentCategory,
-  PassportData,
-  SelfApp,
-  SelfAppDisclosureConfig,
-} from '@selfxyz/common';
 import {
   attributeToPosition,
   attributeToPosition_ID,
-  calculateUserIdentifierHash,
   DEFAULT_MAJORITY,
+  ID_CARD_ATTESTATION_ID,
+  PASSPORT_ATTESTATION_ID,
+} from '@selfxyz/common/constants';
+import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
+import type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/common/utils';
+import {
+  calculateUserIdentifierHash,
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
   getCircuitNameFromPassportData,
   hashEndpointWithScope,
-  ID_CARD_ATTESTATION_ID,
-  PASSPORT_ATTESTATION_ID,
-} from '@selfxyz/common';
+} from '@selfxyz/common/utils';
 import { poseidon2 } from 'poseidon-lite';
 
 import { useProtocolStore } from '../../stores/protocolStore';

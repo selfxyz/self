@@ -25,8 +25,8 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
       barStyle={
         options.headerTintColor === white ||
         (options.headerTitleStyle as TextStyle)?.color === white
-          ? 'light-content'
-          : 'dark-content'
+          ? 'light'
+          : 'dark'
       }
     >
       <NavBar.LeftAction

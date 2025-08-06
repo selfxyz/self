@@ -38,14 +38,13 @@
  * - Display format determined by documentCategory
  */
 
+import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import {
   brutforceSignatureAlgorithmDsc,
-  DocumentCategory,
   parseCertificateSimple,
-  PassportData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-} from '@selfxyz/common';
+} from '@selfxyz/common/utils';
 import { sha256 } from 'js-sha256';
 import React, {
   createContext,
@@ -123,8 +122,71 @@ function inferDocumentCategory(documentType: string): DocumentCategory {
   return 'passport' as DocumentCategory; // fallback
 }
 
+// Global flag to track if native modules are ready
+let nativeModulesReady = false;
+
+/**
+ * Global initialization function to wait for native modules to be ready
+ * Call this once at app startup before any native module operations
+ */
+export async function initializeNativeModules(
+  maxRetries: number = 10,
+  delay: number = 500,
+): Promise<boolean> {
+  if (nativeModulesReady) {
+    return true;
+  }
+
+  console.log('Initializing native modules...');
+
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      if (typeof Keychain.getGenericPassword === 'function') {
+        // Test if Keychain is actually available by making a safe call
+        await Keychain.getGenericPassword({ service: 'test-availability' });
+        nativeModulesReady = true;
+        console.log('Native modules ready!');
+        return true;
+      }
+    } catch (error) {
+      // If we get a "requiring unknown module" error, wait and retry
+      if (
+        error instanceof Error &&
+        error.message.includes('Requiring unknown module')
+      ) {
+        console.log(
+          `Waiting for native modules to be ready (attempt ${i + 1}/${maxRetries})`,
+        );
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      // For other errors (like service not found), assume Keychain is available
+      nativeModulesReady = true;
+      console.log('Native modules ready (with minor errors)!');
+      return true;
+    }
+  }
+
+  console.warn('Native modules not ready after retries');
+  return false;
+}
+
 export async function loadDocumentCatalog(): Promise<DocumentCatalog> {
   try {
+    // Extra safety check for module initialization
+    if (typeof Keychain === 'undefined' || !Keychain) {
+      console.warn(
+        'Keychain module not yet initialized, returning empty catalog',
+      );
+      return { documents: [] };
+    }
+
+    // Check if native modules are ready (should be initialized at app startup)
+    if (!nativeModulesReady) {
+      console.warn('Native modules not ready, returning empty catalog');
+      return { documents: [] };
+    }
+
     const catalogCreds = await Keychain.getGenericPassword({
       service: 'documentCatalog',
     });
@@ -151,6 +213,14 @@ export async function loadDocumentById(
   documentId: string,
 ): Promise<PassportData | null> {
   try {
+    // Check if native modules are ready
+    if (!nativeModulesReady) {
+      console.warn(
+        `Native modules not ready for loading document ${documentId}, returning null`,
+      );
+      return null;
+    }
+
     const documentCreds = await Keychain.getGenericPassword({
       service: `document-${documentId}`,
     });
@@ -376,21 +446,35 @@ export async function loadPassportData() {
   }
 
   // Fallback to legacy system and migrate if found
-  const services = [
-    'passportData',
-    'mockPassportData',
-    'idCardData',
-    'mockIdCardData',
-  ];
-  for (const service of services) {
-    const passportDataCreds = await Keychain.getGenericPassword({ service });
-    if (passportDataCreds !== false) {
-      // Migrate this document
-      const passportData: PassportData = JSON.parse(passportDataCreds.password);
-      await storeDocumentWithDeduplication(passportData);
-      await Keychain.resetGenericPassword({ service });
-      return passportDataCreds.password;
+  try {
+    // Check if native modules are ready for legacy migration
+    if (!nativeModulesReady) {
+      console.warn(
+        'Native modules not ready for legacy passport data migration',
+      );
+      return false;
     }
+
+    const services = [
+      'passportData',
+      'mockPassportData',
+      'idCardData',
+      'mockIdCardData',
+    ];
+    for (const service of services) {
+      const passportDataCreds = await Keychain.getGenericPassword({ service });
+      if (passportDataCreds !== false) {
+        // Migrate this document
+        const passportData: PassportData = JSON.parse(
+          passportDataCreds.password,
+        );
+        await storeDocumentWithDeduplication(passportData);
+        await Keychain.resetGenericPassword({ service });
+        return passportDataCreds.password;
+      }
+    }
+  } catch (error) {
+    console.log('Error in legacy passport data migration:', error);
   }
 
   return false;
@@ -551,7 +635,34 @@ interface IPassportContext {
     isRegistered: boolean,
   ) => Promise<void>;
   checkIfAnyDocumentsNeedMigration: () => Promise<boolean>;
+  hasAnyValidRegisteredDocument: () => Promise<boolean>;
+  checkAndUpdateRegistrationStates: () => Promise<void>;
 }
+
+// Create safe wrapper functions to prevent undefined errors during early initialization
+const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
+  try {
+    return await loadDocumentCatalog();
+  } catch (error) {
+    console.warn(
+      'Error in safeLoadDocumentCatalog, returning empty catalog:',
+      error,
+    );
+    return { documents: [] };
+  }
+};
+
+const safeGetAllDocuments = async () => {
+  try {
+    return await getAllDocuments();
+  } catch (error) {
+    console.warn(
+      'Error in safeGetAllDocuments, returning empty object:',
+      error,
+    );
+    return {};
+  }
+};
 
 export const PassportContext = createContext<IPassportContext>({
   getData: () => Promise.resolve(null),
@@ -563,8 +674,8 @@ export const PassportContext = createContext<IPassportContext>({
   getSelectedPassportDataAndSecret: () => Promise.resolve(null),
   clearPassportData: clearPassportData,
   clearSpecificData: clearSpecificPassportData,
-  loadDocumentCatalog: loadDocumentCatalog,
-  getAllDocuments: getAllDocuments,
+  loadDocumentCatalog: safeLoadDocumentCatalog,
+  getAllDocuments: safeGetAllDocuments,
   setSelectedDocument: setSelectedDocument,
   deleteDocument: deleteDocument,
   migrateFromLegacyStorage: migrateFromLegacyStorage,
@@ -574,6 +685,8 @@ export const PassportContext = createContext<IPassportContext>({
   markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
   updateDocumentRegistrationState: updateDocumentRegistrationState,
   checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
+  hasAnyValidRegisteredDocument: hasAnyValidRegisteredDocument,
+  checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
@@ -622,8 +735,8 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       getSelectedPassportDataAndSecret,
       clearPassportData: clearPassportData,
       clearSpecificData: clearSpecificPassportData,
-      loadDocumentCatalog: loadDocumentCatalog,
-      getAllDocuments: getAllDocuments,
+      loadDocumentCatalog: safeLoadDocumentCatalog,
+      getAllDocuments: safeGetAllDocuments,
       setSelectedDocument: setSelectedDocument,
       deleteDocument: deleteDocument,
       migrateFromLegacyStorage: migrateFromLegacyStorage,
@@ -633,6 +746,8 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
       updateDocumentRegistrationState: updateDocumentRegistrationState,
       checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
+      hasAnyValidRegisteredDocument: hasAnyValidRegisteredDocument,
+      checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
     }),
     [
       getData,
@@ -728,6 +843,23 @@ export async function updateDocumentRegistrationState(
   }
 }
 
+export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
+  try {
+    const catalog = await loadDocumentCatalog();
+    return catalog.documents.some(doc => doc.isRegistered === true);
+  } catch (error) {
+    console.error('Error loading document catalog:', error);
+    return false;
+  }
+}
+
+export async function checkAndUpdateRegistrationStates(): Promise<void> {
+  // Lazy import to avoid circular dependency
+  const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
+    await import('../utils/proving/validateDocument');
+  return validateDocCheckAndUpdate();
+}
+
 export async function markCurrentDocumentAsRegistered(): Promise<void> {
   const catalog = await loadDocumentCatalog();
   if (catalog.selectedDocumentId) {
@@ -738,6 +870,11 @@ export async function markCurrentDocumentAsRegistered(): Promise<void> {
 }
 
 export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
-  const catalog = await loadDocumentCatalog();
-  return catalog.documents.some(doc => doc.isRegistered === undefined);
+  try {
+    const catalog = await loadDocumentCatalog();
+    return catalog.documents.some(doc => doc.isRegistered === undefined);
+  } catch (error) {
+    console.warn('Error checking if documents need migration:', error);
+    return false;
+  }
 }

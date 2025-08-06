@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { StaticScreenProps, useIsFocused } from '@react-navigation/native';
-import { PassportData } from '@selfxyz/common';
+import type { PassportData } from '@selfxyz/common/types';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
