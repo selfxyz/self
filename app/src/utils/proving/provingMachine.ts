@@ -4,8 +4,12 @@ import forge from 'node-forge';
 import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { v4 } from 'uuid';
-import type { AnyActorRef } from 'xstate';
-import { createActor, createMachine } from 'xstate';
+import {
+  AnyActorRef,
+  createActor,
+  createMachine,
+  StateFrom,
+} from 'xstate';
 import { create } from 'zustand';
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
@@ -160,14 +164,14 @@ export const getPostVerificationRoute = () => {
 
 interface ProvingState {
   currentState: ProvingStateType;
-  attestation: any;
+  attestation: number[] | null;
   serverPublicKey: string | null;
   sharedKey: Buffer | null;
   wsConnection: WebSocket | null;
   socketConnection: Socket | null;
   uuid: string | null;
   userConfirmed: boolean;
-  passportData: any | null;
+  passportData: PassportData | null;
   secret: string | null;
   circuitType: provingMachineCircuitType | null;
   error_code: string | null;
@@ -187,7 +191,7 @@ interface ProvingState {
   postProving: () => void;
   setUserConfirmed: () => void;
   _closeConnections: () => void;
-  _generatePayload: () => Promise<any>;
+  _generatePayload: () => Promise<unknown>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
   _handleRegisterErrorOrFailure: () => void;
   _startSocketIOStatusListener: (
@@ -200,10 +204,13 @@ interface ProvingState {
 }
 
 export const useProvingStore = create<ProvingState>((set, get) => {
-  let actor: AnyActorRef | null = null;
+  let actor: AnyActorRef<StateFrom<typeof provingMachine>> | null = null;
 
-  function setupActorSubscriptions(newActor: AnyActorRef) {
-    newActor.subscribe((state: any) => {
+  function setupActorSubscriptions(
+    newActor: AnyActorRef<StateFrom<typeof provingMachine>>,
+  ) {
+    newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
+      console.log(`State transition: ${state.value}`);
       trackEvent(ProofEvents.PROVING_STATE_CHANGE, { state: state.value });
       set({ currentState: state.value as ProvingStateType });
 
@@ -395,12 +402,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         console.error('Error processing WebSocket message:', error);
         if (get().currentState === 'init_tee_connexion') {
           trackEvent(ProofEvents.TEE_CONN_FAILED, {
-            message: (error as any).message,
+            message: error instanceof Error ? error.message : String(error),
           });
           actor!.send({ type: 'CONNECT_ERROR' });
         } else {
           trackEvent(ProofEvents.TEE_WS_ERROR, {
-            error: (error as any).message,
+            error: error instanceof Error ? error.message : String(error),
           });
           trackEvent(ProofEvents.PROOF_FAILED, {
             circuitType: get().circuitType,
@@ -453,7 +460,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       socket.on('connect_error', error => {
         console.error('SocketIO connection error:', error);
         trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
-          message: (error as any).message,
+          message: error instanceof Error ? error.message : String(error),
         });
         trackEvent(ProofEvents.PROOF_FAILED, {
           circuitType: get().circuitType,
@@ -480,7 +487,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         set({ socketConnection: null });
       });
 
-      socket.on('status', (message: any) => {
+      socket.on('status', (message: unknown) => {
         const data =
           typeof message === 'string' ? JSON.parse(message) : message;
         trackEvent(ProofEvents.SOCKETIO_STATUS_RECEIVED, {
@@ -664,7 +671,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       } catch (error) {
         console.error('Error fetching data:', error);
         trackEvent(ProofEvents.FETCH_DATA_FAILED, {
-          message: (error as any).message,
+          message: error instanceof Error ? error.message : String(error),
         });
         actor!.send({ type: 'FETCH_ERROR' });
       }
@@ -757,7 +764,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       } catch (error) {
         console.error('Error validating passport:', error);
         trackEvent(ProofEvents.VALIDATION_FAILED, {
-          message: (error as any).message,
+          message: error instanceof Error ? error.message : String(error),
         });
         actor!.send({ type: 'VALIDATION_ERROR' });
       }
@@ -877,7 +884,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           } catch (error) {
             console.error('Error registering device token:', error);
             trackEvent(ProofEvents.DEVICE_TOKEN_REG_FAILED, {
-              message: (error as any).message,
+              message: error instanceof Error ? error.message : String(error),
             });
             // Continue with the proving process even if token registration fails
           }

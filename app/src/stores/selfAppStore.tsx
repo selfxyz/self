@@ -68,10 +68,10 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
       socket.on('connect', () => {});
 
       // Listen for the event only once per connection attempt
-      socket.once('self_app', (data: any) => {
+      socket.once('self_app', (data: unknown) => {
         try {
           const appData: SelfApp =
-            typeof data === 'string' ? JSON.parse(data) : data;
+            typeof data === 'string' ? JSON.parse(data) : (data as SelfApp);
 
           // Basic validation
           if (!appData || typeof appData !== 'object' || !appData.sessionId) {

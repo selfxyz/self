@@ -2,9 +2,18 @@
 
 import type { PropsWithChildren } from 'react';
 import React, { useMemo, useState } from 'react';
-import type { StyleProp } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
-import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import {
+  Adapt,
+  Button,
+  Select,
+  Sheet,
+  Text,
+  XStack,
+  YStack,
+  type AdaptWhen,
+} from 'tamagui';
 
 import BugIcon from '../../images/icons/bug_icon.svg';
 import IdIcon from '../../images/icons/id_icon.svg';
@@ -43,7 +52,7 @@ interface DevSettingsScreenProps extends PropsWithChildren {
     | 'space-evenly';
   userSelect?: 'all' | 'text' | 'none' | 'contain';
   textAlign?: 'center' | 'left' | 'right';
-  style?: StyleProp<any>;
+  style?: StyleProp<TextStyle | ViewStyle>;
 }
 
 function ParameterSection({
@@ -158,8 +167,8 @@ const ScreenSelector = ({}) => {
     <Select
       open={open}
       onOpenChange={setOpen}
-      onValueChange={(screen: any) => {
-        navigation.navigate(screen);
+      onValueChange={(screen: keyof RootStackParamList) => {
+        navigation.navigate(screen as never);
       }}
       disablePreventBodyScroll
     >
@@ -187,7 +196,7 @@ const ScreenSelector = ({}) => {
         </Button>
       </Select.Trigger>
 
-      <Adapt when={'sm' as any} platform="touch">
+      <Adapt when={'sm' as AdaptWhen} platform="touch">
         <Sheet native modal dismissOnSnapToBottom animation="medium">
           <Sheet.Frame>
             <Sheet.ScrollView>
