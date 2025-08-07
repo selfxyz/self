@@ -34,7 +34,6 @@ import { MockDataEvents } from '../../consts/analytics';
 import SelfDevCard from '../../images/card-dev.svg';
 import IdIcon from '../../images/icons/id_icon.svg';
 import NoteIcon from '../../images/icons/note.svg';
-import WarningIcon from '../../images/icons/warning.svg';
 import { storePassportData } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import {
@@ -47,7 +46,6 @@ import {
   slate500,
   textBlack,
   white,
-  yellow500,
   zinc400,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
