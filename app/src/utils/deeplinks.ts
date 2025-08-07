@@ -3,9 +3,9 @@
 import { parseUrl } from 'query-string';
 import { Linking, Platform } from 'react-native';
 
-import { navigationRef } from '../navigation';
-import { useSelfAppStore } from '../stores/selfAppStore';
-import useUserStore from '../stores/userStore';
+import { navigationRef } from '@src/navigation';
+import { useSelfAppStore } from '@src/stores/selfAppStore';
+import useUserStore from '@src/stores/userStore';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {

@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
-import analytics from '../utils/analytics';
+import analytics from '@src/utils/analytics';
 
 const { flush: flushAnalytics } = analytics();
 

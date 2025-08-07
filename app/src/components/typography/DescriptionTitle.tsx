@@ -2,7 +2,7 @@
 
 import { styled, Text } from 'tamagui';
 
-import { dinot } from '../../utils/fonts';
+import { dinot } from '@src/utils/fonts';
 
 export const DescriptionTitle = styled(Text, {
   fontSize: 18,

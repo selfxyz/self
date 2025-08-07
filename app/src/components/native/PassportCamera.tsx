@@ -4,8 +4,9 @@ import React, { useCallback } from 'react';
 import type { NativeSyntheticEvent } from 'react-native';
 import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
 
-import { extractMRZInfo } from '../../utils/utils';
 import { RCTFragment } from './RCTFragment';
+
+import { extractMRZInfo } from '@src/utils/utils';
 
 interface NativePassportOCRViewProps {
   onPassportRead: (

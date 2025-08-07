@@ -2,10 +2,11 @@
 
 import { useEffect } from 'react';
 
-import { navigationRef } from '../navigation';
-import { usePassport } from '../providers/passportDataProvider';
-import { useSettingStore } from '../stores/settingStore';
 import { useModal } from './useModal';
+
+import { navigationRef } from '@src/navigation';
+import { usePassport } from '@src/providers/passportDataProvider';
+import { useSettingStore } from '@src/stores/settingStore';
 
 // TODO: need to debug and test the logic. it pops up too often.
 export default function useRecoveryPrompts() {

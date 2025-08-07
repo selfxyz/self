@@ -5,25 +5,24 @@ import React, { useCallback, useRef } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 
-import passportScanAnimation from '../../assets/animations/passport_scan.json';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import type { PassportCameraProps } from '../../components/native/PassportCamera';
-import { PassportCamera } from '../../components/native/PassportCamera';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import Scan from '../../images/icons/passport_camera_scan.svg';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import useUserStore from '../../stores/userStore';
-import analytics from '../../utils/analytics';
-import { black, slate400, slate800, white } from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
-import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
-import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
-
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import passportScanAnimation from '@src/assets/animations/passport_scan.json';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import type { PassportCameraProps } from '@src/components/native/PassportCamera';
+import { PassportCamera } from '@src/components/native/PassportCamera';
+import Additional from '@src/components/typography/Additional';
+import Description from '@src/components/typography/Description';
+import { Title } from '@src/components/typography/Title';
+import { PassportEvents } from '@src/consts/analytics';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import Scan from '@src/images/icons/passport_camera_scan.svg';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import useUserStore from '@src/stores/userStore';
+import analytics from '@src/utils/analytics';
+import { black, slate400, slate800, white } from '@src/utils/colors';
+import { dinot } from '@src/utils/fonts';
+import { hasAnyValidRegisteredDocument } from '@src/utils/proving/validateDocument';
+import { checkScannedInfo, formatDateToYYMMDD } from '@src/utils/utils';
 
 interface PassportNFCScanScreen {}
 

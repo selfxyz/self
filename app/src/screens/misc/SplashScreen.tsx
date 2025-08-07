@@ -4,20 +4,19 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import splashAnimation from '../../assets/animations/splash.json';
-import { useAuth } from '../../providers/authProvider';
+import { useNavigation } from '@react-navigation/native';
+import splashAnimation from '@src/assets/animations/splash.json';
+import { useAuth } from '@src/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
   hasAnyValidRegisteredDocument,
   initializeNativeModules,
   migrateFromLegacyStorage,
-} from '../../providers/passportDataProvider';
-import { useSettingStore } from '../../stores/settingStore';
-import { black } from '../../utils/colors';
-import { impactLight } from '../../utils/haptic';
-
-import { useNavigation } from '@react-navigation/native';
+} from '@src/providers/passportDataProvider';
+import { useSettingStore } from '@src/stores/settingStore';
+import { black } from '@src/utils/colors';
+import { impactLight } from '@src/utils/haptic';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();

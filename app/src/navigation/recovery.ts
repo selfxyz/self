@@ -2,9 +2,8 @@
 
 import { lazy } from 'react';
 
-import { black, slate300 } from '../utils/colors';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black, slate300 } from '@src/utils/colors';
 
 const AccountRecoveryChoiceScreen = lazy(
   () => import('../screens/recovery/AccountRecoveryChoiceScreen'),

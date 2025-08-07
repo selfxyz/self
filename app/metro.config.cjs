@@ -12,6 +12,7 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  '@src': path.join(__dirname, 'src'),
   '@selfxyz/common': path.resolve(commonPath, 'dist'),
   // Main exports
   '@selfxyz/common/utils': path.resolve(

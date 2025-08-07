@@ -14,9 +14,9 @@ import React, {
   useState,
 } from 'react';
 
-import { AuthEvents } from '../consts/analytics';
-import type { Mnemonic } from '../types/mnemonic';
-import analytics from '../utils/analytics';
+import { AuthEvents } from '@src/consts/analytics';
+import type { Mnemonic } from '@src/types/mnemonic';
+import analytics from '@src/utils/analytics';
 
 const { trackEvent } = analytics();
 

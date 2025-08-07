@@ -2,8 +2,9 @@
 
 import { styled } from 'tamagui';
 
-import { slate400 } from '../../utils/colors';
 import { BodyText } from './BodyText';
+
+import { slate400 } from '@src/utils/colors';
 
 export const Caption = styled(BodyText, {
   fontSize: 15,

@@ -2,9 +2,8 @@
 
 import { lazy } from 'react';
 
-import { black, white } from '../utils/colors';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black, white } from '@src/utils/colors';
 
 const ManageDocumentsScreen = lazy(
   () => import('../screens/settings/ManageDocumentsScreen'),

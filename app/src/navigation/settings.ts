@@ -2,9 +2,8 @@
 
 import { lazy } from 'react';
 
-import { black, slate300, white } from '../utils/colors';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black, slate300, white } from '@src/utils/colors';
 
 const CloudBackupScreen = lazy(
   () => import('../screens/settings/CloudBackupScreen'),

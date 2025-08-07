@@ -5,11 +5,6 @@ import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Text } from 'tamagui';
 
-import { DefaultNavBar } from '../components/NavBar';
-import AppLayout from '../layouts/AppLayout';
-import analytics from '../utils/analytics';
-import { white } from '../utils/colors';
-import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
 import { getAesopScreens } from './aesop';
 import devScreens from './dev';
 import homeScreens from './home';
@@ -25,6 +20,11 @@ import {
   createStaticNavigation,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { DefaultNavBar } from '@src/components/NavBar';
+import AppLayout from '@src/layouts/AppLayout';
+import analytics from '@src/utils/analytics';
+import { white } from '@src/utils/colors';
+import { setupUniversalLinkListenerInNavigation } from '@src/utils/deeplinks';
 
 export const navigationScreens = {
   ...miscScreens,

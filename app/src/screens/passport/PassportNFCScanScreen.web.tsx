@@ -3,17 +3,17 @@
 import React from 'react';
 import { Image } from 'tamagui';
 
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
-import { BodyText } from '../../components/typography/BodyText';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import NFC_IMAGE from '../../images/nfc.png';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '../../utils/colors';
-import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import ButtonsContainer from '@src/components/ButtonsContainer';
+import TextsContainer from '@src/components/TextsContainer';
+import { BodyText } from '@src/components/typography/BodyText';
+import { Title } from '@src/components/typography/Title';
+import { PassportEvents } from '@src/consts/analytics';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import NFC_IMAGE from '@src/images/nfc.png';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import { black, slate100, white } from '@src/utils/colors';
+import { hasAnyValidRegisteredDocument } from '@src/utils/proving/validateDocument';
 
 interface PassportNFCScanScreenProps {}
 

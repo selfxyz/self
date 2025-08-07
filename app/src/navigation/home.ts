@@ -2,10 +2,9 @@
 
 import { lazy } from 'react';
 
-import { HomeNavBar } from '../components/NavBar';
-import { black } from '../utils/colors';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { HomeNavBar } from '@src/components/NavBar';
+import { black } from '@src/utils/colors';
 
 const DisclaimerScreen = lazy(() => import('../screens/home/DisclaimerScreen'));
 const HomeScreen = lazy(() => import('../screens/home/HomeScreen'));

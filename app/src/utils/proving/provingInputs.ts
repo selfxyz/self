@@ -20,10 +20,9 @@ import {
   hashEndpointWithScope,
 } from '@selfxyz/common/utils';
 
-import { useProtocolStore } from '../../stores/protocolStore';
-
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
+import { useProtocolStore } from '@src/stores/protocolStore';
 
 export function generateTEEInputsDSC(
   passportData: PassportData,

@@ -3,26 +3,25 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { YStack } from 'tamagui';
 
-import BackupDocumentationLink from '../../components/BackupDocumentationLink';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import { Caption } from '../../components/typography/Caption';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { BackupEvents } from '../../consts/analytics';
-import { useModal } from '../../hooks/useModal';
-import Cloud from '../../images/icons/logo_cloud_backup.svg';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import type { RootStackParamList } from '../../navigation';
-import { useAuth } from '../../providers/authProvider';
-import { useSettingStore } from '../../stores/settingStore';
-import analytics from '../../utils/analytics';
-import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
-import { black, white } from '../../utils/colors';
-import { buttonTap, confirmTap } from '../../utils/haptic';
-
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import BackupDocumentationLink from '@src/components/BackupDocumentationLink';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import { Caption } from '@src/components/typography/Caption';
+import Description from '@src/components/typography/Description';
+import { Title } from '@src/components/typography/Title';
+import { BackupEvents } from '@src/consts/analytics';
+import { useModal } from '@src/hooks/useModal';
+import Cloud from '@src/images/icons/logo_cloud_backup.svg';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@src/navigation';
+import { useAuth } from '@src/providers/authProvider';
+import { useSettingStore } from '@src/stores/settingStore';
+import analytics from '@src/utils/analytics';
+import { STORAGE_NAME, useBackupMnemonic } from '@src/utils/cloudBackup';
+import { black, white } from '@src/utils/colors';
+import { buttonTap, confirmTap } from '@src/utils/haptic';
 
 const { trackEvent } = analytics();
 

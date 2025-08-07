@@ -2,13 +2,13 @@
 
 import React, { useEffect } from 'react';
 
-import type { TipProps } from '../../components/Tips';
-import Tips from '../../components/Tips';
-import { Caption } from '../../components/typography/Caption';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
-import analytics from '../../utils/analytics';
-import { slate500 } from '../../utils/colors';
+import type { TipProps } from '@src/components/Tips';
+import Tips from '@src/components/Tips';
+import { Caption } from '@src/components/typography/Caption';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import SimpleScrolledTitleLayout from '@src/layouts/SimpleScrolledTitleLayout';
+import analytics from '@src/utils/analytics';
+import { slate500 } from '@src/utils/colors';
 
 const { flush: flushAnalytics } = analytics();
 

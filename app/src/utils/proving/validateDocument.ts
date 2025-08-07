@@ -20,7 +20,8 @@ import {
 } from '@selfxyz/common/utils/passports';
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
 
-import { DocumentEvents } from '../../consts/analytics';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { DocumentEvents } from '@src/consts/analytics';
 import {
   getAllDocuments,
   loadDocumentCatalog,
@@ -29,11 +30,9 @@ import {
   setSelectedDocument,
   storePassportData,
   updateDocumentRegistrationState,
-} from '../../providers/passportDataProvider';
-import { useProtocolStore } from '../../stores/protocolStore';
-import analytics from '../../utils/analytics';
-
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+} from '@src/providers/passportDataProvider';
+import { useProtocolStore } from '@src/stores/protocolStore';
+import analytics from '@src/utils/analytics';
 
 const { trackEvent } = analytics();
 

@@ -3,21 +3,20 @@
 import React, { useCallback } from 'react';
 import { styled, View, XStack, YStack } from 'tamagui';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import ModalClose from '../../images/icons/modal_close.svg';
-import LogoInversed from '../../images/logo_inversed.svg';
-import { white } from '../../utils/colors';
-import { confirmTap, impactLight } from '../../utils/haptic';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import Description from '@src/components/typography/Description';
+import { Title } from '@src/components/typography/Title';
+import ModalClose from '@src/images/icons/modal_close.svg';
+import LogoInversed from '@src/images/logo_inversed.svg';
+import { white } from '@src/utils/colors';
+import { confirmTap, impactLight } from '@src/utils/haptic';
 import {
   getModalCallbacks,
   unregisterModalCallbacks,
-} from '../../utils/modalCallbackRegistry';
-
-import type { StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+} from '@src/utils/modalCallbackRegistry';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',

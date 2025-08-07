@@ -15,18 +15,6 @@ import {
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
 
-import { PassportEvents, ProofEvents } from '../../consts/analytics';
-import { navigationRef } from '../../navigation';
-import { unsafe_getPrivateKey } from '../../providers/authProvider';
-import {
-  clearPassportData,
-  loadSelectedDocument,
-  markCurrentDocumentAsRegistered,
-  reStorePassportDataWithRightCSCA,
-} from '../../providers/passportDataProvider';
-import { useProtocolStore } from '../../stores/protocolStore';
-import { useSelfAppStore } from '../../stores/selfAppStore';
-import analytics from '../analytics';
 import { getPublicKey, verifyAttestation } from './attest';
 import {
   generateTEEInputsDisclose,
@@ -49,6 +37,19 @@ import {
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
 } from './validateDocument';
+
+import { PassportEvents, ProofEvents } from '@src/consts/analytics';
+import { navigationRef } from '@src/navigation';
+import { unsafe_getPrivateKey } from '@src/providers/authProvider';
+import {
+  clearPassportData,
+  loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+} from '@src/providers/passportDataProvider';
+import { useProtocolStore } from '@src/stores/protocolStore';
+import { useSelfAppStore } from '@src/stores/selfAppStore';
+import analytics from '@src/utils/analytics';
 
 const { trackEvent } = analytics();
 

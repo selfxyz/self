@@ -3,7 +3,7 @@
 import type { StyleProp, TextStyle } from 'react-native';
 import { styled, Text } from 'tamagui';
 
-import { advercase } from '../../utils/fonts';
+import { advercase } from '@src/utils/fonts';
 
 export const Title = styled(
   Text,

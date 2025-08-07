@@ -53,7 +53,7 @@ import {
   parseCertificateSimple,
 } from '@selfxyz/common/utils';
 
-import { unsafe_getPrivateKey, useAuth } from '../providers/authProvider';
+import { unsafe_getPrivateKey, useAuth } from '@src/providers/authProvider';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues

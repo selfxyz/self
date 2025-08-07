@@ -2,10 +2,9 @@
 
 import { lazy } from 'react';
 
-import DevPrivateKeyScreen from '../screens/dev/DevPrivateKeyScreen';
-import { black, white } from '../utils/colors';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import DevPrivateKeyScreen from '@src/screens/dev/DevPrivateKeyScreen';
+import { black, white } from '@src/utils/colors';
 
 const DevFeatureFlagsScreen = lazy(
   () => import('../screens/dev/DevFeatureFlagsScreen'),

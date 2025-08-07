@@ -5,17 +5,16 @@ import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { YStack } from 'tamagui';
 
-import warningAnimation from '../../assets/animations/warning.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import Caution from '../../components/typography/Caution';
-import { SubHeader } from '../../components/typography/SubHeader';
-import { AppEvents } from '../../consts/analytics';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useSettingStore } from '../../stores/settingStore';
-import { black, white } from '../../utils/colors';
-import { confirmTap, notificationWarning } from '../../utils/haptic';
-
 import { useNavigation } from '@react-navigation/native';
+import warningAnimation from '@src/assets/animations/warning.json';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import Caution from '@src/components/typography/Caution';
+import { SubHeader } from '@src/components/typography/SubHeader';
+import { AppEvents } from '@src/consts/analytics';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import { useSettingStore } from '@src/stores/settingStore';
+import { black, white } from '@src/utils/colors';
+import { confirmTap, notificationWarning } from '@src/utils/haptic';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation = useNavigation();

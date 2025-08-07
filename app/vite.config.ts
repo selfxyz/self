@@ -30,6 +30,7 @@ export default defineConfig({
     alias: {
       '@env': path.resolve(__dirname, 'env.ts'),
       '/src': path.resolve(__dirname, 'src'),
+      '@src': path.resolve(__dirname, 'src'),
       'react-native-svg': 'react-native-svg-web',
       'lottie-react-native': 'lottie-react',
       'react-native-safe-area-context': path.resolve(

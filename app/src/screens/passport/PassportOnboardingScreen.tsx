@@ -5,21 +5,20 @@ import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 
-import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '../../utils/colors';
-import { impactLight } from '../../utils/haptic';
-
 import { useNavigation } from '@react-navigation/native';
+import passportOnboardingAnimation from '@src/assets/animations/passport_onboarding.json';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import ButtonsContainer from '@src/components/ButtonsContainer';
+import TextsContainer from '@src/components/TextsContainer';
+import Additional from '@src/components/typography/Additional';
+import Description from '@src/components/typography/Description';
+import { Title } from '@src/components/typography/Title';
+import { PassportEvents } from '@src/consts/analytics';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import { black, slate100, white } from '@src/utils/colors';
+import { impactLight } from '@src/utils/haptic';
 
 interface PassportOnboardingScreenProps {}
 
