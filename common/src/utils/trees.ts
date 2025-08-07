@@ -1,5 +1,4 @@
 import countries from 'i18n-iso-countries';
-import { createRequire } from 'module';
 import { poseidon2, poseidon3, poseidon6, poseidon10, poseidon12, poseidon13 } from 'poseidon-lite';
 
 import {
@@ -22,10 +21,9 @@ import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import type { ChildNodes } from '@openpassport/zk-kit-smt';
 import { SMT } from '@openpassport/zk-kit-smt';
 
-const en = createRequire(import.meta.url)('i18n-iso-countries/langs/en.json');
-
 // SideEffect here
-countries.registerLocale(en);
+// Register English locale - the package should handle this automatically
+// countries.registerLocale(en);
 
 // SMT trees for 3 levels of matching :
 // 1. Passport Number and Nationality tree : level 3 (Absolute Match)
