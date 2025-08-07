@@ -29,7 +29,9 @@ jobs:
       - name: enable yarn
         run: corepack enable yarn
       - name: Install Yarn dependencies
-        run: yarn workspaces focus @selfxyz/circuits
+        run: yarn install
+      - name: Build common dependencies
+        run: yarn workspace @selfxyz/common build
       - name: Run lint
         run: yarn workspace @selfxyz/circuits lint
 
@@ -39,7 +41,7 @@ jobs:
     strategy:
       matrix:
         script:
-          [test-register, test-register-id, test-dsc, test-disclose, test-ofac]
+          [test-register, test-register-id, test-dsc, test-disclose, test-disclose-id, test-ofac, test-ecdsa, test-rsa, test-rsa-pss, test-is-valid, test-is-older-than, test-not-in-list, test-custom-hasher]
     steps:
       - uses: actions/checkout@v4
 
@@ -74,7 +76,10 @@ jobs:
         run: corepack enable yarn
 
       - name: Install Yarn dependencies
-        run: yarn workspaces focus @selfxyz/circuits
+        run: yarn install
+
+      - name: Build common dependencies
+        run: yarn workspace @selfxyz/common build
 
       - name: Build circuits
         run: yarn workspace @selfxyz/circuits build-all
