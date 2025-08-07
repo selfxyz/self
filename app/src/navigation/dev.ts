@@ -2,7 +2,8 @@
 
 import { lazy } from 'react';
 
-import { white } from '../utils/colors';
+import DevPrivateKeyScreen from '../screens/dev/DevPrivateKeyScreen';
+import { black, white } from '../utils/colors';
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
@@ -25,6 +26,12 @@ const devScreens = {
     screen: MockDataScreen,
     options: {
       title: 'Mock Passport',
+      headerStyle: {
+        backgroundColor: black,
+      },
+      headerTitleStyle: {
+        color: white,
+      },
     } as NativeStackNavigationOptions,
   },
   MockDataDeepLink: {
@@ -42,10 +49,14 @@ const devScreens = {
   DevSettings: {
     screen: DevSettingsScreen,
     options: {
-      title: 'Developer Settings',
+      title: 'Dev Mode',
       headerStyle: {
-        backgroundColor: white,
+        backgroundColor: black,
       },
+      headerTitleStyle: {
+        color: white,
+      },
+      headerBackTitle: 'close',
     } as NativeStackNavigationOptions,
   },
   DevFeatureFlags: {
@@ -54,6 +65,18 @@ const devScreens = {
       title: 'Feature Flags',
       headerStyle: {
         backgroundColor: white,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  DevPrivateKey: {
+    screen: DevPrivateKeyScreen,
+    options: {
+      title: 'Private Key',
+      headerStyle: {
+        backgroundColor: black,
+      },
+      headerTitleStyle: {
+        color: white,
       },
     } as NativeStackNavigationOptions,
   },

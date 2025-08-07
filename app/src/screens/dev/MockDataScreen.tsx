@@ -8,7 +8,6 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
-  Input,
   ScrollView,
   Separator,
   Sheet,
@@ -29,20 +28,28 @@ import {
 } from '@selfxyz/common/utils/passports';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
-import { BodyText } from '../../components/typography/BodyText';
-import { Title } from '../../components/typography/Title';
+import { Caption } from '../../components/typography/Caption';
 import { MockDataEvents } from '../../consts/analytics';
+import SelfDevCard from '../../images/card-dev.svg';
+import IdIcon from '../../images/icons/id_icon.svg';
+import NoteIcon from '../../images/icons/note.svg';
 import { storePassportData } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import {
+  black,
   borderColor,
   separatorColor,
+  slate100,
+  slate200,
+  slate400,
+  slate500,
   textBlack,
   white,
+  zinc400,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
+import { dinot, plexMono } from '../../utils/fonts';
 import { buttonTap, selectionChange } from '../../utils/haptic';
 
 import { useNavigation } from '@react-navigation/native';
@@ -51,6 +58,11 @@ import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 const { trackEvent } = analytics();
 
 interface MockDataScreenProps {}
+
+const documentTypes = {
+  mock_passport: 'Passport',
+  mock_id_card: 'ID Card',
+};
 
 const signatureAlgorithmToStrictSignatureAlgorithm = {
   'sha256 rsa 65537 4096': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
@@ -116,9 +128,7 @@ const signatureAlgorithmToStrictSignatureAlgorithm = {
   'sha512 poland': ['sha512', 'sha512', 'rsa_sha256_65537_4096'],
 } as const;
 
-const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() + yearsOffset);
+const formatDateToYYMMDD = (date: Date): string => {
   return (
     date.toISOString().slice(2, 4) +
     date.toISOString().slice(5, 7) +
@@ -126,13 +136,121 @@ const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
   ).toString();
 };
 
+const getBirthDateFromAge = (age: number): string => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - age);
+  return formatDateToYYMMDD(date);
+};
+
+const getExpiryDateFromYears = (years: number): string => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + years);
+  return formatDateToYYMMDD(date);
+};
+
+const MockPassportTitleCard = () => {
+  return (
+    <YStack
+      backgroundColor="#18181B"
+      borderRadius={12}
+      borderColor="#27272A"
+      borderWidth={1}
+      flexDirection="column"
+      alignItems="flex-start"
+      padding={20}
+      gap={20}
+    >
+      <YStack
+        minWidth={46}
+        minHeight={46}
+        backgroundColor="#606060"
+        justifyContent="center"
+        alignItems="center"
+        borderRadius={3}
+      >
+        <IdIcon />
+      </YStack>
+      <YStack flex={1} flexDirection="column" gap={2}>
+        <Text fontFamily={dinot} fontWeight={500} fontSize="$6" color={white}>
+          Generate mock passport data
+        </Text>
+        <Caption fontFamily={dinot} fontSize="$5" color={zinc400}>
+          Configure data parameters to generate a mock passport for testing
+          purposes on the Self Protocol.
+        </Caption>
+      </YStack>
+    </YStack>
+  );
+};
+
+const HeroBanner = () => {
+  return (
+    <YStack backgroundColor={white} marginBottom="$6" position="relative">
+      <YStack
+        backgroundColor={black}
+        zIndex={1}
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom="15%"
+      />
+      <YStack zIndex={2}>
+        <YStack padding="$4">
+          <MockPassportTitleCard />
+        </YStack>
+        <YStack
+          shadowColor={black}
+          shadowOffset={{ width: 0, height: 2 }}
+          shadowOpacity={0.5}
+          shadowRadius={5}
+        >
+          <SelfDevCard width="100%" />
+        </YStack>
+      </YStack>
+    </YStack>
+  );
+};
+
+type FormSectionProps = {
+  title: string;
+  endSection?: boolean;
+  children: React.ReactNode;
+};
+
+const FormSection: React.FC<FormSectionProps> = ({
+  title,
+  endSection = false,
+  children,
+}) => {
+  const borderBottomWidth = endSection ? 0 : 1;
+  return (
+    <YStack
+      padding={20}
+      justifyContent="space-between"
+      gap={10}
+      borderBottomWidth={borderBottomWidth}
+      borderColor={slate200}
+    >
+      <Text
+        fontFamily={dinot}
+        textTransform="uppercase"
+        color={slate400}
+        fontSize="$4"
+      >
+        {title}
+      </Text>
+      {children}
+    </YStack>
+  );
+};
+
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const navigation = useNavigation();
-  const [birthDate, setBirthDate] = useState('2000/01/01');
+  const [age, setAge] = useState(21);
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isInOfacList, setIsInOfacList] = useState(false);
-  const [advancedMode, setAdvancedMode] = useState(false);
+  const [isInOfacList, setIsInOfacList] = useState(true);
   const [selectedDocumentType, setSelectedDocumentType] = useState<
     'mock_passport' | 'mock_id_card'
   >('mock_passport');
@@ -142,6 +260,16 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   );
   const [isCountrySheetOpen, setCountrySheetOpen] = useState(false);
   const [isAlgorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
+  const [isDocumentTypeSheetOpen, setDocumentTypeSheetOpen] = useState(false);
+
+  const resetFormValues = () => {
+    setAge(21);
+    setExpiryYears(5);
+    setIsInOfacList(true);
+    setSelectedDocumentType('mock_passport');
+    setSelectedAlgorithm('sha256 rsa 65537 2048');
+    setSelectedCountry('USA');
+  };
 
   const handleCountrySelect = (countryCode: string) => {
     setSelectedCountry(countryCode);
@@ -153,40 +281,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     setAlgorithmSheetOpen(false);
   };
 
-  const handleBirthDateChange = (text: string) => {
-    if (isInOfacList) return;
-
-    const value = text.replace(/[^0-9]/g, '');
-    let formattedValue = '';
-
-    if (value.length > 0) {
-      formattedValue += value.substring(0, Math.min(4, value.length));
-    }
-    if (value.length > 4) {
-      formattedValue += '/' + value.substring(4, Math.min(6, value.length));
-    }
-    if (value.length > 6) {
-      formattedValue += '/' + value.substring(6, Math.min(8, value.length));
-    }
-    setBirthDate(formattedValue);
-  };
-
-  const formatBirthDateForGeneration = (inputDate: string): string => {
-    if (inputDate && inputDate.length === 10 && inputDate.includes('/')) {
-      const parts = inputDate.split('/');
-      if (
-        parts.length === 3 &&
-        parts[0].length === 4 &&
-        parts[1].length === 2 &&
-        parts[2].length === 2
-      ) {
-        return `${parts[0].slice(2)}${parts[1]}${parts[2]}`;
-      }
-    }
-    console.warn(
-      'Birth date is not in YYYY/MM/DD format for generation. Using default.',
-    );
-    return '900101';
+  const handleDocumentTypeSelect = (
+    documentType: 'mock_passport' | 'mock_id_card',
+  ) => {
+    setSelectedDocumentType(documentType);
+    setDocumentTypeSheetOpen(false);
   };
 
   const handleGenerate = useCallback(async () => {
@@ -207,12 +306,12 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
       const idDocInput: Partial<IdDocInput> = {
         nationality: selectedCountry as IdDocInput['nationality'],
-        idType: selectedDocumentType,
+        idType: selectedDocumentType as IdDocInput['idType'],
         dgHashAlgo: dgHashAlgo as IdDocInput['dgHashAlgo'],
         eContentHashAlgo: eContentHashAlgo as IdDocInput['eContentHashAlgo'],
         signatureType:
           signatureTypeForGeneration as IdDocInput['signatureType'],
-        expiryDate: castDateToYYMMDDForExpiry(expiryYears),
+        expiryDate: getExpiryDateFromYears(expiryYears),
         passportNumber: randomPassportNumber,
       };
 
@@ -222,12 +321,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         idDocInput.lastName = 'HENAO MONTOYA';
         idDocInput.firstName = 'ARCANGEL DE JESUS';
       } else {
-        if (birthDate.length === 10 && birthDate.split('/').length === 3) {
-          dobForGeneration = formatBirthDateForGeneration(birthDate);
-        } else {
-          console.warn('Using default birth date 000101 (January 1, 2000)');
-          dobForGeneration = '000101';
-        }
+        dobForGeneration = getBirthDateFromAge(age);
       }
       idDocInput.birthDate = dobForGeneration;
       let mockDSC, rawMockData;
@@ -253,7 +347,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       setIsGenerating(false);
     }
   }, [
-    birthDate,
+    age,
     expiryYears,
     isInOfacList,
     navigation,
@@ -265,234 +359,368 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
-      setAdvancedMode(true);
       buttonTap();
       trackEvent(MockDataEvents.ENABLE_ADVANCED_MODE);
     });
 
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
   return (
     <YStack
       flex={1}
       backgroundColor={white}
-      paddingTop={top}
       paddingBottom={bottom + extraYPadding}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
-          <GestureDetector gesture={devModeTap}>
-            <YStack alignItems="center" marginBottom={'$10'}>
-              <Title>Generate Document Data</Title>
-              <BodyText textAlign="center">
-                Configure the document data parameters below
-              </BodyText>
-            </YStack>
-          </GestureDetector>
-
-          <XStack alignItems="center" justifyContent="space-between">
-            <BodyText>Document Type</BodyText>
-            <XStack space="$2" alignItems="center">
-              <Button
-                size="$3"
-                onPress={() => {
-                  buttonTap();
-                  setSelectedDocumentType('mock_passport');
-                }}
-                backgroundColor={
-                  selectedDocumentType === 'mock_passport'
-                    ? '$blue7Light'
-                    : white
-                }
-                borderColor={borderColor}
-                borderWidth={1}
-                color={
-                  selectedDocumentType === 'mock_passport' ? white : textBlack
-                }
-              >
-                Passport
-              </Button>
-              <Button
-                size="$3"
-                onPress={() => {
-                  buttonTap();
-                  setSelectedDocumentType('mock_id_card');
-                }}
-                backgroundColor={
-                  selectedDocumentType === 'mock_id_card'
-                    ? '$blue7Light'
-                    : white
-                }
-                borderColor={borderColor}
-                borderWidth={1}
-                color={
-                  selectedDocumentType === 'mock_id_card' ? white : textBlack
-                }
-              >
-                ID Card
-              </Button>
-            </XStack>
-          </XStack>
-
-          {advancedMode && (
-            <XStack alignItems="center" justifyContent="space-between">
-              <BodyText>Encryption</BodyText>
+        <GestureDetector gesture={devModeTap}>
+          <HeroBanner />
+        </GestureDetector>
+        <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
+          <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
+            Mock Passport Parameters
+          </Text>
+          <YStack
+            borderRadius={10}
+            borderWidth={1}
+            borderColor={slate200}
+            backgroundColor={slate100}
+          >
+            <FormSection title="Encryption Preference">
               <Button
                 onPress={() => {
                   buttonTap();
                   setAlgorithmSheetOpen(true);
                 }}
-                padding="$2"
+                paddingVertical="$5"
                 paddingHorizontal="$3"
                 backgroundColor="white"
-                borderColor={borderColor}
+                borderColor={slate200}
                 borderWidth={1}
-                borderRadius="$4"
+                borderRadius={5}
               >
-                <XStack alignItems="center" gap="$2">
-                  <Text fontSize="$4">{selectedAlgorithm}</Text>
-                  <ChevronDown size={20} />
+                <XStack justifyContent="space-between" width="100%">
+                  <Text fontSize="$4" fontFamily={plexMono} color={black}>
+                    {selectedAlgorithm}
+                  </Text>
+                  <ChevronDown size={20} color={slate500} />
                 </XStack>
               </Button>
-            </XStack>
-          )}
+            </FormSection>
 
-          <XStack alignItems="center" justifyContent="space-between">
-            <BodyText>Nationality</BodyText>
-            <Button
-              onPress={() => {
-                buttonTap();
-                setCountrySheetOpen(true);
-                trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
-              }}
-              padding="$2"
-              paddingHorizontal="$3"
-              backgroundColor="white"
-              borderColor={borderColor}
-              borderWidth={1}
-              borderRadius="$4"
-            >
-              <XStack alignItems="center" gap="$2">
-                <Text fontSize="$4">
-                  {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
-                  {flag(getCountryISO2(selectedCountry))}
+            <FormSection title="Document Type">
+              <Button
+                onPress={() => {
+                  buttonTap();
+                  setDocumentTypeSheetOpen(true);
+                }}
+                paddingVertical="$5"
+                paddingHorizontal="$3"
+                backgroundColor="white"
+                borderColor={slate200}
+                borderWidth={1}
+                borderRadius={5}
+              >
+                <XStack justifyContent="space-between" width="100%">
+                  <Text
+                    fontSize="$4"
+                    fontFamily={plexMono}
+                    color={black}
+                    textTransform="uppercase"
+                  >
+                    {
+                      documentTypes[
+                        selectedDocumentType as keyof typeof documentTypes
+                      ]
+                    }
+                  </Text>
+                  <ChevronDown size={20} color={slate500} />
+                </XStack>
+              </Button>
+            </FormSection>
+
+            <FormSection title="Nationality">
+              <Button
+                onPress={() => {
+                  buttonTap();
+                  setCountrySheetOpen(true);
+                  trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
+                }}
+                paddingVertical="$5"
+                paddingHorizontal="$3"
+                backgroundColor="white"
+                borderColor={slate200}
+                borderWidth={1}
+                borderRadius={5}
+              >
+                <XStack justifyContent="space-between" width="100%">
+                  <Text
+                    fontSize="$4"
+                    fontFamily={plexMono}
+                    color={black}
+                    textTransform="uppercase"
+                  >
+                    {flag(getCountryISO2(selectedCountry))}
+                    {'   '}
+                    {countryCodes[selectedCountry as keyof typeof countryCodes]}
+                  </Text>
+                  <ChevronDown size={20} color={slate500} />
+                </XStack>
+              </Button>
+            </FormSection>
+
+            <FormSection title="Age">
+              <XStack
+                alignItems="center"
+                gap="$2"
+                justifyContent="space-between"
+              >
+                <Button
+                  height="$3.5"
+                  width="$6"
+                  backgroundColor="white"
+                  justifyContent="center"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  onPress={() => {
+                    buttonTap();
+                    setAge(age - 1);
+                    trackEvent(MockDataEvents.DECREASE_AGE);
+                  }}
+                  disabled={expiryYears <= 0}
+                >
+                  <Minus color={slate500} />
+                </Button>
+                <Text
+                  textTransform="uppercase"
+                  textAlign="center"
+                  color={textBlack}
+                  fontWeight="500"
+                  fontSize="$4"
+                  fontFamily={plexMono}
+                >
+                  {age} years or older
                 </Text>
-                <ChevronDown size={20} />
+                <Button
+                  height="$3.5"
+                  width="$6"
+                  backgroundColor="white"
+                  justifyContent="center"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  onPress={() => {
+                    buttonTap();
+                    setAge(age + 1);
+                    trackEvent(MockDataEvents.INCREASE_AGE);
+                  }}
+                >
+                  <Plus color={slate500} />
+                </Button>
               </XStack>
-            </Button>
-          </XStack>
+            </FormSection>
 
-          <XStack alignItems="center" justifyContent="space-between">
-            <BodyText>Birth Date (YYYY/MM/DD)</BodyText>
-            <Input
-              placeholder="YYYY/MM/DD"
-              value={isInOfacList ? '1954/10/07' : birthDate}
-              onChangeText={handleBirthDateChange}
-              keyboardType="numeric"
-              maxLength={10}
-              width={150}
-              textAlign="center"
-              borderColor={borderColor}
-              borderWidth={1}
-              borderRadius="$4"
-              padding="$2"
-              disabled={isInOfacList}
-              opacity={isInOfacList ? 0.7 : 1}
-            />
-          </XStack>
+            <FormSection title="Passport Expires In">
+              <XStack
+                alignItems="center"
+                gap="$2"
+                justifyContent="space-between"
+              >
+                <Button
+                  height="$3.5"
+                  width="$6"
+                  backgroundColor="white"
+                  justifyContent="center"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  onPress={() => {
+                    buttonTap();
+                    setExpiryYears(expiryYears - 1);
+                    trackEvent(MockDataEvents.DECREASE_EXPIRY_YEARS);
+                  }}
+                  disabled={expiryYears <= 0}
+                >
+                  <Minus color={slate500} />
+                </Button>
+                <Text
+                  textTransform="uppercase"
+                  textAlign="center"
+                  color={textBlack}
+                  fontWeight="500"
+                  fontSize="$4"
+                  fontFamily={plexMono}
+                >
+                  {expiryYears} years
+                </Text>
+                <Button
+                  height="$3.5"
+                  width="$6"
+                  backgroundColor="white"
+                  justifyContent="center"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  onPress={() => {
+                    buttonTap();
+                    setExpiryYears(expiryYears + 1);
+                    trackEvent(MockDataEvents.INCREASE_EXPIRY_YEARS);
+                  }}
+                >
+                  <Plus color={slate500} />
+                </Button>
+              </XStack>
+            </FormSection>
 
-          <XStack alignItems="center" justifyContent="space-between">
-            <BodyText>Passport expires in</BodyText>
-            <XStack alignItems="center" gap="$2">
-              <Button
-                height="$3.5"
-                width="$3.5"
-                backgroundColor="white"
-                justifyContent="center"
-                borderColor={borderColor}
-                borderWidth={1}
-                borderRadius="$10"
-                onPress={() => {
-                  buttonTap();
-                  setExpiryYears(expiryYears - 1);
-                  trackEvent(MockDataEvents.DECREASE_EXPIRY_YEARS);
-                }}
-                disabled={expiryYears <= 0}
-              >
-                <Minus />
-              </Button>
-              <Text
-                textAlign="center"
-                width="$6"
-                color={textBlack}
-                fontSize="$5"
-              >
-                {expiryYears} years
-              </Text>
-              <Button
-                height="$3.5"
-                width="$3.5"
-                backgroundColor="white"
-                justifyContent="center"
-                borderColor={borderColor}
-                borderWidth={1}
-                borderRadius="$10"
-                onPress={() => {
-                  buttonTap();
-                  setExpiryYears(expiryYears + 1);
-                  trackEvent(MockDataEvents.INCREASE_EXPIRY_YEARS);
-                }}
-              >
-                <Plus />
-              </Button>
-            </XStack>
-          </XStack>
-
-          <XStack alignItems="center" justifyContent="space-between">
-            <BodyText>In OFAC list</BodyText>
-            <Switch
-              size="$3.5"
-              checked={isInOfacList}
-              onCheckedChange={() => {
-                buttonTap();
-                setIsInOfacList(!isInOfacList);
-                trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
-              }}
-              backgroundColor={isInOfacList ? '$green7Light' : '$gray4'}
+            <FormSection title="In OFAC sanction list" endSection={true}>
+              <YStack flexDirection="column" gap="$2">
+                <YStack
+                  flexDirection="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  width="100%"
+                  borderWidth={1}
+                  borderColor={slate200}
+                  borderRadius={5}
+                  backgroundColor={white}
+                  paddingVertical="$3"
+                  paddingHorizontal="$4"
+                >
+                  <Text textTransform="uppercase">Not on list</Text>
+                  <Switch
+                    size="$3.5"
+                    checked={!isInOfacList}
+                    onCheckedChange={() => {
+                      buttonTap();
+                      setIsInOfacList(!isInOfacList);
+                      trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
+                    }}
+                    backgroundColor="$gray12"
+                    borderRadius={10}
+                    height={34}
+                    width={65}
+                    padding="$1.5"
+                    flexDirection="row"
+                    justifyContent="center"
+                    alignSelf="center"
+                    unstyled={true}
+                  >
+                    <Switch.Thumb
+                      animation="quick"
+                      backgroundColor="white"
+                      height={26}
+                      width={26}
+                      borderRadius={6}
+                      unstyled={true}
+                    />
+                  </Switch>
+                </YStack>
+                <YStack
+                  flexDirection="row"
+                  gap="$3"
+                  alignItems="center"
+                  width="100%"
+                >
+                  <NoteIcon width={25} height={25} color={slate400} />
+                  <Text
+                    color={slate400}
+                    fontSize="$2"
+                    textTransform="uppercase"
+                    flex={1}
+                    letterSpacing={0.04}
+                  >
+                    OFAC list is a list of people who are suspected of being
+                    involved in terrorism or other illegal activities.
+                  </Text>
+                </YStack>
+              </YStack>
+            </FormSection>
+            <YStack
+              paddingHorizontal="$4"
+              paddingVertical="$2"
+              marginBottom="$3"
             >
-              <Switch.Thumb animation="quick" backgroundColor="white" />
-            </Switch>
-          </XStack>
+              <Button
+                backgroundColor={slate200}
+                color={slate500}
+                fontFamily={dinot}
+                onPress={() => {
+                  buttonTap();
+                  resetFormValues();
+                }}
+              >
+                Reset all values
+              </Button>
+            </YStack>
+          </YStack>
+        </YStack>
 
-          {isInOfacList && (
-            <Text color="$red10" fontSize="$3">
-              OFAC list is a list of people who are suspected of being involved
-              in terrorism or other illegal activities.
-            </Text>
-          )}
+        <YStack paddingHorizontal="$4" paddingBottom="$4">
+          <ButtonsContainer>
+            <PrimaryButton
+              trackEvent={MockDataEvents.GENERATE_DATA}
+              onPress={handleGenerate}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <Spinner color="gray" size="small" />
+              ) : (
+                'Generate Mock Passport'
+              )}
+            </PrimaryButton>
+          </ButtonsContainer>
         </YStack>
       </ScrollView>
 
-      <YStack paddingHorizontal="$4" paddingBottom="$4">
-        <ButtonsContainer>
-          <PrimaryButton
-            trackEvent={MockDataEvents.GENERATE_DATA}
-            onPress={handleGenerate}
-            disabled={isGenerating}
-          >
-            {isGenerating ? (
-              <Spinner color="gray" size="small" />
-            ) : (
-              'Generate Passport Data'
-            )}
-          </PrimaryButton>
-          <SecondaryButton
-            trackEvent={MockDataEvents.CANCEL_GENERATION}
-            onPress={() => navigation.goBack()}
-          >
-            Cancel
-          </SecondaryButton>
-        </ButtonsContainer>
-      </YStack>
+      <Sheet
+        modal
+        open={isDocumentTypeSheetOpen}
+        onOpenChange={setDocumentTypeSheetOpen}
+        snapPoints={[60]}
+        animation="medium"
+        disableDrag
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame
+          backgroundColor={white}
+          borderTopLeftRadius="$9"
+          borderTopRightRadius="$9"
+        >
+          <YStack padding="$4">
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              marginBottom="$4"
+            >
+              <Text fontSize="$8">Select a document type</Text>
+              <XStack
+                onPress={() => {
+                  selectionChange();
+                  setDocumentTypeSheetOpen(false);
+                }}
+                padding="$2"
+              >
+                <X color={borderColor} size="$1.5" marginRight="$2" />
+              </XStack>
+            </XStack>
+            <Separator borderColor={separatorColor} marginBottom="$4" />
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {Object.entries(documentTypes).map(([docType, displayText]) => (
+                <TouchableOpacity
+                  key={docType}
+                  onPress={() => {
+                    buttonTap();
+                    handleDocumentTypeSelect(
+                      docType as 'mock_passport' | 'mock_id_card',
+                    );
+                    setDocumentTypeSheetOpen(false);
+                    trackEvent(MockDataEvents.SELECT_DOCUMENT_TYPE);
+                  }}
+                >
+                  <XStack paddingVertical="$3" paddingHorizontal="$2">
+                    <Text fontSize="$4">{displayText}</Text>
+                  </XStack>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
 
       <Sheet
         modal
