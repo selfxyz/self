@@ -4,12 +4,23 @@ import { useProtocolStore } from '../../../src/stores/protocolStore';
 import { useProvingStore } from '../../../src/utils/proving/provingMachine';
 import { actorMock } from './actorMock';
 
-import { jest } from '@jest/globals';
-
 jest.mock('xstate', () => {
-  const actual = jest.requireActual('xstate') as any;
   const { actorMock: mockActor } = require('./actorMock');
-  return { ...actual, createActor: jest.fn(() => mockActor) };
+  return {
+    createActor: jest.fn(() => mockActor),
+    createMachine: jest.fn(),
+    assign: jest.fn(),
+    send: jest.fn(),
+    spawn: jest.fn(),
+    interpret: jest.fn(),
+    fromPromise: jest.fn(),
+    fromObservable: jest.fn(),
+    fromEventObservable: jest.fn(),
+    fromCallback: jest.fn(),
+    fromTransition: jest.fn(),
+    fromReducer: jest.fn(),
+    fromRef: jest.fn(),
+  };
 });
 
 jest.mock('../../../src/utils/analytics', () => () => ({
