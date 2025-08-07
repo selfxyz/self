@@ -15,6 +15,8 @@ import useUserStore from '../../stores/userStore';
 import { white } from '../../utils/colors';
 
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../navigation';
 
 type NFCParams = {
   skipPACE?: boolean;
@@ -88,7 +90,7 @@ const NFC_METHODS = [
 ];
 
 const NFCMethodSelectionScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
   const [error, setError] = useState('');
@@ -122,13 +124,25 @@ const NFCMethodSelectionScreen: React.FC = () => {
       return;
     }
 
-    const params: NFCParams = {
+    const params = {
+      passportNumber,
+      dateOfBirth,
+      dateOfExpiry,
       ...method.params,
+    } as NFCParams & {
+      passportNumber: string;
+      dateOfBirth: string;
+      dateOfExpiry: string;
     };
+
     if (selectedMethod === 'can') {
       params.canNumber = canValue;
     }
-    navigation.navigate('PassportNFCScan', params as any);
+
+    navigation.navigate(
+      'PassportNFCScan',
+      params as unknown as RootStackParamList['PassportNFCScan'],
+    );
   };
 
   return (

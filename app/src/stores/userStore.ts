@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 
 import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
+import type { IdDocInput } from '@selfxyz/common/utils';
 
 interface UserState {
   documentType: string;
@@ -12,7 +13,7 @@ interface UserState {
   dateOfExpiry: string;
   deepLinkName?: string;
   deepLinkSurname?: string;
-  deepLinkNationality?: string;
+  deepLinkNationality?: IdDocInput['nationality'];
   deepLinkBirthDate?: string;
   deepLinkGender?: string;
   update: (patch: Partial<UserState>) => void;
@@ -20,7 +21,7 @@ interface UserState {
   setDeepLinkUserDetails: (details: {
     name?: string;
     surname?: string;
-    nationality?: string;
+    nationality?: IdDocInput['nationality'];
     birthDate?: string;
     gender?: string;
   }) => void;
