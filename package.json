@@ -5,6 +5,7 @@
     "circuits",
     "common",
     "contracts",
+    "packages/*",
     "prover/tests",
     "sdk/*"
   ],

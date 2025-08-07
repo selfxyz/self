@@ -1,0 +1,45 @@
+{
+  "name": "@selfxyz/sdk-alpha",
+  "version": "0.0.1",
+  "description": "Self SDK (alpha) for registering and proving. Adapters-first, RN-first with web shims.",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "react-native": "./dist/index.js",
+      "browser": "./dist/index.js",
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --dts --format esm --clean --out-dir dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate:exports": "node ./scripts/validate-exports.mjs",
+    "validate:pkg": "node ./scripts/verify-conditions.mjs",
+    "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "tslib": "^2.6.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "self",
+    "react-native",
+    "web",
+    "zk",
+    "sdk"
+  ]
+}
