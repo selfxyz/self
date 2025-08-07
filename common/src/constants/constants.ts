@@ -518,7 +518,7 @@ export const countryCodes = {
 // not using a library for this as the entry countries use can be differnt than the ISO 3166-1 alpha-3 standard
 export type Country3LetterCode = keyof typeof countryCodes;
 
-export function getCountryCode(countryName: string): string | string {
+export function getCountryCode(countryName: string): string {
   const entries = Object.entries(countryCodes);
   const found = entries.find(([_, name]) => name.toLowerCase() === countryName.toLowerCase());
   return found ? found[0] : 'undefined';
