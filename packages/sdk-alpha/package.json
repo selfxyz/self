@@ -23,6 +23,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
     "validate:pkg": "node ./scripts/verify-conditions.mjs",
+    "report:exports": "node ./scripts/report-exports.mjs",
     "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg"
   },
   "devDependencies": {
