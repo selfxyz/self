@@ -796,7 +796,7 @@ export async function setSelectedDocument(documentId: string): Promise<void> {
   if (metadata) {
     catalog.selectedDocumentId = documentId;
     await saveDocumentCatalog(catalog);
-    
+
     notifyDocumentChange(metadata.mock);
   }
 }

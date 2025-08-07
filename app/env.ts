@@ -13,10 +13,9 @@ export const GOOGLE_SIGNIN_ANDROID_CLIENT_ID =
 export const GOOGLE_SIGNIN_WEB_CLIENT_ID =
   process.env.GOOGLE_SIGNIN_WEB_CLIENT_ID;
 
+export const GRAFANA_LOKI_PASSWORD = process.env.GRAFANA_LOKI_PASSWORD;
 export const GRAFANA_LOKI_URL = process.env.GRAFANA_LOKI_URL;
 export const GRAFANA_LOKI_USERNAME = process.env.GRAFANA_LOKI_USERNAME;
-export const GRAFANA_LOKI_PASSWORD = process.env.GRAFANA_LOKI_PASSWORD;
-
 
 /* This file provides compatiblity between how web expects env variables to be and how native does.
  *   on web it is aliased to @env on native it is not used

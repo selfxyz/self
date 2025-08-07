@@ -1,18 +1,25 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import './logger/nativeLoggerBridge';
-
-import { configLoggerType, logger } from 'react-native-logs';
+import type { configLoggerType } from 'react-native-logs';
+import { logger } from 'react-native-logs';
 
 import { interceptConsole } from './logger/consoleInterceptor';
 import { lokiTransport } from './logger/lokiTransport';
 
-// Define log levels
-export const logLevels = {
-  debug: 0,
-  info: 1,
-  warn: 2,
-  error: 3,
+import './logger/nativeLoggerBridge';
+
+export {
+  AppLogger,
+  AuthLogger,
+  BackupLogger,
+  DocumentLogger,
+  Logger,
+  MockDataLogger,
+  NfcLogger,
+  NotificationLogger,
+  PassportLogger,
+  ProofLogger,
+  SettingsLogger,
 };
 
 const defaultConfig: configLoggerType<any, any> = {
@@ -51,16 +58,10 @@ const DocumentLogger = Logger.extend('DOCUMENT');
 //Native Modules
 const NfcLogger = Logger.extend('NFC');
 
-export {
-  AppLogger,
-  AuthLogger,
-  BackupLogger,
-  DocumentLogger,
-  Logger,
-  MockDataLogger,
-  NfcLogger,
-  NotificationLogger,
-  PassportLogger,
-  ProofLogger,
-  SettingsLogger,
+// Define log levels
+export const logLevels = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
 };

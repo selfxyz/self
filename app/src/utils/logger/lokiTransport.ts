@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { AppState, AppStateStatus } from 'react-native';
-import { transportFunctionType } from 'react-native-logs';
+import type { AppStateStatus } from 'react-native';
+import { AppState } from 'react-native';
+import type { transportFunctionType } from 'react-native-logs';
 
 import {
   GRAFANA_LOKI_PASSWORD,
@@ -131,6 +132,18 @@ registerDocumentChangeCallback((isMock: boolean) => {
   isCurrentPassportMockFlag = isMock;
 });
 
+// Export flush function for manual flushing if needed
+export const flushLokiTransport = () => {
+  if (batch.length > 0) {
+    sendBatch([...batch], 'default');
+    batch = [];
+  }
+  if (batchTimer) {
+    clearTimeout(batchTimer);
+    batchTimer = null;
+  }
+};
+
 // Create react-native-logs transport function
 export const lokiTransport: transportFunctionType<any> = props => {
   const { msg, rawMsg, level, extension } = props;
@@ -174,18 +187,6 @@ export const lokiTransport: transportFunctionType<any> = props => {
   };
 
   addToBatch(entry, namespace);
-};
-
-// Export flush function for manual flushing if needed
-export const flushLokiTransport = () => {
-  if (batch.length > 0) {
-    sendBatch([...batch], 'default');
-    batch = [];
-  }
-  if (batchTimer) {
-    clearTimeout(batchTimer);
-    batchTimer = null;
-  }
 };
 
 //TODO: test this

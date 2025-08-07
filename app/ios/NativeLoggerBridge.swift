@@ -6,6 +6,8 @@ import React
 @objc(NativeLoggerBridge)
 class NativeLoggerBridge: RCTEventEmitter {
     
+    private static let loggerQueue = DispatchQueue(label: "com.proofofpassportapp.logger", qos: .utility)
+    
     @objc
     override static func requiresMainQueueSetup() -> Bool {
         return false
@@ -28,7 +30,7 @@ class NativeLoggerBridge: RCTEventEmitter {
             params["data"] = data
         }
         
-        DispatchQueue.main.async {
+        loggerQueue.async {
             if let sharedInstance = NativeLoggerBridge.shared {
                 sharedInstance.sendEvent(withName: "logEvent", body: params)
             }
