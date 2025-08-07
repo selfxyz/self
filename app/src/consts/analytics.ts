@@ -134,6 +134,7 @@ export const ProofEvents = {
   PROVING_STATE_CHANGE: 'Proof: Proving State Change',
   QR_SCAN_CANCELLED: 'Proof: QR Scan Cancelled',
   QR_SCAN_FAILED: 'Proof: QR Scan Failed',
+  QR_SCAN_REQUESTED: 'Proof: QR Scan Requested',
   QR_SCAN_SUCCESS: 'Proof: QR Scan Success',
   REGISTER_COMPLETED: 'Proof: Register Completed',
   SHARED_KEY_DERIVED: 'Proof: Shared Key Derived',
