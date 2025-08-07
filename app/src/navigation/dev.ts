@@ -2,7 +2,7 @@
 
 import { lazy } from 'react';
 
-import { white } from '../utils/colors';
+import { black, white } from '../utils/colors';
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 

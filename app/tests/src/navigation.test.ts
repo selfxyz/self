@@ -13,6 +13,7 @@ describe('navigation', () => {
       'CreateMock',
       'DevFeatureFlags',
       'DevHapticFeedback',
+      'DevPrivateKey',
       'DevSettings',
       'Disclaimer',
       'Home',

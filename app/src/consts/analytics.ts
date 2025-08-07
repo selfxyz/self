@@ -60,14 +60,17 @@ export const DocumentEvents = {
 export const MockDataEvents = {
   CANCEL_GENERATION: 'Mock Data: Cancel Generation',
   CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
+  DECREASE_AGE: 'Mock Data: Decrease Age',
   DECREASE_EXPIRY_YEARS: 'Mock Data: Decrease Expiry Years',
   ENABLE_ADVANCED_MODE: 'Mock Data: Enable Advanced Mode',
   GENERATE_DATA: 'Mock Data: Generate Data',
+  INCREASE_AGE: 'Mock Data: Increase Age',
   INCREASE_EXPIRY_YEARS: 'Mock Data: Increase Expiry Years',
   OPEN_ALGORITHM_SELECTION: 'Mock Data: Open Algorithm Selection',
   OPEN_COUNTRY_SELECTION: 'Mock Data: Open Country Selection',
   SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
   SELECT_COUNTRY: 'Mock Data: Select Country',
+  SELECT_DOCUMENT_TYPE: 'Mock Data: Select Document Type',
   TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
 };
 
