@@ -38,7 +38,7 @@ export interface StorageBackend {
 export const LOCAL_OVERRIDES_KEY = 'feature_flag_overrides';
 
 // Default feature flags - this should be defined by the consuming application
-const defaultFlags: Record<string, any> = {};
+const defaultFlags: Record<string, string | boolean> = {};
 
 export const clearAllLocalOverrides = async (
   storage: StorageBackend,
