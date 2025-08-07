@@ -4,10 +4,7 @@ import Lottie from 'lottie-react';
 import CHECK_ANIMATION from '../animations/check_animation.json' with { type: 'json' };
 import X_ANIMATION from '../animations/x_animation.json' with { type: 'json' };
 import LED from './LED.js';
-import {
-  REDIRECT_URL,
-  WS_DB_RELAYER,
-} from '@selfxyz/common/constants/constants';
+import { REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/common/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from '../utils/utils.js';
 import {

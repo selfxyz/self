@@ -6,7 +6,7 @@ import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement, getStartOfDayTimestamp } from "../utils/utils";
-import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
+import { getPackedForbiddenCountries } from "@selfxyz/common/utils/sanctions";
 import { countries } from "@selfxyz/common/constants/countries";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";

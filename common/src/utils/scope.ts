@@ -1,5 +1,21 @@
 import { poseidon2 } from 'poseidon-lite';
+
 import { flexiblePoseidon } from './hash.js';
+
+export function bigIntToString(bigInt: bigint): string {
+  if (bigInt === 0n) return '';
+
+  let result = '';
+  let tempBigInt = bigInt;
+
+  while (tempBigInt > 0n) {
+    const charCode = Number(tempBigInt & 0xffn);
+    result = String.fromCharCode(charCode) + result;
+    tempBigInt = tempBigInt >> 8n;
+  }
+
+  return result;
+}
 
 export function formatEndpoint(endpoint: string): string {
   if (!endpoint) return '';
@@ -40,21 +56,6 @@ export function stringToBigInt(str: string): bigint {
   if (result > MAX_VALUE) {
     console.log(`str: ${str}, str.length: ${str.length}`);
     throw new Error('Resulting BigInt exceeds maximum size of 31 bytes');
-  }
-
-  return result;
-}
-
-export function bigIntToString(bigInt: bigint): string {
-  if (bigInt === 0n) return '';
-
-  let result = '';
-  let tempBigInt = bigInt;
-
-  while (tempBigInt > 0n) {
-    const charCode = Number(tempBigInt & 0xffn);
-    result = String.fromCharCode(charCode) + result;
-    tempBigInt = tempBigInt >> 8n;
   }
 
   return result;

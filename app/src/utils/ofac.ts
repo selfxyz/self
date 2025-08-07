@@ -2,13 +2,13 @@
 
 import { TREE_URL, TREE_URL_STAGING } from '@selfxyz/common/constants';
 
-export type OfacVariant = 'passport' | 'id_card';
-
 export interface OfacTrees {
   passportNoAndNationality: any;
   nameAndDob: any;
   nameAndYob: any;
 }
+
+export type OfacVariant = 'passport' | 'id_card';
 
 // Generic helper to fetch a single OFAC tree and validate the response shape.
 const fetchTree = async (url: string): Promise<any> => {

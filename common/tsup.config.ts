@@ -1,5 +1,5 @@
-import { defineConfig } from 'tsup';
 import path from 'path';
+import { defineConfig } from 'tsup';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);

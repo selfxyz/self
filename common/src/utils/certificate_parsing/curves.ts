@@ -8,6 +8,72 @@ export interface StandardCurve {
   h: string;
 }
 
+export function getCurveForElliptic(curveName: string): string {
+  const curves = {
+    secp224r1: 'p224',
+    secp256r1: 'p256',
+    secp384r1: 'p384',
+    secp521r1: 'p521',
+    brainpoolP224r1: 'brainpoolP224r1',
+    brainpoolP256r1: 'brainpoolP256r1',
+    brainpoolP384r1: 'brainpoolP384r1',
+    brainpoolP512r1: 'brainpoolP512r1',
+  };
+
+  if (!curves[curveName]) {
+    throw new Error('Invalid curve: ' + curveName);
+  }
+
+  return curves[curveName];
+}
+
+export function getECDSACurveBits(curveName: string): string {
+  const curveBits: { [key: string]: number } = {
+    secp224r1: 224,
+    secp256r1: 256,
+    secp384r1: 384,
+    secp521r1: 521,
+    brainpoolP224r1: 224,
+    brainpoolP256r1: 256,
+    brainpoolP384r1: 384,
+    brainpoolP512r1: 512,
+  };
+  if (curveName in curveBits) {
+    return curveBits[curveName].toString();
+  }
+  console.log('\x1b[31m%s\x1b[0m', `curve name ${curveName} not found in curveBits`);
+  return 'unknown';
+}
+
+export function identifyCurve(params: any): string {
+  const normalizedParams = {
+    p: normalizeHex(params.p),
+    a: normalizeHex(params.a),
+    b: normalizeHex(params.b),
+    G: normalizeHex(params.G),
+    n: normalizeHex(params.n),
+    h: normalizeHex(params.h),
+  };
+
+  for (const curve of standardCurves) {
+    if (
+      normalizedParams.p === normalizeHex(curve.p) &&
+      normalizedParams.a === normalizeHex(curve.a) &&
+      normalizedParams.b === normalizeHex(curve.b) &&
+      normalizedParams.G === normalizeHex(curve.G) &&
+      normalizedParams.n === normalizeHex(curve.n) &&
+      normalizedParams.h === normalizeHex(curve.h)
+    ) {
+      return curve.name;
+    }
+  }
+  console.log('Unknown curve:', normalizedParams);
+  return 'Unknown curve';
+}
+
+export function normalizeHex(hex: string): string {
+  return hex.toLowerCase().replace(/^0x/, '').replace(/^00/, '');
+}
 export const standardCurves: StandardCurve[] = [
   {
     name: 'secp192r1',
@@ -100,69 +166,3 @@ export const standardCurves: StandardCurve[] = [
     h: '01',
   },
 ];
-
-export function normalizeHex(hex: string): string {
-  return hex.toLowerCase().replace(/^0x/, '').replace(/^00/, '');
-}
-
-export function identifyCurve(params: any): string {
-  const normalizedParams = {
-    p: normalizeHex(params.p),
-    a: normalizeHex(params.a),
-    b: normalizeHex(params.b),
-    G: normalizeHex(params.G),
-    n: normalizeHex(params.n),
-    h: normalizeHex(params.h),
-  };
-
-  for (const curve of standardCurves) {
-    if (
-      normalizedParams.p === normalizeHex(curve.p) &&
-      normalizedParams.a === normalizeHex(curve.a) &&
-      normalizedParams.b === normalizeHex(curve.b) &&
-      normalizedParams.G === normalizeHex(curve.G) &&
-      normalizedParams.n === normalizeHex(curve.n) &&
-      normalizedParams.h === normalizeHex(curve.h)
-    ) {
-      return curve.name;
-    }
-  }
-  console.log('Unknown curve:', normalizedParams);
-  return 'Unknown curve';
-}
-
-export function getECDSACurveBits(curveName: string): string {
-  const curveBits: { [key: string]: number } = {
-    secp224r1: 224,
-    secp256r1: 256,
-    secp384r1: 384,
-    secp521r1: 521,
-    brainpoolP224r1: 224,
-    brainpoolP256r1: 256,
-    brainpoolP384r1: 384,
-    brainpoolP512r1: 512,
-  };
-  if (curveName in curveBits) {
-    return curveBits[curveName].toString();
-  }
-  console.log('\x1b[31m%s\x1b[0m', `curve name ${curveName} not found in curveBits`);
-  return 'unknown';
-}
-export function getCurveForElliptic(curveName: string): string {
-  const curves = {
-    secp224r1: 'p224',
-    secp256r1: 'p256',
-    secp384r1: 'p384',
-    secp521r1: 'p521',
-    brainpoolP224r1: 'brainpoolP224r1',
-    brainpoolP256r1: 'brainpoolP256r1',
-    brainpoolP384r1: 'brainpoolP384r1',
-    brainpoolP512r1: 'brainpoolP512r1',
-  };
-
-  if (!curves[curveName]) {
-    throw new Error('Invalid curve: ' + curveName);
-  }
-
-  return curves[curveName];
-}

@@ -1,9 +1,8 @@
 export {
-  formatCallData_register,
-  formatCallData_dsc,
   formatCallData_disclose,
-  packForbiddenCountriesList,
+  formatCallData_dsc,
+  formatCallData_register,
   formatProof,
+  packForbiddenCountriesList,
 } from './formatCallData.js';
-
 export { getPackedForbiddenCountries } from './forbiddenCountries.js';

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
@@ -21,6 +20,9 @@ import {
 } from '../../utils/notifications/notificationService';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from './ProofRequestStatusScreen';
+
+import type { StaticScreenProps } from '@react-navigation/native';
+import { usePreventRemove } from '@react-navigation/native';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
 

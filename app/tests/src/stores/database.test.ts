@@ -16,6 +16,15 @@ const mockSQLite = SQLite as any;
 describe('database (SQLite)', () => {
   let mockDb: any;
 
+  // Suppress console errors during testing to avoid cluttering output
+  beforeAll(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
