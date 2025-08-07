@@ -1,10 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import {
-  useFocusEffect,
-  useNavigation,
-  usePreventRemove,
-} from '@react-navigation/native';
 import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, styled, YStack } from 'tamagui';
@@ -12,6 +7,7 @@ import { Button, styled, YStack } from 'tamagui';
 import { pressedStyle } from '../../components/buttons/pressedStyle';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
+import { ProofEvents } from '../../consts/analytics';
 import { useAppUpdates } from '../../hooks/useAppUpdates';
 import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
@@ -20,6 +16,7 @@ import ScanIcon from '../../images/icons/qr_scan.svg';
 import WarnIcon from '../../images/icons/warning.svg';
 import { usePassport } from '../../providers/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
+import analytics from '../../utils/analytics';
 import {
   amber500,
   black,
@@ -28,6 +25,13 @@ import {
   white,
 } from '../../utils/colors';
 import { extraYPadding } from '../../utils/constants';
+
+import {
+  useFocusEffect,
+  useNavigation,
+  usePreventRemove,
+} from '@react-navigation/native';
+
 const ScanButton = styled(Button, {
   borderRadius: 20,
   width: 90,
@@ -38,6 +42,8 @@ const ScanButton = styled(Button, {
   alignItems: 'center',
   justifyContent: 'center',
 });
+
+const { trackEvent } = analytics();
 
 const HomeScreen: React.FC = () => {
   useConnectionModal();
@@ -69,7 +75,15 @@ const HomeScreen: React.FC = () => {
     }, [getAllDocuments, navigation]),
   );
 
-  const onScanButtonPress = useHapticNavigation('QRCodeViewFinder');
+  const goToQRCodeViewFinder = useHapticNavigation('QRCodeViewFinder');
+  const onScanButtonPress = useCallback(() => {
+    trackEvent(ProofEvents.QR_SCAN_REQUESTED, {
+      from: 'Home',
+    });
+
+    goToQRCodeViewFinder();
+  }, [trackEvent, goToQRCodeViewFinder]);
+
   // Prevents back navigation
   usePreventRemove(true, () => {});
   const { bottom } = useSafeAreaInsets();

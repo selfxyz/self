@@ -14,8 +14,6 @@ const RemoteConfigContext = createContext<RemoteConfigContextValue>({
   error: null,
 });
 
-export const useRemoteConfig = () => useContext(RemoteConfigContext);
-
 export const RemoteConfigProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -44,3 +42,5 @@ export const RemoteConfigProvider: React.FC<{ children: React.ReactNode }> = ({
     </RemoteConfigContext.Provider>
   );
 };
+
+export const useRemoteConfig = () => useContext(RemoteConfigContext);

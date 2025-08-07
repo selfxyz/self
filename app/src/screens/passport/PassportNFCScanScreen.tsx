@@ -1,14 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import type { PassportData } from '@selfxyz/common/types';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
-import { CircleHelp } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -21,6 +12,10 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Button, Image, XStack } from 'tamagui';
+
+import type { PassportData } from '@selfxyz/common/types';
+import { getSKIPEM } from '@selfxyz/common/utils/csca';
+import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
 
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -47,6 +42,13 @@ import {
 import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
+
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { CircleHelp } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();
 

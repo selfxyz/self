@@ -1,6 +1,7 @@
 # AGENTS Instructions
 
 This repository is a Yarn v4 monorepo with several workspaces:
+
 - `app` – mobile app (@selfxyz/mobile-app)
 - `circuits` – zk-SNARK circuits (@selfxyz/circuits)
 - `common` – shared utilities (@selfxyz/common)
@@ -11,9 +12,11 @@ This repository is a Yarn v4 monorepo with several workspaces:
 ## Workflow
 
 ### Setup
+
 - Run `yarn install` once before running any other commands. This installs root dependencies and sets up husky hooks.
 
 ### Commit Checks
+
 Before committing, run the following commands:
 
 ```bash
@@ -31,19 +34,23 @@ yarn types
 ```
 
 ### Tests
+
 - Run unit tests where available:
   - `yarn workspace @selfxyz/common test`
-  - `yarn workspace @selfxyz/circuits test`  # may fail if OpenSSL algorithms are missing
+  - `yarn workspace @selfxyz/circuits test` # may fail if OpenSSL algorithms are missing
   - `yarn workspace @selfxyz/mobile-app test`
   - Tests for `@selfxyz/contracts` are currently disabled in CI and may be skipped.
 
 ### Formatting
+
 - Use Prettier configuration from `.prettierrc` files.
 - Follow `.editorconfig` for line endings and indentation.
 
 ### Commit Guidelines
+
 - Write short, imperative commit messages (e.g. `Fix address validation`).
 - The pull request body should summarize the changes and mention test results.
 
 ## Scope
+
 These instructions apply to the entire repository unless overridden by a nested `AGENTS.md`.

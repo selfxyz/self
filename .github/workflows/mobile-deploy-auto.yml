@@ -5,9 +5,9 @@ on:
     types: [closed]
     branches: [main, dev]
     paths:
-      - 'app/**'
-      - '!app/**/*.md'
-      - '!app/docs/**'
+      - "app/**"
+      - "!app/**/*.md"
+      - "!app/docs/**"
 
 permissions:
   contents: write
@@ -22,13 +22,13 @@ jobs:
       deployment_track: ${{ steps.check.outputs.deployment_track }}
       version_bump: ${{ steps.check.outputs.version_bump }}
       platforms: ${{ steps.check.outputs.platforms }}
-    
+
     steps:
       - name: Check deployment conditions
         id: check
         run: |
           echo "🔍 Checking deployment conditions..."
-          
+
           # Skip if PR has skip-deploy in title or body
           if [[ "${{ github.event.pull_request.title }}" =~ \[skip-deploy\] ]] || 
              [[ "${{ github.event.pull_request.body }}" =~ \[skip-deploy\] ]]; then
@@ -36,7 +36,7 @@ jobs:
             echo "⏭️ Skipping deployment due to [skip-deploy] flag"
             exit 0
           fi
-          
+
           # Determine deployment track based on target branch
           if [[ "${{ github.base_ref }}" == "main" ]]; then
             echo "deployment_track=production" >> $GITHUB_OUTPUT
@@ -45,7 +45,7 @@ jobs:
             echo "deployment_track=internal" >> $GITHUB_OUTPUT
             echo "🧪 Deployment track: internal testing"
           fi
-          
+
           # Determine version bump from PR labels
           labels="${{ join(github.event.pull_request.labels.*.name, ',') }}"
           if [[ "$labels" =~ version:major ]]; then
@@ -61,11 +61,11 @@ jobs:
             echo "version_bump=build" >> $GITHUB_OUTPUT
             echo "📈 Version bump: build only"
           fi
-          
+
           # Always deploy both platforms for now (can be enhanced later)
           echo 'platforms=["ios", "android"]' >> $GITHUB_OUTPUT
           echo "should_deploy=true" >> $GITHUB_OUTPUT
-          
+
       - name: Log deployment info
         if: steps.check.outputs.should_deploy == 'true'
         run: |

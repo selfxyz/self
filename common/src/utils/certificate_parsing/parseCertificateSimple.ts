@@ -1,91 +1,45 @@
 import * as asn1js from 'asn1js';
 import { Certificate, RSAPublicKey, RSASSAPSSParams } from 'pkijs';
-import { getFriendlyName, getSecpFromNist } from './oids.js';
-import {
+
+import { circuitNameFromMode } from '../../constants/constants.js';
+import type { Mode } from '../appType.js';
+import type { StandardCurve } from './curves.js';
+import { getCurveForElliptic, getECDSACurveBits, identifyCurve } from './curves.js';
+import type {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
   PublicKeyDetailsRSAPSS,
 } from './dataStructure.js';
-import { getCurveForElliptic, getECDSACurveBits, identifyCurve, StandardCurve } from './curves.js';
-import { getIssuerCountryCode, getSubjectKeyIdentifier } from './utils.js';
-import { circuitNameFromMode } from '../../constants/constants.js';
-import { Mode } from '../appType.js';
 import { initElliptic } from './elliptic.js';
+import { getFriendlyName, getSecpFromNist } from './oids.js';
+import { getIssuerCountryCode, getSubjectKeyIdentifier } from './utils.js';
 
-export function parseCertificateSimple(pem: string): CertificateData {
-  let certificateData: CertificateData = {
-    id: '',
-    issuer: '',
-    validity: {
-      notBefore: '',
-      notAfter: '',
-    },
-    subjectKeyIdentifier: '',
-    authorityKeyIdentifier: '',
-    signatureAlgorithm: '',
-    hashAlgorithm: '',
-    publicKeyDetails: undefined,
-    tbsBytes: undefined,
-    tbsBytesLength: '',
-    rawPem: '',
-    rawTxt: '',
-    publicKeyAlgoOID: '',
-  };
-  try {
-    const cert = getCertificateFromPem(pem);
-    certificateData.tbsBytes = getTBSBytesForge(cert);
-    certificateData.tbsBytesLength = certificateData.tbsBytes.length.toString();
+export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
+  const authorityKeyIdentifier = cert.extensions.find((ext) => ext.extnID === '2.5.29.35');
+  if (authorityKeyIdentifier) {
+    let akiValue = Buffer.from(authorityKeyIdentifier.extnValue.valueBlock.valueHexView).toString(
+      'hex'
+    );
 
-    const publicKeyAlgoOID = cert.subjectPublicKeyInfo.algorithm.algorithmId;
-    const publicKeyAlgoFN = getFriendlyName(publicKeyAlgoOID);
-    const signatureAlgoOID = cert.signatureAlgorithm.algorithmId;
-    const signatureAlgoFN = getFriendlyName(signatureAlgoOID);
-    certificateData.hashAlgorithm = getHashAlgorithm(signatureAlgoFN);
-    certificateData.publicKeyAlgoOID = publicKeyAlgoOID;
-    let params;
-    if (publicKeyAlgoFN === 'RSA' && signatureAlgoFN != 'RSASSA_PSS') {
-      certificateData.signatureAlgorithm = 'rsa';
-      params = getParamsRSA(cert);
-    } else if (publicKeyAlgoFN === 'ECC') {
-      certificateData.signatureAlgorithm = 'ecdsa';
-      params = getParamsECDSA(cert);
-    } else if (publicKeyAlgoFN === 'RSASSA_PSS' || signatureAlgoFN === 'RSASSA_PSS') {
-      certificateData.signatureAlgorithm = 'rsapss';
-      params = getParamsRSAPSS(cert);
-    } else {
-      console.log(publicKeyAlgoFN);
-    }
-    certificateData.publicKeyDetails = params;
-    certificateData.issuer = getIssuerCountryCode(cert);
-    certificateData.validity = {
-      notBefore: cert.notBefore.value.toString(),
-      notAfter: cert.notAfter.value.toString(),
-    };
-    const ski = getSubjectKeyIdentifier(cert);
-    certificateData.id = ski.slice(0, 12);
-    certificateData.subjectKeyIdentifier = ski;
-    certificateData.rawPem = pem;
-
-    const authorityKeyIdentifier = getAuthorityKeyIdentifier(cert);
-    certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
-
-    // corner case for rsapss
-    if (
-      certificateData.signatureAlgorithm === 'rsapss' &&
-      (!certificateData.hashAlgorithm || certificateData.hashAlgorithm === 'unknown')
-    ) {
-      certificateData.hashAlgorithm = (
-        certificateData.publicKeyDetails as PublicKeyDetailsRSAPSS
-      ).hashAlgorithm;
+    // Match the ASN.1 sequence header pattern: 30 followed by length
+    const sequenceMatch = akiValue.match(/^30([0-9a-f]{2}|8[0-9a-f][0-9a-f])/i);
+    if (sequenceMatch) {
+      // console.log('Sequence length indicator:', sequenceMatch[1]);
     }
 
-    return certificateData;
-  } catch (error) {
-    console.error(`Error processing certificate`, error);
-    throw error;
+    // Match the keyIdentifier pattern: 80 followed by length (usually 14)
+    const keyIdMatch = akiValue.match(/80([0-9a-f]{2})/i);
+    if (keyIdMatch) {
+      const keyIdLength = parseInt(keyIdMatch[1], 16);
+      // Extract the actual key ID (length * 2 because hex)
+      const startIndex = akiValue.indexOf(keyIdMatch[0]) + 4;
+      akiValue = akiValue.slice(startIndex, startIndex + keyIdLength * 2);
+      return akiValue.toUpperCase();
+    }
   }
-}
+  return null;
+};
 
 function getParamsRSA(cert: Certificate): PublicKeyDetailsRSA {
   const publicKeyValue = cert.subjectPublicKeyInfo.parsedKey as RSAPublicKey;
@@ -136,6 +90,89 @@ function getParamsRSAPSS(cert: Certificate): PublicKeyDetailsRSAPSS {
   };
 }
 
+export function getCertificateFromPem(pemContent: string): Certificate {
+  const pemFormatted = pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g, '');
+  const binary = Buffer.from(pemFormatted, 'base64');
+  const arrayBuffer = new ArrayBuffer(binary.length);
+  const view = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < binary.length; i++) {
+    view[i] = binary[i];
+  }
+
+  const asn1 = asn1js.fromBER(arrayBuffer);
+  if (asn1.offset === -1) {
+    throw new Error(`ASN.1 parsing error: ${asn1.result.error}`);
+  }
+
+  return new Certificate({ schema: asn1.result });
+}
+
+export const getCircuitName = (
+  circuitMode: 'prove' | 'dsc' | 'vc_and_disclose',
+  signatureAlgorithm: string,
+  hashFunction: string,
+  domainParameter: string,
+  keyLength: string
+) => {
+  const circuit = circuitNameFromMode[circuitMode];
+  if (circuit == 'vc_and_disclose') {
+    return 'vc_and_disclose';
+  }
+  if (circuit == 'dsc') {
+    return (
+      circuit +
+      '_' +
+      signatureAlgorithm +
+      '_' +
+      hashFunction +
+      '_' +
+      domainParameter +
+      '_' +
+      keyLength
+    );
+  }
+  return (
+    circuit +
+    '_' +
+    signatureAlgorithm +
+    '_' +
+    hashFunction +
+    '_' +
+    domainParameter +
+    '_' +
+    keyLength
+  );
+};
+
+export const getCircuitNameOld = (
+  circuitMode: Mode,
+  signatureAlgorithm: string,
+  hashFunction: string
+) => {
+  const circuit = circuitNameFromMode[circuitMode];
+  if (circuit == 'vc_and_disclose') {
+    return 'vc_and_disclose';
+  } else if (signatureAlgorithm === 'ecdsa') {
+    return circuit + '_' + signatureAlgorithm + '_secp256r1_' + hashFunction;
+  } else {
+    return circuit + '_' + signatureAlgorithm + '_65537_' + hashFunction;
+  }
+};
+export function getHashAlgorithm(rawSignatureAlgorithm: string) {
+  const input = rawSignatureAlgorithm.toLowerCase();
+  const patterns = [/sha-?1/i, /sha-?224/i, /sha-?256/i, /sha-?384/i, /sha-?512/i];
+
+  for (const pattern of patterns) {
+    const match = input.match(pattern);
+    if (match) {
+      // Remove any hyphens and return standardized format
+      return match[0].replace('-', '');
+    }
+  }
+
+  return 'unknown';
+}
+
 export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
   try {
     const algorithmParams = cert.subjectPublicKeyInfo.algorithm.algorithmParams;
@@ -155,7 +192,7 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
       bits,
       x,
       y = 'Unknown';
-    let curveParams: StandardCurve = {} as StandardCurve;
+    const curveParams: StandardCurve = {} as StandardCurve;
 
     // Try to get the curve name from the OID
     if (algorithmParams instanceof asn1js.ObjectIdentifier) {
@@ -257,115 +294,80 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
   }
 }
 
-export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
-  const authorityKeyIdentifier = cert.extensions.find((ext) => ext.extnID === '2.5.29.35');
-  if (authorityKeyIdentifier) {
-    let akiValue = Buffer.from(authorityKeyIdentifier.extnValue.valueBlock.valueHexView).toString(
-      'hex'
-    );
-
-    // Match the ASN.1 sequence header pattern: 30 followed by length
-    const sequenceMatch = akiValue.match(/^30([0-9a-f]{2}|8[0-9a-f][0-9a-f])/i);
-    if (sequenceMatch) {
-      // console.log('Sequence length indicator:', sequenceMatch[1]);
-    }
-
-    // Match the keyIdentifier pattern: 80 followed by length (usually 14)
-    const keyIdMatch = akiValue.match(/80([0-9a-f]{2})/i);
-    if (keyIdMatch) {
-      const keyIdLength = parseInt(keyIdMatch[1], 16);
-      // Extract the actual key ID (length * 2 because hex)
-      const startIndex = akiValue.indexOf(keyIdMatch[0]) + 4;
-      akiValue = akiValue.slice(startIndex, startIndex + keyIdLength * 2);
-      return akiValue.toUpperCase();
-    }
-  }
-  return null;
-};
-
-export const getCircuitName = (
-  circuitMode: 'prove' | 'dsc' | 'vc_and_disclose',
-  signatureAlgorithm: string,
-  hashFunction: string,
-  domainParameter: string,
-  keyLength: string
-) => {
-  const circuit = circuitNameFromMode[circuitMode];
-  if (circuit == 'vc_and_disclose') {
-    return 'vc_and_disclose';
-  }
-  if (circuit == 'dsc') {
-    return (
-      circuit +
-      '_' +
-      signatureAlgorithm +
-      '_' +
-      hashFunction +
-      '_' +
-      domainParameter +
-      '_' +
-      keyLength
-    );
-  }
-  return (
-    circuit +
-    '_' +
-    signatureAlgorithm +
-    '_' +
-    hashFunction +
-    '_' +
-    domainParameter +
-    '_' +
-    keyLength
-  );
-};
-export const getCircuitNameOld = (
-  circuitMode: Mode,
-  signatureAlgorithm: string,
-  hashFunction: string
-) => {
-  const circuit = circuitNameFromMode[circuitMode];
-  if (circuit == 'vc_and_disclose') {
-    return 'vc_and_disclose';
-  } else if (signatureAlgorithm === 'ecdsa') {
-    return circuit + '_' + signatureAlgorithm + '_secp256r1_' + hashFunction;
-  } else {
-    return circuit + '_' + signatureAlgorithm + '_65537_' + hashFunction;
-  }
-};
-
-export function getHashAlgorithm(rawSignatureAlgorithm: string) {
-  const input = rawSignatureAlgorithm.toLowerCase();
-  const patterns = [/sha-?1/i, /sha-?224/i, /sha-?256/i, /sha-?384/i, /sha-?512/i];
-
-  for (const pattern of patterns) {
-    const match = input.match(pattern);
-    if (match) {
-      // Remove any hyphens and return standardized format
-      return match[0].replace('-', '');
-    }
-  }
-
-  return 'unknown';
-}
-
-export function getCertificateFromPem(pemContent: string): Certificate {
-  const pemFormatted = pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g, '');
-  const binary = Buffer.from(pemFormatted, 'base64');
-  const arrayBuffer = new ArrayBuffer(binary.length);
-  const view = new Uint8Array(arrayBuffer);
-  for (let i = 0; i < binary.length; i++) {
-    view[i] = binary[i];
-  }
-
-  const asn1 = asn1js.fromBER(arrayBuffer);
-  if (asn1.offset === -1) {
-    throw new Error(`ASN.1 parsing error: ${asn1.result.error}`);
-  }
-
-  return new Certificate({ schema: asn1.result });
-}
-
 export function getTBSBytesForge(certificate: Certificate): number[] {
   return Array.from(certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16)));
+}
+
+export function parseCertificateSimple(pem: string): CertificateData {
+  const certificateData: CertificateData = {
+    id: '',
+    issuer: '',
+    validity: {
+      notBefore: '',
+      notAfter: '',
+    },
+    subjectKeyIdentifier: '',
+    authorityKeyIdentifier: '',
+    signatureAlgorithm: '',
+    hashAlgorithm: '',
+    publicKeyDetails: undefined,
+    tbsBytes: undefined,
+    tbsBytesLength: '',
+    rawPem: '',
+    rawTxt: '',
+    publicKeyAlgoOID: '',
+  };
+  try {
+    const cert = getCertificateFromPem(pem);
+    certificateData.tbsBytes = getTBSBytesForge(cert);
+    certificateData.tbsBytesLength = certificateData.tbsBytes.length.toString();
+
+    const publicKeyAlgoOID = cert.subjectPublicKeyInfo.algorithm.algorithmId;
+    const publicKeyAlgoFN = getFriendlyName(publicKeyAlgoOID);
+    const signatureAlgoOID = cert.signatureAlgorithm.algorithmId;
+    const signatureAlgoFN = getFriendlyName(signatureAlgoOID);
+    certificateData.hashAlgorithm = getHashAlgorithm(signatureAlgoFN);
+    certificateData.publicKeyAlgoOID = publicKeyAlgoOID;
+    let params;
+    if (publicKeyAlgoFN === 'RSA' && signatureAlgoFN != 'RSASSA_PSS') {
+      certificateData.signatureAlgorithm = 'rsa';
+      params = getParamsRSA(cert);
+    } else if (publicKeyAlgoFN === 'ECC') {
+      certificateData.signatureAlgorithm = 'ecdsa';
+      params = getParamsECDSA(cert);
+    } else if (publicKeyAlgoFN === 'RSASSA_PSS' || signatureAlgoFN === 'RSASSA_PSS') {
+      certificateData.signatureAlgorithm = 'rsapss';
+      params = getParamsRSAPSS(cert);
+    } else {
+      console.log(publicKeyAlgoFN);
+    }
+    certificateData.publicKeyDetails = params;
+    certificateData.issuer = getIssuerCountryCode(cert);
+    certificateData.validity = {
+      notBefore: cert.notBefore.value.toString(),
+      notAfter: cert.notAfter.value.toString(),
+    };
+    const ski = getSubjectKeyIdentifier(cert);
+    certificateData.id = ski.slice(0, 12);
+    certificateData.subjectKeyIdentifier = ski;
+    certificateData.rawPem = pem;
+
+    const authorityKeyIdentifier = getAuthorityKeyIdentifier(cert);
+    certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
+
+    // corner case for rsapss
+    if (
+      certificateData.signatureAlgorithm === 'rsapss' &&
+      (!certificateData.hashAlgorithm || certificateData.hashAlgorithm === 'unknown')
+    ) {
+      certificateData.hashAlgorithm = (
+        certificateData.publicKeyDetails as PublicKeyDetailsRSAPSS
+      ).hashAlgorithm;
+    }
+
+    return certificateData;
+  } catch (error) {
+    console.error(`Error processing certificate`, error);
+    throw error;
+  }
 }

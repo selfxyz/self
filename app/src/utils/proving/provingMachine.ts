@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import forge from 'node-forge';
+import type { Socket } from 'socket.io-client';
+import socketIo from 'socket.io-client';
+import { v4 } from 'uuid';
+import type { AnyActorRef } from 'xstate';
+import { createActor, createMachine } from 'xstate';
+import { create } from 'zustand';
+
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { EndpointType, SelfApp } from '@selfxyz/common/utils';
 import {
   getCircuitNameFromPassportData,
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
-import forge from 'node-forge';
-import socketIo, { Socket } from 'socket.io-client';
-import { v4 } from 'uuid';
-import { AnyActorRef, createActor, createMachine } from 'xstate';
-import { create } from 'zustand';
 
 import { PassportEvents, ProofEvents } from '../../consts/analytics';
 import { navigationRef } from '../../navigation';
@@ -49,12 +52,29 @@ import {
 
 const { trackEvent } = analytics();
 
-export const getPostVerificationRoute = () => {
-  return 'AccountVerifiedSuccess';
-  // disable for now
-  // const { cloudBackupEnabled } = useSettingStore.getState();
-  // return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
-};
+export type ProvingStateType =
+  // Initial states
+  | 'idle'
+  | undefined
+  // Data preparation states
+  | 'fetching_data'
+  | 'validating_document'
+  // Connection states
+  | 'init_tee_connexion'
+  | 'listening_for_status'
+  // Proving states
+  | 'ready_to_prove'
+  | 'proving'
+  | 'post_proving'
+  // Success state
+  | 'completed'
+  // Error states
+  | 'error'
+  | 'failure'
+  // Special case states
+  | 'passport_not_supported'
+  | 'account_recovery_choice'
+  | 'passport_data_not_found';
 
 const provingMachine = createMachine({
   id: 'proving',
@@ -131,29 +151,12 @@ const provingMachine = createMachine({
 
 export type provingMachineCircuitType = 'register' | 'dsc' | 'disclose';
 
-export type ProvingStateType =
-  // Initial states
-  | 'idle'
-  | undefined
-  // Data preparation states
-  | 'fetching_data'
-  | 'validating_document'
-  // Connection states
-  | 'init_tee_connexion'
-  | 'listening_for_status'
-  // Proving states
-  | 'ready_to_prove'
-  | 'proving'
-  | 'post_proving'
-  // Success state
-  | 'completed'
-  // Error states
-  | 'error'
-  | 'failure'
-  // Special case states
-  | 'passport_not_supported'
-  | 'account_recovery_choice'
-  | 'passport_data_not_found';
+export const getPostVerificationRoute = () => {
+  return 'AccountVerifiedSuccess';
+  // disable for now
+  // const { cloudBackupEnabled } = useSettingStore.getState();
+  // return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
+};
 
 interface ProvingState {
   currentState: ProvingStateType;

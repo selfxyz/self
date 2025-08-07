@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import React, { useCallback } from 'react';
 import { styled, View, XStack, YStack } from 'tamagui';
 
@@ -17,6 +16,9 @@ import {
   unregisterModalCallbacks,
 } from '../../utils/modalCallbackRegistry';
 
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+
 const ModalBackDrop = styled(View, {
   display: 'flex',
   alignItems: 'center',
@@ -29,6 +31,11 @@ const ModalBackDrop = styled(View, {
   height: '100%',
 });
 
+export interface ModalNavigationParams
+  extends Omit<ModalParams, 'onButtonPress' | 'onModalDismiss'> {
+  callbackId: number;
+}
+
 export interface ModalParams extends Record<string, any> {
   titleText: string;
   bodyText: string;
@@ -37,11 +44,6 @@ export interface ModalParams extends Record<string, any> {
   onButtonPress: (() => Promise<void>) | (() => void);
   onModalDismiss: () => void;
   preventDismiss?: boolean;
-}
-
-export interface ModalNavigationParams
-  extends Omit<ModalParams, 'onButtonPress' | 'onModalDismiss'> {
-  callbackId: number;
 }
 
 interface ModalScreenProps extends StaticScreenProps<ModalNavigationParams> {}

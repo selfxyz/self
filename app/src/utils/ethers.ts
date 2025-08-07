@@ -2,26 +2,55 @@
 
 // https://docs.ethers.org/v6/cookbook/react-native/
 import { ethers } from 'ethers';
-import crypto from 'react-native-quick-crypto';
 
-ethers.randomBytes.register(length => {
-  return new Uint8Array(crypto.randomBytes(length));
-});
+import { hmac } from '@noble/hashes/hmac';
+import { pbkdf2 as noblePbkdf2 } from '@noble/hashes/pbkdf2';
+import { sha256 as nobleSha256 } from '@noble/hashes/sha256';
+import { sha512 as nobleSha512 } from '@noble/hashes/sha512';
 
-ethers.computeHmac.register((algo, key, data) => {
-  return crypto.createHmac(algo, key).update(data).digest();
-});
+function randomBytes(length: number): Uint8Array {
+  if (typeof globalThis.crypto?.getRandomValues !== 'function') {
+    throw new Error('globalThis.crypto.getRandomValues is not available');
+  }
+  return globalThis.crypto.getRandomValues(new Uint8Array(length));
+}
 
-ethers.pbkdf2.register((passwd, salt, iter, keylen, algo) => {
-  return crypto.pbkdf2Sync(passwd, salt, iter, keylen, algo);
-});
+function computeHmac(
+  algo: 'sha256' | 'sha512',
+  key: Uint8Array,
+  data: Uint8Array,
+): Uint8Array {
+  const hash = algo === 'sha256' ? nobleSha256 : nobleSha512;
+  return hmac(hash, key, data);
+}
 
-ethers.sha256.register(data => {
-  // @ts-expect-error
-  return crypto.createHash('sha256').update(data).digest();
-});
+function pbkdf2(
+  password: Uint8Array,
+  salt: Uint8Array,
+  iterations: number,
+  keylen: number,
+  algo: 'sha256' | 'sha512',
+): Uint8Array {
+  const hash = algo === 'sha256' ? nobleSha256 : nobleSha512;
+  return noblePbkdf2(hash, password, salt, { c: iterations, dkLen: keylen });
+}
 
-ethers.sha512.register(data => {
-  // @ts-expect-error
-  return crypto.createHash('sha512').update(data).digest();
-});
+function sha256(data: Uint8Array): Uint8Array {
+  return nobleSha256.create().update(data).digest();
+}
+
+function sha512(data: Uint8Array): Uint8Array {
+  return nobleSha512.create().update(data).digest();
+}
+
+ethers.randomBytes.register(randomBytes);
+
+ethers.computeHmac.register(computeHmac);
+
+ethers.pbkdf2.register(pbkdf2);
+
+ethers.sha256.register(sha256);
+
+ethers.sha512.register(sha512);
+
+export { computeHmac, pbkdf2, randomBytes, sha256, sha512 };

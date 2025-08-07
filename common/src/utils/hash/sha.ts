@@ -1,1 +1,1 @@
-export { hash, getHashLen } from '../hash.js';
+export { getHashLen, hash } from '../hash.js';

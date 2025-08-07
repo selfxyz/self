@@ -9,13 +9,6 @@ export const AppEvents = {
   UPDATE_STARTED: 'App: Update Started',
 };
 
-export const NotificationEvents = {
-  BACKGROUND_NOTIFICATION_OPENED:
-    'Notification: Background Notification Opened',
-  COLD_START_NOTIFICATION_OPENED:
-    'Notification: Cold Start Notification Opened',
-};
-
 export const AuthEvents = {
   AUTHENTICATION_TIMEOUT: 'Auth: Authentication Timeout',
   BIOMETRIC_AUTH_FAILED: 'Auth: Biometric Auth Failed',
@@ -29,6 +22,63 @@ export const AuthEvents = {
   MNEMONIC_LOADED: 'Auth: Mnemonic Loaded',
   MNEMONIC_RESTORE_FAILED: 'Auth: Mnemonic Restore Failed',
   MNEMONIC_RESTORE_SUCCESS: 'Auth: Mnemonic Restore Success',
+};
+
+export const BackupEvents = {
+  ACCOUNT_RECOVERY_COMPLETED: 'Backup: Account Recovery Completed',
+  ACCOUNT_RECOVERY_STARTED: 'Backup: Account Recovery Started',
+  ACCOUNT_VERIFICATION_COMPLETED: 'Backup: Account Verification Completed',
+  CLOUD_BACKUP_CANCELLED: 'Backup: Cloud Backup Cancelled',
+  CLOUD_BACKUP_CONTINUE: 'Backup: Cloud Backup Continue',
+  CLOUD_BACKUP_DISABLED_DONE: 'Backup: Cloud Backup Disabled Done',
+  CLOUD_BACKUP_DISABLE_STARTED: 'Backup: Cloud Backup Disable Started',
+  CLOUD_BACKUP_ENABLED_DONE: 'Backup: Cloud Backup Enabled Done',
+  CLOUD_BACKUP_ENABLE_STARTED: 'Backup: Cloud Backup Enable Started',
+  CLOUD_BACKUP_STARTED: 'Backup: Cloud Backup Started',
+  CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED:
+    'Backup: Cloud Restore Failed: Passport Not Registered',
+  CLOUD_RESTORE_FAILED_UNKNOWN: 'Backup: Cloud Restore Failed: Unknown Error',
+  CLOUD_RESTORE_SUCCESS: 'Backup: Cloud Restore Success',
+  CREATE_NEW_ACCOUNT: 'Backup: Create New Account',
+  MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
+};
+
+export const DocumentEvents = {
+  ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
+  ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
+  DOCUMENT_DELETED: 'Document: Document Deleted',
+  DOCUMENT_SELECTED: 'Document: Document Selected',
+  DOCUMENTS_FETCHED: 'Document: Documents Fetched',
+  MANAGE_SCREEN_OPENED: 'Document: Manage Documents Screen Opened',
+  NO_DOCUMENTS_FOUND: 'Document: No Documents Found',
+  PASSPORT_INFO_OPENED: 'Document: Passport Info Screen Opened',
+  PASSPORT_METADATA_LOADED: 'Document: Passport Metadata Loaded',
+  VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
+  DOCUMENT_VALIDATED: 'Document: Document Validated',
+};
+
+export const MockDataEvents = {
+  CANCEL_GENERATION: 'Mock Data: Cancel Generation',
+  CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
+  DECREASE_AGE: 'Mock Data: Decrease Age',
+  DECREASE_EXPIRY_YEARS: 'Mock Data: Decrease Expiry Years',
+  ENABLE_ADVANCED_MODE: 'Mock Data: Enable Advanced Mode',
+  GENERATE_DATA: 'Mock Data: Generate Data',
+  INCREASE_AGE: 'Mock Data: Increase Age',
+  INCREASE_EXPIRY_YEARS: 'Mock Data: Increase Expiry Years',
+  OPEN_ALGORITHM_SELECTION: 'Mock Data: Open Algorithm Selection',
+  OPEN_COUNTRY_SELECTION: 'Mock Data: Open Country Selection',
+  SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
+  SELECT_COUNTRY: 'Mock Data: Select Country',
+  SELECT_DOCUMENT_TYPE: 'Mock Data: Select Document Type',
+  TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
+};
+
+export const NotificationEvents = {
+  BACKGROUND_NOTIFICATION_OPENED:
+    'Notification: Background Notification Opened',
+  COLD_START_NOTIFICATION_OPENED:
+    'Notification: Cold Start Notification Opened',
 };
 
 export const PassportEvents = {
@@ -87,6 +137,7 @@ export const ProofEvents = {
   PROVING_STATE_CHANGE: 'Proof: Proving State Change',
   QR_SCAN_CANCELLED: 'Proof: QR Scan Cancelled',
   QR_SCAN_FAILED: 'Proof: QR Scan Failed',
+  QR_SCAN_REQUESTED: 'Proof: QR Scan Requested',
   QR_SCAN_SUCCESS: 'Proof: QR Scan Success',
   REGISTER_COMPLETED: 'Proof: Register Completed',
   SHARED_KEY_DERIVED: 'Proof: Shared Key Derived',
@@ -115,51 +166,4 @@ export const SettingsEvents = {
   CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
   CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
   CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
-};
-
-export const BackupEvents = {
-  ACCOUNT_RECOVERY_COMPLETED: 'Backup: Account Recovery Completed',
-  ACCOUNT_RECOVERY_STARTED: 'Backup: Account Recovery Started',
-  ACCOUNT_VERIFICATION_COMPLETED: 'Backup: Account Verification Completed',
-  CLOUD_BACKUP_CANCELLED: 'Backup: Cloud Backup Cancelled',
-  CLOUD_BACKUP_CONTINUE: 'Backup: Cloud Backup Continue',
-  CLOUD_BACKUP_DISABLED_DONE: 'Backup: Cloud Backup Disabled Done',
-  CLOUD_BACKUP_DISABLE_STARTED: 'Backup: Cloud Backup Disable Started',
-  CLOUD_BACKUP_ENABLED_DONE: 'Backup: Cloud Backup Enabled Done',
-  CLOUD_BACKUP_ENABLE_STARTED: 'Backup: Cloud Backup Enable Started',
-  CLOUD_BACKUP_STARTED: 'Backup: Cloud Backup Started',
-  CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED:
-    'Backup: Cloud Restore Failed: Passport Not Registered',
-  CLOUD_RESTORE_FAILED_UNKNOWN: 'Backup: Cloud Restore Failed: Unknown Error',
-  CLOUD_RESTORE_SUCCESS: 'Backup: Cloud Restore Success',
-  CREATE_NEW_ACCOUNT: 'Backup: Create New Account',
-  MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
-};
-
-export const MockDataEvents = {
-  CANCEL_GENERATION: 'Mock Data: Cancel Generation',
-  CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
-  DECREASE_EXPIRY_YEARS: 'Mock Data: Decrease Expiry Years',
-  ENABLE_ADVANCED_MODE: 'Mock Data: Enable Advanced Mode',
-  GENERATE_DATA: 'Mock Data: Generate Data',
-  INCREASE_EXPIRY_YEARS: 'Mock Data: Increase Expiry Years',
-  OPEN_ALGORITHM_SELECTION: 'Mock Data: Open Algorithm Selection',
-  OPEN_COUNTRY_SELECTION: 'Mock Data: Open Country Selection',
-  SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
-  SELECT_COUNTRY: 'Mock Data: Select Country',
-  TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
-};
-
-export const DocumentEvents = {
-  ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
-  ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
-  DOCUMENT_DELETED: 'Document: Document Deleted',
-  DOCUMENT_SELECTED: 'Document: Document Selected',
-  DOCUMENTS_FETCHED: 'Document: Documents Fetched',
-  MANAGE_SCREEN_OPENED: 'Document: Manage Documents Screen Opened',
-  NO_DOCUMENTS_FOUND: 'Document: No Documents Found',
-  PASSPORT_INFO_OPENED: 'Document: Passport Info Screen Opened',
-  PASSPORT_METADATA_LOADED: 'Document: Passport Metadata Loaded',
-  VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
-  DOCUMENT_VALIDATED: 'Document: Document Validated',
 };
