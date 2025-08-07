@@ -56,7 +56,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
         if (token) {
           setFcmToken(token);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
-          console.log('FCM token stored in proving store');
         }
       }
 

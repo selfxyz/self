@@ -30,7 +30,6 @@ const SplashScreen: React.FC = ({}) => {
   useEffect(() => {
     if (!dataLoadInitiatedRef.current) {
       dataLoadInitiatedRef.current = true;
-      console.log('Starting data loading and validation...');
 
       checkBiometricsAvailable()
         .then(setBiometricsAvailable)
@@ -41,7 +40,6 @@ const SplashScreen: React.FC = ({}) => {
       const loadDataAndDetermineNextScreen = async () => {
         try {
           // Initialize native modules first, before any data operations
-          console.log('Initializing native modules...');
           const modulesReady = await initializeNativeModules();
           if (!modulesReady) {
             console.warn(
@@ -53,14 +51,7 @@ const SplashScreen: React.FC = ({}) => {
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           if (needsMigration) {
-            console.log(
-              'Documents need registration state migration, running...',
-            );
             await checkAndUpdateRegistrationStates();
-          } else {
-            console.log(
-              'No documents need registration state migration, skipping...',
-            );
           }
 
           const hasValid = await hasAnyValidRegisteredDocument();
@@ -82,7 +73,6 @@ const SplashScreen: React.FC = ({}) => {
 
   useEffect(() => {
     if (isAnimationFinished && nextScreen) {
-      console.log(`Navigating to ${nextScreen}`);
       requestAnimationFrame(() => {
         navigation.navigate(nextScreen as any);
       });

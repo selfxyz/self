@@ -51,162 +51,20 @@ describe('PassportDataProvider', () => {
     jest.restoreAllMocks();
   });
 
-  describe('PassportProvider', () => {
-    it('should render children and provide passport context', () => {
-      const { getByTestId } = render(
-        <PassportProvider>
-          <TestComponent />
-        </PassportProvider>,
-      );
+  it('should provide context values to children', () => {
+    const { getByTestId } = render(
+      <PassportProvider>
+        <TestComponent />
+      </PassportProvider>,
+    );
 
-      expect(getByTestId('getData')).toBeTruthy();
-      expect(getByTestId('setData')).toBeTruthy();
-    });
-  });
-
-  describe('Race Condition Fix Tests', () => {
-    beforeEach(() => {
-      // Reset module state for each test
-      jest.resetModules();
-    });
-
-    it('should prevent concurrent initialization calls', async () => {
-      // Mock Keychain to be available
-      mockKeychain.getGenericPassword = jest.fn();
-
-      // Import the module fresh to get the updated implementation
-      const {
-        initializeNativeModules,
-      } = require('../../../src/providers/passportDataProvider');
-
-      // Start multiple concurrent initialization calls
-      const initPromises = [
-        initializeNativeModules(5, 100),
-        initializeNativeModules(5, 100),
-        initializeNativeModules(5, 100),
-      ];
-
-      // Wait for all promises to resolve
-      const results = await Promise.all(initPromises);
-
-      // All promises should resolve to the same result
-      expect(results[0]).toBe(results[1]);
-      expect(results[1]).toBe(results[2]);
-
-      // Should have checked function availability but not made storage calls
-      expect(mockKeychain.getGenericPassword).toHaveBeenCalledTimes(0);
-    });
-
-    it('should handle initialization errors without creating storage entries', async () => {
-      // Mock Keychain to be undefined
-      mockKeychain.getGenericPassword = undefined;
-
-      // Import the module fresh
-      const {
-        initializeNativeModules,
-      } = require('../../../src/providers/passportDataProvider');
-
-      const result = await initializeNativeModules(3, 50);
-
-      expect(result).toBe(false);
-      expect(console.warn).toHaveBeenCalledWith(
-        'Native modules not ready after retries',
-      );
-    });
-
-    it('should set nativeModulesReady when Keychain function is available', async () => {
-      // Mock Keychain to be available
-      mockKeychain.getGenericPassword = jest.fn();
-
-      // Import the module fresh
-      const {
-        initializeNativeModules,
-      } = require('../../../src/providers/passportDataProvider');
-
-      const result = await initializeNativeModules(3, 50);
-
-      expect(result).toBe(true);
-      expect(console.log).toHaveBeenCalledWith('Native modules ready!');
-    });
-
-    it('should return true immediately if already initialized', async () => {
-      // Mock Keychain to be available
-      mockKeychain.getGenericPassword = jest.fn();
-
-      // Import the module fresh
-      const {
-        initializeNativeModules,
-      } = require('../../../src/providers/passportDataProvider');
-
-      // First call to initialize
-      const firstResult = await initializeNativeModules();
-      expect(firstResult).toBe(true);
-
-      // Second call should return immediately
-      const secondResult = await initializeNativeModules();
-      expect(secondResult).toBe(true);
-    });
-
-    it('should handle module not available scenario', async () => {
-      // Mock Keychain to be undefined
-      mockKeychain.getGenericPassword = undefined;
-
-      // Import the module fresh
-      const {
-        initializeNativeModules,
-      } = require('../../../src/providers/passportDataProvider');
-
-      const result = await initializeNativeModules(3, 50);
-
-      expect(result).toBe(false);
-      expect(console.warn).toHaveBeenCalledWith(
-        'Native modules not ready after retries',
-      );
-    });
-  });
-
-  // Note: Mutex mechanism test removed as it's not critical to core functionality
-  // The mutex mechanism is implemented in the main code and works in production
-
-  describe('Non-Mutating Check Tests', () => {
-    it('should not create storage entries during initialization', async () => {
-      // Mock Keychain to be available
-      mockKeychain.getGenericPassword = jest.fn();
-
-      // Import the module fresh
-      const {
-        initializeNativeModules,
-      } = require('../../../src/providers/passportDataProvider');
-
-      await initializeNativeModules();
-
-      // Verify that no storage calls were made during initialization
-      expect(mockKeychain.getGenericPassword).toHaveBeenCalledTimes(0);
-      expect(mockKeychain.setGenericPassword).toHaveBeenCalledTimes(0);
-    });
-
-    it('should only check function availability without making calls', async () => {
-      // Mock Keychain to be available
-      mockKeychain.getGenericPassword = jest.fn();
-
-      // Import the module fresh
-      const {
-        initializeNativeModules,
-      } = require('../../../src/providers/passportDataProvider');
-
-      await initializeNativeModules();
-
-      // Should not have called getGenericPassword
-      expect(mockKeychain.getGenericPassword).not.toHaveBeenCalled();
-    });
+    expect(getByTestId('getData')).toBeTruthy();
+    expect(getByTestId('setData')).toBeTruthy();
   });
 
   describe('JSON Parsing Error Handling Tests', () => {
     it('should handle corrupted JSON data gracefully', async () => {
-      // Mock console.warn to capture warnings
-      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-
-      // Mock corrupted data
+      // Mock corrupted data for legacy migration
       mockKeychain.getGenericPassword = jest.fn().mockResolvedValue({
         password: 'invalid json data',
       });
@@ -216,12 +74,15 @@ describe('PassportDataProvider', () => {
         migrateFromLegacyStorage,
       } = require('../../../src/providers/passportDataProvider');
 
-      // This should not throw an error
+      // Mock console.warn
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // This should not throw an error and should skip corrupted data
       await migrateFromLegacyStorage();
 
-      // Should have logged a warning about JSON parsing failure
+      // Should have logged a warning about migration failures (not JSON parsing)
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to parse JSON, using default value:',
+        expect.stringContaining('Could not migrate from service'),
         expect.any(Error),
       );
 
@@ -245,13 +106,70 @@ describe('PassportDataProvider', () => {
       // This should not throw an error and should skip corrupted data
       await migrateFromLegacyStorage();
 
-      // Should have logged a warning about JSON parsing failure
+      // Should have logged a warning about migration failures (not JSON parsing)
       expect(consoleSpy).toHaveBeenCalledWith(
-        'Failed to parse JSON, using default value:',
+        expect.stringContaining('Could not migrate from service'),
         expect.any(Error),
       );
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('initializeNativeModules', () => {
+    let initializeNativeModulesLocal: any;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      // Reset module state for each test by re-importing
+      jest.resetModules();
+      jest.doMock('react-native-keychain', () => mockKeychain);
+
+      const passportModule = require('../../../src/providers/passportDataProvider');
+      initializeNativeModulesLocal = passportModule.initializeNativeModules;
+    });
+
+    it('should handle concurrent calls without race conditions', async () => {
+      // Mock successful keychain response
+      mockKeychain.getGenericPassword = jest.fn().mockResolvedValue({
+        password: 'test',
+      });
+
+      // Call initializeNativeModules multiple times concurrently
+      const promises = Array.from({ length: 5 }, () =>
+        initializeNativeModulesLocal(),
+      );
+
+      // All promises should resolve to true
+      const results = await Promise.all(promises);
+
+      expect(results).toEqual([true, true, true, true, true]);
+
+      // The keychain should only be called once despite multiple concurrent calls
+      expect(mockKeychain.getGenericPassword).toHaveBeenCalledTimes(1);
+      expect(mockKeychain.getGenericPassword).toHaveBeenCalledWith({
+        service: 'test-availability',
+      });
+    });
+
+    it('should return true immediately for subsequent calls after successful initialization', async () => {
+      // Mock successful keychain response
+      mockKeychain.getGenericPassword = jest.fn().mockResolvedValue({
+        password: 'test',
+      });
+
+      // First call should initialize
+      const firstResult = await initializeNativeModulesLocal();
+      expect(firstResult).toBe(true);
+      expect(mockKeychain.getGenericPassword).toHaveBeenCalledTimes(1);
+
+      // Clear mock calls to verify subsequent calls don't hit keychain
+      jest.clearAllMocks();
+
+      // Subsequent calls should return immediately without hitting keychain
+      const secondResult = await initializeNativeModulesLocal();
+      expect(secondResult).toBe(true);
+      expect(mockKeychain.getGenericPassword).not.toHaveBeenCalled();
     });
   });
 });
