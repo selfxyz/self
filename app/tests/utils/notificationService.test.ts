@@ -1,26 +1,26 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-jest.unmock('../../src/utils/notifications/notificationService');
-
 import { PermissionsAndroid, Platform } from 'react-native';
+
+jest.unmock('../../src/utils/notifications/notificationService');
 
 jest.mock('@react-native-firebase/messaging', () => {
   const instance = {
     requestPermission: jest.fn(),
     getToken: jest.fn(),
   };
-  const mockFn: any = () => instance;
+  const mockFn = () => instance;
   mockFn._instance = instance;
   mockFn.AuthorizationStatus = { AUTHORIZED: 1, PROVISIONAL: 2 };
   return { __esModule: true, default: mockFn };
 });
 
-let messagingMock: any;
+let messagingMock: ReturnType<typeof jest.fn>;
 
 global.fetch = jest.fn();
 
 describe('notificationService', () => {
-  let service: typeof import('../../src/utils/notifications/notificationService');
+  let service: any; // Using any here since we're dynamically requiring the module in tests
 
   beforeEach(() => {
     jest.resetModules();
@@ -46,8 +46,12 @@ describe('notificationService', () => {
         writable: true,
       });
       PermissionsAndroid.request = jest.fn().mockResolvedValue('granted');
-      PermissionsAndroid.PERMISSIONS = { POST_NOTIFICATIONS: 'post' } as any;
-      PermissionsAndroid.RESULTS = { GRANTED: 'granted' } as any;
+      PermissionsAndroid.PERMISSIONS = {
+        POST_NOTIFICATIONS: 'post',
+      } as typeof PermissionsAndroid.PERMISSIONS;
+      PermissionsAndroid.RESULTS = {
+        GRANTED: 'granted',
+      } as typeof PermissionsAndroid.RESULTS;
 
       const result = await service.requestNotificationPermission();
       expect(result).toBe(true);
@@ -64,11 +68,13 @@ describe('notificationService', () => {
         writable: true,
       });
       PermissionsAndroid.request = jest.fn().mockResolvedValue('denied');
-      PermissionsAndroid.PERMISSIONS = { POST_NOTIFICATIONS: 'post' } as any;
+      PermissionsAndroid.PERMISSIONS = {
+        POST_NOTIFICATIONS: 'post',
+      } as typeof PermissionsAndroid.PERMISSIONS;
       PermissionsAndroid.RESULTS = {
         GRANTED: 'granted',
         DENIED: 'denied',
-      } as any;
+      } as typeof PermissionsAndroid.RESULTS;
 
       const result = await service.requestNotificationPermission();
       expect(result).toBe(false);
@@ -86,11 +92,13 @@ describe('notificationService', () => {
       PermissionsAndroid.request = jest
         .fn()
         .mockResolvedValue('never_ask_again');
-      PermissionsAndroid.PERMISSIONS = { POST_NOTIFICATIONS: 'post' } as any;
+      PermissionsAndroid.PERMISSIONS = {
+        POST_NOTIFICATIONS: 'post',
+      } as typeof PermissionsAndroid.PERMISSIONS;
       PermissionsAndroid.RESULTS = {
         GRANTED: 'granted',
         NEVER_ASK_AGAIN: 'never_ask_again',
-      } as any;
+      } as typeof PermissionsAndroid.RESULTS;
 
       const result = await service.requestNotificationPermission();
       expect(result).toBe(false);

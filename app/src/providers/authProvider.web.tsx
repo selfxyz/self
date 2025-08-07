@@ -5,9 +5,9 @@
  *
  */
 
+import type { PropsWithChildren } from 'react';
 import React, {
   createContext,
-  PropsWithChildren,
   useCallback,
   useContext,
   useMemo,
@@ -15,7 +15,7 @@ import React, {
 } from 'react';
 
 import { AuthEvents } from '../consts/analytics';
-import { Mnemonic } from '../types/mnemonic';
+import type { Mnemonic } from '../types/mnemonic';
 import analytics from '../utils/analytics';
 
 const { trackEvent } = analytics();
@@ -259,13 +259,16 @@ export const AuthProvider = ({
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
-
 export async function hasSecretStored() {
   // TODO implement a way to check if the private key is stored
   return true;
+}
+
+export async function unsafe_clearSecrets() {
+  if (__DEV__) {
+    console.warn('unsafe_clearSecrets is not implemented for web');
+    // In a real implementation, you would clear any stored secrets here
+  }
 }
 
 /**
@@ -276,9 +279,6 @@ export async function unsafe_getPrivateKey() {
   return getPrivateKey();
 }
 
-export async function unsafe_clearSecrets() {
-  if (__DEV__) {
-    console.warn('unsafe_clearSecrets is not implemented for web');
-    // In a real implementation, you would clear any stored secrets here
-  }
-}
+export const useAuth = () => {
+  return useContext(AuthContext);
+};

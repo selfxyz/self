@@ -181,6 +181,20 @@ jobs:
         run: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Cache Node modules
+        uses: actions/cache@v4
+        with:
+          path: app/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('app/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Cache Ruby gems
+        uses: actions/cache@v4
+        with:
+          path: app/vendor/bundle
+          key: ${{ runner.os }}-gems-${{ hashFiles('app/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gems-
       - name: Cache Pods
         uses: actions/cache@v4
         with:
@@ -193,10 +207,30 @@ jobs:
       - name: Cache Xcode build
         uses: actions/cache@v4
         with:
-          path: app/ios/build
-          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}
+          path: |
+            app/ios/build
+            ~/Library/Developer/Xcode/DerivedData
+            ~/Library/Caches/com.apple.dt.Xcode
+          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata') }}
           restore-keys: |
+            ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-
             ${{ runner.os }}-xcode-
+      - name: Cache Xcode Index
+        uses: actions/cache@v4
+        with:
+          path: app/ios/build/Index.noindex
+          key: ${{ runner.os }}-xcode-index-${{ hashFiles('app/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-index-
+      - name: Cache iOS Simulator
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/CoreSimulator/Devices
+            ~/Library/Developer/Xcode/iOS DeviceSupport
+          key: ${{ runner.os }}-simulator-${{ hashFiles('app/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-simulator-
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
@@ -212,13 +246,21 @@ jobs:
           echo "Setting up iOS Simulator..."
           echo "Available simulators:"
           xcrun simctl list devices | grep "iPhone 15"
+
+          # Boot simulator and wait for it to be ready
           xcrun simctl boot "iPhone 15" || true
           xcrun simctl bootstatus "iPhone 15" -b
+
+          # Wait for simulator to be fully ready
+          echo "Waiting for simulator to be ready..."
+          sleep 10
+
           echo "Simulator status:"
           xcrun simctl list devices | grep "iPhone 15"
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
+          # Use cached derived data and enable parallel builds for faster compilation
           xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS

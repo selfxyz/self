@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { tamaguiPlugin } from '@tamagui/vite-plugin';
-import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
+
+import { tamaguiPlugin } from '@tamagui/vite-plugin';
+import react from '@vitejs/plugin-react-swc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

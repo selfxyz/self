@@ -1,3 +1,50 @@
+export function extractHashFunction(friendlyName: string): string {
+  if (friendlyName.toLowerCase().includes('sha1')) {
+    return 'sha1';
+  }
+  if (friendlyName.toLowerCase().includes('sha256')) {
+    return 'sha256';
+  }
+  if (friendlyName.toLowerCase().includes('sha384')) {
+    return 'sha384';
+  }
+  if (friendlyName.toLowerCase().includes('sha512')) {
+    return 'sha512';
+  }
+  throw new Error('hash function not found in: ' + friendlyName);
+
+  return 'unknown';
+}
+
+export function getFriendlyName(oid: string): string {
+  return getFriendlyNameSecpCurves(oidMap[oid]) || 'Unknown Algorithm';
+}
+
+export function getSecpFromNist(nist: string): string {
+  switch (nist) {
+    case 'nistP224':
+      return 'secp224r1';
+    case 'nistP256':
+      return 'secp256r1';
+    case 'nistP384':
+      return 'secp384r1';
+    case 'nistP521':
+      return 'secp521r1';
+  }
+  return nist;
+}
+
+function getFriendlyNameSecpCurves(friendlyName: string): string {
+  return mapSecpCurves[friendlyName] || friendlyName;
+}
+
+export const mapSecpCurves: { [key: string]: string } = {
+  ECDSA_224: 'secp224r1',
+  ECDSA_P256: 'secp256r1',
+  ECDSA_P384: 'secp384r1',
+  ECDSA_P521: 'secp521r1',
+};
+
 export const oidMap: { [key: string]: string } = {
   '1.2.840.113549.3.7': '3des',
   '2.16.840.1.101.3.4.1.2': 'aes128',
@@ -105,50 +152,3 @@ export const oidMap: { [key: string]: string } = {
   '1.2.840.10045.3.1.5': 'x962P239v2',
   '1.2.840.10045.3.1.6': 'x962P239v3',
 };
-
-export const mapSecpCurves: { [key: string]: string } = {
-  ECDSA_224: 'secp224r1',
-  ECDSA_P256: 'secp256r1',
-  ECDSA_P384: 'secp384r1',
-  ECDSA_P521: 'secp521r1',
-};
-
-export function getSecpFromNist(nist: string): string {
-  switch (nist) {
-    case 'nistP224':
-      return 'secp224r1';
-    case 'nistP256':
-      return 'secp256r1';
-    case 'nistP384':
-      return 'secp384r1';
-    case 'nistP521':
-      return 'secp521r1';
-  }
-  return nist;
-}
-
-function getFriendlyNameSecpCurves(friendlyName: string): string {
-  return mapSecpCurves[friendlyName] || friendlyName;
-}
-
-export function getFriendlyName(oid: string): string {
-  return getFriendlyNameSecpCurves(oidMap[oid]) || 'Unknown Algorithm';
-}
-
-export function extractHashFunction(friendlyName: string): string {
-  if (friendlyName.toLowerCase().includes('sha1')) {
-    return 'sha1';
-  }
-  if (friendlyName.toLowerCase().includes('sha256')) {
-    return 'sha256';
-  }
-  if (friendlyName.toLowerCase().includes('sha384')) {
-    return 'sha384';
-  }
-  if (friendlyName.toLowerCase().includes('sha512')) {
-    return 'sha512';
-  }
-  throw new Error('hash function not found in: ' + friendlyName);
-
-  return 'unknown';
-}

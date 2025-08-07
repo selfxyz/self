@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { ethers } from 'ethers';
+import type { PropsWithChildren } from 'react';
 import React, {
   createContext,
-  PropsWithChildren,
   useCallback,
   useContext,
   useMemo,
@@ -14,7 +14,7 @@ import Keychain from 'react-native-keychain';
 
 import { AuthEvents } from '../consts/analytics';
 import { useSettingStore } from '../stores/settingStore';
-import { Mnemonic } from '../types/mnemonic';
+import type { Mnemonic } from '../types/mnemonic';
 import analytics from '../utils/analytics';
 
 const { trackEvent } = analytics();
@@ -258,13 +258,15 @@ export const AuthProvider = ({
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
-
 export async function hasSecretStored() {
   const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
   return !!seed;
+}
+
+export async function unsafe_clearSecrets() {
+  if (__DEV__) {
+    await Keychain.resetGenericPassword({ service: SERVICE_NAME });
+  }
 }
 
 /**
@@ -281,8 +283,6 @@ export async function unsafe_getPrivateKey() {
   return wallet.privateKey;
 }
 
-export async function unsafe_clearSecrets() {
-  if (__DEV__) {
-    await Keychain.resetGenericPassword({ service: SERVICE_NAME });
-  }
-}
+export const useAuth = () => {
+  return useContext(AuthContext);
+};

@@ -1,8 +1,8 @@
 export {
-  getCertificatePubKey,
-  formatCertificatePubKeyDSC,
   findStartPubKeyIndex,
+  formatCertificatePubKeyDSC,
+  getCertificatePubKey,
+  getNAndKCSCA,
   pad,
   padWithZeroes,
-  getNAndKCSCA,
 } from './passport.js';

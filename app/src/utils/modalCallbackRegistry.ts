@@ -8,14 +8,14 @@ export type ModalCallbacks = {
 let currentId = 0;
 const callbackMap = new Map<number, ModalCallbacks>();
 
+export function getModalCallbacks(id: number): ModalCallbacks | undefined {
+  return callbackMap.get(id);
+}
+
 export function registerModalCallbacks(callbacks: ModalCallbacks): number {
   const id = ++currentId;
   callbackMap.set(id, callbacks);
   return id;
-}
-
-export function getModalCallbacks(id: number): ModalCallbacks | undefined {
-  return callbackMap.get(id);
 }
 
 export function unregisterModalCallbacks(id: number): void {

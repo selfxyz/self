@@ -5,71 +5,17 @@ import { Platform, Vibration } from 'react-native';
 import { triggerFeedback } from './trigger';
 
 // Keep track of the loading screen interval
-let loadingScreenInterval: NodeJS.Timeout | null = null;
+let loadingScreenInterval: ReturnType<typeof setInterval> | null = null;
 
-/**
- * Haptic actions
- */
+// Define the base functions first
 export const impactLight = () => triggerFeedback('impactLight');
 export const impactMedium = () => triggerFeedback('impactMedium');
-export const notificationError = () => triggerFeedback('notificationError');
-export const notificationSuccess = () => triggerFeedback('notificationSuccess');
-export const notificationWarning = () => triggerFeedback('notificationWarning');
 export const selectionChange = () => triggerFeedback('selection');
+
+// Then define the aliases
 export const buttonTap = impactLight;
 export const cancelTap = selectionChange;
 export const confirmTap = impactMedium;
-
-// Custom feedback events
-
-export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
-  // Clear any existing interval
-  if (loadingScreenInterval) {
-    clearInterval(loadingScreenInterval);
-    loadingScreenInterval = null;
-  }
-
-  // If we shouldn't vibrate, just stop here
-  if (!shouldVibrate) {
-    Vibration.cancel();
-    return;
-  }
-
-  // Function to trigger the haptic feedback
-  const triggerHaptic = () => {
-    if (Platform.OS === 'android') {
-      // Pattern: [delay, duration, delay, duration, ...]
-      // First heavy impact at 500ms
-      // Then three light impacts at 750ms intervals
-      triggerFeedback('custom', {
-        pattern: [
-          500,
-          100, // Heavy impact
-          750,
-          50, // First light impact
-          750,
-          50, // Second light impact
-          750,
-          50, // Third light impact
-        ],
-      });
-    } else {
-      setTimeout(() => {
-        triggerFeedback('impactHeavy');
-      }, 750);
-      setTimeout(() => {
-        feedbackProgress();
-      }, 750);
-    }
-  };
-
-  // Trigger immediately
-  triggerHaptic();
-
-  // Set up interval for continuous feedback
-  // Total pattern duration (2950ms) + 1 second pause (1000ms) = 3950ms
-  loadingScreenInterval = setInterval(triggerHaptic, 4000);
-};
 
 // consistent light feedback at a steady interval
 export const feedbackProgress = () => {
@@ -158,5 +104,65 @@ export const feedbackUnsuccessful = () => {
     triggerFeedback('impactLight');
   }, 1000);
 };
+
+/**
+ * Haptic actions
+ */
+
+// Custom feedback events
+export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
+  // Clear any existing interval
+  if (loadingScreenInterval) {
+    clearInterval(loadingScreenInterval);
+    loadingScreenInterval = null;
+  }
+
+  // If we shouldn't vibrate, just stop here
+  if (!shouldVibrate) {
+    Vibration.cancel();
+    return;
+  }
+
+  // Function to trigger the haptic feedback
+  const triggerHaptic = () => {
+    if (Platform.OS === 'android') {
+      // Pattern: [delay, duration, delay, duration, ...]
+      // First heavy impact at 500ms
+      // Then three light impacts at 750ms intervals
+      triggerFeedback('custom', {
+        pattern: [
+          500,
+          100, // Heavy impact
+          750,
+          50, // First light impact
+          750,
+          50, // Second light impact
+          750,
+          50, // Third light impact
+        ],
+      });
+    } else {
+      setTimeout(() => {
+        triggerFeedback('impactHeavy');
+      }, 750);
+      setTimeout(() => {
+        feedbackProgress();
+      }, 750);
+    }
+  };
+
+  // Trigger immediately
+  triggerHaptic();
+
+  // Set up interval for continuous feedback
+  // Total pattern duration (2950ms) + 1 second pause (1000ms) = 3950ms
+  loadingScreenInterval = setInterval(triggerHaptic, 4000);
+};
+
+export const notificationError = () => triggerFeedback('notificationError');
+
+export const notificationSuccess = () => triggerFeedback('notificationSuccess');
+
+export const notificationWarning = () => triggerFeedback('notificationWarning');
 
 export { triggerFeedback } from './trigger';

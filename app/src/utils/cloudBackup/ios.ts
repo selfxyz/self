@@ -2,7 +2,7 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
-import { Mnemonic } from '../../types/mnemonic';
+import type { Mnemonic } from '../../types/mnemonic';
 import {
   ENCRYPTED_FILE_PATH,
   FOLDER,
@@ -10,18 +10,8 @@ import {
   withRetries,
 } from './helpers';
 
-export async function upload(mnemonic: Mnemonic) {
-  try {
-    await CloudStorage.mkdir(FOLDER);
-  } catch (e) {
-    console.error(e);
-    if (!(e as Error).message.includes('already')) {
-      throw e;
-    }
-  }
-  await withRetries(() =>
-    CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(mnemonic)),
-  );
+export async function disableBackup() {
+  await withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
 }
 
 export async function download() {
@@ -43,6 +33,16 @@ export async function download() {
   );
 }
 
-export async function disableBackup() {
-  await withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
+export async function upload(mnemonic: Mnemonic) {
+  try {
+    await CloudStorage.mkdir(FOLDER);
+  } catch (e) {
+    console.error(e);
+    if (!(e as Error).message.includes('already')) {
+      throw e;
+    }
+  }
+  await withRetries(() =>
+    CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(mnemonic)),
+  );
 }

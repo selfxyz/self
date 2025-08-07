@@ -1,7 +1,7 @@
 export {
-  oidMap,
-  mapSecpCurves,
-  getSecpFromNist,
-  getFriendlyName,
   extractHashFunction,
+  getFriendlyName,
+  getSecpFromNist,
+  mapSecpCurves,
+  oidMap,
 } from './oids.js';

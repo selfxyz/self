@@ -3,18 +3,20 @@
 // Web-compatible version using LocalStorage and Firebase Web SDK
 // This file provides the same API as RemoteConfig.ts but for web environments
 
+import type {
+  FeatureFlagValue,
+  RemoteConfigBackend,
+  StorageBackend,
+} from './RemoteConfig.shared';
 import {
   clearAllLocalOverrides as clearAllLocalOverridesShared,
   clearLocalOverride as clearLocalOverrideShared,
-  FeatureFlagValue,
   getAllFeatureFlags as getAllFeatureFlagsShared,
   getFeatureFlag as getFeatureFlagShared,
   getLocalOverrides as getLocalOverridesShared,
   initRemoteConfig as initRemoteConfigShared,
   refreshRemoteConfig as refreshRemoteConfigShared,
-  RemoteConfigBackend,
   setLocalOverride as setLocalOverrideShared,
-  StorageBackend,
 } from './RemoteConfig.shared';
 
 // Web-specific storage backend using LocalStorage
@@ -85,17 +87,17 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
 const webRemoteConfigBackend: RemoteConfigBackend =
   new MockFirebaseRemoteConfig();
 
-// Export the shared functions with web-specific backends
-export const getLocalOverrides = () =>
-  getLocalOverridesShared(webStorageBackend);
-export const setLocalOverride = (flag: string, value: FeatureFlagValue) =>
-  setLocalOverrideShared(webStorageBackend, flag, value);
-export const clearLocalOverride = (flag: string) =>
-  clearLocalOverrideShared(webStorageBackend, flag);
+export type { FeatureFlagValue } from './RemoteConfig.shared';
+
 export const clearAllLocalOverrides = () =>
   clearAllLocalOverridesShared(webStorageBackend);
-export const initRemoteConfig = () =>
-  initRemoteConfigShared(webRemoteConfigBackend);
+
+export const clearLocalOverride = (flag: string) =>
+  clearLocalOverrideShared(webStorageBackend, flag);
+
+export const getAllFeatureFlags = () =>
+  getAllFeatureFlagsShared(webRemoteConfigBackend, webStorageBackend);
+// Export the shared functions with web-specific backends
 export const getFeatureFlag = <T extends FeatureFlagValue>(
   flag: string,
   defaultValue: T,
@@ -106,10 +108,13 @@ export const getFeatureFlag = <T extends FeatureFlagValue>(
     flag,
     defaultValue,
   );
-export const getAllFeatureFlags = () =>
-  getAllFeatureFlagsShared(webRemoteConfigBackend, webStorageBackend);
+export const getLocalOverrides = () =>
+  getLocalOverridesShared(webStorageBackend);
+export const initRemoteConfig = () =>
+  initRemoteConfigShared(webRemoteConfigBackend);
+// Re-export types for convenience
 export const refreshRemoteConfig = () =>
   refreshRemoteConfigShared(webRemoteConfigBackend);
 
-// Re-export types for convenience
-export type { FeatureFlagValue } from './RemoteConfig.shared';
+export const setLocalOverride = (flag: string, value: FeatureFlagValue) =>
+  setLocalOverrideShared(webStorageBackend, flag, value);

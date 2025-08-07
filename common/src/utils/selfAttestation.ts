@@ -1,4 +1,4 @@
-import { Groth16Proof, PublicSignals } from 'snarkjs';
+import type { Groth16Proof, PublicSignals } from 'snarkjs';
 
 export interface SelfVerificationResult {
   isValid: boolean;
