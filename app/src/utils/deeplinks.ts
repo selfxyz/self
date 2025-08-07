@@ -3,6 +3,8 @@
 import { parseUrl } from 'query-string';
 import { Linking, Platform } from 'react-native';
 
+import { countries } from '@selfxyz/common/constants/countries';
+
 import { navigationRef } from '../navigation';
 import { useSelfAppStore } from '../stores/selfAppStore';
 import useUserStore from '../stores/userStore';
@@ -92,10 +94,19 @@ export const handleUrl = (uri: string) => {
       };
       const rawParams = data as MockDataDeepLinkRawParams;
 
+      // Validate nationality is a valid country code
+      const isValidCountryCode = (code: string | undefined): code is string => {
+        if (!code) return false;
+        // Check if the code exists as a value in the countries object
+        return (Object.values(countries) as string[]).includes(code);
+      };
+
       useUserStore.getState().setDeepLinkUserDetails({
         name: rawParams.name,
         surname: rawParams.surname,
-        nationality: rawParams.nationality,
+        nationality: isValidCountryCode(rawParams.nationality)
+          ? (rawParams.nationality as any)
+          : undefined,
         birthDate: rawParams.birth_date,
         gender: rawParams.gender,
       });

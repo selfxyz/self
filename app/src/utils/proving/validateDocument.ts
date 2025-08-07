@@ -399,26 +399,25 @@ export async function isUserRegisteredWithAlternativeCSCA(
   return { isRegistered: false, csca: null };
 }
 
-interface MigratedPassportData extends PassportData {
+interface MigratedPassportData extends Omit<PassportData, 'documentType'> {
   documentType?: string;
 }
 
 export function migratePassportData(passportData: PassportData): PassportData {
   const migratedData: MigratedPassportData = { ...passportData };
   if (!('documentCategory' in migratedData) || !('mock' in migratedData)) {
-    if (migratedData.documentType) {
-      migratedData.mock = migratedData.documentType.startsWith('mock');
-      migratedData.documentCategory = migratedData.documentType.includes(
-        'passport',
-      )
+    const documentType = (migratedData as any).documentType;
+    if (documentType) {
+      (migratedData as any).mock = documentType.startsWith('mock');
+      (migratedData as any).documentCategory = documentType.includes('passport')
         ? 'passport'
         : 'id_card';
     } else {
-      migratedData.documentType = 'passport';
-      migratedData.documentCategory = 'passport';
-      migratedData.mock = false;
+      (migratedData as any).documentType = 'passport';
+      (migratedData as any).documentCategory = 'passport';
+      (migratedData as any).mock = false;
     }
     // console.log('Migrated passport data:', migratedData);
   }
-  return migratedData;
+  return migratedData as PassportData;
 }

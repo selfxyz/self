@@ -2,6 +2,8 @@
 
 import { createSegmentClient } from '../Segment';
 
+import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
+
 /**
  * Generic reasons:
  * - network_error: Network connectivity issues
@@ -41,14 +43,43 @@ export interface EventParams {
 
 const segmentClient = createSegmentClient();
 
-function cleanParams(params: Record<string, unknown>) {
-  const newParams: Record<string, unknown> = {};
-  for (const key of Object.keys(params)) {
-    if (typeof params[key] !== 'function') {
-      newParams[key] = params[key];
-    }
+function coerceToJsonValue(value: unknown): JsonValue | undefined {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value as JsonValue;
   }
-  return newParams;
+  if (Array.isArray(value)) {
+    const arr: JsonValue[] = [];
+    for (const item of value) {
+      const v = coerceToJsonValue(item);
+      if (v === undefined) continue;
+      arr.push(v);
+    }
+    return arr as JsonValue;
+  }
+  if (typeof value === 'object' && value) {
+    const obj: JsonMap = {};
+    for (const [k, v] of Object.entries(value)) {
+      const coerced = coerceToJsonValue(v);
+      if (coerced !== undefined) obj[k] = coerced;
+    }
+    return obj as JsonValue;
+  }
+  // drop functions/undefined/symbols
+  return undefined;
+}
+
+function cleanParams(params: Record<string, unknown>): JsonMap {
+  const cleaned: JsonMap = {};
+  for (const [key, value] of Object.entries(params)) {
+    const v = coerceToJsonValue(value);
+    if (v !== undefined) cleaned[key] = v;
+  }
+  return cleaned;
 }
 
 /**
@@ -57,7 +88,7 @@ function cleanParams(params: Record<string, unknown>) {
  */
 function validateParams(
   properties?: Record<string, unknown>,
-): Record<string, unknown> | undefined {
+): JsonMap | undefined {
   if (!properties) return undefined;
 
   const validatedProps = { ...properties } as EventParams;
@@ -95,7 +126,7 @@ const analytics = () => {
     if (!segmentClient) {
       return;
     }
-    const trackMethod = (e: string, p?: Record<string, unknown>) =>
+    const trackMethod = (e: string, p?: JsonMap) =>
       type === 'screen'
         ? segmentClient.screen(e, p)
         : segmentClient.track(e, p);

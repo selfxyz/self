@@ -15,11 +15,7 @@ import {
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 
-interface DriveFile {
-  id?: string;
-}
-
-function isDriveFile(file: unknown): file is DriveFile {
+function isDriveFile(file: unknown): file is { id: string } {
   return (
     typeof file === 'object' &&
     file !== null &&

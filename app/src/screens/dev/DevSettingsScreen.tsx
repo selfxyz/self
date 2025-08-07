@@ -4,16 +4,7 @@ import type { PropsWithChildren } from 'react';
 import React, { useMemo, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
-import {
-  Adapt,
-  type AdaptWhen,
-  Button,
-  Select,
-  Sheet,
-  Text,
-  XStack,
-  YStack,
-} from 'tamagui';
+import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
 import BugIcon from '../../images/icons/bug_icon.svg';
 import IdIcon from '../../images/icons/id_icon.svg';
@@ -196,7 +187,7 @@ const ScreenSelector = ({}) => {
         </Button>
       </Select.Trigger>
 
-      <Adapt when={'sm' as AdaptWhen} platform="touch">
+      <Adapt when={true} platform="touch">
         <Sheet native modal dismissOnSnapToBottom animation="medium">
           <Sheet.Frame>
             <Sheet.ScrollView>
