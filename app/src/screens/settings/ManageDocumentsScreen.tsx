@@ -9,10 +9,11 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import { DocumentEvents } from '../../consts/analytics';
+import type { RootStackParamList } from '../../navigation';
 import {
-  usePassport,
   type DocumentCatalog,
   type DocumentMetadata,
+  usePassport,
 } from '../../providers/passportDataProvider';
 import analytics from '../../utils/analytics';
 import { borderColor, textBlack, white } from '../../utils/colors';
@@ -20,9 +21,8 @@ import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
 
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, Eraser } from '@tamagui/lucide-icons';
-import type { RootStackParamList } from '../../navigation';
 
 const { trackEvent } = analytics();
 

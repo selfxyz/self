@@ -43,11 +43,11 @@ import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '../../utils/nfcScanner';
 import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
 
+import type { RouteProp } from '@react-navigation/native';
 import {
   useFocusEffect,
   useNavigation,
   useRoute,
-  RouteProp,
 } from '@react-navigation/native';
 import { CircleHelp } from '@tamagui/lucide-icons';
 

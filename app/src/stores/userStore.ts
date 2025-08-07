@@ -2,8 +2,9 @@
 
 import { create } from 'zustand';
 
-import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 import type { IdDocInput } from '@selfxyz/common/utils';
+
+import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 
 interface UserState {
   documentType: string;

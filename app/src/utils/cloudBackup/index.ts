@@ -75,7 +75,9 @@ export async function download() {
       'Couldnt find the encrypted backup, did you back it up previously?',
     );
   }
-  const mnemonicString = await withRetries(() => gdrive.files.getText(firstFile.id));
+  const mnemonicString = await withRetries(() =>
+    gdrive.files.getText(firstFile.id),
+  );
   try {
     const mnemonic = parseMnemonic(mnemonicString);
     return mnemonic;

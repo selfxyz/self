@@ -43,7 +43,7 @@ import { impactLight } from '../../utils/haptic';
 import { getCountry, getLocales, getTimeZone } from '../../utils/locale';
 
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
 interface SettingsScreenProps {}

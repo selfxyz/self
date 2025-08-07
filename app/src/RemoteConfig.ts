@@ -17,9 +17,8 @@ import {
 } from './RemoteConfig.shared';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import remoteConfig, {
-  FirebaseRemoteConfigTypes,
-} from '@react-native-firebase/remote-config';
+import type { FirebaseRemoteConfigTypes } from '@react-native-firebase/remote-config';
+import remoteConfig from '@react-native-firebase/remote-config';
 
 // Mobile-specific storage backend using AsyncStorage
 const mobileStorageBackend: StorageBackend = {
@@ -42,9 +41,7 @@ const mobileRemoteConfigBackend: RemoteConfigBackend = {
   getAll: () => {
     return remoteConfig().getAll();
   },
-  setDefaults: async (
-    defaults: FirebaseRemoteConfigTypes.ConfigDefaults,
-  ) => {
+  setDefaults: async (defaults: FirebaseRemoteConfigTypes.ConfigDefaults) => {
     await remoteConfig().setDefaults(defaults);
   },
   setConfigSettings: async (

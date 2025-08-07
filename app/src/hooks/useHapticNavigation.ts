@@ -5,8 +5,8 @@ import { useCallback } from 'react';
 import type { RootStackParamList } from '../navigation/index';
 import { impactLight, impactMedium, selectionChange } from '../utils/haptic';
 
-import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
 
@@ -47,14 +47,18 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
         impactLight();
     }
     if (navParams !== undefined) {
-      (navigation.navigate as <T extends keyof RootStackParamList>(
-        screen: T,
-        params: RootStackParamList[T],
-      ) => void)(screen, navParams);
+      (
+        navigation.navigate as <T extends keyof RootStackParamList>(
+          screen: T,
+          params: RootStackParamList[T],
+        ) => void
+      )(screen, navParams);
     } else {
-      (navigation.navigate as <T extends keyof RootStackParamList>(
-        screen: T,
-      ) => void)(screen);
+      (
+        navigation.navigate as <T extends keyof RootStackParamList>(
+          screen: T,
+        ) => void
+      )(screen);
     }
   }, [navigation, screen, options]);
 };

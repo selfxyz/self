@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
+import type { RootStackParamList } from '../../navigation';
 import { useAuth } from '../../providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
@@ -18,7 +17,9 @@ import {
 import { useSettingStore } from '../../stores/settingStore';
 import { black } from '../../utils/colors';
 import { impactLight } from '../../utils/haptic';
-import type { RootStackParamList } from '../../navigation';
+
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation =
@@ -26,9 +27,9 @@ const SplashScreen: React.FC = ({}) => {
   const { checkBiometricsAvailable } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
   const [isAnimationFinished, setIsAnimationFinished] = useState(false);
-  const [nextScreen, setNextScreen] = useState<
-    keyof RootStackParamList | null
-  >(null);
+  const [nextScreen, setNextScreen] = useState<keyof RootStackParamList | null>(
+    null,
+  );
   const dataLoadInitiatedRef = useRef(false);
 
   useEffect(() => {
@@ -78,7 +79,7 @@ const SplashScreen: React.FC = ({}) => {
   useEffect(() => {
     if (isAnimationFinished && nextScreen) {
       requestAnimationFrame(() => {
-    navigation.navigate(nextScreen as never);
+        navigation.navigate(nextScreen as never);
       });
     }
   }, [isAnimationFinished, nextScreen, navigation]);

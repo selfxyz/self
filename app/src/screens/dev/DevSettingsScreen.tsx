@@ -2,17 +2,17 @@
 
 import type { PropsWithChildren } from 'react';
 import React, { useMemo, useState } from 'react';
-import { Alert, ScrollView } from 'react-native';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
+import { Alert, ScrollView } from 'react-native';
 import {
   Adapt,
+  type AdaptWhen,
   Button,
   Select,
   Sheet,
   Text,
   XStack,
   YStack,
-  type AdaptWhen,
 } from 'tamagui';
 
 import BugIcon from '../../images/icons/bug_icon.svg';

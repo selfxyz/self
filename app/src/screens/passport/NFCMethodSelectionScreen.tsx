@@ -11,12 +11,12 @@ import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '../../navigation';
 import useUserStore from '../../stores/userStore';
 import { white } from '../../utils/colors';
 
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../../navigation';
 
 type NFCParams = {
   skipPACE?: boolean;
@@ -90,7 +90,8 @@ const NFC_METHODS = [
 ];
 
 const NFCMethodSelectionScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
   const [error, setError] = useState('');

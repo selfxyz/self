@@ -4,12 +4,8 @@ import forge from 'node-forge';
 import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { v4 } from 'uuid';
-import {
-  AnyActorRef,
-  createActor,
-  createMachine,
-  StateFrom,
-} from 'xstate';
+import type { AnyActorRef, StateFrom } from 'xstate';
+import { createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
