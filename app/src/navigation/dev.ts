@@ -2,6 +2,7 @@
 
 import { lazy } from 'react';
 
+import DevPrivateKeyScreen from '../screens/dev/DevPrivateKeyScreen';
 import { black, white } from '../utils/colors';
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
