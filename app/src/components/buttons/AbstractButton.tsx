@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React from 'react';
-import type { ViewStyle } from 'react-native';
-import { Platform, StyleSheet } from 'react-native';
-import type { ViewProps } from 'tamagui';
-import { Button, Text } from 'tamagui';
+import {
+  GestureResponderEvent,
+  Platform,
+  StyleSheet,
+  ViewStyle,
+} from 'react-native';
+import { Button, Text, ViewProps } from 'tamagui';
 
 import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
 import analytics from '../../utils/analytics';
@@ -22,7 +25,7 @@ interface AbstractButtonProps extends ButtonProps {
   borderColor?: string;
   borderWidth?: number;
   color: string;
-  onPress?: ((e: any) => void) | null | undefined;
+  onPress?: ((e: GestureResponderEvent) => void) | null | undefined;
 }
 
 const { trackEvent: analyticsTrackEvent } = analytics();
@@ -47,7 +50,7 @@ export default function AbstractButton({
 }: AbstractButtonProps) {
   const hasBorder = borderColor ? true : false;
 
-  const handlePress = (e: any) => {
+  const handlePress = (e: GestureResponderEvent) => {
     if (trackEvent) {
       // attempt to remove event category from click event
       const parsedEvent = trackEvent?.split(':')?.[1]?.trim();

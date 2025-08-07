@@ -21,9 +21,9 @@ interface Inputs {
   usePacePolling?: boolean;
 }
 
-export const parseScanResponse = (response: any) => {
+export const parseScanResponse = (response: unknown) => {
   return Platform.OS === 'android'
-    ? handleResponseAndroid(response)
+    ? handleResponseAndroid(response as Record<string, unknown>)
     : handleResponseIOS(response);
 };
 
@@ -69,8 +69,8 @@ export const scan = async (inputs: Inputs) => {
     : await scanIOS(inputs);
 };
 
-const handleResponseIOS = (response: any) => {
-  const parsed = JSON.parse(response);
+const handleResponseIOS = (response: unknown) => {
+  const parsed = JSON.parse(String(response));
   const dgHashesObj = JSON.parse(parsed?.dataGroupHashes);
   const dg1HashString = dgHashesObj?.DG1?.sodHash;
   const dg1Hash = Array.from(Buffer.from(dg1HashString, 'hex'));
@@ -126,7 +126,9 @@ const handleResponseIOS = (response: any) => {
   } as PassportData;
 };
 
-const handleResponseAndroid = (response: any): PassportData => {
+const handleResponseAndroid = (
+  response: Record<string, unknown>,
+): PassportData => {
   const {
     mrz,
     eContent,
@@ -140,7 +142,20 @@ const handleResponseAndroid = (response: any): PassportData => {
     encapContent,
     documentSigningCertificate,
     dataGroupHashes,
-  } = response;
+  } = response as {
+    mrz: string;
+    eContent: string;
+    encryptedDigest: string;
+    _photo: string;
+    _digestAlgorithm: string;
+    _signerInfoDigestAlgorithm: string;
+    _digestEncryptionAlgorithm: string;
+    _LDSVersion: string;
+    _unicodeVersion: string;
+    encapContent: string;
+    documentSigningCertificate: string;
+    dataGroupHashes: string;
+  };
 
   const dgHashesObj = JSON.parse(dataGroupHashes);
   const dg1HashString = dgHashesObj['1'];

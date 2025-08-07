@@ -2,7 +2,13 @@
 
 import React, { useCallback } from 'react';
 import type { NativeSyntheticEvent } from 'react-native';
-import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
+import {
+  PixelRatio,
+  Platform,
+  requireNativeComponent,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 
 import { RCTFragment } from './RCTFragment';
 
@@ -15,7 +21,7 @@ interface NativeQRCodeScannerViewProps {
       stackTrace: string;
     }>,
   ) => void;
-  style?: any; // Or a more specific style type
+  style?: StyleProp<ViewStyle>;
 }
 
 const QRCodeNativeComponent = Platform.select({
