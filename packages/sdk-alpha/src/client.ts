@@ -1,16 +1,27 @@
-import type {
-  Adapters, Config, SelfClient, SDKEvent, Unsubscribe,
-  ScanOpts, ScanResult, ValidationInput, ValidationResult,
-  RegistrationInput, RegistrationStatus, ProofRequest, Progress, ProofHandle
-} from "./types/public.js";
-import { notImplemented } from "./errors.js";
 import { defaultConfig } from "./config/defaults.js";
+import { notImplemented } from "./errors.js";
+import type {
+  Adapters,
+  Config,
+  Progress,
+  ProofHandle,
+  ProofRequest,
+  RegistrationInput,
+  RegistrationStatus,
+  ScanOpts,
+  ScanResult,
+  SDKEvent,
+  SelfClient,
+  Unsubscribe,
+  ValidationInput,
+  ValidationResult,
+} from "./types/public.js";
 
 export function createSelfClient({
   config,
   adapters
 }: { config: Config; adapters: Partial<Adapters>; }): SelfClient {
-  const cfg = { ...defaultConfig, ...config };
+  const _cfg = { ...defaultConfig, ...config };
   const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
 
   function on(event: SDKEvent, cb: (payload: any) => void): Unsubscribe {

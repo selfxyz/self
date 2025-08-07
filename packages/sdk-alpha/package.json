@@ -24,11 +24,25 @@
     "validate:exports": "node ./scripts/validate-exports.mjs",
     "validate:pkg": "node ./scripts/verify-conditions.mjs",
     "report:exports": "node ./scripts/report-exports.mjs",
-    "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg"
+    "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "fmt": "prettier --check .",
+    "fmt:fix": "prettier --write .",
+    "nice": "yarn lint:fix && yarn fmt:fix",
+    "format": "yarn nice",
+    "test": "vitest run"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "prettier": "^3.5.3",
     "tsup": "^8.0.1",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "tslib": "^2.6.2"
