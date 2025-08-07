@@ -38,7 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        script: [test-register, test-register-id, test-dsc, test-disclose, test-ofac]
+        script:
+          [test-register, test-register-id, test-dsc, test-disclose, test-ofac]
     steps:
       - uses: actions/checkout@v4
 
@@ -82,4 +83,3 @@ jobs:
         env:
           FULL_TEST_SUITE: false
         run: yarn workspace @selfxyz/circuits ${{ matrix.script }}
-

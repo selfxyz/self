@@ -58,15 +58,9 @@ testSuite.forEach(
       const circuitName = getCircuitNameFromPassportData(passportData, 'register');
 
       before(async function () {
-        const output = path.join(
-          __dirname,
-          `../../build/register/${circuitName}`
-        );
+        const output = path.join(__dirname, `../../build/register/${circuitName}`);
         circuit = await wasm_tester(
-          path.join(
-            __dirname,
-            `../../circuits/register/instances/${circuitName}.circom`
-          ),
+          path.join(__dirname, `../../circuits/register/instances/${circuitName}.circom`),
           {
             output,
             recompile: false,
