@@ -651,38 +651,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               </Button>
             </YStack>
           </YStack>
-
-          <YStack
-            paddingHorizontal="$4"
-            paddingBottom="$4"
-            borderRadius="$4"
-            backgroundColor={black}
-            flexDirection="row"
-            justifyContent="space-between"
-            alignItems="center"
-            gap="$4"
-            padding="$5"
-          >
-            <YStack
-              backgroundColor="gray"
-              borderRadius={5}
-              width={46}
-              height={46}
-              justifyContent="center"
-              alignItems="center"
-            >
-              <WarningIcon width={30} height={30} color={yellow500} />
-            </YStack>
-            <YStack width="100%" height="100%" flex={1}>
-              <Text fontSize="$5" color={white}>
-                Proceed with caution
-              </Text>
-              <Text fontSize="$4" color={slate400}>
-                Generating a mock passport will wipe all Self app data stored on
-                this device
-              </Text>
-            </YStack>
-          </YStack>
         </YStack>
 
         <YStack paddingHorizontal="$4" paddingBottom="$4">
