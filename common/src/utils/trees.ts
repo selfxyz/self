@@ -1,6 +1,5 @@
 import countries from 'i18n-iso-countries';
-// @ts-ignore
-import en from 'i18n-iso-countries/langs/en.json' with { type: 'json' };
+import { createRequire } from 'module';
 import { poseidon2, poseidon3, poseidon6, poseidon10, poseidon12, poseidon13 } from 'poseidon-lite';
 
 import {
@@ -22,6 +21,8 @@ import { IMT } from '@openpassport/zk-kit-imt';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import type { ChildNodes } from '@openpassport/zk-kit-smt';
 import { SMT } from '@openpassport/zk-kit-smt';
+
+const en = createRequire(import.meta.url)('i18n-iso-countries/langs/en.json');
 
 // SideEffect here
 countries.registerLocale(en);
