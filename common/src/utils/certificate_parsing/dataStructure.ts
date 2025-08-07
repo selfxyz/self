@@ -1,4 +1,4 @@
-import { StandardCurve } from './curves.js';
+import type { StandardCurve } from './curves.js';
 
 export interface CertificateData {
   id: string;
@@ -23,6 +23,14 @@ export interface CertificateData {
   publicKeyAlgoOID?: string;
 }
 
+export interface PublicKeyDetailsECDSA {
+  x: string;
+  y: string;
+  curve: string;
+  params: StandardCurve;
+  bits: string;
+}
+
 export interface PublicKeyDetailsRSA {
   modulus: string;
   exponent: string;
@@ -33,12 +41,4 @@ export interface PublicKeyDetailsRSAPSS extends PublicKeyDetailsRSA {
   hashAlgorithm: string;
   mgf: string;
   saltLength: string;
-}
-
-export interface PublicKeyDetailsECDSA {
-  x: string;
-  y: string;
-  curve: string;
-  params: StandardCurve;
-  bits: string;
 }

@@ -11,9 +11,9 @@ import {
   YStack,
 } from 'tamagui';
 
+import type { FeatureFlagValue } from '../../RemoteConfig';
 import {
   clearAllLocalOverrides,
-  FeatureFlagValue,
   getAllFeatureFlags,
   refreshRemoteConfig,
   setLocalOverride,

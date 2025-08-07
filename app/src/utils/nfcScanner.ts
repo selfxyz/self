@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
-import type { PassportData } from '@selfxyz/common/types';
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
+
+import type { PassportData } from '@selfxyz/common/types';
+
+import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 
 interface Inputs {
   passportNumber: string;
@@ -19,21 +21,10 @@ interface Inputs {
   usePacePolling?: boolean;
 }
 
-export const scan = async (inputs: Inputs) => {
-  if (MIXPANEL_NFC_PROJECT_TOKEN) {
-    if (Platform.OS === 'ios') {
-      const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
-      NativeModules.PassportReader.configure(
-        MIXPANEL_NFC_PROJECT_TOKEN,
-        enableDebugLogs,
-      );
-    } else {
-    }
-  }
-
+export const parseScanResponse = (response: any) => {
   return Platform.OS === 'android'
-    ? await scanAndroid(inputs)
-    : await scanIOS(inputs);
+    ? handleResponseAndroid(response)
+    : handleResponseIOS(response);
 };
 
 const scanAndroid = async (inputs: Inputs) => {
@@ -61,10 +52,21 @@ const scanIOS = async (inputs: Inputs) => {
   );
 };
 
-export const parseScanResponse = (response: any) => {
+export const scan = async (inputs: Inputs) => {
+  if (MIXPANEL_NFC_PROJECT_TOKEN) {
+    if (Platform.OS === 'ios') {
+      const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
+      NativeModules.PassportReader.configure(
+        MIXPANEL_NFC_PROJECT_TOKEN,
+        enableDebugLogs,
+      );
+    } else {
+    }
+  }
+
   return Platform.OS === 'android'
-    ? handleResponseAndroid(response)
-    : handleResponseIOS(response);
+    ? await scanAndroid(inputs)
+    : await scanIOS(inputs);
 };
 
 const handleResponseIOS = (response: any) => {

@@ -4,7 +4,7 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: '80...100'
+  range: "80...100"
   status:
     project:
       default:
@@ -18,36 +18,36 @@ coverage:
 flags:
   screens:
     paths:
-      - 'src/screens/'
+      - "src/screens/"
   stores:
     paths:
-      - 'src/stores/'
+      - "src/stores/"
   providers:
     paths:
-      - 'src/providers/'
+      - "src/providers/"
   components:
     paths:
-      - 'src/components/'
+      - "src/components/"
   utils:
     paths:
-      - 'src/utils/'
+      - "src/utils/"
   hooks:
     paths:
-      - 'src/hooks/'
+      - "src/hooks/"
   navigation:
     paths:
-      - 'src/navigation/'
+      - "src/navigation/"
   layouts:
     paths:
-      - 'src/layouts/'
+      - "src/layouts/"
 
 ignore:
-  - 'src/mocks/**'
-  - 'src/types/**'
-  - 'src/**/*.d.ts'
-  - 'src/**/index.{ts,tsx}'
-  - 'src/**/*.test.{ts,tsx}'
-  - 'src/**/*.spec.{ts,tsx}'
-  - 'src/**/__tests__/**'
-  - 'src/**/__mocks__/**'
-  - 'tests/**'
+  - "src/mocks/**"
+  - "src/types/**"
+  - "src/**/*.d.ts"
+  - "src/**/index.{ts,tsx}"
+  - "src/**/*.test.{ts,tsx}"
+  - "src/**/*.spec.{ts,tsx}"
+  - "src/**/__tests__/**"
+  - "src/**/__mocks__/**"
+  - "tests/**"

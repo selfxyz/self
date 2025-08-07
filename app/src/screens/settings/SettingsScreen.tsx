@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useNavigation } from '@react-navigation/native';
-import { Bug, FileText } from '@tamagui/lucide-icons';
-import React, { PropsWithChildren, useCallback, useMemo } from 'react';
+import type { PropsWithChildren } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Linking, Platform, Share } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SvgProps } from 'react-native-svg';
+import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
 import { version } from '../../../package.json';
@@ -28,7 +27,7 @@ import ShareIcon from '../../images/icons/share.svg';
 import Star from '../../images/icons/star.svg';
 import Telegram from '../../images/icons/telegram.svg';
 import Web from '../../images/icons/webpage.svg';
-import { RootStackParamList } from '../../navigation';
+import type { RootStackParamList } from '../../navigation';
 import { useSettingStore } from '../../stores/settingStore';
 import {
   amber500,
@@ -40,6 +39,9 @@ import {
 import { extraYPadding } from '../../utils/constants';
 import { impactLight } from '../../utils/haptic';
 import { getCountry, getLocales, getTimeZone } from '../../utils/locale';
+
+import { useNavigation } from '@react-navigation/native';
+import { Bug, FileText } from '@tamagui/lucide-icons';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {

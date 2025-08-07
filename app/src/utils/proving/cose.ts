@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { decode, encode } from '@stablelib/cbor';
 import { Buffer } from 'buffer';
 import { ec as EC } from 'elliptic';
 import { sha384 } from 'js-sha512';
+
+import { decode, encode } from '@stablelib/cbor';
 
 /**
  * @notice Verifies a COSE_Sign1 message signature against the provided ECDSA public key.

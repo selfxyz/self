@@ -1,19 +1,19 @@
-name: Self Contracts CI/CD
+name: Contracts CI
 on:
   push:
     branches:
       - dev
       - main
     paths:
-      - 'contracts/**'
-      - 'common/**'
+      - "contracts/**"
+      - "common/**"
   pull_request:
     branches:
       - dev
       - main
     paths:
-      - 'contracts/**'
-      - 'common/**'
+      - "contracts/**"
+      - "common/**"
 jobs:
   test_contracts:
     if: github.event.pull_request.draft == false

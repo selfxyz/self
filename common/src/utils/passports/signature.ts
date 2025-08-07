@@ -1,8 +1,8 @@
 export {
-  getPassportSignatureInfos,
+  extractRSFromSignature,
   extractSignatureFromDSC,
   formatSignatureDSCCircuit,
-  getSignatureAlgorithmFullName,
-  extractRSFromSignature,
   getNAndK,
+  getPassportSignatureInfos,
+  getSignatureAlgorithmFullName,
 } from './passport.js';

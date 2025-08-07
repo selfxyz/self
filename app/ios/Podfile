@@ -27,7 +27,10 @@ target "Self" do
   config = use_native_modules!
 
   use_frameworks!
-  pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "74098a5e29c23b3f5a58dc14a336556fa89c0ad6"
+  # Skip NFCPassportReader for e2e testing to avoid build issues
+  unless ENV["E2E_TESTING"] == "1"
+    pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "74098a5e29c23b3f5a58dc14a336556fa89c0ad6"
+  end
 
   pod "QKMRZScanner"
   pod "lottie-ios"
@@ -63,6 +66,7 @@ target "Self" do
             end
           end
         end
+
         target.build_configurations.each do |config|
           config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.0"
           config.build_settings["GCC_PREPROCESSOR_DEFINITIONS"] ||= ["$(inherited)", "_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]
@@ -79,15 +83,18 @@ target "Self" do
       system(command)
     end
 
-    framework_paths = [
-      "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64/OpenSSL.framework/OpenSSL",
-      "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64_x86_64-maccatalyst/OpenSSL.framework/OpenSSL",
-      "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64_x86_64-simulator/OpenSSL.framework/OpenSSL",
-      "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/macos-arm64_x86_64/OpenSSL.framework/OpenSSL",
-    ]
+    # Only strip OpenSSL bitcode if NFCPassportReader is included (not in e2e testing)
+    unless ENV["E2E_TESTING"] == "1"
+      framework_paths = [
+        "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64/OpenSSL.framework/OpenSSL",
+        "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64_x86_64-maccatalyst/OpenSSL.framework/OpenSSL",
+        "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64_x86_64-simulator/OpenSSL.framework/OpenSSL",
+        "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/macos-arm64_x86_64/OpenSSL.framework/OpenSSL",
+      ]
 
-    framework_paths.each do |framework_relative_path|
-      strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+      framework_paths.each do |framework_relative_path|
+        strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
+      end
     end
 
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
@@ -134,6 +141,26 @@ target "Self" do
 
         # Fix for Rosetta emulator builds - exclude arm64 for simulator
         config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+      end
+    end
+
+    # Add E2E_TESTING compilation condition for main app target when environment variable is set
+    if ENV["E2E_TESTING"] == "1"
+      # Find Self.xcodeproj and add E2E_TESTING compilation condition
+      self_project_path = File.join(installer.sandbox.project_path, "../Self.xcodeproj")
+      if File.exist?(self_project_path)
+        project = Xcodeproj::Project.open(self_project_path)
+        project.targets.each do |target|
+          if target.name == "Self"
+            target.build_configurations.each do |config|
+              existing_conditions = config.build_settings["SWIFT_ACTIVE_COMPILATION_CONDITIONS"] || ""
+              unless existing_conditions.to_s.include?("E2E_TESTING")
+                config.build_settings["SWIFT_ACTIVE_COMPILATION_CONDITIONS"] = (existing_conditions.to_s + " E2E_TESTING").strip
+              end
+            end
+          end
+        end
+        project.save
       end
     end
   end

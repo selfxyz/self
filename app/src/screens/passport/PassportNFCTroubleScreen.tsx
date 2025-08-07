@@ -4,7 +4,8 @@ import React, { useEffect } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { YStack } from 'tamagui';
 
-import Tips, { TipProps } from '../../components/Tips';
+import type { TipProps } from '../../components/Tips';
+import Tips from '../../components/Tips';
 import { Caption } from '../../components/typography/Caption';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';

@@ -130,7 +130,11 @@ android {
                 arguments += "-DANDROID_STL=c++_shared"
             }
             ndk {
-                abiFilters += "arm64-v8a"
+                if (System.env.E2E_BUILD == "true") {
+                    abiFilters "x86_64"
+                } else {
+                    abiFilters "arm64-v8a", "x86_64"
+                }
             }
         }
     }
@@ -147,6 +151,12 @@ android {
                 storePassword MYAPP_UPLOAD_STORE_PASSWORD
                 keyAlias MYAPP_UPLOAD_KEY_ALIAS
                 keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            } else {
+                // Fallback to debug signing for CI/local testing
+                storeFile file('debug.keystore')
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
             }
         }
     }

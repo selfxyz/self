@@ -1,12 +1,13 @@
-import { UserIdType, validateUserId } from './circuits/uuid.js';
-
-export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
-export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
-
 import { v4 } from 'uuid';
+
 import { REDIRECT_URL } from '../constants/constants.js';
-import { Country3LetterCode } from '../constants/countries.js';
+import type { Country3LetterCode } from '../constants/countries.js';
+import type { UserIdType } from './circuits/uuid.js';
+import { validateUserId } from './circuits/uuid.js';
 import { formatEndpoint } from './scope.js';
+
+export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
+export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 
 export interface SelfApp {
   appName: string;

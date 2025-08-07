@@ -1,7 +1,7 @@
 export {
-  normalizeHex,
-  identifyCurve,
-  getECDSACurveBits,
   getCurveForElliptic,
+  getECDSACurveBits,
+  identifyCurve,
+  normalizeHex,
   standardCurves,
 } from './curves.js';

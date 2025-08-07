@@ -5,7 +5,7 @@ export function formatAndConcatenateDataHashes(
   dg1HashOffset: number
 ) {
   // concatenating dataHashes :
-  let concat: number[] = [];
+  const concat: number[] = [];
 
   const startingSequence = Array.from(
     { length: dg1HashOffset },
@@ -83,6 +83,63 @@ export function formatAndConcatenateDataHashes(
   return concat;
 }
 
+export function formatDG1Attribute(index: number[], value: string) {
+  const max_length = index[1] - index[0] + 1;
+  if (value.length > max_length) {
+    throw new Error(
+      `Value is too long for index ${index[0]}-${index[1]} value: ${value} value.length: ${value.length} maxLength: ${max_length}`
+    );
+  }
+  return value.padEnd(max_length, '<');
+}
+
+export function formatDg2Hash(dg2Hash: number[]) {
+  const unsignedBytesDg2Hash = dg2Hash.map((x) => toUnsignedByte(x));
+  while (unsignedBytesDg2Hash.length < 64) {
+    // pad it to 64 bytes to correspond to the hash length of sha512 and avoid multiplying circuits
+    unsignedBytesDg2Hash.push(0);
+  }
+  return unsignedBytesDg2Hash;
+}
+
+export function formatMrz(mrz: string) {
+  const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
+
+  if (mrz.length === 88) {
+    mrzCharcodes.unshift(88); // the length of the mrz data
+    mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
+    mrzCharcodes.unshift(91); // the new length of the whole array
+    mrzCharcodes.unshift(97); // the tag for DG1
+  } else if (mrz.length === 90) {
+    mrzCharcodes.unshift(90); // the length of the mrz data
+    mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
+    mrzCharcodes.unshift(93); // the new length of the whole array
+    mrzCharcodes.unshift(97); // the tag for DG1
+  } else {
+    throw new Error(`Unsupported MRZ length: ${mrz.length}. Expected 88 or 90 characters.`);
+  }
+
+  return mrzCharcodes;
+}
+
+export function formatName(firstName: string, lastName: string, targetLength: number) {
+  // Split names by spaces and join parts with '<'
+  const formattedLastName = lastName.toUpperCase().split(' ').join('<');
+  const formattedFirstName = firstName.toUpperCase().split(' ').join('<');
+
+  // Combine with '<<' separator
+  let result = `${formattedLastName}<<${formattedFirstName}`;
+
+  // Pad with '<' or truncate to target length
+  if (result.length < targetLength) {
+    result = result.padEnd(targetLength, '<');
+  } else if (result.length > targetLength) {
+    result = result.substring(0, targetLength);
+  }
+
+  return result;
+}
+
 export function generateSignedAttr(messageDigest: number[]) {
   const constructedEContent = [];
 
@@ -106,61 +163,4 @@ export function generateSignedAttr(messageDigest: number[]) {
 
   constructedEContent.push(...messageDigest);
   return constructedEContent;
-}
-
-export function formatMrz(mrz: string) {
-  const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
-
-  if (mrz.length === 88) {
-    mrzCharcodes.unshift(88); // the length of the mrz data
-    mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
-    mrzCharcodes.unshift(91); // the new length of the whole array
-    mrzCharcodes.unshift(97); // the tag for DG1
-  } else if (mrz.length === 90) {
-    mrzCharcodes.unshift(90); // the length of the mrz data
-    mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
-    mrzCharcodes.unshift(93); // the new length of the whole array
-    mrzCharcodes.unshift(97); // the tag for DG1
-  } else {
-    throw new Error(`Unsupported MRZ length: ${mrz.length}. Expected 88 or 90 characters.`);
-  }
-
-  return mrzCharcodes;
-}
-
-export function formatDg2Hash(dg2Hash: number[]) {
-  const unsignedBytesDg2Hash = dg2Hash.map((x) => toUnsignedByte(x));
-  while (unsignedBytesDg2Hash.length < 64) {
-    // pad it to 64 bytes to correspond to the hash length of sha512 and avoid multiplying circuits
-    unsignedBytesDg2Hash.push(0);
-  }
-  return unsignedBytesDg2Hash;
-}
-
-export function formatDG1Attribute(index: number[], value: string) {
-  const max_length = index[1] - index[0] + 1;
-  if (value.length > max_length) {
-    throw new Error(
-      `Value is too long for index ${index[0]}-${index[1]} value: ${value} value.length: ${value.length} maxLength: ${max_length}`
-    );
-  }
-  return value.padEnd(max_length, '<');
-}
-
-export function formatName(firstName: string, lastName: string, targetLength: number) {
-  // Split names by spaces and join parts with '<'
-  const formattedLastName = lastName.toUpperCase().split(' ').join('<');
-  const formattedFirstName = firstName.toUpperCase().split(' ').join('<');
-
-  // Combine with '<<' separator
-  let result = `${formattedLastName}<<${formattedFirstName}`;
-
-  // Pad with '<' or truncate to target length
-  if (result.length < targetLength) {
-    result = result.padEnd(targetLength, '<');
-  } else if (result.length > targetLength) {
-    result = result.substring(0, targetLength);
-  }
-
-  return result;
 }

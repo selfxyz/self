@@ -1,4 +1,4 @@
-name: App CI
+name: Mobile CI
 env:
   # Build environment versions
   NODE_VERSION: 18

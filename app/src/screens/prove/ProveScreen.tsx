@@ -1,9 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
-import { formatEndpoint } from '@selfxyz/common/utils/scope';
-import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
@@ -12,15 +8,16 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
+import type {
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
 } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image, Text, View, XStack, YStack } from 'tamagui';
+
+import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
+import { formatEndpoint } from '@selfxyz/common/utils/scope';
 
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrimaryButtonProveScreen';
@@ -38,6 +35,9 @@ import { black, slate300, white } from '../../utils/colors';
 import { formatUserId } from '../../utils/formatUserId';
 import { buttonTap } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
+
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();
 
