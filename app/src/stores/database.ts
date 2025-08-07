@@ -31,28 +31,18 @@ export const database: ProofDB = {
     );
 
     // Improved error handling - wrap each setProofStatus call in try-catch
-    let successfulUpdates = 0;
-    let failedUpdates = 0;
 
     for (let i = 0; i < stalePending.rows.length; i++) {
       const { sessionId } = stalePending.rows.item(i);
       try {
         await setProofStatus(sessionId, ProofStatus.FAILURE);
-        successfulUpdates++;
       } catch (error) {
         console.error(
           `Failed to update proof status for session ${sessionId}:`,
           error,
         );
-        failedUpdates++;
         // Continue with the next iteration instead of stopping the entire loop
       }
-    }
-
-    if (stalePending.rows.length > 0) {
-      console.log(
-        `Stale proof cleanup: ${successfulUpdates} successful, ${failedUpdates} failed`,
-      );
     }
   },
   getPendingProofs: async (): Promise<ProofDBResult> => {

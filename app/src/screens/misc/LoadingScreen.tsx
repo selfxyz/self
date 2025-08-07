@@ -111,9 +111,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       return;
     }
 
-    console.log('[LoadingScreen] Current proving state:', currentState);
-    console.log('[LoadingScreen] FCM token available:', !!fcmToken);
-
     // Update UI if passport data is available
     if (passportData?.passportMetadata) {
       // Update loading text based on current state

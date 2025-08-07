@@ -1,4 +1,49 @@
 {
+  // Performance Optimizations
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.git/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/vendor/**": true,
+    "**/coverage/**": true,
+    "**/.nyc_output/**": true,
+    "**/android/app/build/**": true,
+    "**/ios/build/**": true,
+    "**/circuits/build/**": true,
+    "**/Pods/**": true,
+    "**/.gradle/**": true,
+    "**/DerivedData/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/vendor": true,
+    "**/coverage": true,
+    "**/.nyc_output": true,
+    "**/android/app/build": true,
+    "**/ios/build": true,
+    "**/circuits/build": true
+  },
+  "files.exclude": {
+    "**/node_modules": false,
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true
+  },
+
+  // TypeScript Performance (Keep the good stuff)
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.suggestionActions.enabled": true,
+
+  // Editor Performance (Sensible optimizations only)
+  "editor.minimap.enabled": false,
+  "editor.hover.delay": 500,
+
   // Formatting & Linting
   "editor.formatOnSave": false,
   "editor.formatOnPaste": false,
@@ -8,8 +53,8 @@
     "editor.formatOnSave": true
   },
 
-  // ESLint Configuration
-  "eslint.run": "onType",
+  // ESLint Configuration - Optimized for Performance
+  "eslint.run": "onSave",
   "eslint.format.enable": true,
   "eslint.lintTask.enable": true,
   "eslint.quiet": false,

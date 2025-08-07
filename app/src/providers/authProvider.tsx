@@ -26,13 +26,8 @@ const _getSecurely = async function <T>(
   fn: () => Promise<string | false>,
   formatter: (dataString: string) => T,
 ): Promise<SignedPayload<T> | null> {
-  console.log('Starting _getSecurely');
-
   const dataString = await fn();
-  console.log('Got data string:', dataString ? 'exists' : 'not found');
-
   if (dataString === false) {
-    console.log('No data string available');
     return null;
   }
 
@@ -111,23 +106,19 @@ async function loadOrCreateMnemonic(): Promise<string | false> {
   if (storedMnemonic) {
     try {
       JSON.parse(storedMnemonic.password);
-      console.log('Stored mnemonic parsed successfully');
       trackEvent(AuthEvents.MNEMONIC_LOADED);
       return storedMnemonic.password;
     } catch (e: any) {
-      console.log(
+      console.error(
         'Error parsing stored mnemonic, old secret format was used',
         e,
       );
-      console.log('Creating a new one');
       trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
         reason: 'unknown_error',
         error: e.message,
       });
     }
   }
-
-  console.log('No secret found, creating one');
   try {
     const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
       ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),

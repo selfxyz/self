@@ -64,9 +64,8 @@ const AccountRecoveryChoiceScreen: React.FC<
         passportData,
         secret,
       );
-      console.log('User is registered:', isRegistered);
       if (!isRegistered) {
-        console.log(
+        console.warn(
           'Secret provided did not match a registered ID. Please try again.',
         );
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);

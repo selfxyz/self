@@ -54,6 +54,21 @@ import {
 } from '@selfxyz/common/utils';
 
 import { unsafe_getPrivateKey, useAuth } from '../providers/authProvider';
+import { safeJsonParse } from '../utils/jsonUtils';
+
+// Import testing utilities conditionally
+let clearDocumentCatalogForMigrationTestingFromUtils:
+  | (() => Promise<void>)
+  | undefined;
+if (__DEV__) {
+  try {
+    const testingUtils = require('../utils/testingUtils');
+    clearDocumentCatalogForMigrationTestingFromUtils =
+      testingUtils.clearDocumentCatalogForMigrationTesting;
+  } catch (error) {
+    console.warn('Testing utilities not available:', error);
+  }
+}
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -128,268 +143,8 @@ function inferDocumentCategory(documentType: string): DocumentCategory {
 
 // Global flag to track if native modules are ready
 let nativeModulesReady = false;
-
-export const PassportContext = createContext<IPassportContext>({
-  getData: () => Promise.resolve(null),
-  getSelectedData: () => Promise.resolve(null),
-  getAllData: () => Promise.resolve({}),
-  getAvailableTypes: () => Promise.resolve([]),
-  setData: storePassportData,
-  getPassportDataAndSecret: () => Promise.resolve(null),
-  getSelectedPassportDataAndSecret: () => Promise.resolve(null),
-  clearPassportData: clearPassportData,
-  clearSpecificData: clearSpecificPassportData,
-  loadDocumentCatalog: safeLoadDocumentCatalog,
-  getAllDocuments: safeGetAllDocuments,
-  setSelectedDocument: setSelectedDocument,
-  deleteDocument: deleteDocument,
-  migrateFromLegacyStorage: migrateFromLegacyStorage,
-  getCurrentDocumentType: getCurrentDocumentType,
-  clearDocumentCatalogForMigrationTesting:
-    clearDocumentCatalogForMigrationTesting,
-  markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
-  updateDocumentRegistrationState: updateDocumentRegistrationState,
-  checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
-  hasAnyValidRegisteredDocument: hasAnyValidRegisteredDocument,
-  checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
-});
-
-export const PassportProvider = ({ children }: PassportProviderProps) => {
-  const { _getSecurely } = useAuth();
-
-  const getData = useCallback(
-    () => _getSecurely<PassportData>(loadPassportData, str => JSON.parse(str)),
-    [_getSecurely],
-  );
-
-  const getSelectedData = useCallback(() => {
-    return _getSecurely<PassportData>(
-      () => loadSelectedPassportData(),
-      str => JSON.parse(str),
-    );
-  }, [_getSecurely]);
-
-  const getAllData = useCallback(() => loadAllPassportData(), []);
-
-  const getAvailableTypes = useCallback(() => getAvailableDocumentTypes(), []);
-
-  const getPassportDataAndSecret = useCallback(
-    () =>
-      _getSecurely<{ passportData: PassportData; secret: string }>(
-        loadPassportDataAndSecret,
-        str => JSON.parse(str),
-      ),
-    [_getSecurely],
-  );
-
-  const getSelectedPassportDataAndSecret = useCallback(() => {
-    return _getSecurely<{ passportData: PassportData; secret: string }>(
-      () => loadSelectedPassportDataAndSecret(),
-      str => JSON.parse(str),
-    );
-  }, [_getSecurely]);
-
-  const state: IPassportContext = useMemo(
-    () => ({
-      getData,
-      getSelectedData,
-      getAllData,
-      getAvailableTypes,
-      setData: storePassportData,
-      getPassportDataAndSecret,
-      getSelectedPassportDataAndSecret,
-      clearPassportData: clearPassportData,
-      clearSpecificData: clearSpecificPassportData,
-      loadDocumentCatalog: safeLoadDocumentCatalog,
-      getAllDocuments: safeGetAllDocuments,
-      setSelectedDocument: setSelectedDocument,
-      deleteDocument: deleteDocument,
-      migrateFromLegacyStorage: migrateFromLegacyStorage,
-      getCurrentDocumentType: getCurrentDocumentType,
-      clearDocumentCatalogForMigrationTesting:
-        clearDocumentCatalogForMigrationTesting,
-      markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
-      updateDocumentRegistrationState: updateDocumentRegistrationState,
-      checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
-      hasAnyValidRegisteredDocument: hasAnyValidRegisteredDocument,
-      checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
-    }),
-    [
-      getData,
-      getSelectedData,
-      getAllData,
-      getAvailableTypes,
-      getPassportDataAndSecret,
-      getSelectedPassportDataAndSecret,
-    ],
-  );
-
-  return (
-    <PassportContext.Provider value={state}>
-      {children}
-    </PassportContext.Provider>
-  );
-};
-
-export async function checkAndUpdateRegistrationStates(): Promise<void> {
-  // Lazy import to avoid circular dependency
-  const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
-    await import('../utils/proving/validateDocument');
-  return validateDocCheckAndUpdate();
-}
-
-export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
-  try {
-    const catalog = await loadDocumentCatalog();
-    return catalog.documents.some(doc => doc.isRegistered === undefined);
-  } catch (error) {
-    console.warn('Error checking if documents need migration:', error);
-    return false;
-  }
-}
-
-export async function clearDocumentCatalogForMigrationTesting() {
-  console.log('Clearing document catalog for migration testing...');
-  const catalog = await loadDocumentCatalog();
-
-  // Delete all new-style documents
-  for (const doc of catalog.documents) {
-    try {
-      await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
-      console.log(`Cleared document: ${doc.id}`);
-    } catch (error) {
-      console.log(`Document ${doc.id} not found or already cleared`);
-    }
-  }
-
-  // Clear the catalog itself
-  try {
-    await Keychain.resetGenericPassword({ service: 'documentCatalog' });
-    console.log('Cleared document catalog');
-  } catch (error) {
-    console.log('Document catalog not found or already cleared');
-  }
-
-  // Note: We intentionally do NOT clear legacy storage entries
-  // (passportData, mockPassportData, etc.) so migration can be tested
-  console.log(
-    'Document catalog cleared. Legacy storage preserved for migration testing.',
-  );
-}
-
-export async function clearPassportData() {
-  const catalog = await loadDocumentCatalog();
-
-  // Delete all documents
-  for (const doc of catalog.documents) {
-    try {
-      await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
-    } catch (error) {
-      console.log(`Document ${doc.id} not found or already cleared`);
-    }
-  }
-
-  // Clear catalog
-  await saveDocumentCatalog({ documents: [] });
-}
-
-export async function clearSpecificPassportData(documentType: string) {
-  const catalog = await loadDocumentCatalog();
-  const docsToDelete = catalog.documents.filter(
-    d => d.documentType === documentType,
-  );
-
-  for (const doc of docsToDelete) {
-    await deleteDocument(doc.id);
-  }
-}
-
-export async function deleteDocument(documentId: string): Promise<void> {
-  const catalog = await loadDocumentCatalog();
-
-  // Remove from catalog
-  catalog.documents = catalog.documents.filter(d => d.id !== documentId);
-
-  // Update selected document if it was deleted
-  if (catalog.selectedDocumentId === documentId) {
-    if (catalog.documents.length > 0) {
-      catalog.selectedDocumentId = catalog.documents[0].id;
-    } else {
-      catalog.selectedDocumentId = undefined;
-    }
-  }
-
-  await saveDocumentCatalog(catalog);
-
-  // Delete the actual document
-  try {
-    await Keychain.resetGenericPassword({ service: `document-${documentId}` });
-  } catch (error) {
-    console.log(`Document ${documentId} not found or already cleared`);
-  }
-}
-
-export async function getAllDocuments(): Promise<{
-  [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
-}> {
-  const catalog = await loadDocumentCatalog();
-  const allDocs: {
-    [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
-  } = {};
-
-  for (const metadata of catalog.documents) {
-    const data = await loadDocumentById(metadata.id);
-    if (data) {
-      allDocs[metadata.id] = { data, metadata };
-    }
-  }
-
-  return allDocs;
-}
-
-export async function getAvailableDocumentTypes(): Promise<string[]> {
-  const catalog = await loadDocumentCatalog();
-  return [...new Set(catalog.documents.map(d => d.documentType))];
-}
-
-// Helper function to get current document type from catalog
-export async function getCurrentDocumentType(): Promise<string | null> {
-  const catalog = await loadDocumentCatalog();
-  if (!catalog.selectedDocumentId) return null;
-
-  const metadata = catalog.documents.find(
-    d => d.id === catalog.selectedDocumentId,
-  );
-  return metadata?.documentType || null;
-}
-
-// ===== LEGACY WRAPPER FUNCTIONS (for backward compatibility) =====
-
-function getServiceNameForDocumentType(documentType: string): string {
-  // These are now only used for legacy compatibility
-  switch (documentType) {
-    case 'passport':
-      return 'passportData';
-    case 'mock_passport':
-      return 'mockPassportData';
-    case 'id_card':
-      return 'idCardData';
-    case 'mock_id_card':
-      return 'mockIdCardData';
-    default:
-      return 'passportData';
-  }
-}
-
-export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
-  try {
-    const catalog = await loadDocumentCatalog();
-    return catalog.documents.some(doc => doc.isRegistered === true);
-  } catch (error) {
-    console.error('Error loading document catalog:', error);
-    return false;
-  }
-}
+// Promise to prevent concurrent initialization
+let initializationPromise: Promise<boolean> | null = null;
 
 /**
  * Global initialization function to wait for native modules to be ready
@@ -403,15 +158,28 @@ export async function initializeNativeModules(
     return true;
   }
 
-  console.log('Initializing native modules...');
+  // If initialization is already in progress, wait for it
+  if (initializationPromise) {
+    return initializationPromise;
+  }
 
+  // Start initialization and store the promise
+  initializationPromise = performInitialization(maxRetries, delay);
+  const result = await initializationPromise;
+  initializationPromise = null; // Clear the promise when done
+  return result;
+}
+
+async function performInitialization(
+  maxRetries: number,
+  delay: number,
+): Promise<boolean> {
   for (let i = 0; i < maxRetries; i++) {
     try {
       if (typeof Keychain.getGenericPassword === 'function') {
         // Test if Keychain is actually available by making a safe call
         await Keychain.getGenericPassword({ service: 'test-availability' });
         nativeModulesReady = true;
-        console.log('Native modules ready!');
         return true;
       }
     } catch (error) {
@@ -420,60 +188,17 @@ export async function initializeNativeModules(
         error instanceof Error &&
         error.message.includes('Requiring unknown module')
       ) {
-        console.log(
-          `Waiting for native modules to be ready (attempt ${i + 1}/${maxRetries})`,
-        );
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
       // For other errors (like service not found), assume Keychain is available
       nativeModulesReady = true;
-      console.log('Native modules ready (with minor errors)!');
       return true;
     }
   }
 
   console.warn('Native modules not ready after retries');
   return false;
-}
-
-export async function loadAllPassportData(): Promise<{
-  [service: string]: PassportData;
-}> {
-  const allDocs = await getAllDocuments();
-  const result: { [service: string]: PassportData } = {};
-
-  // Convert to legacy format for backward compatibility
-  Object.values(allDocs).forEach(({ data, metadata }) => {
-    const serviceName = getServiceNameForDocumentType(metadata.documentType);
-    result[serviceName] = data;
-  });
-
-  return result;
-}
-
-export async function loadDocumentById(
-  documentId: string,
-): Promise<PassportData | null> {
-  try {
-    // Check if native modules are ready
-    if (!nativeModulesReady) {
-      console.warn(
-        `Native modules not ready for loading document ${documentId}, returning null`,
-      );
-      return null;
-    }
-
-    const documentCreds = await Keychain.getGenericPassword({
-      service: `document-${documentId}`,
-    });
-    if (documentCreds !== false) {
-      return JSON.parse(documentCreds.password);
-    }
-  } catch (error) {
-    console.log(`Error loading document ${documentId}:`, error);
-  }
-  return null;
 }
 
 export async function loadDocumentCatalog(): Promise<DocumentCatalog> {
@@ -499,11 +224,239 @@ export async function loadDocumentCatalog(): Promise<DocumentCatalog> {
       return JSON.parse(catalogCreds.password);
     }
   } catch (error) {
-    console.log('Error loading document catalog:', error);
+    console.error('Error loading document catalog:', error);
   }
 
   // Return empty catalog if none exists
   return { documents: [] };
+}
+
+export async function saveDocumentCatalog(
+  catalog: DocumentCatalog,
+): Promise<void> {
+  await Keychain.setGenericPassword('catalog', JSON.stringify(catalog), {
+    service: 'documentCatalog',
+  });
+}
+
+export async function loadDocumentById(
+  documentId: string,
+): Promise<PassportData | null> {
+  try {
+    // Check if native modules are ready
+    if (!nativeModulesReady) {
+      console.warn(
+        `Native modules not ready for loading document ${documentId}, returning null`,
+      );
+      return null;
+    }
+
+    const documentCreds = await Keychain.getGenericPassword({
+      service: `document-${documentId}`,
+    });
+    if (documentCreds !== false) {
+      return JSON.parse(documentCreds.password);
+    }
+  } catch (error) {
+    console.error(`Error loading document ${documentId}:`, error);
+  }
+  return null;
+}
+
+export async function storeDocumentWithDeduplication(
+  passportData: PassportData,
+): Promise<string> {
+  const contentHash = calculateContentHash(passportData);
+  const catalog = await loadDocumentCatalog();
+
+  // Check for existing document with same content
+  const existing = catalog.documents.find(d => d.id === contentHash);
+  if (existing) {
+    // Even if content hash is the same, we should update the document
+    // in case metadata (like CSCA) has changed
+    // Update the stored document with potentially new metadata
+    await Keychain.setGenericPassword(
+      contentHash,
+      JSON.stringify(passportData),
+      {
+        service: `document-${contentHash}`,
+      },
+    );
+
+    // Update selected document to this one
+    catalog.selectedDocumentId = contentHash;
+    await saveDocumentCatalog(catalog);
+    return contentHash;
+  }
+
+  // Store new document using contentHash as service name
+  await Keychain.setGenericPassword(contentHash, JSON.stringify(passportData), {
+    service: `document-${contentHash}`,
+  });
+
+  // Add to catalog
+  const metadata: DocumentMetadata = {
+    id: contentHash,
+    documentType: passportData.documentType,
+    documentCategory:
+      passportData.documentCategory ||
+      inferDocumentCategory(passportData.documentType),
+    data: passportData.mrz || '', // Store MRZ for passports/IDs, relevant data for aadhaar
+    mock: passportData.mock || false,
+    isRegistered: false,
+  };
+
+  catalog.documents.push(metadata);
+  catalog.selectedDocumentId = contentHash;
+  await saveDocumentCatalog(catalog);
+
+  return contentHash;
+}
+
+export async function loadSelectedDocument(): Promise<{
+  data: PassportData;
+  metadata: DocumentMetadata;
+} | null> {
+  const catalog = await loadDocumentCatalog();
+  if (!catalog.selectedDocumentId) {
+    if (catalog.documents.length > 0) {
+      catalog.selectedDocumentId = catalog.documents[0].id;
+      await saveDocumentCatalog(catalog);
+    } else {
+      return null;
+    }
+  }
+
+  const metadata = catalog.documents.find(
+    d => d.id === catalog.selectedDocumentId,
+  );
+  if (!metadata) {
+    console.warn(
+      'Metadata not found for selectedDocumentId:',
+      catalog.selectedDocumentId,
+    );
+    return null;
+  }
+
+  const data = await loadDocumentById(catalog.selectedDocumentId);
+  if (!data) {
+    console.warn('Document data not found for id:', catalog.selectedDocumentId);
+    return null;
+  }
+
+  return { data, metadata };
+}
+
+export async function getAllDocuments(): Promise<{
+  [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
+}> {
+  const catalog = await loadDocumentCatalog();
+  const allDocs: {
+    [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
+  } = {};
+
+  for (const metadata of catalog.documents) {
+    const data = await loadDocumentById(metadata.id);
+    if (data) {
+      allDocs[metadata.id] = { data, metadata };
+    }
+  }
+
+  return allDocs;
+}
+
+export async function setSelectedDocument(documentId: string): Promise<void> {
+  const catalog = await loadDocumentCatalog();
+  const metadata = catalog.documents.find(d => d.id === documentId);
+
+  if (metadata) {
+    catalog.selectedDocumentId = documentId;
+    await saveDocumentCatalog(catalog);
+  }
+}
+
+export async function deleteDocument(documentId: string): Promise<void> {
+  const catalog = await loadDocumentCatalog();
+
+  // Remove from catalog
+  catalog.documents = catalog.documents.filter(d => d.id !== documentId);
+
+  // Update selected document if it was deleted
+  if (catalog.selectedDocumentId === documentId) {
+    if (catalog.documents.length > 0) {
+      catalog.selectedDocumentId = catalog.documents[0].id;
+    } else {
+      catalog.selectedDocumentId = undefined;
+    }
+  }
+
+  await saveDocumentCatalog(catalog);
+
+  // Delete the actual document
+  try {
+    await Keychain.resetGenericPassword({ service: `document-${documentId}` });
+  } catch (error) {
+    console.warn(`Document ${documentId} not found or already cleared`);
+  }
+}
+
+export async function getAvailableDocumentTypes(): Promise<string[]> {
+  const catalog = await loadDocumentCatalog();
+  return [...new Set(catalog.documents.map(d => d.documentType))];
+}
+
+export async function migrateFromLegacyStorage(): Promise<void> {
+  if (__DEV__)
+    console.log('Migrating from legacy storage to new architecture...');
+  const catalog = await loadDocumentCatalog();
+
+  // If catalog already has documents, skip migration
+  if (catalog.documents.length > 0) {
+    if (__DEV__) console.log('Migration already completed');
+    return;
+  }
+
+  const legacyServices = [
+    'passportData',
+    'mockPassportData',
+    'idCardData',
+    'mockIdCardData',
+  ];
+  for (const service of legacyServices) {
+    try {
+      const passportDataCreds = await Keychain.getGenericPassword({ service });
+      if (passportDataCreds !== false) {
+        const passportData: PassportData = JSON.parse(
+          passportDataCreds.password,
+        );
+        await storeDocumentWithDeduplication(passportData);
+        await Keychain.resetGenericPassword({ service });
+        if (__DEV__) console.log(`Migrated document from ${service}`);
+      }
+    } catch (error) {
+      if (__DEV__)
+        console.warn(`Could not migrate from service ${service}:`, error);
+    }
+  }
+  if (__DEV__) console.log('Migration completed');
+}
+
+// ===== LEGACY WRAPPER FUNCTIONS (for backward compatibility) =====
+
+function getServiceNameForDocumentType(documentType: string): string {
+  // These are now only used for legacy compatibility
+  switch (documentType) {
+    case 'passport':
+      return 'passportData';
+    case 'mock_passport':
+      return 'mockPassportData';
+    case 'id_card':
+      return 'idCardData';
+    case 'mock_id_card':
+      return 'mockIdCardData';
+    default:
+      return 'passportData';
+  }
 }
 
 export async function loadPassportData() {
@@ -542,62 +495,10 @@ export async function loadPassportData() {
       }
     }
   } catch (error) {
-    console.log('Error in legacy passport data migration:', error);
+    console.error('Error in legacy passport data migration:', error);
   }
 
   return false;
-}
-
-export async function loadPassportDataAndSecret() {
-  const passportData = await loadPassportData();
-  const secret = await unsafe_getPrivateKey();
-  if (!secret || !passportData) {
-    return false;
-  }
-  return JSON.stringify({
-    secret,
-    passportData: JSON.parse(passportData),
-  });
-}
-
-export async function loadSelectedDocument(): Promise<{
-  data: PassportData;
-  metadata: DocumentMetadata;
-} | null> {
-  const catalog = await loadDocumentCatalog();
-  console.log('Catalog loaded');
-
-  if (!catalog.selectedDocumentId) {
-    console.log('No selectedDocumentId found');
-    if (catalog.documents.length > 0) {
-      console.log('Using first document as fallback');
-      catalog.selectedDocumentId = catalog.documents[0].id;
-      await saveDocumentCatalog(catalog);
-    } else {
-      console.log('No documents in catalog, returning null');
-      return null;
-    }
-  }
-
-  const metadata = catalog.documents.find(
-    d => d.id === catalog.selectedDocumentId,
-  );
-  if (!metadata) {
-    console.log(
-      'Metadata not found for selectedDocumentId:',
-      catalog.selectedDocumentId,
-    );
-    return null;
-  }
-
-  const data = await loadDocumentById(catalog.selectedDocumentId);
-  if (!data) {
-    console.log('Document data not found for id:', catalog.selectedDocumentId);
-    return null;
-  }
-
-  console.log('Successfully loaded document:', metadata.documentType);
-  return { data, metadata };
 }
 
 export async function loadSelectedPassportData(): Promise<string | false> {
@@ -621,6 +522,105 @@ export async function loadSelectedPassportDataAndSecret() {
     secret,
     passportData: JSON.parse(passportData),
   });
+}
+
+export async function loadAllPassportData(): Promise<{
+  [service: string]: PassportData;
+}> {
+  const allDocs = await getAllDocuments();
+  const result: { [service: string]: PassportData } = {};
+
+  // Convert to legacy format for backward compatibility
+  Object.values(allDocs).forEach(({ data, metadata }) => {
+    const serviceName = getServiceNameForDocumentType(metadata.documentType);
+    result[serviceName] = data;
+  });
+
+  return result;
+}
+
+export async function setDefaultDocumentTypeIfNeeded() {
+  const catalog = await loadDocumentCatalog();
+
+  if (!catalog.selectedDocumentId && catalog.documents.length > 0) {
+    await setSelectedDocument(catalog.documents[0].id);
+  }
+}
+
+export async function loadPassportDataAndSecret() {
+  const passportData = await loadPassportData();
+  const secret = await unsafe_getPrivateKey();
+  if (!secret || !passportData) {
+    return false;
+  }
+  return JSON.stringify({
+    secret,
+    passportData: JSON.parse(passportData),
+  });
+}
+
+export async function storePassportData(passportData: PassportData) {
+  await storeDocumentWithDeduplication(passportData);
+}
+
+export async function clearPassportData() {
+  const catalog = await loadDocumentCatalog();
+
+  // Delete all documents
+  for (const doc of catalog.documents) {
+    try {
+      await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
+    } catch (error) {
+      if (__DEV__)
+        console.log(`Document ${doc.id} not found or already cleared`);
+    }
+  }
+
+  // Clear catalog
+  await saveDocumentCatalog({ documents: [] });
+}
+
+export async function clearSpecificPassportData(documentType: string) {
+  const catalog = await loadDocumentCatalog();
+  const docsToDelete = catalog.documents.filter(
+    d => d.documentType === documentType,
+  );
+
+  for (const doc of docsToDelete) {
+    await deleteDocument(doc.id);
+  }
+}
+
+export async function clearDocumentCatalogForMigrationTesting() {
+  if (__DEV__)
+    console.log('Clearing document catalog for migration testing...');
+  const catalog = await loadDocumentCatalog();
+
+  // Delete all new-style documents
+  for (const doc of catalog.documents) {
+    try {
+      await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
+      if (__DEV__) console.log(`Cleared document: ${doc.id}`);
+    } catch (error) {
+      if (__DEV__)
+        console.log(`Document ${doc.id} not found or already cleared`);
+    }
+  }
+
+  // Clear the catalog itself
+  try {
+    await Keychain.resetGenericPassword({ service: 'documentCatalog' });
+    if (__DEV__) console.log('Cleared document catalog');
+  } catch (error) {
+    if (__DEV__) console.log('Document catalog not found or already cleared');
+  }
+
+  // Note: We intentionally do NOT clear legacy storage entries
+  // (passportData, mockPassportData, etc.) so migration can be tested
+  if (__DEV__)
+    console.log(
+      'Document catalog cleared. Legacy storage preserved for migration testing.',
+    );
 }
 
 interface PassportProviderProps extends PropsWithChildren {
@@ -664,6 +664,151 @@ interface IPassportContext {
   checkAndUpdateRegistrationStates: () => Promise<void>;
 }
 
+export const PassportContext = createContext<IPassportContext>({
+  getData: () => Promise.resolve(null),
+  getSelectedData: () => Promise.resolve(null),
+  getAllData: () => Promise.resolve({}),
+  getAvailableTypes: () => Promise.resolve([]),
+  setData: storePassportData,
+  getPassportDataAndSecret: () => Promise.resolve(null),
+  getSelectedPassportDataAndSecret: () => Promise.resolve(null),
+  clearPassportData: clearPassportData,
+  clearSpecificData: clearSpecificPassportData,
+  loadDocumentCatalog: safeLoadDocumentCatalog,
+  getAllDocuments: safeGetAllDocuments,
+  setSelectedDocument: setSelectedDocument,
+  deleteDocument: deleteDocument,
+  migrateFromLegacyStorage: migrateFromLegacyStorage,
+  getCurrentDocumentType: getCurrentDocumentType,
+  clearDocumentCatalogForMigrationTesting:
+    clearDocumentCatalogForMigrationTestingFromUtils ||
+    (() => Promise.resolve()),
+  markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
+  updateDocumentRegistrationState: updateDocumentRegistrationState,
+  checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
+  hasAnyValidRegisteredDocument: hasAnyValidRegisteredDocument,
+  checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
+});
+
+export const PassportProvider = ({ children }: PassportProviderProps) => {
+  const { _getSecurely } = useAuth();
+
+  const getData = useCallback(
+    () =>
+      _getSecurely<PassportData>(loadPassportData, str =>
+        safeJsonParse(str, null as any),
+      ),
+    [_getSecurely],
+  );
+
+  const getSelectedData = useCallback(() => {
+    return _getSecurely<PassportData>(
+      () => loadSelectedPassportData(),
+      str => safeJsonParse(str, null as any),
+    );
+  }, [_getSecurely]);
+
+  const getAllData = useCallback(() => loadAllPassportData(), []);
+
+  const getAvailableTypes = useCallback(() => getAvailableDocumentTypes(), []);
+
+  const getPassportDataAndSecret = useCallback(
+    () =>
+      _getSecurely<{ passportData: PassportData; secret: string }>(
+        loadPassportDataAndSecret,
+        str => safeJsonParse(str, null as any),
+      ),
+    [_getSecurely],
+  );
+
+  const getSelectedPassportDataAndSecret = useCallback(() => {
+    return _getSecurely<{ passportData: PassportData; secret: string }>(
+      () => loadSelectedPassportDataAndSecret(),
+      str => safeJsonParse(str, null as any),
+    );
+  }, [_getSecurely]);
+
+  const state: IPassportContext = useMemo(
+    () => ({
+      getData,
+      getSelectedData,
+      getAllData,
+      getAvailableTypes,
+      setData: storePassportData,
+      getPassportDataAndSecret,
+      getSelectedPassportDataAndSecret,
+      clearPassportData: clearPassportData,
+      clearSpecificData: clearSpecificPassportData,
+      loadDocumentCatalog: safeLoadDocumentCatalog,
+      getAllDocuments: safeGetAllDocuments,
+      setSelectedDocument: setSelectedDocument,
+      deleteDocument: deleteDocument,
+      migrateFromLegacyStorage: migrateFromLegacyStorage,
+      getCurrentDocumentType: getCurrentDocumentType,
+      clearDocumentCatalogForMigrationTesting:
+        clearDocumentCatalogForMigrationTestingFromUtils ||
+        (() => Promise.resolve()),
+      markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
+      updateDocumentRegistrationState: updateDocumentRegistrationState,
+      checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
+      hasAnyValidRegisteredDocument: hasAnyValidRegisteredDocument,
+      checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
+    }),
+    [
+      getData,
+      getSelectedData,
+      getAllData,
+      getAvailableTypes,
+      getPassportDataAndSecret,
+      getSelectedPassportDataAndSecret,
+    ],
+  );
+
+  return (
+    <PassportContext.Provider value={state}>
+      {children}
+    </PassportContext.Provider>
+  );
+};
+
+export async function checkAndUpdateRegistrationStates(): Promise<void> {
+  // Lazy import to avoid circular dependency
+  const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
+    await import('../utils/proving/validateDocument');
+  return validateDocCheckAndUpdate();
+}
+
+export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
+  try {
+    const catalog = await loadDocumentCatalog();
+    return catalog.documents.some(doc => doc.isRegistered === undefined);
+  } catch (error) {
+    console.warn('Error checking if documents need migration:', error);
+    return false;
+  }
+}
+
+// Helper function to get current document type from catalog
+export async function getCurrentDocumentType(): Promise<string | null> {
+  const catalog = await loadDocumentCatalog();
+  if (!catalog.selectedDocumentId) return null;
+
+  const metadata = catalog.documents.find(
+    d => d.id === catalog.selectedDocumentId,
+  );
+  return metadata?.documentType || null;
+}
+
+export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
+  try {
+    const catalog = await loadDocumentCatalog();
+    return catalog.documents.some(doc => doc.isRegistered === true);
+  } catch (error) {
+    console.error('Error loading document catalog:', error);
+    return false;
+  }
+}
+
 export async function markCurrentDocumentAsRegistered(): Promise<void> {
   const catalog = await loadDocumentCatalog();
   if (catalog.selectedDocumentId) {
@@ -671,41 +816,6 @@ export async function markCurrentDocumentAsRegistered(): Promise<void> {
   } else {
     console.warn('No selected document to mark as registered');
   }
-}
-
-export async function migrateFromLegacyStorage(): Promise<void> {
-  console.log('Migrating from legacy storage to new architecture...');
-  const catalog = await loadDocumentCatalog();
-
-  // If catalog already has documents, skip migration
-  if (catalog.documents.length > 0) {
-    console.log('Migration already completed');
-    return;
-  }
-
-  const legacyServices = [
-    'passportData',
-    'mockPassportData',
-    'idCardData',
-    'mockIdCardData',
-  ];
-  for (const service of legacyServices) {
-    try {
-      const passportDataCreds = await Keychain.getGenericPassword({ service });
-      if (passportDataCreds !== false) {
-        const passportData: PassportData = JSON.parse(
-          passportDataCreds.password,
-        );
-        await storeDocumentWithDeduplication(passportData);
-        await Keychain.resetGenericPassword({ service });
-        console.log(`Migrated document from ${service}`);
-      }
-    } catch (error) {
-      console.log(`Could not migrate from service ${service}:`, error);
-    }
-  }
-
-  console.log('Migration completed');
 }
 
 export async function reStorePassportDataWithRightCSCA(
@@ -752,88 +862,6 @@ export async function reStorePassportDataWithRightCSCA(
   }
 }
 
-export async function saveDocumentCatalog(
-  catalog: DocumentCatalog,
-): Promise<void> {
-  await Keychain.setGenericPassword('catalog', JSON.stringify(catalog), {
-    service: 'documentCatalog',
-  });
-}
-
-export async function setDefaultDocumentTypeIfNeeded() {
-  const catalog = await loadDocumentCatalog();
-
-  if (!catalog.selectedDocumentId && catalog.documents.length > 0) {
-    await setSelectedDocument(catalog.documents[0].id);
-  }
-}
-
-export async function setSelectedDocument(documentId: string): Promise<void> {
-  const catalog = await loadDocumentCatalog();
-  const metadata = catalog.documents.find(d => d.id === documentId);
-
-  if (metadata) {
-    catalog.selectedDocumentId = documentId;
-    await saveDocumentCatalog(catalog);
-  }
-}
-
-export async function storeDocumentWithDeduplication(
-  passportData: PassportData,
-): Promise<string> {
-  const contentHash = calculateContentHash(passportData);
-  const catalog = await loadDocumentCatalog();
-
-  // Check for existing document with same content
-  const existing = catalog.documents.find(d => d.id === contentHash);
-  if (existing) {
-    // Even if content hash is the same, we should update the document
-    // in case metadata (like CSCA) has changed
-    console.log('Document with same content exists, updating stored data');
-
-    // Update the stored document with potentially new metadata
-    await Keychain.setGenericPassword(
-      contentHash,
-      JSON.stringify(passportData),
-      {
-        service: `document-${contentHash}`,
-      },
-    );
-
-    // Update selected document to this one
-    catalog.selectedDocumentId = contentHash;
-    await saveDocumentCatalog(catalog);
-    return contentHash;
-  }
-
-  // Store new document using contentHash as service name
-  await Keychain.setGenericPassword(contentHash, JSON.stringify(passportData), {
-    service: `document-${contentHash}`,
-  });
-
-  // Add to catalog
-  const metadata: DocumentMetadata = {
-    id: contentHash,
-    documentType: passportData.documentType,
-    documentCategory:
-      passportData.documentCategory ||
-      inferDocumentCategory(passportData.documentType),
-    data: passportData.mrz || '', // Store MRZ for passports/IDs, relevant data for aadhaar
-    mock: passportData.mock || false,
-    isRegistered: false,
-  };
-
-  catalog.documents.push(metadata);
-  catalog.selectedDocumentId = contentHash;
-  await saveDocumentCatalog(catalog);
-
-  return contentHash;
-}
-
-export async function storePassportData(passportData: PassportData) {
-  await storeDocumentWithDeduplication(passportData);
-}
-
 export async function updateDocumentRegistrationState(
   documentId: string,
   isRegistered: boolean,
@@ -844,9 +872,6 @@ export async function updateDocumentRegistrationState(
   if (documentIndex !== -1) {
     catalog.documents[documentIndex].isRegistered = isRegistered;
     await saveDocumentCatalog(catalog);
-    console.log(
-      `Updated registration state for document ${documentId}: ${isRegistered}`,
-    );
   } else {
     console.warn(`Document ${documentId} not found in catalog`);
   }

@@ -40,10 +40,6 @@ app/android/dev-keystore
 circuits/scripts/server/*.sh
 !node_modules/**/*.sh
 
-# Fastlane configuration (may contain secrets)
-app/fastlane/Fastfile
-app/fastlane/helpers.rb
-
 # Test wallets and mock data
 app/ios/passport.json
 app/ios/OpenPassport/passport.json
@@ -100,7 +96,6 @@ contracts/ignition/deployments/
 **/.pnp.*
 
 # Mobile specific
-app/ios/Podfile.lock
 app/android/link-assets-manifest.json
 app/ios/link-assets-manifest.json
 
@@ -162,7 +157,6 @@ app/android/android-passport-reader/app/src/main/assets/tessdata/
 # IDE & Editor Files
 # ========================================
 
-.vscode/
 .idea/
 *.swp
 *.swo
