@@ -98,7 +98,7 @@ export function genMockIdDocAndInitDataParsing(userInput: Partial<IdDocInput> = 
 export async function generateMockDSC(
   signatureType: string
 ): Promise<{ privateKeyPem: string; dsc: string }> {
-  const response = await fetch(`${API_URL_STAGING}/api/v2/generate-dsc`, {
+  const response = await fetch(`${API_URL_STAGING}/generate-dsc`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ signatureType }),
