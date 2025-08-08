@@ -2,11 +2,10 @@
 
 import { useCallback } from 'react';
 
-import type { RootStackParamList } from '../navigation/index';
-import { impactLight, impactMedium, selectionChange } from '../utils/haptic';
-
 import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import type { RootStackParamList } from '@src/navigation/index';
+import { impactLight, impactMedium, selectionChange } from '@src/utils/haptic';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
 

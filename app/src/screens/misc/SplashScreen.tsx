@@ -4,22 +4,21 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import splashAnimation from '../../assets/animations/splash.json';
-import type { RootStackParamList } from '../../navigation';
-import { useAuth } from '../../providers/authProvider';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import splashAnimation from '@src/assets/animations/splash.json';
+import type { RootStackParamList } from '@src/navigation';
+import { useAuth } from '@src/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
   hasAnyValidRegisteredDocument,
   initializeNativeModules,
   migrateFromLegacyStorage,
-} from '../../providers/passportDataProvider';
-import { useSettingStore } from '../../stores/settingStore';
-import { black } from '../../utils/colors';
-import { impactLight } from '../../utils/haptic';
-
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+} from '@src/providers/passportDataProvider';
+import { useSettingStore } from '@src/stores/settingStore';
+import { black } from '@src/utils/colors';
+import { impactLight } from '@src/utils/haptic';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation =

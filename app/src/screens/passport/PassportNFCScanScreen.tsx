@@ -17,32 +17,6 @@ import type { PassportData } from '@selfxyz/common/types';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
 
-import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
-import { BodyText } from '../../components/typography/BodyText';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import NFC_IMAGE from '../../images/nfc.png';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { storePassportData } from '../../providers/passportDataProvider';
-import useUserStore from '../../stores/userStore';
-import analytics from '../../utils/analytics';
-import { black, slate100, slate400, slate500, white } from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
-import {
-  buttonTap,
-  feedbackSuccess,
-  feedbackUnsuccessful,
-  impactLight,
-} from '../../utils/haptic';
-import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
-import { parseScanResponse, scan } from '../../utils/nfcScanner';
-import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
-
 import type { RouteProp } from '@react-navigation/native';
 import {
   useFocusEffect,

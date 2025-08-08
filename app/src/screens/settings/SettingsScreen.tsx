@@ -11,6 +11,7 @@ import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 import { version } from '../../../package.json';
 
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { pressedStyle } from '@src/components/buttons/pressedStyle';
 import { BodyText } from '@src/components/typography/BodyText';
 import {
@@ -39,13 +40,10 @@ import {
   neutral700,
   slate800,
   white,
-} from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-import { impactLight } from '../../utils/haptic';
-import { getCountry, getLocales, getTimeZone } from '../../utils/locale';
-
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+} from '@src/utils/colors';
+import { extraYPadding } from '@src/utils/constants';
+import { impactLight } from '@src/utils/haptic';
+import { getCountry, getLocales, getTimeZone } from '@src/utils/locale';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
 interface SettingsScreenProps {}
