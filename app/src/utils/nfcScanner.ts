@@ -9,6 +9,21 @@ import type { PassportData } from '@selfxyz/common/types';
 
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 
+interface AndroidScanResponse {
+  mrz: string;
+  eContent: string;
+  encryptedDigest: string;
+  _photo: string;
+  _digestAlgorithm: string;
+  _signerInfoDigestAlgorithm: string;
+  _digestEncryptionAlgorithm: string;
+  _LDSVersion: string;
+  _unicodeVersion: string;
+  encapContent: string;
+  documentSigningCertificate: string;
+  dataGroupHashes: string;
+}
+
 interface Inputs {
   passportNumber: string;
   dateOfBirth: string;
@@ -23,7 +38,7 @@ interface Inputs {
 
 export const parseScanResponse = (response: unknown) => {
   return Platform.OS === 'android'
-    ? handleResponseAndroid(response as Record<string, unknown>)
+    ? handleResponseAndroid(response as unknown as AndroidScanResponse)
     : handleResponseIOS(response);
 };
 
@@ -126,9 +141,7 @@ const handleResponseIOS = (response: unknown) => {
   } as PassportData;
 };
 
-const handleResponseAndroid = (
-  response: Record<string, unknown>,
-): PassportData => {
+const handleResponseAndroid = (response: AndroidScanResponse): PassportData => {
   const {
     mrz,
     eContent,
@@ -142,20 +155,7 @@ const handleResponseAndroid = (
     encapContent,
     documentSigningCertificate,
     dataGroupHashes,
-  } = response as {
-    mrz: string;
-    eContent: string;
-    encryptedDigest: string;
-    _photo: string;
-    _digestAlgorithm: string;
-    _signerInfoDigestAlgorithm: string;
-    _digestEncryptionAlgorithm: string;
-    _LDSVersion: string;
-    _unicodeVersion: string;
-    encapContent: string;
-    documentSigningCertificate: string;
-    dataGroupHashes: string;
-  };
+  } = response;
 
   const dgHashesObj = JSON.parse(dataGroupHashes);
   const dg1HashString = dgHashesObj['1'];

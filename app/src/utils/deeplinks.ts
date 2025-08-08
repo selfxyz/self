@@ -4,6 +4,7 @@ import { parseUrl } from 'query-string';
 import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
+import type { IdDocInput } from '@selfxyz/common/utils';
 
 import { navigationRef } from '../navigation';
 import { useSelfAppStore } from '../stores/selfAppStore';
@@ -95,7 +96,9 @@ export const handleUrl = (uri: string) => {
       const rawParams = data as MockDataDeepLinkRawParams;
 
       // Validate nationality is a valid country code
-      const isValidCountryCode = (code: string | undefined): code is string => {
+      const isValidCountryCode = (
+        code: string | undefined,
+      ): code is IdDocInput['nationality'] => {
         if (!code) return false;
         // Check if the code exists as a value in the countries object
         return (Object.values(countries) as string[]).includes(code);
@@ -105,7 +108,7 @@ export const handleUrl = (uri: string) => {
         name: rawParams.name,
         surname: rawParams.surname,
         nationality: isValidCountryCode(rawParams.nationality)
-          ? (rawParams.nationality as any)
+          ? rawParams.nationality
           : undefined,
         birthDate: rawParams.birth_date,
         gender: rawParams.gender,

@@ -43,7 +43,10 @@ export interface EventParams {
 
 const segmentClient = createSegmentClient();
 
-function coerceToJsonValue(value: unknown): JsonValue | undefined {
+function coerceToJsonValue(
+  value: unknown,
+  seen = new WeakSet(),
+): JsonValue | undefined {
   if (
     value === null ||
     typeof value === 'string' ||
@@ -55,16 +58,22 @@ function coerceToJsonValue(value: unknown): JsonValue | undefined {
   if (Array.isArray(value)) {
     const arr: JsonValue[] = [];
     for (const item of value) {
-      const v = coerceToJsonValue(item);
+      const v = coerceToJsonValue(item, seen);
       if (v === undefined) continue;
       arr.push(v);
     }
     return arr as JsonValue;
   }
   if (typeof value === 'object' && value) {
+    // Check for circular references
+    if (seen.has(value)) {
+      return undefined; // Skip circular references
+    }
+    seen.add(value);
+
     const obj: JsonMap = {};
     for (const [k, v] of Object.entries(value)) {
-      const coerced = coerceToJsonValue(v);
+      const coerced = coerceToJsonValue(v, seen);
       if (coerced !== undefined) obj[k] = coerced;
     }
     return obj as JsonValue;
