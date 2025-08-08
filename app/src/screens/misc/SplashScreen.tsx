@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../../assets/animations/splash.json';
+import type { RootStackParamList } from '../../navigation';
 import { useAuth } from '../../providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
@@ -18,19 +19,22 @@ import { black } from '../../utils/colors';
 import { impactLight } from '../../utils/haptic';
 
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const SplashScreen: React.FC = ({}) => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { checkBiometricsAvailable } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
   const [isAnimationFinished, setIsAnimationFinished] = useState(false);
-  const [nextScreen, setNextScreen] = useState<string | null>(null);
+  const [nextScreen, setNextScreen] = useState<keyof RootStackParamList | null>(
+    null,
+  );
   const dataLoadInitiatedRef = useRef(false);
 
   useEffect(() => {
     if (!dataLoadInitiatedRef.current) {
       dataLoadInitiatedRef.current = true;
-      console.log('Starting data loading and validation...');
 
       checkBiometricsAvailable()
         .then(setBiometricsAvailable)
@@ -41,7 +45,6 @@ const SplashScreen: React.FC = ({}) => {
       const loadDataAndDetermineNextScreen = async () => {
         try {
           // Initialize native modules first, before any data operations
-          console.log('Initializing native modules...');
           const modulesReady = await initializeNativeModules();
           if (!modulesReady) {
             console.warn(
@@ -53,14 +56,7 @@ const SplashScreen: React.FC = ({}) => {
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           if (needsMigration) {
-            console.log(
-              'Documents need registration state migration, running...',
-            );
             await checkAndUpdateRegistrationStates();
-          } else {
-            console.log(
-              'No documents need registration state migration, skipping...',
-            );
           }
 
           const hasValid = await hasAnyValidRegisteredDocument();
@@ -82,9 +78,8 @@ const SplashScreen: React.FC = ({}) => {
 
   useEffect(() => {
     if (isAnimationFinished && nextScreen) {
-      console.log(`Navigating to ${nextScreen}`);
       requestAnimationFrame(() => {
-        navigation.navigate(nextScreen as any);
+        navigation.navigate(nextScreen as never);
       });
     }
   }, [isAnimationFinished, nextScreen, navigation]);

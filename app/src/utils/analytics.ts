@@ -2,6 +2,8 @@
 
 import { createSegmentClient } from '../Segment';
 
+import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
+
 /**
  * Generic reasons:
  * - network_error: Network connectivity issues
@@ -36,19 +38,57 @@ export interface EventParams {
   reason?: string | null;
   duration_seconds?: number;
   attempt_count?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 const segmentClient = createSegmentClient();
 
-function cleanParams(params: Record<string, any>) {
-  const newParams = {};
-  for (const key of Object.keys(params)) {
-    if (typeof params[key] !== 'function') {
-      (newParams as Record<string, any>)[key] = params[key];
-    }
+function coerceToJsonValue(
+  value: unknown,
+  seen = new WeakSet(),
+): JsonValue | undefined {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value as JsonValue;
   }
-  return newParams;
+  if (Array.isArray(value)) {
+    const arr: JsonValue[] = [];
+    for (const item of value) {
+      const v = coerceToJsonValue(item, seen);
+      if (v === undefined) continue;
+      arr.push(v);
+    }
+    return arr as JsonValue;
+  }
+  if (typeof value === 'object' && value) {
+    // Check for circular references
+    if (seen.has(value)) {
+      return undefined; // Skip circular references
+    }
+    seen.add(value);
+
+    const obj: JsonMap = {};
+    for (const [k, v] of Object.entries(value)) {
+      const coerced = coerceToJsonValue(v, seen);
+      if (coerced !== undefined) obj[k] = coerced;
+    }
+    return obj as JsonValue;
+  }
+  // drop functions/undefined/symbols
+  return undefined;
+}
+
+function cleanParams(params: Record<string, unknown>): JsonMap {
+  const cleaned: JsonMap = {};
+  for (const [key, value] of Object.entries(params)) {
+    const v = coerceToJsonValue(value);
+    if (v !== undefined) cleaned[key] = v;
+  }
+  return cleaned;
 }
 
 /**
@@ -56,23 +96,16 @@ function cleanParams(params: Record<string, any>) {
  * - Ensures numeric values are properly formatted
  */
 function validateParams(
-  properties?: Record<string, any>,
-): Record<string, any> | undefined {
+  properties?: Record<string, unknown>,
+): JsonMap | undefined {
   if (!properties) return undefined;
 
-  const validatedProps = { ...properties };
+  const validatedProps = { ...properties } as EventParams;
 
   // Ensure duration is formatted as a number with at most 2 decimal places
   if (validatedProps.duration_seconds !== undefined) {
-    if (typeof validatedProps.duration_seconds === 'string') {
-      validatedProps.duration_seconds = parseFloat(
-        validatedProps.duration_seconds,
-      );
-    }
-    // Format to 2 decimal places
-    validatedProps.duration_seconds = parseFloat(
-      validatedProps.duration_seconds.toFixed(2),
-    );
+    const duration = Number(validatedProps.duration_seconds);
+    validatedProps.duration_seconds = parseFloat(duration.toFixed(2));
   }
 
   return cleanParams(validatedProps);
@@ -86,7 +119,7 @@ const analytics = () => {
   function _track(
     type: 'event' | 'screen',
     eventName: string,
-    properties?: Record<string, any>,
+    properties?: Record<string, unknown>,
   ) {
     // Validate and clean properties
     const validatedProps = validateParams(properties);
@@ -102,7 +135,7 @@ const analytics = () => {
     if (!segmentClient) {
       return;
     }
-    const trackMethod = (e: string, p?: Record<string, any>) =>
+    const trackMethod = (e: string, p?: JsonMap) =>
       type === 'screen'
         ? segmentClient.screen(e, p)
         : segmentClient.track(e, p);
@@ -121,7 +154,10 @@ const analytics = () => {
     trackEvent: (eventName: string, properties?: EventParams) => {
       _track('event', eventName, properties);
     },
-    trackScreenView: (screenName: string, properties?: Record<string, any>) => {
+    trackScreenView: (
+      screenName: string,
+      properties?: Record<string, unknown>,
+    ) => {
       _track('screen', screenName, properties);
     },
     flush: () => {

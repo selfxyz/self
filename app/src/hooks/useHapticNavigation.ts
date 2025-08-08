@@ -5,10 +5,17 @@ import { useCallback } from 'react';
 import type { RootStackParamList } from '../navigation/index';
 import { impactLight, impactMedium, selectionChange } from '../utils/haptic';
 
+import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
+
+type ExtendedNavigation = NavigationProp<RootStackParamList> & {
+  popTo?: <T extends keyof RootStackParamList>(
+    screen: T,
+    params?: RootStackParamList[T],
+  ) => void;
+};
 
 const useHapticNavigation = <S extends keyof RootStackParamList>(
   screen: S,
@@ -17,8 +24,7 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
     action?: NavigationAction;
   } = {},
 ) => {
-  const navigation =
-    useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
+  const navigation = useNavigation<ExtendedNavigation>();
 
   return useCallback(() => {
     const navParams = options.params;
@@ -26,12 +32,9 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
       case 'cancel':
         selectionChange();
         if (navParams !== undefined) {
-          (navigation.popTo as (screen: S, params: typeof navParams) => void)(
-            screen,
-            navParams,
-          );
+          navigation.popTo?.(screen, navParams);
         } else {
-          (navigation.popTo as (screen: S) => void)(screen);
+          navigation.popTo?.(screen);
         }
         return;
 
@@ -43,14 +46,19 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
       default:
         impactLight();
     }
-    // it is safe to cast options.params as any because it is correct when entering the function
     if (navParams !== undefined) {
-      (navigation.navigate as (screen: S, params: typeof navParams) => void)(
-        screen,
-        navParams,
-      );
+      (
+        navigation.navigate as <T extends keyof RootStackParamList>(
+          screen: T,
+          params: RootStackParamList[T],
+        ) => void
+      )(screen, navParams);
     } else {
-      (navigation.navigate as (screen: S) => void)(screen);
+      (
+        navigation.navigate as <T extends keyof RootStackParamList>(
+          screen: T,
+        ) => void
+      )(screen);
     }
   }, [navigation, screen, options]);
 };

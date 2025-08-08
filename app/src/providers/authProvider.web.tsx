@@ -105,11 +105,12 @@ const _getSecurely = async function <T>(
       signature: 'authenticated',
       data: formatter(dataString),
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in _getSecurely:', error);
+    const message = error instanceof Error ? error.message : String(error);
     trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
       reason: 'unknown_error',
-      error: error.message,
+      error: message,
     });
     throw error;
   }
@@ -190,8 +191,11 @@ export const AuthProvider = ({
         } else {
           return { success: false, error: 'No private key provided' };
         }
-      } catch (error: any) {
-        return { success: false, error: error.message };
+      } catch (error: unknown) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        };
       }
     })();
 

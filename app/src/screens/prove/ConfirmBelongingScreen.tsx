@@ -56,7 +56,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
         if (token) {
           setFcmToken(token);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
-          console.log('FCM token stored in proving store');
         }
       }
 
@@ -65,10 +64,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
 
       // Navigate to loading screen
       navigate();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error initializing proving process:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
       trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
-        error: error?.message || 'Unknown error',
+        error: message,
       });
     } finally {
       setRequestingPermission(false);

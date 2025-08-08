@@ -3,6 +3,9 @@
 import { parseUrl } from 'query-string';
 import { Linking, Platform } from 'react-native';
 
+import { countries } from '@selfxyz/common/constants/countries';
+import type { IdDocInput } from '@selfxyz/common/utils';
+
 import { navigationRef } from '../navigation';
 import { useSelfAppStore } from '../stores/selfAppStore';
 import useUserStore from '../stores/userStore';
@@ -18,6 +21,15 @@ type ValidatedParams = {
   sessionId?: string;
   selfApp?: string;
   mock_passport?: string;
+};
+
+// Define proper types for the mock data structure
+type MockDataDeepLinkRawParams = {
+  name?: string;
+  surname?: string;
+  nationality?: string;
+  birth_date?: string;
+  gender?: string;
 };
 
 /**
@@ -83,19 +95,25 @@ export const handleUrl = (uri: string) => {
   } else if (mock_passport) {
     try {
       const data = JSON.parse(mock_passport);
-      type MockDataDeepLinkRawParams = {
-        name?: string;
-        surname?: string;
-        nationality?: string;
-        birth_date?: string;
-        gender?: string;
-      };
       const rawParams = data as MockDataDeepLinkRawParams;
+
+      // Validate nationality is a valid country code
+      const isValidCountryCode = (
+        code: string | undefined,
+      ): code is IdDocInput['nationality'] => {
+        if (!code) return false;
+        // Check if the code exists as a value in the countries object
+        return Object.values(countries).some(
+          countryCode => countryCode === code,
+        );
+      };
 
       useUserStore.getState().setDeepLinkUserDetails({
         name: rawParams.name,
         surname: rawParams.surname,
-        nationality: rawParams.nationality,
+        nationality: isValidCountryCode(rawParams.nationality)
+          ? rawParams.nationality
+          : undefined,
         birthDate: rawParams.birth_date,
         gender: rawParams.gender,
       });

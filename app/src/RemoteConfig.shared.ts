@@ -37,6 +37,9 @@ export interface StorageBackend {
 
 export const LOCAL_OVERRIDES_KEY = 'feature_flag_overrides';
 
+// Default feature flags - this should be defined by the consuming application
+const defaultFlags: Record<string, string | boolean> = {};
+
 export const clearAllLocalOverrides = async (
   storage: StorageBackend,
 ): Promise<void> => {
@@ -58,11 +61,6 @@ export const clearLocalOverride = async (
   } catch (error) {
     console.error('Failed to clear local override:', error);
   }
-};
-
-// Shared interfaces for platform-specific implementations
-export const defaultFlags: Record<string, FeatureFlagValue> = {
-  aesop: false,
 };
 
 export const getAllFeatureFlags = async (
@@ -237,7 +235,7 @@ export const initRemoteConfig = async (
   try {
     await remoteConfig.fetchAndActivate();
   } catch (err) {
-    console.log('Remote config fetch failed', err);
+    console.error('Remote config fetch failed', err);
   }
 };
 
@@ -247,7 +245,7 @@ export const refreshRemoteConfig = async (
   try {
     await remoteConfig.fetchAndActivate();
   } catch (err) {
-    console.log('Remote config refresh failed', err);
+    console.error('Remote config refresh failed', err);
   }
 };
 

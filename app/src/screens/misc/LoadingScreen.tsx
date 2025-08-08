@@ -39,9 +39,9 @@ const terminalStates: ProvingStateType[] = [
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   // Animation states
-  const [animationSource, setAnimationSource] = useState<any>(
-    proveLoadingAnimation,
-  );
+  const [animationSource, setAnimationSource] = useState<
+    LottieView['props']['source']
+  >(proveLoadingAnimation);
 
   // Passport data state
   const [passportData, setPassportData] = useState<PassportData | null>(null);
@@ -83,7 +83,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             const { passportData: _passportData } = JSON.parse(result);
             setPassportData(_passportData);
           }
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Error loading passport data:', error);
         }
       }
@@ -110,9 +110,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       loadingScreenProgress(false);
       return;
     }
-
-    console.log('[LoadingScreen] Current proving state:', currentState);
-    console.log('[LoadingScreen] FCM token available:', !!fcmToken);
 
     // Update UI if passport data is available
     if (passportData?.passportMetadata) {

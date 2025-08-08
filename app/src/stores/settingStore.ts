@@ -77,7 +77,7 @@ export const useSettingStore = create<SettingsState>()(
     {
       name: 'setting-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => console.log('Rehydrated settings'),
+      onRehydrateStorage: () => undefined,
       partialize: state => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { hideNetworkModal, setHideNetworkModal, ...persistedState } =

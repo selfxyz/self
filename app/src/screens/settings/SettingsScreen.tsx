@@ -43,14 +43,11 @@ import { impactLight } from '../../utils/haptic';
 import { getCountry, getLocales, getTimeZone } from '../../utils/locale';
 
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {
-  Icon: React.FC<SvgProps>;
-  onPress: () => void;
-}
-interface MenuButtonProps {
   Icon: React.FC<SvgProps>;
   onPress: () => void;
 }
@@ -152,7 +149,8 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
 const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
   const { isDevMode, setDevModeOn } = useSettingStore();
   useSettingStore();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const screenRoutes = useMemo(() => {
     return isDevMode ? [...routes, ...DEBUG_MENU] : routes;
@@ -206,11 +204,11 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             break;
 
           case 'ManageDocuments':
-            navigation.navigate('ManageDocuments' as any);
+            navigation.navigate('ManageDocuments');
             break;
 
           default:
-            navigation.navigate(menuRoute as any);
+            navigation.navigate(menuRoute as never);
             break;
         }
       };

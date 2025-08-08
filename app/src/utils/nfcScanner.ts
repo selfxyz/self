@@ -9,6 +9,21 @@ import type { PassportData } from '@selfxyz/common/types';
 
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 
+interface AndroidScanResponse {
+  mrz: string;
+  eContent: string;
+  encryptedDigest: string;
+  _photo: string;
+  _digestAlgorithm: string;
+  _signerInfoDigestAlgorithm: string;
+  _digestEncryptionAlgorithm: string;
+  _LDSVersion: string;
+  _unicodeVersion: string;
+  encapContent: string;
+  documentSigningCertificate: string;
+  dataGroupHashes: string;
+}
+
 interface Inputs {
   passportNumber: string;
   dateOfBirth: string;
@@ -21,9 +36,9 @@ interface Inputs {
   usePacePolling?: boolean;
 }
 
-export const parseScanResponse = (response: any) => {
+export const parseScanResponse = (response: unknown) => {
   return Platform.OS === 'android'
-    ? handleResponseAndroid(response)
+    ? handleResponseAndroid(response as AndroidScanResponse)
     : handleResponseIOS(response);
 };
 
@@ -69,8 +84,8 @@ export const scan = async (inputs: Inputs) => {
     : await scanIOS(inputs);
 };
 
-const handleResponseIOS = (response: any) => {
-  const parsed = JSON.parse(response);
+const handleResponseIOS = (response: unknown) => {
+  const parsed = JSON.parse(String(response));
   const dgHashesObj = JSON.parse(parsed?.dataGroupHashes);
   const dg1HashString = dgHashesObj?.DG1?.sodHash;
   const dg1Hash = Array.from(Buffer.from(dg1HashString, 'hex'));
@@ -126,7 +141,7 @@ const handleResponseIOS = (response: any) => {
   } as PassportData;
 };
 
-const handleResponseAndroid = (response: any): PassportData => {
+const handleResponseAndroid = (response: AndroidScanResponse): PassportData => {
   const {
     mrz,
     eContent,

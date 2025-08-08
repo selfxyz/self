@@ -289,7 +289,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   };
 
   const handleGenerate = useCallback(async () => {
-    console.log('selectedDocumentType', selectedDocumentType);
     setIsGenerating(true);
     try {
       const randomPassportNumber = Math.random()

@@ -22,10 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set Node.js 20.x
+      - name: Set Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Prettier Check - Code Formatting
