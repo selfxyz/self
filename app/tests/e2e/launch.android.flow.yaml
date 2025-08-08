@@ -3,4 +3,4 @@ appId: com.proofofpassportapp
 - launchApp
 - extendedWaitUntil:
     id: "launch-get-started-button"
-    timeout: 60000
+    timeout: ${LAUNCH_WAIT_MS:60000}
