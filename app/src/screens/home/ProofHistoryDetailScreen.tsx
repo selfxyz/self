@@ -4,8 +4,8 @@ import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 
-import type { ProofHistory } from '../../stores/proof-types';
-import { ProofStatus } from '../../stores/proof-types';
+import type { ProofHistory } from '@src/stores/proof-types';
+import { ProofStatus } from '@src/stores/proof-types';
 import {
   black,
   blue100,
@@ -18,9 +18,8 @@ import {
   white,
   zinc400,
   zinc500,
-} from '../../utils/colors';
-import { advercase, dinot, plexMono } from '../../utils/fonts';
-
+} from '@src/utils/colors';
+import { advercase, dinot, plexMono } from '@src/utils/fonts';
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 
 type ProofHistoryDetailScreenProps = {

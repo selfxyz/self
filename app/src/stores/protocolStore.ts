@@ -19,7 +19,7 @@ import {
   IDENTITY_TREE_URL_STAGING_ID_CARD,
 } from '@selfxyz/common/constants';
 
-import { fetchOfacTrees } from '../utils/ofac';
+import { fetchOfacTrees } from '@src/utils/ofac';
 
 interface ProtocolState {
   passport: {

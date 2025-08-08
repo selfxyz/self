@@ -11,18 +11,17 @@ import { countryCodes } from '@selfxyz/common/constants';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import { BodyText } from '../../components/typography/BodyText';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { MockDataEvents } from '../../consts/analytics';
-import { storePassportData } from '../../providers/passportDataProvider';
-import useUserStore from '../../stores/userStore';
-import { black, borderColor, white } from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-
 import { useNavigation } from '@react-navigation/native';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import ButtonsContainer from '@src/components/ButtonsContainer';
+import { BodyText } from '@src/components/typography/BodyText';
+import Description from '@src/components/typography/Description';
+import { Title } from '@src/components/typography/Title';
+import { MockDataEvents } from '@src/consts/analytics';
+import { storePassportData } from '@src/providers/passportDataProvider';
+import useUserStore from '@src/stores/userStore';
+import { black, borderColor, white } from '@src/utils/colors';
+import { extraYPadding } from '@src/utils/constants';
 
 const MockDataScreenDeepLink: React.FC = () => {
   const navigation = useNavigation();

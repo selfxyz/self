@@ -5,26 +5,25 @@ import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Text } from 'tamagui';
 
-import { DefaultNavBar } from '../components/NavBar';
-import AppLayout from '../layouts/AppLayout';
-import analytics from '../utils/analytics';
-import { white } from '../utils/colors';
-import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
-import { getAesopScreens } from './aesop';
-import devScreens from './dev';
-import homeScreens from './home';
-import miscScreens from './misc';
-import passportScreens from './passport';
-import proveScreens from './prove';
-import recoveryScreens from './recovery';
-import settingsScreens from './settings';
-
 import type { StaticParamList } from '@react-navigation/native';
 import {
   createNavigationContainerRef,
   createStaticNavigation,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { DefaultNavBar } from '@src/components/NavBar';
+import AppLayout from '@src/layouts/AppLayout';
+import { getAesopScreens } from '@src/navigation/aesop';
+import devScreens from '@src/navigation/dev';
+import homeScreens from '@src/navigation/home';
+import miscScreens from '@src/navigation/misc';
+import passportScreens from '@src/navigation/passport';
+import proveScreens from '@src/navigation/prove';
+import recoveryScreens from '@src/navigation/recovery';
+import settingsScreens from '@src/navigation/settings';
+import analytics from '@src/utils/analytics';
+import { white } from '@src/utils/colors';
+import { setupUniversalLinkListenerInNavigation } from '@src/utils/deeplinks';
 
 export const navigationScreens = {
   ...miscScreens,

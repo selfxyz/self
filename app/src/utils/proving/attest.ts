@@ -9,10 +9,9 @@ import { Certificate } from 'pkijs';
 
 import { PCR0_MANAGER_ADDRESS, RPC_URL } from '@selfxyz/common/constants';
 
-import { AWS_ROOT_PEM } from './awsRootPem';
-import cose from './cose';
-
 import { X509Certificate } from '@peculiar/x509';
+import { AWS_ROOT_PEM } from '@src/utils/proving/awsRootPem';
+import cose from '@src/utils/proving/cose';
 import { decode } from '@stablelib/cbor';
 
 /**

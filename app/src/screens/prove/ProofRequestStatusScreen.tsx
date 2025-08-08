@@ -1,35 +1,34 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
 
-import loadingAnimation from '../../assets/animations/loading/misc.json';
-import failAnimation from '../../assets/animations/proof_failed.json';
-import succesAnimation from '../../assets/animations/proof_success.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { BodyText } from '../../components/typography/BodyText';
-import Description from '../../components/typography/Description';
-import { typography } from '../../components/typography/styles';
-import { Title } from '../../components/typography/Title';
-import { ProofEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { ProofStatus } from '../../stores/proof-types';
-import { useProofHistoryStore } from '../../stores/proofHistoryStore';
-import { useSelfAppStore } from '../../stores/selfAppStore';
-import analytics from '../../utils/analytics';
-import { black, white } from '../../utils/colors';
+import { useIsFocused } from '@react-navigation/native';
+import loadingAnimation from '@src/assets/animations/loading/misc.json';
+import failAnimation from '@src/assets/animations/proof_failed.json';
+import succesAnimation from '@src/assets/animations/proof_success.json';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import { BodyText } from '@src/components/typography/BodyText';
+import Description from '@src/components/typography/Description';
+import { typography } from '@src/components/typography/styles';
+import { Title } from '@src/components/typography/Title';
+import { ProofEvents } from '@src/consts/analytics';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import { ProofStatus } from '@src/stores/proof-types';
+import { useProofHistoryStore } from '@src/stores/proofHistoryStore';
+import { useSelfAppStore } from '@src/stores/selfAppStore';
+import analytics from '@src/utils/analytics';
+import { black, white } from '@src/utils/colors';
 import {
   buttonTap,
   notificationError,
   notificationSuccess,
-} from '../../utils/haptic';
-import { useProvingStore } from '../../utils/proving/provingMachine';
-
-import { useIsFocused } from '@react-navigation/native';
+} from '@src/utils/haptic';
+import { useProvingStore } from '@src/utils/proving/provingMachine';
 
 const { trackEvent } = analytics();
 
@@ -50,7 +49,7 @@ const SuccessScreen: React.FC = () => {
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   function onOkPress() {
     buttonTap();

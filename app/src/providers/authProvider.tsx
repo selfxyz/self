@@ -12,10 +12,10 @@ import React, {
 import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
 
-import { AuthEvents } from '../consts/analytics';
-import { useSettingStore } from '../stores/settingStore';
-import type { Mnemonic } from '../types/mnemonic';
-import analytics from '../utils/analytics';
+import { AuthEvents } from '@src/consts/analytics';
+import { useSettingStore } from '@src/stores/settingStore';
+import type { Mnemonic } from '@src/types/mnemonic';
+import analytics from '@src/utils/analytics';
 
 const { trackEvent } = analytics();
 

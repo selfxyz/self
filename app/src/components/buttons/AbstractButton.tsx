@@ -6,10 +6,10 @@ import { Platform, StyleSheet } from 'react-native';
 import type { ViewProps } from 'tamagui';
 import { Button, Text } from 'tamagui';
 
-import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
-import analytics from '../../utils/analytics';
-import { dinot } from '../../utils/fonts';
-import { pressedStyle } from './pressedStyle';
+import { pressedStyle } from '@src/components/buttons/pressedStyle';
+import { shouldShowAesopRedesign } from '@src/hooks/useAesopRedesign';
+import analytics from '@src/utils/analytics';
+import { dinot } from '@src/utils/fonts';
 
 export interface ButtonProps extends ViewProps {
   children: React.ReactNode;

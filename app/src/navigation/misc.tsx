@@ -3,17 +3,16 @@
 import React, { lazy } from 'react';
 import { SystemBars } from 'react-native-edge-to-edge';
 
+import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 // Important: SplashScreen is imported directly and not lazy-loaded.
 // This is because it's used as a fallback for the Suspense boundary in the root navigator,
 // ensuring it's immediately available at startup.
-import SplashScreen from '../screens/misc/SplashScreen';
-import { black } from '../utils/colors';
+import SplashScreen from '@src/screens/misc/SplashScreen';
+import { black } from '@src/utils/colors';
 
-import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-
-const LaunchScreen = lazy(() => import('../screens/misc/LaunchScreen'));
-const LoadingScreen = lazy(() => import('../screens/misc/LoadingScreen'));
-const ModalScreen = lazy(() => import('../screens/misc/ModalScreen'));
+const LaunchScreen = lazy(() => import('@src/screens/misc/LaunchScreen'));
+const LoadingScreen = lazy(() => import('@src/screens/misc/LoadingScreen'));
+const ModalScreen = lazy(() => import('@src/screens/misc/ModalScreen'));
 
 const miscScreens = {
   Launch: {

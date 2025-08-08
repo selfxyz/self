@@ -3,7 +3,7 @@
 import { ethers } from 'ethers';
 import { useCallback, useState } from 'react';
 
-import { useAuth } from '../providers/authProvider';
+import { useAuth } from '@src/providers/authProvider';
 
 export default function useMnemonic() {
   const { getOrCreateMnemonic } = useAuth();

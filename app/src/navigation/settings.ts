@@ -2,22 +2,23 @@
 
 import { lazy } from 'react';
 
-import { black, slate300, white } from '../utils/colors';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black, slate300, white } from '@src/utils/colors';
 
 const CloudBackupScreen = lazy(
-  () => import('../screens/settings/CloudBackupScreen'),
+  () => import('@src/screens/settings/CloudBackupScreen'),
 );
 const ManageDocumentsScreen = lazy(
-  () => import('../screens/settings/ManageDocumentsScreen'),
+  () => import('@src/screens/settings/ManageDocumentsScreen'),
 );
 const PassportDataInfoScreen = lazy(
-  () => import('../screens/settings/PassportDataInfoScreen'),
+  () => import('@src/screens/settings/PassportDataInfoScreen'),
 );
-const SettingsScreen = lazy(() => import('../screens/settings/SettingsScreen'));
+const SettingsScreen = lazy(
+  () => import('@src/screens/settings/SettingsScreen'),
+);
 const ShowRecoveryPhraseScreen = lazy(
-  () => import('../screens/settings/ShowRecoveryPhraseScreen'),
+  () => import('@src/screens/settings/ShowRecoveryPhraseScreen'),
 );
 
 const settingsScreens = {

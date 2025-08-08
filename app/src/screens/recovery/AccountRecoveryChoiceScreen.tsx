@@ -3,28 +3,27 @@
 import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import { Caption } from '../../components/typography/Caption';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { BackupEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import Keyboard from '../../images/icons/keyboard.svg';
-import RestoreAccountSvg from '../../images/icons/restore_account.svg';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useAuth } from '../../providers/authProvider';
+import { useNavigation } from '@react-navigation/native';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import { Caption } from '@src/components/typography/Caption';
+import Description from '@src/components/typography/Description';
+import { Title } from '@src/components/typography/Title';
+import { BackupEvents } from '@src/consts/analytics';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import Keyboard from '@src/images/icons/keyboard.svg';
+import RestoreAccountSvg from '@src/images/icons/restore_account.svg';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import { useAuth } from '@src/providers/authProvider';
 import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
-} from '../../providers/passportDataProvider';
-import { useSettingStore } from '../../stores/settingStore';
-import analytics from '../../utils/analytics';
-import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
-import { black, slate500, slate600, white } from '../../utils/colors';
-import { isUserRegisteredWithAlternativeCSCA } from '../../utils/proving/validateDocument';
-
-import { useNavigation } from '@react-navigation/native';
+} from '@src/providers/passportDataProvider';
+import { useSettingStore } from '@src/stores/settingStore';
+import analytics from '@src/utils/analytics';
+import { STORAGE_NAME, useBackupMnemonic } from '@src/utils/cloudBackup';
+import { black, slate500, slate600, white } from '@src/utils/colors';
+import { isUserRegisteredWithAlternativeCSCA } from '@src/utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 

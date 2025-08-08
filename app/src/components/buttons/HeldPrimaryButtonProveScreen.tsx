@@ -4,11 +4,10 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
 
-import { ProofEvents } from '../../consts/analytics';
-import { black } from '../../utils/colors';
-import Description from '../typography/Description';
-import { HeldPrimaryButton } from './PrimaryButtonLongHold';
-
+import { HeldPrimaryButton } from '@src/components/buttons/PrimaryButtonLongHold';
+import Description from '@src/components/typography/Description';
+import { ProofEvents } from '@src/consts/analytics';
+import { black } from '@src/utils/colors';
 import { useMachine } from '@xstate/react';
 
 interface HeldPrimaryButtonProveScreenProps {

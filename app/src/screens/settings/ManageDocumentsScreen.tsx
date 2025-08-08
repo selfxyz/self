@@ -5,23 +5,22 @@ import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import { DocumentEvents } from '../../consts/analytics';
-import type { RootStackParamList } from '../../navigation';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import ButtonsContainer from '@src/components/ButtonsContainer';
+import { DocumentEvents } from '@src/consts/analytics';
+import type { RootStackParamList } from '@src/navigation';
 import {
   type DocumentCatalog,
   type DocumentMetadata,
   usePassport,
-} from '../../providers/passportDataProvider';
-import analytics from '../../utils/analytics';
-import { borderColor, textBlack, white } from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-import { impactLight } from '../../utils/haptic';
-
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+} from '@src/providers/passportDataProvider';
+import analytics from '@src/utils/analytics';
+import { borderColor, textBlack, white } from '@src/utils/colors';
+import { extraYPadding } from '@src/utils/constants';
+import { impactLight } from '@src/utils/haptic';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();

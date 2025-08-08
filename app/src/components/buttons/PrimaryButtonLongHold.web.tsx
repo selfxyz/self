@@ -5,9 +5,12 @@ import type { LayoutChangeEvent } from 'react-native';
 // Tamagui imports for web
 import { AnimatePresence, YStack } from 'tamagui';
 
-import { PrimaryButton } from './PrimaryButton';
-import type { HeldPrimaryButtonProps } from './PrimaryButtonLongHold.shared';
-import { ACTION_TIMER, COLORS } from './PrimaryButtonLongHold.shared';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import type { HeldPrimaryButtonProps } from '@src/components/buttons/PrimaryButtonLongHold.shared';
+import {
+  ACTION_TIMER,
+  COLORS,
+} from '@src/components/buttons/PrimaryButtonLongHold.shared';
 
 export function HeldPrimaryButton({
   children,

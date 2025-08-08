@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 
 const { decode, encode } = require('@stablelib/cbor');
 
-const cose = require('../../../src/utils/proving/cose').default;
+const cose = require('@src/utils/proving/cose').default;
 
 // Simplified mock for better test control
 const mockVerifyFn = jest.fn();

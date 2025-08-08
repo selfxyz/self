@@ -53,7 +53,7 @@ describe('Web Build and Render', () => {
         previewProcess.stdout.on('data', (data: Buffer) => {
           const output = data.toString();
           serverOutput += output;
-          // eslint-disable-next-line no-console
+
           console.log('Preview server stdout:', JSON.stringify(output));
 
           // Look for the Local: indicator that the server is ready
@@ -66,7 +66,6 @@ describe('Web Build and Render', () => {
             (output.includes('4173') && output.includes('Local'));
 
           if (isReady) {
-            // eslint-disable-next-line no-console
             console.log('Server ready detected!');
             clearTimeout(timeout);
             resolve();
@@ -77,7 +76,7 @@ describe('Web Build and Render', () => {
       if (previewProcess?.stderr) {
         previewProcess.stderr.on('data', (data: Buffer) => {
           const error = data.toString();
-          // eslint-disable-next-line no-console
+
           console.error('Preview server stderr:', error);
           serverOutput += error;
         });
@@ -114,7 +113,6 @@ describe('Web Build and Render', () => {
           previewProcess.kill('SIGKILL');
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Error killing preview process:', error);
       }
     }

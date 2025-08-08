@@ -6,13 +6,12 @@ import { Text } from 'react-native';
 import {
   RemoteConfigProvider,
   useRemoteConfig,
-} from '../../../src/providers/remoteConfigProvider';
-import { initRemoteConfig } from '../../../src/RemoteConfig';
-
+} from '@src/providers/remoteConfigProvider';
+import { initRemoteConfig } from '@src/RemoteConfig';
 import { render, waitFor } from '@testing-library/react-native';
 
 // Mock the RemoteConfig module
-jest.mock('../../../src/RemoteConfig', () => ({
+jest.mock('@src/RemoteConfig', () => ({
   initRemoteConfig: jest.fn(),
 }));
 

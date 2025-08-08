@@ -29,6 +29,7 @@ module.exports = {
     '*.d.ts',
     'metro.config.cjs',
     'docs/examples/',
+    'tests/e2e/',
   ],
   settings: {
     react: { version: 'detect' },
@@ -166,6 +167,23 @@ module.exports = {
     '@typescript-eslint/indent': 'off',
   },
   overrides: [
+    {
+      files: ['tests/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: './tsconfig.test.json',
+      },
+      rules: {
+        // Allow console logging in tests
+        'no-console': 'off',
+      },
+    },
+    {
+      // Allow console logging in scripts
+      files: ['scripts/**/*.cjs', 'scripts/*.cjs'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
     {
       files: ['*.cjs'],
       env: {

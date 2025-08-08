@@ -11,14 +11,14 @@ import {
   YStack,
 } from 'tamagui';
 
-import type { FeatureFlagValue } from '../../RemoteConfig';
+import type { FeatureFlagValue } from '@src/RemoteConfig';
 import {
   clearAllLocalOverrides,
   getAllFeatureFlags,
   refreshRemoteConfig,
   setLocalOverride,
-} from '../../RemoteConfig';
-import { textBlack } from '../../utils/colors';
+} from '@src/RemoteConfig';
+import { textBlack } from '@src/utils/colors';
 
 interface FeatureFlag {
   key: string;

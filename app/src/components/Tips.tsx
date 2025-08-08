@@ -3,8 +3,8 @@
 import React from 'react';
 import { Text, View } from 'tamagui';
 
-import { slate500 } from '../utils/colors';
-import { Caption } from './typography/Caption';
+import { Caption } from '@src/components/typography/Caption';
+import { slate500 } from '@src/utils/colors';
 
 export interface TipProps {
   title: string;

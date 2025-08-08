@@ -9,8 +9,11 @@ import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
 import { version } from '../../../package.json';
-import { pressedStyle } from '../../components/buttons/pressedStyle';
-import { BodyText } from '../../components/typography/BodyText';
+
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { pressedStyle } from '@src/components/buttons/pressedStyle';
+import { BodyText } from '@src/components/typography/BodyText';
 import {
   appStoreUrl,
   gitHubUrl,
@@ -18,32 +21,29 @@ import {
   selfUrl,
   telegramUrl,
   xUrl,
-} from '../../consts/links';
-import Github from '../../images/icons/github.svg';
-import Cloud from '../../images/icons/settings_cloud_backup.svg';
-import Data from '../../images/icons/settings_data.svg';
-import Feedback from '../../images/icons/settings_feedback.svg';
-import Lock from '../../images/icons/settings_lock.svg';
-import ShareIcon from '../../images/icons/share.svg';
-import Star from '../../images/icons/star.svg';
-import Telegram from '../../images/icons/telegram.svg';
-import Web from '../../images/icons/webpage.svg';
-import X from '../../images/icons/x.svg';
-import type { RootStackParamList } from '../../navigation';
-import { useSettingStore } from '../../stores/settingStore';
+} from '@src/consts/links';
+import Github from '@src/images/icons/github.svg';
+import Cloud from '@src/images/icons/settings_cloud_backup.svg';
+import Data from '@src/images/icons/settings_data.svg';
+import Feedback from '@src/images/icons/settings_feedback.svg';
+import Lock from '@src/images/icons/settings_lock.svg';
+import ShareIcon from '@src/images/icons/share.svg';
+import Star from '@src/images/icons/star.svg';
+import Telegram from '@src/images/icons/telegram.svg';
+import Web from '@src/images/icons/webpage.svg';
+import X from '@src/images/icons/x.svg';
+import type { RootStackParamList } from '@src/navigation';
+import { useSettingStore } from '@src/stores/settingStore';
 import {
   amber500,
   black,
   neutral700,
   slate800,
   white,
-} from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-import { impactLight } from '../../utils/haptic';
-import { getCountry, getLocales, getTimeZone } from '../../utils/locale';
-
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+} from '@src/utils/colors';
+import { extraYPadding } from '@src/utils/constants';
+import { impactLight } from '@src/utils/haptic';
+import { getCountry, getLocales, getTimeZone } from '@src/utils/locale';
 import { Bug, FileText } from '@tamagui/lucide-icons';
 
 interface SettingsScreenProps {}

@@ -2,7 +2,7 @@
 
 import { PermissionsAndroid, Platform } from 'react-native';
 
-jest.unmock('../../src/utils/notifications/notificationService');
+jest.unmock('@src/utils/notifications/notificationService');
 
 jest.mock('@react-native-firebase/messaging', () => {
   const instance = {
@@ -28,7 +28,7 @@ describe('notificationService', () => {
       ._instance;
     messagingMock.requestPermission.mockReset();
     messagingMock.getToken.mockReset();
-    service = require('../../src/utils/notifications/notificationService');
+    service = require('@src/utils/notifications/notificationService');
     (fetch as jest.Mock).mockResolvedValue({ ok: true, text: jest.fn() });
     messagingMock.requestPermission.mockResolvedValue(1);
     messagingMock.getToken.mockResolvedValue('token');

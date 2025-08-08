@@ -2,27 +2,26 @@
 
 import { lazy } from 'react';
 
-import { black, slate300 } from '../utils/colors';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { black, slate300 } from '@src/utils/colors';
 
 const AccountRecoveryChoiceScreen = lazy(
-  () => import('../screens/recovery/AccountRecoveryChoiceScreen'),
+  () => import('@src/screens/recovery/AccountRecoveryChoiceScreen'),
 );
 const AccountRecoveryScreen = lazy(
-  () => import('../screens/recovery/AccountRecoveryScreen'),
+  () => import('@src/screens/recovery/AccountRecoveryScreen'),
 );
 const AccountVerifiedSuccessScreen = lazy(
-  () => import('../screens/recovery/AccountVerifiedSuccessScreen'),
+  () => import('@src/screens/recovery/AccountVerifiedSuccessScreen'),
 );
 const PassportDataNotFound = lazy(
-  () => import('../screens/recovery/PassportDataNotFoundScreen'),
+  () => import('@src/screens/recovery/PassportDataNotFoundScreen'),
 );
 const RecoverWithPhraseScreen = lazy(
-  () => import('../screens/recovery/RecoverWithPhraseScreen'),
+  () => import('@src/screens/recovery/RecoverWithPhraseScreen'),
 );
 const SaveRecoveryPhraseScreen = lazy(
-  () => import('../screens/recovery/SaveRecoveryPhraseScreen'),
+  () => import('@src/screens/recovery/SaveRecoveryPhraseScreen'),
 );
 
 const recoveryScreens = {

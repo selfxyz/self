@@ -10,14 +10,14 @@ const mockAnalytics = jest.fn(() => ({
   flush: mockFlush,
 }));
 
-jest.doMock('../../../src/utils/analytics', () => mockAnalytics);
-jest.mock('../../../src/Sentry', () => ({
+jest.doMock('@src/utils/analytics', () => mockAnalytics);
+jest.mock('@src/Sentry', () => ({
   captureException: jest.fn(),
 }));
 
 // Import after mocks are set up
-const ErrorBoundary = require('../../../src/components/ErrorBoundary').default;
-const { captureException } = require('../../../src/Sentry');
+const ErrorBoundary = require('@src/components/ErrorBoundary').default;
+const { captureException } = require('@src/Sentry');
 
 const ProblemChild = () => {
   throw new Error('boom');

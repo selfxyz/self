@@ -2,14 +2,13 @@
 
 import { lazy } from 'react';
 
-import { ProgressNavBar } from '../components/NavBar';
-import { shouldShowAesopRedesign } from '../hooks/useAesopRedesign';
-import { white } from '../utils/colors';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { ProgressNavBar } from '@src/components/NavBar';
+import { shouldShowAesopRedesign } from '@src/hooks/useAesopRedesign';
+import { white } from '@src/utils/colors';
 
 const PassportOnboardingScreen = lazy(
-  () => import('../screens/aesop/PassportOnboardingScreen'),
+  () => import('@src/screens/aesop/PassportOnboardingScreen'),
 );
 
 const aesopScreens = {

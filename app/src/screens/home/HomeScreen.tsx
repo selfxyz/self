@@ -4,33 +4,32 @@ import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, styled, YStack } from 'tamagui';
 
-import { pressedStyle } from '../../components/buttons/pressedStyle';
-import { BodyText } from '../../components/typography/BodyText';
-import { Caption } from '../../components/typography/Caption';
-import { ProofEvents } from '../../consts/analytics';
-import { useAppUpdates } from '../../hooks/useAppUpdates';
-import useConnectionModal from '../../hooks/useConnectionModal';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import SelfCard from '../../images/card-style-1.svg';
-import ScanIcon from '../../images/icons/qr_scan.svg';
-import WarnIcon from '../../images/icons/warning.svg';
-import { usePassport } from '../../providers/passportDataProvider';
-import { useSettingStore } from '../../stores/settingStore';
-import analytics from '../../utils/analytics';
+import {
+  useFocusEffect,
+  useNavigation,
+  usePreventRemove,
+} from '@react-navigation/native';
+import { pressedStyle } from '@src/components/buttons/pressedStyle';
+import { BodyText } from '@src/components/typography/BodyText';
+import { Caption } from '@src/components/typography/Caption';
+import { ProofEvents } from '@src/consts/analytics';
+import { useAppUpdates } from '@src/hooks/useAppUpdates';
+import useConnectionModal from '@src/hooks/useConnectionModal';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import SelfCard from '@src/images/card-style-1.svg';
+import ScanIcon from '@src/images/icons/qr_scan.svg';
+import WarnIcon from '@src/images/icons/warning.svg';
+import { usePassport } from '@src/providers/passportDataProvider';
+import { useSettingStore } from '@src/stores/settingStore';
+import analytics from '@src/utils/analytics';
 import {
   amber500,
   black,
   neutral700,
   slate800,
   white,
-} from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-
-import {
-  useFocusEffect,
-  useNavigation,
-  usePreventRemove,
-} from '@react-navigation/native';
+} from '@src/utils/colors';
+import { extraYPadding } from '@src/utils/constants';
 
 const ScanButton = styled(Button, {
   borderRadius: 20,
@@ -82,7 +81,7 @@ const HomeScreen: React.FC = () => {
     });
 
     goToQRCodeViewFinder();
-  }, [trackEvent, goToQRCodeViewFinder]);
+  }, [goToQRCodeViewFinder]);
 
   // Prevents back navigation
   usePreventRemove(true, () => {});

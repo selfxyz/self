@@ -3,11 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 
-import { unsafe_getPrivateKey } from '../../providers/authProvider';
-import { black, slate50, slate200, teal500, white } from '../../utils/colors';
-import { confirmTap } from '../../utils/haptic';
-
 import Clipboard from '@react-native-clipboard/clipboard';
+import { unsafe_getPrivateKey } from '@src/providers/authProvider';
+import { black, slate50, slate200, teal500, white } from '@src/utils/colors';
+import { confirmTap } from '@src/utils/haptic';
 
 interface DevPrivateKeyScreen {}
 
@@ -34,7 +33,7 @@ const DevPrivateKeyScreen: React.FC<DevPrivateKeyScreen> = ({}) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     }
-  }, [isPrivateKeyRevealed]);
+  }, [isPrivateKeyRevealed, privateKey]);
 
   const getRedactedPrivateKey = useCallback(() => {
     if (

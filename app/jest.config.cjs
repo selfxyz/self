@@ -9,5 +9,14 @@ module.exports = {
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',
+    '^@src/(.*)$': '<rootDir>/src/$1',
+    '^@src$': '<rootDir>/src',
+    '^@tests/(.*)$': '<rootDir>/tests/src/$1',
+    '^@tests$': '<rootDir>/tests/src',
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json',
+    },
   },
 };

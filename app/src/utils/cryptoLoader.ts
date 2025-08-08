@@ -11,8 +11,8 @@ export const loadCryptoUtils = async () => {
 
 export const loadProvingUtils = async () => {
   return Promise.all([
-    import('./proving/provingMachine'),
-    import('./proving/attest'),
-    import('./proving/validateDocument'),
+    import('@src/utils/proving/provingMachine'),
+    import('@src/utils/proving/attest'),
+    import('@src/utils/proving/validateDocument'),
   ]);
 };

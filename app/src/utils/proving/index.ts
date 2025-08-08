@@ -3,20 +3,23 @@
 // Only export what's actually used elsewhere to enable proper tree shaking
 
 // From provingMachine - used in screens and tests
-export { type ProvingStateType, useProvingStore } from './provingMachine';
+export {
+  type ProvingStateType,
+  useProvingStore,
+} from '@src/utils/proving/provingMachine';
 
 // From provingUtils - used in tests (keeping these for testing purposes)
 export {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from './provingUtils';
+} from '@src/utils/proving/provingUtils';
 
 // From loadingScreenStateText - used in loading screen
-export { getLoadingScreenText } from './loadingScreenStateText';
+export { getLoadingScreenText } from '@src/utils/proving/loadingScreenStateText';
 
 // From validateDocument - used in recovery and splash screens
 export {
   hasAnyValidRegisteredDocument,
   isUserRegisteredWithAlternativeCSCA,
-} from './validateDocument';
+} from '@src/utils/proving/validateDocument';

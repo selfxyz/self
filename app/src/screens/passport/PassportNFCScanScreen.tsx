@@ -17,38 +17,37 @@ import type { PassportData } from '@selfxyz/common/types';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
 
-import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
-import { BodyText } from '../../components/typography/BodyText';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import NFC_IMAGE from '../../images/nfc.png';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { storePassportData } from '../../providers/passportDataProvider';
-import useUserStore from '../../stores/userStore';
-import analytics from '../../utils/analytics';
-import { black, slate100, slate400, slate500, white } from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
-import {
-  buttonTap,
-  feedbackSuccess,
-  feedbackUnsuccessful,
-  impactLight,
-} from '../../utils/haptic';
-import { registerModalCallbacks } from '../../utils/modalCallbackRegistry';
-import { parseScanResponse, scan } from '../../utils/nfcScanner';
-import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
-
 import type { RouteProp } from '@react-navigation/native';
 import {
   useFocusEffect,
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import passportVerifyAnimation from '@src/assets/animations/passport_verify.json';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import ButtonsContainer from '@src/components/ButtonsContainer';
+import TextsContainer from '@src/components/TextsContainer';
+import { BodyText } from '@src/components/typography/BodyText';
+import { Title } from '@src/components/typography/Title';
+import { PassportEvents } from '@src/consts/analytics';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import NFC_IMAGE from '@src/images/nfc.png';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import { storePassportData } from '@src/providers/passportDataProvider';
+import useUserStore from '@src/stores/userStore';
+import analytics from '@src/utils/analytics';
+import { black, slate100, slate400, slate500, white } from '@src/utils/colors';
+import { dinot } from '@src/utils/fonts';
+import {
+  buttonTap,
+  feedbackSuccess,
+  feedbackUnsuccessful,
+  impactLight,
+} from '@src/utils/haptic';
+import { registerModalCallbacks } from '@src/utils/modalCallbackRegistry';
+import { parseScanResponse, scan } from '@src/utils/nfcScanner';
+import { hasAnyValidRegisteredDocument } from '@src/utils/proving/validateDocument';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();

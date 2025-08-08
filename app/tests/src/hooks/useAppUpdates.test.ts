@@ -2,10 +2,9 @@
 
 import { checkVersion } from 'react-native-check-version';
 
-import { useAppUpdates } from '../../../src/hooks/useAppUpdates';
-import { registerModalCallbacks } from '../../../src/utils/modalCallbackRegistry';
-
 import { useNavigation } from '@react-navigation/native';
+import { useAppUpdates } from '@src/hooks/useAppUpdates';
+import { registerModalCallbacks } from '@src/utils/modalCallbackRegistry';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 jest.mock('@react-navigation/native', () => ({
@@ -16,11 +15,11 @@ jest.mock('react-native-check-version', () => ({
   checkVersion: jest.fn(),
 }));
 
-jest.mock('../../../src/utils/modalCallbackRegistry', () => ({
+jest.mock('@src/utils/modalCallbackRegistry', () => ({
   registerModalCallbacks: jest.fn().mockReturnValue(1),
 }));
 
-jest.mock('../../../src/utils/analytics', () => () => ({
+jest.mock('@src/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
 

@@ -5,20 +5,20 @@ import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 
-import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { DescriptionTitle } from '../../components/typography/DescriptionTitle';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import Scan from '../../images/icons/passport_camera_scan.svg';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '../../utils/colors';
-import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
+import passportOnboardingAnimation from '@src/assets/animations/passport_onboarding.json';
+import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
+import ButtonsContainer from '@src/components/ButtonsContainer';
+import TextsContainer from '@src/components/TextsContainer';
+import Additional from '@src/components/typography/Additional';
+import Description from '@src/components/typography/Description';
+import { DescriptionTitle } from '@src/components/typography/DescriptionTitle';
+import { PassportEvents } from '@src/consts/analytics';
+import useHapticNavigation from '@src/hooks/useHapticNavigation';
+import Scan from '@src/images/icons/passport_camera_scan.svg';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import { black, slate100, white } from '@src/utils/colors';
+import { hasAnyValidRegisteredDocument } from '@src/utils/proving/validateDocument';
 
 interface PassportOnboardingScreenProps {}
 

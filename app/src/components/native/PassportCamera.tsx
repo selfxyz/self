@@ -10,7 +10,8 @@ import {
 
 import { extractMRZInfo } from '@selfxyz/sdk-alpha';
 
-import { RCTFragment } from './RCTFragment';
+import { RCTFragment } from '@src/components/native/RCTFragment';
+import { extractMRZInfo } from '@src/utils/utils';
 
 interface NativePassportOCRViewProps {
   onPassportRead: (

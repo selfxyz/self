@@ -7,8 +7,7 @@ import { Text } from 'react-native';
 import {
   PassportProvider,
   usePassport,
-} from '../../../src/providers/passportDataProvider';
-
+} from '@src/providers/passportDataProvider';
 import { render, waitFor } from '@testing-library/react-native';
 
 // Mock react-native-keychain before importing the module
@@ -25,7 +24,7 @@ const mockAuthProvider = {
   _getSecurely: jest.fn(),
 };
 
-jest.mock('../../../src/providers/authProvider', () => ({
+jest.mock('@src/providers/authProvider', () => ({
   useAuth: () => mockAuthProvider,
 }));
 
@@ -263,7 +262,7 @@ describe('PassportDataProvider', () => {
       jest.resetModules();
       jest.doMock('react-native-keychain', () => mockKeychain);
 
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       initializeNativeModulesLocal = passportModule.initializeNativeModules;
     });
 
@@ -339,13 +338,13 @@ describe('PassportDataProvider', () => {
       jest.resetModules();
       jest.doMock('react-native-keychain', () => mockKeychain);
 
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       migrateFromLegacyStorageLocal = passportModule.migrateFromLegacyStorage;
     });
 
     it('should skip migration if catalog already has documents', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
@@ -368,7 +367,7 @@ describe('PassportDataProvider', () => {
 
     it('should migrate legacy documents when catalog is empty', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
@@ -398,7 +397,7 @@ describe('PassportDataProvider', () => {
 
     it('should handle errors during migration gracefully', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
@@ -432,7 +431,7 @@ describe('PassportDataProvider', () => {
       jest.resetModules();
       jest.doMock('react-native-keychain', () => mockKeychain);
 
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       loadDocumentCatalogLocal = passportModule.loadDocumentCatalog;
     });
 
@@ -443,7 +442,7 @@ describe('PassportDataProvider', () => {
       jest.doMock('react-native-keychain', () => undefined);
 
       // Re-import the module after mocking to ensure mock is applied
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       const loadDocumentCatalogLocal = passportModule.loadDocumentCatalog;
 
       const result = await loadDocumentCatalogLocal();
@@ -474,7 +473,7 @@ describe('PassportDataProvider', () => {
 
     it('should return parsed catalog when it exists and native modules are ready', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
@@ -493,7 +492,7 @@ describe('PassportDataProvider', () => {
 
     it('should handle malformed JSON and return empty documents array', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
@@ -519,7 +518,7 @@ describe('PassportDataProvider', () => {
 
     it('should handle invalid catalog structure and return the parsed structure', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
@@ -538,7 +537,7 @@ describe('PassportDataProvider', () => {
 
     it('should handle JSON parsing exceptions and return empty documents array', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
@@ -564,7 +563,7 @@ describe('PassportDataProvider', () => {
 
     it('should handle null/undefined password and return empty documents array', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
@@ -599,7 +598,7 @@ describe('PassportDataProvider', () => {
 
     it('should handle empty string password and return empty documents array', async () => {
       // First initialize native modules to set the flag
-      const passportModule = require('../../../src/providers/passportDataProvider');
+      const passportModule = require('@src/providers/passportDataProvider');
       mockKeychain.getGenericPassword = jest
         .fn()
         .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules

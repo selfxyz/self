@@ -15,24 +15,24 @@ import {
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
 
-import { PassportEvents, ProofEvents } from '../../consts/analytics';
-import { navigationRef } from '../../navigation';
-import { unsafe_getPrivateKey } from '../../providers/authProvider';
+import { PassportEvents, ProofEvents } from '@src/consts/analytics';
+import { navigationRef } from '@src/navigation';
+import { unsafe_getPrivateKey } from '@src/providers/authProvider';
 import {
   clearPassportData,
   loadSelectedDocument,
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
-} from '../../providers/passportDataProvider';
-import { useProtocolStore } from '../../stores/protocolStore';
-import { useSelfAppStore } from '../../stores/selfAppStore';
-import analytics from '../analytics';
-import { getPublicKey, verifyAttestation } from './attest';
+} from '@src/providers/passportDataProvider';
+import { useProtocolStore } from '@src/stores/protocolStore';
+import { useSelfAppStore } from '@src/stores/selfAppStore';
+import analytics from '@src/utils/analytics';
+import { getPublicKey, verifyAttestation } from '@src/utils/proving/attest';
 import {
   generateTEEInputsDisclose,
   generateTEEInputsDSC,
   generateTEEInputsRegister,
-} from './provingInputs';
+} from '@src/utils/proving/provingInputs';
 import {
   clientKey,
   clientPublicKeyHex,
@@ -40,7 +40,7 @@ import {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from './provingUtils';
+} from '@src/utils/proving/provingUtils';
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
@@ -48,7 +48,7 @@ import {
   isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
-} from './validateDocument';
+} from '@src/utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 
@@ -879,7 +879,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           try {
             const {
               registerDeviceToken,
-            } = require('../../utils/notifications/notificationService');
+            } = require('@src/utils/notifications/notificationService');
             const isMockPassport = passportData?.mock;
             trackEvent(ProofEvents.DEVICE_TOKEN_REG_STARTED);
             await registerDeviceToken(uuid, fcmToken, isMockPassport);

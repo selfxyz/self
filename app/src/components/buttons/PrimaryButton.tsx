@@ -2,10 +2,10 @@
 
 import React from 'react';
 
-import { amber50, black, slate300, white } from '../../utils/colors';
-import { normalizeBorderWidth } from '../../utils/styleUtils';
-import type { ButtonProps } from './AbstractButton';
-import AbstractButton from './AbstractButton';
+import type { ButtonProps } from '@src/components/buttons/AbstractButton';
+import AbstractButton from '@src/components/buttons/AbstractButton';
+import { amber50, black, slate300, white } from '@src/utils/colors';
+import { normalizeBorderWidth } from '@src/utils/styleUtils';
 
 export function PrimaryButton({ children, ...props }: ButtonProps) {
   const { borderWidth, ...restProps } = props;
