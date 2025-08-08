@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "analyze:bundle:android": "node ./scripts/bundle-analyze-ci.cjs android",
-    "analyze:bundle:ios": "node ./scripts/bundle-analyze-ci.cjs ios",
+    "analyze:bundle:android": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs android",
+    "analyze:bundle:ios": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs ios",
     "analyze:tree-shaking": "node ./scripts/analyze-tree-shaking.cjs imports",
     "analyze:tree-shaking:web": "yarn web:build && node ./scripts/analyze-tree-shaking.cjs web",
     "android": "yarn build:deps && react-native run-android",
