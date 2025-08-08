@@ -4,9 +4,8 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from 'tamagui';
 
-import { NavBar } from '@src/components/NavBar/BaseNavBar';
-
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
+import { NavBar } from '@src/components/NavBar/BaseNavBar';
 import ActivityIcon from '@src/images/icons/activity.svg';
 import SettingsIcon from '@src/images/icons/settings.svg';
 import { black, neutral400, white } from '@src/utils/colors';

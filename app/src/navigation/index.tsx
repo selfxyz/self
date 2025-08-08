@@ -5,15 +5,6 @@ import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Text } from 'tamagui';
 
-import { getAesopScreens } from '@src/navigation/aesop';
-import devScreens from '@src/navigation/dev';
-import homeScreens from '@src/navigation/home';
-import miscScreens from '@src/navigation/misc';
-import passportScreens from '@src/navigation/passport';
-import proveScreens from '@src/navigation/prove';
-import recoveryScreens from '@src/navigation/recovery';
-import settingsScreens from '@src/navigation/settings';
-
 import type { StaticParamList } from '@react-navigation/native';
 import {
   createNavigationContainerRef,
@@ -22,6 +13,14 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DefaultNavBar } from '@src/components/NavBar';
 import AppLayout from '@src/layouts/AppLayout';
+import { getAesopScreens } from '@src/navigation/aesop';
+import devScreens from '@src/navigation/dev';
+import homeScreens from '@src/navigation/home';
+import miscScreens from '@src/navigation/misc';
+import passportScreens from '@src/navigation/passport';
+import proveScreens from '@src/navigation/prove';
+import recoveryScreens from '@src/navigation/recovery';
+import settingsScreens from '@src/navigation/settings';
 import analytics from '@src/utils/analytics';
 import { white } from '@src/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '@src/utils/deeplinks';

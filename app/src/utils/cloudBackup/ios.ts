@@ -2,14 +2,13 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
+import type { Mnemonic } from '@src/types/mnemonic';
 import {
   ENCRYPTED_FILE_PATH,
   FOLDER,
   parseMnemonic,
   withRetries,
 } from '@src/utils/cloudBackup/helpers';
-
-import type { Mnemonic } from '@src/types/mnemonic';
 
 export async function disableBackup() {
   await withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));

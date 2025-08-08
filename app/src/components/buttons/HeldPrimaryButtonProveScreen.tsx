@@ -5,7 +5,6 @@ import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
 
 import { HeldPrimaryButton } from '@src/components/buttons/PrimaryButtonLongHold';
-
 import Description from '@src/components/typography/Description';
 import { ProofEvents } from '@src/consts/analytics';
 import { black } from '@src/utils/colors';

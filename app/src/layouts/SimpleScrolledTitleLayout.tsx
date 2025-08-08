@@ -5,11 +5,10 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
 
-import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
-
 import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
 import { Title } from '@src/components/typography/Title';
+import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
 import { white } from '@src/utils/colors';
 
 interface DetailListProps

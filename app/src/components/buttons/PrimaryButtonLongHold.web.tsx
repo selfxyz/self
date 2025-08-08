@@ -7,7 +7,10 @@ import { AnimatePresence, YStack } from 'tamagui';
 
 import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
 import type { HeldPrimaryButtonProps } from '@src/components/buttons/PrimaryButtonLongHold.shared';
-import { ACTION_TIMER, COLORS } from '@src/components/buttons/PrimaryButtonLongHold.shared';
+import {
+  ACTION_TIMER,
+  COLORS,
+} from '@src/components/buttons/PrimaryButtonLongHold.shared';
 
 export function HeldPrimaryButton({
   children,

@@ -5,7 +5,6 @@ import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native';
 import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
 
 import { RCTFragment } from '@src/components/native/RCTFragment';
-
 import { extractMRZInfo } from '@src/utils/utils';
 
 interface NativePassportOCRViewProps {

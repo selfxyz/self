@@ -389,6 +389,7 @@ describe('alias-imports transform', () => {
 
     const indexFile = project.getSourceFileOrThrow(index);
     const importDecl = indexFile.getImportDeclarations()[0];
+    // Same-directory imports are migrated to @src/<relative-from-src>/<file>
     assert.strictEqual(
       importDecl.getModuleSpecifierValue(),
       '@src/utils/haptic/trigger',

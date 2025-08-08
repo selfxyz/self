@@ -2,6 +2,7 @@
 
 import { PermissionsAndroid, Platform } from 'react-native';
 
+import messaging from '@react-native-firebase/messaging';
 import type {
   DeviceTokenRegistration,
   RemoteMessage,
@@ -11,8 +12,6 @@ import {
   API_URL_STAGING,
   getStateMessage,
 } from '@src/utils/notifications/notificationService.shared';
-
-import messaging from '@react-native-firebase/messaging';
 
 export async function getFCMToken(): Promise<string | null> {
   try {

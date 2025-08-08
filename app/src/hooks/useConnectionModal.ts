@@ -3,10 +3,9 @@
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
+import { SettingsEvents } from '@src/consts/analytics';
 import { useModal } from '@src/hooks/useModal';
 import { useNetInfo } from '@src/hooks/useNetInfo';
-
-import { SettingsEvents } from '@src/consts/analytics';
 import { navigationRef } from '@src/navigation';
 import { useSettingStore } from '@src/stores/settingStore';
 import analytics from '@src/utils/analytics';

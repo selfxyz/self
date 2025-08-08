@@ -4,8 +4,6 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
-import { styles } from '@src/screens/prove/ProofRequestStatusScreen';
-
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 import successAnimation from '@src/assets/animations/loading/success.json';
@@ -15,6 +13,7 @@ import { Title } from '@src/components/typography/Title';
 import { PassportEvents, ProofEvents } from '@src/consts/analytics';
 import useHapticNavigation from '@src/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
+import { styles } from '@src/screens/prove/ProofRequestStatusScreen';
 import analytics from '@src/utils/analytics';
 import { black, white } from '@src/utils/colors';
 import { notificationSuccess } from '@src/utils/haptic';

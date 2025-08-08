@@ -3,7 +3,6 @@
 import { styled } from 'tamagui';
 
 import { BodyText } from '@src/components/typography/BodyText';
-
 import { slate400 } from '@src/utils/colors';
 
 export const Caption = styled(BodyText, {

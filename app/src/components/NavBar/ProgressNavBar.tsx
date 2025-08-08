@@ -5,12 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { TextStyle, ViewStyle } from 'tamagui';
 import { XStack, YStack } from 'tamagui';
 
-import { NavBar } from '@src/components/NavBar/BaseNavBar';
-
 import type {
   NativeStackHeaderProps,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
+import { NavBar } from '@src/components/NavBar/BaseNavBar';
 import { cyan300, slate200, white } from '@src/utils/colors';
 import { buttonTap } from '@src/utils/haptic';
 

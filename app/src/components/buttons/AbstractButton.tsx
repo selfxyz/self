@@ -7,7 +7,6 @@ import type { ViewProps } from 'tamagui';
 import { Button, Text } from 'tamagui';
 
 import { pressedStyle } from '@src/components/buttons/pressedStyle';
-
 import { shouldShowAesopRedesign } from '@src/hooks/useAesopRedesign';
 import analytics from '@src/utils/analytics';
 import { dinot } from '@src/utils/fonts';

@@ -2,6 +2,31 @@
 const path = require('node:path');
 const { Project, SyntaxKind } = require('ts-morph');
 
+function determineAliasStrategy(dir, abs, baseDir, baseAlias) {
+  // Always use base alias with path relative to baseDir (no special '@/' handling)
+  const rel = path.relative(baseDir, abs).replace(/\\/g, '/');
+  return rel ? `${baseAlias}/${rel}` : baseAlias;
+}
+
+function optimizeExistingSrcImport(spec) {
+  // Convert @src/path/to/file to @/file if it's a same-directory import
+  // This migration no longer shortens to '@/' because tooling can't resolve contextual '@/'
+  if (!spec.startsWith('@src/')) return spec;
+  return spec;
+}
+
+// Migrate legacy '@/File' (same-directory shorthand) to '@src/<relative-from-src>/<File>'
+function migrateAtShorthand(spec, dir, srcDir) {
+  if (!spec.startsWith('@/')) return spec;
+  const fileBase = spec.slice(2); // remove '@/'
+  // Compute path relative to src for the current directory, then append the fileBase
+  const relFromSrcToCurrentDir = path.relative(srcDir, dir).replace(/\\/g, '/');
+  const finalPath = relFromSrcToCurrentDir
+    ? `@src/${relFromSrcToCurrentDir}/${fileBase}`
+    : `@src/${fileBase}`;
+  return finalPath;
+}
+
 function transformProjectToAliasImports(project, appRootPath) {
   const srcDir = path.join(appRootPath, 'src');
   const testsDir = path.join(appRootPath, 'tests', 'src');
@@ -13,6 +38,26 @@ function transformProjectToAliasImports(project, appRootPath) {
     // Handle import declarations
     for (const declaration of sourceFile.getImportDeclarations()) {
       const spec = declaration.getModuleSpecifierValue();
+
+      // Handle existing @src/ imports - keep as-is (no '@/' optimization)
+      if (spec.startsWith('@src/')) {
+        const optimized = optimizeExistingSrcImport(spec, dir, srcDir);
+        if (optimized !== spec) {
+          declaration.setModuleSpecifier(optimized);
+        }
+        continue;
+      }
+
+      // Handle legacy '@/File' shorthand and migrate it
+      if (spec.startsWith('@/')) {
+        const migrated = migrateAtShorthand(spec, dir, srcDir);
+        if (migrated !== spec) {
+          declaration.setModuleSpecifier(migrated);
+        }
+        continue;
+      }
+
+      // Handle relative imports
       if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
       const abs = path.resolve(dir, spec);
       let baseDir = null;
@@ -33,16 +78,35 @@ function transformProjectToAliasImports(project, appRootPath) {
         }
       }
 
-      const rel = path.relative(baseDir, abs).replace(/\\/g, '/');
-      const newSpec = rel ? `${baseAlias}/${rel}` : baseAlias;
+      const newSpec = determineAliasStrategy(dir, abs, baseDir, baseAlias);
       declaration.setModuleSpecifier(newSpec);
     }
 
     // Handle export declarations like: export * from '../x' or export {A} from '../x'
     for (const declaration of sourceFile.getExportDeclarations()) {
       const spec = declaration.getModuleSpecifierValue();
-      if (!spec || (!spec.startsWith('./') && !spec.startsWith('../')))
+      if (!spec) continue;
+
+      // Handle existing @src/ exports - keep as-is
+      if (spec.startsWith('@src/')) {
+        const optimized = optimizeExistingSrcImport(spec, dir, srcDir);
+        if (optimized !== spec) {
+          declaration.setModuleSpecifier(optimized);
+        }
         continue;
+      }
+
+      // Handle legacy '@/File' shorthand and migrate it
+      if (spec.startsWith('@/')) {
+        const migrated = migrateAtShorthand(spec, dir, srcDir);
+        if (migrated !== spec) {
+          declaration.setModuleSpecifier(migrated);
+        }
+        continue;
+      }
+
+      // Handle relative exports
+      if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
       const abs = path.resolve(dir, spec);
       let baseDir = null;
       let baseAlias = null;
@@ -61,8 +125,7 @@ function transformProjectToAliasImports(project, appRootPath) {
         }
       }
 
-      const rel = path.relative(baseDir, abs).replace(/\\/g, '/');
-      const newSpec = rel ? `${baseAlias}/${rel}` : baseAlias;
+      const newSpec = determineAliasStrategy(dir, abs, baseDir, baseAlias);
       declaration.setModuleSpecifier(newSpec);
     }
 
@@ -88,6 +151,26 @@ function transformProjectToAliasImports(project, appRootPath) {
       if (arg.getKind() !== SyntaxKind.StringLiteral) continue;
 
       const spec = arg.getLiteralValue();
+
+      // Handle existing @src/ requires - keep as-is
+      if (spec.startsWith('@src/')) {
+        const optimized = optimizeExistingSrcImport(spec, dir, srcDir);
+        if (optimized !== spec) {
+          arg.setLiteralValue(optimized);
+        }
+        continue;
+      }
+
+      // Handle legacy '@/File' shorthand and migrate it
+      if (spec.startsWith('@/')) {
+        const migrated = migrateAtShorthand(spec, dir, srcDir);
+        if (migrated !== spec) {
+          arg.setLiteralValue(migrated);
+        }
+        continue;
+      }
+
+      // Handle relative requires
       if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
 
       const abs = path.resolve(dir, spec);
@@ -109,8 +192,7 @@ function transformProjectToAliasImports(project, appRootPath) {
         }
       }
 
-      const rel = path.relative(baseDir, abs).replace(/\\/g, '/');
-      const newSpec = rel ? `${baseAlias}/${rel}` : baseAlias;
+      const newSpec = determineAliasStrategy(dir, abs, baseDir, baseAlias);
       arg.setLiteralValue(newSpec);
     }
   }

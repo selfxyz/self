@@ -2,7 +2,11 @@
 
 import SQLite from 'react-native-sqlite-storage';
 
-import type { ProofDB, ProofDBResult, ProofHistory } from '@src/stores/proof-types';
+import type {
+  ProofDB,
+  ProofDBResult,
+  ProofHistory,
+} from '@src/stores/proof-types';
 import { ProofStatus } from '@src/stores/proof-types';
 
 const PAGE_SIZE = 20;
