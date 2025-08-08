@@ -38,12 +38,12 @@ OTHER=""
 while IFS= read -r line; do
     HASH=$(echo "$line" | cut -d' ' -f1)
     MESSAGE=$(echo "$line" | cut -d' ' -f2-)
-    
+
     # Skip merge commits
     if [[ "$MESSAGE" =~ ^Merge ]]; then
         continue
     fi
-    
+
     # Categorize commits
     if [[ "$MESSAGE" =~ ^feat ]]; then
         FEATURES="${FEATURES}- ${MESSAGE}\n"
