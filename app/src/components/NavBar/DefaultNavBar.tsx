@@ -4,7 +4,7 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { TextStyle, ViewStyle } from 'tamagui';
 
-import { NavBar } from './BaseNavBar';
+import { NavBar } from '@src/components/NavBar/BaseNavBar';
 
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { white } from '@src/utils/colors';

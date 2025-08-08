@@ -2,7 +2,7 @@
 
 import { styled } from 'tamagui';
 
-import { BodyText } from './BodyText';
+import { BodyText } from '@src/components/typography/BodyText';
 
 import { slate400 } from '@src/utils/colors';
 

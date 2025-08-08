@@ -4,7 +4,7 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
-import { styles } from './ProofRequestStatusScreen';
+import { styles } from '@src/screens/prove/ProofRequestStatusScreen';
 
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';

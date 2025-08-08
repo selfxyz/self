@@ -3,8 +3,8 @@
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { useModal } from './useModal';
-import { useNetInfo } from './useNetInfo';
+import { useModal } from '@src/hooks/useModal';
+import { useNetInfo } from '@src/hooks/useNetInfo';
 
 import { SettingsEvents } from '@src/consts/analytics';
 import { navigationRef } from '@src/navigation';

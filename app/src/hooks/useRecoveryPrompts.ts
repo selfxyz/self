@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-import { useModal } from './useModal';
+import { useModal } from '@src/hooks/useModal';
 
 import { navigationRef } from '@src/navigation';
 import { usePassport } from '@src/providers/passportDataProvider';

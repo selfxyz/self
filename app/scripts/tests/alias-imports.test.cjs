@@ -363,4 +363,35 @@ describe('alias-imports transform', () => {
     assert.ok(text.includes("jest.doMock('@src/utils/mod2')"));
     assert.ok(text.includes("jest.unmock('@src/utils/mod2')"));
   });
+
+  it('aliases relative imports starting with ./', () => {
+    const appRoot = tempRoot;
+    const srcDir = path.join(appRoot, 'src');
+    const utils = path.join(srcDir, 'utils', 'haptic', 'trigger.ts');
+    const index = path.join(srcDir, 'utils', 'haptic', 'index.ts');
+
+    writeFileEnsured(utils, 'export const triggerFeedback = () => {};\n');
+    writeFileEnsured(
+      index,
+      "import { triggerFeedback } from './trigger';\nexport { triggerFeedback };\n",
+    );
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.ESNext,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const indexFile = project.getSourceFileOrThrow(index);
+    const importDecl = indexFile.getImportDeclarations()[0];
+    assert.strictEqual(
+      importDecl.getModuleSpecifierValue(),
+      '@src/utils/haptic/trigger',
+    );
+  });
 });

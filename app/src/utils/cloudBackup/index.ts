@@ -3,9 +3,9 @@
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import { createGDrive } from './google';
-import { FILE_NAME, parseMnemonic, withRetries } from './helpers';
-import * as ios from './ios';
+import { createGDrive } from '@src/utils/cloudBackup/google';
+import { FILE_NAME, parseMnemonic, withRetries } from '@src/utils/cloudBackup/helpers';
+import * as ios from '@src/utils/cloudBackup/ios';
 
 import {
   APP_DATA_FOLDER_ID,

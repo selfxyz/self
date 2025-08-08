@@ -15,12 +15,12 @@ import {
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
 
-import { getPublicKey, verifyAttestation } from './attest';
+import { getPublicKey, verifyAttestation } from '@src/utils/proving/attest';
 import {
   generateTEEInputsDisclose,
   generateTEEInputsDSC,
   generateTEEInputsRegister,
-} from './provingInputs';
+} from '@src/utils/proving/provingInputs';
 import {
   clientKey,
   clientPublicKeyHex,
@@ -28,7 +28,7 @@ import {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from './provingUtils';
+} from '@src/utils/proving/provingUtils';
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
@@ -36,7 +36,7 @@ import {
   isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
-} from './validateDocument';
+} from '@src/utils/proving/validateDocument';
 
 import { PassportEvents, ProofEvents } from '@src/consts/analytics';
 import { navigationRef } from '@src/navigation';

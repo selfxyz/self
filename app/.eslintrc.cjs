@@ -29,6 +29,7 @@ module.exports = {
     '*.d.ts',
     'metro.config.cjs',
     'docs/examples/',
+    'tests/e2e/',
   ],
   settings: {
     react: { version: 'detect' },

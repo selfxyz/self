@@ -5,14 +5,14 @@ import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Text } from 'tamagui';
 
-import { getAesopScreens } from './aesop';
-import devScreens from './dev';
-import homeScreens from './home';
-import miscScreens from './misc';
-import passportScreens from './passport';
-import proveScreens from './prove';
-import recoveryScreens from './recovery';
-import settingsScreens from './settings';
+import { getAesopScreens } from '@src/navigation/aesop';
+import devScreens from '@src/navigation/dev';
+import homeScreens from '@src/navigation/home';
+import miscScreens from '@src/navigation/misc';
+import passportScreens from '@src/navigation/passport';
+import proveScreens from '@src/navigation/prove';
+import recoveryScreens from '@src/navigation/recovery';
+import settingsScreens from '@src/navigation/settings';
 
 import type { StaticParamList } from '@react-navigation/native';
 import {

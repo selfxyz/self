@@ -13,7 +13,7 @@ function transformProjectToAliasImports(project, appRootPath) {
     // Handle import declarations
     for (const declaration of sourceFile.getImportDeclarations()) {
       const spec = declaration.getModuleSpecifierValue();
-      if (!spec.startsWith('../')) continue;
+      if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
       const abs = path.resolve(dir, spec);
       let baseDir = null;
       let baseAlias = null;
@@ -41,7 +41,8 @@ function transformProjectToAliasImports(project, appRootPath) {
     // Handle export declarations like: export * from '../x' or export {A} from '../x'
     for (const declaration of sourceFile.getExportDeclarations()) {
       const spec = declaration.getModuleSpecifierValue();
-      if (!spec || !spec.startsWith('../')) continue;
+      if (!spec || (!spec.startsWith('./') && !spec.startsWith('../')))
+        continue;
       const abs = path.resolve(dir, spec);
       let baseDir = null;
       let baseAlias = null;
@@ -87,7 +88,7 @@ function transformProjectToAliasImports(project, appRootPath) {
       if (arg.getKind() !== SyntaxKind.StringLiteral) continue;
 
       const spec = arg.getLiteralValue();
-      if (!spec.startsWith('../')) continue;
+      if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
 
       const abs = path.resolve(dir, spec);
       let baseDir = null;

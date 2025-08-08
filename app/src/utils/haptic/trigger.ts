@@ -3,8 +3,8 @@
 import { Platform, Vibration } from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
-import type { HapticOptions, HapticType } from './shared';
-import { defaultOptions } from './shared';
+import type { HapticOptions, HapticType } from '@src/utils/haptic/shared';
+import { defaultOptions } from '@src/utils/haptic/shared';
 /**
  * Triggers haptic feedback or vibration based on platform.
  * @param type - The haptic feedback type.

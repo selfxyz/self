@@ -3,7 +3,7 @@
 import React from 'react';
 import { Text, View } from 'tamagui';
 
-import { Caption } from './typography/Caption';
+import { Caption } from '@src/components/typography/Caption';
 
 import { slate500 } from '@src/utils/colors';
 

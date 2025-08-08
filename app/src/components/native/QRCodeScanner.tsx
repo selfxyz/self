@@ -4,7 +4,7 @@ import React, { useCallback } from 'react';
 import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native';
 import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
 
-import { RCTFragment } from './RCTFragment';
+import { RCTFragment } from '@src/components/native/RCTFragment';
 
 interface NativeQRCodeScannerViewProps {
   onQRData: (event: NativeSyntheticEvent<{ data: string }>) => void;

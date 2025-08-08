@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { TextStyle, ViewStyle } from 'tamagui';
 import { XStack, YStack } from 'tamagui';
 
-import { NavBar } from './BaseNavBar';
+import { NavBar } from '@src/components/NavBar/BaseNavBar';
 
 import type {
   NativeStackHeaderProps,

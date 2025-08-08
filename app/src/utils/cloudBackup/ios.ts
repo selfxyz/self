@@ -7,7 +7,7 @@ import {
   FOLDER,
   parseMnemonic,
   withRetries,
-} from './helpers';
+} from '@src/utils/cloudBackup/helpers';
 
 import type { Mnemonic } from '@src/types/mnemonic';
 

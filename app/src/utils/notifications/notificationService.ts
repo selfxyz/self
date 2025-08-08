@@ -5,12 +5,12 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import type {
   DeviceTokenRegistration,
   RemoteMessage,
-} from './notificationService.shared';
+} from '@src/utils/notifications/notificationService.shared';
 import {
   API_URL,
   API_URL_STAGING,
   getStateMessage,
-} from './notificationService.shared';
+} from '@src/utils/notifications/notificationService.shared';
 
 import messaging from '@react-native-firebase/messaging';
 
