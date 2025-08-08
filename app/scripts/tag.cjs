@@ -110,7 +110,7 @@ function main() {
       break;
 
     default:
-      console.log('Usage: node tag.js [commit|create|push|remove|release]');
+      console.log('Usage: node tag.cjs [commit|create|push|remove|release]');
       process.exit(1);
   }
 }
