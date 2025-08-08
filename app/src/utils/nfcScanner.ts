@@ -38,7 +38,7 @@ interface Inputs {
 
 export const parseScanResponse = (response: unknown) => {
   return Platform.OS === 'android'
-    ? handleResponseAndroid(response as unknown as AndroidScanResponse)
+    ? handleResponseAndroid(response as AndroidScanResponse)
     : handleResponseIOS(response);
 };
 

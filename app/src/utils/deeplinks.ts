@@ -23,6 +23,15 @@ type ValidatedParams = {
   mock_passport?: string;
 };
 
+// Define proper types for the mock data structure
+type MockDataDeepLinkRawParams = {
+  name?: string;
+  surname?: string;
+  nationality?: string;
+  birth_date?: string;
+  gender?: string;
+};
+
 /**
  * Validates and sanitizes a query parameter value
  * @param key - The parameter key
@@ -86,13 +95,6 @@ export const handleUrl = (uri: string) => {
   } else if (mock_passport) {
     try {
       const data = JSON.parse(mock_passport);
-      type MockDataDeepLinkRawParams = {
-        name?: string;
-        surname?: string;
-        nationality?: string;
-        birth_date?: string;
-        gender?: string;
-      };
       const rawParams = data as MockDataDeepLinkRawParams;
 
       // Validate nationality is a valid country code
@@ -101,7 +103,9 @@ export const handleUrl = (uri: string) => {
       ): code is IdDocInput['nationality'] => {
         if (!code) return false;
         // Check if the code exists as a value in the countries object
-        return (Object.values(countries) as string[]).includes(code);
+        return Object.values(countries).some(
+          countryCode => countryCode === code,
+        );
       };
 
       useUserStore.getState().setDeepLinkUserDetails({
