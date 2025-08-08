@@ -2,36 +2,47 @@
   "name": "@selfxyz/sdk-alpha",
   "version": "0.0.1",
   "description": "Self SDK (alpha) for registering and proving. Adapters-first, RN-first with web shims.",
-  "type": "module",
+  "keywords": [
+    "self",
+    "react-native",
+    "web",
+    "zk",
+    "sdk"
+  ],
   "sideEffects": false,
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
-      "react-native": "./dist/index.js",
-      "browser": "./dist/index.js",
-      "default": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
     }
   },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --dts --format esm --clean --out-dir dist",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "validate:exports": "node ./scripts/validate-exports.mjs",
-    "validate:pkg": "node ./scripts/verify-conditions.mjs",
-    "report:exports": "node ./scripts/report-exports.mjs",
-    "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "build": "tsup src/index.ts --dts --format esm,cjs --clean --out-dir dist",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
-    "nice": "yarn lint:fix && yarn fmt:fix",
     "format": "yarn nice",
-    "test": "vitest run"
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "nice": "yarn lint:fix && yarn fmt:fix",
+    "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
+    "report:exports": "node ./scripts/report-exports.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "types": "tsc -p tsconfig.json --noEmit",
+    "validate:exports": "node ./scripts/validate-exports.mjs",
+    "validate:pkg": "node ./scripts/verify-conditions.mjs"
+  },
+  "dependencies": {
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.18.0",
@@ -44,17 +55,7 @@
     "typescript": "^5.5.4",
     "vitest": "^1.6.0"
   },
-  "dependencies": {
-    "tslib": "^2.6.2"
-  },
   "publishConfig": {
     "access": "public"
-  },
-  "keywords": [
-    "self",
-    "react-native",
-    "web",
-    "zk",
-    "sdk"
-  ]
+  }
 }

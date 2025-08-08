@@ -9,21 +9,32 @@ Alpha SDK for registering and proving. Adapters-first, React Native-first with w
 - Do not auto-start servers in dev flows; document commands only.
 
 ## Minimal API
+
 - `createSelfClient({ config, adapters })`
 - `scanDocument(opts)`, `validateDocument(input)`, `checkRegistration(input)`, `generateProof(req, { signal, onProgress, timeoutMs })`
 - Eventing: `on(event, cb)`
 - Web shim: `webScannerShim` (QR stub only)
 
 ## Quick start (local, monorepo)
+
 ```ts
-import { createSelfClient, webScannerShim, extractMRZInfo } from "@selfxyz/sdk-alpha";
-const sdk = createSelfClient({ config: {}, adapters: { scanner: webScannerShim } });
+import {
+  createSelfClient,
+  webScannerShim,
+  extractMRZInfo,
+} from '@selfxyz/sdk-alpha';
+const sdk = createSelfClient({
+  config: {},
+  adapters: { scanner: webScannerShim },
+});
 ```
 
 ## Migration checklist
+
 Track progress in [MIGRATION_CHECKLIST.md](./MIGRATION_CHECKLIST.md).
 
 ## Dev scripts
+
 - `npm run validate:exports` — ensure named exports only.
 - `npm run validate:pkg` — check packaging and export conditions.
 - `npm run report:exports` — output current public symbols.
