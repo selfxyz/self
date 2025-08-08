@@ -16,8 +16,8 @@ jest.mock('../../../src/Sentry', () => ({
 }));
 
 // Import after mocks are set up
-const ErrorBoundary = require('../../../src/components/ErrorBoundary').default;
-const { captureException } = require('../../../src/Sentry');
+const ErrorBoundary = require('@src/components/ErrorBoundary').default;
+const { captureException } = require('@src/Sentry');
 
 const ProblemChild = () => {
   throw new Error('boom');

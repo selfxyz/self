@@ -2,8 +2,8 @@
 
 import SQLite from 'react-native-sqlite-storage';
 
-import { database } from '../../../src/stores/database';
-import { ProofStatus } from '../../../src/stores/proof-types';
+import { database } from '@src/stores/database';
+import { ProofStatus } from '@src/stores/proof-types';
 
 // Mock react-native-sqlite-storage
 jest.mock('react-native-sqlite-storage', () => ({

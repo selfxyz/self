@@ -2,7 +2,7 @@
 
 describe('navigation', () => {
   it('should have the correct navigation screens', () => {
-    const navigationScreens = require('../../src/navigation').navigationScreens;
+    const navigationScreens = require('@src/navigation').navigationScreens;
     const listOfScreens = Object.keys(navigationScreens).sort();
     expect(listOfScreens).toEqual([
       'AccountRecovery',
@@ -51,8 +51,7 @@ describe('navigation', () => {
     });
 
     it('should use regular passport screens when shouldShowAesopRedesign is false', () => {
-      const navigationScreens =
-        require('../../src/navigation').navigationScreens;
+      const navigationScreens = require('@src/navigation').navigationScreens;
       expect(
         navigationScreens.PassportOnboarding.options.title,
       ).toBeUndefined();
@@ -63,8 +62,7 @@ describe('navigation', () => {
         shouldShowAesopRedesign: jest.fn().mockReturnValue(true),
       }));
 
-      const navigationScreens =
-        require('../../src/navigation').navigationScreens;
+      const navigationScreens = require('@src/navigation').navigationScreens;
       expect(navigationScreens.PassportOnboarding.options.title).toBeDefined();
     });
   });

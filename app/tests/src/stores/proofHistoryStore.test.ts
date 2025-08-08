@@ -2,10 +2,9 @@
 
 import { io } from 'socket.io-client';
 
-import { database } from '../../../src/stores/database';
-import { ProofStatus } from '../../../src/stores/proof-types';
-import { useProofHistoryStore } from '../../../src/stores/proofHistoryStore';
-
+import { database } from '@src/stores/database';
+import { ProofStatus } from '@src/stores/proof-types';
+import { useProofHistoryStore } from '@src/stores/proofHistoryStore';
 import { act } from '@testing-library/react-native';
 
 // Mock socket.io-client

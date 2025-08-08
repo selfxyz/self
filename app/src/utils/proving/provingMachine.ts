@@ -880,7 +880,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           try {
             const {
               registerDeviceToken,
-            } = require('../../utils/notifications/notificationService');
+            } = require('@src/utils/notifications/notificationService');
             const isMockPassport = passportData?.mock;
             trackEvent(ProofEvents.DEVICE_TOKEN_REG_STARTED);
             await registerDeviceToken(uuid, fcmToken, isMockPassport);

@@ -28,7 +28,7 @@ describe('notificationService', () => {
       ._instance;
     messagingMock.requestPermission.mockReset();
     messagingMock.getToken.mockReset();
-    service = require('../../src/utils/notifications/notificationService');
+    service = require('@src/utils/notifications/notificationService');
     (fetch as jest.Mock).mockResolvedValue({ ok: true, text: jest.fn() });
     messagingMock.requestPermission.mockResolvedValue(1);
     messagingMock.getToken.mockResolvedValue('token');
