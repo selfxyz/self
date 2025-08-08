@@ -10,9 +10,9 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import SplashScreen from '@src/screens/misc/SplashScreen';
 import { black } from '@src/utils/colors';
 
-const LaunchScreen = lazy(() => import('../screens/misc/LaunchScreen'));
-const LoadingScreen = lazy(() => import('../screens/misc/LoadingScreen'));
-const ModalScreen = lazy(() => import('../screens/misc/ModalScreen'));
+const LaunchScreen = lazy(() => import('@src/screens/misc/LaunchScreen'));
+const LoadingScreen = lazy(() => import('@src/screens/misc/LoadingScreen'));
+const ModalScreen = lazy(() => import('@src/screens/misc/ModalScreen'));
 
 const miscScreens = {
   Launch: {

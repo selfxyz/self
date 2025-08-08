@@ -10,8 +10,8 @@ const mockAnalytics = jest.fn(() => ({
   flush: mockFlush,
 }));
 
-jest.doMock('../../../src/utils/analytics', () => mockAnalytics);
-jest.mock('../../../src/Sentry', () => ({
+jest.doMock('@src/utils/analytics', () => mockAnalytics);
+jest.mock('@src/Sentry', () => ({
   captureException: jest.fn(),
 }));
 

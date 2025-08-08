@@ -4,7 +4,7 @@ import useMnemonic from '@src/hooks/useMnemonic';
 import { useAuth } from '@src/providers/authProvider';
 import { act, renderHook } from '@testing-library/react-native';
 
-jest.mock('../../../src/providers/authProvider', () => ({
+jest.mock('@src/providers/authProvider', () => ({
   useAuth: jest.fn(),
 }));
 

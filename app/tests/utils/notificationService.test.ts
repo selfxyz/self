@@ -2,7 +2,7 @@
 
 import { PermissionsAndroid, Platform } from 'react-native';
 
-jest.unmock('../../src/utils/notifications/notificationService');
+jest.unmock('@src/utils/notifications/notificationService');
 
 jest.mock('@react-native-firebase/messaging', () => {
   const instance = {

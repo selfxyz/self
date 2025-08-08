@@ -24,7 +24,7 @@ const mockAuthProvider = {
   _getSecurely: jest.fn(),
 };
 
-jest.mock('../../../src/providers/authProvider', () => ({
+jest.mock('@src/providers/authProvider', () => ({
   useAuth: () => mockAuthProvider,
 }));
 

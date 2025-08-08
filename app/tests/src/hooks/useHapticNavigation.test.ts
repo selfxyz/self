@@ -9,7 +9,7 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
-jest.mock('../../../src/utils/haptic', () => ({
+jest.mock('@src/utils/haptic', () => ({
   impactLight: jest.fn(),
   impactMedium: jest.fn(),
   selectionChange: jest.fn(),

@@ -5,7 +5,7 @@ import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 const PassportDataNotFound = lazy(
-  () => import('../screens/recovery/PassportDataNotFoundScreen'),
+  () => import('@src/screens/recovery/PassportDataNotFoundScreen'),
 );
 
 const recoveryScreens = {

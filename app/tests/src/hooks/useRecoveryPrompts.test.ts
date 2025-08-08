@@ -6,9 +6,9 @@ import { usePassport } from '@src/providers/passportDataProvider';
 import { useSettingStore } from '@src/stores/settingStore';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
-jest.mock('../../../src/hooks/useModal');
-jest.mock('../../../src/providers/passportDataProvider');
-jest.mock('../../../src/navigation', () => ({
+jest.mock('@src/hooks/useModal');
+jest.mock('@src/providers/passportDataProvider');
+jest.mock('@src/navigation', () => ({
   navigationRef: {
     isReady: jest.fn(() => true),
     navigate: jest.fn(),

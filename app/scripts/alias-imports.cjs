@@ -17,14 +17,47 @@ function transformProjectToAliasImports(project, appRootPath) {
       const abs = path.resolve(dir, spec);
       let baseDir = null;
       let baseAlias = null;
-      if (abs.startsWith(srcDir)) {
+
+      // Determine containment safely using path.relative to avoid startsWith false positives
+      const relFromSrc = path.relative(srcDir, abs);
+      if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
         baseDir = srcDir;
         baseAlias = '@src';
-      } else if (abs.startsWith(testsDir)) {
-        baseDir = testsDir;
-        baseAlias = '@tests';
       } else {
-        continue;
+        const relFromTests = path.relative(testsDir, abs);
+        if (!relFromTests.startsWith('..') && !path.isAbsolute(relFromTests)) {
+          baseDir = testsDir;
+          baseAlias = '@tests';
+        } else {
+          continue;
+        }
+      }
+
+      const rel = path.relative(baseDir, abs).replace(/\\/g, '/');
+      const newSpec = rel ? `${baseAlias}/${rel}` : baseAlias;
+      declaration.setModuleSpecifier(newSpec);
+    }
+
+    // Handle export declarations like: export * from '../x' or export {A} from '../x'
+    for (const declaration of sourceFile.getExportDeclarations()) {
+      const spec = declaration.getModuleSpecifierValue();
+      if (!spec || !spec.startsWith('../')) continue;
+      const abs = path.resolve(dir, spec);
+      let baseDir = null;
+      let baseAlias = null;
+
+      const relFromSrc = path.relative(srcDir, abs);
+      if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
+        baseDir = srcDir;
+        baseAlias = '@src';
+      } else {
+        const relFromTests = path.relative(testsDir, abs);
+        if (!relFromTests.startsWith('..') && !path.isAbsolute(relFromTests)) {
+          baseDir = testsDir;
+          baseAlias = '@tests';
+        } else {
+          continue;
+        }
       }
 
       const rel = path.relative(baseDir, abs).replace(/\\/g, '/');
@@ -38,7 +71,14 @@ function transformProjectToAliasImports(project, appRootPath) {
     );
     for (const call of requireCalls) {
       const expression = call.getExpression();
-      if (expression.getText() !== 'require') continue;
+      const exprText = expression.getText();
+      const isRequire = exprText === 'require';
+      const isDynamicImport = exprText === 'import';
+      const isJestMock =
+        exprText === 'jest.mock' ||
+        exprText === 'jest.doMock' ||
+        exprText === 'jest.unmock';
+      if (!isRequire && !isDynamicImport && !isJestMock) continue;
 
       const args = call.getArguments();
       if (args.length === 0) continue;
@@ -52,14 +92,20 @@ function transformProjectToAliasImports(project, appRootPath) {
       const abs = path.resolve(dir, spec);
       let baseDir = null;
       let baseAlias = null;
-      if (abs.startsWith(srcDir)) {
+
+      // Determine containment safely using path.relative to avoid startsWith false positives
+      const relFromSrc = path.relative(srcDir, abs);
+      if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
         baseDir = srcDir;
         baseAlias = '@src';
-      } else if (abs.startsWith(testsDir)) {
-        baseDir = testsDir;
-        baseAlias = '@tests';
       } else {
-        continue;
+        const relFromTests = path.relative(testsDir, abs);
+        if (!relFromTests.startsWith('..') && !path.isAbsolute(relFromTests)) {
+          baseDir = testsDir;
+          baseAlias = '@tests';
+        } else {
+          continue;
+        }
       }
 
       const rel = path.relative(baseDir, abs).replace(/\\/g, '/');

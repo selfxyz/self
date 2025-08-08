@@ -13,7 +13,7 @@ jest.mock('socket.io-client', () => ({
 }));
 
 // Mock database
-jest.mock('../../../src/stores/database', () => ({
+jest.mock('@src/stores/database', () => ({
   database: {
     init: jest.fn(),
     insertProof: jest.fn(),

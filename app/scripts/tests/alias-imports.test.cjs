@@ -165,4 +165,202 @@ describe('alias-imports transform', () => {
       runAliasImportsTransform({ appRoot, project, skipAddTests: true });
     });
   });
+
+  it("transforms deep relative TS import '../../../src/...' to @src alias from tests", () => {
+    const appRoot = tempRoot;
+    const srcDir = path.join(appRoot, 'src');
+    const testsSrcDir = path.join(appRoot, 'tests', 'src');
+    const fileHaptic = path.join(srcDir, 'utils', 'haptic.ts');
+    const deepSpecDir = path.join(testsSrcDir, 'deep');
+    const deepSpecFile = path.join(deepSpecDir, 'spec.ts');
+
+    writeFileEnsured(fileHaptic, 'export const h = 1;\n');
+    writeFileEnsured(
+      deepSpecFile,
+      "import { h } from '../../../src/utils/haptic';\nexport const v = h;\n",
+    );
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.ESNext,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(testsSrcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const specFile = project.getSourceFileOrThrow(deepSpecFile);
+    const imports = specFile.getImportDeclarations();
+    assert.strictEqual(imports.length, 1);
+    assert.strictEqual(
+      imports[0].getModuleSpecifierValue(),
+      '@src/utils/haptic',
+    );
+  });
+
+  it("transforms deep relative require '../../../src/...' to @src alias from tests", () => {
+    const appRoot = tempRoot;
+    const srcDir = path.join(appRoot, 'src');
+    const testsSrcDir = path.join(appRoot, 'tests', 'src');
+    const fileHaptic = path.join(srcDir, 'utils', 'haptic.ts');
+    const deepSpecDir = path.join(testsSrcDir, 'deep');
+    const deepSpecFile = path.join(deepSpecDir, 'req.ts');
+
+    writeFileEnsured(fileHaptic, 'module.exports = { h: 1 };\n');
+    writeFileEnsured(
+      deepSpecFile,
+      "const h = require('../../../src/utils/haptic');\nexport const v = h;\n",
+    );
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.CommonJS,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(testsSrcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const specFile = project.getSourceFileOrThrow(deepSpecFile);
+    assert.ok(specFile.getText().includes("require('@src/utils/haptic')"));
+  });
+
+  it('aliases export star re-exports with ../ from sibling directory', () => {
+    const appRoot = tempRoot;
+    const srcDir = path.join(appRoot, 'src');
+    const fileA = path.join(srcDir, 'utils', 'a.ts');
+    const fileIndex = path.join(srcDir, 'components', 'index.ts');
+
+    writeFileEnsured(fileA, 'export const A = 1;\n');
+    writeFileEnsured(fileIndex, "export * from '../utils/a';\n");
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.ESNext,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const indexFile = project.getSourceFileOrThrow(fileIndex);
+    const exportDecl = indexFile.getExportDeclarations()[0];
+    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@src/utils/a');
+  });
+
+  it('aliases export named re-exports with ../ from sibling directory', () => {
+    const appRoot = tempRoot;
+    const srcDir = path.join(appRoot, 'src');
+    const fileA = path.join(srcDir, 'utils', 'a.ts');
+    const fileIndex = path.join(srcDir, 'components', 'index.ts');
+
+    writeFileEnsured(fileA, 'export const A = 1;\n');
+    writeFileEnsured(fileIndex, "export { A as AA } from '../utils/a';\n");
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.ESNext,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const indexFile = project.getSourceFileOrThrow(fileIndex);
+    const exportDecl = indexFile.getExportDeclarations()[0];
+    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@src/utils/a');
+  });
+
+  it('aliases dynamic import() with relative specifier', () => {
+    const appRoot = tempRoot;
+    const srcDir = path.join(appRoot, 'src');
+    const utils = path.join(srcDir, 'utils', 'lazy.ts');
+    const feature = path.join(srcDir, 'feature', 'index.ts');
+
+    writeFileEnsured(utils, 'export const lazy = 1;\n');
+    writeFileEnsured(
+      feature,
+      "async function go(){ await import('../utils/lazy'); }\nexport { go };\n",
+    );
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.ESNext,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const featureFile = project.getSourceFileOrThrow(feature);
+    const text = featureFile.getText();
+    assert.ok(text.includes("import('@src/utils/lazy')"));
+  });
+
+  it('aliases jest.mock relative specifier', () => {
+    const appRoot = tempRoot;
+    const srcDir = path.join(appRoot, 'src');
+    const utils = path.join(srcDir, 'utils', 'mod.ts');
+    const feature = path.join(srcDir, 'feature', 'index.test.ts');
+
+    writeFileEnsured(utils, 'export const v = 1;\n');
+    writeFileEnsured(
+      feature,
+      "jest.mock('../utils/mod');\nimport { v } from '../utils/mod';\nexport const u = v;\n",
+    );
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.ESNext,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const featureFile = project.getSourceFileOrThrow(feature);
+    const text = featureFile.getText();
+    assert.ok(text.includes("jest.mock('@src/utils/mod')"));
+  });
+
+  it('aliases jest.doMock and jest.unmock relative specifiers', () => {
+    const appRoot = tempRoot;
+    const srcDir = path.join(appRoot, 'src');
+    const utils = path.join(srcDir, 'utils', 'mod2.ts');
+    const feature = path.join(srcDir, 'feature', 'index2.test.ts');
+
+    writeFileEnsured(utils, 'export const v = 2;\n');
+    writeFileEnsured(
+      feature,
+      "jest.doMock('../utils/mod2');\njest.unmock('../utils/mod2');\n",
+    );
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.ESNext,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const featureFile = project.getSourceFileOrThrow(feature);
+    const text = featureFile.getText();
+    assert.ok(text.includes("jest.doMock('@src/utils/mod2')"));
+    assert.ok(text.includes("jest.unmock('@src/utils/mod2')"));
+  });
 });

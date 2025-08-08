@@ -15,11 +15,11 @@ jest.mock('react-native-check-version', () => ({
   checkVersion: jest.fn(),
 }));
 
-jest.mock('../../../src/utils/modalCallbackRegistry', () => ({
+jest.mock('@src/utils/modalCallbackRegistry', () => ({
   registerModalCallbacks: jest.fn().mockReturnValue(1),
 }));
 
-jest.mock('../../../src/utils/analytics', () => () => ({
+jest.mock('@src/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
 

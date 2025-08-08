@@ -3,7 +3,7 @@
 import analytics from '@src/utils/analytics';
 
 // Mock the Segment client
-jest.mock('../../src/Segment', () => ({
+jest.mock('@src/Segment', () => ({
   createSegmentClient: jest.fn(() => ({
     track: jest.fn(),
     screen: jest.fn(),

@@ -234,7 +234,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
 export async function checkAndUpdateRegistrationStates(): Promise<void> {
   // Lazy import to avoid circular dependency
   const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
-    await import('../utils/proving/validateDocument');
+    await import('@src/utils/proving/validateDocument');
   return validateDocCheckAndUpdate();
 }
 

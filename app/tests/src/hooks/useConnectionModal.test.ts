@@ -6,11 +6,11 @@ import { act, renderHook } from '@testing-library/react-native';
 
 jest.useFakeTimers();
 
-jest.mock('../../../src/navigation', () => ({
+jest.mock('@src/navigation', () => ({
   navigationRef: { isReady: jest.fn(() => true), navigate: jest.fn() },
 }));
 
-jest.mock('../../../src/hooks/useModal');
+jest.mock('@src/hooks/useModal');
 jest.mock('@react-native-community/netinfo', () => ({
   useNetInfo: jest
     .fn()
@@ -60,7 +60,7 @@ describe('useConnectionModal', () => {
   });
 
   it('does not show modal when hideNetworkModal is true', () => {
-    jest.doMock('../../../src/stores/settingStore', () => ({
+    jest.doMock('@src/stores/settingStore', () => ({
       useSettingStore: jest.fn(() => true),
     }));
 

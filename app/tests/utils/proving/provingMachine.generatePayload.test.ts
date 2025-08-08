@@ -10,12 +10,12 @@ jest.mock('xstate', () => {
   return { ...actual, createActor: jest.fn(() => actorMock) };
 });
 
-jest.mock('../../../src/utils/analytics', () => () => ({
+jest.mock('@src/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
 
 // Mock the proving inputs to return predictable data
-jest.mock('../../../src/utils/proving/provingInputs', () => ({
+jest.mock('@src/utils/proving/provingInputs', () => ({
   generateTEEInputsRegister: jest.fn(() => ({
     inputs: { r: 1 },
     circuitName: 'reg',
@@ -37,10 +37,8 @@ jest.mock('../../../src/utils/proving/provingInputs', () => ({
 }));
 
 // Mock the proving utils
-jest.mock('../../../src/utils/proving/provingUtils', () => {
-  const actual = jest.requireActual(
-    '../../../src/utils/proving/provingUtils',
-  ) as any;
+jest.mock('@src/utils/proving/provingUtils', () => {
+  const actual = jest.requireActual('@src/utils/proving/provingUtils') as any;
   return {
     ...actual,
     getPayload: jest.fn(() => ({ mocked: true })),

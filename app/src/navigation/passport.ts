@@ -5,25 +5,25 @@ import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 const PassportCameraScreen = lazy(
-  () => import('../screens/passport/PassportCameraScreen'),
+  () => import('@src/screens/passport/PassportCameraScreen'),
 );
 const PassportCameraTrouble = lazy(
-  () => import('../screens/passport/PassportCameraTroubleScreen'),
+  () => import('@src/screens/passport/PassportCameraTroubleScreen'),
 );
 const PassportNFCScanScreen = lazy(
-  () => import('../screens/passport/PassportNFCScanScreen'),
+  () => import('@src/screens/passport/PassportNFCScanScreen'),
 );
 const PassportNFCTrouble = lazy(
-  () => import('../screens/passport/PassportNFCTroubleScreen'),
+  () => import('@src/screens/passport/PassportNFCTroubleScreen'),
 );
 const PassportOnboardingScreen = lazy(
-  () => import('../screens/passport/PassportOnboardingScreen'),
+  () => import('@src/screens/passport/PassportOnboardingScreen'),
 );
 const UnsupportedPassportScreen = lazy(
-  () => import('../screens/passport/UnsupportedPassportScreen'),
+  () => import('@src/screens/passport/UnsupportedPassportScreen'),
 );
 const NFCMethodSelectionScreen = lazy(
-  () => import('../screens/passport/NFCMethodSelectionScreen'),
+  () => import('@src/screens/passport/NFCMethodSelectionScreen'),
 );
 
 const passportScreens = {

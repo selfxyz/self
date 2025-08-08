@@ -8,7 +8,7 @@ import { shouldShowAesopRedesign } from '@src/hooks/useAesopRedesign';
 import { white } from '@src/utils/colors';
 
 const PassportOnboardingScreen = lazy(
-  () => import('../screens/aesop/PassportOnboardingScreen'),
+  () => import('@src/screens/aesop/PassportOnboardingScreen'),
 );
 
 const aesopScreens = {
