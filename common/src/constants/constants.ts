@@ -560,7 +560,7 @@ export const countryCodes = {
   ZWE: 'Zimbabwe',
 };
 
-export function getCountryCode(countryName: string): string | string {
+export function getCountryCode(countryName: string): string {
   const entries = Object.entries(countryCodes);
   const found = entries.find(([_, name]) => name.toLowerCase() === countryName.toLowerCase());
   return found ? found[0] : 'undefined';
