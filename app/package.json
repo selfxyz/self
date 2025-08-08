@@ -64,7 +64,7 @@
     "test:web-build": "jest tests/web-build-render.test.ts --testTimeout=180000",
     "types": "tsc --noEmit",
     "web": "vite",
-    "web:build": "vite build",
+    "web:build": "yarn build:deps && vite build",
     "web:preview": "vite preview"
   },
   "dependencies": {
