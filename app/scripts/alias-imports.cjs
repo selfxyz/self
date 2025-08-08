@@ -4,6 +4,7 @@ const { Project, SyntaxKind } = require('ts-morph');
 
 function transformProjectToAliasImports(project, appRootPath) {
   const srcDir = path.join(appRootPath, 'src');
+  const testsDir = path.join(appRootPath, 'tests', 'src');
 
   const sourceFiles = project.getSourceFiles();
   for (const sourceFile of sourceFiles) {
@@ -14,9 +15,20 @@ function transformProjectToAliasImports(project, appRootPath) {
       const spec = declaration.getModuleSpecifierValue();
       if (!spec.startsWith('../')) continue;
       const abs = path.resolve(dir, spec);
-      if (!abs.startsWith(srcDir)) continue;
-      const rel = path.relative(srcDir, abs).replace(/\\/g, '/');
-      const newSpec = rel ? `@src/${rel}` : '@src';
+      let baseDir = null;
+      let baseAlias = null;
+      if (abs.startsWith(srcDir)) {
+        baseDir = srcDir;
+        baseAlias = '@src';
+      } else if (abs.startsWith(testsDir)) {
+        baseDir = testsDir;
+        baseAlias = '@tests';
+      } else {
+        continue;
+      }
+
+      const rel = path.relative(baseDir, abs).replace(/\\/g, '/');
+      const newSpec = rel ? `${baseAlias}/${rel}` : baseAlias;
       declaration.setModuleSpecifier(newSpec);
     }
 
@@ -38,10 +50,20 @@ function transformProjectToAliasImports(project, appRootPath) {
       if (!spec.startsWith('../')) continue;
 
       const abs = path.resolve(dir, spec);
-      if (!abs.startsWith(srcDir)) continue;
+      let baseDir = null;
+      let baseAlias = null;
+      if (abs.startsWith(srcDir)) {
+        baseDir = srcDir;
+        baseAlias = '@src';
+      } else if (abs.startsWith(testsDir)) {
+        baseDir = testsDir;
+        baseAlias = '@tests';
+      } else {
+        continue;
+      }
 
-      const rel = path.relative(srcDir, abs).replace(/\\/g, '/');
-      const newSpec = rel ? `@src/${rel}` : '@src';
+      const rel = path.relative(baseDir, abs).replace(/\\/g, '/');
+      const newSpec = rel ? `${baseAlias}/${rel}` : baseAlias;
       arg.setLiteralValue(newSpec);
     }
   }

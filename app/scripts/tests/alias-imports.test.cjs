@@ -88,6 +88,38 @@ describe('alias-imports transform', () => {
     assert.ok(c.getText().includes("require('@src/utils/x')"));
   });
 
+  it('transforms relative TS import in tests to @tests alias', () => {
+    const appRoot = tempRoot;
+    const testsSrcDir = path.join(appRoot, 'tests', 'src');
+    const fileUtil = path.join(testsSrcDir, 'utils', 'helper.ts');
+    const fileSpec = path.join(testsSrcDir, 'specs', 'feature.spec.ts');
+
+    writeFileEnsured(fileUtil, 'export const helper = () => 42;\n');
+    writeFileEnsured(
+      fileSpec,
+      "import { helper } from '../utils/helper';\nexport const answer = helper();\n",
+    );
+
+    const project = new Project({
+      compilerOptions: {
+        target: ScriptTarget.ES2022,
+        module: ModuleKind.ESNext,
+        baseUrl: appRoot,
+      },
+    });
+    project.addSourceFilesAtPaths(path.join(testsSrcDir, '**/*.{ts,tsx}'));
+
+    transformProjectToAliasImports(project, appRoot);
+
+    const specFile = project.getSourceFileOrThrow(fileSpec);
+    const imports = specFile.getImportDeclarations();
+    assert.strictEqual(imports.length, 1);
+    assert.strictEqual(
+      imports[0].getModuleSpecifierValue(),
+      '@tests/utils/helper',
+    );
+  });
+
   it('ignores relative imports that resolve outside src', () => {
     const appRoot = tempRoot;
     const srcDir = path.join(appRoot, 'src');
