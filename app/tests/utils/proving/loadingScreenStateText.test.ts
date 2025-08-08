@@ -73,10 +73,7 @@ describe('stateLoadingScreenText', () => {
     });
 
     it('should handle undefined metadata', () => {
-      const result = getLoadingScreenText(
-        'proving',
-        undefined as unknown as PassportMetadata,
-      );
+      const result = getLoadingScreenText('proving', undefined);
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
       expect(result.estimatedTime).toBe('30 - 90 SECONDS'); // Should use default time estimate

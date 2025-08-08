@@ -78,7 +78,7 @@ const NavigationWithTracking = () => {
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
     if (currentRoute) {
-      console.log(`Screen View: ${currentRoute.name}`);
+      if (__DEV__) console.log(`Screen View: ${currentRoute.name}`);
       trackScreenView(`${currentRoute.name}`, {
         screenName: currentRoute.name,
       });

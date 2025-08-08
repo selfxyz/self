@@ -121,5 +121,8 @@
     "typechain": "^8.3.2",
     "typescript": "^5.1.6"
   },
+  "engines": {
+    "node": ">=22 <23"
+  },
   "packageManager": "yarn@4.5.3"
 }

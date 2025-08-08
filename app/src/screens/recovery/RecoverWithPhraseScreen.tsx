@@ -49,7 +49,6 @@ const RecoverWithPhraseScreen: React.FC<
     setRestoring(true);
     const slimMnemonic = mnemonic?.trim();
     if (!slimMnemonic || !ethers.Mnemonic.isValidMnemonic(slimMnemonic)) {
-      console.log('Invalid mnemonic');
       setRestoring(false);
       return;
     }
@@ -68,9 +67,8 @@ const RecoverWithPhraseScreen: React.FC<
       passportData,
       secret as string,
     );
-    console.log('User is registered:', isRegistered);
     if (!isRegistered) {
-      console.log(
+      console.warn(
         'Secret provided did not match a registered passport. Please try again.',
       );
       reStorePassportDataWithRightCSCA(passportData, csca as string);

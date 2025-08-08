@@ -42,6 +42,7 @@ export type PassportSupportStatus =
   | 'registration_circuit_not_supported'
   | 'dsc_circuit_not_supported'
   | 'passport_supported';
+
 /**
  * This function checks and updates registration states for all documents and updates the `isRegistered`.
  */
@@ -58,7 +59,7 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
           error: 'Passport data is not valid',
           documentId,
         });
-        console.log(`Skipping invalid document ${documentId}`);
+        console.warn(`Skipping invalid document ${documentId}`);
         continue;
       }
       const migratedPassportData = migratePassportData(passportData);
@@ -77,7 +78,7 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
           documentCategory,
           mock: migratedPassportData.mock,
         });
-        console.log(
+        console.warn(
           `Skipping document ${documentId} - no authority key identifier`,
         );
         continue;
@@ -87,7 +88,7 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
         [documentCategory].fetch_all(environment, authorityKeyIdentifier);
       const passportDataAndSecret = await loadPassportDataAndSecret();
       if (!passportDataAndSecret) {
-        console.log(
+        console.warn(
           `Skipping document ${documentId} - no passport data and secret`,
         );
         continue;
@@ -107,9 +108,10 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
         });
       }
 
-      console.log(
-        `Updated registration state for document ${documentId}: ${isRegistered}`,
-      );
+      if (__DEV__)
+        console.log(
+          `Updated registration state for document ${documentId}: ${isRegistered}`,
+        );
     } catch (error) {
       console.error(
         `Error checking registration state for document ${documentId}: ${error}`,
@@ -121,14 +123,14 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
     }
   }
 
-  console.log('Registration state check and update completed');
+  if (__DEV__) console.log('Registration state check and update completed');
 }
 
 export async function checkIfPassportDscIsInTree(
   passportData: PassportData,
   dscTree: string,
 ): Promise<boolean> {
-  const hashFunction = (a: any, b: any) => poseidon2([a, b]);
+  const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, dscTree);
   const leaf = getLeafDscTree(
     passportData.dsc_parsed!,
@@ -136,12 +138,10 @@ export async function checkIfPassportDscIsInTree(
   );
   const index = tree.indexOf(BigInt(leaf));
   if (index === -1) {
-    console.log('DSC not found in the tree');
+    console.warn('DSC not found in the tree');
     return false;
-  } else {
-    console.log('DSC found in the tree');
-    return true;
   }
+  return true;
 }
 
 export async function checkPassportSupported(
@@ -153,11 +153,11 @@ export async function checkPassportSupported(
   const passportMetadata = passportData.passportMetadata;
   const document: DocumentCategory = passportData.documentCategory;
   if (!passportMetadata) {
-    console.log('Passport metadata is null');
+    console.warn('Passport metadata is null');
     return { status: 'passport_metadata_missing', details: passportData.dsc };
   }
   if (!passportMetadata.cscaFound) {
-    console.log('CSCA not found');
+    console.warn('CSCA not found');
     return { status: 'csca_not_found', details: passportData.dsc };
   }
   const circuitNameRegister = getCircuitNameFromPassportData(
@@ -186,10 +186,9 @@ export async function checkPassportSupported(
       deployedCircuits.DSC_ID.includes(circuitNameDsc)
     )
   ) {
-    console.log('DSC circuit not supported:', circuitNameDsc);
+    console.warn('DSC circuit not supported:', circuitNameDsc);
     return { status: 'dsc_circuit_not_supported', details: circuitNameDsc };
   }
-  console.log('Passport supported');
   return { status: 'passport_supported', details: 'null' };
 }
 
@@ -245,6 +244,21 @@ export function generateCommitmentInApp(
   return { commitment_list, csca_list };
 }
 
+function formatCSCAPem(cscaPem: string): string {
+  let cleanedPem = cscaPem.trim();
+
+  if (!cleanedPem.includes('-----BEGIN CERTIFICATE-----')) {
+    cleanedPem = cleanedPem.replace(/[^A-Za-z0-9+/=]/g, '');
+    try {
+      Buffer.from(cleanedPem, 'base64');
+    } catch (error) {
+      throw new Error(`Invalid base64 certificate data: ${error}`);
+    }
+    cleanedPem = `-----BEGIN CERTIFICATE-----\n${cleanedPem}\n-----END CERTIFICATE-----`;
+  }
+  return cleanedPem;
+}
+
 export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
   try {
     const catalog = await loadDocumentCatalog();
@@ -280,21 +294,6 @@ export async function isDocumentNullified(passportData: PassportData) {
   const data = await response.json();
   console.log('isDocumentNullified', data);
   return data.data;
-}
-
-function formatCSCAPem(cscaPem: string): string {
-  let cleanedPem = cscaPem.trim();
-
-  if (!cleanedPem.includes('-----BEGIN CERTIFICATE-----')) {
-    cleanedPem = cleanedPem.replace(/[^A-Za-z0-9+/=]/g, '');
-    try {
-      Buffer.from(cleanedPem, 'base64');
-    } catch (error) {
-      throw new Error(`Invalid base64 certificate data: ${error}`);
-    }
-    cleanedPem = `-----BEGIN CERTIFICATE-----\n${cleanedPem}\n-----END CERTIFICATE-----`;
-  }
-  return cleanedPem;
 }
 
 export function isPassportDataValid(passportData: PassportData) {
@@ -369,7 +368,6 @@ export async function isUserRegisteredWithAlternativeCSCA(
   const document: DocumentCategory = passportData.documentCategory;
   const alternativeCSCA =
     useProtocolStore.getState()[document].alternative_csca;
-  console.log('alternativeCSCA: ', alternativeCSCA);
   const { commitment_list, csca_list } = generateCommitmentInApp(
     secret,
     document === 'passport' ? PASSPORT_ATTESTATION_ID : ID_CARD_ATTESTATION_ID,
@@ -400,20 +398,23 @@ export async function isUserRegisteredWithAlternativeCSCA(
   return { isRegistered: false, csca: null };
 }
 
+interface MigratedPassportData extends Omit<PassportData, 'documentType'> {
+  documentType?: string;
+}
+
 export function migratePassportData(passportData: PassportData): PassportData {
-  const migratedData = { ...passportData } as any;
+  const migratedData: MigratedPassportData = { ...passportData };
   if (!('documentCategory' in migratedData) || !('mock' in migratedData)) {
-    if ('documentType' in migratedData && migratedData.documentType) {
-      migratedData.mock = migratedData.documentType.startsWith('mock');
-      migratedData.documentCategory = migratedData.documentType.includes(
-        'passport',
-      )
+    const documentType = (migratedData as any).documentType;
+    if (documentType) {
+      (migratedData as any).mock = documentType.startsWith('mock');
+      (migratedData as any).documentCategory = documentType.includes('passport')
         ? 'passport'
         : 'id_card';
     } else {
-      migratedData.documentType = 'passport';
-      migratedData.documentCategory = 'passport';
-      migratedData.mock = false;
+      (migratedData as any).documentType = 'passport';
+      (migratedData as any).documentCategory = 'passport';
+      (migratedData as any).mock = false;
     }
     // console.log('Migrated passport data:', migratedData);
   }

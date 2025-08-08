@@ -2,7 +2,7 @@ name: Mobile Deploy
 
 env:
   # Build environment versions
-  NODE_VERSION: 18
+  NODE_VERSION: 22
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
@@ -796,7 +796,7 @@ jobs:
       inputs.test_mode != true &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
-      NODE_VERSION: 18
+      NODE_VERSION: 22
       APP_PATH: ${{ github.workspace }}/app
     steps:
       - uses: actions/checkout@v4

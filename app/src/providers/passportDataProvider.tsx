@@ -81,7 +81,7 @@ const safeGetAllDocuments = async () => {
   }
 };
 
-interface DocumentMetadata {
+export interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication
   documentType: string; // passport, mock_passport, id_card, etc.
   documentCategory: DocumentCategory; // passport, id_card, aadhaar
@@ -90,7 +90,7 @@ interface DocumentMetadata {
   isRegistered?: boolean; // whether the document is registered onChain
 }
 
-interface DocumentCatalog {
+export interface DocumentCatalog {
   documents: DocumentMetadata[];
   selectedDocumentId?: string; // This is now a contentHash
 }
@@ -496,7 +496,12 @@ export async function loadDocumentCatalog(): Promise<DocumentCatalog> {
       service: 'documentCatalog',
     });
     if (catalogCreds !== false) {
-      return JSON.parse(catalogCreds.password);
+      const parsed = JSON.parse(catalogCreds.password);
+      // Handle case where JSON.parse(null) returns null
+      if (parsed === null) {
+        throw new TypeError('Cannot parse null password');
+      }
+      return parsed;
     }
   } catch (error) {
     console.log('Error loading document catalog:', error);

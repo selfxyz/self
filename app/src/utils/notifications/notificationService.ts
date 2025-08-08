@@ -29,10 +29,10 @@ export async function getFCMToken(): Promise<string | null> {
 }
 // Determine if running in test environment
 const isTestEnv = process.env.NODE_ENV === 'test';
-const log = (...args: any[]) => {
+const log = (...args: unknown[]) => {
   if (!isTestEnv) console.log(...args);
 };
-const error = (...args: any[]) => {
+const error = (...args: unknown[]) => {
   if (!isTestEnv) console.error(...args);
 };
 

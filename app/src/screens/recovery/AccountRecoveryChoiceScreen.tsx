@@ -63,9 +63,8 @@ const AccountRecoveryChoiceScreen: React.FC<
         passportData,
         secret,
       );
-      console.log('User is registered:', isRegistered);
       if (!isRegistered) {
-        console.log(
+        console.warn(
           'Secret provided did not match a registered ID. Please try again.',
         );
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED);
@@ -81,7 +80,7 @@ const AccountRecoveryChoiceScreen: React.FC<
       trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
       onRestoreFromCloudNext();
       setRestoring(false);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
       setRestoring(false);
