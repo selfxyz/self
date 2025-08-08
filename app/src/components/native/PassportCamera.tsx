@@ -6,12 +6,13 @@ import {
   PixelRatio,
   Platform,
   requireNativeComponent,
+  type StyleProp,
+  type ViewStyle,
 } from 'react-native';
 
 import { extractMRZInfo } from '@selfxyz/sdk-alpha';
 
 import { RCTFragment } from '@src/components/native/RCTFragment';
-import { extractMRZInfo } from '@src/utils/utils';
 
 interface NativePassportOCRViewProps {
   onPassportRead: (
