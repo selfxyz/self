@@ -1,7 +1,7 @@
 name: Mobile Bundle Analysis
 
 env:
-  NODE_VERSION: 18
+  NODE_VERSION: 22
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   WORKSPACE: ${{ github.workspace }}
