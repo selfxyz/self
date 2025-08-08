@@ -12,4 +12,9 @@ module.exports = {
     '^@src/(.*)$': '<rootDir>/src/$1',
     '^@src$': '<rootDir>/src',
   },
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json',
+    },
+  },
 };

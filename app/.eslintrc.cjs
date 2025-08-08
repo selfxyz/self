@@ -167,6 +167,12 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['tests/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: './tsconfig.test.json',
+      },
+    },
+    {
       files: ['*.cjs'],
       env: {
         node: true,

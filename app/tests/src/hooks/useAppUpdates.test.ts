@@ -2,10 +2,9 @@
 
 import { checkVersion } from 'react-native-check-version';
 
-import { useAppUpdates } from '../../../src/hooks/useAppUpdates';
-import { registerModalCallbacks } from '../../../src/utils/modalCallbackRegistry';
-
 import { useNavigation } from '@react-navigation/native';
+import { useAppUpdates } from '@src/hooks/useAppUpdates';
+import { registerModalCallbacks } from '@src/utils/modalCallbackRegistry';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 jest.mock('@react-navigation/native', () => ({
