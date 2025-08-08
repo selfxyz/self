@@ -84,6 +84,7 @@ const LaunchScreen: React.FC = () => {
             onPress={onStartPress}
             bgColor={white}
             color={black}
+            testID="launch-get-started-button"
           >
             I have a Passport or Biometric ID
           </AbstractButton>
