@@ -81,7 +81,7 @@ const HomeScreen: React.FC = () => {
     });
 
     goToQRCodeViewFinder();
-  }, [trackEvent, goToQRCodeViewFinder]);
+  }, [goToQRCodeViewFinder]);
 
   // Prevents back navigation
   usePreventRemove(true, () => {});

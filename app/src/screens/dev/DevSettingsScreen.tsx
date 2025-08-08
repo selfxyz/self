@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import type { PropsWithChildren } from 'react';
+import { cloneElement, isValidElement, type PropsWithChildren } from 'react';
 import React, { useMemo, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
@@ -62,12 +62,12 @@ function ParameterSection({
     const iconElement =
       typeof icon === 'function'
         ? (icon as () => React.ReactNode)()
-        : React.isValidElement(icon)
+        : isValidElement(icon)
           ? icon
           : null;
 
     return iconElement
-      ? React.cloneElement(iconElement as React.ReactElement, {
+      ? cloneElement(iconElement as React.ReactElement, {
           width: '100%',
           height: '100%',
         })

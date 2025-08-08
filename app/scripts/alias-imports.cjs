@@ -2,57 +2,69 @@
 const path = require('node:path');
 const { Project, SyntaxKind } = require('ts-morph');
 
-const appRoot = path.resolve(__dirname, '..');
-const srcDir = path.join(appRoot, 'src');
+function transformProjectToAliasImports(project, appRootPath) {
+  const srcDir = path.join(appRootPath, 'src');
 
-const project = new Project({
-  tsConfigFilePath: path.join(appRoot, 'tsconfig.json'),
-});
+  const sourceFiles = project.getSourceFiles();
+  for (const sourceFile of sourceFiles) {
+    const dir = path.dirname(sourceFile.getFilePath());
 
-// Force add test files since they're excluded in tsconfig
-project.addSourceFilesAtPaths(['tests/**/*.{ts,tsx}']);
+    // Handle import declarations
+    for (const declaration of sourceFile.getImportDeclarations()) {
+      const spec = declaration.getModuleSpecifierValue();
+      if (!spec.startsWith('../')) continue;
+      const abs = path.resolve(dir, spec);
+      if (!abs.startsWith(srcDir)) continue;
+      const rel = path.relative(srcDir, abs).replace(/\\/g, '/');
+      const newSpec = rel ? `@src/${rel}` : '@src';
+      declaration.setModuleSpecifier(newSpec);
+    }
 
-// Get all source files (including manually added test files)
-const sourceFiles = project.getSourceFiles();
+    // Handle require() calls
+    const requireCalls = sourceFile.getDescendantsOfKind(
+      SyntaxKind.CallExpression,
+    );
+    for (const call of requireCalls) {
+      const expression = call.getExpression();
+      if (expression.getText() !== 'require') continue;
 
-for (const sourceFile of sourceFiles) {
-  const dir = path.dirname(sourceFile.getFilePath());
+      const args = call.getArguments();
+      if (args.length === 0) continue;
 
-  // Handle import declarations
-  for (const declaration of sourceFile.getImportDeclarations()) {
-    const spec = declaration.getModuleSpecifierValue();
-    if (!spec.startsWith('../')) continue;
-    const abs = path.resolve(dir, spec);
-    if (!abs.startsWith(srcDir)) continue;
-    const rel = path.relative(srcDir, abs).replace(/\\/g, '/');
-    const newSpec = rel ? `@src/${rel}` : '@src';
-    declaration.setModuleSpecifier(newSpec);
-  }
+      const arg = args[0];
+      if (arg.getKind() !== SyntaxKind.StringLiteral) continue;
 
-  // Handle require() calls
-  const requireCalls = sourceFile.getDescendantsOfKind(
-    SyntaxKind.CallExpression,
-  );
-  for (const call of requireCalls) {
-    const expression = call.getExpression();
-    if (expression.getText() !== 'require') continue;
+      const spec = arg.getLiteralValue();
+      if (!spec.startsWith('../')) continue;
 
-    const args = call.getArguments();
-    if (args.length === 0) continue;
+      const abs = path.resolve(dir, spec);
+      if (!abs.startsWith(srcDir)) continue;
 
-    const arg = args[0];
-    if (arg.getKind() !== SyntaxKind.StringLiteral) continue;
-
-    const spec = arg.getLiteralValue();
-    if (!spec.startsWith('../')) continue;
-
-    const abs = path.resolve(dir, spec);
-    if (!abs.startsWith(srcDir)) continue;
-
-    const rel = path.relative(srcDir, abs).replace(/\\/g, '/');
-    const newSpec = rel ? `@src/${rel}` : '@src';
-    arg.setLiteralValue(newSpec);
+      const rel = path.relative(srcDir, abs).replace(/\\/g, '/');
+      const newSpec = rel ? `@src/${rel}` : '@src';
+      arg.setLiteralValue(newSpec);
+    }
   }
 }
 
-project.saveSync();
+function runAliasImportsTransform(options = {}) {
+  const appRoot = options.appRoot || path.resolve(__dirname, '..');
+  const project =
+    options.project ||
+    new Project({ tsConfigFilePath: path.join(appRoot, 'tsconfig.json') });
+
+  // Include test files since they're excluded in tsconfig
+  if (!options.skipAddTests) {
+    project.addSourceFilesAtPaths(['tests/**/*.{ts,tsx}']);
+  }
+
+  transformProjectToAliasImports(project, appRoot);
+  project.saveSync();
+  return project;
+}
+
+if (require.main === module) {
+  runAliasImportsTransform();
+}
+
+module.exports = { runAliasImportsTransform, transformProjectToAliasImports };

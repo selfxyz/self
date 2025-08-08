@@ -171,6 +171,17 @@ module.exports = {
       parserOptions: {
         project: './tsconfig.test.json',
       },
+      rules: {
+        // Allow console logging in tests
+        'no-console': 'off',
+      },
+    },
+    {
+      // Allow console logging in scripts
+      files: ['scripts/**/*.cjs', 'scripts/*.cjs'],
+      rules: {
+        'no-console': 'off',
+      },
     },
     {
       files: ['*.cjs'],

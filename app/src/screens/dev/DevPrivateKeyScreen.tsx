@@ -33,7 +33,7 @@ const DevPrivateKeyScreen: React.FC<DevPrivateKeyScreen> = ({}) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     }
-  }, [isPrivateKeyRevealed]);
+  }, [isPrivateKeyRevealed, privateKey]);
 
   const getRedactedPrivateKey = useCallback(() => {
     if (
