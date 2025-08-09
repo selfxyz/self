@@ -1,4 +1,5 @@
 import { defaultConfig } from './config/defaults.js';
+import { mergeConfig } from './config/merge.js';
 import { notImplemented } from './errors.js';
 import type {
   Adapters,
@@ -26,7 +27,7 @@ const optionalDefaults: Partial<Adapters> = {
   clock: {
     now: () => Date.now(),
     sleep: async (ms: number) => {
-      await new Promise((r) => setTimeout(r, ms));
+      await new Promise(r => setTimeout(r, ms));
     },
   },
   logger: {
@@ -35,6 +36,7 @@ const optionalDefaults: Partial<Adapters> = {
 };
 
 export function createSelfClient({ config, adapters }: { config: Config; adapters: Partial<Adapters> }): SelfClient {
+  const cfg = mergeConfig(defaultConfig, config);
   const required: (keyof Adapters)[] = ['scanner', 'network', 'crypto'];
   for (const name of required) {
     if (!(name in adapters) || !adapters[name]) throw notImplemented(name);
@@ -65,12 +67,16 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
 
   async function generateProof(
     _req: ProofRequest,
-    _opts?: {
+    opts: {
       signal?: AbortSignal;
       onProgress?: (p: Progress) => void;
       timeoutMs?: number;
-    },
+    } = {},
   ): Promise<ProofHandle> {
+    if (!adapters.network) throw notImplemented('network');
+    if (!adapters.crypto) throw notImplemented('crypto');
+    const timeoutMs = opts.timeoutMs ?? cfg.timeouts?.proofMs ?? defaultConfig.timeouts.proofMs;
+    void timeoutMs;
     return {
       id: 'stub',
       status: 'pending',

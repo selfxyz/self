@@ -35,9 +35,9 @@ describe('createSelfClient', () => {
 
   it('throws when network adapter missing for checkRegistration', async () => {
     const client = createSelfClient({ config: {}, adapters: {} });
-    await expect(
-      client.checkRegistration({ scan: { mode: 'qr', data: 'self://a' } } as any),
-    ).rejects.toMatchObject({ code: 'SELF_ERR_ADAPTER_MISSING' });
+    await expect(client.checkRegistration({ scan: { mode: 'qr', data: 'self://a' } } as any)).rejects.toMatchObject({
+      code: 'SELF_ERR_ADAPTER_MISSING',
+    });
   });
 
   it('throws when network adapter missing for proof generation', async () => {
@@ -79,10 +79,10 @@ describe('createSelfClient', () => {
     const unsub = client.on('progress', cb);
     Map.prototype.set = originalSet;
 
-    eventSet?.forEach((fn) => fn({ step: 'one' }));
+    eventSet?.forEach(fn => fn({ step: 'one' }));
     expect(cb).toHaveBeenCalledWith({ step: 'one' });
     unsub();
-    eventSet?.forEach((fn) => fn({ step: 'two' }));
+    eventSet?.forEach(fn => fn({ step: 'two' }));
     expect(cb).toHaveBeenCalledTimes(1);
   });
 });
