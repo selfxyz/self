@@ -1,4 +1,5 @@
 import { defaultConfig } from './config/defaults.js';
+import { mergeConfig } from './config/merge.js';
 import { notImplemented } from './errors.js';
 import type {
   Adapters,
@@ -18,7 +19,7 @@ import type {
 } from './types/public.js';
 
 export function createSelfClient({ config, adapters }: { config: Config; adapters: Partial<Adapters> }): SelfClient {
-  const _cfg = { ...defaultConfig, ...config };
+  const cfg = mergeConfig(defaultConfig, config);
   const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
 
   function on(event: SDKEvent, cb: (payload: any) => void): Unsubscribe {
@@ -44,14 +45,16 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
 
   async function generateProof(
     _req: ProofRequest,
-    _opts?: {
+    opts: {
       signal?: AbortSignal;
       onProgress?: (p: Progress) => void;
       timeoutMs?: number;
-    },
+    } = {},
   ): Promise<ProofHandle> {
     if (!adapters.network) throw notImplemented('network');
     if (!adapters.crypto) throw notImplemented('crypto');
+    const timeoutMs = opts.timeoutMs ?? cfg.timeouts?.proofMs ?? defaultConfig.timeouts.proofMs;
+    void timeoutMs;
     return {
       id: 'stub',
       status: 'pending',
