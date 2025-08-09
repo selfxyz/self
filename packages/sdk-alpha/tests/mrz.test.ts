@@ -11,7 +11,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
     describe('Valid TD3 MRZ', () => {
       it('extracts all fields correctly from valid TD3 MRZ', () => {
         const info = extractMRZInfo(validTD3Sample);
-        
+
         // Basic fields
         expect(info.passportNumber).toBe('L898902C3');
         expect(info.dateOfBirth).toBe('740812');
@@ -20,11 +20,11 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
         expect(info.issuingCountry).toBe('UTO');
         expect(info.nationality).toBe('UTO');
         expect(info.sex).toBe('F');
-        
+
         // Name parsing
         expect(info.surname).toBe('ERIKSSON');
         expect(info.givenNames).toBe('ANNA MARIA');
-        
+
         // Validation should pass for valid MRZ
         expect(info.validation.format).toBe(true);
         expect(info.validation.passportNumberChecksum).toBe(true);
@@ -44,7 +44,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
       it('handles names with single given name', () => {
         const singleNameSample = `P<UTOERIKSSON<<ANNA<<<<<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
-        
+
         const info = extractMRZInfo(singleNameSample);
         expect(info.surname).toBe('ERIKSSON');
         expect(info.givenNames).toBe('ANNA');
@@ -53,7 +53,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
       it('handles names with no given names', () => {
         const noGivenNameSample = `P<UTOERIKSSON<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
-        
+
         const info = extractMRZInfo(noGivenNameSample);
         expect(info.surname).toBe('ERIKSSON');
         expect(info.givenNames).toBe('');
@@ -63,7 +63,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
     describe('Format Validation', () => {
       it('rejects MRZ with wrong number of lines', () => {
         const singleLineMRZ = 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<';
-        
+
         expect(() => extractMRZInfo(singleLineMRZ)).toThrow(
           'Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got 1 lines with lengths [44]'
         );
@@ -72,7 +72,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
       it('rejects MRZ with incorrect line lengths', () => {
         const shortLineMRZ = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
-        
+
         expect(() => extractMRZInfo(shortLineMRZ)).toThrow(
           'Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got 2 lines with lengths [43, 44]'
         );
@@ -94,7 +94,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
       it('detects invalid passport number check digit', () => {
         const invalidPassportCheck = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C37UTO7408122F1204159ZE184226B<<<<<10`;
-        
+
         const info = extractMRZInfo(invalidPassportCheck);
         expect(info.validation.passportNumberChecksum).toBe(false);
         expect(info.validation.overall).toBe(false);
@@ -103,7 +103,7 @@ L898902C37UTO7408122F1204159ZE184226B<<<<<10`;
       it('detects invalid date of birth check digit', () => {
         const invalidDOBCheck = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408123F1204159ZE184226B<<<<<10`;
-        
+
         const info = extractMRZInfo(invalidDOBCheck);
         expect(info.validation.dateOfBirthChecksum).toBe(false);
         expect(info.validation.overall).toBe(false);
@@ -112,7 +112,7 @@ L898902C36UTO7408123F1204159ZE184226B<<<<<10`;
       it('detects invalid date of expiry check digit', () => {
         const invalidExpiryCheck = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204150ZE184226B<<<<<10`;
-        
+
         const info = extractMRZInfo(invalidExpiryCheck);
         expect(info.validation.dateOfExpiryChecksum).toBe(false);
         expect(info.validation.overall).toBe(false);
@@ -121,7 +121,7 @@ L898902C36UTO7408122F1204150ZE184226B<<<<<10`;
       it('detects invalid composite check digit', () => {
         const invalidCompositeCheck = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<11`;
-        
+
         const info = extractMRZInfo(invalidCompositeCheck);
         expect(info.validation.compositeChecksum).toBe(false);
         expect(info.validation.overall).toBe(false);
@@ -131,7 +131,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<11`;
         // Some fields may use < to indicate no check digit
         const noCheckDigitSample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C<6UTO7408122F1204159ZE184226B<<<<<10`;
-        
+
         const info = extractMRZInfo(noCheckDigitSample);
         expect(info.validation.passportNumberChecksum).toBe(true); // < means no check required
       });
@@ -141,7 +141,7 @@ L898902C<6UTO7408122F1204159ZE184226B<<<<<10`;
       it('handles fields with filler characters correctly', () => {
         const fillerSample = `P<UTOSMITH<<<JOHN<DOE<<<<<<<<<<<<<<<<<<<<<<<
 A1234567<9UTO8501019M2512314GBR<<<<<<<<<<<<<04`;
-        
+
         const info = extractMRZInfo(fillerSample);
         expect(info.surname).toBe('SMITH');
         expect(info.givenNames).toBe('JOHN DOE');
@@ -154,7 +154,7 @@ A1234567<9UTO8501019M2512314GBR<<<<<<<<<<<<<04`;
       it('handles complex name structures', () => {
         const complexNameSample = `P<UTGVAN<<DER<<BERG<<MARIA<ELENA<<<<<<<<<<<<
 B2345678<1UTG9001015F2612125NLD<<<<<<<<<<<<<18`;
-        
+
         const info = extractMRZInfo(complexNameSample);
         expect(info.surname).toBe('VAN  DER  BERG');
         expect(info.givenNames).toBe('MARIA ELENA');
@@ -197,7 +197,7 @@ B2345678<1UTG9001015F2612125NLD<<<<<<<<<<<<<18`;
         // Years 00-30 assumed to be 20xx
         expect(formatDateToYYMMDD('03/01/05')).toBe('030105');
         expect(formatDateToYYMMDD('25/12/31')).toBe('251231');
-        
+
         // Years 31-99 assumed to be 19xx
         expect(formatDateToYYMMDD('74/08/12')).toBe('740812');
         expect(formatDateToYYMMDD('99/12/31')).toBe('991231');
@@ -256,7 +256,7 @@ B2345678<1UTG9001015F2612125NLD<<<<<<<<<<<<<18`;
       // German passport example (fictional but realistic)
       const germanMRZ = `P<DEUTERMANN<<HANS<PETER<<<<<<<<<<<<<<<<<<<
 C01234567<7DEU8304159M2905141<<<<<<<<<<<<<<<8`;
-      
+
       const info = extractMRZInfo(germanMRZ);
       expect(info.issuingCountry).toBe('DEU');
       expect(info.nationality).toBe('DEU');
@@ -269,7 +269,7 @@ C01234567<7DEU8304159M2905141<<<<<<<<<<<<<<<8`;
     it('handles various country codes', () => {
       const usMRZ = `P<USASMITH<<JOHN<WILLIAM<<<<<<<<<<<<<<<<<<<
 123456789<1USA8501019M3012315<<<<<<<<<<<<<<06`;
-      
+
       const info = extractMRZInfo(usMRZ);
       expect(info.issuingCountry).toBe('USA');
       expect(info.nationality).toBe('USA');
