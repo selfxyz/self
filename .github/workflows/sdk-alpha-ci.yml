@@ -1,4 +1,4 @@
-name: SDK Alpha CI
+name: Mobile SDK CI
 
 on:
   pull_request:
