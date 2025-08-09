@@ -27,7 +27,7 @@ const optionalDefaults: Partial<Adapters> = {
   clock: {
     now: () => Date.now(),
     sleep: async (ms: number) => {
-      await new Promise((r) => setTimeout(r, ms));
+      await new Promise(r => setTimeout(r, ms));
     },
   },
   logger: {
