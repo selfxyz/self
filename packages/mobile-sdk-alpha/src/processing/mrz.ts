@@ -138,7 +138,10 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
 
   // Line 1: P<CCCSURNAME<<GIVENNAMES<<<<<<<<<<<<<<<<<<
   const documentType = line1.slice(0, 1);
-  const issuingCountry = line1.slice(2, 5).replace(/</g, '').replace(/[^A-Z]/g, '');
+  const issuingCountry = line1
+    .slice(2, 5)
+    .replace(/</g, '')
+    .replace(/[^A-Z]/g, '');
   const nameField = line1.slice(5, 44);
   const { surname, givenNames } = parseNames(nameField);
 

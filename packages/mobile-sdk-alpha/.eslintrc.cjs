@@ -11,6 +11,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
+    'plugin:prettier/recommended',
   ],
   plugins: ['simple-import-sort', 'import', 'sort-exports'],
   ignorePatterns: ['dist/', 'node_modules/'],
@@ -51,6 +52,8 @@ module.exports = {
     'import/export': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    // Add prettier rule to show prettier errors as ESLint errors
+    'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
   },
   overrides: [
     {
