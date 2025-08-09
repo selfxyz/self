@@ -1,17 +1,23 @@
 import os
 import re
 
+
 def read_certificate_content(file_path):
     """Read and return the complete PEM certificate including headers, removing any extra lines."""
     with open(file_path, 'r') as f:
         full_text = f.read()
     # Extract just the chunk from BEGIN CERTIFICATE to END CERTIFICATE
-    start_idx = full_text.find("-----BEGIN CERTIFICATE-----")
-    end_idx = full_text.find("-----END CERTIFICATE-----") + len("-----END CERTIFICATE-----")
-    if start_idx == -1 or end_idx == -1:
+    begin_marker = "-----BEGIN CERTIFICATE-----"
+    end_marker = "-----END CERTIFICATE-----"
+    start_idx = full_text.find(begin_marker)
+    if start_idx == -1:
         # If not found, just return what we have
         return full_text.strip()
-    pem_chunk = full_text[start_idx:end_idx]
+    end_pos = full_text.find(end_marker, start_idx)
+    if end_pos == -1:
+        # If not found, just return what we have
+        return full_text.strip()
+    pem_chunk = full_text[start_idx:end_pos + len(end_marker)]
 
     cleaned_lines = []
     for line in pem_chunk.splitlines():
@@ -28,12 +34,17 @@ def read_private_key_content(file_path):
     with open(file_path, 'r') as f:
         full_text = f.read()
     # Extract just the chunk from BEGIN PRIVATE KEY to END PRIVATE KEY
-    start_idx = full_text.find("-----BEGIN PRIVATE KEY-----")
-    end_idx = full_text.find("-----END PRIVATE KEY-----") + len("-----END PRIVATE KEY-----")
-    if start_idx == -1 or end_idx == -1:
+    begin_marker = "-----BEGIN PRIVATE KEY-----"
+    end_marker = "-----END PRIVATE KEY-----"
+    start_idx = full_text.find(begin_marker)
+    if start_idx == -1:
         # If not found, just return what we have
         return full_text.strip()
-    pem_chunk = full_text[start_idx:end_idx]
+    end_pos = full_text.find(end_marker, start_idx)
+    if end_pos == -1:
+        # If not found, just return what we have
+        return full_text.strip()
+    pem_chunk = full_text[start_idx:end_pos + len(end_marker)]
 
     cleaned_lines = []
     for line in pem_chunk.splitlines():
