@@ -18,8 +18,32 @@ import type {
   ValidationResult,
 } from './types/public.js';
 
+const optionalDefaults: Partial<Adapters> = {
+  storage: {
+    get: async () => null,
+    set: async () => {},
+    remove: async () => {},
+  },
+  clock: {
+    now: () => Date.now(),
+    sleep: async (ms: number) => {
+      await new Promise((r) => setTimeout(r, ms));
+    },
+  },
+  logger: {
+    log: () => {},
+  },
+};
+
 export function createSelfClient({ config, adapters }: { config: Config; adapters: Partial<Adapters> }): SelfClient {
   const cfg = mergeConfig(defaultConfig, config);
+  const required: (keyof Adapters)[] = ['scanner', 'network', 'crypto'];
+  for (const name of required) {
+    if (!(name in adapters) || !adapters[name]) throw notImplemented(name);
+  }
+
+  const _adapters = { ...optionalDefaults, ...adapters } as Adapters;
+  const _cfg = { ...defaultConfig, ...config };
   const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
 
   function on(event: SDKEvent, cb: (payload: any) => void): Unsubscribe {
@@ -30,8 +54,7 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
   }
 
   async function scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult> {
-    if (!adapters.scanner) throw notImplemented('scanner');
-    return adapters.scanner.scan(opts);
+    return _adapters.scanner.scan(opts);
   }
 
   async function validateDocument(_input: ValidationInput): Promise<ValidationResult> {
@@ -39,7 +62,6 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
   }
 
   async function checkRegistration(_input: RegistrationInput): Promise<RegistrationStatus> {
-    if (!adapters.network) throw notImplemented('network');
     return { registered: false, reason: 'SELF_REG_STATUS_STUB' };
   }
 

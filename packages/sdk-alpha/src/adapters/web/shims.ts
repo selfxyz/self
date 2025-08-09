@@ -1,3 +1,4 @@
+import { SCANNER_ERROR_CODES, sdkError } from '../../errors.js';
 import type { ScannerAdapter, ScanOpts, ScanResult } from '../../types/public.js';
 
 export const webScannerShim: ScannerAdapter = {
@@ -6,23 +7,11 @@ export const webScannerShim: ScannerAdapter = {
       case 'qr':
         return { mode: 'qr', data: 'self://stub-qr' };
       case 'mrz':
-        throw Object.assign(new Error('MRZ scan not supported in web shim'), {
-          code: 'SELF_ERR_SCANNER_UNAVAILABLE',
-          category: 'scanner',
-          retryable: false,
-        });
+        throw sdkError('MRZ scan not supported in web shim', SCANNER_ERROR_CODES.UNAVAILABLE, 'scanner');
       case 'nfc':
-        throw Object.assign(new Error('NFC not supported in web shim'), {
-          code: 'SELF_ERR_NFC_NOT_SUPPORTED',
-          category: 'scanner',
-          retryable: false,
-        });
+        throw sdkError('NFC not supported in web shim', SCANNER_ERROR_CODES.NFC_NOT_SUPPORTED, 'scanner');
       default:
-        throw Object.assign(new Error('Unknown scan mode'), {
-          code: 'SELF_ERR_SCANNER_MODE',
-          category: 'scanner',
-          retryable: false,
-        });
+        throw sdkError('Unknown scan mode', SCANNER_ERROR_CODES.INVALID_MODE, 'scanner');
     }
   },
 };
