@@ -20,7 +20,7 @@ jobs:
           yarn workspace @selfxyz/common build
           yarn workspace @selfxyz/sdk-alpha build
       - name: Run linter
-        run: yarn lint
+        run: yarn workspace @selfxyz/sdk-alpha lint
 
   type-check:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
           yarn workspace @selfxyz/sdk-alpha build
       - name: Yarn types
         shell: bash
-        run: yarn types
+        run: yarn workspace @selfxyz/sdk-alpha types
 
   test-sdk-alpha:
     runs-on: ubuntu-latest

@@ -4,19 +4,29 @@ import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src/adapt
 import { createSelfClient } from '../src/index.js';
 
 describe('createSelfClient', () => {
-  it('throws when scanner adapter missing', async () => {
-    const client = createSelfClient({ config: {}, adapters: {} });
-    await expect(client.scanDocument({ mode: 'qr' } as any)).rejects.toMatchObject({
-      code: 'SELF_ERR_ADAPTER_MISSING',
-      category: 'config',
-    });
+  // Test eager validation during client creation
+  it('throws when scanner adapter missing during creation', () => {
+    expect(() => createSelfClient({ config: {}, adapters: {} })).toThrow('scanner adapter not provided');
+  });
+
+  it('throws when network adapter missing during creation', () => {
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto } })).toThrow('network adapter not provided');
+  });
+
+  it('throws when crypto adapter missing during creation', () => {
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, network } })).toThrow('crypto adapter not provided');
+  });
+
+  it('creates client successfully with all required adapters', () => {
+    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
+    expect(client).toBeTruthy();
   });
 
   it('scans document with provided adapter', async () => {
     const scanMock = vi.fn().mockResolvedValue({ mode: 'qr', data: 'self://ok' });
     const client = createSelfClient({
       config: {},
-      adapters: { scanner: { scan: scanMock } },
+      adapters: { scanner: { scan: scanMock }, network, crypto },
     });
     const result = await client.scanDocument({ mode: 'qr' });
     expect(result).toEqual({ mode: 'qr', data: 'self://ok' });
@@ -28,38 +38,16 @@ describe('createSelfClient', () => {
     const scanMock = vi.fn().mockRejectedValue(err);
     const client = createSelfClient({
       config: {},
-      adapters: { scanner: { scan: scanMock } },
+      adapters: { scanner: { scan: scanMock }, network, crypto },
     });
     await expect(client.scanDocument({ mode: 'qr' })).rejects.toBe(err);
-  });
-
-  it('throws when network adapter missing for checkRegistration', async () => {
-    const client = createSelfClient({ config: {}, adapters: {} });
-    await expect(client.checkRegistration({ scan: { mode: 'qr', data: 'self://a' } } as any)).rejects.toMatchObject({
-      code: 'SELF_ERR_ADAPTER_MISSING',
-    });
-  });
-
-  it('throws when network adapter missing for proof generation', async () => {
-    const crypto = { hash: vi.fn(), sign: vi.fn() } as any;
-    const client = createSelfClient({ config: {}, adapters: { crypto } });
-    await expect(client.generateProof({ type: 'register', payload: {} })).rejects.toMatchObject({
-      code: 'SELF_ERR_ADAPTER_MISSING',
-    });
-  });
-
-  it('throws when crypto adapter missing for proof generation', async () => {
-    const network = { http: { fetch: vi.fn() }, ws: { connect: vi.fn() } } as any;
-    const client = createSelfClient({ config: {}, adapters: { network } });
-    await expect(client.generateProof({ type: 'register', payload: {} })).rejects.toMatchObject({
-      code: 'SELF_ERR_ADAPTER_MISSING',
-    });
   });
 
   it('returns stub proof handle when adapters provided', async () => {
     const network = { http: { fetch: vi.fn() }, ws: { connect: vi.fn() } } as any;
     const crypto = { hash: vi.fn(), sign: vi.fn() } as any;
-    const client = createSelfClient({ config: {}, adapters: { network, crypto } });
+    const scanner = { scan: vi.fn() } as any;
+    const client = createSelfClient({ config: {}, adapters: { network, crypto, scanner } });
     const handle = await client.generateProof({ type: 'register', payload: {} });
     expect(handle.id).toBe('stub');
     expect(handle.status).toBe('pending');
@@ -68,7 +56,7 @@ describe('createSelfClient', () => {
   });
 
   it('emits and unsubscribes events', () => {
-    const client = createSelfClient({ config: {}, adapters: {} });
+    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
     const cb = vi.fn();
     const originalSet = Map.prototype.set;
     let eventSet: Set<(p: any) => void> | undefined;
@@ -108,28 +96,3 @@ const crypto: CryptoAdapter = {
   hash: async () => new Uint8Array(),
   sign: async () => new Uint8Array(),
 };
-
-describe('createSelfClient', () => {
-  it('throws if scanner adapter missing', () => {
-    expect(() => createSelfClient({ config: {}, adapters: { network, crypto } })).toThrow(
-      'scanner adapter not provided',
-    );
-  });
-
-  it('throws if network adapter missing', () => {
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto } })).toThrow(
-      'network adapter not provided',
-    );
-  });
-
-  it('throws if crypto adapter missing', () => {
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, network } })).toThrow(
-      'crypto adapter not provided',
-    );
-  });
-
-  it('creates client with required adapters and no optional ones', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
-    expect(client).toBeTruthy();
-  });
-});

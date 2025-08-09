@@ -34,7 +34,7 @@ export type ScanResult =
       passportNumber: string;
       dateOfBirth: string;
       dateOfExpiry: string;
-      countryCode?: string;
+      issuingCountry?: string;
       // Extended MRZ data when available
       mrzInfo?: MRZInfo;
     }

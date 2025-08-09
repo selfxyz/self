@@ -108,7 +108,7 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
 
 /**
  * Validate all check digits for TD3 MRZ
- * TD3 Line 2 format: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)OPTIONAL(7)FINALCHECK(1)
+ * TD3 Line 2 format: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)PERSONAL(14)PERSONALCHECK(1)FINALCHECK(1)
  */
 function validateTD3CheckDigits(lines: string[]): Omit<MRZValidation, 'format' | 'overall'> {
   const line2 = lines[1];
@@ -119,9 +119,11 @@ function validateTD3CheckDigits(lines: string[]): Omit<MRZValidation, 'format' |
   const dobCheckDigit = line2.slice(19, 20);
   const dateOfExpiry = line2.slice(21, 27);
   const expiryCheckDigit = line2.slice(27, 28);
+  const personalNumber = line2.slice(28, 42); // Personal number (14 characters)
+  const personalCheckDigit = line2.slice(42, 43); // Personal number check digit
 
-  // TD3 composite check: passport(9) + passportCheck(1) + dob(6) + dobCheck(1) + expiry(6) + expiryCheck(1)
-  const compositeField = line2.slice(0, 10) + line2.slice(13, 20) + line2.slice(21, 28);
+  // TD3 composite check: passport(9) + passportCheck(1) + dob(6) + dobCheck(1) + expiry(6) + expiryCheck(1) + personal(14) + personalCheck(1)
+  const compositeField = line2.slice(0, 10) + line2.slice(13, 20) + line2.slice(21, 28) + line2.slice(28, 43);
   const compositeCheckDigit = line2.slice(43, 44); // Last character of line 2
 
   return {
