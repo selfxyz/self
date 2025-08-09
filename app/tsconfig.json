@@ -13,7 +13,6 @@
         "../packages/sdk-alpha/src",
         "../packages/sdk-alpha/dist"
       ],
-      "@src": ["./src"],
       "@src/*": ["./src/*"]
     }
   },

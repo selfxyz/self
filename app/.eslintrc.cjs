@@ -70,10 +70,10 @@ module.exports = {
       },
     ],
 
-    // Export sorting - using sort-exports for better type prioritization
+    // Export sorting - warn instead of error to avoid per-file overrides
 
     'sort-exports/sort-exports': [
-      'error',
+      'warn',
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
 
@@ -199,20 +199,6 @@ module.exports = {
         'header/header': 'off',
         '@typescript-eslint/no-var-requires': 'off',
         'no-undef': 'off',
-      },
-    },
-    {
-      // Disable export sorting for files with dependency issues
-      files: [
-        'src/components/NavBar/BaseNavBar.tsx',
-        'src/navigation/index.tsx',
-        'src/providers/passportDataProvider.tsx',
-        'src/utils/cloudBackup/helpers.ts',
-        'src/utils/haptic/index.ts',
-        'src/utils/proving/provingUtils.ts',
-      ],
-      rules: {
-        'sort-exports/sort-exports': 'off',
       },
     },
   ],
