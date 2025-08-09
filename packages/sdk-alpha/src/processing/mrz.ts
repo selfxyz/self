@@ -141,14 +141,17 @@ export function extractMRZInfo(mrzString: string): MRZInfo {
     throw new Error('MRZ string is required and must be a string');
   }
 
-  const lines = mrzString.trim().split('\n').map(line => line.trim());
+  const lines = mrzString
+    .trim()
+    .split('\n')
+    .map(line => line.trim());
 
   // Validate format
   const isValidTD3 = validateTD3Format(lines);
 
   if (!isValidTD3) {
     throw new Error(
-      `Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got ${lines.length} lines with lengths [${lines.map(l => l.length).join(', ')}]`
+      `Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got ${lines.length} lines with lengths [${lines.map(l => l.length).join(', ')}]`,
     );
   }
 
@@ -190,7 +193,8 @@ export function formatDateToYYMMDD(inputDate: string): string {
   // Handle other common formats
   const dateMatch = inputDate.match(/^(\d{2,4})[-/]?(\d{2})[-/]?(\d{2})/);
   if (dateMatch) {
-    let [, year, month, day] = dateMatch;
+    let [, year] = dateMatch;
+    const [, , month, day] = dateMatch;
 
     // Handle 2-digit years (assume 20xx for 00-30, 19xx for 31-99)
     if (year.length === 2) {

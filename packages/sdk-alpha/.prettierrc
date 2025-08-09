@@ -8,6 +8,7 @@
   "useTabs": false,
   "semi": true,
   "endOfLine": "auto",
+  "printWidth": 120,
   "overrides": [
     {
       "files": ["*.yml", "*.yaml"],

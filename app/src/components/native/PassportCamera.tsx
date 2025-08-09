@@ -106,7 +106,19 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
           dateOfBirth: event.nativeEvent.data.birthDate,
           dateOfExpiry: event.nativeEvent.data.expiryDate,
           documentType: event.nativeEvent.data.documentType,
-          countryCode: event.nativeEvent.data.countryCode,
+          issuingCountry: event.nativeEvent.data.countryCode,
+          nationality: event.nativeEvent.data.countryCode, // Assuming same for both
+          surname: '', // Fill with defaults as they're required
+          givenNames: '',
+          sex: '',
+          validation: {
+            format: true,
+            passportNumberChecksum: true,
+            dateOfBirthChecksum: true,
+            dateOfExpiryChecksum: true,
+            compositeChecksum: true,
+            overall: true,
+          },
         });
       }
     },

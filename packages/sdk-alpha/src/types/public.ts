@@ -124,10 +124,7 @@ export interface WsConn {
   onClose: (cb: () => void) => void;
 }
 export interface WsAdapter {
-  connect(
-    url: string,
-    opts?: { signal?: AbortSignal; headers?: Record<string, string> },
-  ): WsConn;
+  connect(url: string, opts?: { signal?: AbortSignal; headers?: Record<string, string> }): WsConn;
 }
 export interface NetworkAdapter {
   http: HttpAdapter;

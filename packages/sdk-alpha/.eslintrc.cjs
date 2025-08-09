@@ -28,28 +28,16 @@ module.exports = {
     'simple-import-sort/imports': [
       'error',
       {
-        groups: [
-          ['^node:'],
-          ['^node:.*/'],
-          ['^[a-zA-Z]'],
-          ['^@selfxyz/'],
-          ['^[./]'],
-        ],
+        groups: [['^node:'], ['^node:.*/'], ['^[a-zA-Z]'], ['^@selfxyz/'], ['^[./]']],
       },
     ],
-    '@typescript-eslint/consistent-type-imports': [
-      'error',
-      { prefer: 'type-imports' },
-    ],
+    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
     'import/first': 'error',
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
     'import/export': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    '@typescript-eslint/no-unused-vars': [
-      'error',
-      { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-    ],
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
   },
   overrides: [
     {

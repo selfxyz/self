@@ -8,11 +8,7 @@ const report = {};
 for (const f of files) {
   if (!f.endsWith('.js')) continue;
   const src = await readFile(join(dist.pathname, f), 'utf8');
-  const direct = [
-    ...src.matchAll(
-      /export\s+(?:const|function|class|let|var)\s+([A-Za-z0-9_$]+)/g,
-    ),
-  ].map(m => m[1]);
+  const direct = [...src.matchAll(/export\s+(?:const|function|class|let|var)\s+([A-Za-z0-9_$]+)/g)].map(m => m[1]);
   const re = [...src.matchAll(/export\s*{([^}]+)}/g)]
     .flatMap(m => m[1].split(',').map(s => s.trim()))
     .map(s => s.split('\s+as\s+').pop())

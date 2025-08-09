@@ -17,13 +17,7 @@ import type {
   ValidationResult,
 } from './types/public.js';
 
-export function createSelfClient({
-  config,
-  adapters,
-}: {
-  config: Config;
-  adapters: Partial<Adapters>;
-}): SelfClient {
+export function createSelfClient({ config, adapters }: { config: Config; adapters: Partial<Adapters> }): SelfClient {
   const _cfg = { ...defaultConfig, ...config };
   const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
 
@@ -34,22 +28,16 @@ export function createSelfClient({
     return () => set.delete(cb);
   }
 
-  async function scanDocument(
-    opts: ScanOpts & { signal?: AbortSignal },
-  ): Promise<ScanResult> {
+  async function scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult> {
     if (!adapters.scanner) throw notImplemented('scanner');
     return adapters.scanner.scan(opts);
   }
 
-  async function validateDocument(
-    _input: ValidationInput,
-  ): Promise<ValidationResult> {
+  async function validateDocument(_input: ValidationInput): Promise<ValidationResult> {
     return { ok: false, reason: 'SELF_ERR_VALIDATION_STUB' };
   }
 
-  async function checkRegistration(
-    _input: RegistrationInput,
-  ): Promise<RegistrationStatus> {
+  async function checkRegistration(_input: RegistrationInput): Promise<RegistrationStatus> {
     if (!adapters.network) throw notImplemented('network');
     return { registered: false, reason: 'SELF_REG_STATUS_STUB' };
   }

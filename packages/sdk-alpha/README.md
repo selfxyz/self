@@ -18,11 +18,7 @@ Alpha SDK for registering and proving. Adapters-first, React Native-first with w
 ## Quick start (local, monorepo)
 
 ```ts
-import {
-  createSelfClient,
-  webScannerShim,
-  extractMRZInfo,
-} from '@selfxyz/sdk-alpha';
+import { createSelfClient, webScannerShim, extractMRZInfo } from '@selfxyz/sdk-alpha';
 const sdk = createSelfClient({
   config: {},
   adapters: { scanner: webScannerShim },

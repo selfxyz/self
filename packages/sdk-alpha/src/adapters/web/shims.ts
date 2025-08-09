@@ -1,8 +1,4 @@
-import type {
-  ScannerAdapter,
-  ScanOpts,
-  ScanResult,
-} from '../../types/public.js';
+import type { ScannerAdapter, ScanOpts, ScanResult } from '../../types/public.js';
 
 export const webScannerShim: ScannerAdapter = {
   async scan(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult> {

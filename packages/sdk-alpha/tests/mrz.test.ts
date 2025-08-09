@@ -65,7 +65,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
         const singleLineMRZ = 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<';
 
         expect(() => extractMRZInfo(singleLineMRZ)).toThrow(
-          'Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got 1 lines with lengths [44]'
+          'Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got 1 lines with lengths [44]',
         );
       });
 
@@ -74,7 +74,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
 
         expect(() => extractMRZInfo(shortLineMRZ)).toThrow(
-          'Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got 2 lines with lengths [43, 44]'
+          'Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got 2 lines with lengths [43, 44]',
         );
       });
 
