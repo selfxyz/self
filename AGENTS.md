@@ -8,6 +8,8 @@ This repository is a Yarn v4 monorepo with several workspaces:
 - `contracts` – solidity contracts (@selfxyz/contracts)
 - `sdk/core` – core TypeScript SDK (@selfxyz/core)
 - `sdk/qrcode` – qrcode SDK (@selfxyz/qrcode)
+- `packages/sdk-alpha` – alpha version of the SDK (@selfxyz/sdk-alpha)
+- `noir` – noir circuits
 
 ## Workflow
 
@@ -39,6 +41,8 @@ yarn types
   - `yarn workspace @selfxyz/common test`
   - `yarn workspace @selfxyz/circuits test` # may fail if OpenSSL algorithms are missing
   - `yarn workspace @selfxyz/mobile-app test`
+  - `yarn workspace @selfxyz/sdk-alpha test`
+  - For Noir circuits, run `nargo test -p <crate>` in each `noir/crates/*` directory.
   - Tests for `@selfxyz/contracts` are currently disabled in CI and may be skipped.
 
 ### Formatting
