@@ -54,7 +54,10 @@ describe('Web Build and Render', () => {
           const output = data.toString();
           serverOutput += output;
 
-          console.log('Preview server stdout:', JSON.stringify(output));
+          // Suppress noisy output in tests
+          if (process.env.DEBUG_BUILD_TEST) {
+            console.log('Preview server stdout:', JSON.stringify(output));
+          }
 
           // Look for the Local: indicator that the server is ready
           // Be more flexible with pattern matching
@@ -66,7 +69,9 @@ describe('Web Build and Render', () => {
             (output.includes('4173') && output.includes('Local'));
 
           if (isReady) {
-            console.log('Server ready detected!');
+            if (process.env.DEBUG_BUILD_TEST) {
+              console.log('Server ready detected!');
+            }
             clearTimeout(timeout);
             resolve();
           }

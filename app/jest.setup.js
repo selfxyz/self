@@ -319,3 +319,6 @@ jest.mock('react-native-localize', () => ({
 jest.mock('./src/utils/notifications/notificationService', () =>
   require('./tests/__setup__/notificationServiceMock.js'),
 );
+
+// Import console mocks to reduce test noise
+require('./tests/__setup__/consoleMocks.ts');

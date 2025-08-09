@@ -51,7 +51,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
       });
 
       it('handles names with no given names', () => {
-        const noGivenNameSample = `P<UTOERIKSSON<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        const noGivenNameSample = `P<UTOERIKSSON<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
 
         const info = extractMRZInfo(noGivenNameSample);
@@ -129,7 +129,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<11`;
 
       it('handles check digits with < character (no check required)', () => {
         // Some fields may use < to indicate no check digit
-        const noCheckDigitSample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<
+        const noCheckDigitSample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C<6UTO7408122F1204159ZE184226B<<<<<10`;
 
         const info = extractMRZInfo(noCheckDigitSample);
@@ -139,8 +139,8 @@ L898902C<6UTO7408122F1204159ZE184226B<<<<<10`;
 
     describe('Field Extraction Edge Cases', () => {
       it('handles fields with filler characters correctly', () => {
-        const fillerSample = `P<UTOSMITH<<<JOHN<DOE<<<<<<<<<<<<<<<<<<<<<
-A1234567<9UTO8501019M2512314GBR<<<<<<<<<<<<04`;
+        const fillerSample = `P<UTOSMITH<<<JOHN<DOE<<<<<<<<<<<<<<<<<<<<<<<
+A1234567<9UTO8501019M2512314GBR<<<<<<<<<<<04`;
 
         const info = extractMRZInfo(fillerSample);
         expect(info.surname).toBe('SMITH');
@@ -152,8 +152,8 @@ A1234567<9UTO8501019M2512314GBR<<<<<<<<<<<<04`;
       });
 
       it('handles complex name structures', () => {
-        const complexNameSample = `P<UTGVAN<<DER<<BERG<<MARIA<ELENA<<<<<<<<<<<
-B2345678<1UTG9001015F2612125NLD<<<<<<<<<<<<18`;
+        const complexNameSample = `P<UTOVAN<<DER<<BERG<<MARIA<ELENA<<<<<<<<<<<<
+B2345678<1UTO9001015F2612125UTO<<<<<<<<<<<<8`;
 
         const info = extractMRZInfo(complexNameSample);
         expect(info.surname).toBe('VAN  DER  BERG');
@@ -254,8 +254,8 @@ B2345678<1UTG9001015F2612125NLD<<<<<<<<<<<<18`;
   describe('Integration Tests', () => {
     it('works with real-world MRZ variations', () => {
       // German passport example (fictional but realistic)
-      const germanMRZ = `P<DEUTERMANN<<HANS<PETER<<<<<<<<<<<<<<<<<<<
-C01234567<7DEU8304159M2905141<<<<<<<<<<<<<<<8`;
+      const germanMRZ = `P<DEUTERMANN<<HANS<PETER<<<<<<<<<<<<<<<<<<<<
+C01234567<7DEU8304159M2905141DEU<<<<<<<<<<<8`;
 
       const info = extractMRZInfo(germanMRZ);
       expect(info.issuingCountry).toBe('DEU');
@@ -267,8 +267,8 @@ C01234567<7DEU8304159M2905141<<<<<<<<<<<<<<<8`;
     });
 
     it('handles various country codes', () => {
-      const usMRZ = `P<USASMITH<<JOHN<WILLIAM<<<<<<<<<<<<<<<<<<<
-123456789<1USA8501019M3012315<<<<<<<<<<<<<<06`;
+      const usMRZ = `P<USASMITH<<JOHN<WILLIAM<<<<<<<<<<<<<<<<<<<<
+123456789<1USA8501019M3012315USA<<<<<<<<<<<6`;
 
       const info = extractMRZInfo(usMRZ);
       expect(info.issuingCountry).toBe('USA');
