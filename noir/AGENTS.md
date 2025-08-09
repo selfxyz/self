@@ -2,6 +2,16 @@
 
 ## Development Workflow
 
+### Prerequisites
+
+- Install nargo via noirup (pin the version used in CI for reproducibility):
+  - curl -L https://raw.githubusercontent.com/noir-lang/noirup/main/install | bash
+  - noirup -v <noir_version>    # e.g., noirup -v v0.30.0
+- Verify nargo is on the expected version:
+  - nargo --version
+- Ensure Rust toolchain is installed and up to date (required by nargo).
+- From the repository root, run commands inside the `noir/` workspace unless otherwise noted.
+
 ### Code Quality
 
 For the best development experience:
@@ -16,7 +26,7 @@ nargo check -p <crate>
 
 ### Building
 
-- Run `nargo build -p <crate>` to compile a Noir circuit
+- Run `nargo build --package <crate>` (`-p <crate>`) to compile a Noir circuit (requires nargo >= 0.31.0)
 - Run `nargo build` to build all crates in the workspace
 
 ### Testing
@@ -27,7 +37,11 @@ nargo check -p <crate>
 ### Formatting
 
 - Run `nargo fmt` to format all Noir files in the workspace
-- Run `nargo fmt -p <crate>` to format files in a specific crate
+- To format files in a specific crate, change into that crate's directory and run:
+  ```
+  cd <crate>
+  nargo fmt
+  ```
 
 ### Pre-commit Checklist
 

@@ -23,6 +23,14 @@ describe('mergeConfig', () => {
     },
   };
 
+  // Freeze base config to catch accidental mutations inside mergeConfig
+  Object.freeze(baseConfig.tlsPinning.pins);
+  Object.freeze(baseConfig.tlsPinning);
+  Object.freeze(baseConfig.features);
+  Object.freeze(baseConfig.timeouts);
+  Object.freeze(baseConfig.endpoints);
+  Object.freeze(baseConfig);
+
   it('merges complete override config correctly', () => {
     const override: Config = {
       endpoints: {

@@ -1,3 +1,8 @@
+// Add ErrorOptions interface for TypeScript compatibility
+interface ErrorOptions {
+  cause?: unknown;
+}
+
 export type SdkErrorCategory = 'scanner' | 'network' | 'protocol' | 'proof' | 'crypto' | 'validation' | 'config';
 
 export const SCANNER_ERROR_CODES = {
@@ -12,23 +17,12 @@ export class SdkError extends Error {
   readonly retryable: boolean;
   declare cause?: Error;
 
-  constructor(
-    message: string,
-    code: string,
-    category: SdkErrorCategory,
-    retryable = false,
-    options?: { cause?: Error },
-  ) {
-    super(message);
+  constructor(message: string, code: string, category: SdkErrorCategory, retryable = false, options?: ErrorOptions) {
+    super(message, options);
     this.name = 'SdkError';
     this.code = code;
     this.category = category;
     this.retryable = retryable;
-
-    // Handle cause if provided (for older TypeScript versions)
-    if (options?.cause) {
-      (this as any).cause = options.cause;
-    }
   }
 }
 
