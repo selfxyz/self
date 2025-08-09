@@ -16,7 +16,9 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/sdk-alpha build
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-alpha build
       - name: Run linter
         run: yarn lint
 
@@ -28,7 +30,9 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/sdk-alpha build
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-alpha build
       - name: Yarn types
         shell: bash
         run: yarn types
@@ -41,6 +45,8 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/sdk-alpha build
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/sdk-alpha build
       - name: Run @selfxyz/sdk-alpha tests
         run: yarn workspace @selfxyz/sdk-alpha test
