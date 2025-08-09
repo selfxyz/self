@@ -6,6 +6,28 @@ export interface ScanOpts {
   mode: ScanMode;
 }
 
+export interface MRZValidation {
+  format: boolean;
+  passportNumberChecksum: boolean;
+  dateOfBirthChecksum: boolean;
+  dateOfExpiryChecksum: boolean;
+  compositeChecksum: boolean;
+  overall: boolean;
+}
+
+export interface MRZInfo {
+  passportNumber: string;
+  dateOfBirth: string;
+  dateOfExpiry: string;
+  surname: string;
+  givenNames: string;
+  sex: string;
+  nationality: string;
+  issuingCountry: string;
+  documentType: string;
+  validation: MRZValidation;
+}
+
 export type ScanResult =
   | {
       mode: 'mrz';
@@ -13,6 +35,8 @@ export type ScanResult =
       dateOfBirth: string;
       dateOfExpiry: string;
       countryCode?: string;
+      // Extended MRZ data when available
+      mrzInfo?: MRZInfo;
     }
   | { mode: 'nfc'; raw: unknown }
   | { mode: 'qr'; data: string };
