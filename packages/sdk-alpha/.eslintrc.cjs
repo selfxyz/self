@@ -43,10 +43,7 @@ module.exports = {
       },
     ],
     // Export sorting - using sort-exports for better type prioritization
-    'sort-exports/sort-exports': [
-      'error',
-      { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
-    ],
+    'sort-exports/sort-exports': ['error', { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' }],
     '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
     'import/first': 'error',
     'import/newline-after-import': 'error',

@@ -255,7 +255,7 @@ B2345678<1UTO9001015F2612125UTO<<<<<<<<<<<<8`;
     it('works with real-world MRZ variations', () => {
       // German passport example (fictional but realistic)
       const germanMRZ = `P<DEUTERMANN<<HANS<PETER<<<<<<<<<<<<<<<<<<<<
-C01234567<7DEU8304159M2905141DEU<<<<<<<<<<<8`;
+C012345677DEU8304159M2905141DEU<<<<<<<<<<<<8`;
 
       const info = extractMRZInfo(germanMRZ);
       expect(info.issuingCountry).toBe('DEU');
@@ -268,7 +268,7 @@ C01234567<7DEU8304159M2905141DEU<<<<<<<<<<<8`;
 
     it('handles various country codes', () => {
       const usMRZ = `P<USASMITH<<JOHN<WILLIAM<<<<<<<<<<<<<<<<<<<<
-123456789<1USA8501019M3012315USA<<<<<<<<<<<6`;
+1234567891USA8501019M3012315USA<<<<<<<<<<<<6`;
 
       const info = extractMRZInfo(usMRZ);
       expect(info.issuingCountry).toBe('USA');
