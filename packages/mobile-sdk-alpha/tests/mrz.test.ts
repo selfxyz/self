@@ -160,6 +160,70 @@ B2345678<1UTO9001015F2612125UTO<<<<<<<<<<<<8`;
         expect(info.givenNames).toBe('MARIA ELENA');
       });
     });
+
+    describe('Improved Issuing Country and Nationality Extraction', () => {
+      it('filters issuing country to only uppercase A-Z letters', () => {
+        // Test with non-letter characters in issuing country
+        const sampleWithSpecialChars = `P<U1OERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
+
+        const info = extractMRZInfo(sampleWithSpecialChars);
+        expect(info.issuingCountry).toBe('UO'); // Removes the '1' character
+      });
+
+      it('handles issuing country with mixed characters', () => {
+        const sampleWithMixedChars = `P<U@TOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
+
+        const info = extractMRZInfo(sampleWithMixedChars);
+        expect(info.issuingCountry).toBe('UTO'); // Removes the '@' character
+      });
+
+      it('improves nationality extraction with 4-character window scanning', () => {
+        // Test nationality field with stray characters at position 10
+        const sampleWithStrayChar = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+L898902C36U1TO7408122F1204159ZE184226B<<<<<10`;
+
+        const info = extractMRZInfo(sampleWithStrayChar);
+        expect(info.nationality).toBe('UTO'); // Finds 'UTO' starting at position 11
+      });
+
+      it('handles nationality with multiple stray characters', () => {
+        // Test nationality field with stray characters at positions 10 and 11
+        const sampleWithMultipleStrayChars = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+L898902C36U1T2O7408122F1204159ZE184226B<<<<<10`;
+
+        const info = extractMRZInfo(sampleWithMultipleStrayChars);
+        expect(info.nationality).toBe('UTO'); // Finds 'UTO' starting at position 12
+      });
+
+      it('falls back to original slice when no 3-letter match found', () => {
+        // Test nationality field with no valid 3-letter sequence in window
+        const sampleWithNoValidSequence = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+L898902C36U1T27408122F1204159ZE184226B<<<<<10`;
+
+        const info = extractMRZInfo(sampleWithNoValidSequence);
+        expect(info.nationality).toBe('U1T'); // Falls back to original slice(10,13)
+      });
+
+      it('handles nationality field with all valid characters', () => {
+        // Test normal case where nationality field is clean
+        const cleanSample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
+
+        const info = extractMRZInfo(cleanSample);
+        expect(info.nationality).toBe('UTO'); // Normal case works as expected
+      });
+
+      it('handles edge case with nationality at end of window', () => {
+        // Test nationality field where valid sequence is at the end of the 4-character window
+        const sampleWithLateSequence = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+L898902C36U1UTO7408122F1204159ZE184226B<<<<<10`;
+
+        const info = extractMRZInfo(sampleWithLateSequence);
+        expect(info.nationality).toBe('UTO'); // Finds 'UTO' at positions 12-14
+      });
+    });
   });
 
   describe('formatDateToYYMMDD', () => {

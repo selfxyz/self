@@ -138,13 +138,26 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
 
   // Line 1: P<CCCSURNAME<<GIVENNAMES<<<<<<<<<<<<<<<<<<
   const documentType = line1.slice(0, 1);
-  const issuingCountry = line1.slice(2, 5).replace(/</g, '');
+  const issuingCountry = line1.slice(2, 5).replace(/</g, '').replace(/[^A-Z]/g, '');
   const nameField = line1.slice(5, 44);
   const { surname, givenNames } = parseNames(nameField);
 
   // Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)OPTIONAL(7)FINALCHECK(1)
   const passportNumber = line2.slice(0, 9).replace(/</g, '');
-  const nationality = line2.slice(10, 13).replace(/</g, '');
+
+  // Improved nationality extraction: scan 4-character window starting at position 10
+  // for the first contiguous three-letter uppercase match
+  const nationalityWindow = line2.slice(10, 14);
+  let nationality = nationalityWindow.slice(0, 3).replace(/</g, '');
+
+  // Look for a 3-letter uppercase sequence in the window
+  for (let i = 0; i <= nationalityWindow.length - 3; i++) {
+    const candidate = nationalityWindow.slice(i, i + 3);
+    if (/^[A-Z]{3}$/.test(candidate)) {
+      nationality = candidate;
+      break;
+    }
+  }
   const dateOfBirth = line2.slice(13, 19);
   const sex = line2.slice(20, 21).replace(/</g, '');
   const dateOfExpiry = line2.slice(21, 27);

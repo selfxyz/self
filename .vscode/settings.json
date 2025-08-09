@@ -52,6 +52,9 @@
   "[**/app/**]": {
     "editor.formatOnSave": true
   },
+  "[**/packages/**]": {
+    "editor.formatOnSave": true
+  },
 
   // ESLint Configuration - Optimized for Performance
   "eslint.run": "onSave",
