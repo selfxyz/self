@@ -1,0 +1,46 @@
+name: SDK Alpha CI
+
+on:
+  pull_request:
+    paths:
+      - "packages/sdk-alpha/**"
+      - ".github/workflows/sdk-alpha-ci.yml"
+      - ".github/actions/**"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build dependencies
+        shell: bash
+        run: yarn workspace @selfxyz/sdk-alpha build
+      - name: Run linter
+        run: yarn lint
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build dependencies
+        shell: bash
+        run: yarn workspace @selfxyz/sdk-alpha build
+      - name: Yarn types
+        shell: bash
+        run: yarn types
+
+  test-sdk-alpha:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build dependencies
+        shell: bash
+        run: yarn workspace @selfxyz/sdk-alpha build
+      - name: Run @selfxyz/sdk-alpha tests
+        run: yarn workspace @selfxyz/sdk-alpha test
