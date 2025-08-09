@@ -18,11 +18,14 @@ export class SdkError extends Error {
   declare cause?: Error;
 
   constructor(message: string, code: string, category: SdkErrorCategory, retryable = false, options?: ErrorOptions) {
-    super(message, options);
+    super(message);
     this.name = 'SdkError';
     this.code = code;
     this.category = category;
     this.retryable = retryable;
+    if (options?.cause) {
+      this.cause = options.cause as Error;
+    }
   }
 }
 
