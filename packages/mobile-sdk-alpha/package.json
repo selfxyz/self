@@ -1,5 +1,5 @@
 {
-  "name": "@selfxyz/sdk-alpha",
+  "name": "@selfxyz/mobile-sdk-alpha",
   "version": "0.0.1",
   "description": "Self SDK (alpha) for registering and proving. Adapters-first, RN-first with web shims.",
   "keywords": [
@@ -38,6 +38,7 @@
     "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
     "report:exports": "node ./scripts/report-exports.mjs",
     "test": "vitest run",
+    "test:build": "yarn build && yarn test && yarn types && yarn lint",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",

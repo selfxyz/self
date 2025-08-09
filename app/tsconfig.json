@@ -9,9 +9,9 @@
       "@env": ["./env.ts"],
       "@selfxyz/common": ["../common"],
       "@selfxyz/common/*": ["../common/*"],
-      "@selfxyz/sdk-alpha": [
-        "../packages/sdk-alpha/src",
-        "../packages/sdk-alpha/dist"
+      "@selfxyz/mobile-sdk-alpha": [
+        "../packages/mobile-sdk-alpha/src",
+        "../packages/mobile-sdk-alpha/dist"
       ],
       "@src": ["./src"],
       "@src/*": ["./src/*"]

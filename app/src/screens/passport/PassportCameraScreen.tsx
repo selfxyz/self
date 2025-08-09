@@ -5,7 +5,7 @@ import React, { useCallback, useRef } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 
-import { formatDateToYYMMDD } from '@selfxyz/sdk-alpha';
+import { formatDateToYYMMDD } from '@selfxyz/mobile-sdk-alpha';
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import passportScanAnimation from '@src/assets/animations/passport_scan.json';

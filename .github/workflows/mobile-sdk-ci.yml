@@ -3,7 +3,7 @@ name: Mobile SDK CI
 on:
   pull_request:
     paths:
-      - "packages/sdk-alpha/**"
+      - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-sdk-ci.yml"
       - ".github/actions/**"
 
@@ -19,17 +19,17 @@ jobs:
         shell: bash
         run: |
           yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/sdk-alpha build
+          yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Cache build artifacts
         uses: actions/cache/save@v4
         with:
           path: |
             common/dist
-            packages/sdk-alpha/dist
+            packages/mobile-sdk-alpha/dist
             node_modules
-            packages/sdk-alpha/node_modules
+            packages/mobile-sdk-alpha/node_modules
             common/node_modules
-          key: sdk-alpha-build-${{ github.sha }}
+          key: mobile-sdk-alpha-build-${{ github.sha }}
 
   # Consolidated quality checks job
   quality-checks:
@@ -44,17 +44,17 @@ jobs:
         with:
           path: |
             common/dist
-            packages/sdk-alpha/dist
+            packages/mobile-sdk-alpha/dist
             node_modules
-            packages/sdk-alpha/node_modules
+            packages/mobile-sdk-alpha/node_modules
             common/node_modules
-          key: sdk-alpha-build-${{ github.sha }}
+          key: mobile-sdk-alpha-build-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Run linter
-        run: yarn workspace @selfxyz/sdk-alpha lint
+        run: yarn workspace @selfxyz/mobile-sdk-alpha lint
       - name: Check Prettier formatting
-        run: yarn workspace @selfxyz/sdk-alpha prettier --check .
+        run: yarn workspace @selfxyz/mobile-sdk-alpha prettier --check .
       - name: Type checking
-        run: yarn workspace @selfxyz/sdk-alpha types
+        run: yarn workspace @selfxyz/mobile-sdk-alpha types
       - name: Run tests
-        run: yarn workspace @selfxyz/sdk-alpha test
+        run: yarn workspace @selfxyz/mobile-sdk-alpha test

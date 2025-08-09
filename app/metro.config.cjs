@@ -5,7 +5,7 @@ const { assetExts, sourceExts } = defaultConfig.resolver;
 
 const monorepoRoot = path.resolve(__dirname, '../');
 const commonPath = path.join(__dirname, '/../common');
-const sdkAlphaPath = path.join(__dirname, '/../packages/sdk-alpha');
+const sdkAlphaPath = path.join(__dirname, '/../packages/mobile-sdk-alpha');
 const trueMonorepoNodeModules = path.resolve(__dirname, '../node_modules');
 const extraNodeModules = {
   stream: require.resolve('stream-browserify'),
@@ -15,7 +15,7 @@ const extraNodeModules = {
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
   '@src': path.join(__dirname, 'src'),
   '@selfxyz/common': path.resolve(commonPath, 'dist'),
-  '@selfxyz/sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
+  '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
   // Main exports
   '@selfxyz/common/utils': path.resolve(
     commonPath,

@@ -1,4 +1,4 @@
-# @selfxyz/sdk-alpha
+# @selfxyz/mobile-sdk-alpha
 
 Alpha SDK for registering and proving. Adapters-first, React Native-first with web shims. Minimal surface for scan → validate → generate proof → attestation verification.
 
@@ -26,7 +26,7 @@ Alpha SDK for registering and proving. Adapters-first, React Native-first with w
 Provide `scanner`, `network`, and `crypto` adapters. `storage`, `clock`, and `logger` default to no-ops.
 
 ```ts
-import { createSelfClient, webScannerShim, extractMRZInfo } from '@selfxyz/sdk-alpha';
+import { createSelfClient, webScannerShim, extractMRZInfo } from '@selfxyz/mobile-sdk-alpha';
 const sdk = createSelfClient({
   config: {},
   adapters: {

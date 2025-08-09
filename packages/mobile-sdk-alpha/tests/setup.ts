@@ -1,5 +1,5 @@
 /**
- * Vitest setup file for SDK-alpha tests
+ * Vitest setup file for mobile-sdk-alpha tests
  * Reduces console noise during testing
  */
 
