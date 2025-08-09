@@ -17,11 +17,17 @@ Alpha SDK for registering and proving. Adapters-first, React Native-first with w
 
 ## Quick start (local, monorepo)
 
+Provide `scanner`, `network`, and `crypto` adapters. `storage`, `clock`, and `logger` default to no-ops.
+
 ```ts
 import { createSelfClient, webScannerShim, extractMRZInfo } from '@selfxyz/sdk-alpha';
 const sdk = createSelfClient({
   config: {},
-  adapters: { scanner: webScannerShim },
+  adapters: {
+    scanner: webScannerShim,
+    network: yourNetworkAdapter,
+    crypto: yourCryptoAdapter,
+  },
 });
 ```
 
