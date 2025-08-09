@@ -1,4 +1,4 @@
-import type { Config } from '../types/public.js';
+import type { Config } from '../types/public';
 
 export function mergeConfig(base: Required<Config>, override: Config): Required<Config> {
   return {

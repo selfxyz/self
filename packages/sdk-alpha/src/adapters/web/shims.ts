@@ -1,5 +1,5 @@
-import { SCANNER_ERROR_CODES, sdkError } from '../../errors.js';
-import type { ScannerAdapter, ScanOpts, ScanResult } from '../../types/public.js';
+import { SCANNER_ERROR_CODES, sdkError } from '../../errors';
+import type { ScannerAdapter, ScanOpts, ScanResult } from '../../types/public';
 
 export const webScannerShim: ScannerAdapter = {
   async scan(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult> {

@@ -10,11 +10,15 @@ describe('createSelfClient', () => {
   });
 
   it('throws when network adapter missing during creation', () => {
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto } })).toThrow('network adapter not provided');
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto } })).toThrow(
+      'network adapter not provided',
+    );
   });
 
   it('throws when crypto adapter missing during creation', () => {
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, network } })).toThrow('crypto adapter not provided');
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, network } })).toThrow(
+      'crypto adapter not provided',
+    );
   });
 
   it('creates client successfully with all required adapters', () => {

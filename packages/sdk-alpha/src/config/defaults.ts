@@ -1,4 +1,4 @@
-import type { Config } from '../types/public.js';
+import type { Config } from '../types/public';
 
 export const defaultConfig: Required<Config> = {
   endpoints: { api: '', teeWs: '', artifactsCdn: '' },

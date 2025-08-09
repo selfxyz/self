@@ -14,7 +14,8 @@ if (!pkg.scripts?.build?.includes('tsup')) errors.push('build script should use 
 const dotExports = pkg.exports?.['.'];
 if (dotExports && typeof dotExports === 'object') {
   if (!dotExports.browser) errors.push("exports['.'] must include 'browser' condition for web environments");
-  if (!dotExports['react-native']) errors.push("exports['.'] must include 'react-native' condition for React Native environments");
+  if (!dotExports['react-native'])
+    errors.push("exports['.'] must include 'react-native' condition for React Native environments");
 }
 
 // Check for types exports

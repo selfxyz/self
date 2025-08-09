@@ -1,4 +1,4 @@
-import type { MRZInfo, MRZValidation } from '../types/public.js';
+import type { MRZInfo, MRZValidation } from '../types/public';
 
 /**
  * Calculate check digit for MRZ fields using ICAO 9303 standard

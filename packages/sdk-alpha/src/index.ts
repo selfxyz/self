@@ -1,9 +1,9 @@
-export { createSelfClient } from './client.js';
-export * from './types/public.js';
-export * from './adapters/index.js';
-export * from './errors.js';
-export { defaultConfig } from './config/defaults.js';
-export { webScannerShim } from './adapters/web/shims.js';
+export { createSelfClient } from './client';
+export * from './types/public';
+export * from './adapters/index';
+export * from './errors';
+export { defaultConfig } from './config/defaults';
+export { webScannerShim } from './adapters/web/shims';
 
 // expose initial processing helper to prove structure works
-export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz.js';
+export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz';

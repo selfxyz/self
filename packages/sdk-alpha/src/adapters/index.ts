@@ -8,4 +8,4 @@ export type {
   WsAdapter,
   ClockAdapter,
   LoggerAdapter,
-} from '../types/public.js';
+} from '../types/public';

@@ -1,6 +1,6 @@
-import { defaultConfig } from './config/defaults.js';
-import { mergeConfig } from './config/merge.js';
-import { notImplemented } from './errors.js';
+import { defaultConfig } from './config/defaults';
+import { mergeConfig } from './config/merge';
+import { notImplemented } from './errors';
 import type {
   Adapters,
   Config,
@@ -16,7 +16,7 @@ import type {
   Unsubscribe,
   ValidationInput,
   ValidationResult,
-} from './types/public.js';
+} from './types/public';
 
 const optionalDefaults: Partial<Adapters> = {
   storage: {
