@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { webScannerShim } from '../src/adapters/web/shims.js';
+import { webScannerShim } from '../src/adapters/web/shims';
 
 describe('webScannerShim', () => {
   it('returns stub qr data', async () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src/adapters/index.js';
-import { createSelfClient } from '../src/index.js';
+import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src/adapters/index';
+import { createSelfClient } from '../src/index';
 
 describe('createSelfClient', () => {
   // Test eager validation during client creation

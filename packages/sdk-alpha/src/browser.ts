@@ -1,22 +1,43 @@
 // Browser-safe exports with explicit tree-shaking friendly imports
-export { createSelfClient } from './client';
-export { defaultConfig } from './config/defaults';
-export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz';
-export { webScannerShim } from './adapters/web/shims';
 
-// Export browser-safe types and errors
-export * from './types/public';
-export * from './errors';
-
-// Export browser-compatible adapters (excludes any Node-specific adapters)
+// Types
 export type {
-  ScannerAdapter,
-  CryptoAdapter,
-  NetworkAdapter,
-  StorageAdapter,
+  Adapters,
   ClockAdapter,
-  LoggerAdapter,
+  Config,
+  CryptoAdapter,
   HttpAdapter,
+  LogLevel,
+  LoggerAdapter,
+  MRZInfo,
+  MRZValidation,
+  NetworkAdapter,
+  Progress,
+  ProofHandle,
+  ProofRequest,
+  RegistrationInput,
+  RegistrationStatus,
+  SDKEvent,
+  ScanMode,
+  ScanOpts,
+  ScanResult,
+  ScannerAdapter,
+  SelfClient,
+  StorageAdapter,
+  Unsubscribe,
+  ValidationInput,
+  ValidationResult,
   WsAdapter,
   WsConn,
 } from './types/public';
+
+// Core functions
+export type { SdkErrorCategory } from './errors';
+export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+export { createSelfClient } from './client';
+export { defaultConfig } from './config/defaults';
+
+
+export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz';
+// Error handling
+export { webScannerShim } from './adapters/web/shims';

@@ -12,7 +12,7 @@ module.exports = {
     'plugin:import/recommended',
     'plugin:import/typescript',
   ],
-  plugins: ['simple-import-sort', 'import'],
+  plugins: ['simple-import-sort', 'import', 'sort-exports'],
   ignorePatterns: ['dist/', 'node_modules/'],
   settings: {
     'import/resolver': {
@@ -28,8 +28,24 @@ module.exports = {
     'simple-import-sort/imports': [
       'error',
       {
-        groups: [['^node:'], ['^node:.*/'], ['^[a-zA-Z]'], ['^@selfxyz/'], ['^[./]']],
+        groups: [
+          // Node.js built-ins
+          ['^node:'],
+          ['^node:.*/'],
+          // External packages
+          ['^[a-zA-Z]'],
+          // Internal workspace packages
+          ['^@selfxyz/'],
+
+          // Relative imports
+          ['^[./]'],
+        ],
       },
+    ],
+    // Export sorting - using sort-exports for better type prioritization
+    'sort-exports/sort-exports': [
+      'error',
+      { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
     '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
     'import/first': 'error',
@@ -54,6 +70,13 @@ module.exports = {
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
         'no-undef': 'off',
+      },
+    },
+    {
+      // Disable export sorting for type definition files to preserve logical grouping
+      files: ['src/types/**/*.ts'],
+      rules: {
+        'sort-exports/sort-exports': 'off',
       },
     },
   ],

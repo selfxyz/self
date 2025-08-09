@@ -1,9 +1,41 @@
-export { createSelfClient } from './client';
-export * from './types/public';
-export * from './adapters/index';
-export * from './errors';
-export { defaultConfig } from './config/defaults';
-export { webScannerShim } from './adapters/web/shims';
+// Types
+export type {
+  Adapters,
+  ClockAdapter,
+  Config,
+  CryptoAdapter,
+  HttpAdapter,
+  LogLevel,
+  LoggerAdapter,
+  MRZInfo,
+  MRZValidation,
+  NetworkAdapter,
+  Progress,
+  ProofHandle,
+  ProofRequest,
+  RegistrationInput,
+  RegistrationStatus,
+  SDKEvent,
+  ScanMode,
+  ScanOpts,
+  ScanResult,
+  ScannerAdapter,
+  SelfClient,
+  StorageAdapter,
+  Unsubscribe,
+  ValidationInput,
+  ValidationResult,
+  WsAdapter,
+  WsConn,
+} from './types/public';
 
-// expose initial processing helper to prove structure works
+// Core functions
+export type { SdkErrorCategory } from './errors';
+export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+export { createSelfClient } from './client';
+export { defaultConfig } from './config/defaults';
+
+
 export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz';
+// Error handling
+export { webScannerShim } from './adapters/web/shims';

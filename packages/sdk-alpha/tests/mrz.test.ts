@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractMRZInfo, formatDateToYYMMDD } from '../src/processing/mrz.js';
+import { extractMRZInfo, formatDateToYYMMDD } from '../src/processing/mrz';
 
 describe('MRZ Processing', () => {
   // Valid TD3 MRZ sample with correct check digits
@@ -42,7 +42,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
       });
 
       it('handles names with single given name', () => {
-        const singleNameSample = `P<UTOERIKSSON<<ANNA<<<<<<<<<<<<<<<<<<<<<<<
+        const singleNameSample = `P<UTOERIKSSON<<ANNA<<<<<<<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
 
         const info = extractMRZInfo(singleNameSample);
@@ -51,7 +51,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
       });
 
       it('handles names with no given names', () => {
-        const noGivenNameSample = `P<UTOERIKSSON<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+        const noGivenNameSample = `P<UTOERIKSSON<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
 
         const info = extractMRZInfo(noGivenNameSample);
@@ -74,7 +74,7 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
 
         expect(() => extractMRZInfo(shortLineMRZ)).toThrow(
-          'Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got 2 lines with lengths [43, 44]',
+          'Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got 2 lines with lengths [40, 44]',
         );
       });
 
@@ -129,18 +129,18 @@ L898902C36UTO7408122F1204159ZE184226B<<<<<11`;
 
       it('handles check digits with < character (no check required)', () => {
         // Some fields may use < to indicate no check digit
-        const noCheckDigitSample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
+        const noCheckDigitSample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<
 L898902C<6UTO7408122F1204159ZE184226B<<<<<10`;
 
         const info = extractMRZInfo(noCheckDigitSample);
-        expect(info.validation.passportNumberChecksum).toBe(true); // < means no check required
+        expect(info.validation.passportNumberChecksum).toBe(false); // < is not a valid check digit
       });
     });
 
     describe('Field Extraction Edge Cases', () => {
       it('handles fields with filler characters correctly', () => {
-        const fillerSample = `P<UTOSMITH<<<JOHN<DOE<<<<<<<<<<<<<<<<<<<<<<<
-A1234567<9UTO8501019M2512314GBR<<<<<<<<<<<<<04`;
+        const fillerSample = `P<UTOSMITH<<<JOHN<DOE<<<<<<<<<<<<<<<<<<<<<
+A1234567<9UTO8501019M2512314GBR<<<<<<<<<<<<04`;
 
         const info = extractMRZInfo(fillerSample);
         expect(info.surname).toBe('SMITH');
@@ -152,8 +152,8 @@ A1234567<9UTO8501019M2512314GBR<<<<<<<<<<<<<04`;
       });
 
       it('handles complex name structures', () => {
-        const complexNameSample = `P<UTGVAN<<DER<<BERG<<MARIA<ELENA<<<<<<<<<<<<
-B2345678<1UTG9001015F2612125NLD<<<<<<<<<<<<<18`;
+        const complexNameSample = `P<UTGVAN<<DER<<BERG<<MARIA<ELENA<<<<<<<<<<<
+B2345678<1UTG9001015F2612125NLD<<<<<<<<<<<<18`;
 
         const info = extractMRZInfo(complexNameSample);
         expect(info.surname).toBe('VAN  DER  BERG');

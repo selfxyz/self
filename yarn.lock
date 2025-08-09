@@ -5090,7 +5090,9 @@ __metadata:
     eslint: "npm:^8.57.0"
     eslint-plugin-import: "npm:^2.31.0"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
+    eslint-plugin-sort-exports: "npm:^0.8.0"
     prettier: "npm:^3.5.3"
+    ts-morph: "npm:^21.0.1"
     tslib: "npm:^2.6.2"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.5.4"
@@ -9222,6 +9224,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ts-morph/common@npm:~0.22.0":
+  version: 0.22.0
+  resolution: "@ts-morph/common@npm:0.22.0"
+  dependencies:
+    fast-glob: "npm:^3.3.2"
+    minimatch: "npm:^9.0.3"
+    mkdirp: "npm:^3.0.1"
+    path-browserify: "npm:^1.0.1"
+  checksum: 10c0/1f1ff7fee54414e09803b1ba559ff51881b821c19bc97cb19d06fc46c58957dea4a58e6a83e9f2e30e08c8179d6d142e45be329d9242f410323795b5c1e04806
+  languageName: node
+  linkType: hard
+
 "@ts-morph/common@npm:~0.23.0":
   version: 0.23.0
   resolution: "@ts-morph/common@npm:0.23.0"
@@ -12774,6 +12788,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"code-block-writer@npm:^12.0.0":
+  version: 12.0.0
+  resolution: "code-block-writer@npm:12.0.0"
+  checksum: 10c0/ced73cdc466bff968bba9e8e32340d88420d25a229b9269f7425a10a7c2c9a12ca702dcb601b2462b96472d354f021cf66e552179fcbe30c8f7ecd0173c5fa07
+  languageName: node
+  linkType: hard
+
 "code-block-writer@npm:^13.0.1":
   version: 13.0.3
   resolution: "code-block-writer@npm:13.0.3"
@@ -14736,6 +14757,15 @@ __metadata:
   peerDependencies:
     eslint: ">=5.0.0"
   checksum: 10c0/0ad1907ad9ddbadd1db655db0a9d0b77076e274b793a77b982c8525d808d868e6ecfce24f3a411e8a1fa551077387f9ebb38c00956073970ebd7ee6a029ce2b3
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-sort-exports@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "eslint-plugin-sort-exports@npm:0.8.0"
+  peerDependencies:
+    eslint: ">=5.0.0"
+  checksum: 10c0/599b3b34389030cfadfdfb93c915497412b47191af2cc722edb887991657aabd4ffce683bebe8db8312d92426bbc8bb1456ead3d4e0d29cb7ae0ba40359f10b4
   languageName: node
   linkType: hard
 
@@ -24782,6 +24812,16 @@ __metadata:
   bin:
     ts-mocha: bin/ts-mocha
   checksum: 10c0/ebc4be7d31939c502f6ff5bebe67a8370b69a76dac2889a5a6fc56fa0c11e25298f45c6ab81260d9899fc0120402ed75f0cf6dce37020df27ada55787b70bb42
+  languageName: node
+  linkType: hard
+
+"ts-morph@npm:^21.0.1":
+  version: 21.0.1
+  resolution: "ts-morph@npm:21.0.1"
+  dependencies:
+    "@ts-morph/common": "npm:~0.22.0"
+    code-block-writer: "npm:^12.0.0"
+  checksum: 10c0/ed1d4ccdeba2300cfa236f2aaf64bb462aa386141e659a08d8a2eb96d3b4b274abc9d97b8dd06a0c13af79187b197f38f6a8baca709f99d11094a82c8abccf27
   languageName: node
   linkType: hard
 

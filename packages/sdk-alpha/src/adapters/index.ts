@@ -1,11 +1,11 @@
 export type {
   Adapters,
-  StorageAdapter,
-  ScannerAdapter,
-  CryptoAdapter,
-  NetworkAdapter,
-  HttpAdapter,
-  WsAdapter,
   ClockAdapter,
+  CryptoAdapter,
+  HttpAdapter,
   LoggerAdapter,
+  NetworkAdapter,
+  ScannerAdapter,
+  StorageAdapter,
+  WsAdapter,
 } from '../types/public';
