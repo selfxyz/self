@@ -22,6 +22,11 @@ This repository is a Yarn v4 monorepo with several workspaces:
 Before committing, run the following commands:
 
 ```bash
+# Fix linting and formatting issues automatically (for packages that support it)
+yarn workspace @selfxyz/mobile-sdk-alpha nice
+yarn workspace @selfxyz/common nice
+yarn workspace @selfxyz/app nice
+
 # Lint all packages in parallel
 yarn lint
 

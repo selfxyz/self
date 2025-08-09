@@ -31,15 +31,11 @@ function calculateCheckDigit(input: string): number {
  * Verify check digit for a given field
  */
 function verifyCheckDigit(field: string, expectedCheckDigit: string): boolean {
-  if (expectedCheckDigit === '<') {
-    return true; // < indicates no check digit required
-  }
-
-  const expected = parseInt(expectedCheckDigit, 10);
-  if (isNaN(expected)) {
+  // Only numeric check digits are valid per ICAO 9303
+  if (!/^\d$/.test(expectedCheckDigit)) {
     return false;
   }
-
+  const expected = parseInt(expectedCheckDigit, 10);
   try {
     const calculated = calculateCheckDigit(field);
     return calculated === expected;
@@ -50,16 +46,10 @@ function verifyCheckDigit(field: string, expectedCheckDigit: string): boolean {
 
 /**
  * Parse names from MRZ format (surname<<given<names<<<)
- * In the test case: VAN<<DER<<BERG<<MARIA<ELENA<<<<<<<<<<<<<
+ * Handles complex cases like: VAN<<DER<<BERG<<MARIA<ELENA
  * Expected: surname="VAN  DER  BERG", givenNames="MARIA ELENA"
- * This suggests that surname parts are separated by << until we hit the given names
  */
 function parseNames(nameField: string): { surname: string; givenNames: string } {
-  // The pattern for the complex case is: surname parts separated by <<, then given names
-  // For VAN<<DER<<BERG<<MARIA<ELENA, we need to identify that MARIA starts the given names
-
-  // First, try to find a logical breaking point
-  // In this specific format, we look for the last << followed by a typical given name pattern
   const parts = nameField.split('<<');
 
   if (parts.length === 1) {
@@ -70,23 +60,21 @@ function parseNames(nameField: string): { surname: string; givenNames: string } 
     };
   }
 
-  // Look for parts that look like given names (containing < within the part, suggesting multiple given names)
-  // or look for common given name patterns
+  // Find the boundary between surname and given names
+  // Look for the last part that contains '<' (indicating given names with spaces)
   let givenNamesStartIndex = parts.length; // Default to all surname
 
   for (let i = parts.length - 1; i >= 0; i--) {
     const part = parts[i];
-    // If a part contains '<' within it (not just at the end), it's likely given names
-    // Or if it's the last substantive part
+    // If a part contains '<' within it (not just trailing '<'), it's likely given names
     if (part.includes('<') && !part.endsWith('<'.repeat(part.length))) {
       givenNamesStartIndex = i;
       break;
     }
   }
 
-  // If we didn't find a clear given names section, use the original simple logic
+  // If we didn't find a clear given names section, use the first << as boundary
   if (givenNamesStartIndex >= parts.length) {
-    // Use the first << as the boundary (simple case)
     const firstDoubleSeparator = nameField.indexOf('<<');
     if (firstDoubleSeparator === -1) {
       return {
@@ -104,13 +92,13 @@ function parseNames(nameField: string): { surname: string; givenNames: string } 
     };
   }
 
-  // Build surname from parts before the given names
-  const surnamePartsArray = parts.slice(0, givenNamesStartIndex);
-  const surname = surnamePartsArray.join('  ').replace(/</g, ' ').trim(); // Use double space to match expected output
+  // Build surname from parts before the given names (join with double spaces to reflect <<)
+  const surnameParts = parts.slice(0, givenNamesStartIndex);
+  const surname = surnameParts.join('  ').replace(/</g, ' ').trim();
 
   // Build given names from remaining parts
-  const givenNamesPartsArray = parts.slice(givenNamesStartIndex);
-  const givenNames = givenNamesPartsArray.join(' ').replace(/</g, ' ').trim();
+  const givenNamesParts = parts.slice(givenNamesStartIndex);
+  const givenNames = givenNamesParts.join(' ').replace(/</g, ' ').trim();
 
   return { surname, givenNames };
 }
@@ -148,18 +136,22 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
   // Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)OPTIONAL(7)FINALCHECK(1)
   const passportNumber = line2.slice(0, 9).replace(/</g, '');
 
-  // Improved nationality extraction: scan 4-character window starting at position 10
-  // for the first contiguous three-letter uppercase match
-  const nationalityWindow = line2.slice(10, 14);
-  let nationality = nationalityWindow.slice(0, 3).replace(/</g, '');
+  // Robust nationality extraction: scan 4-character window for three contiguous A-Z letters
+  const rawNat = line2.slice(10, 14);
+  let nationality = '';
 
   // Look for a 3-letter uppercase sequence in the window
-  for (let i = 0; i <= nationalityWindow.length - 3; i++) {
-    const candidate = nationalityWindow.slice(i, i + 3);
+  for (let i = 0; i <= rawNat.length - 3; i++) {
+    const candidate = rawNat.slice(i, i + 3);
     if (/^[A-Z]{3}$/.test(candidate)) {
       nationality = candidate;
       break;
     }
+  }
+
+  // If no 3-letter sequence found, fall back to original slice(10,13) with non-letters removed
+  if (!nationality) {
+    nationality = rawNat.slice(0, 3).replace(/[^A-Z]/g, '');
   }
   const dateOfBirth = line2.slice(13, 19);
   const sex = line2.slice(20, 21).replace(/</g, '');
