@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
+    "coderabbit:comments": "tsx scripts/coderabbit-comments.ts",
     "format": "yarn format:root && yarn format:github && yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "prettier --parser markdown --write *.md && prettier --parser yaml --write .*.{yml,yaml} --single-quote false",
@@ -25,8 +26,10 @@
   "devDependencies": {
     "gitleaks": "1.0.0",
     "husky": "9.1.7",
+    "node-fetch": "^2.7.0",
     "patch-package": "^8.0.0",
-    "postinstall-postinstall": "^2.1.0"
+    "postinstall-postinstall": "^2.1.0",
+    "tsx": "^4.20.3"
   },
   "packageManager": "yarn@4.6.0",
   "engines": {

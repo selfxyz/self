@@ -72,6 +72,16 @@ This project requires **Node.js 22.x**. Use the included `.nvmrc` to match the v
 Run `yarn install` to bootstrap dependencies and husky hooks.
 Gitleaks will scan staged changes on each commit via `yarn gitleaks`.
 
+### coderabbit comments script
+
+Collect unresolved review comments from [coderabbit](https://github.com/coderabbitai/coderabbit) on a pull request:
+
+```bash
+GITHUB_TOKEN=YOUR_TOKEN yarn coderabbit:comments <pr-url-or-number> [output-file]
+```
+
+The script prints each comment's file path, line, and body. If an `output-file` is provided, the result is written there for tools like Cursor.
+
 ## Contributing
 
 We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know were to start! We offer bounties for significant contributions.
