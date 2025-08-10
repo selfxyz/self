@@ -12,6 +12,7 @@ import type {
   ScanOpts,
   ScanResult,
   SDKEvent,
+  SDKEventMap,
   SelfClient,
   Unsubscribe,
   ValidationInput,
@@ -43,14 +44,25 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
   }
 
   const _adapters = { ...optionalDefaults, ...adapters } as Adapters;
-  const _cfg = { ...defaultConfig, ...config };
   const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
 
-  function on(event: SDKEvent, cb: (payload: any) => void): Unsubscribe {
+  function on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe {
     const set = listeners.get(event) ?? new Set();
-    set.add(cb);
+    set.add(cb as any);
     listeners.set(event, set);
-    return () => set.delete(cb);
+    return () => set.delete(cb as any);
+  }
+
+  function emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void {
+    const set = listeners.get(event);
+    if (!set) return;
+    for (const cb of Array.from(set)) {
+      try {
+        (cb as (p: SDKEventMap[E]) => void)(payload);
+      } catch (err) {
+        _adapters.logger.log('error', `event-listener error for event '${event}'`, { event, error: err });
+      }
+    }
   }
 
   async function scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult> {
@@ -76,7 +88,7 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     if (!adapters.network) throw notImplemented('network');
     if (!adapters.crypto) throw notImplemented('crypto');
     const timeoutMs = opts.timeoutMs ?? cfg.timeouts?.proofMs ?? defaultConfig.timeouts.proofMs;
-    void timeoutMs;
+    void _adapters.clock.sleep(timeoutMs!, opts.signal).then(() => emit('error', new Error('timeout')));
     return {
       id: 'stub',
       status: 'pending',
@@ -91,5 +103,6 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     checkRegistration,
     generateProof,
     on,
+    emit,
   };
 }
