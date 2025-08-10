@@ -88,7 +88,12 @@ export interface RegistrationStatus {
   reason?: string;
 }
 
-export type SDKEvent = 'progress' | 'state' | 'error';
+export interface SDKEventMap {
+  progress: Progress;
+  state: string;
+  error: Error;
+}
+export type SDKEvent = keyof SDKEventMap;
 
 export type ScanMode = 'mrz' | 'nfc' | 'qr';
 export interface ScanOpts {
@@ -121,7 +126,8 @@ export interface SelfClient {
       timeoutMs?: number;
     },
   ): Promise<ProofHandle>;
-  on(event: SDKEvent, cb: (payload: any) => void): Unsubscribe;
+  on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
+  emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

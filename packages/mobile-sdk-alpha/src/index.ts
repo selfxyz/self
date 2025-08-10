@@ -16,6 +16,7 @@ export type {
   RegistrationInput,
   RegistrationStatus,
   SDKEvent,
+  SDKEventMap,
   ScanMode,
   ScanOpts,
   ScanResult,
