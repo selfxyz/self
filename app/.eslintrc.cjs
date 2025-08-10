@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
@@ -26,9 +27,6 @@ module.exports = {
     'web/dist/',
     '.tamagui/*',
     '*.js.map',
-    '*.d.ts',
-    'metro.config.cjs',
-    'docs/examples/',
     'tests/e2e/',
   ],
   settings: {
@@ -168,6 +166,14 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['docs/examples/**/*.ts'],
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+        'no-unused-vars': 'off',
+        'import/no-unresolved': 'off',
+      },
+    },
+    {
       files: ['tests/**/*.{ts,tsx}'],
       parserOptions: {
         project: './tsconfig.test.json',
@@ -196,7 +202,6 @@ module.exports = {
         sourceType: 'script',
       },
       rules: {
-        'header/header': 'off',
         '@typescript-eslint/no-var-requires': 'off',
         'no-undef': 'off',
       },
