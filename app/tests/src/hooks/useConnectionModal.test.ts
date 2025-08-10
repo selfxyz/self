@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import useConnectionModal from '@src/hooks/useConnectionModal';
-import { useModal } from '@src/hooks/useModal';
 import { act, renderHook } from '@testing-library/react-native';
+
+import useConnectionModal from '@/hooks/useConnectionModal';
+import { useModal } from '@/hooks/useModal';
 
 jest.useFakeTimers();
 
-jest.mock('@src/navigation', () => ({
+jest.mock('@/navigation', () => ({
   navigationRef: { isReady: jest.fn(() => true), navigate: jest.fn() },
 }));
 
-jest.mock('@src/hooks/useModal');
+jest.mock('@/hooks/useModal');
 jest.mock('@react-native-community/netinfo', () => ({
   useNetInfo: jest
     .fn()
@@ -60,7 +61,7 @@ describe('useConnectionModal', () => {
   });
 
   it('does not show modal when hideNetworkModal is true', () => {
-    jest.doMock('@src/stores/settingStore', () => ({
+    jest.doMock('@/stores/settingStore', () => ({
       useSettingStore: jest.fn(() => true),
     }));
 
@@ -72,7 +73,7 @@ describe('useConnectionModal', () => {
   });
 
   it('does not show modal when navigation is not ready', () => {
-    const { navigationRef } = require('@src/navigation');
+    const { navigationRef } = require('@/navigation');
     navigationRef.isReady.mockReturnValue(false);
 
     renderHook(() => useConnectionModal());

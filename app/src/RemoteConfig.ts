@@ -3,11 +3,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FirebaseRemoteConfigTypes } from '@react-native-firebase/remote-config';
 import remoteConfig from '@react-native-firebase/remote-config';
+
 import type {
   FeatureFlagValue,
   RemoteConfigBackend,
   StorageBackend,
-} from '@src/RemoteConfig.shared';
+} from '@/RemoteConfig.shared';
 import {
   clearAllLocalOverrides as clearAllLocalOverridesShared,
   clearLocalOverride as clearLocalOverrideShared,
@@ -17,7 +18,7 @@ import {
   initRemoteConfig as initRemoteConfigShared,
   refreshRemoteConfig as refreshRemoteConfigShared,
   setLocalOverride as setLocalOverrideShared,
-} from '@src/RemoteConfig.shared';
+} from '@/RemoteConfig.shared';
 
 // Mobile-specific storage backend using AsyncStorage
 const mobileStorageBackend: StorageBackend = {
@@ -53,7 +54,7 @@ const mobileRemoteConfigBackend: RemoteConfigBackend = {
   },
 };
 
-export type { FeatureFlagValue } from '@src/RemoteConfig.shared';
+export type { FeatureFlagValue } from '@/RemoteConfig.shared';
 
 export const clearAllLocalOverrides = () =>
   clearAllLocalOverridesShared(mobileStorageBackend);

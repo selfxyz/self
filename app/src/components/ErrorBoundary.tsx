@@ -4,8 +4,8 @@ import type { ErrorInfo } from 'react';
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
-import { captureException } from '@src/Sentry';
-import analytics from '@src/utils/analytics';
+import { captureException } from '@/Sentry';
+import analytics from '@/utils/analytics';
 
 const { flush: flushAnalytics } = analytics();
 

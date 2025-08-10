@@ -4,12 +4,12 @@ import React, { useEffect, useState } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 import { Animated, StyleSheet, useAnimatedValue } from 'react-native';
 
-import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
-import type { HeldPrimaryButtonProps } from '@src/components/buttons/PrimaryButtonLongHold.shared';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import type { HeldPrimaryButtonProps } from '@/components/buttons/PrimaryButtonLongHold.shared';
 import {
   ACTION_TIMER,
   COLORS,
-} from '@src/components/buttons/PrimaryButtonLongHold.shared';
+} from '@/components/buttons/PrimaryButtonLongHold.shared';
 
 export function HeldPrimaryButton({
   children,

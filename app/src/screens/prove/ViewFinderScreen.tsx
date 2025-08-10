@@ -4,28 +4,28 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
-
 import {
   useFocusEffect,
   useIsFocused,
   useNavigation,
 } from '@react-navigation/native';
-import qrScanAnimation from '@src/assets/animations/qr_scan.json';
-import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
-import type { QRCodeScannerViewProps } from '@src/components/native/QRCodeScanner';
-import { QRCodeScannerView } from '@src/components/native/QRCodeScanner';
-import Additional from '@src/components/typography/Additional';
-import Description from '@src/components/typography/Description';
-import { Title } from '@src/components/typography/Title';
-import { ProofEvents } from '@src/consts/analytics';
-import useConnectionModal from '@src/hooks/useConnectionModal';
-import useHapticNavigation from '@src/hooks/useHapticNavigation';
-import QRScan from '@src/images/icons/qr_code.svg';
-import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
-import { useSelfAppStore } from '@src/stores/selfAppStore';
-import analytics from '@src/utils/analytics';
-import { black, slate800, white } from '@src/utils/colors';
-import { parseAndValidateUrlParams } from '@src/utils/deeplinks';
+
+import qrScanAnimation from '@/assets/animations/qr_scan.json';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
+import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
+import Additional from '@/components/typography/Additional';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { ProofEvents } from '@/consts/analytics';
+import useConnectionModal from '@/hooks/useConnectionModal';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import QRScan from '@/images/icons/qr_code.svg';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { useSelfAppStore } from '@/stores/selfAppStore';
+import analytics from '@/utils/analytics';
+import { black, slate800, white } from '@/utils/colors';
+import { parseAndValidateUrlParams } from '@/utils/deeplinks';
 
 interface QRCodeViewFinderScreenProps {}
 

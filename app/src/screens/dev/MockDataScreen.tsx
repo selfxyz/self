@@ -17,6 +17,8 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import type { IdDocInput } from '@selfxyz/common/utils';
@@ -27,16 +29,15 @@ import {
   initPassportDataParsing,
 } from '@selfxyz/common/utils/passports';
 
-import { useNavigation } from '@react-navigation/native';
-import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
-import ButtonsContainer from '@src/components/ButtonsContainer';
-import { Caption } from '@src/components/typography/Caption';
-import { MockDataEvents } from '@src/consts/analytics';
-import SelfDevCard from '@src/images/card-dev.svg';
-import IdIcon from '@src/images/icons/id_icon.svg';
-import NoteIcon from '@src/images/icons/note.svg';
-import { storePassportData } from '@src/providers/passportDataProvider';
-import analytics from '@src/utils/analytics';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import ButtonsContainer from '@/components/ButtonsContainer';
+import { Caption } from '@/components/typography/Caption';
+import { MockDataEvents } from '@/consts/analytics';
+import SelfDevCard from '@/images/card-dev.svg';
+import IdIcon from '@/images/icons/id_icon.svg';
+import NoteIcon from '@/images/icons/note.svg';
+import { storePassportData } from '@/providers/passportDataProvider';
+import analytics from '@/utils/analytics';
 import {
   black,
   borderColor,
@@ -48,11 +49,10 @@ import {
   textBlack,
   white,
   zinc400,
-} from '@src/utils/colors';
-import { extraYPadding } from '@src/utils/constants';
-import { dinot, plexMono } from '@src/utils/fonts';
-import { buttonTap, selectionChange } from '@src/utils/haptic';
-import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
+} from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
+import { dinot, plexMono } from '@/utils/fonts';
+import { buttonTap, selectionChange } from '@/utils/haptic';
 
 const { trackEvent } = analytics();
 

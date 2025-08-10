@@ -1,29 +1,28 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { lazy } from 'react';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 const PassportCameraScreen = lazy(
-  () => import('@src/screens/passport/PassportCameraScreen'),
+  () => import('@/screens/passport/PassportCameraScreen'),
 );
 const PassportCameraTrouble = lazy(
-  () => import('@src/screens/passport/PassportCameraTroubleScreen'),
+  () => import('@/screens/passport/PassportCameraTroubleScreen'),
 );
 const PassportNFCScanScreen = lazy(
-  () => import('@src/screens/passport/PassportNFCScanScreen'),
+  () => import('@/screens/passport/PassportNFCScanScreen'),
 );
 const PassportNFCTrouble = lazy(
-  () => import('@src/screens/passport/PassportNFCTroubleScreen'),
+  () => import('@/screens/passport/PassportNFCTroubleScreen'),
 );
 const PassportOnboardingScreen = lazy(
-  () => import('@src/screens/passport/PassportOnboardingScreen'),
+  () => import('@/screens/passport/PassportOnboardingScreen'),
 );
 const UnsupportedPassportScreen = lazy(
-  () => import('@src/screens/passport/UnsupportedPassportScreen'),
+  () => import('@/screens/passport/UnsupportedPassportScreen'),
 );
 const NFCMethodSelectionScreen = lazy(
-  () => import('@src/screens/passport/NFCMethodSelectionScreen'),
+  () => import('@/screens/passport/NFCMethodSelectionScreen'),
 );
 
 const passportScreens = {

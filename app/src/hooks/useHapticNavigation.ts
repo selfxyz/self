@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useCallback } from 'react';
-
 import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
-import type { RootStackParamList } from '@src/navigation/index';
-import { impactLight, impactMedium, selectionChange } from '@src/utils/haptic';
+
+import type { RootStackParamList } from '@/navigation/index';
+import { impactLight, impactMedium, selectionChange } from '@/utils/haptic';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
 

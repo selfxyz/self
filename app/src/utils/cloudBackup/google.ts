@@ -2,7 +2,6 @@
 
 import type { AuthConfiguration, AuthorizeResult } from 'react-native-app-auth';
 import { authorize } from 'react-native-app-auth';
-
 import { GOOGLE_SIGNIN_ANDROID_CLIENT_ID } from '@env';
 import { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
 

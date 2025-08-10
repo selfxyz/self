@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { lazy } from 'react';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import { ProgressNavBar } from '@src/components/NavBar';
-import { shouldShowAesopRedesign } from '@src/hooks/useAesopRedesign';
-import { white } from '@src/utils/colors';
+
+import { ProgressNavBar } from '@/components/NavBar';
+import { shouldShowAesopRedesign } from '@/hooks/useAesopRedesign';
+import { white } from '@/utils/colors';
 
 const PassportOnboardingScreen = lazy(
-  () => import('@src/screens/aesop/PassportOnboardingScreen'),
+  () => import('@/screens/aesop/PassportOnboardingScreen'),
 );
 
 const aesopScreens = {

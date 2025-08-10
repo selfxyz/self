@@ -3,7 +3,7 @@
 // Register crypto polyfills
 import { ethers } from 'ethers';
 
-import '@src/utils/ethers';
+import '@/utils/ethers';
 
 describe('ethers crypto polyfills', () => {
   it('randomBytes returns requested length and unique values', () => {

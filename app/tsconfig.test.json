@@ -5,8 +5,8 @@
       "@env": ["./env.ts"],
       "@selfxyz/common": ["../common"],
       "@selfxyz/common/*": ["../common/*"],
-      "@src": ["./src"],
-      "@src/*": ["./src/*"],
+      "@": ["./src"],
+      "@/*": ["./src/*"],
       "@tests": ["./tests/src"],
       "@tests/*": ["./tests/src/*"]
     }

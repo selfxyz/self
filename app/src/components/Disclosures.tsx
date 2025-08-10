@@ -7,9 +7,9 @@ import type { Country3LetterCode } from '@selfxyz/common/constants';
 import { countryCodes } from '@selfxyz/common/constants';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils';
 
-import { BodyText } from '@src/components/typography/BodyText';
-import CheckMark from '@src/images/icons/checkmark.svg';
-import { slate200, slate500 } from '@src/utils/colors';
+import { BodyText } from '@/components/typography/BodyText';
+import CheckMark from '@/images/icons/checkmark.svg';
+import { slate200, slate500 } from '@/utils/colors';
 
 interface DisclosureProps {
   disclosures: SelfAppDisclosureConfig;

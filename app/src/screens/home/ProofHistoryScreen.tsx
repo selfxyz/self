@@ -9,12 +9,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
-
 import { useNavigation } from '@react-navigation/native';
-import { BodyText } from '@src/components/typography/BodyText';
-import type { ProofHistory } from '@src/stores/proof-types';
-import { ProofStatus } from '@src/stores/proof-types';
-import { useProofHistoryStore } from '@src/stores/proofHistoryStore';
+import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
+
+import { BodyText } from '@/components/typography/BodyText';
+import type { ProofHistory } from '@/stores/proof-types';
+import { ProofStatus } from '@/stores/proof-types';
+import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import {
   black,
   blue100,
@@ -25,10 +26,9 @@ import {
   slate300,
   slate500,
   white,
-} from '@src/utils/colors';
-import { extraYPadding } from '@src/utils/constants';
-import { dinot } from '@src/utils/fonts';
-import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
+} from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
+import { dinot } from '@/utils/fonts';
 
 type Section = {
   title: string;

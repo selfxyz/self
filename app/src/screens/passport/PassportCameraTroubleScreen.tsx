@@ -2,18 +2,18 @@
 
 import React, { useEffect } from 'react';
 
-import type { TipProps } from '@src/components/Tips';
-import Tips from '@src/components/Tips';
-import { Caption } from '@src/components/typography/Caption';
-import useHapticNavigation from '@src/hooks/useHapticNavigation';
-import Activity from '@src/images/icons/activity.svg';
-import PassportCameraBulb from '@src/images/icons/passport_camera_bulb.svg';
-import PassportCameraScan from '@src/images/icons/passport_camera_scan.svg';
-import QrScan from '@src/images/icons/qr_scan.svg';
-import Star from '@src/images/icons/star.svg';
-import SimpleScrolledTitleLayout from '@src/layouts/SimpleScrolledTitleLayout';
-import analytics from '@src/utils/analytics';
-import { slate500 } from '@src/utils/colors';
+import type { TipProps } from '@/components/Tips';
+import Tips from '@/components/Tips';
+import { Caption } from '@/components/typography/Caption';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import Activity from '@/images/icons/activity.svg';
+import PassportCameraBulb from '@/images/icons/passport_camera_bulb.svg';
+import PassportCameraScan from '@/images/icons/passport_camera_scan.svg';
+import QrScan from '@/images/icons/qr_scan.svg';
+import Star from '@/images/icons/star.svg';
+import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
+import analytics from '@/utils/analytics';
+import { slate500 } from '@/utils/colors';
 
 const { flush: flushAnalytics } = analytics();
 

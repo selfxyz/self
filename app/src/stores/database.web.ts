@@ -4,8 +4,8 @@ import type {
   ProofDB,
   ProofDBResult,
   ProofHistory,
-} from '@src/stores/proof-types';
-import { ProofStatus } from '@src/stores/proof-types';
+} from '@/stores/proof-types';
+import { ProofStatus } from '@/stores/proof-types';
 
 export const DB_NAME = 'proof_history_db';
 const STORE_NAME = 'proof_history';

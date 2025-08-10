@@ -15,28 +15,28 @@ import type {
 } from 'react-native';
 import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image, Text, View, XStack, YStack } from 'tamagui';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import miscAnimation from '@src/assets/animations/loading/misc.json';
-import { HeldPrimaryButtonProveScreen } from '@src/components/buttons/HeldPrimaryButtonProveScreen';
-import Disclosures from '@src/components/Disclosures';
-import { BodyText } from '@src/components/typography/BodyText';
-import { Caption } from '@src/components/typography/Caption';
-import { ProofEvents } from '@src/consts/analytics';
-import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
-import { setDefaultDocumentTypeIfNeeded } from '@src/providers/passportDataProvider';
-import { ProofStatus } from '@src/stores/proof-types';
-import { useProofHistoryStore } from '@src/stores/proofHistoryStore';
-import { useSelfAppStore } from '@src/stores/selfAppStore';
-import analytics from '@src/utils/analytics';
-import { black, slate300, white } from '@src/utils/colors';
-import { formatUserId } from '@src/utils/formatUserId';
-import { buttonTap } from '@src/utils/haptic';
-import { useProvingStore } from '@src/utils/proving/provingMachine';
-import { Eye, EyeOff } from '@tamagui/lucide-icons';
+import miscAnimation from '@/assets/animations/loading/misc.json';
+import { HeldPrimaryButtonProveScreen } from '@/components/buttons/HeldPrimaryButtonProveScreen';
+import Disclosures from '@/components/Disclosures';
+import { BodyText } from '@/components/typography/BodyText';
+import { Caption } from '@/components/typography/Caption';
+import { ProofEvents } from '@/consts/analytics';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { setDefaultDocumentTypeIfNeeded } from '@/providers/passportDataProvider';
+import { ProofStatus } from '@/stores/proof-types';
+import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import { useSelfAppStore } from '@/stores/selfAppStore';
+import analytics from '@/utils/analytics';
+import { black, slate300, white } from '@/utils/colors';
+import { formatUserId } from '@/utils/formatUserId';
+import { buttonTap } from '@/utils/haptic';
+import { useProvingStore } from '@/utils/proving/provingMachine';
 
 const { trackEvent } = analytics();
 

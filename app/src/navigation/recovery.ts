@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { lazy } from 'react';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import { black, slate300 } from '@src/utils/colors';
+
+import { black, slate300 } from '@/utils/colors';
 
 const AccountRecoveryChoiceScreen = lazy(
-  () => import('@src/screens/recovery/AccountRecoveryChoiceScreen'),
+  () => import('@/screens/recovery/AccountRecoveryChoiceScreen'),
 );
 const AccountRecoveryScreen = lazy(
-  () => import('@src/screens/recovery/AccountRecoveryScreen'),
+  () => import('@/screens/recovery/AccountRecoveryScreen'),
 );
 const AccountVerifiedSuccessScreen = lazy(
-  () => import('@src/screens/recovery/AccountVerifiedSuccessScreen'),
+  () => import('@/screens/recovery/AccountVerifiedSuccessScreen'),
 );
 const PassportDataNotFound = lazy(
-  () => import('@src/screens/recovery/PassportDataNotFoundScreen'),
+  () => import('@/screens/recovery/PassportDataNotFoundScreen'),
 );
 const RecoverWithPhraseScreen = lazy(
-  () => import('@src/screens/recovery/RecoverWithPhraseScreen'),
+  () => import('@/screens/recovery/RecoverWithPhraseScreen'),
 );
 const SaveRecoveryPhraseScreen = lazy(
-  () => import('@src/screens/recovery/SaveRecoveryPhraseScreen'),
+  () => import('@/screens/recovery/SaveRecoveryPhraseScreen'),
 );
 
 const recoveryScreens = {

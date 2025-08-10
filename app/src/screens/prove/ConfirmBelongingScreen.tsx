@@ -3,25 +3,25 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
-import successAnimation from '@src/assets/animations/loading/success.json';
-import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
-import Description from '@src/components/typography/Description';
-import { Title } from '@src/components/typography/Title';
-import { PassportEvents, ProofEvents } from '@src/consts/analytics';
-import useHapticNavigation from '@src/hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
-import { styles } from '@src/screens/prove/ProofRequestStatusScreen';
-import analytics from '@src/utils/analytics';
-import { black, white } from '@src/utils/colors';
-import { notificationSuccess } from '@src/utils/haptic';
+
+import successAnimation from '@/assets/animations/loading/success.json';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { PassportEvents, ProofEvents } from '@/consts/analytics';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { styles } from '@/screens/prove/ProofRequestStatusScreen';
+import analytics from '@/utils/analytics';
+import { black, white } from '@/utils/colors';
+import { notificationSuccess } from '@/utils/haptic';
 import {
   getFCMToken,
   requestNotificationPermission,
-} from '@src/utils/notifications/notificationService';
-import { useProvingStore } from '@src/utils/proving/provingMachine';
+} from '@/utils/notifications/notificationService';
+import { useProvingStore } from '@/utils/proving/provingMachine';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
 

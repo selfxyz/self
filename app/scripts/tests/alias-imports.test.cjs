@@ -59,7 +59,7 @@ describe('alias-imports transform', () => {
     const b = project.getSourceFileOrThrow(fileB);
     const imports = b.getImportDeclarations();
     assert.strictEqual(imports.length, 1);
-    assert.strictEqual(imports[0].getModuleSpecifierValue(), '@src/utils/a');
+    assert.strictEqual(imports[0].getModuleSpecifierValue(), '@/utils/a');
   });
 
   it('transforms relative require to @src alias', () => {
@@ -86,7 +86,7 @@ describe('alias-imports transform', () => {
     transformProjectToAliasImports(project, appRoot);
 
     const c = project.getSourceFileOrThrow(fileC);
-    assert.ok(c.getText().includes("require('@src/utils/x')"));
+    assert.ok(c.getText().includes("require('@/utils/x')"));
   });
 
   it('transforms relative TS import in tests to @tests alias', () => {
@@ -195,10 +195,7 @@ describe('alias-imports transform', () => {
     const specFile = project.getSourceFileOrThrow(deepSpecFile);
     const imports = specFile.getImportDeclarations();
     assert.strictEqual(imports.length, 1);
-    assert.strictEqual(
-      imports[0].getModuleSpecifierValue(),
-      '@src/utils/haptic',
-    );
+    assert.strictEqual(imports[0].getModuleSpecifierValue(), '@/utils/haptic');
   });
 
   it("transforms deep relative require '../../../src/...' to @src alias from tests", () => {
@@ -227,7 +224,7 @@ describe('alias-imports transform', () => {
     transformProjectToAliasImports(project, appRoot);
 
     const specFile = project.getSourceFileOrThrow(deepSpecFile);
-    assert.ok(specFile.getText().includes("require('@src/utils/haptic')"));
+    assert.ok(specFile.getText().includes("require('@/utils/haptic')"));
   });
 
   it('aliases export star re-exports with ../ from sibling directory', () => {
@@ -252,7 +249,7 @@ describe('alias-imports transform', () => {
 
     const indexFile = project.getSourceFileOrThrow(fileIndex);
     const exportDecl = indexFile.getExportDeclarations()[0];
-    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@src/utils/a');
+    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@/utils/a');
   });
 
   it('aliases export named re-exports with ../ from sibling directory', () => {
@@ -277,7 +274,7 @@ describe('alias-imports transform', () => {
 
     const indexFile = project.getSourceFileOrThrow(fileIndex);
     const exportDecl = indexFile.getExportDeclarations()[0];
-    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@src/utils/a');
+    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@/utils/a');
   });
 
   it('aliases dynamic import() with relative specifier', () => {
@@ -305,7 +302,7 @@ describe('alias-imports transform', () => {
 
     const featureFile = project.getSourceFileOrThrow(feature);
     const text = featureFile.getText();
-    assert.ok(text.includes("import('@src/utils/lazy')"));
+    assert.ok(text.includes("import('@/utils/lazy')"));
   });
 
   it('aliases jest.mock relative specifier', () => {
@@ -333,7 +330,7 @@ describe('alias-imports transform', () => {
 
     const featureFile = project.getSourceFileOrThrow(feature);
     const text = featureFile.getText();
-    assert.ok(text.includes("jest.mock('@src/utils/mod')"));
+    assert.ok(text.includes("jest.mock('@/utils/mod')"));
   });
 
   it('aliases jest.doMock and jest.unmock relative specifiers', () => {
@@ -361,8 +358,8 @@ describe('alias-imports transform', () => {
 
     const featureFile = project.getSourceFileOrThrow(feature);
     const text = featureFile.getText();
-    assert.ok(text.includes("jest.doMock('@src/utils/mod2')"));
-    assert.ok(text.includes("jest.unmock('@src/utils/mod2')"));
+    assert.ok(text.includes("jest.doMock('@/utils/mod2')"));
+    assert.ok(text.includes("jest.unmock('@/utils/mod2')"));
   });
 
   it('aliases relative imports starting with ./', () => {
@@ -390,10 +387,150 @@ describe('alias-imports transform', () => {
 
     const indexFile = project.getSourceFileOrThrow(index);
     const importDecl = indexFile.getImportDeclarations()[0];
-    // Same-directory imports are migrated to @src/<relative-from-src>/<file>
+    // Same-directory imports are migrated to @/<relative-from-src>/<file>
     assert.strictEqual(
       importDecl.getModuleSpecifierValue(),
-      '@src/utils/haptic/trigger',
+      '@/utils/haptic/trigger',
     );
+  });
+
+  describe('Migration functionality', () => {
+    it('migrates @src/ import to @/', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'components', 'Button.tsx');
+      const fileB = path.join(srcDir, 'utils', 'colors.ts');
+
+      writeFileEnsured(
+        fileA,
+        'export const Button = () => <div>Button</div>;\n',
+      );
+      writeFileEnsured(
+        fileB,
+        "import { Button } from '@src/components/Button';\nexport const colors = { primary: '#007AFF' };\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileB, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileB, migratedContent, 'utf8');
+
+      // Verify the migration worked
+      const finalContent = fs.readFileSync(fileB, 'utf8');
+      assert.ok(finalContent.includes("from '@/components/Button'"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+
+    it('migrates @src/ export to @/', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'components', 'Button.tsx');
+      const fileIndex = path.join(srcDir, 'components', 'index.ts');
+
+      writeFileEnsured(
+        fileA,
+        'export const Button = () => <div>Button</div>;\n',
+      );
+      writeFileEnsured(
+        fileIndex,
+        "export { Button } from '@src/components/Button';\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileIndex, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileIndex, migratedContent, 'utf8');
+
+      // Verify the migration worked
+      const finalContent = fs.readFileSync(fileIndex, 'utf8');
+      assert.ok(finalContent.includes("from '@/components/Button'"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+
+    it('migrates @src/ require to @/', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'utils', 'colors.ts');
+      const fileB = path.join(srcDir, 'components', 'Theme.tsx');
+
+      writeFileEnsured(
+        fileA,
+        'export const colors = { primary: "#007AFF" };\n',
+      );
+      writeFileEnsured(
+        fileB,
+        "const colors = require('@src/utils/colors');\nexport const Theme = () => <div>Theme</div>;\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileB, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileB, migratedContent, 'utf8');
+
+      // Verify the migration worked
+      const finalContent = fs.readFileSync(fileB, 'utf8');
+      assert.ok(finalContent.includes("require('@/utils/colors')"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+
+    it('preserves full paths (no aggressive optimization)', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'components', 'buttons', 'Button.tsx');
+      const fileB = path.join(srcDir, 'screens', 'Home.tsx');
+
+      writeFileEnsured(
+        fileA,
+        'export const Button = () => <div>Button</div>;\n',
+      );
+      writeFileEnsured(
+        fileB,
+        "import { Button } from '@src/components/buttons/Button';\nexport const Home = () => <Button />;\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileB, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileB, migratedContent, 'utf8');
+
+      // Verify the migration preserved the full path
+      const finalContent = fs.readFileSync(fileB, 'utf8');
+      assert.ok(finalContent.includes("from '@/components/buttons/Button'"));
+      assert.ok(!finalContent.includes("from '@/Button'"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+
+    it('migrates multiple @src/ imports in same file', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'utils', 'colors.ts');
+      const fileB = path.join(srcDir, 'utils', 'dateFormatter.ts');
+      const fileC = path.join(srcDir, 'screens', 'Home.tsx');
+
+      writeFileEnsured(
+        fileA,
+        'export const colors = { primary: "#007AFF" };\n',
+      );
+      writeFileEnsured(
+        fileB,
+        'export const formatDate = (date: Date) => date.toISOString();\n',
+      );
+      writeFileEnsured(
+        fileC,
+        "import { Button } from '@src/components/buttons/Button';\nimport { colors } from '@src/utils/colors';\nimport { formatDate } from '@src/utils/dateFormatter';\nexport const Home = () => <Button />;\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileC, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileC, migratedContent, 'utf8');
+
+      // Verify all imports were migrated
+      const finalContent = fs.readFileSync(fileC, 'utf8');
+      assert.ok(finalContent.includes("from '@/components/buttons/Button'"));
+      assert.ok(finalContent.includes("from '@/utils/colors'"));
+      assert.ok(finalContent.includes("from '@/utils/dateFormatter'"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
   });
 });

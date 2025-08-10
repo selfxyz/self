@@ -3,12 +3,12 @@
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { TextStyle, ViewStyle } from 'tamagui';
-
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
-import { NavBar } from '@src/components/NavBar/BaseNavBar';
-import { white } from '@src/utils/colors';
-import { extraYPadding } from '@src/utils/constants';
-import { buttonTap } from '@src/utils/haptic';
+
+import { NavBar } from '@/components/NavBar/BaseNavBar';
+import { white } from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
+import { buttonTap } from '@/utils/haptic';
 
 export const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;

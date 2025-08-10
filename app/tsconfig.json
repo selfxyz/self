@@ -13,8 +13,7 @@
         "../packages/mobile-sdk-alpha/src",
         "../packages/mobile-sdk-alpha/dist"
       ],
-      "@src": ["./src"],
-      "@src/*": ["./src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"],

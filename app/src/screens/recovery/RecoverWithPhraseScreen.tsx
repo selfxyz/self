@@ -4,19 +4,19 @@ import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
-
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
-import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
-import Description from '@src/components/typography/Description';
-import { BackupEvents } from '@src/consts/analytics';
-import Paste from '@src/images/icons/paste.svg';
-import { useAuth } from '@src/providers/authProvider';
+
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import Description from '@/components/typography/Description';
+import { BackupEvents } from '@/consts/analytics';
+import Paste from '@/images/icons/paste.svg';
+import { useAuth } from '@/providers/authProvider';
 import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
-} from '@src/providers/passportDataProvider';
-import analytics from '@src/utils/analytics';
+} from '@/providers/passportDataProvider';
+import analytics from '@/utils/analytics';
 import {
   black,
   slate300,
@@ -24,8 +24,8 @@ import {
   slate600,
   slate700,
   white,
-} from '@src/utils/colors';
-import { isUserRegisteredWithAlternativeCSCA } from '@src/utils/proving/validateDocument';
+} from '@/utils/colors';
+import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
 
 interface RecoverWithPhraseScreenProps {}
 

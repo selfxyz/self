@@ -5,7 +5,6 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
-
 import { tamaguiPlugin } from '@tamagui/vite-plugin';
 import react from '@vitejs/plugin-react-swc';
 
@@ -30,7 +29,7 @@ export default defineConfig({
     alias: {
       '@env': path.resolve(__dirname, 'env.ts'),
       '/src': path.resolve(__dirname, 'src'),
-      '@src': path.resolve(__dirname, 'src'),
+      '@': path.resolve(__dirname, 'src'),
       'react-native-svg': 'react-native-svg-web',
       'lottie-react-native': 'lottie-react',
       'react-native-safe-area-context': path.resolve(

@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Text } from 'react-native';
-
 import { render } from '@testing-library/react-native';
 
 const mockFlush = jest.fn();
@@ -10,14 +9,14 @@ const mockAnalytics = jest.fn(() => ({
   flush: mockFlush,
 }));
 
-jest.doMock('@src/utils/analytics', () => mockAnalytics);
-jest.mock('@src/Sentry', () => ({
+jest.doMock('@/utils/analytics', () => mockAnalytics);
+jest.mock('@/Sentry', () => ({
   captureException: jest.fn(),
 }));
 
 // Import after mocks are set up
-const ErrorBoundary = require('@src/components/ErrorBoundary').default;
-const { captureException } = require('@src/Sentry');
+const ErrorBoundary = require('@/components/ErrorBoundary').default;
+const { captureException } = require('@/Sentry');
 
 const ProblemChild = () => {
   throw new Error('boom');

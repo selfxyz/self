@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { lazy } from 'react';
-
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import DevPrivateKeyScreen from '@src/screens/dev/DevPrivateKeyScreen';
-import { black, white } from '@src/utils/colors';
+
+import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
+import { black, white } from '@/utils/colors';
 
 const DevFeatureFlagsScreen = lazy(
-  () => import('@src/screens/dev/DevFeatureFlagsScreen'),
+  () => import('@/screens/dev/DevFeatureFlagsScreen'),
 );
 const DevHapticFeedbackScreen = lazy(
-  () => import('@src/screens/dev/DevHapticFeedback'),
+  () => import('@/screens/dev/DevHapticFeedback'),
 );
-const DevSettingsScreen = lazy(
-  () => import('@src/screens/dev/DevSettingsScreen'),
-);
-const MockDataScreen = lazy(() => import('@src/screens/dev/MockDataScreen'));
+const DevSettingsScreen = lazy(() => import('@/screens/dev/DevSettingsScreen'));
+const MockDataScreen = lazy(() => import('@/screens/dev/MockDataScreen'));
 const MockDataScreenDeepLink = lazy(
-  () => import('@src/screens/dev/MockDataScreenDeepLink'),
+  () => import('@/screens/dev/MockDataScreenDeepLink'),
 );
 
 const devScreens = {

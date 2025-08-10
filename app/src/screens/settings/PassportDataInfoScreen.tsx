@@ -3,16 +3,16 @@
 import React, { useCallback, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
+import { useFocusEffect } from '@react-navigation/native';
 
 import type { PassportMetadata } from '@selfxyz/common/types';
 
-import { useFocusEffect } from '@react-navigation/native';
-import { Caption } from '@src/components/typography/Caption';
-import { DocumentEvents } from '@src/consts/analytics';
-import { usePassport } from '@src/providers/passportDataProvider';
-import analytics from '@src/utils/analytics';
-import { black, slate200, white } from '@src/utils/colors';
-import { extraYPadding } from '@src/utils/constants';
+import { Caption } from '@/components/typography/Caption';
+import { DocumentEvents } from '@/consts/analytics';
+import { usePassport } from '@/providers/passportDataProvider';
+import analytics from '@/utils/analytics';
+import { black, slate200, white } from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
 
 const { trackEvent } = analytics();
 

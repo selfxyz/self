@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { checkVersion } from 'react-native-check-version';
-
 import { useNavigation } from '@react-navigation/native';
-import { useAppUpdates } from '@src/hooks/useAppUpdates';
-import { registerModalCallbacks } from '@src/utils/modalCallbackRegistry';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
+
+import { useAppUpdates } from '@/hooks/useAppUpdates';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -15,11 +15,11 @@ jest.mock('react-native-check-version', () => ({
   checkVersion: jest.fn(),
 }));
 
-jest.mock('@src/utils/modalCallbackRegistry', () => ({
+jest.mock('@/utils/modalCallbackRegistry', () => ({
   registerModalCallbacks: jest.fn().mockReturnValue(1),
 }));
 
-jest.mock('@src/utils/analytics', () => () => ({
+jest.mock('@/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
 

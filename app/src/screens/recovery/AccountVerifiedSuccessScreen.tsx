@@ -3,17 +3,17 @@
 import LottieView from 'lottie-react-native';
 import React from 'react';
 import { YStack } from 'tamagui';
-
 import { useNavigation } from '@react-navigation/native';
-import proofSuccessAnimation from '@src/assets/animations/proof_success.json';
-import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
-import Description from '@src/components/typography/Description';
-import { Title } from '@src/components/typography/Title';
-import { BackupEvents } from '@src/consts/analytics';
-import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
-import { styles } from '@src/screens/prove/ProofRequestStatusScreen';
-import { black, white } from '@src/utils/colors';
-import { buttonTap } from '@src/utils/haptic';
+
+import proofSuccessAnimation from '@/assets/animations/proof_success.json';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { BackupEvents } from '@/consts/analytics';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { styles } from '@/screens/prove/ProofRequestStatusScreen';
+import { black, white } from '@/utils/colors';
+import { buttonTap } from '@/utils/haptic';
 
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation = useNavigation();

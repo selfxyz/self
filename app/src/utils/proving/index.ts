@@ -6,20 +6,20 @@
 export {
   type ProvingStateType,
   useProvingStore,
-} from '@src/utils/proving/provingMachine';
+} from '@/utils/proving/provingMachine';
 
 // From provingUtils - used in tests (keeping these for testing purposes)
 export {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from '@src/utils/proving/provingUtils';
+} from '@/utils/proving/provingUtils';
 
 // From loadingScreenStateText - used in loading screen
-export { getLoadingScreenText } from '@src/utils/proving/loadingScreenStateText';
+export { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
 
 // From validateDocument - used in recovery and splash screens
 export {
   hasAnyValidRegisteredDocument,
   isUserRegisteredWithAlternativeCSCA,
-} from '@src/utils/proving/validateDocument';
+} from '@/utils/proving/validateDocument';

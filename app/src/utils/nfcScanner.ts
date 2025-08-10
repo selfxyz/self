@@ -4,10 +4,9 @@
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
+import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 
 import type { PassportData } from '@selfxyz/common/types';
-
-import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 
 interface AndroidScanResponse {
   mrz: string;

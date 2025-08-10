@@ -3,17 +3,17 @@
 import React, { useState } from 'react';
 import { Platform, ScrollView } from 'react-native';
 import { Input, YStack } from 'tamagui';
-
 import { useNavigation } from '@react-navigation/native';
-import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
-import ButtonsContainer from '@src/components/ButtonsContainer';
-import { BodyText } from '@src/components/typography/BodyText';
-import Description from '@src/components/typography/Description';
-import { Title } from '@src/components/typography/Title';
-import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
-import useUserStore from '@src/stores/userStore';
-import { white } from '@src/utils/colors';
+
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import ButtonsContainer from '@/components/ButtonsContainer';
+import { BodyText } from '@/components/typography/BodyText';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import useUserStore from '@/stores/userStore';
+import { white } from '@/utils/colors';
 
 type NFCParams = {
   skipPACE?: boolean;

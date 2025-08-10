@@ -5,9 +5,9 @@ import { create } from 'zustand';
 
 import { WS_DB_RELAYER } from '@selfxyz/common/constants';
 
-import { database } from '@src/stores/database';
-import type { ProofHistory } from '@src/stores/proof-types';
-import { ProofStatus } from '@src/stores/proof-types';
+import { database } from '@/stores/database';
+import type { ProofHistory } from '@/stores/proof-types';
+import { ProofStatus } from '@/stores/proof-types';
 
 interface ProofHistoryState {
   proofHistory: ProofHistory[];
