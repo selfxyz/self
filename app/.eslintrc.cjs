@@ -173,6 +173,9 @@ module.exports = {
         '@typescript-eslint/no-unused-vars': 'off',
         'no-unused-vars': 'off',
         'import/no-unresolved': 'off',
+      },
+    },
+    {
       // Disable export sorting for files with dependency issues
       files: [
         'src/components/NavBar/BaseNavBar.tsx',
