@@ -58,7 +58,7 @@ describe('alias-imports transform', () => {
     const b = project.getSourceFileOrThrow(fileB);
     const imports = b.getImportDeclarations();
     assert.strictEqual(imports.length, 1);
-    assert.strictEqual(imports[0].getModuleSpecifierValue(), '@src/utils/a');
+    assert.strictEqual(imports[0].getModuleSpecifierValue(), '@/utils/a');
   });
 
   it('transforms relative require to @src alias', () => {
@@ -85,7 +85,7 @@ describe('alias-imports transform', () => {
     transformProjectToAliasImports(project, appRoot);
 
     const c = project.getSourceFileOrThrow(fileC);
-    assert.ok(c.getText().includes("require('@src/utils/x')"));
+    assert.ok(c.getText().includes("require('@/utils/x')"));
   });
 
   it('transforms relative TS import in tests to @tests alias', () => {
@@ -194,10 +194,7 @@ describe('alias-imports transform', () => {
     const specFile = project.getSourceFileOrThrow(deepSpecFile);
     const imports = specFile.getImportDeclarations();
     assert.strictEqual(imports.length, 1);
-    assert.strictEqual(
-      imports[0].getModuleSpecifierValue(),
-      '@src/utils/haptic',
-    );
+    assert.strictEqual(imports[0].getModuleSpecifierValue(), '@/utils/haptic');
   });
 
   it("transforms deep relative require '../../../src/...' to @src alias from tests", () => {
@@ -226,7 +223,7 @@ describe('alias-imports transform', () => {
     transformProjectToAliasImports(project, appRoot);
 
     const specFile = project.getSourceFileOrThrow(deepSpecFile);
-    assert.ok(specFile.getText().includes("require('@src/utils/haptic')"));
+    assert.ok(specFile.getText().includes("require('@/utils/haptic')"));
   });
 
   it('aliases export star re-exports with ../ from sibling directory', () => {
@@ -251,7 +248,7 @@ describe('alias-imports transform', () => {
 
     const indexFile = project.getSourceFileOrThrow(fileIndex);
     const exportDecl = indexFile.getExportDeclarations()[0];
-    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@src/utils/a');
+    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@/utils/a');
   });
 
   it('aliases export named re-exports with ../ from sibling directory', () => {
@@ -276,7 +273,7 @@ describe('alias-imports transform', () => {
 
     const indexFile = project.getSourceFileOrThrow(fileIndex);
     const exportDecl = indexFile.getExportDeclarations()[0];
-    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@src/utils/a');
+    assert.strictEqual(exportDecl.getModuleSpecifierValue(), '@/utils/a');
   });
 
   it('aliases dynamic import() with relative specifier', () => {
@@ -304,7 +301,7 @@ describe('alias-imports transform', () => {
 
     const featureFile = project.getSourceFileOrThrow(feature);
     const text = featureFile.getText();
-    assert.ok(text.includes("import('@src/utils/lazy')"));
+    assert.ok(text.includes("import('@/utils/lazy')"));
   });
 
   it('aliases jest.mock relative specifier', () => {
@@ -332,7 +329,7 @@ describe('alias-imports transform', () => {
 
     const featureFile = project.getSourceFileOrThrow(feature);
     const text = featureFile.getText();
-    assert.ok(text.includes("jest.mock('@src/utils/mod')"));
+    assert.ok(text.includes("jest.mock('@/utils/mod')"));
   });
 
   it('aliases jest.doMock and jest.unmock relative specifiers', () => {
@@ -360,8 +357,8 @@ describe('alias-imports transform', () => {
 
     const featureFile = project.getSourceFileOrThrow(feature);
     const text = featureFile.getText();
-    assert.ok(text.includes("jest.doMock('@src/utils/mod2')"));
-    assert.ok(text.includes("jest.unmock('@src/utils/mod2')"));
+    assert.ok(text.includes("jest.doMock('@/utils/mod2')"));
+    assert.ok(text.includes("jest.unmock('@/utils/mod2')"));
   });
 
   it('aliases relative imports starting with ./', () => {
@@ -389,10 +386,10 @@ describe('alias-imports transform', () => {
 
     const indexFile = project.getSourceFileOrThrow(index);
     const importDecl = indexFile.getImportDeclarations()[0];
-    // Same-directory imports are migrated to @src/<relative-from-src>/<file>
+    // Same-directory imports are migrated to @/<relative-from-src>/<file>
     assert.strictEqual(
       importDecl.getModuleSpecifierValue(),
-      '@src/utils/haptic/trigger',
+      '@/utils/haptic/trigger',
     );
   });
 
