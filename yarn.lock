@@ -4944,7 +4944,7 @@ __metadata:
     "@segment/analytics-react-native": "npm:^2.21.0"
     "@segment/sovran-react-native": "npm:^1.1.3"
     "@selfxyz/common": "workspace:^"
-    "@selfxyz/sdk-alpha": "workspace:^"
+    "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:^6.10.0"
     "@stablelib/cbor": "npm:^2.0.1"
@@ -5043,6 +5043,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@selfxyz/mobile-sdk-alpha@workspace:^, @selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha":
+  version: 0.0.0-use.local
+  resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
+  dependencies:
+    "@typescript-eslint/eslint-plugin": "npm:^7.18.0"
+    "@typescript-eslint/parser": "npm:^7.18.0"
+    eslint: "npm:^8.57.0"
+    eslint-config-prettier: "npm:^10.1.8"
+    eslint-plugin-import: "npm:^2.31.0"
+    eslint-plugin-prettier: "npm:^5.5.4"
+    eslint-plugin-simple-import-sort: "npm:^12.1.1"
+    eslint-plugin-sort-exports: "npm:^0.8.0"
+    prettier: "npm:^3.5.3"
+    tslib: "npm:^2.6.2"
+    tsup: "npm:^8.0.1"
+    typescript: "npm:^5.5.4"
+    vitest: "npm:^1.6.0"
+  languageName: unknown
+  linkType: soft
+
 "@selfxyz/qrcode@workspace:sdk/qrcode":
   version: 0.0.0-use.local
   resolution: "@selfxyz/qrcode@workspace:sdk/qrcode"
@@ -5078,23 +5098,6 @@ __metadata:
     lottie-react: ^2.4.0
     react: ^18.0.0
     react-dom: ^18.0.0
-  languageName: unknown
-  linkType: soft
-
-"@selfxyz/sdk-alpha@workspace:^, @selfxyz/sdk-alpha@workspace:packages/sdk-alpha":
-  version: 0.0.0-use.local
-  resolution: "@selfxyz/sdk-alpha@workspace:packages/sdk-alpha"
-  dependencies:
-    "@typescript-eslint/eslint-plugin": "npm:^7.18.0"
-    "@typescript-eslint/parser": "npm:^7.18.0"
-    eslint: "npm:^8.57.0"
-    eslint-plugin-import: "npm:^2.31.0"
-    eslint-plugin-simple-import-sort: "npm:^12.1.1"
-    prettier: "npm:^3.5.3"
-    tslib: "npm:^2.6.2"
-    tsup: "npm:^8.0.1"
-    typescript: "npm:^5.5.4"
-    vitest: "npm:^1.6.0"
   languageName: unknown
   linkType: soft
 
@@ -14456,7 +14459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-prettier@npm:10.1.8":
+"eslint-config-prettier@npm:10.1.8, eslint-config-prettier@npm:^10.1.8":
   version: 10.1.8
   resolution: "eslint-config-prettier@npm:10.1.8"
   peerDependencies:
@@ -14675,6 +14678,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-prettier@npm:^5.5.4":
+  version: 5.5.4
+  resolution: "eslint-plugin-prettier@npm:5.5.4"
+  dependencies:
+    prettier-linter-helpers: "npm:^1.0.0"
+    synckit: "npm:^0.11.7"
+  peerDependencies:
+    "@types/eslint": ">=8.0.0"
+    eslint: ">=8.0.0"
+    eslint-config-prettier: ">= 7.0.0 <10.0.0 || >=10.1.0"
+    prettier: ">=3.0.0"
+  peerDependenciesMeta:
+    "@types/eslint":
+      optional: true
+    eslint-config-prettier:
+      optional: true
+  checksum: 10c0/5cc780e0ab002f838ad8057409e86de4ff8281aa2704a50fa8511abff87028060c2e45741bc9cbcbd498712e8d189de8026e70aed9e20e50fe5ba534ee5a8442
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-react-hooks@npm:^4.6.0":
   version: 4.6.2
   resolution: "eslint-plugin-react-hooks@npm:4.6.2"
@@ -14736,6 +14759,15 @@ __metadata:
   peerDependencies:
     eslint: ">=5.0.0"
   checksum: 10c0/0ad1907ad9ddbadd1db655db0a9d0b77076e274b793a77b982c8525d808d868e6ecfce24f3a411e8a1fa551077387f9ebb38c00956073970ebd7ee6a029ce2b3
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-sort-exports@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "eslint-plugin-sort-exports@npm:0.8.0"
+  peerDependencies:
+    eslint: ">=5.0.0"
+  checksum: 10c0/599b3b34389030cfadfdfb93c915497412b47191af2cc722edb887991657aabd4ffce683bebe8db8312d92426bbc8bb1456ead3d4e0d29cb7ae0ba40359f10b4
   languageName: node
   linkType: hard
 

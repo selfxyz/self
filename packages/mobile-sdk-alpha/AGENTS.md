@@ -1,0 +1,71 @@
+# AGENTS Instructions
+
+## Development Workflow
+
+### Code Quality (Recommended)
+
+For the best development experience, run these commands in order:
+
+```bash
+# Fix linting and formatting issues automatically
+yarn nice
+
+# Check types across the codebase
+yarn types
+
+# Run tests to ensure everything works
+yarn test
+```
+
+### Individual Commands
+
+#### Linting
+
+- Run `yarn lint` to check for linting issues
+- Run `yarn lint:fix` to automatically fix linting issues
+
+#### Formatting
+
+- Run `yarn fmt` to check if files are properly formatted
+- Run `yarn fmt:fix` to automatically format files with Prettier
+- Run `yarn format` (alias for `yarn nice`) to fix both linting and formatting
+
+#### Type Checking
+
+- Run `yarn types` to check TypeScript types across the codebase
+- Run `yarn typecheck` (alias for `yarn types`) for the same functionality
+
+#### Building
+
+- Run `yarn build` to build the package for distribution
+- Run `yarn test:build` to build, test, check types, and lint in one command
+
+#### Testing
+
+- Run `yarn test` to run all tests
+- Run `yarn test:build` for a comprehensive check (build + test + types + lint)
+
+### Pre-commit Checklist
+
+Before committing your changes, ensure:
+
+1. ✅ Code is properly formatted: `yarn nice`
+2. ✅ Types are valid: `yarn types`
+3. ✅ All tests pass: `yarn test`
+4. ✅ Build succeeds: `yarn build`
+
+### Package Validation
+
+For publishing:
+
+- Run `yarn prepublishOnly` to validate exports and package configuration
+- Run `yarn validate:exports` to check export configuration
+- Run `yarn validate:pkg` to verify package conditions
+
+## Notes
+
+- This package uses TypeScript with strict type checking
+- ESLint is configured with TypeScript-specific rules
+- Prettier is used for code formatting
+- The `yarn nice` command is the recommended way to fix code quality issues
+- Use the root Prettier and EditorConfig settings for consistency

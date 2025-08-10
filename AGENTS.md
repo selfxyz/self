@@ -8,6 +8,8 @@ This repository is a Yarn v4 monorepo with several workspaces:
 - `contracts` – solidity contracts (@selfxyz/contracts)
 - `sdk/core` – core TypeScript SDK (@selfxyz/core)
 - `sdk/qrcode` – qrcode SDK (@selfxyz/qrcode)
+- `packages/mobile-sdk-alpha` – alpha version of the SDK (@selfxyz/mobile-sdk-alpha)
+- `noir` – noir circuits
 
 ## Workflow
 
@@ -20,6 +22,11 @@ This repository is a Yarn v4 monorepo with several workspaces:
 Before committing, run the following commands:
 
 ```bash
+# Fix linting and formatting issues automatically (for packages that support it)
+yarn workspace @selfxyz/mobile-sdk-alpha nice
+yarn workspace @selfxyz/common nice
+yarn workspace @selfxyz/app nice
+
 # Lint all packages in parallel
 yarn lint
 
@@ -39,6 +46,8 @@ yarn types
   - `yarn workspace @selfxyz/common test`
   - `yarn workspace @selfxyz/circuits test` # may fail if OpenSSL algorithms are missing
   - `yarn workspace @selfxyz/mobile-app test`
+  - `yarn workspace @selfxyz/mobile-sdk-alpha test`
+  - For Noir circuits, run `nargo test -p <crate>` in each `noir/crates/*` directory.
   - Tests for `@selfxyz/contracts` are currently disabled in CI and may be skipped.
 
 ### Formatting

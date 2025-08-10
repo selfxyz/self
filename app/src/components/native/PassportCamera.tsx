@@ -10,7 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
-import { extractMRZInfo } from '@selfxyz/sdk-alpha';
+import { extractMRZInfo } from '@selfxyz/mobile-sdk-alpha';
 
 import { RCTFragment } from '@src/components/native/RCTFragment';
 
@@ -106,7 +106,20 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
           dateOfBirth: event.nativeEvent.data.birthDate,
           dateOfExpiry: event.nativeEvent.data.expiryDate,
           documentType: event.nativeEvent.data.documentType,
-          countryCode: event.nativeEvent.data.countryCode,
+          issuingCountry: event.nativeEvent.data.countryCode,
+          nationality: event.nativeEvent.data.countryCode, // TODO: Verify if native module provides separate nationality code instead of defaulting to issuingCountry
+          surname: '', // Fill with defaults as they're required
+          givenNames: '',
+          sex: '',
+          validation: {
+            format: false, // Changed from true - avoid assuming validation success before actual checks
+            passportNumberChecksum: false, // Changed from true - avoid assuming validation success before actual checks
+            dateOfBirthChecksum: false, // Changed from true - avoid assuming validation success before actual checks
+            dateOfExpiryChecksum: false, // Changed from true - avoid assuming validation success before actual checks
+            compositeChecksum: false, // Changed from true - avoid assuming validation success before actual checks
+            overall: false, // Changed from true - avoid assuming validation success before actual checks
+          },
+          // TODO: If raw MRZ lines are accessible from native module, pass them to extractMRZInfo function to perform real checksum validations
         });
       }
     },

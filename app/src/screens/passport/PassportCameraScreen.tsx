@@ -5,7 +5,7 @@ import React, { useCallback, useRef } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 
-import { formatDateToYYMMDD } from '@selfxyz/sdk-alpha';
+import { formatDateToYYMMDD } from '@selfxyz/mobile-sdk-alpha';
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import passportScanAnimation from '@src/assets/animations/passport_scan.json';
@@ -72,7 +72,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         dateOfBirth,
         dateOfExpiry,
         documentType,
-        countryCode,
+        issuingCountry,
       } = result;
 
       const formattedDateOfBirth =
@@ -103,7 +103,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         dateOfBirth: formattedDateOfBirth,
         dateOfExpiry: formattedDateOfExpiry,
         documentType: documentType?.trim() || '',
-        countryCode: countryCode?.trim().toUpperCase() || '',
+        countryCode: issuingCountry?.trim().toUpperCase() || '',
       });
 
       trackEvent(PassportEvents.CAMERA_SCAN_SUCCESS, {

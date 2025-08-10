@@ -48,9 +48,31 @@
   "editor.formatOnSave": false,
   "editor.formatOnPaste": false,
 
-  // Path-specific formatting
-  "[**/app/**]": {
+  // TypeScript Specific Rules (Global defaults)
+  "typescript.format.enable": false,  // Disable VS Code's built-in formatter for TypeScript
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",  // Use Prettier for TypeScript formatting
     "editor.formatOnSave": true
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",  // Use Prettier for TypeScript React formatting
+    "editor.formatOnSave": true
+  },
+
+  // Path-specific formatting (These override the global language settings above)
+  "[app/**]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always"
+    }
+  },
+  "[packages/**]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always"
+    }
   },
 
   // ESLint Configuration - Optimized for Performance
@@ -71,18 +93,9 @@
     "typescriptreact"
   ],
 
-  // Auto-fix Actions
+  // Auto-fix Actions (Global fallback)
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always",
-  },
-
-  // TypeScript Specific Rules
-  "typescript.format.enable": false,  // Disable VS Code's built-in formatter for TypeScript
-  "[typescript]": {
-    "editor.defaultFormatter": null  // Let ESLint handle TypeScript formatting
-  },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": null  // Let ESLint handle TypeScript React formatting
   },
 
   // Indentation & Whitespace
