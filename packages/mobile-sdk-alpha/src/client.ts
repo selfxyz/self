@@ -56,8 +56,12 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
   function emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void {
     const set = listeners.get(event);
     if (!set) return;
-    for (const cb of set) {
-      (cb as (p: SDKEventMap[E]) => void)(payload);
+    for (const cb of Array.from(set)) {
+      try {
+        (cb as (p: SDKEventMap[E]) => void)(payload);
+      } catch (err) {
+        _adapters.logger.log('error', `event-listener error for event '${event}'`, { event, error: err });
+      }
     }
   }
 
