@@ -7,12 +7,10 @@ import {
   API_URL,
   PASSPORT_ATTESTATION_ID,
 } from '@selfxyz/common/constants/core';
-
-// Import only hash utilities (no bytes, trees, circuits, etc.)
-import { hash } from '@selfxyz/common/utils/hash';
-
 // Import only passport types (no app types, certificate types, etc.)
 import type { PassportData } from '@selfxyz/common/types/passport';
+// Import only hash utilities (no bytes, trees, circuits, etc.)
+import { hash } from '@selfxyz/common/utils/hash';
 
 export function optimalLevel2Example(data: PassportData) {
   // This will result in the smallest possible bundle
