@@ -5,7 +5,7 @@ module.exports = {
       'module-resolver',
       {
         root: ['./src'],
-        alias: { '@src': './src' },
+        alias: { '@': './src' },
       },
     ],
     ['@babel/plugin-transform-private-methods', { loose: true }],

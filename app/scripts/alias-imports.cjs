@@ -20,7 +20,7 @@ function transformProjectToAliasImports(project, appRootPath) {
       const spec = declaration.getModuleSpecifierValue();
 
       // Skip existing alias imports
-      if (spec.startsWith('@src/') || spec.startsWith('@tests/')) {
+      if (spec.startsWith('@/') || spec.startsWith('@tests/')) {
         continue;
       }
 
@@ -34,7 +34,7 @@ function transformProjectToAliasImports(project, appRootPath) {
       const relFromSrc = path.relative(srcDir, abs);
       if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
         baseDir = srcDir;
-        baseAlias = '@src';
+        baseAlias = '@';
       } else {
         const relFromTests = path.relative(testsDir, abs);
         if (!relFromTests.startsWith('..') && !path.isAbsolute(relFromTests)) {
@@ -55,7 +55,7 @@ function transformProjectToAliasImports(project, appRootPath) {
       if (!spec) continue;
 
       // Skip existing alias exports
-      if (spec.startsWith('@src/') || spec.startsWith('@tests/')) {
+      if (spec.startsWith('@/') || spec.startsWith('@tests/')) {
         continue;
       }
 
@@ -68,7 +68,7 @@ function transformProjectToAliasImports(project, appRootPath) {
       const relFromSrc = path.relative(srcDir, abs);
       if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
         baseDir = srcDir;
-        baseAlias = '@src';
+        baseAlias = '@';
       } else {
         const relFromTests = path.relative(testsDir, abs);
         if (!relFromTests.startsWith('..') && !path.isAbsolute(relFromTests)) {
@@ -107,7 +107,7 @@ function transformProjectToAliasImports(project, appRootPath) {
       const spec = arg.getLiteralValue();
 
       // Skip existing alias requires
-      if (spec.startsWith('@src/') || spec.startsWith('@tests/')) {
+      if (spec.startsWith('@/') || spec.startsWith('@tests/')) {
         continue;
       }
 
@@ -122,7 +122,7 @@ function transformProjectToAliasImports(project, appRootPath) {
       const relFromSrc = path.relative(srcDir, abs);
       if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
         baseDir = srcDir;
-        baseAlias = '@src';
+        baseAlias = '@';
       } else {
         const relFromTests = path.relative(testsDir, abs);
         if (!relFromTests.startsWith('..') && !path.isAbsolute(relFromTests)) {
