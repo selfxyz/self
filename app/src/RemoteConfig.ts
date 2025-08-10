@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { FirebaseRemoteConfigTypes } from '@react-native-firebase/remote-config';
-import remoteConfig from '@react-native-firebase/remote-config';
 import type {
   FeatureFlagValue,
   RemoteConfigBackend,
   StorageBackend,
-} from '@src/RemoteConfig.shared';
+} from '@/RemoteConfig.shared';
 import {
   clearAllLocalOverrides as clearAllLocalOverridesShared,
   clearLocalOverride as clearLocalOverrideShared,
@@ -17,7 +14,10 @@ import {
   initRemoteConfig as initRemoteConfigShared,
   refreshRemoteConfig as refreshRemoteConfigShared,
   setLocalOverride as setLocalOverrideShared,
-} from '@src/RemoteConfig.shared';
+} from '@/RemoteConfig.shared';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { FirebaseRemoteConfigTypes } from '@react-native-firebase/remote-config';
+import remoteConfig from '@react-native-firebase/remote-config';
 
 // Mobile-specific storage backend using AsyncStorage
 const mobileStorageBackend: StorageBackend = {
@@ -53,7 +53,7 @@ const mobileRemoteConfigBackend: RemoteConfigBackend = {
   },
 };
 
-export type { FeatureFlagValue } from '@src/RemoteConfig.shared';
+export type { FeatureFlagValue } from '@/RemoteConfig.shared';
 
 export const clearAllLocalOverrides = () =>
   clearAllLocalOverridesShared(mobileStorageBackend);

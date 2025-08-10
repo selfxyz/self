@@ -4,9 +4,9 @@ import React from 'react';
 import type { TextProps } from 'react-native';
 import { StyleSheet, Text } from 'react-native';
 
-import { shouldShowAesopRedesign } from '@src/hooks/useAesopRedesign';
-import { slate400 } from '@src/utils/colors';
-import { dinot } from '@src/utils/fonts';
+import { shouldShowAesopRedesign } from '@/hooks/useAesopRedesign';
+import { slate400 } from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
 
 interface AdditionalProps extends TextProps {}
 

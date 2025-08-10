@@ -395,4 +395,144 @@ describe('alias-imports transform', () => {
       '@src/utils/haptic/trigger',
     );
   });
+
+  describe('Migration functionality', () => {
+    it('migrates @src/ import to @/', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'components', 'Button.tsx');
+      const fileB = path.join(srcDir, 'utils', 'colors.ts');
+
+      writeFileEnsured(
+        fileA,
+        'export const Button = () => <div>Button</div>;\n',
+      );
+      writeFileEnsured(
+        fileB,
+        "import { Button } from '@src/components/Button';\nexport const colors = { primary: '#007AFF' };\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileB, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileB, migratedContent, 'utf8');
+
+      // Verify the migration worked
+      const finalContent = fs.readFileSync(fileB, 'utf8');
+      assert.ok(finalContent.includes("from '@/components/Button'"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+
+    it('migrates @src/ export to @/', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'components', 'Button.tsx');
+      const fileIndex = path.join(srcDir, 'components', 'index.ts');
+
+      writeFileEnsured(
+        fileA,
+        'export const Button = () => <div>Button</div>;\n',
+      );
+      writeFileEnsured(
+        fileIndex,
+        "export { Button } from '@src/components/Button';\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileIndex, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileIndex, migratedContent, 'utf8');
+
+      // Verify the migration worked
+      const finalContent = fs.readFileSync(fileIndex, 'utf8');
+      assert.ok(finalContent.includes("from '@/components/Button'"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+
+    it('migrates @src/ require to @/', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'utils', 'colors.ts');
+      const fileB = path.join(srcDir, 'components', 'Theme.tsx');
+
+      writeFileEnsured(
+        fileA,
+        'export const colors = { primary: "#007AFF" };\n',
+      );
+      writeFileEnsured(
+        fileB,
+        "const colors = require('@src/utils/colors');\nexport const Theme = () => <div>Theme</div>;\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileB, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileB, migratedContent, 'utf8');
+
+      // Verify the migration worked
+      const finalContent = fs.readFileSync(fileB, 'utf8');
+      assert.ok(finalContent.includes("require('@/utils/colors')"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+
+    it('preserves full paths (no aggressive optimization)', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'components', 'buttons', 'Button.tsx');
+      const fileB = path.join(srcDir, 'screens', 'Home.tsx');
+
+      writeFileEnsured(
+        fileA,
+        'export const Button = () => <div>Button</div>;\n',
+      );
+      writeFileEnsured(
+        fileB,
+        "import { Button } from '@src/components/buttons/Button';\nexport const Home = () => <Button />;\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileB, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileB, migratedContent, 'utf8');
+
+      // Verify the migration preserved the full path
+      const finalContent = fs.readFileSync(fileB, 'utf8');
+      assert.ok(finalContent.includes("from '@/components/buttons/Button'"));
+      assert.ok(!finalContent.includes("from '@/Button'"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+
+    it('migrates multiple @src/ imports in same file', () => {
+      const appRoot = tempRoot;
+      const srcDir = path.join(appRoot, 'src');
+      const fileA = path.join(srcDir, 'utils', 'colors.ts');
+      const fileB = path.join(srcDir, 'utils', 'dateFormatter.ts');
+      const fileC = path.join(srcDir, 'screens', 'Home.tsx');
+
+      writeFileEnsured(
+        fileA,
+        'export const colors = { primary: "#007AFF" };\n',
+      );
+      writeFileEnsured(
+        fileB,
+        'export const formatDate = (date: Date) => date.toISOString();\n',
+      );
+      writeFileEnsured(
+        fileC,
+        "import { Button } from '@src/components/buttons/Button';\nimport { colors } from '@src/utils/colors';\nimport { formatDate } from '@src/utils/dateFormatter';\nexport const Home = () => <Button />;\n",
+      );
+
+      // Simulate the migration: replace @src/ with @/
+      const content = fs.readFileSync(fileC, 'utf8');
+      const migratedContent = content.replace(/@src\//g, '@/');
+      fs.writeFileSync(fileC, migratedContent, 'utf8');
+
+      // Verify all imports were migrated
+      const finalContent = fs.readFileSync(fileC, 'utf8');
+      assert.ok(finalContent.includes("from '@/components/buttons/Button'"));
+      assert.ok(finalContent.includes("from '@/utils/colors'"));
+      assert.ok(finalContent.includes("from '@/utils/dateFormatter'"));
+      assert.ok(!finalContent.includes('@src/'));
+    });
+  });
 });

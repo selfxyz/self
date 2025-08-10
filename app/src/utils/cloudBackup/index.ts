@@ -3,18 +3,18 @@
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import {
-  APP_DATA_FOLDER_ID,
-  MIME_TYPES,
-} from '@robinbobin/react-native-google-drive-api-wrapper';
-import type { Mnemonic } from '@src/types/mnemonic';
-import { createGDrive } from '@src/utils/cloudBackup/google';
+import type { Mnemonic } from '@/types/mnemonic';
+import { createGDrive } from '@/utils/cloudBackup/google';
 import {
   FILE_NAME,
   parseMnemonic,
   withRetries,
-} from '@src/utils/cloudBackup/helpers';
-import * as ios from '@src/utils/cloudBackup/ios';
+} from '@/utils/cloudBackup/helpers';
+import * as ios from '@/utils/cloudBackup/ios';
+import {
+  APP_DATA_FOLDER_ID,
+  MIME_TYPES,
+} from '@robinbobin/react-native-google-drive-api-wrapper';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 

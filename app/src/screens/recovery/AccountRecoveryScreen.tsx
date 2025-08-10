@@ -3,15 +3,15 @@
 import React from 'react';
 import { View, YStack } from 'tamagui';
 
-import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@src/components/buttons/SecondaryButton';
-import Description from '@src/components/typography/Description';
-import { Title } from '@src/components/typography/Title';
-import { BackupEvents } from '@src/consts/analytics';
-import useHapticNavigation from '@src/hooks/useHapticNavigation';
-import RestoreAccountSvg from '@src/images/icons/restore_account.svg';
-import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
-import { black, slate600, white } from '@src/utils/colors';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { BackupEvents } from '@/consts/analytics';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import RestoreAccountSvg from '@/images/icons/restore_account.svg';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { black, slate600, white } from '@/utils/colors';
 
 interface AccountRecoveryScreenProps {}
 

@@ -2,7 +2,7 @@
 
 import { Platform, Vibration } from 'react-native';
 
-import { triggerFeedback } from '@src/utils/haptic/trigger';
+import { triggerFeedback } from '@/utils/haptic/trigger';
 
 // Keep track of the loading screen interval
 let loadingScreenInterval: ReturnType<typeof setInterval> | null = null;
@@ -165,4 +165,4 @@ export const notificationSuccess = () => triggerFeedback('notificationSuccess');
 
 export const notificationWarning = () => triggerFeedback('notificationWarning');
 
-export { triggerFeedback } from '@src/utils/haptic/trigger';
+export { triggerFeedback } from '@/utils/haptic/trigger';

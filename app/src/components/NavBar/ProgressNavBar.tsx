@@ -5,13 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { TextStyle, ViewStyle } from 'tamagui';
 import { XStack, YStack } from 'tamagui';
 
+import { NavBar } from '@/components/NavBar/BaseNavBar';
+import { cyan300, slate200, white } from '@/utils/colors';
+import { buttonTap } from '@/utils/haptic';
 import type {
   NativeStackHeaderProps,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
-import { NavBar } from '@src/components/NavBar/BaseNavBar';
-import { cyan300, slate200, white } from '@src/utils/colors';
-import { buttonTap } from '@src/utils/haptic';
 
 interface ProgressNavBarProps extends NativeStackHeaderProps {
   currentStep?: number;

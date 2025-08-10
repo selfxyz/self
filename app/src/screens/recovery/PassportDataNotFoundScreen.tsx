@@ -2,14 +2,14 @@
 
 import React, { useEffect } from 'react';
 
-import { PrimaryButton } from '@src/components/buttons/PrimaryButton';
-import Description from '@src/components/typography/Description';
-import { Title } from '@src/components/typography/Title';
-import useHapticNavigation from '@src/hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '@src/layouts/ExpandableBottomLayout';
-import analytics from '@src/utils/analytics';
-import { black, slate200, white } from '@src/utils/colors';
-import { hasAnyValidRegisteredDocument } from '@src/utils/proving/validateDocument';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import analytics from '@/utils/analytics';
+import { black, slate200, white } from '@/utils/colors';
+import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 
 const { flush: flushAnalytics } = analytics();
 

@@ -9,8 +9,8 @@ module.exports = {
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',
-    '^@src/(.*)$': '<rootDir>/src/$1',
-    '^@src$': '<rootDir>/src',
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@$': '<rootDir>/src',
     '^@tests/(.*)$': '<rootDir>/tests/src/$1',
     '^@tests$': '<rootDir>/tests/src',
   },

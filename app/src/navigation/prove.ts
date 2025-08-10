@@ -2,21 +2,21 @@
 
 import { lazy } from 'react';
 
+import { black, white } from '@/utils/colors';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import { black, white } from '@src/utils/colors';
 
 const ConfirmBelongingScreen = lazy(
-  () => import('@src/screens/prove/ConfirmBelongingScreen'),
+  () => import('@/screens/prove/ConfirmBelongingScreen'),
 );
 const ProofRequestStatusScreen = lazy(
-  () => import('@src/screens/prove/ProofRequestStatusScreen'),
+  () => import('@/screens/prove/ProofRequestStatusScreen'),
 );
-const ProveScreen = lazy(() => import('@src/screens/prove/ProveScreen'));
+const ProveScreen = lazy(() => import('@/screens/prove/ProveScreen'));
 const QRCodeTroubleScreen = lazy(
-  () => import('@src/screens/prove/QRCodeTroubleScreen'),
+  () => import('@/screens/prove/QRCodeTroubleScreen'),
 );
 const QRCodeViewFinderScreen = lazy(
-  () => import('@src/screens/prove/ViewFinderScreen'),
+  () => import('@/screens/prove/ViewFinderScreen'),
 );
 
 const proveScreens = {

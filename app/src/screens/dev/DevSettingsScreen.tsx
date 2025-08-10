@@ -6,14 +6,12 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import BugIcon from '@src/images/icons/bug_icon.svg';
-import IdIcon from '@src/images/icons/id_icon.svg';
-import WarningIcon from '@src/images/icons/warning.svg';
-import type { RootStackParamList } from '@src/navigation';
-import { unsafe_clearSecrets } from '@src/providers/authProvider';
-import { usePassport } from '@src/providers/passportDataProvider';
+import BugIcon from '@/images/icons/bug_icon.svg';
+import IdIcon from '@/images/icons/id_icon.svg';
+import WarningIcon from '@/images/icons/warning.svg';
+import type { RootStackParamList } from '@/navigation';
+import { unsafe_clearSecrets } from '@/providers/authProvider';
+import { usePassport } from '@/providers/passportDataProvider';
 import {
   red500,
   slate100,
@@ -25,8 +23,10 @@ import {
   slate900,
   white,
   yellow500,
-} from '@src/utils/colors';
-import { dinot } from '@src/utils/fonts';
+} from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
 interface DevSettingsScreenProps extends PropsWithChildren {
