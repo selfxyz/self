@@ -9,6 +9,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
 import { BodyText } from '@/components/typography/BodyText';
 import type { ProofHistory } from '@/stores/proof-types';
@@ -27,8 +29,6 @@ import {
 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { dinot } from '@/utils/fonts';
-import { useNavigation } from '@react-navigation/native';
-import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
 type Section = {
   title: string;

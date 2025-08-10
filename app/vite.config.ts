@@ -5,7 +5,6 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
-
 import { tamaguiPlugin } from '@tamagui/vite-plugin';
 import react from '@vitejs/plugin-react-swc';
 

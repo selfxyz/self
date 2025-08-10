@@ -4,6 +4,7 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
+import { useNavigation } from '@react-navigation/native';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -18,7 +19,6 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '@/utils/colors';
 import { impactLight } from '@/utils/haptic';
-import { useNavigation } from '@react-navigation/native';
 
 interface PassportOnboardingScreenProps {}
 

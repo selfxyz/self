@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
+import { render, waitFor } from '@testing-library/react-native';
 
 // Import after mocking
 import {
   PassportProvider,
   usePassport,
 } from '@/providers/passportDataProvider';
-import { render, waitFor } from '@testing-library/react-native';
 
 // Mock react-native-keychain before importing the module
 const mockKeychain = {

@@ -4,6 +4,12 @@ import React, { Suspense, useEffect } from 'react';
 import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Text } from 'tamagui';
+import type { StaticParamList } from '@react-navigation/native';
+import {
+  createNavigationContainerRef,
+  createStaticNavigation,
+} from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
@@ -18,12 +24,6 @@ import settingsScreens from '@/navigation/settings';
 import analytics from '@/utils/analytics';
 import { white } from '@/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
-import type { StaticParamList } from '@react-navigation/native';
-import {
-  createNavigationContainerRef,
-  createStaticNavigation,
-} from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 export const navigationScreens = {
   ...miscScreens,

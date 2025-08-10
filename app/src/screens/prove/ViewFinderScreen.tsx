@@ -4,6 +4,11 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -21,11 +26,6 @@ import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
 import { black, slate800, white } from '@/utils/colors';
 import { parseAndValidateUrlParams } from '@/utils/deeplinks';
-import {
-  useFocusEffect,
-  useIsFocused,
-  useNavigation,
-} from '@react-navigation/native';
 
 interface QRCodeViewFinderScreenProps {}
 

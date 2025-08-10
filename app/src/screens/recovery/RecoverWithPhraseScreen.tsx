@@ -4,6 +4,8 @@ import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { useNavigation } from '@react-navigation/native';
 
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import Description from '@/components/typography/Description';
@@ -24,8 +26,6 @@ import {
   white,
 } from '@/utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
-import Clipboard from '@react-native-clipboard/clipboard';
-import { useNavigation } from '@react-navigation/native';
 
 interface RecoverWithPhraseScreenProps {}
 

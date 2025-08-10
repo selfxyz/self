@@ -7,8 +7,9 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
-
-import { version } from '../../../package.json';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Bug, FileText } from '@tamagui/lucide-icons';
 
 import { pressedStyle } from '@/components/buttons/pressedStyle';
 import { BodyText } from '@/components/typography/BodyText';
@@ -36,9 +37,8 @@ import { amber500, black, neutral700, slate800, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { impactLight } from '@/utils/haptic';
 import { getCountry, getLocales, getTimeZone } from '@/utils/locale';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bug, FileText } from '@tamagui/lucide-icons';
+
+import { version } from '../../../package.json';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {

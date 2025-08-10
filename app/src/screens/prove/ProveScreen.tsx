@@ -15,6 +15,8 @@ import type {
 } from 'react-native';
 import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image, Text, View, XStack, YStack } from 'tamagui';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
@@ -35,8 +37,6 @@ import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
 import { buttonTap } from '@/utils/haptic';
 import { useProvingStore } from '@/utils/proving/provingMachine';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();
 

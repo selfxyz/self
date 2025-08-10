@@ -2,6 +2,8 @@
 
 import React, { useCallback } from 'react';
 import { styled, View, XStack, YStack } from 'tamagui';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -15,8 +17,6 @@ import {
   getModalCallbacks,
   unregisterModalCallbacks,
 } from '@/utils/modalCallbackRegistry';
-import type { StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',

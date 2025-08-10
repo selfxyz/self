@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import { act, renderHook, waitFor } from '@testing-library/react-native';
+
 import { useModal } from '@/hooks/useModal';
 import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 jest.mock('@/hooks/useModal');
 jest.mock('@/providers/passportDataProvider');

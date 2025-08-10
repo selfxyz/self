@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
+import { useIsFocused } from '@react-navigation/native';
 
 import loadingAnimation from '@/assets/animations/loading/misc.json';
 import failAnimation from '@/assets/animations/proof_failed.json';
@@ -28,7 +29,6 @@ import {
   notificationSuccess,
 } from '@/utils/haptic';
 import { useProvingStore } from '@/utils/proving/provingMachine';
-import { useIsFocused } from '@react-navigation/native';
 
 const { trackEvent } = analytics();
 

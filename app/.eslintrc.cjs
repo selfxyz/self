@@ -54,17 +54,19 @@ module.exports = {
       {
         groups: [
           // Node.js built-ins
-
           ['^node:'],
           ['^node:.*/'],
-          // External packages
 
-          ['^[a-zA-Z]'],
+          // External packages (including @-prefixed external packages)
+          ['^[a-zA-Z]', '^@(?!selfxyz|/)'],
+
           // Internal workspace packages
-
           ['^@selfxyz/'],
-          // Internal relative imports
 
+          // Internal alias imports (new @/ alias)
+          ['^@/'],
+
+          // Internal relative imports
           ['^[./]'],
         ],
       },

@@ -3,12 +3,12 @@
 import { ethers } from 'ethers';
 import { Platform } from 'react-native';
 import { CloudStorage } from 'react-native-cloud-storage';
-
-import { useBackupMnemonic } from '@/utils/cloudBackup';
-import { createGDrive } from '@/utils/cloudBackup/google';
 // Import after mocks
 import { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
 import { renderHook } from '@testing-library/react-native';
+
+import { useBackupMnemonic } from '@/utils/cloudBackup';
+import { createGDrive } from '@/utils/cloudBackup/google';
 
 // Mock dependencies
 jest.mock('react-native-cloud-storage', () => ({

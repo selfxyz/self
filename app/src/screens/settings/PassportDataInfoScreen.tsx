@@ -3,6 +3,7 @@
 import React, { useCallback, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
+import { useFocusEffect } from '@react-navigation/native';
 
 import type { PassportMetadata } from '@selfxyz/common/types';
 
@@ -12,7 +13,6 @@ import { usePassport } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
 import { black, slate200, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
-import { useFocusEffect } from '@react-navigation/native';
 
 const { trackEvent } = analytics();
 

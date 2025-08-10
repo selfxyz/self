@@ -4,6 +4,7 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import warningAnimation from '@/assets/animations/warning.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -14,7 +15,6 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useSettingStore } from '@/stores/settingStore';
 import { black, white } from '@/utils/colors';
 import { confirmTap, notificationWarning } from '@/utils/haptic';
-import { useNavigation } from '@react-navigation/native';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation = useNavigation();

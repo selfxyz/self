@@ -3,6 +3,7 @@
 import LottieView from 'lottie-react-native';
 import React from 'react';
 import { YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -13,7 +14,6 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
 import { black, white } from '@/utils/colors';
 import { buttonTap } from '@/utils/haptic';
-import { useNavigation } from '@react-navigation/native';
 
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation = useNavigation();

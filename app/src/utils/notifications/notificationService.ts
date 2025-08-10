@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { PermissionsAndroid, Platform } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 
 import type {
   DeviceTokenRegistration,
@@ -11,7 +12,6 @@ import {
   API_URL_STAGING,
   getStateMessage,
 } from '@/utils/notifications/notificationService.shared';
-import messaging from '@react-native-firebase/messaging';
 
 export async function getFCMToken(): Promise<string | null> {
   try {

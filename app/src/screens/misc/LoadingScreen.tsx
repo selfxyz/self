@@ -5,6 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, YStack } from 'tamagui';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 
 import type { PassportData } from '@selfxyz/common/types';
 
@@ -21,8 +23,6 @@ import { setupNotifications } from '@/utils/notifications/notificationService';
 import { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
 import type { ProvingStateType } from '@/utils/proving/provingMachine';
 import { useProvingStore } from '@/utils/proving/provingMachine';
-import type { StaticScreenProps } from '@react-navigation/native';
-import { useIsFocused } from '@react-navigation/native';
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 

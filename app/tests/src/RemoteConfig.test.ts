@@ -2,6 +2,8 @@
 
 // Now import the module under test
 // Import the mocked AsyncStorage for test controls
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {
   clearAllLocalOverrides,
   clearLocalOverride,
@@ -10,7 +12,6 @@ import {
   getLocalOverrides,
   setLocalOverride,
 } from '@/RemoteConfig';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Mock AsyncStorage with a default export
 jest.mock('@react-native-async-storage/async-storage', () => ({

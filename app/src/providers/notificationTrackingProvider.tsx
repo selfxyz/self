@@ -2,10 +2,10 @@
 
 import type { PropsWithChildren } from 'react';
 import React, { useEffect } from 'react';
+import messaging from '@react-native-firebase/messaging';
 
 import { NotificationEvents } from '@/consts/analytics';
 import analytics from '@/utils/analytics';
-import messaging from '@react-native-firebase/messaging';
 
 const { trackEvent } = analytics();
 

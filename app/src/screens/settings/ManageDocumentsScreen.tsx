@@ -4,6 +4,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Check, Eraser } from '@tamagui/lucide-icons';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -19,9 +22,6 @@ import analytics from '@/utils/analytics';
 import { borderColor, textBlack, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { impactLight } from '@/utils/haptic';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Check, Eraser } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();
 

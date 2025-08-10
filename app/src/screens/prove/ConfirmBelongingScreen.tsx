@@ -3,6 +3,8 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { usePreventRemove } from '@react-navigation/native';
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -20,8 +22,6 @@ import {
   requestNotificationPermission,
 } from '@/utils/notifications/notificationService';
 import { useProvingStore } from '@/utils/proving/provingMachine';
-import type { StaticScreenProps } from '@react-navigation/native';
-import { usePreventRemove } from '@react-navigation/native';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
 

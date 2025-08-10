@@ -4,6 +4,7 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useRef } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 
 import { formatDateToYYMMDD } from '@selfxyz/mobile-sdk-alpha';
 
@@ -24,7 +25,6 @@ import { black, slate400, slate800, white } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 import { checkScannedInfo } from '@/utils/utils';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
 
 interface PassportNFCScanScreen {}
 

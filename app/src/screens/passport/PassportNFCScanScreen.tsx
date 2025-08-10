@@ -12,6 +12,13 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Button, Image, XStack } from 'tamagui';
+import type { RouteProp } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
@@ -42,13 +49,6 @@ import {
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
-import type { RouteProp } from '@react-navigation/native';
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import { CircleHelp } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();
 

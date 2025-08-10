@@ -17,6 +17,8 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import type { IdDocInput } from '@selfxyz/common/utils';
@@ -51,8 +53,6 @@ import {
 import { extraYPadding } from '@/utils/constants';
 import { dinot, plexMono } from '@/utils/fonts';
 import { buttonTap, selectionChange } from '@/utils/haptic';
-import { useNavigation } from '@react-navigation/native';
-import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 
 const { trackEvent } = analytics();
 

@@ -2,6 +2,8 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 import { YStack } from 'tamagui';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -20,8 +22,6 @@ import analytics from '@/utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, white } from '@/utils/colors';
 import { buttonTap, confirmTap } from '@/utils/haptic';
-import type { StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
 
 const { trackEvent } = analytics();
 

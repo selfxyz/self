@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -23,7 +24,6 @@ import analytics from '@/utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
-import { useNavigation } from '@react-navigation/native';
 
 const { trackEvent } = analytics();
 

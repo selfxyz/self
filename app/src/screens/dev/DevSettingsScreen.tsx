@@ -5,6 +5,9 @@ import React, { useMemo, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
 import BugIcon from '@/images/icons/bug_icon.svg';
 import IdIcon from '@/images/icons/id_icon.svg';
@@ -25,9 +28,6 @@ import {
   yellow500,
 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;

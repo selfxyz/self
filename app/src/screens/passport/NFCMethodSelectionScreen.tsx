@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Platform, ScrollView } from 'react-native';
 import { Input, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -13,7 +14,6 @@ import { Title } from '@/components/typography/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import useUserStore from '@/stores/userStore';
 import { white } from '@/utils/colors';
-import { useNavigation } from '@react-navigation/native';
 
 type NFCParams = {
   skipPACE?: boolean;

@@ -3,6 +3,11 @@
 import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, styled, YStack } from 'tamagui';
+import {
+  useFocusEffect,
+  useNavigation,
+  usePreventRemove,
+} from '@react-navigation/native';
 
 import { pressedStyle } from '@/components/buttons/pressedStyle';
 import { BodyText } from '@/components/typography/BodyText';
@@ -19,11 +24,6 @@ import { useSettingStore } from '@/stores/settingStore';
 import analytics from '@/utils/analytics';
 import { amber500, black, neutral700, slate800, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
-import {
-  useFocusEffect,
-  useNavigation,
-  usePreventRemove,
-} from '@react-navigation/native';
 
 const ScanButton = styled(Button, {
   borderRadius: 20,
