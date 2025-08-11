@@ -5,14 +5,37 @@
   "license": "MIT",
   "author": "self team",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs"
+    },
+    "./testing": {
+      "types": "./dist/esm/testing/index.d.ts",
+      "import": "./dist/esm/testing/index.js",
+      "require": "./dist/cjs/testing/index.cjs"
+    },
+    "./circuits/*": "./circuits/*"
+  },
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "circuits/**/*"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup && yarn build:types && yarn postbuild",
+    "postbuild": "node ./scripts/postBuild.mjs",
     "build-all": "bash scripts/build/build_register_circuits.sh && bash scripts/build/build_register_circuits_id.sh && bash scripts/build/build_dsc_circuits.sh && bash scripts/build/build_disclose_circuits.sh",
     "build-disclose": "bash scripts/build/build_disclose_circuits.sh",
     "build-dsc": "bash scripts/build/build_dsc_circuits.sh",
     "build-register": "bash scripts/build/build_register_circuits.sh",
     "build-register-id": "bash scripts/build/build_register_circuits_id.sh",
     "build:deps": "yarn workspaces foreach --from @selfxyz/circuits --topological-dev --recursive run build",
+    "build:types": "tsc -p tsconfig.types.json && node scripts/organize-types.mjs",
+    "build:watch": "tsup --watch",
     "download": "bash scripts/server/download_circuits_from_AWS.sh",
     "format": "prettier --write .",
     "install-circuits": "yarn workspaces focus @selfxyz/circuits",
@@ -81,6 +104,7 @@
     "prettier": "^3.3.3",
     "ts-mocha": "^10.0.0",
     "tsconfig-paths": "^4.2.0",
+    "tsup": "^8.5.0",
     "tsx": "^4.20.3"
   },
   "engines": {
