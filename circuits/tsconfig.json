@@ -14,7 +14,7 @@
     "baseUrl": ".",
     "composite": true
   },
-  "include": ["tests/**/*", "tests/**/*.json", "src/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {

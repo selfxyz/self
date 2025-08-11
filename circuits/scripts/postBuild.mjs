@@ -16,29 +16,50 @@ writeFileSync(
   JSON.stringify({ type: 'commonjs' }, null, 4)
 );
 
-// Create dist package.json for Metro
+// Initialize dist package.json (filled after shims)
 const distPackageJson = {
   name: '@selfxyz/circuits',
   version: packageJson.version,
   type: 'module',
-  exports: {
-    '.': './esm/index.js',
-  },
+  exports: { '.': './esm/index.js' },
 };
-writeFileSync(path.join(DIST, 'package.json'), JSON.stringify(distPackageJson, null, 4));
+
+function toPosix(p) {
+  return p.split(path.sep).join('/');
+}
 
 function createShim(shimPath, targetPath) {
   const shimDir = path.join(DIST, shimPath);
   mkdirSync(shimDir, { recursive: true });
-  const cjsTargetPath = targetPath.replace('/esm/', '/cjs/').replace('.js', '.cjs');
+  const esmTarget = targetPath; // e.g. ./esm/utils/rsa.js (posix-like expected)
+  const cjsTarget = esmTarget.replace('/esm/', '/cjs/').replace(/\.js$/, '.cjs');
+
+  // ESM shim entry
   writeFileSync(
     path.join(shimDir, 'index.js'),
-    `// Shim file for @selfxyz/circuits/${shimPath}\nmodule.exports = require('${cjsTargetPath}');`
+    `// Shim for @selfxyz/circuits/${shimPath}\nexport * from '${esmTarget.replace(/\.js$/, '')}';\nexport { default } from '${esmTarget.replace(/\.js$/, '')}';\n`
   );
+  // CJS shim entry
+  writeFileSync(
+    path.join(shimDir, 'index.cjs'),
+    `// Shim for @selfxyz/circuits/${shimPath}\nmodule.exports = require('${cjsTarget}');\n`
+  );
+  // Types shim
   writeFileSync(
     path.join(shimDir, 'index.d.ts'),
-    `// Shim file for @selfxyz/circuits/${shimPath} types\nexport * from '${targetPath.replace('.js', '')}';`
+    `// Types for @selfxyz/circuits/${shimPath}\nexport * from '${esmTarget.replace(/\.js$/, '')}';\nexport { default } from '${esmTarget.replace(/\.js$/, '')}';\n`
   );
+
+  // Add subpath export for this shim
+  const subpath = `./${toPosix(shimPath)}`;
+  distPackageJson.exports[subpath] = {
+    import: `./${toPosix(path.relative(DIST, path.join(shimDir, 'index.js')))}`,
+    require: `./${toPosix(path.relative(DIST, path.join(shimDir, 'index.cjs')))}`,
+  };
 }
 
+// Materialize shims and export map
 shimConfigs.forEach((config) => createShim(config.shimPath, config.targetPath));
+
+// Finally write dist/package.json (after exports are populated)
+writeFileSync(path.join(DIST, 'package.json'), JSON.stringify(distPackageJson, null, 4));
