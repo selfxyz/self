@@ -8,10 +8,12 @@
     "module": "NodeNext",
     "allowJs": true,
     "checkJs": false,
-    "outDir": "./dist",
-    "baseUrl": "."
+    "outDir": "./dist/esm",
+    "declaration": false,
+    "baseUrl": ".",
+    "composite": false
   },
-  "include": ["tests/**/*", "src/**/*"],
+  "include": ["tests/**/*", "tests/**/*.json", "src/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {
