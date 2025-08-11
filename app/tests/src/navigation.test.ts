@@ -2,7 +2,7 @@
 
 describe('navigation', () => {
   it('should have the correct navigation screens', () => {
-    const navigationScreens = require('../../src/navigation').navigationScreens;
+    const navigationScreens = require('@/navigation').navigationScreens;
     const listOfScreens = Object.keys(navigationScreens).sort();
     expect(listOfScreens).toEqual([
       'AccountRecovery',
@@ -13,6 +13,7 @@ describe('navigation', () => {
       'CreateMock',
       'DevFeatureFlags',
       'DevHapticFeedback',
+      'DevPrivateKey',
       'DevSettings',
       'Disclaimer',
       'Home',
@@ -50,20 +51,18 @@ describe('navigation', () => {
     });
 
     it('should use regular passport screens when shouldShowAesopRedesign is false', () => {
-      const navigationScreens =
-        require('../../src/navigation').navigationScreens;
+      const navigationScreens = require('@/navigation').navigationScreens;
       expect(
         navigationScreens.PassportOnboarding.options.title,
       ).toBeUndefined();
     });
 
     it('should use aesop design passport screens when shouldShowAesopRedesign is true', () => {
-      jest.mock('../../src/hooks/useAesopRedesign', () => ({
+      jest.mock('@/hooks/useAesopRedesign', () => ({
         shouldShowAesopRedesign: jest.fn().mockReturnValue(true),
       }));
 
-      const navigationScreens =
-        require('../../src/navigation').navigationScreens;
+      const navigationScreens = require('@/navigation').navigationScreens;
       expect(navigationScreens.PassportOnboarding.options.title).toBeDefined();
     });
   });

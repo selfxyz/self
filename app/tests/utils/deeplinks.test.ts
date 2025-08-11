@@ -2,15 +2,15 @@
 
 import { Linking } from 'react-native';
 
-jest.mock('../../src/navigation', () => ({
+jest.mock('@/navigation', () => ({
   navigationRef: { navigate: jest.fn(), isReady: jest.fn(() => true) },
 }));
 
 const mockSelfAppStore = { useSelfAppStore: { getState: jest.fn() } };
-jest.mock('../../src/stores/selfAppStore', () => mockSelfAppStore);
+jest.mock('@/stores/selfAppStore', () => mockSelfAppStore);
 
 const mockUserStore = { default: { getState: jest.fn() } };
-jest.mock('../../src/stores/userStore', () => ({
+jest.mock('@/stores/userStore', () => ({
   __esModule: true,
   ...mockUserStore,
 }));
@@ -30,7 +30,7 @@ describe('deeplinks', () => {
       handleUrl,
       parseAndValidateUrlParams,
       setupUniversalLinkListenerInNavigation,
-    } = require('../../src/utils/deeplinks'));
+    } = require('@/utils/deeplinks'));
     setSelfApp = jest.fn();
     startAppListener = jest.fn();
     cleanSelfApp = jest.fn();
@@ -57,7 +57,7 @@ describe('deeplinks', () => {
 
       expect(setSelfApp).toHaveBeenCalledWith(selfApp);
       expect(startAppListener).toHaveBeenCalledWith('abc');
-      const { navigationRef } = require('../../src/navigation');
+      const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).toHaveBeenCalledWith('ProveScreen');
     });
 
@@ -67,7 +67,7 @@ describe('deeplinks', () => {
 
       expect(cleanSelfApp).toHaveBeenCalled();
       expect(startAppListener).toHaveBeenCalledWith('123');
-      const { navigationRef } = require('../../src/navigation');
+      const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).toHaveBeenCalledWith('ProveScreen');
     });
 
@@ -83,7 +83,7 @@ describe('deeplinks', () => {
         birthDate: undefined,
         gender: undefined,
       });
-      const { navigationRef } = require('../../src/navigation');
+      const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).toHaveBeenCalledWith('MockDataDeepLink');
     });
 
@@ -95,7 +95,7 @@ describe('deeplinks', () => {
       const url = 'scheme://open?selfApp=%7Binvalid';
       handleUrl(url);
 
-      const { navigationRef } = require('../../src/navigation');
+      const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).toHaveBeenCalledWith('QRCodeTrouble');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Error parsing selfApp:',
@@ -116,7 +116,7 @@ describe('deeplinks', () => {
       const url = 'scheme://open?sessionId=abc<script>alert("xss")</script>';
       handleUrl(url);
 
-      const { navigationRef } = require('../../src/navigation');
+      const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).toHaveBeenCalledWith('QRCodeTrouble');
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'No sessionId or selfApp found in the data',
@@ -134,7 +134,7 @@ describe('deeplinks', () => {
       const url = 'scheme://open?sessionId=%ZZ'; // Invalid URL encoding
       handleUrl(url);
 
-      const { navigationRef } = require('../../src/navigation');
+      const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).toHaveBeenCalledWith('QRCodeTrouble');
 
       consoleErrorSpy.mockRestore();
@@ -330,7 +330,7 @@ describe('deeplinks', () => {
       jest.resetModules();
       const {
         parseAndValidateUrlParams: mockedParser,
-      } = require('../../src/utils/deeplinks');
+      } = require('@/utils/deeplinks');
 
       const url = 'scheme://open?sessionId=duplicate&sessionId=values';
       const result = mockedParser(url);

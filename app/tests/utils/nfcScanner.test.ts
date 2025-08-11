@@ -2,7 +2,7 @@
 
 import { Platform } from 'react-native';
 
-import { parseScanResponse } from '../../src/utils/nfcScanner';
+import { parseScanResponse } from '@/utils/nfcScanner';
 
 describe('parseScanResponse', () => {
   beforeEach(() => {

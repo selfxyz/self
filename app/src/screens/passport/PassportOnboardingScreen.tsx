@@ -4,22 +4,21 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
-
-import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '../../utils/colors';
-import { impactLight } from '../../utils/haptic';
-
 import { useNavigation } from '@react-navigation/native';
+
+import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import ButtonsContainer from '@/components/ButtonsContainer';
+import TextsContainer from '@/components/TextsContainer';
+import Additional from '@/components/typography/Additional';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { PassportEvents } from '@/consts/analytics';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { black, slate100, white } from '@/utils/colors';
+import { impactLight } from '@/utils/haptic';
 
 interface PassportOnboardingScreenProps {}
 

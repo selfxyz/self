@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 /**
  * LEVEL 3 MIGRATION GUIDE - Function-Level Granular Imports
  *
@@ -25,55 +27,24 @@
 // ============================================================================
 
 // ✅ Hash Functions - Import only what you need
-import { hash } from '@selfxyz/common/utils/hash/sha'; // ~3KB instead of 15KB
-import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon'; // ~2KB instead of 15KB
+import type { CertificateData } from '@selfxyz/common/types/certificates';
+// ✅ Types - Import specific type categories
+import type { PassportData } from '@selfxyz/common/types/passport'; // Types are tree-shaken automatically
+import { identifyCurve } from '@selfxyz/common/utils/certificates/curveUtils'; // ~3KB instead of 20KB
+import { initElliptic } from '@selfxyz/common/utils/certificates/ellipticInit'; // ~2KB instead of 20KB
+// No need to import disclose or OFAC inputs if not used
+// ✅ Certificate Functions - Import specific parsing operations
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parseSimple'; // ~5KB instead of 20KB
 // No need to import custom hash functions if not used
-
 // ✅ Circuit Functions - Import specific circuit generators
 import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs'; // ~8KB instead of 25KB
 import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/registerInputs'; // ~7KB instead of 25KB
-// No need to import disclose or OFAC inputs if not used
-
-// ✅ Certificate Functions - Import specific parsing operations
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificates/parseSimple'; // ~5KB instead of 20KB
-import { initElliptic } from '@selfxyz/common/utils/certificates/ellipticInit'; // ~2KB instead of 20KB
-import { identifyCurve } from '@selfxyz/common/utils/certificates/curveUtils'; // ~3KB instead of 20KB
-
+import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon'; // ~2KB instead of 15KB
+import { hash } from '@selfxyz/common/utils/hash/sha'; // ~3KB instead of 15KB
 // ✅ Passport Functions - Import specific operations
 import { generateCommitment } from '@selfxyz/common/utils/passports/commitment'; // ~3KB instead of 15KB
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core'; // ~4KB instead of 15KB
-import { getPassportSignatureInfos } from '@selfxyz/common/utils/passports/signature'; // ~5KB instead of 15KB
-
-// ✅ Types - Import specific type categories
-import type { PassportData } from '@selfxyz/common/types/passport'; // Types are tree-shaken automatically
-import type { CertificateData } from '@selfxyz/common/types/certificates';
-
-// ============================================================================
-// MIGRATION EXAMPLES BY USE CASE
-// ============================================================================
-
-/**
- * USE CASE 1: Frontend App - Only needs basic hash and passport parsing
- * Bundle size reduction: ~60KB → ~15KB (75% smaller!)
- */
-export function frontendOptimalImports() {
-  // Only import what this specific frontend component needs
-  // import { hash } from '@selfxyz/common/utils/hash/sha';
-  // import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core';
-  // import type { PassportData } from '@selfxyz/common/types/passport';
-  // Your component code here...
-}
-
-/**
- * USE CASE 2: Circuit Worker - Only needs circuit generation
- * Bundle size reduction: ~45KB → ~8KB (82% smaller!)
- */
-export function circuitWorkerOptimalImports() {
-  // Only import the specific circuit generator needed
-  // import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs';
-  // import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon';
-  // Your circuit generation code here...
-}
+import { getPassportSignatureInfos } from '@selfxyz/common/utils/passports/signature';
 
 /**
  * USE CASE 3: Certificate Parser - Only needs certificate operations
@@ -85,6 +56,33 @@ export function certificateParserOptimalImports() {
   // import { identifyCurve } from '@selfxyz/common/utils/certificates/curveUtils';
   // import { getFriendlyName } from '@selfxyz/common/utils/certificates/oidUtils';
   // Your certificate parsing code here...
+}
+
+// ~5KB instead of 15KB
+/**
+ * USE CASE 2: Circuit Worker - Only needs circuit generation
+ * Bundle size reduction: ~45KB → ~8KB (82% smaller!)
+ */
+export function circuitWorkerOptimalImports() {
+  // Only import the specific circuit generator needed
+  // import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs';
+  // import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon';
+  // Your circuit generation code here...
+}
+
+// ============================================================================
+// MIGRATION EXAMPLES BY USE CASE
+// ============================================================================
+/**
+ * USE CASE 1: Frontend App - Only needs basic hash and passport parsing
+ * Bundle size reduction: ~60KB → ~15KB (75% smaller!)
+ */
+export function frontendOptimalImports() {
+  // Only import what this specific frontend component needs
+  // import { hash } from '@selfxyz/common/utils/hash/sha';
+  // import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core';
+  // import type { PassportData } from '@selfxyz/common/types/passport';
+  // Your component code here...
 }
 
 /**

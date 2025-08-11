@@ -2,10 +2,10 @@
 
 import React, { useCallback } from 'react';
 
-import Mnemonic from '../../components/Mnemonic';
-import Description from '../../components/typography/Description';
-import useMnemonic from '../../hooks/useMnemonic';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import Mnemonic from '@/components/Mnemonic';
+import Description from '@/components/typography/Description';
+import useMnemonic from '@/hooks/useMnemonic';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
 interface ShowRecoveryPhraseScreenProps {}
 

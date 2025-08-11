@@ -3,13 +3,12 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
-
-import { ProofEvents } from '../../consts/analytics';
-import { black } from '../../utils/colors';
-import Description from '../typography/Description';
-import { HeldPrimaryButton } from './PrimaryButtonLongHold';
-
 import { useMachine } from '@xstate/react';
+
+import { HeldPrimaryButton } from '@/components/buttons/PrimaryButtonLongHold';
+import Description from '@/components/typography/Description';
+import { ProofEvents } from '@/consts/analytics';
+import { black } from '@/utils/colors';
 
 interface HeldPrimaryButtonProveScreenProps {
   onVerify: () => void;

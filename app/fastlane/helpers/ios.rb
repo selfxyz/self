@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 module Fastlane
   module Helpers
     module IOS
@@ -8,7 +10,7 @@ module Fastlane
         latest = Fastlane::Actions::LatestTestflightBuildNumberAction.run(
           api_key: api_key,
           app_identifier: ENV["IOS_APP_IDENTIFIER"],
-          platform: "ios"
+          platform: "ios",
         )
 
         project = Xcodeproj::Project.open(xcodeproj)
@@ -64,13 +66,13 @@ module Fastlane
         latest = Fastlane::Actions::LatestTestflightBuildNumberAction.run(
           api_key: api_key,
           app_identifier: ENV["IOS_APP_IDENTIFIER"],
-          platform: "ios"
+          platform: "ios",
         )
 
         new_number = latest + 1
         Fastlane::Actions::IncrementBuildNumberAction.run(
           build_number: new_number,
-          xcodeproj: xcodeproj
+          xcodeproj: xcodeproj,
         )
         report_success("Incremented build number to #{new_number} (previous #{latest})")
         new_number

@@ -2,7 +2,6 @@
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface PersistedSettingsState {
@@ -77,7 +76,7 @@ export const useSettingStore = create<SettingsState>()(
     {
       name: 'setting-storage',
       storage: createJSONStorage(() => AsyncStorage),
-      onRehydrateStorage: () => console.log('Rehydrated settings'),
+      onRehydrateStorage: () => undefined,
       partialize: state => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { hideNetworkModal, setHideNetworkModal, ...persistedState } =

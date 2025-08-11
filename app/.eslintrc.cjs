@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
@@ -26,9 +28,7 @@ module.exports = {
     'web/dist/',
     '.tamagui/*',
     '*.js.map',
-    '*.d.ts',
-    'metro.config.cjs',
-    'docs/examples/',
+    'tests/e2e/',
   ],
   settings: {
     react: { version: 'detect' },
@@ -53,23 +53,25 @@ module.exports = {
       {
         groups: [
           // Node.js built-ins
-
           ['^node:'],
           ['^node:.*/'],
-          // External packages
 
-          ['^[a-zA-Z]'],
+          // External packages (including @-prefixed external packages)
+          ['^[a-zA-Z]', '^@(?!selfxyz|/)'],
+
           // Internal workspace packages
-
           ['^@selfxyz/'],
-          // Internal relative imports
 
+          // Internal alias imports (new @/ alias)
+          ['^@/'],
+
+          // Internal relative imports
           ['^[./]'],
         ],
       },
     ],
 
-    // Export sorting - using sort-exports for better type prioritization
+    // Export sorting
 
     'sort-exports/sort-exports': [
       'error',
@@ -167,20 +169,11 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.cjs'],
-      env: {
-        node: true,
-        commonjs: true,
-        es6: true,
-      },
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'script',
-      },
+      files: ['docs/examples/**/*.ts'],
       rules: {
-        'header/header': 'off',
-        '@typescript-eslint/no-var-requires': 'off',
-        'no-undef': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        'no-unused-vars': 'off',
+        'import/no-unresolved': 'off',
       },
     },
     {
@@ -195,6 +188,39 @@ module.exports = {
       ],
       rules: {
         'sort-exports/sort-exports': 'off',
+      },
+    },
+    {
+      files: ['tests/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: './tsconfig.test.json',
+      },
+      rules: {
+        // Allow console logging in tests
+        'no-console': 'off',
+      },
+    },
+    {
+      // Allow console logging in scripts
+      files: ['scripts/**/*.cjs', 'scripts/*.cjs'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
+    {
+      files: ['*.cjs'],
+      env: {
+        node: true,
+        commonjs: true,
+        es6: true,
+      },
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'script',
+      },
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+        'no-undef': 'off',
       },
     },
   ],

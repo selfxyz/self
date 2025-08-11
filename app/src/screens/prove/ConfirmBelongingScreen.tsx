@@ -3,26 +3,25 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { usePreventRemove } from '@react-navigation/native';
 
-import successAnimation from '../../assets/animations/loading/success.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents, ProofEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import analytics from '../../utils/analytics';
-import { black, white } from '../../utils/colors';
-import { notificationSuccess } from '../../utils/haptic';
+import successAnimation from '@/assets/animations/loading/success.json';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { PassportEvents, ProofEvents } from '@/consts/analytics';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { styles } from '@/screens/prove/ProofRequestStatusScreen';
+import analytics from '@/utils/analytics';
+import { black, white } from '@/utils/colors';
+import { notificationSuccess } from '@/utils/haptic';
 import {
   getFCMToken,
   requestNotificationPermission,
-} from '../../utils/notifications/notificationService';
-import { useProvingStore } from '../../utils/proving/provingMachine';
-import { styles } from './ProofRequestStatusScreen';
-
-import type { StaticScreenProps } from '@react-navigation/native';
-import { usePreventRemove } from '@react-navigation/native';
+} from '@/utils/notifications/notificationService';
+import { useProvingStore } from '@/utils/proving/provingMachine';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
 
@@ -56,7 +55,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
         if (token) {
           setFcmToken(token);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
-          console.log('FCM token stored in proving store');
         }
       }
 
@@ -65,10 +63,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
 
       // Navigate to loading screen
       navigate();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error initializing proving process:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
       trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
-        error: error?.message || 'Unknown error',
+        error: message,
       });
     } finally {
       setRequestingPermission(false);

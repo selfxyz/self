@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React, { useCallback } from 'react';
-import type { NativeSyntheticEvent } from 'react-native';
+import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native';
 import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
 
-import { RCTFragment } from './RCTFragment';
+import { RCTFragment } from '@/components/native/RCTFragment';
 
 interface NativeQRCodeScannerViewProps {
   onQRData: (event: NativeSyntheticEvent<{ data: string }>) => void;
@@ -15,7 +15,7 @@ interface NativeQRCodeScannerViewProps {
       stackTrace: string;
     }>,
   ) => void;
-  style?: any; // Or a more specific style type
+  style?: StyleProp<ViewStyle>;
 }
 
 const QRCodeNativeComponent = Platform.select({
@@ -65,7 +65,6 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
       if (!isMounted) {
         return;
       }
-      console.log(event.nativeEvent.data);
       onQRData(null, event.nativeEvent.data);
     },
     [onQRData, isMounted],

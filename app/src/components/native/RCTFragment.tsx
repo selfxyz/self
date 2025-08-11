@@ -44,7 +44,7 @@ function dispatchCommand(
   } catch (e) {
     // Error creatingthe fragment
     // TODO: assert this only happens in dev mode when the fragment is already mounted
-    console.log(e);
+    console.warn(e);
     if (command === 'create') {
       dispatchCommand(fragmentComponentName, viewId, 'destroy');
     }

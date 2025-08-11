@@ -5,6 +5,7 @@
     "circuits",
     "common",
     "contracts",
+    "packages/*",
     "prover/tests",
     "sdk/*"
   ],
@@ -18,6 +19,7 @@
     "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
     "prepare": "husky",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
+    "test": "yarn workspaces foreach --parallel -i --all run test",
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
   "devDependencies": {
@@ -26,5 +28,8 @@
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0"
   },
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.6.0",
+  "engines": {
+    "node": ">=22 <23"
+  }
 }

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 module.exports = {
   preset: 'react-native',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
@@ -9,5 +11,14 @@ module.exports = {
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@$': '<rootDir>/src',
+    '^@tests/(.*)$': '<rootDir>/tests/src/$1',
+    '^@tests$': '<rootDir>/tests/src',
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json',
+    },
   },
 };

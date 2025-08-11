@@ -28,6 +28,7 @@
 		905B70052A72767900AFA232 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905B70042A72767900AFA232 /* PassportReader.swift */; };
 		905B70072A72774000AFA232 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 905B70062A72774000AFA232 /* PassportReader.m */; };
 		AE6147EC2DC95A8D00445C0F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */; };
+		B49D2B112E28AA7900946F64 /* IBMPlexMono-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */; };
 		BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */; };
 		BF1044832DD5354F009B3688 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044822DD5354F009B3688 /* CameraView.swift */; };
 		BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MRZScanner.swift */; };
@@ -69,6 +70,7 @@
 		9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "DINOT-Medium.otf"; path = "../src/assets/fonts/DINOT-Medium.otf"; sourceTree = "<group>"; };
 		AC3CAAD43E2B9ECF07DACA0B /* Pods-Self.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Self.release.xcconfig"; path = "Target Support Files/Pods-Self/Pods-Self.release.xcconfig"; sourceTree = "<group>"; };
 		AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "IBMPlexMono-Regular.otf"; path = "../src/assets/fonts/IBMPlexMono-Regular.otf"; sourceTree = SOURCE_ROOT; };
 		BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMRZScannerView.swift; sourceTree = "<group>"; };
 		BF1044822DD5354F009B3688 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		BF1044842DD53570009B3688 /* MRZScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScanner.swift; sourceTree = "<group>"; };
@@ -141,6 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				7E5C3CEF7EDA4871B3D0EBE1 /* Advercase-Regular.otf */,
+				B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */,
 				9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */,
 			);
 			name = Resources;
@@ -255,6 +258,7 @@
 				AE6147EC2DC95A8D00445C0F /* GoogleService-Info.plist in Resources */,
 				EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */,
 				DAC618BCA5874DD8AD74FFFC /* Advercase-Regular.otf in Resources */,
+				B49D2B112E28AA7900946F64 /* IBMPlexMono-Regular.otf in Resources */,
 				D427791AA5714251A5EAF8AD /* DINOT-Medium.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

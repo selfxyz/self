@@ -2,7 +2,7 @@
 
 import { styled, Text } from 'tamagui';
 
-import { dinot } from '../../utils/fonts';
+import { dinot } from '@/utils/fonts';
 
 export const BodyText = styled(Text, {
   fontFamily: dinot,

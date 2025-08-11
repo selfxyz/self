@@ -80,7 +80,7 @@ platform :ios do
 
     # Update deployment timestamp in version.json
     if result[:should_upload]
-      Fastlane::Helpers.update_deployment_timestamp('ios')
+      Fastlane::Helpers.update_deployment_timestamp("ios")
     end
 
     # Notify Slack about the new build
@@ -101,8 +101,8 @@ platform :ios do
 
   desc "Deploy iOS app with automatic version management"
   lane :deploy_auto do |options|
-    deployment_track = options[:deployment_track] || 'internal'
-    version_bump = options[:version_bump] || 'build'
+    deployment_track = options[:deployment_track] || "internal"
+    version_bump = options[:version_bump] || "build"
     test_mode = options[:test_mode] == true || options[:test_mode] == "true"
 
     UI.message("🚀 Starting iOS deployment")
@@ -115,30 +115,30 @@ platform :ios do
       require_relative "helpers/version_manager"
 
       case version_bump
-      when 'major', 'minor', 'patch'
+      when "major", "minor", "patch"
         # VersionManager doesn't handle semantic versions, use npm
         sh("cd .. && npm version #{version_bump} --no-git-tag-version")
         UI.success("✅ Bumped #{version_bump} version")
-      when 'build'
+      when "build"
         # Build number is handled in prepare_ios_build
         UI.message("📦 Build number will be incremented during build")
       end
     end
 
     # Prepare and build
-    result = prepare_ios_build(prod_release: deployment_track == 'production')
+    result = prepare_ios_build(prod_release: deployment_track == "production")
 
     # Handle deployment based on track
     if test_mode
       UI.important("🧪 TEST MODE: Skipping App Store upload")
       UI.success("✅ Build completed successfully!")
-    elsif deployment_track == 'internal'
+    elsif deployment_track == "internal"
       upload_to_testflight(
         api_key: result[:api_key],
         distribute_external: false,
         skip_waiting_for_build_processing: false,
       ) if result[:should_upload]
-    elsif deployment_track == 'production'
+    elsif deployment_track == "production"
       # For production, upload to TestFlight first, then promote
       upload_to_testflight(
         api_key: result[:api_key],
@@ -152,13 +152,13 @@ platform :ios do
 
     # Update deployment info
     if result[:should_upload] && !test_mode
-      Fastlane::Helpers.update_deployment_timestamp('ios')
+      Fastlane::Helpers.update_deployment_timestamp("ios")
     end
 
     # Slack notification
     if ENV["SLACK_CHANNEL_ID"] && !test_mode
       deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Actions (Auto)" : "Local Deploy"
-      track_emoji = deployment_track == 'production' ? '🚀' : '🧪'
+      track_emoji = deployment_track == "production" ? "🚀" : "🧪"
 
       Fastlane::Helpers.upload_file_to_slack(
         file_path: result[:ipa_path],
@@ -213,7 +213,7 @@ platform :ios do
     # Update Xcode project with new build number
     increment_build_number(
       build_number: build_number,
-      xcodeproj: "ios/#{ENV["IOS_PROJECT_NAME"]}.xcodeproj"
+      xcodeproj: "ios/#{ENV["IOS_PROJECT_NAME"]}.xcodeproj",
     )
 
     # Verify build number is higher than TestFlight
@@ -299,8 +299,8 @@ platform :android do
 
   desc "Deploy Android app with automatic version management"
   lane :deploy_auto do |options|
-    deployment_track = options[:deployment_track] || 'internal'
-    version_bump = options[:version_bump] || 'build'
+    deployment_track = options[:deployment_track] || "internal"
+    version_bump = options[:version_bump] || "build"
     test_mode = options[:test_mode] == true || options[:test_mode] == "true"
 
     UI.message("🚀 Starting Android deployment")
@@ -313,7 +313,7 @@ platform :android do
       require_relative "helpers/version_manager"
 
       case version_bump
-      when 'major', 'minor', 'patch'
+      when "major", "minor", "patch"
         # For semantic version bumps, we need to use npm version
         sh("cd .. && npm version #{version_bump} --no-git-tag-version")
         UI.success("✅ Bumped #{version_bump} version")
@@ -323,14 +323,14 @@ platform :android do
           version_name: new_version,
           gradle_file: android_gradle_file_path.gsub("../", ""),
         )
-      when 'build'
+      when "build"
         # Build number is automatically incremented during build
         UI.message("📦 Build number will be incremented")
       end
     end
 
     # Map deployment track to Play Store track
-    play_store_track = deployment_track == 'production' ? 'production' : 'internal'
+    play_store_track = deployment_track == "production" ? "production" : "internal"
 
     # Build and deploy
     upload_android_build(track: play_store_track, test_mode: test_mode, deployment_track: deployment_track)
@@ -366,7 +366,7 @@ platform :android do
     # Update build.gradle with new version code
     increment_version_code(
       version_code: version_code,
-      gradle_file_path: android_gradle_file_path.gsub("../", "")
+      gradle_file_path: android_gradle_file_path.gsub("../", ""),
     )
 
     # TODO: uncomment when we have the permissions to run this action
@@ -426,14 +426,14 @@ platform :android do
 
     # Update deployment timestamp in version.json
     if should_upload
-      Fastlane::Helpers.update_deployment_timestamp('android')
+      Fastlane::Helpers.update_deployment_timestamp("android")
     end
 
     # Notify Slack about the new build
     if ENV["SLACK_CHANNEL_ID"] && !test_mode
       deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Actions (Auto)" : "Local Deploy"
       deployment_track = options[:deployment_track] || options[:track]
-      track_emoji = deployment_track == 'production' ? '🚀' : '🧪'
+      track_emoji = deployment_track == "production" ? "🚀" : "🧪"
 
       Fastlane::Helpers.upload_file_to_slack(
         file_path: android_aab_path,

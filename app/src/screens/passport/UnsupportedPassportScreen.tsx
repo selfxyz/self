@@ -3,19 +3,19 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 
-import warnAnimation from '../../assets/animations/warning.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { Caption } from '../../components/typography/Caption';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import analytics from '../../utils/analytics';
-import { black, white } from '../../utils/colors';
-import { notificationError } from '../../utils/haptic';
-import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
-import { styles } from '../prove/ProofRequestStatusScreen';
+import warnAnimation from '@/assets/animations/warning.json';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { Caption } from '@/components/typography/Caption';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { PassportEvents } from '@/consts/analytics';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { styles } from '@/screens/prove/ProofRequestStatusScreen';
+import analytics from '@/utils/analytics';
+import { black, white } from '@/utils/colors';
+import { notificationError } from '@/utils/haptic';
+import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 
 const { flush: flushAnalytics } = analytics();
 

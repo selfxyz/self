@@ -4,26 +4,27 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useRef } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
-
-import passportScanAnimation from '../../assets/animations/passport_scan.json';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import type { PassportCameraProps } from '../../components/native/PassportCamera';
-import { PassportCamera } from '../../components/native/PassportCamera';
-import Additional from '../../components/typography/Additional';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { PassportEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import Scan from '../../images/icons/passport_camera_scan.svg';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import useUserStore from '../../stores/userStore';
-import analytics from '../../utils/analytics';
-import { black, slate400, slate800, white } from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
-import { hasAnyValidRegisteredDocument } from '../../utils/proving/validateDocument';
-import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
-
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+
+import { formatDateToYYMMDD } from '@selfxyz/mobile-sdk-alpha';
+
+import passportScanAnimation from '@/assets/animations/passport_scan.json';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import type { PassportCameraProps } from '@/components/native/PassportCamera';
+import { PassportCamera } from '@/components/native/PassportCamera';
+import Additional from '@/components/typography/Additional';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { PassportEvents } from '@/consts/analytics';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import Scan from '@/images/icons/passport_camera_scan.svg';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import useUserStore from '@/stores/userStore';
+import analytics from '@/utils/analytics';
+import { black, slate400, slate800, white } from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
+import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
+import { checkScannedInfo } from '@/utils/utils';
 
 interface PassportNFCScanScreen {}
 
@@ -71,7 +72,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         dateOfBirth,
         dateOfExpiry,
         documentType,
-        countryCode,
+        issuingCountry,
       } = result;
 
       const formattedDateOfBirth =
@@ -102,7 +103,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         dateOfBirth: formattedDateOfBirth,
         dateOfExpiry: formattedDateOfExpiry,
         documentType: documentType?.trim() || '',
-        countryCode: countryCode?.trim().toUpperCase() || '',
+        countryCode: issuingCountry?.trim().toUpperCase() || '',
       });
 
       trackEvent(PassportEvents.CAMERA_SCAN_SUCCESS, {

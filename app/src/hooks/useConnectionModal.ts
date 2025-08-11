@@ -3,12 +3,12 @@
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { SettingsEvents } from '../consts/analytics';
-import { navigationRef } from '../navigation';
-import { useSettingStore } from '../stores/settingStore';
-import analytics from '../utils/analytics';
-import { useModal } from './useModal';
-import { useNetInfo } from './useNetInfo';
+import { SettingsEvents } from '@/consts/analytics';
+import { useModal } from '@/hooks/useModal';
+import { useNetInfo } from '@/hooks/useNetInfo';
+import { navigationRef } from '@/navigation';
+import { useSettingStore } from '@/stores/settingStore';
+import analytics from '@/utils/analytics';
 
 const { trackEvent } = analytics();
 

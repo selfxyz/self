@@ -1,10 +1,14 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('node:path');
+
 const defaultConfig = getDefaultConfig(__dirname);
 const { assetExts, sourceExts } = defaultConfig.resolver;
 
 const monorepoRoot = path.resolve(__dirname, '../');
 const commonPath = path.join(__dirname, '/../common');
+const sdkAlphaPath = path.join(__dirname, '/../packages/mobile-sdk-alpha');
 const trueMonorepoNodeModules = path.resolve(__dirname, '../node_modules');
 const extraNodeModules = {
   stream: require.resolve('stream-browserify'),
@@ -12,7 +16,9 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  '@': path.join(__dirname, 'src'),
   '@selfxyz/common': path.resolve(commonPath, 'dist'),
+  '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
   // Main exports
   '@selfxyz/common/utils': path.resolve(
     commonPath,
@@ -158,6 +164,7 @@ const watchFolders = [
   path.resolve(commonPath),
   trueMonorepoNodeModules,
   path.join(__dirname, 'src'),
+  path.resolve(sdkAlphaPath),
 ];
 
 /**

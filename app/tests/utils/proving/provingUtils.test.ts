@@ -6,7 +6,7 @@ import {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from '../../../src/utils/proving/provingUtils';
+} from '@/utils/proving/provingUtils';
 
 describe('provingUtils', () => {
   it('encryptAES256GCM encrypts and decrypts correctly', () => {

@@ -1,0 +1,67 @@
+{
+  "name": "@selfxyz/mobile-sdk-alpha",
+  "version": "0.0.1",
+  "description": "Self SDK (alpha) for registering and proving. Adapters-first, RN-first with web shims.",
+  "keywords": [
+    "self",
+    "react-native",
+    "web",
+    "zk",
+    "sdk"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-native": "./dist/index.js",
+      "browser": "./dist/browser.js",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/browser.ts --dts --format esm,cjs --clean --out-dir dist",
+    "fmt": "prettier --check .",
+    "fmt:fix": "prettier --write .",
+    "format": "yarn nice",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "nice": "yarn lint:fix && yarn fmt:fix",
+    "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
+    "report:exports": "node ./scripts/report-exports.mjs",
+    "test": "vitest run",
+    "test:build": "yarn build && yarn test && yarn types && yarn lint",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "types": "tsc -p tsconfig.json --noEmit",
+    "validate:exports": "node ./scripts/validate-exports.mjs",
+    "validate:pkg": "node ./scripts/verify-conditions.mjs"
+  },
+  "dependencies": {
+    "tslib": "^2.6.2"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-sort-exports": "^0.8.0",
+    "prettier": "^3.5.3",
+    "tsup": "^8.0.1",
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

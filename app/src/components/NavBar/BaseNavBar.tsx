@@ -5,10 +5,9 @@ import type { SystemBarStyle } from 'react-native-edge-to-edge';
 import { SystemBars } from 'react-native-edge-to-edge';
 import type { TextProps, ViewProps, XStackProps } from 'tamagui';
 import { Button, View, XStack } from 'tamagui';
-
-import { Title } from '../typography/Title';
-
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
+
+import { Title } from '@/components/typography/Title';
 
 interface NavBarProps extends XStackProps {
   children: React.ReactNode;

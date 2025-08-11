@@ -2,7 +2,7 @@ name: Mobile Deploy
 
 env:
   # Build environment versions
-  NODE_VERSION: 18
+  NODE_VERSION: 22
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
@@ -112,35 +112,36 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
+            .yarn/cache
+            node_modules
             ${{ env.APP_PATH }}/node_modules
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
-            ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-
 
       - name: Cache Ruby gems
         id: gems-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/vendor/bundle
-          key: ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
+          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
-            ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-
+            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
+            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-
 
       - name: Cache CocoaPods
         id: pods-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-pods
         with:
-          path: ${{ env.APP_PATH }}/ios/Pods
-          key: ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-
-            ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-
+          path: |
+            ${{ env.APP_PATH }}/ios/Pods
+            ~/Library/Caches/CocoaPods
+          lock-file: app/ios/Podfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}
 
       - name: Log cache status
         run: |
@@ -540,37 +541,32 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
+            .yarn/cache
+            node_modules
             ${{ env.APP_PATH }}/node_modules
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
-            ${{ runner.os }}-yarn-${{ env.GH_CACHE_VERSION }}-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-
 
       - name: Cache Ruby gems
         id: gems-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/vendor/bundle
-          key: ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
+          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
-            ${{ runner.os }}-gems-${{ env.GH_CACHE_VERSION }}-
+            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
+            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-
 
       - name: Cache Gradle dependencies
         id: gradle-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-gradle
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-
-            ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}
 
       - name: Cache Android NDK
         id: ndk-cache
@@ -796,7 +792,7 @@ jobs:
       inputs.test_mode != true &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
-      NODE_VERSION: 18
+      NODE_VERSION: 22
       APP_PATH: ${{ github.workspace }}/app
     steps:
       - uses: actions/checkout@v4

@@ -2,18 +2,29 @@
 
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
-
-import type { Mnemonic } from '../../types/mnemonic';
-import { createGDrive } from './google';
-import { FILE_NAME, parseMnemonic, withRetries } from './helpers';
-import * as ios from './ios';
-
 import {
   APP_DATA_FOLDER_ID,
   MIME_TYPES,
 } from '@robinbobin/react-native-google-drive-api-wrapper';
 
+import type { Mnemonic } from '@/types/mnemonic';
+import { createGDrive } from '@/utils/cloudBackup/google';
+import {
+  FILE_NAME,
+  parseMnemonic,
+  withRetries,
+} from '@/utils/cloudBackup/helpers';
+import * as ios from '@/utils/cloudBackup/ios';
+
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
+
+function isDriveFile(file: unknown): file is { id: string } {
+  return (
+    typeof file === 'object' &&
+    file !== null &&
+    typeof (file as { id?: unknown }).id === 'string'
+  );
+}
 
 export async function disableBackup() {
   if (Platform.OS === 'ios') {
@@ -29,10 +40,14 @@ export async function disableBackup() {
     spaces: APP_DATA_FOLDER_ID,
     q: `name = '${FILE_NAME}'`,
   });
+
+  const driveFiles: unknown[] = files;
+
   await Promise.all(
-    files.map((f: any) => {
-      const id = f.id as string;
-      return id ? gdrive.files.delete(id) : Promise.resolve();
+    driveFiles.map(file => {
+      return isDriveFile(file) && file.id
+        ? gdrive.files.delete(file.id)
+        : Promise.resolve();
     }),
   );
 }
@@ -50,18 +65,18 @@ export async function download() {
     spaces: APP_DATA_FOLDER_ID,
     q: `name = '${FILE_NAME}'`,
   });
-  if (!files.length) {
+
+  const driveFiles: unknown[] = files;
+  const firstFile = driveFiles[0];
+
+  if (!isDriveFile(firstFile)) {
     throw new Error(
       'Couldnt find the encrypted backup, did you back it up previously?',
     );
   }
-  const fileId = (files[0] as any).id as string;
-  if (!fileId) {
-    throw new Error(
-      'Couldnt find the encrypted backup, did you back it up previously?',
-    );
-  }
-  const mnemonicString = await withRetries(() => gdrive.files.getText(fileId));
+  const mnemonicString = await withRetries(() =>
+    gdrive.files.getText(firstFile.id),
+  );
   try {
     const mnemonic = parseMnemonic(mnemonicString);
     return mnemonic;

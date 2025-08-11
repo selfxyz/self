@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 const { execSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
@@ -23,8 +25,8 @@ function formatBytes(bytes) {
   return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
-function checkBundleSize(bundleSize, platform) {
-  const thresholdMB = BUNDLE_THRESHOLDS_MB[platform];
+function checkBundleSize(bundleSize, targetPlatform) {
+  const thresholdMB = BUNDLE_THRESHOLDS_MB[targetPlatform];
   const thresholdBytes = thresholdMB * 1024 * 1024;
 
   console.log(`\n📦 Bundle size: ${formatBytes(bundleSize)}`);

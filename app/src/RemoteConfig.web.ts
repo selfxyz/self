@@ -7,7 +7,7 @@ import type {
   FeatureFlagValue,
   RemoteConfigBackend,
   StorageBackend,
-} from './RemoteConfig.shared';
+} from '@/RemoteConfig.shared';
 import {
   clearAllLocalOverrides as clearAllLocalOverridesShared,
   clearLocalOverride as clearLocalOverrideShared,
@@ -17,7 +17,7 @@ import {
   initRemoteConfig as initRemoteConfigShared,
   refreshRemoteConfig as refreshRemoteConfigShared,
   setLocalOverride as setLocalOverrideShared,
-} from './RemoteConfig.shared';
+} from '@/RemoteConfig.shared';
 
 // Web-specific storage backend using LocalStorage
 const webStorageBackend: StorageBackend = {
@@ -35,14 +35,14 @@ const webStorageBackend: StorageBackend = {
 // Mock Firebase Remote Config for web (since Firebase Web SDK for Remote Config is not installed)
 // In a real implementation, you would import and use the Firebase Web SDK
 class MockFirebaseRemoteConfig implements RemoteConfigBackend {
-  private config: Record<string, any> = {};
-  private settings: any = {};
+  private config: Record<string, unknown> = {};
+  private settings: Record<string, unknown> = {};
 
-  setDefaults(defaults: Record<string, any>) {
+  setDefaults(defaults: Record<string, unknown>) {
     this.config = { ...defaults };
   }
 
-  setConfigSettings(settings: any) {
+  setConfigSettings(settings: Record<string, unknown>) {
     this.settings = settings;
   }
 
@@ -73,7 +73,7 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
         return String(value);
       },
       getSource: () => {
-        return value;
+        return String(value);
       },
     };
   }
@@ -87,7 +87,7 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
 const webRemoteConfigBackend: RemoteConfigBackend =
   new MockFirebaseRemoteConfig();
 
-export type { FeatureFlagValue } from './RemoteConfig.shared';
+export type { FeatureFlagValue } from '@/RemoteConfig.shared';
 
 export const clearAllLocalOverrides = () =>
   clearAllLocalOverridesShared(webStorageBackend);

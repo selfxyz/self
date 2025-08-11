@@ -6,23 +6,22 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import { BodyText } from '../../components/typography/BodyText';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { MockDataEvents } from '../../consts/analytics';
-import { storePassportData } from '../../providers/passportDataProvider';
-import useUserStore from '../../stores/userStore';
-import { black, borderColor, white } from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-
-import { useNavigation } from '@react-navigation/native';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import ButtonsContainer from '@/components/ButtonsContainer';
+import { BodyText } from '@/components/typography/BodyText';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import { MockDataEvents } from '@/consts/analytics';
+import { storePassportData } from '@/providers/passportDataProvider';
+import useUserStore from '@/stores/userStore';
+import { black, borderColor, white } from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
 
 const MockDataScreenDeepLink: React.FC = () => {
   const navigation = useNavigation();
@@ -51,7 +50,7 @@ const MockDataScreenDeepLink: React.FC = () => {
       lastName: storeState.deepLinkSurname,
       birthDate: storeState.deepLinkBirthDate,
       sex: storeState.deepLinkGender as 'M' | 'F',
-      nationality: storeState.deepLinkNationality as any,
+      nationality: storeState.deepLinkNationality,
     };
     const passportData = genMockIdDocAndInitDataParsing(idDocInput);
     await storePassportData(passportData);

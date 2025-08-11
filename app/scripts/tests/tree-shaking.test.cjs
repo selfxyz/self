@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
@@ -22,7 +24,7 @@ describe('Tree Shaking Infrastructure Tests', () => {
       assert(stats.isFile(), `${script} should be a file`);
 
       // Check if file is executable (has execute permission)
-      const isExecutable = (stats.mode & parseInt('111', 8)) !== 0;
+      const isExecutable = (stats.mode & 0o111) !== 0;
       assert(isExecutable, `${script} should be executable`);
     });
   });

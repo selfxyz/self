@@ -2,18 +2,18 @@
 
 import React, { useCallback, useState } from 'react';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Mnemonic from '../../components/Mnemonic';
-import { Caption } from '../../components/typography/Caption';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import useMnemonic from '../../hooks/useMnemonic';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useSettingStore } from '../../stores/settingStore';
-import { STORAGE_NAME } from '../../utils/cloudBackup';
-import { black, slate400, white } from '../../utils/colors';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import Mnemonic from '@/components/Mnemonic';
+import { Caption } from '@/components/typography/Caption';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import useMnemonic from '@/hooks/useMnemonic';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { useSettingStore } from '@/stores/settingStore';
+import { STORAGE_NAME } from '@/utils/cloudBackup';
+import { black, slate400, white } from '@/utils/colors';
 
 interface SaveRecoveryPhraseScreenProps {}
 

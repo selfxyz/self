@@ -3,9 +3,10 @@
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
+import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 
-import type { ProofHistory } from '../../stores/proof-types';
-import { ProofStatus } from '../../stores/proof-types';
+import type { ProofHistory } from '@/stores/proof-types';
+import { ProofStatus } from '@/stores/proof-types';
 import {
   black,
   blue100,
@@ -18,10 +19,8 @@ import {
   white,
   zinc400,
   zinc500,
-} from '../../utils/colors';
-import { advercase, dinot, plexMono } from '../../utils/fonts';
-
-import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
+} from '@/utils/colors';
+import { advercase, dinot, plexMono } from '@/utils/fonts';
 
 type ProofHistoryDetailScreenProps = {
   route: {

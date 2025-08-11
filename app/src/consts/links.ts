@@ -17,3 +17,5 @@ export const supportedBiometricIdsUrl =
 export const telegramUrl = 'https://t.me/self_xyz';
 
 export const termsUrl = 'https://self.xyz/terms';
+
+export const xUrl = 'https://x.com/selfprotocol';

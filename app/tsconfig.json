@@ -8,7 +8,12 @@
     "paths": {
       "@env": ["./env.ts"],
       "@selfxyz/common": ["../common"],
-      "@selfxyz/common/*": ["../common/*"]
+      "@selfxyz/common/*": ["../common/*"],
+      "@selfxyz/mobile-sdk-alpha": [
+        "../packages/mobile-sdk-alpha/src",
+        "../packages/mobile-sdk-alpha/dist"
+      ],
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*"],

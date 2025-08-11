@@ -6,21 +6,17 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
 
-import AbstractButton from '../../components/buttons/AbstractButton';
-import { BodyText } from '../../components/typography/BodyText';
-import { Caption } from '../../components/typography/Caption';
-import { AppEvents } from '../../consts/analytics';
-import {
-  privacyUrl,
-  supportedBiometricIdsUrl,
-  termsUrl,
-} from '../../consts/links';
-import useConnectionModal from '../../hooks/useConnectionModal';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import Logo from '../../images/logo.svg';
-import { black, slate400, white, zinc800, zinc900 } from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-import { advercase, dinot } from '../../utils/fonts';
+import AbstractButton from '@/components/buttons/AbstractButton';
+import { BodyText } from '@/components/typography/BodyText';
+import { Caption } from '@/components/typography/Caption';
+import { AppEvents } from '@/consts/analytics';
+import { privacyUrl, supportedBiometricIdsUrl, termsUrl } from '@/consts/links';
+import useConnectionModal from '@/hooks/useConnectionModal';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import Logo from '@/images/logo.svg';
+import { black, slate400, white, zinc800, zinc900 } from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
+import { advercase, dinot } from '@/utils/fonts';
 
 const LaunchScreen: React.FC = () => {
   useConnectionModal();
@@ -84,6 +80,7 @@ const LaunchScreen: React.FC = () => {
             onPress={onStartPress}
             bgColor={white}
             color={black}
+            testID="launch-get-started-button"
           >
             I have a Passport or Biometric ID
           </AbstractButton>

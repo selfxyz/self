@@ -3,7 +3,6 @@
 import { Buffer } from 'buffer';
 import { ec as EC } from 'elliptic';
 import { sha384 } from 'js-sha512';
-
 import { decode, encode } from '@stablelib/cbor';
 
 /**
