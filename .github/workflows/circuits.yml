@@ -41,7 +41,21 @@ jobs:
     strategy:
       matrix:
         script:
-          [test-register, test-register-id, test-dsc, test-disclose, test-disclose-id, test-ofac, test-ecdsa, test-rsa, test-rsa-pss, test-is-valid, test-is-older-than, test-not-in-list, test-custom-hasher]
+          [
+            test-register,
+            test-register-id,
+            test-dsc,
+            test-disclose,
+            test-disclose-id,
+            test-ofac,
+            test-ecdsa,
+            test-rsa,
+            test-rsa-pss,
+            test-is-valid,
+            test-is-older-than,
+            test-not-in-list,
+            test-custom-hasher,
+          ]
     steps:
       - uses: actions/checkout@v4
 
@@ -86,4 +100,5 @@ jobs:
       - name: Run Tests (Circuits)
         env:
           FULL_TEST_SUITE: false
+          NODE_MEMORY_LIMIT: 6144
         run: yarn workspace @selfxyz/circuits ${{ matrix.script }}
