@@ -1,6 +1,7 @@
-import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import { shimConfigs } from './shimConfigs.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,7 +35,21 @@ function createShim(shimPath, targetPath) {
   const shimDir = path.join(DIST, shimPath);
   mkdirSync(shimDir, { recursive: true });
   const cjsTargetPath = targetPath.replace('/esm/', '/cjs/').replace('.js', '.cjs');
-  writeFileSync(path.join(shimDir, 'index.js'), `module.exports = require('${cjsTargetPath}');`);
+
+  // ESM shim (matches dist/type: module)
+  writeFileSync(
+    path.join(shimDir, 'index.js'),
+    [
+      `export * from '${targetPath.replace('.js', '')}';`,
+      // If some targets have a default export, optionally re-export it:
+      // `export { default } from '${targetPath.replace('.js', '')}';`,
+      '',
+    ].join('\n')
+  );
+
+  // Optional: CJS shim for deep require path consumers
+  writeFileSync(path.join(shimDir, 'index.cjs'), `module.exports = require('${cjsTargetPath}');`);
+
   writeFileSync(
     path.join(shimDir, 'index.d.ts'),
     `export * from '${targetPath.replace('.js', '')}';`

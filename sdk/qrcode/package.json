@@ -55,10 +55,10 @@
   ],
   "scripts": {
     "build": "tsup && yarn build:types && yarn postbuild",
-    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "postbuild": "node ./scripts/postBuild.mjs",
-    "build:watch": "tsup --watch",
     "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode --topological-dev --recursive run build",
+    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
+    "build:watch": "tsup --watch",
     "format": "prettier --write .",
     "install-sdk": "yarn workspace focus @selfxyz/qrcode",
     "lint": "prettier --check .",
