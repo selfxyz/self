@@ -44,22 +44,22 @@ const config: HardhatUserConfig = {
     mainnet: {
       chainId: 1,
       url: process.env.MAINNET_RPC_URL || "https://eth.llamarpc.com",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
     sepolia: {
       chainId: 11155111,
       url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.public.blastapi.io",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
     celo: {
       chainId: 42220,
       url: process.env.CELO_RPC_URL || "https://forno.celo.org",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
     alfajores: {
       chainId: 44787,
       url: process.env.CELO_ALFAJORES_RPC_URL || "https://alfajores-forno.celo-testnet.org",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
   },
   etherscan: {
