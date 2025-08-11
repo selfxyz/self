@@ -69,3 +69,10 @@
 
 - Embedded React Native demo inside the SDK with theming hooks.
 - Provide build and run instructions.
+
+## 13. Partner feedback
+
+- OAuth-style branding: logo, colors, copy, optional fonts.
+- Callback hook so the host app can trigger push notifications after async proof verification.
+- Expand ID document coverage for US digital licenses and AADHAR.
+- Document bundle size targets and provide a runnable integration example.
