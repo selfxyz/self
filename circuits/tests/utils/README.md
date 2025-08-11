@@ -16,6 +16,15 @@ CIRCOM_RECOMPILE=1 npm test
 CIRCOM_RECOMPILE=1 npm run test-register
 ```
 
+### CI Configuration
+
+Individual test scripts in CI automatically set `CIRCOM_RECOMPILE=1` to ensure circuits are built on-demand:
+
+```bash
+# CI automatically runs with recompilation enabled
+npm run test-custom-hasher  # Equivalent to: CIRCOM_RECOMPILE=1 yarn test-base 'tests/other_circuits/custom_hasher.test.ts' --exit
+```
+
 ### Configuration
 
 The recompile behavior is controlled by the `CIRCOM_RECOMPILE` environment variable:
@@ -40,7 +49,7 @@ export const RECOMPILE = process.env.CIRCOM_RECOMPILE === '1';
 export function wasmOptions(outputPath: string) {
   return {
     output: outputPath,
-    recompile: RECOMPILE
+    recompile: RECOMPILE,
   };
 }
 ```

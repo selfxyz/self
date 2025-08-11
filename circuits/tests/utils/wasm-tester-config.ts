@@ -11,7 +11,7 @@ export const RECOMPILE = process.env.CIRCOM_RECOMPILE === '1';
 export function wasmOptions(outputPath: string) {
   return {
     output: outputPath,
-    recompile: RECOMPILE
+    recompile: RECOMPILE,
   };
 }
 
@@ -25,6 +25,6 @@ export function wasmOptionsWithInclude(outputPath: string, includePaths: string[
   return {
     include: includePaths,
     output: outputPath,
-    recompile: RECOMPILE
+    recompile: RECOMPILE,
   };
 }
