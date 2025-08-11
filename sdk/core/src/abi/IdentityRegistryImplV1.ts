@@ -1225,4 +1225,4 @@ export const registryAbi = [
     stateMutability: 'payable',
     type: 'function',
   },
-];
+] as const;

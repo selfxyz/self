@@ -86,6 +86,26 @@
       "import": "./dist/esm/src/typechain-types/*.js",
       "require": "./dist/cjs/src/typechain-types/*.cjs"
     },
+    "./abi/VerifyAll": {
+      "types": "./dist/esm/src/abi/VerifyAll.d.ts",
+      "import": "./dist/esm/src/abi/VerifyAll.js",
+      "require": "./dist/cjs/src/abi/VerifyAll.cjs"
+    },
+    "./abi/IdentityVerificationHubImplV2": {
+      "types": "./dist/esm/src/abi/IdentityVerificationHubImplV2.d.ts",
+      "import": "./dist/esm/src/abi/IdentityVerificationHubImplV2.js",
+      "require": "./dist/cjs/src/abi/IdentityVerificationHubImplV2.cjs"
+    },
+    "./abi/IdentityVerificationHubImplV1": {
+      "types": "./dist/esm/src/abi/IdentityVerificationHubImplV1.d.ts",
+      "import": "./dist/esm/src/abi/IdentityVerificationHubImplV1.js",
+      "require": "./dist/cjs/src/abi/IdentityVerificationHubImplV1.cjs"
+    },
+    "./abi/IdentityRegistryImplV1": {
+      "types": "./dist/esm/src/abi/IdentityRegistryImplV1.d.ts",
+      "import": "./dist/esm/src/abi/IdentityRegistryImplV1.js",
+      "require": "./dist/cjs/src/abi/IdentityRegistryImplV1.cjs"
+    },
     "./abi/*": "./src/abi/*"
   },
   "main": "dist/cjs/index.cjs",
@@ -109,6 +129,7 @@
     "nice": "yarn format && yarn lint:fix",
     "prepublishOnly": "npm run build",
     "publish": "yarn npm publish --access public",
+    "test:build": "yarn build && yarn lint && yarn types",
     "types": "yarn build"
   },
   "dependencies": {

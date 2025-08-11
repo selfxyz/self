@@ -36,6 +36,10 @@ const distPackageJson = {
     './utils/id': './esm/src/utils/id.js',
     './utils/proof': './esm/src/utils/proof.js',
     './typechain-types': './esm/src/typechain-types/index.js',
+    './abi/VerifyAll': './esm/src/abi/VerifyAll.js',
+    './abi/IdentityVerificationHubImplV2': './esm/src/abi/IdentityVerificationHubImplV2.js',
+    './abi/IdentityVerificationHubImplV1': './esm/src/abi/IdentityVerificationHubImplV1.js',
+    './abi/IdentityRegistryImplV1': './esm/src/abi/IdentityRegistryImplV1.js',
   },
 };
 writeFileSync(path.join(DIST, 'package.json'), JSON.stringify(distPackageJson, null, 4));
@@ -44,6 +48,9 @@ writeFileSync(path.join(DIST, 'package.json'), JSON.stringify(distPackageJson, n
 function createShim(shimPath, targetPath, name) {
   const shimDir = path.join(DIST, shimPath);
   mkdirSync(shimDir, { recursive: true });
+
+  // Ensure Node treats this folder as CommonJS
+  writeFileSync(path.join(shimDir, 'package.json'), JSON.stringify({ type: 'commonjs' }, null, 2));
 
   // Tsup emits .js files by default, so just swap the directory
   const cjsTargetPath = targetPath.replace('/esm/', '/cjs/');

@@ -1012,4 +1012,4 @@ export const hubV2Abi = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
-];
+] as const;

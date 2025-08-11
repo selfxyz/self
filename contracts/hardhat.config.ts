@@ -9,6 +9,12 @@ import "solidity-coverage";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
 
+// Support PRIVATE_KEYS (comma-separated) or fallback to PRIVATE_KEY, trim & filter out empty strings
+const accountsEnv = process.env.PRIVATE_KEYS
+  ? process.env.PRIVATE_KEYS.split(',').map(k => k.trim()).filter(Boolean)
+  : (process.env.PRIVATE_KEY?.trim() ? [process.env.PRIVATE_KEY.trim()] : []);
+const accounts = accountsEnv.length ? accountsEnv : undefined;
+
 const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.28",
@@ -44,22 +50,22 @@ const config: HardhatUserConfig = {
     mainnet: {
       chainId: 1,
       url: process.env.MAINNET_RPC_URL || "https://eth.llamarpc.com",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      ...(accounts && { accounts }),
     },
     sepolia: {
       chainId: 11155111,
       url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.public.blastapi.io",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      ...(accounts && { accounts }),
     },
     celo: {
       chainId: 42220,
       url: process.env.CELO_RPC_URL || "https://forno.celo.org",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      ...(accounts && { accounts }),
     },
     alfajores: {
       chainId: 44787,
       url: process.env.CELO_ALFAJORES_RPC_URL || "https://alfajores-forno.celo-testnet.org",
-      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      ...(accounts && { accounts }),
     },
   },
   etherscan: {

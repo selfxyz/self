@@ -36,4 +36,25 @@ export const shimConfigs = [
     targetPath: '../esm/src/typechain-types/index.js',
     name: 'typechain-types',
   },
+  // ABIs
+  {
+    shimPath: 'abi/VerifyAll',
+    targetPath: '../../esm/src/abi/VerifyAll.js',
+    name: 'abi/VerifyAll',
+  },
+  {
+    shimPath: 'abi/IdentityVerificationHubImplV2',
+    targetPath: '../../esm/src/abi/IdentityVerificationHubImplV2.js',
+    name: 'abi/IdentityVerificationHubImplV2',
+  },
+  {
+    shimPath: 'abi/IdentityVerificationHubImplV1',
+    targetPath: '../../esm/src/abi/IdentityVerificationHubImplV1.js',
+    name: 'abi/IdentityVerificationHubImplV1',
+  },
+  {
+    shimPath: 'abi/IdentityRegistryImplV1',
+    targetPath: '../../esm/src/abi/IdentityRegistryImplV1.js',
+    name: 'abi/IdentityRegistryImplV1',
+  },
 ];

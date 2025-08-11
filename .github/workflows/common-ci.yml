@@ -24,11 +24,11 @@ jobs:
       - name: Build dependencies
         shell: bash
         run: |
+          set -euo pipefail
           yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/core build
       - name: Yarn types
         shell: bash
-        run: yarn types
+        run: CI=true yarn types
 
   test-common:
     runs-on: ubuntu-latest
