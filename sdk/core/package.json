@@ -17,27 +17,92 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    }
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs"
+    },
+    "./SelfBackendVerifier": {
+      "types": "./dist/esm/src/SelfBackendVerifier.d.ts",
+      "import": "./dist/esm/src/SelfBackendVerifier.js",
+      "require": "./dist/cjs/src/SelfBackendVerifier.cjs"
+    },
+    "./errors": {
+      "types": "./dist/esm/src/errors.d.ts",
+      "import": "./dist/esm/src/errors.js",
+      "require": "./dist/cjs/src/errors.cjs"
+    },
+    "./store/DefaultConfigStore": {
+      "types": "./dist/esm/src/store/DefaultConfigStore.d.ts",
+      "import": "./dist/esm/src/store/DefaultConfigStore.js",
+      "require": "./dist/cjs/src/store/DefaultConfigStore.cjs"
+    },
+    "./store/InMemoryConfigStore": {
+      "types": "./dist/esm/src/store/InMemoryConfigStore.d.ts",
+      "import": "./dist/esm/src/store/InMemoryConfigStore.js",
+      "require": "./dist/cjs/src/store/InMemoryConfigStore.cjs"
+    },
+    "./store/interface": {
+      "types": "./dist/esm/src/store/interface.d.ts",
+      "import": "./dist/esm/src/store/interface.js",
+      "require": "./dist/cjs/src/store/interface.cjs"
+    },
+    "./types": {
+      "types": "./dist/esm/src/types/types.d.ts",
+      "import": "./dist/esm/src/types/types.js",
+      "require": "./dist/cjs/src/types/types.cjs"
+    },
+    "./utils": {
+      "types": "./dist/esm/src/utils/utils.d.ts",
+      "import": "./dist/esm/src/utils/utils.js",
+      "require": "./dist/cjs/src/utils/utils.cjs"
+    },
+    "./utils/constants": {
+      "types": "./dist/esm/src/utils/constants.d.ts",
+      "import": "./dist/esm/src/utils/constants.js",
+      "require": "./dist/cjs/src/utils/constants.cjs"
+    },
+    "./utils/hash": {
+      "types": "./dist/esm/src/utils/hash.d.ts",
+      "import": "./dist/esm/src/utils/hash.js",
+      "require": "./dist/cjs/src/utils/hash.cjs"
+    },
+    "./utils/id": {
+      "types": "./dist/esm/src/utils/id.d.ts",
+      "import": "./dist/esm/src/utils/id.js",
+      "require": "./dist/cjs/src/utils/id.cjs"
+    },
+    "./utils/proof": {
+      "types": "./dist/esm/src/utils/proof.d.ts",
+      "import": "./dist/esm/src/utils/proof.js",
+      "require": "./dist/cjs/src/utils/proof.cjs"
+    },
+    "./typechain-types": {
+      "types": "./dist/esm/src/typechain-types/index.d.ts",
+      "import": "./dist/esm/src/typechain-types/index.js",
+      "require": "./dist/cjs/src/typechain-types/index.cjs"
+    },
+    "./typechain-types/*": {
+      "types": "./dist/esm/src/typechain-types/*.d.ts",
+      "import": "./dist/esm/src/typechain-types/*.js",
+      "require": "./dist/cjs/src/typechain-types/*.cjs"
+    },
+    "./abi/*": "./src/abi/*"
   },
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "types": "dist/index.d.cts",
+  "main": "dist/cjs/index.cjs",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "typechain --target ethers-v6 --node16-modules --out-dir src/typechain-types src/abi/**.json && tsup index.ts --format cjs,esm --dts --clean --sourcemap",
+    "build": "tsup && yarn build:types && yarn postbuild",
     "build:deps": "yarn workspaces foreach --from @selfxyz/core --topological-dev --recursive run build",
     "copy-abi": "bash scripts/copyAbi.sh",
+    "postbuild": "node ./scripts/postBuild.mjs",
+    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
+    "build:watch": "tsup --watch",
     "format": "prettier --write .",
+    "nice": "yarn format",
     "install-sdk": "yarn workspaces focus @selfxyz/core",
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
