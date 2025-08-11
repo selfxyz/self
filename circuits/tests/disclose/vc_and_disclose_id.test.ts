@@ -71,7 +71,7 @@ describe('Disclose', function () {
           '../node_modules/circomlib/circuits',
         ],
         output: path.join(__dirname, '../../build/disclose/vc_and_disclose_id'),
-        recompile: false,
+        recompile: true,
       }
     );
 

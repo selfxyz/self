@@ -104,16 +104,8 @@ jobs:
       - name: Print Circom version
         run: circom --version
 
-      - name: Cache Circuit Builds
-        uses: actions/cache@v4
-        with:
-          path: |
-            circuits/build
-            circuits/node_modules
-            common/dist
-          key: ${{ runner.os }}-circuit-builds-${{ hashFiles('circuits/**/*.circom', 'circuits/package.json', 'common/**/*.ts') }}
-          restore-keys: |
-            ${{ runner.os }}-circuit-builds-
+      # Note: Circuit build caching disabled since circuits are compiled on-demand during tests
+      # The actual circuit compilation is expensive and handled separately in circuits-build.yml
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -125,7 +117,7 @@ jobs:
         run: yarn workspace @selfxyz/common build
 
       - name: Build circuits
-        run: yarn workspace @selfxyz/circuits build-all
+        run: echo "Circuits will be built on-demand during tests with recompile=true"
 
       - name: Run tests
         env:
