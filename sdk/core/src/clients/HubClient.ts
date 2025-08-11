@@ -13,11 +13,14 @@ import {
  * For migration scenarios or V1 compatibility, use the IdentityVerificationHubAdapter instead.
  */
 export class IdentityVerificationHubClient {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private contract: any; // Will be properly typed when ethers integration is added
 
   constructor(
     contractAddress: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _provider: any, // Replace with proper provider type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _signer?: any // Replace with proper signer type
   ) {
     // TODO: Implement proper ethers contract creation
@@ -175,7 +178,9 @@ export class IdentityVerificationHubClient {
  */
 export function createHubAdapter(
   contractAddress: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   provider: any, // Replace with proper provider type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _signer?: any // Replace with proper signer type
 ): Promise<IdentityVerificationHubAdapter> {
   return createHubAdapterAuto(contractAddress, provider);
@@ -187,7 +192,9 @@ export function createHubAdapter(
  */
 export function createHubAdapterWithValidation(
   contractAddress: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   provider: any, // Replace with proper provider type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _signer?: any, // Replace with proper signer type
   options?: {
     forceVersion?: 'v1' | 'v2';
@@ -204,7 +211,9 @@ export function createHubAdapterWithValidation(
  */
 export function createHubClient(
   contractAddress: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   provider: any, // Replace with proper provider type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   _signer?: any // Replace with proper signer type
 ): IdentityVerificationHubClient {
   return new IdentityVerificationHubClient(contractAddress, provider, _signer);
@@ -216,6 +225,7 @@ export function createHubClient(
  */
 export async function getMigrationReport(
   contractAddress: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   provider: any // Replace with proper provider type
 ): Promise<{
   currentVersion: 'v1' | 'v2';
@@ -232,6 +242,7 @@ export async function getMigrationReport(
  */
 export async function supportsV2(
   contractAddress: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   provider: any // Replace with proper provider type
 ): Promise<boolean> {
   return await HubMigrationUtils.supportsV2(contractAddress, provider);
