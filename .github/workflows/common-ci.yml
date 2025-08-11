@@ -23,7 +23,9 @@ jobs:
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/common build
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/core build
       - name: Yarn types
         shell: bash
         run: yarn types
