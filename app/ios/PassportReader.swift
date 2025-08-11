@@ -48,7 +48,7 @@ class PassportReader: NSObject {
 
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
-        let analytics = CustomAnalytics(token: token, enableDebugLogs: enableDebugLogs)
+        let analytics = SelfAnalytics(token: token, enableDebugLogs: enableDebugLogs)
         self.passportReader = NFCPassportReader.PassportReader(analytics: analytics)
     }
 

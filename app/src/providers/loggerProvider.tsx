@@ -2,15 +2,57 @@
 
 import React, { createContext, useContext } from 'react';
 
-import * as Logger from '../utils/logger';
+import {
+  AppLogger,
+  AuthLogger,
+  BackupLogger,
+  DocumentLogger,
+  logLevels,
+  MockDataLogger,
+  NfcLogger,
+  NotificationLogger,
+  PassportLogger,
+  ProofLogger,
+  SettingsLogger,
+} from '../utils/logger';
 
-const LoggerContext = createContext(Logger);
+type LoggerContextType = {
+  AppLogger: typeof AppLogger;
+  AuthLogger: typeof AuthLogger;
+  BackupLogger: typeof BackupLogger;
+  DocumentLogger: typeof DocumentLogger;
+  MockDataLogger: typeof MockDataLogger;
+  NfcLogger: typeof NfcLogger;
+  NotificationLogger: typeof NotificationLogger;
+  PassportLogger: typeof PassportLogger;
+  ProofLogger: typeof ProofLogger;
+  SettingsLogger: typeof SettingsLogger;
+  logLevels: typeof logLevels;
+};
+
+const LoggerContext = createContext<LoggerContextType | null>(null);
 
 export const LoggerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   return (
-    <LoggerContext.Provider value={Logger}>{children}</LoggerContext.Provider>
+    <LoggerContext.Provider
+      value={{
+        AppLogger,
+        AuthLogger,
+        BackupLogger,
+        DocumentLogger,
+        MockDataLogger,
+        NfcLogger,
+        NotificationLogger,
+        PassportLogger,
+        ProofLogger,
+        SettingsLogger,
+        logLevels,
+      }}
+    >
+      {children}
+    </LoggerContext.Provider>
   );
 };
 

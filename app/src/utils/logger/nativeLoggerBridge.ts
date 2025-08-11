@@ -27,8 +27,6 @@ const setupNativeLoggerBridge = () => {
     console.log(
       `NativeLoggerBridge initialized successfully with ${moduleName}`,
     );
-  } else {
-    // console.warn(`Native module ${moduleName} not found`);
   }
 };
 

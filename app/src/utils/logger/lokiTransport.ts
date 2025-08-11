@@ -189,7 +189,6 @@ export const lokiTransport: transportFunctionType<any> = props => {
   addToBatch(entry, namespace);
 };
 
-//TODO: test this
 const handleAppStateChange = (nextAppState: AppStateStatus) => {
   if (nextAppState === 'background' || nextAppState === 'inactive') {
     flushLokiTransport();

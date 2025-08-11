@@ -4,7 +4,7 @@ import Foundation
 import NFCPassportReader
 import Mixpanel
 
-public class CustomAnalytics: Analytics {
+public class SelfAnalytics: Analytics {
     private let enableDebugLogs: Bool
     
     public override init(token: String, enableDebugLogs: Bool = false, trackAutomaticEvents: Bool = false) {
