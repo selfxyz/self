@@ -1,10 +1,5 @@
 import type { SelfApp } from '@selfxyz/common';
-import {
-  getUniversalLink,
-  REDIRECT_URL,
-  SelfAppBuilder,
-  WS_DB_RELAYER,
-} from '@selfxyz/common';
+import { getUniversalLink, REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/common';
 import Lottie from 'lottie-react';
 import { QRCodeSVG } from 'qrcode.react';
 import React, { useEffect, useRef, useState } from 'react';
@@ -13,11 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import CHECK_ANIMATION from '../animations/check_animation.json' with { type: 'json' };
 import X_ANIMATION from '../animations/x_animation.json' with { type: 'json' };
-import {
-  containerStyle,
-  ledContainerStyle,
-  qrContainerStyle,
-} from '../utils/styles.js';
+import { containerStyle, ledContainerStyle, qrContainerStyle } from '../utils/styles.js';
 import { QRcodeSteps } from '../utils/utils.js';
 import { initWebSocket } from '../utils/websocket.js';
 import LED from './LED.js';
@@ -74,7 +65,7 @@ const SelfQRcode = ({
         type,
         setProofStep,
         onSuccess,
-        onError,
+        onError
       );
     }
 
@@ -150,4 +141,4 @@ const SelfQRcode = ({
 };
 
 // Also export other components/types that might be needed
-export { SelfApp, SelfAppBuilder, SelfQRcode, SelfQRcodeWrapper };
+export { SelfQRcode, SelfQRcodeWrapper };

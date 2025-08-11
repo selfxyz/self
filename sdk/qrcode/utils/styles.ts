@@ -17,4 +17,6 @@ const qrContainerStyle = (size: number): React.CSSProperties => ({
   justifyContent: 'center',
 });
 
-export { containerStyle, ledContainerStyle, qrContainerStyle };
+export { containerStyle };
+export { ledContainerStyle };
+export { qrContainerStyle };

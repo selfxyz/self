@@ -27,10 +27,7 @@ module.exports = {
       'error',
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
-    '@typescript-eslint/consistent-type-imports': [
-      'error',
-      { prefer: 'type-imports' },
-    ],
+    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
     'import/first': 'error',
     'import/no-duplicates': 'error',
     'import/newline-after-import': 'error',

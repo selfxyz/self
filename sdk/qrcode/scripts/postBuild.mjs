@@ -9,13 +9,10 @@ const DIST = path.resolve(__dirname, '..', 'dist');
 const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
 
-writeFileSync(
-  path.join(DIST, 'esm', 'package.json'),
-  JSON.stringify({ type: 'module' }, null, 4),
-);
+writeFileSync(path.join(DIST, 'esm', 'package.json'), JSON.stringify({ type: 'module' }, null, 4));
 writeFileSync(
   path.join(DIST, 'cjs', 'package.json'),
-  JSON.stringify({ type: 'commonjs' }, null, 4),
+  JSON.stringify({ type: 'commonjs' }, null, 4)
 );
 
 const distPackageJson = {
@@ -31,25 +28,17 @@ const distPackageJson = {
     './utils/websocket': './esm/utils/websocket.js',
   },
 };
-writeFileSync(
-  path.join(DIST, 'package.json'),
-  JSON.stringify(distPackageJson, null, 4),
-);
+writeFileSync(path.join(DIST, 'package.json'), JSON.stringify(distPackageJson, null, 4));
 
 function createShim(shimPath, targetPath) {
   const shimDir = path.join(DIST, shimPath);
   mkdirSync(shimDir, { recursive: true });
-  const cjsTargetPath = targetPath
-    .replace('/esm/', '/cjs/')
-    .replace('.js', '.cjs');
-  writeFileSync(
-    path.join(shimDir, 'index.js'),
-    `module.exports = require('${cjsTargetPath}');`,
-  );
+  const cjsTargetPath = targetPath.replace('/esm/', '/cjs/').replace('.js', '.cjs');
+  writeFileSync(path.join(shimDir, 'index.js'), `module.exports = require('${cjsTargetPath}');`);
   writeFileSync(
     path.join(shimDir, 'index.d.ts'),
-    `export * from '${targetPath.replace('.js', '')}';`,
+    `export * from '${targetPath.replace('.js', '')}';`
   );
 }
 
-shimConfigs.forEach(c => createShim(c.shimPath, c.targetPath));
+shimConfigs.forEach((c) => createShim(c.shimPath, c.targetPath));
