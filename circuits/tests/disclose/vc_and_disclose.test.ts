@@ -75,6 +75,8 @@ describe('Disclose', function () {
           '../node_modules/@zk-kit/binary-merkle-root.circom/src',
           '../node_modules/circomlib/circuits',
         ],
+        output: path.join(__dirname, '../../build/disclose/vc_and_disclose'),
+        recompile: false,
       }
     );
 

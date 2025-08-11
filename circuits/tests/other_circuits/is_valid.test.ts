@@ -70,6 +70,8 @@ describe('DateIsLessChecker Circuit Test', function () {
       path.join(__dirname, '../../circuits/tests/utils/isValid_tester.circom'),
       {
         include: ['../node_modules'],
+        output: path.join(__dirname, '../../build/is_valid'),
+        recompile: false,
       }
     );
   });

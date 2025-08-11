@@ -25,6 +25,8 @@ describe('ProveCountryIsNotInList', function () {
         '../node_modules/@zk-kit/binary-merkle-root.circom/src',
         '../node_modules/circomlib/circuits',
       ],
+      output: path.join(__dirname, '../../build/prove_country_is_not_in_list'),
+      recompile: false,
     });
   });
 

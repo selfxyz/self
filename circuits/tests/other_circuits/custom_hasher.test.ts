@@ -27,6 +27,8 @@ describe('CustomHasher', function () {
         '../node_modules/@zk-kit/binary-merkle-root.circom/src',
         '../node_modules/circomlib/circuits',
       ],
+      output: path.join(__dirname, '../../build/customHasher'),
+      recompile: false,
     });
     circuitPackBytesAndPoseidon = await wasm_tester(circuitPathPackBytesAndPoseidon, {
       include: [
@@ -34,6 +36,8 @@ describe('CustomHasher', function () {
         '../node_modules/@zk-kit/binary-merkle-root.circom/src',
         '../node_modules/circomlib/circuits',
       ],
+      output: path.join(__dirname, '../../build/packBytesAndPoseidon'),
+      recompile: false,
     });
   });
 

@@ -79,6 +79,8 @@ describe('DateIsLessChecker Circuit Test', function () {
       path.join(__dirname, '../../circuits/tests/utils/isOlderThan_tester.circom'),
       {
         include: ['../node_modules'],
+        output: path.join(__dirname, '../../build/is_older_than'),
+        recompile: false,
       }
     );
   });

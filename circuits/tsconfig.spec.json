@@ -9,6 +9,9 @@
     "allowJs": true,
     "checkJs": false,
     "outDir": "./dist",
+    "rootDir": ".",
+    "lib": ["ES2020"],
+    "types": ["node"],
     "baseUrl": ".",
     "paths": {
       "@selfxyz/common/utils/*": ["../common/src/utils/*"],

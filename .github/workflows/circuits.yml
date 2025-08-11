@@ -17,14 +17,45 @@ on:
       - "circuits/**"
       - "common/**"
 jobs:
-  run_circuit_tests:
+  lint:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    environment: development
     steps:
       - uses: actions/checkout@v4
+      - name: Set Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: "enable yarn"
+        run: corepack enable yarn
+      - name: Install Yarn dependencies
+        run: yarn workspaces focus @selfxyz/circuits
+      - name: Run lint
+        run: yarn workspace @selfxyz/circuits lint
 
-      # Circom installation from https://github.com/erhant/circomkit/blob/main/.github/workflows/tests.yml
+  tests:
+    if: github.event.pull_request.draft == false
+    needs: lint
+    runs-on: ubuntu-latest
+    environment: development
+    strategy:
+      matrix:
+        script:
+          - test-custom-hasher
+          - test-disclose
+          - test-disclose-id
+          - test-dsc
+          - test-ecdsa
+          - test-is-older-than
+          - test-is-valid
+          - test-not-in-list
+          - test-ofac
+          - test-register
+          - test-register-id
+          - test-rsa
+          - test-rsa-pss
+    steps:
+      - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -34,30 +65,29 @@ jobs:
             libsodium-dev \
             nasm \
             nlohmann-json3-dev
-
       - name: Set Node.js 22.x
         uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
-
       - name: Download Circom Binary v2.1.9
         run: |
           wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
           chmod +x /home/runner/work/circom
           sudo mv /home/runner/work/circom /bin/circom
-
       - name: Print Circom version
         run: circom --version
       - name: "enable yarn"
         run: corepack enable yarn
       - name: Install Yarn dependencies
         run: yarn workspaces focus @selfxyz/circuits
-
-      - name: Run lint
-        run: yarn workspace @selfxyz/circuits lint
-      - name: Run Tests (Circuits)
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
+      - name: Build circuits
+        run: yarn workspace @selfxyz/circuits build-all
+      - name: Run tests
         env:
+          NODE_MEMORY_LIMIT: 6144
           FULL_TEST_SUITE: false
-        run: yarn workspace @selfxyz/circuits test
+        run: yarn workspace @selfxyz/circuits ${{ matrix.script }}
