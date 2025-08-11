@@ -1,0 +1,201 @@
+name: QRCode SDK CI
+
+env:
+  # Build environment versions
+  NODE_VERSION: 22
+  # Cache versioning - increment these to bust caches when needed
+  GH_CACHE_VERSION: v1 # Global cache version
+  GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
+  GH_SDK_CACHE_VERSION: v1 # SDK build cache version
+
+on:
+  pull_request:
+    paths:
+      - "sdk/qrcode/**"
+      - "common/**"
+      - ".github/workflows/qrcode-sdk-ci.yml"
+      - ".github/actions/**"
+  push:
+    branches: [main, develop]
+    paths:
+      - "sdk/qrcode/**"
+      - "common/**"
+
+jobs:
+  # Quality checks job
+  quality-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Yarn dependencies
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            sdk/qrcode/node_modules
+            common/node_modules
+          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build dependencies
+        shell: bash
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/qrcode build
+
+      - name: Run linter
+        run: yarn workspace @selfxyz/qrcode lint:imports:check
+
+      - name: Check Prettier formatting
+        run: yarn workspace @selfxyz/qrcode lint
+
+      - name: Type checking
+        run: yarn workspace @selfxyz/qrcode types
+
+      - name: Log cache status
+        run: |
+          echo "Cache hit results:"
+          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+
+  # Build verification job
+  build-verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Yarn dependencies
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            sdk/qrcode/node_modules
+            common/node_modules
+          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-
+
+      - name: Cache SDK build artifacts
+        id: sdk-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/dist
+            sdk/qrcode/dist
+          key: ${{ runner.os }}-sdk-build-${{ env.GH_CACHE_VERSION }}-${{ env.GH_SDK_CACHE_VERSION }}-${{ hashFiles('sdk/qrcode/package.json', 'common/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-sdk-build-${{ env.GH_CACHE_VERSION }}-${{ env.GH_SDK_CACHE_VERSION }}-
+            ${{ runner.os }}-sdk-build-${{ env.GH_CACHE_VERSION }}-
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build dependencies
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/qrcode build
+
+      - name: Verify build output
+        run: |
+          echo "Checking build output structure..."
+          ls -la sdk/qrcode/dist/
+          echo "Checking ESM build..."
+          ls -la sdk/qrcode/dist/esm/
+          echo "Checking CJS build..."
+          ls -la sdk/qrcode/dist/cjs/
+          echo "Checking type definitions..."
+          ls -la sdk/qrcode/dist/esm/*.d.ts
+
+      - name: Test package exports
+        run: |
+          echo "Testing package exports..."
+          node -e "
+            const pkg = require('./sdk/qrcode/package.json');
+            console.log('Package exports:', JSON.stringify(pkg.exports, null, 2));
+          "
+
+      - name: Verify bundle size
+        run: yarn workspace @selfxyz/qrcode size-limit
+
+      - name: Log cache status
+        run: |
+          echo "Cache hit results:"
+          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+          echo "- SDK build cache hit: ${{ steps.sdk-cache.outputs.cache-hit }}"
+
+  # Integration test job
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Yarn dependencies
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            sdk/qrcode/node_modules
+            common/node_modules
+          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-
+
+      - name: Cache SDK build artifacts
+        id: sdk-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            common/dist
+            sdk/qrcode/dist
+          key: ${{ runner.os }}-sdk-build-${{ env.GH_CACHE_VERSION }}-${{ env.GH_SDK_CACHE_VERSION }}-${{ hashFiles('sdk/qrcode/package.json', 'common/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-sdk-build-${{ env.GH_CACHE_VERSION }}-${{ env.GH_SDK_CACHE_VERSION }}-
+            ${{ runner.os }}-sdk-build-${{ env.GH_CACHE_VERSION }}-
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build dependencies
+        if: steps.sdk-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/qrcode build
+
+      - name: Run tests
+        run: yarn workspace @selfxyz/qrcode test
+
+      - name: Test package import
+        run: |
+          echo "Testing package import..."
+          node -e "
+            try {
+              const { SelfQRcode, SelfQRcodeWrapper, countries } = require('./sdk/qrcode/dist/cjs/index.cjs');
+              console.log('✅ Package import successful');
+              console.log('Exported components:', Object.keys({ SelfQRcode, SelfQRcodeWrapper, countries }));
+            } catch (error) {
+              console.error('❌ Package import failed:', error.message);
+              process.exit(1);
+            }
+          "
+
+      - name: Log cache status
+        run: |
+          echo "Cache hit results:"
+          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+          echo "- SDK build cache hit: ${{ steps.sdk-cache.outputs.cache-hit }}"
