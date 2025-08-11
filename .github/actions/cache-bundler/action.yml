@@ -1,0 +1,35 @@
+name: Cache Bundler
+
+description: Cache Ruby gems installed via Bundler.
+
+inputs:
+  path:
+    description: Paths to cache
+    required: false
+    default: vendor/bundle
+  lock-file:
+    description: Path to Gemfile.lock
+    required: false
+    default: Gemfile.lock
+  cache-version:
+    description: Additional cache version segment
+    required: false
+    default: v1
+
+outputs:
+  cache-hit:
+    description: Whether an exact match was found for the cache key
+    value: ${{ steps.cache.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: cache
+      name: Cache Ruby gems
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ runner.os }}-gems-${{ inputs.cache-version }}-${{ hashFiles(inputs.lock-file) }}
+        restore-keys: |
+          ${{ runner.os }}-gems-${{ inputs.cache-version }}-
+          ${{ runner.os }}-gems-

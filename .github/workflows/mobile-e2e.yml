@@ -6,6 +6,9 @@ env:
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 33
   ANDROID_NDK_VERSION: 27.0.11718014
+  # Cache versions
+  GH_CACHE_VERSION: v1 # Global cache version
+  GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
   CI: true
@@ -69,14 +72,7 @@ jobs:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
       - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+        uses: ./.github/actions/cache-gradle
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -189,21 +185,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node${{ env.NODE_VERSION }}-
       - name: Cache Ruby gems
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-bundler
         with:
           path: app/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ hashFiles('app/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-
+          lock-file: app/Gemfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
       - name: Cache Pods
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-pods
         with:
           path: |
             app/ios/Pods
             ~/Library/Caches/CocoaPods
-          key: ${{ runner.os }}-pods-${{ hashFiles('app/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+          lock-file: app/ios/Podfile.lock
       - name: Cache Xcode build
         uses: actions/cache@v4
         with:

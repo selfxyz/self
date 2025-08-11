@@ -112,7 +112,7 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
@@ -125,7 +125,7 @@ jobs:
 
       - name: Cache Ruby gems
         id: gems-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/vendor/bundle
           key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
@@ -135,13 +135,13 @@ jobs:
 
       - name: Cache CocoaPods
         id: pods-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-pods
         with:
-          path: ${{ env.APP_PATH }}/ios/Pods
-          key: ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-
-            ${{ runner.os }}-pods-${{ env.GH_CACHE_VERSION }}-
+          path: |
+            ${{ env.APP_PATH }}/ios/Pods
+            ~/Library/Caches/CocoaPods
+          lock-file: app/ios/Podfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}
 
       - name: Log cache status
         run: |
@@ -541,7 +541,7 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
@@ -554,7 +554,7 @@ jobs:
 
       - name: Cache Ruby gems
         id: gems-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/vendor/bundle
           key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
@@ -564,15 +564,9 @@ jobs:
 
       - name: Cache Gradle dependencies
         id: gradle-cache
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-gradle
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-
-            ${{ runner.os }}-gradle-${{ env.GH_CACHE_VERSION }}-
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}
 
       - name: Cache Android NDK
         id: ndk-cache
