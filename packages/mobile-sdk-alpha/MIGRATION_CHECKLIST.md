@@ -22,6 +22,8 @@
 
 - Fetch protocol trees with pagination and a TTL cache.
 - Verify computed roots against server data.
+- Implement rate limiting with exponential backoff and jitter.
+- Set memory bounds for concatenated trees and honor Retry-After headers.
 
 ## 5. Proof input generation
 
@@ -40,11 +42,17 @@
 
 - Runtime-selectable adapter using WebCrypto with `@noble/*` fallbacks.
 - Parity tests across implementations.
+- Detect WebCrypto availability on React Native/Hermes environments.
+- Ensure CSPRNG-backed random number generation.
+- Use timing-safe comparison for secret values.
 
 ## 9. Artifact management
 
 - Manifest schema & integrity verification.
 - CDN downloads with caching and storage adapter.
+- Verify manifest signature with pinned public key before caching.
+- Enforce CDN allowlist and Content-Length checks.
+- Stream hashing to avoid buffering large files.
 
 ## 10. Sample applications
 
