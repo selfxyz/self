@@ -8,15 +8,13 @@ import type { IConfigStorage } from './src/store/interface.js';
 import type { AttestationId, VerificationConfig, VerificationResult } from './src/types/types.js';
 import { AllIds } from './src/utils/constants.js';
 
+export type { AttestationId, IConfigStorage, VerificationConfig, VerificationResult };
+
 export {
   AllIds,
-  AttestationId,
   DefaultConfigStore,
-  IConfigStorage,
   InMemoryConfigStore,
   SelfBackendVerifier,
-  VerificationConfig,
-  VerificationResult,
   countries,
   countryCodes,
   getUniversalLink,

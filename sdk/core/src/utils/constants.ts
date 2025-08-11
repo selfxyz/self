@@ -1,4 +1,4 @@
-import type { AttestationId } from 'src/types/types.js';
+import type { AttestationId } from '../types/types.js';
 
 export const AllIds = new Map<AttestationId, boolean>([
   [1, true],

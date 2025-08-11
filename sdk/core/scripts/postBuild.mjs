@@ -45,7 +45,8 @@ function createShim(shimPath, targetPath, name) {
   const shimDir = path.join(DIST, shimPath);
   mkdirSync(shimDir, { recursive: true });
 
-  const cjsTargetPath = targetPath.replace('/esm/', '/cjs/').replace('.js', '.cjs');
+  // Tsup emits .js files by default, so just swap the directory
+  const cjsTargetPath = targetPath.replace('/esm/', '/cjs/');
 
   writeFileSync(
     path.join(shimDir, 'index.js'),
