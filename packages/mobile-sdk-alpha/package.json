@@ -13,22 +13,28 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "react-native": "./dist/index.js",
-      "browser": "./dist/browser.js",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "default": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "react-native": "./dist/esm/index.js",
+      "browser": "./dist/esm/browser.js",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs",
+      "default": "./dist/esm/index.js"
+    },
+    "./browser": {
+      "types": "./dist/esm/browser.d.ts",
+      "import": "./dist/esm/browser.js",
+      "require": "./dist/cjs/browser.cjs"
     }
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts src/browser.ts --dts --format esm,cjs --clean --out-dir dist",
+    "build": "rm -rf dist && tsup && yarn postbuild",
+    "postbuild": "node ./scripts/postBuild.mjs",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "format": "yarn nice",
