@@ -1,25 +1,7 @@
-import { PublicSignals } from 'snarkjs';
-import { discloseIndices } from './constants.js';
-import { AttestationId } from 'src/types/types.js';
+import type { PublicSignals } from 'snarkjs';
 
-/**
- * Returns the number of public signals containing revealed data for the specified attestation ID.
- *
- * Throws an error if the attestation ID is not supported.
- *
- * @param attestationId - The attestation ID for which to determine the number of revealed data public signals
- * @returns The number of public signals corresponding to revealed data
- */
-export function getRevealedDataPublicSignalsLength(attestationId: AttestationId): number {
-  switch (attestationId) {
-    case 1:
-      return 93 / 31;
-    case 2:
-      return Math.ceil(94 / 31);
-    default:
-      throw new Error(`Invalid attestation ID: ${attestationId}`);
-  }
-}
+import type { AttestationId } from '../types/types.js';
+import { discloseIndices } from './constants.js';
 
 export const bytesCount: Record<AttestationId, number[]> = {
   1: [31, 31, 31],
@@ -39,7 +21,7 @@ export function getRevealedDataBytes(
   attestationId: AttestationId,
   publicSignals: PublicSignals
 ): number[] {
-  let bytes: number[] = [];
+  const bytes: number[] = [];
   for (let i = 0; i < getRevealedDataPublicSignalsLength(attestationId); i++) {
     let publicSignal = BigInt(
       publicSignals[discloseIndices[attestationId].revealedDataPackedIndex + i]
@@ -51,4 +33,23 @@ export function getRevealedDataBytes(
   }
 
   return bytes;
+}
+
+/**
+ * Returns the number of public signals containing revealed data for the specified attestation ID.
+ *
+ * Throws an error if the attestation ID is not supported.
+ *
+ * @param attestationId - The attestation ID for which to determine the number of revealed data public signals
+ * @returns The number of public signals corresponding to revealed data
+ */
+export function getRevealedDataPublicSignalsLength(attestationId: AttestationId): number {
+  switch (attestationId) {
+    case 1:
+      return 93 / 31;
+    case 2:
+      return Math.ceil(94 / 31);
+    default:
+      throw new Error(`Invalid attestation ID: ${attestationId}`);
+  }
 }

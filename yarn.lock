@@ -4896,7 +4896,14 @@ __metadata:
     "@types/pako": "npm:^2.0.3"
     "@types/snarkjs": "npm:^0.7.8"
     "@types/uuid": "npm:^10.0.0"
+    "@typescript-eslint/eslint-plugin": "npm:^7.0.0"
+    "@typescript-eslint/parser": "npm:^7.0.0"
     axios: "npm:^1.7.2"
+    eslint: "npm:^8.57.0"
+    eslint-import-resolver-typescript: "npm:^3.6.1"
+    eslint-plugin-import: "npm:^2.29.1"
+    eslint-plugin-simple-import-sort: "npm:^12.0.0"
+    eslint-plugin-sort-exports: "npm:^0.8.0"
     ethers: "npm:^6.13.5"
     js-sha1: "npm:^0.7.0"
     js-sha256: "npm:^0.11.0"
@@ -14503,7 +14510,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-import-resolver-typescript@npm:^3.7.0":
+"eslint-import-resolver-typescript@npm:^3.6.1, eslint-import-resolver-typescript@npm:^3.7.0":
   version: 3.10.1
   resolution: "eslint-import-resolver-typescript@npm:3.10.1"
   dependencies:
@@ -14753,7 +14760,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-simple-import-sort@npm:^12.1.1":
+"eslint-plugin-simple-import-sort@npm:^12.0.0, eslint-plugin-simple-import-sort@npm:^12.1.1":
   version: 12.1.1
   resolution: "eslint-plugin-simple-import-sort@npm:12.1.1"
   peerDependencies:

@@ -1,22 +1,24 @@
+import type { BigNumberish } from 'ethers';
 import { ethers } from 'ethers';
+
+import type { Country3LetterCode } from '@selfxyz/common/constants';
+import type { UserIdType } from '@selfxyz/common/utils/circuits/uuid';
+import { castToUserIdentifier } from '@selfxyz/common/utils/circuits/uuid';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+
+import { ConfigMismatch, ConfigMismatchError } from './errors.js';
+import type { IConfigStorage } from './store/interface.js';
+import type { IdentityVerificationHubImpl, Verifier } from './typechain-types/index.js';
 import {
-  IdentityVerificationHubImpl,
   IdentityVerificationHubImpl__factory,
   Registry__factory,
-  Verifier,
   Verifier__factory,
 } from './typechain-types/index.js';
+import type { AttestationId, VcAndDiscloseProof, VerificationConfig } from './types/types.js';
 import { discloseIndices } from './utils/constants.js';
-import { formatRevealedDataPacked } from './utils/id.js';
-import { AttestationId, VcAndDiscloseProof, VerificationConfig } from './types/types.js';
-import { Country3LetterCode } from '@selfxyz/common/constants';
 import { calculateUserIdentifierHash } from './utils/hash.js';
-import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
-import { ConfigMismatch, ConfigMismatchError } from './errors.js';
-import { IConfigStorage } from './store/interface.js';
+import { formatRevealedDataPacked } from './utils/id.js';
 import { unpackForbiddenCountriesList } from './utils/utils.js';
-import { BigNumberish } from 'ethers';
 
 const CELO_MAINNET_RPC_URL = 'https://forno.celo.org';
 const CELO_TESTNET_RPC_URL = 'https://alfajores-forno.celo-testnet.org';
@@ -64,7 +66,7 @@ export class SelfBackendVerifier {
   ) {
     //check if attestation id is allowed
     const allowedId = this.allowedIds.get(attestationId);
-    let issues: Array<{ type: ConfigMismatch; message: string }> = [];
+    const issues: Array<{ type: ConfigMismatch; message: string }> = [];
     if (!allowedId) {
       issues.push({
         type: ConfigMismatch.InvalidId,
@@ -154,22 +156,18 @@ export class SelfBackendVerifier {
       });
     }
 
-    let verificationConfig: VerificationConfig | null;
+    let verificationConfig: VerificationConfig | null = null;
     try {
       verificationConfig = await this.configStorage.getConfig(configId);
-    } catch (error) {
+    } catch {
+      /* ignore */
+    }
+    if (!verificationConfig) {
       issues.push({
         type: ConfigMismatch.ConfigNotFound,
         message: `Config not found for ${configId}`,
       });
-    } finally {
-      if (!verificationConfig) {
-        issues.push({
-          type: ConfigMismatch.ConfigNotFound,
-          message: `Config not found for ${configId}`,
-        });
-        throw new ConfigMismatchError(issues);
-      }
+      throw new ConfigMismatchError(issues);
     }
 
     //check if forbidden countries list matches

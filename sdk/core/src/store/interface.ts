@@ -1,4 +1,4 @@
-import { VerificationConfig } from '../types/types.js';
+import type { VerificationConfig } from '../types/types.js';
 
 export interface IConfigStorage {
   /**

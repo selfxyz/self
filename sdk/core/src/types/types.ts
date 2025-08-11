@@ -1,6 +1,24 @@
-import { Country3LetterCode } from '@selfxyz/common/constants';
 import type { BigNumberish } from 'ethers';
-import { discloseIndices } from 'src/utils/constants.js';
+
+import type { Country3LetterCode } from '@selfxyz/common/constants';
+
+import type { discloseIndices } from '../utils/constants.js';
+
+export type AttestationId = keyof typeof discloseIndices;
+
+export type GenericDiscloseOutput = {
+  nullifier: string;
+  forbiddenCountriesListPacked: string[];
+  issuingState: string;
+  name: string;
+  idNumber: string;
+  nationality: string;
+  dateOfBirth: string;
+  gender: string;
+  expiryDate: string;
+  minimumAge: string;
+  ofac: boolean[];
+};
 
 export type VcAndDiscloseProof = {
   a: [BigNumberish, BigNumberish];
@@ -28,19 +46,3 @@ export type VerificationResult = {
     userDefinedData: string;
   };
 };
-
-export type GenericDiscloseOutput = {
-  nullifier: string;
-  forbiddenCountriesListPacked: string[];
-  issuingState: string;
-  name: string;
-  idNumber: string;
-  nationality: string;
-  dateOfBirth: string;
-  gender: string;
-  expiryDate: string;
-  minimumAge: string;
-  ofac: boolean[];
-};
-
-export type AttestationId = keyof typeof discloseIndices;

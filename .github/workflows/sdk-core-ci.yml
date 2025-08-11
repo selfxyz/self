@@ -1,0 +1,59 @@
+name: SDK Core CI
+
+on:
+  push:
+    paths:
+      - 'sdk/core/**'
+      - '.github/workflows/sdk-core-ci.yml'
+  pull_request:
+    paths:
+      - 'sdk/core/**'
+      - '.github/workflows/sdk-core-ci.yml'
+
+jobs:
+  test-sdk-core:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./sdk/core
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Copy ABI files
+        run: yarn copy-abi
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Type check
+        run: yarn types
+
+      - name: Build
+        run: yarn build
+
+      - name: Test build output
+        run: |
+          echo "Testing ESM import..."
+          node -e "import('@selfxyz/core').then(m => console.log('✅ ESM import successful')).catch(e => console.error('❌ ESM import failed:', e.message))"
+
+          echo "Testing CJS require..."
+          node -e "try { const m = require('@selfxyz/core'); console.log('✅ CJS require successful'); } catch(e) { console.error('❌ CJS require failed:', e.message); }"
+
+      - name: Verify exports
+        run: |
+          echo "Verifying package exports..."
+          node -e "
+            const pkg = require('./package.json');
+            console.log('Package exports:', JSON.stringify(pkg.exports, null, 2));
+            console.log('Main:', pkg.main);
+            console.log('Module:', pkg.module);
+            console.log('Types:', pkg.types);
+          "

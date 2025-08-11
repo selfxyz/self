@@ -1,5 +1,5 @@
+import type { AttestationId, GenericDiscloseOutput } from '../types/types.js';
 import { discloseIndices, revealedDataIndices } from './constants.js';
-import { AttestationId, GenericDiscloseOutput } from 'src/types/types.js';
 import { getRevealedDataBytes } from './proof.js';
 
 export const formatRevealedDataPacked = (
