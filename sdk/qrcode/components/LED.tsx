@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { QRcodeSteps } from '../utils/utils.js';
+
 interface LEDProps {
   size?: number;
   connectionStatus?: number;
@@ -9,10 +11,7 @@ const green = '#31F040';
 const blue = '#424AD8';
 const gray = '#95a5a6';
 
-const LED: React.FC<LEDProps> = ({
-  size = 8,
-  connectionStatus = QRcodeSteps.DISCONNECTED,
-}) => {
+const LED: React.FC<LEDProps> = ({ size = 8, connectionStatus = QRcodeSteps.DISCONNECTED }) => {
   const getColor = () => {
     if (connectionStatus >= QRcodeSteps.MOBILE_CONNECTED) {
       return green;

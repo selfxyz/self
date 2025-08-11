@@ -50,6 +50,17 @@ yarn types
   - For Noir circuits, run `nargo test -p <crate>` in each `noir/crates/*` directory.
   - Tests for `@selfxyz/contracts` are currently disabled in CI and may be skipped.
 
+### CI Caching
+
+Use the shared composite actions in `.github/actions` when caching dependencies in GitHub workflows. They provide consistent cache paths and keys:
+
+- `cache-yarn` for Yarn dependencies
+- `cache-bundler` for Ruby gems
+- `cache-gradle` for Gradle wrappers and caches
+- `cache-pods` for CocoaPods
+
+Each action accepts an optional `cache-version` input (often combined with `GH_CACHE_VERSION` and a tool-specific version). Avoid calling `actions/cache` directly so future workflows follow the same strategy.
+
 ### Formatting
 
 - Use Prettier configuration from `.prettierrc` files.

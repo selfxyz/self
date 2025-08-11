@@ -1,13 +1,11 @@
-import {
-  SelfQRcode,
-  SelfAppBuilder,
-  SelfQRcodeWrapper,
-} from './components/SelfQRcode.js';
-import type { SelfApp } from './components/SelfQRcode.js';
-import { WebAppInfo } from './utils/websocket.js';
-import { countries } from '@selfxyz/common/constants/countries';
+import type { SelfApp } from '@selfxyz/common';
+import { countries } from '@selfxyz/common';
 
-export { SelfQRcodeWrapper, SelfQRcode, SelfAppBuilder, countries };
+import { SelfQRcode, SelfQRcodeWrapper } from './components/SelfQRcode.js';
+import type { WebAppInfo } from './utils/websocket.js';
+
 export type { SelfApp };
-
 export type { WebAppInfo };
+
+export { SelfQRcode, SelfQRcodeWrapper };
+export { countries };
