@@ -8,9 +8,9 @@ import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 
 import { ConfigMismatch, ConfigMismatchError } from './errors.js';
 import type { IConfigStorage } from './store/interface.js';
-import type { IdentityVerificationHubImpl, Verifier } from './typechain-types/index.js';
+import type { IdentityVerificationHubImplV2, Verifier } from './typechain-types/index.js';
 import {
-  IdentityVerificationHubImpl__factory,
+  IdentityVerificationHubImplV2__factory,
   Registry__factory,
   Verifier__factory,
 } from './typechain-types/index.js';
@@ -28,7 +28,7 @@ const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x68c931C9a534D37aa78094877F4
 
 export class SelfBackendVerifier {
   protected scope: string;
-  protected identityVerificationHubContract: IdentityVerificationHubImpl;
+  protected identityVerificationHubContract: IdentityVerificationHubImplV2;
   protected configStorage: IConfigStorage;
   protected provider: ethers.JsonRpcProvider;
   protected allowedIds: Map<AttestationId, boolean>;
@@ -47,7 +47,7 @@ export class SelfBackendVerifier {
     const identityVerificationHubAddress = mockPassport
       ? IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING
       : IDENTITY_VERIFICATION_HUB_ADDRESS;
-    this.identityVerificationHubContract = IdentityVerificationHubImpl__factory.connect(
+    this.identityVerificationHubContract = IdentityVerificationHubImplV2__factory.connect(
       identityVerificationHubAddress,
       provider
     );
