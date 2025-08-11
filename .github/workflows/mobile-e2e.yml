@@ -45,12 +45,7 @@ jobs:
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn dependencies
-        uses: actions/cache@v4
-        with:
-          path: .yarn/cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+        uses: ./.github/actions/cache-yarn
       - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
@@ -69,14 +64,7 @@ jobs:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
       - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+        uses: ./.github/actions/cache-gradle
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -163,12 +151,7 @@ jobs:
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn dependencies
-        uses: actions/cache@v4
-        with:
-          path: .yarn/cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+        uses: ./.github/actions/cache-yarn
       - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
@@ -189,21 +172,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Cache Ruby gems
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-bundler
         with:
           path: app/vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('app/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gems-
+          lock-file: app/Gemfile.lock
       - name: Cache Pods
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-pods
         with:
           path: |
             app/ios/Pods
             ~/Library/Caches/CocoaPods
-          key: ${{ runner.os }}-pods-${{ hashFiles('app/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
+          lock-file: app/ios/Podfile.lock
       - name: Cache Xcode build
         uses: actions/cache@v4
         with:
