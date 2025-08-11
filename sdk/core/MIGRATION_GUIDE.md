@@ -1,10 +1,11 @@
-# Hub Migration Guide: V1 to V2
+# Identity Verification Hub Migration Guide: V1 to V2
 
 This guide helps you migrate from Identity Verification Hub V1 to V2 using the migration-focused adapter.
 
 ## 🎯 Overview
 
 The migration adapter provides a smooth transition path from V1 to V2 with:
+
 - **Automatic version detection**
 - **Migration guidance and validation**
 - **Backward compatibility during transition**
@@ -13,6 +14,7 @@ The migration adapter provides a smooth transition path from V1 to V2 with:
 ## 📋 Migration Checklist
 
 ### Pre-Migration
+
 - [ ] Review breaking changes
 - [ ] Check V2 availability on your network
 - [ ] Test migration in staging environment
@@ -20,6 +22,7 @@ The migration adapter provides a smooth transition path from V1 to V2 with:
 - [ ] Plan attestation ID strategy
 
 ### During Migration
+
 - [ ] Deploy V2 implementation
 - [ ] Update contract references
 - [ ] Migrate verification calls
@@ -27,6 +30,7 @@ The migration adapter provides a smooth transition path from V1 to V2 with:
 - [ ] Configure V2 verification settings
 
 ### Post-Migration
+
 - [ ] Test all verification flows
 - [ ] Update documentation
 - [ ] Monitor for issues
@@ -52,7 +56,7 @@ import { createHubAdapterWithValidation } from '@selfxyz/core';
 
 const hub = await createHubAdapterWithValidation(contractAddress, publicClient, {
   validateMigration: true,
-  showWarnings: true
+  showWarnings: true,
 });
 
 // Get migration guidance
@@ -74,18 +78,17 @@ if (!readiness.ready) {
 ## 🔄 Migration Examples
 
 ### Before (V1)
+
 ```typescript
 // V1 verification
 const result = await hub.verifyVcAndDisclose(proof);
 
 // V1 registration
-await hub.registerPassportCommitment(
-  registerCircuitVerifierId,
-  registerCircuitProof
-);
+await hub.registerPassportCommitment(registerCircuitVerifierId, registerCircuitProof);
 ```
 
 ### After (V2)
+
 ```typescript
 // V2 verification
 await hub.verify(baseVerificationInput, userContextData);
@@ -99,6 +102,7 @@ await hub.registerPassportCommitment(
 ```
 
 ### During Migration (Adapter)
+
 ```typescript
 // Works with both V1 and V2 automatically
 const hub = await createHubAdapter(contractAddress, publicClient);
@@ -115,23 +119,24 @@ if (hub.version === 'v1') {
 
 ### Method Signature Changes
 
-| V1 Method | V2 Method | Changes |
-|-----------|-----------|---------|
-| `verifyVcAndDisclose(proof)` | `verify(input, context)` | Completely new interface |
-| `registerPassportCommitment(id, proof)` | `registerCommitment(attestationId, id, proof)` | Added attestationId |
-| `registerDscKeyCommitment(id, proof)` | `registerDscKeyCommitment(attestationId, id, proof)` | Added attestationId |
+| V1 Method                               | V2 Method                                            | Changes                  |
+| --------------------------------------- | ---------------------------------------------------- | ------------------------ |
+| `verifyVcAndDisclose(proof)`            | `verify(input, context)`                             | Completely new interface |
+| `registerPassportCommitment(id, proof)` | `registerCommitment(attestationId, id, proof)`       | Added attestationId      |
+| `registerDscKeyCommitment(id, proof)`   | `registerDscKeyCommitment(attestationId, id, proof)` | Added attestationId      |
 
 ### Configuration Changes
 
-| V1 | V2 |
-|----|----|
-| Hardcoded parameters | Configurable verification configs |
+| V1                       | V2                                   |
+| ------------------------ | ------------------------------------ |
+| Hardcoded parameters     | Configurable verification configs    |
 | Single registry/verifier | Per-attestation registries/verifiers |
-| Simple error handling | Enhanced error types |
+| Simple error handling    | Enhanced error types                 |
 
 ## 🛠️ Migration Utilities
 
 ### Version Detection
+
 ```typescript
 import { supportsV2 } from '@selfxyz/core';
 
@@ -139,6 +144,7 @@ const isV2 = await supportsV2(contractAddress, publicClient);
 ```
 
 ### Migration Report
+
 ```typescript
 import { getMigrationReport } from '@selfxyz/core';
 
@@ -149,6 +155,7 @@ console.log('New features:', report.migrationInfo.newFeatures);
 ```
 
 ### Validation
+
 ```typescript
 import { HubMigrationUtils } from '@selfxyz/core';
 
@@ -163,12 +170,14 @@ if (readiness.ready) {
 ## 🔧 Configuration Migration
 
 ### V1 Configuration
+
 ```typescript
 // V1 had hardcoded parameters in the contract
 const hub = new HubV1Adapter(contract, publicClient);
 ```
 
 ### V2 Configuration
+
 ```typescript
 // V2 uses configurable verification configs
 const config = {
@@ -181,6 +190,7 @@ const configId = await hub.setVerificationConfigV2(config);
 ## 🚨 Error Handling Migration
 
 ### V1 Error Handling
+
 ```typescript
 try {
   await hub.verifyVcAndDisclose(proof);
@@ -191,6 +201,7 @@ try {
 ```
 
 ### V2 Error Handling
+
 ```typescript
 import { HubVersionError, HubMigrationError } from '@selfxyz/core';
 
@@ -210,6 +221,7 @@ try {
 ## 📊 Migration Progress Tracking
 
 ### Check Migration Status
+
 ```typescript
 const hub = await createHubAdapter(contractAddress, publicClient);
 
@@ -224,10 +236,11 @@ if (hub.version === 'v1') {
 ```
 
 ### Monitor Migration Warnings
+
 ```typescript
 // The adapter automatically logs migration warnings
 const hub = await createHubAdapterWithValidation(contractAddress, publicClient, {
-  showWarnings: true
+  showWarnings: true,
 });
 
 // Warnings will appear in console:
@@ -237,23 +250,27 @@ const hub = await createHubAdapterWithValidation(contractAddress, publicClient, 
 ## 🎯 Best Practices
 
 ### 1. Gradual Migration
+
 - Start with non-critical flows
 - Test thoroughly in staging
 - Monitor for issues
 - Migrate critical flows last
 
 ### 2. Error Handling
+
 - Update error handling for V2 error types
 - Add migration-specific error handling
 - Log migration warnings appropriately
 
 ### 3. Testing
+
 - Test all verification flows with V2
 - Verify attestation ID handling
 - Test error scenarios
 - Validate configuration migration
 
 ### 4. Documentation
+
 - Update API documentation
 - Document breaking changes
 - Provide migration examples
@@ -264,15 +281,19 @@ const hub = await createHubAdapterWithValidation(contractAddress, publicClient, 
 ### Common Issues
 
 #### "V1 does not support the new verify method"
+
 **Solution**: Use `verifyVcAndDisclose()` for V1 or migrate to V2.
 
 #### "V2 requires attestationId"
+
 **Solution**: Add attestationId parameter to registration calls.
 
 #### "Migration validation failed"
+
 **Solution**: Review the validation issues and address them before migrating.
 
 #### "V2 not available on current network"
+
 **Solution**: Deploy V2 implementation first or use V1 until V2 is available.
 
 ### Getting Help

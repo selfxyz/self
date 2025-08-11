@@ -1,12 +1,8 @@
-import type { Abi } from 'viem';
-
-import { hubV1Abi } from '../abi/IdentityVerificationHubImplV1';
-import { hubV2Abi } from '../abi/IdentityVerificationHubImplV2';
-
-
+import { hubV1Abi } from '../abi/IdentityVerificationHubImplV1.js';
+import { hubV2Abi } from '../abi/IdentityVerificationHubImplV2.js';
 
 // Unified Interface with migration support
-export interface HubAdapter {
+export interface IdentityVerificationHubAdapter {
   // Version information
   readonly version: 'v1' | 'v2';
   readonly isLegacy: boolean;
@@ -41,9 +37,6 @@ export interface HubAdapter {
   getVcAndDiscloseCircuitVerifier(): Promise<string>;
 }
 
-
-
-
 // Migration-specific types
 export interface MigrationInfo {
   currentVersion: 'v1' | 'v2';
@@ -53,9 +46,6 @@ export interface MigrationInfo {
   newFeatures: string[];
 }
 
-
-
-
 export interface V1DscCircuitProof {
   a: readonly [bigint, bigint];
   b: readonly [[bigint, bigint], [bigint, bigint]];
@@ -63,18 +53,12 @@ export interface V1DscCircuitProof {
   pubSignals: readonly [bigint, bigint];
 }
 
-
-
-
 export interface V1RegisterCircuitProof {
   a: readonly [bigint, bigint];
   b: readonly [[bigint, bigint], [bigint, bigint]];
   c: readonly [bigint, bigint];
   pubSignals: readonly [bigint, bigint, bigint];
 }
-
-
-
 
 // V1 Types
 export interface V1VcAndDiscloseHubProof {
@@ -91,9 +75,6 @@ export interface V1VcAndDiscloseHubProof {
   };
 }
 
-
-
-
 export interface V1VcAndDiscloseVerificationResult {
   attestationId: bigint;
   scope: bigint;
@@ -103,7 +84,6 @@ export interface V1VcAndDiscloseVerificationResult {
   revealedDataPacked: readonly [bigint, bigint, bigint];
   forbiddenCountriesListPacked: readonly [bigint, bigint, bigint, bigint];
 }
-
 
 // V2 Types
 export interface V2VerificationConfig {
@@ -123,19 +103,18 @@ export class HubMigrationError extends Error {
   }
 }
 
-
 // Migration utilities
 export class HubMigrationUtils {
   /**
    * Check if a contract supports V2 features
    */
-  static async supportsV2(contractAddress: string, publicClient: any): Promise<boolean> {
+  static async supportsV2(contractAddress: string, publicClient: unknown): Promise<boolean> {
     try {
       const contract = { address: contractAddress, abi: hubV2Abi };
       await publicClient.readContract({
         ...contract,
         functionName: 'verificationConfigV2Exists',
-        args: ['0x0000000000000000000000000000000000000000000000000000000000000000']
+        args: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
       });
       return true;
     } catch {
@@ -148,7 +127,7 @@ export class HubMigrationUtils {
    */
   static async getMigrationReport(
     contractAddress: string,
-    publicClient: any
+    publicClient: unknown
   ): Promise<{
     currentVersion: 'v1' | 'v2';
     canMigrate: boolean;
@@ -173,14 +152,14 @@ export class HubMigrationUtils {
         : 'You are using V2 - consider using HubClient for better type safety',
       'Review breaking changes before migration',
       'Test thoroughly in staging environment',
-      'Update documentation and error handling'
+      'Update documentation and error handling',
     ];
 
     return {
       currentVersion,
       canMigrate,
       migrationInfo,
-      recommendations
+      recommendations,
     };
   }
 
@@ -188,7 +167,7 @@ export class HubMigrationUtils {
    * Validate migration readiness
    */
   static validateMigrationReadiness(
-    currentAdapter: HubAdapter,
+    currentAdapter: IdentityVerificationHubAdapter,
     targetVersion: 'v1' | 'v2'
   ): { ready: boolean; issues: string[] } {
     const issues: string[] = [];
@@ -210,21 +189,19 @@ export class HubMigrationUtils {
 
     return {
       ready: issues.length === 0,
-      issues
+      issues,
     };
   }
 }
 
-
-
 // V1 Implementation with migration guidance
-export class HubV1Adapter implements HubAdapter {
+export class HubV1Adapter implements IdentityVerificationHubAdapter {
   readonly version = 'v1' as const;
   readonly isLegacy = true;
 
   constructor(
-    private contract: any, // Replace with proper contract type
-    private publicClient: any, // Replace with proper client type
+    private contract: unknown, // Replace with proper contract type
+    private publicClient: unknown, // Replace with proper client type
     private contractAddress: string
   ) {}
 
@@ -238,21 +215,21 @@ export class HubV1Adapter implements HubAdapter {
         'Migrate from verifyVcAndDisclose() to verify() method',
         'Update registration calls to include attestationId parameter',
         'Configure V2 verification configs using setVerificationConfigV2()',
-        'Update error handling for new V2 error types'
+        'Update error handling for new V2 error types',
       ],
       breakingChanges: [
         'verifyVcAndDisclose() method removed in V2',
         'Registration methods now require attestationId parameter',
         'Registry and verifier addresses are now per-attestation',
-        'New verification config system replaces hardcoded parameters'
+        'New verification config system replaces hardcoded parameters',
       ],
       newFeatures: [
         'Multi-attestation support (passport, ID cards)',
         'Configurable verification parameters',
         'Cross-chain verification support (future)',
         'Improved error handling and validation',
-        'Better gas optimization'
-      ]
+        'Better gas optimization',
+      ],
     };
   }
 
@@ -269,15 +246,17 @@ export class HubV1Adapter implements HubAdapter {
       '4. Add attestationId to registration calls',
       '5. Configure V2 verification settings',
       '6. Update error handling',
-      '7. Test thoroughly before switching'
+      '7. Test thoroughly before switching',
     ];
   }
 
-  async verifyVcAndDisclose(proof: V1VcAndDiscloseHubProof): Promise<V1VcAndDiscloseVerificationResult> {
+  async verifyVcAndDisclose(
+    proof: V1VcAndDiscloseHubProof
+  ): Promise<V1VcAndDiscloseVerificationResult> {
     return await this.contract.read.verifyVcAndDisclose([proof]);
   }
 
-  async verify(baseVerificationInput: Uint8Array, userContextData: Uint8Array): Promise<void> {
+  async verify(_baseVerificationInput: Uint8Array, _userContextData: Uint8Array): Promise<void> {
     throw new HubVersionError(
       'V1 does not support the new verify method. Use verifyVcAndDisclose instead, or migrate to V2.',
       'v1',
@@ -293,11 +272,14 @@ export class HubV1Adapter implements HubAdapter {
     // V1 doesn't have attestationId parameter - log migration guidance
     console.warn(
       `[Migration Notice] V1 registerPassportCommitment() doesn't use attestationId. ` +
-      `Consider migrating to V2 for multi-attestation support. ` +
-      `Contract: ${this.contractAddress}`
+        `Consider migrating to V2 for multi-attestation support. ` +
+        `Contract: ${this.contractAddress}`
     );
 
-    await this.contract.write.registerPassportCommitment([registerCircuitVerifierId, registerCircuitProof]);
+    await this.contract.write.registerPassportCommitment([
+      registerCircuitVerifierId,
+      registerCircuitProof,
+    ]);
   }
 
   async registerDscKeyCommitment(
@@ -308,8 +290,8 @@ export class HubV1Adapter implements HubAdapter {
     // V1 doesn't have attestationId parameter - log migration guidance
     console.warn(
       `[Migration Notice] V1 registerDscKeyCommitment() doesn't use attestationId. ` +
-      `Consider migrating to V2 for multi-attestation support. ` +
-      `Contract: ${this.contractAddress}`
+        `Consider migrating to V2 for multi-attestation support. ` +
+        `Contract: ${this.contractAddress}`
     );
 
     await this.contract.write.registerDscKeyCommitment([dscCircuitVerifierId, dscCircuitProof]);
@@ -324,16 +306,14 @@ export class HubV1Adapter implements HubAdapter {
   }
 }
 
-
-
 // V2 Implementation with migration support
-export class HubV2Adapter implements HubAdapter {
+export class HubV2Adapter implements IdentityVerificationHubAdapter {
   readonly version = 'v2' as const;
   readonly isLegacy = false;
 
   constructor(
-    private contract: any, // Replace with proper contract type
-    private publicClient: any, // Replace with proper client type
+    private contract: unknown, // Replace with proper contract type
+    private publicClient: unknown, // Replace with proper client type
     private contractAddress: string
   ) {}
 
@@ -344,7 +324,7 @@ export class HubV2Adapter implements HubAdapter {
       migrationSteps: [
         'You are already using V2 - no migration needed',
         'Consider using the dedicated HubClient for better type safety',
-        'Explore new V2 features like multi-attestation support'
+        'Explore new V2 features like multi-attestation support',
       ],
       breakingChanges: [],
       newFeatures: [
@@ -352,8 +332,8 @@ export class HubV2Adapter implements HubAdapter {
         'Configurable verification parameters',
         'Cross-chain verification support (future)',
         'Improved error handling and validation',
-        'Better gas optimization'
-      ]
+        'Better gas optimization',
+      ],
     };
   }
 
@@ -365,7 +345,9 @@ export class HubV2Adapter implements HubAdapter {
     return ['Already on V2 - no migration needed'];
   }
 
-  async verifyVcAndDisclose(proof: V1VcAndDiscloseHubProof): Promise<V1VcAndDiscloseVerificationResult> {
+  async verifyVcAndDisclose(
+    _proof: V1VcAndDiscloseHubProof
+  ): Promise<V1VcAndDiscloseVerificationResult> {
     throw new HubVersionError(
       'V2 does not support verifyVcAndDisclose. Use verify method instead.',
       'v2',
@@ -382,7 +364,11 @@ export class HubV2Adapter implements HubAdapter {
     registerCircuitVerifierId: bigint,
     registerCircuitProof: V1RegisterCircuitProof
   ): Promise<void> {
-    await this.contract.write.registerCommitment([attestationId, registerCircuitVerifierId, registerCircuitProof]);
+    await this.contract.write.registerCommitment([
+      attestationId,
+      registerCircuitVerifierId,
+      registerCircuitProof,
+    ]);
   }
 
   async registerDscKeyCommitment(
@@ -390,7 +376,11 @@ export class HubV2Adapter implements HubAdapter {
     dscCircuitVerifierId: bigint,
     dscCircuitProof: V1DscCircuitProof
   ): Promise<void> {
-    await this.contract.write.registerDscKeyCommitment([attestationId, dscCircuitVerifierId, dscCircuitProof]);
+    await this.contract.write.registerDscKeyCommitment([
+      attestationId,
+      dscCircuitVerifierId,
+      dscCircuitProof,
+    ]);
   }
 
   async setVerificationConfigV2(config: V2VerificationConfig): Promise<bigint> {
@@ -416,8 +406,6 @@ export class HubV2Adapter implements HubAdapter {
   }
 }
 
-
-
 export class HubVersionError extends Error {
   constructor(
     message: string,
@@ -433,15 +421,15 @@ export class HubVersionError extends Error {
 export function createHubAdapter(
   contractAddress: string,
   version: 'v1' | 'v2',
-  publicClient: any // Replace with proper client type
-): HubAdapter {
+  publicClient: unknown // Replace with proper client type
+): IdentityVerificationHubAdapter {
   const abi = version === 'v1' ? hubV1Abi : hubV2Abi;
 
   // Create contract instance (replace with proper contract creation)
   const contract = {
     read: {},
     write: {},
-    abi
+    abi,
   };
 
   return version === 'v1'
@@ -449,12 +437,11 @@ export function createHubAdapter(
     : new HubV2Adapter(contract, publicClient, contractAddress);
 }
 
-
 // Auto-detecting factory with migration support
 export async function createHubAdapterAuto(
   contractAddress: string,
-  publicClient: any // Replace with proper client type
-): Promise<HubAdapter> {
+  publicClient: unknown // Replace with proper client type
+): Promise<IdentityVerificationHubAdapter> {
   const version = await detectHubVersion(contractAddress, publicClient);
   const adapter = createHubAdapter(contractAddress, version, publicClient);
 
@@ -462,36 +449,34 @@ export async function createHubAdapterAuto(
   if (adapter.version === 'v1') {
     console.warn(
       `[Migration Notice] Using V1 hub at ${contractAddress}. ` +
-      `Consider migrating to V2 for new features. ` +
-      `Run getMigrationInfo() for details.`
+        `Consider migrating to V2 for new features. ` +
+        `Run getMigrationInfo() for details.`
     );
   }
 
   return adapter;
 }
 
-
-
 // Migration-focused factory with validation
 export async function createHubAdapterWithMigration(
   contractAddress: string,
-  publicClient: any, // Replace with proper client type
+  publicClient: unknown, // Replace with proper client type
   options?: {
     forceVersion?: 'v1' | 'v2';
     validateMigration?: boolean;
     showWarnings?: boolean;
   }
-): Promise<HubAdapter> {
+): Promise<IdentityVerificationHubAdapter> {
   const { forceVersion, validateMigration = true, showWarnings = true } = options || {};
 
-  const version = forceVersion || await detectHubVersion(contractAddress, publicClient);
+  const version = forceVersion || (await detectHubVersion(contractAddress, publicClient));
   const adapter = createHubAdapter(contractAddress, version, publicClient);
 
   if (showWarnings && adapter.version === 'v1') {
     console.warn(
       `[Migration Notice] Using V1 hub at ${contractAddress}. ` +
-      `Consider migrating to V2 for new features. ` +
-      `Run getMigrationInfo() for details.`
+        `Consider migrating to V2 for new features. ` +
+        `Run getMigrationInfo() for details.`
     );
   }
 
@@ -505,11 +490,10 @@ export async function createHubAdapterWithMigration(
   return adapter;
 }
 
-
 // Helper to detect version from contract
 export async function detectHubVersion(
   contractAddress: string,
-  publicClient: any // Replace with proper client type
+  publicClient: unknown // Replace with proper client type
 ): Promise<'v1' | 'v2'> {
   try {
     // Try to call a V2-specific method
@@ -517,7 +501,7 @@ export async function detectHubVersion(
     await publicClient.readContract({
       ...contract,
       functionName: 'verificationConfigV2Exists',
-      args: ['0x0000000000000000000000000000000000000000000000000000000000000000']
+      args: ['0x0000000000000000000000000000000000000000000000000000000000000000'],
     });
     return 'v2';
   } catch {

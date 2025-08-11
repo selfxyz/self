@@ -1,30 +1,33 @@
-import type { PublicClient, WalletClient } from 'viem';
-import { getContract } from 'viem';
-
-import { hubV2Abi } from '../abi/IdentityVerificationHubImplV2';
-import type {   createHubAdapterAuto,
+import { hubV2Abi } from '../abi/IdentityVerificationHubImplV2.js';
+import type { IdentityVerificationHubAdapter, MigrationInfo } from '../adapters/HubAdapter.js';
+import {
+  createHubAdapterAuto,
   createHubAdapterWithMigration,
-HubAdapter ,
   HubMigrationUtils,
-  type MigrationInfo
-} from '../adapters/HubAdapter';
+} from '../adapters/HubAdapter.js';
 
 /**
  * Simple V2-focused client for Identity Verification Hub
  *
  * This is the preferred way to interact with the hub in new code.
- * For migration scenarios or V1 compatibility, use the HubAdapter instead.
+ * For migration scenarios or V1 compatibility, use the IdentityVerificationHubAdapter instead.
  */
-export class HubClient {
-  private contract: ReturnType<typeof getContract<typeof hubV2Abi>>;
+export class IdentityVerificationHubClient {
+  private contract: any; // Will be properly typed when ethers integration is added
 
-  constructor(contractAddress: string, publicClient: PublicClient, walletClient?: WalletClient) {
-    this.contract = getContract({
-      address: contractAddress as `0x${string}`,
+  constructor(
+    contractAddress: string,
+    _provider: any, // Replace with proper provider type
+    _signer?: any // Replace with proper signer type
+  ) {
+    // TODO: Implement proper ethers contract creation
+    this.contract = {
+      address: contractAddress,
       abi: hubV2Abi,
-      publicClient,
-      walletClient,
-    });
+      // Placeholder for ethers contract methods
+      read: {},
+      write: {},
+    };
   }
 
   /**
@@ -79,14 +82,14 @@ export class HubClient {
   /**
    * Set verification config for V2
    */
-  async setVerificationConfigV2(config: any): Promise<bigint> {
+  async setVerificationConfigV2(config: unknown): Promise<bigint> {
     return await this.contract.write.setVerificationConfigV2([config]);
   }
 
   /**
    * Get verification config for V2
    */
-  async getVerificationConfigV2(configId: bigint): Promise<any> {
+  async getVerificationConfigV2(configId: bigint): Promise<unknown> {
     return await this.contract.read.getVerificationConfigV2([configId]);
   }
 
@@ -101,20 +104,14 @@ export class HubClient {
    * Update registry address for a specific attestation
    */
   async updateRegistry(attestationId: bigint, registryAddress: string): Promise<void> {
-    return await this.contract.write.updateRegistry([
-      attestationId,
-      registryAddress as `0x${string}`,
-    ]);
+    return await this.contract.write.updateRegistry([attestationId, registryAddress]);
   }
 
   /**
    * Update VC and Disclose circuit verifier for a specific attestation
    */
   async updateVcAndDiscloseCircuit(attestationId: bigint, verifierAddress: string): Promise<void> {
-    return await this.contract.write.updateVcAndDiscloseCircuit([
-      attestationId,
-      verifierAddress as `0x${string}`,
-    ]);
+    return await this.contract.write.updateVcAndDiscloseCircuit([attestationId, verifierAddress]);
   }
 
   /**
@@ -128,7 +125,7 @@ export class HubClient {
     return await this.contract.write.updateRegisterCircuitVerifier([
       attestationId,
       typeId,
-      verifierAddress as `0x${string}`,
+      verifierAddress,
     ]);
   }
 
@@ -140,11 +137,7 @@ export class HubClient {
     typeId: bigint,
     verifierAddress: string
   ): Promise<void> {
-    return await this.contract.write.updateDscVerifier([
-      attestationId,
-      typeId,
-      verifierAddress as `0x${string}`,
-    ]);
+    return await this.contract.write.updateDscVerifier([attestationId, typeId, verifierAddress]);
   }
 
   /**
@@ -182,10 +175,10 @@ export class HubClient {
  */
 export function createHubAdapter(
   contractAddress: string,
-  publicClient: PublicClient,
-  walletClient?: WalletClient
-): Promise<HubAdapter> {
-  return createHubAdapterAuto(contractAddress, publicClient);
+  provider: any, // Replace with proper provider type
+  _signer?: any // Replace with proper signer type
+): Promise<IdentityVerificationHubAdapter> {
+  return createHubAdapterAuto(contractAddress, provider);
 }
 
 /**
@@ -194,31 +187,28 @@ export function createHubAdapter(
  */
 export function createHubAdapterWithValidation(
   contractAddress: string,
-  publicClient: PublicClient,
-  walletClient?: WalletClient,
+  provider: any, // Replace with proper provider type
+  _signer?: any, // Replace with proper signer type
   options?: {
     forceVersion?: 'v1' | 'v2';
     validateMigration?: boolean;
     showWarnings?: boolean;
   }
-): Promise<HubAdapter> {
-  return createHubAdapterWithMigration(contractAddress, publicClient, options);
+): Promise<IdentityVerificationHubAdapter> {
+  return createHubAdapterWithMigration(contractAddress, provider, options);
 }
 
-
 /**
- * Factory function to create a HubClient for V2
+ * Factory function to create a IdentityVerificationHubClient for V2
  * This is the preferred way to create a hub client for new code.
  */
 export function createHubClient(
   contractAddress: string,
-  publicClient: PublicClient,
-  walletClient?: WalletClient
-): HubClient {
-  return new HubClient(contractAddress, publicClient, walletClient);
+  provider: any, // Replace with proper provider type
+  _signer?: any // Replace with proper signer type
+): IdentityVerificationHubClient {
+  return new IdentityVerificationHubClient(contractAddress, provider, _signer);
 }
-
-
 
 /**
  * Get detailed migration report for a contract
@@ -226,16 +216,15 @@ export function createHubClient(
  */
 export async function getMigrationReport(
   contractAddress: string,
-  publicClient: PublicClient
+  provider: any // Replace with proper provider type
 ): Promise<{
   currentVersion: 'v1' | 'v2';
   canMigrate: boolean;
   migrationInfo: MigrationInfo;
   recommendations: string[];
 }> {
-  return await HubMigrationUtils.getMigrationReport(contractAddress, publicClient);
+  return await HubMigrationUtils.getMigrationReport(contractAddress, provider);
 }
-
 
 /**
  * Check if a contract supports V2 features
@@ -243,7 +232,7 @@ export async function getMigrationReport(
  */
 export async function supportsV2(
   contractAddress: string,
-  publicClient: PublicClient
+  provider: any // Replace with proper provider type
 ): Promise<boolean> {
-  return await HubMigrationUtils.supportsV2(contractAddress, publicClient);
+  return await HubMigrationUtils.supportsV2(contractAddress, provider);
 }
