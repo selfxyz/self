@@ -45,9 +45,9 @@ jobs:
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -64,10 +64,7 @@ jobs:
           path: |
             common/dist
             sdk/qrcode/dist
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          key: qrcode-sdk-build-${{ github.sha }}
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
 
   # Quality checks job
   quality-checks:
@@ -93,9 +90,9 @@ jobs:
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -106,10 +103,7 @@ jobs:
           path: |
             common/dist
             sdk/qrcode/dist
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          key: qrcode-sdk-build-${{ github.sha }}
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
           fail-on-cache-miss: true
 
       - name: Run linter
@@ -150,9 +144,9 @@ jobs:
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -163,10 +157,7 @@ jobs:
           path: |
             common/dist
             sdk/qrcode/dist
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          key: qrcode-sdk-build-${{ github.sha }}
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
           fail-on-cache-miss: true
 
       - name: Verify build output
@@ -223,9 +214,9 @@ jobs:
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -236,10 +227,7 @@ jobs:
           path: |
             common/dist
             sdk/qrcode/dist
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          key: qrcode-sdk-build-${{ github.sha }}
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
           fail-on-cache-miss: true
 
       - name: Run tests
