@@ -2,43 +2,21 @@
 
 > Detailed task prompts are listed in [MIGRATION_PROMPTS.md](./MIGRATION_PROMPTS.md).
 
-## 1. Scanning adapters & NFC lifecycle
-
-- Define cross-platform scanner interfaces.
-- Implement React Native MRZ and NFC adapters with screen-on hooks.
-- Provide a sample flow chaining MRZ to NFC scanning.
-
-## 2. Processing helpers (MRZ & NFC)
+## 1. Processing helpers (MRZ & NFC)
 
 - Finalize MRZ utilities and add an NFC response parser.
 - Re-export helpers through the SDK entry point.
 
-## 3. Validation module
+## 2. Validation module
 
 - Port stateless document checks.
 - Cover validation logic with unit tests.
 
-## 4. Protocol synchronization
-
-- Fetch protocol trees with pagination and a TTL cache.
-- Verify computed roots against server data.
-- Implement rate limiting with exponential backoff and jitter.
-- Set memory bounds for concatenated trees and honor Retry-After headers.
-
-## 5. Proof input generation
+## 3. Proof input generation
 
 - Port register and disclose TEE input helpers.
 
-## 6. TEE session management
-
-- WebSocket wrapper supporting abort, timeout, and progress events.
-
-## 7. Attestation verification
-
-- PCR0 check and public-key extraction.
-- Minimal certificate-chain validation.
-
-## 8. Crypto adapters
+## 4. Crypto adapters
 
 - Runtime-selectable adapter using WebCrypto with `@noble/*` fallbacks.
 - Parity tests across implementations.
@@ -46,13 +24,35 @@
 - Ensure CSPRNG-backed random number generation.
 - Use timing-safe comparison for secret values.
 
-## 9. Artifact management
+## 5. TEE session management
+
+- WebSocket wrapper supporting abort, timeout, and progress events.
+
+## 6. Attestation verification
+
+- PCR0 check and public-key extraction.
+- Minimal certificate-chain validation.
+
+## 7. Protocol synchronization
+
+- Fetch protocol trees with pagination and a TTL cache.
+- Verify computed roots against server data.
+- Implement rate limiting with exponential backoff and jitter.
+- Set memory bounds for concatenated trees and honor Retry-After headers.
+
+## 8. Artifact management
 
 - Manifest schema & integrity verification.
 - CDN downloads with caching and storage adapter.
 - Verify manifest signature with pinned public key before caching.
 - Enforce CDN allowlist and Content-Length checks.
 - Stream hashing to avoid buffering large files.
+
+## 9. Scanning adapters & NFC lifecycle
+
+- Define cross-platform scanner interfaces.
+- Implement React Native MRZ and NFC adapters with screen-on hooks.
+- Provide a sample flow chaining MRZ to NFC scanning.
 
 ## 10. Sample applications
 
