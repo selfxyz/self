@@ -4773,6 +4773,7 @@ __metadata:
     snarkjs: "npm:^0.7.1"
     ts-mocha: "npm:^10.0.0"
     tsconfig-paths: "npm:^4.2.0"
+    tsup: "npm:^8.5.0"
     tsx: "npm:^4.20.3"
     typescript: "npm:^5.3.3"
   languageName: unknown
