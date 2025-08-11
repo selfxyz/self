@@ -1,24 +1,26 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { BounceLoader } from 'react-spinners';
+import type { SelfApp } from '@selfxyz/common';
+import {
+  getUniversalLink,
+  REDIRECT_URL,
+  SelfAppBuilder,
+  WS_DB_RELAYER,
+} from '@selfxyz/common';
 import Lottie from 'lottie-react';
+import { QRCodeSVG } from 'qrcode.react';
+import React, { useEffect, useRef, useState } from 'react';
+import { BounceLoader } from 'react-spinners';
+import { v4 as uuidv4 } from 'uuid';
+
 import CHECK_ANIMATION from '../animations/check_animation.json' with { type: 'json' };
 import X_ANIMATION from '../animations/x_animation.json' with { type: 'json' };
-import LED from './LED.js';
-import { REDIRECT_URL, WS_DB_RELAYER } from '@selfxyz/common/constants';
-import { v4 as uuidv4 } from 'uuid';
-import { QRcodeSteps } from '../utils/utils.js';
 import {
   containerStyle,
   ledContainerStyle,
   qrContainerStyle,
-} from '../utils/styles.js';
-import { QRCodeSVG } from 'qrcode.react';
-import { initWebSocket } from '../utils/websocket.js';
-import {
-  getUniversalLink,
-  SelfAppBuilder,
-} from '@selfxyz/common/utils/appType';
-import type { SelfApp } from '@selfxyz/common/utils/appType';
+} from '../utils/styles';
+import { QRcodeSteps } from '../utils/utils';
+import { initWebSocket } from '../utils/websocket';
+import LED from './LED';
 
 interface SelfQRcodeProps {
   selfApp: SelfApp;
@@ -53,7 +55,6 @@ const SelfQRcode = ({
   darkMode = false,
 }: SelfQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
-  const [proofVerified, setProofVerified] = useState(false);
   const [sessionId, setSessionId] = useState('');
   const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
 
@@ -149,4 +150,4 @@ const SelfQRcode = ({
 };
 
 // Also export other components/types that might be needed
-export { SelfQRcodeWrapper, SelfQRcode, SelfApp, SelfAppBuilder };
+export { SelfApp, SelfAppBuilder, SelfQRcode, SelfQRcodeWrapper };

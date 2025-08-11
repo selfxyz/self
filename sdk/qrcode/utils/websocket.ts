@@ -1,6 +1,8 @@
-import io, { Socket } from 'socket.io-client';
-import { QRcodeSteps } from './utils.js';
-import { SelfApp } from '@selfxyz/common/utils/appType';
+import type { SelfApp } from '@selfxyz/common';
+import type { Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
+
+import { QRcodeSteps } from './utils';
 
 export interface WebAppInfo {
   appName: string;
@@ -42,7 +44,7 @@ const handleWebSocketMessage =
     onSuccess: () => void,
     onError: (data: { error_code?: string; reason?: string }) => void,
   ) =>
-  async (data: any) => {
+  async (data: { status: string; error_code?: string; reason?: string }) => {
     console.log(
       '[WebSocket] Received mobile status:',
       data.status,
