@@ -86,17 +86,20 @@ export default defineConfig([
     },
     format: ['esm'],
     outDir: path.resolve(__dirname, 'dist/esm'),
+    outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     dts: false, // Generated separately via build:types script
     splitting: false,
     clean: true, // Clean only on first build
     sourcemap: true,
     target: 'es2020',
+    platform: 'neutral',
     external: [
       /^@openpassport/,
       /^asn1/,
       /^axios/,
       /^buffer/,
       /^chai/,
+      /^child_process/,
       /^country-/,
       /^elliptic/,
       /^ethers/,
@@ -194,17 +197,20 @@ export default defineConfig([
     },
     format: ['cjs'],
     outDir: path.resolve(__dirname, 'dist/cjs'),
+    outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     dts: false, // Only generate types once (in ESM build)
     splitting: false,
     clean: false, // Don't clean after ESM build
     sourcemap: true,
     target: 'es2020',
+    platform: 'neutral',
     external: [
       /^@openpassport/,
       /^asn1/,
       /^axios/,
       /^buffer/,
       /^chai/,
+      /^child_process/,
       /^country-/,
       /^elliptic/,
       /^ethers/,

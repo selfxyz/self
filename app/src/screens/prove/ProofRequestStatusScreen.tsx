@@ -86,9 +86,11 @@ const SuccessScreen: React.FC = () => {
       if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
         if (selfApp?.deeplinkCallback) {
           try {
-            new URL(selfApp.deeplinkCallback);
-            setCountdown(5);
-            setCountdownStarted(true);
+            const url = new URL(selfApp.deeplinkCallback);
+            if (url) {
+              setCountdown(5);
+              setCountdownStarted(true);
+            }
           } catch (error) {
             console.warn(
               'Invalid deep link URL provided:',

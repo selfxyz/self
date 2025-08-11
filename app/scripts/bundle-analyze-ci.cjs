@@ -25,8 +25,8 @@ function formatBytes(bytes) {
   return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
-function checkBundleSize(bundleSize, platform) {
-  const thresholdMB = BUNDLE_THRESHOLDS_MB[platform];
+function checkBundleSize(bundleSize, targetPlatform) {
+  const thresholdMB = BUNDLE_THRESHOLDS_MB[targetPlatform];
   const thresholdBytes = thresholdMB * 1024 * 1024;
 
   console.log(`\n📦 Bundle size: ${formatBytes(bundleSize)}`);
