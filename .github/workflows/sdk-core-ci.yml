@@ -3,12 +3,12 @@ name: SDK Core CI
 on:
   push:
     paths:
-      - 'sdk/core/**'
-      - '.github/workflows/sdk-core-ci.yml'
+      - "sdk/core/**"
+      - ".github/workflows/sdk-core-ci.yml"
   pull_request:
     paths:
-      - 'sdk/core/**'
-      - '.github/workflows/sdk-core-ci.yml'
+      - "sdk/core/**"
+      - ".github/workflows/sdk-core-ci.yml"
 
 jobs:
   test-sdk-core:
@@ -19,13 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
 
       - name: Copy ABI files
         run: yarn copy-abi
