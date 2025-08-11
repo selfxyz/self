@@ -180,12 +180,15 @@ describe('PassportDataProvider', () => {
     );
 
     const updateCount = getByTestId('update-count');
-    const initialCount = parseInt(updateCount.props.children);
+    const initialCount = parseInt(updateCount.props.children, 10);
 
     // Wait for updates to occur
     await waitFor(
       () => {
-        const newCount = parseInt(getByTestId('update-count').props.children);
+        const newCount = parseInt(
+          getByTestId('update-count').props.children,
+          10,
+        );
         expect(newCount).toBeGreaterThan(initialCount);
       },
       { timeout: 1000 },

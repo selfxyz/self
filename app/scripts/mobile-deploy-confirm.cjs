@@ -353,7 +353,7 @@ function displayPlatformVersions(platform, versions) {
     const currentBuild = versions.ios.build;
     const nextBuild = versions.versionJson
       ? versions.versionJson.ios.build + 1
-      : parseInt(currentBuild) + 1;
+      : parseInt(currentBuild, 10) + 1;
     const lastDeployed = versions.versionJson
       ? getTimeAgo(versions.versionJson.ios.lastDeployed)
       : 'Unknown';
@@ -371,7 +371,7 @@ function displayPlatformVersions(platform, versions) {
     const currentBuild = versions.android.versionCode;
     const nextBuild = versions.versionJson
       ? versions.versionJson.android.build + 1
-      : parseInt(currentBuild) + 1;
+      : parseInt(currentBuild, 10) + 1;
     const lastDeployed = versions.versionJson
       ? getTimeAgo(versions.versionJson.android.lastDeployed)
       : 'Unknown';
@@ -391,7 +391,7 @@ function displayPlatformVersions(platform, versions) {
   if (versions.versionJson) {
     if (platform === PLATFORMS.IOS || platform === PLATFORMS.BOTH) {
       const jsonBuild = versions.versionJson.ios.build;
-      const actualBuild = parseInt(versions.ios.build);
+      const actualBuild = parseInt(versions.ios.build, 10);
       if (jsonBuild !== actualBuild) {
         console.log(
           `\n${CONSOLE_SYMBOLS.WARNING} iOS build mismatch: version.json has ${jsonBuild}, but Xcode has ${actualBuild}`,
@@ -401,7 +401,7 @@ function displayPlatformVersions(platform, versions) {
 
     if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH) {
       const jsonBuild = versions.versionJson.android.build;
-      const actualBuild = parseInt(versions.android.versionCode);
+      const actualBuild = parseInt(versions.android.versionCode, 10);
       if (jsonBuild !== actualBuild) {
         console.log(
           `\n${CONSOLE_SYMBOLS.WARNING} Android build mismatch: version.json has ${jsonBuild}, but gradle has ${actualBuild}`,
