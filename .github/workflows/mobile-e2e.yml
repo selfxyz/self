@@ -48,9 +48,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .yarn/cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
       - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
@@ -166,9 +166,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .yarn/cache
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
       - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
@@ -185,16 +185,16 @@ jobs:
         uses: actions/cache@v4
         with:
           path: app/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('app/yarn.lock') }}
+          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('app/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node${{ env.NODE_VERSION }}-
       - name: Cache Ruby gems
         uses: actions/cache@v4
         with:
           path: app/vendor/bundle
-          key: ${{ runner.os }}-gems-${{ hashFiles('app/Gemfile.lock') }}
+          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ hashFiles('app/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-gems-
+            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-
       - name: Cache Pods
         uses: actions/cache@v4
         with:
