@@ -191,10 +191,10 @@ export const AuthProvider = ({
         } else {
           return { success: false, error: 'No private key provided' };
         }
-      } catch (error: unknown) {
+      } catch (err: unknown) {
         return {
           success: false,
-          error: error instanceof Error ? error.message : String(error),
+          error: err instanceof Error ? err.message : String(err),
         };
       }
     })();

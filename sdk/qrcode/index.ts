@@ -1,12 +1,12 @@
 import { countries } from '@selfxyz/common';
 
-import type { SelfApp } from './components/SelfQRcode';
+import type { SelfApp } from './components/SelfQRcode.js';
 import {
   SelfAppBuilder,
   SelfQRcode,
   SelfQRcodeWrapper,
-} from './components/SelfQRcode';
-import type { WebAppInfo } from './utils/websocket';
+} from './components/SelfQRcode.js';
+import type { WebAppInfo } from './utils/websocket.js';
 
 export type { SelfApp };
 export type { WebAppInfo };

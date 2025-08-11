@@ -17,10 +17,10 @@ import {
   containerStyle,
   ledContainerStyle,
   qrContainerStyle,
-} from '../utils/styles';
-import { QRcodeSteps } from '../utils/utils';
-import { initWebSocket } from '../utils/websocket';
-import LED from './LED';
+} from '../utils/styles.js';
+import { QRcodeSteps } from '../utils/utils.js';
+import { initWebSocket } from '../utils/websocket.js';
+import LED from './LED.js';
 
 interface SelfQRcodeProps {
   selfApp: SelfApp;

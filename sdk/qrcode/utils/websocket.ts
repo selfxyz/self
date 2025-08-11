@@ -2,7 +2,7 @@ import type { SelfApp } from '@selfxyz/common';
 import type { Socket } from 'socket.io-client';
 import { io } from 'socket.io-client';
 
-import { QRcodeSteps } from './utils';
+import { QRcodeSteps } from './utils.js';
 
 export interface WebAppInfo {
   appName: string;

@@ -13,6 +13,14 @@ module.exports = {
     'plugin:import/typescript',
     'prettier',
   ],
+  settings: {
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: './tsconfig.json',
+      },
+    },
+  },
   rules: {
     'simple-import-sort/imports': 'error',
     'sort-exports/sort-exports': [
