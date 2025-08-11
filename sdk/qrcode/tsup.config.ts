@@ -1,7 +1,11 @@
 import path from 'path';
 import { defineConfig } from 'tsup';
+import { fileURLToPath } from 'url';
 
 // Shared entry map to keep ESM/CJS builds in sync
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const entries = {
   index: 'index.ts',
   'components/LED': 'components/LED.tsx',
@@ -27,6 +31,7 @@ export default defineConfig([
     external: [
       /^react/,
       /^react-dom/,
+      /^react\/jsx-runtime$/,
       /^lottie-react/,
       /^qrcode.react/,
       /^socket.io-client/,
@@ -48,6 +53,7 @@ export default defineConfig([
     external: [
       /^react/,
       /^react-dom/,
+      /^react\/jsx-runtime$/,
       /^lottie-react/,
       /^qrcode.react/,
       /^socket.io-client/,

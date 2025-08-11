@@ -28,6 +28,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+
       - name: Cache Yarn dependencies
         id: yarn-cache
         uses: actions/cache@v4
@@ -70,6 +76,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
 
       - name: Cache Yarn dependencies
         id: yarn-cache
@@ -116,7 +128,10 @@ jobs:
           echo "Checking CJS build..."
           ls -la sdk/qrcode/dist/cjs/
           echo "Checking type definitions..."
-          ls -la sdk/qrcode/dist/esm/*.d.ts
+          if ! find sdk/qrcode/dist/esm -maxdepth 1 -name '*.d.ts' | grep -q .; then
+            echo "No .d.ts files found in dist/esm"; exit 1;
+          fi
+          find sdk/qrcode/dist/esm -maxdepth 1 -name '*.d.ts' -ls
 
       - name: Test package exports
         run: |
@@ -140,6 +155,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
 
       - name: Cache Yarn dependencies
         id: yarn-cache
