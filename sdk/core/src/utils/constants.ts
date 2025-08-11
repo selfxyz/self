@@ -1,4 +1,9 @@
-import { AttestationId } from 'src/types/types.js';
+import type { AttestationId } from 'src/types/types.js';
+
+export const AllIds = new Map<AttestationId, boolean>([
+  [1, true],
+  [2, true],
+]);
 
 export const discloseIndices = {
   1: {
@@ -85,8 +90,3 @@ export const revealedDataIndices: Record<
     ofacEnd: 93,
   },
 } as const;
-
-const allIdEntries = Object.keys(discloseIndices).map(
-  (id) => [Number(id) as AttestationId, true] as [AttestationId, boolean]
-);
-export const AllIds = new Map<AttestationId, boolean>(allIdEntries);
