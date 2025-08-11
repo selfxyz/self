@@ -22,12 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: "enable yarn"
-        run: corepack enable yarn
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
       - name: Install Yarn dependencies
         run: yarn workspaces focus @selfxyz/circuits
       - name: Run lint
@@ -56,7 +52,16 @@ jobs:
           - test-rsa-pss
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
+
+      - name: Cache APT packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/circuits.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-
+
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install --yes \
@@ -65,27 +70,63 @@ jobs:
             libsodium-dev \
             nasm \
             nlohmann-json3-dev
-      - name: Set Node.js 22.x
-        uses: actions/setup-node@v4
+
+      - name: Cache Rust toolchain
+        uses: actions/cache@v4
         with:
-          node-version: 22
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.rustup
+          key: ${{ runner.os }}-rust-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-rust-
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Circom Binary
+        id: cache-circom
+        uses: actions/cache@v4
+        with:
+          path: /tmp/circom
+          key: ${{ runner.os }}-circom-v2.1.9
+
       - name: Download Circom Binary v2.1.9
+        if: steps.cache-circom.outputs.cache-hit != 'true'
         run: |
-          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
-          chmod +x /home/runner/work/circom
-          sudo mv /home/runner/work/circom /bin/circom
+          wget -qO /tmp/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
+          chmod +x /tmp/circom
+
+      - name: Install Circom
+        run: sudo mv /tmp/circom /bin/circom
+
       - name: Print Circom version
         run: circom --version
-      - name: "enable yarn"
-        run: corepack enable yarn
+
+      - name: Cache Circuit Builds
+        uses: actions/cache@v4
+        with:
+          path: |
+            circuits/build
+            circuits/node_modules
+            common/dist
+          key: ${{ runner.os }}-circuit-builds-${{ hashFiles('circuits/**/*.circom', 'circuits/package.json', 'common/**/*.ts') }}
+          restore-keys: |
+            ${{ runner.os }}-circuit-builds-
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
       - name: Install Yarn dependencies
         run: yarn workspaces focus @selfxyz/circuits
+
       - name: Build common
         run: yarn workspace @selfxyz/common build
+
       - name: Build circuits
         run: yarn workspace @selfxyz/circuits build-all
+
       - name: Run tests
         env:
           NODE_MEMORY_LIMIT: 6144
