@@ -1,4 +1,5 @@
 import countries from 'i18n-iso-countries';
+import en from 'i18n-iso-countries/langs/en.json' with { type: 'json' };
 import { poseidon2, poseidon3, poseidon6, poseidon10, poseidon12, poseidon13 } from 'poseidon-lite';
 
 import {
@@ -20,8 +21,8 @@ import { IMT } from '@openpassport/zk-kit-imt';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import type { ChildNodes } from '@openpassport/zk-kit-smt';
 import { SMT } from '@openpassport/zk-kit-smt';
-// English locale is included by default in the package, so no explicit
-// registration is necessary.
+// Register English locale so getAlpha3Code(..., 'en') works correctly
+countries.registerLocale(en as any);
 
 // SMT trees for 3 levels of matching :
 // 1. Passport Number and Nationality tree : level 3 (Absolute Match)

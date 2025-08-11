@@ -86,7 +86,7 @@ describe('OFAC - Passport number and Nationality match', function () {
           '../node_modules/circomlib/circuits',
         ],
         output: path.join(__dirname, '../../build/ofac/passport_number'),
-        recompile: false,
+        recompile: process.env.CIRCOM_RECOMPILE === '1',
       }
     );
 
@@ -149,7 +149,7 @@ describe('OFAC - Name and DOB match', function () {
           '../node_modules/circomlib/circuits',
         ],
         output: path.join(__dirname, '../../build/ofac/name_dob'),
-        recompile: false,
+        recompile: process.env.CIRCOM_RECOMPILE === '1',
       }
     );
 
@@ -219,7 +219,7 @@ describe('OFAC - Name and YOB match', function () {
           '../node_modules/circomlib/circuits',
         ],
         output: path.join(__dirname, '../../build/ofac/name_yob'),
-        recompile: false,
+        recompile: process.env.CIRCOM_RECOMPILE === '1',
       }
     );
 
@@ -287,7 +287,7 @@ describe('OFAC - SMT Security Tests', function () {
           '../node_modules/circomlib/circuits',
         ],
         output: path.join(__dirname, '../../build/ofac/passport_number'),
-        recompile: false,
+        recompile: process.env.CIRCOM_RECOMPILE === '1',
       }
     );
 
@@ -393,7 +393,7 @@ describe('OFAC - ID Card - Name and DOB match', function () {
           '../node_modules/circomlib/circuits',
         ],
         output: path.join(__dirname, '../../build/ofac/name_dob_id'),
-        recompile: false,
+        recompile: process.env.CIRCOM_RECOMPILE === '1',
       }
     );
 
@@ -454,7 +454,7 @@ describe('OFAC - ID Card - Name and YOB match', function () {
           '../node_modules/circomlib/circuits',
         ],
         output: path.join(__dirname, '../../build/ofac/name_yob_id'),
-        recompile: false,
+        recompile: process.env.CIRCOM_RECOMPILE === '1',
       }
     );
 

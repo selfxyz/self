@@ -48,7 +48,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
             '../node_modules/circomlib/circuits',
           ],
           output: path.join(__dirname, `../../build/dsc/${circuitName}`),
-          recompile: false,
+          recompile: process.env.CIRCOM_RECOMPILE === '1',
         }
       );
     });

@@ -65,7 +65,7 @@ testSuite.forEach(
               '../node_modules/circomlib/circuits',
             ],
             output: path.join(__dirname, `../../build/register/${circuitName}`),
-            recompile: false,
+            recompile: process.env.CIRCOM_RECOMPILE === '1',
           }
         );
       });

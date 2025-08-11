@@ -71,7 +71,7 @@ describe('DateIsLessChecker Circuit Test', function () {
       {
         include: ['../node_modules'],
         output: path.join(__dirname, '../../build/is_valid'),
-        recompile: false,
+        recompile: process.env.CIRCOM_RECOMPILE === '1',
       }
     );
   });

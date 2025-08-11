@@ -28,7 +28,7 @@ describe('CustomHasher', function () {
         '../node_modules/circomlib/circuits',
       ],
       output: path.join(__dirname, '../../build/customHasher'),
-      recompile: false,
+      recompile: process.env.CIRCOM_RECOMPILE === '1',
     });
     circuitPackBytesAndPoseidon = await wasm_tester(circuitPathPackBytesAndPoseidon, {
       include: [
@@ -37,7 +37,7 @@ describe('CustomHasher', function () {
         '../node_modules/circomlib/circuits',
       ],
       output: path.join(__dirname, '../../build/packBytesAndPoseidon'),
-      recompile: false,
+      recompile: process.env.CIRCOM_RECOMPILE === '1',
     });
   });
 
