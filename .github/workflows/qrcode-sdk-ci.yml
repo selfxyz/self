@@ -34,6 +34,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'yarn'
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Cache Yarn dependencies
         id: yarn-cache
         uses: actions/cache@v4
