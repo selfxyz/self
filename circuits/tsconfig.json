@@ -9,12 +9,11 @@
     "allowJs": true,
     "checkJs": false,
     "outDir": "./dist/esm",
-    "declaration": true,
-    "declarationDir": "./dist/esm",
+    "declaration": false,
     "baseUrl": ".",
     "composite": true
   },
-  "include": ["src/**/*"],
+  "include": ["tests/**/*", "tests/**/*.json", "src/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {

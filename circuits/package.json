@@ -29,7 +29,7 @@
     "build-register": "bash scripts/build/build_register_circuits.sh",
     "build-register-id": "bash scripts/build/build_register_circuits_id.sh",
     "build:deps": "yarn workspaces foreach --from @selfxyz/circuits --topological-dev --recursive run build",
-    "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
+    "build:types": "tsc src/index.ts --emitDeclarationOnly --declaration --declarationDir ./dist --moduleResolution NodeNext --module NodeNext --target ES2020 --esModuleInterop --skipLibCheck --resolveJsonModule && mv dist/src/index.d.ts dist/esm/index.d.ts && rm -rf dist/src",
     "build:watch": "tsup --watch",
     "download": "bash scripts/server/download_circuits_from_AWS.sh",
     "format": "prettier --write .",
