@@ -28,5 +28,6 @@ export default defineConfig([
     outDir: 'dist/cjs',
     tsconfig: './tsconfig.cjs.json',
     target: 'es2020',
+    outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
   },
 ]);
