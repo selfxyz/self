@@ -20,13 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build Common Dependencies

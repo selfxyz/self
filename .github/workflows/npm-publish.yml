@@ -18,7 +18,7 @@ jobs:
       qrcode_changed: ${{ steps.check-version.outputs.qrcode_changed }}
       common_changed: ${{ steps.check-version.outputs.common_changed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 2
 
@@ -47,7 +47,7 @@ jobs:
     if: needs.detect-changes.outputs.core_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -77,7 +77,7 @@ jobs:
     if: needs.detect-changes.outputs.qrcode_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -107,13 +107,13 @@ jobs:
     if: needs.detect-changes.outputs.common_changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           registry-url: 'https://registry.npmjs.org'
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
