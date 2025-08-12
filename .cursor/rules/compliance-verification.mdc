@@ -1,0 +1,118 @@
+---
+description: Specification for analyzing compliance verification systems including OFAC checks, age verification, and forbidden country validation
+version: 1.0.0
+status: draft
+owners:
+  - team: compliance-platform
+  - team: mobile-identity
+lastUpdated: 2025-01-12
+specId: compliance-verification
+importanceScore: 95
+importanceJustification: Direct implementation of critical regulatory compliance requirements with multiple verification layers and sophisticated identity validation.
+contextUsageNote: If this file is used to add in-context notes, include a single italicized line stating what specific information was used from this file in sentence case.
+---
+
+# Compliance Verification System Specification
+
+## 1. Multi-Factor Compliance Verification
+
+- OFAC (Office of Foreign Assets Control) checks across three dimensions:
+  * Passport number verification
+  * Name + Date of Birth verification 
+  * Name + Year of Birth verification
+- Age verification with "olderThan" checks and day-level granularity
+- Forbidden countries validation using efficient packed lists
+- Timestamp-based verification with 24-hour window validation
+
+### Matching and Normalization Requirements
+
+- **Names MUST be normalized** prior to matching (case-folding, Unicode NFKC, diacritics removal) and compared using a fuzzy algorithm with a documented threshold (e.g., Jaro–Winkler >= 0.92). Record the algorithm and threshold in circuit public inputs.
+- **Date inputs MUST be ISO 8601** (YYYY-MM-DD). For year-of-birth checks, explicitly state whether defaulting to Jan-01 is permitted or whether circuits encode year-only comparisons.
+- **Passport numbers MUST be normalized** for whitespace and punctuation and validated against country-specific formats where available.
+
+### Time and Replay Control
+
+- All time comparisons MUST use UTC. Define an allowed clock drift (e.g., ±5 minutes) and reject proofs outside the 24-hour window adjusted by drift.
+- The timestamp MUST be bound into the proof signature/statement to prevent replay.
+- For mobile clients, avoid trusting device wall-clock alone; obtain a trusted time anchor (e.g., server-signed time token or chain block timestamp) and include it in the proof.
+
+### Privacy and PII Handling
+
+- No raw PII (names, DoB, passport numbers) may leave the device. PII MUST be committed via domain-separated hashes (e.g., Poseidon("ofac-v1" || value) with per-issuer salt).
+- All on-chain data MUST remain non-linkable to the underlying identity; only nullifiers/commitments are published.
+
+### Forbidden Countries "Packed List"
+
+- Define the data structure (bitset vs Bloom filter). If Bloom filter is used, specify acceptable false positive rate (e.g., ≤ 1e-6) and version the filter seed.
+- Distribution MUST be integrity-protected (JWS/JWT or Merkle root) with key rotation and a KID. Specify update cadence and cache TTL.
+
+## 2. Document Validation Architecture
+
+- Enforces date validation within specific time windows
+- Validates forbidden countries against predefined restricted lists
+- Implements age requirements through date comparison
+- Manages multiple verification circuits based on signature types
+
+### Circuit Catalog and Versioning
+
+- Maintain a registry of circuit IDs, semantic versions, and public input schemas. Clients fetch the active set via a signed manifest.
+- Define an upgrade policy (grace period, deprecation windows) and backward-compatibility expectations.
+
+### Mobile Proof Generation Constraints
+
+- Provide target proof generation limits for RN clients (e.g., <60s on mid-tier devices, <300MB peak memory).
+- Define a fallback to a remote prover that never receives raw PII/witness; only receives commitments and obtains a zero-knowledge witness via on-device secure enclave or chunked witness encryption.
+- Clearly separate on-device vs server responsibilities to minimize battery impact and avoid UI jank (background task, progress events).
+
+## 3. Verification Rules Engine
+
+- Custom document verification workflow combining multiple proof types
+- Parallel verification paths for different identity document types
+- Sequential verification steps through commitment registration
+- Integration with external compliance data sources
+
+### External Data Source Integration
+
+- Specify SLAs (latency, availability) and client-side retry/backoff policy. All calls MUST be idempotent and resumable.
+- Implement signed data snapshots with ETag/versioning for offline-first behavior; cache with explicit TTLs and verify signatures before use.
+- Do not transmit any raw PII to external providers; only use hashed/committed forms compatible with the circuits.
+- Define deterministic error codes for user feedback and analytics without leaking sensitive data.
+
+## 4. Identity Registry Management 
+
+- Maintains Merkle trees for identity commitments and DSC keys
+- Implements OFAC compliance checks with multiple verification roots
+- Manages nullifier tracking to prevent duplicate registrations
+- Handles CSCA root verification for document signing authority
+
+### Registry Parameters
+
+- For each Merkle tree, define tree height, hash function (e.g., Poseidon params), and root rotation cadence. Publish active roots and deprecation windows on-chain.
+- Specify chain IDs and contract addresses for each environment (dev/test/prod) and the required finality before roots are considered valid.
+- Nullifiers MUST be domain-separated by purpose (e.g., "register", "kyc-check") to prevent unintended linkability across workflows.
+- Define revocation list handling (CSCA/DSC CRLs), update cadence, and signature verification process. Cache with signed manifests and KID-based key rotation.
+
+## 5. Implementation Guidelines
+
+### Circuit Versioning Strategy
+
+- Use semantic versioning (MAJOR.MINOR.PATCH) for all circuits
+- MAJOR version changes require new circuit deployment and client migration
+- MINOR version changes maintain backward compatibility
+- PATCH version changes are bug fixes only
+
+### Error Handling and Recovery
+
+- Implement graceful degradation when external services are unavailable
+- Provide clear error messages for users without exposing sensitive data
+- Log non-identifying metadata for debugging and analytics
+- Implement retry mechanisms with exponential backoff
+
+### Security Considerations
+
+- All cryptographic operations must use approved algorithms and key sizes
+- Implement proper key management and rotation procedures
+- Ensure secure random number generation for all cryptographic operations
+- Regular security audits and penetration testing
+
+$END$

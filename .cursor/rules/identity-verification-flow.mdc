@@ -1,0 +1,61 @@
+---
+description: Detailed documentation of the multi-step identity verification process, including passport and EU ID card verification paths, proof verification pipeline, and attestation workflows
+version: 1.0.0
+status: draft
+owners:
+  - team: mobile-identity
+  - team: compliance-platform
+lastUpdated: 2025-01-12
+specId: identity-verification-flow
+importanceScore: 90
+importanceJustification: Core workflow specification for the identity verification process with multi-step attestation and proof generation.
+contextUsageNote: If this file is used to add in-context notes, include a single italicized line stating what specific information was used from this file in sentence case.
+---
+
+# Identity Verification Flow Specification
+
+## 1. Multi-Step Verification Process
+
+### Passport Verification Path
+- NFC chip data extraction and validation
+- Document Signer Certificate (DSC) verification
+- Zero-knowledge proof generation for privacy
+- Multi-stage attestation verification
+- Cross-chain verification support
+
+### EU ID Card Verification Path
+- Similar process to passport verification
+- Additional EU-specific compliance checks
+- Regional document format validation
+
+## 2. Proof Verification Pipeline
+
+### Register Circuit Verification
+- Identity commitment generation and validation
+- Nullifier creation to prevent duplicate registrations
+- Merkle tree inclusion proofs for privacy
+
+### DSC Proof Verification
+- Document Signer Certificate validation
+- Cryptographic signature verification
+- Certificate chain validation
+
+### Disclosure Proof Verification
+- Selective attribute revelation
+- Privacy-preserving age verification
+- Granular document field disclosure
+
+## 3. Attestation Workflows
+
+### User Identifier Verification
+- User identifier verification through double-hashing with domain separation:
+  H2 = Hash("IDH" || Hash("IDH" || userIdentifier))
+- Attestation storage with nullifier tracking
+- Support for cross-chain verification results
+
+### Verification Result Management
+- Secure storage of verification results
+- Privacy-preserving result sharing
+- Audit trail maintenance
+
+$END$

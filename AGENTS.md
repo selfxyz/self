@@ -15,7 +15,53 @@ This repository is a Yarn v4 monorepo with several workspaces:
 
 ### Setup
 
+- Ensure Node.js 22.x is installed (see `.nvmrc` for exact version), then:
+  - `nvm use`
+  - `corepack enable && corepack prepare yarn@stable --activate`
+  - Verify: `node -v && yarn -v`
 - Run `yarn install` once before running any other commands. This installs root dependencies and sets up husky hooks.
+
+### Pre-PR Checklist
+
+Before creating a PR, ensure:
+
+#### Code Quality
+
+- [ ] `yarn nice` (or equivalent) passes in affected workspaces
+- [ ] `yarn types` passes across the repo
+- [ ] `yarn test` passes in affected packages
+- [ ] `yarn build` succeeds for all workspaces
+
+#### AI Review Preparation
+
+- [ ] Clear commit messages following conventional format
+- [ ] PR description includes context for AI reviewers
+- [ ] Complex changes have inline comments explaining intent
+- [ ] Security-sensitive changes flagged for special review
+
+#### Follow-up Planning
+
+- [ ] Identify any known issues that need separate PRs
+- [ ] Note any performance implications
+- [ ] Document any breaking changes
+
+### Post-PR Validation
+
+After PR creation:
+
+#### Automated Checks
+
+- [ ] CI pipeline passes all stages
+- [ ] No new linting/formatting issues introduced
+- [ ] Type checking passes in all affected workspaces
+- [ ] Build artifacts generated successfully
+
+#### Review Integration
+
+- [ ] Address CodeRabbitAI feedback (or document why not)
+- [ ] Resolve any security warnings
+- [ ] Verify performance benchmarks still pass
+- [ ] Confirm no sensitive data exposed in logs/comments
 
 ### Commit Checks
 
@@ -23,9 +69,7 @@ Before committing, run the following commands:
 
 ```bash
 # Fix linting and formatting issues automatically (for packages that support it)
-yarn workspace @selfxyz/mobile-sdk-alpha nice
-yarn workspace @selfxyz/common nice
-yarn workspace @selfxyz/app nice
+yarn workspaces foreach -A -p -v --topological-dev --since=HEAD run nice --if-present
 
 # Lint all packages in parallel
 yarn lint
@@ -38,6 +82,34 @@ yarn workspace @selfxyz/contracts build
 
 # Run type-checking across the repo
 yarn types
+```
+
+### Workflow Commands
+
+#### Pre-PR Validation
+
+```bash
+# Run all checks before PR - only on changed workspaces since main
+# Format and lint changed workspaces (workspace-specific scripts first, then fallback to root)
+yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run nice --if-present
+
+# Run global checks across all workspaces
+yarn lint && yarn types && yarn build && yarn test
+
+# Alternative: Run workspace-specific checks for changed workspaces only
+# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run lint --if-present
+# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run types --if-present
+# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run build --if-present
+# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run test --if-present
+```
+
+#### Post-PR Cleanup
+
+```bash
+# After addressing review feedback
+yarn nice  # Fix any formatting issues in affected workspaces
+yarn test  # Ensure tests still pass
+yarn types # Verify type checking
 ```
 
 ### Tests

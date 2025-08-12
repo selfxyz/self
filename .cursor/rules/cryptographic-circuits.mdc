@@ -1,0 +1,53 @@
+---
+description: Technical documentation of the zero-knowledge proof circuits, including register circuits, DSC proofs, and disclosure proofs with their validation mechanisms
+version: 1.0.0
+status: draft
+owners:
+  - team: cryptography
+  - team: mobile-identity
+lastUpdated: 2025-01-12
+specId: cryptographic-circuits
+importanceScore: 85
+importanceJustification: Core cryptographic implementation specification for zero-knowledge proofs and circuit validation.
+contextUsageNote: If this file is used to add in-context notes, include a single italicized line stating what specific information was used from this file in sentence case.
+---
+
+# Cryptographic Circuits Specification
+
+## 1. Register Circuits
+
+### Identity Commitment Generation
+- Poseidon hash-based commitment scheme
+- Domain separation for different commitment types
+- Nullifier generation for duplicate prevention
+
+### Circuit Parameters
+- Field size and security parameters
+- Hash function specifications
+- Public input validation rules
+
+## 2. DSC Proofs
+
+### Document Signer Certificate Validation
+- Certificate chain verification
+- Signature algorithm support (RSA, ECDSA)
+- Revocation list checking
+
+### Proof Generation Constraints
+- Memory and computation limits
+- Deterministic randomness requirements
+- Proof size optimization
+
+## 3. Disclosure Proofs
+
+### Selective Attribute Revelation
+- Merkle-based attribute verification
+- Privacy-preserving age verification
+- Granular field disclosure
+
+### Circuit Optimization
+- Efficient hash function usage
+- Minimal public input requirements
+- Fast verification algorithms
+
+$END$

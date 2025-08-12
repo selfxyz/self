@@ -1,0 +1,210 @@
+
+# main-overview
+
+## Development Guidelines
+
+- Only modify code directly relevant to the specific request. Avoid changing unrelated functionality.
+- Never replace code with placeholders like `# ... rest of the processing ...`. Always include complete code.
+- Break problems into smaller steps. Think through each step separately before implementing.
+- Always provide a complete PLAN with REASONING based on evidence from code and logs before making changes.
+- Explain your OBSERVATIONS clearly, then provide REASONING to identify the exact issue. Add console logs when needed to gather more information.
+- **NEVER log sensitive data** including PII (names, DOB, passport numbers, addresses), credentials, tokens, API keys, private keys, or session identifiers.
+- **ALWAYS redact/mask sensitive fields** in logs using consistent patterns (e.g., `***-***-1234` for passport numbers, `J*** D***` for names).
+- **Use secure centralized logging** with access controls, encryption in transit/at rest, and audit trails for log access.
+- **Debug-level secrets require tokenized environment flags** (e.g., `DEBUG_SECRETS_TOKEN=abc123`) with approval workflow and limited lifetime (max 24 hours).
+- **Implement periodic log review and retention policies** with automated cleanup of sensitive data and compliance with data protection regulations.
+
+
+# Identity Verification System Architecture
+
+## Core Components
+
+1. Identity Verification Hub
+- Manages multi-step verification process for passports and EU ID cards
+- Handles document attestation through zero-knowledge proofs
+- Implements verification paths: E-PASSPORT and EU_ID_CARD
+- File: contracts/contracts/IdentityVerificationHubImplV2.sol
+
+2. Document Verification Processing
+- Validates international travel documents using ICAO standards
+- Processes Document Signer Certificate (DSC) verification
+- Handles multiple cryptographic signature algorithms
+- Location: noir/crates/dg1/src/dg1/dg1.nr
+
+3. OFAC Compliance System
+- Three-tier verification approach:
+  * Name-based sanctions screening
+  * Name + DOB verification
+  * Passport number validation
+- Merkle tree-based sanctions list verification
+- Files: noir/crates/dg1/src/ofac/*.nr
+
+4. Identity Registry Management
+- Maintains separate registries for passports and ID cards
+- Handles DSC key commitment registration
+- Implements nullifier tracking for duplicate prevention
+- File: contracts/contracts/registry/IdentityRegistryImplV1.sol
+
+## Core Workflows
+
+1. Document Verification Flow
+- NFC chip data extraction and validation
+- Zero-knowledge proof generation for privacy
+- Multi-stage attestation verification
+- Cross-chain verification support
+
+2. Compliance Verification
+- OFAC screening integration
+- Age verification without revealing DOB
+- Country restriction validation
+- Forbidden country checking
+
+3. Attribute Disclosure Control
+- Selective revelation of identity attributes
+- Privacy-preserving age verification
+- Granular document field disclosure
+- Merkle-based attribute verification
+
+## Business Rules
+
+1. Document Validation
+- Multiple proof types required (Register, DSC, VC)
+- Time-based verification with day granularity
+- Double-spend prevention through nullifiers
+
+2. Compliance Requirements
+- OFAC validation with multiple check levels
+- Age threshold verification
+- Country-based restrictions
+- Document expiration validation
+
+3. Privacy Controls
+- Minimum necessary attribute disclosure
+- Zero-knowledge proof requirements
+- Selective attribute revelation
+- Identity commitment privacy
+
+$END$
+
+# Self App Development Rules
+
+## Project Overview
+This is a React Native identity verification app with NFC passport reading, zero-knowledge proofs, and smart contracts. The app handles passport/ID verification, OFAC compliance, and privacy-preserving identity attestations.
+
+## Development Patterns
+
+### React Native Architecture
+- Uses `@react-navigation/native` with `createStaticNavigation` for type-safe navigation
+- Platform-specific handling: `Platform.OS === 'ios' ? 'iOS' : 'Android'`
+- Native module initialization with `initializeNativeModules()` before any native operations
+- Lazy loading for screens using `React.lazy()`
+
+### Navigation Patterns
+- Screens organized by feature modules (passport, home, settings, etc.)
+- Custom modal system with `useModal` hook and callback registry
+- Haptic feedback integration with `useHapticNavigation`
+- Platform-specific initial routes: web uses 'Home', mobile uses 'Splash'
+
+### State Management
+- Zustand for global state management
+- Custom hooks for complex state (`useModal`, `useHapticNavigation`)
+- AsyncStorage for simple data, SQLite for complex data, Keychain for sensitive data
+
+## Testing Conventions
+
+### Jest Setup
+- Comprehensive mocks in `jest.setup.js` for all native modules
+- Module mapping: `@/` → `src/`, `@tests/` → `tests/src/`
+- Mock patterns for Firebase, Keychain, NFC, Analytics, and third-party modules
+
+### Testing Patterns
+- Use `renderHook` for custom hook testing
+- Mock console.error to avoid test output clutter
+- Test error boundaries and recovery mechanisms
+- E2E testing with Maestro for platform-specific flows
+
+### Database Testing
+- SQLite operations mocked with `executeSql` method
+- Test utilities in `tests/__setup__/databaseMocks.ts`
+- Mock database instance for testing
+
+## NFC Implementation
+
+### Cross-Platform Architecture
+- iOS: Custom PassportReader Swift module
+- Android: Custom RNPassportReaderModule Kotlin implementation
+- Unified JavaScript interface with platform detection
+
+### Authentication Methods
+- MRZ Key: Derived from passport number, DOB, and expiry date
+- CAN (Card Access Number): 6-digit number for PACE authentication
+- PACE: Password Authenticated Connection Establishment
+- BAC fallback when PACE fails
+
+### Error Handling
+- Multiple BAC attempts with delays
+- Graceful degradation from PACE to BAC
+- Real-time status updates and haptic feedback
+- Comprehensive error boundaries
+
+## Code Organization
+
+### File Structure
+- Feature-based organization in `src/`
+- Shared utilities in `@/utils`
+- Type definitions in `@/types`
+- Platform-specific code in `native/` directories
+- Tests mirror source structure in `tests/src/`
+
+### Import Patterns
+- Use `@/` alias for src imports
+- Use `@tests/` alias for test imports
+- Platform-specific imports with conditional rendering
+
+## Build & Deployment
+
+### Scripts
+- `yarn ios` / `yarn android` for platform-specific builds
+- `yarn test` for Jest testing
+- `yarn test:e2e:ios` / `yarn test:e2e:android` for E2E
+- Fastlane for deployment automation
+
+### Dependencies
+- Yarn workspaces for monorepo management
+- Platform-specific native modules
+- Tamagui for UI components
+- React Navigation for routing
+
+## Security & Privacy
+
+### Data Protection
+- Sensitive data not logged in production
+- Secure storage with Keychain
+- Proper cleanup of sensitive data
+- Certificate validation for passport data
+
+### Privacy Features
+- Zero-knowledge proof generation
+- Selective attribute revelation
+- Privacy-preserving age verification
+- Identity commitment privacy
+
+## Common Patterns
+
+### Error Handling
+- Always use try-catch for async operations
+- Graceful degradation when native modules fail
+- User-friendly error messages
+- Comprehensive error boundaries
+
+### Performance
+- Lazy load screens and components
+- Bundle size optimization with tree shaking
+- Memory leak prevention in native modules
+- Proper cleanup in useEffect and component unmount
+
+### Platform Differences
+- Always check Platform.OS before platform-specific code
+- Different implementations for iOS/Android when needed
+- Platform-specific testing strategies
+- Conditional rendering for platform differences

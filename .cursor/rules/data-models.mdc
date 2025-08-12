@@ -1,0 +1,65 @@
+---
+description: Documentation of core data structures including identity commitments, DSC key commitments, nullifier tracking, and verification configurations
+version: 1.0.0
+status: draft
+owners:
+  - team: mobile-identity
+  - team: backend-api
+lastUpdated: 2025-01-12
+specId: data-models
+importanceScore: 80
+importanceJustification: Core data structure definitions that ensure consistency across the identity verification system.
+contextUsageNote: If this file is used to add in-context notes, include a single italicized line stating what specific information was used from this file in sentence case.
+---
+
+# Data Models Specification
+
+## 1. Identity Commitments
+
+### Commitment Structure
+- Poseidon hash of identity data
+- Domain separation for different commitment types
+- Timestamp and version information
+
+### Commitment Types
+- Passport identity commitments
+- EU ID card commitments
+- Cross-chain commitment linking
+
+## 2. DSC Key Commitments
+
+### Key Commitment Format
+- Public key hash with domain separation
+- Certificate chain validation data
+- Revocation status tracking
+
+### Key Management
+- Key rotation procedures
+- Backup and recovery mechanisms
+- Security parameter specifications
+
+## 3. Nullifier Tracking
+
+### Nullifier Generation
+- Domain-separated nullifier creation
+- Duplicate prevention mechanisms
+- Cross-chain nullifier validation
+
+### Nullifier Storage
+- Efficient storage and retrieval
+- Privacy-preserving nullifier management
+- Audit trail maintenance
+
+## 4. Verification Configurations
+
+### Configuration Parameters
+- Circuit version specifications
+- Verification threshold settings
+- Compliance rule configurations
+
+### Configuration Management
+- Version control and updates
+- Environment-specific configurations
+- Security parameter management
+
+$END$

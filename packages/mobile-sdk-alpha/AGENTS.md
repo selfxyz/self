@@ -62,6 +62,81 @@ For publishing:
 - Run `yarn validate:exports` to check export configuration
 - Run `yarn validate:pkg` to verify package conditions
 
+## Pre-PR Checklist
+
+Before creating a PR for the mobile-sdk-alpha package:
+
+### Code Quality
+
+- [ ] `yarn nice` passes (fixes linting and formatting)
+- [ ] `yarn types` passes (TypeScript validation)
+- [ ] `yarn test` passes (unit tests)
+- [ ] `yarn build` succeeds (package builds correctly)
+
+### SDK-Specific Validation
+
+- [ ] Exports are properly configured
+- [ ] Package conditions are valid
+- [ ] No breaking changes to public API (or properly documented)
+- [ ] Migration guide updated (if applicable)
+- [ ] Integration tests pass
+
+### AI Review Preparation
+
+- [ ] API changes documented with examples
+- [ ] Breaking changes clearly flagged
+- [ ] Performance implications noted
+- [ ] Security considerations addressed
+
+## Post-PR Validation
+
+After PR creation:
+
+### Automated Checks
+
+- [ ] CI pipeline passes all stages
+- [ ] No new linting/formatting issues
+- [ ] Type checking passes
+- [ ] Build artifacts generated successfully
+
+### SDK-Specific Checks
+
+- [ ] Package exports validation passes
+- [ ] Integration with main app still works
+- [ ] No circular dependencies introduced
+- [ ] Bundle size impact acceptable
+
+### Review Integration
+
+- [ ] Address CodeRabbitAI feedback
+- [ ] Resolve any security warnings
+- [ ] Verify API compatibility
+- [ ] Confirm migration path is clear
+
+## Workflow Commands
+
+### Pre-PR Validation
+
+```bash
+# Run all checks before PR
+yarn nice
+yarn types
+yarn test
+yarn build
+yarn validate:exports
+yarn validate:pkg
+```
+
+### Post-PR Cleanup
+
+```bash
+# After addressing review feedback
+yarn nice  # Fix any formatting issues
+yarn test  # Ensure tests still pass
+yarn types # Verify type checking
+yarn build # Confirm build still works
+```
+
 ## Notes
 
 - This package uses TypeScript with strict type checking
