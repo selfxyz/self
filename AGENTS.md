@@ -15,7 +15,10 @@ This repository is a Yarn v4 monorepo with several workspaces:
 
 ### Setup
 
-- Ensure Node.js 22.x is installed (see `.nvmrc` for exact version).
+- Ensure Node.js 22.x is installed (see `.nvmrc` for exact version), then:
+  - `nvm use`
+  - `corepack enable && corepack prepare yarn@stable --activate`
+  - Verify: `node -v && yarn -v`
 - Run `yarn install` once before running any other commands. This installs root dependencies and sets up husky hooks.
 
 ### Commit Checks
