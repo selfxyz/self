@@ -21,6 +21,43 @@ This repository is a Yarn v4 monorepo with several workspaces:
   - Verify: `node -v && yarn -v`
 - Run `yarn install` once before running any other commands. This installs root dependencies and sets up husky hooks.
 
+### Pre-PR Checklist
+
+Before creating a PR, ensure:
+
+#### Code Quality
+- [ ] `yarn nice` (or equivalent) passes in affected workspaces
+- [ ] `yarn types` passes across the repo
+- [ ] `yarn test` passes in affected packages
+- [ ] `yarn build` succeeds for all workspaces
+
+#### AI Review Preparation
+- [ ] Clear commit messages following conventional format
+- [ ] PR description includes context for AI reviewers
+- [ ] Complex changes have inline comments explaining intent
+- [ ] Security-sensitive changes flagged for special review
+
+#### Follow-up Planning
+- [ ] Identify any known issues that need separate PRs
+- [ ] Note any performance implications
+- [ ] Document any breaking changes
+
+### Post-PR Validation
+
+After PR creation:
+
+#### Automated Checks
+- [ ] CI pipeline passes all stages
+- [ ] No new linting/formatting issues introduced
+- [ ] Type checking passes in all affected workspaces
+- [ ] Build artifacts generated successfully
+
+#### Review Integration
+- [ ] Address CodeRabbitAI feedback (or document why not)
+- [ ] Resolve any security warnings
+- [ ] Verify performance benchmarks still pass
+- [ ] Confirm no sensitive data exposed in logs/comments
+
 ### Commit Checks
 
 Before committing, run the following commands:
@@ -43,6 +80,26 @@ yarn workspace @selfxyz/contracts build
 
 # Run type-checking across the repo
 yarn types
+```
+
+### Workflow Commands
+
+#### Pre-PR Validation
+```bash
+# Run all checks before PR
+yarn workspace @selfxyz/mobile-app nice
+yarn workspace @selfxyz/mobile-sdk-alpha nice
+yarn workspace @selfxyz/common nice
+yarn workspace @selfxyz/circuits nice
+yarn lint && yarn types && yarn build
+```
+
+#### Post-PR Cleanup
+```bash
+# After addressing review feedback
+yarn nice  # Fix any formatting issues in affected workspaces
+yarn test  # Ensure tests still pass
+yarn types # Verify type checking
 ```
 
 ### Tests
