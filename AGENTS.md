@@ -15,6 +15,10 @@ This repository is a Yarn v4 monorepo with several workspaces:
 
 ### Setup
 
+- Ensure Node.js 22.x is installed (see `.nvmrc` for exact version), then:
+  - `nvm use`
+  - `corepack enable && corepack prepare yarn@stable --activate`
+  - Verify: `node -v && yarn -v`
 - Run `yarn install` once before running any other commands. This installs root dependencies and sets up husky hooks.
 
 ### Commit Checks
@@ -25,7 +29,8 @@ Before committing, run the following commands:
 # Fix linting and formatting issues automatically (for packages that support it)
 yarn workspace @selfxyz/mobile-sdk-alpha nice
 yarn workspace @selfxyz/common nice
-yarn workspace @selfxyz/app nice
+yarn workspace @selfxyz/circuits nice
+yarn workspace @selfxyz/mobile-app nice
 
 # Lint all packages in parallel
 yarn lint
