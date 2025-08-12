@@ -42,6 +42,7 @@
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
     "publish": "yarn npm publish --access public",
+    "test": "echo 'Tests not yet implemented for @selfxyz/core' && exit 0",
     "types": "yarn build"
   },
   "dependencies": {
