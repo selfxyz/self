@@ -97,7 +97,7 @@ yarn workspace @selfxyz/mobile-app nice
 yarn workspace @selfxyz/mobile-sdk-alpha nice
 yarn workspace @selfxyz/common nice
 yarn workspace @selfxyz/circuits nice
-yarn lint && yarn types && yarn build
+yarn lint && yarn types && yarn build && yarn test
 ```
 
 #### Post-PR Cleanup
