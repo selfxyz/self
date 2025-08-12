@@ -67,12 +67,14 @@ For publishing:
 Before creating a PR for the mobile-sdk-alpha package:
 
 ### Code Quality
+
 - [ ] `yarn nice` passes (fixes linting and formatting)
 - [ ] `yarn types` passes (TypeScript validation)
 - [ ] `yarn test` passes (unit tests)
 - [ ] `yarn build` succeeds (package builds correctly)
 
 ### SDK-Specific Validation
+
 - [ ] Exports are properly configured
 - [ ] Package conditions are valid
 - [ ] No breaking changes to public API (or properly documented)
@@ -80,6 +82,7 @@ Before creating a PR for the mobile-sdk-alpha package:
 - [ ] Integration tests pass
 
 ### AI Review Preparation
+
 - [ ] API changes documented with examples
 - [ ] Breaking changes clearly flagged
 - [ ] Performance implications noted
@@ -90,18 +93,21 @@ Before creating a PR for the mobile-sdk-alpha package:
 After PR creation:
 
 ### Automated Checks
+
 - [ ] CI pipeline passes all stages
 - [ ] No new linting/formatting issues
 - [ ] Type checking passes
 - [ ] Build artifacts generated successfully
 
 ### SDK-Specific Checks
+
 - [ ] Package exports validation passes
 - [ ] Integration with main app still works
 - [ ] No circular dependencies introduced
 - [ ] Bundle size impact acceptable
 
 ### Review Integration
+
 - [ ] Address CodeRabbitAI feedback
 - [ ] Resolve any security warnings
 - [ ] Verify API compatibility
@@ -110,6 +116,7 @@ After PR creation:
 ## Workflow Commands
 
 ### Pre-PR Validation
+
 ```bash
 # Run all checks before PR
 yarn nice
@@ -121,6 +128,7 @@ yarn validate:pkg
 ```
 
 ### Post-PR Cleanup
+
 ```bash
 # After addressing review feedback
 yarn nice  # Fix any formatting issues
