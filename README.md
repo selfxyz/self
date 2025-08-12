@@ -72,6 +72,16 @@ This project requires **Node.js 22.x**. Use the included `.nvmrc` to match the v
 Run `yarn install` to bootstrap dependencies and husky hooks.
 Gitleaks will scan staged changes on each commit via `yarn gitleaks`.
 
+## Development Documentation
+
+For detailed development patterns and conventions, see:
+
+- **[Development Patterns](docs/development-patterns.md)** - React Native architecture, navigation, state management, and code organization
+- **[Testing Guide](docs/testing-guide.md)** - Jest configuration, mock patterns, testing strategies, and E2E testing
+- **[NFC Implementation](docs/nfc-implementation.md)** - Cross-platform NFC passport reading, authentication methods, and error handling
+
+These guides provide comprehensive context for AI-assisted development with ChatGPT Codex, Cursor, and CodeRabbit AI.
+
 ## Contributing
 
 We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know were to start! We offer bounties for significant contributions.
