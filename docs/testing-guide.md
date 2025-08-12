@@ -145,7 +145,7 @@ tests/
 Use `renderHook` for testing custom hooks:
 
 ```typescript
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-native';
 
 describe('useModal', () => {
   it('should return modal functions', () => {

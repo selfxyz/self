@@ -8,6 +8,11 @@
 - Break problems into smaller steps. Think through each step separately before implementing.
 - Always provide a complete PLAN with REASONING based on evidence from code and logs before making changes.
 - Explain your OBSERVATIONS clearly, then provide REASONING to identify the exact issue. Add console logs when needed to gather more information.
+- **NEVER log sensitive data** including PII (names, DOB, passport numbers, addresses), credentials, tokens, API keys, private keys, or session identifiers.
+- **ALWAYS redact/mask sensitive fields** in logs using consistent patterns (e.g., `***-***-1234` for passport numbers, `J*** D***` for names).
+- **Use secure centralized logging** with access controls, encryption in transit/at rest, and audit trails for log access.
+- **Debug-level secrets require tokenized environment flags** (e.g., `DEBUG_SECRETS_TOKEN=abc123`) with approval workflow and limited lifetime (max 24 hours).
+- **Implement periodic log review and retention policies** with automated cleanup of sensitive data and compliance with data protection regulations.
 
 
 # Identity Verification System Architecture
