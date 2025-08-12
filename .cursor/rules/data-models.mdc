@@ -1,51 +1,65 @@
 ---
-description: Specification for documenting core data structures in identity verification systems including commitments, keys, and verification configurations
+description: Documentation of core data structures including identity commitments, DSC key commitments, nullifier tracking, and verification configurations
+version: 1.0.0
+status: draft
+owners:
+  - team: mobile-identity
+  - team: backend-api
+lastUpdated: 2025-01-12
+specId: data-models
+importanceScore: 80
+importanceJustification: Core data structure definitions that ensure consistency across the identity verification system.
+contextUsageNote: If this file is used to add in-context notes, include a single italicized line stating what specific information was used from this file in sentence case.
 ---
 
+# Data Models Specification
 
-# data-models
+## 1. Identity Commitments
 
-## Core Data Structures
+### Commitment Structure
+- Poseidon hash of identity data
+- Domain separation for different commitment types
+- Timestamp and version information
 
-### Identity Commitments
-- Dual Merkle tree system tracking identity and DSC key commitments
-- Nullifier tracking to prevent duplicate registrations
-- Timestamp-based root validity tracking for compliance
-- Versioned commitment structures for different document types
-File: `contracts/contracts/registry/IdentityRegistryImplV1.sol`
+### Commitment Types
+- Passport identity commitments
+- EU ID card commitments
+- Cross-chain commitment linking
 
-### DSC Key Management
-- Document Signing Certificate (DSC) key commitment storage
-- Separate Merkle tree for DSC keys with independent state
-- Root history tracking for temporal validation
-File: `contracts/contracts/registry/IdentityRegistry.sol`
+## 2. DSC Key Commitments
 
-### Verification Configurations 
-- Multi-layered verification schema supporting:
-  - E-PASSPORT and EU_ID_CARD document types
-  - OFAC compliance verification paths
-  - Age verification checks
-  - Geographic restrictions
-- Version-aware configuration mapping
-File: `contracts/contracts/IdentityVerificationHubImplV2.sol`
+### Key Commitment Format
+- Public key hash with domain separation
+- Certificate chain validation data
+- Revocation status tracking
 
-### Circuit Attribute Structures
-- Document field position mapping by type
-- OFAC validation rule configurations
-- Age threshold verification formats
-- Compliance check configurations
-File: `contracts/contracts/libraries/CircuitAttributeHandlerV2.sol`
+### Key Management
+- Key rotation procedures
+- Backup and recovery mechanisms
+- Security parameter specifications
 
-### Document Registry Models
-- Identity commitment registration state
-- DSC key commitment tracking
-- Nullifier management
-- Root timestamp history
-File: `contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol`
+## 3. Nullifier Tracking
 
-Importance Score: 95/100
-The data models represent critical business structures for identity verification, compliance tracking, and document validation with sophisticated versioning and state management.
+### Nullifier Generation
+- Domain-separated nullifier creation
+- Duplicate prevention mechanisms
+- Cross-chain nullifier validation
+
+### Nullifier Storage
+- Efficient storage and retrieval
+- Privacy-preserving nullifier management
+- Audit trail maintenance
+
+## 4. Verification Configurations
+
+### Configuration Parameters
+- Circuit version specifications
+- Verification threshold settings
+- Compliance rule configurations
+
+### Configuration Management
+- Version control and updates
+- Environment-specific configurations
+- Security parameter management
 
 $END$
-
- If you're using this file in context, clearly say in italics in one small line that "Context added by Giga data-models" along with specifying exactly what information was used from this file in a human-friendly way, instead of using kebab-case use normal sentence case.
