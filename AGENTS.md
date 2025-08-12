@@ -69,10 +69,7 @@ Before committing, run the following commands:
 
 ```bash
 # Fix linting and formatting issues automatically (for packages that support it)
-yarn workspace @selfxyz/mobile-sdk-alpha nice
-yarn workspace @selfxyz/common nice
-yarn workspace @selfxyz/circuits nice
-yarn workspace @selfxyz/mobile-app nice
+yarn workspaces foreach -A -p -v --topological-dev --since=HEAD run nice --if-present
 
 # Lint all packages in parallel
 yarn lint
@@ -92,12 +89,18 @@ yarn types
 #### Pre-PR Validation
 
 ```bash
-# Run all checks before PR
-yarn workspace @selfxyz/mobile-app nice
-yarn workspace @selfxyz/mobile-sdk-alpha nice
-yarn workspace @selfxyz/common nice
-yarn workspace @selfxyz/circuits nice
+# Run all checks before PR - only on changed workspaces since main
+# Format and lint changed workspaces (workspace-specific scripts first, then fallback to root)
+yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run nice --if-present
+
+# Run global checks across all workspaces
 yarn lint && yarn types && yarn build && yarn test
+
+# Alternative: Run workspace-specific checks for changed workspaces only
+# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run lint --if-present
+# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run types --if-present
+# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run build --if-present
+# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run test --if-present
 ```
 
 #### Post-PR Cleanup
