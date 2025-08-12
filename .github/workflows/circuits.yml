@@ -35,25 +35,38 @@ jobs:
             nasm \
             nlohmann-json3-dev
 
-      - name: Set Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Restore Circom binary
+        id: circom-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/circom
+          key: circom-v2.1.9
+
       - name: Download Circom Binary v2.1.9
+        if: steps.circom-cache.outputs.cache-hit != 'true'
         run: |
-          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
-          chmod +x /home/runner/work/circom
-          sudo mv /home/runner/work/circom /bin/circom
+          mkdir -p ~/.cache/circom
+          wget -qO ~/.cache/circom/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
+          chmod +x ~/.cache/circom/circom
+
+      - name: Save Circom cache
+        if: steps.circom-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/circom
+          key: circom-v2.1.9
+
+      - name: Install Circom
+        run: sudo cp ~/.cache/circom/circom /usr/local/bin/circom
 
       - name: Print Circom version
         run: circom --version
-      - name: "enable yarn"
-        run: corepack enable yarn
+
       - name: Install Yarn dependencies
-        run: yarn workspaces focus @selfxyz/circuits
+        uses: ./.github/actions/yarn-install
 
       - name: Run lint
         run: yarn workspace @selfxyz/circuits lint

@@ -33,29 +33,47 @@ jobs:
             nlohmann-json3-dev \
             wget
 
-      # TODO(): Use caching
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: |
-          corepack enable
-          yarn set version 4.6.0
-          cd circuits && yarn
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Restore Circom binary
+        id: circom-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/circom
+          key: circom-v2.1.9
+
       - name: Download Circom Binary v2.1.9
+        if: steps.circom-cache.outputs.cache-hit != 'true'
         run: |
-          mkdir -p /home/runner/work
-          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
-          chmod +x /home/runner/work/circom
-          sudo mv /home/runner/work/circom /bin/circom
+          mkdir -p ~/.cache/circom
+          wget -qO ~/.cache/circom/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
+          chmod +x ~/.cache/circom/circom
+
+      - name: Save Circom cache
+        if: steps.circom-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/circom
+          key: circom-v2.1.9
+
+      - name: Install Circom
+        run: sudo cp ~/.cache/circom/circom /usr/local/bin/circom
+
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+        with:
+          working_directory: circuits
 
       - name: Print Circom version
         run: circom --version
+
+      - name: Restore circuits cache
+        id: circuits-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: output
+          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**') }}
 
       - name: Build cpp circuits
         run: |
@@ -64,6 +82,13 @@ jobs:
           ./circuits/scripts/build/build_cpp.sh register_id &&
           ./circuits/scripts/build/build_cpp.sh disclose &&
           ./circuits/scripts/build/build_cpp.sh dsc
+
+      - name: Save circuits cache
+        if: steps.circuits-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: output
+          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**') }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
