@@ -161,7 +161,9 @@ app/android/android-passport-reader/app/src/main/assets/tessdata/
 *.swp
 *.swo
 .DS_Store
-.cursor/
+.cursor/cache/
+.cursor/logs/
+.cursor/temp/
 
 # ========================================
 # Documentation Build
