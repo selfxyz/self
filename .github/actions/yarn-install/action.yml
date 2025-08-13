@@ -16,7 +16,8 @@ runs:
       run: |
         corepack enable
         corepack prepare yarn@4.6.0 --activate
-        yarn set version 4.6.0
+        # Ensure we're using the correct version
+        yarn --version
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
