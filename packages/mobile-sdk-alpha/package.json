@@ -51,6 +51,10 @@
     "validate:pkg": "node ./scripts/verify-conditions.mjs"
   },
   "dependencies": {
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
+    "@openpassport/zk-kit-smt": "^0.0.1",
+    "@selfxyz/common": "workspace:*",
+    "poseidon-lite": "^0.2.0",
     "tslib": "^2.6.2"
   },
   "devDependencies": {

@@ -37,6 +37,8 @@ export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz';
+export { generateTEEInputsDisclose } from './proving/discloseInputs';
+export { generateTEEInputsRegister } from './proving/registerInputs';
 export { parseNFCResponse } from './processing/nfc';
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
