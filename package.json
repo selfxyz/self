@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
+    "find:migration": "node scripts/find-migration.mjs",
     "format": "yarn format:root && yarn format:github && yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "prettier --parser markdown --write *.md && prettier --parser yaml --write .*.{yml,yaml} --single-quote false",
@@ -20,14 +21,16 @@
     "prepare": "husky",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
-    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
-    "find:migration": "node scripts/find-migration.mjs"
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
   "devDependencies": {
+    "@types/node": "^24.2.1",
     "gitleaks": "1.0.0",
     "husky": "9.1.7",
+    "knip": "^5.62.0",
     "patch-package": "^8.0.0",
-    "postinstall-postinstall": "^2.1.0"
+    "postinstall-postinstall": "^2.1.0",
+    "typescript": "^5.9.2"
   },
   "packageManager": "yarn@4.6.0",
   "engines": {
