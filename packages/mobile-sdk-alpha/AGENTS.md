@@ -152,6 +152,7 @@ yarn build # Confirm build still works
 The mobile-sdk-alpha migration's primary purpose is to test REAL package methods, not mocked versions. When working with this package:
 
 ### Testing Requirements
+
 - Use actual imports from `@selfxyz/mobile-sdk-alpha`
 - Write integration tests that exercise real validation logic
 - Test `isPassportDataValid()` with real passport data
@@ -159,12 +160,14 @@ The mobile-sdk-alpha migration's primary purpose is to test REAL package methods
 - Ensure `parseNFCResponse()` works with real NFC data
 
 ### Anti-Patterns to Avoid
+
 - Mocking the entire package in Jest setup
 - Replacing real functions with mock implementations
 - Using `jest.mock('@selfxyz/mobile-sdk-alpha')` without justification
 - Testing with fake/placeholder data instead of real passport data
 
 ### Example Integration Test Pattern
+
 ```ts
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 

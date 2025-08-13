@@ -62,17 +62,20 @@ Plan implementation with [ARCHITECTURE.md](./docs/ARCHITECTURE.md) and task prom
 The purpose of the mobile-sdk-alpha migration is to test the REAL package methods, not mocked versions. When integrating this package into your application:
 
 ### ✅ DO: Use Real Package Methods
+
 - Import and use the actual functions from `@selfxyz/mobile-sdk-alpha`
 - Write integration tests that call the real validation logic
 - Test actual passport data validation with `isPassportDataValid()`
 - Verify real MRZ parsing with `extractMRZInfo()`
 
 ### ❌ DON'T: Mock the Package
+
 - Don't mock `@selfxyz/mobile-sdk-alpha` in Jest setup
 - Don't replace real functions with mock implementations
 - Don't use `jest.mock('@selfxyz/mobile-sdk-alpha')` unless absolutely necessary
 
 ### Example: Real Integration Test
+
 ```ts
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 
