@@ -6,8 +6,6 @@ import { logger } from 'react-native-logs';
 import { interceptConsole } from '@/utils/logger/consoleInterceptor';
 import { lokiTransport } from '@/utils/logger/lokiTransport';
 
-import '@/utils/logger/nativeLoggerBridge';
-
 export {
   AppLogger,
   AuthLogger,

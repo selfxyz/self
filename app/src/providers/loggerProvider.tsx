@@ -16,6 +16,9 @@ import {
   SettingsLogger,
 } from '@/utils/logger';
 
+// Initialize native logger bridge
+import '@/utils/logger/nativeLoggerBridge';
+
 type LoggerContextType = {
   AppLogger: typeof AppLogger;
   AuthLogger: typeof AuthLogger;
