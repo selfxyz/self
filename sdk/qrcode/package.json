@@ -87,7 +87,7 @@
   },
   "devDependencies": {
     "@size-limit/preset-big-lib": "^11.2.0",
-    "@types/node": "^20.11.19",
+    "@types/node": "^22.0.0",
     "@types/node-forge": "^1",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",

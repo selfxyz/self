@@ -23,7 +23,7 @@
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
   "devDependencies": {
-    "@types/node": "^24.2.1",
+    "@types/node": "^22.0.0",
     "gitleaks": "1.0.0",
     "husky": "9.1.7",
     "knip": "^5.62.0",
