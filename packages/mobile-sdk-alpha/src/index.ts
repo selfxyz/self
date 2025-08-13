@@ -30,12 +30,13 @@ export type {
   WsConn,
 } from './types/public';
 
+export type { DG1, DG2, ParsedNFCResponse } from './processing/nfc';
 // Core functions
 export type { SdkErrorCategory } from './errors';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
-
 export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz';
+export { parseNFCResponse } from './processing/nfc';
 // Error handling
 export { webScannerShim } from './adapters/web/shims';

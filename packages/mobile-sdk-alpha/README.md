@@ -37,6 +37,16 @@ const sdk = createSelfClient({
 });
 ```
 
+## Processing utilities
+
+```ts
+import { extractMRZInfo, formatDateToYYMMDD, parseNFCResponse } from '@selfxyz/mobile-sdk-alpha';
+
+const mrzInfo = extractMRZInfo(mrzString);
+const compact = formatDateToYYMMDD('1974-08-12');
+const nfc = parseNFCResponse(rawBytes);
+```
+
 ## Migration checklist
 
 Track progress in [MIGRATION_CHECKLIST.md](./MIGRATION_CHECKLIST.md).
