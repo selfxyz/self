@@ -78,6 +78,24 @@ export const initSentry = () => {
       }
       return event;
     },
+    integrations: [
+      Sentry.feedbackIntegration({
+        buttonOptions: {
+          styles: {
+            triggerButton: {
+              position: 'absolute',
+              top: 20,
+              right: 20,
+              bottom: undefined,
+              marginTop: 100,
+            },
+          },
+        },
+        enableTakeScreenshot: true,
+        namePlaceholder: 'Fullname',
+        emailPlaceholder: 'Email',
+      }),
+    ],
   });
   return Sentry;
 };
