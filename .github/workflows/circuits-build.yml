@@ -49,6 +49,9 @@ jobs:
           mkdir -p ~/.cache/circom
           wget -qO ~/.cache/circom/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
           chmod +x ~/.cache/circom/circom
+          # TODO: Move to environment variable for better security management
+          # Verify checksum - SHA256 for circom v2.1.9 linux-amd64
+          echo "e5575829252d763b7818049df9de2ef9304df834697de77fa63ce7babc23c967  ~/.cache/circom/circom" | sha256sum -c -
 
       - name: Save Circom cache
         if: steps.circom-cache.outputs.cache-hit != 'true'
@@ -73,7 +76,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: output
-          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**') }}
+          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
 
       - name: Build cpp circuits
         run: |
@@ -88,7 +91,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: output
-          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**') }}
+          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

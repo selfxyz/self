@@ -35,9 +35,8 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
+        id: build-cache
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -48,6 +47,9 @@ jobs:
             common/node_modules
           key: core-sdk-build-${{ github.sha }}
           fail-on-cache-miss: true
+      - name: Install Dependencies
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        uses: ./.github/actions/yarn-install
       - name: Run linter
         run: yarn workspace @selfxyz/core lint
 
@@ -56,9 +58,8 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
+        id: build-cache
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -69,6 +70,9 @@ jobs:
             common/node_modules
           key: core-sdk-build-${{ github.sha }}
           fail-on-cache-miss: true
+      - name: Install Dependencies
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        uses: ./.github/actions/yarn-install
       - name: Type checking
         run: yarn workspace @selfxyz/core types
 
@@ -77,9 +81,8 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
+        id: build-cache
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -90,5 +93,8 @@ jobs:
             common/node_modules
           key: core-sdk-build-${{ github.sha }}
           fail-on-cache-miss: true
+      - name: Install Dependencies
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        uses: ./.github/actions/yarn-install
       - name: Run tests
         run: yarn workspace @selfxyz/core test

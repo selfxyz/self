@@ -42,7 +42,7 @@
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
     "publish": "yarn npm publish --access public",
-    "test": "echo 'Tests not yet implemented for @selfxyz/core' && exit 0",
+    "test": "node -e \"require('./dist/index.cjs'); console.log('Core SDK smoke test: import OK')\"",
     "types": "yarn build"
   },
   "dependencies": {
