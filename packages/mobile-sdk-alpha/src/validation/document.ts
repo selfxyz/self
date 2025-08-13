@@ -11,6 +11,8 @@ function arraysEqual(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((v, i) => v === b[i]);
 }
 
+const SUPPORTED_HASH_FUNCTIONS = ['sha256', 'sha384', 'sha512'] as const;
+
 /**
  * Callbacks fired for specific passport validation failures.
  */
@@ -75,8 +77,27 @@ export function isPassportDataValid(
     return false;
   }
 
-  if (passportData.dg1Hash) {
-    const expected = hash(dg1HashFunction, formatMrz(passportData.mrz)) as number[];
+  const dg1Algo = dg1HashFunction.toLowerCase() as (typeof SUPPORTED_HASH_FUNCTIONS)[number];
+  const eContentAlgo = eContentHashFunction.toLowerCase() as (typeof SUPPORTED_HASH_FUNCTIONS)[number];
+  const signedAttrAlgo = signedAttrHashFunction.toLowerCase() as (typeof SUPPORTED_HASH_FUNCTIONS)[number];
+  if (
+    !SUPPORTED_HASH_FUNCTIONS.includes(dg1Algo) ||
+    !SUPPORTED_HASH_FUNCTIONS.includes(eContentAlgo) ||
+    !SUPPORTED_HASH_FUNCTIONS.includes(signedAttrAlgo)
+  ) {
+    return false;
+  }
+
+  if (!passportData.mrz) {
+    return false;
+  }
+
+  if (passportData.dg1Hash && passportData.dg1Hash.length > 0) {
+    const hashResult = hash(dg1Algo, formatMrz(passportData.mrz));
+    if (!Array.isArray(hashResult) || !hashResult.every(n => typeof n === 'number' && Number.isFinite(n))) {
+      return false;
+    }
+    const expected = hashResult as number[];
     if (!arraysEqual(passportData.dg1Hash, expected)) {
       onDg1HashMismatch?.(passportData);
       return false;
