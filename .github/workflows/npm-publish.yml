@@ -55,10 +55,6 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@4.6.0 --activate
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
@@ -89,10 +85,6 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@4.6.0 --activate
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
@@ -122,10 +114,6 @@ jobs:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
       - uses: actions/checkout@v4
-      - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@4.6.0 --activate
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 

@@ -15,10 +15,6 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@4.6.0 --activate
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
