@@ -9,6 +9,7 @@ import ErrorBoundary from './src/components/ErrorBoundary';
 import AppNavigation from './src/navigation';
 import { AuthProvider } from './src/providers/authProvider';
 import { DatabaseProvider } from './src/providers/databaseProvider';
+import { FeedbackProvider } from './src/providers/feedbackProvider';
 import { LoggerProvider } from './src/providers/loggerProvider';
 import { NotificationTrackingProvider } from './src/providers/notificationTrackingProvider';
 import { PassportProvider } from './src/providers/passportDataProvider';
@@ -31,7 +32,9 @@ function App(): React.JSX.Element {
                 <PassportProvider>
                   <DatabaseProvider>
                     <NotificationTrackingProvider>
-                      <AppNavigation />
+                      <FeedbackProvider>
+                        <AppNavigation />
+                      </FeedbackProvider>
                     </NotificationTrackingProvider>
                   </DatabaseProvider>
                 </PassportProvider>

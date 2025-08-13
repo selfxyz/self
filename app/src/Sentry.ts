@@ -15,6 +15,35 @@ export const captureException = (
   });
 };
 
+export const captureFeedback = (
+  feedback: string,
+  context?: Record<string, any>,
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+
+  Sentry.captureFeedback(
+    {
+      message: feedback,
+      name: context?.name,
+      email: context?.email,
+      tags: {
+        category: context?.category || 'general',
+        source: context?.source || 'feedback_modal',
+      },
+    },
+    {
+      captureContext: {
+        tags: {
+          category: context?.category || 'general',
+          source: context?.source || 'feedback_modal',
+        },
+      },
+    },
+  );
+};
+
 export const captureMessage = (
   message: string,
   context?: Record<string, any>,
@@ -53,6 +82,22 @@ export const initSentry = () => {
     integrations: [
       Sentry.consoleLoggingIntegration({
         levels: ['log', 'error', 'warn', 'info', 'debug'],
+      }),
+      Sentry.feedbackIntegration({
+        buttonOptions: {
+          styles: {
+            triggerButton: {
+              position: 'absolute',
+              top: 20,
+              right: 20,
+              bottom: undefined,
+              marginTop: 100,
+            },
+          },
+        },
+        enableTakeScreenshot: true,
+        namePlaceholder: 'Fullname',
+        emailPlaceholder: 'Email',
       }),
     ],
     _experiments: {
