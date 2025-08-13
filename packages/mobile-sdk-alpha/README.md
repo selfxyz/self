@@ -51,6 +51,10 @@ const nfc = parseNFCResponse(rawBytes);
 
 Track progress in [MIGRATION_CHECKLIST.md](./docs/MIGRATION_CHECKLIST.md).
 
+## Architecture checklist
+
+Plan implementation with [ARCHITECTURE.md](./docs/ARCHITECTURE.md) and task prompts in [ARCHITECTURE_PROMPTS.md](./docs/ARCHITECTURE_PROMPTS.md).
+
 ## Dev scripts
 
 - `npm run validate:exports` — ensure named exports only.

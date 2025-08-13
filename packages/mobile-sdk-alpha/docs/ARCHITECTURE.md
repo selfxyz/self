@@ -1,5 +1,7 @@
 # Architecture
 
+> Detailed task prompts are listed in [ARCHITECTURE_PROMPTS.md](./ARCHITECTURE_PROMPTS.md).
+
 ## Overview
 
 The alpha SDK follows an adapter-first, React Native–oriented design. Tree-shakable named exports and `"sideEffects": false` keep bundles lean. While React Native is the only supported platform today, the structure below leaves room to add web, Capacitor, or Cordova targets without major refactors.
