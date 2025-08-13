@@ -144,3 +144,34 @@ yarn build # Confirm build still works
 - Prettier is used for code formatting
 - The `yarn nice` command is the recommended way to fix code quality issues
 - Use the root Prettier and EditorConfig settings for consistency
+
+## Testing Guidelines
+
+**CRITICAL: Do NOT mock this package in tests!**
+
+The mobile-sdk-alpha migration's primary purpose is to test REAL package methods, not mocked versions. When working with this package:
+
+### Testing Requirements
+- Use actual imports from `@selfxyz/mobile-sdk-alpha`
+- Write integration tests that exercise real validation logic
+- Test `isPassportDataValid()` with real passport data
+- Verify `extractMRZInfo()` with actual MRZ strings
+- Ensure `parseNFCResponse()` works with real NFC data
+
+### Anti-Patterns to Avoid
+- Mocking the entire package in Jest setup
+- Replacing real functions with mock implementations
+- Using `jest.mock('@selfxyz/mobile-sdk-alpha')` without justification
+- Testing with fake/placeholder data instead of real passport data
+
+### Example Integration Test Pattern
+```ts
+import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
+
+describe('Real SDK Integration', () => {
+  it('validates real passport data', () => {
+    const result = isPassportDataValid(realPassportData, validationCallbacks);
+    expect(result).toBe(true); // Real validation, not mock
+  });
+});
+```

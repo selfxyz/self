@@ -79,10 +79,8 @@ jest.mock('@segment/analytics-react-native', () => {
   };
 });
 
-// Mock @selfxyz/mobile-sdk-alpha
-jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
-  isPassportDataValid: jest.fn(() => true),
-}));
+// Note: @selfxyz/mobile-sdk-alpha is NOT mocked to allow testing real package methods
+// This is intentional for the mobile-sdk-alpha migration testing
 
 // Mock react-native-keychain
 jest.mock('react-native-keychain', () => ({
