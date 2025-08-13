@@ -55,7 +55,17 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
       const selectedDocument = await loadSelectedDocument();
       if (!selectedDocument) continue;
       let { data: passportData } = selectedDocument;
-      if (!isPassportDataValid(passportData)) {
+      if (
+        !isPassportDataValid(passportData, {
+          onInvalid: error =>
+            trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+              error,
+              mock: passportData?.mock,
+              dsc: passportData?.dsc,
+              documentCategory: passportData?.documentCategory,
+            }),
+        })
+      ) {
         trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
           error: 'Passport data is not valid',
           documentId,

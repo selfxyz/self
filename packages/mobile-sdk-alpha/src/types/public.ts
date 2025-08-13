@@ -1,4 +1,5 @@
 export type { PassportData } from '@selfxyz/common/utils/types';
+export type { PassportValidationError, PassportValidationOptions } from '../validation/document';
 export interface Config {
   endpoints?: { api?: string; teeWs?: string; artifactsCdn?: string };
   timeouts?: {

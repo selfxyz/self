@@ -31,6 +31,8 @@ export type {
 } from './types/public';
 
 export type { DG1, DG2, ParsedNFCResponse } from './processing/nfc';
+
+export type { PassportValidationError, PassportValidationOptions } from './validation/document';
 // Core functions
 export type { SdkErrorCategory } from './errors';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';

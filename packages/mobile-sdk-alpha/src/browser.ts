@@ -32,12 +32,13 @@ export type {
   WsConn,
 } from './types/public';
 
+export type { PassportValidationError, PassportValidationOptions } from './validation/document';
 // Core functions
 export type { SdkErrorCategory } from './errors';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { createSelfClient } from './client';
-export { defaultConfig } from './config/defaults';
 
+export { defaultConfig } from './config/defaults';
 export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz';
 export { isPassportDataValid } from './validation/document';
 // Error handling
