@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@v4
 
       - name: Install cpp dependencies
         run: |
@@ -43,7 +43,7 @@ jobs:
 
       - name: Restore Circom binary
         id: circom-cache
-        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/circom
           key: circom-v2.1.9
@@ -59,7 +59,7 @@ jobs:
 
       - name: Save Circom cache
         if: steps.circom-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache/save@v4
         with:
           path: ~/.cache/circom
           key: circom-v2.1.9
@@ -82,7 +82,7 @@ jobs:
 
       - name: Restore circuits cache
         id: circuits-cache
-        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache/restore@v4
         with:
           path: output
           key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
@@ -97,7 +97,7 @@ jobs:
 
       - name: Save circuits cache
         if: steps.circuits-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache/save@v4
         with:
           path: output
           key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}

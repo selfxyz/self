@@ -8,7 +8,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build @selfxyz/common
@@ -24,7 +24,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Run linter
@@ -36,7 +36,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
@@ -58,7 +58,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts

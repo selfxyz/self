@@ -27,7 +27,7 @@ jobs:
       CIRCOM_VERSION: "2.1.9"
       CIRCOM_SHA256: "e5575829252d763b7818049df9de2ef9304df834697de77fa63ce7babc23c967"
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@v4
 
       # Circom installation from https://github.com/erhant/circomkit/blob/main/.github/workflows/tests.yml
       - name: Install dependencies
@@ -45,7 +45,7 @@ jobs:
 
       - name: Restore Circom binary
         id: circom-cache
-        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/circom
           key: circom-v2.1.9
@@ -61,7 +61,7 @@ jobs:
 
       - name: Save Circom cache
         if: steps.circom-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
+        uses: actions/cache/save@v4
         with:
           path: ~/.cache/circom
           key: circom-v2.1.9
