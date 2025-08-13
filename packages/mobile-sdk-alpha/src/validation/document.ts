@@ -7,11 +7,21 @@ import type { PassportData } from '../types/public';
  * Checks if two numeric arrays contain the same values in the same order.
  * @internal
  */
-function arraysEqual(a: number[], b: number[]): boolean {
-  return a.length === b.length && a.every((v, i) => v === b[i]);
+function arraysEqual(a: ArrayLike<number>, b: ArrayLike<number>): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
 }
 
 const SUPPORTED_HASH_FUNCTIONS = ['sha256', 'sha384', 'sha512'] as const;
+
+type SupportedHash = (typeof SUPPORTED_HASH_FUNCTIONS)[number];
+
+function isSupportedHashAlgorithm(x: string): x is SupportedHash {
+  return (SUPPORTED_HASH_FUNCTIONS as readonly string[]).includes(x);
+}
 
 /**
  * Callbacks fired for specific passport validation failures.
@@ -29,6 +39,10 @@ export interface PassportValidationCallbacks {
   onSignedAttrHashFunctionNull?: (data: PassportData) => void;
   /** Calculated DG1 hash didn't match the supplied value. */
   onDg1HashMismatch?: (data: PassportData) => void;
+  /** An unsupported hash algorithm was supplied in metadata. */
+  onUnsupportedHashAlgorithm?: (field: 'dg1' | 'eContent' | 'signedAttr', value: string, data: PassportData) => void;
+  /** DG1 hash missing or empty; nothing to validate against. */
+  onDg1HashMissing?: (data: PassportData) => void;
 }
 
 /**
@@ -50,6 +64,8 @@ export function isPassportDataValid(
     onEContentHashFunctionNull,
     onSignedAttrHashFunctionNull,
     onDg1HashMismatch,
+    onUnsupportedHashAlgorithm,
+    onDg1HashMissing,
   } = callbacks;
 
   if (!passportData) {
@@ -77,14 +93,20 @@ export function isPassportDataValid(
     return false;
   }
 
-  const dg1Algo = dg1HashFunction.toLowerCase() as (typeof SUPPORTED_HASH_FUNCTIONS)[number];
-  const eContentAlgo = eContentHashFunction.toLowerCase() as (typeof SUPPORTED_HASH_FUNCTIONS)[number];
-  const signedAttrAlgo = signedAttrHashFunction.toLowerCase() as (typeof SUPPORTED_HASH_FUNCTIONS)[number];
-  if (
-    !SUPPORTED_HASH_FUNCTIONS.includes(dg1Algo) ||
-    !SUPPORTED_HASH_FUNCTIONS.includes(eContentAlgo) ||
-    !SUPPORTED_HASH_FUNCTIONS.includes(signedAttrAlgo)
-  ) {
+  const dg1Algo = dg1HashFunction.toLowerCase();
+  const eContentAlgo = eContentHashFunction.toLowerCase();
+  const signedAttrAlgo = signedAttrHashFunction.toLowerCase();
+
+  if (!isSupportedHashAlgorithm(dg1Algo)) {
+    onUnsupportedHashAlgorithm?.('dg1', dg1Algo, passportData);
+    return false;
+  }
+  if (!isSupportedHashAlgorithm(eContentAlgo)) {
+    onUnsupportedHashAlgorithm?.('eContent', eContentAlgo, passportData);
+    return false;
+  }
+  if (!isSupportedHashAlgorithm(signedAttrAlgo)) {
+    onUnsupportedHashAlgorithm?.('signedAttr', signedAttrAlgo, passportData);
     return false;
   }
 
@@ -93,15 +115,23 @@ export function isPassportDataValid(
   }
 
   if (passportData.dg1Hash && passportData.dg1Hash.length > 0) {
-    const hashResult = hash(dg1Algo, formatMrz(passportData.mrz));
-    if (!Array.isArray(hashResult) || !hashResult.every(n => typeof n === 'number' && Number.isFinite(n))) {
+    try {
+      const hashResult = hash(dg1Algo, formatMrz(passportData.mrz));
+      if (!Array.isArray(hashResult) || !hashResult.every(n => typeof n === 'number' && Number.isFinite(n))) {
+        return false;
+      }
+      const expected = hashResult as number[];
+      if (!arraysEqual(passportData.dg1Hash, expected)) {
+        onDg1HashMismatch?.(passportData);
+        return false;
+      }
+    } catch (e) {
+      // Log the error or handle it appropriately
+      console.error('Error calculating DG1 hash:', e);
       return false;
     }
-    const expected = hashResult as number[];
-    if (!arraysEqual(passportData.dg1Hash, expected)) {
-      onDg1HashMismatch?.(passportData);
-      return false;
-    }
+  } else {
+    onDg1HashMissing?.(passportData);
   }
 
   return true;

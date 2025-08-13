@@ -79,6 +79,11 @@ jest.mock('@segment/analytics-react-native', () => {
   };
 });
 
+// Mock @selfxyz/mobile-sdk-alpha
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  isPassportDataValid: jest.fn(() => true),
+}));
+
 // Mock react-native-keychain
 jest.mock('react-native-keychain', () => ({
   SECURITY_LEVEL_ANY: 'MOCK_SECURITY_LEVEL_ANY',

@@ -58,22 +58,36 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
       const logValidationError = (error: string, data?: PassportData) =>
         trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
           error,
+          documentId,
           mock: data?.mock,
           dsc: data?.dsc,
           documentCategory: data?.documentCategory,
         });
-      if (
-        !isPassportDataValid(passportData, {
+      let isValid = false;
+      try {
+        isValid = isPassportDataValid(passportData, {
           onPassportDataNull: () => logValidationError('passport_data_null'),
-          onPassportMetadataNull: d => logValidationError('passport_metadata_null', d),
-          onDg1HashFunctionNull: d => logValidationError('dg1_hash_function_null', d),
+          onPassportMetadataNull: d =>
+            logValidationError('passport_metadata_null', d),
+          onDg1HashFunctionNull: d =>
+            logValidationError('dg1_hash_function_null', d),
           onEContentHashFunctionNull: d =>
             logValidationError('econtent_hash_function_null', d),
           onSignedAttrHashFunctionNull: d =>
             logValidationError('signed_attr_hash_function_null', d),
           onDg1HashMismatch: d => logValidationError('dg1_hash_mismatch', d),
-        })
-      ) {
+          onUnsupportedHashAlgorithm: (field, value, data) =>
+            logValidationError(`unsupported_hash_algorithm_${field}`, data),
+          onDg1HashMissing: d => logValidationError('dg1_hash_missing', d),
+        });
+      } catch (error) {
+        logValidationError('validation_threw', passportData);
+        console.warn(
+          `Validation threw exception for document ${documentId}:`,
+          error,
+        );
+      }
+      if (!isValid) {
         trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
           error: 'Passport data is not valid',
           documentId,
