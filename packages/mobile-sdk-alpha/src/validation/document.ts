@@ -7,53 +7,57 @@ function arraysEqual(a: number[], b: number[]): boolean {
   return a.length === b.length && a.every((v, i) => v === b[i]);
 }
 
-export type PassportValidationError =
-  | 'passport_data_null'
-  | 'passport_metadata_null'
-  | 'dg1_hash_function_null'
-  | 'econtent_hash_function_null'
-  | 'signed_attr_hash_function_null'
-  | 'dg1_hash_mismatch';
-
-export interface PassportValidationOptions {
-  onInvalid?: (error: PassportValidationError, data?: PassportData) => void;
+export interface PassportValidationCallbacks {
+  onPassportDataNull?: () => void;
+  onPassportMetadataNull?: (data: PassportData) => void;
+  onDg1HashFunctionNull?: (data: PassportData) => void;
+  onEContentHashFunctionNull?: (data: PassportData) => void;
+  onSignedAttrHashFunctionNull?: (data: PassportData) => void;
+  onDg1HashMismatch?: (data: PassportData) => void;
 }
 
 export function isPassportDataValid(
   passportData: PassportData | undefined,
-  opts: PassportValidationOptions = {},
+  opts: PassportValidationCallbacks = {},
 ): boolean {
-  const { onInvalid } = opts;
+  const {
+    onPassportDataNull,
+    onPassportMetadataNull,
+    onDg1HashFunctionNull,
+    onEContentHashFunctionNull,
+    onSignedAttrHashFunctionNull,
+    onDg1HashMismatch,
+  } = opts;
 
   if (!passportData) {
-    onInvalid?.('passport_data_null');
+    onPassportDataNull?.();
     return false;
   }
 
   const { passportMetadata } = passportData;
   if (!passportMetadata) {
-    onInvalid?.('passport_metadata_null', passportData);
+    onPassportMetadataNull?.(passportData);
     return false;
   }
 
   const { dg1HashFunction, eContentHashFunction, signedAttrHashFunction } = passportMetadata;
   if (!dg1HashFunction) {
-    onInvalid?.('dg1_hash_function_null', passportData);
+    onDg1HashFunctionNull?.(passportData);
     return false;
   }
   if (!eContentHashFunction) {
-    onInvalid?.('econtent_hash_function_null', passportData);
+    onEContentHashFunctionNull?.(passportData);
     return false;
   }
   if (!signedAttrHashFunction) {
-    onInvalid?.('signed_attr_hash_function_null', passportData);
+    onSignedAttrHashFunctionNull?.(passportData);
     return false;
   }
 
   if (passportData.dg1Hash) {
     const expected = hash(dg1HashFunction, formatMrz(passportData.mrz)) as number[];
     if (!arraysEqual(passportData.dg1Hash, expected)) {
-      onInvalid?.('dg1_hash_mismatch', passportData);
+      onDg1HashMismatch?.(passportData);
       return false;
     }
   }

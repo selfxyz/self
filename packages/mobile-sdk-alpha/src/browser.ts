@@ -32,7 +32,7 @@ export type {
   WsConn,
 } from './types/public';
 
-export type { PassportValidationError, PassportValidationOptions } from './validation/document';
+export type { PassportValidationCallbacks } from './validation/document';
 // Core functions
 export type { SdkErrorCategory } from './errors';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';

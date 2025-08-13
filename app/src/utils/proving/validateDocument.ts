@@ -55,15 +55,23 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
       const selectedDocument = await loadSelectedDocument();
       if (!selectedDocument) continue;
       let { data: passportData } = selectedDocument;
+      const logValidationError = (error: string, data?: PassportData) =>
+        trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+          error,
+          mock: data?.mock,
+          dsc: data?.dsc,
+          documentCategory: data?.documentCategory,
+        });
       if (
         !isPassportDataValid(passportData, {
-          onInvalid: error =>
-            trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-              error,
-              mock: passportData?.mock,
-              dsc: passportData?.dsc,
-              documentCategory: passportData?.documentCategory,
-            }),
+          onPassportDataNull: () => logValidationError('passport_data_null'),
+          onPassportMetadataNull: d => logValidationError('passport_metadata_null', d),
+          onDg1HashFunctionNull: d => logValidationError('dg1_hash_function_null', d),
+          onEContentHashFunctionNull: d =>
+            logValidationError('econtent_hash_function_null', d),
+          onSignedAttrHashFunctionNull: d =>
+            logValidationError('signed_attr_hash_function_null', d),
+          onDg1HashMismatch: d => logValidationError('dg1_hash_mismatch', d),
         })
       ) {
         trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {

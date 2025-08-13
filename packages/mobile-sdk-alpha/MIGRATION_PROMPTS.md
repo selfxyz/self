@@ -60,10 +60,19 @@ yarn build
 </details>
 
 <details>
-<summary><strong>Test document validation</strong></summary>
+  <summary><strong>Test document validation</strong></summary>
 
 1. Add `tests/validation/document.test.ts` with cases for missing metadata and hash mismatches.
 2. Run via `yarn workspace @selfxyz/mobile-sdk-alpha test`.
+
+</details>
+
+<details>
+<summary><strong>Add validation callbacks</strong></summary>
+
+1. Extend `isPassportDataValid` to accept per-error callbacks (e.g., `onPassportMetadataNull`).
+2. Use these hooks in the app to forward analytics events.
+3. Cover callback invocations in unit tests.
 
 </details>
 
