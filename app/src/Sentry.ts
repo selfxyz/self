@@ -50,6 +50,14 @@ export const initSentry = () => {
       }
       return event;
     },
+    integrations: [
+      Sentry.consoleLoggingIntegration({
+        levels: ['log', 'error', 'warn', 'info', 'debug'],
+      }),
+    ],
+    _experiments: {
+      enableLogs: true,
+    },
   });
   return Sentry;
 };

@@ -9,6 +9,7 @@ import ErrorBoundary from './src/components/ErrorBoundary';
 import AppNavigation from './src/navigation';
 import { AuthProvider } from './src/providers/authProvider';
 import { DatabaseProvider } from './src/providers/databaseProvider';
+import { LoggerProvider } from './src/providers/loggerProvider';
 import { NotificationTrackingProvider } from './src/providers/notificationTrackingProvider';
 import { PassportProvider } from './src/providers/passportDataProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
@@ -23,15 +24,17 @@ function App(): React.JSX.Element {
     <ErrorBoundary>
       <YStack flex={1} height="100%" width="100%">
         <RemoteConfigProvider>
-          <AuthProvider>
-            <PassportProvider>
-              <DatabaseProvider>
-                <NotificationTrackingProvider>
-                  <AppNavigation />
-                </NotificationTrackingProvider>
-              </DatabaseProvider>
-            </PassportProvider>
-          </AuthProvider>
+          <LoggerProvider>
+            <AuthProvider>
+              <PassportProvider>
+                <DatabaseProvider>
+                  <NotificationTrackingProvider>
+                    <AppNavigation />
+                  </NotificationTrackingProvider>
+                </DatabaseProvider>
+              </PassportProvider>
+            </AuthProvider>
+          </LoggerProvider>
         </RemoteConfigProvider>
       </YStack>
     </ErrorBoundary>

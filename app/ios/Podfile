@@ -29,7 +29,7 @@ target "Self" do
   use_frameworks!
   # Skip NFCPassportReader for e2e testing to avoid build issues
   unless ENV["E2E_TESTING"] == "1"
-    pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "74098a5e29c23b3f5a58dc14a336556fa89c0ad6"
+    pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
   end
 
   pod "QKMRZScanner"

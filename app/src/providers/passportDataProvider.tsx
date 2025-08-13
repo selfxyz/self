@@ -95,6 +95,27 @@ export interface DocumentCatalog {
   selectedDocumentId?: string; // This is now a contentHash
 }
 
+type DocumentChangeCallback = (isMock: boolean) => void;
+
+const documentChangeCallbacks: DocumentChangeCallback[] = [];
+
+//keeps track of all the callbacks that need to be notified when the document changes
+export const registerDocumentChangeCallback = (
+  callback: DocumentChangeCallback,
+) => {
+  documentChangeCallbacks.push(callback);
+};
+
+const notifyDocumentChange = (isMock: boolean) => {
+  documentChangeCallbacks.forEach(callback => {
+    try {
+      callback(isMock);
+    } catch (error) {
+      console.warn('Document change callback error:', error);
+    }
+  });
+};
+
 // ===== NEW STORAGE IMPLEMENTATION =====
 
 function calculateContentHash(passportData: PassportData): string {
@@ -780,6 +801,8 @@ export async function setSelectedDocument(documentId: string): Promise<void> {
   if (metadata) {
     catalog.selectedDocumentId = documentId;
     await saveDocumentCatalog(catalog);
+
+    notifyDocumentChange(metadata.mock);
   }
 }
 

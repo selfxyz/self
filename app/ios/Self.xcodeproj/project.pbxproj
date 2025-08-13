@@ -32,6 +32,9 @@
 		BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */; };
 		BF1044832DD5354F009B3688 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044822DD5354F009B3688 /* CameraView.swift */; };
 		BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MRZScanner.swift */; };
+		BF6F0D552E38ED81008EA85C /* SelfAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */; };
+		BFBA0C772E339D2B00E82A52 /* NativeLoggerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */; };
+		BFBA0C792E33A01F00E82A52 /* NativeLoggerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */; };
 		D427791AA5714251A5EAF8AD /* DINOT-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */; };
 		DAC618BCA5874DD8AD74FFFC /* Advercase-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 7E5C3CEF7EDA4871B3D0EBE1 /* Advercase-Regular.otf */; };
 		E9F9A99C2D57FE2900E1362E /* PassportOCRViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */; };
@@ -74,6 +77,9 @@
 		BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMRZScannerView.swift; sourceTree = "<group>"; };
 		BF1044822DD5354F009B3688 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		BF1044842DD53570009B3688 /* MRZScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScanner.swift; sourceTree = "<group>"; };
+		BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfAnalytics.swift; sourceTree = "<group>"; };
+		BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLoggerBridge.swift; sourceTree = "<group>"; };
+		BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativeLoggerBridge.m; sourceTree = "<group>"; };
 		E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = OpenPassport/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportOCRViewManager.m; sourceTree = "<group>"; };
 		E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportOCRViewManager.swift; sourceTree = "<group>"; };
@@ -96,6 +102,9 @@
 		13B07FAE1A68108700A75B9A /* OpenPassport */ = {
 			isa = PBXGroup;
 			children = (
+				BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */,
+				BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */,
+				BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */,
 				BF1044842DD53570009B3688 /* MRZScanner.swift */,
 				BF1044822DD5354F009B3688 /* CameraView.swift */,
 				BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */,
@@ -380,10 +389,12 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */,
 				1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */,
+				BFBA0C772E339D2B00E82A52 /* NativeLoggerBridge.swift in Sources */,
 				BF1044832DD5354F009B3688 /* CameraView.swift in Sources */,
 				1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				905B70072A72774000AFA232 /* PassportReader.m in Sources */,
+				BFBA0C792E33A01F00E82A52 /* NativeLoggerBridge.m in Sources */,
 				16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */,
 				BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */,
 				165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */,
@@ -394,6 +405,7 @@
 				1648EB782CC9564D003BEA7D /* LottieView.swift in Sources */,
 				164FD9672D569A640067E63B /* QRCodeScannerViewManager.swift in Sources */,
 				165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */,
+				BF6F0D552E38ED81008EA85C /* SelfAnalytics.swift in Sources */,
 				BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */,
 				164FD9692D569C1F0067E63B /* QRCodeScannerViewManager.m in Sources */,
 			);

@@ -48,7 +48,7 @@ class PassportReader: NSObject {
 
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
-        let analytics = Analytics(token: token, enableDebugLogs: enableDebugLogs)
+        let analytics = SelfAnalytics(token: token, enableDebugLogs: enableDebugLogs)
         self.passportReader = NFCPassportReader.PassportReader(analytics: analytics)
     }
 
@@ -124,6 +124,15 @@ class PassportReader: NSObject {
       guard let self = self else {
         return
       }
+
+      NativeLoggerBridge.logInfo(category: "NFC", message: "NFC passport scan started", data: [
+        "passportNumber": passportNumber,
+        "useCAN": useCANBool,
+        "skipPACE": skipPACEBool,
+        "skipCA": skipCABool,
+        "extendedMode": extendedModeBool,
+        "usePacePolling": usePacePollingBool
+      ])
 
       do {
         let password: String
