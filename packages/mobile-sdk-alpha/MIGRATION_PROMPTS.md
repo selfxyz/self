@@ -7,6 +7,8 @@ Each chapter from the migration checklist includes granular tasks below. Pick ta
 ## Before you start
 
 - Run `yarn find:migration` to locate and open `.cursor/rules/mobile-sdk-migration.mdc` for full context.
+- When migrating code from `/app`, move the implementation into this package and refactor `/app` to consume the SDK. Run tests for both workspaces to ensure parity.
+- Add JSDoc comments to all newly migrated functions and types so documentation remains complete.
 
 ## Pre-flight checks
 
