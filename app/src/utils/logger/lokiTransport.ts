@@ -4,12 +4,13 @@ import type { AppStateStatus } from 'react-native';
 import { AppState } from 'react-native';
 import type { transportFunctionType } from 'react-native-logs';
 
+import { registerDocumentChangeCallback } from '@/providers/passportDataProvider';
+
 import {
   GRAFANA_LOKI_PASSWORD,
   GRAFANA_LOKI_URL,
   GRAFANA_LOKI_USERNAME,
 } from '../../../env';
-import { registerDocumentChangeCallback } from '../../providers/passportDataProvider';
 
 interface LokiLogEntry {
   timestamp: string;

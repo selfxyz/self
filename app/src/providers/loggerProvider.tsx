@@ -14,7 +14,7 @@ import {
   PassportLogger,
   ProofLogger,
   SettingsLogger,
-} from '../utils/logger';
+} from '@/utils/logger';
 
 type LoggerContextType = {
   AppLogger: typeof AppLogger;

@@ -3,10 +3,10 @@
 import type { configLoggerType } from 'react-native-logs';
 import { logger } from 'react-native-logs';
 
-import { interceptConsole } from './logger/consoleInterceptor';
-import { lokiTransport } from './logger/lokiTransport';
+import { interceptConsole } from '@/utils/logger/consoleInterceptor';
+import { lokiTransport } from '@/utils/logger/lokiTransport';
 
-import './logger/nativeLoggerBridge';
+import '@/utils/logger/nativeLoggerBridge';
 
 export {
   AppLogger,

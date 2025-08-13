@@ -2,7 +2,7 @@
 
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
-import { AppLogger, Logger, NfcLogger } from '../logger';
+import { AppLogger, Logger, NfcLogger } from '@/utils/logger';
 
 interface NativeLogEvent {
   level: 'debug' | 'info' | 'warn' | 'error';
