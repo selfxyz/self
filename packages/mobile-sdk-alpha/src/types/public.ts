@@ -1,3 +1,4 @@
+export type { PassportData } from '@selfxyz/common/utils/types';
 export interface Config {
   endpoints?: { api?: string; teeWs?: string; artifactsCdn?: string };
   timeouts?: {

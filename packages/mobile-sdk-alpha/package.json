@@ -51,6 +51,7 @@
     "validate:pkg": "node ./scripts/verify-conditions.mjs"
   },
   "dependencies": {
+    "@selfxyz/common": "workspace:*",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
