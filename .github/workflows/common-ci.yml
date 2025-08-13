@@ -5,8 +5,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build @selfxyz/common
@@ -15,12 +17,14 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: common/dist
-          key: common-build-${{ github.sha }}
+          key: common-build-${{ runner.os }}-${{ github.sha }}
 
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Run linter
@@ -29,8 +33,10 @@ jobs:
   type-check:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
@@ -49,8 +55,10 @@ jobs:
   test-common:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts

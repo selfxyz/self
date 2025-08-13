@@ -17,10 +17,15 @@ on:
 jobs:
   build:
     runs-on: ["self-hosted", "selfxyz-org", "ubuntu-22-04", "128ram"]
+    permissions:
+      contents: read
+    env:
+      CIRCOM_VERSION: "2.1.9"
+      CIRCOM_SHA256: "e5575829252d763b7818049df9de2ef9304df834697de77fa63ce7babc23c967"
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Install cpp dependencies
         run: |
@@ -38,7 +43,7 @@ jobs:
 
       - name: Restore Circom binary
         id: circom-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
         with:
           path: ~/.cache/circom
           key: circom-v2.1.9
@@ -47,21 +52,25 @@ jobs:
         if: steps.circom-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/.cache/circom
-          wget -qO ~/.cache/circom/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
+          wget -qO ~/.cache/circom/circom https://github.com/iden3/circom/releases/download/v${{ env.CIRCOM_VERSION }}/circom-linux-amd64
           chmod +x ~/.cache/circom/circom
-          # TODO: Move to environment variable for better security management
           # Verify checksum - SHA256 for circom v2.1.9 linux-amd64
-          echo "e5575829252d763b7818049df9de2ef9304df834697de77fa63ce7babc23c967  ~/.cache/circom/circom" | sha256sum -c -
+          echo "${{ env.CIRCOM_SHA256 }}  ~/.cache/circom/circom" | sha256sum -c -
 
       - name: Save Circom cache
         if: steps.circom-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
         with:
           path: ~/.cache/circom
           key: circom-v2.1.9
 
-      - name: Install Circom
-        run: sudo cp ~/.cache/circom/circom /usr/local/bin/circom
+      - name: Verify Circom checksum (cache hit)
+        if: steps.circom-cache.outputs.cache-hit == 'true'
+        run: |
+          echo "${{ env.CIRCOM_SHA256 }}  ~/.cache/circom/circom" | sha256sum -c -
+
+      - name: Add Circom to PATH
+        run: echo "$HOME/.cache/circom" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
@@ -73,7 +82,7 @@ jobs:
 
       - name: Restore circuits cache
         id: circuits-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
         with:
           path: output
           key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
@@ -88,13 +97,13 @@ jobs:
 
       - name: Save circuits cache
         if: steps.circuits-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4
         with:
           path: output
           key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: circuits
           path: output/
