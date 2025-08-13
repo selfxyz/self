@@ -20,6 +20,7 @@ import {
   generateNullifier,
 } from '@selfxyz/common/utils/passports';
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
+import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 
 import { DocumentEvents } from '@/consts/analytics';
 import {
@@ -294,48 +295,6 @@ export async function isDocumentNullified(passportData: PassportData) {
   const data = await response.json();
   console.log('isDocumentNullified', data);
   return data.data;
-}
-
-export function isPassportDataValid(passportData: PassportData) {
-  if (!passportData) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      error: 'Passport data is null',
-    });
-    return false;
-  }
-  if (!passportData.passportMetadata) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      error: 'Passport metadata is null',
-    });
-    return false;
-  }
-  if (!passportData.passportMetadata.dg1HashFunction) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      mock: passportData.mock,
-      dsc: passportData.dsc,
-      error: 'DG1 hash function is null',
-    });
-    return false;
-  }
-  if (!passportData.passportMetadata.eContentHashFunction) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      mock: passportData.mock,
-      dsc: passportData.dsc,
-      documentCategory: passportData.documentCategory,
-      error: 'EContent hash function is null',
-    });
-    return false;
-  }
-  if (!passportData.passportMetadata.signedAttrHashFunction) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      mock: passportData.mock,
-      dsc: passportData.dsc,
-      documentCategory: passportData.documentCategory,
-      error: 'Signed attribute hash function is null',
-    });
-    return false;
-  }
-  return true;
 }
 
 export async function isUserRegistered(

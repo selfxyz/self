@@ -39,5 +39,6 @@ export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 
 export { extractMRZInfo, formatDateToYYMMDD } from './processing/mrz';
+export { isPassportDataValid } from './validation/document';
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
