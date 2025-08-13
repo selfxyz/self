@@ -190,6 +190,7 @@ contextUsageNote: If this file is used to add in-context notes, include a single
 - [ ] Run `yarn test:build` in mobile-sdk-alpha after each item
 - [ ] Validate functionality matches original implementation
 - [ ] Update documentation and type definitions
+- [ ] Re-export new modules via `packages/mobile-sdk-alpha/src/index.ts` and document them in `packages/mobile-sdk-alpha/README.md`
 
 ### Post-Migration
 - [ ] Update app to consume mobile-sdk-alpha

@@ -1,16 +1,23 @@
 #!/usr/bin/env node
-import { readdirSync, statSync } from 'fs';
+import { readdirSync } from 'fs';
 import { join } from 'path';
 
 function search(dir, target) {
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    const stats = statSync(full);
-    if (stats.isDirectory()) {
-      const found = search(full, target);
+  const SKIP = new Set(['node_modules', '.git', 'dist', 'build', '.next', 'out']);
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+  for (const dirent of entries) {
+    const name = dirent.name;
+    if (dirent.isDirectory()) {
+      if (SKIP.has(name) || dirent.isSymbolicLink()) continue;
+      const found = search(join(dir, name), target);
       if (found) return found;
-    } else if (entry === target) {
-      return full;
+    } else if (name === target) {
+      return join(dir, name);
     }
   }
   return null;

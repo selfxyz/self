@@ -4,6 +4,23 @@ Each chapter from the migration checklist includes granular tasks below. Pick ta
 
 > **Note**: This document uses standard Markdown `<details>` and `<summary>` tags for collapsible task sections, ensuring proper rendering on GitHub and other Markdown viewers.
 
+## Before you start
+
+- Run `yarn find:migration` to locate and open `.cursor/rules/mobile-sdk-migration.mdc` for full context.
+
+## Pre-flight checks
+
+Run these commands before committing changes:
+
+```bash
+yarn workspace @selfxyz/mobile-sdk-alpha nice
+yarn workspace @selfxyz/mobile-sdk-alpha build
+yarn workspace @selfxyz/mobile-sdk-alpha types
+yarn workspace @selfxyz/mobile-sdk-alpha test
+yarn lint
+yarn build
+```
+
 ## 1. Processing helpers (MRZ & NFC)
 
 <details>

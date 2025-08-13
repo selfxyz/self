@@ -1,4 +1,31 @@
-import { TextDecoder } from 'util';
+// Prefer the global TextDecoder; fall back to Node's util.TextDecoder at runtime.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - TextDecoder may not exist on all globals
+const getDecoder = (): TextDecoder => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore - globalThis may not include TextDecoder in typings
+  const TD =
+    (typeof globalThis !== 'undefined' && (globalThis as any).TextDecoder) ||
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    (typeof require !== 'undefined'
+      ? (() => {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
+            return require('util').TextDecoder;
+          } catch {
+            return undefined;
+          }
+        })()
+      : undefined);
+  if (!TD) throw new Error('TextDecoder not available in this environment');
+  return new TD('utf-8', { fatal: true });
+};
+
+const DECODER = getDecoder();
+
+// Known LDS1 tag constants
+const TAG_DG1 = 0x61;
+const TAG_DG2 = 0x75;
 
 export interface DG1 {
   mrz: string;
@@ -14,16 +41,25 @@ export interface ParsedNFCResponse {
 }
 
 function readLength(view: Uint8Array, offset: number): { length: number; next: number } {
-  let len = view[offset];
-  if (len & 0x80) {
-    const bytes = len & 0x7f;
-    len = 0;
-    for (let i = 1; i <= bytes; i++) {
-      len = (len << 8) | view[offset + i];
+  if (offset >= view.length) {
+    throw new Error('Unexpected end of data while reading length');
+  }
+  const first = view[offset];
+  if (first & 0x80) {
+    const bytes = first & 0x7f;
+    if (bytes === 0) {
+      throw new Error('Indefinite length (0x80) not supported');
+    }
+    if (offset + bytes >= view.length) {
+      throw new Error('Unexpected end of data while reading long-form length');
+    }
+    let len = 0;
+    for (let j = 1; j <= bytes; j++) {
+      len = (len << 8) | view[offset + j];
     }
     return { length: len, next: offset + 1 + bytes };
   }
-  return { length: len, next: offset + 1 };
+  return { length: first, next: offset + 1 };
 }
 
 /**
@@ -42,15 +78,18 @@ export function parseNFCResponse(bytes: Uint8Array): ParsedNFCResponse {
     i += length;
 
     switch (tag) {
-      case 0x61: // DG1
-        result.dg1 = { mrz: new TextDecoder().decode(value) };
+      case TAG_DG1: {
+        result.dg1 = { mrz: DECODER.decode(value) };
         break;
-      case 0x75: // DG2
+      }
+      case TAG_DG2: {
         result.dg2 = { image: value };
         break;
-      default:
-        // ignore unknown tags
+      }
+      default: {
+        // ignore unknown tags for forward-compatibility
         break;
+      }
     }
   }
   return result;

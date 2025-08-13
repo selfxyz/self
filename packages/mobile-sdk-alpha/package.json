@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-sdk-alpha",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Self SDK (alpha) for registering and proving. Adapters-first, RN-first with web shims.",
   "keywords": [
     "self",

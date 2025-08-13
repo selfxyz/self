@@ -4,8 +4,8 @@
 
 ## 1. Processing helpers (MRZ & NFC)
 
-- Finalize MRZ utilities and add an NFC response parser.
-- Re-export helpers through the SDK entry point.
+- [x] Finalize MRZ utilities and add an NFC response parser.
+- [x] Re-export helpers through the SDK entry point.
 
 ## 2. Validation module
 

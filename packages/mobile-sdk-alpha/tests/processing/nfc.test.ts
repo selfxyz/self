@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseNFCResponse } from '../../src/processing/nfc';
+import { parseNFCResponse } from '../../src';
 
 const enc = new TextEncoder();
 const mrz = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
