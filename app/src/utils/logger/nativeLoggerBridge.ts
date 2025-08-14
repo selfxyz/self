@@ -51,7 +51,7 @@ const setupEventListeners = () => {
       try {
         const parsedEvent = JSON.parse(event);
         handleNativeLogEvent(parsedEvent);
-      } catch (e) {
+      } catch (_e) {
         console.warn('Failed to parse logEvent string:', event);
       }
     } else {

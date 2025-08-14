@@ -91,7 +91,7 @@ const SuccessScreen: React.FC = () => {
               setCountdown(5);
               setCountdownStarted(true);
             }
-          } catch (error) {
+          } catch (_error) {
             console.warn(
               'Invalid deep link URL provided:',
               selfApp.deeplinkCallback,

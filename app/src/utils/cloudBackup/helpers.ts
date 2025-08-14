@@ -38,7 +38,7 @@ export function parseMnemonic(mnemonicString: string): Mnemonic {
 
   try {
     parsed = JSON.parse(mnemonicString);
-  } catch (e) {
+  } catch (_e) {
     throw new Error('Invalid JSON format in mnemonic backup');
   }
 
