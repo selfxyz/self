@@ -153,6 +153,8 @@ module.exports = {
     'prefer-const': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-require-imports': 'off',
+    '@typescript-eslint/no-empty-object-type': 'off',
     '@typescript-eslint/no-unused-vars': 'error',
     'no-redeclare': 'off',
     '@typescript-eslint/ban-types': 'off',
