@@ -49,7 +49,11 @@ const nfc = parseNFCResponse(rawBytes);
 
 ## Migration checklist
 
-Track progress in [MIGRATION_CHECKLIST.md](./MIGRATION_CHECKLIST.md).
+Track progress in [MIGRATION_CHECKLIST.md](./docs/MIGRATION_CHECKLIST.md).
+
+## Architecture checklist
+
+Plan implementation with [ARCHITECTURE.md](./docs/ARCHITECTURE.md) and task prompts in [ARCHITECTURE_PROMPTS.md](./docs/ARCHITECTURE_PROMPTS.md).
 
 ## Dev scripts
 
