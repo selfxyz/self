@@ -1,0 +1,9 @@
+# Test artifacts
+node_modules/
+.yarn/
+fixtures/
+*.log
+
+# OS artifacts
+.DS_Store
+Thumbs.db
