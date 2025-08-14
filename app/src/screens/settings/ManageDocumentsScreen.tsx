@@ -279,6 +279,7 @@ const ManageDocumentsScreen: React.FC = () => {
   };
 
   const handleGenerateMock = () => {
+    if (!__DEV__) return;
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_MOCK_SELECTED);
     navigation.navigate('CreateMock');
@@ -311,9 +312,11 @@ const ManageDocumentsScreen: React.FC = () => {
             <PrimaryButton onPress={handleScanDocument}>
               Scan New ID Document
             </PrimaryButton>
-            <SecondaryButton onPress={handleGenerateMock}>
-              Generate Mock Document
-            </SecondaryButton>
+            {__DEV__ && (
+              <SecondaryButton onPress={handleGenerateMock}>
+                Generate Mock Document
+              </SecondaryButton>
+            )}
           </ButtonsContainer>
         </YStack>
       </YStack>
