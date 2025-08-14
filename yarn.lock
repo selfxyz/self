@@ -12641,6 +12641,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"check-package-versions-tests@workspace:scripts/tests":
+  version: 0.0.0-use.local
+  resolution: "check-package-versions-tests@workspace:scripts/tests"
+  dependencies:
+    vitest: "npm:^1.6.0"
+  languageName: unknown
+  linkType: soft
+
 "check-types@npm:^11.2.3":
   version: 11.2.3
   resolution: "check-types@npm:11.2.3"

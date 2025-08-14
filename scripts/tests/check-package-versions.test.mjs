@@ -3,14 +3,12 @@ import { test, describe, expect, beforeAll, afterAll } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
 
-// Test fixtures
-const testDir = path.join(process.cwd(), 'scripts', 'tests', 'fixtures');
-const scriptPath = path.join(
-  process.cwd(),
-  'scripts',
-  'check-package-versions.mjs',
-);
+// Resolve paths relative to this test file
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const testDir = path.join(__dirname, 'fixtures');
+const scriptPath = path.resolve(__dirname, '..', 'check-package-versions.mjs');
 
 describe('check-package-versions', () => {
   beforeAll(async () => {

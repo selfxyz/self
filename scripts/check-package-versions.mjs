@@ -250,23 +250,67 @@ for (const pkg of criticalPackages) {
 let hasWorkflowIssues = false;
 const engineNodeVersions = engineVersions.get('engines.node');
 if (engineNodeVersions && engineNodeVersions.size > 0) {
-  const expectedNodeVersion = Array.from(engineNodeVersions.keys())[0];
+  const engineValues = [...engineNodeVersions.keys()].sort();
+  // If multiple engines.node constraints exist across packages, report that first.
+  if (engineValues.length > 1) {
+    console.log('🚨 ENGINES.NODE MISMATCH:');
+    console.log(
+      'Different Node.js engine constraints found across packages:\n',
+    );
+    for (const v of engineValues) {
+      const files = engineNodeVersions.get(v);
+      const list = Array.isArray(files)
+        ? files.slice().sort()
+        : [...files].sort();
+      const shortFiles = list.map(f =>
+        f.replace(process.cwd(), '').replace('/package.json', ''),
+      );
+      console.log(`  ${v}: ${shortFiles.join(', ')}`);
+    }
+    console.log('');
+    hasWorkflowIssues = true;
+  }
+
+  // Compare workflows against the first (sorted) engines.node as expected
+  const expectedNodeVersion = engineValues[0];
   const workflowNodeVersions = workflowVersions.get('workflow node-version');
   if (workflowNodeVersions) {
-    for (const [version, files] of workflowNodeVersions) {
-      if (!version.includes(expectedNodeVersion)) {
-        if (!hasWorkflowIssues) {
-          console.log('🚨 WORKFLOW VERSION MISMATCH:');
-          console.log('CI/CD may fail due to Node.js version mismatch:\n');
-        }
-        hasWorkflowIssues = true;
-        console.log(`Expected: ${expectedNodeVersion} (from engines.node)`);
-        console.log(`Found: ${version} in workflows`);
-        console.log('');
-        break; // Only show this once
+    const mismatches = [...workflowNodeVersions.keys()]
+      .filter(v => !String(v).includes(expectedNodeVersion))
+      .sort();
+    if (mismatches.length) {
+      console.log('🚨 WORKFLOW VERSION MISMATCH:');
+      console.log('CI/CD may fail due to Node.js version mismatch:\n');
+      console.log(`Expected: ${expectedNodeVersion} (from engines.node)`);
+      for (const v of mismatches) {
+        console.log(`Found: ${v} in workflows`);
       }
+      console.log('');
+      hasWorkflowIssues = true;
     }
   }
+}
+
+// Check packageManager mismatches
+let hasPmIssues = false;
+const pm = pmVersions.get('packageManager');
+if (pm && pm.size > 1) {
+  console.log('🚨 PACKAGE MANAGER VERSION MISMATCH:');
+  console.log(
+    'Yarn/PNPM/NPM versions should be consistent across the monorepo:\n',
+  );
+  for (const v of [...pm.keys()].sort()) {
+    const files = pm.get(v);
+    const list = Array.isArray(files)
+      ? files.slice().sort()
+      : [...files].sort();
+    const shortFiles = list.map(f =>
+      f.replace(process.cwd(), '').replace('/package.json', ''),
+    );
+    console.log(`  ${v}: ${shortFiles.join(', ')}`);
+  }
+  console.log('');
+  hasPmIssues = true;
 }
 
 // Check for other package mismatches
@@ -324,6 +368,7 @@ console.log('='.repeat(60));
 const totalIssues = [
   hasCriticalIssues,
   hasWorkflowIssues,
+  hasPmIssues,
   hasOtherIssues,
 ].filter(Boolean).length;
 
@@ -349,6 +394,11 @@ if (totalIssues === 0) {
   if (hasWorkflowIssues) {
     console.log('  🚨 Workflow:');
     console.log('    • Node.js version mismatch');
+  }
+
+  if (hasPmIssues) {
+    console.log('  🚨 Package Manager:');
+    console.log('    • Package manager version mismatch');
   }
 
   if (hasOtherIssues) {
