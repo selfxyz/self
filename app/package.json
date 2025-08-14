@@ -190,6 +190,7 @@
     "typescript": "^5.9.2",
     "vite": "^7.0.0"
   },
+  "packageManager": "yarn@4.6.0",
   "engines": {
     "node": ">=22 <23"
   }
