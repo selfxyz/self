@@ -138,7 +138,7 @@ const PassportDataSelector = () => {
         return 'IND';
       }
       return null;
-    } catch (_error) {
+    } catch {
       return null;
     }
   };

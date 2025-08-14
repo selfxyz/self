@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
@@ -51,13 +51,13 @@ const SuccessScreen: React.FC = () => {
   const [countdownStarted, setCountdownStarted] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  function onOkPress() {
+  const onOkPress = useCallback(() => {
     buttonTap();
     goHome();
     setTimeout(() => {
       cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
-  }
+  }, [goHome, cleanSelfApp]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -91,7 +91,7 @@ const SuccessScreen: React.FC = () => {
               setCountdown(5);
               setCountdownStarted(true);
             }
-          } catch (_error) {
+          } catch {
             console.warn(
               'Invalid deep link URL provided:',
               selfApp.deeplinkCallback,

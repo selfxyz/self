@@ -226,6 +226,13 @@ module.exports = {
       },
     },
     {
+      // Allow require imports for conditional loading in navigation
+      files: ['src/navigation/index.tsx'],
+      rules: {
+        '@typescript-eslint/no-require-imports': 'off',
+      },
+    },
+    {
       files: ['*.cjs', '*.js'],
       env: {
         node: true,

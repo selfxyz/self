@@ -26,7 +26,7 @@ export async function clearDocumentCatalogForMigrationTesting(): Promise<void> {
     try {
       await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
       console.log(`Cleared document: ${doc.id}`);
-    } catch (_error) {
+    } catch {
       console.log(`Document ${doc.id} not found or already cleared`);
     }
   }
@@ -35,7 +35,7 @@ export async function clearDocumentCatalogForMigrationTesting(): Promise<void> {
   try {
     await Keychain.resetGenericPassword({ service: 'documentCatalog' });
     console.log('Cleared document catalog');
-  } catch (_error) {
+  } catch {
     console.log('Document catalog not found or already cleared');
   }
 
