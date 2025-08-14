@@ -23,7 +23,7 @@ yarn build
 <summary><strong>Split features into dedicated folders</strong></summary>
 
 1. Under `src/`, create folders like `mrz/`, `nfc/`, and `qr/` as features are added.
-2. Re-export feature APIs from `src/index.ts` to keep tree shaking intact.
+2. Re-export feature APIs from `src/index.ts` using explicit named exports to keep tree shaking intact.
 
 </details>
 
