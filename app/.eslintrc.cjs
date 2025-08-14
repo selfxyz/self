@@ -82,7 +82,7 @@ module.exports = {
 
     '@typescript-eslint/consistent-type-imports': [
       'error',
-      { prefer: 'type-imports' },
+      { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
     ],
 
     // Standard import rules
