@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
+    "check:versions": "node scripts/check-package-versions.mjs",
     "find:migration": "node scripts/find-migration.mjs",
     "format": "yarn format:root && yarn format:github && yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "prettier --parser yaml --write .github/**/*.yml --single-quote false",
@@ -21,8 +22,7 @@
     "prepare": "husky",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
-    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
-    "check:versions": "node scripts/check-package-versions.mjs"
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

@@ -8,6 +8,7 @@ const packagesToCheck = ['@types/node', 'typescript'];
 // Map<packageName, Map<version, string[]>>
 const depVersions = new Map();
 const pmVersions = new Map();
+const workflowVersions = new Map();
 
 function record(map, key, version, filePath) {
   if (!version) return;
@@ -42,7 +43,35 @@ async function walk(dir) {
   }
 }
 
+async function scanWorkflows() {
+  const wfDir = path.join(process.cwd(), '.github', 'workflows');
+  let files;
+  try {
+    files = await fs.readdir(wfDir);
+  } catch (err) {
+    if (err.code === 'ENOENT') return; // No workflows directory
+    throw err;
+  }
+  for (const file of files) {
+    if (!file.endsWith('.yml') && !file.endsWith('.yaml')) continue;
+    const fullPath = path.join(wfDir, file);
+    const content = await fs.readFile(fullPath, 'utf8');
+    const envMatch = content.match(/NODE_VERSION:\s*([^\n]+)/);
+    const envVersion = envMatch ? envMatch[1].trim().replace(/['"]/g, '') : null;
+    const regex = /node[-_]version:\s*([^\n]+)/g;
+    let m;
+    while ((m = regex.exec(content))) {
+      let version = m[1].trim().replace(/['"]/g, '');
+      if (version.includes('${{') && envVersion) {
+        version = envVersion;
+      }
+      record(workflowVersions, 'workflow node-version', version, fullPath);
+    }
+  }
+}
+
 await walk(process.cwd());
+await scanWorkflows();
 
 function report(map) {
   let mismatch = false;
@@ -59,5 +88,6 @@ function report(map) {
 
 const hasDepMismatch = report(depVersions);
 const hasPmMismatch = report(pmVersions);
+const hasWorkflowMismatch = report(workflowVersions);
 
-process.exit(hasDepMismatch || hasPmMismatch ? 1 : 0);
+process.exit(hasDepMismatch || hasPmMismatch || hasWorkflowMismatch ? 1 : 0);
