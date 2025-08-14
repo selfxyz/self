@@ -69,7 +69,8 @@ const handleNativeLogEvent = (event: NativeLogEvent) => {
   const { level, category, message, data } = event;
 
   // Route to appropriate logger based on category
-  let logger;
+  type LoggerInstance = typeof AppLogger;
+  let logger: LoggerInstance;
   switch (category.toLowerCase()) {
     case 'nfc':
       logger = injectedLoggers.NfcLogger;
@@ -85,19 +86,19 @@ const handleNativeLogEvent = (event: NativeLogEvent) => {
   // Log with appropriate level
   switch (level) {
     case 'debug':
-      (logger as any).debug(message, data);
+      logger.debug(message, data);
       break;
     case 'info':
-      (logger as any).info(message, data);
+      logger.info(message, data);
       break;
     case 'warn':
-      (logger as any).warn(message, data);
+      logger.warn(message, data);
       break;
     case 'error':
-      (logger as any).error(message, data);
+      logger.error(message, data);
       break;
     default:
-      (logger as any).info(message, data);
+      logger.info(message, data);
   }
 };
 
