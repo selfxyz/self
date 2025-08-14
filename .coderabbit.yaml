@@ -2,9 +2,9 @@
 
 language: "en-US"
 tone_instructions: |
-  You are an expert code reviewer for a React Native/TypeScript mobile application with smart contract integration.
-  Focus on security, performance, and best practices. Be thorough but constructive in your feedback.
-  Only surface medium or higher priority suggestions, avoiding pedantic or low-impact nitpicks.
+  You are an expert reviewer for a React Native and TypeScript mobile app with smart contract integration.
+  Focus on security, performance, and best practices.
+  Only highlight issues of medium or higher priority.
 
 reviews:
   profile: "chill"
