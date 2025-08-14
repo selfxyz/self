@@ -4,12 +4,13 @@ import type { AppStateStatus } from 'react-native';
 import { AppState } from 'react-native';
 import type { transportFunctionType } from 'react-native-logs';
 
+import { registerDocumentChangeCallback } from '@/providers/passportDataProvider';
+
 import {
   GRAFANA_LOKI_PASSWORD,
   GRAFANA_LOKI_URL,
   GRAFANA_LOKI_USERNAME,
 } from '../../../env';
-import { registerDocumentChangeCallback } from '../../providers/passportDataProvider';
 
 interface LokiLogEntry {
   timestamp: string;
@@ -132,6 +133,13 @@ registerDocumentChangeCallback((isMock: boolean) => {
   isCurrentPassportMockFlag = isMock;
 });
 
+export const cleanupLokiTransport = () => {
+  try {
+    appStateSubscription.remove?.();
+  } catch {}
+  flushLokiTransport();
+};
+
 // Export flush function for manual flushing if needed
 export const flushLokiTransport = () => {
   if (batch.length > 0) {
@@ -143,6 +151,17 @@ export const flushLokiTransport = () => {
     batchTimer = null;
   }
 };
+
+const handleAppStateChange = (nextAppState: AppStateStatus) => {
+  if (nextAppState === 'background' || nextAppState === 'inactive') {
+    flushLokiTransport();
+  }
+};
+
+const appStateSubscription = AppState.addEventListener(
+  'change',
+  handleAppStateChange,
+);
 
 // Create react-native-logs transport function
 export const lokiTransport: transportFunctionType<any> = props => {
@@ -188,11 +207,3 @@ export const lokiTransport: transportFunctionType<any> = props => {
 
   addToBatch(entry, namespace);
 };
-
-const handleAppStateChange = (nextAppState: AppStateStatus) => {
-  if (nextAppState === 'background' || nextAppState === 'inactive') {
-    flushLokiTransport();
-  }
-};
-
-AppState.addEventListener('change', handleAppStateChange);

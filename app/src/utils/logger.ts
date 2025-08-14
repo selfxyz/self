@@ -3,10 +3,9 @@
 import type { configLoggerType } from 'react-native-logs';
 import { logger } from 'react-native-logs';
 
-import { interceptConsole } from './logger/consoleInterceptor';
-import { lokiTransport } from './logger/lokiTransport';
-
-import './logger/nativeLoggerBridge';
+import { interceptConsole } from '@/utils/logger/consoleInterceptor';
+import { lokiTransport } from '@/utils/logger/lokiTransport';
+import { setupNativeLoggerBridge } from '@/utils/logger/nativeLoggerBridge';
 
 export {
   AppLogger,
@@ -41,9 +40,6 @@ const defaultConfig: configLoggerType<any, any> = {
 
 const Logger = logger.createLogger(defaultConfig);
 
-// Initialize console interceptor to route console logs to Loki
-interceptConsole();
-
 // loggers based on src/consts/analytics.ts
 const AppLogger = Logger.extend('APP');
 const NotificationLogger = Logger.extend('NOTIFICATION');
@@ -58,6 +54,9 @@ const DocumentLogger = Logger.extend('DOCUMENT');
 //Native Modules
 const NfcLogger = Logger.extend('NFC');
 
+// Initialize console interceptor to route console logs to Loki
+interceptConsole(AppLogger);
+
 // Define log levels
 export const logLevels = {
   debug: 0,
@@ -65,3 +64,7 @@ export const logLevels = {
   warn: 2,
   error: 3,
 };
+
+// Initialize native logger bridge after all loggers are defined
+// This avoids module cycle by injecting dependencies instead of importing them
+setupNativeLoggerBridge({ AppLogger, NfcLogger, Logger });

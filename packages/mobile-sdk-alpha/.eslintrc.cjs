@@ -51,6 +51,8 @@ module.exports = {
     'import/no-duplicates': 'error',
     'import/export': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-require-imports': 'error',
+    '@typescript-eslint/no-empty-object-type': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     // Add prettier rule to show prettier errors as ESLint errors
     'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
@@ -77,6 +79,13 @@ module.exports = {
       files: ['src/types/**/*.ts'],
       rules: {
         'sort-exports/sort-exports': 'off',
+      },
+    },
+    {
+      // Allow require imports only in the NFC decoder shim that conditionally imports node:util
+      files: ['src/processing/nfc.ts'],
+      rules: {
+        '@typescript-eslint/no-require-imports': 'off',
       },
     },
   ],

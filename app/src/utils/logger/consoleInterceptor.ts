@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { AppLogger } from '../logger';
-
 // Store original console methods
 const originalConsole = {
   log: console.log,
@@ -11,29 +9,29 @@ const originalConsole = {
   debug: console.debug,
 };
 
-const interceptConsole = () => {
+const interceptConsole = (appLogger: any) => {
   console.log = (...args: any[]) => {
-    AppLogger.info(...args);
+    appLogger.info(...args);
     originalConsole.log(...args);
   };
 
   console.info = (...args: any[]) => {
-    AppLogger.info(...args);
+    appLogger.info(...args);
     originalConsole.info(...args);
   };
 
   console.warn = (...args: any[]) => {
-    AppLogger.warn(...args);
+    appLogger.warn(...args);
     originalConsole.warn(...args);
   };
 
   console.error = (...args: any[]) => {
-    AppLogger.error(...args);
+    appLogger.error(...args);
     originalConsole.error(...args);
   };
 
   console.debug = (...args: any[]) => {
-    AppLogger.debug(...args);
+    appLogger.debug(...args);
     originalConsole.debug(...args);
   };
 };
