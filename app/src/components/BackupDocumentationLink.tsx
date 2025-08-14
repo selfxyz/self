@@ -10,11 +10,7 @@ const StyledAnchor = styled(Anchor, {
   textDecorationLine: 'underline',
 });
 
-interface BackupDocumentationLinkProps {}
-
-const BackupDocumentationLink: React.FC<
-  BackupDocumentationLinkProps
-> = ({}) => {
+const BackupDocumentationLink: React.FC = () => {
   if (Platform.OS === 'ios') {
     return (
       <StyledAnchor unstyled href="https://support.apple.com/en-us/102651">
