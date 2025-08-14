@@ -25,8 +25,6 @@ import { impactLight } from '@/utils/haptic';
 
 const { trackEvent } = analytics();
 
-interface ManageDocumentsScreenProps {}
-
 const PassportDataSelector = () => {
   const {
     loadDocumentCatalog,
@@ -140,7 +138,7 @@ const PassportDataSelector = () => {
         return 'IND';
       }
       return null;
-    } catch (_error) {
+    } catch {
       return null;
     }
   };
@@ -265,7 +263,7 @@ const PassportDataSelector = () => {
   );
 };
 
-const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
+const ManageDocumentsScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();
@@ -281,6 +279,7 @@ const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
   };
 
   const handleGenerateMock = () => {
+    if (!__DEV__) return;
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_MOCK_SELECTED);
     navigation.navigate('CreateMock');
@@ -313,9 +312,11 @@ const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
             <PrimaryButton onPress={handleScanDocument}>
               Scan New ID Document
             </PrimaryButton>
-            <SecondaryButton onPress={handleGenerateMock}>
-              Generate Mock Document
-            </SecondaryButton>
+            {__DEV__ && (
+              <SecondaryButton onPress={handleGenerateMock}>
+                Generate Mock Document
+              </SecondaryButton>
+            )}
           </ButtonsContainer>
         </YStack>
       </YStack>

@@ -8,7 +8,7 @@ import { shouldShowAesopRedesign } from '@/hooks/useAesopRedesign';
 import { slate400 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 
-interface AdditionalProps extends TextProps {}
+type AdditionalProps = TextProps;
 
 const Additional = ({ children, style, ...props }: AdditionalProps) => {
   return (

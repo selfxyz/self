@@ -7,7 +7,7 @@ Each chapter from the migration checklist includes granular tasks below. Pick ta
 ## Before you start
 
 - Run `yarn find:migration` to locate and open `.cursor/rules/mobile-sdk-migration.mdc` for full context.
-- Group new capabilities in their own directories (e.g., `processing/`, `validation/`, `mrz/`, `nfc/`, `qr/`) and re-export them from `src/index.ts` using explicit named exports.
+- Group new capabilities in their own directories (e.g., `processing/`, `validation/`, `mrz/`, `qr/`) and re-export them from `src/index.ts` using explicit named exports.
 
 ## Pre-flight checks
 
@@ -22,7 +22,7 @@ yarn lint
 yarn build
 ```
 
-## 1. Processing helpers (MRZ & NFC) ✅ COMPLETED
+## 1. Processing helpers (MRZ) ✅ COMPLETED
 
 <details>
 <summary><strong>Test MRZ parsing utilities</strong></summary>
@@ -33,19 +33,10 @@ yarn build
 </details>
 
 <details>
-<summary><strong>Add NFC response parser</strong></summary>
-
-1. ✅ Create `src/processing/nfc.ts` exporting a pure function to parse NFC chip responses into DG1/DG2 structures.
-2. Write tests in `tests/processing/nfc.test.ts`.
-3. ✅ Ensure no React Native dependencies.
-
-</details>
-
-<details>
 <summary><strong>Expose processing utilities</strong></summary>
 
-1. ✅ Update `src/index.ts` to re-export MRZ and NFC helpers.
-2. ✅ Create modular structure with `src/nfc/`, `src/mrz/`, and `src/qr/` modules.
+1. ✅ Update `src/index.ts` to re-export MRZ helpers.
+2. ✅ Create modular structure with `src/mrz/` and `src/qr/` modules.
 3. ✅ Implement proper error handling using `notImplemented` helper.
 4. ✅ Use type aliases instead of empty interfaces for better tree shaking.
 5. Document them in `README.md` under a "Processing utilities" section.
@@ -214,54 +205,13 @@ yarn build
 
 </details>
 
-## 9. Scanning adapters & NFC lifecycle
-
-<details>
-<summary><strong>Create scanning adapter interface</strong></summary>
-
-1. In `src/adapters/`, add `scanner.ts` exporting TypeScript interfaces for `MRZScanner` and `NFCScanner`.
-2. Reference React Native camera/NFC packages only through these interfaces.
-3. Document usage in `README.md`. Include a "Privacy & PII" subsection: forbid logging MRZ/NFC data, enable on-device processing only, and provide redaction utilities for debug.
-4. Never log MRZ strings, NFC APDUs, or chip contents anywhere (including telemetry).
-5. Ensure camera frames and NFC/APDU processing occur on-device with analytics disabled for those paths by default.
-6. Provide a redact/sanitize helper function for debug builds only.
-
-</details>
-
-<details>
-<summary><strong>Implement React Native MRZ adapter</strong></summary>
-
-1. Add `mrz-rn.ts` in `src/adapters/` implementing `MRZScanner` via `react-native-vision-camera`.
-2. Expose configuration for permissions, preview, and result handling.
-3. Write unit tests under `tests/` mocking camera output.
-
-</details>
-
-<details>
-<summary><strong>Implement React Native NFC adapter</strong></summary>
-
-1. Create `nfc-rn.ts` in `src/adapters/` implementing `NFCScanner` with `react-native-nfc-manager`.
-2. Provide lifecycle hooks so the app can call `keepScreenOn(true|false)` during sessions.
-3. Document app-level setup in `MIGRATION_CHECKLIST.md`.
-
-</details>
-
-<details>
-<summary><strong>Add scanning sample</strong></summary>
-
-1. Under `samples/`, add a React Native demo showing MRZ then NFC scanning.
-2. Include simple error handling and log output.
-3. Reference the sample from `README.md`.
-
-</details>
-
-## 10. Sample applications
+## 9. Sample applications
 
 <details>
 <summary><strong>Add React Native sample</strong></summary>
 
 1. Under `samples/react-native/`, scaffold a bare-bones app using Expo or React Native CLI.
-2. Demonstrate MRZ scanning, NFC reading, and registration flow using SDK APIs.
+2. Demonstrate MRZ scanning and registration flow using SDK APIs.
 3. Include instructions in a `README.md`.
 
 </details>
@@ -285,25 +235,25 @@ yarn build
 
 </details>
 
-## 11. Integrate SDK into `/app`
+## 10. Integrate SDK into `/app`
 
 <details>
 <summary><strong>Integrate SDK in /app</strong></summary>
 
 1. Add `@selfxyz/mobile-sdk-alpha` to `app/package.json`.
-2. Replace existing MRZ/NFC scanning modules with SDK adapters.
+2. Replace existing MRZ scanning modules with SDK adapters.
 3. Wire app screens to SDK processing and validation helpers.
 4. Validate builds and unit tests in the `app` workspace.
 
 </details>
 
-## 12. In-SDK lightweight demo
+## 11. In-SDK lightweight demo
 
 <details>
 <summary><strong>Create embedded demo app</strong></summary>
 
 1. Scaffold `demo/` under the SDK as a minimal React Native project.
-2. Use SDK APIs for MRZ → NFC → registration flow.
+2. Use SDK APIs for MRZ → proof flow.
 3. Expose simple theming configuration.
 4. Add `demo/README.md` with build/run instructions.
 5. Add publishing guardrails: exclude `demo/` from npm and add a CI step to verify the published tarball contents.

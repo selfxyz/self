@@ -15,9 +15,7 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '@/utils/colors';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 
-interface PassportNFCScanScreenProps {}
-
-const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
+const PassportNFCScanScreen: React.FC = () => {
   const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
   });

@@ -27,11 +27,9 @@ import analytics from '@/utils/analytics';
 import { black, slate800, white } from '@/utils/colors';
 import { parseAndValidateUrlParams } from '@/utils/deeplinks';
 
-interface QRCodeViewFinderScreenProps {}
-
 const { trackEvent } = analytics();
 
-const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
+const QRCodeViewFinderScreen: React.FC = () => {
   const { visible: connectionModalVisible } = useConnectionModal();
   const navigation = useNavigation();
   const isFocused = useIsFocused();

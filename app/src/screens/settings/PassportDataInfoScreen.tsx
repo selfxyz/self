@@ -59,9 +59,7 @@ const InfoRow: React.FC<{
   </YStack>
 );
 
-interface PassportDataInfoScreenProps {}
-
-const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
+const PassportDataInfoScreen: React.FC = () => {
   const { getData } = usePassport();
   const [metadata, setMetadata] = useState<PassportMetadata | null>(null);
   const { bottom } = useSafeAreaInsets();

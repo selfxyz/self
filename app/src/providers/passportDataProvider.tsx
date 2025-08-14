@@ -278,7 +278,7 @@ export async function clearDocumentCatalogForMigrationTesting() {
     try {
       await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
       console.log(`Cleared document: ${doc.id}`);
-    } catch (_error) {
+    } catch {
       console.log(`Document ${doc.id} not found or already cleared`);
     }
   }
@@ -287,7 +287,7 @@ export async function clearDocumentCatalogForMigrationTesting() {
   try {
     await Keychain.resetGenericPassword({ service: 'documentCatalog' });
     console.log('Cleared document catalog');
-  } catch (_error) {
+  } catch {
     console.log('Document catalog not found or already cleared');
   }
 
@@ -305,7 +305,7 @@ export async function clearPassportData() {
   for (const doc of catalog.documents) {
     try {
       await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
-    } catch (_error) {
+    } catch {
       console.log(`Document ${doc.id} not found or already cleared`);
     }
   }
@@ -345,7 +345,7 @@ export async function deleteDocument(documentId: string): Promise<void> {
   // Delete the actual document
   try {
     await Keychain.resetGenericPassword({ service: `document-${documentId}` });
-  } catch (_error) {
+  } catch {
     console.log(`Document ${documentId} not found or already cleared`);
   }
 }

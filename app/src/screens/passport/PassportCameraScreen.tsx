@@ -26,11 +26,9 @@ import { dinot } from '@/utils/fonts';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 import { checkScannedInfo } from '@/utils/utils';
 
-interface PassportNFCScanScreen {}
-
 const { trackEvent } = analytics();
 
-const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
+const PassportCameraScreen: React.FC = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();

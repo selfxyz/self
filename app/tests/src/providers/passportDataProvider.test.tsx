@@ -90,7 +90,7 @@ const ErrorBoundaryTest = () => {
     try {
       // This would normally call a context function
       return 'success';
-    } catch (_error) {
+    } catch {
       return 'error';
     }
   };
@@ -446,9 +446,10 @@ describe('PassportDataProvider', () => {
 
       // Re-import the module after mocking to ensure mock is applied
       const passportModule = require('@/providers/passportDataProvider');
-      const loadDocumentCatalogLocal = passportModule.loadDocumentCatalog;
+      const loadDocumentCatalogLocalUndefined =
+        passportModule.loadDocumentCatalog;
 
-      const result = await loadDocumentCatalogLocal();
+      const result = await loadDocumentCatalogLocalUndefined();
 
       expect(result).toEqual({ documents: [] });
     });

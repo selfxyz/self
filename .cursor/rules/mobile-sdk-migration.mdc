@@ -47,12 +47,11 @@ contextUsageNote: If this file is used to add in-context notes, include a single
 
 ## Migration Checklist Items
 
-### 1. Processing Helpers (MRZ & NFC)
-**Current Location**: `app/src/utils/` (MRZ utilities, NFC scanner)
+### 1. Processing Helpers (MRZ)
+**Current Location**: `app/src/utils/` (MRZ utilities)
 **Target Location**: `packages/mobile-sdk-alpha/src/processing/`
 **Testing Strategy**:
 - Create MRZ parsing tests with sample passport data
-- Create NFC response parser tests with mock NFC data
 - Test cross-platform compatibility (React Native vs Web)
 
 ### 2. Validation Module
@@ -114,42 +113,26 @@ contextUsageNote: If this file is used to add in-context notes, include a single
 - Test signature verification
 - Test storage adapter integration
 
-### 9. Scanning Adapters & NFC Lifecycle
-**Current Location**: `app/src/utils/nfcScanner.ts`
-**Target Location**: `packages/mobile-sdk-alpha/src/adapters/`
+### 9. Sample Applications
+**Target Location**: `packages/mobile-sdk-alpha/samples/`
 **Testing Strategy**:
-- Test cross-platform scanner interfaces
-- Test React Native MRZ and NFC adapters
-- Test screen-on hooks integration
-- Test flow chaining (MRZ → NFC)
-
-### 10. Sample Applications
-**Target Location**: `packages/mobile-sdk-alpha/examples/`
-**Testing Strategy**:
-- Create React Native demo with core flows
-- Create web demo with browser adapters
+- Create React Native demo with MRZ → proof flow
+- Create web demo with browser-based MRZ input
 - Test iOS `OpenPassport` URL scheme
 
-### 11. SDK Integration into App
+### 10. SDK Integration into App
 **Migration Strategy**:
 - Replace existing modules with SDK imports
 - Update import paths throughout app
 - Validate all existing functionality works
 - Ensure no regression in app behavior
 
-### 12. In-SDK Lightweight Demo
+### 11. In-SDK Lightweight Demo
 **Target Location**: `packages/mobile-sdk-alpha/demo/`
 **Testing Strategy**:
-- Embedded React Native demo
+- Embedded React Native demo using MRZ → proof flow
 - Test theming hooks integration
 - Validate build and run instructions
-
-### 13. Partner Feedback Integration
-**Enhancements**:
-- OAuth-style branding customization
-- Callback hooks for async operations
-- Expanded document coverage
-- Bundle size optimization
 
 ## Testing Best Practices
 

@@ -347,11 +347,16 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           darkMode={true}
         >
           {[
-            {
-              label: 'Display your private key',
-              onPress: () => navigation.navigate('DevPrivateKey'),
-              dangerTheme: false,
-            },
+            // Only show private key button in development
+            ...(__DEV__
+              ? [
+                  {
+                    label: 'Display your private key',
+                    onPress: () => navigation.navigate('DevPrivateKey'),
+                    dangerTheme: false,
+                  },
+                ]
+              : []),
             {
               label: 'Delete your private key',
               onPress: handleClearSecretsPress,

@@ -27,11 +27,7 @@ import {
 } from '@/utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
 
-interface RecoverWithPhraseScreenProps {}
-
-const RecoverWithPhraseScreen: React.FC<
-  RecoverWithPhraseScreenProps
-> = ({}) => {
+const RecoverWithPhraseScreen: React.FC = () => {
   const navigation = useNavigation();
   const { restoreAccountFromMnemonic } = useAuth();
   const { trackEvent } = analytics();

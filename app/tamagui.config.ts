@@ -73,6 +73,8 @@ declare module 'tamagui' {
   // or '@tamagui/core'
   // overrides TamaguiCustomConfig so your custom types
   // work everywhere you import `tamagui`
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface TamaguiCustomConfig extends AppConfig {}
 }
 

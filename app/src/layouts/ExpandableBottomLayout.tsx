@@ -72,7 +72,7 @@ const TopSection: React.FC<TopSectionProps> = ({
   );
 };
 
-interface FullSectionProps extends ViewProps {}
+type FullSectionProps = ViewProps;
 /*
  * Rather than using a top and bottom section, this component is te entire thing.
  * It leave space for the safe area insets and provides basic padding

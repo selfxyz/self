@@ -8,9 +8,7 @@ import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { black, slate50, slate200, teal500, white } from '@/utils/colors';
 import { confirmTap } from '@/utils/haptic';
 
-interface DevPrivateKeyScreen {}
-
-const DevPrivateKeyScreen: React.FC<DevPrivateKeyScreen> = ({}) => {
+const DevPrivateKeyScreen: React.FC = () => {
   const [privateKey, setPrivateKey] = useState<string | null>(
     'Loading private key…',
   );

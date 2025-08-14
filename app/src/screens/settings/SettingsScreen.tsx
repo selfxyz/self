@@ -40,7 +40,6 @@ import { getCountry, getLocales, getTimeZone } from '@/utils/locale';
 
 import { version } from '../../../package.json';
 
-interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {
   Icon: React.FC<SvgProps>;
   onPress: () => void;
@@ -140,9 +139,8 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
   );
 };
 
-const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
+const SettingsScreen: React.FC = () => {
   const { isDevMode, setDevModeOn } = useSettingStore();
-  useSettingStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 

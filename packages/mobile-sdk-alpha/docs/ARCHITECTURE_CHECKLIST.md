@@ -10,9 +10,9 @@ The alpha SDK follows an adapter-first, React Native–oriented design. Tree-sha
 
 ### 1. Modular feature directories ✅ COMPLETED
 
-- [x] Group new capabilities (e.g., `mrz/`, `nfc/`, `qr/`) in their own folders
+- [x] Group new capabilities (e.g., `mrz/`, `qr/`) in their own folders
 - [x] Re-export from `src/index.ts` using explicit named exports (avoid `export *`)
-- [x] Create `src/nfc/`, `src/mrz/`, and `src/qr/` modules
+- [x] Create `src/mrz/` and `src/qr/` modules
 - [x] Implement proper error handling with `notImplemented` helper
 - [x] Use type aliases instead of empty interfaces for better tree shaking
 
@@ -44,12 +44,12 @@ The alpha SDK follows an adapter-first, React Native–oriented design. Tree-sha
 
 - [ ] Integrate the SDK into the monorepo's `app` workspace
 - [ ] Validate real flows
-- [ ] Replace existing MRZ/NFC modules with SDK adapters
+- [ ] Replace existing MRZ modules with SDK adapters
 
 ### 7. Android demo app
 
 - [ ] Ship a minimal React Native Android project
-- [ ] Demonstrate MRZ → NFC → proof generation flow
+- [ ] Demonstrate MRZ → proof generation flow
 - [ ] Provide build and run instructions
 
 ## Working in Parallel

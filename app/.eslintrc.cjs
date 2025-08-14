@@ -174,6 +174,8 @@ module.exports = {
       files: ['docs/examples/**/*.ts'],
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        'no-console': 'off',
         'no-unused-vars': 'off',
         'import/no-unresolved': 'off',
       },
@@ -194,11 +196,14 @@ module.exports = {
     },
     {
       files: ['tests/**/*.{ts,tsx}'],
+      env: {
+        jest: true,
+      },
       parserOptions: {
         project: './tsconfig.test.json',
       },
       rules: {
-        // Allow console logging in tests
+        // Allow console logging and relaxed typing in tests
         'no-console': 'off',
         // Allow require() imports in tests for mocking
         '@typescript-eslint/no-require-imports': 'off',
@@ -221,6 +226,13 @@ module.exports = {
       },
     },
     {
+      // Allow require imports for conditional loading in navigation
+      files: ['src/navigation/index.tsx'],
+      rules: {
+        '@typescript-eslint/no-require-imports': 'off',
+      },
+    },
+    {
       files: ['*.cjs', '*.js'],
       env: {
         node: true,
@@ -232,6 +244,10 @@ module.exports = {
         sourceType: 'script',
       },
       rules: {
+        'no-console': 'off',
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-var-requires': 'off',
         '@typescript-eslint/no-require-imports': 'off',
         'no-undef': 'off',
