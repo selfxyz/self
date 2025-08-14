@@ -5022,7 +5022,6 @@ __metadata:
     prettier-plugin-solidity: "npm:^2.0.0"
     snarkjs: "npm:^0.7.4"
     solidity-coverage: "npm:^0.8.14"
-    ts-node: "npm:^10.9.2"
     typechain: "npm:^8.3.2"
     typescript: "npm:^5.9.2"
   languageName: unknown
@@ -5125,7 +5124,7 @@ __metadata:
     country-emoji: "npm:^1.5.6"
     country-iso-3-to-2: "npm:^1.1.1"
     elliptic: "npm:^6.6.1"
-    eslint: "npm:^8.19.0"
+    eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:10.1.8"
     eslint-import-resolver-typescript: "npm:^3.7.0"
     eslint-plugin-header: "npm:^3.1.1"
@@ -15116,7 +15115,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^8.19.0, eslint@npm:^8.57.0":
+"eslint@npm:^8.57.0":
   version: 8.57.1
   resolution: "eslint@npm:8.57.1"
   dependencies:
