@@ -56,8 +56,6 @@ import { buttonTap, selectionChange } from '@/utils/haptic';
 
 const { trackEvent } = analytics();
 
-interface MockDataScreenProps {}
-
 const documentTypes = {
   mock_passport: 'Passport',
   mock_id_card: 'ID Card',
@@ -244,7 +242,7 @@ const FormSection: React.FC<FormSectionProps> = ({
   );
 };
 
-const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
+const MockDataScreen: React.FC = () => {
   const navigation = useNavigation();
   const [age, setAge] = useState(21);
   const [expiryYears, setExpiryYears] = useState(5);

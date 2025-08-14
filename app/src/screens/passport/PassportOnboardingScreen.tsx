@@ -20,11 +20,7 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '@/utils/colors';
 import { impactLight } from '@/utils/haptic';
 
-interface PassportOnboardingScreenProps {}
-
-const PassportOnboardingScreen: React.FC<
-  PassportOnboardingScreenProps
-> = ({}) => {
+const PassportOnboardingScreen: React.FC = () => {
   const navigation = useNavigation();
   const handleCameraPress = useHapticNavigation('PassportCamera');
   const animationRef = useRef<LottieView>(null);

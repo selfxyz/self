@@ -7,7 +7,7 @@ import { StyleSheet, Text } from 'react-native';
 import { slate700 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 
-interface CautionProps extends TextProps {}
+type CautionProps = TextProps;
 
 const Caution = ({ children, style, ...props }: CautionProps) => {
   return (

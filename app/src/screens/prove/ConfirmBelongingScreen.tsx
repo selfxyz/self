@@ -23,11 +23,11 @@ import {
 } from '@/utils/notifications/notificationService';
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
-type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
+type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
 const { trackEvent } = analytics();
 
-const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
+const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const navigate = useHapticNavigation('LoadingScreen', {
     params: {},
   });

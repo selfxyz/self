@@ -4,7 +4,7 @@ import type { PropsWithChildren } from 'react';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-interface ConnectedAppLayoutProps extends PropsWithChildren {}
+type ConnectedAppLayoutProps = PropsWithChildren;
 
 export default function ConnectedAppLayout({
   children,

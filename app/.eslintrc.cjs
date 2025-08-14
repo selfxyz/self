@@ -172,6 +172,8 @@ module.exports = {
       files: ['docs/examples/**/*.ts'],
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        'no-console': 'off',
         'no-unused-vars': 'off',
         'import/no-unresolved': 'off',
       },
@@ -196,8 +198,10 @@ module.exports = {
         project: './tsconfig.test.json',
       },
       rules: {
-        // Allow console logging in tests
+        // Allow console logging and relaxed typing in tests
         'no-console': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
       },
     },
     {
@@ -205,6 +209,9 @@ module.exports = {
       files: ['scripts/**/*.cjs', 'scripts/*.cjs'],
       rules: {
         'no-console': 'off',
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
       },
     },
     {

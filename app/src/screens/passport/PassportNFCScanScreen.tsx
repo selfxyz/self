@@ -52,8 +52,6 @@ import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument'
 
 const { trackEvent } = analytics();
 
-interface PassportNFCScanScreenProps {}
-
 const emitter =
   Platform.OS === 'android'
     ? new NativeEventEmitter(NativeModules.nativeModule)
@@ -73,7 +71,7 @@ type PassportNFCScanRoute = RouteProp<
   string
 >;
 
-const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
+const PassportNFCScanScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<PassportNFCScanRoute>();
   const {

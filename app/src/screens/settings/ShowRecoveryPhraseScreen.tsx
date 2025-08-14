@@ -7,11 +7,7 @@ import Description from '@/components/typography/Description';
 import useMnemonic from '@/hooks/useMnemonic';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
-interface ShowRecoveryPhraseScreenProps {}
-
-const ShowRecoveryPhraseScreen: React.FC<
-  ShowRecoveryPhraseScreenProps
-> = ({}) => {
+const ShowRecoveryPhraseScreen: React.FC = () => {
   const { mnemonic, loadMnemonic } = useMnemonic();
 
   const onRevealWords = useCallback(async () => {

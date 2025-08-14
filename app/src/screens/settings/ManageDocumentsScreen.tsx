@@ -25,8 +25,6 @@ import { impactLight } from '@/utils/haptic';
 
 const { trackEvent } = analytics();
 
-interface ManageDocumentsScreenProps {}
-
 const PassportDataSelector = () => {
   const {
     loadDocumentCatalog,
@@ -265,7 +263,7 @@ const PassportDataSelector = () => {
   );
 };
 
-const ManageDocumentsScreen: React.FC<ManageDocumentsScreenProps> = ({}) => {
+const ManageDocumentsScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();

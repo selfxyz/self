@@ -55,7 +55,8 @@ export const navigationRef = createNavigationContainerRef();
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    // Use a type alias to avoid empty interface warnings
+    type RootParamList = RootStackParamList;
   }
 }
 

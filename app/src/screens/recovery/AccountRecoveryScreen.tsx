@@ -13,9 +13,7 @@ import RestoreAccountSvg from '@/images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate600, white } from '@/utils/colors';
 
-interface AccountRecoveryScreenProps {}
-
-const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
+const AccountRecoveryScreen: React.FC = () => {
   const onRestoreAccountPress = useHapticNavigation('AccountRecoveryChoice');
   const onCreateAccountPress = useHapticNavigation('CloudBackupSettings', {
     params: {

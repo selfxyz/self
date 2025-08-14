@@ -11,15 +11,14 @@ import { Title } from '@/components/typography/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { white } from '@/utils/colors';
 
-interface DetailListProps
-  extends PropsWithChildren<{
-    title: string;
-    onDismiss: () => void;
-    secondaryButtonText?: string;
-    onSecondaryButtonPress?: () => void;
-    header?: React.ReactNode;
-    footer?: React.ReactNode;
-  }> {}
+type DetailListProps = PropsWithChildren<{
+  title: string;
+  onDismiss: () => void;
+  secondaryButtonText?: string;
+  onSecondaryButtonPress?: () => void;
+  header?: React.ReactNode;
+  footer?: React.ReactNode;
+}>;
 
 export default function SimpleScrolledTitleLayout({
   title,
