@@ -146,7 +146,7 @@ describe('LoggerProvider', () => {
     console.error = originalError;
   });
 
-  it('should initialize nativeLoggerBridge when LoggerProvider mounts', () => {
+  it('should import nativeLoggerBridge module successfully', () => {
     // The nativeLoggerBridge import should be called when LoggerProvider is rendered
     render(
       <LoggerProvider>
