@@ -64,7 +64,7 @@
     "eslint-plugin-sort-exports": "^0.8.0",
     "prettier": "^3.5.3",
     "tsup": "^8.0.1",
-    "typescript": "^5.5.4",
+    "typescript": "^5.8.3",
     "vitest": "^1.6.0"
   },
   "publishConfig": {

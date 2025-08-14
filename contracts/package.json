@@ -79,8 +79,6 @@
     "@openzeppelin/contracts": "^5.0.2",
     "@openzeppelin/contracts-upgradeable": "^5.1.0",
     "@selfxyz/common": "workspace:^",
-    "@types/circomlibjs": "^0.1.6",
-    "@types/jest": "^29.5.12",
     "@zk-kit/imt": "^2.0.0-beta.4",
     "@zk-kit/imt.sol": "^2.0.0-beta.12",
     "@zk-kit/lean-imt": "^2.0.1",
@@ -106,6 +104,8 @@
     "@typechain/ethers-v6": "^0.4.3",
     "@typechain/hardhat": "^8.0.3",
     "@types/chai": "^4.3.16",
+    "@types/circomlibjs": "^0.1.6",
+    "@types/jest": "^29.5.12",
     "@types/mocha": "^10.0.6",
     "@types/snarkjs": "^0.7.7",
     "chai": "^4.4.1",
@@ -119,7 +119,7 @@
     "solidity-coverage": "^0.8.14",
     "ts-node": "^10.9.1",
     "typechain": "^8.3.2",
-    "typescript": "^5.1.6"
+    "typescript": "^5.8.3"
   },
   "packageManager": "yarn@4.5.3",
   "engines": {
