@@ -69,8 +69,7 @@ const handleNativeLogEvent = (event: NativeLogEvent) => {
   const { level, category, message, data } = event;
 
   // Route to appropriate logger based on category
-  type LoggerInstance = typeof AppLogger;
-  let logger: LoggerInstance;
+  let logger: any;
   switch (category.toLowerCase()) {
     case 'nfc':
       logger = injectedLoggers.NfcLogger;
