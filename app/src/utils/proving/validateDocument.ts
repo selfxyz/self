@@ -67,7 +67,7 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
       ) => {
         anyFailureReported = true;
         trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-          error,
+          error: 'Passport data is not valid',
           documentId,
           mock: data?.mock,
           documentCategory: data?.documentCategory,
