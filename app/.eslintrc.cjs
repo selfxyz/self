@@ -194,6 +194,9 @@ module.exports = {
     },
     {
       files: ['tests/**/*.{ts,tsx}'],
+      env: {
+        jest: true,
+      },
       parserOptions: {
         project: './tsconfig.test.json',
       },
@@ -206,16 +209,7 @@ module.exports = {
     },
     {
       // Allow console logging in scripts
-      files: ['scripts/**/*.cjs', 'scripts/*.cjs'],
-      rules: {
-        'no-console': 'off',
-        'no-unused-vars': 'off',
-        '@typescript-eslint/no-unused-vars': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-      },
-    },
-    {
-      files: ['*.cjs'],
+      files: ['scripts/**/*.cjs', 'scripts/*.cjs', '*.cjs'],
       env: {
         node: true,
         commonjs: true,
@@ -226,6 +220,10 @@ module.exports = {
         sourceType: 'script',
       },
       rules: {
+        'no-console': 'off',
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-var-requires': 'off',
         'no-undef': 'off',
       },

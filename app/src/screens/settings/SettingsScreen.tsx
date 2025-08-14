@@ -141,7 +141,6 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
 
 const SettingsScreen: React.FC = () => {
   const { isDevMode, setDevModeOn } = useSettingStore();
-  useSettingStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
