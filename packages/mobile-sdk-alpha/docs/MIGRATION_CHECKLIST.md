@@ -12,10 +12,10 @@
 - [x] Implement proper error handling using `notImplemented` helper.
 - [x] Use type aliases instead of empty interfaces for better tree shaking.
 
-## 2. Validation module
+## 2. Validation module ✅ COMPLETED
 
-- Port stateless document checks.
-- Cover validation logic with unit tests.
+- [x] Port stateless document checks.
+- [x] Cover validation logic with unit tests.
 
 ## 3. Proof input generation
 
