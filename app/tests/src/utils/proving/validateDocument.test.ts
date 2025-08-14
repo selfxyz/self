@@ -51,21 +51,21 @@ jest.mock('@/stores/protocolStore', () => ({
   },
 }));
 
-describe('validateDocument - Real mobile-sdk-alpha Integration', () => {
-  it('should use the real isPassportDataValid function from mobile-sdk-alpha', () => {
+describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () => {
+  it('should use the real isPassportDataValid function with synthetic passport data', () => {
     // This test verifies that we're using the real function, not a mock
     expect(typeof isPassportDataValid).toBe('function');
 
     // The real function should be callable
     expect(typeof isPassportDataValid).toBe('function');
 
-    // Test with minimal valid passport data
+    // Test with realistic, synthetic passport data (NEVER real user data)
     const mockPassportData: PassportData = {
       documentCategory: 'passport',
       mock: true,
       mrz: 'P<UTOD23145890<1233<6831101169<9408125F2206304<<<<<6',
       dsc: 'mock_dsc_data',
-      eContent: new Uint8Array([1, 2, 3, 4]),
+      eContent: [1, 2, 3, 4],
       passportMetadata: {
         cscaFound: true,
         eContentHashFunction: 'sha256',
@@ -133,7 +133,7 @@ describe('validateDocument - Real mobile-sdk-alpha Integration', () => {
   });
 
   it('should import and use real mobile-sdk-alpha exports', () => {
-    // Verify that we can import other exports from the real package
+    // Verify that we can import other exports from the real package (using synthetic data)
     const {
       createSelfClient,
       defaultConfig,

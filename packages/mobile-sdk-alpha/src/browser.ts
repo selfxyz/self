@@ -43,7 +43,13 @@ export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
+// Core functions
+export { isPassportDataValid } from './validation/document';
+
 export { mergeConfig } from './config/merge';
+
 export { parseNFCResponse, scanNFC } from './nfc';
+
 export { scanQRProof } from './qr';
+
 export { webScannerShim } from './adapters/web/shims';

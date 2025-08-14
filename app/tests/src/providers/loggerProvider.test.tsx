@@ -101,7 +101,11 @@ const TestComponent = () => {
     loggers.NfcLogger.debug('NFC test');
   }, [loggers]);
 
-  return <Text testID="test-component">Test Component</Text>;
+  return (
+    <Text testID="test-component">
+      Test Component - AppLogger Level: {loggers.logLevels.info}
+    </Text>
+  );
 };
 
 describe('LoggerProvider', () => {
@@ -109,28 +113,33 @@ describe('LoggerProvider', () => {
     jest.clearAllMocks();
   });
 
-  it('should provide all required logger instances', () => {
+  it('should provide all required logger instances and allow logging', () => {
     render(
       <LoggerProvider>
         <TestComponent />
       </LoggerProvider>,
     );
 
-    // Verify the component renders without errors
+    // Verify the component renders without errors and shows context values
     expect(screen.getByTestId('test-component')).toBeTruthy();
+    expect(
+      screen.getByText('Test Component - AppLogger Level: 1'),
+    ).toBeTruthy();
+
+    // Verify that logger methods were called with expected arguments
+    const { AppLogger, NfcLogger } = require('@/utils/logger');
+    expect(AppLogger.info).toHaveBeenCalledWith('Test message');
+    expect(NfcLogger.debug).toHaveBeenCalledWith('NFC test');
   });
 
-  it('should initialize nativeLoggerBridge when LoggerProvider mounts', () => {
-    // The nativeLoggerBridge import should be called when LoggerProvider is rendered
+  it('should initialize and allow loggers to be called', () => {
     render(
       <LoggerProvider>
-        <div>Test</div>
+        <Text>Test</Text>
       </LoggerProvider>,
     );
-
-    // Verify that the LoggerProvider renders without errors
-    // This implicitly tests that the nativeLoggerBridge import works
-    expect(true).toBe(true);
+    // The TestComponent is rendered in other tests; here we just assert provider renders without errors
+    expect(screen.getByText('Test')).toBeTruthy();
   });
 
   it('should throw error when useLogger is used outside LoggerProvider', () => {
@@ -150,13 +159,12 @@ describe('LoggerProvider', () => {
     // The nativeLoggerBridge import should be called when LoggerProvider is rendered
     render(
       <LoggerProvider>
-        <div>Test</div>
+        <Text>Test</Text>
       </LoggerProvider>,
     );
 
-    // Verify that the nativeLoggerBridge module was imported (which triggers its initialization)
-    // This is implicit since we're importing it in the LoggerProvider
-    expect(true).toBe(true); // Placeholder - the real test is that no errors occur
+    // Verify that the LoggerProvider renders without errors
+    expect(screen.getByText('Test')).toBeTruthy();
   });
 
   it('should provide logLevels constant', () => {

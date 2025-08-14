@@ -58,14 +58,25 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
       const selectedDocument = await loadSelectedDocument();
       if (!selectedDocument) continue;
       let { data: passportData } = selectedDocument;
-      const logValidationError = (error: string, data?: PassportData) =>
+      const logValidationError = (
+        error: string,
+        data?: PassportData,
+        additionalContext?: Record<string, any>,
+      ) => {
+        // Create a fingerprint for DSC data instead of sending raw data
+        const dscFingerprint = data?.dsc
+          ? Buffer.from(data.dsc).toString('base64').substring(0, 16)
+          : undefined;
+
         trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
           error,
           documentId,
           mock: data?.mock,
-          dsc: data?.dsc,
+          dscFingerprint,
           documentCategory: data?.documentCategory,
+          ...additionalContext,
         });
+      };
       let isValid = false;
       try {
         const callbacks: PassportValidationCallbacks = {
@@ -84,7 +95,12 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
             field: 'dg1' | 'eContent' | 'signedAttr',
             value: string,
             data: PassportData,
-          ) => logValidationError(`unsupported_hash_algorithm_${field}`, data),
+          ) => {
+            logValidationError(`unsupported_hash_algorithm_${field}`, data, {
+              unsupportedAlgorithm: value,
+              field: field,
+            });
+          },
           onDg1HashMissing: (d: PassportData) =>
             logValidationError('dg1_hash_missing', d),
         };
