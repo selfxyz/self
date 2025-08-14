@@ -51,6 +51,8 @@ module.exports = {
     'import/no-duplicates': 'error',
     'import/export': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-require-imports': 'off',
+    '@typescript-eslint/no-empty-object-type': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     // Add prettier rule to show prettier errors as ESLint errors
     'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
