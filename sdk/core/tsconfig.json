@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node16",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
     "baseUrl": "."
   },
   "include": ["index.ts", "src/**/*", "circuits/**/*", "circuits/**/*.json", "utils/utils.ts"],

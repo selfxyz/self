@@ -65,6 +65,10 @@ const config: KnipConfig = {
   // Workspace-specific configurations
   workspaces: {
     'app': {
+      entry: [
+        'index.js',
+        'web/main.tsx'
+      ],
       ignore: [
         // React Native config files
         'declarations.d.ts',
@@ -73,10 +77,6 @@ const config: KnipConfig = {
         // Test utilities
         'src/mocks/**',
         'src/utils/testingUtils.ts',
-
-        // Platform-specific entry points
-        'src/index.native.ts',
-        'src/index.web.ts',
       ],
 
       ignoreDependencies: [
