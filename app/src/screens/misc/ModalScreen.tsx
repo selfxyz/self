@@ -45,7 +45,7 @@ export interface ModalParams extends Record<string, any> {
   preventDismiss?: boolean;
 }
 
-interface ModalScreenProps extends StaticScreenProps<ModalNavigationParams> {}
+type ModalScreenProps = StaticScreenProps<ModalNavigationParams>;
 
 const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   const navigation = useNavigation();

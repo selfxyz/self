@@ -26,16 +26,18 @@ export function optimalLevel3Example(data: PassportData, secret: string) {
   // This will result in the smallest possible bundle
   // Only the specific individual functions we use are included
   // Bundle size reduction: ~75-90% compared to broad imports!
-
   console.log('Using API:', API_URL);
+
   console.log('Attestation ID:', PASSPORT_ATTESTATION_ID);
 
   // Use specific hash function from SHA module
   const hashedData = hash([1, 2, 3, 4], 'hex');
+
   console.log('SHA hashed data:', hashedData);
 
   // Use specific Poseidon function for commitment
   const poseidonHash = flexiblePoseidon([BigInt(1), BigInt(2)]);
+
   console.log('Poseidon hash:', poseidonHash);
 
   // Use specific passport functions

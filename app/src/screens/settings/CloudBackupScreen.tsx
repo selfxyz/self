@@ -27,13 +27,12 @@ const { trackEvent } = analytics();
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 
-interface CloudBackupScreenProps
-  extends StaticScreenProps<
-    | {
-        nextScreen?: NextScreen;
-      }
-    | undefined
-  > {}
+type CloudBackupScreenProps = StaticScreenProps<
+  | {
+      nextScreen?: NextScreen;
+    }
+  | undefined
+>;
 
 const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   route: { params },

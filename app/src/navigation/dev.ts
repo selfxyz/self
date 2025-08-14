@@ -3,7 +3,7 @@
 import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
+// DevPrivateKeyScreen is loaded lazily to avoid bundling in production
 import { black, white } from '@/utils/colors';
 
 const DevFeatureFlagsScreen = lazy(
@@ -16,6 +16,9 @@ const DevSettingsScreen = lazy(() => import('@/screens/dev/DevSettingsScreen'));
 const MockDataScreen = lazy(() => import('@/screens/dev/MockDataScreen'));
 const MockDataScreenDeepLink = lazy(
   () => import('@/screens/dev/MockDataScreenDeepLink'),
+);
+const DevPrivateKeyScreen = lazy(
+  () => import('@/screens/dev/DevPrivateKeyScreen'),
 );
 
 const devScreens = {

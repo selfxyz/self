@@ -9,7 +9,7 @@ import { shouldShowAesopRedesign } from '@/hooks/useAesopRedesign';
 import { slate500 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 
-interface DescriptionProps extends TextProps {}
+type DescriptionProps = TextProps;
 
 const Description = ({ children, style, ...props }: DescriptionProps) => {
   return (

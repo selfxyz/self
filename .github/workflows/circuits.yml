@@ -54,10 +54,48 @@ jobs:
         if: steps.circom-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/.cache/circom
-          wget -qO ~/.cache/circom/circom https://github.com/iden3/circom/releases/download/v${{ env.CIRCOM_VERSION }}/circom-linux-amd64
+
+          # Download with curl (more reliable than wget in CI environments)
+          # Use exponential backoff retry logic
+          for attempt in 1 2 3; do
+            echo "Download attempt $attempt/3..."
+
+            if curl -L --connect-timeout 30 --max-time 300 \
+                --retry 3 --retry-delay 2 --retry-max-time 600 \
+                -o ~/.cache/circom/circom \
+                "https://github.com/iden3/circom/releases/download/v${{ env.CIRCOM_VERSION }}/circom-linux-amd64"; then
+              echo "✅ Download successful!"
+              break
+            else
+              echo "❌ Download failed on attempt $attempt"
+              if [ $attempt -eq 3 ]; then
+                echo "💥 All download attempts failed"
+                exit 1
+              fi
+              # Exponential backoff: 5s, 10s, 20s
+              sleep_time=$((5 * attempt))
+              echo "⏳ Waiting ${sleep_time}s before retry..."
+              sleep $sleep_time
+            fi
+          done
+
+          # Verify file exists and has content
+          if [ ! -f ~/.cache/circom/circom ]; then
+            echo "💥 Error: circom binary file is missing"
+            exit 1
+          fi
+
+          if [ ! -s ~/.cache/circom/circom ]; then
+            echo "💥 Error: circom binary file is empty"
+            exit 1
+          fi
+
+          echo "📁 File size: $(ls -lh ~/.cache/circom/circom | awk '{print $5}')"
           chmod +x ~/.cache/circom/circom
-          # Verify checksum - SHA256 for circom v2.1.9 linux-amd64
-          echo "${{ env.CIRCOM_SHA256 }}  ~/.cache/circom/circom" | sha256sum -c -
+
+          # Verify checksum
+          echo "🔍 Verifying checksum..."
+          echo "${{ env.CIRCOM_SHA256 }}  $HOME/.cache/circom/circom" | sha256sum -c -
 
       - name: Save Circom cache
         if: steps.circom-cache.outputs.cache-hit != 'true'
@@ -69,7 +107,7 @@ jobs:
       - name: Verify Circom checksum (cache hit)
         if: steps.circom-cache.outputs.cache-hit == 'true'
         run: |
-          echo "${{ env.CIRCOM_SHA256 }}  ~/.cache/circom/circom" | sha256sum -c -
+          echo "${{ env.CIRCOM_SHA256 }}  $HOME/.cache/circom/circom" | sha256sum -c -
 
       - name: Add Circom to PATH
         run: echo "$HOME/.cache/circom" >> "$GITHUB_PATH"

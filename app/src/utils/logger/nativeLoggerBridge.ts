@@ -2,7 +2,8 @@
 
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
-import { AppLogger, Logger, NfcLogger } from '@/utils/logger';
+// Remove direct imports to avoid module cycle
+// Dependencies will be injected via setupNativeLoggerBridge
 
 interface NativeLogEvent {
   level: 'debug' | 'info' | 'warn' | 'error';
@@ -13,9 +14,21 @@ interface NativeLogEvent {
 
 let eventEmitter: NativeEventEmitter | null = null;
 let isInitialized = false;
+let injectedLoggers: {
+  AppLogger: any;
+  NfcLogger: any;
+  Logger: any;
+} | null = null;
 
-const setupNativeLoggerBridge = () => {
+const setupNativeLoggerBridge = (loggers: {
+  AppLogger: any;
+  NfcLogger: any;
+  Logger: any;
+}) => {
   if (isInitialized) return;
+
+  // Store injected loggers
+  injectedLoggers = loggers;
 
   const moduleName =
     Platform.OS === 'android' ? 'RNPassportReader' : 'NativeLoggerBridge';
@@ -38,7 +51,7 @@ const setupEventListeners = () => {
       try {
         const parsedEvent = JSON.parse(event);
         handleNativeLogEvent(parsedEvent);
-      } catch (e) {
+      } catch {
         console.warn('Failed to parse logEvent string:', event);
       }
     } else {
@@ -48,38 +61,43 @@ const setupEventListeners = () => {
 };
 
 const handleNativeLogEvent = (event: NativeLogEvent) => {
+  if (!injectedLoggers) {
+    console.warn('NativeLoggerBridge not initialized with loggers');
+    return;
+  }
+
   const { level, category, message, data } = event;
 
   // Route to appropriate logger based on category
-  let logger;
+  let logger: any;
   switch (category.toLowerCase()) {
     case 'nfc':
-      logger = NfcLogger;
+      logger = injectedLoggers.NfcLogger;
       break;
     case 'app':
-      logger = AppLogger;
+      logger = injectedLoggers.AppLogger;
       break;
     default:
-      // For unknown categories, use AppLogger with category prefix
-      logger = Logger.extend(category.toUpperCase());
+      // For unknown categories, use Logger with category prefix
+      logger = injectedLoggers.Logger.extend(category.toUpperCase());
   }
 
   // Log with appropriate level
   switch (level) {
     case 'debug':
-      (logger as any).debug(message, data);
+      logger.debug(message, data);
       break;
     case 'info':
-      (logger as any).info(message, data);
+      logger.info(message, data);
       break;
     case 'warn':
-      (logger as any).warn(message, data);
+      logger.warn(message, data);
       break;
     case 'error':
-      (logger as any).error(message, data);
+      logger.error(message, data);
       break;
     default:
-      (logger as any).info(message, data);
+      logger.info(message, data);
   }
 };
 
@@ -89,9 +107,8 @@ const cleanup = () => {
     eventEmitter = null;
   }
   isInitialized = false;
+  injectedLoggers = null;
 };
 
-// Initialize the bridge
-setupNativeLoggerBridge();
-
-export { cleanup };
+// Export the setup function for explicit initialization
+export { cleanup, setupNativeLoggerBridge };

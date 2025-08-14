@@ -16,11 +16,12 @@ import { hash } from '@selfxyz/common/utils/hash';
 export function optimalLevel2Example(data: PassportData) {
   // This will result in the smallest possible bundle
   // Only the specific functions and constants we use are included
-
   console.log('Using API:', API_URL);
+
   console.log('Attestation ID:', PASSPORT_ATTESTATION_ID);
 
   const hashedData = hash(JSON.stringify(data));
+
   console.log('Hashed passport data:', hashedData);
 
   return {

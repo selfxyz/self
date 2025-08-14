@@ -15,11 +15,7 @@ import { useSettingStore } from '@/stores/settingStore';
 import { STORAGE_NAME } from '@/utils/cloudBackup';
 import { black, slate400, white } from '@/utils/colors';
 
-interface SaveRecoveryPhraseScreenProps {}
-
-const SaveRecoveryPhraseScreen: React.FC<
-  SaveRecoveryPhraseScreenProps
-> = ({}) => {
+const SaveRecoveryPhraseScreen: React.FC = () => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
   const { cloudBackupEnabled } = useSettingStore();

@@ -17,34 +17,34 @@
   "type": "module",
   "exports": {
     ".": {
+      "types": "./dist/esm/index.d.ts",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs",
-      "types": "./dist/esm/index.d.ts"
+      "require": "./dist/cjs/index.cjs"
     },
     "./components/LED": {
+      "types": "./dist/esm/components/LED.d.ts",
       "import": "./dist/esm/components/LED.js",
-      "require": "./dist/cjs/components/LED.cjs",
-      "types": "./dist/esm/components/LED.d.ts"
+      "require": "./dist/cjs/components/LED.cjs"
     },
     "./components/SelfQRcode": {
+      "types": "./dist/esm/components/SelfQRcode.d.ts",
       "import": "./dist/esm/components/SelfQRcode.js",
-      "require": "./dist/cjs/components/SelfQRcode.cjs",
-      "types": "./dist/esm/components/SelfQRcode.d.ts"
+      "require": "./dist/cjs/components/SelfQRcode.cjs"
     },
     "./utils/utils": {
+      "types": "./dist/esm/utils/utils.d.ts",
       "import": "./dist/esm/utils/utils.js",
-      "require": "./dist/cjs/utils/utils.cjs",
-      "types": "./dist/esm/utils/utils.d.ts"
+      "require": "./dist/cjs/utils/utils.cjs"
     },
     "./utils/styles": {
+      "types": "./dist/esm/utils/styles.d.ts",
       "import": "./dist/esm/utils/styles.js",
-      "require": "./dist/cjs/utils/styles.cjs",
-      "types": "./dist/esm/utils/styles.d.ts"
+      "require": "./dist/cjs/utils/styles.cjs"
     },
     "./utils/websocket": {
+      "types": "./dist/esm/utils/websocket.d.ts",
       "import": "./dist/esm/utils/websocket.js",
-      "require": "./dist/cjs/utils/websocket.cjs",
-      "types": "./dist/esm/utils/websocket.d.ts"
+      "require": "./dist/cjs/utils/websocket.cjs"
     }
   },
   "main": "dist/cjs/index.cjs",
@@ -82,12 +82,11 @@
     "qrcode.react": "^4.1.0",
     "react-spinners": "^0.14.1",
     "socket.io-client": "^4.8.1",
-    "tsup": "^8.5.0",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@size-limit/preset-big-lib": "^11.2.0",
-    "@types/node": "^20.11.19",
+    "@types/node": "^22.0.0",
     "@types/node-forge": "^1",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
@@ -110,7 +109,7 @@
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
-    "typescript": "^5.4.5"
+    "typescript": "^5.9.2"
   },
   "peerDependencies": {
     "lottie-react": "^2.4.0",

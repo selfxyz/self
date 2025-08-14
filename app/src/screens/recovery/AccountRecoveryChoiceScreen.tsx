@@ -27,11 +27,7 @@ import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDoc
 
 const { trackEvent } = analytics();
 
-interface AccountRecoveryChoiceScreenProps {}
-
-const AccountRecoveryChoiceScreen: React.FC<
-  AccountRecoveryChoiceScreenProps
-> = ({}) => {
+const AccountRecoveryChoiceScreen: React.FC = () => {
   const { restoreAccountFromMnemonic } = useAuth();
   const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =

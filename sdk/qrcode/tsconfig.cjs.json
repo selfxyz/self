@@ -4,6 +4,7 @@
     "module": "CommonJS",
     "outDir": "./dist/cjs",
     "declaration": false,
-    "emitDeclarationOnly": false
+    "emitDeclarationOnly": false,
+    "types": ["node"]
   }
 }

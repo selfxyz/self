@@ -20,11 +20,7 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '@/utils/colors';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 
-interface PassportOnboardingScreenProps {}
-
-const PassportOnboardingScreen: React.FC<
-  PassportOnboardingScreenProps
-> = ({}) => {
+const PassportOnboardingScreen: React.FC = () => {
   const handleCameraPress = useHapticNavigation('PassportCamera');
   const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',

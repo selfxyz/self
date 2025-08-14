@@ -14,7 +14,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
 import { getAesopScreens } from '@/navigation/aesop';
-import devScreens from '@/navigation/dev';
+// Import dev screens type for conditional inclusion
+import type devScreensType from '@/navigation/dev';
+// Dev screens are conditionally loaded to avoid bundling in production
 import homeScreens from '@/navigation/home';
 import miscScreens from '@/navigation/misc';
 import passportScreens from '@/navigation/passport';
@@ -24,6 +26,11 @@ import settingsScreens from '@/navigation/settings';
 import analytics from '@/utils/analytics';
 import { white } from '@/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
+
+// Conditionally load dev screens only in development
+const devScreens: typeof devScreensType = __DEV__
+  ? require('@/navigation/dev').default
+  : ({} as typeof devScreensType);
 
 export const navigationScreens = {
   ...miscScreens,
@@ -36,9 +43,6 @@ export const navigationScreens = {
   // add last to override other screens
   ...getAesopScreens(),
 };
-
-export type RootStackParamList = StaticParamList<typeof AppNavigation>;
-
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
   initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
@@ -50,11 +54,14 @@ const AppNavigation = createNativeStackNavigator({
   screens: navigationScreens,
 });
 
+export type RootStackParamList = StaticParamList<typeof AppNavigation>;
+
 // Create a ref that we can use to access the navigation state
-export const navigationRef = createNavigationContainerRef();
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 declare global {
   namespace ReactNavigation {
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface RootParamList extends RootStackParamList {}
   }
 }
