@@ -1,27 +1,43 @@
-// Prefer the global TextDecoder; fall back to Node's util.TextDecoder at runtime.
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - TextDecoder may not exist on all globals
-const getDecoder = (): TextDecoder => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore - globalThis may not include TextDecoder in typings
-  const TD =
-    (typeof globalThis !== 'undefined' && (globalThis as any).TextDecoder) ||
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    (typeof require !== 'undefined'
-      ? (() => {
-          try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            return require('util').TextDecoder;
-          } catch {
-            return undefined;
-          }
-        })()
-      : undefined);
-  if (!TD) throw new Error('TextDecoder not available in this environment');
-  return new TD('utf-8', { fatal: true });
+/**
+ * Safe TextDecoder factory that works across different JavaScript environments.
+ * Handles browser, Node.js, and React Native environments gracefully.
+ */
+const createTextDecoder = (): TextDecoder => {
+  // Browser environment - TextDecoder is available globally
+  if (typeof globalThis !== 'undefined' && 'TextDecoder' in globalThis) {
+    return new globalThis.TextDecoder('utf-8', { fatal: true });
+  }
+
+  // React Native environment - TextDecoder should be available on global
+  if (
+    typeof (globalThis as any).global !== 'undefined' &&
+    (globalThis as any).global &&
+    'TextDecoder' in (globalThis as any).global
+  ) {
+    return new ((globalThis as any).global as any).TextDecoder('utf-8', { fatal: true });
+  }
+
+  // Node.js environment - try to import from util (only if we're in a Node.js context)
+  if (typeof (globalThis as any).process !== 'undefined' && (globalThis as any).process?.versions?.node) {
+    try {
+      // Use dynamic import for better compatibility
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const util = require('util');
+      if (util.TextDecoder) {
+        return new util.TextDecoder('utf-8', { fatal: true });
+      }
+    } catch {
+      // Fall through to error
+    }
+  }
+
+  throw new Error(
+    'TextDecoder not available in this environment. ' +
+      'This SDK requires TextDecoder support which is available in modern browsers, Node.js, and React Native.',
+  );
 };
 
-const DECODER = getDecoder();
+const DECODER = createTextDecoder();
 
 // Known LDS1 tag constants
 const TAG_DG1 = 0x61;

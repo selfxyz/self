@@ -4921,7 +4921,7 @@ __metadata:
     tsconfig-paths: "npm:^4.2.0"
     tsup: "npm:^8.5.0"
     tsx: "npm:^4.20.3"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
 
@@ -4968,7 +4968,7 @@ __metadata:
     ts-mocha: "npm:^10.0.0"
     ts-node: "npm:^10.9.2"
     tsup: "npm:^8.5.0"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.2"
     typescript-parser: "npm:^2.6.1"
     uuid: "npm:^11.0.5"
   languageName: unknown
@@ -5024,7 +5024,7 @@ __metadata:
     solidity-coverage: "npm:^0.8.14"
     ts-node: "npm:^10.9.1"
     typechain: "npm:^8.3.2"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
 
@@ -5057,7 +5057,7 @@ __metadata:
     ts-node: "npm:^10.9.2"
     tsup: "npm:^8.5.0"
     typechain: "npm:^8.3.2"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.2"
     uuid: "npm:^11.1.0"
   languageName: unknown
   linkType: soft
@@ -5183,7 +5183,7 @@ __metadata:
     tamagui: "npm:1.126.14"
     ts-morph: "npm:^22.0.0"
     ts-node: "npm:^10.9.1"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.2"
     uuid: "npm:^11.0.5"
     vite: "npm:^7.0.0"
     vite-plugin-svgr: "npm:^4.3.0"
@@ -5207,7 +5207,7 @@ __metadata:
     prettier: "npm:^3.5.3"
     tslib: "npm:^2.6.2"
     tsup: "npm:^8.0.1"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.2"
     vitest: "npm:^1.6.0"
   languageName: unknown
   linkType: soft
@@ -5250,7 +5250,7 @@ __metadata:
     ts-mocha: "npm:^10.0.0"
     ts-node: "npm:^10.9.2"
     tsup: "npm:^8.5.0"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.2"
     uuid: "npm:^10.0.0"
   peerDependencies:
     lottie-react: ^2.4.0
@@ -25686,7 +25686,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.8.3, typescript@npm:^5.9.2":
+"typescript@npm:^5.9.2":
   version: 5.9.2
   resolution: "typescript@npm:5.9.2"
   bin:
@@ -25716,7 +25716,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>, typescript@patch:typescript@npm%3A^5.9.2#optional!builtin<compat/typescript>":
+"typescript@patch:typescript@npm%3A^5.9.2#optional!builtin<compat/typescript>":
   version: 5.9.2
   resolution: "typescript@patch:typescript@npm%3A5.9.2#optional!builtin<compat/typescript>::version=5.9.2&hash=5786d5"
   bin:
