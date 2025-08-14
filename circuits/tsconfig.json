@@ -11,6 +11,7 @@
     "outDir": "./dist/esm",
     "declaration": false,
     "baseUrl": ".",
+    "types": ["node"],
     "composite": false
   },
   "include": ["tests/**/*", "tests/**/*.json", "src/**/*"],

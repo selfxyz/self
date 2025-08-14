@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "types": ["node", "jest"],
     "paths": {
       "@env": ["./env.ts"],
       "@selfxyz/common": ["../common"],

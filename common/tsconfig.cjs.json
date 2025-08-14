@@ -5,6 +5,7 @@
     "moduleResolution": "Node",
     "outDir": "./dist/cjs",
     "declarationDir": "./dist/cjs",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["node"]
   }
 }

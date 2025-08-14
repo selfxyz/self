@@ -5,8 +5,7 @@ import { logger } from 'react-native-logs';
 
 import { interceptConsole } from '@/utils/logger/consoleInterceptor';
 import { lokiTransport } from '@/utils/logger/lokiTransport';
-
-import '@/utils/logger/nativeLoggerBridge';
+import { setupNativeLoggerBridge } from '@/utils/logger/nativeLoggerBridge';
 
 export {
   AppLogger,
@@ -65,3 +64,7 @@ export const logLevels = {
   warn: 2,
   error: 3,
 };
+
+// Initialize native logger bridge after all loggers are defined
+// This avoids module cycle by injecting dependencies instead of importing them
+setupNativeLoggerBridge({ AppLogger, NfcLogger, Logger });
