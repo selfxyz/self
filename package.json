@@ -21,7 +21,8 @@
     "prepare": "husky",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
-    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
+    "check:versions": "node scripts/check-package-versions.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
