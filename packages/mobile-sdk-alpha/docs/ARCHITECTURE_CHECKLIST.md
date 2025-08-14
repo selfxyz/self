@@ -18,9 +18,9 @@ The alpha SDK follows an adapter-first, React Native–oriented design. Tree-sha
 
 ### 2. Bridge layer for native events
 
-- [ ] Wrap `NativeModules`/`NativeEventEmitter` so features register listeners through a shared adapter
-- [ ] Create unified event handling interface
-- [ ] Implement platform-specific event bridges
+- [x] Wrap `NativeModules`/`NativeEventEmitter` so features register listeners through a shared adapter
+- [x] Create unified event handling interface
+- [x] Implement platform-specific event bridges
 
 ### 3. Exception classes
 
