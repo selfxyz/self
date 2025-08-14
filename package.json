@@ -12,7 +12,6 @@
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
     "check:versions": "node scripts/check-package-versions.mjs",
-    "find:migration": "node scripts/find-migration.mjs",
     "format": "yarn format:root && yarn format:github && yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "prettier --parser markdown --write *.md && prettier --parser yaml --write .*.{yml,yaml} --single-quote false",

@@ -69,7 +69,6 @@ module.exports = {
     // TypeScript Rules - only essential ones
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
 

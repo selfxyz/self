@@ -45,7 +45,7 @@ export function sha384_512Pad(
   prehash_prepad_m_array: number[],
   maxShaBytes: number
 ): [number[], number] {
-  let prehash_prepad_m: any = new Uint8Array(prehash_prepad_m_array);
+  let prehash_prepad_m: Uint8Array = new Uint8Array(prehash_prepad_m_array);
   // Length in bits before padding
   const length_bits = prehash_prepad_m.length * 8;
 
@@ -84,7 +84,7 @@ export function sha384_512Pad(
 // Copied from zk-email cuz it uses crypto so can't import it here.
 // Puts an end selector, a bunch of 0s, then the length, then fill the rest with 0s.
 export function shaPad(prehash_prepad_m_array: number[], maxShaBytes: number): [number[], number] {
-  let prehash_prepad_m: any = new Uint8Array(prehash_prepad_m_array);
+  let prehash_prepad_m: Uint8Array = new Uint8Array(prehash_prepad_m_array);
   const length_bits = prehash_prepad_m.length * 8; // bytes to bits
   const length_in_bytes = int64toBytes(length_bits);
   prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int8toBytes(2 ** 7)); // Add the 1 on the end, length 505

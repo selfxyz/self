@@ -1,6 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-require("dotenv").config({
+import dotenv from "dotenv";
+dotenv.config({
   path: process.env.CI ? ".env.test" : ".env",
 });
 import "hardhat-contract-sizer";

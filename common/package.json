@@ -364,8 +364,8 @@
   "devDependencies": {
     "@types/js-sha1": "^0.6.3",
     "@types/node-forge": "^1.3.10",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
@@ -379,6 +379,7 @@
     "tsup": "^8.5.0",
     "typescript": "^5.9.2"
   },
+  "packageManager": "yarn@4.6.0",
   "engines": {
     "node": ">=22 <23"
   }

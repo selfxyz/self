@@ -17,13 +17,13 @@ const createTextDecoder = (): TextDecoder => {
     return new ((globalThis as any).global as any).TextDecoder('utf-8', { fatal: true });
   }
 
-  // Node.js environment - try to import from util (only if we're in a Node.js context)
+  // Node.js environment - try to import from built-in `node:util` (only if we're in a Node.js context)
   if (typeof (globalThis as any).process !== 'undefined' && (globalThis as any).process?.versions?.node) {
     try {
-      // Use dynamic import for better compatibility
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const util = require('util');
-      if (util.TextDecoder) {
+      const req = typeof require === 'function' ? require : undefined;
+      const util = req ? req('node:util') : undefined;
+      if (util?.TextDecoder) {
         return new util.TextDecoder('utf-8', { fatal: true });
       }
     } catch {
@@ -37,7 +37,13 @@ const createTextDecoder = (): TextDecoder => {
   );
 };
 
-const DECODER = createTextDecoder();
+let DECODER: TextDecoder | undefined;
+
+// Lazily initialize to avoid import-time failures in environments without a decoder.
+const getDecoder = (): TextDecoder => {
+  if (!DECODER) DECODER = createTextDecoder();
+  return DECODER;
+};
 
 // Known LDS1 tag constants
 const TAG_DG1 = 0x61;
@@ -95,7 +101,7 @@ export function parseNFCResponse(bytes: Uint8Array): ParsedNFCResponse {
 
     switch (tag) {
       case TAG_DG1: {
-        result.dg1 = { mrz: DECODER.decode(value) };
+        result.dg1 = { mrz: getDecoder().decode(value) };
         break;
       }
       case TAG_DG2: {
