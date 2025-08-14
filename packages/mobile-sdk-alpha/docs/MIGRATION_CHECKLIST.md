@@ -2,6 +2,8 @@
 
 > Detailed task prompts are listed in [MIGRATION_PROMPTS.md](./MIGRATION_PROMPTS.md).
 
+- [ ] Group new capabilities into modular directories and re-export them from `src/index.ts` (initial stubs: `mrz/`, `nfc/`, `qr/`).
+
 ## 1. Processing helpers (MRZ & NFC)
 
 - [x] Finalize MRZ utilities and add an NFC response parser.

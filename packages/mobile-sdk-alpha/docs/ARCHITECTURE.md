@@ -8,7 +8,7 @@ The alpha SDK follows an adapter-first, React Native–oriented design. Tree-sha
 
 ## Architecture Checklist (easy → hard)
 
-1. **Modular feature directories** – group new capabilities (e.g., `liveness/`, `detection/`) in their own folders and re-export from `src/index.ts`.
+1. **Modular feature directories** – group new capabilities (e.g., `mrz/`, `nfc/`, `qr/`) in their own folders and re-export from `src/index.ts`.
 2. **Bridge layer for native events** – wrap `NativeModules`/`NativeEventEmitter` so features register listeners through a shared adapter.
 3. **Exception classes** – add typed errors (`InitError`, `LivenessError`, etc.) and surface them instead of generic `Error`.
 4. **SDK lifecycle management** – evolve `createSelfClient` into an SDK class with `initialize`/`deinitialize` and stored config.

@@ -7,6 +7,7 @@ Each chapter from the migration checklist includes granular tasks below. Pick ta
 ## Before you start
 
 - Run `yarn find:migration` to locate and open `.cursor/rules/mobile-sdk-migration.mdc` for full context.
+- Group new capabilities in their own directories (e.g., `processing/`, `validation/`, `mrz/`, `nfc/`, `qr/`) and re-export them from `src/index.ts`.
 
 ## Pre-flight checks
 

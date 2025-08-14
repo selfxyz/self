@@ -33,6 +33,9 @@ export type {
 export type { DG1, DG2, ParsedNFCResponse } from './processing/nfc';
 // Core functions
 export type { SdkErrorCategory } from './errors';
+export * from './mrz';
+export * from './nfc';
+export * from './qr';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
