@@ -90,7 +90,7 @@ const ErrorBoundaryTest = () => {
     try {
       // This would normally call a context function
       return 'success';
-    } catch (error) {
+    } catch (_error) {
       return 'error';
     }
   };

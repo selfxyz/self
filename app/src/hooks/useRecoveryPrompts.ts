@@ -43,7 +43,7 @@ export default function useRecoveryPrompts() {
           if (shouldPrompt) {
             showModal();
           }
-        } catch (error) {
+        } catch (_error) {
           // Silently fail to avoid breaking the hook
           // If we can't get documents, we shouldn't show the prompt
           return;

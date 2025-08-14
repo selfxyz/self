@@ -62,7 +62,7 @@ const REGEX_PATTERNS = {
 function safeReadFile(filePath, description) {
   try {
     return fs.readFileSync(filePath, 'utf8');
-  } catch (error) {
+  } catch (_error) {
     console.warn(`Warning: Could not read ${description} at ${filePath}`);
     return null;
   }
@@ -91,7 +91,7 @@ function safeExecSync(command, description) {
 
   try {
     return execSync(command, { encoding: 'utf8' }).trim();
-  } catch (error) {
+  } catch (_error) {
     console.warn(`Warning: Could not ${description}`);
     return null;
   }

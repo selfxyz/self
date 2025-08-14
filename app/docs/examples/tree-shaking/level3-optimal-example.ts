@@ -27,15 +27,19 @@ export function optimalLevel3Example(data: PassportData, secret: string) {
   // Only the specific individual functions we use are included
   // Bundle size reduction: ~75-90% compared to broad imports!
 
+  // eslint-disable-next-line no-console
   console.log('Using API:', API_URL);
+  // eslint-disable-next-line no-console
   console.log('Attestation ID:', PASSPORT_ATTESTATION_ID);
 
   // Use specific hash function from SHA module
   const hashedData = hash([1, 2, 3, 4], 'hex');
+  // eslint-disable-next-line no-console
   console.log('SHA hashed data:', hashedData);
 
   // Use specific Poseidon function for commitment
   const poseidonHash = flexiblePoseidon([BigInt(1), BigInt(2)]);
+  // eslint-disable-next-line no-console
   console.log('Poseidon hash:', poseidonHash);
 
   // Use specific passport functions

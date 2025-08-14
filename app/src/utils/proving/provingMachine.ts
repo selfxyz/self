@@ -422,7 +422,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             navigationRef.navigate('Launch');
           }
         }
-      } catch (error) {
+      } catch (_error) {
         if (navigationRef.isReady()) {
           navigationRef.navigate('Launch');
         }

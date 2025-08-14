@@ -57,7 +57,9 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         transports: ['websocket'],
       });
       setTimeout(() => {
-        websocket.connected && websocket.disconnect();
+        if (websocket.connected) {
+          websocket.disconnect();
+        }
         // disconnect after 2 minutes
       }, SYNC_THROTTLE_MS * 4);
 
