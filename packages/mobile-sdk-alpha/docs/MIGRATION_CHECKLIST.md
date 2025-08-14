@@ -53,8 +53,18 @@
 - Enforce CDN allowlist and Content-Length checks.
 - Stream hashing to avoid buffering large files.
 
-## 9. Integrate SDK into `/app`
+## 9. Sample applications
+
+- React Native and web demos showcasing core flows.
+- iOS `OpenPassport` URL scheme.
+
+## 10. Integrate SDK into `/app`
 
 - Consume `@selfxyz/mobile-sdk-alpha` inside the `app` workspace.
 - Replace MRZ modules with SDK adapters and wire processing helpers.
 - Validate builds and unit tests.
+
+## 11. In-SDK lightweight demo
+
+- Embedded React Native demo inside the SDK with theming hooks.
+- Provide build and run instructions.

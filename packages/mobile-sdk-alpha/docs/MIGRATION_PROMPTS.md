@@ -205,7 +205,37 @@ yarn build
 
 </details>
 
-## 9. Integrate SDK into `/app`
+## 9. Sample applications
+
+<details>
+<summary><strong>Add React Native sample</strong></summary>
+
+1. Under `samples/react-native/`, scaffold a bare-bones app using Expo or React Native CLI.
+2. Demonstrate MRZ scanning and registration flow using SDK APIs.
+3. Include instructions in a `README.md`.
+
+</details>
+
+<details>
+<summary><strong>Add web sample</strong></summary>
+
+1. Under `samples/web/`, set up a Vite/React project showing browser-based MRZ input and proof generation.
+2. Document setup and build steps.
+
+</details>
+
+<details>
+<summary><strong>Configure OpenPassport scheme</strong></summary>
+
+1. In the React Native sample's iOS project, add URL type `OpenPassport` to `Info.plist`.
+2. Document Android intent filters (AndroidManifest.xml). Ensure scheme uniqueness and validate redirect origins to prevent hijacking.
+3. Choose a scheme unique to your app (e.g., using reverse-domain or app-identifier prefix).
+4. Detect and handle collisions (fallback checks, verify caller package/signature).
+5. Verify redirect domains and consider app-claimed links/Android App Links and iOS Universal Links for stronger security.
+
+</details>
+
+## 10. Integrate SDK into `/app`
 
 <details>
 <summary><strong>Integrate SDK in /app</strong></summary>
@@ -214,5 +244,18 @@ yarn build
 2. Replace existing MRZ scanning modules with SDK adapters.
 3. Wire app screens to SDK processing and validation helpers.
 4. Validate builds and unit tests in the `app` workspace.
+
+</details>
+
+## 11. In-SDK lightweight demo
+
+<details>
+<summary><strong>Create embedded demo app</strong></summary>
+
+1. Scaffold `demo/` under the SDK as a minimal React Native project.
+2. Use SDK APIs for MRZ → proof flow.
+3. Expose simple theming configuration.
+4. Add `demo/README.md` with build/run instructions.
+5. Add publishing guardrails: exclude `demo/` from npm and add a CI step to verify the published tarball contents.
 
 </details>
