@@ -40,9 +40,6 @@ const defaultConfig: configLoggerType<any, any> = {
 
 const Logger = logger.createLogger(defaultConfig);
 
-// Initialize console interceptor to route console logs to Loki
-interceptConsole();
-
 // loggers based on src/consts/analytics.ts
 const AppLogger = Logger.extend('APP');
 const NotificationLogger = Logger.extend('NOTIFICATION');
@@ -56,6 +53,9 @@ const DocumentLogger = Logger.extend('DOCUMENT');
 
 //Native Modules
 const NfcLogger = Logger.extend('NFC');
+
+// Initialize console interceptor to route console logs to Loki
+interceptConsole(AppLogger);
 
 // Define log levels
 export const logLevels = {
