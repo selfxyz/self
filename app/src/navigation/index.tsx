@@ -14,6 +14,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
 import { getAesopScreens } from '@/navigation/aesop';
+// Import dev screens type for proper typing
+import type devScreensType from '@/navigation/dev';
 // Dev screens are conditionally loaded to avoid bundling in production
 import homeScreens from '@/navigation/home';
 import miscScreens from '@/navigation/misc';
@@ -26,7 +28,9 @@ import { white } from '@/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
 // Conditionally load dev screens only in development
-const devScreens = __DEV__ ? require('@/navigation/dev').default : {};
+const devScreens: typeof devScreensType = __DEV__
+  ? require('@/navigation/dev').default
+  : {};
 
 export const navigationScreens = {
   ...miscScreens,
