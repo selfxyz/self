@@ -36,9 +36,6 @@ export const navigationScreens = {
   // add last to override other screens
   ...getAesopScreens(),
 };
-
-export type RootStackParamList = StaticParamList<typeof AppNavigation>;
-
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
   initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
@@ -50,13 +47,15 @@ const AppNavigation = createNativeStackNavigator({
   screens: navigationScreens,
 });
 
+export type RootStackParamList = StaticParamList<typeof AppNavigation>;
+
 // Create a ref that we can use to access the navigation state
-export const navigationRef = createNavigationContainerRef();
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 declare global {
   namespace ReactNavigation {
-    // Use a type alias to avoid empty interface warnings
-    type RootParamList = RootStackParamList;
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    interface RootParamList extends RootStackParamList {}
   }
 }
 
