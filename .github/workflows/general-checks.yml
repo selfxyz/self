@@ -6,7 +6,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Run linter
@@ -15,7 +15,7 @@ jobs:
   type-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
@@ -24,7 +24,7 @@ jobs:
   test-common:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build dependencies
