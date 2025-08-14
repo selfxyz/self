@@ -22,7 +22,7 @@ yarn lint
 yarn build
 ```
 
-## 1. Processing helpers (MRZ & NFC)
+## 1. Processing helpers (MRZ & NFC) ✅ COMPLETED
 
 <details>
 <summary><strong>Test MRZ parsing utilities</strong></summary>
@@ -35,17 +35,20 @@ yarn build
 <details>
 <summary><strong>Add NFC response parser</strong></summary>
 
-1. Create `src/processing/nfc.ts` exporting a pure function to parse NFC chip responses into DG1/DG2 structures.
+1. ✅ Create `src/processing/nfc.ts` exporting a pure function to parse NFC chip responses into DG1/DG2 structures.
 2. Write tests in `tests/processing/nfc.test.ts`.
-3. Ensure no React Native dependencies.
+3. ✅ Ensure no React Native dependencies.
 
 </details>
 
 <details>
 <summary><strong>Expose processing utilities</strong></summary>
 
-1. Update `src/index.ts` to re-export MRZ and NFC helpers.
-2. Document them in `README.md` under a "Processing utilities" section.
+1. ✅ Update `src/index.ts` to re-export MRZ and NFC helpers.
+2. ✅ Create modular structure with `src/nfc/`, `src/mrz/`, and `src/qr/` modules.
+3. ✅ Implement proper error handling using `notImplemented` helper.
+4. ✅ Use type aliases instead of empty interfaces for better tree shaking.
+5. Document them in `README.md` under a "Processing utilities" section.
 
 </details>
 
