@@ -20,7 +20,10 @@ import {
   generateNullifier,
 } from '@selfxyz/common/utils/passports';
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
-import { isPassportDataValid, type PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
+import {
+  isPassportDataValid,
+  type PassportValidationCallbacks,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { DocumentEvents } from '@/consts/analytics';
 import {
@@ -75,10 +78,15 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
             logValidationError('econtent_hash_function_null', d),
           onSignedAttrHashFunctionNull: (d: PassportData) =>
             logValidationError('signed_attr_hash_function_null', d),
-          onDg1HashMismatch: (d: PassportData) => logValidationError('dg1_hash_mismatch', d),
-          onUnsupportedHashAlgorithm: (field: 'dg1' | 'eContent' | 'signedAttr', value: string, data: PassportData) =>
-            logValidationError(`unsupported_hash_algorithm_${field}`, data),
-          onDg1HashMissing: (d: PassportData) => logValidationError('dg1_hash_missing', d),
+          onDg1HashMismatch: (d: PassportData) =>
+            logValidationError('dg1_hash_mismatch', d),
+          onUnsupportedHashAlgorithm: (
+            field: 'dg1' | 'eContent' | 'signedAttr',
+            value: string,
+            data: PassportData,
+          ) => logValidationError(`unsupported_hash_algorithm_${field}`, data),
+          onDg1HashMissing: (d: PassportData) =>
+            logValidationError('dg1_hash_missing', d),
         };
         isValid = isPassportDataValid(passportData, callbacks);
       } catch (error) {

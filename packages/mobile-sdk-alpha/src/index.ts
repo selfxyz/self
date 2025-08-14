@@ -30,18 +30,17 @@ export type {
   WsConn,
 } from './types/public';
 
+// MRZ module
+export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
+
+export type { MRZScanOptions } from './mrz';
+
+// QR module
+export type { PassportValidationCallbacks } from './validation/document';
+
+export type { QRProofOptions } from './qr';
 // NFC module
 export type { SdkErrorCategory } from './errors';
-// MRZ module
-export { type DG1, type DG2, type NFCScanOptions, type ParsedNFCResponse, parseNFCResponse, scanNFC } from './nfc';
-// QR module
-export { type MRZScanOptions, extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
-
-// Document validation
-export { type PassportValidationCallbacks, isPassportDataValid } from './validation/document';
-
-// Core functions
-export { type QRProofOptions, scanQRProof } from './qr';
 
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 
@@ -49,6 +48,16 @@ export { createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 
+export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+
+// Core functions
+export { isPassportDataValid } from './validation/document';
+
 export { mergeConfig } from './config/merge';
+
+// Document validation
+export { parseNFCResponse, scanNFC } from './nfc';
+
+export { scanQRProof } from './qr';
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
