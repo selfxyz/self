@@ -31,9 +31,40 @@ module.exports = {
       'error',
       { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
     ],
+
     'import/first': 'error',
     'import/no-duplicates': 'error',
     'import/newline-after-import': 'error',
   },
   ignorePatterns: ['dist/', 'node_modules/'],
+  overrides: [
+    {
+      files: ['src/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
+      },
+      rules: {
+        '@typescript-eslint/consistent-type-exports': [
+          'error',
+          { fixMixedExportsWithInlineTypeSpecifier: false },
+        ],
+      },
+    },
+    {
+      files: ['*.cjs'],
+      env: {
+        node: true,
+        commonjs: true,
+        es6: true,
+      },
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'script',
+      },
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
 };

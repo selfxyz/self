@@ -99,6 +99,19 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['src/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
+      },
+      rules: {
+        '@typescript-eslint/consistent-type-exports': [
+          'error',
+          { fixMixedExportsWithInlineTypeSpecifier: false },
+        ],
+      },
+    },
+    {
       files: ['*.cjs'],
       env: {
         node: true,

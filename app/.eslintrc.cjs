@@ -171,6 +171,19 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['src/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: './tsconfig.json',
+        tsconfigRootDir: __dirname,
+      },
+      rules: {
+        '@typescript-eslint/consistent-type-exports': [
+          'error',
+          { fixMixedExportsWithInlineTypeSpecifier: false },
+        ],
+      },
+    },
+    {
       files: ['docs/examples/**/*.ts'],
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
