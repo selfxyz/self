@@ -93,7 +93,7 @@ jobs:
 
           # Verify checksum
           echo "🔍 Verifying checksum..."
-          echo "${{ env.CIRCOM_SHA256 }}  ~/.cache/circom/circom" | sha256sum -c -
+          echo "${{ env.CIRCOM_SHA256 }}  $HOME/.cache/circom/circom" | sha256sum -c -
 
       - name: Save Circom cache
         if: steps.circom-cache.outputs.cache-hit != 'true'
@@ -105,7 +105,7 @@ jobs:
       - name: Verify Circom checksum (cache hit)
         if: steps.circom-cache.outputs.cache-hit == 'true'
         run: |
-          echo "${{ env.CIRCOM_SHA256 }}  ~/.cache/circom/circom" | sha256sum -c -
+          echo "${{ env.CIRCOM_SHA256 }}  $HOME/.cache/circom/circom" | sha256sum -c -
 
       - name: Add Circom to PATH
         run: echo "$HOME/.cache/circom" >> "$GITHUB_PATH"
