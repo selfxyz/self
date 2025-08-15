@@ -341,7 +341,7 @@
     "asn1js": "^3.0.5",
     "axios": "^1.7.2",
     "buffer": "^6.0.3",
-    "chai": "^4.3.8",
+    "chai": "^4.4.1",
     "country-emoji": "^1.5.6",
     "country-iso-3-to-2": "^1.1.1",
     "elliptic": "^6.5.5",

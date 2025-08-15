@@ -4898,7 +4898,7 @@ __metadata:
     asn1: "npm:^0.2.6"
     asn1.js: "npm:^5.4.1"
     asn1js: "npm:^3.0.5"
-    chai: "npm:4.3.8"
+    chai: "npm:^4.4.1"
     chai-as-promised: "npm:^7.1.1"
     circom-bigint: "https://github.com/0xbok/circom-bigint"
     circom-dl: "https://github.com/distributed-lab/circom-dl"
@@ -4911,7 +4911,7 @@ __metadata:
     hash.js: "npm:^1.1.7"
     js-sha256: "npm:^0.10.1"
     jsrsasign: "npm:^11.1.0"
-    mocha: "npm:^10.3.0"
+    mocha: "npm:^10.7.3"
     modpow: "npm:^1.0.0"
     node-forge: "https://github.com/remicolin/forge"
     poseidon-lite: "npm:^0.2.0"
@@ -4940,7 +4940,7 @@ __metadata:
     asn1js: "npm:^3.0.5"
     axios: "npm:^1.7.2"
     buffer: "npm:^6.0.3"
-    chai: "npm:^4.3.8"
+    chai: "npm:^4.4.1"
     country-emoji: "npm:^1.5.6"
     country-iso-3-to-2: "npm:^1.1.1"
     elliptic: "npm:^6.5.5"
@@ -4998,7 +4998,7 @@ __metadata:
     "@typechain/hardhat": "npm:^8.0.3"
     "@types/chai": "npm:^4.3.16"
     "@types/circomlibjs": "npm:^0.1.6"
-    "@types/jest": "npm:^29.5.12"
+    "@types/jest": "npm:^29.5.14"
     "@types/mocha": "npm:^10.0.6"
     "@types/snarkjs": "npm:^0.7.7"
     "@zk-kit/imt": "npm:^2.0.0-beta.4"
@@ -5013,7 +5013,7 @@ __metadata:
     hardhat: "npm:^2.22.6"
     hardhat-contract-sizer: "npm:^2.10.0"
     hardhat-gas-reporter: "npm:^1.0.10"
-    mocha: "npm:^10.4.0"
+    mocha: "npm:^10.7.3"
     mochawesome: "npm:^7.1.3"
     node-forge: "npm:^1.3.1"
     poseidon-lite: "npm:^0.3.0"
@@ -5107,7 +5107,7 @@ __metadata:
     "@types/elliptic": "npm:^6"
     "@types/jest": "npm:^29.5.14"
     "@types/node-forge": "npm:^1.3.3"
-    "@types/react": "npm:^18.2.6"
+    "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
     "@types/react-native": "npm:^0.73.0"
     "@types/react-native-dotenv": "npm:^0.2.0"
@@ -5230,7 +5230,7 @@ __metadata:
     js-sha256: "npm:^0.11.0"
     js-sha512: "npm:^0.9.0"
     lottie-react: "npm:^2.4.0"
-    mocha: "npm:^10.3.0"
+    mocha: "npm:^10.7.3"
     node-forge: "npm:^1.3.1"
     poseidon-lite: "npm:^0.3.0"
     prettier: "npm:^3.3.3"
@@ -9717,7 +9717,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jest@npm:^29.5.12, @types/jest@npm:^29.5.14":
+"@types/jest@npm:^29.5.14":
   version: 29.5.14
   resolution: "@types/jest@npm:29.5.14"
   dependencies:
@@ -9925,7 +9925,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^18, @types/react@npm:^18.2.6, @types/react@npm:^18.3.4":
+"@types/react@npm:^18, @types/react@npm:^18.3.4":
   version: 18.3.23
   resolution: "@types/react@npm:18.3.23"
   dependencies:
@@ -12522,22 +12522,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chai@npm:4.3.8":
-  version: 4.3.8
-  resolution: "chai@npm:4.3.8"
-  dependencies:
-    assertion-error: "npm:^1.1.0"
-    check-error: "npm:^1.0.2"
-    deep-eql: "npm:^4.1.2"
-    get-func-name: "npm:^2.0.0"
-    loupe: "npm:^2.3.1"
-    pathval: "npm:^1.1.1"
-    type-detect: "npm:^4.0.5"
-  checksum: 10c0/5aa714fbbd4b3a1506f4fc9094851bf9109f184d601c1278bcd4eb98d5ee05cc75d7e84f46d072d656502c55544b38c748a1c669468d138e41e5c9d175beffc5
-  languageName: node
-  linkType: hard
-
-"chai@npm:^4.3.10, chai@npm:^4.3.6, chai@npm:^4.3.8, chai@npm:^4.4.1":
+"chai@npm:^4.3.10, chai@npm:^4.3.6, chai@npm:^4.4.1":
   version: 4.5.0
   resolution: "chai@npm:4.5.0"
   dependencies:
@@ -13729,7 +13714,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"deep-eql@npm:^4.0.1, deep-eql@npm:^4.1.2, deep-eql@npm:^4.1.3":
+"deep-eql@npm:^4.0.1, deep-eql@npm:^4.1.3":
   version: 4.1.4
   resolution: "deep-eql@npm:4.1.4"
   dependencies:
@@ -16324,7 +16309,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"get-func-name@npm:^2.0.0, get-func-name@npm:^2.0.1, get-func-name@npm:^2.0.2":
+"get-func-name@npm:^2.0.1, get-func-name@npm:^2.0.2":
   version: 2.0.2
   resolution: "get-func-name@npm:2.0.2"
   checksum: 10c0/89830fd07623fa73429a711b9daecdb304386d237c71268007f788f113505ef1d4cc2d0b9680e072c5082490aec9df5d7758bf5ac6f1c37062855e8e3dc0b9df
@@ -19186,7 +19171,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loupe@npm:^2.3.1, loupe@npm:^2.3.6, loupe@npm:^2.3.7":
+"loupe@npm:^2.3.6, loupe@npm:^2.3.7":
   version: 2.3.7
   resolution: "loupe@npm:2.3.7"
   dependencies:
@@ -20227,7 +20212,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mocha@npm:^10.0.0, mocha@npm:^10.2.0, mocha@npm:^10.3.0, mocha@npm:^10.4.0, mocha@npm:^10.7.3":
+"mocha@npm:^10.0.0, mocha@npm:^10.2.0, mocha@npm:^10.7.3":
   version: 10.8.2
   resolution: "mocha@npm:10.8.2"
   dependencies:
@@ -25476,7 +25461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"type-detect@npm:^4.0.0, type-detect@npm:^4.0.5, type-detect@npm:^4.1.0":
+"type-detect@npm:^4.0.0, type-detect@npm:^4.1.0":
   version: 4.1.0
   resolution: "type-detect@npm:4.1.0"
   checksum: 10c0/df8157ca3f5d311edc22885abc134e18ff8ffbc93d6a9848af5b682730ca6a5a44499259750197250479c5331a8a75b5537529df5ec410622041650a7f293e2a
