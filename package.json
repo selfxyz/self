@@ -34,6 +34,10 @@
     "postinstall-postinstall": "^2.1.0",
     "typescript": "^5.9.2"
   },
+  "resolutions": {
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0"
+  },
   "packageManager": "yarn@4.6.0",
   "engines": {
     "node": ">=22 <23"

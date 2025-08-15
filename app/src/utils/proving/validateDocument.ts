@@ -20,10 +20,8 @@ import {
   generateNullifier,
 } from '@selfxyz/common/utils/passports';
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
-import {
-  isPassportDataValid,
-  type PassportValidationCallbacks,
-} from '@selfxyz/mobile-sdk-alpha';
+import type { PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
+import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 
 import { DocumentEvents } from '@/consts/analytics';
 import {
