@@ -199,7 +199,7 @@ const mrzKey = getMRZKey(
 - Real device testing for critical paths
 - Platform-specific test scenarios
 - Performance benchmarking
-- Security testing with real passports
+- Security testing with realistic, synthetic passport data (NEVER real user data)
 
 ### Test Data
 - Mock passport data for unit tests

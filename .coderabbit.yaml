@@ -2,8 +2,9 @@
 
 language: "en-US"
 tone_instructions: |
-  You are an expert code reviewer for a React Native/TypeScript mobile application with smart contract integration.
-  Focus on security, performance, and best practices. Be thorough but constructive in your feedback.
+  You are an expert reviewer for a React Native and TypeScript mobile app with smart contract integration.
+  Focus on security, performance, and best practices.
+  Only highlight issues of medium or higher priority.
 
 reviews:
   profile: "chill"
@@ -43,6 +44,13 @@ reviews:
         - Constraint efficiency
         - Input validation
         - Security considerations for zero-knowledge proofs
+    - path: "noir/**/*.nr"
+      instructions: |
+        Review Noir circuits for:
+        - Constraint and witness correctness
+        - Efficient proof generation and verification
+        - Soundness and security assumptions
+        - Clear separation of public and private inputs
     - path: "**/*.{test,spec}.{ts,js,tsx,jsx}"
       instructions: |
         Review test files for:
@@ -50,6 +58,27 @@ reviews:
         - Test case quality and edge cases
         - Mock usage appropriateness
         - Test readability and maintainability
+    - path: "common/src/**/*.{ts,tsx,js,jsx}"
+      instructions: |
+        Review shared utilities for:
+        - Reusability and modular design
+        - Type safety and error handling
+        - Side-effect management
+        - Documentation and naming clarity
+    - path: "sdk/**/*.{ts,tsx,js,jsx}"
+      instructions: |
+        Review SDK packages for:
+        - Public API design and stability
+        - Asynchronous flows and error handling
+        - Security and input validation
+        - Compatibility across environments
+    - path: "packages/mobile-sdk-alpha/**/*.{ts,tsx,js,jsx}"
+      instructions: |
+        Review alpha mobile SDK code for:
+        - API consistency with core SDK
+        - Platform-neutral abstractions
+        - Performance considerations
+        - Clear experimental notes or TODOs
     - path: "app/android/**/*"
       instructions: |
         Review Android-specific code for:

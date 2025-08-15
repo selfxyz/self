@@ -144,3 +144,43 @@ yarn build # Confirm build still works
 - Prettier is used for code formatting
 - The `yarn nice` command is the recommended way to fix code quality issues
 - Use the root Prettier and EditorConfig settings for consistency
+
+## Testing Guidelines
+
+**CRITICAL: Do NOT mock this package in tests!**
+
+The mobile-sdk-alpha migration's primary purpose is to test REAL package methods, not mocked versions. When working with this package:
+
+### Testing Requirements (PII-safe)
+
+- Use actual imports from `@selfxyz/mobile-sdk-alpha`
+- Write integration tests that exercise the real validation logic
+- Test `isPassportDataValid()` with realistic, synthetic passport data (NEVER real user data)
+- Verify `extractMRZInfo()` using published sample MRZ strings (e.g., ICAO examples)
+- Ensure `parseNFCResponse()` works with representative, synthetic NFC data
+
+### Anti-Patterns to Avoid
+
+- Mocking the entire package in Jest setup
+- Replacing real functions with mock implementations
+- Using `jest.mock('@selfxyz/mobile-sdk-alpha')` without justification
+- Testing with fake/placeholder data instead of realistic synthetic fixtures
+
+### Example Integration Test Pattern (PII-safe)
+
+```ts
+import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
+
+describe('Real SDK Integration', () => {
+  it('validates passport data using realistic synthetic fixtures', () => {
+    // Use realistic, synthetic passport data - NEVER real user data
+    const syntheticPassportData = {
+      // ... realistic but non-PII test data
+    };
+    const result = isPassportDataValid(syntheticPassportData, validationCallbacks);
+    expect(result).toBe(true); // Real validation, not mock
+  });
+});
+```
+
+**⚠️ CRITICAL: Never use real user PII in tests. Use only synthetic, anonymized, or approved test vectors.**

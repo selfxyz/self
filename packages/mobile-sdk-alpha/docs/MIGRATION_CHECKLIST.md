@@ -2,20 +2,20 @@
 
 > Detailed task prompts are listed in [MIGRATION_PROMPTS.md](./MIGRATION_PROMPTS.md).
 
-- [x] Group new capabilities into modular directories and re-export them from `src/index.ts` using named exports (initial stubs: `mrz/`, `nfc/`, `qr/`).
+- [x] Group new capabilities into modular directories and re-export them from `src/index.ts` using named exports (initial stubs: `mrz/`, `qr/`).
 
-## 1. Processing helpers (MRZ & NFC) ✅ COMPLETED
+## 1. Processing helpers (MRZ) ✅ COMPLETED
 
-- [x] Finalize MRZ utilities and add an NFC response parser.
+- [x] Finalize MRZ utilities.
 - [x] Re-export helpers through the SDK entry point.
-- [x] Create modular structure with `src/nfc/`, `src/mrz/`, and `src/qr/` modules.
+- [x] Create modular structure with `src/mrz/` and `src/qr/` modules.
 - [x] Implement proper error handling using `notImplemented` helper.
 - [x] Use type aliases instead of empty interfaces for better tree shaking.
 
-## 2. Validation module
+## 2. Validation module ✅ COMPLETED
 
-- Port stateless document checks.
-- Cover validation logic with unit tests.
+- [x] Port stateless document checks.
+- [x] Cover validation logic with unit tests.
 
 ## 3. Proof input generation
 
@@ -53,31 +53,30 @@
 - Enforce CDN allowlist and Content-Length checks.
 - Stream hashing to avoid buffering large files.
 
-## 9. Scanning adapters & NFC lifecycle
+## 9. React Native providers and hooks
 
-- Define cross-platform scanner interfaces.
-- Implement React Native MRZ and NFC adapters with screen-on hooks.
-- Provide a sample flow chaining MRZ to NFC scanning.
+- Decouple context providers and hooks from adapter implementations.
+- Ensure providers accept adapter instances via props to avoid tight coupling.
+- Map provider boundaries to existing architecture tasks for crypto, sessions, attestation, protocol sync, and artifact management.
 
-## 10. Sample applications
+## 10. Batteries-included components
+
+- Ship minimal components (e.g., scanners, buttons) that compose existing hooks and providers.
+- Expose configuration props for custom adapters while preserving sensible defaults.
+- Cross-reference component usage with architecture guidelines and adapter tasks.
+
+## 11. Sample applications
 
 - React Native and web demos showcasing core flows.
 - iOS `OpenPassport` URL scheme.
 
-## 11. Integrate SDK into `/app`
+## 12. Integrate SDK into `/app`
 
 - Consume `@selfxyz/mobile-sdk-alpha` inside the `app` workspace.
-- Replace MRZ/NFC modules with SDK adapters and wire processing helpers.
+- Replace MRZ modules with SDK adapters and wire processing helpers.
 - Validate builds and unit tests.
 
-## 12. In-SDK lightweight demo
+## 13. In-SDK lightweight demo
 
 - Embedded React Native demo inside the SDK with theming hooks.
 - Provide build and run instructions.
-
-## 13. Partner feedback
-
-- OAuth-style branding: logo, colors, copy, optional fonts.
-- Callback hook so the host app can trigger push notifications after async proof verification.
-- Expand ID document coverage for US digital licenses and AADHAR.
-- Document bundle size targets and provide a runnable integration example.

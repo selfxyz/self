@@ -55,6 +55,45 @@ Track progress in [MIGRATION_CHECKLIST.md](./docs/MIGRATION_CHECKLIST.md).
 
 Plan implementation with [ARCHITECTURE.md](./docs/ARCHITECTURE.md) and task prompts in [ARCHITECTURE_PROMPTS.md](./docs/ARCHITECTURE_PROMPTS.md).
 
+## Testing
+
+**IMPORTANT: Do NOT mock this package in tests!**
+
+The purpose of the mobile-sdk-alpha migration is to test the REAL package methods, not mocked versions. When integrating this package into your application:
+
+### ✅ DO: Use Real Package Methods (PII-safe)
+
+- Import and use the actual functions from `@selfxyz/mobile-sdk-alpha`
+- Write integration tests that exercise the real validation logic
+- Test `isPassportDataValid()` with realistic, synthetic passport data (NEVER real user data)
+- Verify `extractMRZInfo()` using published sample MRZ strings (e.g., ICAO examples)
+- Ensure `parseNFCResponse()` works with representative, synthetic NFC data
+
+### ❌ DON'T: Mock the Package
+
+- Don't mock `@selfxyz/mobile-sdk-alpha` in Jest setup
+- Don't replace real functions with mock implementations
+- Don't use `jest.mock('@selfxyz/mobile-sdk-alpha')` unless absolutely necessary
+
+### Example: Real Integration Test (PII-safe)
+
+```ts
+import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
+
+describe('Real mobile-sdk-alpha Integration', () => {
+  it('should validate passport data with real logic using synthetic fixtures', () => {
+    // Use realistic, synthetic passport data - NEVER real user data
+    const syntheticPassportData = {
+      // ... realistic but non-PII test data
+    };
+    const result = isPassportDataValid(syntheticPassportData, callbacks);
+    expect(result).toBe(true); // Real validation result
+  });
+});
+```
+
+**⚠️ IMPORTANT: Never commit real user PII to the repository or test artifacts. Use only synthetic, anonymized, or approved test vectors.**
+
 ## Dev scripts
 
 - `npm run validate:exports` — ensure named exports only.

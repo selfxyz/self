@@ -20,6 +20,10 @@ import {
   generateNullifier,
 } from '@selfxyz/common/utils/passports';
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
+import {
+  isPassportDataValid,
+  type PassportValidationCallbacks,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { DocumentEvents } from '@/consts/analytics';
 import {
@@ -54,11 +58,64 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
       const selectedDocument = await loadSelectedDocument();
       if (!selectedDocument) continue;
       let { data: passportData } = selectedDocument;
-      if (!isPassportDataValid(passportData)) {
+      // Track whether any specific failure callback fired to avoid duplicate generic events
+      let anyFailureReported = false;
+      const logValidationError = (
+        error: string,
+        data?: PassportData,
+        additionalContext?: Record<string, any>,
+      ) => {
+        anyFailureReported = true;
         trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
           error: 'Passport data is not valid',
           documentId,
+          mock: data?.mock,
+          documentCategory: data?.documentCategory,
+          ...additionalContext,
         });
+      };
+      let isValid = false;
+      try {
+        const callbacks: PassportValidationCallbacks = {
+          onPassportDataNull: () => logValidationError('passport_data_null'),
+          onPassportMetadataNull: (d: PassportData) =>
+            logValidationError('passport_metadata_null', d),
+          onDg1HashFunctionNull: (d: PassportData) =>
+            logValidationError('dg1_hash_function_null', d),
+          onEContentHashFunctionNull: (d: PassportData) =>
+            logValidationError('econtent_hash_function_null', d),
+          onSignedAttrHashFunctionNull: (d: PassportData) =>
+            logValidationError('signed_attr_hash_function_null', d),
+          onDg1HashMismatch: (d: PassportData) =>
+            logValidationError('dg1_hash_mismatch', d),
+          onUnsupportedHashAlgorithm: (
+            field: 'dg1' | 'eContent' | 'signedAttr',
+            value: string,
+            data: PassportData,
+          ) => {
+            logValidationError(`unsupported_hash_algorithm_${field}`, data, {
+              unsupportedAlgorithm: value,
+              field: field,
+            });
+          },
+          onDg1HashMissing: (d: PassportData) =>
+            logValidationError('dg1_hash_missing', d),
+        };
+        isValid = isPassportDataValid(passportData, callbacks);
+      } catch (error) {
+        logValidationError('validation_threw', passportData);
+        console.warn(
+          `Validation threw exception for document ${documentId}:`,
+          error,
+        );
+      }
+      if (!isValid) {
+        if (!anyFailureReported) {
+          trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
+            error: 'Passport data is not valid',
+            documentId,
+          });
+        }
         console.warn(`Skipping invalid document ${documentId}`);
         continue;
       }
@@ -294,48 +351,6 @@ export async function isDocumentNullified(passportData: PassportData) {
   const data = await response.json();
   console.log('isDocumentNullified', data);
   return data.data;
-}
-
-export function isPassportDataValid(passportData: PassportData) {
-  if (!passportData) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      error: 'Passport data is null',
-    });
-    return false;
-  }
-  if (!passportData.passportMetadata) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      error: 'Passport metadata is null',
-    });
-    return false;
-  }
-  if (!passportData.passportMetadata.dg1HashFunction) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      mock: passportData.mock,
-      dsc: passportData.dsc,
-      error: 'DG1 hash function is null',
-    });
-    return false;
-  }
-  if (!passportData.passportMetadata.eContentHashFunction) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      mock: passportData.mock,
-      dsc: passportData.dsc,
-      documentCategory: passportData.documentCategory,
-      error: 'EContent hash function is null',
-    });
-    return false;
-  }
-  if (!passportData.passportMetadata.signedAttrHashFunction) {
-    trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
-      mock: passportData.mock,
-      dsc: passportData.dsc,
-      documentCategory: passportData.documentCategory,
-      error: 'Signed attribute hash function is null',
-    });
-    return false;
-  }
-  return true;
 }
 
 export async function isUserRegistered(

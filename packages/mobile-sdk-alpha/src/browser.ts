@@ -33,19 +33,23 @@ export type {
 } from './types/public';
 
 export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
-
 export type { MRZScanOptions } from './mrz';
-
+export type { PassportValidationCallbacks } from './validation/document';
 export type { QRProofOptions } from './qr';
-// Core functions
 export type { SdkErrorCategory } from './errors';
+
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
+// Core functions
+export { isPassportDataValid } from './validation/document';
+
 export { mergeConfig } from './config/merge';
+
 export { parseNFCResponse, scanNFC } from './nfc';
+
 export { scanQRProof } from './qr';
-// Error handling
+
 export { webScannerShim } from './adapters/web/shims';

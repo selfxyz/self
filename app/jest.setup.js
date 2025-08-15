@@ -79,6 +79,9 @@ jest.mock('@segment/analytics-react-native', () => {
   };
 });
 
+// Note: @selfxyz/mobile-sdk-alpha is NOT mocked to allow testing real package methods
+// This is intentional for the mobile-sdk-alpha migration testing
+
 // Mock react-native-keychain
 jest.mock('react-native-keychain', () => ({
   SECURITY_LEVEL_ANY: 'MOCK_SECURITY_LEVEL_ANY',
