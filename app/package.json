@@ -25,6 +25,7 @@
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "format": "yarn nice",
+    "find:type-imports": "node scripts/find-type-import-issues.mjs",
     "ia": "yarn install-app",
     "imports:fix": "node ./scripts/alias-imports.cjs",
     "install-app": "yarn install-app:setup && cd ios && bundle install && bundle exec pod install && cd .. && yarn clean:xcode-env-local",

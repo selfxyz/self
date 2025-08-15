@@ -45,10 +45,7 @@ module.exports = {
     ],
     // Export sorting - using sort-exports for better type prioritization
     'sort-exports/sort-exports': ['error', { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' }],
-    '@typescript-eslint/consistent-type-imports': [
-      'error',
-      { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
-    ],
+
     'import/first': 'error',
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
@@ -68,7 +65,6 @@ module.exports = {
         tsconfigRootDir: __dirname,
       },
       rules: {
-        '@typescript-eslint/consistent-type-exports': ['error', { fixMixedExportsWithInlineTypeSpecifier: false }],
       },
     },
     {

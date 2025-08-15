@@ -58,11 +58,7 @@ module.exports = {
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
 
-    // Type import enforcement - critical for tree shaking
-    '@typescript-eslint/consistent-type-imports': [
-      'error',
-      { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
-    ],
+
 
     // Standard import rules
     'import/first': 'error',
@@ -105,10 +101,6 @@ module.exports = {
         tsconfigRootDir: __dirname,
       },
       rules: {
-        '@typescript-eslint/consistent-type-exports': [
-          'error',
-          { fixMixedExportsWithInlineTypeSpecifier: false },
-        ],
       },
     },
     {

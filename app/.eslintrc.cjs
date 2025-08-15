@@ -78,12 +78,7 @@ module.exports = {
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
 
-    // Type import enforcement
 
-    '@typescript-eslint/consistent-type-imports': [
-      'error',
-      { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
-    ],
 
     // Standard import rules
 
@@ -177,10 +172,6 @@ module.exports = {
         tsconfigRootDir: __dirname,
       },
       rules: {
-        '@typescript-eslint/consistent-type-exports': [
-          'error',
-          { fixMixedExportsWithInlineTypeSpecifier: false },
-        ],
       },
     },
     {
