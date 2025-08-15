@@ -8,7 +8,20 @@ const emitters: Record<string, NativeEventEmitter> = {};
 function getEmitter(moduleName: string): NativeEventEmitter {
   if (!emitters[moduleName]) {
     const mod = (NativeModules as Record<string, any>)[moduleName];
-    emitters[moduleName] = new NativeEventEmitter(mod);
+    const hasExpectedShape =
+      !!mod && typeof (mod as any).addListener === 'function' && typeof (mod as any).removeListeners === 'function';
+    if (!hasExpectedShape) {
+      if (typeof __DEV__ !== 'undefined' && __DEV__) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[nativeEvents] Native module '${moduleName}' is missing or does not implement addListener/removeListeners; ` +
+            'falling back to a shared emitter. Events may not fire on iOS.',
+        );
+      }
+      emitters[moduleName] = new NativeEventEmitter();
+    } else {
+      emitters[moduleName] = new NativeEventEmitter(mod);
+    }
   }
   return emitters[moduleName];
 }
