@@ -21,11 +21,12 @@ jobs:
     environment: development
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set Node.js 22.x
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
+      - name: Set Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Prettier Check - Code Formatting

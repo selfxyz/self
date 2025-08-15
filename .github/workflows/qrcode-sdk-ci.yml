@@ -2,7 +2,7 @@ name: QRCode SDK CI
 
 env:
   # Build environment versions
-  NODE_VERSION: 22
+  # Node version is read from .nvmrc during workflow execution
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
   GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -72,6 +74,8 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -126,6 +130,8 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -196,6 +202,8 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4

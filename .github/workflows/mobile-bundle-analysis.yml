@@ -1,7 +1,6 @@
 name: Mobile Bundle Analysis
 
 env:
-  NODE_VERSION: 22
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   WORKSPACE: ${{ github.workspace }}
@@ -20,6 +19,8 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -64,6 +65,8 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:

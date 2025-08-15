@@ -1,7 +1,7 @@
 name: Mobile CI
 env:
   # Build environment versions
-  NODE_VERSION: 22
+  # Node version is read from .nvmrc during workflow execution
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   # Path configuration
@@ -20,6 +20,8 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -46,6 +48,8 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -69,6 +73,8 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1

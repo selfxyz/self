@@ -48,11 +48,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Dependencies
@@ -78,11 +79,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Dependencies
@@ -108,10 +110,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
       - uses: actions/checkout@v4
       - name: Install Dependencies

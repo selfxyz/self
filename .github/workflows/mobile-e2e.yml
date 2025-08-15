@@ -2,7 +2,6 @@ name: Mobile E2E
 
 env:
   # Build environment versions
-  NODE_VERSION: 22
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 33
   ANDROID_NDK_VERSION: 27.0.11718014
@@ -42,6 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -153,6 +154,8 @@ jobs:
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
+      - name: Read Node.js version
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
