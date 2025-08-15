@@ -18,24 +18,23 @@ const __dirname = path.dirname(__filename);
 // Patterns to match
 const PATTERNS = {
   // Inline type imports: import { type X, Y, type Z } from 'module'
-  inlineTypeImport: /^[^/]*import\s*{\s*[^}]*\btype\s+\w+[^}]*}\s+from\s+['"`][^'"`]+['"`]/gm,
+  inlineTypeImport:
+    /^[^/]*import\s*{\s*[^}]*\btype\s+\w+[^}]*}\s+from\s+['"`][^'"`]+['"`]/gm,
 
   // Inline type exports: export { type X, Y, type Z } from 'module'
-  inlineTypeExport: /^[^/]*export\s*{\s*[^}]*\btype\s+\w+[^}]*}\s+from\s+['"`][^'"`]+['"`]/gm,
+  inlineTypeExport:
+    /^[^/]*export\s*{\s*[^}]*\btype\s+\w+[^}]*}\s+from\s+['"`][^'"`]+['"`]/gm,
 
   // Inline type re-exports: export { type X, Y, type Z }
   inlineTypeReExport: /^[^/]*export\s*{\s*[^}]*\btype\s+\w+[^}]*}\s*(?!from)/gm,
 
   // Inline type destructuring: const { type X, Y, type Z } = require('module')
-  inlineTypeDestructuring: /^[^/]*const\s*{\s*[^}]*\btype\s+\w+[^}]*}\s*=\s*require\s*\(/gm,
+  inlineTypeDestructuring:
+    /^[^/]*const\s*{\s*[^}]*\btype\s+\w+[^}]*}\s*=\s*require\s*\(/gm,
 };
 
 // Directories to scan
-const SCAN_DIRS = [
-  'src',
-  'tests/src',
-  'scripts',
-];
+const SCAN_DIRS = ['src', 'tests/src', 'scripts'];
 
 // File extensions to scan
 const SCAN_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'];
@@ -109,7 +108,11 @@ function scanDirectory(dirPath) {
       if (!shouldIgnoreFile(fullPath)) {
         results.push(...scanDirectory(fullPath));
       }
-    } else if (stat.isFile() && shouldScanFile(fullPath) && !shouldIgnoreFileByName(fullPath)) {
+    } else if (
+      stat.isFile() &&
+      shouldScanFile(fullPath) &&
+      !shouldIgnoreFileByName(fullPath)
+    ) {
       const issues = findIssuesInFile(fullPath);
       if (issues.length > 0) {
         results.push({
@@ -129,7 +132,9 @@ function formatResults(results) {
     return;
   }
 
-  console.log(`\n❌ Found ${results.length} files with improperly formatted type imports/exports:\n`);
+  console.log(
+    `\n❌ Found ${results.length} files with improperly formatted type imports/exports:\n`,
+  );
 
   results.forEach(({ file, issues }) => {
     console.log(`📁 ${file}`);
@@ -140,8 +145,13 @@ function formatResults(results) {
     });
   });
 
-  const totalIssues = results.reduce((sum, { issues }) => sum + issues.length, 0);
-  console.log(`\n📊 Summary: ${totalIssues} total issues found in ${results.length} files`);
+  const totalIssues = results.reduce(
+    (sum, { issues }) => sum + issues.length,
+    0,
+  );
+  console.log(
+    `\n📊 Summary: ${totalIssues} total issues found in ${results.length} files`,
+  );
 
   console.log('\n💡 To fix these issues, convert:');
   console.log('   ❌ import { type X, Y, type Z } from "module"');

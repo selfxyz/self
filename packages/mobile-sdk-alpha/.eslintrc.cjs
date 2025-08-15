@@ -58,15 +58,7 @@ module.exports = {
     'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
   },
   overrides: [
-    {
-      files: ['src/**/*.{ts,tsx}'],
-      parserOptions: {
-        project: './tsconfig.json',
-        tsconfigRootDir: __dirname,
-      },
-      rules: {
-      },
-    },
+
     {
       files: ['*.cjs'],
       env: {

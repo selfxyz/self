@@ -78,8 +78,6 @@ module.exports = {
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
 
-
-
     // Standard import rules
 
     'import/first': 'error',
@@ -165,15 +163,6 @@ module.exports = {
     '@typescript-eslint/indent': 'off',
   },
   overrides: [
-    {
-      files: ['src/**/*.{ts,tsx}'],
-      parserOptions: {
-        project: './tsconfig.json',
-        tsconfigRootDir: __dirname,
-      },
-      rules: {
-      },
-    },
     {
       files: ['docs/examples/**/*.ts'],
       rules: {

@@ -94,15 +94,7 @@ module.exports = {
     ],
   },
   overrides: [
-    {
-      files: ['src/**/*.{ts,tsx}'],
-      parserOptions: {
-        project: './tsconfig.json',
-        tsconfigRootDir: __dirname,
-      },
-      rules: {
-      },
-    },
+
     {
       files: ['*.cjs'],
       env: {
