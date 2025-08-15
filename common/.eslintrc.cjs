@@ -58,8 +58,6 @@ module.exports = {
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
 
-
-
     // Standard import rules
     'import/first': 'error',
     'import/newline-after-import': 'error',
@@ -94,7 +92,6 @@ module.exports = {
     ],
   },
   overrides: [
-
     {
       files: ['*.cjs'],
       env: {

@@ -58,7 +58,6 @@ module.exports = {
     'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
   },
   overrides: [
-
     {
       files: ['*.cjs'],
       env: {

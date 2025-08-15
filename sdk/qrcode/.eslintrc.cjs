@@ -28,14 +28,12 @@ module.exports = {
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
 
-
     'import/first': 'error',
     'import/no-duplicates': 'error',
     'import/newline-after-import': 'error',
   },
   ignorePatterns: ['dist/', 'node_modules/'],
   overrides: [
-
     {
       files: ['*.cjs'],
       env: {
