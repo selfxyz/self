@@ -3,11 +3,7 @@
 // Only export what's actually used elsewhere to enable proper tree shaking
 
 // From provingMachine - used in screens and tests
-export {
-  type ProvingStateType,
-  useProvingStore,
-} from '@/utils/proving/provingMachine';
-
+export type { ProvingStateType } from '@/utils/proving/provingMachine';
 // From provingUtils - used in tests (keeping these for testing purposes)
 export {
   encryptAES256GCM,
@@ -23,3 +19,5 @@ export {
   hasAnyValidRegisteredDocument,
   isUserRegisteredWithAlternativeCSCA,
 } from '@/utils/proving/validateDocument';
+
+export { useProvingStore } from '@/utils/proving/provingMachine';

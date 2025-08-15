@@ -29,18 +29,16 @@ export type {
   WsAdapter,
   WsConn,
 } from './types/public';
-
-// NFC module
 export type { SdkErrorCategory } from './errors';
-// MRZ module
-export { type DG1, type DG2, type NFCScanOptions, type ParsedNFCResponse, parseNFCResponse, scanNFC } from './nfc';
-// QR module
-export { type MRZScanOptions, extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
-// Core functions
-export { type QRProofOptions, scanQRProof } from './qr';
+export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
+export type { MRZScanOptions } from './mrz';
+export type { QRProofOptions } from './qr';
+
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+export { parseNFCResponse, scanNFC } from './nfc';
+export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+export { scanQRProof } from './qr';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 export { mergeConfig } from './config/merge';
-// Error handling
 export { webScannerShim } from './adapters/web/shims';
