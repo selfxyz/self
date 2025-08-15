@@ -12,7 +12,8 @@ reviews:
   high_level_summary: true
   poem: true
   review_status: true
-  priority_threshold: medium
+  review_status: true
+  auto_review:
   auto_review:
     enabled: true
     drafts: false
