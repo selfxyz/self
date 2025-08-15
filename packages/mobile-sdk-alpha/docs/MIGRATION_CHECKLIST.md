@@ -53,18 +53,30 @@
 - Enforce CDN allowlist and Content-Length checks.
 - Stream hashing to avoid buffering large files.
 
-## 9. Sample applications
+## 9. React Native providers and hooks
+
+- Decouple context providers and hooks from adapter implementations.
+- Ensure providers accept adapter instances via props to avoid tight coupling.
+- Map provider boundaries to existing architecture tasks for crypto, sessions, attestation, protocol sync, and artifact management.
+
+## 10. Batteries-included components
+
+- Ship minimal components (e.g., scanners, buttons) that compose existing hooks and providers.
+- Expose configuration props for custom adapters while preserving sensible defaults.
+- Cross-reference component usage with architecture guidelines and adapter tasks.
+
+## 11. Sample applications
 
 - React Native and web demos showcasing core flows.
 - iOS `OpenPassport` URL scheme.
 
-## 10. Integrate SDK into `/app`
+## 12. Integrate SDK into `/app`
 
 - Consume `@selfxyz/mobile-sdk-alpha` inside the `app` workspace.
 - Replace MRZ modules with SDK adapters and wire processing helpers.
 - Validate builds and unit tests.
 
-## 11. In-SDK lightweight demo
+## 13. In-SDK lightweight demo
 
 - Embedded React Native demo inside the SDK with theming hooks.
 - Provide build and run instructions.

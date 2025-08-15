@@ -214,7 +214,46 @@ yarn build
 
 </details>
 
-## 9. Sample applications
+## 9. React Native providers and hooks
+
+<details>
+<summary><strong>Decouple providers from adapters</strong></summary>
+
+1. Extract context providers for crypto, session, attestation, protocol sync, and artifact management.
+2. Accept adapter instances via props to enable swapping implementations.
+3. Export companion hooks (e.g., `useCrypto`) that consume these contexts.
+
+</details>
+
+<details>
+<summary><strong>Validate provider boundaries</strong></summary>
+
+1. Compare each provider's API with architecture guidelines.
+2. Ensure providers expose only adapter-defined methods.
+3. Document interactions with related migration tasks for future audits.
+
+</details>
+
+## 10. Batteries-included components
+
+<details>
+<summary><strong>Create starter components</strong></summary>
+
+1. Build minimal components such as `PassportScanner` or `ProofButton` using the decoupled hooks.
+2. Expose configuration props to inject custom adapters or callbacks.
+3. Provide basic styling and theming hooks to guide consumers.
+
+</details>
+
+<details>
+<summary><strong>Cross-reference architecture tasks</strong></summary>
+
+1. Link component responsibilities to the corresponding adapter and architecture tasks.
+2. Add notes for open questions or follow-ups in `MIGRATION_PROMPTS.md` for future iterations.
+
+</details>
+
+## 11. Sample applications
 
 <details>
 <summary><strong>Add React Native sample</strong></summary>
@@ -244,7 +283,7 @@ yarn build
 
 </details>
 
-## 10. Integrate SDK into `/app`
+## 12. Integrate SDK into `/app`
 
 <details>
 <summary><strong>Integrate SDK in /app</strong></summary>
@@ -256,7 +295,7 @@ yarn build
 
 </details>
 
-## 11. In-SDK lightweight demo
+## 13. In-SDK lightweight demo
 
 <details>
 <summary><strong>Create embedded demo app</strong></summary>
