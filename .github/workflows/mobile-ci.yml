@@ -20,8 +20,23 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Read Node.js version
-        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -29,9 +44,9 @@ jobs:
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build Dependencies
@@ -48,8 +63,23 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Read Node.js version
-        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - name: Cache Node Modules
         uses: actions/cache@v4
         with:
@@ -57,9 +87,9 @@ jobs:
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
@@ -73,8 +103,23 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Read Node.js version
-        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_ENV
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
@@ -90,9 +135,9 @@ jobs:
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
       - name: Cache Ruby Bundler
         uses: actions/cache@v4
         with:
@@ -117,12 +162,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Install Mobile Dependencies
-        uses: ./.github/actions/mobile-setup
-        with:
-          app_path: ${{ env.APP_PATH }}
-          node_version: ${{ env.NODE_VERSION }}
-          ruby_version: ${{ env.RUBY_VERSION }}
-          workspace: ${{ env.WORKSPACE }}
-      - name: Install And Build
-        run: yarn install-app
+        uses: ./.github/actions/yarn-install
+      - name: Build Dependencies
+        run: yarn build:deps
+        working-directory: ./app
+      - name: Build iOS
+        run: yarn ios
+        working-directory: ./app
+      - name: Build Android
+        run: yarn android
         working-directory: ./app
