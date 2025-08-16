@@ -48,6 +48,11 @@ export function extractMRZInfo(mrzString: string) {
 
 // Function to format date from 'YYYY-MM-DD 00:00:00 +0000' to 'YYMMDD'
 export function formatDateToYYMMDD(inputDate: string) {
+  // Validate input string length to prevent substring errors
+  if (!inputDate || inputDate.length < 10) {
+    throw new Error('Invalid date format: input string must be at least 10 characters long');
+  }
+
   // Extract the date components directly from the input string
   const year = inputDate.substring(2, 4); // Get YY part
   const month = inputDate.substring(5, 7); // Get MM part
