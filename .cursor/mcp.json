@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "giga": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "https://mcp.gigamind.dev/mcp"
+      ]
+    }
+  }
+}
