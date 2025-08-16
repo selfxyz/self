@@ -8,5 +8,9 @@
         "https://mcp.gigamind.dev/mcp"
       ]
     }
+  },
+  "settings": {
+    "disableAutoPRAnalysis": true,
+    "manualReviewEnabled": true
   }
 }
