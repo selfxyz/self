@@ -266,7 +266,7 @@ jobs:
         run: |
           echo "Testing package import..."
           node -e "
-            const pkg = require('./sdk/qrcode/dist/index.js');
+            const pkg = require('./sdk/qrcode/dist/cjs/index.cjs');
             console.log('✅ Package imported successfully');
             console.log('Package exports:', Object.keys(pkg));
           "
