@@ -13,11 +13,11 @@ import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import { DocumentEvents } from '@/consts/analytics';
 import type { RootStackParamList } from '@/navigation';
-import {
-  type DocumentCatalog,
-  type DocumentMetadata,
-  usePassport,
+import type {
+  DocumentCatalog,
+  DocumentMetadata,
 } from '@/providers/passportDataProvider';
+import { usePassport } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
 import { borderColor, textBlack, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';

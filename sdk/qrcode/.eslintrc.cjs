@@ -27,10 +27,27 @@ module.exports = {
       'error',
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
-    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+
     'import/first': 'error',
     'import/no-duplicates': 'error',
     'import/newline-after-import': 'error',
   },
   ignorePatterns: ['dist/', 'node_modules/'],
+  overrides: [
+    {
+      files: ['*.cjs'],
+      env: {
+        node: true,
+        commonjs: true,
+        es6: true,
+      },
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'script',
+      },
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
 };

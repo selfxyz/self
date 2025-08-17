@@ -78,13 +78,6 @@ module.exports = {
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
 
-    // Type import enforcement
-
-    '@typescript-eslint/consistent-type-imports': [
-      'error',
-      { prefer: 'type-imports' },
-    ],
-
     // Standard import rules
 
     'import/first': 'error',

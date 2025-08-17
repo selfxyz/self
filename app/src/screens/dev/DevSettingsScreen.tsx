@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { cloneElement, isValidElement, type PropsWithChildren } from 'react';
-import React, { useMemo, useState } from 'react';
+import type { PropsWithChildren } from 'react';
+import React, { cloneElement, isValidElement, useMemo, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
