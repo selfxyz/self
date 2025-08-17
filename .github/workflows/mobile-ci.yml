@@ -153,20 +153,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pods-
       - name: Verify CocoaPods Cache
-          run: |
-            echo "Checking CocoaPods cache status..."
-            if [ -d "app/ios/Pods" ] && [ "$(ls -A app/ios/Pods)" ]; then
-              echo "✅ CocoaPods cache restored successfully"
-              ls -la app/ios/Pods/ | head -10
+        run: |
+          echo "Checking CocoaPods cache status..."
+          if [ -d "app/ios/Pods" ] && [ "$(ls -A app/ios/Pods)" ]; then
+            echo "✅ CocoaPods cache restored successfully"
+            ls -la app/ios/Pods/ | head -10
 
-              # Check if key files exist
-              if [ ! -f "app/ios/Pods/Target Support Files/Pods-Self/Pods-Self.debug.xcconfig" ]; then
-                echo "⚠️ Key CocoaPods files missing - clearing cache"
-                rm -rf app/ios/Pods app/ios/Podfile.lock
-              fi
-            else
-              echo "⚠️ CocoaPods cache is empty or missing - will install fresh"
+            # Check if key files exist
+            if [ ! -f "app/ios/Pods/Target Support Files/Pods-Self/Pods-Self.debug.xcconfig" ]; then
+              echo "⚠️ Key CocoaPods files missing - clearing cache"
+              rm -rf app/ios/Pods app/ios/Podfile.lock
             fi
+          else
+            echo "⚠️ CocoaPods cache is empty or missing - will install fresh"
+          fi
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
