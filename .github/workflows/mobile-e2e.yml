@@ -4,13 +4,13 @@ env:
   # Build environment versions
   NODE_VERSION: 22
   JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 33
+  ANDROID_API_LEVEL: 30
   ANDROID_NDK_VERSION: 27.0.11718014
   # Cache versions
   GH_CACHE_VERSION: v1 # Global cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
+  GRADLE_OPTS: -Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
   CI: true
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
@@ -29,12 +29,6 @@ on:
 
 jobs:
   e2e-android:
-    # TODO: The Android E2E test job is temporarily disabled due to a recurring
-    # Maestro driver timeout issue in the CI environment. The emulator becomes
-    # unresponsive, preventing Maestro from connecting. This needs further
-    # investigation, but has been disabled to unblock the pipeline.
-    # To test locally, run `./scripts/test-e2e-local.sh android --workflow-match`
-    if: false
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
@@ -100,19 +94,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-android-build-
       - name: Build Android APK
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
-          arch: x86_64
-          target: google_apis
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
-          disable-animations: true
-          script: |
-            echo "Building Android APK..."
-            chmod +x app/android/gradlew
-            (cd app/android && ./gradlew assembleRelease --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
-            echo "✅ Android build succeeded"
+        run: |
+          echo "Building Android APK..."
+          chmod +x app/android/gradlew
+          (cd app/android && ./gradlew assembleRelease --quiet --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
+          echo "✅ Android build succeeded"
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -120,7 +106,7 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
+          emulator-options: -no-snapshot-load -no-snapshot-save -wipe-data -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -skin 1080x1920 -memory 4096 -cores 2 -accel on
           disable-animations: true
           script: |
             echo "Installing app on emulator..."
@@ -133,7 +119,7 @@ jobs:
             sleep 5
 
             echo "🎭 Running Maestro tests..."
-            export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
+            export MAESTRO_DRIVER_STARTUP_TIMEOUT=120000
             maestro test tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
         env:
           E2E_BUILD: "true"
