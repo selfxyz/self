@@ -263,18 +263,31 @@ jobs:
         run: |
           echo "Setting up iOS Simulator..."
           echo "Available simulators:"
-          xcrun simctl list devices | grep "iPhone 15"
+          xcrun simctl list devices available
+
+          # Find the first available iPhone simulator
+          SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+
+          if [ -z "$SIMULATOR_DEVICE" ]; then
+            echo "❌ No iPhone simulator found"
+            exit 1
+          fi
+
+          echo "✅ Using simulator: $SIMULATOR_DEVICE"
 
           # Boot simulator and wait for it to be ready
-          xcrun simctl boot "iPhone 15" || true
-          xcrun simctl bootstatus "iPhone 15" -b
+          xcrun simctl boot "$SIMULATOR_DEVICE" || true
+          xcrun simctl bootstatus "$SIMULATOR_DEVICE" -b
 
           # Wait for simulator to be fully ready
           echo "Waiting for simulator to be ready..."
           sleep 10
 
           echo "Simulator status:"
-          xcrun simctl list devices | grep "iPhone 15"
+          xcrun simctl list devices | grep "$SIMULATOR_DEVICE"
+
+          # Export for use in subsequent steps
+          echo "SIMULATOR_DEVICE=$SIMULATOR_DEVICE" >> $GITHUB_ENV
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
@@ -294,17 +307,17 @@ jobs:
           echo "✅ App Bundle ID: $IOS_BUNDLE_ID"
 
           echo "Removing any existing app installation..."
-          xcrun simctl uninstall "iPhone 15" "$IOS_BUNDLE_ID" 2>/dev/null || true
+          xcrun simctl uninstall "$SIMULATOR_DEVICE" "$IOS_BUNDLE_ID" 2>/dev/null || true
 
           echo "Installing app..."
-          xcrun simctl install "iPhone 15" "$APP_PATH"
+          xcrun simctl install "$SIMULATOR_DEVICE" "$APP_PATH"
           if [ $? -ne 0 ]; then
             echo "❌ iOS app installation failed"
             exit 1
           fi
 
           echo "Verifying app installation..."
-          if xcrun simctl listapps "iPhone 15" | grep -q "$IOS_BUNDLE_ID"; then
+          if xcrun simctl listapps "$SIMULATOR_DEVICE" | grep -q "$IOS_BUNDLE_ID"; then
             echo "✅ App successfully installed"
           else
             echo "❌ App installation verification failed"
@@ -312,13 +325,13 @@ jobs:
           fi
 
           echo "🚀 Testing app launch capability..."
-          xcrun simctl launch "iPhone 15" "$IOS_BUNDLE_ID" || {
+          xcrun simctl launch "$SIMULATOR_DEVICE" "$IOS_BUNDLE_ID" || {
             echo "⚠️ Direct app launch test failed - this might be expected."
           }
 
           echo "⏰ Checking simulator readiness..."
           sleep 10
-          xcrun simctl listapps "iPhone 15" > /dev/null || sleep 5
+          xcrun simctl listapps "$SIMULATOR_DEVICE" > /dev/null || sleep 5
 
           echo "Running Maestro tests..."
           echo "Starting test execution..."
