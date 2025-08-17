@@ -138,7 +138,7 @@
     "react-qr-barcode-scanner": "^2.1.7",
     "socket.io-client": "^4.7.5",
     "tamagui": "1.126.14",
-    "uuid": "^11.0.5",
+    "uuid": "^11.1.0",
     "vite-plugin-svgr": "^4.3.0",
     "xstate": "^5.19.2",
     "zustand": "^4.5.2"

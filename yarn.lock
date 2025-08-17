@@ -4915,7 +4915,7 @@ __metadata:
     modpow: "npm:^1.0.0"
     node-forge: "https://github.com/remicolin/forge"
     poseidon-lite: "npm:^0.2.0"
-    prettier: "npm:^3.3.3"
+    prettier: "npm:^3.5.3"
     snarkjs: "npm:^0.7.1"
     ts-mocha: "npm:^10.0.0"
     tsconfig-paths: "npm:^4.2.0"
@@ -4963,14 +4963,14 @@ __metadata:
     path: "npm:^0.12.7"
     pkijs: "npm:^3.2.4"
     poseidon-lite: "npm:^0.2.0"
-    prettier: "npm:^3.3.3"
+    prettier: "npm:^3.5.3"
     snarkjs: "npm:^0.7.5"
     ts-mocha: "npm:^10.0.0"
     ts-node: "npm:^10.9.2"
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.9.2"
     typescript-parser: "npm:^2.6.1"
-    uuid: "npm:^11.0.5"
+    uuid: "npm:^11.1.0"
   languageName: unknown
   linkType: soft
 
@@ -5022,6 +5022,7 @@ __metadata:
     prettier-plugin-solidity: "npm:^2.0.0"
     snarkjs: "npm:^0.7.4"
     solidity-coverage: "npm:^0.8.14"
+    tsup: "npm:^8.5.0"
     typechain: "npm:^8.3.2"
     typescript: "npm:^5.9.2"
   languageName: unknown
@@ -5048,7 +5049,7 @@ __metadata:
     js-sha512: "npm:^0.9.0"
     node-forge: "npm:^1.3.1"
     poseidon-lite: "npm:^0.3.0"
-    prettier: "npm:^3.3.3"
+    prettier: "npm:^3.5.3"
     snarkjs: "npm:^0.7.4"
     ts-loader: "npm:^9.5.1"
     ts-node: "npm:^10.9.2"
@@ -5177,7 +5178,7 @@ __metadata:
     ts-morph: "npm:^22.0.0"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.9.2"
-    uuid: "npm:^11.0.5"
+    uuid: "npm:^11.1.0"
     vite: "npm:^7.0.0"
     vite-plugin-svgr: "npm:^4.3.0"
     xstate: "npm:^5.19.2"
@@ -5233,10 +5234,10 @@ __metadata:
     mocha: "npm:^10.7.3"
     node-forge: "npm:^1.3.1"
     poseidon-lite: "npm:^0.3.0"
-    prettier: "npm:^3.3.3"
+    prettier: "npm:^3.5.3"
     qrcode.react: "npm:^4.1.0"
-    react: "npm:^18.0.0"
-    react-dom: "npm:^18.0.0"
+    react: "npm:^18.3.1"
+    react-dom: "npm:^18.3.1"
     react-spinners: "npm:^0.14.1"
     size-limit: "npm:^11.2.0"
     socket.io-client: "npm:^4.8.1"
@@ -5245,11 +5246,11 @@ __metadata:
     ts-node: "npm:^10.9.2"
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.9.2"
-    uuid: "npm:^10.0.0"
+    uuid: "npm:^11.1.0"
   peerDependencies:
     lottie-react: ^2.4.0
-    react: ^18.0.0
-    react-dom: ^18.0.0
+    react: ^18.3.1
+    react-dom: ^18.3.1
   languageName: unknown
   linkType: soft
 
@@ -21514,7 +21515,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:3.5.3, prettier@npm:^3.3.3, prettier@npm:^3.5.3":
+"prettier@npm:3.5.3, prettier@npm:^3.5.3":
   version: 3.5.3
   resolution: "prettier@npm:3.5.3"
   bin:
@@ -21918,7 +21919,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.0.0, react-dom@npm:^18.3.1":
+"react-dom@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:
@@ -22480,7 +22481,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^18.0.0, react@npm:^18.3.1":
+"react@npm:^18.3.1":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
   dependencies:
@@ -25902,16 +25903,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^10.0.0":
-  version: 10.0.0
-  resolution: "uuid@npm:10.0.0"
-  bin:
-    uuid: dist/bin/uuid
-  checksum: 10c0/eab18c27fe4ab9fb9709a5d5f40119b45f2ec8314f8d4cf12ce27e4c6f4ffa4a6321dc7db6c515068fa373c075b49691ba969f0010bf37f44c37ca40cd6bf7fe
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^11.0.5, uuid@npm:^11.1.0":
+"uuid@npm:^11.1.0":
   version: 11.1.0
   resolution: "uuid@npm:11.1.0"
   bin:

@@ -2,7 +2,6 @@ name: Mobile E2E
 
 env:
   # Build environment versions
-  NODE_VERSION: 22
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 33
   ANDROID_NDK_VERSION: 27.0.11718014
@@ -42,6 +41,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -51,9 +63,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .yarn/cache
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
       - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
@@ -153,6 +165,19 @@ jobs:
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -162,9 +187,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .yarn/cache
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
       - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
@@ -181,9 +206,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: app/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('app/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('app/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-
       - name: Cache Ruby gems
         uses: ./.github/actions/cache-bundler
         with:

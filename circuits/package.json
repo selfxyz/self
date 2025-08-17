@@ -100,7 +100,7 @@
     "@yarnpkg/sdks": "^3.2.0",
     "chai": "^4.4.1",
     "mocha": "^10.7.3",
-    "prettier": "^3.3.3",
+    "prettier": "^3.5.3",
     "ts-mocha": "^10.0.0",
     "tsconfig-paths": "^4.2.0",
     "tsup": "^8.5.0",

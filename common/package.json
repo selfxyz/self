@@ -358,7 +358,7 @@
     "poseidon-lite": "^0.2.0",
     "snarkjs": "^0.7.5",
     "typescript-parser": "^2.6.1",
-    "uuid": "^11.0.5"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/js-sha1": "^0.6.3",
@@ -373,7 +373,7 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
     "mocha": "^10.7.3",
-    "prettier": "^3.3.3",
+    "prettier": "^3.5.3",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
