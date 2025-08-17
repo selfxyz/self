@@ -288,8 +288,10 @@ jobs:
           fi
 
           # Extract device name and ID
-          SIMULATOR_DEVICE=$(echo "$SIMULATOR_LINE" | sed -E 's/^[[:space:]]*([^(]+) \(([^)]+)\).*/\1/' | xargs)
-          SIMULATOR_ID=$(echo "$SIMULATOR_LINE" | sed -E 's/.*\(([^)]+)\).*/\1/')
+          # For device name, take everything before the first parenthesis, but handle cases like "iPhone SE (3rd generation)"
+          SIMULATOR_DEVICE=$(echo "$SIMULATOR_LINE" | sed -E 's/^[[:space:]]*([^(]+(\([^)]*generation[^)]*\))?)[[:space:]]*\([A-F0-9-]+\).*/\1/' | xargs)
+          # For ID, extract the UUID pattern (hex digits and dashes)
+          SIMULATOR_ID=$(echo "$SIMULATOR_LINE" | sed -E 's/.*\(([A-F0-9-]{36})\).*/\1/')
 
           # Find which iOS version section this simulator belongs to
           IOS_VERSION=$(xcrun simctl list devices available | grep -B 10 "$SIMULATOR_ID" | grep "-- iOS" | tail -1 | sed -E 's/.*-- iOS ([0-9.]+) --.*/\1/')
