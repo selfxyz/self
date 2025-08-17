@@ -270,16 +270,16 @@ jobs:
           SIMULATOR_LINE=""
 
           # First try iPhone SE with stable iOS versions (avoid 26.0)
-          SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "-- iOS 18" | grep "iPhone SE" | head -1)
+          SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "\-\- iOS 18" | grep "iPhone SE" | head -1)
 
           # If no iPhone SE with iOS 18.x, try iPhone 16 (non-Pro) with iOS 18.x
           if [ -z "$SIMULATOR_LINE" ]; then
-            SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "-- iOS 18" | grep "iPhone 16 " | grep -v "Pro" | head -1)
+            SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "\-\- iOS 18" | grep "iPhone 16 " | grep -v "Pro" | head -1)
           fi
 
           # Fallback to any iPhone with iOS 18.x (avoid iOS 26.0 which causes long boot times)
           if [ -z "$SIMULATOR_LINE" ]; then
-            SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "-- iOS 18" | grep "iPhone" | head -1)
+            SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "\-\- iOS 18" | grep "iPhone" | head -1)
           fi
 
           # Last resort - any iPhone (but this might pick iOS 26.0)
@@ -294,7 +294,7 @@ jobs:
           SIMULATOR_ID=$(echo "$SIMULATOR_LINE" | sed -E 's/.*\(([A-F0-9-]{36})\).*/\1/')
 
           # Find which iOS version section this simulator belongs to
-          IOS_VERSION=$(xcrun simctl list devices available | grep -B 10 "$SIMULATOR_ID" | grep "-- iOS" | tail -1 | sed -E 's/.*-- iOS ([0-9.]+) --.*/\1/')
+          IOS_VERSION=$(xcrun simctl list devices available | grep -B 10 "$SIMULATOR_ID" | grep "\-\- iOS" | tail -1 | sed -E 's/.*\-\- iOS ([0-9.]+) \-\-.*/\1/')
 
           if [ -z "$SIMULATOR_DEVICE" ]; then
             echo "❌ No iPhone simulator found"
