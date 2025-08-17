@@ -250,9 +250,9 @@ jobs:
           path: |
             ~/Library/Developer/CoreSimulator/Devices
             ~/Library/Developer/Xcode/iOS DeviceSupport
-                      key: ${{ runner.os }}-simulator-${{ hashFiles('app/ios/Podfile.lock') }}
-            restore-keys: |
-              ${{ runner.os }}-simulator-
+          key: ${{ runner.os }}-simulator-v1
+          restore-keys: |
+            ${{ runner.os }}-simulator-
       - name: Install iOS Runtime
         run: |
           echo "📱 Installing iOS Runtime..."
