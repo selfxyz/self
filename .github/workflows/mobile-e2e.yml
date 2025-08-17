@@ -266,7 +266,7 @@ jobs:
           xcrun simctl list devices available
 
           # Find the first available iPhone simulator
-          SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*iPhone ([^(]+) \(([^)]+)\).*/iPhone \1/')
 
           if [ -z "$SIMULATOR_DEVICE" ]; then
             echo "❌ No iPhone simulator found"
