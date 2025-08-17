@@ -265,8 +265,13 @@ jobs:
           echo "Available simulators:"
           xcrun simctl list devices available
 
-          # Find the first available iPhone simulator
-          SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*iPhone ([^(]+) \(([^)]+)\).*/iPhone \1/')
+          # Find the most lightweight available iPhone simulator (prefer iPhone SE, then iPhone 16, then others)
+          SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | grep -E "(iPhone SE|iPhone 16[^P])" | head -1 | sed -E 's/.*iPhone ([^(]+) \(([^)]+)\).*/iPhone \1/')
+
+          # Fallback to any iPhone if lightweight options aren't available
+          if [ -z "$SIMULATOR_DEVICE" ]; then
+            SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*iPhone ([^(]+) \(([^)]+)\).*/iPhone \1/')
+          fi
 
           if [ -z "$SIMULATOR_DEVICE" ]; then
             echo "❌ No iPhone simulator found"
