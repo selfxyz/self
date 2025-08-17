@@ -255,33 +255,33 @@ jobs:
             ${{ runner.os }}-simulator-
       - name: Install iOS Runtime
         run: |
-          echo "📱 Installing iOS Runtime..."
+          echo "📱 Checking iOS Runtime availability..."
 
           # List available runtimes
           echo "Available iOS runtimes:"
           xcrun simctl runtime list
 
-          # Install the latest iOS runtime if not already installed
-          LATEST_RUNTIME=$(xcrun simctl runtime list | grep "iOS" | grep -v "unavailable" | tail -1 | awk '{print $1}')
+          # Check if we have any iOS runtimes available
+          IOS_RUNTIMES=$(xcrun simctl runtime list | grep "iOS" | grep "Ready" | wc -l)
 
-          if [ -n "$LATEST_RUNTIME" ]; then
-            echo "Latest available runtime: $LATEST_RUNTIME"
+          if [ "$IOS_RUNTIMES" -gt 0 ]; then
+            echo "✅ Found $IOS_RUNTIMES iOS runtime(s) available and ready"
 
-            # Check if runtime is already installed
-            if xcrun simctl runtime list | grep -q "$LATEST_RUNTIME.*installed"; then
-              echo "✅ Runtime $LATEST_RUNTIME is already installed"
+            # Get the latest iOS runtime UUID
+            LATEST_RUNTIME_UUID=$(xcrun simctl runtime list | grep "iOS" | grep "Ready" | tail -1 | awk '{print $NF}' | tr -d '()')
+
+            if [ -n "$LATEST_RUNTIME_UUID" ]; then
+              echo "✅ Latest iOS runtime UUID: $LATEST_RUNTIME_UUID"
             else
-              echo "📥 Installing runtime $LATEST_RUNTIME..."
-              xcrun simctl runtime install "$LATEST_RUNTIME" || {
-                echo "⚠️ Failed to install runtime $LATEST_RUNTIME, continuing with available runtimes"
-              }
+              echo "⚠️ Could not determine latest runtime UUID, but runtimes are available"
             fi
           else
-            echo "⚠️ No iOS runtimes found, continuing with system defaults"
+            echo "⚠️ No iOS runtimes found, but this might be expected in CI environment"
+            echo "Continuing with system defaults..."
           fi
 
-          echo "Installed runtimes:"
-          xcrun simctl runtime list | grep "installed"
+          echo "Runtime status summary:"
+          xcrun simctl runtime list | grep "iOS" | head -5
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
