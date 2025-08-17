@@ -152,6 +152,21 @@ jobs:
           key: ${{ runner.os }}-pods-${{ hashFiles('app/ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-pods-
+      - name: Verify CocoaPods Cache
+          run: |
+            echo "Checking CocoaPods cache status..."
+            if [ -d "app/ios/Pods" ] && [ "$(ls -A app/ios/Pods)" ]; then
+              echo "✅ CocoaPods cache restored successfully"
+              ls -la app/ios/Pods/ | head -10
+
+              # Check if key files exist
+              if [ ! -f "app/ios/Pods/Target Support Files/Pods-Self/Pods-Self.debug.xcconfig" ]; then
+                echo "⚠️ Key CocoaPods files missing - clearing cache"
+                rm -rf app/ios/Pods app/ios/Podfile.lock
+              fi
+            else
+              echo "⚠️ CocoaPods cache is empty or missing - will install fresh"
+            fi
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
@@ -166,6 +181,53 @@ jobs:
       - name: Build Dependencies
         run: yarn build:deps
         working-directory: ./app
+      - name: Install iOS Dependencies
+        run: |
+          echo "Installing iOS dependencies..."
+          cd app/ios
+
+          # Clean Pods directory if it's corrupted or empty
+          if [ ! -d "Pods" ] || [ -z "$(ls -A Pods 2>/dev/null)" ]; then
+            echo "Cleaning empty/corrupted Pods directory..."
+            rm -rf Pods Podfile.lock
+          fi
+
+          # Install pods
+          bundle exec pod install --silent || { echo "❌ Pod install failed"; exit 1; }
+          echo "✅ Pods installed successfully"
+
+          # Verify installation
+          if [ ! -d "Pods" ] || [ -z "$(ls -A Pods 2>/dev/null)" ]; then
+            echo "❌ Pods directory is still empty after installation"
+            exit 1
+          fi
+
+          echo "Pods directory contents:"
+          ls -la Pods/ | head -10
+
+          # Verify key files exist
+          if [ ! -f "Pods/Target Support Files/Pods-Self/Pods-Self.debug.xcconfig" ]; then
+            echo "❌ Key CocoaPods configuration file missing"
+            exit 1
+          fi
+
+          echo "✅ iOS dependencies installed successfully"
+      - name: Verify iOS Workspace
+        run: |
+          echo "Verifying iOS workspace setup..."
+          cd app/ios
+
+          if [ ! -f "OpenPassport.xcworkspace/contents.xcworkspacedata" ]; then
+            echo "❌ OpenPassport.xcworkspace is missing or corrupted"
+            exit 1
+          fi
+
+          if [ ! -d "Pods" ]; then
+            echo "❌ Pods directory is missing"
+            exit 1
+          fi
+
+          echo "✅ iOS workspace is properly configured"
       - name: Build iOS
         run: yarn ios
         working-directory: ./app
