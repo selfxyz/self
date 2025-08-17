@@ -120,12 +120,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          # some cocoapods won't compile with xcode 16.3
-          xcode-version: "16.2"
+          xcode-version: "16.4"
 
       - uses: actions/checkout@v4
       - name: Cache Node Modules

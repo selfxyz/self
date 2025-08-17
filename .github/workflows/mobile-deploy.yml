@@ -118,9 +118,8 @@ jobs:
       - name: Set up Xcode
         if: inputs.platform != 'android'
         uses: maxim-lobanov/setup-xcode@v1
-        # with:
-        #   # some cocoapods won't compile with xcode 16.3
-        #   xcode-version: "16.2"
+        with:
+          xcode-version: "16.4"
 
       - name: Cache Yarn dependencies
         id: yarn-cache
