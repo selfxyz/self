@@ -266,12 +266,19 @@ jobs:
           xcrun simctl list devices available
 
           # Find the most lightweight available iPhone simulator (prefer iPhone SE, then iPhone 16, then others)
-          SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | grep -E "(iPhone SE|iPhone 16[^P])" | head -1 | sed -E 's/.*iPhone ([^(]+) \(([^)]+)\).*/iPhone \1/')
+          SIMULATOR_LINE=$(xcrun simctl list devices available | grep "iPhone" | grep -E "(iPhone SE|iPhone 16[^P])" | head -1)
 
           # Fallback to any iPhone if lightweight options aren't available
-          if [ -z "$SIMULATOR_DEVICE" ]; then
-            SIMULATOR_DEVICE=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*iPhone ([^(]+) \(([^)]+)\).*/iPhone \1/')
+          if [ -z "$SIMULATOR_LINE" ]; then
+            SIMULATOR_LINE=$(xcrun simctl list devices available | grep "iPhone" | head -1)
           fi
+
+          # Extract device name and iOS version
+          SIMULATOR_DEVICE=$(echo "$SIMULATOR_LINE" | sed -E 's/.*iPhone ([^(]+) \(([^)]+)\).*/iPhone \1/')
+          SIMULATOR_ID=$(echo "$SIMULATOR_LINE" | sed -E 's/.*\(([^)]+)\).*/\1/')
+
+          # Get iOS version for this simulator
+          IOS_VERSION=$(xcrun simctl list devices available | grep "$SIMULATOR_ID" | sed -E 's/.*-- iOS ([0-9.]+) --.*/\1/')
 
           if [ -z "$SIMULATOR_DEVICE" ]; then
             echo "❌ No iPhone simulator found"
@@ -290,9 +297,11 @@ jobs:
 
           echo "Simulator status:"
           xcrun simctl list devices | grep "$SIMULATOR_DEVICE"
+          echo "iOS Version: $IOS_VERSION"
 
           # Export for use in subsequent steps
           echo "SIMULATOR_DEVICE=$SIMULATOR_DEVICE" >> $GITHUB_ENV
+          echo "IOS_VERSION=$IOS_VERSION" >> $GITHUB_ENV
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
@@ -306,7 +315,7 @@ jobs:
           xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -showdestinations -sdk iphonesimulator
 
           # Use cached derived data and enable parallel builds for faster compilation
-          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -destination "platform=iOS Simulator,name=$SIMULATOR_DEVICE" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
+          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -destination "platform=iOS Simulator,OS=$IOS_VERSION,name=$SIMULATOR_DEVICE" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
