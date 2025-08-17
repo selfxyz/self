@@ -1,7 +1,7 @@
 [
   {
     "fileName": "main-overview.mdc",
-    "path": ".cursorrules",
+    "path": ".cursor/rules",
     "description": "Complete system overview of the identity verification platform, covering the passport/ID verification workflow, zero-knowledge proof system, and compliance mechanisms"
   },
   {

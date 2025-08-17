@@ -22,7 +22,7 @@
 - **Memory Constraints**: <300MB peak memory usage
 
 ### Disclosure Proof Circuit
-- **Circuit Location**: `circuits/circuits/disclose/disclose.circom`
+- **Circuit Location**: `circuits/circuits/disclose/vc_and_disclose.circom`
 - **Purpose**: Selective attribute revelation with privacy preservation
 - **Supported Disclosures**:
   - Age verification: "olderThan" with day granularity
@@ -60,6 +60,10 @@ interface VerificationConfig {
   complianceRules: ComplianceRule[];
   timeWindow: number; // 24-hour window in seconds
   clockDrift: number; // ±5 minutes tolerance
+  trustAnchors: string[]; // Trusted certificate authority roots
+  revocationRoots: string[]; // Certificate revocation list roots
+  timeSource: string; // NTP server for time validation
+  nullifierScope: string; // Domain separation for nullifiers
 }
 ```
 
@@ -90,6 +94,10 @@ interface VerificationConfig {
 - **Field Size**: BN254 scalar field (254 bits)
 - **Key Sizes**: RSA-2048 minimum, ECDSA-P256 preferred
 - **Randomness**: CSPRNG with entropy validation
+- **Signature Scheme**: EdDSA over BabyJubJub (zk-friendly)
+- **MRZ Validation**: Check digits validation for data integrity
+- **Authentication**: Passive/active authentication modes
+- **NFC Security**: Secure channel establishment with PACE/BAC
 
 ### Performance Constraints
 - **Proof Generation**: <60s on mid-tier mobile devices
@@ -102,13 +110,18 @@ interface VerificationConfig {
 - **Key Management**: Secure key storage with rotation
 - **Audit Trails**: Privacy-preserving audit logs
 - **Input Validation**: Comprehensive input sanitization
+- **OFAC Anchoring**: Signed list snapshots with freshness guarantees
+- **Cross-Chain Privacy**: Domain-separated nullifiers prevent linkability
+- **Hardware Security**: Hardware keystore requirements for mobile
+- **TLS Pinning**: Certificate pinning for secure communications
+- **Telemetry Minimization**: Minimal data collection and transmission
 
 ## 5. Error Handling & Recovery
 
 ### Circuit Errors
 - **Invalid Input**: Clear error codes for malformed data
 - **Proof Failure**: Graceful degradation with retry logic
-- **Memory Limits**: Fallback to server-side proving
+- **Memory Limits**: Client-side only - no server-side proving fallback
 - **Timeout Handling**: Configurable timeouts with progress events
 
 ### Network Errors
@@ -146,9 +159,3 @@ interface VerificationConfig {
 - **Examples**: Integration examples and demos
 
 This specification provides concrete implementation guidance for the identity verification system with specific technical requirements, performance constraints, and development patterns.
-
-$END$
-description:
-globs:
-alwaysApply: false
----
