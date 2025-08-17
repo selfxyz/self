@@ -306,6 +306,20 @@ jobs:
           echo "✅ Simulator ID: $SIMULATOR_ID"
           echo "✅ iOS Version: $IOS_VERSION"
 
+          # Debug: Ensure variables are not empty
+          if [ -z "$SIMULATOR_DEVICE" ]; then
+            echo "❌ SIMULATOR_DEVICE is empty!"
+            exit 1
+          fi
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "❌ SIMULATOR_ID is empty!"
+            exit 1
+          fi
+          if [ -z "$IOS_VERSION" ]; then
+            echo "❌ IOS_VERSION is empty!"
+            exit 1
+          fi
+
           # Boot simulator and wait for it to be ready
           xcrun simctl boot "$SIMULATOR_ID" || true
           xcrun simctl bootstatus "$SIMULATOR_ID" -b
@@ -326,6 +340,31 @@ jobs:
         run: |
           echo "Building iOS app..."
 
+          # Debug: Print environment variables
+          echo "🔍 Environment variables:"
+          echo "  SIMULATOR_DEVICE='$SIMULATOR_DEVICE'"
+          echo "  SIMULATOR_ID='$SIMULATOR_ID'"
+          echo "  IOS_VERSION='$IOS_VERSION'"
+
+          # Ensure environment variables are set
+          if [ -z "$SIMULATOR_DEVICE" ] || [ -z "$SIMULATOR_ID" ] || [ -z "$IOS_VERSION" ]; then
+            echo "❌ Missing environment variables. Re-extracting..."
+
+            # Re-extract if missing (fallback)
+            SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "\-\- iOS 18" | grep "iPhone SE" | head -1)
+            if [ -z "$SIMULATOR_LINE" ]; then
+              SIMULATOR_LINE=$(xcrun simctl list devices available | grep "iPhone" | head -1)
+            fi
+            SIMULATOR_DEVICE=$(echo "$SIMULATOR_LINE" | sed -E 's/^[[:space:]]*([^(]+(\([^)]*generation[^)]*\))?)[[:space:]]*\([A-F0-9-]+\).*/\1/' | xargs)
+            SIMULATOR_ID=$(echo "$SIMULATOR_LINE" | sed -E 's/.*\(([A-F0-9-]{36})\).*/\1/')
+            IOS_VERSION=$(xcrun simctl list devices available | grep -B 10 "$SIMULATOR_ID" | grep "\-\- iOS" | tail -1 | sed -E 's/.*\-\- iOS ([0-9.]+) \-\-.*/\1/')
+
+            echo "🔄 Re-extracted values:"
+            echo "  SIMULATOR_DEVICE='$SIMULATOR_DEVICE'"
+            echo "  SIMULATOR_ID='$SIMULATOR_ID'"
+            echo "  IOS_VERSION='$IOS_VERSION'"
+          fi
+
           # List available schemes
           echo "Available schemes:"
           xcodebuild -workspace app/ios/OpenPassport.xcworkspace -list
@@ -335,6 +374,7 @@ jobs:
           xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -showdestinations -sdk iphonesimulator
 
           # Use cached derived data and enable parallel builds for faster compilation
+          echo "🚀 Building with destination: platform=iOS Simulator,OS=$IOS_VERSION,name=$SIMULATOR_DEVICE"
           xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -destination "platform=iOS Simulator,OS=$IOS_VERSION,name=$SIMULATOR_DEVICE" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
