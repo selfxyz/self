@@ -263,119 +263,23 @@ jobs:
         run: |
           echo "Setting up iOS Simulator..."
           echo "Available simulators:"
-          xcrun simctl list devices available
-
-                    # Find the most lightweight available iPhone simulator
-          # Prefer iPhone SE, then iPhone 16 (non-Pro), then any iPhone, but avoid iOS 26.0
-          SIMULATOR_LINE=""
-
-          # First try iPhone SE with stable iOS versions (avoid 26.0)
-          SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "\-\- iOS 18" | grep "iPhone SE" | head -1)
-
-          # If no iPhone SE with iOS 18.x, try iPhone 16 (non-Pro) with iOS 18.x
-          if [ -z "$SIMULATOR_LINE" ]; then
-            SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "\-\- iOS 18" | grep "iPhone 16 " | grep -v "Pro" | head -1)
-          fi
-
-          # Fallback to any iPhone with iOS 18.x (avoid iOS 26.0 which causes long boot times)
-          if [ -z "$SIMULATOR_LINE" ]; then
-            SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "\-\- iOS 18" | grep "iPhone" | head -1)
-          fi
-
-          # Last resort - any iPhone (but this might pick iOS 26.0)
-          if [ -z "$SIMULATOR_LINE" ]; then
-            SIMULATOR_LINE=$(xcrun simctl list devices available | grep "iPhone" | head -1)
-          fi
-
-          # Extract device name and ID
-          # For device name, take everything before the first parenthesis, but handle cases like "iPhone SE (3rd generation)"
-          SIMULATOR_DEVICE=$(echo "$SIMULATOR_LINE" | sed -E 's/^[[:space:]]*([^(]+(\([^)]*generation[^)]*\))?)[[:space:]]*\([A-F0-9-]+\).*/\1/' | xargs)
-          # For ID, extract the UUID pattern (hex digits and dashes)
-          SIMULATOR_ID=$(echo "$SIMULATOR_LINE" | sed -E 's/.*\(([A-F0-9-]{36})\).*/\1/')
-
-          # Find which iOS version section this simulator belongs to
-          IOS_VERSION=$(xcrun simctl list devices available | grep -B 10 "$SIMULATOR_ID" | grep "\-\- iOS" | tail -1 | sed -E 's/.*\-\- iOS ([0-9.]+) \-\-.*/\1/')
-
-          if [ -z "$SIMULATOR_DEVICE" ]; then
-            echo "❌ No iPhone simulator found"
-            exit 1
-          fi
-
-          echo "✅ Selected simulator line: $SIMULATOR_LINE"
-          echo "✅ Using simulator: $SIMULATOR_DEVICE"
-          echo "✅ Simulator ID: $SIMULATOR_ID"
-          echo "✅ iOS Version: $IOS_VERSION"
-
-          # Debug: Ensure variables are not empty
-          if [ -z "$SIMULATOR_DEVICE" ]; then
-            echo "❌ SIMULATOR_DEVICE is empty!"
-            exit 1
-          fi
-          if [ -z "$SIMULATOR_ID" ]; then
-            echo "❌ SIMULATOR_ID is empty!"
-            exit 1
-          fi
-          if [ -z "$IOS_VERSION" ]; then
-            echo "❌ IOS_VERSION is empty!"
-            exit 1
-          fi
+          xcrun simctl list devices | grep "iPhone SE"
 
           # Boot simulator and wait for it to be ready
-          xcrun simctl boot "$SIMULATOR_ID" || true
-          xcrun simctl bootstatus "$SIMULATOR_ID" -b
+          xcrun simctl boot "iPhone SE (3rd generation)" || true
+          xcrun simctl bootstatus "iPhone SE (3rd generation)" -b
 
           # Wait for simulator to be fully ready
           echo "Waiting for simulator to be ready..."
           sleep 10
 
           echo "Simulator status:"
-          xcrun simctl list devices | grep "$SIMULATOR_ID"
-          echo "iOS Version: $IOS_VERSION"
-
-          # Export for use in subsequent steps
-          echo "SIMULATOR_DEVICE=$SIMULATOR_DEVICE" >> $GITHUB_ENV
-          echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
-          echo "IOS_VERSION=$IOS_VERSION" >> $GITHUB_ENV
+          xcrun simctl list devices | grep "iPhone SE"
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
-
-          # Debug: Print environment variables
-          echo "🔍 Environment variables:"
-          echo "  SIMULATOR_DEVICE='$SIMULATOR_DEVICE'"
-          echo "  SIMULATOR_ID='$SIMULATOR_ID'"
-          echo "  IOS_VERSION='$IOS_VERSION'"
-
-          # Ensure environment variables are set
-          if [ -z "$SIMULATOR_DEVICE" ] || [ -z "$SIMULATOR_ID" ] || [ -z "$IOS_VERSION" ]; then
-            echo "❌ Missing environment variables. Re-extracting..."
-
-            # Re-extract if missing (fallback)
-            SIMULATOR_LINE=$(xcrun simctl list devices available | grep -A 20 "\-\- iOS 18" | grep "iPhone SE" | head -1)
-            if [ -z "$SIMULATOR_LINE" ]; then
-              SIMULATOR_LINE=$(xcrun simctl list devices available | grep "iPhone" | head -1)
-            fi
-            SIMULATOR_DEVICE=$(echo "$SIMULATOR_LINE" | sed -E 's/^[[:space:]]*([^(]+(\([^)]*generation[^)]*\))?)[[:space:]]*\([A-F0-9-]+\).*/\1/' | xargs)
-            SIMULATOR_ID=$(echo "$SIMULATOR_LINE" | sed -E 's/.*\(([A-F0-9-]{36})\).*/\1/')
-            IOS_VERSION=$(xcrun simctl list devices available | grep -B 10 "$SIMULATOR_ID" | grep "\-\- iOS" | tail -1 | sed -E 's/.*\-\- iOS ([0-9.]+) \-\-.*/\1/')
-
-            echo "🔄 Re-extracted values:"
-            echo "  SIMULATOR_DEVICE='$SIMULATOR_DEVICE'"
-            echo "  SIMULATOR_ID='$SIMULATOR_ID'"
-            echo "  IOS_VERSION='$IOS_VERSION'"
-          fi
-
-          # List available schemes
-          echo "Available schemes:"
-          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -list
-
-          # List available destinations
-          echo "Available destinations:"
-          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -showdestinations -sdk iphonesimulator
-
           # Use cached derived data and enable parallel builds for faster compilation
-          echo "🚀 Building with destination: platform=iOS Simulator,OS=$IOS_VERSION,name=$SIMULATOR_DEVICE"
-          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -destination "platform=iOS Simulator,OS=$IOS_VERSION,name=$SIMULATOR_DEVICE" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
+          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
@@ -390,17 +294,17 @@ jobs:
           echo "✅ App Bundle ID: $IOS_BUNDLE_ID"
 
           echo "Removing any existing app installation..."
-          xcrun simctl uninstall "$SIMULATOR_ID" "$IOS_BUNDLE_ID" 2>/dev/null || true
+          xcrun simctl uninstall "iPhone SE (3rd generation)" "$IOS_BUNDLE_ID" 2>/dev/null || true
 
           echo "Installing app..."
-          xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
+          xcrun simctl install "iPhone SE (3rd generation)" "$APP_PATH"
           if [ $? -ne 0 ]; then
             echo "❌ iOS app installation failed"
             exit 1
           fi
 
           echo "Verifying app installation..."
-          if xcrun simctl listapps "$SIMULATOR_ID" | grep -q "$IOS_BUNDLE_ID"; then
+          if xcrun simctl listapps "iPhone SE (3rd generation)" | grep -q "$IOS_BUNDLE_ID"; then
             echo "✅ App successfully installed"
           else
             echo "❌ App installation verification failed"
@@ -408,13 +312,13 @@ jobs:
           fi
 
           echo "🚀 Testing app launch capability..."
-          xcrun simctl launch "$SIMULATOR_ID" "$IOS_BUNDLE_ID" || {
+          xcrun simctl launch "iPhone SE (3rd generation)" "$IOS_BUNDLE_ID" || {
             echo "⚠️ Direct app launch test failed - this might be expected."
           }
 
           echo "⏰ Checking simulator readiness..."
           sleep 10
-          xcrun simctl listapps "$SIMULATOR_ID" > /dev/null || sleep 5
+          xcrun simctl listapps "iPhone SE (3rd generation)" > /dev/null || sleep 5
 
           echo "Running Maestro tests..."
           echo "Starting test execution..."
