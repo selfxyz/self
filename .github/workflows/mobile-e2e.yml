@@ -213,6 +213,19 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: ${{ env.XCODE_VERSION }}
+      - name: Configure Xcode path
+        run: |
+          echo "🔧 Configuring Xcode path to fix iOS SDK issues..."
+          # Fix for macOS 15 runner iOS SDK issues
+          # See: https://github.com/actions/runner-images/issues/12758
+          sudo xcode-select --switch /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+          echo "✅ Xcode path configured"
+
+          # Verify Xcode setup
+          echo "Xcode version:"
+          xcodebuild -version
+          echo "Xcode path:"
+          xcode-select -p
       - name: Cache Node modules
         uses: actions/cache@v4
         with:
@@ -260,41 +273,11 @@ jobs:
           key: ${{ runner.os }}-simulator-v1
           restore-keys: |
             ${{ runner.os }}-simulator-
-      - name: Install iOS Runtime
+      - name: Verify iOS Runtime
         run: |
-          echo "📱 Checking iOS Runtime availability..."
-          echo "Available iOS runtimes (JSON):"
-          xcrun simctl list -j runtimes || true
-
-          echo "Available iOS runtimes (human readable):"
+          echo "📱 Verifying iOS Runtime availability..."
+          echo "Available iOS runtimes:"
           xcrun simctl list runtimes | grep iOS || true
-
-          # Determine latest available iOS runtime identifier
-          if command -v jq >/dev/null 2>&1; then
-            RUNTIME_ID=$(
-              xcrun simctl list -j runtimes \
-                | jq -r '.runtimes[]
-                    | select(.platform=="iOS" and .isAvailable==true)
-                    | .identifier' \
-                | sort -V \
-                | tail -1
-            )
-          else
-            # Fallback: parse human output (less reliable)
-            RUNTIME_ID=$(
-              xcrun simctl list runtimes \
-                | awk '/iOS/ && /com.apple.CoreSimulator.SimRuntime.iOS-/ {print $NF}' \
-                | tail -1
-            )
-          fi
-          if [ -n "$RUNTIME_ID" ] && [[ "$RUNTIME_ID" == com.apple.CoreSimulator.SimRuntime.iOS-* ]]; then
-            echo "✅ Latest iOS runtime: $RUNTIME_ID"
-            echo "RUNTIME_ID=$RUNTIME_ID" >> $GITHUB_ENV
-          else
-            echo "⚠️ Could not determine an iOS runtime identifier"
-            echo "Available runtimes:"
-            xcrun simctl list runtimes
-          fi
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
@@ -337,47 +320,15 @@ jobs:
           if [ -z "$AVAILABLE_SIMULATOR" ]; then
             echo "❌ No available iPhone simulator found"
             echo "Creating a new iPhone SE (3rd generation) simulator..."
-
-            # Use the runtime ID that was determined in the previous step
-            RUNTIME_ID="${RUNTIME_ID:-}"
-            if [ -z "$RUNTIME_ID" ]; then
-              echo "Determining latest available iOS runtime..."
-              if command -v jq >/dev/null 2>&1; then
-                RUNTIME_ID=$(
-                  xcrun simctl list -j runtimes \
-                    | jq -r '.runtimes[]
-                        | select(.platform=="iOS" and .isAvailable==true)
-                        | .identifier' \
-                    | sort -V \
-                    | tail -1
-                )
-              else
-                # Fallback: parse human output
-                RUNTIME_ID=$(
-                  xcrun simctl list runtimes \
-                    | awk '/iOS/ && /com.apple.CoreSimulator.SimRuntime.iOS-/ {print $NF}' \
-                    | tail -1
-                )
-              fi
-            fi
-
-            if [ -n "$RUNTIME_ID" ] && [[ "$RUNTIME_ID" == com.apple.CoreSimulator.SimRuntime.iOS-* ]]; then
-              echo "✅ Using iOS runtime: $RUNTIME_ID"
-              # Create a new iPhone SE (3rd generation) simulator with the latest available iOS runtime
-              xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "$RUNTIME_ID" || {
-                echo "❌ Failed to create iPhone SE (3rd generation) simulator"
-                echo "Trying to create any iPhone SE simulator..."
-                xcrun simctl create "iPhone SE" "iPhone SE" "$RUNTIME_ID" || {
-                  echo "❌ Failed to create simulator"
-                  exit 1
-                }
+            # Create a new iPhone SE (3rd generation) simulator
+            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" || {
+              echo "❌ Failed to create iPhone SE (3rd generation) simulator"
+              echo "Trying to create any iPhone SE simulator..."
+              xcrun simctl create "iPhone SE" "iPhone SE" || {
+                echo "❌ Failed to create simulator"
+                exit 1
               }
-            else
-              echo "❌ Could not determine iOS runtime identifier"
-              echo "Available runtimes:"
-              xcrun simctl list runtimes
-              exit 1
-            fi
+            }
             AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone SE" | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
           fi
 
