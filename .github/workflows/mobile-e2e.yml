@@ -106,29 +106,103 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-snapshot-load -no-snapshot-save -wipe-data -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -skin 1080x1920 -memory 4096 -cores 2 -accel on
-          disable-animations: false
+          emulator-options: -no-snapshot-load -no-snapshot-save -wipe-data -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -skin 1080x1920 -memory 4096 -cores 2 -accel on -qemu -enable-kvm -netdelay none -netspeed full
+          disable-animations: true
           script: |
+            echo "🔧 Setting up ADB connection..."
+
+            # Wait for ADB to be ready and restart if needed
+            echo "Waiting for ADB to be ready..."
+            adb kill-server || true
+            sleep 2
+            adb start-server
+            sleep 3
+
+            # Wait for emulator to appear in device list
+            echo "Waiting for emulator to appear in device list..."
+            for i in {1..30}; do
+              if adb devices | grep -q emulator; then
+                echo "✅ Emulator found in device list"
+                break
+              fi
+              echo "Attempt $i/30: Waiting for emulator..."
+              sleep 5
+            done
+
+            # Get emulator device ID
+            EMULATOR_ID=$(adb devices | grep emulator | head -1 | cut -f1)
+            if [ -z "$EMULATOR_ID" ]; then
+              echo "❌ No emulator found in device list"
+              adb devices
+              exit 1
+            fi
+            echo "📱 Using emulator: $EMULATOR_ID"
+
+            # Wait for emulator to be fully booted with better error handling
+            echo "⏳ Waiting for emulator to be fully booted..."
+            for i in {1..60}; do
+              if adb -s "$EMULATOR_ID" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
+                echo "✅ Emulator fully booted"
+                break
+              fi
+              if [ $i -eq 60 ]; then
+                echo "❌ Emulator failed to boot within 5 minutes"
+                echo "Device status:"
+                adb devices
+                echo "Boot completion status:"
+                adb -s "$EMULATOR_ID" shell getprop sys.boot_completed 2>/dev/null || echo "Cannot get boot status"
+                exit 1
+              fi
+              echo "Boot attempt $i/60..."
+              sleep 5
+            done
+
+            # Configure emulator settings after boot
             echo "Configuring emulator settings..."
-            adb shell settings put global window_animation_scale 0 || true
-            adb shell settings put global transition_animation_scale 0 || true
-            adb shell settings put global animator_duration_scale 0 || true
-            adb shell settings put system screen_off_timeout 2147483647 || true
+            adb -s "$EMULATOR_ID" shell settings put global window_animation_scale 0 || true
+            adb -s "$EMULATOR_ID" shell settings put global transition_animation_scale 0 || true
+            adb -s "$EMULATOR_ID" shell settings put global animator_duration_scale 0 || true
+            adb -s "$EMULATOR_ID" shell settings put system screen_off_timeout 2147483647 || true
+
+            # Additional stability wait
+            echo "⏰ Additional stability wait..."
+            sleep 10
 
             echo "Installing app on emulator..."
             APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
             [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
-            adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
-            echo "✅ App installed successfully"
+
+            # Install with retry logic
+            for attempt in {1..3}; do
+              echo "Install attempt $attempt/3..."
+              if adb -s "$EMULATOR_ID" install -r "$APK_PATH"; then
+                echo "✅ App installed successfully"
+                break
+              else
+                echo "❌ App installation failed on attempt $attempt"
+                if [ $attempt -eq 3 ]; then
+                  echo "All installation attempts failed"
+                  exit 1
+                fi
+                sleep 5
+              fi
+            done
 
             echo "⏰ Giving the emulator a moment to settle..."
-            sleep 5
+            sleep 10
 
             echo "🎭 Running Maestro tests..."
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=120000
             maestro test tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
         env:
           E2E_BUILD: "true"
+          # Emulator stability settings
+          ANDROID_EMU_ENABLE_CRASH_REPORTING: "0"
+          ANDROID_EMU_ENABLE_CONSOLE: "0"
+          ANDROID_EMU_ENABLE_GRALLOC_SYNC: "1"
+          # ADB settings
+          ADB_TRACE: "all"
+          ADB_INSTALL_TIMEOUT: "300000"
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
