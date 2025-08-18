@@ -330,11 +330,11 @@ jobs:
           if [ -z "$AVAILABLE_SIMULATOR" ]; then
             echo "❌ No available iPhone simulator found"
             echo "Creating a new iPhone SE (3rd generation) simulator..."
-            # Create a new iPhone SE (3rd generation) simulator with default iOS version
-            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" || {
+            # Create a new iPhone SE (3rd generation) simulator with iOS 18.2 (bundled with Xcode 16.2)
+            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS18.2" || {
               echo "❌ Failed to create iPhone SE (3rd generation) simulator"
               echo "Trying to create any iPhone SE simulator..."
-              xcrun simctl create "iPhone SE" "iPhone SE" || {
+              xcrun simctl create "iPhone SE" "iPhone SE" "iOS18.2" || {
                 echo "❌ Failed to create simulator"
                 exit 1
               }
@@ -398,8 +398,8 @@ jobs:
           echo "✅ Using scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
           # Use cached derived data and enable parallel builds for faster compilation
-          # Use any available iOS simulator version with iPhone SE
-          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "platform=iOS Simulator,name=iPhone SE (3rd generation)" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
+          # Use the simulator that was set up earlier in the workflow
+          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
