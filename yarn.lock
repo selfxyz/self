@@ -4933,6 +4933,7 @@ __metadata:
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
     "@types/js-sha1": "npm:^0.6.3"
+    "@types/node": "npm:^22.0.0"
     "@types/node-forge": "npm:^1.3.10"
     "@typescript-eslint/eslint-plugin": "npm:^8.0.0"
     "@typescript-eslint/parser": "npm:^8.0.0"
