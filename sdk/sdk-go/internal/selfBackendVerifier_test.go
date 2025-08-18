@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	self "github.com/self/sdk"
-	"github.com/self/sdk/common"
+	self "github.com/selfxyz/self/sdk/sdk-go"
+	common "github.com/selfxyz/self/sdk/sdk-go/common"
 )
 
 // MockConfigStore implements ConfigStore interface for testing

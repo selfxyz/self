@@ -5,7 +5,7 @@ A Go SDK for integrating with the Self protocol for privacy-preserving identity 
 ## Installation
 
 ```bash
-go get github.com/self/sdk
+go get github.com/selfxyz/self/sdk/sdk-go@main
 ```
 
 ## Quick Start
@@ -20,14 +20,15 @@ import (
     "fmt"
     "log"
 
-    "github.com/self/sdk"
+    "github.com/selfxyz/self/sdk/sdk-go"
+    "github.com/selfxyz/self/sdk/sdk-go/common"
 )
 
 func main() {
     // Create a verification configuration
     config := self.VerificationConfig{
         MinimumAge:        &[]int{18}[0],                    // Require 18+ years
-        ExcludedCountries: []self.Country3LetterCode{"USA"}, // Exclude USA
+        ExcludedCountries: []common.Country3LetterCode{common.USA}, // Exclude USA
         Ofac:              &[]bool{false}[0],                // Allow OFAC flagged individuals
     }
 

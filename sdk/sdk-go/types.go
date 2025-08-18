@@ -1,7 +1,7 @@
 package self
 
 import (
-	"github.com/self/sdk/common"
+	"github.com/selfxyz/self/sdk/sdk-go/common"
 )
 
 // AttestationId represents the type for attestation identifiers

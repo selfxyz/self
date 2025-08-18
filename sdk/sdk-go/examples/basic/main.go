@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	self "github.com/self/sdk"
-	"github.com/self/sdk/common"
+	self "github.com/selfxyz/self/sdk/sdk-go"
+	common "github.com/selfxyz/self/sdk/sdk-go/common"
 )
 
 func main() {

@@ -12,8 +12,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	commonUtils "github.com/self/sdk/common"
-	bindings "github.com/self/sdk/contracts/bindings"
+	commonUtils "github.com/selfxyz/self/sdk/sdk-go/common"
+	bindings "github.com/selfxyz/self/sdk/sdk-go/contracts/bindings"
 )
 
 const (

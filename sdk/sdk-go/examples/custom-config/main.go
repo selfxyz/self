@@ -6,8 +6,8 @@ import (
 	"log"
 	"sync"
 
-	self "github.com/self/sdk"
-	"github.com/self/sdk/common"
+	self "github.com/selfxyz/self/sdk/sdk-go"
+	"github.com/selfxyz/self/sdk/sdk-go/common"
 )
 
 // CustomConfigStore implements a more sophisticated config store

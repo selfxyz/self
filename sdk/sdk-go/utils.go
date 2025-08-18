@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/self/sdk/common"
+	"github.com/selfxyz/self/sdk/sdk-go/common"
 	"golang.org/x/crypto/ripemd160"
 )
 

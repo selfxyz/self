@@ -1,4 +1,4 @@
-module github.com/self/sdk
+module github.com/selfxyz/self/sdk/sdk-go
 
 go 1.23.0
 
