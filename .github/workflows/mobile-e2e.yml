@@ -328,7 +328,12 @@ jobs:
                 echo "❌ Failed to create simulator"
                 exit 1
               }
-            }
+            else
+              echo "❌ Could not determine iOS runtime identifier"
+              echo "Available runtimes:"
+              xcrun simctl list runtimes
+              exit 1
+            fi
             AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone SE" | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
           fi
 
