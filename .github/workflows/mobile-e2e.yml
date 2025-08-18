@@ -164,9 +164,11 @@ jobs:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
     env:
-      # iOS project configuration - using same environment variables as mobile-deploy.yml for consistency
+      # iOS project configuration - hardcoded for E2E testing stability
+      # Note: During migration, project name is "Self" but scheme is still "OpenPassport"
+      # mobile-deploy.yml uses secrets for production deployment
       IOS_PROJECT_NAME: "Self"
-      IOS_PROJECT_SCHEME: "Self"
+      IOS_PROJECT_SCHEME: "OpenPassport"
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
