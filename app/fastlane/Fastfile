@@ -202,7 +202,20 @@ platform :ios do
 
     target_platform = options[:prod_release] ? "App Store" : "TestFlight"
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
-    workspace_path = File.expand_path("../ios/#{PROJECT_SCHEME}.xcworkspace", Dir.pwd)
+
+    # Robust workspace path resolution
+    scheme_workspace_path = File.expand_path("../ios/#{PROJECT_SCHEME}.xcworkspace", Dir.pwd)
+    project_workspace_path = File.expand_path("../ios/#{PROJECT_NAME}.xcworkspace", Dir.pwd)
+
+    workspace_path = if File.exist?(scheme_workspace_path)
+        scheme_workspace_path
+      elsif File.exist?(project_workspace_path)
+        project_workspace_path
+      else
+        raise "No workspace found for scheme '#{PROJECT_SCHEME}' or project '#{PROJECT_NAME}'. " \
+              "Checked paths: #{scheme_workspace_path}, #{project_workspace_path}"
+      end
+
     ios_signing_certificate_name = "iPhone Distribution: #{ENV["IOS_TEAM_NAME"]} (#{ENV["IOS_TEAM_ID"]})"
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
