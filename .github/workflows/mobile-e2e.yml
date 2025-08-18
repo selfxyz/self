@@ -186,7 +186,7 @@ jobs:
         uses: ./.github/actions/cache-yarn
         with:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
-      - run: yarn workspaces focus @selfxyz/mobile-app --production
+      - run: yarn workspaces focus @selfxyz/mobile-app
       - name: Cache Maestro
         id: cache-maestro
         uses: actions/cache@v4
