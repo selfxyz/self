@@ -397,7 +397,8 @@ jobs:
           echo "✅ Using scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
           # Use cached derived data and enable parallel builds for faster compilation
-          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
+          # Use the same iPhone SE simulator that gets set up earlier in the workflow
+          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "platform=iOS Simulator,name=iPhone SE (3rd generation)" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
