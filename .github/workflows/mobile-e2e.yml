@@ -383,12 +383,13 @@ jobs:
 
           # Verify scheme exists by listing available schemes
           echo "Verifying scheme availability..."
-          AVAILABLE_SCHEMES=$(xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 100 "Schemes:" | grep -v "Schemes:" | head -10 | xargs)
-          echo "Available schemes: $AVAILABLE_SCHEMES"
+          AVAILABLE_SCHEMES=$(xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 200 "Schemes:" | grep -v "Schemes:" | xargs)
+          echo "Available schemes (first 20): $(echo $AVAILABLE_SCHEMES | cut -d' ' -f1-20)..."
 
           if [[ ! "$AVAILABLE_SCHEMES" =~ ${{ env.IOS_PROJECT_SCHEME }} ]]; then
             echo "❌ Scheme '${{ env.IOS_PROJECT_SCHEME }}' not found"
-            echo "Available schemes: $AVAILABLE_SCHEMES"
+            echo "Full scheme list:"
+            xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 200 "Schemes:" | grep -v "Schemes:" | head -50
             exit 1
           fi
 
