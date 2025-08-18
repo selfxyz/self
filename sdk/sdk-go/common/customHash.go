@@ -14,7 +14,7 @@ func FlexiblePoseidon(inputs []*big.Int) (*big.Int, error) {
 		return nil, fmt.Errorf("no inputs provided")
 	}
 
-	if len(inputs) > 16 {
+	if len(inputs) > 17 {
 		return nil, fmt.Errorf("unsupported number of inputs: %d", len(inputs))
 	}
 
@@ -78,7 +78,7 @@ func HashEndpointWithScope(endpoint, scope string) (string, error) {
 	var endpointChunks []string
 	remaining := formattedEndpoint
 	for len(remaining) > 0 {
-		// Take up to 31 characters (safe slicing)	
+		// Take up to 31 characters (safe slicing)
 		if len(remaining) > 31 {
 			chunk := remaining[:31]
 			endpointChunks = append(endpointChunks, chunk)

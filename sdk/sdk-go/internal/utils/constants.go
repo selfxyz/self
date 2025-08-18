@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	AttestationId1 types.AttestationId = 1
-	AttestationId2 types.AttestationId = 2
+	Passport types.AttestationId = 1
+	EUCard   types.AttestationId = 2
 )
 
 type DiscloseIndicesEntry struct {
@@ -24,7 +24,7 @@ type DiscloseIndicesEntry struct {
 }
 
 var DiscloseIndices = map[types.AttestationId]DiscloseIndicesEntry{
-	AttestationId1: {
+	Passport: {
 		RevealedDataPackedIndex:           0,
 		ForbiddenCountriesListPackedIndex: 3,
 		NullifierIndex:                    7,
@@ -37,7 +37,7 @@ var DiscloseIndices = map[types.AttestationId]DiscloseIndicesEntry{
 		UserIdentifierIndex:               20,
 		PassportNoSmtRootIndex:            16,
 	},
-	AttestationId2: {
+	EUCard: {
 		RevealedDataPackedIndex:           0,
 		ForbiddenCountriesListPackedIndex: 4,
 		NullifierIndex:                    8,
@@ -86,7 +86,7 @@ type RevealedDataIndicesEntry struct {
 }
 
 var RevealedDataIndices = map[types.AttestationId]RevealedDataIndicesEntry{
-	AttestationId1: {
+	Passport: {
 		IssuingStateStart: 2,
 		IssuingStateEnd:   4,
 		NameStart:         5,
@@ -106,7 +106,7 @@ var RevealedDataIndices = map[types.AttestationId]RevealedDataIndicesEntry{
 		OfacStart:         90,
 		OfacEnd:           92,
 	},
-	AttestationId2: {
+	EUCard: {
 		IssuingStateStart: 2,
 		IssuingStateEnd:   4,
 		NameStart:         60,
@@ -129,6 +129,6 @@ var RevealedDataIndices = map[types.AttestationId]RevealedDataIndicesEntry{
 }
 
 var AllIds = map[types.AttestationId]bool{
-	AttestationId1: true,
-	AttestationId2: true,
+	Passport: true,
+	EUCard:   true,
 }

@@ -13,8 +13,8 @@ type PublicSignals []string
 
 // BytesCount maps attestation IDs to their respective byte counts
 var BytesCount = map[AttestationId][]int{
-	AttestationId1: {31, 31, 31},
-	AttestationId2: {31, 31, 31, 1},
+	Passport: {31, 31, 31},
+	EUCard:   {31, 31, 31, 1},
 }
 
 // GetRevealedDataPublicSignalsLength returns the number of public signals containing
@@ -30,9 +30,9 @@ var BytesCount = map[AttestationId][]int{
 //   - An error if the attestation ID is invalid
 func GetRevealedDataPublicSignalsLength(attestationId AttestationId) (int, error) {
 	switch attestationId {
-	case AttestationId1:
+	case Passport:
 		return int(93 / 31), nil
-	case AttestationId2:
+	case EUCard:
 		return int(math.Ceil(94.0 / 31.0)), nil
 	default:
 		return 0, fmt.Errorf("invalid attestation ID: %d", attestationId)
