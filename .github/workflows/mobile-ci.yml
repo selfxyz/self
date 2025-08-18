@@ -5,6 +5,7 @@ env:
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   ANDROID_NDK_VERSION: 27.0.11718014
+  XCODE_VERSION: 16.2
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
@@ -124,7 +125,7 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.2"
+          xcode-version: ${{ env.XCODE_VERSION }}
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1

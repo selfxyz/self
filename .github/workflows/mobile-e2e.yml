@@ -5,6 +5,7 @@ env:
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 33
   ANDROID_NDK_VERSION: 27.0.11718014
+  XCODE_VERSION: 16.2
   # Cache versions
   GH_CACHE_VERSION: v1 # Global cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
@@ -211,7 +212,7 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.2"
+          xcode-version: ${{ env.XCODE_VERSION }}
       - name: Cache Node modules
         uses: actions/cache@v4
         with:
@@ -329,11 +330,11 @@ jobs:
           if [ -z "$AVAILABLE_SIMULATOR" ]; then
             echo "❌ No available iPhone simulator found"
             echo "Creating a new iPhone SE (3rd generation) simulator..."
-            # Create a new iPhone SE (3rd generation) simulator with the latest iOS version
-            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS17.5" || {
+            # Create a new iPhone SE (3rd generation) simulator with default iOS version
+            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" || {
               echo "❌ Failed to create iPhone SE (3rd generation) simulator"
               echo "Trying to create any iPhone SE simulator..."
-              xcrun simctl create "iPhone SE" "iPhone SE" "iOS17.5" || {
+              xcrun simctl create "iPhone SE" "iPhone SE" || {
                 echo "❌ Failed to create simulator"
                 exit 1
               }
@@ -397,8 +398,8 @@ jobs:
           echo "✅ Using scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
           # Use cached derived data and enable parallel builds for faster compilation
-          # Use generic iOS Simulator destination that works with any available simulator
-          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "generic/platform=iOS Simulator" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
+          # Use any available iOS simulator version with iPhone SE
+          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "platform=iOS Simulator,name=iPhone SE (3rd generation)" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
