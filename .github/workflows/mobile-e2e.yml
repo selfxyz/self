@@ -163,6 +163,10 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
+    env:
+      # iOS project configuration - using same environment variables as mobile-deploy.yml for consistency
+      IOS_PROJECT_NAME: "Self"
+      IOS_PROJECT_SCHEME: "Self"
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
@@ -233,7 +237,7 @@ jobs:
             app/ios/build
             ~/Library/Developer/Xcode/DerivedData
             ~/Library/Caches/com.apple.dt.Xcode
-          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata') }}
+          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace/contents.xcworkspacedata') }}
           restore-keys: |
             ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-
             ${{ runner.os }}-xcode-
@@ -364,8 +368,33 @@ jobs:
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
+          echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
+
+          # Verify workspace exists before building
+          WORKSPACE_PATH="app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
+          if [ ! -d "$WORKSPACE_PATH" ]; then
+            echo "❌ Workspace not found at: $WORKSPACE_PATH"
+            echo "Available workspaces:"
+            find app/ios -name "*.xcworkspace" -type d
+            exit 1
+          fi
+
+          # Verify scheme exists by listing available schemes
+          echo "Verifying scheme availability..."
+          AVAILABLE_SCHEMES=$(xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 100 "Schemes:" | grep -v "Schemes:" | head -10 | xargs)
+          echo "Available schemes: $AVAILABLE_SCHEMES"
+
+          if [[ ! "$AVAILABLE_SCHEMES" =~ ${{ env.IOS_PROJECT_SCHEME }} ]]; then
+            echo "❌ Scheme '${{ env.IOS_PROJECT_SCHEME }}' not found"
+            echo "Available schemes: $AVAILABLE_SCHEMES"
+            exit 1
+          fi
+
+          echo "✅ Using workspace: $WORKSPACE_PATH"
+          echo "✅ Using scheme: ${{ env.IOS_PROJECT_SCHEME }}"
+
           # Use cached derived data and enable parallel builds for faster compilation
-          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
+          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
