@@ -324,7 +324,7 @@ jobs:
             xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" || {
               echo "❌ Failed to create iPhone SE (3rd generation) simulator"
               echo "Trying to create any iPhone SE simulator..."
-              xcrun simctl create "iPhone SE" "iPhone SE" || {
+              xcrun simctl create "iPhone SE" "iPhone SE" "iOS18.2" || {
                 echo "❌ Failed to create simulator"
                 exit 1
               }
