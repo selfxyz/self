@@ -57,6 +57,8 @@ export { createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 
+export { discloseInputs } from './proving/discloseInputs';
+
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 // Core functions
@@ -66,6 +68,9 @@ export { mergeConfig } from './config/merge';
 
 // Document validation
 export { parseNFCResponse, scanNFC } from './nfc';
+
+// Proving helpers
+export { registerInputs } from './proving/registerInputs';
 
 export { scanQRProof } from './qr';
 // Error handling
