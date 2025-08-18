@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "giga": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@1.2.3",
+        "https://mcp.gigamind.dev/mcp"
+      ]
+    }
+  },
+  "settings": {
+    "disableAutoPRAnalysis": true,
+    "manualReviewEnabled": true
+  }
+}

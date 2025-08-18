@@ -82,7 +82,7 @@
     "qrcode.react": "^4.1.0",
     "react-spinners": "^0.14.1",
     "socket.io-client": "^4.8.1",
-    "uuid": "^10.0.0"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@size-limit/preset-big-lib": "^11.2.0",
@@ -101,9 +101,9 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
     "mocha": "^10.7.3",
-    "prettier": "^3.3.3",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "prettier": "^3.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "size-limit": "^11.2.0",
     "ts-loader": "^9.5.1",
     "ts-mocha": "^10.0.0",
@@ -113,8 +113,8 @@
   },
   "peerDependencies": {
     "lottie-react": "^2.4.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "engines": {
     "node": ">=22 <23"

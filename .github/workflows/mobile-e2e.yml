@@ -2,7 +2,6 @@ name: Mobile E2E
 
 env:
   # Build environment versions
-  NODE_VERSION: 22
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 30
   ANDROID_NDK_VERSION: 27.0.11718014
@@ -36,6 +35,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -45,9 +57,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .yarn/cache
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
       - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
@@ -219,6 +231,19 @@ jobs:
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -228,9 +253,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .yarn/cache
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
       - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
@@ -243,13 +268,17 @@ jobs:
         run: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "16.4"
       - name: Cache Node modules
         uses: actions/cache@v4
         with:
           path: app/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-${{ hashFiles('app/yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('app/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-
       - name: Cache Ruby gems
         uses: ./.github/actions/cache-bundler
         with:
@@ -287,9 +316,38 @@ jobs:
           path: |
             ~/Library/Developer/CoreSimulator/Devices
             ~/Library/Developer/Xcode/iOS DeviceSupport
-          key: ${{ runner.os }}-simulator-${{ hashFiles('app/ios/Podfile.lock') }}
+          key: ${{ runner.os }}-simulator-v1
           restore-keys: |
             ${{ runner.os }}-simulator-
+      - name: Install iOS Runtime
+        run: |
+          echo "📱 Checking iOS Runtime availability..."
+
+          # List available runtimes
+          echo "Available iOS runtimes:"
+          xcrun simctl runtime list
+
+          # Check if we have any iOS runtimes available
+          IOS_RUNTIMES=$(xcrun simctl runtime list | grep "iOS" | grep "Ready" | wc -l)
+
+          if [ "$IOS_RUNTIMES" -gt 0 ]; then
+            echo "✅ Found $IOS_RUNTIMES iOS runtime(s) available and ready"
+
+            # Get the latest iOS runtime UUID
+            LATEST_RUNTIME_UUID=$(xcrun simctl runtime list | grep "iOS" | grep "Ready" | tail -1 | awk '{print $NF}' | tr -d '()')
+
+            if [ -n "$LATEST_RUNTIME_UUID" ]; then
+              echo "✅ Latest iOS runtime UUID: $LATEST_RUNTIME_UUID"
+            else
+              echo "⚠️ Could not determine latest runtime UUID, but runtimes are available"
+            fi
+          else
+            echo "⚠️ No iOS runtimes found, but this might be expected in CI environment"
+            echo "Continuing with system defaults..."
+          fi
+
+          echo "Runtime status summary:"
+          xcrun simctl runtime list | grep "iOS" | head -5
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
@@ -303,19 +361,73 @@ jobs:
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."
+
+          # First, check what simulators are actually available
           echo "Available simulators:"
-          xcrun simctl list devices | grep "iPhone 15"
+          xcrun simctl list devices available || {
+            echo "❌ Failed to list available devices"
+            echo "Trying to list all devices:"
+            xcrun simctl list devices || {
+              echo "❌ Failed to list any devices"
+              exit 1
+            }
+          }
+
+          # Find iPhone SE (3rd generation) simulator
+          echo "Finding iPhone SE (3rd generation) simulator..."
+          AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone SE (3rd generation)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+
+          if [ -z "$AVAILABLE_SIMULATOR" ]; then
+            echo "iPhone SE (3rd generation) not found, trying any iPhone SE..."
+            AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone SE" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          fi
+
+          if [ -z "$AVAILABLE_SIMULATOR" ]; then
+            echo "No iPhone SE found, trying any iPhone..."
+            AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          fi
+
+          if [ -z "$AVAILABLE_SIMULATOR" ]; then
+            echo "❌ No available iPhone simulator found"
+            echo "Creating a new iPhone SE (3rd generation) simulator..."
+            # Create a new iPhone SE (3rd generation) simulator with the latest iOS version
+            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS17.5" || {
+              echo "❌ Failed to create iPhone SE (3rd generation) simulator"
+              echo "Trying to create any iPhone SE simulator..."
+              xcrun simctl create "iPhone SE" "iPhone SE" "iOS17.5" || {
+                echo "❌ Failed to create simulator"
+                exit 1
+              }
+            }
+            AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone SE" | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          fi
+
+          echo "Using simulator: $AVAILABLE_SIMULATOR"
+
+          # Get simulator name for display
+          SIMULATOR_NAME=$(xcrun simctl list devices | grep "$AVAILABLE_SIMULATOR" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | xargs)
+          echo "Simulator name: $SIMULATOR_NAME"
 
           # Boot simulator and wait for it to be ready
-          xcrun simctl boot "iPhone 15" || true
-          xcrun simctl bootstatus "iPhone 15" -b
+          echo "Booting simulator..."
+          xcrun simctl boot "$AVAILABLE_SIMULATOR" || {
+            echo "❌ Failed to boot simulator"
+            exit 1
+          }
+
+          echo "Waiting for simulator to be ready..."
+          xcrun simctl bootstatus "$AVAILABLE_SIMULATOR" -b
 
           # Wait for simulator to be fully ready
-          echo "Waiting for simulator to be ready..."
-          sleep 10
+          echo "Waiting for simulator to be fully ready..."
+          sleep 15
 
           echo "Simulator status:"
-          xcrun simctl list devices | grep "iPhone 15"
+          xcrun simctl list devices | grep "$AVAILABLE_SIMULATOR"
+
+          # Store simulator ID for later use
+          echo "IOS_SIMULATOR_ID=$AVAILABLE_SIMULATOR" >> $GITHUB_ENV
+          echo "IOS_SIMULATOR_NAME=$SIMULATOR_NAME" >> $GITHUB_ENV
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
@@ -334,18 +446,22 @@ jobs:
           [ -z "$IOS_BUNDLE_ID" ] && { echo "❌ Could not determine bundle ID from $APP_PATH/Info.plist"; exit 1; }
           echo "✅ App Bundle ID: $IOS_BUNDLE_ID"
 
+          # Use the dynamic simulator ID
+          SIMULATOR_ID="${IOS_SIMULATOR_ID:-iPhone SE (3rd generation)}"
+          echo "Installing on simulator: $SIMULATOR_ID"
+
           echo "Removing any existing app installation..."
-          xcrun simctl uninstall "iPhone 15" "$IOS_BUNDLE_ID" 2>/dev/null || true
+          xcrun simctl uninstall "$SIMULATOR_ID" "$IOS_BUNDLE_ID" 2>/dev/null || true
 
           echo "Installing app..."
-          xcrun simctl install "iPhone 15" "$APP_PATH"
+          xcrun simctl install "$SIMULATOR_ID" "$APP_PATH"
           if [ $? -ne 0 ]; then
             echo "❌ iOS app installation failed"
             exit 1
           fi
 
           echo "Verifying app installation..."
-          if xcrun simctl listapps "iPhone 15" | grep -q "$IOS_BUNDLE_ID"; then
+          if xcrun simctl listapps "$SIMULATOR_ID" | grep -q "$IOS_BUNDLE_ID"; then
             echo "✅ App successfully installed"
           else
             echo "❌ App installation verification failed"
@@ -353,13 +469,13 @@ jobs:
           fi
 
           echo "🚀 Testing app launch capability..."
-          xcrun simctl launch "iPhone 15" "$IOS_BUNDLE_ID" || {
+          xcrun simctl launch "$SIMULATOR_ID" "$IOS_BUNDLE_ID" || {
             echo "⚠️ Direct app launch test failed - this might be expected."
           }
 
           echo "⏰ Checking simulator readiness..."
           sleep 10
-          xcrun simctl listapps "iPhone 15" > /dev/null || sleep 5
+          xcrun simctl listapps "$SIMULATOR_ID" > /dev/null || sleep 5
 
           echo "Running Maestro tests..."
           echo "Starting test execution..."

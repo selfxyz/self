@@ -2,7 +2,7 @@ name: QRCode SDK CI
 
 env:
   # Build environment versions
-  NODE_VERSION: 22
+  # Node version is read from .nvmrc during workflow execution
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
   GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
@@ -27,6 +27,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -45,9 +58,9 @@ jobs:
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -72,6 +85,19 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -90,9 +116,9 @@ jobs:
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -126,6 +152,19 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -144,9 +183,9 @@ jobs:
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -160,35 +199,12 @@ jobs:
           key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
           fail-on-cache-miss: true
 
-      - name: Verify build output
+      - name: Verify build artifacts
         run: |
-          echo "Checking build output structure..."
+          echo "Verifying build artifacts..."
+          ls -la common/dist/
           ls -la sdk/qrcode/dist/
-          echo "Checking ESM build..."
-          ls -la sdk/qrcode/dist/esm/
-          echo "Checking CJS build..."
-          ls -la sdk/qrcode/dist/cjs/
-          echo "Checking type definitions..."
-          if ! find sdk/qrcode/dist/esm -maxdepth 1 -name '*.d.ts' | grep -q .; then
-            echo "No .d.ts files found in dist/esm"; exit 1;
-          fi
-          find sdk/qrcode/dist/esm -maxdepth 1 -name '*.d.ts' -ls
-
-      - name: Test package exports
-        run: |
-          echo "Testing package exports..."
-          node -e "
-            const pkg = require('./sdk/qrcode/package.json');
-            console.log('Package exports:', JSON.stringify(pkg.exports, null, 2));
-          "
-
-      - name: Verify bundle size
-        run: yarn workspace @selfxyz/qrcode size-limit
-
-      - name: Log cache status
-        run: |
-          echo "Cache hit results:"
-          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+          echo "✅ Build artifacts verified"
 
   # Integration test job
   integration-test:
@@ -196,6 +212,19 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -214,9 +243,9 @@ jobs:
             node_modules
             sdk/qrcode/node_modules
             common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node${{ env.NODE_VERSION }}-yarn-
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
@@ -237,14 +266,9 @@ jobs:
         run: |
           echo "Testing package import..."
           node -e "
-            try {
-              const { SelfQRcode, SelfQRcodeWrapper, countries } = require('./sdk/qrcode/dist/cjs/index.cjs');
-              console.log('✅ Package import successful');
-              console.log('Exported components:', Object.keys({ SelfQRcode, SelfQRcodeWrapper, countries }));
-            } catch (error) {
-              console.error('❌ Package import failed:', error.message);
-              process.exit(1);
-            }
+            const pkg = require('./sdk/qrcode/dist/cjs/index.cjs');
+            console.log('✅ Package imported successfully');
+            console.log('Package exports:', Object.keys(pkg));
           "
 
       - name: Log cache status

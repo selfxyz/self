@@ -2,7 +2,6 @@ name: Mobile Deploy
 
 env:
   # Build environment versions
-  NODE_VERSION: 22
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
@@ -102,13 +101,25 @@ jobs:
           echo "📦 Version bump: ${{ inputs.version_bump }}"
 
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Set up Xcode
         if: inputs.platform != 'android'
         uses: maxim-lobanov/setup-xcode@v1
-        # with:
-        #   # some cocoapods won't compile with xcode 16.3
-        #   xcode-version: "16.2"
+        with:
+          xcode-version: "16.4"
 
       - name: Cache Yarn dependencies
         id: yarn-cache
@@ -118,10 +129,10 @@ jobs:
             .yarn/cache
             node_modules
             ${{ env.APP_PATH }}/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -538,6 +549,19 @@ jobs:
 
       - uses: actions/checkout@v4
         if: inputs.platform != 'ios'
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - name: Cache Yarn dependencies
         id: yarn-cache
@@ -547,10 +571,10 @@ jobs:
             .yarn/cache
             node_modules
             ${{ env.APP_PATH }}/node_modules
-          key: ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
-            ${{ runner.os }}-node${{ env.NODE_VERSION }}-yarn-${{ env.GH_CACHE_VERSION }}-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -792,13 +816,25 @@ jobs:
       inputs.test_mode != true &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
-      NODE_VERSION: 22
       APP_PATH: ${{ github.workspace }}/app
     steps:
       - uses: actions/checkout@v4
         with:
           token: ${{ github.token }}
           fetch-depth: 0
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - uses: actions/setup-node@v4
         with:
