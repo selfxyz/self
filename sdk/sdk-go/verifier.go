@@ -1,4 +1,4 @@
-package selfBackendVerifier
+package self
 
 import (
 	"context"
@@ -12,45 +12,95 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 
-	self "github.com/self/sdk" // Import public API
 	commonUtils "github.com/self/sdk/common"
 	bindings "github.com/self/sdk/contracts/bindings"
 )
 
-// containsHexChars checks if a string contains hexadecimal characters (a-f)
-func containsHexChars(s string) bool {
-	for _, char := range s {
-		if (char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F') {
-			return true
-		}
-	}
-	return false
+const (
+	CELO_MAINNET_RPC_URL = "https://forno.celo.org"
+	CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org"
+
+	IDENTITY_VERIFICATION_HUB_ADDRESS         = "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF"
+	IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = "0x68c931C9a534D37aa78094877F46fE46a49F1A51"
+)
+
+// ConfigMismatch represents different types of configuration validation errors
+type ConfigMismatch string
+
+const (
+	InvalidId                     ConfigMismatch = "InvalidId"
+	InvalidUserContextHash        ConfigMismatch = "InvalidUserContextHash"
+	InvalidScope                  ConfigMismatch = "InvalidScope"
+	InvalidRoot                   ConfigMismatch = "InvalidRoot"
+	InvalidAttestationId          ConfigMismatch = "InvalidAttestationId"
+	InvalidForbiddenCountriesList ConfigMismatch = "InvalidForbiddenCountriesList"
+	InvalidMinimumAge             ConfigMismatch = "InvalidMinimumAge"
+	InvalidTimestamp              ConfigMismatch = "InvalidTimestamp"
+	InvalidOfac                   ConfigMismatch = "InvalidOfac"
+	ConfigNotFound                ConfigMismatch = "ConfigNotFound"
+)
+
+// ConfigIssue represents a specific configuration validation issue
+type ConfigIssue struct {
+	Type    ConfigMismatch `json:"type"`
+	Message string         `json:"message"`
 }
 
-type SelfBackendVerifier struct {
+// ConfigMismatchError represents an error with multiple configuration issues
+type ConfigMismatchError struct {
+	Issues []ConfigIssue `json:"issues"`
+}
+
+func (e *ConfigMismatchError) Error() string {
+	var message []string
+	for _, issue := range e.Issues {
+		message = append(message, fmt.Sprintf("[%s]: %s", issue.Type, issue.Message))
+	}
+	return strings.Join(message, "\n")
+}
+
+// NewConfigMismatchError creates a new ConfigMismatchError with the given issues
+func NewConfigMismatchError(issue []ConfigIssue) *ConfigMismatchError {
+	return &ConfigMismatchError{Issues: issue}
+}
+
+// BackendVerifier handles verification of Self protocol attestations
+type BackendVerifier struct {
 	scope                           string
 	identityVerificationHubContract *bindings.IdentityVerificationHubImpl
-	configStorage                   self.ConfigStore
+	configStorage                   ConfigStore
 	provider                        *ethclient.Client
-	allowedIDs                      map[self.AttestationId]bool
-	userIdentifierType              self.UserIDType
+	allowedIDs                      map[AttestationId]bool
+	userIdentifierType              UserIDType
 }
 
-// NewSelfBackendVerifier creates a new SelfBackendVerifier instance
-func NewSelfBackendVerifier(
+// NewBackendVerifier creates a new BackendVerifier instance
+//
+// Parameters:
+//   - scope: The verification scope identifier
+//   - endpoint: The endpoint URL for scope hashing
+//   - mockPassport: Whether to use testnet (staging) contracts
+//   - allowedIds: Map of allowed attestation IDs
+//   - configStorage: Configuration storage interface implementation
+//   - userIdentifierType: Type of user identifier (hex or uuid)
+//
+// Returns:
+//   - A new BackendVerifier instance
+//   - An error if initialization fails
+func NewBackendVerifier(
 	scope string,
 	endpoint string,
 	mockPassport bool,
-	allowedIds map[self.AttestationId]bool,
-	configStorage self.ConfigStore,
-	userIdentifierType self.UserIDType,
-) (*SelfBackendVerifier, error) {
-	rpcUrl := self.CELO_MAINNET_RPC_URL
-	hubAddress := self.IDENTITY_VERIFICATION_HUB_ADDRESS
+	allowedIds map[AttestationId]bool,
+	configStorage ConfigStore,
+	userIdentifierType UserIDType,
+) (*BackendVerifier, error) {
+	rpcUrl := CELO_MAINNET_RPC_URL
+	hubAddress := IDENTITY_VERIFICATION_HUB_ADDRESS
 
 	if mockPassport {
-		rpcUrl = self.CELO_TESTNET_RPC_URL
-		hubAddress = self.IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING
+		rpcUrl = CELO_TESTNET_RPC_URL
+		hubAddress = IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING
 	}
 
 	provider, err := ethclient.Dial(rpcUrl)
@@ -72,7 +122,7 @@ func NewSelfBackendVerifier(
 		return nil, fmt.Errorf("failed to hash endpoint with scope: %v", err)
 	}
 
-	return &SelfBackendVerifier{
+	return &BackendVerifier{
 		scope:                           hashedScope,
 		identityVerificationHubContract: hubContract,
 		configStorage:                   configStorage,
@@ -82,26 +132,47 @@ func NewSelfBackendVerifier(
 	}, nil
 }
 
+// containsHexChars checks if a string contains hexadecimal characters (a-f)
+func containsHexChars(s string) bool {
+	for _, char := range s {
+		if (char >= 'a' && char <= 'f') || (char >= 'A' && char <= 'F') {
+			return true
+		}
+	}
+	return false
+}
+
 // Verify performs the verification of attestation with the given proof and signals
-func (s *SelfBackendVerifier) Verify(
+//
+// Parameters:
+//   - ctx: Context for the verification operation
+//   - attestationIdStr: String representation of the attestation ID
+//   - proof: Zero-knowledge proof structure
+//   - pubSignals: Public signals from the proof
+//   - userContextData: User context data for verification
+//
+// Returns:
+//   - VerificationResult containing all verification details
+//   - An error if verification fails or validation issues are found
+func (s *BackendVerifier) Verify(
 	ctx context.Context,
 	attestationIdStr string,
-	proof self.VcAndDiscloseProof,
+	proof VcAndDiscloseProof,
 	pubSignals []string,
 	userContextData string,
-) (*self.VerificationResult, error) {
+) (*VerificationResult, error) {
 
 	attestationIdInt, err := strconv.Atoi(attestationIdStr)
 	if err != nil {
 		return nil, fmt.Errorf("invalid attestation ID: %v", err)
 	}
-	attestationId := self.AttestationId(attestationIdInt)
+	attestationId := AttestationId(attestationIdInt)
 	allowedId, exists := s.allowedIDs[attestationId]
-	var issues []self.ConfigIssue
+	var issues []ConfigIssue
 
 	if !exists || !allowedId {
-		issues = append(issues, self.ConfigIssue{
-			Type:    self.InvalidId,
+		issues = append(issues, ConfigIssue{
+			Type:    InvalidId,
 			Message: fmt.Sprintf("Attestation ID is not allowed, received: %d", attestationId),
 		})
 	}
@@ -121,10 +192,10 @@ func (s *SelfBackendVerifier) Verify(
 	copy(attestationIdBytes32[:], common.FromHex("0x"+attestationIdHex))
 
 	// Check if user context hash matches
-	discloseIndices, exists := self.DiscloseIndices[attestationId]
+	discloseIndices, exists := DiscloseIndices[attestationId]
 	if !exists {
-		issues = append(issues, self.ConfigIssue{
-			Type:    self.InvalidAttestationId,
+		issues = append(issues, ConfigIssue{
+			Type:    InvalidAttestationId,
 			Message: fmt.Sprintf("Unknown attestation ID: %d", attestationId),
 		})
 	} else {
@@ -136,19 +207,19 @@ func (s *SelfBackendVerifier) Verify(
 		// Calculate expected user context hash
 		userContextDataBytes, err := hex.DecodeString(userContextData)
 		if err != nil {
-			issues = append(issues, self.ConfigIssue{
-				Type:    self.InvalidUserContextHash,
+			issues = append(issues, ConfigIssue{
+				Type:    InvalidUserContextHash,
 				Message: fmt.Sprintf("Invalid hex string in userContextData: %v", err),
 			})
 		} else {
-			userContextHashStr := self.CalculateUserIdentifierHash(userContextDataBytes)
+			userContextHashStr := CalculateUserIdentifierHash(userContextDataBytes)
 			userContextHash := new(big.Int)
 			userContextHashStr = strings.TrimPrefix(userContextHashStr, "0x")
 			userContextHash.SetString(userContextHashStr, 16)
 
 			if userContextHashInCircuit.Cmp(userContextHash) != 0 {
-				issues = append(issues, self.ConfigIssue{
-					Type: self.InvalidUserContextHash,
+				issues = append(issues, ConfigIssue{
+					Type: InvalidUserContextHash,
 					Message: fmt.Sprintf("User context hash does not match with the one in the circuit\nCircuit: %s\nUser context hash: %s",
 						userContextHashInCircuit.String(), userContextHash.String()),
 				})
@@ -158,8 +229,8 @@ func (s *SelfBackendVerifier) Verify(
 		// Check if scope matches
 		isValidScope := s.scope == publicSignals[discloseIndices.ScopeIndex]
 		if !isValidScope {
-			issues = append(issues, self.ConfigIssue{
-				Type: self.InvalidScope,
+			issues = append(issues, ConfigIssue{
+				Type: InvalidScope,
 				Message: fmt.Sprintf("Scope does not match with the one in the circuit\nCircuit: %s\nScope: %s",
 					publicSignals[discloseIndices.ScopeIndex], s.scope),
 			})
@@ -168,15 +239,15 @@ func (s *SelfBackendVerifier) Verify(
 		// Check the root (reusing pre-calculated attestationIdBytes32)
 		registryAddress, err := s.identityVerificationHubContract.Registry(nil, attestationIdBytes32)
 		if err != nil || registryAddress == (common.Address{}) {
-			issues = append(issues, self.ConfigIssue{
-				Type:    self.InvalidRoot,
+			issues = append(issues, ConfigIssue{
+				Type:    InvalidRoot,
 				Message: "Registry contract not found",
 			})
 		} else {
 			registryContract, err := bindings.NewRegistry(registryAddress, s.provider)
 			if err != nil {
-				issues = append(issues, self.ConfigIssue{
-					Type:    self.InvalidRoot,
+				issues = append(issues, ConfigIssue{
+					Type:    InvalidRoot,
 					Message: fmt.Sprintf("Failed to create registry contract binding: %v", err),
 				})
 			} else {
@@ -185,8 +256,8 @@ func (s *SelfBackendVerifier) Verify(
 
 				currentRoot, err := registryContract.CheckIdentityCommitmentRoot(nil, merkleRoot)
 				if err != nil || !currentRoot {
-					issues = append(issues, self.ConfigIssue{
-						Type:    self.InvalidRoot,
+					issues = append(issues, ConfigIssue{
+						Type:    InvalidRoot,
 						Message: fmt.Sprintf("Onchain root does not exist, received: %s", publicSignals[discloseIndices.MerkleRootIndex]),
 					})
 				}
@@ -196,8 +267,8 @@ func (s *SelfBackendVerifier) Verify(
 		// Check if attestation id matches
 		attestationIdFromCircuit := publicSignals[discloseIndices.AttestationIdIndex]
 		if fmt.Sprintf("%d", attestationId) != attestationIdFromCircuit {
-			issues = append(issues, self.ConfigIssue{
-				Type:    self.InvalidAttestationId,
+			issues = append(issues, ConfigIssue{
+				Type:    InvalidAttestationId,
 				Message: "Attestation ID does not match with the one in the circuit",
 			})
 		}
@@ -206,14 +277,14 @@ func (s *SelfBackendVerifier) Verify(
 	// Extract user identifier and user defined data from userContextData (declare at function scope for reuse)
 	// userContextData format: configId(32 bytes) + userIdentifier(32 bytes) + userDefinedData(rest)
 	var userIdentifier, userDefinedData string
-	var verificationConfig self.VerificationConfig
+	var verificationConfig VerificationConfig
 	var configErr error
 	var forbiddenCountriesList []string
-	var genericDiscloseOutput self.GenericDiscloseOutput
+	var genericDiscloseOutput GenericDiscloseOutput
 
 	if len(userContextData) < 128 {
-		issues = append(issues, self.ConfigIssue{
-			Type:    self.ConfigNotFound,
+		issues = append(issues, ConfigIssue{
+			Type:    ConfigNotFound,
 			Message: "userContextData too short",
 		})
 	} else {
@@ -222,14 +293,14 @@ func (s *SelfBackendVerifier) Verify(
 		userIdentifierBigInt := new(big.Int)
 		userIdentifierBigInt.SetString(userIdentifierHex, 16)
 
-		userIdentifier = self.CastToUserIdentifier(userIdentifierBigInt, s.userIdentifierType)
+		userIdentifier = CastToUserIdentifier(userIdentifierBigInt, s.userIdentifierType)
 		userDefinedData = userContextData[128:]
 
 		// Get config ID from storage
 		configId, err := s.configStorage.GetActionId(ctx, userIdentifier, userDefinedData)
 		if err != nil || configId == "" {
-			issues = append(issues, self.ConfigIssue{
-				Type:    self.ConfigNotFound,
+			issues = append(issues, ConfigIssue{
+				Type:    ConfigNotFound,
 				Message: "Config Id not found",
 			})
 		} else {
@@ -238,16 +309,16 @@ func (s *SelfBackendVerifier) Verify(
 
 			// Check for GetConfig error first
 			if configErr != nil {
-				issues = append(issues, self.ConfigIssue{
-					Type:    self.ConfigNotFound,
+				issues = append(issues, ConfigIssue{
+					Type:    ConfigNotFound,
 					Message: fmt.Sprintf("Config not found for %s", configId),
 				})
 			}
 
 			// Check if returned config is empty/invalid (like TypeScript's finally block)
 			if s.isEmptyVerificationConfig(verificationConfig) {
-				issues = append(issues, self.ConfigIssue{
-					Type:    self.ConfigNotFound,
+				issues = append(issues, ConfigIssue{
+					Type:    ConfigNotFound,
 					Message: fmt.Sprintf("Config not found for %s", configId),
 				})
 			}
@@ -261,7 +332,7 @@ func (s *SelfBackendVerifier) Verify(
 
 	// If there are validation issues, return them
 	if len(issues) > 0 {
-		return nil, self.NewConfigMismatchError(issues)
+		return nil, NewConfigMismatchError(issues)
 	}
 
 	isProofValid := false
@@ -324,16 +395,16 @@ func (s *SelfBackendVerifier) Verify(
 
 	if forbiddenCountriesList == nil || len(genericDiscloseOutput.Nullifier) == 0 {
 		if len(userContextData) >= 128 {
-			discloseIndices, exists = self.DiscloseIndices[attestationId]
+			discloseIndices, exists = DiscloseIndices[attestationId]
 			if exists {
 				forbiddenCountriesListPacked := make([]string, 4)
 				for i := 0; i < 4; i++ {
 					forbiddenCountriesListPacked[i] = publicSignals[discloseIndices.ForbiddenCountriesListPackedIndex+i]
 				}
-				forbiddenCountriesList = self.UnpackForbiddenCountriesList(forbiddenCountriesListPacked)
+				forbiddenCountriesList = UnpackForbiddenCountriesList(forbiddenCountriesListPacked)
 
 				var err error
-				genericDiscloseOutput, err = self.FormatRevealedDataPacked(attestationId, publicSignals)
+				genericDiscloseOutput, err = FormatRevealedDataPacked(attestationId, publicSignals)
 				if err != nil {
 					return nil, fmt.Errorf("error formatting revealed data: %v", err)
 				}
@@ -344,7 +415,7 @@ func (s *SelfBackendVerifier) Verify(
 	// Determine minimum age validity from validation issues
 	isMinimumAgeValid := true
 	for _, issue := range issues {
-		if issue.Type == self.InvalidMinimumAge {
+		if issue.Type == InvalidMinimumAge {
 			isMinimumAgeValid = false
 			break
 		}
@@ -360,16 +431,16 @@ func (s *SelfBackendVerifier) Verify(
 		}
 	}
 
-	return &self.VerificationResult{
+	return &VerificationResult{
 		AttestationId: attestationId,
-		IsValidDetails: self.IsValidDetails{
+		IsValidDetails: IsValidDetails{
 			IsValid:           isProofValid,
 			IsMinimumAgeValid: isMinimumAgeValid,
 			IsOfacValid:       isOfacValid,
 		},
 		ForbiddenCountriesList: forbiddenCountriesList,
 		DiscloseOutput:         genericDiscloseOutput,
-		UserData: self.UserData{
+		UserData: UserData{
 			UserIdentifier:  userIdentifier,
 			UserDefinedData: userDefinedData,
 		},
@@ -378,19 +449,19 @@ func (s *SelfBackendVerifier) Verify(
 
 // validateWithConfig performs config-based validations (forbidden countries, minimum age, timestamp, OFAC)
 // Returns the computed values for reuse in return value construction
-func (s *SelfBackendVerifier) validateWithConfig(
-	verificationConfig self.VerificationConfig,
+func (s *BackendVerifier) validateWithConfig(
+	verificationConfig VerificationConfig,
 	publicSignals []string,
-	discloseIndices self.DiscloseIndicesEntry,
-	attestationId self.AttestationId,
-	issues *[]self.ConfigIssue,
-) ([]string, self.GenericDiscloseOutput, error) {
+	discloseIndices DiscloseIndicesEntry,
+	attestationId AttestationId,
+	issues *[]ConfigIssue,
+) ([]string, GenericDiscloseOutput, error) {
 	forbiddenCountriesListPacked := make([]string, 4)
 	for i := 0; i < 4; i++ {
 		forbiddenCountriesListPacked[i] = publicSignals[discloseIndices.ForbiddenCountriesListPackedIndex+i]
 	}
 
-	forbiddenCountriesList := self.UnpackForbiddenCountriesList(forbiddenCountriesListPacked)
+	forbiddenCountriesList := UnpackForbiddenCountriesList(forbiddenCountriesListPacked)
 
 	// Check if all config excluded countries are in the circuit's forbidden list
 	isForbiddenCountryListValid := true
@@ -409,19 +480,19 @@ func (s *SelfBackendVerifier) validateWithConfig(
 	}
 
 	if !isForbiddenCountryListValid {
-		*issues = append(*issues, self.ConfigIssue{
-			Type: self.InvalidForbiddenCountriesList,
+		*issues = append(*issues, ConfigIssue{
+			Type: InvalidForbiddenCountriesList,
 			Message: fmt.Sprintf("Forbidden countries list in config does not match with the one in the circuit\nCircuit: %s\nConfig: %v",
 				strings.Join(forbiddenCountriesList, ", "), verificationConfig.ExcludedCountries),
 		})
 	}
-	genericDiscloseOutput, err := self.FormatRevealedDataPacked(attestationId, publicSignals)
+	genericDiscloseOutput, err := FormatRevealedDataPacked(attestationId, publicSignals)
 	if err != nil {
-		*issues = append(*issues, self.ConfigIssue{
-			Type:    self.InvalidMinimumAge,
+		*issues = append(*issues, ConfigIssue{
+			Type:    InvalidMinimumAge,
 			Message: fmt.Sprintf("Error formatting revealed data: %v", err),
 		})
-		return nil, self.GenericDiscloseOutput{}, err
+		return nil, GenericDiscloseOutput{}, err
 	}
 
 	if verificationConfig.MinimumAge != nil {
@@ -435,8 +506,8 @@ func (s *SelfBackendVerifier) validateWithConfig(
 
 		isMinimumAgeValid := configMinAge == circuitMinAgeInt || circuitMinAge == "00"
 		if !isMinimumAgeValid {
-			*issues = append(*issues, self.ConfigIssue{
-				Type: self.InvalidMinimumAge,
+			*issues = append(*issues, ConfigIssue{
+				Type: InvalidMinimumAge,
 				Message: fmt.Sprintf("Minimum age in config does not match with the one in the circuit\nCircuit: %s\nConfig: %d",
 					circuitMinAge, configMinAge),
 			})
@@ -459,8 +530,8 @@ func (s *SelfBackendVerifier) validateWithConfig(
 				default:
 					ofacType = fmt.Sprintf("OFAC check %d", i)
 				}
-				*issues = append(*issues, self.ConfigIssue{
-					Type:    self.InvalidOfac,
+				*issues = append(*issues, ConfigIssue{
+					Type:    InvalidOfac,
 					Message: fmt.Sprintf("%s is not allowed", ofacType),
 				})
 			}
@@ -471,10 +542,10 @@ func (s *SelfBackendVerifier) validateWithConfig(
 }
 
 // validateTimestamp checks if the circuit timestamp is within acceptable range (not too old, not in future)
-func (s *SelfBackendVerifier) validateTimestamp(
+func (s *BackendVerifier) validateTimestamp(
 	publicSignals []string,
-	discloseIndices self.DiscloseIndicesEntry,
-	issues *[]self.ConfigIssue,
+	discloseIndices DiscloseIndicesEntry,
+	issues *[]ConfigIssue,
 ) {
 	// Extract timestamp components from circuit (YYMMDD format)
 	currentDateIndex := discloseIndices.CurrentDateIndex
@@ -503,8 +574,8 @@ func (s *SelfBackendVerifier) validateTimestamp(
 	// Check if timestamp is more than 1 day in the future
 	oneDayAhead := currentTimestamp.Add(24 * time.Hour)
 	if circuitTimestamp.After(oneDayAhead) {
-		*issues = append(*issues, self.ConfigIssue{
-			Type:    self.InvalidTimestamp,
+		*issues = append(*issues, ConfigIssue{
+			Type:    InvalidTimestamp,
 			Message: "Circuit timestamp is in the future",
 		})
 	}
@@ -512,15 +583,15 @@ func (s *SelfBackendVerifier) validateTimestamp(
 	// Check if timestamp is more than 1 day in the past
 	oneDayAgo := currentTimestamp.Add(-24 * time.Hour)
 	if circuitTimestamp.Before(oneDayAgo) {
-		*issues = append(*issues, self.ConfigIssue{
-			Type:    self.InvalidTimestamp,
+		*issues = append(*issues, ConfigIssue{
+			Type:    InvalidTimestamp,
 			Message: "Circuit timestamp is too old",
 		})
 	}
 }
 
 // isEmptyVerificationConfig checks if a VerificationConfig is empty/invalid
-func (s *SelfBackendVerifier) isEmptyVerificationConfig(config self.VerificationConfig) bool {
+func (s *BackendVerifier) isEmptyVerificationConfig(config VerificationConfig) bool {
 	return config.MinimumAge == nil &&
 		config.ExcludedCountries == nil &&
 		config.Ofac == nil

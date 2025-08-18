@@ -1,7 +1,7 @@
-package types
+package self
 
 import (
-	"self-sdk-go/common"
+	"github.com/self/sdk/common"
 )
 
 // AttestationId represents the type for attestation identifiers
@@ -58,6 +58,7 @@ type VerificationResult struct {
 	UserData               UserData              `json:"userData"`
 }
 
+// UserIDType represents the type of user identifier
 type UserIDType string
 
 const (

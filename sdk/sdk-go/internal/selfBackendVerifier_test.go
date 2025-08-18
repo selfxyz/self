@@ -8,27 +8,26 @@ import (
 	"strings"
 	"testing"
 
-	"self-sdk-go/common"
-	"self-sdk-go/internal/types"
-	"self-sdk-go/internal/utils"
+	self "github.com/self/sdk"
+	"github.com/self/sdk/common"
 )
 
 // MockConfigStore implements ConfigStore interface for testing
 type MockConfigStore struct {
-	configs   map[string]types.VerificationConfig
+	configs   map[string]self.VerificationConfig
 	actionIds map[string]string
 }
 
-func (m *MockConfigStore) GetConfig(ctx context.Context, id string) (types.VerificationConfig, error) {
+func (m *MockConfigStore) GetConfig(ctx context.Context, id string) (self.VerificationConfig, error) {
 	if config, exists := m.configs[id]; exists {
 		return config, nil
 	}
-	return types.VerificationConfig{}, nil
+	return self.VerificationConfig{}, nil
 }
 
-func (m *MockConfigStore) SetConfig(ctx context.Context, id string, config types.VerificationConfig) (bool, error) {
+func (m *MockConfigStore) SetConfig(ctx context.Context, id string, config self.VerificationConfig) (bool, error) {
 	if m.configs == nil {
-		m.configs = make(map[string]types.VerificationConfig)
+		m.configs = make(map[string]self.VerificationConfig)
 	}
 	m.configs[id] = config
 	return true, nil
@@ -43,7 +42,7 @@ func (m *MockConfigStore) GetActionId(ctx context.Context, userIdentifier string
 }
 
 // Real proof data from Self app generation
-var testProof = types.VcAndDiscloseProof{
+var testProof = self.VcAndDiscloseProof{
 	A: [2]string{
 		"19978035591559142190701827820645990013414633793180672686938226685776304489564",
 		"5729195691952204724157922378821526527130089592215448275678040621795037604051",
@@ -101,10 +100,10 @@ func castToUUID(bigInt *big.Int) string {
 }
 
 // Helper function to create test verification config
-func createTestVerificationConfig() types.VerificationConfig {
+func createTestVerificationConfig() self.VerificationConfig {
 	minimumAge := 18
 	ofac := false
-	return types.VerificationConfig{
+	return self.VerificationConfig{
 		MinimumAge:        &minimumAge,
 		ExcludedCountries: []common.Country3LetterCode{"PRK"},
 		Ofac:              &ofac,
@@ -176,7 +175,7 @@ func TestSelfBackendVerifier_Verify_WithUUIDUserIDType(t *testing.T) {
 	t.Logf("Mock key will be: '%s'", userIdentifierUUID+extractedUserDefinedDataHex)
 
 	mockConfigStore := &MockConfigStore{
-		configs: map[string]types.VerificationConfig{
+		configs: map[string]self.VerificationConfig{
 			"test-config-id": createTestVerificationConfig(),
 		},
 		actionIds: map[string]string{
@@ -185,9 +184,9 @@ func TestSelfBackendVerifier_Verify_WithUUIDUserIDType(t *testing.T) {
 		},
 	}
 
-	allowedIds := map[types.AttestationId]bool{
-		types.AttestationId(1): true,
-		types.AttestationId(2): true,
+	allowedIds := map[self.AttestationId]bool{
+		self.AttestationId(1): true,
+		self.AttestationId(2): true,
 	}
 
 	verifier, err := NewSelfBackendVerifier(
@@ -196,7 +195,7 @@ func TestSelfBackendVerifier_Verify_WithUUIDUserIDType(t *testing.T) {
 		false,
 		allowedIds,
 		mockConfigStore,
-		types.UserIDTypeUUID,
+		self.UserIDTypeUUID,
 	)
 
 	if err != nil {
@@ -218,7 +217,7 @@ func TestSelfBackendVerifier_Verify_WithUUIDUserIDType(t *testing.T) {
 	if err != nil {
 		t.Logf("Verification failed: %v", err)
 		// Check if it's a ConfigMismatchError or contract-related error
-		if configErr, ok := err.(*ConfigMismatchError); ok {
+		if configErr, ok := err.(*self.ConfigMismatchError); ok {
 			t.Logf("Config validation issues found:")
 			for i, issue := range configErr.Issues {
 				t.Logf("  Issue %d: %s - %s", i+1, issue.Type, issue.Message)
@@ -240,7 +239,7 @@ func TestUserContextHashValidation(t *testing.T) {
 	}
 
 	// Calculate the hash using the same method as the verifier
-	userContextHashStr := utils.CalculateUserIdentifierHash(userContextDataBytes)
+	userContextHashStr := self.CalculateUserIdentifierHash(userContextDataBytes)
 	t.Logf("Calculated userContextHash: %s", userContextHashStr)
 
 	// The public signals should contain this hash at the userIdentifierIndex
