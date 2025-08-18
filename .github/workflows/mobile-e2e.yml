@@ -7,6 +7,7 @@ env:
   ANDROID_NDK_VERSION: 27.0.11718014
   # Cache versions
   GH_CACHE_VERSION: v1 # Global cache version
+  GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
   CI: true
@@ -183,10 +184,13 @@ jobs:
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: actions/cache@v4
         with:
-          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
-      - run: yarn workspaces focus @selfxyz/mobile-app
+          path: .yarn/cache
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+      - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
         uses: actions/cache@v4
@@ -201,7 +205,7 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.2"
+          xcode-version: "16.4"
       - name: Cache Node modules
         uses: actions/cache@v4
         with:
@@ -209,6 +213,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('app/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-
+      - name: Cache Ruby gems
+        uses: ./.github/actions/cache-bundler
+        with:
+          path: app/vendor/bundle
+          lock-file: app/Gemfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
       - name: Cache Pods
         uses: ./.github/actions/cache-pods
         with:
@@ -216,6 +226,33 @@ jobs:
             app/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: app/ios/Podfile.lock
+      - name: Cache Xcode build
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/ios/build
+            ~/Library/Developer/Xcode/DerivedData
+            ~/Library/Caches/com.apple.dt.Xcode
+          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-
+            ${{ runner.os }}-xcode-
+      - name: Cache Xcode Index
+        uses: actions/cache@v4
+        with:
+          path: app/ios/build/Index.noindex
+          key: ${{ runner.os }}-xcode-index-${{ hashFiles('app/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-index-
+      - name: Cache iOS Simulator
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Developer/CoreSimulator/Devices
+            ~/Library/Developer/Xcode/iOS DeviceSupport
+          key: ${{ runner.os }}-simulator-v1
+          restore-keys: |
+            ${{ runner.os }}-simulator-
       - name: Install iOS Runtime
         run: |
           echo "📱 Checking iOS Runtime availability..."
