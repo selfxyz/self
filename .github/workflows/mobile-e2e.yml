@@ -395,7 +395,7 @@ jobs:
           fi
 
           echo "Verifying app installation..."
-          if xcrun simctl listapps "$SIMULATOR_ID" | grep -q "$IOS_BUNDLE_ID"; then
+          if xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1; then
             echo "✅ App successfully installed"
           else
             echo "❌ App installation verification failed"
@@ -409,7 +409,8 @@ jobs:
 
           echo "⏰ Checking simulator readiness..."
           sleep 10
-          xcrun simctl listapps "$SIMULATOR_ID" > /dev/null || sleep 5
+          # Probe container as readiness check instead of listapps
+          xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1 || sleep 5
 
           echo "Running Maestro tests..."
           echo "Starting test execution..."

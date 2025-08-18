@@ -158,9 +158,13 @@ jobs:
             ls -la app/ios/Pods/ | head -10
 
             # Check if key files exist
-            if [ ! -f "app/ios/Pods/Target Support Files/Pods-Self/Pods-Self.debug.xcconfig" ]; then
-              echo "⚠️ Key CocoaPods files missing - clearing cache"
-              rm -rf app/ios/Pods app/ios/Podfile.lock
+            if [ ! -f "app/ios/Podfile.lock" ]; then
+              echo "⚠️ Podfile.lock is missing - pods cache may be stale"
+            fi
+            # If Pods directory exists but is incomplete, clear only Pods; keep Podfile.lock
+            if [ ! -d "app/ios/Pods" ] || [ -z "$(ls -A app/ios/Pods 2>/dev/null)" ]; then
+              echo "⚠️ Pods directory incomplete - clearing Pods (preserving Podfile.lock)"
+              rm -rf app/ios/Pods
             fi
           else
             echo "⚠️ CocoaPods cache is empty or missing - will install fresh"
