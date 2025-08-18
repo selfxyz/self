@@ -27,3 +27,7 @@ export class ConfigMismatchError extends Error {
     return new ConfigMismatchError([{ type, message }]);
   }
 }
+
+export { RegistryContractError } from './RegistryContractError.js';
+export { VerifierContractError } from './VerifierContractError.js';
+export { ProofError } from './ProofError.js';

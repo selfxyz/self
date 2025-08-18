@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseNFCResponse } from '../../src';
+import { NfcParseError, parseNFCResponse } from '../../src';
 
 const enc = new TextEncoder();
 const mrz = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
@@ -24,7 +24,7 @@ describe('parseNFCResponse', () => {
 
   it('throws on truncated data', () => {
     const bad = new Uint8Array([0x61, 0x05, 0x01]);
-    expect(() => parseNFCResponse(bad)).toThrow('Unexpected end of data');
+    expect(() => parseNFCResponse(bad)).toThrowError(NfcParseError);
   });
 
   it('ignores unknown tags', () => {

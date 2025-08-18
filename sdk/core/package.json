@@ -42,7 +42,7 @@
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
     "publish": "yarn npm publish --access public",
-    "test": "node -e \"require('./dist/index.cjs'); console.log('Core SDK smoke test: import OK')\"",
+    "test": "node --loader ts-node/esm --test tests/*.test.ts",
     "types": "yarn build"
   },
   "dependencies": {

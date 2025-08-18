@@ -1,3 +1,4 @@
+import { MrzParseError } from '../errors';
 import type { MRZInfo, MRZValidation } from '../types/public';
 
 /**
@@ -18,7 +19,7 @@ function calculateCheckDigit(input: string): number {
     } else if (char === '<') {
       value = 0;
     } else {
-      throw new Error(`Invalid character in MRZ: ${char}`);
+      throw new MrzParseError(`Invalid character in MRZ: ${char}`);
     }
 
     sum += value * weights[i % 3];
@@ -204,7 +205,7 @@ function validateTD3CheckDigits(lines: string[]): Omit<MRZValidation, 'format' |
  */
 export function extractMRZInfo(mrzString: string): MRZInfo {
   if (!mrzString || typeof mrzString !== 'string') {
-    throw new Error('MRZ string is required and must be a string');
+    throw new MrzParseError('MRZ string is required and must be a string');
   }
 
   const lines = mrzString
@@ -216,7 +217,7 @@ export function extractMRZInfo(mrzString: string): MRZInfo {
   const isValidTD3 = validateTD3Format(lines);
 
   if (!isValidTD3) {
-    throw new Error(
+    throw new MrzParseError(
       `Invalid MRZ format: Expected TD3 format (2 lines × 44 characters), got ${lines.length} lines with lengths [${lines.map(l => l.length).join(', ')}]`,
     );
   }
@@ -246,7 +247,7 @@ export function extractMRZInfo(mrzString: string): MRZInfo {
  */
 export function formatDateToYYMMDD(inputDate: string): string {
   if (!inputDate || typeof inputDate !== 'string') {
-    throw new Error('Date string is required');
+    throw new MrzParseError('Date string is required');
   }
 
   // Handle ISO date strings (YYYY-MM-DD format)
@@ -271,5 +272,5 @@ export function formatDateToYYMMDD(inputDate: string): string {
     return year.slice(2) + month + day;
   }
 
-  throw new Error(`Invalid date format: ${inputDate}. Expected ISO format (YYYY-MM-DD) or similar.`);
+  throw new MrzParseError(`Invalid date format: ${inputDate}. Expected ISO format (YYYY-MM-DD) or similar.`);
 }

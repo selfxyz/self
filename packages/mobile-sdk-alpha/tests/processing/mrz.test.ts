@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractMRZInfo, formatDateToYYMMDD } from '../../src';
+import { extractMRZInfo, formatDateToYYMMDD, MrzParseError } from '../../src';
 
 const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
@@ -14,7 +14,7 @@ describe('extractMRZInfo', () => {
 
   it('rejects malformed MRZ', () => {
     const invalid = 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<';
-    expect(() => extractMRZInfo(invalid)).toThrow();
+    expect(() => extractMRZInfo(invalid)).toThrowError(MrzParseError);
   });
 
   it('flags bad check digits', () => {
@@ -35,6 +35,6 @@ describe('formatDateToYYMMDD', () => {
   });
 
   it('throws on invalid input', () => {
-    expect(() => formatDateToYYMMDD('invalid')).toThrow();
+    expect(() => formatDateToYYMMDD('invalid')).toThrowError(MrzParseError);
   });
 });

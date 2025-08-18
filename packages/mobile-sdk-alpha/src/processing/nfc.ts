@@ -2,6 +2,8 @@
  * Safe TextDecoder factory that works across different JavaScript environments.
  * Handles browser, Node.js, and React Native environments gracefully.
  */
+import { NfcParseError } from '../errors';
+
 const createTextDecoder = (): TextDecoder => {
   // Browser environment - TextDecoder is available globally
   if (typeof globalThis !== 'undefined' && 'TextDecoder' in globalThis) {
@@ -31,7 +33,7 @@ const createTextDecoder = (): TextDecoder => {
     }
   }
 
-  throw new Error(
+  throw new NfcParseError(
     'TextDecoder not available in this environment. ' +
       'This SDK requires TextDecoder support which is available in modern browsers, Node.js, and React Native.',
   );
@@ -64,16 +66,16 @@ export interface ParsedNFCResponse {
 
 function readLength(view: Uint8Array, offset: number): { length: number; next: number } {
   if (offset >= view.length) {
-    throw new Error('Unexpected end of data while reading length');
+    throw new NfcParseError('Unexpected end of data while reading length');
   }
   const first = view[offset];
   if (first & 0x80) {
     const bytes = first & 0x7f;
     if (bytes === 0) {
-      throw new Error('Indefinite length (0x80) not supported');
+      throw new NfcParseError('Indefinite length (0x80) not supported');
     }
     if (offset + bytes >= view.length) {
-      throw new Error('Unexpected end of data while reading long-form length');
+      throw new NfcParseError('Unexpected end of data while reading long-form length');
     }
     let len = 0;
     for (let j = 1; j <= bytes; j++) {
@@ -92,10 +94,10 @@ export function parseNFCResponse(bytes: Uint8Array): ParsedNFCResponse {
   let i = 0;
   while (i < bytes.length) {
     const tag = bytes[i++];
-    if (i >= bytes.length) throw new Error('Unexpected end of data');
+    if (i >= bytes.length) throw new NfcParseError('Unexpected end of data');
     const { length, next } = readLength(bytes, i);
     i = next;
-    if (i + length > bytes.length) throw new Error('Unexpected end of data');
+    if (i + length > bytes.length) throw new NfcParseError('Unexpected end of data');
     const value = bytes.slice(i, i + length);
     i += length;
 

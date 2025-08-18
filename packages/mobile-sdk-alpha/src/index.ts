@@ -42,7 +42,15 @@ export type { QRProofOptions } from './qr';
 // NFC module
 export type { SdkErrorCategory } from './errors';
 
-export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+export {
+  InitError,
+  LivenessError,
+  MrzParseError,
+  NfcParseError,
+  SCANNER_ERROR_CODES,
+  notImplemented,
+  sdkError,
+} from './errors';
 
 export { createSelfClient } from './client';
 

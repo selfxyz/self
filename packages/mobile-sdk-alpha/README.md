@@ -47,6 +47,16 @@ const compact = formatDateToYYMMDD('1974-08-12');
 const nfc = parseNFCResponse(rawBytes);
 ```
 
+## Error handling
+
+The SDK surfaces typed errors for clearer diagnostics:
+
+- `NfcParseError` and `MrzParseError` for NFC and MRZ parsing issues (category `validation`)
+- `InitError` for initialization problems (category `init`)
+- `LivenessError` for liveness failures (category `liveness`)
+
+All errors extend `SdkError`, which includes a `code`, `category`, and `retryable` flag.
+
 ## Migration checklist
 
 Track progress in [MIGRATION_CHECKLIST.md](./docs/MIGRATION_CHECKLIST.md).

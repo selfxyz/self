@@ -22,11 +22,11 @@ The alpha SDK follows an adapter-first, React Native–oriented design. Tree-sha
 - [x] Create unified event handling interface
 - [x] Implement platform-specific event bridges
 
-### 3. Exception classes
+### 3. Exception classes ✅
 
-- [ ] Add typed errors (`InitError`, `LivenessError`, etc.)
-- [ ] Surface typed errors instead of generic `Error`
-- [ ] Ensure consistent error categorization
+- [x] Add typed errors (`InitError`, `LivenessError`, `NfcParseError`, `MrzParseError`)
+- [x] Surface typed errors instead of generic `Error`
+- [x] Ensure consistent error categorization
 
 ### 4. SDK lifecycle management
 
