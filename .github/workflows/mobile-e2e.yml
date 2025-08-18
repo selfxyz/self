@@ -256,32 +256,31 @@ jobs:
       - name: Install iOS Runtime
         run: |
           echo "📱 Checking iOS Runtime availability..."
-
-          # List available runtimes
-          echo "Available iOS runtimes:"
-          xcrun simctl runtime list
-
-          # Check if we have any iOS runtimes available
-          IOS_RUNTIMES=$(xcrun simctl runtime list | grep "iOS" | grep "Ready" | wc -l)
-
-          if [ "$IOS_RUNTIMES" -gt 0 ]; then
-            echo "✅ Found $IOS_RUNTIMES iOS runtime(s) available and ready"
-
-            # Get the latest iOS runtime UUID
-            LATEST_RUNTIME_UUID=$(xcrun simctl runtime list | grep "iOS" | grep "Ready" | tail -1 | awk '{print $NF}' | tr -d '()')
-
-            if [ -n "$LATEST_RUNTIME_UUID" ]; then
-              echo "✅ Latest iOS runtime UUID: $LATEST_RUNTIME_UUID"
-            else
-              echo "⚠️ Could not determine latest runtime UUID, but runtimes are available"
-            fi
+          echo "Available iOS runtimes (JSON):"
+          xcrun simctl list -j runtimes || true
+          # Determine latest available iOS runtime identifier
+          if command -v jq >/dev/null 2>&1; then
+            RUNTIME_ID=$(
+              xcrun simctl list -j runtimes \
+                | jq -r '.runtimes[]
+                    | select(.platform=="iOS" and .isAvailable==true)
+                    | .identifier' \
+                | sort -V \
+                | tail -1
+            )
           else
-            echo "⚠️ No iOS runtimes found, but this might be expected in CI environment"
-            echo "Continuing with system defaults..."
+            # Fallback: parse human output (less reliable)
+            RUNTIME_ID=$(
+              xcrun simctl list runtimes \
+                | awk '/iOS/ && /com.apple.CoreSimulator.SimRuntime.iOS-/ {print $NF}' \
+                | tail -1
+            )
           fi
-
-          echo "Runtime status summary:"
-          xcrun simctl runtime list | grep "iOS" | head -5
+          if [ -n "$RUNTIME_ID" ] && [[ "$RUNTIME_ID" == com.apple.CoreSimulator.SimRuntime.iOS-* ]]; then
+            echo "✅ Latest iOS runtime: $RUNTIME_ID"
+          else
+            echo "⚠️ Could not determine an iOS runtime identifier"
+          fi
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
