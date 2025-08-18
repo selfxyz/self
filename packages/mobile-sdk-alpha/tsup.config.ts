@@ -14,6 +14,19 @@ export default defineConfig([
     outDir: 'dist/esm',
     tsconfig: './tsconfig.json',
     target: 'es2020',
+    external: ['react', 'react-native'],
+    esbuildOptions(options) {
+      options.supported = {
+        ...options.supported,
+        'import-assertions': true,
+        'import-attributes': true,
+      };
+      // Handle React Native's import typeof syntax
+      options.loader = {
+        ...options.loader,
+        '.js': 'jsx',
+      };
+    },
   },
   {
     entry: {
@@ -28,6 +41,19 @@ export default defineConfig([
     outDir: 'dist/cjs',
     tsconfig: './tsconfig.cjs.json',
     target: 'es2020',
+    external: ['react', 'react-native'],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
+    esbuildOptions(options) {
+      options.supported = {
+        ...options.supported,
+        'import-assertions': true,
+        'import-attributes': true,
+      };
+      // Handle React Native's import typeof syntax
+      options.loader = {
+        ...options.loader,
+        '.js': 'jsx',
+      };
+    },
   },
 ]);

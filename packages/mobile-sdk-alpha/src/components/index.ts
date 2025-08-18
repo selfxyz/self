@@ -1,0 +1,1 @@
+export { MRZScannerView } from './MRZScannerView';

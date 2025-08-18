@@ -98,9 +98,22 @@ export interface SDKEventMap {
 export type SDKEvent = keyof SDKEventMap;
 
 export type ScanMode = 'mrz' | 'nfc' | 'qr';
-export interface ScanOpts {
-  mode: ScanMode;
-}
+
+export type ScanOpts =
+  | { mode: 'mrz' }
+  | {
+      mode: 'nfc';
+      passportNumber: string;
+      dateOfBirth: string;
+      dateOfExpiry: string;
+      canNumber?: string;
+      skipPACE?: boolean;
+      skipCA?: boolean;
+      extendedMode?: boolean;
+      usePacePolling?: boolean;
+    }
+  | { mode: 'qr' };
+
 export type ScanResult =
   | {
       mode: 'mrz';
@@ -111,7 +124,46 @@ export type ScanResult =
       // Extended MRZ data when available
       mrzInfo?: MRZInfo;
     }
-  | { mode: 'nfc'; raw: unknown }
+  | {
+      mode: 'nfc';
+      passportNumber: string;
+      dateOfBirth: string;
+      dateOfExpiry: string;
+      issuingCountry?: string;
+      firstName?: string;
+      lastName?: string;
+      gender?: string;
+      nationality?: string;
+      passportMRZ?: string;
+      documentSigningCertificate?: string;
+      countrySigningCertificate?: string;
+      eContentBase64?: string;
+      signatureBase64?: string;
+      dataGroupHashes?: string;
+      // TODO confirm these
+      documentType?: string;
+      documentSubType?: string;
+      placeOfBirth?: string;
+      residenceAddress?: string;
+      phoneNumber?: string;
+      personalNumber?: string;
+      ldsVersion?: string;
+      dataGroupsPresent?: string;
+      activeAuthenticationChallenge?: string;
+      activeAuthenticationSignature?: string;
+      verificationErrors?: string;
+      isPACESupported?: string;
+      isChipAuthenticationSupported?: string;
+      signatureAlgorithm?: string;
+      encapsulatedContentDigestAlgorithm?: string;
+      signedAttributes?: string;
+      verificationStatus?: {
+        passportCorrectlySigned: boolean;
+        documentSigningCertificateVerified: boolean;
+        passportDataNotTampered: boolean;
+        activeAuthenticationPassed: boolean;
+      };
+    }
   | { mode: 'qr'; data: string };
 export interface ScannerAdapter {
   scan(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
