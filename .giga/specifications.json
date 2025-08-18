@@ -1,27 +1,22 @@
 [
   {
     "fileName": "main-overview.mdc",
-    "path": ".cursorrules",
+    "path": ".cursor/rules",
     "description": "Complete system overview of the identity verification platform, covering the passport/ID verification workflow, zero-knowledge proof system, and compliance mechanisms"
   },
   {
-    "fileName": "identity-verification-flow.mdc",
-    "path": ".cursor/rules/identity-verification-flow.mdc",
-    "description": "Detailed documentation of the multi-step identity verification process, including passport and EU ID card verification paths, proof verification pipeline, and attestation workflows"
+    "fileName": "mobile-sdk-migration.mdc",
+    "path": ".cursor/rules/mobile-sdk-migration.mdc",
+    "description": "Comprehensive migration strategy and testing-first approach for porting identity verification logic from app to mobile-sdk-alpha package with detailed checklist and validation workflow"
   },
   {
-    "fileName": "cryptographic-circuits.mdc",
-    "path": ".cursor/rules/cryptographic-circuits.mdc",
-    "description": "Technical documentation of the zero-knowledge proof circuits, including register circuits, DSC proofs, and disclosure proofs with their validation mechanisms"
-  },
-  {
-    "fileName": "data-models.mdc",
-    "path": ".cursor/rules/data-models.mdc",
-    "description": "Documentation of core data structures including identity commitments, DSC key commitments, nullifier tracking, and verification configurations"
+    "fileName": "technical-specification.mdc",
+    "path": ".cursor/rules/technical-specification.mdc",
+    "description": "Consolidated technical implementation specification for zero-knowledge proof circuits, data models, verification workflows, and implementation requirements with performance constraints"
   },
   {
     "fileName": "compliance-verification.mdc",
     "path": ".cursor/rules/compliance-verification.mdc",
-    "description": "Details of the compliance verification system including OFAC checks, age verification, forbidden country validation, and timestamp-based verifications"
+    "description": "Critical compliance verification requirements for OFAC checks, age verification, and forbidden country validation with specific implementation details and constraints"
   }
 ]
