@@ -12,7 +12,7 @@ on:
     paths:
       - "common/**"
       - "app/**"
-      - ".github/workflows/app.yml"
+      - ".github/workflows/mobile-ci.yml"
       - ".github/actions/**"
 
 jobs:

@@ -16,24 +16,44 @@ env:
   MAESTRO_VERSION: 1.41.0
 
 on:
-  push:
-    branches: [main, release/**]
-    paths:
-      - "app/**"
-      - ".github/workflows/mobile-e2e.yml"
-  pull_request:
-    paths:
-      - "app/**"
-      - ".github/workflows/mobile-e2e.yml"
+  workflow_run:
+    workflows: ["Mobile CI"]
+    types:
+      - completed
 
 jobs:
+  changes:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      ios: ${{ steps.filter.outputs.ios }}
+      android: ${{ steps.filter.outputs.android }}
+      shared: ${{ steps.filter.outputs.shared }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          base: ${{ github.event.workflow_run.pull_requests[0].base.sha || github.event.workflow_run.before }}
+          filters: |
+            ios:
+              - 'app/ios/**'
+            android:
+              - 'app/android/**'
+            shared:
+              - 'app/src/**'
+              - 'common/**'
   e2e-android:
     # TODO: The Android E2E test job is temporarily disabled due to a recurring
     # Maestro driver timeout issue in the CI environment. The emulator becomes
     # unresponsive, preventing Maestro from connecting. This needs further
     # investigation, but has been disabled to unblock the pipeline.
     # To test locally, run `./scripts/test-e2e-local.sh android --workflow-match`
-    if: false
+    needs: changes
+    if: false # Temporarily disabled; adjust when re-enabled
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
@@ -158,11 +178,16 @@ jobs:
           if-no-files-found: warn
 
   e2e-ios:
+    needs: changes
+    if: ${{ github.event.workflow_run.conclusion == 'success' && (needs.changes.outputs.ios == 'true' || needs.changes.outputs.shared == 'true') }}
     timeout-minutes: 45
     runs-on: macos-latest
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
+    env:
+      IOS_PROJECT_NAME: "Self"
+      IOS_PROJECT_SCHEME: "OpenPassport"
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
