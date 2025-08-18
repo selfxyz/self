@@ -6,7 +6,7 @@ env:
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
   ANDROID_NDK_VERSION: 27.0.11718014
-  XCODE_VERSION: 16.2
+  XCODE_VERSION: 16.4
 
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version

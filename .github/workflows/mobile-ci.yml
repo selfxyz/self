@@ -5,7 +5,7 @@ env:
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   ANDROID_NDK_VERSION: 27.0.11718014
-  XCODE_VERSION: 16.2
+  XCODE_VERSION: 16.4
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app

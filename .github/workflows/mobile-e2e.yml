@@ -5,7 +5,7 @@ env:
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 33
   ANDROID_NDK_VERSION: 27.0.11718014
-  XCODE_VERSION: 16.2
+  XCODE_VERSION: 16.4
   # Cache versions
   GH_CACHE_VERSION: v1 # Global cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
