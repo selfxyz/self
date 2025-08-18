@@ -8,6 +8,7 @@ env:
   XCODE_VERSION: 16.4
   # Cache versions
   GH_CACHE_VERSION: v1 # Global cache version
+  GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
   CI: true
@@ -190,10 +191,13 @@ jobs:
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: actions/cache@v4
         with:
-          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
-      - run: yarn workspaces focus @selfxyz/mobile-app
+          path: .yarn/cache
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+      - run: yarn install --immutable --silent
       - name: Cache Maestro
         id: cache-maestro
         uses: actions/cache@v4
@@ -229,6 +233,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('app/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-
+      - name: Cache Ruby gems
+        uses: ./.github/actions/cache-bundler
+        with:
+          path: app/vendor/bundle
+          lock-file: app/Gemfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
       - name: Cache Pods
         uses: ./.github/actions/cache-pods
         with:
