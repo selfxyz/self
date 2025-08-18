@@ -118,7 +118,7 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-snapshot-load -no-snapshot-save -wipe-data -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -skin 1080x1920 -memory 4096 -cores 2 -accel on -qemu -enable-kvm -netdelay none -netspeed full
+          emulator-options: -no-snapshot-load -no-snapshot-save -wipe-data -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -skin 1080x1920 -memory 4096 -cores 2 -no-accel -netdelay none -netspeed full
           disable-animations: true
           script: |
             echo "🔧 Setting up ADB connection..."
