@@ -5,6 +5,7 @@ export default defineConfig([
     entry: {
       index: 'src/index.ts',
       browser: 'src/browser.ts',
+      'react-native': 'src/react-native.ts',
     },
     format: ['esm'],
     dts: true,
@@ -19,6 +20,7 @@ export default defineConfig([
     entry: {
       index: 'src/index.ts',
       browser: 'src/browser.ts',
+      'react-native': 'src/react-native.ts',
     },
     format: ['cjs'],
     dts: false,

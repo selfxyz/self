@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-sdk-alpha",
-  "version": "0.1.0",
+  "version": "2.6.4",
   "description": "Self SDK (alpha) for registering and proving. Adapters-first, RN-first with web shims.",
   "keywords": [
     "self",
@@ -14,7 +14,7 @@
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
-      "react-native": "./dist/esm/index.js",
+      "react-native": "./dist/esm/react-native.js",
       "browser": "./dist/esm/browser.js",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs",
@@ -24,6 +24,11 @@
       "types": "./dist/esm/browser.d.ts",
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
+    },
+    "./react-native": {
+      "types": "./dist/esm/react-native.d.ts",
+      "import": "./dist/esm/react-native.js",
+      "require": "./dist/cjs/react-native.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
