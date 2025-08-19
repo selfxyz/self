@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src/adapters/index';
+import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src';
 import { createSelfClient } from '../src/index';
 
 describe('createSelfClient', () => {

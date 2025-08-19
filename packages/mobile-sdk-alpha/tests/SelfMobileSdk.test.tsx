@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 describe('High-Level SelfMobileSdk Component', () => {
   it('can be imported successfully', async () => {
-    const { SelfMobileSdk } = await import('../src/components/SelfMobileSdk');
+    const { SelfMobileSdk } = await import('../src');
     expect(SelfMobileSdk).toBeDefined();
     expect(typeof SelfMobileSdk).toBe('function');
   });
 
   it('accepts the expected props interface', async () => {
-    const { SelfMobileSdk } = await import('../src/components/SelfMobileSdk');
+    const { SelfMobileSdk } = await import('../src');
 
     // Test that the component accepts the expected props structure
     const mockExternal = {

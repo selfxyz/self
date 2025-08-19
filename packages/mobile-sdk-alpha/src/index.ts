@@ -72,11 +72,12 @@ export { SelfClientContext, SelfClientProvider, useSelfClient } from './context'
 // Components
 export { SelfMobileSdk } from './entry';
 
-export { SelfMobileSdk as SelfMobileSdkHighLevel } from './components/SelfMobileSdk';
-
 export { createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
+
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
+export { extractMRZInfo } from './mrz';
 
 export { formatDateToYYMMDD, scanMRZ } from './mrz';
 

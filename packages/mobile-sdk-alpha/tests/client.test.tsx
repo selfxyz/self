@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { createSelfClient } from '../src/index';
-import { expectedMRZResult, mockAdapters, sampleMRZ } from './utils/testHelpers';
+import { MrzParseError } from '../src/processing/mrz';
+import { badCheckDigitsMRZ, expectedMRZResult, invalidMRZ, mockAdapters, sampleMRZ } from './utils/testHelpers';
 
 describe('createSelfClient API', () => {
   it('creates a client instance with expected methods', () => {
@@ -28,5 +29,16 @@ describe('createSelfClient API', () => {
 
     expect(clientWithAllAdapters).toBeDefined();
     expect(typeof clientWithAllAdapters.extractMRZInfo).toBe('function');
+  });
+
+  it('throws MrzParseError for malformed MRZ input', () => {
+    const client = createSelfClient({ config: {}, adapters: mockAdapters });
+    expect(() => client.extractMRZInfo(invalidMRZ)).toThrowError(MrzParseError);
+  });
+
+  it('flags invalid check digits', () => {
+    const client = createSelfClient({ config: {}, adapters: mockAdapters });
+    const info = client.extractMRZInfo(badCheckDigitsMRZ);
+    expect(info.validation.overall).toBe(false);
   });
 });

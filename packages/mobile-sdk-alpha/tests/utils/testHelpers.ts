@@ -3,6 +3,9 @@ import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../../src';
 
 // Shared test data
 export const sampleMRZ = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
+// Intentionally malformed MRZ (invalid structure/check digits) for negative tests
+export const invalidMRZ = 'NOT_A_VALID_MRZ';
+export const badCheckDigitsMRZ = sampleMRZ.slice(0, -1) + '1';
 
 // Shared mock adapters
 export const mockScanner: ScannerAdapter = {
@@ -10,7 +13,17 @@ export const mockScanner: ScannerAdapter = {
 };
 
 export const mockNetwork: NetworkAdapter = {
-  http: { fetch: async () => ({ ok: true }) as any },
+  // Return a minimal stub to avoid relying on global Response in JSDOM/Node
+  http: {
+    fetch: async () =>
+      ({
+        ok: true,
+        status: 200,
+        text: async () => '',
+        json: async () => ({}),
+        arrayBuffer: async () => new ArrayBuffer(0),
+      }) as any,
+  },
   ws: {
     connect: () => ({
       send: () => {},

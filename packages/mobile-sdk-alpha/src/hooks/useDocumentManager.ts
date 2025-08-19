@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { DocumentData, ExternalAdapter } from '../types/ui';
 
@@ -8,7 +8,7 @@ export const useDocumentManager = (external: ExternalAdapter) => {
   }>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     external
       .getAllDocuments()
       .then(documents => {
