@@ -53,11 +53,12 @@ export {
   sdkError,
 } from './errors';
 
+export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 export { createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 
-export { formatDateToYYMMDD, scanMRZ } from './mrz';
+export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';

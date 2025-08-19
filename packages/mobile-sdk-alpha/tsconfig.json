@@ -16,7 +16,7 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": false,
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "react"]
   },
   "include": ["src", "tests"]
 }

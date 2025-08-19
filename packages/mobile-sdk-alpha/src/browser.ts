@@ -39,9 +39,10 @@ export type { QRProofOptions } from './qr';
 export type { SdkErrorCategory } from './errors';
 
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
-export { formatDateToYYMMDD, scanMRZ } from './mrz';
+export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';
