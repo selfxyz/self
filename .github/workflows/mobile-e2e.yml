@@ -5,6 +5,7 @@ env:
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 30
   ANDROID_NDK_VERSION: 27.0.11718014
+  XCODE_VERSION: 16.4
   # Cache versions
   GH_CACHE_VERSION: v1 # Global cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
@@ -229,6 +230,12 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
       cancel-in-progress: true
+    env:
+      # iOS project configuration - hardcoded for E2E testing stability
+      # Note: During migration, project name is "Self" but scheme is still "OpenPassport"
+      # mobile-deploy.yml uses secrets for production deployment
+      IOS_PROJECT_NAME: "Self"
+      IOS_PROJECT_SCHEME: "OpenPassport"
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
@@ -271,7 +278,20 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.4"
+          xcode-version: ${{ env.XCODE_VERSION }}
+      - name: Configure Xcode path
+        run: |
+          echo "🔧 Configuring Xcode path to fix iOS SDK issues..."
+          # Fix for macOS 15 runner iOS SDK issues
+          # See: https://github.com/actions/runner-images/issues/12758
+          sudo xcode-select --switch /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+          echo "✅ Xcode path configured"
+
+          # Verify Xcode setup
+          echo "Xcode version:"
+          xcodebuild -version
+          echo "Xcode path:"
+          xcode-select -p
       - name: Cache Node modules
         uses: actions/cache@v4
         with:
@@ -299,7 +319,7 @@ jobs:
             app/ios/build
             ~/Library/Developer/Xcode/DerivedData
             ~/Library/Caches/com.apple.dt.Xcode
-          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata') }}
+          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace/contents.xcworkspacedata') }}
           restore-keys: |
             ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-
             ${{ runner.os }}-xcode-
@@ -319,35 +339,11 @@ jobs:
           key: ${{ runner.os }}-simulator-v1
           restore-keys: |
             ${{ runner.os }}-simulator-
-      - name: Install iOS Runtime
+      - name: Verify iOS Runtime
         run: |
-          echo "📱 Checking iOS Runtime availability..."
-
-          # List available runtimes
+          echo "📱 Verifying iOS Runtime availability..."
           echo "Available iOS runtimes:"
-          xcrun simctl runtime list
-
-          # Check if we have any iOS runtimes available
-          IOS_RUNTIMES=$(xcrun simctl runtime list | grep "iOS" | grep "Ready" | wc -l)
-
-          if [ "$IOS_RUNTIMES" -gt 0 ]; then
-            echo "✅ Found $IOS_RUNTIMES iOS runtime(s) available and ready"
-
-            # Get the latest iOS runtime UUID
-            LATEST_RUNTIME_UUID=$(xcrun simctl runtime list | grep "iOS" | grep "Ready" | tail -1 | awk '{print $NF}' | tr -d '()')
-
-            if [ -n "$LATEST_RUNTIME_UUID" ]; then
-              echo "✅ Latest iOS runtime UUID: $LATEST_RUNTIME_UUID"
-            else
-              echo "⚠️ Could not determine latest runtime UUID, but runtimes are available"
-            fi
-          else
-            echo "⚠️ No iOS runtimes found, but this might be expected in CI environment"
-            echo "Continuing with system defaults..."
-          fi
-
-          echo "Runtime status summary:"
-          xcrun simctl runtime list | grep "iOS" | head -5
+          xcrun simctl list runtimes | grep iOS || true
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
@@ -390,11 +386,11 @@ jobs:
           if [ -z "$AVAILABLE_SIMULATOR" ]; then
             echo "❌ No available iPhone simulator found"
             echo "Creating a new iPhone SE (3rd generation) simulator..."
-            # Create a new iPhone SE (3rd generation) simulator with the latest iOS version
-            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" "iOS17.5" || {
+            # Create a new iPhone SE (3rd generation) simulator
+            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" || {
               echo "❌ Failed to create iPhone SE (3rd generation) simulator"
               echo "Trying to create any iPhone SE simulator..."
-              xcrun simctl create "iPhone SE" "iPhone SE" "iOS17.5" || {
+              xcrun simctl create "iPhone SE" "iPhone SE" || {
                 echo "❌ Failed to create simulator"
                 exit 1
               }
@@ -431,8 +427,35 @@ jobs:
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
+          echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
+
+          # Verify workspace exists before building
+          WORKSPACE_PATH="app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
+          if [ ! -d "$WORKSPACE_PATH" ]; then
+            echo "❌ Workspace not found at: $WORKSPACE_PATH"
+            echo "Available workspaces:"
+            find app/ios -name "*.xcworkspace" -type d
+            exit 1
+          fi
+
+          # Verify scheme exists by listing available schemes
+          echo "Verifying scheme availability..."
+          AVAILABLE_SCHEMES=$(xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 200 "Schemes:" | grep -v "Schemes:" | xargs)
+          echo "Available schemes (first 20): $(echo $AVAILABLE_SCHEMES | cut -d' ' -f1-20)..."
+
+          if [[ ! "$AVAILABLE_SCHEMES" =~ ${{ env.IOS_PROJECT_SCHEME }} ]]; then
+            echo "❌ Scheme '${{ env.IOS_PROJECT_SCHEME }}' not found"
+            echo "Full scheme list:"
+            xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 200 "Schemes:" | grep -v "Schemes:" | head -50
+            exit 1
+          fi
+
+          echo "✅ Using workspace: $WORKSPACE_PATH"
+          echo "✅ Using scheme: ${{ env.IOS_PROJECT_SCHEME }}"
+
           # Use cached derived data and enable parallel builds for faster compilation
-          xcodebuild -workspace app/ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration Release -sdk iphonesimulator -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
+          # Use the simulator that was set up earlier in the workflow
+          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
@@ -461,7 +484,7 @@ jobs:
           fi
 
           echo "Verifying app installation..."
-          if xcrun simctl listapps "$SIMULATOR_ID" | grep -q "$IOS_BUNDLE_ID"; then
+          if xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1; then
             echo "✅ App successfully installed"
           else
             echo "❌ App installation verification failed"
@@ -475,7 +498,8 @@ jobs:
 
           echo "⏰ Checking simulator readiness..."
           sleep 10
-          xcrun simctl listapps "$SIMULATOR_ID" > /dev/null || sleep 5
+          # Probe container as readiness check instead of listapps
+          xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1 || sleep 5
 
           echo "Running Maestro tests..."
           echo "Starting test execution..."
