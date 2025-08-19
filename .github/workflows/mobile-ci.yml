@@ -4,6 +4,8 @@ env:
   # Node version is read from .nvmrc during workflow execution
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
+  ANDROID_NDK_VERSION: 27.0.11718014
+  XCODE_VERSION: 16.4
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
@@ -123,7 +125,27 @@ jobs:
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: "16.4"
+          xcode-version: ${{ env.XCODE_VERSION }}
+      - name: Configure Xcode path
+        run: |
+          echo "🔧 Configuring Xcode path to fix iOS SDK issues..."
+          # Fix for macOS 15 runner iOS SDK issues
+          # See: https://github.com/actions/runner-images/issues/12758
+          sudo xcode-select --switch /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+          echo "✅ Xcode path configured"
+
+          # Verify Xcode setup
+          echo "Xcode version:"
+          xcodebuild -version
+          echo "Xcode path:"
+          xcode-select -p
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: false
+          working-directory: ./app
 
       - uses: actions/checkout@v4
       - name: Cache Node Modules
@@ -178,15 +200,36 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('app/android/**/gradle-wrapper.properties', 'app/android/**/gradle-wrapper.jar') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+      - name: Setup Java environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+      - name: Cache NDK
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
+          key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
+      - name: Install NDK
+        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build Dependencies
         run: yarn build:deps
         working-directory: ./app
+      - name: Install Ruby Dependencies
+        run: |
+          echo "Installing Ruby dependencies..."
+          bundle config set --local path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+        working-directory: ./app
       - name: Install iOS Dependencies
         run: |
           echo "Installing iOS dependencies..."
-          cd app/ios
 
           # Clean Pods directory if it's corrupted or empty
           if [ ! -d "Pods" ] || [ -z "$(ls -A Pods 2>/dev/null)" ]; then
@@ -214,10 +257,10 @@ jobs:
           fi
 
           echo "✅ iOS dependencies installed successfully"
+        working-directory: ./app/ios
       - name: Verify iOS Workspace
         run: |
           echo "Verifying iOS workspace setup..."
-          cd app/ios
 
           if [ ! -f "OpenPassport.xcworkspace/contents.xcworkspacedata" ]; then
             echo "❌ OpenPassport.xcworkspace is missing or corrupted"
@@ -230,6 +273,7 @@ jobs:
           fi
 
           echo "✅ iOS workspace is properly configured"
+        working-directory: ./app/ios
       - name: Build iOS
         run: yarn ios
         working-directory: ./app
