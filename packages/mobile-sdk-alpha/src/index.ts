@@ -46,7 +46,6 @@ export type { QRProofOptions } from './qr';
 export type { SdkErrorCategory } from './errors';
 
 // Error handling
-export type { SdkErrorCategory } from './errors';
 export {
   InitError,
   LivenessError,
