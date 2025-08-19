@@ -13,7 +13,7 @@ reviews:
   poem: true
   review_status: true
   auto_review:
-    enabled: true
+    enabled: false
     drafts: false
     base_branches: ["main", "dev"]
   tools:
