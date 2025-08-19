@@ -89,7 +89,7 @@ const network: NetworkAdapter = {
       status: 200,
       headers: {},
       text: async () => '',
-      json: async () => ({}),
+      json: async <T = unknown>() => ({}) as T,
       arrayBuffer: async () => new ArrayBuffer(0),
     }),
   },
