@@ -279,14 +279,38 @@ func (s *SelfBackendVerifier) Verify(
 			isProofValid = false
 		} else {
 			// Convert string proof fields to *big.Int
-			a0, _ := new(big.Int).SetString(proof.A[0], 10)
-			a1, _ := new(big.Int).SetString(proof.A[1], 10)
-			b00, _ := new(big.Int).SetString(proof.B[0][0], 10)
-			b01, _ := new(big.Int).SetString(proof.B[0][1], 10)
-			b10, _ := new(big.Int).SetString(proof.B[1][0], 10)
-			b11, _ := new(big.Int).SetString(proof.B[1][1], 10)
-			c0, _ := new(big.Int).SetString(proof.C[0], 10)
-			c1, _ := new(big.Int).SetString(proof.C[1], 10)
+			a0, ok := new(big.Int).SetString(proof.A[0], 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid proof.A[0]: %s", proof.A[0])
+			}
+			a1, ok := new(big.Int).SetString(proof.A[1], 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid proof.A[1]: %s", proof.A[1])
+			}
+			b00, ok := new(big.Int).SetString(proof.B[0][0], 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid proof.B[0][0]: %s", proof.B[0][0])
+			}
+			b01, ok := new(big.Int).SetString(proof.B[0][1], 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid proof.B[0][1]: %s", proof.B[0][1])
+			}
+			b10, ok := new(big.Int).SetString(proof.B[1][0], 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid proof.B[1][0]: %s", proof.B[1][0])
+			}
+			b11, ok := new(big.Int).SetString(proof.B[1][1], 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid proof.B[1][1]: %s", proof.B[1][1])
+			}
+			c0, ok := new(big.Int).SetString(proof.C[0], 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid proof.C[0]: %s", proof.C[0])
+			}
+			c1, ok := new(big.Int).SetString(proof.C[1], 10)
+			if !ok {
+				return nil, fmt.Errorf("invalid proof.C[1]: %s", proof.C[1])
+			}
 
 			// Convert proof format: swaps B coordinates [proof.b[0][1], proof.b[0][0]]
 			bFormatted := [2][2]*big.Int{
