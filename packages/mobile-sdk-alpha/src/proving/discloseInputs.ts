@@ -112,6 +112,8 @@ function getSelectorDg1(document: DocumentCategory, disclosures: SelfAppDisclosu
       return getSelectorDg1Passport(disclosures);
     case 'id_card':
       return getSelectorDg1IdCard(disclosures);
+    default:
+      throw new Error(`Unsupported document category: ${document as string}`);
   }
 }
 

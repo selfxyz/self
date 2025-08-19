@@ -25,7 +25,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   discloseInputs: jest.fn(() => ({
     inputs: { s: 1 },
     circuitName: 'vc_and_disclose',
-    endpointType: 'https',
+    endpointType: 'celo',
     endpoint: 'https://dis',
   })),
 }));
@@ -160,7 +160,7 @@ describe('_generatePayload', () => {
     useProvingStore.setState({ circuitType: 'disclose' });
     const payload = await useProvingStore.getState()._generatePayload();
     expect(discloseInputs).toHaveBeenCalled();
-    expect(useProvingStore.getState().endpointType).toBe('https');
+    expect(useProvingStore.getState().endpointType).toBe('celo');
     expect(payload.params.uuid).toBe('123');
   });
 });

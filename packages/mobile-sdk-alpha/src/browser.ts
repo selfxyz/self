@@ -33,28 +33,28 @@ export type {
 } from './types/public';
 
 export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
+export type { DiscloseSelfApp, OfacTrees } from './proving/discloseInputs';
 export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
 export type { QRProofOptions } from './qr';
-export type { SdkErrorCategory } from './errors';
 
+export type { SdkErrorCategory } from './errors';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
-export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+
+export { discloseInputs } from './proving/discloseInputs';
 
 // Core functions
+export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+
 export { isPassportDataValid } from './validation/document';
 
 export { mergeConfig } from './config/merge';
 
+// Proving helpers
 export { parseNFCResponse, scanNFC } from './nfc';
 
-export { scanQRProof } from './qr';
-
-export { webScannerShim } from './adapters/web/shims';
-
-// Proving helpers
 export { registerInputs } from './proving/registerInputs';
-export { discloseInputs } from './proving/discloseInputs';
-export type { DiscloseSelfApp, OfacTrees } from './proving/discloseInputs';
+export { scanQRProof } from './qr';
+export { webScannerShim } from './adapters/web/shims';

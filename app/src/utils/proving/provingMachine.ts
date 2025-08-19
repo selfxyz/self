@@ -1032,7 +1032,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             commitmentTree,
             env,
           ));
-          circuitTypeWithDocumentExtension = `disclose`;
+          circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
           break;
         }
         default:
@@ -1047,10 +1047,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const payload = getPayload(
         inputs,
         circuitTypeWithDocumentExtension as
-          | 'register_id'
-          | 'dsc_id'
           | 'register'
-          | 'dsc',
+          | 'register_id'
+          | 'dsc'
+          | 'dsc_id'
+          | 'disclose'
+          | 'disclose_id',
         circuitName as string,
         endpointType as EndpointType,
         endpoint as string,
