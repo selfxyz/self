@@ -2,11 +2,9 @@
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src/adapters/index';
+import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src';
 import { SelfClientProvider, useSelfClient } from '../src/index';
 
-// eslint-disable-next-line import/no-unresolved
-// @ts-ignore
 import { renderHook } from '@testing-library/react';
 
 const scanner: ScannerAdapter = {
@@ -14,7 +12,8 @@ const scanner: ScannerAdapter = {
 };
 
 const network: NetworkAdapter = {
-  http: { fetch: async () => new Response(null) },
+  // Return a minimal stub to avoid relying on global Response in JSDOM/Node
+  http: { fetch: async () => ({ ok: true }) as any },
   ws: {
     connect: () => ({
       send: () => {},

@@ -55,11 +55,12 @@ export {
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 export { SelfMobileSdk } from './entry';
+export { SelfMobileSdk as SelfMobileSdkHighLevel } from './components/SelfMobileSdk';
 export { createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 
-export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';

@@ -1,11 +1,9 @@
 /* @vitest-environment jsdom */
 import React from 'react';
 
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src/adapters';
+import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src';
 import { SelfMobileSdk, useSelfClient } from '../src/index';
 
-// eslint-disable-next-line import/no-unresolved
-// @ts-ignore
 import { render, screen } from '@testing-library/react';
 
 const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
@@ -21,7 +19,8 @@ const scanner: ScannerAdapter = {
 };
 
 const network: NetworkAdapter = {
-  http: { fetch: async () => new Response(null) },
+  // Return a minimal stub to avoid relying on global Response in JSDOM/Node
+  http: { fetch: async () => ({ ok: true }) as any },
   ws: {
     connect: () => ({
       send: () => {},
