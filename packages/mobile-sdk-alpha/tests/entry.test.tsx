@@ -1,49 +1,37 @@
 /* @vitest-environment jsdom */
 import React from 'react';
+import { describe, expect, it } from 'vitest';
 
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src';
 import { SelfMobileSdk, useSelfClient } from '../src/index';
+import { expectedMRZResult, mockAdapters, sampleMRZ } from './utils/testHelpers';
 
 import { render, screen } from '@testing-library/react';
 
-const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
-
 function Consumer() {
   const client = useSelfClient();
-  const info = client.extractMRZInfo(sample);
+  const info = client.extractMRZInfo(sampleMRZ);
   return <span>{info.passportNumber}</span>;
 }
 
-const scanner: ScannerAdapter = {
-  scan: async () => ({ mode: 'mrz', passportNumber: '', dateOfBirth: '', dateOfExpiry: '' }),
-};
-
-const network: NetworkAdapter = {
-  // Return a minimal stub to avoid relying on global Response in JSDOM/Node
-  http: { fetch: async () => ({ ok: true }) as any },
-  ws: {
-    connect: () => ({
-      send: () => {},
-      close: () => {},
-      onMessage: () => {},
-      onError: () => {},
-      onClose: () => {},
-    }),
-  },
-};
-
-const crypto: CryptoAdapter = {
-  hash: async () => new Uint8Array(),
-  sign: async () => new Uint8Array(),
-};
-
-describe('SelfMobileSdk', () => {
-  it('provides client to children', () => {
+describe('SelfMobileSdk Entry Component', () => {
+  it('provides client to children and enables MRZ parsing', () => {
     render(
-      <SelfMobileSdk config={{}} adapters={{ scanner, network, crypto }}>
+      <SelfMobileSdk config={{}} adapters={mockAdapters}>
         <Consumer />
       </SelfMobileSdk>,
     );
-    expect(screen.getByText('L898902C3')).toBeTruthy();
+
+    expect(screen.getByText(expectedMRZResult.passportNumber)).toBeTruthy();
+  });
+
+  it('renders children correctly', () => {
+    const testMessage = 'Test Child Component';
+    render(
+      <SelfMobileSdk config={{}} adapters={mockAdapters}>
+        <div>{testMessage}</div>
+      </SelfMobileSdk>,
+    );
+
+    expect(screen.getByText(testMessage)).toBeTruthy();
   });
 });

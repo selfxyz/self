@@ -2,45 +2,29 @@
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src';
 import { SelfClientProvider, useSelfClient } from '../src/index';
+import { expectedMRZResult, mockAdapters, sampleMRZ } from './utils/testHelpers';
 
 import { renderHook } from '@testing-library/react';
 
-const scanner: ScannerAdapter = {
-  scan: async () => ({ mode: 'mrz', passportNumber: '', dateOfBirth: '', dateOfExpiry: '' }),
-};
-
-const network: NetworkAdapter = {
-  // Return a minimal stub to avoid relying on global Response in JSDOM/Node
-  http: { fetch: async () => ({ ok: true }) as any },
-  ws: {
-    connect: () => ({
-      send: () => {},
-      close: () => {},
-      onMessage: () => {},
-      onError: () => {},
-      onClose: () => {},
-    }),
-  },
-};
-
-const crypto: CryptoAdapter = {
-  hash: async () => new Uint8Array(),
-  sign: async () => new Uint8Array(),
-};
-
-describe('SelfClientProvider', () => {
-  it('provides client through context', () => {
+describe('SelfClientProvider Context', () => {
+  it('provides client through context with MRZ parsing capability', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <SelfClientProvider config={{}} adapters={{ scanner, network, crypto }}>
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         {children}
       </SelfClientProvider>
     );
+
     const { result } = renderHook(() => useSelfClient(), { wrapper });
-    const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
-    const info = result.current.extractMRZInfo(sample);
-    expect(info.passportNumber).toBe('L898902C3');
-    expect(info.validation.overall).toBe(true);
+    const info = result.current.extractMRZInfo(sampleMRZ);
+
+    expect(info.passportNumber).toBe(expectedMRZResult.passportNumber);
+    expect(info.validation.overall).toBe(expectedMRZResult.validation.overall);
+  });
+
+  it('throws error when used outside provider', () => {
+    expect(() => {
+      renderHook(() => useSelfClient());
+    }).toThrow('useSelfClient must be used within a SelfClientProvider');
   });
 });
