@@ -120,6 +120,7 @@ export interface SelfClient {
   scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
   validateDocument(input: ValidationInput): Promise<ValidationResult>;
   checkRegistration(input: RegistrationInput): Promise<RegistrationStatus>;
+  registerDocument(input: RegistrationInput): Promise<RegistrationStatus>;
   generateProof(
     req: ProofRequest,
     opts?: {

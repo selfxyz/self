@@ -7,12 +7,12 @@ const SelfClientContext = createContext<SelfClient | null>(null);
 
 export interface SelfClientProviderProps {
   config: Config;
-  adapters: Partial<Adapters>;
+  adapters?: Partial<Adapters>;
 }
 
 export { SelfClientContext };
 
-export function SelfClientProvider({ config, adapters, children }: PropsWithChildren<SelfClientProviderProps>) {
+export function SelfClientProvider({ config, adapters = {}, children }: PropsWithChildren<SelfClientProviderProps>) {
   const client = useMemo(() => createSelfClient({ config, adapters }), [config, adapters]);
   return <SelfClientContext.Provider value={client}>{children}</SelfClientContext.Provider>;
 }

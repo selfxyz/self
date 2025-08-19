@@ -40,6 +40,7 @@ export type { SdkErrorCategory } from './errors';
 
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+export { SelfMobileSdk } from './entry';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';

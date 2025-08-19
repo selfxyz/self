@@ -78,6 +78,10 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     return { registered: false, reason: 'SELF_REG_STATUS_STUB' };
   }
 
+  async function registerDocument(_input: RegistrationInput): Promise<RegistrationStatus> {
+    return { registered: false, reason: 'SELF_REG_STATUS_STUB' };
+  }
+
   async function generateProof(
     _req: ProofRequest,
     opts: {
@@ -102,6 +106,7 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     scanDocument,
     validateDocument,
     checkRegistration,
+    registerDocument,
     generateProof,
     extractMRZInfo: parseMRZInfo,
     on,

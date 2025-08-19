@@ -85,6 +85,14 @@ describe('createSelfClient', () => {
     expect(info.passportNumber).toBe('L898902C3');
     expect(info.validation.overall).toBe(true);
   });
+
+  it('returns stub registration status', async () => {
+    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
+    await expect(client.registerDocument({} as any)).resolves.toEqual({
+      registered: false,
+      reason: 'SELF_REG_STATUS_STUB',
+    });
+  });
 });
 
 const scanner: ScannerAdapter = {

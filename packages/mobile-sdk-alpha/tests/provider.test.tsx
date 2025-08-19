@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest';
 import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src/adapters/index';
 import { SelfClientProvider, useSelfClient } from '../src/index';
 
+// eslint-disable-next-line import/no-unresolved
+// @ts-ignore
 import { renderHook } from '@testing-library/react';
 
 const scanner: ScannerAdapter = {

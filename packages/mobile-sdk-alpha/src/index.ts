@@ -54,6 +54,7 @@ export {
 } from './errors';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+export { SelfMobileSdk } from './entry';
 export { createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
