@@ -1,3 +1,7 @@
+/**
+ * Main entry point for the mobile SDK. This module re-exports all public
+ * types and functions for use in native or cross-platform environments.
+ */
 // Types
 export type {
   Adapters,

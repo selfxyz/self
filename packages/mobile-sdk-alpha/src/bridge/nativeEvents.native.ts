@@ -5,6 +5,9 @@ import type { NativeEventBridge } from './nativeEvents';
 
 const emitters: Record<string, NativeEventEmitter> = {};
 
+/**
+ * Retrieve or create an event emitter for the specified native module.
+ */
 function getEmitter(moduleName: string): NativeEventEmitter {
   if (!emitters[moduleName]) {
     const mod = (NativeModules as Record<string, any>)[moduleName];
@@ -26,12 +29,18 @@ function getEmitter(moduleName: string): NativeEventEmitter {
   return emitters[moduleName];
 }
 
+/**
+ * Subscribe to a native module event using React Native's event emitters.
+ */
 export const addListener: NativeEventBridge['addListener'] = (moduleName, eventName, handler) => {
   const emitter = getEmitter(moduleName);
   const sub: NativeEventSubscription = emitter.addListener(eventName, handler);
   return () => sub.remove();
 };
 
+/**
+ * Remove a previously registered native module event handler.
+ */
 export const removeListener: NativeEventBridge['removeListener'] = (moduleName, eventName, handler) => {
   const emitter = emitters[moduleName];
   if (emitter) {

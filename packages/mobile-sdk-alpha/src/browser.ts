@@ -1,3 +1,8 @@
+/**
+ * Browser-focused entry point that only exposes APIs safe for web
+ * environments. Using this module enables better tree-shaking and avoids
+ * bundling native-specific code.
+ */
 // Browser-safe exports with explicit tree-shaking friendly imports
 
 // Types
