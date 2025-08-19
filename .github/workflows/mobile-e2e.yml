@@ -277,7 +277,7 @@ jobs:
         run: |
           echo "📱 Verifying iOS Runtime availability..."
           echo "Available iOS runtimes:"
-          xcrun simctl list runtimes | grep iOS || true
+          xcrun simctl list runtimes | grep iOS
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
