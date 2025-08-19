@@ -1,215 +1,103 @@
-# PR {{PR_NUMBER}} - Action Items Template
+<!--
+INSTRUCTIONS FOR AGENTS:
+- Use giga_read_pr to fetch PR data and CodeRabbit comments
+- Focus on unresolved comments without '✅ Addressed' status
+- Group related issues by root cause (not just severity)
+- Include specific file paths and line numbers
+- Provide clear, actionable fixes
+- Add code examples for complex issues
+- Prioritize by "blocking merge" vs "architectural" vs "polish"
+- Create file as PR-{{NUMBER}}-ACTION_ITEMS.md in project root
+-->
 
-## PR Overview
+# PR {{PR_NUMBER}} Action Items
+
+## Overview
 **Title:** {{PR_TITLE}}
 **Author:** {{AUTHOR}}
 **Status:** {{STATUS}}
 **Created:** {{DATE}}
 **Branch:** {{BRANCH}}
 
-## Summary
 {{PR_SUMMARY}}
 
-## Key Changes
-- {{CHANGE_1}}
-- {{CHANGE_2}}
-- {{CHANGE_3}}
+## Critical Issues (Blocking Merge)
 
-## Action Items
+### 1. {{ISSUE_TITLE}}
+**Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
+**Problem:** {{PROBLEM_DESCRIPTION}}
+**Fix:** {{SPECIFIC_FIX_OR_ACTION}}
 
-### 🔧 Critical Issues (High Priority)
-*Security vulnerabilities, breaking changes, critical bugs*
+### 2. {{ISSUE_TITLE}}
+**Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
+**Problem:** {{PROBLEM_DESCRIPTION}}
+**Fix:** {{SPECIFIC_FIX_OR_ACTION}}
 
-#### 1. {{CRITICAL_ISSUE_TITLE}}
-**Status:** 🔴 Critical Issues Identified
-**Files:** {{FILE_PATHS}}
+## Required Actions
 
-**Issues:**
-- [ ] **Security Risk:** {{SECURITY_DESCRIPTION}}
-- [ ] **Cache Key Problems:** {{CACHE_DESCRIPTION}}
-- [ ] **Missing Validation:** {{VALIDATION_DESCRIPTION}}
+### Issue 1: {{GROUPED_ISSUE_TITLE}}
+**Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`, `{{FILE_PATH}}:{{LINE_NUMBER}}`
+**Root Cause:** {{ROOT_CAUSE_DESCRIPTION}}
 
-**Required Actions:**
-```bash
-# Specific code examples for fixes
+**Actions:**
+- [ ] {{SPECIFIC_ACTION_1}}
+- [ ] {{SPECIFIC_ACTION_2}}
+- [ ] {{SPECIFIC_ACTION_3}}
+
+**Code Example:**
+```{{LANGUAGE}}
 {{CODE_EXAMPLE}}
 ```
 
-#### 2. {{SECOND_CRITICAL_ISSUE}}
-**Status:** 🟡 Investigation Required
-**Files:** {{FILE_PATHS}}
-
-**Issue:** {{ISSUE_DESCRIPTION}}
+### Issue 2: {{GROUPED_ISSUE_TITLE}}
+**Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
+**Root Cause:** {{ROOT_CAUSE_DESCRIPTION}}
 
 **Actions:**
-- [ ] {{ACTION_1}}
-- [ ] {{ACTION_2}}
-- [ ] {{ACTION_3}}
+- [ ] {{SPECIFIC_ACTION_1}}
+- [ ] {{SPECIFIC_ACTION_2}}
 
-### 📦 Functional Issues (Medium Priority)
-*Bugs, missing features, incorrect behavior*
+## Testing Checklist
 
-#### 3. {{FUNCTIONAL_ISSUE_TITLE}}
-**Status:** 🟡 Missing Dependencies
-**Files:** {{FILE_PATHS}}
+### Before Merge
+- [ ] {{SPECIFIC_TEST_TO_RUN}}
+- [ ] {{SPECIFIC_VALIDATION}}
+- [ ] {{SPECIFIC_BUILD_TEST}}
 
-**Issue:** {{ISSUE_DESCRIPTION}}
+### Post-Merge
+- [ ] {{INTEGRATION_TEST}}
+- [ ] {{PERFORMANCE_TEST}}
 
-**Actions:**
-- [ ] {{ACTION_1}}
-- [ ] {{ACTION_2}}
-- [ ] {{ACTION_3}}
+## Breaking Changes
 
-#### 4. {{WORKFLOW_ISSUE_TITLE}}
-**Status:** 🟡 Workflow Optimization
-**Files:** {{WORKFLOW_FILES}}
+### For Consumers
+- [ ] {{SPECIFIC_BREAKING_CHANGE}}
+- [ ] {{MIGRATION_NEEDED}}
 
-**Issue:** {{WORKFLOW_DESCRIPTION}}
+### Migration Guide
+- [ ] Update import statements
+- [ ] Replace deprecated API calls
+- [ ] Handle new dependencies
 
-**Actions:**
-- [ ] {{WORKFLOW_ACTION_1}}
-- [ ] {{WORKFLOW_ACTION_2}}
-- [ ] {{WORKFLOW_ACTION_3}}
+## Implementation Priority
 
-### 🧪 Testing & Validation (High Priority)
+### Phase 1: Critical Fixes (Blocking Merge)
+1. {{CRITICAL_FIX_1}}
+2. {{CRITICAL_FIX_2}}
 
-#### 5. Fix Failing Tests
-**Status:** 🔴 Blocking Issues
-**Files:** {{TEST_FILES}}
+### Phase 2: Architecture Improvements
+1. {{ARCHITECTURE_FIX_1}}
+2. {{ARCHITECTURE_FIX_2}}
 
-**Known Failures:**
-- [ ] **{{TEST_TYPE}}:** {{FAILURE_DESCRIPTION}}
-- [ ] **{{TEST_TYPE_2}}:** {{FAILURE_DESCRIPTION_2}}
-
-**Actions:**
-- [ ] Investigate {{ISSUE_TYPE}} configuration issues
-- [ ] Check {{COMPATIBILITY}} compatibility
-- [ ] Update test configurations if needed
-- [ ] Verify test environment setup
-
-#### 6. Comprehensive Test Suite
-**Status:** 🟡 Verification Required
-
-**Actions:**
-- [ ] Run `yarn workspace @selfxyz/{{WORKSPACE_1}} test`
-- [ ] Run `yarn workspace @selfxyz/{{WORKSPACE_2}} test`
-- [ ] Run `yarn workspace @selfxyz/{{WORKSPACE_3}} test`
-- [ ] Run `yarn types`
-- [ ] Run `yarn build`
-- [ ] Run `yarn lint`
-- [ ] Run `yarn workspace @selfxyz/{{WORKSPACE_4}} build`
-
-### 🔍 Code Review Tasks
-
-#### 7. Review Security Changes
-**Status:** 🟡 Review Required
-
-**Actions:**
-- [ ] Review all {{CHANGE_TYPE}} changes for security implications
-- [ ] Verify {{CONSISTENCY}} is consistent across all {{SCOPE}}
-- [ ] Check that {{CONFIGURATION}} is properly updated
-- [ ] Ensure {{ACTIONS}} are properly configured
-- [ ] Verify sanitization prevents injection attacks
-- [ ] Confirm all workflows use consistent patterns
-
-#### 8. Review Workflow Changes
-**Status:** 🟡 Review Required
-
-**Actions:**
-- [ ] Review {{WORKFLOW_TYPE}} workflow changes
-- [ ] Verify {{WORKFLOW_STEP}} is appropriately implemented
-- [ ] Check that {{WORKFLOW_PROCESS}} is properly streamlined
-- [ ] Ensure no functionality was lost in optimizations
-
-### 🚀 Deployment Considerations
-
-#### 9. Pre-deployment Checklist
-**Status:** 🟡 Planning Required
-
-**Actions:**
-- [ ] Test CI/CD pipeline with new {{FEATURE}} handling
-- [ ] Verify all workflows pass with {{CHANGES}} changes
-- [ ] Test {{RESOLUTION}} resolution in all environments
-- [ ] Validate build artifacts are consistent
-- [ ] Test {{SPECIFIC_FEATURE}} functionality
-- [ ] Verify {{WORKFLOW_TYPE}} workflows work correctly
-
-## Risk Assessment
-
-### High Risk
-- **{{RISK_1}}:** {{RISK_1_DESCRIPTION}}
-- **{{RISK_2}}:** {{RISK_2_DESCRIPTION}}
-- **{{RISK_3}}:** {{RISK_3_DESCRIPTION}}
-
-### Medium Risk
-- **{{RISK_4}}:** {{RISK_4_DESCRIPTION}}
-- **{{RISK_5}}:** {{RISK_5_DESCRIPTION}}
-- **{{RISK_6}}:** {{RISK_6_DESCRIPTION}}
-
-### Low Risk
-- **{{RISK_7}}:** {{RISK_7_DESCRIPTION}}
-- **{{RISK_8}}:** {{RISK_8_DESCRIPTION}}
-
-## Success Criteria
-
-- [ ] All CI workflows pass consistently
-- [ ] No security vulnerabilities in {{FILES}}
-- [ ] All tests pass across all workspaces
-- [ ] {{DEPENDENCIES}} versions are properly aligned
-- [ ] {{FEATURE}} handling is robust and secure
-- [ ] {{CACHE}} keys prevent {{MISMATCH}} mismatches
-- [ ] {{WORKFLOW_TYPE}} workflows are optimized and functional
-- [ ] {{SPECIFIC_FEATURE}} works correctly in all environments
-
-## Additional Considerations
-
-### Edge Cases & Future Improvements
-
-#### 10. Monitoring & Alerting
-**Status:** 🟡 Future Enhancement
-
-**Considerations:**
-- [ ] Monitor for {{MONITORING_ITEM_1}}
-- [ ] Set up alerts for {{ALERT_TYPE}} failures
-- [ ] Track {{METRIC}} to ensure {{FEATURE}} is working
-- [ ] Monitor for any security issues with {{SECURITY_FEATURE}}
-
-#### 11. Documentation Updates
-**Status:** 🟡 Future Enhancement
-
-**Actions:**
-- [ ] Update {{DOC_TYPE}} documentation to reflect new {{FEATURE}}
-- [ ] Document the {{PROCESS}} process
-- [ ] Update developer onboarding for {{REQUIREMENT}}
-- [ ] Document {{STRATEGY}} strategy for future additions
-
-#### 12. Rollback Plan
-**Status:** 🟡 Planning Required
-
-**Actions:**
-- [ ] Document rollback procedure if {{CHANGE}} causes issues
-- [ ] Identify which {{COMPONENTS}} can be quickly reverted
-- [ ] Plan for emergency fixes if {{VALIDATION}} causes failures
-- [ ] Prepare fallback strategy for critical deployments
+### Phase 3: Polish & Documentation
+1. {{POLISH_ITEM_1}}
+2. {{POLISH_ITEM_2}}
 
 ## Notes
 
-- **{{ANALYSIS_TOOL}} Analysis:** {{ANALYSIS_SUMMARY}}
-- **Testing Status:** {{TESTING_STATUS}}
-- **Security Concerns:** {{SECURITY_CONCERNS}}
-- **Dependencies:** {{DEPENDENCY_ISSUES}}
-- **Workflow Improvements:** {{WORKFLOW_IMPROVEMENTS}}
-- **Cache Optimization:** {{CACHE_OPTIMIZATION}}
-- **Comprehensive Coverage:** {{COVERAGE_SUMMARY}}
-
-## Timeline Estimate
-
-- **Critical Fixes:** {{TIMELINE_1}}
-- **Testing & Validation:** {{TIMELINE_2}}
-- **Code Review:** {{TIMELINE_3}}
-- **Deployment:** {{TIMELINE_4}}
-
-**Total Estimated Time:** {{TOTAL_TIMELINE}}
+- {{SPECIFIC_NOTE_1}}
+- {{SPECIFIC_NOTE_2}}
+- {{SPECIFIC_NOTE_3}}
 
 ---
 
