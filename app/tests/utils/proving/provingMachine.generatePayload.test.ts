@@ -15,24 +15,26 @@ jest.mock('@/utils/analytics', () => () => ({
 }));
 
 // Mock the proving inputs to return predictable data
-jest.mock('@/utils/proving/provingInputs', () => ({
-  generateTEEInputsRegister: jest.fn(() => ({
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  registerInputs: jest.fn(() => ({
     inputs: { r: 1 },
     circuitName: 'reg',
     endpointType: 'celo',
     endpoint: 'https://reg',
   })),
+  discloseInputs: jest.fn(() => ({
+    inputs: { s: 1 },
+    circuitName: 'vc_and_disclose',
+    endpointType: 'https',
+    endpoint: 'https://dis',
+  })),
+}));
+jest.mock('@/utils/proving/provingInputs', () => ({
   generateTEEInputsDSC: jest.fn(() => ({
     inputs: { d: 1 },
     circuitName: 'dsc',
     endpointType: 'celo',
     endpoint: 'https://dsc',
-  })),
-  generateTEEInputsDisclose: jest.fn(() => ({
-    inputs: { s: 1 },
-    circuitName: 'vc_and_disclose',
-    endpointType: 'https',
-    endpoint: 'https://dis',
   })),
 }));
 
@@ -54,11 +56,8 @@ const {
   getPayload,
   encryptAES256GCM,
 } = require('@/utils/proving/provingUtils');
-const {
-  generateTEEInputsRegister,
-  generateTEEInputsDSC,
-  generateTEEInputsDisclose,
-} = require('@/utils/proving/provingInputs');
+const { registerInputs, discloseInputs } = require('@selfxyz/mobile-sdk-alpha');
+const { generateTEEInputsDSC } = require('@/utils/proving/provingInputs');
 
 describe('_generatePayload', () => {
   beforeEach(() => {
@@ -94,7 +93,12 @@ describe('_generatePayload', () => {
       passport: {
         dsc_tree: 'tree',
         csca_tree: [['a']],
-        commitment_tree: null,
+        commitment_tree: 'comm',
+        ofac_trees: {
+          passportNoAndNationality: 'pn',
+          nameAndDob: 'nd',
+          nameAndYob: 'ny',
+        },
         deployed_circuits: null,
         circuits_dns_mapping: null,
         alternative_csca: {},
@@ -107,7 +111,12 @@ describe('_generatePayload', () => {
         fetch_all: jest.fn(),
       },
       id_card: {
-        commitment_tree: null,
+        commitment_tree: 'comm',
+        ofac_trees: {
+          passportNoAndNationality: 'pn',
+          nameAndDob: 'nd',
+          nameAndYob: 'ny',
+        },
         dsc_tree: null,
         csca_tree: null,
         deployed_circuits: null,
@@ -127,7 +136,7 @@ describe('_generatePayload', () => {
   it('register circuit', async () => {
     useProvingStore.setState({ circuitType: 'register' });
     const payload = await useProvingStore.getState()._generatePayload();
-    expect(generateTEEInputsRegister).toHaveBeenCalled();
+    expect(registerInputs).toHaveBeenCalled();
     expect(getPayload).toHaveBeenCalled();
     expect(encryptAES256GCM).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('celo');
@@ -150,7 +159,7 @@ describe('_generatePayload', () => {
   it('disclose circuit', async () => {
     useProvingStore.setState({ circuitType: 'disclose' });
     const payload = await useProvingStore.getState()._generatePayload();
-    expect(generateTEEInputsDisclose).toHaveBeenCalled();
+    expect(discloseInputs).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('https');
     expect(payload.params.uuid).toBe('123');
   });

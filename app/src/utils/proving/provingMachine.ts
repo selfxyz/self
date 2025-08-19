@@ -9,11 +9,12 @@ import { createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
-import type { EndpointType, SelfApp } from '@selfxyz/common/utils';
+import type { EndpointType } from '@selfxyz/common/utils';
 import {
   getCircuitNameFromPassportData,
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
+import { discloseInputs, registerInputs } from '@selfxyz/mobile-sdk-alpha';
 
 import { PassportEvents, ProofEvents } from '@/consts/analytics';
 import { navigationRef } from '@/navigation';
@@ -28,11 +29,7 @@ import { useProtocolStore } from '@/stores/protocolStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
 import { getPublicKey, verifyAttestation } from '@/utils/proving/attest';
-import {
-  generateTEEInputsDisclose,
-  generateTEEInputsDSC,
-  generateTEEInputsRegister,
-} from '@/utils/proving/provingInputs';
+import { generateTEEInputsDSC } from '@/utils/proving/provingInputs';
 import {
   clientKey,
   clientPublicKeyHex,
@@ -991,13 +988,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       switch (circuitType) {
         case 'register':
-          ({ inputs, circuitName, endpointType, endpoint } =
-            generateTEEInputsRegister(
-              secret as string,
-              passportData,
-              protocolStore[document].dsc_tree,
-              env,
-            ));
+          ({ inputs, circuitName, endpointType, endpoint } = registerInputs(
+            secret as string,
+            passportData,
+            protocolStore[document].dsc_tree,
+            env,
+          ));
           circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
           break;
         case 'dsc':
@@ -1009,15 +1005,36 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             ));
           circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
           break;
-        case 'disclose':
-          ({ inputs, circuitName, endpointType, endpoint } =
-            generateTEEInputsDisclose(
-              secret as string,
-              passportData,
-              selfApp as SelfApp,
-            ));
+        case 'disclose': {
+          const ofacTrees = protocolStore[document].ofac_trees;
+          const commitmentTree = protocolStore[document].commitment_tree;
+          if (!ofacTrees) {
+            throw new Error('OFAC trees not loaded');
+          }
+          if (!commitmentTree) {
+            throw new Error('Commitment tree not loaded');
+          }
+          ({ inputs, circuitName, endpointType, endpoint } = discloseInputs(
+            secret as string,
+            passportData,
+            {
+              scope: selfApp!.scope,
+              disclosures: selfApp!.disclosures,
+              userId: selfApp!.userId,
+              userDefinedData: selfApp!.userDefinedData,
+              chainID: selfApp!.chainID,
+            },
+            {
+              passportNoAndNationality: ofacTrees.passportNoAndNationality,
+              nameAndDob: ofacTrees.nameAndDob,
+              nameAndYob: ofacTrees.nameAndYob,
+            },
+            commitmentTree,
+            env,
+          ));
           circuitTypeWithDocumentExtension = `disclose`;
           break;
+        }
         default:
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);

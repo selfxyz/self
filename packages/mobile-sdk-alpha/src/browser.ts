@@ -53,3 +53,8 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { scanQRProof } from './qr';
 
 export { webScannerShim } from './adapters/web/shims';
+
+// Proving helpers
+export { registerInputs } from './proving/registerInputs';
+export { discloseInputs } from './proving/discloseInputs';
+export type { DiscloseSelfApp, OfacTrees } from './proving/discloseInputs';
