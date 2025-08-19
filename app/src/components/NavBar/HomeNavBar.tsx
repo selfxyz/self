@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from 'tamagui';
+import { Button, XStack } from 'tamagui';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
@@ -11,9 +11,37 @@ import SettingsIcon from '@/images/icons/settings.svg';
 import { black, neutral400, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { buttonTap } from '@/utils/haptic';
+import {Clipboard as ClipboardIcon } from '@tamagui/lucide-icons'
+import Clipboard from '@react-native-clipboard/clipboard';
+import { useSelfAppStore } from '@/stores/selfAppStore';
 
 export const HomeNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();
+  const handleConsumeToken = async () => {
+    const content = await Clipboard.getString()
+    console.log('Consume token content:', content);
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(content)) {
+      try {
+        const response = await fetch(`https://api.self.xyz/consume-deferred-linking-token?token=${content}`);
+        console.log('Consume token response:', response);
+        const result = await response.json();
+        console.log('Consume token result:', result);
+        if (result.status !== 'success') {
+          throw new Error(`Failed to consume token: ${result.message || 'Unknown error'}`);
+        }
+        const selfApp = JSON.parse(result.data.self_app);
+        console.log('Consume token selfApp:', selfApp);
+        useSelfAppStore.getState().setSelfApp(selfApp);
+        useSelfAppStore.getState().startAppListener(selfApp.sessionId);
+        props.navigation.navigate('ProveScreen');
+      } catch (error) {
+        console.error('Error consuming token:', error);
+      }
+    } else {
+      console.log('Clipboard content is not a UUID');
+    }
+  };
   return (
     <NavBar.Container
       backgroundColor={black}
@@ -43,18 +71,22 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
       </NavBar.Title>
       <NavBar.RightAction
         component={
+          <XStack alignItems="center" gap={10}>
+          <ClipboardIcon size={24} color={neutral400} onPress={handleConsumeToken} />
           <Button
             size={'$3'}
             unstyled
             icon={
               <SettingsIcon width={'24'} height={'100%'} color={neutral400} />
             }
+            onPress={() => {
+              buttonTap();
+              props.navigation.navigate('Settings');
+            }}
           />
+          </XStack>
         }
-        onPress={() => {
-          buttonTap();
-          props.navigation.navigate('Settings');
-        }}
+
       />
     </NavBar.Container>
   );
