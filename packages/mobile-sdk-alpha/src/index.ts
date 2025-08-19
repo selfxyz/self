@@ -39,15 +39,16 @@ export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
 
 export type { QRProofOptions } from './qr';
-// NFC module
-export type { SdkErrorCategory } from './errors';
 
+// Error handling
+export type { SdkErrorCategory } from './errors';
 export {
   InitError,
   LivenessError,
   MrzParseError,
   NfcParseError,
   SCANNER_ERROR_CODES,
+  SdkError,
   notImplemented,
   sdkError,
 } from './errors';

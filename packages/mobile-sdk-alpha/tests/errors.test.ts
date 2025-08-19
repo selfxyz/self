@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { InitError, LivenessError, MrzParseError, NfcParseError } from '../src';
 import { notImplemented, SdkError, sdkError } from '../src/errors';
 
 describe('SdkError', () => {
@@ -73,5 +74,51 @@ describe('notImplemented factory function', () => {
     expect(error.code).toBe('SELF_ERR_ADAPTER_MISSING');
     expect(error.category).toBe('config');
     expect(error.retryable).toBe(false);
+  });
+});
+
+describe('Specific error classes', () => {
+  it('can instantiate InitError', () => {
+    const error = new InitError('Initialization failed');
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toBeInstanceOf(SdkError);
+    expect(error).toBeInstanceOf(InitError);
+    expect(error.name).toBe('InitError');
+    expect(error.message).toBe('Initialization failed');
+    expect(error.category).toBe('init');
+  });
+
+  it('can instantiate LivenessError', () => {
+    const error = new LivenessError('Liveness check failed');
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toBeInstanceOf(SdkError);
+    expect(error).toBeInstanceOf(LivenessError);
+    expect(error.name).toBe('LivenessError');
+    expect(error.message).toBe('Liveness check failed');
+    expect(error.category).toBe('liveness');
+  });
+
+  it('can instantiate MrzParseError', () => {
+    const error = new MrzParseError('MRZ parsing failed');
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toBeInstanceOf(SdkError);
+    expect(error).toBeInstanceOf(MrzParseError);
+    expect(error.name).toBe('MrzParseError');
+    expect(error.message).toBe('MRZ parsing failed');
+    expect(error.category).toBe('validation');
+  });
+
+  it('can instantiate NfcParseError', () => {
+    const error = new NfcParseError('NFC parsing failed');
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toBeInstanceOf(SdkError);
+    expect(error).toBeInstanceOf(NfcParseError);
+    expect(error.name).toBe('NfcParseError');
+    expect(error.message).toBe('NFC parsing failed');
+    expect(error.category).toBe('validation');
   });
 });
