@@ -1,9 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import {
-  RegistryContractError,
-  VerifierContractError,
-} from '../src/errors/index.js';
+import { RegistryContractError, VerifierContractError } from '../src/errors/index.js';
 
 test('creates registry contract error', () => {
   const err = new RegistryContractError('Registry contract not found');
