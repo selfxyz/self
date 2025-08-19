@@ -84,7 +84,15 @@ const scanner: ScannerAdapter = {
 };
 
 const network: NetworkAdapter = {
-  http: { fetch: async () => new Response(null) },
+  http: {
+    fetch: async () => ({
+      status: 200,
+      headers: {},
+      text: async () => '',
+      json: async () => ({}),
+      arrayBuffer: async () => new ArrayBuffer(0),
+    }),
+  },
   ws: {
     connect: () => ({
       send: () => {},

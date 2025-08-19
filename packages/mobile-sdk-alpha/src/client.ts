@@ -1,6 +1,6 @@
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
-import { notImplemented } from './errors';
+import { notImplemented, sdkError } from './errors';
 import type {
   Adapters,
   Config,
@@ -44,7 +44,13 @@ const optionalDefaults: Partial<Adapters> = {
  * @param param0.adapters - Implementations of required SDK adapters.
  * @returns Initialized client exposing document scanning, validation, and proof APIs.
  */
-export function createSelfClient({ config, adapters }: { config: Config; adapters: Partial<Adapters> }): SelfClient {
+export function createSelfClient({
+  config,
+  adapters,
+}: {
+  config: Partial<Config>;
+  adapters: Partial<Adapters>;
+}): SelfClient {
   const cfg = mergeConfig(defaultConfig, config);
   const required: (keyof Adapters)[] = ['scanner', 'network', 'crypto'];
   for (const name of required) {
@@ -134,7 +140,9 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     if (!adapters.network) throw notImplemented('network');
     if (!adapters.crypto) throw notImplemented('crypto');
     const timeoutMs = opts.timeoutMs ?? cfg.timeouts?.proofMs ?? defaultConfig.timeouts.proofMs;
-    void _adapters.clock.sleep(timeoutMs!, opts.signal).then(() => emit('error', new Error('timeout')));
+    void _adapters.clock
+      .sleep(timeoutMs!, opts.signal)
+      .then(() => emit('error', sdkError('timeout', 'SELF_ERR_PROOF_TIMEOUT', 'proof', true)));
     return {
       id: 'stub',
       status: 'pending',

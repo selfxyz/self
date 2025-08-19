@@ -1,5 +1,23 @@
+import type { SdkError } from '../errors';
+
 export type { PassportData } from '@selfxyz/common/utils/types';
 export type { PassportValidationCallbacks } from '../validation/document';
+
+// Platform-neutral HTTP shapes
+export type RequestLike = string | URL;
+export interface RequestInitLike {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string | ArrayBuffer | ArrayBufferView | Uint8Array;
+}
+export interface HttpResponseLike {
+  status: number;
+  headers: Record<string, string>;
+  text(): Promise<string>;
+  json<T = unknown>(): Promise<T>;
+  arrayBuffer(): Promise<ArrayBuffer>;
+}
+
 /**
  * Runtime configuration options for the SDK.
  */
@@ -25,7 +43,7 @@ export interface CryptoAdapter {
  * Minimal wrapper around `fetch` used for HTTP requests.
  */
 export interface HttpAdapter {
-  fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
+  fetch(input: RequestLike, init?: RequestInitLike): Promise<HttpResponseLike>;
 }
 /**
  * Parsed machine-readable zone (MRZ) details from a passport.
@@ -132,7 +150,7 @@ export interface RegistrationStatus {
 export interface SDKEventMap {
   progress: Progress;
   state: string;
-  error: Error;
+  error: SdkError;
 }
 /**
  * Names of events emitted by {@link SelfClient}.
