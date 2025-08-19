@@ -5266,12 +5266,14 @@ __metadata:
     prettier: "npm:^3.5.3"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
+    react-native: "npm:0.75.4"
     tslib: "npm:^2.6.2"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
     vitest: "npm:^1.6.0"
   peerDependencies:
     react: ^18.3.1
+    react-native: ^0.75.4
   languageName: unknown
   linkType: soft
 
