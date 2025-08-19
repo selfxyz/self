@@ -18,6 +18,9 @@ import {
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 
+/**
+ * Minimal configuration of a Self app requesting disclosures.
+ */
 export interface DiscloseSelfApp {
   scope: string;
   disclosures: SelfAppDisclosureConfig;
@@ -26,12 +29,25 @@ export interface DiscloseSelfApp {
   chainID: number;
 }
 
+/**
+ * Serialized OFAC screening trees.
+ */
 export interface OfacTrees {
   passportNoAndNationality?: string | null;
   nameAndDob: string;
   nameAndYob: string;
 }
 
+/**
+ * Generate circuit inputs and endpoint metadata for a disclosure proof.
+ *
+ * @param secret - User's secret used for witness generation.
+ * @param passportData - Parsed passport or ID card data.
+ * @param selfApp - Application requesting selective disclosures.
+ * @param ofacTrees - Trees for OFAC screening checks.
+ * @param commitmentTree - Commitment Merkle tree.
+ * @param env - Target environment, production or staging.
+ */
 export function discloseInputs(
   secret: string,
   passportData: PassportData,
@@ -87,6 +103,9 @@ export function discloseInputs(
   return { inputs, circuitName, endpointType, endpoint };
 }
 
+/**
+ * Build the DG1 selector based on document type and requested disclosures.
+ */
 function getSelectorDg1(document: DocumentCategory, disclosures: SelfAppDisclosureConfig) {
   switch (document) {
     case 'passport':
@@ -96,6 +115,9 @@ function getSelectorDg1(document: DocumentCategory, disclosures: SelfAppDisclosu
   }
 }
 
+/**
+ * Selector builder for passport DG1 attributes.
+ */
 function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
   const selector_dg1 = Array(88).fill('0');
   Object.entries(disclosures).forEach(([attribute, reveal]) => {
@@ -110,6 +132,9 @@ function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
   return selector_dg1;
 }
 
+/**
+ * Selector builder for ID card DG1 attributes.
+ */
 function getSelectorDg1IdCard(disclosures: SelfAppDisclosureConfig) {
   const selector_dg1 = Array(90).fill('0');
   Object.entries(disclosures).forEach(([attribute, reveal]) => {

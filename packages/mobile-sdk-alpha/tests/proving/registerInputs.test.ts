@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import type { PassportData } from '@selfxyz/common/types';
+
 import { registerInputs } from '../../src/proving/registerInputs';
 
 vi.mock('@selfxyz/common/utils', () => ({
@@ -7,7 +9,16 @@ vi.mock('@selfxyz/common/utils', () => ({
   getCircuitNameFromPassportData: vi.fn(() => 'register_circuit'),
 }));
 
-const passportData = { documentCategory: 'passport' } as any;
+const passportData: PassportData = {
+  mrz: '',
+  dsc: '',
+  eContent: [],
+  signedAttr: [],
+  encryptedDigest: [],
+  documentType: 'passport',
+  documentCategory: 'passport',
+  mock: true,
+};
 
 describe('registerInputs', () => {
   it('returns inputs and metadata for prod env', () => {

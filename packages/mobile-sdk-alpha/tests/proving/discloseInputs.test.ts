@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { attributeToPosition } from '@selfxyz/common/constants';
+import type { PassportData } from '@selfxyz/common/types';
 import { generateCircuitInputsVCandDisclose } from '@selfxyz/common/utils';
 
+import type { DiscloseSelfApp, OfacTrees } from '../../src/proving/discloseInputs';
 import { discloseInputs } from '../../src/proving/discloseInputs';
 
 vi.mock('@selfxyz/common/utils', () => ({
@@ -21,15 +23,24 @@ vi.mock('@openpassport/zk-kit-smt', () => ({
 
 vi.mock('poseidon-lite', () => ({ poseidon2: vi.fn(() => 'hash') }));
 
-const passportData = { documentCategory: 'passport' } as any;
-const selfApp = {
+const passportData: PassportData = {
+  mrz: '',
+  dsc: '',
+  eContent: [],
+  signedAttr: [],
+  encryptedDigest: [],
+  documentType: 'passport',
+  documentCategory: 'passport',
+  mock: true,
+};
+const selfApp: DiscloseSelfApp = {
   scope: 'scope',
   disclosures: { name: true, ofac: true, minimumAge: 21 },
   userId: 'user',
   userDefinedData: 'data',
   chainID: 42220,
 };
-const ofacTrees = {
+const ofacTrees: OfacTrees = {
   passportNoAndNationality: 'pn',
   nameAndDob: 'nd',
   nameAndYob: 'ny',

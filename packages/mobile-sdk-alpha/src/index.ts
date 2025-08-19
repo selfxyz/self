@@ -33,12 +33,17 @@ export type {
 // MRZ module
 export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
 
+export type { DiscloseSelfApp, OfacTrees } from './proving/discloseInputs';
+
 export type { MRZScanOptions } from './mrz';
 
 // QR module
 export type { PassportValidationCallbacks } from './validation/document';
 
 export type { QRProofOptions } from './qr';
+
+// NFC module
+export type { SdkErrorCategory } from './errors';
 
 // Error handling
 export type { SdkErrorCategory } from './errors';
@@ -56,7 +61,6 @@ export {
 export { createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
-
 export { discloseInputs } from './proving/discloseInputs';
 
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
