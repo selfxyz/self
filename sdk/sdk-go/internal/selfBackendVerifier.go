@@ -351,7 +351,7 @@ func (s *SelfBackendVerifier) Verify(
 	}
 
 	isOfacValid := true
-	if configErr == nil && verificationConfig.Ofac != nil && *verificationConfig.Ofac {
+	if configErr == nil && verificationConfig.Ofac {
 		for _, ofacCheck := range genericDiscloseOutput.Ofac {
 			if !ofacCheck {
 				isOfacValid = false
@@ -424,8 +424,8 @@ func (s *SelfBackendVerifier) validateWithConfig(
 		return nil, self.GenericDiscloseOutput{}, err
 	}
 
-	if verificationConfig.MinimumAge != nil {
-		configMinAge := *verificationConfig.MinimumAge
+	if verificationConfig.MinimumAge != 0 {
+		configMinAge := verificationConfig.MinimumAge
 		circuitMinAge := genericDiscloseOutput.MinimumAge
 
 		circuitMinAgeInt := 0
@@ -445,7 +445,7 @@ func (s *SelfBackendVerifier) validateWithConfig(
 
 	s.validateTimestamp(publicSignals, discloseIndices, issues)
 
-	if verificationConfig.Ofac != nil && !*verificationConfig.Ofac {
+	if !verificationConfig.Ofac {
 		for i, ofacCheck := range genericDiscloseOutput.Ofac {
 			if ofacCheck {
 				var ofacType string
@@ -521,7 +521,7 @@ func (s *SelfBackendVerifier) validateTimestamp(
 
 // isEmptyVerificationConfig checks if a VerificationConfig is empty/invalid
 func (s *SelfBackendVerifier) isEmptyVerificationConfig(config self.VerificationConfig) bool {
-	return config.MinimumAge == nil &&
-		config.ExcludedCountries == nil &&
-		config.Ofac == nil
+	return config.MinimumAge == 0 &&
+		len(config.ExcludedCountries) == 0 &&
+		!config.Ofac
 }

@@ -18,9 +18,9 @@
 //
 //	// Create a simple config store
 //	config := self.VerificationConfig{
-//		MinimumAge: &[]int{18}[0], // 18+ verification
+//		MinimumAge: 18, // 18+ verification
 //		ExcludedCountries: []self.Country3LetterCode{self.USA}, // Exclude USA
-//		Ofac: &[]bool{false}[0], // Allow OFAC flagged individuals
+//		Ofac: false, // Allow OFAC flagged individuals
 //	}
 //	configStore := self.NewDefaultConfigStore(config)
 //

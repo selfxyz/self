@@ -101,12 +101,10 @@ func castToUUID(bigInt *big.Int) string {
 
 // Helper function to create test verification config
 func createTestVerificationConfig() self.VerificationConfig {
-	minimumAge := 18
-	ofac := false
 	return self.VerificationConfig{
-		MinimumAge:        &minimumAge,
+		MinimumAge:        18,
 		ExcludedCountries: []common.Country3LetterCode{"PRK"},
-		Ofac:              &ofac,
+		Ofac:              false,
 	}
 }
 
