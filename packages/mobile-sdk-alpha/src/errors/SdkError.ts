@@ -34,10 +34,25 @@ export class SdkError extends Error {
   }
 }
 
+/**
+ * Helper to create an SDK error for an adapter that has not been provided.
+ *
+ * @param name - human-readable adapter name.
+ * @returns configured {@link SdkError} instance.
+ */
 export function notImplemented(name: string) {
   return new SdkError(`${name} adapter not provided`, 'SELF_ERR_ADAPTER_MISSING', 'config', false);
 }
 
+/**
+ * Convenience factory for {@link SdkError}.
+ *
+ * @param message - error description.
+ * @param code - unique error code.
+ * @param category - high level error category.
+ * @param retryable - whether the operation may be retried.
+ * @returns configured {@link SdkError} instance.
+ */
 export function sdkError(message: string, code: string, category: SdkErrorCategory, retryable = false) {
   return new SdkError(message, code, category, retryable);
 }
