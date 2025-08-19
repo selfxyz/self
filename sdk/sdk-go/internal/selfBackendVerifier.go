@@ -93,6 +93,9 @@ func (s *SelfBackendVerifier) Verify(
 
 	attestationIdInt, err := strconv.Atoi(attestationIdStr)
 	if err != nil {
+		if attestationIdStr == "" {
+				return nil, fmt.Errorf("attestation ID cannot be empty")
+			}
 		return nil, fmt.Errorf("invalid attestation ID: %v", err)
 	}
 	attestationId := self.AttestationId(attestationIdInt)
@@ -109,7 +112,7 @@ func (s *SelfBackendVerifier) Verify(
 	// Process public signals, adding 0x prefix for hex values if needed
 	publicSignals := make([]string, len(pubSignals))
 	for i, signal := range pubSignals {
-		if len(signal) > 0 && containsHexChars(signal) {
+		if len(signal) > 0 && !strings.HasPrefix(signal, "0x") && containsHexChars(signal) {
 			publicSignals[i] = "0x" + signal
 		} else {
 			publicSignals[i] = signal

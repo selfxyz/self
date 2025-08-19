@@ -172,7 +172,7 @@ self.UserIDTypeUUID // UUID format: 12345678-1234-1234-1234-123456789abc
 Use 3-letter ISO country codes for exclusions:
 
 ```go
-import "github.com/self/sdk/common"
+import "github.com/selfxyz/self/sdk/sdk-go/common"
 
 excludedCountries := []common.Country3LetterCode{
     common.USA, // United States

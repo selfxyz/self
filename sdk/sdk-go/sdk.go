@@ -14,7 +14,7 @@
 //
 // Example:
 //
-//	import "github.com/self/sdk"
+//	import "import "github.com/selfxyz/self/sdk/sdk-go"
 //
 //	// Create a simple config store
 //	config := self.VerificationConfig{
