@@ -128,6 +128,7 @@ export interface SelfClient {
       timeoutMs?: number;
     },
   ): Promise<ProofHandle>;
+  extractMRZInfo(mrz: string): MRZInfo;
   on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
 }

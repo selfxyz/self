@@ -1,6 +1,7 @@
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
+import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
 import type {
   Adapters,
   Config,
@@ -102,6 +103,7 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     validateDocument,
     checkRegistration,
     generateProof,
+    extractMRZInfo: parseMRZInfo,
     on,
     emit,
   };

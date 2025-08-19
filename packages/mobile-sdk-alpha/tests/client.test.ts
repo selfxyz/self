@@ -77,6 +77,14 @@ describe('createSelfClient', () => {
     eventSet?.forEach(fn => fn({ step: 'two' }));
     expect(cb).toHaveBeenCalledTimes(1);
   });
+
+  it('parses MRZ via client', () => {
+    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
+    const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
+    const info = client.extractMRZInfo(sample);
+    expect(info.passportNumber).toBe('L898902C3');
+    expect(info.validation.overall).toBe(true);
+  });
 });
 
 const scanner: ScannerAdapter = {

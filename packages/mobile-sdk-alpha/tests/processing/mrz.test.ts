@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractMRZInfo, formatDateToYYMMDD, MrzParseError } from '../../src';
+import { formatDateToYYMMDD, MrzParseError } from '../../src';
+import { extractMRZInfo } from '../../src/mrz';
 
 const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;

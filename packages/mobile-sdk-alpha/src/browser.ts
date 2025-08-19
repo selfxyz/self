@@ -41,7 +41,7 @@ export type { SdkErrorCategory } from './errors';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
-export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';
