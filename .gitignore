@@ -12,4 +12,4 @@ output/*
 .yarnrc.yml
 
 # PR Action Items - prevent accidental commits
-PR_*_ACTION_ITEMS.md
+PR-*-ACTION*.md
