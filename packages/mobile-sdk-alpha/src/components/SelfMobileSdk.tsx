@@ -1,9 +1,9 @@
-import type { ReactNode } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 import { SelfClientProvider } from '../context';
 import { useDocumentManager } from '../hooks/useDocumentManager';
 import type { Adapters, Config } from '../types/public';
-import type { ExternalAdapter } from '../types/ui';
+import type { ExternalAdapter, PassportCameraProps, ScreenProps } from '../types/ui';
 import { OnboardingFlow } from './flows/OnboardingFlow';
 import { QRCodeScreen } from './screens/QRCodeScreen';
 
@@ -14,8 +14,8 @@ interface SelfMobileSdkProps {
   children?: ReactNode;
   // Optional custom components
   customScreens?: {
-    PassportCamera?: ReactNode;
-    NFCScanner?: ReactNode;
+    PassportCamera?: ComponentType<PassportCameraProps>;
+    NFCScanner?: ComponentType<ScreenProps>;
     QRScanner?: ReactNode;
   };
 }
