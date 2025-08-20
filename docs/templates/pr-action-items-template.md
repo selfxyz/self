@@ -3,11 +3,11 @@ INSTRUCTIONS FOR AGENTS:
 - Use giga_read_pr to fetch PR data and CodeRabbit comments
 - Focus on unresolved comments without '✅ Addressed' status
 - Group related issues by root cause (not just severity)
-- Include specific file paths and line numbers
-- Provide clear, actionable fixes
-- Add code examples for complex issues
+- Include specific file paths and line numbers from CodeRabbit metadata
+- Provide clear, actionable fixes with code examples
 - Prioritize by "blocking merge" vs "architectural" vs "polish"
 - Create file as PR-{{NUMBER}}-ACTION-ITEMS.md in project root
+- Follow gitignore pattern: PR-*-ACTION*.md
 -->
 
 # PR {{PR_NUMBER}} Action Items
@@ -25,19 +25,28 @@ INSTRUCTIONS FOR AGENTS:
 
 ### 1. {{ISSUE_TITLE}}
 **Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
+**CodeRabbit Comment:** {{COMMENT_ID}}
 **Problem:** {{PROBLEM_DESCRIPTION}}
 **Fix:** {{SPECIFIC_FIX_OR_ACTION}}
 
+**Code Example:**
+```{{LANGUAGE}}
+{{CODE_EXAMPLE}}
+```
+
 ### 2. {{ISSUE_TITLE}}
 **Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
+**CodeRabbit Comment:** {{COMMENT_ID}}
 **Problem:** {{PROBLEM_DESCRIPTION}}
 **Fix:** {{SPECIFIC_FIX_OR_ACTION}}
 
 ## Required Actions
 
 ### Issue 1: {{GROUPED_ISSUE_TITLE}}
-**Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`, `{{FILE_PATH}}:{{LINE_NUMBER}}`
 **Root Cause:** {{ROOT_CAUSE_DESCRIPTION}}
+**Files Affected:**
+- `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
+- `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
 
 **Actions:**
 - [ ] {{SPECIFIC_ACTION_1}}
@@ -50,12 +59,28 @@ INSTRUCTIONS FOR AGENTS:
 ```
 
 ### Issue 2: {{GROUPED_ISSUE_TITLE}}
-**Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
 **Root Cause:** {{ROOT_CAUSE_DESCRIPTION}}
+**Files Affected:**
+- `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
 
 **Actions:**
 - [ ] {{SPECIFIC_ACTION_1}}
 - [ ] {{SPECIFIC_ACTION_2}}
+
+## CodeRabbit Analysis Summary
+
+### Resolved Comments ✅
+- {{RESOLVED_COMMENT_1}}
+- {{RESOLVED_COMMENT_2}}
+
+### Unresolved Comments 🔴
+- {{UNRESOLVED_COMMENT_1}} - {{STATUS}}
+- {{UNRESOLVED_COMMENT_2}} - {{STATUS}}
+
+### Comment Categories
+- **Critical:** {{COUNT}} comments (React Native compatibility, security, memory leaks)
+- **Architecture:** {{COUNT}} comments (API design, type safety)
+- **Code Quality:** {{COUNT}} comments (testing, imports, documentation)
 
 ## Testing Checklist
 
@@ -102,3 +127,5 @@ INSTRUCTIONS FOR AGENTS:
 ---
 
 **Last Updated:** {{DATE}}
+**CodeRabbit Comments Analyzed:** {{TOTAL_COMMENTS}}
+**Unresolved Issues:** {{UNRESOLVED_COUNT}}
