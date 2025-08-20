@@ -39,12 +39,12 @@ When packages import dependencies directly but don't declare them in their own p
 When iOS build fails with "bundler: failed to load command: pod" and missing gem errors, the issue is that the system is trying to use global Ruby gems instead of the project's bundled gems. The solution is to: 1) Run "bundle install" in the app directory to install project dependencies, 2) Use "bundle exec pod install" instead of just "pod install" to ensure the bundled gems are used, 3) Run the command from the ios directory where the Podfile is located. The project uses Bundler to manage Ruby dependencies and has a Gemfile with specific versions of CocoaPods, Fastlane, and other gems. Always use "bundle exec" prefix for Ruby commands in this project to ensure consistent dependency versions.
 
 ### Template File Management - v1 #t1u2v3
-Template files use kebab-case naming: 'pr-action-items-template.md' (with hyphens), NOT 'pr-action-items-template.md' (with underscores). The template is located at docs/templates/pr-action-items-template.md and should be used to create PR-specific action items files in the repo root as PR-{{NUMBER}}-ACTION_ITEMS.md. This ensures visibility and easy access for all team members reviewing the PR. When searching for or referencing template files, always use the correct kebab-case format.
+Template files use kebab-case naming: 'pr-action-items-template.md' (with hyphens), NOT 'pr_action_items_template.md' (with underscores). The template is located at docs/templates/pr-action-items-template.md and should be used to create PR-specific action items files in the repo root as PR-{{NUMBER}}-ACTION_ITEMS.md. This ensures visibility and easy access for all team members reviewing the PR. When searching for or referencing template files, always use the correct kebab-case format.
 
 ### Fastlane Workspace Path Robust Resolution - v1 #j1k2l3
 The fastlane workspace path resolution should be robust to handle cases where workspace filename differs from scheme name. The implementation should: 1) First try scheme-named workspace (e.g., OpenPassport.xcworkspace for OpenPassport scheme), 2) Fall back to project-named workspace (e.g., Self.xcworkspace for Self project) if scheme-named doesn't exist, 3) Raise a clear error with checked paths if neither exists to fail CI fast. This prevents build failures when workspace and scheme names don't match, and provides clear debugging information when no workspace is found. The logic should be: scheme_workspace_path = File.expand_path("../ios/#{PROJECT_SCHEME}.xcworkspace", Dir.pwd); project_workspace_path = File.expand_path("../ios/#{PROJECT_NAME}.xcworkspace", Dir.pwd); then check File.exist? on each path in order of preference.
 
-### PR Action Items Template - v2 #a1b2c3
+### PR Action Items Template - v2 #zfda91
 The PR action items template should be value-first and focused on actionable content. Structure: 1) Critical Issues (Blocking Merge) - specific file:line with clear actions, 2) Required Actions - grouped by root cause with specific fixes, 3) Testing Checklist - specific tests to run, 4) Breaking Changes - specific changes and migration needs. Remove generic sections that don't apply to most PRs. Focus on problem → solution → validation pattern. Template location: docs/templates/pr-action-items-template.md, generated files: PR-{{NUMBER}}-ACTION_ITEMS.md in project root. Prioritize actionable items over pretty formatting. Always include specific file paths, line numbers, and code examples for complex fixes.
 
 ### Neuron Naming Convention - v1
@@ -66,6 +66,7 @@ INSTRUCTIONS FOR AGENTS:
 - Include specific file paths and line numbers
 - Provide clear, actionable fixes
 - Add code examples for complex issues
+- Do not paste or include secrets (API keys, mnemonics, private keys, tokens, credentials) in code blocks or logs; redact sensitive values.
 - Prioritize by "blocking merge" vs "architectural" vs "polish"
 - Create file as PR-{{NUMBER}}-ACTION_ITEMS.md in project root
 -->
