@@ -1,7 +1,8 @@
 /* @vitest-environment jsdom */
 import type { ReactNode } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
+import * as clientModule from '../src/client';
 import { SelfClientProvider, useSelfClient } from '../src/index';
 import { expectedMRZResult, mockAdapters, sampleMRZ } from './utils/testHelpers';
 
@@ -26,5 +27,23 @@ describe('SelfClientProvider Context', () => {
     expect(() => {
       renderHook(() => useSelfClient());
     }).toThrow('useSelfClient must be used within a SelfClientProvider');
+  });
+
+  it('memoises the client instance across re-renders', () => {
+    const spy = vi.spyOn(clientModule, 'createSelfClient');
+    const config = {};
+    const adapters = mockAdapters;
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <SelfClientProvider config={config} adapters={adapters}>
+        {children}
+      </SelfClientProvider>
+    );
+
+    const { result, rerender } = renderHook(() => useSelfClient(), { wrapper });
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+    expect(spy).toHaveBeenCalledTimes(1);
+    spy.mockRestore();
   });
 });
