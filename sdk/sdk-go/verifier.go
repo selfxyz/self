@@ -146,7 +146,7 @@ func containsHexChars(s string) bool {
 //
 // Parameters:
 //   - ctx: Context for the verification operation
-//   - attestationIdStr: String representation of the attestation ID
+//   - attestationIdInt: Integer representation of the attestation ID
 //   - proof: Zero-knowledge proof structure
 //   - pubSignals: Public signals from the proof
 //   - userContextData: User context data for verification
@@ -156,16 +156,12 @@ func containsHexChars(s string) bool {
 //   - An error if verification fails or validation issues are found
 func (s *BackendVerifier) Verify(
 	ctx context.Context,
-	attestationIdStr string,
+	attestationIdInt int,
 	proof VcAndDiscloseProof,
 	pubSignals []string,
 	userContextData string,
 ) (*VerificationResult, error) {
 
-	attestationIdInt, err := strconv.Atoi(attestationIdStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid attestation ID: %v", err)
-	}
 	attestationId := AttestationId(attestationIdInt)
 	allowedId, exists := s.allowedIDs[attestationId]
 	var issues []ConfigIssue
@@ -180,7 +176,7 @@ func (s *BackendVerifier) Verify(
 	// Process public signals, adding 0x prefix for hex values if needed
 	publicSignals := make([]string, len(pubSignals))
 	for i, signal := range pubSignals {
-		if len(signal) > 0 && containsHexChars(signal) {
+		if len(signal) > 0 && !strings.HasPrefix(signal, "0x") && containsHexChars(signal) {
 			publicSignals[i] = "0x" + signal
 		} else {
 			publicSignals[i] = signal
@@ -280,7 +276,15 @@ func (s *BackendVerifier) Verify(
 	var verificationConfig VerificationConfig
 	var configErr error
 	var forbiddenCountriesList []string
-	var genericDiscloseOutput GenericDiscloseOutput
+
+	// Precompute generic disclose output once and reuse
+	genericDiscloseOutput, err := FormatRevealedDataPacked(attestationId, publicSignals)
+	if err != nil {
+		issues = append(issues, ConfigIssue{
+			Type:    InvalidMinimumAge,
+			Message: fmt.Sprintf("Error formatting revealed data: %v", err),
+		})
+	}
 
 	if len(userContextData) < 128 {
 		issues = append(issues, ConfigIssue{
@@ -325,7 +329,7 @@ func (s *BackendVerifier) Verify(
 
 			// Only proceed with validations if no error and config is not empty
 			if configErr == nil && !s.isEmptyVerificationConfig(verificationConfig) {
-				forbiddenCountriesList, genericDiscloseOutput, _ = s.validateWithConfig(verificationConfig, publicSignals, discloseIndices, attestationId, &issues)
+				forbiddenCountriesList, genericDiscloseOutput, _ = s.validateWithConfig(verificationConfig, publicSignals, discloseIndices, genericDiscloseOutput, &issues)
 			}
 		}
 	}
@@ -340,86 +344,95 @@ func (s *BackendVerifier) Verify(
 	// Use the pre-calculated attestationIdBytes32 from above
 	verifierAddress, err := s.identityVerificationHubContract.DiscloseVerifier(nil, attestationIdBytes32)
 	if err != nil || verifierAddress == (common.Address{}) {
+		return nil, fmt.Errorf("verifier contract not found")
+	}
+
+	verifierContract, err := bindings.NewVerifier(verifierAddress, s.provider)
+	if err != nil {
+		return nil, fmt.Errorf("verifier contract not found")
+	}
+
+	// Convert string proof fields to *big.Int
+	a0, ok := new(big.Int).SetString(proof.A[0], 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid proof.A[0]: %s", proof.A[0])
+	}
+	a1, ok := new(big.Int).SetString(proof.A[1], 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid proof.A[1]: %s", proof.A[1])
+	}
+	b00, ok := new(big.Int).SetString(proof.B[0][0], 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid proof.B[0][0]: %s", proof.B[0][0])
+	}
+	b01, ok := new(big.Int).SetString(proof.B[0][1], 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid proof.B[0][1]: %s", proof.B[0][1])
+	}
+	b10, ok := new(big.Int).SetString(proof.B[1][0], 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid proof.B[1][0]: %s", proof.B[1][0])
+	}
+	b11, ok := new(big.Int).SetString(proof.B[1][1], 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid proof.B[1][1]: %s", proof.B[1][1])
+	}
+	c0, ok := new(big.Int).SetString(proof.C[0], 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid proof.C[0]: %s", proof.C[0])
+	}
+	c1, ok := new(big.Int).SetString(proof.C[1], 10)
+	if !ok {
+		return nil, fmt.Errorf("invalid proof.C[1]: %s", proof.C[1])
+	}
+
+	// Convert proof format: swaps B coordinates [proof.b[0][1], proof.b[0][0]]
+	bFormatted := [2][2]*big.Int{
+		{b01, b00}, // Swap first pair
+		{b11, b10}, // Swap second pair
+	}
+
+	// Convert the processed string signals to *big.Int for Go contract call
+	var publicSignalsArray [21]*big.Int
+	for i, signal := range publicSignals {
+		if i >= 21 {
+			break // Contract ABI specifies exactly 21 elements
+		}
+		signalBigInt := new(big.Int)
+		// Handle both hex (0x...) and decimal strings
+		if strings.HasPrefix(signal, "0x") {
+			signalBigInt.SetString(signal, 0) // Auto-detect base (0x = hex)
+		} else {
+			signalBigInt.SetString(signal, 10) // Decimal
+		}
+		publicSignalsArray[i] = signalBigInt
+	}
+	// Fill remaining slots with zero if publicSignals has less than 21 elements
+	for i := len(publicSignals); i < 21; i++ {
+		publicSignalsArray[i] = big.NewInt(0)
+	}
+
+	aFormatted := [2]*big.Int{a0, a1}
+	cFormatted := [2]*big.Int{c0, c1}
+	isValid, err := verifierContract.VerifyProof(nil, aFormatted, bFormatted, cFormatted, publicSignalsArray)
+	if err != nil {
 		isProofValid = false
 	} else {
-		verifierContract, err := bindings.NewVerifier(verifierAddress, s.provider)
-		if err != nil {
-			isProofValid = false
-		} else {
-			// Convert string proof fields to *big.Int
-			a0, _ := new(big.Int).SetString(proof.A[0], 10)
-			a1, _ := new(big.Int).SetString(proof.A[1], 10)
-			b00, _ := new(big.Int).SetString(proof.B[0][0], 10)
-			b01, _ := new(big.Int).SetString(proof.B[0][1], 10)
-			b10, _ := new(big.Int).SetString(proof.B[1][0], 10)
-			b11, _ := new(big.Int).SetString(proof.B[1][1], 10)
-			c0, _ := new(big.Int).SetString(proof.C[0], 10)
-			c1, _ := new(big.Int).SetString(proof.C[1], 10)
+		isProofValid = isValid
+	}
 
-			// Convert proof format: swaps B coordinates [proof.b[0][1], proof.b[0][0]]
-			bFormatted := [2][2]*big.Int{
-				{b01, b00}, // Swap first pair
-				{b11, b10}, // Swap second pair
+	if forbiddenCountriesList == nil {
+		discloseIndices, exists = DiscloseIndices[attestationId]
+		if exists {
+			forbiddenCountriesListPacked := make([]string, 4)
+			for i := 0; i < 4; i++ {
+				forbiddenCountriesListPacked[i] = publicSignals[discloseIndices.ForbiddenCountriesListPackedIndex+i]
 			}
-
-			// Convert the processed string signals to *big.Int for Go contract call
-			var publicSignalsArray [21]*big.Int
-			for i, signal := range publicSignals {
-				if i >= 21 {
-					break // Contract ABI specifies exactly 21 elements
-				}
-				signalBigInt := new(big.Int)
-				// Handle both hex (0x...) and decimal strings
-				if strings.HasPrefix(signal, "0x") {
-					signalBigInt.SetString(signal, 0) // Auto-detect base (0x = hex)
-				} else {
-					signalBigInt.SetString(signal, 10) // Decimal
-				}
-				publicSignalsArray[i] = signalBigInt
-			}
-			// Fill remaining slots with zero if publicSignals has less than 21 elements
-			for i := len(publicSignals); i < 21; i++ {
-				publicSignalsArray[i] = big.NewInt(0)
-			}
-
-			aFormatted := [2]*big.Int{a0, a1}
-			cFormatted := [2]*big.Int{c0, c1}
-			isValid, err := verifierContract.VerifyProof(nil, aFormatted, bFormatted, cFormatted, publicSignalsArray)
-			if err != nil {
-				isProofValid = false
-			} else {
-				isProofValid = isValid
-			}
+			forbiddenCountriesList = UnpackForbiddenCountriesList(forbiddenCountriesListPacked)
 		}
 	}
 
-	if forbiddenCountriesList == nil || len(genericDiscloseOutput.Nullifier) == 0 {
-		if len(userContextData) >= 128 {
-			discloseIndices, exists = DiscloseIndices[attestationId]
-			if exists {
-				forbiddenCountriesListPacked := make([]string, 4)
-				for i := 0; i < 4; i++ {
-					forbiddenCountriesListPacked[i] = publicSignals[discloseIndices.ForbiddenCountriesListPackedIndex+i]
-				}
-				forbiddenCountriesList = UnpackForbiddenCountriesList(forbiddenCountriesListPacked)
 
-				var err error
-				genericDiscloseOutput, err = FormatRevealedDataPacked(attestationId, publicSignals)
-				if err != nil {
-					return nil, fmt.Errorf("error formatting revealed data: %v", err)
-				}
-			}
-		}
-	}
-
-	// Determine minimum age validity from validation issues
-	isMinimumAgeValid := true
-	for _, issue := range issues {
-		if issue.Type == InvalidMinimumAge {
-			isMinimumAgeValid = false
-			break
-		}
-	}
 
 	isOfacValid := true
 	if configErr == nil && verificationConfig.Ofac {
@@ -435,7 +448,7 @@ func (s *BackendVerifier) Verify(
 		AttestationId: attestationId,
 		IsValidDetails: IsValidDetails{
 			IsValid:           isProofValid,
-			IsMinimumAgeValid: isMinimumAgeValid,
+			IsMinimumAgeValid: true,
 			IsOfacValid:       isOfacValid,
 		},
 		ForbiddenCountriesList: forbiddenCountriesList,
@@ -453,7 +466,7 @@ func (s *BackendVerifier) validateWithConfig(
 	verificationConfig VerificationConfig,
 	publicSignals []string,
 	discloseIndices DiscloseIndicesEntry,
-	attestationId AttestationId,
+	genericDiscloseOutput GenericDiscloseOutput,
 	issues *[]ConfigIssue,
 ) ([]string, GenericDiscloseOutput, error) {
 	forbiddenCountriesListPacked := make([]string, 4)
@@ -485,14 +498,6 @@ func (s *BackendVerifier) validateWithConfig(
 			Message: fmt.Sprintf("Forbidden countries list in config does not match with the one in the circuit\nCircuit: %s\nConfig: %v",
 				strings.Join(forbiddenCountriesList, ", "), verificationConfig.ExcludedCountries),
 		})
-	}
-	genericDiscloseOutput, err := FormatRevealedDataPacked(attestationId, publicSignals)
-	if err != nil {
-		*issues = append(*issues, ConfigIssue{
-			Type:    InvalidMinimumAge,
-			Message: fmt.Sprintf("Error formatting revealed data: %v", err),
-		})
-		return nil, GenericDiscloseOutput{}, err
 	}
 
 	if verificationConfig.MinimumAge != 0 {

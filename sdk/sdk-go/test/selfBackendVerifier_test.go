@@ -187,7 +187,7 @@ func TestSelfBackendVerifier_Verify_WithUUIDUserIDType(t *testing.T) {
 		self.AttestationId(2): true,
 	}
 
-	verifier, err := NewSelfBackendVerifier(
+	verifier, err := self.NewBackendVerifier(
 		"self-playground",
 		"https://playground.self.xyz/api/verify",
 		false,
