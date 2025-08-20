@@ -4,8 +4,9 @@ import React, { useCallback } from 'react';
 import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native';
 import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
 
+import { type SelfClient, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+
 import { RCTFragment } from '@/components/native/RCTFragment';
-import { useSelfClient, type SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 interface NativePassportOCRViewProps {
   onPassportRead: (

@@ -12,8 +12,8 @@ import { DatabaseProvider } from './src/providers/databaseProvider';
 import { LoggerProvider } from './src/providers/loggerProvider';
 import { NotificationTrackingProvider } from './src/providers/notificationTrackingProvider';
 import { PassportProvider } from './src/providers/passportDataProvider';
-import { SelfClientProvider } from './src/providers/selfClientProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
+import { SelfClientProvider } from './src/providers/selfClientProvider';
 import { initSentry, wrapWithSentry } from './src/Sentry';
 
 initSentry();

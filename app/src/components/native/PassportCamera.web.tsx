@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect } from 'react';
 
-import { useSelfClient, type SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { type SelfClient, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 // TODO: Web find a lightweight ocr or mrz scanner.
 
