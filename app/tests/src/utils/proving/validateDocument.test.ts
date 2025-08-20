@@ -80,6 +80,12 @@ function createTestClient() {
   });
 }
 
+/** Sample ICAO-compliant MRZ string for parsing tests. */
+const validMrz = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
+
+/** Intentionally malformed MRZ string to exercise error handling. */
+const invalidMrz = 'NOT_A_VALID_MRZ';
+
 describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () => {
   it('should use the real isPassportDataValid function with synthetic passport data', () => {
     // This test verifies that we're using the real function, not a mock
@@ -164,5 +170,17 @@ describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () =
   it('should expose extractMRZInfo via a self client instance', () => {
     const client = createTestClient();
     expect(typeof client.extractMRZInfo).toBe('function');
+  });
+
+  it('parses a valid MRZ string', () => {
+    const client = createTestClient();
+    const info = client.extractMRZInfo(validMrz);
+    expect(info.passportNumber).toBe('L898902C3');
+    expect(info.validation.overall).toBe(true);
+  });
+
+  it('throws on malformed MRZ input', () => {
+    const client = createTestClient();
+    expect(() => client.extractMRZInfo(invalidMrz)).toThrow();
   });
 });

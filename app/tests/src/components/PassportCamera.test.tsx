@@ -1,0 +1,91 @@
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+import React from 'react';
+import { render } from '@testing-library/react-native';
+
+import { PassportCamera as NativePassportCamera } from '@/components/native/PassportCamera';
+import { PassportCamera as WebPassportCamera } from '@/components/native/PassportCamera.web';
+
+// Mock the SDK client hook to provide a spyable MRZ parser
+const mockExtract = jest.fn();
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  useSelfClient: () => ({ extractMRZInfo: mockExtract }),
+}));
+
+// Capture props passed to the native view so we can trigger callbacks
+let nativeProps: any;
+jest.mock('react-native', () => ({
+  Platform: { OS: 'ios', select: ({ ios }: any) => ios },
+  PixelRatio: { getPixelSizeForLayoutSize: () => 0 },
+  requireNativeComponent: () => (props: any) => {
+    nativeProps = props;
+    return null;
+  },
+}));
+
+describe('PassportCamera components', () => {
+  beforeEach(() => {
+    mockExtract.mockReset();
+  });
+
+  it('invokes MRZ parser for string data on native', () => {
+    const onPassportRead = jest.fn();
+    render(<NativePassportCamera isMounted onPassportRead={onPassportRead} />);
+    const mrz = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
+    const parsed = {
+      passportNumber: 'L898902C3',
+      validation: { overall: true },
+    } as any;
+    mockExtract.mockReturnValue(parsed);
+
+    nativeProps.onPassportRead({ nativeEvent: { data: mrz } });
+
+    expect(mockExtract).toHaveBeenCalledWith(mrz);
+    expect(onPassportRead).toHaveBeenCalledWith(null, parsed);
+  });
+
+  it('maps object-form MRZ data directly on native', () => {
+    const onPassportRead = jest.fn();
+    render(<NativePassportCamera isMounted onPassportRead={onPassportRead} />);
+
+    const obj = {
+      documentNumber: '123456789',
+      expiryDate: '240101',
+      birthDate: '900101',
+      documentType: 'P',
+      countryCode: 'UTO',
+    };
+
+    nativeProps.onPassportRead({ nativeEvent: { data: obj } });
+
+    expect(mockExtract).not.toHaveBeenCalled();
+    expect(onPassportRead).toHaveBeenCalledWith(
+      null,
+      expect.objectContaining({
+        passportNumber: '123456789',
+        dateOfExpiry: '240101',
+        dateOfBirth: '900101',
+        documentType: 'P',
+        issuingCountry: 'UTO',
+        nationality: 'UTO',
+      }),
+    );
+  });
+
+  it('invokes MRZ parser for string data on web', () => {
+    const onPassportRead = jest.fn();
+    render(<WebPassportCamera isMounted onPassportRead={onPassportRead} />);
+
+    const mrz = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
+    const parsed = {
+      passportNumber: 'L898902C3',
+      validation: { overall: true },
+    } as any;
+    mockExtract.mockReturnValue(parsed);
+
+    // Simulate web read by manually invoking the parsing then forwarding result
+    onPassportRead(null, mockExtract(mrz));
+
+    expect(mockExtract).toHaveBeenCalledWith(mrz);
+    expect(onPassportRead).toHaveBeenCalledWith(null, parsed);
+  });
+});

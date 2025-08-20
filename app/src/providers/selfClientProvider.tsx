@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
-import type { PropsWithChildren } from 'react';
+import { type PropsWithChildren, useMemo } from 'react';
+
 import {
   SelfClientProvider as SDKSelfClientProvider,
   webScannerShim,
@@ -14,21 +15,26 @@ import {
  * - `fetch`/`WebSocket` for network communication
  * - Web Crypto hashing with a stub signer
  */
-export const SelfClientProvider = ({ children }: PropsWithChildren) => (
-  <SDKSelfClientProvider
-    config={{}}
-    adapters={{
+export const SelfClientProvider = ({ children }: PropsWithChildren) => {
+  const config = useMemo(() => ({}), []);
+  const adapters = useMemo(
+    () => ({
       scanner: webScannerShim,
       network: {
-        http: { fetch: (input: RequestInfo, init?: RequestInit) => fetch(input, init) },
+        http: {
+          fetch: (input: RequestInfo, init?: RequestInit) => fetch(input, init),
+        },
         ws: {
           connect: (url: string): WsConn => {
             const socket = new WebSocket(url);
             return {
-              send: (data: string | ArrayBufferView | ArrayBuffer) => socket.send(data),
+              send: (data: string | ArrayBufferView | ArrayBuffer) =>
+                socket.send(data),
               close: () => socket.close(),
               onMessage: cb => {
-                socket.addEventListener('message', ev => cb((ev as MessageEvent).data));
+                socket.addEventListener('message', ev =>
+                  cb((ev as MessageEvent).data),
+                );
               },
               onError: cb => {
                 socket.addEventListener('error', e => cb(e));
@@ -41,7 +47,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => (
         },
       },
       crypto: {
-        async hash(data: Uint8Array, algo: 'sha256' = 'sha256'): Promise<Uint8Array> {
+        async hash(
+          data: Uint8Array,
+          algo: 'sha256' = 'sha256',
+        ): Promise<Uint8Array> {
           const buf = await crypto.subtle.digest(algo, data as BufferSource);
           return new Uint8Array(buf);
         },
@@ -49,10 +58,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => (
           return new Uint8Array();
         },
       },
-    }}
-  >
-    {children}
-  </SDKSelfClientProvider>
-);
+    }),
+    [],
+  );
+
+  return (
+    <SDKSelfClientProvider config={config} adapters={adapters}>
+      {children}
+    </SDKSelfClientProvider>
+  );
+};
 
 export default SelfClientProvider;
