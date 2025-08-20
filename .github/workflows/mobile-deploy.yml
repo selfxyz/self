@@ -116,6 +116,12 @@ jobs:
           echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'plucky-tempo-454713-r0'
+          workload_identity_provider: 'projects/852920390127/locations/global/workloadIdentityPools/gh-self/providers/gh-by-repos'
+          service_account: "self-xyz@plucky-tempo-454713-r0.iam.gserviceaccount.com"
+
       - name: Set up Xcode
         if: inputs.platform != 'android'
         uses: maxim-lobanov/setup-xcode@v1
