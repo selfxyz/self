@@ -50,7 +50,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       crypto: {
         async hash(
           data: Uint8Array,
-          algo: 'SHA-256' = 'SHA-256',
+          algo: 'sha256' = 'sha256',
         ): Promise<Uint8Array> {
           const subtle = (globalThis as any)?.crypto?.subtle;
           if (!subtle?.digest) {
@@ -58,7 +58,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               'WebCrypto subtle.digest is not available; provide a crypto adapter/polyfill for React Native.',
             );
           }
-          const buf = await subtle.digest(algo, data as BufferSource);
+          // Convert algorithm name to WebCrypto format
+          const webCryptoAlgo = algo === 'sha256' ? 'SHA-256' : algo;
+          const buf = await subtle.digest(webCryptoAlgo, data as BufferSource);
           return new Uint8Array(buf);
         },
         async sign(_data: Uint8Array, _keyRef: string): Promise<Uint8Array> {
