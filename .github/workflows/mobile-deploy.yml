@@ -119,6 +119,7 @@ jobs:
       - name: Set up Xcode
         if: inputs.platform != 'android'
         uses: maxim-lobanov/setup-xcode@v1
+        continue-on-error: true
         with:
           xcode-version: ${{ env.XCODE_VERSION }}
       - name: Configure Xcode path

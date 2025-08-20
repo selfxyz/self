@@ -124,6 +124,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
+        continue-on-error: true
         with:
           xcode-version: ${{ env.XCODE_VERSION }}
       - name: Configure Xcode path
