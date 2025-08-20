@@ -93,16 +93,18 @@ module.exports = {
     ],
 
     // Prevent empty lines at the beginning and end of files, and limit consecutive empty lines
+    // Exception: allow one empty line after license header at file start
 
     'no-multiple-empty-lines': [
       'error',
       {
         max: 1,
         maxEOF: 0,
-        maxBOF: 0,
+        maxBOF: 1, // Allow one empty line at beginning (for license header)
       },
     ],
-    // Enforce empty line after header comments (but not at file start)
+    // Keep lines-around-comment rule disabled for normal comments
+    // License header newlines will be enforced by the check-license-headers.mjs script
 
     'lines-around-comment': [
       'error',
@@ -110,7 +112,7 @@ module.exports = {
         beforeBlockComment: false,
         afterBlockComment: false,
         beforeLineComment: false,
-        afterLineComment: false,
+        afterLineComment: false, // Keep disabled - license script handles this
         allowBlockStart: true,
         allowBlockEnd: false,
         allowObjectStart: false,

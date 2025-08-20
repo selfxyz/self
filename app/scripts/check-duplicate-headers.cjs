@@ -33,6 +33,7 @@ function main() {
   // Get all relevant files
   const patterns = EXTENSIONS.map(ext => path.join('src', ext));
   patterns.push(...EXTENSIONS.map(ext => path.join('tests', ext)));
+  patterns.push(...EXTENSIONS.map(ext => path.join('scripts', ext)));
   patterns.push('*.ts', '*.tsx', '*.js', '*.jsx');
 
   for (const pattern of patterns) {
