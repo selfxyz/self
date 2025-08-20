@@ -47,6 +47,7 @@ export { createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 // Core functions

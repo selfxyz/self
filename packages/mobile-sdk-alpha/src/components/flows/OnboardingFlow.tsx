@@ -1,16 +1,16 @@
-import type { ReactNode } from 'react';
+import type { ComponentType } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useSelfClient } from '../../context';
-import type { DocumentData, ExternalAdapter } from '../../types/ui';
+import type { DocumentData, ExternalAdapter, PassportCameraProps, ScreenProps } from '../../types/ui';
 import { NFCScannerScreen } from '../screens/NFCScannerScreen';
 import { PassportCameraScreen } from '../screens/PassportCameraScreen';
 
 interface OnboardingFlowProps {
   external: ExternalAdapter;
   setDocument: (doc: DocumentData, documentId: string) => Promise<boolean>;
-  PassportCamera?: ReactNode;
-  NFCScanner?: ReactNode;
+  PassportCamera?: ComponentType<PassportCameraProps>;
+  NFCScanner?: ComponentType<ScreenProps>;
 }
 
 export const OnboardingFlow = ({ external, setDocument, PassportCamera, NFCScanner }: OnboardingFlowProps) => {
@@ -43,10 +43,16 @@ export const OnboardingFlow = ({ external, setDocument, PassportCamera, NFCScann
   );
 
   if (!mrzData) {
-    return PassportCamera || <PassportCameraScreen onMRZDetected={handleMRZDetected} />;
+    if (PassportCamera) {
+      const PCam = PassportCamera as ComponentType<PassportCameraProps>;
+      return <PCam onMRZDetected={handleMRZDetected} />;
+    }
+    return <PassportCameraScreen onMRZDetected={handleMRZDetected} />;
   }
 
-  return (
-    NFCScanner || <NFCScannerScreen onSuccess={external.onOnboardingSuccess} onFailure={external.onOnboardingFailure} />
-  );
+  if (NFCScanner) {
+    const NFC = NFCScanner as ComponentType<ScreenProps>;
+    return <NFC onSuccess={external.onOnboardingSuccess} onFailure={external.onOnboardingFailure} />;
+  }
+  return <NFCScannerScreen onSuccess={external.onOnboardingSuccess} onFailure={external.onOnboardingFailure} />;
 };

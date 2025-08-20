@@ -55,7 +55,8 @@
   },
   "peerDependencies": {
     "react": "^18.3.1",
-    "react-native": "^0.75.4"
+    "react-native": "^0.75.4",
+    "tamagui": "^1.126.0"
   },
   "devDependencies": {
     "@testing-library/react": "^14.1.2",

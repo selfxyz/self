@@ -1,11 +1,16 @@
 import type { DocumentCategory, PassportData } from '@selfxyz/common';
 
 // Document-related types
+/**
+ * Document metadata - must NOT contain plaintext MRZ/PII
+ * All sensitive payloads belong only in DocumentData.data (typed as PassportData)
+ * or in encrypted storage referenced by the opaque token
+ */
 export interface DocumentMetadata {
   id: string;
   documentType: string;
   documentCategory: DocumentCategory;
-  data: string;
+  encryptedBlobRef?: string; // opaque pointer; no plaintext PII
   mock: boolean;
   isRegistered?: boolean;
 }

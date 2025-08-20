@@ -1,9 +1,15 @@
+import { Button, Text, YStack } from 'tamagui';
+
 import type { ScreenProps } from '../../types/ui';
 
 export const QRCodeScreen = ({ onSuccess, onFailure }: ScreenProps) => (
-  <div>
-    <p>QR Code Scanner</p>
-    <button onClick={onSuccess}>Simulate Success</button>
-    <button onClick={() => onFailure(new Error('QR scan failed'))}>Simulate Failure</button>
-  </div>
+  <YStack space="$4" padding="$4">
+    <Text fontSize="$6" fontWeight="bold">
+      QR Code Scanner
+    </Text>
+    <Button onPress={onSuccess}>Simulate Success</Button>
+    <Button variant="outlined" onPress={() => onFailure(new Error('QR scan failed'))}>
+      Simulate Failure
+    </Button>
+  </YStack>
 );
