@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect } from 'react';
 
-import type { extractMRZInfo } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient, type SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 // TODO: Web find a lightweight ocr or mrz scanner.
 
@@ -10,7 +10,7 @@ export interface PassportCameraProps {
   isMounted: boolean;
   onPassportRead: (
     error: Error | null,
-    mrzData?: ReturnType<typeof extractMRZInfo>,
+    mrzData?: ReturnType<SelfClient['extractMRZInfo']>,
   ) => void;
 }
 
@@ -18,6 +18,16 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   onPassportRead,
   isMounted,
 }) => {
+  const selfClient = useSelfClient();
+  const _onPassportRead = useCallback(
+    (mrz: string) => {
+      if (!isMounted) {
+        return;
+      }
+      onPassportRead(null, selfClient.extractMRZInfo(mrz));
+    },
+    [onPassportRead, isMounted],
+  );
   const handleError = useCallback(() => {
     if (!isMounted) {
       return;
@@ -28,6 +38,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
 
   // Web stub - no functionality yet
   useEffect(() => {
+    void _onPassportRead; // noop until web implementation exists
     // Simulate that the component is not ready for web
     if (isMounted) {
       console.warn('PassportCamera: Web implementation not yet available');
@@ -37,7 +48,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isMounted, handleError]);
+  }, [isMounted, handleError, _onPassportRead]);
 
   return (
     <div

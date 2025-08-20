@@ -12,6 +12,7 @@ import { DatabaseProvider } from './src/providers/databaseProvider';
 import { LoggerProvider } from './src/providers/loggerProvider';
 import { NotificationTrackingProvider } from './src/providers/notificationTrackingProvider';
 import { PassportProvider } from './src/providers/passportDataProvider';
+import { SelfClientProvider } from './src/providers/selfClientProvider';
 import { RemoteConfigProvider } from './src/providers/remoteConfigProvider';
 import { initSentry, wrapWithSentry } from './src/Sentry';
 
@@ -25,15 +26,17 @@ function App(): React.JSX.Element {
       <YStack flex={1} height="100%" width="100%">
         <RemoteConfigProvider>
           <LoggerProvider>
-            <AuthProvider>
-              <PassportProvider>
-                <DatabaseProvider>
-                  <NotificationTrackingProvider>
-                    <AppNavigation />
-                  </NotificationTrackingProvider>
-                </DatabaseProvider>
-              </PassportProvider>
-            </AuthProvider>
+            <SelfClientProvider>
+              <AuthProvider>
+                <PassportProvider>
+                  <DatabaseProvider>
+                    <NotificationTrackingProvider>
+                      <AppNavigation />
+                    </NotificationTrackingProvider>
+                  </DatabaseProvider>
+                </PassportProvider>
+              </AuthProvider>
+            </SelfClientProvider>
           </LoggerProvider>
         </RemoteConfigProvider>
       </YStack>

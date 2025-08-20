@@ -51,6 +51,35 @@ jest.mock('@/stores/protocolStore', () => ({
   },
 }));
 
+/**
+ * Creates a Self SDK client with minimal mock adapters for tests.
+ */
+function createTestClient() {
+  const { createSelfClient } = require('@selfxyz/mobile-sdk-alpha');
+  return createSelfClient({
+    config: {},
+    adapters: {
+      scanner: { scan: jest.fn() },
+      network: {
+        http: { fetch: jest.fn() },
+        ws: {
+          connect: jest.fn(() => ({
+            send: jest.fn(),
+            close: jest.fn(),
+            onMessage: jest.fn(),
+            onError: jest.fn(),
+            onClose: jest.fn(),
+          })),
+        },
+      },
+      crypto: {
+        hash: jest.fn(),
+        sign: jest.fn(),
+      },
+    },
+  });
+}
+
 describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () => {
   it('should use the real isPassportDataValid function with synthetic passport data', () => {
     // This test verifies that we're using the real function, not a mock
@@ -132,16 +161,8 @@ describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () =
     expect(callbacks.onPassportMetadataNull).toHaveBeenCalled();
   });
 
-  it('should import and use real mobile-sdk-alpha exports', () => {
-    // Verify that we can import other exports from the real package (using synthetic data)
-    const {
-      createSelfClient,
-      defaultConfig,
-      extractMRZInfo,
-    } = require('@selfxyz/mobile-sdk-alpha');
-
-    expect(typeof createSelfClient).toBe('function');
-    expect(typeof defaultConfig).toBe('object');
-    expect(typeof extractMRZInfo).toBe('function');
+  it('should expose extractMRZInfo via a self client instance', () => {
+    const client = createTestClient();
+    expect(typeof client.extractMRZInfo).toBe('function');
   });
 });
