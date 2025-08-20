@@ -83,21 +83,15 @@ func NewSelfBackendVerifier(
 }
 
 // Verify performs the verification of attestation with the given proof and signals
+
 func (s *SelfBackendVerifier) Verify(
 	ctx context.Context,
-	attestationIdStr string,
+	attestationIdInt int,
 	proof self.VcAndDiscloseProof,
 	pubSignals []string,
 	userContextData string,
 ) (*self.VerificationResult, error) {
 
-	attestationIdInt, err := strconv.Atoi(attestationIdStr)
-	if err != nil {
-		if attestationIdStr == "" {
-				return nil, fmt.Errorf("attestation ID cannot be empty")
-			}
-		return nil, fmt.Errorf("invalid attestation ID: %v", err)
-	}
 	attestationId := self.AttestationId(attestationIdInt)
 	allowedId, exists := s.allowedIDs[attestationId]
 	var issues []self.ConfigIssue

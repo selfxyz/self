@@ -205,7 +205,7 @@ func TestSelfBackendVerifier_Verify_WithUUIDUserIDType(t *testing.T) {
 	// Try to verify with valid attestation ID 1
 	result, err := verifier.Verify(
 		ctx,
-		"1", // Valid ID
+		1, // Valid ID
 		testProof,
 		testPublicSignals,
 		userContextData,
