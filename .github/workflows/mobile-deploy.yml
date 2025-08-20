@@ -30,6 +30,7 @@ env:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 on:
   workflow_dispatch:
