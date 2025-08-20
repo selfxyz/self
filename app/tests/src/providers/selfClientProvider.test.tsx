@@ -19,30 +19,39 @@ describe('SelfClientProvider', () => {
   });
 
   it('wires Web Crypto hashing and network adapters', async () => {
-    const fetchSpy = jest.fn(async () => new Response(null));
-    (global as any).fetch = fetchSpy;
-    class MockSocket {
-      url: string;
-      constructor(url: string) {
-        this.url = url;
+    const originalFetch = (global as any).fetch;
+    const originalWebSocket = (global as any).WebSocket;
+
+    try {
+      const fetchSpy = jest.fn(async () => new Response(null));
+      (global as any).fetch = fetchSpy;
+      class MockSocket {
+        url: string;
+        constructor(url: string) {
+          this.url = url;
+        }
+        addEventListener() {}
+        send() {}
+        close() {}
       }
-      addEventListener() {}
-      send() {}
-      close() {}
+      (global as any).WebSocket = MockSocket;
+
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <SelfClientProvider>{children}</SelfClientProvider>
+      );
+      renderHook(() => useSelfClient(), { wrapper });
+
+      const data = new TextEncoder().encode('hello');
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      expect(digest.byteLength).toBeGreaterThan(0);
+
+      await expect(fetch('https://example.com')).resolves.toBeDefined();
+      const socket = new WebSocket('ws://example.com');
+      expect(typeof (socket as any).send).toBe('function');
+    } finally {
+      // Cleanup - restore original globals
+      (global as any).fetch = originalFetch;
+      (global as any).WebSocket = originalWebSocket;
     }
-    (global as any).WebSocket = MockSocket;
-
-    const wrapper = ({ children }: { children: ReactNode }) => (
-      <SelfClientProvider>{children}</SelfClientProvider>
-    );
-    renderHook(() => useSelfClient(), { wrapper });
-
-    const data = new TextEncoder().encode('hello');
-    const digest = await crypto.subtle.digest('SHA-256', data);
-    expect(digest.byteLength).toBeGreaterThan(0);
-
-    await expect(fetch('https://example.com')).resolves.toBeDefined();
-    const socket = new WebSocket('ws://example.com');
-    expect(typeof (socket as any).send).toBe('function');
   });
 });

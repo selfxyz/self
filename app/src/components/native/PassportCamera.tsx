@@ -118,7 +118,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
         });
       }
     },
-    [onPassportRead, isMounted],
+    [onPassportRead, isMounted, selfClient],
   );
 
   if (Platform.OS === 'ios') {

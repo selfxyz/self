@@ -26,7 +26,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
       }
       onPassportRead(null, selfClient.extractMRZInfo(mrz));
     },
-    [onPassportRead, isMounted],
+    [onPassportRead, isMounted, selfClient],
   );
   const handleError = useCallback(() => {
     if (!isMounted) {

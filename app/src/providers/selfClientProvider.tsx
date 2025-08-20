@@ -50,13 +50,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       crypto: {
         async hash(
           data: Uint8Array,
-          algo: 'sha256' = 'sha256',
+          algo: 'SHA-256' = 'SHA-256',
         ): Promise<Uint8Array> {
-          const buf = await crypto.subtle.digest(algo, data as BufferSource);
+          const subtle = (globalThis as any)?.crypto?.subtle;
+          if (!subtle?.digest) {
+            throw new Error(
+              'WebCrypto subtle.digest is not available; provide a crypto adapter/polyfill for React Native.',
+            );
+          }
+          const buf = await subtle.digest(algo, data as BufferSource);
           return new Uint8Array(buf);
         },
         async sign(_data: Uint8Array, _keyRef: string): Promise<Uint8Array> {
-          return new Uint8Array();
+          throw new Error(
+            `crypto.sign adapter not implemented for keyRef: ${_keyRef}`,
+          );
         },
       },
     }),

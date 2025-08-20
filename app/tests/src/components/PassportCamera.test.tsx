@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 
 import { PassportCamera as NativePassportCamera } from '@/components/native/PassportCamera';
 import { PassportCamera as WebPassportCamera } from '@/components/native/PassportCamera.web';
@@ -72,21 +72,22 @@ describe('PassportCamera components', () => {
     );
   });
 
-  it('invokes MRZ parser for string data on web', () => {
+  it('web stub emits an error and does not call MRZ parser', () => {
+    jest.useFakeTimers();
     const onPassportRead = jest.fn();
     render(<WebPassportCamera isMounted onPassportRead={onPassportRead} />);
 
-    const mrz = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
-    const parsed = {
-      passportNumber: 'L898902C3',
-      validation: { overall: true },
-    } as any;
-    mockExtract.mockReturnValue(parsed);
+    // Parser should not be invoked by the stub
+    expect(mockExtract).not.toHaveBeenCalled();
 
-    // Simulate web read by manually invoking the parsing then forwarding result
-    onPassportRead(null, mockExtract(mrz));
+    // Stub emits an error after 100ms
+    act(() => {
+      jest.advanceTimersByTime(100);
+    });
 
-    expect(mockExtract).toHaveBeenCalledWith(mrz);
-    expect(onPassportRead).toHaveBeenCalledWith(null, parsed);
+    expect(onPassportRead).toHaveBeenCalledWith(expect.any(Error));
+    expect(mockExtract).not.toHaveBeenCalled();
+
+    jest.useRealTimers();
   });
 });
