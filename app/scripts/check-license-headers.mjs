@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 /**
  * Script to check and fix license header formatting
  * Ensures there's a newline after license headers
  */
-
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import fs from 'fs';
 import path from 'path';
