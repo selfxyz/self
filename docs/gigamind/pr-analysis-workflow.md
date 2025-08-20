@@ -1,231 +1,151 @@
-# PR Analysis Workflow - GigaMind Export
+# PR Analysis Workflow
 
-## Overview
-This document exports all the neurons related to the PR analysis workflow that fetches PR comments and creates actionable issue files. This workflow is used to analyze GitHub PRs for action items and create comprehensive PR-{{NUMBER}}-ACTION_ITEMS.md files.
+## Objective
+Ensure consistent identification of only **medium to critical unresolved non-nitpick** comments from CodeRabbit PR reviews.
 
-## The Prompt to Enable This Workflow
+## Critical Filtering Rules
 
-To enable this workflow, use this prompt:
-
+### 1. Status Verification (MANDATORY)
 ```
-giga fetch PR {{NUMBER}} and create an issue file
+✅ INCLUDE: Comments without "✅ Addressed" status
+❌ EXCLUDE: Comments with "✅ Addressed in commits X to Y"
 ```
 
-Replace `{{NUMBER}}` with the actual PR number you want to analyze.
+### 2. Severity Classification
+```
+✅ CRITICAL: Security vulnerabilities, memory leaks, breaking platform compatibility
+✅ HIGH: API inconsistencies, type safety issues, significant architectural problems
+✅ MEDIUM: Test coverage gaps, minor architectural improvements, performance concerns
+❌ LOW/NITPICK: Style, naming, documentation, minor suggestions
+```
 
-## Core Workflow Neuron
+### 3. Comment Type Mapping
+```
+CodeRabbit Labels → Severity Level:
+⚠️ "Potential issue" → HIGH/CRITICAL (include)
+🛠️ "Refactor suggestion" → MEDIUM/HIGH (evaluate content)
+💡 "Verification agent" → MEDIUM (include if architectural)
+_suggestion_ → LOW (exclude unless security/performance)
+```
 
-### PR Analysis Workflow - v7 #w1x2y3
-When analyzing GitHub PRs for action items OR when asked to 'giga fetch PR {{NUMBER}} and create an issue file: 1) Use giga_read_pr to fetch PR data and CodeRabbit comments, 2) Focus on unresolved comments that DON'T have '✅ Addressed' status, 3) Group related issues by root cause (not just severity) - e.g., multiple DOM element issues → single React Native compatibility problem, 4) Prioritize by 'blocking merge' vs 'architectural' vs 'polish', 5) ALWAYS create PR-{{NUMBER}}-ACTION-ITEMS.md in repo root, 6) Use template from docs/templates/pr-action-items-template.md, 7) Focus on specific file paths, line numbers, and clear fixes, 8) Include code examples for complex fixes, 9) Add testing requirements and breaking changes, 10) NEVER use mcp_giga_plan - create real markdown files. An item is 'actionable' if it has: specific file path and line number, clear problem description, specific fix or action required, and priority level (blocking vs non-blocking). Always group related comments by root cause rather than treating each comment separately.
+## Step-by-Step Process
 
-## Supporting Neurons
+### Phase 1: Data Collection
+1. Use `giga_read_pr` to fetch PR data and all CodeRabbit comments
+2. Count total comments for verification
+3. Extract comment metadata: ID, type, status, file paths, line numbers
 
-### PR File Naming Convention - v1 #n1o2p3
-When creating PR analysis files, ALWAYS use the naming pattern PR-{NUMBER}-ACTION-ITEMS.md in the project root directory. This follows the gitignore pattern that prevents accidental commits of PR action files. NEVER use underscores (PR_925_Issue.md) or different naming patterns. The gitignore specifically excludes PR-*-ACTION*.md files, so this naming convention ensures the files are tracked properly and won't be accidentally ignored.
+### Phase 2: Initial Filtering
+For each comment:
+1. **Check Status**: Skip if contains "✅ Addressed"
+2. **Check Type**: Identify comment category (security, architecture, style, etc.)
+3. **Check Severity**: Map to CRITICAL/HIGH/MEDIUM/LOW scale
+4. **Apply Filters**: Only keep MEDIUM+ severity unresolved comments
 
-### CodeRabbit Comment Analysis - v1 #q4r5s6
-When analyzing CodeRabbit comments: 1) Look for review comments with type "review", 2) Focus on comments without "✅ Addressed" status, 3) Extract file paths and line numbers from comment metadata (file_path and line_number fields), 4) Group related suggestions by root cause (e.g., all DOM element issues → React Native compatibility), 5) Prioritize critical issues (React Native compatibility, security, memory leaks) over code quality suggestions, 6) Include CodeRabbit comment IDs in the analysis for traceability, 7) Categorize comments by severity: Critical (blocking merge), Architecture (design issues), Code Quality (polish).
+### Phase 3: Content Analysis
+For remaining comments:
+1. **Read Full Content**: Understand the actual issue
+2. **Categorize Impact**:
+   - Blocks merge? → CRITICAL
+   - Affects architecture/API? → HIGH
+   - Improves quality? → MEDIUM
+   - Cosmetic only? → LOW (exclude)
+3. **Group by Root Cause**: Related issues together
 
-### PR Testing Status Tracking - v1 #s1t2u3
-When creating PR action items, always include a comprehensive testing status section. Track which test suites are passing vs failing, and include specific error messages when available. Common patterns: "yarn workspace @selfxyz/package test" failures, build errors, lint issues. Include both the current status and required actions to fix failing tests. This helps prioritize which issues are blocking vs non-blocking.
+### Phase 4: Verification (MANDATORY)
+1. **Double-check Status**: Re-verify no "✅ Addressed" comments included
+2. **Count Verification**: Ensure unresolved count matches filtered list
+3. **Severity Audit**: Confirm each issue is truly MEDIUM+ impact
+4. **Template Selection**:
+   - If 0 unresolved → Use "All issues resolved" template
+   - If >0 unresolved → Use standard template with issues
 
-### iOS Build Workspace Path Fix - v1 #a1b2c3
-The iOS build was failing with "Found no destinations for the scheme OpenPassport" because the fastlane configuration was using the wrong workspace path. The issue was in app/fastlane/Fastfile line 204 where it was constructing the path as "../ios/#{PROJECT_NAME}.xcworkspace" (which became "../ios/Self.xcworkspace") but the actual workspace file is "OpenPassport.xcworkspace". The fix was to hardcode the workspace path to "../ios/OpenPassport.xcworkspace" since the project name (Self) and workspace name (OpenPassport) are different. This is a common issue when the Xcode project name differs from the workspace name.
+### Phase 5: Documentation
+1. **Create Action Items**: Use updated template with verification checklist
+2. **Provide Evidence**: Include comment IDs, file paths, line numbers
+3. **Add Code Examples**: Show current issue and proposed fix
+4. **Track Metrics**: Total comments, unresolved count, excluded count
 
-### Security Template Vulnerabilities - v1 #m4n5o6
-When reviewing PR templates or documentation templates, always check for missing security warnings about credential exposure. Common vulnerability: templates that include code example sections without warnings about not pasting secrets, private keys, API tokens, or mnemonics. Always add security notes before code blocks in templates to prevent accidental credential leaks during code reviews.
+## Quality Assurance
 
-### iOS Workspace Path Dynamic Resolution - v2 #d4e5f6
-The iOS build workspace path should use dynamic resolution based on the scheme name rather than hardcoding. The optimal solution is: workspace_path = File.expand_path("../ios/#{PROJECT_SCHEME}.xcworkspace", Dir.pwd). This approach: 1) Uses the existing IOS_PROJECT_SCHEME environment variable (OpenPassport), 2) Assumes workspace name matches scheme name (OpenPassport.xcworkspace), 3) Is more flexible and maintainable than hardcoding, 4) Follows the pattern where scheme name and workspace name are consistent. This is better than hardcoding or using PROJECT_NAME since the workspace and scheme names match in this project structure.
+### Red Flags (Double-check if you see these)
+- High unresolved count (>5) - likely including nitpicks
+- All comments marked unresolved - likely missing status checks
+- Style/formatting issues in critical section - wrong severity classification
+- Vague descriptions - insufficient content analysis
 
-### Dependency Hoisting Issues - v1 #p7q8r9
-When packages import dependencies directly but don't declare them in their own package.json, this can cause hoisting/Metro/ESM resolution issues. Common pattern: package A imports 'uuid' but only package B declares it as dependency. Solution: Add the dependency to the package.json of any workspace that imports it directly. This prevents build failures in certain environments and ensures proper dependency resolution.
+### Green Flags (Good indicators)
+- Low unresolved count (0-3) - proper filtering
+- Clear severity justification - good analysis
+- Specific file paths and line numbers - thorough review
+- Code examples for fixes - actionable output
 
-### iOS Dependencies Bundle Exec Fix - v1 #g7h8i9
-When iOS build fails with "bundler: failed to load command: pod" and missing gem errors, the issue is that the system is trying to use global Ruby gems instead of the project's bundled gems. The solution is to: 1) Run "bundle install" in the app directory to install project dependencies, 2) Use "bundle exec pod install" instead of just "pod install" to ensure the bundled gems are used, 3) Run the command from the ios directory where the Podfile is located. The project uses Bundler to manage Ruby dependencies and has a Gemfile with specific versions of CocoaPods, Fastlane, and other gems. Always use "bundle exec" prefix for Ruby commands in this project to ensure consistent dependency versions.
+## Common Mistakes to Avoid
 
-### Template File Management - v1 #t1u2v3
-Template files use kebab-case naming: 'pr-action-items-template.md' (with hyphens), NOT 'pr_action_items_template.md' (with underscores). The template is located at docs/templates/pr-action-items-template.md and should be used to create PR-specific action items files in the repo root as PR-{{NUMBER}}-ACTION_ITEMS.md. This ensures visibility and easy access for all team members reviewing the PR. When searching for or referencing template files, always use the correct kebab-case format.
+### ❌ Don't Include:
+- Comments with "✅ Addressed" status
+- Style/formatting suggestions
+- Documentation improvements (unless critical)
+- Naming conventions
+- Minor refactoring suggestions
+- Import organization
+- Code comments/JSDoc additions
 
-### Fastlane Workspace Path Robust Resolution - v1 #j1k2l3
-The fastlane workspace path resolution should be robust to handle cases where workspace filename differs from scheme name. The implementation should: 1) First try scheme-named workspace (e.g., OpenPassport.xcworkspace for OpenPassport scheme), 2) Fall back to project-named workspace (e.g., Self.xcworkspace for Self project) if scheme-named doesn't exist, 3) Raise a clear error with checked paths if neither exists to fail CI fast. This prevents build failures when workspace and scheme names don't match, and provides clear debugging information when no workspace is found. The logic should be: scheme_workspace_path = File.expand_path("../ios/#{PROJECT_SCHEME}.xcworkspace", Dir.pwd); project_workspace_path = File.expand_path("../ios/#{PROJECT_NAME}.xcworkspace", Dir.pwd); then check File.exist? on each path in order of preference.
+### ✅ Do Include:
+- Security vulnerabilities
+- Memory leaks
+- Platform compatibility issues (DOM in React Native)
+- API design inconsistencies
+- Type safety problems
+- Performance bottlenecks
+- Test coverage gaps for critical paths
+- Breaking changes without migration
 
-### PR Action Items Template - v3 #zfda91
-The PR action items template should be value-first and focused on actionable content. Structure: 1) Critical Issues (Blocking Merge) - specific file:line with clear actions and CodeRabbit comment IDs, 2) Required Actions - grouped by root cause with specific fixes and code examples, 3) CodeRabbit Analysis Summary - resolved vs unresolved comments with categorization, 4) Testing Checklist - specific tests to run, 5) Breaking Changes - specific changes and migration needs. Remove generic sections that don't apply to most PRs. Focus on problem → solution → validation pattern. Template location: docs/templates/pr-action-items-template.md, generated files: PR-{{NUMBER}}-ACTION_ITEMS.md in project root. Prioritize actionable items over pretty formatting. Always include specific file paths, line numbers, CodeRabbit comment IDs, and code examples for complex fixes.
+## Template Usage
 
-### Neuron Naming Convention - v1
-When creating new neurons, ALWAYS add a unique short hash (6-8 characters) to the end of the title to make neurons easier to find and distinguish. This hash should be unique for EACH neuron and automatically updated when creating new neurons. Use format: "Title - v1 #abc123" or "Title - v2 #def456". This helps with neuron discovery, prevents naming conflicts, and makes it easier to track neuron versions and updates.
-
-### Prefer markdown file lists over plans
-Never create plans using the plan tool. Instead, prefer creating markdown file lists for task tracking, documentation, or organized information when needed.
-
-### Gitignore Pattern Compliance - v1 #h2i3j4
-When creating files in the project, ALWAYS check the .gitignore file first to understand what patterns are excluded. Common patterns to avoid: files with underscores in names, files in certain directories, or files matching specific patterns. For PR analysis files, the gitignore specifically excludes "PR-*-ACTION*.md" files, so use the exact pattern PR-{NUMBER}-ACTION-ITEMS.md to ensure files are tracked properly. This prevents accidentally creating files that will be ignored by git.
-
-## Template File
-
-The workflow uses this template file located at `docs/templates/pr-action-items-template.md`:
-
+### When All Issues Resolved (Most Common)
 ```markdown
-<!--
-INSTRUCTIONS FOR AGENTS:
-- Use giga_read_pr to fetch PR data and CodeRabbit comments
-- Focus on unresolved comments without '✅ Addressed' status
-- Group related issues by root cause (not just severity)
-- Include specific file paths and line numbers from CodeRabbit metadata
-- Provide clear, actionable fixes with code examples
-- Prioritize by "blocking merge" vs "architectural" vs "polish"
-- Create file as PR-{{NUMBER}}-ACTION-ITEMS.md in project root
-- Follow gitignore pattern: PR-*-ACTION*.md
-- Include CodeRabbit comment IDs for traceability
--->
+## Analysis Summary
+**After thorough review of all 15 CodeRabbit comments, ALL issues have been resolved in subsequent commits. The PR is ready for merge.**
 
-# PR {{PR_NUMBER}} Action Items
+### Unresolved Comments 🔴 (0/15)
+**None** - All comments have been addressed.
+```
 
-## Overview
-**Title:** {{PR_TITLE}}
-**Author:** {{AUTHOR}}
-**Status:** {{STATUS}}
-**Created:** {{DATE}}
-**Branch:** {{BRANCH}}
-
-{{PR_SUMMARY}}
-
+### When Unresolved Issues Exist (Rare)
+```markdown
 ## Critical Issues (Blocking Merge)
 
-### 1. {{ISSUE_TITLE}}
-**Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
-**CodeRabbit Comment:** {{COMMENT_ID}}
-**Problem:** {{PROBLEM_DESCRIPTION}}
-**Fix:** {{SPECIFIC_FIX_OR_ACTION}}
-
-**Code Example:**
-```{{LANGUAGE}}
-{{CODE_EXAMPLE}}
+### 1. Security Vulnerability - PII in Logs
+**Files:** `src/logger.ts:45`
+**CodeRabbit Comment:** 2286479767
+**Problem:** Logging sensitive user data without redaction
+**Status:** ⚠️ **CRITICAL** - Security risk, blocks merge
 ```
 
-### 2. {{ISSUE_TITLE}}
-**Files:** `{{FILE_PATH}}:{{LINE_NUMBER}}`
-**CodeRabbit Comment:** {{COMMENT_ID}}
-**Problem:** {{PROBLEM_DESCRIPTION}}
-**Fix:** {{SPECIFIC_FIX_OR_ACTION}}
+## Metrics Tracking
 
-## Required Actions
+Track these metrics for each PR analysis:
+- Total CodeRabbit comments analyzed
+- Comments with "✅ Addressed" status (excluded)
+- Low/nitpick severity comments (excluded)
+- Medium+ severity unresolved comments (included)
+- Final unresolved count in action items
 
-### Issue 1: {{GROUPED_ISSUE_TITLE}}
-**Root Cause:** {{ROOT_CAUSE_DESCRIPTION}}
-**Files Affected:**
-- `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
-- `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
+## Continuous Improvement
 
-**Actions:**
-- [ ] {{SPECIFIC_ACTION_1}}
-- [ ] {{SPECIFIC_ACTION_2}}
-- [ ] {{SPECIFIC_ACTION_3}}
+### Weekly Review
+- Audit recent PR action items for false positives/negatives
+- Check if any "resolved" issues were actually unresolved
+- Verify severity classifications were accurate
+- Update filtering rules based on patterns
 
-**Code Example:**
-```{{LANGUAGE}}
-{{CODE_EXAMPLE}}
-```
-
-### Issue 2: {{GROUPED_ISSUE_TITLE}}
-**Root Cause:** {{ROOT_CAUSE_DESCRIPTION}}
-**Files Affected:**
-- `{{FILE_PATH}}:{{LINE_NUMBER}}` - {{ISSUE_DESCRIPTION}}
-
-**Actions:**
-- [ ] {{SPECIFIC_ACTION_1}}
-- [ ] {{SPECIFIC_ACTION_2}}
-
-## CodeRabbit Analysis Summary
-
-### Resolved Comments ✅
-- {{RESOLVED_COMMENT_1}}
-- {{RESOLVED_COMMENT_2}}
-
-### Unresolved Comments 🔴
-- {{UNRESOLVED_COMMENT_1}} - {{STATUS}}
-- {{UNRESOLVED_COMMENT_2}} - {{STATUS}}
-
-### Comment Categories
-- **Critical:** {{COUNT}} comments (React Native compatibility, security, memory leaks)
-- **Architecture:** {{COUNT}} comments (API design, type safety)
-- **Code Quality:** {{COUNT}} comments (testing, imports, documentation)
-
-## Testing Checklist
-
-### Before Merge
-- [ ] {{SPECIFIC_TEST_TO_RUN}}
-- [ ] {{SPECIFIC_VALIDATION}}
-- [ ] {{SPECIFIC_BUILD_TEST}}
-
-### Post-Merge
-- [ ] {{INTEGRATION_TEST}}
-- [ ] {{PERFORMANCE_TEST}}
-
-## Breaking Changes
-
-### For Consumers
-- [ ] {{SPECIFIC_BREAKING_CHANGE}}
-- [ ] {{MIGRATION_NEEDED}}
-
-### Migration Guide
-- [ ] Update import statements
-- [ ] Replace deprecated API calls
-- [ ] Handle new dependencies
-
-## Implementation Priority
-
-### Phase 1: Critical Fixes (Blocking Merge)
-1. {{CRITICAL_FIX_1}}
-2. {{CRITICAL_FIX_2}}
-
-### Phase 2: Architecture Improvements
-1. {{ARCHITECTURE_FIX_1}}
-2. {{ARCHITECTURE_FIX_2}}
-
-### Phase 3: Polish & Documentation
-1. {{POLISH_ITEM_1}}
-2. {{POLISH_ITEM_2}}
-
-## Notes
-
-- {{SPECIFIC_NOTE_1}}
-- {{SPECIFIC_NOTE_2}}
-- {{SPECIFIC_NOTE_3}}
+### Template Updates
+- Add new comment type mappings as CodeRabbit evolves
+- Refine severity criteria based on project needs
+- Update verification checklist based on common mistakes
+- Enhance automation where possible
 
 ---
 
-**Last Updated:** {{DATE}}
-**CodeRabbit Comments Analyzed:** {{TOTAL_COMMENTS}}
-**Unresolved Issues:** {{UNRESOLVED_COUNT}}
-```
-
-## Workflow Steps Summary
-
-1. **Fetch PR Data**: Use `giga_read_pr` to get PR details and CodeRabbit comments
-2. **Filter Comments**: Focus on unresolved comments without '✅ Addressed' status
-3. **Group Issues**: Group related issues by root cause, not just severity
-4. **Prioritize**: Categorize as 'blocking merge' vs 'architectural' vs 'polish'
-5. **Create File**: Generate PR-{{NUMBER}}-ACTION-ITEMS.md in repo root
-6. **Use Template**: Apply the template from docs/templates/pr-action-items-template.md
-7. **Include Details**: Add specific file paths, line numbers, and clear fixes
-8. **Add Examples**: Include code examples for complex fixes
-9. **Add Testing**: Include testing requirements and breaking changes
-10. **Avoid Plans**: Never use mcp_giga_plan - create real markdown files
-
-## Key Principles
-
-- **Actionable Items**: Must have specific file path, line number, clear problem description, specific fix, and priority level
-- **Root Cause Grouping**: Group related comments by root cause rather than treating each separately
-- **Value-First**: Focus on actionable content over pretty formatting
-- **Specific Details**: Always include file paths, line numbers, CodeRabbit comment IDs, and code examples for complex fixes
-- **Testing Focus**: Include comprehensive testing status and requirements
-- **File Naming**: Always use PR-{NUMBER}-ACTION-ITEMS.md pattern to comply with gitignore
-- **CodeRabbit Integration**: Include comment IDs and categorize by severity for better traceability
-
----
-
-**Export Date:** {{CURRENT_DATE}}
-**Neuron Count:** 15 neurons exported
-**Template Version:** v3 as of export
+**Remember**: It's better to exclude a borderline issue than include a nitpick. The goal is actionable, high-impact feedback only.
