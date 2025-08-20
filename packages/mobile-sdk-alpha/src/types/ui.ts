@@ -1,5 +1,7 @@
 import type { DocumentCategory, PassportData } from '@selfxyz/common';
 
+import type { MRZInfo } from './public';
+
 // Document-related types
 /**
  * Document metadata - must NOT contain plaintext MRZ/PII
@@ -40,5 +42,5 @@ export interface ScreenProps {
 }
 
 export interface PassportCameraProps {
-  onMRZDetected: (mrzData: any) => void;
+  onMRZDetected: (mrzData: MRZInfo) => void;
 }

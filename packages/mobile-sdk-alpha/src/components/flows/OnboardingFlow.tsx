@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useSelfClient } from '../../context';
+import type { MRZInfo } from '../../types/public';
 import type { DocumentData, ExternalAdapter, PassportCameraProps, ScreenProps } from '../../types/ui';
 import { NFCScannerScreen } from '../screens/NFCScannerScreen';
 import { PassportCameraScreen } from '../screens/PassportCameraScreen';
@@ -14,19 +15,19 @@ interface OnboardingFlowProps {
 }
 
 export const OnboardingFlow = ({ external, setDocument, PassportCamera, NFCScanner }: OnboardingFlowProps) => {
-  const [mrzData, setMrzData] = useState<any>(null);
+  const [mrzData, setMrzData] = useState<MRZInfo | null>(null);
   const client = useSelfClient();
 
   const handleMRZDetected = useCallback(
-    async (mrzData: any) => {
+    async (mrzData: MRZInfo) => {
       try {
         const status = await client.registerDocument({
           scan: {
             mode: 'mrz',
-            passportNumber: mrzData.documentNumber,
-            dateOfBirth: mrzData.birthDate,
-            dateOfExpiry: mrzData.expiryDate,
-            issuingCountry: mrzData.countryCode,
+            passportNumber: mrzData.passportNumber,
+            dateOfBirth: mrzData.dateOfBirth,
+            dateOfExpiry: mrzData.dateOfExpiry,
+            issuingCountry: mrzData.issuingCountry,
           },
         });
 

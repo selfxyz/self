@@ -7,6 +7,7 @@ CRITICAL FILTERING RULES - MUST FOLLOW EXACTLY:
    ✅ NO "nitpick" or "suggestion" labels (medium+ severity only)
    ✅ MEDIUM to CRITICAL impact (affects functionality, security, or architecture)
    ✅ NOT cosmetic/style issues (unless security/performance related)
+   ✅ DO NOT include secrets, access tokens, API keys, private keys, MRZ data, or any PII. Redact sensitive values and replace with placeholders.
 
 2. VERIFICATION PROCESS - MANDATORY:
    - Read EACH comment's status field carefully
@@ -26,6 +27,7 @@ CRITICAL FILTERING RULES - MUST FOLLOW EXACTLY:
    - Verify each "unresolved" issue is actually unresolved
    - Remove any that have been addressed in subsequent commits
    - If NO unresolved medium+ issues exist, state "All issues resolved ✅"
+   - Run a final pass to ensure no credentials, secrets, or PII are present in examples, logs, or screenshots.
 
 5. EXECUTION:
    - Use giga_read_pr to fetch PR data and CodeRabbit comments
