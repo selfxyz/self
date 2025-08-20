@@ -7,7 +7,7 @@ INSTRUCTIONS FOR AGENTS:
 - Provide clear, actionable fixes
 - Add code examples for complex issues
 - Prioritize by "blocking merge" vs "architectural" vs "polish"
-- Create file as PR-{{NUMBER}}-ACTION_ITEMS.md in project root
+- Create file as PR-{{NUMBER}}-ACTION-ITEMS.md in project root
 -->
 
 # PR {{PR_NUMBER}} Action Items
