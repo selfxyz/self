@@ -1,7 +1,7 @@
 <!--
 INSTRUCTIONS FOR AGENTS:
 - Use giga_read_pr to fetch PR data and CodeRabbit comments
-- Focus on unresolved comments without '✅ Addressed' status
+- Focus on unresolved non nitpick comments without '✅ Addressed' status
 - Group related issues by root cause (not just severity)
 - Include specific file paths and line numbers from CodeRabbit metadata
 - Provide clear, actionable fixes with code examples
