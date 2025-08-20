@@ -5274,6 +5274,7 @@ __metadata:
   peerDependencies:
     react: ^18.3.1
     react-native: ^0.75.4
+    tamagui: ^1.126.0
   languageName: unknown
   linkType: soft
 
