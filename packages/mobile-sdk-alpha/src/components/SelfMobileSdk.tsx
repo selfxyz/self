@@ -1,4 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
+import { View } from 'tamagui';
 
 import { SelfClientProvider } from '../context';
 import { useDocumentManager } from '../hooks/useDocumentManager';
@@ -30,7 +31,7 @@ const SelfMobileSdkContent = ({
   const { documents, isLoading, hasRegisteredDocuments } = useDocumentManager(external);
 
   if (isLoading) {
-    return <div>Loading documents...</div>;
+    return <View>Loading documents...</View>;
   }
 
   // Check if user has any registered documents
