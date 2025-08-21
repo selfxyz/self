@@ -397,8 +397,6 @@ function getServiceNameForDocumentType(documentType: string): string {
 // TODO: move to utils?
 export async function hasAnyValidRegisteredDocument(client: SelfClient): Promise<boolean> {
   try {
-    console.log(client);
-
     const catalog = await client.loadDocumentCatalog();
 
     return catalog.documents.some(doc => doc.isRegistered === true);
