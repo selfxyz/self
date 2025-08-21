@@ -19,6 +19,7 @@ import {
 import { useSettingStore } from '@/stores/settingStore';
 import { black } from '@/utils/colors';
 import { impactLight } from '@/utils/haptic';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation =
@@ -30,6 +31,7 @@ const SplashScreen: React.FC = ({}) => {
     null,
   );
   const dataLoadInitiatedRef = useRef(false);
+  const selfClient = useSelfClient();
 
   useEffect(() => {
     if (!dataLoadInitiatedRef.current) {
@@ -58,7 +60,7 @@ const SplashScreen: React.FC = ({}) => {
             await checkAndUpdateRegistrationStates();
           }
 
-          const hasValid = await hasAnyValidRegisteredDocument();
+          const hasValid = await hasAnyValidRegisteredDocument(selfClient);
           setNextScreen(hasValid ? 'Home' : 'Launch');
         } catch (error) {
           console.error(`Error in SplashScreen data loading: ${error}`);

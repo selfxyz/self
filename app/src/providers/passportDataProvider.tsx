@@ -43,7 +43,6 @@ import type { PropsWithChildren } from 'react';
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
-import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
@@ -52,8 +51,15 @@ import {
   brutforceSignatureAlgorithmDsc,
   parseCertificateSimple,
 } from '@selfxyz/common/utils';
+import type {
+  DocumentCatalog,
+  DocumentCategory,
+  DocumentMetadata,
+  PassportData,
+} from '@selfxyz/common/utils/types';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
+import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -80,20 +86,6 @@ const safeGetAllDocuments = async () => {
     return {};
   }
 };
-
-export interface DocumentMetadata {
-  id: string; // contentHash as ID for deduplication
-  documentType: string; // passport, mock_passport, id_card, etc.
-  documentCategory: DocumentCategory; // passport, id_card, aadhaar
-  data: string; // DG1/MRZ data for passports/IDs, relevant data for aadhaar
-  mock: boolean; // whether this is a mock document
-  isRegistered?: boolean; // whether the document is registered onChain
-}
-
-export interface DocumentCatalog {
-  documents: DocumentMetadata[];
-  selectedDocumentId?: string; // This is now a contentHash
-}
 
 type DocumentChangeCallback = (isMock: boolean) => void;
 
@@ -402,9 +394,13 @@ function getServiceNameForDocumentType(documentType: string): string {
   }
 }
 
-export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
+// TODO: move to utils?
+export async function hasAnyValidRegisteredDocument(client: SelfClient): Promise<boolean> {
   try {
-    const catalog = await loadDocumentCatalog();
+    console.log(client);
+
+    const catalog = await client.loadDocumentCatalog();
+
     return catalog.documents.some(doc => doc.isRegistered === true);
   } catch (error) {
     console.error('Error loading document catalog:', error);
@@ -671,12 +667,14 @@ interface IPassportContext {
   } | null>;
   clearPassportData: () => Promise<void>;
   clearSpecificData: (documentType: string) => Promise<void>;
+
   loadDocumentCatalog: () => Promise<DocumentCatalog>;
   getAllDocuments: () => Promise<{
     [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
   }>;
   setSelectedDocument: (documentId: string) => Promise<void>;
   deleteDocument: (documentId: string) => Promise<void>;
+
   migrateFromLegacyStorage: () => Promise<void>;
   getCurrentDocumentType: () => Promise<string | null>;
   clearDocumentCatalogForMigrationTesting: () => Promise<void>;
@@ -686,7 +684,7 @@ interface IPassportContext {
     isRegistered: boolean,
   ) => Promise<void>;
   checkIfAnyDocumentsNeedMigration: () => Promise<boolean>;
-  hasAnyValidRegisteredDocument: () => Promise<boolean>;
+  hasAnyValidRegisteredDocument: (client: SelfClient) => Promise<boolean>;
   checkAndUpdateRegistrationStates: () => Promise<void>;
 }
 

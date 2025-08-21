@@ -123,5 +123,12 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     extractMRZInfo: parseMRZInfo,
     on,
     emit,
+
+    // TODO: inline for now
+    loadDocumentCatalog: async () => {
+      // TODO: should it be done via adapters? If so, should we use StorageAdapter or
+      // a new one like KeychainAdapter?
+      return { documents: [] };
+    },
   };
 }

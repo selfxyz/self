@@ -1,3 +1,5 @@
+import { DocumentCatalog } from '@selfxyz/common/utils/types';
+
 export type { PassportData } from '@selfxyz/common/utils/types';
 export type { PassportValidationCallbacks } from '../validation/document';
 export interface Config {
@@ -132,6 +134,8 @@ export interface SelfClient {
   extractMRZInfo(mrz: string): MRZInfo;
   on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
+
+  loadDocumentCatalog(): Promise<DocumentCatalog>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {
