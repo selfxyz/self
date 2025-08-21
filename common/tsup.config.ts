@@ -26,6 +26,7 @@ export default defineConfig([
       'src/utils/hash': 'src/utils/hash.ts',
       'src/utils/bytes': 'src/utils/bytes.ts',
       'src/utils/trees': 'src/utils/trees.ts',
+      'src/utils/proving': 'src/utils/proving.ts',
       'src/utils/scope': 'src/utils/scope.ts',
       'src/utils/appType': 'src/utils/appType.ts',
       'src/utils/date': 'src/utils/date.ts',

@@ -14,6 +14,14 @@ import {
   getCircuitNameFromPassportData,
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
+import {
+  clientKey,
+  clientPublicKeyHex,
+  ec,
+  encryptAES256GCM,
+  getPayload,
+  getWSDbRelayerUrl,
+} from '@selfxyz/common/utils/proving';
 
 import { PassportEvents, ProofEvents } from '@/consts/analytics';
 import { navigationRef } from '@/navigation';
@@ -33,14 +41,6 @@ import {
   generateTEEInputsDSC,
   generateTEEInputsRegister,
 } from '@/utils/proving/provingInputs';
-import {
-  clientKey,
-  clientPublicKeyHex,
-  ec,
-  encryptAES256GCM,
-  getPayload,
-  getWSDbRelayerUrl,
-} from '@/utils/proving/provingUtils';
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,

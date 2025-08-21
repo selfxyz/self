@@ -281,6 +281,11 @@
       "import": "./dist/esm/src/utils/passports/passport_parsing/parseDscCertificateData.js",
       "require": "./dist/cjs/src/utils/passports/passport_parsing/parseDscCertificateData.cjs"
     },
+      "./utils/proving": {
+      "types": "./dist/esm/src/utils/proving.d.ts",
+      "import": "./dist/esm/src/utils/proving.js",
+      "require": "./dist/cjs/src/utils/proving.cjs"
+    },
     "./utils/scope": {
       "types": "./dist/esm/src/utils/scope.d.ts",
       "import": "./dist/esm/src/utils/scope.js",
