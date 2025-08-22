@@ -63,6 +63,15 @@ export function generateTEEInputsDiscloseStateless(
   if (!ofac_trees) {
     throw new Error('OFAC trees not loaded');
   }
+
+  // Validate OFAC tree structure
+  if (!ofac_trees.nameAndDob || !ofac_trees.nameAndYob) {
+    throw new Error('Invalid OFAC tree structure: missing required fields');
+  }
+  if (document === 'passport' && !ofac_trees.passportNoAndNationality) {
+    throw new Error('Invalid OFAC tree structure: missing passportNoAndNationality for passport');
+  }
+
   let passportNoAndNationalitySMT: SMT | null = null;
   const nameAndDobSMT = new SMT(poseidon2, true);
   const nameAndYobSMT = new SMT(poseidon2, true);
