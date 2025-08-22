@@ -122,43 +122,23 @@ export type ScanResult =
     }
   | {
       mode: 'nfc';
+      mrz: string;
+      dsc: any;
+      dg2Hash?: number[];
+      dg1Hash?: number[];
+      dgPresents?: any[];
+      eContent: number[];
+      signedAttr: number[];
+      encryptedDigest: number[];
+      parsed: boolean;
+      mock: boolean;
+      documentType: 'passport' | 'id_card';
+      documentCategory: 'passport' | 'id_card';
+
       passportNumber: string;
       dateOfBirth: string;
       dateOfExpiry: string;
-      issuingCountry?: string;
-      firstName?: string;
-      lastName?: string;
-      gender?: string;
-      nationality?: string;
-      passportMRZ?: string;
-      documentSigningCertificate?: string;
-      countrySigningCertificate?: string;
-      eContentBase64?: string;
-      signatureBase64?: string;
-      dataGroupHashes?: string;
-      // TODO confirm these
-      documentType?: string;
-      documentSubType?: string;
-      placeOfBirth?: string;
-      residenceAddress?: string;
-      phoneNumber?: string;
-      personalNumber?: string;
-      ldsVersion?: string;
-      dataGroupsPresent?: string;
-      activeAuthenticationChallenge?: string;
-      activeAuthenticationSignature?: string;
-      verificationErrors?: string;
-      isPACESupported?: string;
-      isChipAuthenticationSupported?: string;
-      signatureAlgorithm?: string;
-      encapsulatedContentDigestAlgorithm?: string;
-      signedAttributes?: string;
-      verificationStatus?: {
-        passportCorrectlySigned: boolean;
-        documentSigningCertificateVerified: boolean;
-        passportDataNotTampered: boolean;
-        activeAuthenticationPassed: boolean;
-      };
+      issuingCountry: string;
     }
   | { mode: 'qr'; data: string };
 export interface ScannerAdapter {
