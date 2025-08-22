@@ -14,10 +14,14 @@ import {
   getCircuitNameFromPassportData,
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
+import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { PassportEvents, ProofEvents } from '@/consts/analytics';
+//
 import { navigationRef } from '@/navigation';
+// this will be pass as property of from selfClient
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
+// will need to be passed in from selfClient
 import {
   clearPassportData,
   loadSelectedDocument,
@@ -177,14 +181,15 @@ interface ProvingState {
   env: 'prod' | 'stg' | null;
   setFcmToken: (token: string) => void;
   init: (
+    selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
   ) => Promise<void>;
   startFetchingData: () => Promise<void>;
-  validatingDocument: () => Promise<void>;
+  validatingDocument: (selfClient: SelfClient) => Promise<void>;
   initTeeConnection: () => Promise<boolean>;
   startProving: () => Promise<void>;
-  postProving: () => void;
+  postProving: (selfClient: SelfClient) => void;
   setUserConfirmed: () => void;
   _closeConnections: () => void;
   _generatePayload: () => Promise<unknown>;
@@ -202,7 +207,10 @@ interface ProvingState {
 export const useProvingStore = create<ProvingState>((set, get) => {
   let actor: AnyActorRef | null = null;
 
-  function setupActorSubscriptions(newActor: AnyActorRef) {
+  function setupActorSubscriptions(
+    newActor: AnyActorRef,
+    selfClient: SelfClient,
+  ) {
     newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
       console.log(`State transition: ${state.value}`);
       trackEvent(ProofEvents.PROVING_STATE_CHANGE, { state: state.value });
@@ -212,7 +220,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startFetchingData();
       }
       if (state.value === 'validating_document') {
-        get().validatingDocument();
+        get().validatingDocument(selfClient);
       }
 
       if (state.value === 'init_tee_connexion') {
@@ -224,7 +232,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'post_proving') {
-        get().postProving();
+        get().postProving(selfClient);
       }
       if (
         get().circuitType !== 'disclose' &&
@@ -416,7 +424,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       try {
         // TODO: call hasAnyValidRegisteredDocument(selfClient) from @selfxyz/mobile-sdk-alpha
         const hasValid = await hasAnyValidRegisteredDocument();
-
         if (navigationRef.isReady()) {
           if (hasValid) {
             navigationRef.navigate('Home');
@@ -590,6 +597,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     init: async (
+      selfClient: SelfClient,
       circuitType: 'dsc' | 'disclose' | 'register',
       userConfirmed: boolean = false,
     ) => {
@@ -620,10 +628,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
 
       actor = createActor(provingMachine);
-      setupActorSubscriptions(actor);
+      setupActorSubscriptions(actor, selfClient);
       actor.start();
 
       trackEvent(ProofEvents.DOCUMENT_LOAD_STARTED);
+      // TODO call on self client
       const selectedDocument = await loadSelectedDocument();
       if (!selectedDocument) {
         console.error('No document found for proving');
@@ -634,6 +643,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       const { data: passportData } = selectedDocument;
 
+      // TODO call on self client
       const secret = await unsafe_getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');
@@ -676,7 +686,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    validatingDocument: async () => {
+    validatingDocument: async (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
       trackEvent(ProofEvents.VALIDATION_STARTED);
@@ -919,7 +929,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    postProving: () => {
+    postProving: (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       trackEvent(ProofEvents.POST_PROVING_STARTED);
@@ -929,7 +939,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             from: 'dsc',
             to: 'register',
           });
-          get().init('register', true);
+          get().init(selfClient, 'register', true);
         }, 1500);
       } else if (circuitType === 'register') {
         trackEvent(ProofEvents.POST_PROVING_COMPLETED);

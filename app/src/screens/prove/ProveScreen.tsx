@@ -20,6 +20,7 @@ import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '@/components/buttons/HeldPrimaryButtonProveScreen';
@@ -56,7 +57,7 @@ const ProveScreen: React.FC = () => {
     () => scrollViewContentHeight <= scrollViewHeight,
     [scrollViewContentHeight, scrollViewHeight],
   );
-
+  const selfClient = useSelfClient();
   const provingStore = useProvingStore();
   const currentState = useProvingStore(state => state.currentState);
   const isReadyToProve = currentState === 'ready_to_prove';
@@ -94,10 +95,10 @@ const ProveScreen: React.FC = () => {
     setDefaultDocumentTypeIfNeeded();
 
     if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
-      provingStore.init('disclose');
+      provingStore.init(selfClient, 'disclose');
     }
     selectedAppRef.current = selectedApp;
-  }, [selectedApp, isFocused, provingStore]);
+  }, [selectedApp, isFocused, provingStore, selfClient]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
