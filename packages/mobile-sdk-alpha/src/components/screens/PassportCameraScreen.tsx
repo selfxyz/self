@@ -14,10 +14,6 @@ export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => 
           passportNumber: 'L898902C3',
           dateOfBirth: '740812',
           dateOfExpiry: '120415',
-          surname: 'ERIKSSON',
-          givenNames: 'ANNA MARIA',
-          sex: 'F',
-          nationality: 'UTO',
           issuingCountry: 'UTO',
           documentType: 'P',
           validation: {
