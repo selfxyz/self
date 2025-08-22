@@ -125,7 +125,6 @@ class PassportReader: NSObject {
       }
 
       NativeLoggerBridge.logInfo(category: "NFC", message: "NFC passport scan started", data: [
-        "passportNumber": passportNumber,
         "useCAN": useCANBool,
         "skipPACE": skipPACEBool,
         "skipCA": skipCABool,

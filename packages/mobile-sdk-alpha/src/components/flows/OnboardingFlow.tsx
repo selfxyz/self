@@ -24,10 +24,7 @@ export const OnboardingFlow = ({ external, setDocument, PassportCamera, NFCScann
         const status = await client.registerDocument({
           scan: {
             mode: 'mrz',
-            passportNumber: mrzData.passportNumber,
-            dateOfBirth: mrzData.dateOfBirth,
-            dateOfExpiry: mrzData.dateOfExpiry,
-            issuingCountry: mrzData.issuingCountry,
+            mrzInfo: mrzData,
           },
         });
 
@@ -52,8 +49,14 @@ export const OnboardingFlow = ({ external, setDocument, PassportCamera, NFCScann
   }
 
   if (NFCScanner) {
-    const NFC = NFCScanner as ComponentType<ScreenProps>;
-    return <NFC onSuccess={external.onOnboardingSuccess} onFailure={external.onOnboardingFailure} />;
+    const NFC = NFCScanner as ComponentType<ScreenProps & { mrzData: MRZInfo }>;
+    return <NFC onSuccess={external.onOnboardingSuccess} onFailure={external.onOnboardingFailure} mrzData={mrzData} />;
   }
-  return <NFCScannerScreen onSuccess={external.onOnboardingSuccess} onFailure={external.onOnboardingFailure} />;
+  return (
+    <NFCScannerScreen
+      onSuccess={external.onOnboardingSuccess}
+      onFailure={external.onOnboardingFailure}
+      mrzData={mrzData}
+    />
+  );
 };

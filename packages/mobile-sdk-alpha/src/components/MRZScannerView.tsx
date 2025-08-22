@@ -3,6 +3,7 @@ import type { DimensionValue, NativeSyntheticEvent, ViewProps, ViewStyle } from 
 import { NativeModules, PixelRatio, Platform, requireNativeComponent, StyleSheet, View } from 'react-native';
 
 import { extractMRZInfo, formatDateToYYMMDD } from '../mrz';
+import { MRZInfo } from '../types/public';
 import { RCTFragment } from './RCTFragment';
 
 interface SelfMRZScannerViewProps extends ViewProps {
@@ -33,7 +34,7 @@ interface SelfMRZScannerViewProps extends ViewProps {
 const NativeMRZScannerView = requireNativeComponent<SelfMRZScannerViewProps>(
   Platform.select({
     ios: 'SelfMRZScannerView',
-    android: 'PassportOCRViewManager',
+    android: 'SelfOCRViewManager',
   })!,
 );
 
@@ -42,13 +43,7 @@ interface MRZScannerViewProps {
   height?: DimensionValue;
   width?: DimensionValue;
   aspectRatio?: number;
-  onMRZDetected?: (data: {
-    documentNumber: string;
-    birthDate: string;
-    expiryDate: string;
-    countryCode: string;
-    documentType: string;
-  }) => void;
+  onMRZDetected?: (data: MRZInfo) => void;
   onError?: (error: string) => void;
 }
 
@@ -70,18 +65,18 @@ export const MRZScannerView: React.FC<MRZScannerViewProps> = ({
         const formattedExpiryDate = formatDateToYYMMDD(data.expiryDate);
         onMRZDetected?.({
           documentNumber: data.documentNumber,
-          birthDate: formattedBirthDate,
-          expiryDate: formattedExpiryDate,
-          countryCode: data.countryCode,
+          dateOfBirth: formattedBirthDate,
+          dateOfExpiry: formattedExpiryDate,
+          issuingCountry: data.countryCode,
           documentType: data.documentType,
         });
       } else if (Platform.OS === 'android') {
         const extractedData = extractMRZInfo(data);
         onMRZDetected?.({
-          documentNumber: extractedData.passportNumber,
-          birthDate: extractedData.dateOfBirth,
-          expiryDate: extractedData.dateOfExpiry,
-          countryCode: extractedData.issuingCountry,
+          documentNumber: extractedData.documentNumber,
+          dateOfBirth: extractedData.dateOfBirth,
+          dateOfExpiry: extractedData.dateOfExpiry,
+          issuingCountry: extractedData.issuingCountry,
           documentType: extractedData.documentType,
         });
       } else {

@@ -17,7 +17,7 @@ import com.facebook.react.uimanager.events.RCTEventEmitter
 import org.jmrtd.lds.icao.MRZInfo
 import com.selfxyz.selfSDK.ui.CameraMLKitFragment
 
-class PassportOCRViewManager(
+class SelfOCRViewManager(
     open val reactContext: ReactApplicationContext
    ) : ViewGroupManager<FrameLayout>(), CameraMLKitFragment.CameraMLKitCallback {
     private var propWidth: Int? = null
@@ -138,7 +138,7 @@ class PassportOCRViewManager(
     }
 
     companion object {
-      private const val REACT_CLASS = "PassportOCRViewManager"
+      private const val REACT_CLASS = "SelfOCRViewManager"
       private const val COMMAND_CREATE = 1
       private const val COMMAND_DESTROY = 2
       private const val SUCCESS_EVENT = "onPassportReadResult"

@@ -46,65 +46,6 @@ function verifyCheckDigit(field: string, expectedCheckDigit: string): boolean {
 }
 
 /**
- * Parse names from MRZ format (surname<<given<names<<<)
- * Handles complex cases like: VAN<<DER<<BERG<<MARIA<ELENA
- * Expected: surname="VAN  DER  BERG", givenNames="MARIA ELENA"
- */
-function parseNames(nameField: string): { surname: string; givenNames: string } {
-  const parts = nameField.split('<<');
-
-  if (parts.length === 1) {
-    // No '<<' found, entire field is surname
-    return {
-      surname: nameField.replace(/</g, ' ').trim(),
-      givenNames: '',
-    };
-  }
-
-  // Find the boundary between surname and given names
-  // Look for the last part that contains '<' (indicating given names with spaces)
-  let givenNamesStartIndex = parts.length; // Default to all surname
-
-  for (let i = parts.length - 1; i >= 0; i--) {
-    const part = parts[i];
-    // If a part contains '<' within it (not just trailing '<'), it's likely given names
-    if (part.includes('<') && !part.endsWith('<'.repeat(part.length))) {
-      givenNamesStartIndex = i;
-      break;
-    }
-  }
-
-  // If we didn't find a clear given names section, use the first << as boundary
-  if (givenNamesStartIndex >= parts.length) {
-    const firstDoubleSeparator = nameField.indexOf('<<');
-    if (firstDoubleSeparator === -1) {
-      return {
-        surname: nameField.replace(/</g, ' ').trim(),
-        givenNames: '',
-      };
-    }
-
-    const surnameField = nameField.slice(0, firstDoubleSeparator);
-    const givenNamesField = nameField.slice(firstDoubleSeparator + 2);
-
-    return {
-      surname: surnameField.replace(/</g, ' ').trim(),
-      givenNames: givenNamesField.replace(/</g, ' ').trim(),
-    };
-  }
-
-  // Build surname from parts before the given names (join with double spaces to reflect <<)
-  const surnameParts = parts.slice(0, givenNamesStartIndex);
-  const surname = surnameParts.join('  ').replace(/</g, ' ').trim();
-
-  // Build given names from remaining parts
-  const givenNamesParts = parts.slice(givenNamesStartIndex);
-  const givenNames = givenNamesParts.join(' ').replace(/</g, ' ').trim();
-
-  return { surname, givenNames };
-}
-
-/**
  * Validate TD3 MRZ format (passport/travel document)
  */
 function validateTD3Format(lines: string[]): boolean {
@@ -143,7 +84,7 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
     .replace(/[^A-Z]/g, '');
 
   // Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)OPTIONAL(7)FINALCHECK(1)
-  const passportNumber = line2.slice(0, 9).replace(/</g, '');
+  const documentNumber = line2.slice(0, 9).replace(/</g, '');
 
   // Robust nationality extraction: scan 4-character window for three contiguous A-Z letters
   const rawNat = line2.slice(10, 14);
@@ -168,7 +109,7 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
   return {
     documentType,
     issuingCountry,
-    passportNumber,
+    documentNumber,
     dateOfBirth,
     dateOfExpiry,
   };
@@ -183,7 +124,7 @@ function extractTD1Info(lines: string[]): Omit<MRZInfo, 'validation'> {
   return {
     documentType: concatenatedLines.slice(0, 2),
     issuingCountry: concatenatedLines.slice(2, 5),
-    passportNumber: concatenatedLines.slice(5, 14).replace(/</g, '').trim(),
+    documentNumber: concatenatedLines.slice(5, 14).replace(/</g, '').trim(),
     dateOfBirth: concatenatedLines.slice(30, 36),
     dateOfExpiry: concatenatedLines.slice(38, 44),
   };

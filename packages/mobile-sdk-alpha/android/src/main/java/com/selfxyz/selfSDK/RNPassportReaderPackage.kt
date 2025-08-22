@@ -30,6 +30,6 @@ class RNPassportReaderPackage : ReactPackage {
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-        return listOf(PassportOCRViewManager(reactContext))
+        return listOf(SelfOCRViewManager(reactContext))
     }
 }

@@ -1,8 +1,7 @@
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 
-import { extractMRZInfo } from '../../mrz';
-import type { ScannerAdapter, ScanOpts, ScanResult } from '../../types/public';
+import type { PassportData, ScannerAdapter, ScanOpts, ScanResult } from '../../types/public';
 
 export const reactNativeScannerAdapter: ScannerAdapter = {
   async scan(opts: ScanOpts): Promise<ScanResult> {
@@ -26,12 +25,16 @@ async function scanIOS(opts: ScanOpts): Promise<ScanResult> {
     case 'mrz':
       try {
         const result = await SelfMRZScannerModule.startScanning();
+        const documentType = result.data.documentType.startsWith('P') ? 'passport' : 'id_card';
         return {
           mode: 'mrz',
-          passportNumber: result.data.documentNumber,
-          dateOfBirth: result.data.birthDate,
-          dateOfExpiry: result.data.expiryDate,
-          issuingCountry: result.data.countryCode,
+          mrzInfo: {
+            documentNumber: result.data.documentNumber,
+            dateOfBirth: result.data.birthDate,
+            dateOfExpiry: result.data.expiryDate,
+            issuingCountry: result.data.countryCode,
+            documentType: documentType,
+          },
         };
       } catch (error) {
         throw new Error(`MRZ scanning failed: ${error}`);
@@ -89,25 +92,22 @@ async function scanIOS(opts: ScanOpts): Promise<ScanResult> {
         );
 
         const document_type = mrz.length === 88 ? 'passport' : 'id_card';
-        const parsedMRZ = extractMRZInfo(mrz);
         return {
           mode: 'nfc',
-          passportNumber: parsed?.documentNumber || passportNumber,
-          dateOfBirth: parsed?.dateOfBirth || dateOfBirth,
-          dateOfExpiry: parsed?.documentExpiryDate || dateOfExpiry,
-          issuingCountry: parsed?.issuingAuthority || parsedMRZ.issuingCountry,
-          mrz: mrz,
-          eContent: concatenatedDataHashesArraySigned,
-          signedAttr: signedEContentArray,
-          encryptedDigest: encryptedDigestArray,
-          documentType: document_type,
-          dsc: pem,
-          dg2Hash: dg2Hash,
-          dg1Hash: dg1Hash,
-          dgPresents: parsed?.dataGroupsPresent,
-          parsed: false,
-          mock: false,
-          documentCategory: document_type,
+          passportData: {
+            mrz: mrz,
+            eContent: concatenatedDataHashesArraySigned,
+            signedAttr: signedEContentArray,
+            encryptedDigest: encryptedDigestArray,
+            documentType: document_type,
+            dsc: pem,
+            dg2Hash: dg2Hash,
+            dg1Hash: dg1Hash,
+            dgPresents: parsed?.dataGroupsPresent,
+            parsed: false,
+            mock: false,
+            documentCategory: document_type,
+          } as PassportData,
         };
       } catch (error) {
         throw new Error(`NFC scanning failed: ${error}`);
@@ -135,12 +135,16 @@ async function scanAndroid(opts: ScanOpts): Promise<ScanResult> {
     case 'mrz':
       try {
         const result = await SelfMRZScannerModule.startScanning();
+        const documentType = result.data.documentType.startsWith('P') ? 'passport' : 'id_card';
         return {
           mode: 'mrz',
-          passportNumber: result.data.documentNumber,
-          dateOfBirth: result.data.birthDate,
-          dateOfExpiry: result.data.expiryDate,
-          issuingCountry: result.data.countryCode,
+          mrzInfo: {
+            documentNumber: result.data.documentNumber,
+            dateOfBirth: result.data.birthDate,
+            dateOfExpiry: result.data.expiryDate,
+            issuingCountry: result.data.countryCode,
+            documentType: documentType,
+          },
         };
       } catch (error) {
         throw new Error(`MRZ scanning failed: ${error}`);
@@ -163,7 +167,6 @@ async function scanAndroid(opts: ScanOpts): Promise<ScanResult> {
         };
 
         const result = await PassportReader.scan(scanOptions);
-        const mrzData = extractMRZInfo(result.mrz);
 
         const dgHashesObj = JSON.parse(result.dataGroupHashes);
         const dg1HashString = dgHashesObj['1'];
@@ -181,22 +184,20 @@ async function scanAndroid(opts: ScanOpts): Promise<ScanResult> {
 
         return {
           mode: 'nfc',
-          mrz: mrz_clean,
-          dsc: pem,
-          dg2Hash: dg2Hash,
-          dg1Hash: dg1Hash,
-          dgPresents: dgPresents,
-          eContent: JSON.parse(result.encapContent),
-          signedAttr: JSON.parse(result.eContent),
-          encryptedDigest: JSON.parse(result.encryptedDigest),
-          documentType: document_type,
-          documentCategory: document_type,
-          parsed: false,
-          mock: false,
-          passportNumber: mrzData.passportNumber,
-          dateOfBirth: dateOfBirth,
-          dateOfExpiry: dateOfExpiry,
-          issuingCountry: mrzData.issuingCountry,
+          passportData: {
+            mrz: mrz_clean,
+            dsc: pem,
+            dg2Hash: dg2Hash,
+            dg1Hash: dg1Hash,
+            dgPresents: dgPresents,
+            eContent: JSON.parse(result.encapContent),
+            signedAttr: JSON.parse(result.eContent),
+            encryptedDigest: JSON.parse(result.encryptedDigest),
+            documentType: document_type,
+            documentCategory: document_type,
+            parsed: false,
+            mock: false,
+          } as PassportData,
         };
       } catch (error) {
         throw new Error(`NFC scanning failed: ${error}`);

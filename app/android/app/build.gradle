@@ -190,7 +190,8 @@ dependencies {
         exclude group: 'edu.ucar', module: 'jj2000'
     }
     implementation project(':passportreader')
-    implementation 'org.jmrtd:jmrtd:0.7.18'
+    implementation project(':mobile-sdk-alpha')
+    implementation 'org.jmrtd:jmrtd:0.7.35'
 
     implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
 

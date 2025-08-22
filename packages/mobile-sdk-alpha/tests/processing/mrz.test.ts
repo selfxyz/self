@@ -11,17 +11,19 @@ const sampleTD1 = `IDFRAX4RTBPFW46<<<<<<<<<<<<<<<9007138M3002119ESP6DUMMY<<DUMMY
 describe('extractMRZInfo', () => {
   it('parses valid TD3 MRZ', () => {
     const info = extractMRZInfo(sample);
-    expect(info.passportNumber).toBe('L898902C3');
-    expect(info.validation.overall).toBe(true);
+    expect(info.documentNumber).toBe('L898902C3');
+    expect(info.validation).toBeDefined();
+    expect(info.validation?.overall).toBe(true);
   });
 
   it('parses valid TD1 MRZ', () => {
     const info = extractMRZInfo(sampleTD1);
-    expect(info.passportNumber).toBe('X4RTBPFW4');
+    expect(info.documentNumber).toBe('X4RTBPFW4');
     expect(info.issuingCountry).toBe('FRA');
     expect(info.dateOfBirth).toBe('900713');
     expect(info.dateOfExpiry).toBe('300211');
-    expect(info.validation.overall).toBe(true);
+    expect(info.validation).toBeDefined();
+    expect(info.validation?.overall).toBe(true);
   });
 
   it('rejects invalid TD1 MRZ', () => {
@@ -32,7 +34,8 @@ describe('extractMRZInfo', () => {
   it('Fails overall validation for invalid TD1 MRZ', () => {
     const invalid = `IDFRAX4RTBPFW46`;
     const info = extractMRZInfo(invalid);
-    expect(info.validation.overall).toBe(false);
+    expect(info.validation).toBeDefined();
+    expect(info.validation?.overall).toBe(false);
   });
 
   it('rejects malformed MRZ', () => {
@@ -44,7 +47,8 @@ describe('extractMRZInfo', () => {
     const bad = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<11`;
     const info = extractMRZInfo(bad);
-    expect(info.validation.overall).toBe(false);
+    expect(info.validation).toBeDefined();
+    expect(info.validation?.overall).toBe(false);
   });
 });
 

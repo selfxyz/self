@@ -1,4 +1,6 @@
-export type { PassportData } from '@selfxyz/common/utils/types';
+import type { PassportData } from '@selfxyz/common/utils/types';
+
+export type { PassportData };
 export type { PassportValidationCallbacks } from '../validation/document';
 export interface Config {
   endpoints?: { api?: string; teeWs?: string; artifactsCdn?: string };
@@ -20,12 +22,12 @@ export interface HttpAdapter {
   fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
 }
 export interface MRZInfo {
-  passportNumber: string;
+  documentNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
   issuingCountry: string;
   documentType: string;
-  validation: MRZValidation;
+  validation?: MRZValidation; //TODO - not available in IOS currentlt
 }
 
 export interface ClockAdapter {
@@ -110,37 +112,23 @@ export type ScanOpts =
     }
   | { mode: 'qr' };
 
-export type ScanResult =
-  | {
-      mode: 'mrz';
-      passportNumber: string;
-      dateOfBirth: string;
-      dateOfExpiry: string;
-      issuingCountry?: string;
-      // Extended MRZ data when available
-      mrzInfo?: MRZInfo;
-    }
-  | {
-      mode: 'nfc';
-      mrz: string;
-      dsc: any;
-      dg2Hash?: number[];
-      dg1Hash?: number[];
-      dgPresents?: any[];
-      eContent: number[];
-      signedAttr: number[];
-      encryptedDigest: number[];
-      parsed: boolean;
-      mock: boolean;
-      documentType: 'passport' | 'id_card';
-      documentCategory: 'passport' | 'id_card';
+export type ScanResultNFC = {
+  mode: 'nfc';
+  passportData: PassportData;
+};
 
-      passportNumber: string;
-      dateOfBirth: string;
-      dateOfExpiry: string;
-      issuingCountry: string;
-    }
-  | { mode: 'qr'; data: string };
+export type ScanResultMRZ = {
+  mode: 'mrz';
+  mrzInfo: MRZInfo;
+};
+
+export type ScanResultQR = {
+  mode: 'qr';
+  data: string;
+};
+
+export type ScanResult = ScanResultMRZ | ScanResultNFC | ScanResultQR;
+
 export interface ScannerAdapter {
   scan(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
 }

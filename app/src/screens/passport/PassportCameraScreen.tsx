@@ -66,7 +66,7 @@ const PassportCameraScreen: React.FC = () => {
       }
 
       const {
-        passportNumber,
+        documentNumber,
         dateOfBirth,
         dateOfExpiry,
         documentType,
@@ -80,14 +80,14 @@ const PassportCameraScreen: React.FC = () => {
 
       if (
         !checkScannedInfo(
-          passportNumber,
+          documentNumber,
           formattedDateOfBirth,
           formattedDateOfExpiry,
         )
       ) {
         trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
           reason: 'invalid_format',
-          passportNumberLength: passportNumber.length,
+          passportNumberLength: documentNumber.length,
           dateOfBirthLength: formattedDateOfBirth.length,
           dateOfExpiryLength: formattedDateOfExpiry.length,
           duration_seconds: parseFloat(scanDurationSeconds),
@@ -97,7 +97,7 @@ const PassportCameraScreen: React.FC = () => {
       }
 
       store.update({
-        passportNumber,
+        passportNumber: documentNumber,
         dateOfBirth: formattedDateOfBirth,
         dateOfExpiry: formattedDateOfExpiry,
         documentType: documentType?.trim() || '',

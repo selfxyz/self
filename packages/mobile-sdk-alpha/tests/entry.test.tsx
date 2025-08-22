@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react';
 function Consumer() {
   const client = useSelfClient();
   const info = client.extractMRZInfo(sampleMRZ);
-  return <span>{info.passportNumber}</span>;
+  return <span>{info.documentNumber}</span>;
 }
 
 describe('SelfMobileSdk Entry Component', () => {
