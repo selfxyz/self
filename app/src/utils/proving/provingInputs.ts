@@ -5,11 +5,16 @@ import {
   generateCircuitInputsRegister,
   generateTEEInputsDiscloseStateless,
   generateTEEInputsDSC,
+  generateTEEInputsRegister,
 } from '@selfxyz/common/utils/circuits/registerInputs';
 
 import { useProtocolStore } from '@/stores/protocolStore';
 
-export { generateCircuitInputsRegister, generateTEEInputsDSC };
+export {
+  generateCircuitInputsRegister,
+  generateTEEInputsDSC,
+  generateTEEInputsRegister,
+};
 export function generateTEEInputsDisclose(
   secret: string,
   passportData: PassportData,
