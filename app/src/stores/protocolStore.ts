@@ -18,6 +18,7 @@ import {
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
 } from '@selfxyz/common/constants';
+import type { OfacTree } from '@selfxyz/common/utils/types';
 
 import { fetchOfacTrees } from '@/utils/ofac';
 
@@ -29,11 +30,7 @@ interface ProtocolState {
     deployed_circuits: any;
     circuits_dns_mapping: any;
     alternative_csca: Record<string, string>;
-    ofac_trees: {
-      passportNoAndNationality: any;
-      nameAndDob: any;
-      nameAndYob: any;
-    } | null;
+    ofac_trees: OfacTree | null;
     fetch_deployed_circuits: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_circuits_dns_mapping: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_csca_tree: (environment: 'prod' | 'stg') => Promise<void>;
@@ -53,11 +50,7 @@ interface ProtocolState {
     deployed_circuits: any;
     circuits_dns_mapping: any;
     alternative_csca: Record<string, string>;
-    ofac_trees: {
-      passportNoAndNationality: any;
-      nameAndDob: any;
-      nameAndYob: any;
-    } | null;
+    ofac_trees: OfacTree | null;
     fetch_deployed_circuits: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_circuits_dns_mapping: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_csca_tree: (environment: 'prod' | 'stg') => Promise<void>;
