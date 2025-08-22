@@ -130,5 +130,8 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     loadDocumentCatalog: async () => {
       return _adapters.documents.loadDocumentCatalog();
     },
+    loadDocumentById: async (id: string) => {
+      return _adapters.documents.loadDocumentById(id);
+    },
   };
 }

@@ -57,7 +57,7 @@ import type {
   DocumentMetadata,
   PassportData,
 } from '@selfxyz/common/utils/types';
-import { DocumentsAdapter } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentsAdapter, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 
@@ -76,8 +76,10 @@ const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
 };
 
 const safeGetAllDocuments = async () => {
+  const selfClient = useSelfClient();
+
   try {
-    return await getAllDocuments();
+    return await getAllDocuments(selfClient);
   } catch (error) {
     console.warn(
       'Error in safeGetAllDocuments, returning empty object:',
@@ -340,24 +342,6 @@ export async function deleteDocument(documentId: string): Promise<void> {
   }
 }
 
-export async function getAllDocuments(): Promise<{
-  [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
-}> {
-  const catalog = await loadDocumentCatalog();
-  const allDocs: {
-    [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
-  } = {};
-
-  for (const metadata of catalog.documents) {
-    const data = await loadDocumentById(metadata.id);
-    if (data) {
-      allDocs[metadata.id] = { data, metadata };
-    }
-  }
-
-  return allDocs;
-}
-
 export async function getAvailableDocumentTypes(): Promise<string[]> {
   const catalog = await loadDocumentCatalog();
   return [...new Set(catalog.documents.map(d => d.documentType))];
@@ -441,7 +425,8 @@ export async function initializeNativeModules(
 export async function loadAllPassportData(): Promise<{
   [service: string]: PassportData;
 }> {
-  const allDocs = await getAllDocuments();
+  const selfClient = useSelfClient();
+  const allDocs = await getAllDocuments(selfClient);
   const result: { [service: string]: PassportData } = {};
 
   // Convert to legacy format for backward compatibility
@@ -479,6 +464,7 @@ export async function loadDocumentById(
 
 export const selfClientDocumentsAdapter: DocumentsAdapter = {
   loadDocumentCatalog: loadDocumentCatalog,
+  loadDocumentById: loadDocumentById,
 };
 
 export async function loadDocumentCatalog(): Promise<DocumentCatalog> {
@@ -645,6 +631,7 @@ interface IPassportContext {
     signature: string;
     data: PassportData;
   } | null>;
+  // TODO: is this even used?
   getAllData: () => Promise<{ [service: string]: PassportData }>;
   getAvailableTypes: () => Promise<string[]>;
   setData: (data: PassportData) => Promise<void>;

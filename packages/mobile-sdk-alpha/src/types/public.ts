@@ -1,4 +1,4 @@
-import { DocumentCatalog } from '@selfxyz/common/utils/types';
+import { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
 
 export type { PassportData } from '@selfxyz/common/utils/types';
 export type { PassportValidationCallbacks } from '../validation/document';
@@ -122,6 +122,7 @@ export interface ScannerAdapter {
 
 export interface DocumentsAdapter {
   loadDocumentCatalog(): Promise<DocumentCatalog>;
+  loadDocumentById(id: string): Promise<PassportData | null>;
 }
 
 export interface SelfClient {
@@ -142,6 +143,7 @@ export interface SelfClient {
   emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
 
   loadDocumentCatalog(): Promise<DocumentCatalog>;
+  loadDocumentById(id: string): Promise<PassportData | null>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

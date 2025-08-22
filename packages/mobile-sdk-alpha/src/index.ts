@@ -97,4 +97,7 @@ export { useDocumentManager } from './hooks/useDocumentManager';
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
 
-export { hasAnyValidRegisteredDocument } from './documents/utils';
+export {
+  getAllDocuments,
+  hasAnyValidRegisteredDocument,
+} from './documents/utils';
