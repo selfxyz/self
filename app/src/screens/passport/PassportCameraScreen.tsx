@@ -6,7 +6,11 @@ import { Platform, StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 
-import { formatDateToYYMMDD } from '@selfxyz/mobile-sdk-alpha';
+import {
+  formatDateToYYMMDD,
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -23,12 +27,12 @@ import useUserStore from '@/stores/userStore';
 import analytics from '@/utils/analytics';
 import { black, slate400, slate800, white } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
-import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 import { checkScannedInfo } from '@/utils/utils';
 
 const { trackEvent } = analytics();
 
 const PassportCameraScreen: React.FC = () => {
+  const client = useSelfClient();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();
@@ -120,7 +124,7 @@ const PassportCameraScreen: React.FC = () => {
   });
 
   const onCancelPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    const hasValidDocument = await hasAnyValidRegisteredDocument(client);
     if (hasValidDocument) {
       navigateToHome();
     } else {

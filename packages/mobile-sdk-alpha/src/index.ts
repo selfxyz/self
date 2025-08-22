@@ -4,6 +4,7 @@ export type {
   ClockAdapter,
   Config,
   CryptoAdapter,
+  DocumentsAdapter,
   HttpAdapter,
   LogLevel,
   LoggerAdapter,
@@ -95,3 +96,5 @@ export { scanQRProof } from './qr';
 export { useDocumentManager } from './hooks/useDocumentManager';
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
+
+export { hasAnyValidRegisteredDocument } from './documents/utils';

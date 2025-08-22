@@ -57,9 +57,9 @@ import type {
   DocumentMetadata,
   PassportData,
 } from '@selfxyz/common/utils/types';
+import { DocumentsAdapter } from '@selfxyz/mobile-sdk-alpha';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -163,7 +163,6 @@ export const PassportContext = createContext<IPassportContext>({
   markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
   updateDocumentRegistrationState: updateDocumentRegistrationState,
   checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
-  hasAnyValidRegisteredDocument: hasAnyValidRegisteredDocument,
   checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
 });
 
@@ -224,7 +223,6 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
       updateDocumentRegistrationState: updateDocumentRegistrationState,
       checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
-      hasAnyValidRegisteredDocument: hasAnyValidRegisteredDocument,
       checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
     }),
     [
@@ -394,18 +392,6 @@ function getServiceNameForDocumentType(documentType: string): string {
   }
 }
 
-// TODO: move to utils?
-export async function hasAnyValidRegisteredDocument(client: SelfClient): Promise<boolean> {
-  try {
-    const catalog = await client.loadDocumentCatalog();
-
-    return catalog.documents.some(doc => doc.isRegistered === true);
-  } catch (error) {
-    console.error('Error loading document catalog:', error);
-    return false;
-  }
-}
-
 /**
  * Global initialization function to wait for native modules to be ready
  * Call this once at app startup before any native module operations
@@ -491,6 +477,10 @@ export async function loadDocumentById(
   return null;
 }
 
+export const selfClientDocumentsAdapter: DocumentsAdapter = {
+  loadDocumentCatalog: loadDocumentCatalog,
+};
+
 export async function loadDocumentCatalog(): Promise<DocumentCatalog> {
   try {
     // Extra safety check for module initialization
@@ -516,6 +506,9 @@ export async function loadDocumentCatalog(): Promise<DocumentCatalog> {
       if (parsed === null) {
         throw new TypeError('Cannot parse null password');
       }
+
+      console.log('Successfully loaded document catalog from keychain');
+
       return parsed;
     }
   } catch (error) {
@@ -682,7 +675,6 @@ interface IPassportContext {
     isRegistered: boolean,
   ) => Promise<void>;
   checkIfAnyDocumentsNeedMigration: () => Promise<boolean>;
-  hasAnyValidRegisteredDocument: (client: SelfClient) => Promise<boolean>;
   checkAndUpdateRegistrationStates: () => Promise<void>;
 }
 

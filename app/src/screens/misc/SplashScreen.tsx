@@ -6,22 +6,26 @@ import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+
 import splashAnimation from '@/assets/animations/splash.json';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
-  hasAnyValidRegisteredDocument,
   initializeNativeModules,
   migrateFromLegacyStorage,
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { black } from '@/utils/colors';
 import { impactLight } from '@/utils/haptic';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 const SplashScreen: React.FC = ({}) => {
+  const selfClient = useSelfClient();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { checkBiometricsAvailable } = useAuth();
@@ -31,7 +35,6 @@ const SplashScreen: React.FC = ({}) => {
     null,
   );
   const dataLoadInitiatedRef = useRef(false);
-  const selfClient = useSelfClient();
 
   useEffect(() => {
     if (!dataLoadInitiatedRef.current) {

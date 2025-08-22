@@ -61,6 +61,7 @@ export interface Adapters {
   network: NetworkAdapter;
   clock: ClockAdapter;
   logger: LoggerAdapter;
+  documents: DocumentsAdapter;
 }
 
 export interface ProofHandle {
@@ -118,6 +119,11 @@ export type ScanResult =
 export interface ScannerAdapter {
   scan(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
 }
+
+export interface DocumentsAdapter {
+  loadDocumentCatalog(): Promise<DocumentCatalog>;
+}
+
 export interface SelfClient {
   scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
   validateDocument(input: ValidationInput): Promise<ValidationResult>;

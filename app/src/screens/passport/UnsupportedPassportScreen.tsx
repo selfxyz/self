@@ -3,6 +3,11 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+
 import warnAnimation from '@/assets/animations/warning.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { Caption } from '@/components/typography/Caption';
@@ -15,16 +20,16 @@ import { styles } from '@/screens/prove/ProofRequestStatusScreen';
 import analytics from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import { notificationError } from '@/utils/haptic';
-import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 
 const { flush: flushAnalytics } = analytics();
 
 const UnsupportedPassportScreen: React.FC = () => {
+  const selfClient = useSelfClient();
   const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
 
   const onPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
     if (hasValidDocument) {
       navigateToHome();
     } else {

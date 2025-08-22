@@ -8,6 +8,8 @@ import {
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
+import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
+
 /**
  * Provides a configured Self SDK client instance to all descendants.
  *
@@ -47,6 +49,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
           },
         },
       },
+      documents: selfClientDocumentsAdapter,
       crypto: {
         async hash(
           data: Uint8Array,

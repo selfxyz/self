@@ -414,7 +414,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _handleRegisterErrorOrFailure: async () => {
       try {
+        // TODO: call hasAnyValidRegisteredDocument(selfClient) from @selfxyz/mobile-sdk-alpha
         const hasValid = await hasAnyValidRegisteredDocument();
+
         if (navigationRef.isReady()) {
           if (hasValid) {
             navigationRef.navigate('Home');

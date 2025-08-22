@@ -23,6 +23,10 @@ import { CircleHelp } from '@tamagui/lucide-icons';
 import type { PassportData } from '@selfxyz/common/types';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -48,7 +52,6 @@ import {
 } from '@/utils/haptic';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
-import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 
@@ -72,6 +75,7 @@ type PassportNFCScanRoute = RouteProp<
 >;
 
 const PassportNFCScanScreen: React.FC = () => {
+  const selfClient = useSelfClient();
   const navigation = useNavigation();
   const route = useRoute<PassportNFCScanRoute>();
   const {
@@ -304,7 +308,7 @@ const PassportNFCScanScreen: React.FC = () => {
   });
 
   const onCancelPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
     if (hasValidDocument) {
       navigateToHome();
     } else {

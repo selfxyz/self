@@ -314,6 +314,9 @@ function formatCSCAPem(cscaPem: string): string {
   return cleanedPem;
 }
 
+/**
+ * @deprecated Use `hasAnyValidRegisteredDocument` from `@selfxyz/mobile-sdk-alpha` instead.
+ */
 export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
   try {
     const catalog = await loadDocumentCatalog();
