@@ -237,7 +237,14 @@ jobs:
       - name: Install iOS Dependencies
         run: |
           echo "Installing iOS dependencies..."
-          (cd ios && pod install --silent) || { echo "❌ Pod install failed"; exit 1; }
+          cd ios
+          # First attempt: regular pod install
+          if ! pod install --silent; then
+            echo "⚠️ Pod install failed, attempting to fix hermes-engine cache mismatch..."
+            pod update hermes-engine --no-repo-update --silent || { echo "❌ Pod update hermes-engine failed"; exit 1; }
+            echo "✅ Fixed hermes-engine cache, trying pod install again..."
+            pod install --silent || { echo "❌ Pod install still failed after hermes fix"; exit 1; }
+          fi
           echo "✅ Pods installed successfully"
         working-directory: ./app
       - name: Verify iOS Workspace
