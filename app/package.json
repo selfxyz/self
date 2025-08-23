@@ -31,7 +31,7 @@
     "install-app": "yarn install-app:setup && cd ios && bundle install && bundle exec pod install && cd .. && yarn clean:xcode-env-local",
     "install-app:mobile-deploy": "yarn install && yarn build:deps && yarn clean:xcode-env-local",
     "install-app:mobile-deploy:ios": "yarn install-app:setup && yarn clean:xcode-env-local",
-    "install-app:setup": "yarn install && yarn build:deps && cd ios && bundle install && bundle exec pod install && cd ..",
+    "install-app:setup": "yarn install && yarn build:deps && cd ios && bundle install && scripts/pod-install-with-cache-fix.sh && cd ..",
     "ios": "yarn build:deps && react-native run-ios --scheme OpenPassport",
     "ios:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose ios internal_test",
     "lint": "yarn lint:headers && eslint .",
