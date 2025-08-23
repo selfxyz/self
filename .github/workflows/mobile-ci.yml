@@ -276,16 +276,17 @@ jobs:
         working-directory: ./app
       - name: Build iOS
         run: |
-          echo "Building iOS app..."
+          echo "Building iOS app for simulator (no signing required)..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
           WORKSPACE_PATH="ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
 
-          # Use cached derived data and enable parallel builds for faster compilation
+          # Build for iOS Simulator to avoid code signing issues in CI
           xcodebuild -workspace "$WORKSPACE_PATH" \
             -scheme ${{ env.IOS_PROJECT_SCHEME }} \
             -configuration Release \
-            -destination "generic/platform=iOS" \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
             -derivedDataPath ios/build \
             -jobs "$(sysctl -n hw.ncpu)" \
             -parallelizeTargets \
