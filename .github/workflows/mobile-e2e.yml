@@ -287,23 +287,23 @@ jobs:
         run: |
           echo "Installing iOS dependencies..."
           cd app/ios
-          
+
           # Pre-emptively fix hermes-engine cache issues that occur after React Native upgrades
           echo "🔧 Pre-emptively fixing hermes-engine cache conflicts..."
           echo "This prevents the 'hermes-engine differs from Pods/Local Podspecs' error"
-          
+
           # Clean various CocoaPods cache locations
           pod cache clean --all > /dev/null 2>&1 || true
           rm -rf ~/Library/Caches/CocoaPods > /dev/null 2>&1 || true
           rm -rf /Users/runner/Library/Caches/CocoaPods > /dev/null 2>&1 || true
           rm -rf ./Pods/.cache > /dev/null 2>&1 || true
-          
+
           # Force update hermes-engine first to prevent cache conflicts
           echo "🎯 Force updating hermes-engine to prevent cache mismatch..."
-          pod update hermes-engine --no-repo-update --silent || { 
-            echo "⚠️ hermes-engine update failed, trying pod install anyway..."; 
+          pod update hermes-engine --no-repo-update --silent || {
+            echo "⚠️ hermes-engine update failed, trying pod install anyway...";
           }
-          
+
           # Now attempt pod install
           echo "📦 Installing pods..."
           pod install --silent || { echo "❌ Pod install failed"; exit 1; }
