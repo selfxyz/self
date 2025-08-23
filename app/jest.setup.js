@@ -4,7 +4,7 @@
 /** @jest-environment jsdom */
 require('react-native-gesture-handler/jestSetup');
 
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+jest.mock('react-native/src/private/animated/NativeAnimatedHelper');
 
 global.FileReader = class {
   constructor() {
