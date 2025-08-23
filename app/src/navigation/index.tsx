@@ -14,7 +14,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
 import { getAesopScreens } from '@/navigation/aesop';
-import devScreens from '@/navigation/dev';
+import devScreens from '@/navigation/devTools';
 import homeScreens from '@/navigation/home';
 import miscScreens from '@/navigation/misc';
 import passportScreens from '@/navigation/passport';
