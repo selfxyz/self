@@ -32,7 +32,7 @@ export const navigationScreens = {
   ...proveScreens,
   ...settingsScreens,
   ...recoveryScreens,
-  ...devScreens,
+  ...devScreens, // allow in production for testing
   // add last to override other screens
   ...getAesopScreens(),
 };
