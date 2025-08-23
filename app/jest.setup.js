@@ -4,7 +4,12 @@
 /** @jest-environment jsdom */
 require('react-native-gesture-handler/jestSetup');
 
-jest.mock('react-native/src/private/animated/NativeAnimatedHelper');
+// Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
+jest.mock(
+  'react-native/src/private/animated/NativeAnimatedHelper',
+  () => ({}),
+  { virtual: true },
+);
 
 global.FileReader = class {
   constructor() {
