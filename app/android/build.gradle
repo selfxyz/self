@@ -24,8 +24,8 @@ buildscript {
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath 'com.google.gms:google-services:4.4.0'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.2'
-        classpath 'org.mozilla.rust-android-gradle:plugin:0.9.3'
+        // Removed firebase-crashlytics (no usages)—add back 3.x if still applied in modules.
+        // Removed rust-android-gradle plugin; keep only if you re-enable Rust integration.
     }
 }
 

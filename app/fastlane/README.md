@@ -9,6 +9,18 @@ Make sure you have the Xcode 15+ command line tools installed:
 xcode-select --install
 ```
 
+**Note:** The above command installs only the Command Line Tools, not the full Xcode app. Some Fastlane lanes and CocoaPods require the full Xcode 15+ app and the correct DEVELOPER_DIR. To verify your setup and switch to the proper Xcode app if needed:
+
+```bash
+# Verify Xcode and CLT
+xcodebuild -version
+xcode-select -p
+
+# If needed, point to the correct Xcode 15+ app:
+sudo xcode-select -s /Applications/Xcode.app
+sudo xcodebuild -runFirstLaunch
+```
+
 For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
 
 # Available Actions

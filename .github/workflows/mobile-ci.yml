@@ -238,22 +238,8 @@ jobs:
         run: |
           echo "Installing iOS dependencies..."
           cd ios
-
-          # Clear any cached podspecs that might cause version conflicts
-          echo "🧹 Clearing CocoaPods cache to prevent hermes-engine version conflicts..."
-          pod cache clean --all > /dev/null 2>&1 || true
-          rm -rf ~/Library/Caches/CocoaPods > /dev/null 2>&1 || true
-
-          # First attempt: regular pod install
-          echo "📦 Attempting pod install..."
-          if ! pod install --silent; then
-            echo "⚠️ Pod install failed, likely due to hermes-engine cache mismatch after React Native upgrade"
-            echo "🔧 Running targeted fix: pod update hermes-engine..."
-            pod update hermes-engine --no-repo-update --silent || { echo "❌ Pod update hermes-engine failed"; exit 1; }
-            echo "🔄 Retrying pod install..."
-            pod install --silent || { echo "❌ Pod install still failed after hermes fix"; exit 1; }
-          fi
-          echo "✅ Pods installed successfully"
+          # Reuse the same guarded flow as local to ensure reproducibility
+          bundle exec bash scripts/pod-install-with-cache-fix.sh
         working-directory: ./app
       - name: Verify iOS Workspace
         run: |
