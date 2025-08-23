@@ -237,22 +237,22 @@ jobs:
       - name: Install iOS Dependencies
         run: |
           echo "Installing iOS dependencies..."
-          (cd app/ios && pod install --silent) || { echo "❌ Pod install failed"; exit 1; }
+          (cd ios && pod install --silent) || { echo "❌ Pod install failed"; exit 1; }
           echo "✅ Pods installed successfully"
-        working-directory: ./app/ios
+        working-directory: ./app
       - name: Verify iOS Workspace
         run: |
           echo "Verifying iOS workspace setup..."
 
-          WORKSPACE_PATH="app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
+          WORKSPACE_PATH="ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
           if [ ! -d "$WORKSPACE_PATH" ]; then
             echo "❌ Workspace not found at: $WORKSPACE_PATH"
             echo "Available workspaces:"
-            find app/ios -name "*.xcworkspace" -type d
+            find ios -name "*.xcworkspace" -type d
             exit 1
           fi
 
-          if [ ! -d "Pods" ]; then
+          if [ ! -d "ios/Pods" ]; then
             echo "❌ Pods directory is missing"
             exit 1
           fi
@@ -272,20 +272,20 @@ jobs:
           echo "✅ iOS workspace is properly configured"
           echo "✅ Using workspace: $WORKSPACE_PATH"
           echo "✅ Using scheme: ${{ env.IOS_PROJECT_SCHEME }}"
-        working-directory: ./app/ios
+        working-directory: ./app
       - name: Build iOS
         run: |
           echo "Building iOS app..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
-          WORKSPACE_PATH="app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
+          WORKSPACE_PATH="ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
 
           # Use cached derived data and enable parallel builds for faster compilation
           xcodebuild -workspace "$WORKSPACE_PATH" \
             -scheme ${{ env.IOS_PROJECT_SCHEME }} \
             -configuration Release \
             -destination "generic/platform=iOS" \
-            -derivedDataPath app/ios/build \
+            -derivedDataPath ios/build \
             -jobs "$(sysctl -n hw.ncpu)" \
             -parallelizeTargets \
             -quiet || { echo "❌ iOS build failed"; exit 1; }
