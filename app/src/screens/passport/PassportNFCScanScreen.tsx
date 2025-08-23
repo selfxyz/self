@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import NfcManager from 'react-native-nfc-manager';
 import { Button, Image, XStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
@@ -35,6 +36,7 @@ import { PassportEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
 import analytics from '@/utils/analytics';
@@ -46,11 +48,14 @@ import {
   feedbackUnsuccessful,
   impactLight,
 } from '@/utils/haptic';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 
+import { version } from '../../../package.json';
+
 const { trackEvent } = analytics();
+
+const emailFeedback = 'team@self.xyz';
 
 const emitter =
   Platform.OS === 'android'
@@ -74,6 +79,7 @@ type PassportNFCScanRoute = RouteProp<
 const PassportNFCScanScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<PassportNFCScanRoute>();
+  const { showModal } = useFeedback();
   const {
     passportNumber,
     dateOfBirth,
@@ -106,22 +112,49 @@ const PassportNFCScanScreen: React.FC = () => {
       goToNFCMethodSelection();
     });
 
+  const sendFeedbackEmail = useCallback(async (message: string) => {
+    const subject = 'SELF App Feedback';
+    const deviceInfo = [
+      ['device', `${Platform.OS}@${Platform.Version}`],
+      ['app', `v${version}`],
+      [
+        'locales',
+        getLocales()
+          .map(locale => `${locale.languageCode}-${locale.countryCode}`)
+          .join(','),
+      ],
+      ['country', getCountry()],
+      ['tz', getTimeZone()],
+      ['ts', new Date()],
+      ['origin', 'passport/nfc'],
+      ['error', message],
+    ] as [string, string][];
+
+    const body = `
+---
+${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
+---`;
+    await Linking.openURL(
+      `mailto:${emailFeedback}?subject=${encodeURIComponent(
+        subject,
+      )}&body=${encodeURIComponent(body)}`,
+    );
+  }, []);
+
   const openErrorModal = useCallback(
     (message: string) => {
-      const callbackId = registerModalCallbacks({
-        onButtonPress: () => {},
-        onModalDismiss: goToNFCTrouble,
-      });
-      navigation.navigate('Modal', {
+      showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
-        buttonText: 'Dismiss',
+        buttonText: 'Send Feedback',
         secondaryButtonText: 'Help',
-        preventDismiss: true,
-        callbackId,
+        preventDismiss: false,
+        onButtonPress: () => sendFeedbackEmail(message),
+        onSecondaryButtonPress: goToNFCTrouble,
+        onModalDismiss: () => {},
       });
     },
-    [navigation, goToNFCTrouble],
+    [showModal, goToNFCTrouble, sendFeedbackEmail],
   );
 
   const checkNfcSupport = useCallback(async () => {

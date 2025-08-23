@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import type { FeedbackModalScreenParams } from '../components/FeedbackModalScreen';
 import { captureFeedback } from '../Sentry';
 
 import {
@@ -10,11 +11,14 @@ import {
   showFeedbackWidget,
 } from '@sentry/react-native';
 
-export type FeedbackType = 'button' | 'widget' | 'custom';
+export type FeedbackType = 'button' | 'widget' | 'custom' | 'modal';
 
 export const useFeedbackModal = () => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [modalParams, setModalParams] =
+    useState<FeedbackModalScreenParams | null>(null);
 
   const showFeedbackModal = useCallback((type: FeedbackType = 'button') => {
     if (timeoutRef.current) {
@@ -31,6 +35,8 @@ export const useFeedbackModal = () => {
         break;
       case 'custom':
         setIsVisible(true);
+        break;
+      case 'modal':
         break;
       default:
         showFeedbackButton();
@@ -55,6 +61,16 @@ export const useFeedbackModal = () => {
     hideFeedbackButton();
 
     setIsVisible(false);
+  }, []);
+
+  const showModal = useCallback((params: FeedbackModalScreenParams) => {
+    setModalParams(params);
+    setIsModalVisible(true);
+  }, []);
+
+  const hideModal = useCallback(() => {
+    setIsModalVisible(false);
+    setModalParams(null);
   }, []);
 
   useEffect(() => {
@@ -100,5 +116,9 @@ export const useFeedbackModal = () => {
     showFeedbackModal,
     hideFeedbackModal,
     submitFeedback,
+    isModalVisible,
+    modalParams,
+    showModal,
+    hideModal,
   };
 };

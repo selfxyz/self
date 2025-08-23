@@ -58,6 +58,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
       onClose();
       Alert.alert('Success', 'Thank you for your feedback!');
     } catch (error) {
+      console.error('Error submitting feedback:', error);
       Alert.alert('Error', 'Failed to submit feedback. Please try again.');
     } finally {
       setIsSubmitting(false);

@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 import React, { createContext, useContext } from 'react';
 
 import FeedbackModal from '../components/FeedbackModal';
+import type { FeedbackModalScreenParams } from '../components/FeedbackModalScreen';
+import FeedbackModalScreen from '../components/FeedbackModalScreen';
 import type { FeedbackType } from '../hooks/useFeedbackModal';
 import { useFeedbackModal } from '../hooks/useFeedbackModal';
 
@@ -15,6 +17,7 @@ interface FeedbackContextType {
     name?: string,
     email?: string,
   ) => Promise<void>;
+  showModal: (params: FeedbackModalScreenParams) => void;
 }
 
 const FeedbackContext = createContext<FeedbackContextType | undefined>(
@@ -24,14 +27,23 @@ const FeedbackContext = createContext<FeedbackContextType | undefined>(
 export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({
   children,
 }) => {
-  const { isVisible, showFeedbackModal, hideFeedbackModal, submitFeedback } =
-    useFeedbackModal();
+  const {
+    isVisible,
+    showFeedbackModal,
+    hideFeedbackModal,
+    submitFeedback,
+    isModalVisible,
+    modalParams,
+    showModal,
+    hideModal,
+  } = useFeedbackModal();
 
   return (
     <FeedbackContext.Provider
       value={{
         showFeedbackModal,
         submitFeedback,
+        showModal,
       }}
     >
       {children}
@@ -40,6 +52,12 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({
         visible={isVisible}
         onClose={hideFeedbackModal}
         onSubmit={submitFeedback}
+      />
+
+      <FeedbackModalScreen
+        visible={isModalVisible}
+        modalParams={modalParams}
+        onHideModal={hideModal}
       />
     </FeedbackContext.Provider>
   );
