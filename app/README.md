@@ -4,7 +4,7 @@
 
 | Requirement | Version  | Installation Guide                                                       |
 | ----------- | -------- | ------------------------------------------------------------------------ |
-| nodejs      | > v18    | [Install nodejs](https://nodejs.org/)                                    |
+| nodejs      | >= 22    | [Install nodejs](https://nodejs.org/)                                    |
 | ruby        | >= 3.1.0 | [Install ruby](https://www.ruby-lang.org/en/documentation/installation/) |
 | circom      | Latest   | [Install circom](https://docs.circom.io/)                                |
 | snarkjs     | Latest   | [Install snarkjs](https://github.com/iden3/snarkjs)                      |
@@ -25,7 +25,7 @@
 
 | Requirement | Version | Installation Guide                                  |
 | ----------- | ------- | --------------------------------------------------- |
-| Xcode       | Latest  | [Install Xcode](https://developer.apple.com/xcode/) |
+| Xcode       | >= 15   | [Install Xcode](https://developer.apple.com/xcode/) |
 | cocoapods   | Latest  | [Install cocoapods](https://cocoapods.org/)         |
 
 ## Installation

@@ -4,7 +4,7 @@
 
 - Node.js 22.x (`nvm use`), Yarn via Corepack (`corepack enable && corepack prepare yarn@stable --activate`)
 - macOS/iOS:
-  - Xcode and Command Line Tools, CocoaPods (Ruby installed)
+  - Xcode 15+ and Command Line Tools, CocoaPods (Ruby installed)
   - From `app/ios`: `bundle install && bundle exec pod install` or from `app`: `npx pod-install`
 - Android:
   - Android SDK + Emulator, ANDROID_HOME configured, JDK 17 (set JAVA_HOME)

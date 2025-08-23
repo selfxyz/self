@@ -3,7 +3,7 @@ fastlane documentation
 
 # Installation
 
-Make sure you have the latest version of the Xcode command line tools installed:
+Make sure you have the Xcode 15+ command line tools installed:
 
 ```sh
 xcode-select --install
