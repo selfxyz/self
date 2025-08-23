@@ -46,65 +46,6 @@ function verifyCheckDigit(field: string, expectedCheckDigit: string): boolean {
 }
 
 /**
- * Parse names from MRZ format (surname<<given<names<<<)
- * Handles complex cases like: VAN<<DER<<BERG<<MARIA<ELENA
- * Expected: surname="VAN  DER  BERG", givenNames="MARIA ELENA"
- */
-function parseNames(nameField: string): { surname: string; givenNames: string } {
-  const parts = nameField.split('<<');
-
-  if (parts.length === 1) {
-    // No '<<' found, entire field is surname
-    return {
-      surname: nameField.replace(/</g, ' ').trim(),
-      givenNames: '',
-    };
-  }
-
-  // Find the boundary between surname and given names
-  // Look for the last part that contains '<' (indicating given names with spaces)
-  let givenNamesStartIndex = parts.length; // Default to all surname
-
-  for (let i = parts.length - 1; i >= 0; i--) {
-    const part = parts[i];
-    // If a part contains '<' within it (not just trailing '<'), it's likely given names
-    if (part.includes('<') && !part.endsWith('<'.repeat(part.length))) {
-      givenNamesStartIndex = i;
-      break;
-    }
-  }
-
-  // If we didn't find a clear given names section, use the first << as boundary
-  if (givenNamesStartIndex >= parts.length) {
-    const firstDoubleSeparator = nameField.indexOf('<<');
-    if (firstDoubleSeparator === -1) {
-      return {
-        surname: nameField.replace(/</g, ' ').trim(),
-        givenNames: '',
-      };
-    }
-
-    const surnameField = nameField.slice(0, firstDoubleSeparator);
-    const givenNamesField = nameField.slice(firstDoubleSeparator + 2);
-
-    return {
-      surname: surnameField.replace(/</g, ' ').trim(),
-      givenNames: givenNamesField.replace(/</g, ' ').trim(),
-    };
-  }
-
-  // Build surname from parts before the given names (join with double spaces to reflect <<)
-  const surnameParts = parts.slice(0, givenNamesStartIndex);
-  const surname = surnameParts.join('  ').replace(/</g, ' ').trim();
-
-  // Build given names from remaining parts
-  const givenNamesParts = parts.slice(givenNamesStartIndex);
-  const givenNames = givenNamesParts.join(' ').replace(/</g, ' ').trim();
-
-  return { surname, givenNames };
-}
-
-/**
  * Validate TD3 MRZ format (passport/travel document)
  */
 function validateTD3Format(lines: string[]): boolean {
@@ -117,8 +58,6 @@ function validateTD3Format(lines: string[]): boolean {
 }
 
 function validateTD1Format(lines: string[]): boolean {
-  console.log('validateTD1Format', lines);
-
   const concatenatedLines = lines[0] + lines[1];
   const TD1_REGEX =
     /^(?<documentType>[A-Z0-9<]{2})(?<issuingCountry>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})(?<optionalData1>[A-Z0-9<]{15})(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<sex>[MF<]{1})(?<dateOfExpiry>[0-9]{6})(?<checkDigitDateOfExpiry>[0-9]{1})(?<nationality>[A-Z<]{3})(?<optionalData2>[A-Z0-9<]{7})/;
