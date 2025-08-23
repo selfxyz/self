@@ -238,12 +238,12 @@ jobs:
         run: |
           echo "Installing iOS dependencies..."
           cd ios
-          
+
           # Clear any cached podspecs that might cause version conflicts
           echo "🧹 Clearing CocoaPods cache to prevent hermes-engine version conflicts..."
           pod cache clean --all > /dev/null 2>&1 || true
           rm -rf ~/Library/Caches/CocoaPods > /dev/null 2>&1 || true
-          
+
           # First attempt: regular pod install
           echo "📦 Attempting pod install..."
           if ! pod install --silent; then
