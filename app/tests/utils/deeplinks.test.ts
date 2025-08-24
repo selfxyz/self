@@ -3,7 +3,11 @@
 import { Linking } from 'react-native';
 
 jest.mock('@/navigation', () => ({
-  navigationRef: { navigate: jest.fn(), isReady: jest.fn(() => true) },
+  navigationRef: {
+    navigate: jest.fn(),
+    reset: jest.fn(),
+    isReady: jest.fn(() => true),
+  },
 }));
 
 const mockSelfAppStore = { useSelfAppStore: { getState: jest.fn() } };
@@ -58,7 +62,10 @@ describe('deeplinks', () => {
       expect(setSelfApp).toHaveBeenCalledWith(selfApp);
       expect(startAppListener).toHaveBeenCalledWith('abc');
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.navigate).toHaveBeenCalledWith('ProveScreen');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'ProveScreen' }],
+      });
     });
 
     it('handles sessionId parameter', () => {
@@ -68,7 +75,10 @@ describe('deeplinks', () => {
       expect(cleanSelfApp).toHaveBeenCalled();
       expect(startAppListener).toHaveBeenCalledWith('123');
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.navigate).toHaveBeenCalledWith('ProveScreen');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'ProveScreen' }],
+      });
     });
 
     it('handles mock_passport parameter', () => {
@@ -84,7 +94,10 @@ describe('deeplinks', () => {
         gender: undefined,
       });
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.navigate).toHaveBeenCalledWith('MockDataDeepLink');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'MockDataDeepLink' }],
+      });
     });
 
     it('navigates to QRCodeTrouble for invalid data', () => {
@@ -96,7 +109,10 @@ describe('deeplinks', () => {
       handleUrl(url);
 
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.navigate).toHaveBeenCalledWith('QRCodeTrouble');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'QRCodeTrouble' }],
+      });
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Error parsing selfApp:',
         expect.any(Error),
@@ -117,7 +133,10 @@ describe('deeplinks', () => {
       handleUrl(url);
 
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.navigate).toHaveBeenCalledWith('QRCodeTrouble');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'QRCodeTrouble' }],
+      });
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'No sessionId or selfApp found in the data',
       );
@@ -135,7 +154,10 @@ describe('deeplinks', () => {
       handleUrl(url);
 
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.navigate).toHaveBeenCalledWith('QRCodeTrouble');
+      expect(navigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'QRCodeTrouble' }],
+      });
 
       consoleErrorSpy.mockRestore();
     });
