@@ -91,7 +91,7 @@ class KeyStoreUtils {
         if (endIndex < 0) {
             endIndex = issuerName.length
         }
-        val countryCode = issuerName.substring(startIndex + 2, endIndex).trim { it <= ' ' }.toUpperCase()
+        val countryCode = issuerName.substring(startIndex + 2, endIndex).trim { it <= ' ' }.uppercase()
         return try {
             Country.getInstance(countryCode)
         } catch (e: Exception) {
@@ -129,7 +129,7 @@ class KeyStoreUtils {
             val serial = x509Certificate.getSerialNumber()
             val country = getCountry(issuer)
             val isSelfSigned = (issuer == null && subject == null) || subject.equals(issuer)
-            val outName = country!!.toAlpha2Code().toLowerCase().toString() + "_" + (if (isSelfSigned) "root_" else "link_") + (++i) + ".cer"
+            val outName = country!!.toAlpha2Code().lowercase().toString() + "_" + (if (isSelfSigned) "root_" else "link_") + (++i) + ".cer"
             treeMap.put(outName, x509Certificate)
 
         }

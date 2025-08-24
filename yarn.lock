@@ -4221,13 +4221,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/gradle-plugin@npm:0.80.2":
-  version: 0.80.2
-  resolution: "@react-native/gradle-plugin@npm:0.80.2"
-  checksum: 10c0/ab4ca7a1003d965144f54718c779379a31446a26c49befb0c635843ddbafb5a910ac1b47d9dc4c83177f61f8a1b34d8eee5663fb8e6d130046dafeab7a186119
-  languageName: node
-  linkType: hard
-
 "@react-native/js-polyfills@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/js-polyfills@npm:0.76.9"
@@ -5067,7 +5060,7 @@ __metadata:
     "@react-native-firebase/remote-config": "npm:^19.0.1"
     "@react-native/babel-preset": "npm:0.76.9"
     "@react-native/eslint-config": "npm:0.76.9"
-    "@react-native/gradle-plugin": "npm:0.80.2"
+    "@react-native/gradle-plugin": "npm:0.76.9"
     "@react-native/metro-config": "npm:0.76.9"
     "@react-native/typescript-config": "npm:0.76.9"
     "@react-navigation/native": "npm:^7.0.14"
