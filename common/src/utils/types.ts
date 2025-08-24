@@ -4,6 +4,13 @@ import type { PassportMetadata } from './passports/passport_parsing/parsePasspor
 export type DocumentCategory = 'passport' | 'id_card';
 
 export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
+
+export type OfacTree = {
+  passportNoAndNationality: any;
+  nameAndDob: any;
+  nameAndYob: any;
+};
+
 export type PassportData = {
   mrz: string;
   dg1Hash?: number[];

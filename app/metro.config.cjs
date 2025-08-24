@@ -70,6 +70,10 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/scope.js',
   ),
+  '@selfxyz/common/utils/proving': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/proving.js',
+  ),
   '@selfxyz/common/utils/appType': path.resolve(
     commonPath,
     'dist/esm/src/utils/appType.js',
