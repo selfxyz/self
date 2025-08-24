@@ -45,16 +45,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Node Modules
-        uses: actions/cache@v4
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build Dependencies
@@ -88,16 +86,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Node Modules
-        uses: actions/cache@v4
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
@@ -156,14 +152,14 @@ jobs:
           ruby-version: ${{ env.RUBY_VERSION }}
           bundler-cache: false
           working-directory: ./app
-
-      - name: Cache Node modules
-        uses: actions/cache@v4
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
         with:
-          path: app/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('app/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-
+          path: |
+            .yarn/cache
+            node_modules
+            app/node_modules
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Cache Ruby gems
         uses: ./.github/actions/cache-bundler
         with:
@@ -177,6 +173,7 @@ jobs:
             app/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: app/ios/Podfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}
       - name: Cache Xcode build
         uses: actions/cache@v4
         with:
@@ -196,14 +193,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-xcode-index-
       - name: Cache Gradle
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-gradle
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('app/android/**/gradle-wrapper.properties', 'app/android/**/gradle-wrapper.jar') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache-version: ${{ env.GH_CACHE_VERSION }}
       - name: Setup Java environment
         uses: actions/setup-java@v4
         with:
@@ -294,5 +286,7 @@ jobs:
           echo "✅ iOS build succeeded"
         working-directory: ./app
       - name: Build Android
-        run: yarn android
+        run: |
+          cd android
+          ./gradlew assembleDebug
         working-directory: ./app
