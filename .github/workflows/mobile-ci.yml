@@ -20,8 +20,13 @@ on:
     paths:
       - "common/**"
       - "app/**"
-      - ".github/workflows/app.yml"
+      - ".github/workflows/mobile-ci.yml"
       - ".github/actions/**"
+  workflow_dispatch: {}
+
+concurrency:
+  group: mobile-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
@@ -45,16 +50,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Node Modules
-        uses: actions/cache@v4
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build Dependencies
@@ -88,16 +91,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Node Modules
-        uses: actions/cache@v4
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
         with:
           path: |
             .yarn/cache
             node_modules
             app/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
@@ -107,7 +108,7 @@ jobs:
       - name: Test
         run: yarn test
         working-directory: ./app
-  build:
+  build-ios:
     runs-on: macos-latest
     env:
       # iOS project configuration - hardcoded for CI stability
@@ -156,14 +157,14 @@ jobs:
           ruby-version: ${{ env.RUBY_VERSION }}
           bundler-cache: false
           working-directory: ./app
-
-      - name: Cache Node modules
-        uses: actions/cache@v4
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
         with:
-          path: app/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('app/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-
+          path: |
+            .yarn/cache
+            node_modules
+            app/node_modules
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Cache Ruby gems
         uses: ./.github/actions/cache-bundler
         with:
@@ -177,6 +178,7 @@ jobs:
             app/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: app/ios/Podfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}
       - name: Cache Xcode build
         uses: actions/cache@v4
         with:
@@ -195,31 +197,6 @@ jobs:
           key: ${{ runner.os }}-xcode-index-${{ hashFiles('app/ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-xcode-index-
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('app/android/**/gradle-wrapper.properties', 'app/android/**/gradle-wrapper.jar') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: Setup Java environment
-        uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: ${{ env.JAVA_VERSION }}
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          accept-android-sdk-licenses: true
-      - name: Cache NDK
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
-          key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
-      - name: Install NDK
-        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build Dependencies
@@ -237,8 +214,9 @@ jobs:
       - name: Install iOS Dependencies
         run: |
           echo "Installing iOS dependencies..."
-          (cd ios && pod install --silent) || { echo "❌ Pod install failed"; exit 1; }
-          echo "✅ Pods installed successfully"
+          cd ios
+          # Reuse the same guarded flow as local to ensure reproducibility
+          bundle exec bash scripts/pod-install-with-cache-fix.sh
         working-directory: ./app
       - name: Verify iOS Workspace
         run: |
@@ -275,22 +253,83 @@ jobs:
         working-directory: ./app
       - name: Build iOS
         run: |
-          echo "Building iOS app..."
+          echo "Building iOS app for simulator (no signing required)..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
           WORKSPACE_PATH="ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
 
-          # Use cached derived data and enable parallel builds for faster compilation
+          # Build for iOS Simulator to avoid code signing issues in CI
           xcodebuild -workspace "$WORKSPACE_PATH" \
             -scheme ${{ env.IOS_PROJECT_SCHEME }} \
             -configuration Release \
-            -destination "generic/platform=iOS" \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
             -derivedDataPath ios/build \
             -jobs "$(sysctl -n hw.ncpu)" \
             -parallelizeTargets \
             -quiet || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
         working-directory: ./app
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            app/node_modules
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Cache Gradle
+        uses: ./.github/actions/cache-gradle
+        with:
+          cache-version: ${{ env.GH_CACHE_VERSION }}
+      - name: Setup Java environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+      - name: Cache NDK
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
+          key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
+      - name: Install NDK
+        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build Dependencies
+        run: |
+          echo "Building dependencies..."
+          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          echo "✅ Dependencies built successfully"
+        working-directory: ./app
       - name: Build Android
-        run: yarn android
+        run: |
+          cd android
+          ./gradlew assembleDebug
         working-directory: ./app

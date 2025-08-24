@@ -67,7 +67,6 @@ describe('PassportCamera components', () => {
         dateOfBirth: '900101',
         documentType: 'P',
         issuingCountry: 'UTO',
-        nationality: 'UTO',
       }),
     );
   });
