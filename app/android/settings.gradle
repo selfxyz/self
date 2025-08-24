@@ -1,6 +1,8 @@
 pluginManagement { includeBuild("../../node_modules/@react-native/gradle-plugin") }
 plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
+  ex.autolinkLibrariesFromCommand(['bash', '-c', 'cd .. && yarn exec @react-native-community/cli config'])
+}
 rootProject.name = 'OpenPassport'
 include ':app'
 includeBuild('../../node_modules/@react-native/gradle-plugin')
