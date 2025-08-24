@@ -704,9 +704,6 @@ class TouchImageView : androidx.appcompat.widget.AppCompatImageView {
             performLongClick()
         }
 
-                // onFling method removed due to compatibility issues with newer Android SDK versions
-        // The fling functionality is handled differently in modern Android versions
-
         override fun onDoubleTap(e: MotionEvent): Boolean {
             var consumed = false
             if (doubleTapListener != null) {
@@ -753,9 +750,6 @@ class TouchImageView : androidx.appcompat.widget.AppCompatImageView {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
                         last.set(curr)
-                        // Fling functionality disabled due to Android SDK compatibility
-                        // if (fling != null)
-                        //     fling!!.cancelFling()
                         setState(State.DRAG)
                     }
 

@@ -22,8 +22,6 @@ class MainApplication : Application(), ReactApplication {
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): MutableList<ReactPackage> =
             PackageList(this).packages.apply {
-              // Packages that cannot be autolinked yet can be added manually here, for example:
-              // add(MyReactNativePackage())
               add(CameraActivityPackage())
               add(QRCodeScannerPackage())
               add(BackupPackage())
@@ -42,10 +40,8 @@ class MainApplication : Application(), ReactApplication {
     // CRITICAL CHANGE: Use OpenSourceMergedSoMapping for RN 0.76+ Hermes support
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      // If you opted-in for the New Architecture, we load the native entry point for this app.
       DefaultNewArchitectureEntryPoint.load()
     }
-    // ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val channel = NotificationChannel(
