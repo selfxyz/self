@@ -25,7 +25,7 @@
 
 | Requirement | Version | Installation Guide                                  |
 | ----------- | ------- | --------------------------------------------------- |
-| Xcode       | >= 15   | [Install Xcode](https://developer.apple.com/xcode/) |
+| Xcode       | Latest  | [Install Xcode](https://developer.apple.com/xcode/) |
 | cocoapods   | Latest  | [Install cocoapods](https://cocoapods.org/)         |
 
 ## Installation

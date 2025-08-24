@@ -67,7 +67,7 @@ We provide bounties for new and interesting applications using Self.
 
 ## Development Setup
 
-This project requires **Node.js 22.x**. Use the included `.nvmrc` to match the version. For iOS builds, Xcode 15 or later is required.
+This project requires **Node.js 22.x**. Use the included `.nvmrc` to match the version.
 
 Run `yarn install` to bootstrap dependencies and husky hooks.
 Gitleaks will scan staged changes on each commit via `yarn gitleaks`.
