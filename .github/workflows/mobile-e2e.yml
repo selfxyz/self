@@ -18,7 +18,7 @@ env:
 
 on:
   push:
-    branches: [main, release/**, codex/fix-mobile-ci-workflow-errors]
+    branches: [main, release/**]
     paths:
       - "app/**"
       - ".github/workflows/mobile-e2e.yml"
