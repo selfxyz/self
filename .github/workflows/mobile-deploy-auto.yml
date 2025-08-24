@@ -9,6 +9,10 @@ on:
       - "!app/**/*.md"
       - "!app/docs/**"
 
+concurrency:
+  group: mobile-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -30,7 +34,7 @@ jobs:
           echo "🔍 Checking deployment conditions..."
 
           # Skip if PR has skip-deploy in title or body
-          if [[ "${{ github.event.pull_request.title }}" =~ \[skip-deploy\] ]] || 
+          if [[ "${{ github.event.pull_request.title }}" =~ \[skip-deploy\] ]] ||
              [[ "${{ github.event.pull_request.body }}" =~ \[skip-deploy\] ]]; then
             echo "should_deploy=false" >> $GITHUB_OUTPUT
             echo "⏭️ Skipping deployment due to [skip-deploy] flag"

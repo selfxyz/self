@@ -89,6 +89,10 @@ on:
         required: false
         default: false
 
+concurrency:
+  group: mobile-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build-ios:
     runs-on: macos-latest
