@@ -150,7 +150,7 @@
     "@react-native-community/cli": "^20.0.1",
     "@react-native/babel-preset": "0.76.9",
     "@react-native/eslint-config": "0.76.9",
-    "@react-native/gradle-plugin": "0.76.9",
+    "@react-native/gradle-plugin": "0.80.2",
     "@react-native/metro-config": "0.76.9",
     "@react-native/typescript-config": "0.76.9",
     "@tamagui/types": "1.126.14",

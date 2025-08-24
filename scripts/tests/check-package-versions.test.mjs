@@ -32,7 +32,7 @@ describe('check-package-versions', () => {
         'poseidon-lite': '^0.3.0',
         snarkjs: '^0.7.5',
         react: '^18.3.1',
-        'react-native': '0.75.4',
+        'react-native': '0.76.9',
         '@tamagui/config': '1.126.14',
         '@tamagui/lucide-icons': '1.126.14',
         typescript: '^5.9.2',
@@ -198,7 +198,7 @@ jobs:
     const pkg1 = {
       dependencies: {
         react: '^18.3.1',
-        'react-native': '0.75.4',
+        'react-native': '0.76.9',
       },
     };
     const pkg2 = {
