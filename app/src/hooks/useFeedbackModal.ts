@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-import type { FeedbackModalScreenParams } from '../components/FeedbackModalScreen';
-import { captureFeedback } from '../Sentry';
-
 import {
   hideFeedbackButton,
   showFeedbackButton,
   showFeedbackWidget,
 } from '@sentry/react-native';
+
+import type { FeedbackModalScreenParams } from '@/components/FeedbackModalScreen';
+import { captureFeedback } from '@/Sentry';
 
 export type FeedbackType = 'button' | 'widget' | 'custom' | 'modal';
 

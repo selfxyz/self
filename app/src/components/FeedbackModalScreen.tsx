@@ -4,14 +4,14 @@ import React, { useCallback } from 'react';
 import { Modal, StyleSheet } from 'react-native';
 import { styled, View, XStack, YStack } from 'tamagui';
 
-import ModalClose from '../images/icons/modal_close.svg';
-import LogoInversed from '../images/logo_inversed.svg';
-import { white } from '../utils/colors';
-import { confirmTap, impactLight } from '../utils/haptic';
-import { PrimaryButton } from './buttons/PrimaryButton';
-import { SecondaryButton } from './buttons/SecondaryButton';
-import Description from './typography/Description';
-import { Title } from './typography/Title';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import ModalClose from '@/images/icons/modal_close.svg';
+import LogoInversed from '@/images/logo_inversed.svg';
+import { white } from '@/utils/colors';
+import { confirmTap, impactLight } from '@/utils/haptic';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',
@@ -57,7 +57,6 @@ const FeedbackModalScreen: React.FC<FeedbackModalScreenProps> = ({
 
     try {
       await modalParams.onButtonPress();
-
     } catch (callbackError) {
       console.error('Callback error:', callbackError);
     } finally {
