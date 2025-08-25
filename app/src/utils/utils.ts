@@ -20,9 +20,14 @@ export function checkScannedInfo(
 // Redacts 9+ consecutive digits and MRZ-like blocks to reduce PII exposure
 export const sanitizeErrorMessage = (msg: string): string => {
   try {
-    return msg
-      .replace(/\b\d{9,}\b/g, '[REDACTED]')
-      .replace(/[A-Z0-9<]{30,}/g, '[MRZ_REDACTED]');
+    return (
+      msg
+        // First normalize digit sequences by removing spaces and dashes between digits
+        .replace(/\d[ -]+\d/g, match => match.replace(/[ -]/g, ''))
+        // Then redact sequences of 9+ consecutive digits
+        .replace(/\b\d{9,}\b/g, '[REDACTED]')
+        .replace(/[A-Z0-9<]{30,}/g, '[MRZ_REDACTED]')
+    );
   } catch {
     return 'redacted';
   }
