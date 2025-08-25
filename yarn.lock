@@ -12735,14 +12735,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"check-package-versions-tests@workspace:scripts/tests":
-  version: 0.0.0-use.local
-  resolution: "check-package-versions-tests@workspace:scripts/tests"
-  dependencies:
-    vitest: "npm:^1.6.0"
-  languageName: unknown
-  linkType: soft
-
 "check-types@npm:^11.2.3":
   version: 11.2.3
   resolution: "check-types@npm:11.2.3"
@@ -23738,6 +23730,12 @@ __metadata:
   checksum: 10c0/981632f9bf59f35b15a9bcdac671dd183f4946fe4b055ae71a301e66a9797b95e5dd450de581eb6cca56fb6583ce8f24d67b2d9f8e1b2936612209697f6c277e
   languageName: node
   linkType: hard
+
+"scripts-tests@workspace:scripts/tests":
+  version: 0.0.0-use.local
+  resolution: "scripts-tests@workspace:scripts/tests"
+  languageName: unknown
+  linkType: soft
 
 "scrypt-js@npm:3.0.1, scrypt-js@npm:^3.0.0":
   version: 3.0.1
