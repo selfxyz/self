@@ -196,7 +196,7 @@ const PassportNFCScanScreen: React.FC = () => {
       }
       scanTimeoutRef.current = setTimeout(() => {
         trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: sanitizeErrorMessage('timeout'),
+          error: 'timeout',
         });
         openErrorModal('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
