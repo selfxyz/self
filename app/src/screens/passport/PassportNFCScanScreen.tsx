@@ -494,21 +494,12 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
                   gap="$1.5"
                 >
                   <Title>Verify your ID</Title>
-                  <XStack alignItems="center" gap="$2">
-                    <Button
-                      unstyled
-                      onPress={goToNFCTrouble}
-                      icon={<CircleHelp size={28} color={slate500} />}
-                      aria-label="Help"
-                    />
-                    <Button
-                      unstyled
-                      onPress={onReportIssue}
-                      aria-label="Report issue"
-                    >
-                      <BodyText color={slate500}>Report issue</BodyText>
-                    </Button>
-                  </XStack>
+                  <Button
+                    unstyled
+                    onPress={goToNFCTrouble}
+                    icon={<CircleHelp size={28} color={slate500} />}
+                    aria-label="Help"
+                  />
                 </XStack>
               </GestureDetector>
               {isNfcEnabled ? (
@@ -555,6 +546,9 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
                 onPress={onCancelPress}
               >
                 Cancel
+              </SecondaryButton>
+              <SecondaryButton onPress={onReportIssue}>
+                Report Issue
               </SecondaryButton>
             </ButtonsContainer>
           </>
