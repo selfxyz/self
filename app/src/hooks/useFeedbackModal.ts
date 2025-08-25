@@ -13,7 +13,7 @@ import { captureFeedback } from '@/Sentry';
 export type FeedbackType = 'button' | 'widget' | 'custom';
 
 export const useFeedbackModal = () => {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalParams, setModalParams] =

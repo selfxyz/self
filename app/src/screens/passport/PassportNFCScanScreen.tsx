@@ -95,7 +95,7 @@ const PassportNFCScanScreen: React.FC = () => {
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [nfcMessage, setNfcMessage] = useState<string | null>(null);
-  const scanTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const animationRef = useRef<LottieView>(null);
 
