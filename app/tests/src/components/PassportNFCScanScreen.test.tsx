@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
 import React from 'react';
-import { act, renderHook } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
-// Mock the scan function
+import PassportNFCScanScreen from '@/screens/passport/PassportNFCScanScreen';
+
+// Mock the scan function - this is the key to testing timing
 const mockScan = jest.fn();
 jest.mock('@/utils/nfcScanner', () => ({
   scan: mockScan,
-  parseScanResponse: jest.fn(),
+  parseScanResponse: jest.fn(() => ({ documentNumber: '123456789' })),
 }));
 
 // Mock other passport utilities
@@ -16,7 +18,7 @@ jest.mock('@selfxyz/common/utils/passports', () => ({
 }));
 
 jest.mock('@selfxyz/common/utils/csca', () => ({
-  getSKIPEM: jest.fn(),
+  getSKIPEM: jest.fn(() => 'mock-ski-pem'),
 }));
 
 jest.mock('@/providers/passportDataProvider', () => ({
@@ -38,10 +40,12 @@ jest.mock('@sentry/react-native', () => ({
 }));
 
 // Mock feedback provider
+const mockOpenErrorModal = jest.fn();
+const mockOpenSuccessModal = jest.fn();
 jest.mock('@/providers/feedbackProvider', () => ({
   useFeedback: () => ({
-    openErrorModal: jest.fn(),
-    openSuccessModal: jest.fn(),
+    openErrorModal: mockOpenErrorModal,
+    openSuccessModal: mockOpenSuccessModal,
   }),
 }));
 
@@ -69,41 +73,81 @@ const mockRoute = {
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate }),
   useRoute: () => mockRoute,
-  useFocusEffect: jest.fn(),
+  useFocusEffect: jest.fn(callback => {
+    // Execute the callback immediately for testing
+    const cleanup = callback();
+    return cleanup;
+  }),
 }));
 
-// Create a simple hook to test the cancellation logic
-const useCancellationTest = () => {
-  const scanCancelledRef = React.useRef(false);
-  const scanTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null,
+// Mock NFC Manager
+jest.mock('react-native-nfc-manager', () => ({
+  isSupported: jest.fn(() => Promise.resolve(true)),
+  isEnabled: jest.fn(() => Promise.resolve(true)),
+}));
+
+// Mock react-native completely to avoid TurboModule issues
+jest.mock('react-native', () => {
+  const RN = jest.requireActual('react-native');
+
+  return Object.setPrototypeOf(
+    {
+      Platform: {
+        OS: 'ios',
+        select: (config: any) => config.ios,
+      },
+      // Mock components we need
+      TouchableOpacity: RN.TouchableOpacity || 'TouchableOpacity',
+      Text: RN.Text || 'Text',
+      View: RN.View || 'View',
+      Image: RN.Image || 'Image',
+      // Mock Settings that's causing the TurboModule error
+      Settings: {
+        get: jest.fn(),
+        set: jest.fn(),
+        watchKeys: jest.fn(),
+        clearWatch: jest.fn(),
+      },
+    },
+    RN,
   );
+});
 
-  const startScan = () => {
-    scanCancelledRef.current = false;
-    scanTimeoutRef.current = setTimeout(() => {
-      scanCancelledRef.current = true;
-    }, 100); // Short timeout for testing
-  };
-
-  const checkCancellation = () => {
-    return scanCancelledRef.current;
-  };
-
-  const cleanup = () => {
-    scanCancelledRef.current = true;
-    if (scanTimeoutRef.current) {
-      clearTimeout(scanTimeoutRef.current);
-      scanTimeoutRef.current = null;
-    }
-  };
-
-  return {
-    startScan,
-    checkCancellation,
-    cleanup,
-  };
-};
+// Mock Tamagui components to avoid theme issues
+jest.mock('tamagui', () => ({
+  Button: ({ onPress, children, ...props }: any) => {
+    const MockButton = require('react-native').TouchableOpacity;
+    const MockText = require('react-native').Text;
+    return (
+      <MockButton onPress={onPress} testID={props.testID} {...props}>
+        <MockText>{children}</MockText>
+      </MockButton>
+    );
+  },
+  XStack: ({ children, ...props }: any) => {
+    const MockView = require('react-native').View;
+    return <MockView {...props}>{children}</MockView>;
+  },
+  Image: ({ ...props }: any) => {
+    const MockImage = require('react-native').Image;
+    return <MockImage {...props} />;
+  },
+  Text: ({ children, ...props }: any) => {
+    const MockText = require('react-native').Text;
+    return <MockText {...props}>{children}</MockText>;
+  },
+  styled: (component: any, styles?: any) => {
+    // Return a mock component that accepts the same props
+    return ({ children, ...props }: any) => {
+      const mockReact = require('react');
+      if (typeof component === 'string') {
+        const MockView = require('react-native').View;
+        return <MockView {...props}>{children}</MockView>;
+      }
+      return mockReact.createElement(component, props, children);
+    };
+  },
+}));
 
 describe('PassportNFCScanScreen - Cancellation Guard', () => {
   beforeEach(() => {
@@ -115,109 +159,222 @@ describe('PassportNFCScanScreen - Cancellation Guard', () => {
     jest.useRealTimers();
   });
 
-  it('should set cancellation flag when timeout fires', () => {
-    const { result } = renderHook(() => useCancellationTest());
+  it('should show timeout error when 30-second timeout fires', async () => {
+    // Mock a scan that never resolves (simulates a stuck scan)
+    mockScan.mockImplementation(() => new Promise(() => {})); // Never resolves
 
-    // Start scan
+    const { getByText } = render(<PassportNFCScanScreen />);
+
+    // Start the scan
+    const verifyButton = getByText('Verify your ID');
     act(() => {
-      result.current.startScan();
+      fireEvent.press(verifyButton);
     });
 
-    // Initially not cancelled
-    expect(result.current.checkCancellation()).toBe(false);
-
-    // Advance time past timeout
+    // Fast forward to just before timeout
     act(() => {
-      jest.advanceTimersByTime(150);
+      jest.advanceTimersByTime(29000);
     });
 
-    // Should be cancelled after timeout
-    expect(result.current.checkCancellation()).toBe(true);
+    // Should not have timed out yet
+    expect(mockOpenErrorModal).not.toHaveBeenCalled();
+    expect(mockTrackEvent).not.toHaveBeenCalledWith('NFC_SCAN_FAILED', {
+      error: 'timeout',
+    });
+
+    // Fast forward past the 30-second timeout
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    // Should now have timed out
+    expect(mockTrackEvent).toHaveBeenCalledWith('NFC_SCAN_FAILED', {
+      error: 'timeout',
+    });
+    expect(mockOpenErrorModal).toHaveBeenCalledWith(
+      'Scan timed out. Please try again.',
+    );
   });
 
-  it('should not set cancellation flag before timeout', () => {
-    const { result } = renderHook(() => useCancellationTest());
+  it('should ignore scan results that complete after timeout', async () => {
+    // Mock a scan that resolves after 35 seconds (5 seconds after timeout)
+    let resolveScan: (value: any) => void;
+    mockScan.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          resolveScan = resolve;
+        }),
+    );
 
-    // Start scan
+    const { getByText } = render(<PassportNFCScanScreen />);
+
+    // Start the scan
+    const verifyButton = getByText('Verify your ID');
     act(() => {
-      result.current.startScan();
+      fireEvent.press(verifyButton);
     });
 
-    // Advance time but not past timeout
+    // Fast forward past the 30-second timeout
     act(() => {
-      jest.advanceTimersByTime(50);
+      jest.advanceTimersByTime(30000);
     });
 
-    // Should not be cancelled before timeout
-    expect(result.current.checkCancellation()).toBe(false);
+    // Verify timeout was triggered
+    expect(mockTrackEvent).toHaveBeenCalledWith('NFC_SCAN_FAILED', {
+      error: 'timeout',
+    });
+    expect(mockOpenErrorModal).toHaveBeenCalledWith(
+      'Scan timed out. Please try again.',
+    );
+
+    // Clear previous calls to track what happens next
+    mockTrackEvent.mockClear();
+    mockNavigate.mockClear();
+
+    // Now resolve the scan (simulating late completion)
+    act(() => {
+      resolveScan({ success: true, data: 'mock-passport-data' });
+    });
+
+    // Wait for any promises to resolve
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // The cancellation guard should prevent any success analytics or navigation
+    expect(mockTrackEvent).not.toHaveBeenCalledWith(
+      'NFC_SCAN_SUCCESS',
+      expect.any(Object),
+    );
+    expect(mockNavigate).not.toHaveBeenCalledWith('ConfirmBelongingScreen', {});
   });
 
-  it('should set cancellation flag on cleanup', () => {
-    const { result } = renderHook(() => useCancellationTest());
+  it('should ignore scan errors that occur after timeout', async () => {
+    // Mock a scan that rejects after 35 seconds (5 seconds after timeout)
+    let rejectScan: (error: any) => void;
+    mockScan.mockImplementation(
+      () =>
+        new Promise((_, reject) => {
+          rejectScan = reject;
+        }),
+    );
 
-    // Start scan
+    const { getByText } = render(<PassportNFCScanScreen />);
+
+    // Start the scan
+    const verifyButton = getByText('Verify your ID');
     act(() => {
-      result.current.startScan();
+      fireEvent.press(verifyButton);
     });
 
-    // Initially not cancelled
-    expect(result.current.checkCancellation()).toBe(false);
-
-    // Cleanup
+    // Fast forward past the 30-second timeout
     act(() => {
-      result.current.cleanup();
+      jest.advanceTimersByTime(30000);
     });
 
-    // Should be cancelled after cleanup
-    expect(result.current.checkCancellation()).toBe(true);
+    // Verify timeout was triggered
+    expect(mockTrackEvent).toHaveBeenCalledWith('NFC_SCAN_FAILED', {
+      error: 'timeout',
+    });
+
+    // Clear previous calls to track what happens next
+    mockTrackEvent.mockClear();
+    mockOpenErrorModal.mockClear();
+
+    // Now reject the scan (simulating late error)
+    act(() => {
+      rejectScan(new Error('Late scan error'));
+    });
+
+    // Wait for any promises to resolve
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // The cancellation guard should prevent any additional error analytics
+    expect(mockTrackEvent).not.toHaveBeenCalledWith(
+      'NFC_SCAN_FAILED',
+      expect.objectContaining({ error: 'Late scan error' }),
+    );
+    expect(mockOpenErrorModal).not.toHaveBeenCalledWith('Late scan error');
   });
 
-  it('should ignore late scan results after timeout', async () => {
-    const { result } = renderHook(() => useCancellationTest());
+  it('should allow successful scan completion before timeout', async () => {
+    // Mock a fast scan that completes in 10 seconds
+    mockScan.mockResolvedValue({ success: true, data: 'mock-passport-data' });
 
-    // Start scan
+    const { getByText } = render(<PassportNFCScanScreen />);
+
+    // Start the scan
+    const verifyButton = getByText('Verify your ID');
     act(() => {
-      result.current.startScan();
+      fireEvent.press(verifyButton);
     });
 
-    // Advance time past timeout
+    // Fast forward to 10 seconds (well before timeout)
     act(() => {
-      jest.advanceTimersByTime(150);
+      jest.advanceTimersByTime(10000);
     });
 
-    // Should be cancelled
-    expect(result.current.checkCancellation()).toBe(true);
+    // Wait for the scan to complete
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith(
+        'NFC_SCAN_SUCCESS',
+        expect.objectContaining({ duration_seconds: expect.any(String) }),
+      );
+    });
 
-    // Simulate late scan completion
-    const lateScanResult = { success: true, data: 'mock-data' };
+    // Should eventually navigate to next screen
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('ConfirmBelongingScreen', {});
+    });
 
-    // If scan was cancelled, we should ignore the result
-    // This simulates the early return in the actual component
-    expect(result.current.checkCancellation()).toBe(true);
-    expect(lateScanResult).toBeDefined(); // Just to show the logic
+    // Should not have triggered timeout
+    expect(mockTrackEvent).not.toHaveBeenCalledWith('NFC_SCAN_FAILED', {
+      error: 'timeout',
+    });
   });
 
-  it('should allow scan results before timeout', async () => {
-    const { result } = renderHook(() => useCancellationTest());
+  it('should reset cancellation flag when starting a new scan', async () => {
+    // Mock a scan that never resolves
+    mockScan.mockImplementation(() => new Promise(() => {}));
 
-    // Start scan
+    const { getByText } = render(<PassportNFCScanScreen />);
+
+    // Start first scan
+    const verifyButton = getByText('Verify your ID');
     act(() => {
-      result.current.startScan();
+      fireEvent.press(verifyButton);
     });
 
-    // Advance time but not past timeout
+    // Let it timeout
     act(() => {
-      jest.advanceTimersByTime(50);
+      jest.advanceTimersByTime(30000);
     });
 
-    // Should not be cancelled
-    expect(result.current.checkCancellation()).toBe(false);
+    // Verify timeout
+    expect(mockTrackEvent).toHaveBeenCalledWith('NFC_SCAN_FAILED', {
+      error: 'timeout',
+    });
 
-    // Simulate scan completion before timeout
-    const scanResult = { success: true, data: 'mock-data' };
+    // Clear mocks
+    mockTrackEvent.mockClear();
+    mockOpenErrorModal.mockClear();
 
-    // If scan was not cancelled, we should process the result
-    expect(result.current.checkCancellation()).toBe(false);
-    expect(scanResult).toBeDefined(); // Just to show the logic
+    // Mock a successful scan for the retry
+    mockScan.mockResolvedValue({ success: true, data: 'mock-passport-data' });
+
+    // Start second scan (retry)
+    act(() => {
+      fireEvent.press(verifyButton);
+    });
+
+    // The cancellation flag should be reset, allowing the new scan to proceed
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith(
+        'NFC_SCAN_SUCCESS',
+        expect.objectContaining({ duration_seconds: expect.any(String) }),
+      );
+    });
   });
 });
