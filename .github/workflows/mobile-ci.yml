@@ -60,13 +60,27 @@ jobs:
             app/node_modules
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Restore Built Dependencies
-        uses: actions/cache@v4
+        id: built-deps-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+      - name: Build dependencies (cache miss)
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss for built dependencies. Building now..."
+          yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Run linter
@@ -107,13 +121,27 @@ jobs:
             app/node_modules
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Restore Built Dependencies
-        uses: actions/cache@v4
+        id: built-deps-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+      - name: Build dependencies (cache miss)
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss for built dependencies. Building now..."
+          yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Test
@@ -209,13 +237,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-xcode-index-
       - name: Restore Built Dependencies
-        uses: actions/cache@v4
+        id: built-deps-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-          fail-on-cache-miss: true
+          fail-on-cache-miss: false
+      - name: Build dependencies (cache miss)
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss for built dependencies. Building now..."
+          yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
       - name: Install Ruby Dependencies
