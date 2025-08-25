@@ -8,6 +8,7 @@ on:
       - "app/**"
       - "!app/**/*.md"
       - "!app/docs/**"
+      - "packages/mobile-sdk-alpha/**"
 
 concurrency:
   group: mobile-deploy-${{ github.ref }}

@@ -253,7 +253,7 @@ jobs:
             app/ios/build
             ~/Library/Developer/Xcode/DerivedData
             ~/Library/Caches/com.apple.dt.Xcode
-          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace/contents.xcworkspacedata') }}
+          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
           restore-keys: |
             ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-
             ${{ runner.os }}-xcode-
@@ -362,13 +362,29 @@ jobs:
           # Store simulator ID for later use
           echo "IOS_SIMULATOR_ID=$AVAILABLE_SIMULATOR" >> $GITHUB_ENV
           echo "IOS_SIMULATOR_NAME=$SIMULATOR_NAME" >> $GITHUB_ENV
+      - name: Resolve iOS workspace
+        run: |
+          WORKSPACE_OPEN="app/ios/OpenPassport.xcworkspace"
+          WORKSPACE_SELF="app/ios/Self.xcworkspace"
+
+          if xcodebuild -list -workspace "$WORKSPACE_OPEN" 2>/dev/null | grep -q "OpenPassport"; then
+            WORKSPACE_PATH="$WORKSPACE_OPEN"
+          else
+            WORKSPACE_PATH="$WORKSPACE_SELF"
+          fi
+
+          echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$GITHUB_ENV"
+          echo "Resolved workspace: $WORKSPACE_PATH"
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
           # Verify workspace exists before building
-          WORKSPACE_PATH="app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
+          if [ -z "$WORKSPACE_PATH" ]; then
+            echo "❌ WORKSPACE_PATH is not set"
+            exit 1
+          fi
           if [ ! -d "$WORKSPACE_PATH" ]; then
             echo "❌ Workspace not found at: $WORKSPACE_PATH"
             echo "Available workspaces:"

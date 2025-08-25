@@ -20,6 +20,7 @@ on:
     paths:
       - "common/**"
       - "app/**"
+      - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-ci.yml"
       - ".github/actions/**"
   workflow_dispatch: {}
@@ -167,7 +168,6 @@ jobs:
         with:
           ruby-version: ${{ env.RUBY_VERSION }}
           bundler-cache: false
-          working-directory: ./app
       - name: Cache Yarn
         uses: ./.github/actions/cache-yarn
         with:
@@ -197,7 +197,7 @@ jobs:
             app/ios/build
             ~/Library/Developer/Xcode/DerivedData
             ~/Library/Caches/com.apple.dt.Xcode
-          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace/contents.xcworkspacedata') }}
+          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
           restore-keys: |
             ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-
             ${{ runner.os }}-xcode-
@@ -231,11 +231,29 @@ jobs:
           # Reuse the same guarded flow as local to ensure reproducibility
           bundle exec bash scripts/pod-install-with-cache-fix.sh
         working-directory: ./app
+      - name: Resolve iOS workspace
+        run: |
+          WORKSPACE_OPEN="ios/OpenPassport.xcworkspace"
+          WORKSPACE_SELF="ios/Self.xcworkspace"
+
+          if xcodebuild -list -workspace "$WORKSPACE_OPEN" 2>/dev/null | grep -q "OpenPassport"; then
+            WORKSPACE_PATH="$WORKSPACE_OPEN"
+          else
+            WORKSPACE_PATH="$WORKSPACE_SELF"
+          fi
+
+          echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$GITHUB_ENV"
+          echo "Resolved workspace: $WORKSPACE_PATH"
+        working-directory: ./app
       - name: Verify iOS Workspace
         run: |
           echo "Verifying iOS workspace setup..."
 
-          WORKSPACE_PATH="ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
+          if [ -z "$WORKSPACE_PATH" ]; then
+            echo "❌ WORKSPACE_PATH is not set"
+            exit 1
+          fi
+
           if [ ! -d "$WORKSPACE_PATH" ]; then
             echo "❌ Workspace not found at: $WORKSPACE_PATH"
             echo "Available workspaces:"
@@ -268,9 +286,6 @@ jobs:
         run: |
           echo "Building iOS app for simulator (no signing required)..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
-
-          WORKSPACE_PATH="ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
-
           # Build for iOS Simulator to avoid code signing issues in CI
           xcodebuild -workspace "$WORKSPACE_PATH" \
             -scheme ${{ env.IOS_PROJECT_SCHEME }} \
