@@ -60,6 +60,7 @@ import type {
 import { DocumentsAdapter, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
+import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -75,9 +76,7 @@ const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
   }
 };
 
-const safeGetAllDocuments = async () => {
-  const selfClient = useSelfClient();
-
+const safeGetAllDocuments = async (selfClient: SelfClient) => {
   try {
     return await getAllDocuments(selfClient);
   } catch (error) {
@@ -155,7 +154,7 @@ export const PassportContext = createContext<IPassportContext>({
   clearPassportData: clearPassportData,
   clearSpecificData: clearSpecificPassportData,
   loadDocumentCatalog: safeLoadDocumentCatalog,
-  getAllDocuments: safeGetAllDocuments,
+  getAllDocuments: () => Promise.resolve({}),
   setSelectedDocument: setSelectedDocument,
   deleteDocument: deleteDocument,
   migrateFromLegacyStorage: migrateFromLegacyStorage,
@@ -170,6 +169,7 @@ export const PassportContext = createContext<IPassportContext>({
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
   const { _getSecurely } = useAuth();
+  const selfClient = useSelfClient();
 
   const getData = useCallback(
     () => _getSecurely<PassportData>(loadPassportData, str => JSON.parse(str)),
@@ -183,7 +183,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     );
   }, [_getSecurely]);
 
-  const getAllData = useCallback(() => loadAllPassportData(), []);
+  const getAllData = useCallback(() => loadAllPassportData(selfClient), [selfClient]);
 
   const getAvailableTypes = useCallback(() => getAvailableDocumentTypes(), []);
 
@@ -215,7 +215,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       clearPassportData: clearPassportData,
       clearSpecificData: clearSpecificPassportData,
       loadDocumentCatalog: safeLoadDocumentCatalog,
-      getAllDocuments: safeGetAllDocuments,
+      getAllDocuments: () => safeGetAllDocuments(selfClient),
       setSelectedDocument: setSelectedDocument,
       deleteDocument: deleteDocument,
       migrateFromLegacyStorage: migrateFromLegacyStorage,
@@ -422,10 +422,10 @@ export async function initializeNativeModules(
   return false;
 }
 
-export async function loadAllPassportData(): Promise<{
+// TODO: is this used?
+async function loadAllPassportData(selfClient: SelfClient): Promise<{
   [service: string]: PassportData;
 }> {
-  const selfClient = useSelfClient();
   const allDocs = await getAllDocuments(selfClient);
   const result: { [service: string]: PassportData } = {};
 
@@ -650,6 +650,7 @@ interface IPassportContext {
   getAllDocuments: () => Promise<{
     [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
   }>;
+
   setSelectedDocument: (documentId: string) => Promise<void>;
   deleteDocument: (documentId: string) => Promise<void>;
 
