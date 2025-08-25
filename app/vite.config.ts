@@ -153,7 +153,6 @@ export default defineConfig({
           'screens-prove-validation-core': [
             './src/utils/proving/validateDocument.ts',
           ],
-          'screens-prove-attest': ['./src/utils/proving/attest.ts'],
           'screens-prove-utils': [
             './src/utils/proving/index.ts',
             './src/utils/proving/provingInputs.ts',
