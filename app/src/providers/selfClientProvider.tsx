@@ -10,6 +10,7 @@ import {
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
+import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
 import analytics from '@/utils/analytics';
 
@@ -75,7 +76,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         },
       },
       analytics: {
-        trackEvent: (event: string, data: Record<string, any>) => {
+        trackEvent: (event: string, data?: TrackEventParams) => {
           analytics().trackEvent(event, data);
         },
       },
