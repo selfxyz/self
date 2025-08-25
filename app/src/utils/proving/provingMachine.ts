@@ -23,7 +23,10 @@ import {
   getPayload,
   getWSDbRelayerUrl,
 } from '@selfxyz/common/utils/proving';
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  hasAnyValidRegisteredDocument,
+  SelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { PassportEvents, ProofEvents } from '@/consts/analytics';
 //
@@ -48,7 +51,6 @@ import {
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
-  hasAnyValidRegisteredDocument,
   isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
@@ -194,7 +196,7 @@ interface ProvingState {
   _closeConnections: () => void;
   _generatePayload: () => Promise<unknown>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
-  _handleRegisterErrorOrFailure: () => void;
+  _handleRegisterErrorOrFailure: (selfClient: SelfClient) => void;
   _startSocketIOStatusListener: (
     receivedUuid: string,
     endpointType: EndpointType,
@@ -240,7 +242,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       ) {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            get()._handleRegisterErrorOrFailure();
+            get()._handleRegisterErrorOrFailure(selfClient);
           }
         }, 3000);
       }
@@ -420,10 +422,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    _handleRegisterErrorOrFailure: async () => {
+    _handleRegisterErrorOrFailure: async (selfClient: SelfClient) => {
       try {
-        // TODO: call hasAnyValidRegisteredDocument(selfClient) from @selfxyz/mobile-sdk-alpha
-        const hasValid = await hasAnyValidRegisteredDocument();
+        const hasValid = await hasAnyValidRegisteredDocument(selfClient);
+
         if (navigationRef.isReady()) {
           if (hasValid) {
             navigationRef.navigate('Home');

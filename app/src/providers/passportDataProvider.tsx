@@ -70,7 +70,7 @@ import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 // These need to be declared early to avoid dependency issues
 const safeLoadDocumentCatalog = async (): Promise<DocumentCatalog> => {
   try {
-    return await loadDocumentCatalog();
+    return await loadDocumentCatalogDirectlyFromKeychain();
   } catch (error) {
     console.warn(
       'Error in safeLoadDocumentCatalog, returning empty catalog:',
@@ -260,7 +260,7 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
 
 export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
   try {
-    const catalog = await loadDocumentCatalog();
+    const catalog = await loadDocumentCatalogDirectlyFromKeychain();
     return catalog.documents.some(doc => doc.isRegistered === undefined);
   } catch (error) {
     console.warn('Error checking if documents need migration:', error);
@@ -270,7 +270,7 @@ export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
 
 export async function clearDocumentCatalogForMigrationTesting() {
   console.log('Clearing document catalog for migration testing...');
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
   // Delete all new-style documents
   for (const doc of catalog.documents) {
@@ -298,7 +298,7 @@ export async function clearDocumentCatalogForMigrationTesting() {
 }
 
 export async function clearPassportData() {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
   // Delete all documents
   for (const doc of catalog.documents) {
@@ -314,7 +314,7 @@ export async function clearPassportData() {
 }
 
 export async function clearSpecificPassportData(documentType: string) {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   const docsToDelete = catalog.documents.filter(
     d => d.documentType === documentType,
   );
@@ -325,7 +325,7 @@ export async function clearSpecificPassportData(documentType: string) {
 }
 
 export async function deleteDocument(documentId: string): Promise<void> {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
   // Remove from catalog
   catalog.documents = catalog.documents.filter(d => d.id !== documentId);
@@ -350,13 +350,13 @@ export async function deleteDocument(documentId: string): Promise<void> {
 }
 
 export async function getAvailableDocumentTypes(): Promise<string[]> {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   return [...new Set(catalog.documents.map(d => d.documentType))];
 }
 
 // Helper function to get current document type from catalog
 export async function getCurrentDocumentType(): Promise<string | null> {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   if (!catalog.selectedDocumentId) return null;
 
   const metadata = catalog.documents.find(
@@ -445,7 +445,7 @@ async function loadAllPassportData(selfClient: SelfClient): Promise<{
   return result;
 }
 
-export async function loadDocumentById(
+export async function loadDocumentByIdDirectlyFromKeychain(
   documentId: string,
 ): Promise<PassportData | null> {
   try {
@@ -470,11 +470,11 @@ export async function loadDocumentById(
 }
 
 export const selfClientDocumentsAdapter: DocumentsAdapter = {
-  loadDocumentCatalog: loadDocumentCatalog,
-  loadDocumentById: loadDocumentById,
+  loadDocumentCatalog: loadDocumentCatalogDirectlyFromKeychain,
+  loadDocumentById: loadDocumentByIdDirectlyFromKeychain,
 };
 
-export async function loadDocumentCatalog(): Promise<DocumentCatalog> {
+export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<DocumentCatalog> {
   try {
     // Extra safety check for module initialization
     if (typeof Keychain === 'undefined' || !Keychain) {
@@ -570,7 +570,7 @@ export async function loadSelectedDocument(): Promise<{
   data: PassportData;
   metadata: DocumentMetadata;
 } | null> {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   console.log('Catalog loaded');
 
   if (!catalog.selectedDocumentId) {
@@ -596,7 +596,9 @@ export async function loadSelectedDocument(): Promise<{
     return null;
   }
 
-  const data = await loadDocumentById(catalog.selectedDocumentId);
+  const data = await loadDocumentByIdDirectlyFromKeychain(
+    catalog.selectedDocumentId,
+  );
   if (!data) {
     console.log('Document data not found for id:', catalog.selectedDocumentId);
     return null;
@@ -674,7 +676,7 @@ interface IPassportContext {
 }
 
 export async function markCurrentDocumentAsRegistered(): Promise<void> {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   if (catalog.selectedDocumentId) {
     await updateDocumentRegistrationState(catalog.selectedDocumentId, true);
   } else {
@@ -684,7 +686,7 @@ export async function markCurrentDocumentAsRegistered(): Promise<void> {
 
 export async function migrateFromLegacyStorage(): Promise<void> {
   console.log('Migrating from legacy storage to new architecture...');
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
   // If catalog already has documents, skip migration
   if (catalog.documents.length > 0) {
@@ -770,7 +772,7 @@ export async function saveDocumentCatalog(
 }
 
 export async function setDefaultDocumentTypeIfNeeded() {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
   if (!catalog.selectedDocumentId && catalog.documents.length > 0) {
     await setSelectedDocument(catalog.documents[0].id);
@@ -778,7 +780,7 @@ export async function setDefaultDocumentTypeIfNeeded() {
 }
 
 export async function setSelectedDocument(documentId: string): Promise<void> {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   const metadata = catalog.documents.find(d => d.id === documentId);
 
   if (metadata) {
@@ -793,7 +795,7 @@ export async function storeDocumentWithDeduplication(
   passportData: PassportData,
 ): Promise<string> {
   const contentHash = calculateContentHash(passportData);
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
 
   // Check for existing document with same content
   const existing = catalog.documents.find(d => d.id === contentHash);
@@ -849,7 +851,7 @@ export async function updateDocumentRegistrationState(
   documentId: string,
   isRegistered: boolean,
 ): Promise<void> {
-  const catalog = await loadDocumentCatalog();
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   const documentIndex = catalog.documents.findIndex(d => d.id === documentId);
 
   if (documentIndex !== -1) {
@@ -865,4 +867,30 @@ export async function updateDocumentRegistrationState(
 
 export const usePassport = () => {
   return useContext(PassportContext);
+};
+
+/**
+ * Get all documents directly from the keychain.
+ *
+ * It's here to avoid dependency on self client where it's not strictly necessary,
+ * for example when migrating legacy data.
+ *
+ * @returns A dictionary of document IDs to their data and metadata.
+ */
+export const getAllDocumentsDirectlyFromKeychain = async (): Promise<{
+  [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
+}> => {
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
+  const allDocs: {
+    [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
+  } = {};
+
+  for (const metadata of catalog.documents) {
+    const data = await loadDocumentByIdDirectlyFromKeychain(metadata.id);
+    if (data) {
+      allDocs[metadata.id] = { data, metadata };
+    }
+  }
+
+  return allDocs;
 };
