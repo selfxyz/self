@@ -93,6 +93,7 @@ const PassportNFCScanScreen: React.FC = () => {
   const [dialogMessage, setDialogMessage] = useState('');
   const [nfcMessage, setNfcMessage] = useState<string | null>(null);
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scanCancelledRef = useRef(false);
 
   const animationRef = useRef<LottieView>(null);
 
@@ -103,6 +104,7 @@ const PassportNFCScanScreen: React.FC = () => {
   // Cleanup timeout on component unmount
   useEffect(() => {
     return () => {
+      scanCancelledRef.current = true;
       if (scanTimeoutRef.current) {
         clearTimeout(scanTimeoutRef.current);
         scanTimeoutRef.current = null;
@@ -189,12 +191,14 @@ const PassportNFCScanScreen: React.FC = () => {
     if (isNfcEnabled) {
       setIsNfcSheetOpen(true);
       // Add timestamp when scan starts
+      scanCancelledRef.current = false;
       const scanStartTime = Date.now();
       if (scanTimeoutRef.current) {
         clearTimeout(scanTimeoutRef.current);
         scanTimeoutRef.current = null;
       }
       scanTimeoutRef.current = setTimeout(() => {
+        scanCancelledRef.current = true;
         trackEvent(PassportEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
@@ -217,6 +221,11 @@ const PassportNFCScanScreen: React.FC = () => {
           extendedMode,
           usePacePolling: isPacePolling,
         });
+
+        // Check if scan was cancelled by timeout
+        if (scanCancelledRef.current) {
+          return;
+        }
 
         const scanDurationSeconds = (
           (Date.now() - scanStartTime) /
@@ -292,8 +301,17 @@ const PassportNFCScanScreen: React.FC = () => {
           }
           // Feels better somehow
           await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Check if scan was cancelled by timeout before navigating
+          if (scanCancelledRef.current) {
+            return;
+          }
           navigation.navigate('ConfirmBelongingScreen', {});
         } catch (e: unknown) {
+          // Check if scan was cancelled by timeout
+          if (scanCancelledRef.current) {
+            return;
+          }
           console.error('Passport Parsed Failed:', e);
           trackEvent(PassportEvents.PASSPORT_PARSE_FAILED, {
             error: sanitizeErrorMessage(
@@ -303,6 +321,10 @@ const PassportNFCScanScreen: React.FC = () => {
           return;
         }
       } catch (e: unknown) {
+        // Check if scan was cancelled by timeout
+        if (scanCancelledRef.current) {
+          return;
+        }
         const scanDurationSeconds = (
           (Date.now() - scanStartTime) /
           1000
@@ -402,6 +424,7 @@ const PassportNFCScanScreen: React.FC = () => {
         return () => {
           subscription.remove();
           // Clear scan timeout when component loses focus
+          scanCancelledRef.current = true;
           if (scanTimeoutRef.current) {
             clearTimeout(scanTimeoutRef.current);
             scanTimeoutRef.current = null;
@@ -411,6 +434,7 @@ const PassportNFCScanScreen: React.FC = () => {
 
       // For iOS or when no emitter, still handle timeout cleanup on blur
       return () => {
+        scanCancelledRef.current = true;
         if (scanTimeoutRef.current) {
           clearTimeout(scanTimeoutRef.current);
           scanTimeoutRef.current = null;

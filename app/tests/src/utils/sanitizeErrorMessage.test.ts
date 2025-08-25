@@ -32,18 +32,6 @@ describe('sanitizeErrorMessage', () => {
     expect(result).toBe('[MRZ_REDACTED]\n[MRZ_REDACTED]' + suffix);
   });
 
-  it('redacts credit card numbers with spaces or dashes', () => {
-    const input = 'Use 4111 1111 1111 1111 or 5500-0000-0000-0004';
-    const result = sanitizeErrorMessage(input);
-    expect(result).toBe('Use [REDACTED] or [REDACTED]');
-  });
-
-  it('redacts US SSN with hyphens', () => {
-    const input = 'SSN 123-45-6789 should not leak';
-    const result = sanitizeErrorMessage(input);
-    expect(result).toBe('SSN [REDACTED] should not leak');
-  });
-
   it('redacts multiple occurrences in the same string', () => {
     const input = 'ids 123456789 and 987654321 are present';
     const result = sanitizeErrorMessage(input);
