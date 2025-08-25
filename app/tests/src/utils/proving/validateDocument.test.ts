@@ -77,6 +77,10 @@ function createTestClient() {
         hash: jest.fn(),
         sign: jest.fn(),
       },
+      documents: {
+        loadDocumentCatalog: jest.fn(),
+        loadDocumentById: jest.fn(),
+      },
     },
   });
 }

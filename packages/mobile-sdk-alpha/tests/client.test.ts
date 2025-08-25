@@ -1,28 +1,43 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../src';
+import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../src';
 import { createSelfClient } from '../src/index';
 
 describe('createSelfClient', () => {
   // Test eager validation during client creation
   it('throws when scanner adapter missing during creation', () => {
-    expect(() => createSelfClient({ config: {}, adapters: {} })).toThrow('scanner adapter not provided');
+    expect(() =>
+      createSelfClient({
+        config: {},
+        adapters: {
+          documents,
+          network,
+          crypto,
+        },
+      }),
+    ).toThrow('scanner adapter not provided');
   });
 
   it('throws when network adapter missing during creation', () => {
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto } })).toThrow(
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto, documents } })).toThrow(
       'network adapter not provided',
     );
   });
 
   it('throws when crypto adapter missing during creation', () => {
-    expect(() => createSelfClient({ config: {}, adapters: { scanner, network } })).toThrow(
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, network, documents } })).toThrow(
       'crypto adapter not provided',
     );
   });
 
+  it('throws when documents adapter missing during creation', () => {
+    expect(() => createSelfClient({ config: {}, adapters: { scanner, network, crypto } })).toThrow(
+      'documents adapter not provided',
+    );
+  });
+
   it('creates client successfully with all required adapters', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
+    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents } });
     expect(client).toBeTruthy();
   });
 
@@ -30,7 +45,7 @@ describe('createSelfClient', () => {
     const scanMock = vi.fn().mockResolvedValue({ mode: 'qr', data: 'self://ok' });
     const client = createSelfClient({
       config: {},
-      adapters: { scanner: { scan: scanMock }, network, crypto },
+      adapters: { scanner: { scan: scanMock }, network, crypto, documents },
     });
     const result = await client.scanDocument({ mode: 'qr' });
     expect(result).toEqual({ mode: 'qr', data: 'self://ok' });
@@ -42,7 +57,7 @@ describe('createSelfClient', () => {
     const scanMock = vi.fn().mockRejectedValue(err);
     const client = createSelfClient({
       config: {},
-      adapters: { scanner: { scan: scanMock }, network, crypto },
+      adapters: { scanner: { scan: scanMock }, network, crypto, documents },
     });
     await expect(client.scanDocument({ mode: 'qr' })).rejects.toBe(err);
   });
@@ -51,7 +66,7 @@ describe('createSelfClient', () => {
     const network = { http: { fetch: vi.fn() }, ws: { connect: vi.fn() } } as any;
     const crypto = { hash: vi.fn(), sign: vi.fn() } as any;
     const scanner = { scan: vi.fn() } as any;
-    const client = createSelfClient({ config: {}, adapters: { network, crypto, scanner } });
+    const client = createSelfClient({ config: {}, adapters: { network, crypto, scanner, documents } });
     const handle = await client.generateProof({ type: 'register', payload: {} });
     expect(handle.id).toBe('stub');
     expect(handle.status).toBe('pending');
@@ -60,7 +75,7 @@ describe('createSelfClient', () => {
   });
 
   it('emits and unsubscribes events', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
+    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents } });
     const cb = vi.fn();
     const originalSet = Map.prototype.set;
     let eventSet: Set<(p: any) => void> | undefined;
@@ -79,7 +94,7 @@ describe('createSelfClient', () => {
   });
 
   it('parses MRZ via client', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
+    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents } });
     const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
     const info = client.extractMRZInfo(sample);
     expect(info.passportNumber).toBe('L898902C3');
@@ -87,7 +102,7 @@ describe('createSelfClient', () => {
   });
 
   it('returns stub registration status', async () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto } });
+    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents } });
     await expect(client.registerDocument({} as any)).resolves.toEqual({
       registered: false,
       reason: 'SELF_REG_STATUS_STUB',
@@ -115,4 +130,9 @@ const network: NetworkAdapter = {
 const crypto: CryptoAdapter = {
   hash: async () => new Uint8Array(),
   sign: async () => new Uint8Array(),
+};
+
+const documents: DocumentsAdapter = {
+  loadDocumentCatalog: async () => ({ documents: [] }),
+  loadDocumentById: async () => null,
 };
