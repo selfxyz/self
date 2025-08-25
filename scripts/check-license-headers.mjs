@@ -49,6 +49,7 @@ function findFiles(
             'android',
             '.next',
             '.turbo',
+            '.tamagui',
           ].includes(item)
         ) {
           traverse(fullPath);

@@ -50,6 +50,7 @@ function findFiles(
             '.turbo',
             'target',
             'Pods',
+            '.tamagui',
           ].includes(item)
         ) {
           traverse(fullPath);
