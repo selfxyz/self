@@ -11,6 +11,7 @@ describe('navigation', () => {
       'CloudBackupSettings',
       'ConfirmBelongingScreen',
       'CreateMock',
+      'DeferredLinkingInfo',
       'DevFeatureFlags',
       'DevHapticFeedback',
       'DevPrivateKey',

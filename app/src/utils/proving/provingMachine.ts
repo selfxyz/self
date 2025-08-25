@@ -14,6 +14,15 @@ import {
   getCircuitNameFromPassportData,
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
+import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
+import {
+  clientKey,
+  clientPublicKeyHex,
+  ec,
+  encryptAES256GCM,
+  getPayload,
+  getWSDbRelayerUrl,
+} from '@selfxyz/common/utils/proving';
 import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { PassportEvents, ProofEvents } from '@/consts/analytics';
@@ -31,20 +40,11 @@ import {
 import { useProtocolStore } from '@/stores/protocolStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
-import { getPublicKey, verifyAttestation } from '@/utils/proving/attest';
 import {
   generateTEEInputsDisclose,
   generateTEEInputsDSC,
   generateTEEInputsRegister,
 } from '@/utils/proving/provingInputs';
-import {
-  clientKey,
-  clientPublicKeyHex,
-  ec,
-  encryptAES256GCM,
-  getPayload,
-  getWSDbRelayerUrl,
-} from '@/utils/proving/provingUtils';
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,

@@ -153,11 +153,9 @@ export default defineConfig({
           'screens-prove-validation-core': [
             './src/utils/proving/validateDocument.ts',
           ],
-          'screens-prove-attest': ['./src/utils/proving/attest.ts'],
           'screens-prove-utils': [
-            './src/utils/proving/provingUtils.ts',
+            './src/utils/proving/index.ts',
             './src/utils/proving/provingInputs.ts',
-            './src/utils/proving/cose.ts',
             './src/utils/proving/loadingScreenStateText.ts',
           ],
 
@@ -169,7 +167,7 @@ export default defineConfig({
           // Other screens
           'screens-settings': ['./src/navigation/settings.ts'],
           'screens-recovery': ['./src/navigation/recovery.ts'],
-          'screens-dev': ['./src/navigation/dev.ts'],
+          'screens-dev': ['./src/navigation/devTools.ts'],
           'screens-aesop': ['./src/navigation/aesop.ts'],
         },
       },

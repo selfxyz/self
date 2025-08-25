@@ -25,10 +25,6 @@ export interface MRZInfo {
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
-  surname: string;
-  givenNames: string;
-  sex: string;
-  nationality: string;
   issuingCountry: string;
   documentType: string;
   validation: MRZValidation;
