@@ -1,29 +1,104 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
+import type { RouteProp } from '@react-navigation/native';
+import React, { useEffect, useMemo } from 'react';
+import { View } from 'react-native';
 
-import warnAnimation from '@/assets/animations/warning.json';
+import type { PassportData } from '@selfxyz/common/types';
+import { countryCodes } from '@selfxyz/common/constants';
+
+import LogoSvg from '@/images/logo.svg';
+
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { Caption } from '@/components/typography/Caption';
-import Description from '@/components/typography/Description';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import { BodyText } from '@/components/typography/BodyText';
 import { Title } from '@/components/typography/Title';
 import { PassportEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { styles } from '@/screens/prove/ProofRequestStatusScreen';
 import analytics from '@/utils/analytics';
-import { black, white } from '@/utils/colors';
+import { black, slate500, white } from '@/utils/colors';
 import { notificationError } from '@/utils/haptic';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
-
+import { sendCountrySupportNotification } from '@/utils/email';
+import * as CountryFlags from 'react-native-svg-circle-country-flags';
+import { XStack, YStack } from 'tamagui';
+import getCountryISO2 from 'country-iso-3-to-2'
 const { flush: flushAnalytics } = analytics();
 
-const UnsupportedPassportScreen: React.FC = () => {
+type UnsupportedPassportScreenRouteProp = RouteProp<
+  {
+    UnsupportedPassport: {
+      passportData: PassportData | null;
+    };
+  },
+  'UnsupportedPassport'
+>;
+
+interface UnsupportedPassportScreenProps {
+  route: UnsupportedPassportScreenRouteProp;
+}
+
+const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
+  route,
+}) => {
   const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
+  const passportData = route.params?.passportData;
 
-  const onPress = async () => {
+  const { countryName, country2AlphaCode, documentTypeText } = useMemo(() => {
+
+    try {
+      const countryCode = passportData?.passportMetadata?.countryCode;
+      if (countryCode) {
+        // Handle Germany corner case where country code is "D<<" instead of "DEU"
+        let normalizedCountryCode = countryCode;
+        if (countryCode === 'D<<') {
+          normalizedCountryCode = 'DEU';
+        }
+
+        const iso2 = getCountryISO2(normalizedCountryCode);
+        const extractedCode = iso2
+          ? iso2.charAt(0).toUpperCase() + iso2.charAt(1).toLowerCase()
+          : 'Unknown';
+        const name = countryCodes[normalizedCountryCode as keyof typeof countryCodes];
+        const docType = passportData?.documentCategory === 'id_card' ? 'ID Cards' : 'Passports';
+        return {
+          countryName: name,
+          country2AlphaCode: extractedCode,
+          documentTypeText: docType,
+        };
+      }
+    } catch (error) {
+      console.error('Error extracting country from passport data:', error);
+    }
+    const docType = passportData?.documentCategory === 'id_card' ? 'ID Cards' : 'Passports';
+    return {
+      countryName: 'Unknown',
+      country2AlphaCode: 'Unknown',
+      documentTypeText: docType,
+    };
+
+  }, [passportData]);
+
+  // Get country flag component dynamically
+  const getCountryFlag = (code: string) => {
+    try {
+
+        const FlagComponent = (CountryFlags as any)[code];
+        if (FlagComponent) {
+          return FlagComponent;
+        }
+
+    } catch (error) {
+      console.error('Error getting country flag:', error);
+      return null;
+    }
+  };
+
+  const CountryFlagComponent = getCountryFlag(country2AlphaCode);
+
+  const onDismiss = async () => {
     const hasValidDocument = await hasAnyValidRegisteredDocument();
     if (hasValidDocument) {
       navigateToHome();
@@ -31,6 +106,19 @@ const UnsupportedPassportScreen: React.FC = () => {
       navigateToLaunch();
     }
   };
+
+  const onNotifyMe = async () => {
+    try {
+      await sendCountrySupportNotification({
+        countryName,
+        countryCode: country2AlphaCode !== 'Unknown' ? country2AlphaCode : undefined,
+        documentCategory: passportData?.documentCategory,
+      });
+    } catch (error) {
+      console.error('Failed to open email client:', error);
+    }
+  };
+
   useEffect(() => {
     notificationError();
     // error screen, flush analytics
@@ -38,35 +126,60 @@ const UnsupportedPassportScreen: React.FC = () => {
   }, []);
 
   return (
-    <>
-      <ExpandableBottomLayout.Layout backgroundColor={black}>
-        <ExpandableBottomLayout.TopSection backgroundColor={black}>
-          <LottieView
-            autoPlay
-            loop={false}
-            source={warnAnimation}
-            style={styles.animation}
-            cacheComposition={true}
-            renderMode="HARDWARE"
-          />
-        </ExpandableBottomLayout.TopSection>
-        <ExpandableBottomLayout.BottomSection gap={20} backgroundColor={white}>
-          <Title textAlign="center">There was a problem</Title>
-          <Description textAlign="center" style={{ color: black }}>
-            It looks like your passport is not currently supported by Self.
-          </Description>
-          <Caption size="small" textAlign="center" textBreakStrategy="balanced">
-            Don't panic, we're working hard to extend support to more regions.
-          </Caption>
-          <PrimaryButton
-            trackEvent={PassportEvents.DISMISS_UNSUPPORTED_PASSPORT}
-            onPress={onPress}
+    <ExpandableBottomLayout.Layout backgroundColor={black}>
+      <ExpandableBottomLayout.TopSection backgroundColor={white}>
+        <YStack flex={1} justifyContent="center" alignItems="center"  marginTop={100}>
+          <XStack justifyContent="center" alignItems="center" marginBottom={20} gap={12}>
+          {CountryFlagComponent && (
+            <View style={{ alignItems: 'center' }}>
+              <CountryFlagComponent width={60} height={60} />
+            </View>
+          )}
+
+          </XStack>
+          <Title fontSize={32} textAlign="center" color={black} marginBottom={16}>
+            Coming Soon
+          </Title>
+          <BodyText
+            fontSize={17}
+            textAlign="center"
+            color={black}
+            marginBottom={10}
+            paddingHorizontal={10}
           >
-            Dismiss
-          </PrimaryButton>
-        </ExpandableBottomLayout.BottomSection>
-      </ExpandableBottomLayout.Layout>
-    </>
+            We're working to roll out support for {documentTypeText} in {countryName}.
+          </BodyText>
+          <BodyText
+            fontSize={17}
+            textAlign="center"
+            color={slate500}
+            marginBottom={40}
+            paddingHorizontal={10}
+          >
+            Sign up for live updates.
+          </BodyText>
+          </YStack>
+      </ExpandableBottomLayout.TopSection>
+      <ExpandableBottomLayout.BottomSection
+        gap={16}
+        backgroundColor={white}
+        paddingHorizontal={20}
+        paddingVertical={20}
+      >
+        <PrimaryButton
+          onPress={onNotifyMe}
+          trackEvent={PassportEvents.NOTIFY_UNSUPPORTED_PASSPORT}
+        >
+          Sign up for updates
+        </PrimaryButton>
+        <SecondaryButton
+          trackEvent={PassportEvents.DISMISS_UNSUPPORTED_PASSPORT}
+          onPress={onDismiss}
+        >
+          Dismiss
+        </SecondaryButton>
+      </ExpandableBottomLayout.BottomSection>
+    </ExpandableBottomLayout.Layout>
   );
 };
 

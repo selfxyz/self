@@ -264,7 +264,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
       if (state.value === 'passport_not_supported') {
         if (navigationRef.isReady()) {
-          navigationRef.navigate('UnsupportedPassport');
+          const currentPassportData = get().passportData;
+          (navigationRef as any).navigate('UnsupportedPassport', {
+            passportData: currentPassportData,
+          });
         }
       }
       if (state.value === 'account_recovery_choice') {

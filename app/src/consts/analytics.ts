@@ -90,6 +90,7 @@ export const PassportEvents = {
   CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
   DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
   DISMISS_UNSUPPORTED_PASSPORT: 'Passport: Dismiss Unsupported Passport',
+  NOTIFY_UNSUPPORTED_PASSPORT: 'Passport: Notify Unsupported Passport',
   NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
   NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
   NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',

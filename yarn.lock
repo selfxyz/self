@@ -5234,10 +5234,12 @@ __metadata:
     react-native-logs: "npm:^5.3.0"
     react-native-nfc-manager: "npm:^3.15.1"
     react-native-passport-reader: "npm:^1.0.3"
+    react-native-round-flags: "npm:^1.0.4"
     react-native-safe-area-context: "npm:^5.5.1"
     react-native-screens: "npm:4.9.0"
     react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:^15.11.1"
+    react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-svg-transformer: "npm:^1.5.0"
     react-native-svg-web: "npm:^1.0.9"
     react-native-web: "npm:^0.19.0"
@@ -22591,6 +22593,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-round-flags@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "react-native-round-flags@npm:1.0.4"
+  checksum: 10c0/d09bf2fe9fd16aac3b7eba9034b30cb5a21c6dff9f9f46670cba3b393c0a8b8b37c06fde8292eb1ff492568e89619883f499091b689ddf1e556cf96e2e2ca03a
+  languageName: node
+  linkType: hard
+
 "react-native-safe-area-context@npm:^5.5.1":
   version: 5.5.1
   resolution: "react-native-safe-area-context@npm:5.5.1"
@@ -22620,6 +22629,17 @@ __metadata:
   peerDependencies:
     react-native: ">=0.14.0"
   checksum: 10c0/631787a64bf6ade75758a23289c138bb1346e0418d75fb013f7a64822560e0f29e1193ef20290c3eb7fbeb6d594b8f49b256895dfc188f7f0023a55f1ba57134
+  languageName: node
+  linkType: hard
+
+"react-native-svg-circle-country-flags@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "react-native-svg-circle-country-flags@npm:0.2.2"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-svg: "*"
+  checksum: 10c0/9403583b28dba8b317f4bd8e9a2ddfa873fa468cefc047db0d49705fd0dc990bc2029909e3fe899659a31da5961d64dc07b86aa71583f41e6ac81b3019aee824
   languageName: node
   linkType: hard
 
