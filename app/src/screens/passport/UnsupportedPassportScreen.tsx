@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import type { RouteProp } from '@react-navigation/native';
+import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useEffect, useMemo } from 'react';
 import { View } from 'react-native';
+import * as CountryFlags from 'react-native-svg-circle-country-flags';
+import { XStack, YStack } from 'tamagui';
+import type { RouteProp } from '@react-navigation/native';
 
-import type { PassportData } from '@selfxyz/common/types';
 import { countryCodes } from '@selfxyz/common/constants';
-
-import LogoSvg from '@/images/logo.svg';
+import type { PassportData } from '@selfxyz/common/types';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -15,15 +16,14 @@ import { BodyText } from '@/components/typography/BodyText';
 import { Title } from '@/components/typography/Title';
 import { PassportEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import LogoSvg from '@/images/logo.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import analytics from '@/utils/analytics';
 import { black, slate500, white } from '@/utils/colors';
+import { sendCountrySupportNotification } from '@/utils/email';
 import { notificationError } from '@/utils/haptic';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
-import { sendCountrySupportNotification } from '@/utils/email';
-import * as CountryFlags from 'react-native-svg-circle-country-flags';
-import { XStack, YStack } from 'tamagui';
-import getCountryISO2 from 'country-iso-3-to-2'
+
 const { flush: flushAnalytics } = analytics();
 
 type UnsupportedPassportScreenRouteProp = RouteProp<
@@ -47,7 +47,6 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
   const passportData = route.params?.passportData;
 
   const { countryName, country2AlphaCode, documentTypeText } = useMemo(() => {
-
     try {
       const countryCode = passportData?.passportMetadata?.countryCode;
       if (countryCode) {
@@ -61,8 +60,12 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
         const extractedCode = iso2
           ? iso2.charAt(0).toUpperCase() + iso2.charAt(1).toLowerCase()
           : 'Unknown';
-        const name = countryCodes[normalizedCountryCode as keyof typeof countryCodes];
-        const docType = passportData?.documentCategory === 'id_card' ? 'ID Cards' : 'Passports';
+        const name =
+          countryCodes[normalizedCountryCode as keyof typeof countryCodes];
+        const docType =
+          passportData?.documentCategory === 'id_card'
+            ? 'ID Cards'
+            : 'Passports';
         return {
           countryName: name,
           country2AlphaCode: extractedCode,
@@ -72,24 +75,22 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
     } catch (error) {
       console.error('Error extracting country from passport data:', error);
     }
-    const docType = passportData?.documentCategory === 'id_card' ? 'ID Cards' : 'Passports';
+    const docType =
+      passportData?.documentCategory === 'id_card' ? 'ID Cards' : 'Passports';
     return {
       countryName: 'Unknown',
       country2AlphaCode: 'Unknown',
       documentTypeText: docType,
     };
-
   }, [passportData]);
 
   // Get country flag component dynamically
   const getCountryFlag = (code: string) => {
     try {
-
-        const FlagComponent = (CountryFlags as any)[code];
-        if (FlagComponent) {
-          return FlagComponent;
-        }
-
+      const FlagComponent = (CountryFlags as any)[code];
+      if (FlagComponent) {
+        return FlagComponent;
+      }
     } catch (error) {
       console.error('Error getting country flag:', error);
       return null;
@@ -111,7 +112,8 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
     try {
       await sendCountrySupportNotification({
         countryName,
-        countryCode: country2AlphaCode !== 'Unknown' ? country2AlphaCode : undefined,
+        countryCode:
+          country2AlphaCode !== 'Unknown' ? country2AlphaCode : undefined,
         documentCategory: passportData?.documentCategory,
       });
     } catch (error) {
@@ -128,16 +130,30 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={white}>
-        <YStack flex={1} justifyContent="center" alignItems="center"  marginTop={100}>
-          <XStack justifyContent="center" alignItems="center" marginBottom={20} gap={12}>
-          {CountryFlagComponent && (
-            <View style={{ alignItems: 'center' }}>
-              <CountryFlagComponent width={60} height={60} />
-            </View>
-          )}
-
+        <YStack
+          flex={1}
+          justifyContent="center"
+          alignItems="center"
+          marginTop={100}
+        >
+          <XStack
+            justifyContent="center"
+            alignItems="center"
+            marginBottom={20}
+            gap={12}
+          >
+            {CountryFlagComponent && (
+              <View style={{ alignItems: 'center' }}>
+                <CountryFlagComponent width={60} height={60} />
+              </View>
+            )}
           </XStack>
-          <Title fontSize={32} textAlign="center" color={black} marginBottom={16}>
+          <Title
+            fontSize={32}
+            textAlign="center"
+            color={black}
+            marginBottom={16}
+          >
             Coming Soon
           </Title>
           <BodyText
@@ -147,7 +163,8 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
             marginBottom={10}
             paddingHorizontal={10}
           >
-            We're working to roll out support for {documentTypeText} in {countryName}.
+            We're working to roll out support for {documentTypeText} in{' '}
+            {countryName}.
           </BodyText>
           <BodyText
             fontSize={17}
@@ -158,7 +175,7 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
           >
             Sign up for live updates.
           </BodyText>
-          </YStack>
+        </YStack>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
         gap={16}
