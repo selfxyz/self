@@ -10,7 +10,7 @@ import {
 import type { FeedbackModalScreenParams } from '@/components/FeedbackModalScreen';
 import { captureFeedback } from '@/Sentry';
 
-export type FeedbackType = 'button' | 'widget' | 'custom' | 'modal';
+export type FeedbackType = 'button' | 'widget' | 'custom';
 
 export const useFeedbackModal = () => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -34,8 +34,6 @@ export const useFeedbackModal = () => {
         break;
       case 'custom':
         setIsVisible(true);
-        break;
-      case 'modal':
         break;
       default:
         showFeedbackButton();

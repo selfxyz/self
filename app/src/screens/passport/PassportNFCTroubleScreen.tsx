@@ -2,13 +2,15 @@
 
 import React, { useEffect } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { YStack } from 'tamagui';
+import { Button, YStack } from 'tamagui';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { Caption } from '@/components/typography/Caption';
+import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
+import { useFeedback } from '@/providers/feedbackProvider';
 import analytics from '@/utils/analytics';
 import { slate500 } from '@/utils/colors';
 
@@ -46,6 +48,8 @@ const PassportNFCTrouble: React.FC = () => {
   const goToNFCMethodSelection = useHapticNavigation(
     'PassportNFCMethodSelection',
   );
+  const { showFeedbackModal } = useFeedback();
+  useFeedbackAutoHide();
 
   // error screen, flush analytics
   useEffect(() => {
@@ -84,6 +88,9 @@ const PassportNFCTrouble: React.FC = () => {
           device supports NFC and that your passport's RFID is functioning
           properly.
         </Caption>
+        <Button onPress={() => showFeedbackModal('widget')}>
+          Report issue
+        </Button>
       </YStack>
     </SimpleScrolledTitleLayout>
   );
