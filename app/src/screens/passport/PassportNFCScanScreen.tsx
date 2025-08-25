@@ -51,6 +51,7 @@ import {
 } from '@/utils/haptic';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
+import { sanitizeErrorMessage } from '@/utils/utils';
 
 const { trackEvent } = analytics();
 
@@ -137,7 +138,10 @@ const PassportNFCScanScreen: React.FC = () => {
         secondaryButtonText: 'Help',
         preventDismiss: false,
         onButtonPress: () =>
-          sendFeedbackEmail({ message, origin: 'passport/nfc' }),
+          sendFeedbackEmail({
+            message: sanitizeErrorMessage(message),
+            origin: 'passport/nfc',
+          }),
         onSecondaryButtonPress: goToNFCTrouble,
         onModalDismiss: () => {},
       });
@@ -191,7 +195,9 @@ const PassportNFCScanScreen: React.FC = () => {
         scanTimeoutRef.current = null;
       }
       scanTimeoutRef.current = setTimeout(() => {
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, { error: 'timeout' });
+        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
+          error: sanitizeErrorMessage('timeout'),
+        });
         openErrorModal('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
       }, 30000);
@@ -231,7 +237,9 @@ const PassportNFCScanScreen: React.FC = () => {
         } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
           trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: e instanceof Error ? e.message : String(e),
+            error: sanitizeErrorMessage(
+              e instanceof Error ? e.message : String(e),
+            ),
           });
           return;
         }
@@ -288,7 +296,9 @@ const PassportNFCScanScreen: React.FC = () => {
         } catch (e: unknown) {
           console.error('Passport Parsed Failed:', e);
           trackEvent(PassportEvents.PASSPORT_PARSE_FAILED, {
-            error: e instanceof Error ? e.message : String(e),
+            error: sanitizeErrorMessage(
+              e instanceof Error ? e.message : String(e),
+            ),
           });
           return;
         }
@@ -300,7 +310,7 @@ const PassportNFCScanScreen: React.FC = () => {
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
         trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: message,
+          error: sanitizeErrorMessage(message),
           duration_seconds: parseFloat(scanDurationSeconds),
         });
         openErrorModal(message);

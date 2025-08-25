@@ -3,6 +3,8 @@
 import { Linking, Platform } from 'react-native';
 import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 
+import { sanitizeErrorMessage } from '@/utils/utils';
+
 import { version } from '../../package.json';
 
 interface SendFeedbackEmailOptions {
@@ -35,7 +37,7 @@ export const sendFeedbackEmail = async ({
     ['tz', getTimeZone()],
     ['ts', new Date().toISOString()],
     ['origin', origin],
-    ['error', message],
+    ['error', sanitizeErrorMessage(message)],
   ] as [string, string][];
 
   const body = `Please describe the issue you're experiencing:
