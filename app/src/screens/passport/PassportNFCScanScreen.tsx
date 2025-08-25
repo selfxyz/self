@@ -33,6 +33,7 @@ import TextsContainer from '@/components/TextsContainer';
 import { BodyText } from '@/components/typography/BodyText';
 import { Title } from '@/components/typography/Title';
 import { PassportEvents } from '@/consts/analytics';
+import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -79,7 +80,8 @@ type PassportNFCScanRoute = RouteProp<
 const PassportNFCScanScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<PassportNFCScanRoute>();
-  const { showModal } = useFeedback();
+  const { showModal, showFeedbackModal } = useFeedback();
+  useFeedbackAutoHide();
   const {
     passportNumber,
     dateOfBirth,
@@ -93,6 +95,7 @@ const PassportNFCScanScreen: React.FC = () => {
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [nfcMessage, setNfcMessage] = useState<string | null>(null);
+  const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const animationRef = useRef<LottieView>(null);
 
@@ -140,6 +143,10 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
       )}&body=${encodeURIComponent(body)}`,
     );
   }, []);
+
+  const onReportIssue = useCallback(() => {
+    showFeedbackModal('widget');
+  }, [showFeedbackModal]);
 
   const openErrorModal = useCallback(
     (message: string) => {
@@ -198,6 +205,16 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
       setIsNfcSheetOpen(true);
       // Add timestamp when scan starts
       const scanStartTime = Date.now();
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current);
+        scanTimeoutRef.current = null;
+      }
+      scanTimeoutRef.current = setTimeout(() => {
+        trackEvent(PassportEvents.NFC_SCAN_FAILED, { error: 'timeout' });
+        openErrorModal('Scan timed out. Please try again.');
+        showFeedbackModal('widget');
+        setIsNfcSheetOpen(false);
+      }, 30000);
 
       try {
         const { canNumber, useCan, skipPACE, skipCA, extendedMode } =
@@ -307,7 +324,12 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
           duration_seconds: parseFloat(scanDurationSeconds),
         });
         openErrorModal(message);
+        showFeedbackModal('widget');
       } finally {
+        if (scanTimeoutRef.current) {
+          clearTimeout(scanTimeoutRef.current);
+          scanTimeoutRef.current = null;
+        }
         setIsNfcSheetOpen(false);
       }
     } else if (isNfcSupported) {
@@ -327,6 +349,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
     isPacePolling,
     navigation,
     openErrorModal,
+    showFeedbackModal,
   ]);
 
   const navigateToLaunch = useHapticNavigation('Launch', {
@@ -448,12 +471,21 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
                   gap="$1.5"
                 >
                   <Title>Verify your ID</Title>
-                  <Button
-                    unstyled
-                    onPress={goToNFCTrouble}
-                    icon={<CircleHelp size={28} color={slate500} />}
-                    aria-label="Help"
-                  />
+                  <XStack alignItems="center" gap="$2">
+                    <Button
+                      unstyled
+                      onPress={goToNFCTrouble}
+                      icon={<CircleHelp size={28} color={slate500} />}
+                      aria-label="Help"
+                    />
+                    <Button
+                      unstyled
+                      onPress={onReportIssue}
+                      aria-label="Report issue"
+                    >
+                      <BodyText color={slate500}>Report issue</BodyText>
+                    </Button>
+                  </XStack>
                 </XStack>
               </GestureDetector>
               {isNfcEnabled ? (
