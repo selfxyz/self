@@ -103,6 +103,16 @@ const PassportNFCScanScreen: React.FC = () => {
     animationRef.current?.play();
   }, []);
 
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current);
+        scanTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   const goToNFCMethodSelection = useHapticNavigation(
     'PassportNFCMethodSelection',
   );
@@ -411,8 +421,21 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
 
         return () => {
           subscription.remove();
+          // Clear scan timeout when component loses focus
+          if (scanTimeoutRef.current) {
+            clearTimeout(scanTimeoutRef.current);
+            scanTimeoutRef.current = null;
+          }
         };
       }
+
+      // For iOS or when no emitter, still handle timeout cleanup on blur
+      return () => {
+        if (scanTimeoutRef.current) {
+          clearTimeout(scanTimeoutRef.current);
+          scanTimeoutRef.current = null;
+        }
+      };
     }, [checkNfcSupport]),
   );
 
