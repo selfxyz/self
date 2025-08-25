@@ -76,7 +76,7 @@ type PassportNFCScanRoute = RouteProp<
 const PassportNFCScanScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<PassportNFCScanRoute>();
-  const { showModal, showFeedbackModal } = useFeedback();
+  const { showModal } = useFeedback();
   useFeedbackAutoHide();
   const {
     passportNumber,
@@ -193,7 +193,6 @@ const PassportNFCScanScreen: React.FC = () => {
       scanTimeoutRef.current = setTimeout(() => {
         trackEvent(PassportEvents.NFC_SCAN_FAILED, { error: 'timeout' });
         openErrorModal('Scan timed out. Please try again.');
-        showFeedbackModal('widget');
         setIsNfcSheetOpen(false);
       }, 30000);
 
@@ -305,7 +304,8 @@ const PassportNFCScanScreen: React.FC = () => {
           duration_seconds: parseFloat(scanDurationSeconds),
         });
         openErrorModal(message);
-        showFeedbackModal('widget');
+        // We deliberately avoid opening any external feedback widgets here;
+        // users can send feedback via the email action in the modal.
       } finally {
         if (scanTimeoutRef.current) {
           clearTimeout(scanTimeoutRef.current);
@@ -330,7 +330,6 @@ const PassportNFCScanScreen: React.FC = () => {
     isPacePolling,
     navigation,
     openErrorModal,
-    showFeedbackModal,
   ]);
 
   const navigateToLaunch = useHapticNavigation('Launch', {

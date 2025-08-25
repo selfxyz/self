@@ -2,17 +2,18 @@
 
 import React, { useEffect } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { Button, YStack } from 'tamagui';
+import { YStack } from 'tamagui';
 
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { Caption } from '@/components/typography/Caption';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import { useFeedback } from '@/providers/feedbackProvider';
 import analytics from '@/utils/analytics';
 import { slate500 } from '@/utils/colors';
+import { sendFeedbackEmail } from '@/utils/email';
 
 const { flush: flushAnalytics } = analytics();
 
@@ -48,7 +49,6 @@ const PassportNFCTrouble: React.FC = () => {
   const goToNFCMethodSelection = useHapticNavigation(
     'PassportNFCMethodSelection',
   );
-  const { showFeedbackModal } = useFeedback();
   useFeedbackAutoHide();
 
   // error screen, flush analytics
@@ -69,6 +69,22 @@ const PassportNFCTrouble: React.FC = () => {
       onDismiss={go}
       secondaryButtonText="Open NFC Options"
       onSecondaryButtonPress={goToNFCMethodSelection}
+      footer={
+        // Add top padding before buttons and normalize spacing
+        <YStack marginTop={16} marginBottom={0} gap={10}>
+          <SecondaryButton
+            onPress={() =>
+              sendFeedbackEmail({
+                message: 'User reported an issue from NFC trouble screen',
+                origin: 'passport/nfc-trouble',
+              })
+            }
+            marginBottom={0}
+          >
+            Report Issue
+          </SecondaryButton>
+        </YStack>
+      }
     >
       <YStack
         paddingTop={24}
@@ -88,9 +104,6 @@ const PassportNFCTrouble: React.FC = () => {
           device supports NFC and that your passport's RFID is functioning
           properly.
         </Caption>
-        <Button onPress={() => showFeedbackModal('widget')}>
-          Report issue
-        </Button>
       </YStack>
     </SimpleScrolledTitleLayout>
   );
