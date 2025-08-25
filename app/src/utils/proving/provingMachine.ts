@@ -14,6 +14,7 @@ import {
   getCircuitNameFromPassportData,
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
+import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
 import {
   clientKey,
   clientPublicKeyHex,
@@ -35,7 +36,6 @@ import {
 import { useProtocolStore } from '@/stores/protocolStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
-import { getPublicKey, verifyAttestation } from '@/utils/proving/attest';
 import {
   generateTEEInputsDisclose,
   generateTEEInputsDSC,
