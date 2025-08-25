@@ -82,6 +82,8 @@ export { extractMRZInfo } from './mrz';
 
 export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
+export { getAllDocuments, hasAnyValidRegisteredDocument } from './documents/utils';
+
 // Core functions
 export { isPassportDataValid } from './validation/document';
 
@@ -94,10 +96,6 @@ export { scanQRProof } from './qr';
 
 // Hooks
 export { useDocumentManager } from './hooks/useDocumentManager';
+
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
-
-export {
-  getAllDocuments,
-  hasAnyValidRegisteredDocument,
-} from './documents/utils';
