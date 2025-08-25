@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /**
  * Script to check and fix license header formatting
@@ -10,8 +12,16 @@
 import fs from 'fs';
 import path from 'path';
 
-const LICENSE_HEADER =
+// Legacy composite format (being phased out)
+const LEGACY_HEADER =
   '// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11';
+
+// Canonical multi-line format (preferred)
+const CANONICAL_HEADER_LINES = [
+  '// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.',
+  '// SPDX-License-Identifier: BUSL-1.1',
+  '// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.',
+];
 
 function findFiles(
   dir,
@@ -59,16 +69,52 @@ function findLicenseHeaderIndex(lines) {
   if (lines[i]?.startsWith('#!')) i++;
   // Skip leading blank lines
   while (i < lines.length && lines[i].trim() === '') i++;
-  return lines[i] === LICENSE_HEADER ? i : -1;
+
+  const currentLine = lines[i];
+
+  // Check for legacy composite format
+  if (currentLine === LEGACY_HEADER) {
+    return { index: i, type: 'legacy', valid: true, endIndex: i };
+  }
+
+  // Check for canonical multi-line format
+  if (currentLine === CANONICAL_HEADER_LINES[0]) {
+    const hasAllLines =
+      lines[i + 1] === CANONICAL_HEADER_LINES[1] &&
+      lines[i + 2] === CANONICAL_HEADER_LINES[2];
+    return {
+      index: i,
+      type: 'canonical',
+      valid: hasAllLines,
+      endIndex: hasAllLines ? i + 2 : i,
+    };
+  }
+
+  return { index: -1, type: 'none', valid: false };
 }
 
-function checkLicenseHeader(filePath, { requireHeader = false } = {}) {
+function shouldRequireHeader(filePath, projectRoot) {
+  const relativePath = path.relative(projectRoot, filePath);
+  // Only require headers in app/ and packages/mobile-sdk-alpha/ directories
+  return (
+    relativePath.startsWith('app/') ||
+    relativePath.startsWith('packages/mobile-sdk-alpha/')
+  );
+}
+
+function checkLicenseHeader(
+  filePath,
+  { requireHeader = false, projectRoot = process.cwd() } = {},
+) {
   const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
-  const idx = findLicenseHeaderIndex(lines);
+  const headerInfo = findLicenseHeaderIndex(lines);
 
-  if (idx === -1) {
-    if (requireHeader) {
+  const shouldHaveHeader =
+    requireHeader || shouldRequireHeader(filePath, projectRoot);
+
+  if (headerInfo.index === -1) {
+    if (shouldHaveHeader) {
       return {
         file: filePath,
         issue: 'Missing or incorrect license header',
@@ -78,8 +124,17 @@ function checkLicenseHeader(filePath, { requireHeader = false } = {}) {
     return null;
   }
 
+  if (!headerInfo.valid) {
+    return {
+      file: filePath,
+      issue: 'Incomplete or malformed license header',
+      fixed: false,
+    };
+  }
+
   // Check if there's a newline after the license header
-  if (lines[idx + 1] !== '') {
+  const headerEndIndex = headerInfo.endIndex;
+  if (lines[headerEndIndex + 1] !== '') {
     return {
       file: filePath,
       issue: 'Missing newline after license header',
@@ -93,14 +148,17 @@ function checkLicenseHeader(filePath, { requireHeader = false } = {}) {
 function fixLicenseHeader(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
-  const idx = findLicenseHeaderIndex(lines);
+  const headerInfo = findLicenseHeaderIndex(lines);
 
-  if (idx !== -1 && lines[idx + 1] !== '') {
-    // Insert empty line after license header
-    lines.splice(idx + 1, 0, '');
-    const fixedContent = lines.join('\n');
-    fs.writeFileSync(filePath, fixedContent, 'utf8');
-    return true;
+  if (headerInfo.index !== -1 && headerInfo.valid) {
+    const headerEndIndex = headerInfo.endIndex;
+    if (lines[headerEndIndex + 1] !== '') {
+      // Insert empty line after license header
+      lines.splice(headerEndIndex + 1, 0, '');
+      const fixedContent = lines.join('\n');
+      fs.writeFileSync(filePath, fixedContent, 'utf8');
+      return true;
+    }
   }
 
   return false;
@@ -118,7 +176,7 @@ function main() {
   const issues = [];
 
   for (const file of files) {
-    const issue = checkLicenseHeader(file, { requireHeader });
+    const issue = checkLicenseHeader(file, { requireHeader, projectRoot });
     if (issue) {
       issues.push(issue);
 
@@ -133,6 +191,10 @@ function main() {
   }
 
   if (isCheck) {
+    // Show which directories require headers
+    const requiredDirs = ['app/', 'packages/mobile-sdk-alpha/'];
+    console.log(`📋 License headers required in: ${requiredDirs.join(', ')}\n`);
+
     if (issues.length === 0) {
       console.log('✅ All license headers are properly formatted');
     } else {

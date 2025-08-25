@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /**
  * Migration tool to convert composite SPDX headers to canonical multi-line format
@@ -129,6 +131,50 @@ function migrateFile(filePath, dryRun = false) {
   return { success: false, reason: 'Unknown migration path' };
 }
 
+function removeHeaderFromFile(filePath, dryRun = false) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const lines = content.split('\n');
+  const analysis = analyzeFile(filePath);
+
+  if (analysis.headerIndex === -1) {
+    return { success: false, reason: 'No header found' };
+  }
+
+  if (analysis.type === 'composite') {
+    // Remove the composite header line
+    lines.splice(analysis.headerIndex, 1);
+
+    // Also remove the following empty line if it exists
+    if (lines[analysis.headerIndex] === '') {
+      lines.splice(analysis.headerIndex, 1);
+    }
+
+    if (!dryRun) {
+      const newContent = lines.join('\n');
+      fs.writeFileSync(filePath, newContent, 'utf8');
+    }
+
+    return { success: true, reason: 'Removed composite header' };
+  } else if (analysis.type === 'canonical') {
+    // Remove all 3 canonical header lines
+    lines.splice(analysis.headerIndex, 3);
+
+    // Also remove the following empty line if it exists
+    if (lines[analysis.headerIndex] === '') {
+      lines.splice(analysis.headerIndex, 1);
+    }
+
+    if (!dryRun) {
+      const newContent = lines.join('\n');
+      fs.writeFileSync(filePath, newContent, 'utf8');
+    }
+
+    return { success: true, reason: 'Removed canonical header' };
+  }
+
+  return { success: false, reason: 'Unknown header type' };
+}
+
 function generateReport(projectRoot) {
   const files = findFiles(projectRoot);
   const report = {
@@ -245,6 +291,48 @@ function main() {
       break;
     }
 
+    case 'remove': {
+      const files = findFiles(projectRoot);
+      const results = { removed: 0, skipped: 0, errors: 0 };
+
+      console.log(
+        `🗑️ ${isDryRun ? 'DRY RUN: ' : ''}Removing license headers...\n`,
+      );
+
+      for (const file of files) {
+        try {
+          const result = removeHeaderFromFile(file, isDryRun);
+          if (result.success) {
+            results.removed++;
+            console.log(
+              `✅ ${isDryRun ? '[DRY RUN] ' : ''}Removed: ${path.relative(projectRoot, file)}`,
+            );
+          } else {
+            results.skipped++;
+            if (isVerbose) {
+              console.log(
+                `⏭️  Skipped: ${path.relative(projectRoot, file)} (${result.reason})`,
+              );
+            }
+          }
+        } catch (error) {
+          results.errors++;
+          console.error(`❌ Error processing ${file}: ${error.message}`);
+        }
+      }
+
+      console.log(`\n📊 Removal Summary:`);
+      console.log(`   Removed: ${results.removed}`);
+      console.log(`   Skipped: ${results.skipped}`);
+      console.log(`   Errors: ${results.errors}`);
+
+      if (isDryRun && results.removed > 0) {
+        console.log('\n🚀 Run without --dry-run to apply changes');
+      }
+
+      break;
+    }
+
     case 'migrate-single': {
       const targetFile = args[1];
       if (!targetFile) {
@@ -272,6 +360,7 @@ function main() {
 Commands:
   analyze, report     Generate analysis report of current header formats
   migrate            Migrate all composite headers to canonical format
+  remove             Remove license headers from files
   migrate-single     Migrate a single file
 
 Options:
@@ -281,6 +370,7 @@ Options:
 Examples:
   node scripts/migrate-license-headers.mjs analyze --verbose
   node scripts/migrate-license-headers.mjs migrate --dry-run
+  node scripts/migrate-license-headers.mjs remove common --dry-run
   node scripts/migrate-license-headers.mjs migrate packages/mobile-sdk-alpha
   node scripts/migrate-license-headers.mjs migrate-single src/index.ts --dry-run
 `);
