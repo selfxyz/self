@@ -634,7 +634,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       actor.start();
 
       trackEvent(ProofEvents.DOCUMENT_LOAD_STARTED);
-      // TODO call on self client
       const selectedDocument = await loadSelectedDocument();
       if (!selectedDocument) {
         console.error('No document found for proving');
