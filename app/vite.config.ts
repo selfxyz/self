@@ -157,7 +157,6 @@ export default defineConfig({
           'screens-prove-utils': [
             './src/utils/proving/index.ts',
             './src/utils/proving/provingInputs.ts',
-            './src/utils/proving/cose.ts',
             './src/utils/proving/loadingScreenStateText.ts',
           ],
 

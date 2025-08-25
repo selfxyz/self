@@ -58,6 +58,10 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/hash.js',
   ),
+  '@selfxyz/common/utils/attest': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/attest.js',
+  ),
   '@selfxyz/common/utils/bytes': path.resolve(
     commonPath,
     'dist/esm/src/utils/bytes.js',
