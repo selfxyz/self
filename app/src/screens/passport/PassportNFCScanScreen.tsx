@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -32,13 +34,16 @@ import TextsContainer from '@/components/TextsContainer';
 import { BodyText } from '@/components/typography/BodyText';
 import { Title } from '@/components/typography/Title';
 import { PassportEvents } from '@/consts/analytics';
+import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
 import analytics from '@/utils/analytics';
 import { black, slate100, slate400, slate500, white } from '@/utils/colors';
+import { sendFeedbackEmail } from '@/utils/email';
 import { dinot } from '@/utils/fonts';
 import {
   buttonTap,
@@ -46,9 +51,9 @@ import {
   feedbackUnsuccessful,
   impactLight,
 } from '@/utils/haptic';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
+import { sanitizeErrorMessage } from '@/utils/utils';
 
 const { trackEvent } = analytics();
 
@@ -74,6 +79,8 @@ type PassportNFCScanRoute = RouteProp<
 const PassportNFCScanScreen: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute<PassportNFCScanRoute>();
+  const { showModal } = useFeedback();
+  useFeedbackAutoHide();
   const {
     passportNumber,
     dateOfBirth,
@@ -87,11 +94,24 @@ const PassportNFCScanScreen: React.FC = () => {
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [nfcMessage, setNfcMessage] = useState<string | null>(null);
+  const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scanCancelledRef = useRef(false);
 
   const animationRef = useRef<LottieView>(null);
 
   useEffect(() => {
     animationRef.current?.play();
+  }, []);
+
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+      scanCancelledRef.current = true;
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current);
+        scanTimeoutRef.current = null;
+      }
+    };
   }, []);
 
   const goToNFCMethodSelection = useHapticNavigation(
@@ -106,22 +126,31 @@ const PassportNFCScanScreen: React.FC = () => {
       goToNFCMethodSelection();
     });
 
+  const onReportIssue = useCallback(() => {
+    sendFeedbackEmail({
+      message: 'User reported an issue from NFC scan screen',
+      origin: 'passport/nfc',
+    });
+  }, []);
+
   const openErrorModal = useCallback(
     (message: string) => {
-      const callbackId = registerModalCallbacks({
-        onButtonPress: () => {},
-        onModalDismiss: goToNFCTrouble,
-      });
-      navigation.navigate('Modal', {
+      showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
-        buttonText: 'Dismiss',
+        buttonText: 'Report Issue',
         secondaryButtonText: 'Help',
-        preventDismiss: true,
-        callbackId,
+        preventDismiss: false,
+        onButtonPress: () =>
+          sendFeedbackEmail({
+            message: sanitizeErrorMessage(message),
+            origin: 'passport/nfc',
+          }),
+        onSecondaryButtonPress: goToNFCTrouble,
+        onModalDismiss: () => {},
       });
     },
-    [navigation, goToNFCTrouble],
+    [showModal, goToNFCTrouble],
   );
 
   const checkNfcSupport = useCallback(async () => {
@@ -164,7 +193,20 @@ const PassportNFCScanScreen: React.FC = () => {
     if (isNfcEnabled) {
       setIsNfcSheetOpen(true);
       // Add timestamp when scan starts
+      scanCancelledRef.current = false;
       const scanStartTime = Date.now();
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current);
+        scanTimeoutRef.current = null;
+      }
+      scanTimeoutRef.current = setTimeout(() => {
+        scanCancelledRef.current = true;
+        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
+          error: 'timeout',
+        });
+        openErrorModal('Scan timed out. Please try again.');
+        setIsNfcSheetOpen(false);
+      }, 30000);
 
       try {
         const { canNumber, useCan, skipPACE, skipCA, extendedMode } =
@@ -181,6 +223,11 @@ const PassportNFCScanScreen: React.FC = () => {
           extendedMode,
           usePacePolling: isPacePolling,
         });
+
+        // Check if scan was cancelled by timeout
+        if (scanCancelledRef.current) {
+          return;
+        }
 
         const scanDurationSeconds = (
           (Date.now() - scanStartTime) /
@@ -201,7 +248,9 @@ const PassportNFCScanScreen: React.FC = () => {
         } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
           trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: e instanceof Error ? e.message : String(e),
+            error: sanitizeErrorMessage(
+              e instanceof Error ? e.message : String(e),
+            ),
           });
           return;
         }
@@ -254,15 +303,30 @@ const PassportNFCScanScreen: React.FC = () => {
           }
           // Feels better somehow
           await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Check if scan was cancelled by timeout before navigating
+          if (scanCancelledRef.current) {
+            return;
+          }
           navigation.navigate('ConfirmBelongingScreen', {});
         } catch (e: unknown) {
+          // Check if scan was cancelled by timeout
+          if (scanCancelledRef.current) {
+            return;
+          }
           console.error('Passport Parsed Failed:', e);
           trackEvent(PassportEvents.PASSPORT_PARSE_FAILED, {
-            error: e instanceof Error ? e.message : String(e),
+            error: sanitizeErrorMessage(
+              e instanceof Error ? e.message : String(e),
+            ),
           });
           return;
         }
       } catch (e: unknown) {
+        // Check if scan was cancelled by timeout
+        if (scanCancelledRef.current) {
+          return;
+        }
         const scanDurationSeconds = (
           (Date.now() - scanStartTime) /
           1000
@@ -270,11 +334,17 @@ const PassportNFCScanScreen: React.FC = () => {
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
         trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: message,
+          error: sanitizeErrorMessage(message),
           duration_seconds: parseFloat(scanDurationSeconds),
         });
         openErrorModal(message);
+        // We deliberately avoid opening any external feedback widgets here;
+        // users can send feedback via the email action in the modal.
       } finally {
+        if (scanTimeoutRef.current) {
+          clearTimeout(scanTimeoutRef.current);
+          scanTimeoutRef.current = null;
+        }
         setIsNfcSheetOpen(false);
       }
     } else if (isNfcSupported) {
@@ -355,8 +425,23 @@ const PassportNFCScanScreen: React.FC = () => {
 
         return () => {
           subscription.remove();
+          // Clear scan timeout when component loses focus
+          scanCancelledRef.current = true;
+          if (scanTimeoutRef.current) {
+            clearTimeout(scanTimeoutRef.current);
+            scanTimeoutRef.current = null;
+          }
         };
       }
+
+      // For iOS or when no emitter, still handle timeout cleanup on blur
+      return () => {
+        scanCancelledRef.current = true;
+        if (scanTimeoutRef.current) {
+          clearTimeout(scanTimeoutRef.current);
+          scanTimeoutRef.current = null;
+        }
+      };
     }, [checkNfcSupport]),
   );
 
@@ -467,6 +552,9 @@ const PassportNFCScanScreen: React.FC = () => {
                 onPress={onCancelPress}
               >
                 Cancel
+              </SecondaryButton>
+              <SecondaryButton onPress={onReportIssue}>
+                Report Issue
               </SecondaryButton>
             </ButtonsContainer>
           </>

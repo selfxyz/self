@@ -1,30 +1,20 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
-
 import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
 import { ec as ellipticEc } from 'elliptic';
 import { ethers } from 'ethers';
 import { sha384 } from 'js-sha512';
 import { Certificate } from 'pkijs';
+
+import { PCR0_MANAGER_ADDRESS, RPC_URL } from '../constants/constants.js';
+import cose, { AWS_ROOT_PEM } from './cose.js';
+
 import { X509Certificate } from '@peculiar/x509';
 import { decode } from '@stablelib/cbor';
-
-import { PCR0_MANAGER_ADDRESS, RPC_URL } from '@selfxyz/common/constants';
-
-import { AWS_ROOT_PEM } from '@/utils/proving/awsRootPem';
-import cose from '@/utils/proving/cose';
 
 /**
  * @notice An array specifying the required fields for a valid attestation.
  */
-const requiredFields = [
-  'module_id',
-  'digest',
-  'timestamp',
-  'pcrs',
-  'certificate',
-  'cabundle',
-];
+const requiredFields = ['module_id', 'digest', 'timestamp', 'pcrs', 'certificate', 'cabundle'];
 
 /**
  * @notice Queries the PCR0Manager contract to verify that the PCR0 value extracted from the attestation
@@ -32,9 +22,7 @@ const requiredFields = [
  * @param attestation An array of numbers representing the COSE_Sign1 encoded attestation document.
  * @return A promise that resolves to true if the PCR0 value is set in the contract, or false otherwise.
  */
-export async function checkPCR0Mapping(
-  attestation: Array<number>,
-): Promise<boolean> {
+export async function checkPCR0Mapping(attestation: Array<number>): Promise<boolean> {
   // Obtain the PCR0 image hash from the attestation
   const imageHashHex = getImageHash(attestation);
   console.log('imageHash', imageHashHex);
@@ -42,26 +30,20 @@ export async function checkPCR0Mapping(
   // For a SHA384 hash, we expect 96 hex characters (48 bytes)
   if (imageHashHex.length !== 96) {
     throw new Error(
-      `Invalid PCR0 hash length: expected 96 hex characters, got ${imageHashHex.length}`,
+      `Invalid PCR0 hash length: expected 96 hex characters, got ${imageHashHex.length}`
     );
   }
 
   // Convert the PCR0 hash from hex to a byte array, ensuring proper "0x" prefix
   const pcr0Bytes = ethers.getBytes(`0x${imageHashHex}`);
   if (pcr0Bytes.length !== 48) {
-    throw new Error(
-      `Invalid PCR0 bytes length: expected 48, got ${pcr0Bytes.length}`,
-    );
+    throw new Error(`Invalid PCR0 bytes length: expected 48, got ${pcr0Bytes.length}`);
   }
 
   const celoProvider = new ethers.JsonRpcProvider(RPC_URL);
 
   // Create a contract instance for the PCR0Manager
-  const pcr0Manager = new ethers.Contract(
-    PCR0_MANAGER_ADDRESS,
-    PCR0ManagerABI,
-    celoProvider,
-  );
+  const pcr0Manager = new ethers.Contract(PCR0_MANAGER_ADDRESS, PCR0ManagerABI, celoProvider);
 
   try {
     // Query the contract: isPCR0Set returns true if the given PCR0 value is set
@@ -79,9 +61,7 @@ export function formatPCR0Value(pcr0: string): Uint8Array {
 
   // Validate hex string length (96 characters for 48 bytes)
   if (cleanHex.length !== 96) {
-    throw new Error(
-      `Invalid PCR0 length: expected 96 hex characters, got ${cleanHex.length}`,
-    );
+    throw new Error(`Invalid PCR0 length: expected 96 hex characters, got ${cleanHex.length}`);
   }
 
   // Validate hex string format
@@ -100,8 +80,7 @@ export function formatPCR0Value(pcr0: string): Uint8Array {
  */
 export function getPublicKey(attestation: Array<number>) {
   const coseSign1 = decode(Buffer.from(attestation));
-  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] =
-    coseSign1;
+  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] = coseSign1;
   const attestationDoc = decode(payload) as AttestationDoc;
   return attestationDoc.public_key;
 }
@@ -113,11 +92,7 @@ export function getPublicKey(attestation: Array<number>) {
  * @param value The number to check.
  * @return True if value is within the range; otherwise, false.
  */
-export const numberInRange = (
-  start: number,
-  end: number,
-  value: number,
-): boolean => {
+export const numberInRange = (start: number, end: number, value: number): boolean => {
   return value > start && value <= end;
 };
 
@@ -154,8 +129,7 @@ function getImageHash(attestation: Array<number>) {
   if (!Array.isArray(coseSign1) || coseSign1.length !== 4) {
     throw new Error('Invalid COSE_Sign1 format');
   }
-  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] =
-    coseSign1;
+  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] = coseSign1;
   const attestationDoc = decode(payload);
   if (!attestationDoc.pcrs) {
     throw new Error('Missing required field: pcrs');
@@ -166,9 +140,7 @@ function getImageHash(attestation: Array<number>) {
   }
   if (pcr0.length !== 48) {
     // SHA384 produces a 48-byte hash
-    throw new Error(
-      `Invalid PCR0 length - expected 48 bytes, got ${pcr0.length} bytes`,
-    );
+    throw new Error(`Invalid PCR0 length - expected 48 bytes, got ${pcr0.length} bytes`);
   }
   return Buffer.from(pcr0).toString('hex');
 }
@@ -197,8 +169,7 @@ type AttestationDoc = {
 function getPublicKeyFromPem(pem: string) {
   const cert = getCertificateFromPem(pem);
   const curve = 'p384';
-  const publicKeyBuffer =
-    cert.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
+  const publicKeyBuffer = cert.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
   const ec = new ellipticEc(curve);
   const key = ec.keyFromPublic(publicKeyBuffer);
   const x_point = key.getPublic().getX().toString('hex');
@@ -217,10 +188,7 @@ function getPublicKeyFromPem(pem: string) {
  *      creates an ArrayBuffer, and then parses the ASN.1 structure using fromBER. Throws an error if parsing fails.
  */
 function getCertificateFromPem(pemContent: string): Certificate {
-  const pemFormatted = pemContent.replace(
-    /(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g,
-    '',
-  );
+  const pemFormatted = pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g, '');
   const binary = Buffer.from(pemFormatted, 'base64');
   const arrayBuffer = new ArrayBuffer(binary.length);
   const view = new Uint8Array(arrayBuffer);
@@ -239,13 +207,12 @@ function getCertificateFromPem(pemContent: string): Certificate {
 function verifyCertificateSignature(child: string, parent: string): boolean {
   const certBuffer_csca = Buffer.from(
     parent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64',
+    'base64'
   );
   const asn1Data_csca = fromBER(certBuffer_csca);
   const cert_csca = new Certificate({ schema: asn1Data_csca.result });
   const publicKeyInfo_csca = cert_csca.subjectPublicKeyInfo;
-  const publicKeyBuffer_csca =
-    publicKeyInfo_csca.subjectPublicKey.valueBlock.valueHexView;
+  const publicKeyBuffer_csca = publicKeyInfo_csca.subjectPublicKey.valueBlock.valueHexView;
   const curve = 'p384';
   const ec_csca = new ellipticEc(curve);
   const key_csca = ec_csca.keyFromPublic(publicKeyBuffer_csca);
@@ -254,7 +221,7 @@ function verifyCertificateSignature(child: string, parent: string): boolean {
 
   const certBuffer_dsc = Buffer.from(
     child.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64',
+    'base64'
   );
   const asn1Data_dsc = fromBER(certBuffer_dsc);
   const cert_dsc = new Certificate({ schema: asn1Data_dsc.result });
@@ -266,7 +233,7 @@ function verifyCertificateSignature(child: string, parent: string): boolean {
 function getTBSHash(pem: string): string {
   const certBuffer = Buffer.from(
     pem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64',
+    'base64'
   );
   const asn1Data_cert = fromBER(certBuffer);
   const cert = new Certificate({ schema: asn1Data_cert.result });
@@ -279,9 +246,7 @@ function getTBSHash(pem: string): string {
 }
 
 // Minimal ABI containing only the view function we need.
-const PCR0ManagerABI = [
-  'function isPCR0Set(bytes calldata pcr0) external view returns (bool)',
-];
+const PCR0ManagerABI = ['function isPCR0Set(bytes calldata pcr0) external view returns (bool)'];
 
 /**
  * @notice Verifies a TEE attestation document encoded as a COSE_Sign1 structure.
@@ -296,8 +261,7 @@ export const verifyAttestation = async (attestation: Array<number>) => {
     throw new Error('Invalid COSE_Sign1 format');
   }
 
-  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] =
-    coseSign1;
+  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] = coseSign1;
 
   const attestationDoc = (await decode(payload)) as AttestationDoc;
 
@@ -358,9 +322,7 @@ export const verifyAttestation = async (attestation: Array<number>) => {
     }
   }
 
-  const certChain = attestationDoc.cabundle.map((cert: Buffer) =>
-    derToPem(cert),
-  );
+  const certChain = attestationDoc.cabundle.map((cert: Buffer) => derToPem(cert));
 
   const cert = derToPem(attestationDoc.certificate);
   const isPCR0Set = await checkPCR0Mapping(attestation);
@@ -401,11 +363,11 @@ export const verifyAttestation = async (attestation: Array<number>) => {
  */
 export const verifyCertChain = async (
   rootPem: string,
-  certChainStr: string[],
+  certChainStr: string[]
 ): Promise<boolean> => {
   try {
     // Parse all certificates
-    const certChain = certChainStr.map(cert => new X509Certificate(cert));
+    const certChain = certChainStr.map((cert) => new X509Certificate(cert));
 
     // Verify the chain from leaf to root
     // certChain[0] is the root, we use the hardcoded rootPem
@@ -422,7 +384,7 @@ export const verifyCertChain = async (
       try {
         const isValid = verifyCertificateSignature(
           certChainStr[i],
-          i === 1 ? rootPem : certChainStr[i - 1],
+          i === 1 ? rootPem : certChainStr[i - 1]
         );
         if (!isValid) {
           console.error(`Certificate at index ${i} has invalid signature`);
