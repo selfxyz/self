@@ -29,7 +29,17 @@ function findFiles(
       if (stat.isDirectory()) {
         // Skip node_modules, .git, and other common directories
         if (
-          !['node_modules', '.git', 'dist', 'build', 'coverage'].includes(item)
+          ![
+            'node_modules',
+            '.git',
+            'dist',
+            'build',
+            'coverage',
+            'ios',
+            'android',
+            '.next',
+            '.turbo',
+          ].includes(item)
         ) {
           traverse(fullPath);
         }
@@ -43,20 +53,38 @@ function findFiles(
   return files;
 }
 
-function checkLicenseHeader(filePath) {
+function findLicenseHeaderIndex(lines) {
+  let i = 0;
+  // Skip shebang if present
+  if (lines[i]?.startsWith('#!')) i++;
+  // Skip leading blank lines
+  while (i < lines.length && lines[i].trim() === '') i++;
+  return lines[i] === LICENSE_HEADER ? i : -1;
+}
+
+function checkLicenseHeader(filePath, { requireHeader = false } = {}) {
   const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
+  const idx = findLicenseHeaderIndex(lines);
 
-  // Check if first line is license header
-  if (lines[0] === LICENSE_HEADER) {
-    // Check if second line is empty (has newline after license header)
-    if (lines[1] !== '') {
+  if (idx === -1) {
+    if (requireHeader) {
       return {
         file: filePath,
-        issue: 'Missing newline after license header',
+        issue: 'Missing or incorrect license header',
         fixed: false,
       };
     }
+    return null;
+  }
+
+  // Check if there's a newline after the license header
+  if (lines[idx + 1] !== '') {
+    return {
+      file: filePath,
+      issue: 'Missing newline after license header',
+      fixed: false,
+    };
   }
 
   return null;
@@ -65,10 +93,11 @@ function checkLicenseHeader(filePath) {
 function fixLicenseHeader(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
+  const idx = findLicenseHeaderIndex(lines);
 
-  if (lines[0] === LICENSE_HEADER && lines[1] !== '') {
+  if (idx !== -1 && lines[idx + 1] !== '') {
     // Insert empty line after license header
-    lines.splice(1, 0, '');
+    lines.splice(idx + 1, 0, '');
     const fixedContent = lines.join('\n');
     fs.writeFileSync(filePath, fixedContent, 'utf8');
     return true;
@@ -81,6 +110,7 @@ function main() {
   const args = process.argv.slice(2);
   const isFix = args.includes('--fix');
   const isCheck = args.includes('--check') || !isFix;
+  const requireHeader = args.includes('--require');
   const dirArg = args.find(arg => !arg.startsWith('--'));
   const projectRoot = dirArg ? path.resolve(dirArg) : process.cwd();
   const files = findFiles(projectRoot);
@@ -88,7 +118,7 @@ function main() {
   const issues = [];
 
   for (const file of files) {
-    const issue = checkLicenseHeader(file);
+    const issue = checkLicenseHeader(file, { requireHeader });
     if (issue) {
       issues.push(issue);
 
