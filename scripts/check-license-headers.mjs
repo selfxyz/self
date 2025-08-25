@@ -9,10 +9,6 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const LICENSE_HEADER =
   '// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11';
@@ -85,8 +81,8 @@ function main() {
   const args = process.argv.slice(2);
   const isFix = args.includes('--fix');
   const isCheck = args.includes('--check') || !isFix;
-
-  const projectRoot = path.resolve(__dirname, '..');
+  const dirArg = args.find(arg => !arg.startsWith('--'));
+  const projectRoot = dirArg ? path.resolve(dirArg) : process.cwd();
   const files = findFiles(projectRoot);
 
   const issues = [];
