@@ -5,6 +5,7 @@
 // Types
 export type {
   Adapters,
+  AnalyticsAdapter,
   ClockAdapter,
   Config,
   CryptoAdapter,
@@ -27,6 +28,7 @@ export type {
   ScannerAdapter,
   SelfClient,
   StorageAdapter,
+  TrackEventParams,
   Unsubscribe,
   ValidationInput,
   ValidationResult,

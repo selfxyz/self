@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
-import { EventParams } from '../adapters/analytics.js';
 
+export type { TrackEventParams } from '../adapters/analytics.js';
 export type { PassportData } from '@selfxyz/common/utils/types';
 export type { PassportValidationCallbacks } from '../validation/document';
 export interface Config {
@@ -34,7 +34,7 @@ export interface MRZInfo {
 }
 
 export interface AnalyticsAdapter {
-  trackEvent(event: string, payload?: EventParams): void;
+  trackEvent(event: string, payload?: TrackEventParams): void;
 }
 
 export interface ClockAdapter {
@@ -136,7 +136,7 @@ export interface SelfClient {
     },
   ): Promise<ProofHandle>;
   extractMRZInfo(mrz: string): MRZInfo;
-  trackEvent(event: string, payload?: EventParams): void;
+  trackEvent(event: string, payload?: TrackEventParams): void;
   on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
 }

@@ -23,7 +23,7 @@ const extraNodeModules = {
   '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
   '@selfxyz/mobile-sdk-alpha/constants/analytics': path.resolve(
     sdkAlphaPath,
-    'dist/esm/src/constants/analytics.js',
+    'dist/esm/constants/analytics.js',
   ),
   // Main exports
   '@selfxyz/common/utils': path.resolve(

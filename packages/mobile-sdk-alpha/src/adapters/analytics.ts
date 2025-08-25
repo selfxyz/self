@@ -18,7 +18,7 @@
  * - backup_not_found: Backup not found
  * - cloud_service_unavailable: Cloud service unavailable
  * */
-export interface EventParams {
+export interface TrackEventParams {
   reason?: string | null;
   duration_seconds?: number;
   attempt_count?: number;

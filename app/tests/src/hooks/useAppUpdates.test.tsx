@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { ReactNode } from 'react';
 import { checkVersion } from 'react-native-check-version';
 import { useNavigation } from '@react-navigation/native';
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { useAppUpdates } from '@/hooks/useAppUpdates';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 import { SelfClientProvider } from '@/providers/selfClientProvider';
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -29,7 +30,7 @@ jest.mock('@/utils/analytics', () => () => ({
 const navigate = jest.fn();
 (useNavigation as jest.Mock).mockReturnValue({ navigate });
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
+const wrapper = ({ children }: { children: ReactNode }) => (
   <SelfClientProvider>{children}</SelfClientProvider>
 );
 

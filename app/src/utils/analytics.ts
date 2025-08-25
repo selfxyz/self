@@ -4,6 +4,8 @@
 
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 
+import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
+
 import { createSegmentClient } from '@/Segment';
 
 const segmentClient = createSegmentClient();
@@ -65,7 +67,7 @@ function validateParams(
 ): JsonMap | undefined {
   if (!properties) return undefined;
 
-  const validatedProps = { ...properties } as EventParams;
+  const validatedProps = { ...properties };
 
   // Ensure duration is formatted as a number with at most 2 decimal places
   if (validatedProps.duration_seconds !== undefined) {
@@ -116,7 +118,7 @@ const analytics = () => {
 
   return {
     // Using LiteralCheck will allow constants but not plain string literals
-    trackEvent: (eventName: string, properties?: EventParams) => {
+    trackEvent: (eventName: string, properties?: TrackEventParams) => {
       _track('event', eventName, properties);
     },
     trackScreenView: (

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { EventParams } from './adapters/analytics';
+import { TrackEventParams } from './adapters/analytics';
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
@@ -119,7 +119,7 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     };
   }
 
-  async function trackEvent(event: string, payload?: EventParams): Promise<void> {
+  async function trackEvent(event: string, payload?: TrackEventParams): Promise<void> {
     if (!adapters.analytics) {
       return;
     }
