@@ -8,6 +8,7 @@ import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
+import { SelfClientProvider } from '@/providers/selfClientProvider';
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
@@ -28,6 +29,10 @@ jest.mock('@/utils/analytics', () => () => ({
 const navigate = jest.fn();
 (useNavigation as jest.Mock).mockReturnValue({ navigate });
 
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <SelfClientProvider>{children}</SelfClientProvider>
+);
+
 describe('useAppUpdates', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -39,7 +44,7 @@ describe('useAppUpdates', () => {
       url: 'u',
     });
 
-    const { result } = renderHook(() => useAppUpdates());
+    const { result } = renderHook(() => useAppUpdates(), { wrapper });
 
     // Wait for the async state update to complete
     await waitFor(() => {
@@ -53,7 +58,7 @@ describe('useAppUpdates', () => {
       url: 'u',
     });
 
-    const { result } = renderHook(() => useAppUpdates());
+    const { result } = renderHook(() => useAppUpdates(), { wrapper });
 
     // Wait for the async checkVersion to complete first
     await waitFor(() => {
