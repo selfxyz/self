@@ -133,7 +133,7 @@ const PassportNFCScanScreen: React.FC = () => {
       showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
-        buttonText: 'Send Feedback',
+        buttonText: 'Report Issue',
         secondaryButtonText: 'Help',
         preventDismiss: false,
         onButtonPress: () =>
