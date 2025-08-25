@@ -461,7 +461,7 @@ describe('PassportDataProvider', () => {
       jest.doMock('react-native-keychain', () => mockKeychain);
 
       const passportModule = require('@/providers/passportDataProvider');
-      loadDocumentCatalogLocal = passportModule.loadDocumentCatalog;
+      loadDocumentCatalogLocal = passportModule.loadDocumentCatalogDirectlyFromKeychain;
     });
 
     it('should return empty catalog when Keychain is undefined', async () => {
@@ -473,7 +473,7 @@ describe('PassportDataProvider', () => {
       // Re-import the module after mocking to ensure mock is applied
       const passportModule = require('@/providers/passportDataProvider');
       const loadDocumentCatalogLocalUndefined =
-        passportModule.loadDocumentCatalog;
+        passportModule.loadDocumentCatalogDirectlyFromKeychain;
 
       const result = await loadDocumentCatalogLocalUndefined();
 
