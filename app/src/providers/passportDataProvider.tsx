@@ -57,10 +57,14 @@ import type {
   DocumentMetadata,
   PassportData,
 } from '@selfxyz/common/utils/types';
-import { DocumentsAdapter, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  DocumentsAdapter,
+  getAllDocuments,
+  SelfClient,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -183,7 +187,10 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     );
   }, [_getSecurely]);
 
-  const getAllData = useCallback(() => loadAllPassportData(selfClient), [selfClient]);
+  const getAllData = useCallback(
+    () => loadAllPassportData(selfClient),
+    [selfClient],
+  );
 
   const getAvailableTypes = useCallback(() => getAvailableDocumentTypes(), []);
 

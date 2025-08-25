@@ -8,15 +8,16 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 
+import type {
+  DocumentCatalog,
+  DocumentMetadata,
+} from '@selfxyz/common/utils/types';
+
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import { DocumentEvents } from '@/consts/analytics';
 import type { RootStackParamList } from '@/navigation';
-import type {
-  DocumentCatalog,
-  DocumentMetadata,
-} from '@/providers/passportDataProvider';
 import { usePassport } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
 import { borderColor, textBlack, white } from '@/utils/colors';
