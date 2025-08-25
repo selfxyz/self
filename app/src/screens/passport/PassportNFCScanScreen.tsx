@@ -25,6 +25,8 @@ import { CircleHelp } from '@tamagui/lucide-icons';
 import type { PassportData } from '@selfxyz/common/types';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -33,7 +35,6 @@ import ButtonsContainer from '@/components/ButtonsContainer';
 import TextsContainer from '@/components/TextsContainer';
 import { BodyText } from '@/components/typography/BodyText';
 import { Title } from '@/components/typography/Title';
-import { PassportEvents } from '@/consts/analytics';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
@@ -41,7 +42,6 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import analytics from '@/utils/analytics';
 import { black, slate100, slate400, slate500, white } from '@/utils/colors';
 import { sendFeedbackEmail } from '@/utils/email';
 import { dinot } from '@/utils/fonts';
@@ -54,8 +54,6 @@ import {
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 import { sanitizeErrorMessage } from '@/utils/utils';
-
-const { trackEvent } = analytics();
 
 const emitter =
   Platform.OS === 'android'
@@ -77,6 +75,7 @@ type PassportNFCScanRoute = RouteProp<
 >;
 
 const PassportNFCScanScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const navigation = useNavigation();
   const route = useRoute<PassportNFCScanRoute>();
   const { showModal } = useFeedback();

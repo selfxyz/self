@@ -25,8 +25,11 @@ import {
   getPayload,
   getWSDbRelayerUrl,
 } from '@selfxyz/common/utils/proving';
+import {
+  PassportEvents,
+  ProofEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PassportEvents, ProofEvents } from '@/consts/analytics';
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import {

@@ -4,12 +4,15 @@
 
 import { defineConfig } from 'tsup';
 
+const entry = {
+  index: 'src/index.ts',
+  browser: 'src/browser.ts',
+  'constants/analytics': 'src/constants/analytics.ts',
+};
+
 export default defineConfig([
   {
-    entry: {
-      index: 'src/index.ts',
-      browser: 'src/browser.ts',
-    },
+    entry,
     format: ['esm'],
     dts: true,
     sourcemap: true,
@@ -28,10 +31,7 @@ export default defineConfig([
     },
   },
   {
-    entry: {
-      index: 'src/index.ts',
-      browser: 'src/browser.ts',
-    },
+    entry,
     format: ['cjs'],
     dts: false,
     sourcemap: true,

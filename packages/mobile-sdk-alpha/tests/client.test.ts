@@ -97,6 +97,20 @@ describe('createSelfClient', () => {
       reason: 'SELF_REG_STATUS_STUB',
     });
   });
+  describe('when analytics adapter is given', () => {
+    it('calls that adapter for trackEvent', () => {
+      const trackEvent = vi.fn();
+      const client = createSelfClient({
+        config: {},
+        adapters: { scanner, network, crypto, analytics: { trackEvent } },
+      });
+
+      client.trackEvent('test_event');
+      expect(trackEvent).toHaveBeenCalledWith('test_event', undefined);
+      client.trackEvent('another_event', { foo: 'bar' });
+      expect(trackEvent).toHaveBeenCalledWith('another_event', { foo: 'bar' });
+    });
+  });
 });
 
 const scanner: ScannerAdapter = {

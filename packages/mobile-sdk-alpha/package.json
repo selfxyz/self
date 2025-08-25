@@ -23,6 +23,11 @@
       "types": "./dist/esm/browser.d.ts",
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
+    },
+    "./constants/analytics": {
+      "types": "./dist/esm/constants/analytics.d.ts",
+      "import": "./dist/esm/constants/analytics.js",
+      "require": "./dist/cjs/constants/analytics.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",

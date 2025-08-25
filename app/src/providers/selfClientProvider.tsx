@@ -5,10 +5,13 @@
 import { type PropsWithChildren, useMemo } from 'react';
 
 import {
+  Adapters,
   SelfClientProvider as SDKSelfClientProvider,
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
+
+import analytics from '@/utils/analytics';
 
 /**
  * Provides a configured Self SDK client instance to all descendants.
@@ -20,7 +23,7 @@ import {
  */
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
-  const adapters = useMemo(
+  const adapters: Partial<Adapters> = useMemo(
     () => ({
       scanner: webScannerShim,
       network: {
@@ -69,6 +72,11 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
           throw new Error(
             `crypto.sign adapter not implemented for keyRef: ${_keyRef}`,
           );
+        },
+      },
+      analytics: {
+        trackEvent: (event: string, data: Record<string, any>) => {
+          analytics().trackEvent(event, data);
         },
       },
     }),

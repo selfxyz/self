@@ -22,27 +22,26 @@ import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '@/components/buttons/HeldPrimaryButtonProveScreen';
 import Disclosures from '@/components/Disclosures';
 import { BodyText } from '@/components/typography/BodyText';
 import { Caption } from '@/components/typography/Caption';
-import { ProofEvents } from '@/consts/analytics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { setDefaultDocumentTypeIfNeeded } from '@/providers/passportDataProvider';
 import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
-import analytics from '@/utils/analytics';
 import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
 import { buttonTap } from '@/utils/haptic';
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
-const { trackEvent } = analytics();
-
 const ProveScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const { navigate } = useNavigation();
   const isFocused = useIsFocused();
   const selectedApp = useSelfAppStore(state => state.selfApp);

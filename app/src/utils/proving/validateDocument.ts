@@ -24,8 +24,8 @@ import {
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
 import type { PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { DocumentEvents } from '@/consts/analytics';
 import {
   getAllDocuments,
   loadDocumentCatalog,
