@@ -51,6 +51,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate Yarn 4.6.0
+        run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn
         uses: ./.github/actions/cache-yarn
         with:
@@ -112,6 +116,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate Yarn 4.6.0
+        run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn
         uses: ./.github/actions/cache-yarn
         with:
@@ -173,6 +181,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate Yarn 4.6.0
+        run: corepack prepare yarn@4.6.0 --activate
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -363,6 +375,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate Yarn 4.6.0
+        run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn
         uses: ./.github/actions/cache-yarn
         with:
