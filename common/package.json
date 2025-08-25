@@ -201,6 +201,11 @@
       "import": "./dist/esm/src/utils/date.js",
       "require": "./dist/cjs/src/utils/date.cjs"
     },
+    "./utils/attest": {
+      "types": "./dist/esm/src/utils/attest.d.ts",
+      "import": "./dist/esm/src/utils/attest.js",
+      "require": "./dist/cjs/src/utils/attest.cjs"
+    },
     "./utils/hash": {
       "types": "./dist/esm/src/utils/hash.d.ts",
       "import": "./dist/esm/src/utils/hash.js",
@@ -281,6 +286,11 @@
       "import": "./dist/esm/src/utils/passports/passport_parsing/parseDscCertificateData.js",
       "require": "./dist/cjs/src/utils/passports/passport_parsing/parseDscCertificateData.cjs"
     },
+    "./utils/proving": {
+      "types": "./dist/esm/src/utils/proving.d.ts",
+      "import": "./dist/esm/src/utils/proving.js",
+      "require": "./dist/cjs/src/utils/proving.cjs"
+    },
     "./utils/scope": {
       "types": "./dist/esm/src/utils/scope.d.ts",
       "import": "./dist/esm/src/utils/scope.js",
@@ -327,16 +337,19 @@
     "nice": "yarn format && yarn lint:imports",
     "nice:check": "yarn lint && yarn lint:imports:check",
     "prepublishOnly": "yarn build",
-    "test": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/**/*.test.ts --exit",
-    "test-base": "yarn ts-mocha -n import=tsx --max-old-space-size=8192 --paths -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
     "test:exports": "node scripts/validateExports.js && node scripts/testExports.js",
-    "test:scope": "NODE_OPTIONS='--loader ts-node/esm' ts-mocha tests/scope.test.ts --exit",
+    "test:scope": "vitest run tests/scope.test.ts",
     "types": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
+    "@peculiar/x509": "^1.12.3",
+    "@stablelib/cbor": "^2.0.1",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
     "axios": "^1.7.2",
@@ -366,19 +379,17 @@
     "@types/node-forge": "^1.3.10",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "chai": "^4.4.1",
+    "@vitest/ui": "^2.1.8",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.1.3",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
-    "mocha": "^10.7.3",
     "prettier": "^3.5.3",
-    "ts-mocha": "^10.0.0",
-    "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.8"
   },
   "packageManager": "yarn@4.6.0",
   "engines": {

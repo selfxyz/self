@@ -207,10 +207,13 @@ import type { PassportData } from '@selfxyz/common/types/passport';
 - `@selfxyz/common/constants/hashes` - Sample data hashes
 
 #### Utilities
+
+- `@selfxyz/common/utils/attest` - Proving Attestation Utils
 - `@selfxyz/common/utils/hash` - Hash and Poseidon functions
 - `@selfxyz/common/utils/bytes` - Byte manipulation
 - `@selfxyz/common/utils/trees` - SMT and leaf operations
 - `@selfxyz/common/utils/scope` - Endpoint formatting
+- `@selfxyz/common/utils/proving` - Proving Utils
 - `@selfxyz/common/utils/appType` - SelfApp definitions
 - `@selfxyz/common/utils/date` - Date utilities
 - `@selfxyz/common/utils/arrays` - Array helpers

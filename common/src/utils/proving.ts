@@ -2,12 +2,9 @@
 
 import forge from 'node-forge';
 
-import {
-  WS_DB_RELAYER,
-  WS_DB_RELAYER_STAGING,
-} from '@selfxyz/common/constants';
-import type { EndpointType } from '@selfxyz/common/utils';
-import { initElliptic } from '@selfxyz/common/utils';
+import { WS_DB_RELAYER, WS_DB_RELAYER_STAGING } from '../constants/index.js';
+import { initElliptic } from '../utils/certificate_parsing/elliptic.js';
+import type { EndpointType } from './appType.js';
 
 const elliptic = initElliptic();
 const { ec: EC } = elliptic;
@@ -32,28 +29,24 @@ export type TEEPayloadDisclose = TEEPayloadBase & {
   version: number;
 };
 
+// // eslint-disable-next-line -- ec must be created first
 export const ec = new EC('p256');
-
+// eslint-disable-next-line -- clientKey is created from ec so must be second
 export const clientKey = ec.genKeyPair();
 
 type RegisterSuffixes = '' | '_id';
 type DscSuffixes = '' | '_id';
 type DiscloseSuffixes = '' | '_id';
 type ProofTypes = 'register' | 'dsc' | 'disclose';
-type RegisterProofType =
-  `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
+type RegisterProofType = `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
 type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
-type DiscloseProofType =
-  `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
+type DiscloseProofType = `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
 
 export const clientPublicKeyHex =
   clientKey.getPublic().getX().toString('hex').padStart(64, '0') +
   clientKey.getPublic().getY().toString('hex').padStart(64, '0');
 
-export function encryptAES256GCM(
-  plaintext: string,
-  key: forge.util.ByteStringBuffer,
-) {
+export function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBuffer) {
   const iv = forge.random.getBytesSync(12);
   const cipher = forge.cipher.createCipher('AES-GCM', key);
   cipher.start({ iv: iv, tagLength: 128 });
@@ -75,7 +68,7 @@ export function getPayload(
   endpointType: EndpointType,
   endpoint: string,
   version: number = 1,
-  userDefinedData: string = '',
+  userDefinedData: string = ''
 ) {
   if (circuitType === 'disclose') {
     const payload: TEEPayloadDisclose = {

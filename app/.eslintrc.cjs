@@ -183,7 +183,6 @@ module.exports = {
         'src/providers/passportDataProvider.tsx',
         'src/utils/cloudBackup/helpers.ts',
         'src/utils/haptic/index.ts',
-        'src/utils/proving/provingUtils.ts',
       ],
       rules: {
         'sort-exports/sort-exports': 'off',

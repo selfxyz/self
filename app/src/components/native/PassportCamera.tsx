@@ -102,10 +102,6 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
           dateOfExpiry: event.nativeEvent.data.expiryDate,
           documentType: event.nativeEvent.data.documentType,
           issuingCountry: event.nativeEvent.data.countryCode,
-          nationality: event.nativeEvent.data.countryCode, // TODO: Verify if native module provides separate nationality code instead of defaulting to issuingCountry
-          surname: '', // Fill with defaults as they're required
-          givenNames: '',
-          sex: '',
           validation: {
             format: false, // Changed from true - avoid assuming validation success before actual checks
             passportNumberChecksum: false, // Changed from true - avoid assuming validation success before actual checks

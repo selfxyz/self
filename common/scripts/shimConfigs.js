@@ -142,6 +142,11 @@ export const shimConfigs = [
     name: 'utils/circuits/registerInputs',
   },
   {
+    shimPath: 'utils/attest',
+    targetPath: '../../esm/src/utils/attest.js',
+    name: 'utils/attest',
+  },
+  {
     shimPath: 'utils/contracts',
     targetPath: '../../esm/src/utils/contracts/index.js',
     name: 'utils/contracts',
@@ -220,6 +225,11 @@ export const shimConfigs = [
     name: 'utils/sanctions',
   },
   { shimPath: 'utils/scope', targetPath: '../../esm/src/utils/scope.js', name: 'utils/scope' },
+  {
+    shimPath: 'utils/proving',
+    targetPath: '../../esm/src/utils/proving.js',
+    name: 'utils/proving',
+  },
   { shimPath: 'utils/trees', targetPath: '../../esm/src/utils/trees.js', name: 'utils/trees' },
   {
     shimPath: 'utils/uuid',

@@ -9,6 +9,7 @@ export interface DocumentCatalog {
   documents: DocumentMetadata[];
   selectedDocumentId?: string; // This is now a contentHash
 }
+
 export interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication
   documentType: string; // passport, mock_passport, id_card, etc.
@@ -17,6 +18,12 @@ export interface DocumentMetadata {
   mock: boolean; // whether this is a mock document
   isRegistered?: boolean; // whether the document is registered onChain
 }
+
+export type OfacTree = {
+  passportNoAndNationality: any;
+  nameAndDob: any;
+  nameAndYob: any;
+};
 
 export type PassportData = {
   mrz: string;

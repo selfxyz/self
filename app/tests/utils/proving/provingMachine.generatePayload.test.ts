@@ -37,8 +37,8 @@ jest.mock('@/utils/proving/provingInputs', () => ({
 }));
 
 // Mock the proving utils
-jest.mock('@/utils/proving/provingUtils', () => {
-  const actual = jest.requireActual('@/utils/proving/provingUtils') as any;
+jest.mock('@selfxyz/common/utils/proving', () => {
+  const actual = jest.requireActual('@selfxyz/common/utils/proving') as any;
   return {
     ...actual,
     getPayload: jest.fn(() => ({ mocked: true })),
@@ -53,7 +53,7 @@ jest.mock('@/utils/proving/provingUtils', () => {
 const {
   getPayload,
   encryptAES256GCM,
-} = require('@/utils/proving/provingUtils');
+} = require('@selfxyz/common/utils/proving');
 const {
   generateTEEInputsRegister,
   generateTEEInputsDSC,
