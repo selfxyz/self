@@ -14,6 +14,8 @@ import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
 import analytics from '@/utils/analytics';
 
+import { unsafe_getPrivateKey } from './authProvider';
+
 /**
  * Provides a configured Self SDK client instance to all descendants.
  *
@@ -79,6 +81,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         trackEvent: (event: string, data?: TrackEventParams) => {
           analytics().trackEvent(event, data);
         },
+      },
+      auth: {
+        getPrivateKey: () => unsafe_getPrivateKey(),
       },
     }),
     [],

@@ -126,10 +126,31 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     return adapters.analytics.trackEvent(event, payload);
   }
 
+  /**
+   * Retrieves the private key via the auth adapter.
+   * With great power comes great responsibility
+   */
+  async function getPrivateKey(): Promise<string> {
+    if (!adapters.auth) throw notImplemented('auth');
+    return adapters.auth.getPrivateKey();
+  }
+
+  async function hasPrivateKey(): Promise<boolean> {
+    if (!adapters.auth) throw notImplemented('auth');
+    try {
+      const key = await adapters.auth.getPrivateKey();
+      return !!key;
+    } catch {
+      return false;
+    }
+  }
+
   return {
     scanDocument,
     validateDocument,
     trackEvent,
+    getPrivateKey,
+    hasPrivateKey,
     checkRegistration,
     registerDocument,
     generateProof,

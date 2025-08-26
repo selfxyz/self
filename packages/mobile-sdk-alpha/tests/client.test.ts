@@ -111,6 +111,25 @@ describe('createSelfClient', () => {
       expect(trackEvent).toHaveBeenCalledWith('another_event', { foo: 'bar' });
     });
   });
+  describe('when auth adapter is given', () => {
+    it('getPrivateKey becomes callable on the client', () => {
+      const getPrivateKey = vi.fn(() => Promise.resolve('stubbed-private-key'));
+      const client = createSelfClient({
+        config: {},
+        adapters: { scanner, network, crypto, auth: { getPrivateKey } },
+      });
+
+      expect(client.getPrivateKey()).resolves.toBe('stubbed-private-key');
+    });
+    it('hasPrivateKey becomes callable on the client', () => {
+      const getPrivateKey = vi.fn(() => Promise.resolve('stubbed-private-key'));
+      const client = createSelfClient({
+        config: {},
+        adapters: { scanner, network, crypto, auth: { getPrivateKey } },
+      });
+      expect(client.hasPrivateKey()).resolves.toBe(true);
+    });
+  });
 });
 
 const scanner: ScannerAdapter = {
