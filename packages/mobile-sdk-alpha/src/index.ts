@@ -65,9 +65,6 @@ export {
 
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
-// Flow Components
-export { OnboardingFlow } from './components/flows/OnboardingFlow';
-
 // Screen Components
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
@@ -99,9 +96,6 @@ export { mergeConfig } from './config/merge';
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { scanQRProof } from './qr';
-
-// Hooks
-export { useDocumentManager } from './hooks/useDocumentManager';
 
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
