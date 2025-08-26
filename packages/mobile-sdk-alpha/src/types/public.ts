@@ -65,7 +65,11 @@ export interface AnalyticsAdapter {
 }
 
 export interface AuthAdapter {
-  getPrivateKey(): Promise<string>;
+  /**
+   * Returns the hex-encoded private key.
+   * This key should only be used for self and not other crypto operations or signing.
+   */
+  getPrivateKey(): Promise<string | null>;
 }
 
 export interface ClockAdapter {

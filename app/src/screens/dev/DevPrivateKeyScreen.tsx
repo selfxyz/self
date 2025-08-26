@@ -20,9 +20,20 @@ const DevPrivateKeyScreen: React.FC = () => {
   const selfClient = useSelfClient();
 
   useEffect(() => {
+    let mounted = true;
     selfClient
       .getPrivateKey()
-      .then(key => setPrivateKey(key || 'No private key found'));
+      .then(key => {
+        if (!mounted) return;
+        setPrivateKey(key || 'No private key found');
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setPrivateKey('No private key found');
+      });
+    return () => {
+      mounted = false;
+    };
   }, [selfClient]);
 
   const handleRevealPrivateKey = useCallback(() => {

@@ -127,22 +127,22 @@ describe('createSelfClient', () => {
     });
   });
   describe('when auth adapter is given', () => {
-    it('getPrivateKey becomes callable on the client', () => {
+    it('getPrivateKey becomes callable on the client', async () => {
       const getPrivateKey = vi.fn(() => Promise.resolve('stubbed-private-key'));
       const client = createSelfClient({
         config: {},
         adapters: { scanner, network, crypto, auth: { getPrivateKey } },
       });
 
-      expect(client.getPrivateKey()).resolves.toBe('stubbed-private-key');
+      await expect(client.getPrivateKey()).resolves.toBe('stubbed-private-key');
     });
-    it('hasPrivateKey becomes callable on the client', () => {
+    it('hasPrivateKey becomes callable on the client', async () => {
       const getPrivateKey = vi.fn(() => Promise.resolve('stubbed-private-key'));
       const client = createSelfClient({
         config: {},
         adapters: { scanner, network, crypto, auth: { getPrivateKey } },
       });
-      expect(client.hasPrivateKey()).resolves.toBe(true);
+      await expect(client.hasPrivateKey()).resolves.toBe(true);
     });
   });
 });
