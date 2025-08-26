@@ -70,9 +70,11 @@ jobs:
           path: common/dist
           key: common-build-${{ runner.os }}-${{ github.sha }}
           fail-on-cache-miss: false
-      - name: Build @selfxyz/common (fallback on cache miss)
+      - name: Build dependencies (fallback on cache miss)
         if: steps.restore-common-dist.outputs.cache-hit != 'true'
-        run: yarn workspace @selfxyz/common build
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Yarn types
         run: yarn types
 
