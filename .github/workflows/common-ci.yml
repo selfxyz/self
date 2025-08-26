@@ -9,6 +9,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            common/node_modules
+          cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Build @selfxyz/common
@@ -25,6 +33,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            common/node_modules
+          cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Run linter
@@ -37,6 +53,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            common/node_modules
+          cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
@@ -59,6 +83,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            common/node_modules
+          cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
