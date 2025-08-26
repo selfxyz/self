@@ -74,9 +74,11 @@ jobs:
             packages/mobile-sdk-alpha/dist
           key: build-deps-${{ runner.os }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
           fail-on-cache-miss: false
-      - name: Build dependencies (fallback on cache miss)
+      - name: Build @selfxyz/common (fallback on cache miss)
         if: steps.restore-build-deps.outputs.cache-hit != 'true'
-        run: yarn workspace @selfxyz/mobile-app run build:deps
+        run: yarn workspace @selfxyz/common build
+      - name: Build @selfxyz/mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Yarn types
         run: yarn types
 
@@ -106,8 +108,10 @@ jobs:
             packages/mobile-sdk-alpha/dist
           key: build-deps-${{ runner.os }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
           fail-on-cache-miss: false
-      - name: Build dependencies (fallback on cache miss)
+      - name: Build @selfxyz/common (fallback on cache miss)
         if: steps.restore-build-deps.outputs.cache-hit != 'true'
-        run: yarn workspace @selfxyz/mobile-app run build:deps
+        run: yarn workspace @selfxyz/common build
+      - name: Build @selfxyz/mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Run @selfxyz/common tests
         run: yarn workspace @selfxyz/common test
