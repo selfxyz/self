@@ -44,8 +44,6 @@ export type { SdkErrorCategory } from './errors';
 
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
-// Browser-only high-level component (DOM-based)
-export { SelfMobileSdk as SelfMobileSdkHighLevel } from './components/SelfMobileSdk';
 
 export { createSelfClient } from './client';
 
