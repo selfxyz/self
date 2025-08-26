@@ -40,7 +40,7 @@ export type {
 // MRZ module
 export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
 
-export type { DocumentData, DocumentMetadata, ExternalAdapter, PassportCameraProps, ScreenProps } from './types/ui';
+export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
 export type { MRZScanOptions } from './mrz';
 
