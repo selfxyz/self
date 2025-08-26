@@ -95,9 +95,8 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {
-    trackEvent(BackupEvents.MANUAL_RECOVERY_SELECTED);
     onEnterRecoveryPress();
-  }, [onEnterRecoveryPress, trackEvent]);
+  }, [onEnterRecoveryPress]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>

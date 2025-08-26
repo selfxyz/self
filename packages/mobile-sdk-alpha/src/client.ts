@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { TrackEventParams } from './adapters/analytics';
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
@@ -24,6 +23,7 @@ import type {
   ValidationInput,
   ValidationResult,
 } from './types/public';
+import { TrackEventParams } from './types/public';
 
 /**
  * Optional adapter implementations used when a consumer does not provide their
