@@ -8,15 +8,13 @@ import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 import { useFocusEffect } from '@react-navigation/native';
 
 import type { PassportMetadata } from '@selfxyz/common/types';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { Caption } from '@/components/typography/Caption';
-import { DocumentEvents } from '@/consts/analytics';
 import { usePassport } from '@/providers/passportDataProvider';
-import analytics from '@/utils/analytics';
 import { black, slate200, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
-
-const { trackEvent } = analytics();
 
 // TODO clarify if we need more/less keys to be displayed
 const dataKeysToLabels: Record<
@@ -62,6 +60,7 @@ const InfoRow: React.FC<{
 );
 
 const PassportDataInfoScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const { getData } = usePassport();
   const [metadata, setMetadata] = useState<PassportMetadata | null>(null);
   const { bottom } = useSafeAreaInsets();
@@ -80,7 +79,7 @@ const PassportDataInfoScreen: React.FC = () => {
 
     setMetadata(result.data.passportMetadata!);
     trackEvent(DocumentEvents.PASSPORT_METADATA_LOADED);
-  }, [metadata, getData]);
+  }, [metadata, getData, trackEvent]);
 
   useFocusEffect(() => {
     trackEvent(DocumentEvents.PASSPORT_INFO_OPENED);

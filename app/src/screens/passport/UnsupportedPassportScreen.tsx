@@ -15,14 +15,13 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import { BodyText } from '@/components/typography/BodyText';
 import { Title } from '@/components/typography/Title';
-import { PassportEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import LogoSvg from '@/images/logo.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import analytics from '@/utils/analytics';
 import { black, slate500, white } from '@/utils/colors';

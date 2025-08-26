@@ -21,6 +21,10 @@ const extraNodeModules = {
   '@': path.join(__dirname, 'src'),
   '@selfxyz/common': path.resolve(commonPath, 'dist'),
   '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
+  '@selfxyz/mobile-sdk-alpha/constants/analytics': path.resolve(
+    sdkAlphaPath,
+    'dist/esm/constants/analytics.js',
+  ),
   // Main exports
   '@selfxyz/common/utils': path.resolve(
     commonPath,

@@ -15,20 +15,20 @@ import type {
   DocumentMetadata,
 } from '@selfxyz/common/utils/types';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
-import { DocumentEvents } from '@/consts/analytics';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import analytics from '@/utils/analytics';
 import { borderColor, textBlack, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { impactLight } from '@/utils/haptic';
 
-const { trackEvent } = analytics();
-
 const PassportDataSelector = () => {
+  const selfClient = useSelfClient();
   const {
     loadDocumentCatalog,
     getAllDocuments,
@@ -49,14 +49,15 @@ const PassportDataSelector = () => {
     const docs = await getAllDocuments();
     setDocumentCatalog(catalog);
     setAllDocuments(docs);
-    trackEvent(DocumentEvents.DOCUMENTS_FETCHED, {
+    selfClient.trackEvent(DocumentEvents.DOCUMENTS_FETCHED, {
       count: catalog.documents.length,
     });
     if (catalog.documents.length === 0) {
-      trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
+      selfClient.trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
     }
     setLoading(false);
   }, [
+    selfClient,
     loadDocumentCatalog,
     getAllDocuments,
     setDocumentCatalog,
@@ -74,13 +75,13 @@ const PassportDataSelector = () => {
     const docs = await getAllDocuments();
     setDocumentCatalog(catalog);
     setAllDocuments(docs);
-    trackEvent(DocumentEvents.DOCUMENT_SELECTED);
+    selfClient.trackEvent(DocumentEvents.DOCUMENT_SELECTED);
   };
 
   const handleDeleteSpecific = async (documentId: string) => {
     setLoading(true);
     await deleteDocument(documentId);
-    trackEvent(DocumentEvents.DOCUMENT_DELETED);
+    selfClient.trackEvent(DocumentEvents.DOCUMENT_DELETED);
     await loadPassportDataInfo();
   };
 
@@ -270,10 +271,11 @@ const ManageDocumentsScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();
+  const { trackEvent } = useSelfClient();
 
   useEffect(() => {
     trackEvent(DocumentEvents.MANAGE_SCREEN_OPENED);
-  }, []);
+  }, [trackEvent]);
 
   const handleScanDocument = () => {
     impactLight();

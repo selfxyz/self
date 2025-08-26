@@ -5,10 +5,14 @@
 import { type PropsWithChildren, useMemo } from 'react';
 
 import {
+  Adapters,
   SelfClientProvider as SDKSelfClientProvider,
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
+import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
+
+import analytics from '@/utils/analytics';
 
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 
@@ -22,7 +26,7 @@ import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
  */
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
-  const adapters = useMemo(
+  const adapters: Partial<Adapters> = useMemo(
     () => ({
       scanner: webScannerShim,
       network: {
@@ -72,6 +76,11 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
           throw new Error(
             `crypto.sign adapter not implemented for keyRef: ${_keyRef}`,
           );
+        },
+      },
+      analytics: {
+        trackEvent: (event: string, data?: TrackEventParams) => {
+          analytics().trackEvent(event, data);
         },
       },
     }),

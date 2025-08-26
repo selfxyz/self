@@ -9,16 +9,18 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  PassportEvents,
+  ProofEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { PassportEvents, ProofEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
-import analytics from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import { notificationSuccess } from '@/utils/haptic';
 import {
@@ -29,9 +31,9 @@ import { useProvingStore } from '@/utils/proving/provingMachine';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
-const { trackEvent } = analytics();
-
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
   const navigate = useHapticNavigation('LoadingScreen', {
     params: {},
   });
@@ -41,7 +43,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const setFcmToken = useProvingStore(state => state.setFcmToken);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
   const isReadyToProve = currentState === 'ready_to_prove';
-  const selfClient = useSelfClient();
   useEffect(() => {
     notificationSuccess();
     init(selfClient, 'dsc');

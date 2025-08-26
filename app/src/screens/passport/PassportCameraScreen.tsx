@@ -13,6 +13,7 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -21,7 +22,6 @@ import { PassportCamera } from '@/components/native/PassportCamera';
 import Additional from '@/components/typography/Additional';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { PassportEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

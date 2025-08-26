@@ -13,6 +13,9 @@
         "../packages/mobile-sdk-alpha/src",
         "../packages/mobile-sdk-alpha/dist"
       ],
+      "@selfxyz/mobile-sdk-alpha/constants/analytics": [
+        "../packages/mobile-sdk-alpha/dist/esm/constants/analytics.js"
+      ],
       "@/*": ["./src/*"]
     }
   },

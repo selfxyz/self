@@ -23,6 +23,7 @@ import type {
   ValidationInput,
   ValidationResult,
 } from './types/public';
+import { TrackEventParams } from './types/public';
 
 /**
  * Optional adapter implementations used when a consumer does not provide their
@@ -120,9 +121,17 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     };
   }
 
+  async function trackEvent(event: string, payload?: TrackEventParams): Promise<void> {
+    if (!adapters.analytics) {
+      return;
+    }
+    return adapters.analytics.trackEvent(event, payload);
+  }
+
   return {
     scanDocument,
     validateDocument,
+    trackEvent,
     checkRegistration,
     registerDocument,
     generateProof,

@@ -30,11 +30,12 @@ import {
   genMockIdDoc,
   initPassportDataParsing,
 } from '@selfxyz/common/utils/passports';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import { Caption } from '@/components/typography/Caption';
-import { MockDataEvents } from '@/consts/analytics';
 import SelfDevCard from '@/images/card-dev.svg';
 import IdIcon from '@/images/icons/id_icon.svg';
 import NoteIcon from '@/images/icons/note.svg';
@@ -55,8 +56,6 @@ import {
 import { extraYPadding } from '@/utils/constants';
 import { dinot, plexMono } from '@/utils/fonts';
 import { buttonTap, selectionChange } from '@/utils/haptic';
-
-const { trackEvent } = analytics();
 
 const documentTypes = {
   mock_passport: 'Passport',
@@ -246,6 +245,7 @@ const FormSection: React.FC<FormSectionProps> = ({
 };
 
 const MockDataScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const navigation = useNavigation();
   const [age, setAge] = useState(21);
   const [expiryYears, setExpiryYears] = useState(5);

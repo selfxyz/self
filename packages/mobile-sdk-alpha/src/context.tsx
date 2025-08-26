@@ -52,7 +52,7 @@ export function SelfClientProvider({ config, adapters = {}, children }: PropsWit
  * @throws If used outside of a {@link SelfClientProvider}.
  */
 export function useSelfClient(): SelfClient {
-  const ctx = useContext(SelfClientContext);
-  if (!ctx) throw new Error('useSelfClient must be used within a SelfClientProvider');
-  return ctx;
+  const client = useContext(SelfClientContext);
+  if (!client) throw new Error('useSelfClient must be used within a SelfClientProvider');
+  return client;
 }

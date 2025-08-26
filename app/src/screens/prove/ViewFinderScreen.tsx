@@ -12,6 +12,9 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
@@ -19,19 +22,16 @@ import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
 import Additional from '@/components/typography/Additional';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { ProofEvents } from '@/consts/analytics';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import QRScan from '@/images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useSelfAppStore } from '@/stores/selfAppStore';
-import analytics from '@/utils/analytics';
 import { black, slate800, white } from '@/utils/colors';
 import { parseAndValidateUrlParams } from '@/utils/deeplinks';
 
-const { trackEvent } = analytics();
-
 const QRCodeViewFinderScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const { visible: connectionModalVisible } = useConnectionModal();
   const navigation = useNavigation();
   const isFocused = useIsFocused();

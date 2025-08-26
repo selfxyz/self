@@ -6,12 +6,14 @@ import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import { Caption } from '@/components/typography/Caption';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { BackupEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Keyboard from '@/images/icons/keyboard.svg';
 import RestoreAccountSvg from '@/images/icons/restore_account.svg';
@@ -22,14 +24,12 @@ import {
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
 import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
 
-const { trackEvent } = analytics();
-
 const AccountRecoveryChoiceScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
   const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
@@ -85,6 +85,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       throw new Error('Something wrong happened during cloud recovery');
     }
   }, [
+    trackEvent,
     download,
     restoreAccountFromMnemonic,
     cloudBackupEnabled,
@@ -94,7 +95,6 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {
-    trackEvent(BackupEvents.MANUAL_RECOVERY_SELECTED);
     onEnterRecoveryPress();
   }, [onEnterRecoveryPress]);
 

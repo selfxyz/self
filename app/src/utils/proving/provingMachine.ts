@@ -29,9 +29,11 @@ import {
   hasAnyValidRegisteredDocument,
   SelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  PassportEvents,
+  ProofEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PassportEvents, ProofEvents } from '@/consts/analytics';
-//
 import { navigationRef } from '@/navigation';
 // this will be pass as property of from selfClient
 import { unsafe_getPrivateKey } from '@/providers/authProvider';

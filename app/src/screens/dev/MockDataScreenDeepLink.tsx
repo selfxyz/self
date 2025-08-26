@@ -13,13 +13,13 @@ import { useNavigation } from '@react-navigation/native';
 import { countryCodes } from '@selfxyz/common/constants';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
+import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import { BodyText } from '@/components/typography/BodyText';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { MockDataEvents } from '@/consts/analytics';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
 import { black, borderColor, white } from '@/utils/colors';
