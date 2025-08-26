@@ -11,13 +11,11 @@ import type { RouteProp } from '@react-navigation/native';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types';
-
 import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 
-import warnAnimation from '@/assets/animations/warning.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import { BodyText } from '@/components/typography/BodyText';
