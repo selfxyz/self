@@ -117,7 +117,7 @@ describe('createSelfClient', () => {
       const trackEvent = vi.fn();
       const client = createSelfClient({
         config: {},
-        adapters: { scanner, network, crypto, analytics: { trackEvent } },
+        adapters: { scanner, network, crypto, analytics: { trackEvent }, documents },
       });
 
       client.trackEvent('test_event');
