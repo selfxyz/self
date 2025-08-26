@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export const AppEvents = {
   DISMISS_PRIVACY_DISCLAIMER: 'App: Dismiss Privacy Disclaimer',
@@ -90,6 +92,7 @@ export const PassportEvents = {
   CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
   DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
   DISMISS_UNSUPPORTED_PASSPORT: 'Passport: Dismiss Unsupported Passport',
+  NOTIFY_UNSUPPORTED_PASSPORT: 'Passport: Notify Unsupported Passport',
   NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
   NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
   NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',

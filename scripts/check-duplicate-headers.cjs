@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 const fs = require('fs');
 const path = require('path');
@@ -28,6 +30,8 @@ function checkFile(filePath) {
 }
 
 function main() {
+  const args = process.argv.slice(2);
+  const targetDir = args[0] && !args[0].startsWith('--') ? path.resolve(args[0]) : process.cwd();
   let hasErrors = false;
 
   // Get all relevant files
@@ -37,9 +41,12 @@ function main() {
   patterns.push('*.ts', '*.tsx', '*.js', '*.jsx');
 
   for (const pattern of patterns) {
-    const files = glob.sync(pattern, {
-      ignore: ['node_modules/**', 'dist/**', 'build/**', '**/*.d.ts'],
-    });
+    const files = glob
+      .sync(pattern, {
+        cwd: targetDir,
+        ignore: ['node_modules/**', 'dist/**', 'build/**', '**/*.d.ts'],
+      })
+      .map(file => path.join(targetDir, file));
 
     for (const file of files) {
       if (!checkFile(file)) {

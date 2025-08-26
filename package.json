@@ -18,11 +18,13 @@
     "format:root": "prettier --parser markdown --write *.md scripts/**/*.md && prettier --parser yaml --write .*.{yml,yaml} --single-quote false && prettier --write scripts/**/*.{js,mjs,ts} && prettier --parser json --write scripts/**/*.json",
     "gitleaks": "gitleaks protect --staged --redact --config=.gitleaks.toml",
     "postinstall": "patch-package",
-    "lint": "yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
+    "lint": "yarn lint:headers && yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
+    "lint:headers": "node scripts/check-duplicate-headers.cjs app && node scripts/check-license-headers.mjs app --check && node scripts/check-duplicate-headers.cjs packages/mobile-sdk-alpha && node scripts/check-license-headers.mjs packages/mobile-sdk-alpha --check",
+    "lint:headers:fix": "node scripts/check-duplicate-headers.cjs app && node scripts/check-license-headers.mjs app --fix && node scripts/check-duplicate-headers.cjs packages/mobile-sdk-alpha && node scripts/check-license-headers.mjs packages/mobile-sdk-alpha --fix",
     "prepare": "husky",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
-    "test:scripts": "yarn workspace check-package-versions-tests test",
+    "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
   "devDependencies": {

@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
@@ -123,6 +125,7 @@ const signatureAlgorithmToStrictSignatureAlgorithm = {
     'ecdsa_sha512_brainpoolP384r1_384',
   ],
   'sha512 poland': ['sha512', 'sha512', 'rsa_sha256_65537_4096'],
+  'not existing': ['sha512', 'sha384', 'rsa_sha256_65537_4096'],
 } as const;
 
 const formatDateToYYMMDD = (date: Date): string => {

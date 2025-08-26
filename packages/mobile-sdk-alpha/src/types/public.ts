@@ -1,6 +1,8 @@
-import { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export type { PassportData } from '@selfxyz/common/utils/types';
+import { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
 export type { PassportValidationCallbacks } from '../validation/document';
 export interface Config {
   endpoints?: { api?: string; teeWs?: string; artifactsCdn?: string };

@@ -3,3 +3,12 @@ if ! yarn gitleaks; then
   echo "💡 To skip this check temporarily, use: git commit --no-verify"
   exit 1
 fi
+
+# Check license headers
+echo "🔍 Checking license headers..."
+if ! node scripts/check-license-headers.mjs --check; then
+  echo "❌ License header check failed. Please review the output above and fix any issues."
+  echo "💡 You can auto-fix some issues with: node scripts/check-license-headers.mjs --fix"
+  echo "💡 To skip this check temporarily, use: git commit --no-verify"
+  exit 1
+fi
