@@ -314,11 +314,9 @@ const ManageDocumentsScreen: React.FC = () => {
             <PrimaryButton onPress={handleScanDocument}>
               Scan New ID Document
             </PrimaryButton>
-            {__DEV__ && (
-              <SecondaryButton onPress={handleGenerateMock}>
-                Generate Mock Document
-              </SecondaryButton>
-            )}
+            <SecondaryButton onPress={handleGenerateMock}>
+              Generate Mock Document
+            </SecondaryButton>
           </ButtonsContainer>
         </YStack>
       </YStack>
