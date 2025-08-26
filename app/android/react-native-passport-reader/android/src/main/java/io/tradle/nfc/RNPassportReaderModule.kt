@@ -293,7 +293,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
     @SuppressLint("StaticFieldLeak")
     private inner class ReadTask(
-        private val isoDep: IsoDep, 
+        private val isoDep: IsoDep,
         private val authKey: AccessKeySpec
     ) : AsyncTask<Void?, Void?, Exception?>() {
 
@@ -320,7 +320,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     Log.e("MY_LOGS", "Failed to get CardService instance", e)
                     throw e
                 }
-                
+
                 try {
                     cardService.open()
                 } catch (e: Exception) {
@@ -345,6 +345,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 Log.e("MY_LOGS", "service opened")
                 logAnalyticsEvent("nfc_passport_service_opened")
                 var paceSucceeded = false
+                var bacSucceeded = false
                 try {
                     Log.e("MY_LOGS", "trying to get cardAccessFile...")
                     val cardAccessFile = CardAccessFile(service.getInputStream(PassportService.EF_CARD_ACCESS))
@@ -355,16 +356,28 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                         if (securityInfo is PACEInfo) {
                             Log.e("MY_LOGS", "trying PACE...")
                             eventMessageEmitter(Messages.PACE_STARTED)
-                            service.doPACE(
-                                authKey,
-                                securityInfo.objectIdentifier,
-                                PACEInfo.toParameterSpec(securityInfo.parameterId),
-                                null,
-                            )
+                            // Determine proper PACE key: use CAN key if provided; otherwise derive PACE MRZ key from BAC
+                            val paceKeyToUse: PACEKeySpec? = when (authKey) {
+                                is PACEKeySpec -> authKey
+                                is BACKey -> PACEKeySpec.createMRZKey(authKey)
+                                else -> null
+                            }
+                            if (paceKeyToUse != null) {
+                                service.doPACE(
+                                    paceKeyToUse,
+                                    securityInfo.objectIdentifier,
+                                    PACEInfo.toParameterSpec(securityInfo.parameterId),
+                                    null,
+                                )
+                            } else {
+                                throw IllegalStateException("Unsupported auth key for PACE: ${authKey::class.java.simpleName}")
+                            }
                             Log.e("MY_LOGS", "PACE succeeded")
                             paceSucceeded = true
                             logAnalyticsEvent("nfc_pace_succeeded")
                             eventMessageEmitter(Messages.PACE_SUCCEEDED)
+                            // Stop iterating once PACE succeeds to avoid disrupting session with another attempt
+                            break
                         }
                     }
                 } catch (e: Exception) {
@@ -376,35 +389,27 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     Log.w("MY_LOGS", e)
                     eventMessageEmitter(Messages.PACE_FAILED)
                 }
-                Log.e("MY_LOGS", "Sending select applet command with paceSucceeded: ${paceSucceeded}") // this is false so PACE doesn't succeed
-                service.sendSelectApplet(paceSucceeded)
+                // (Reverted) Do not select applet before authentication; proceed to BAC if needed
 
+                // Attempt BAC fallback if PACE failed
                 if (!paceSucceeded && authKey is BACKeySpec) {
-                    var bacSucceeded = false
                     var attempts = 0
                     val maxAttempts = 3
 
                     eventMessageEmitter(Messages.BAC_STARTED)
-                    
                     while (!bacSucceeded && attempts < maxAttempts) {
                         try {
                             attempts++
                             Log.e("MY_LOGS", "BAC attempt $attempts of $maxAttempts")
-                            
-                            if (attempts > 1) {
-                                // Wait before retry
-                                Thread.sleep(500)
-                            }
-                            
-                            // Try to read EF_COM first
+                            if (attempts > 1) Thread.sleep(500)
+                            // Try to read EF_COM first; if it fails, do BAC
                             try {
                                 eventMessageEmitter(Messages.READING_COM)
                                 service.getInputStream(PassportService.EF_COM).read()
                             } catch (e: Exception) {
-                                // EF_COM failed, do BAC
                                 service.doBAC(authKey)
                             }
-                            
+
                             bacSucceeded = true
                             logAnalyticsEvent("nfc_bac_succeeded", mapOf("attempts" to attempts))
                             logAnalyticsEvent("nfc_bac_attempted", mapOf(
@@ -414,18 +419,51 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             Log.e("MY_LOGS", "BAC succeeded on attempt $attempts")
                             eventMessageEmitter(Messages.BAC_SUCCEEDED)
                         } catch (e: Exception) {
+                            val errClass = e.javaClass.simpleName
+                            val errMsg = e.message ?: ""
                             logAnalyticsError("nfc_bac_attempt_failed", "BAC attempt $attempts failed: ${e.message}")
                             logAnalyticsEvent("nfc_bac_attempted", mapOf(
                                 "success" to false,
                                 "attempt" to attempts,
-                                "error_type" to e.javaClass.simpleName
+                                "error_type" to errClass
                             ))
-                            Log.e("MY_LOGS", "BAC attempt $attempts failed: ${e.message}")
+                            Log.e("MY_LOGS", "BAC attempt $attempts failed: $errClass - $errMsg")
+                            if (e is org.jmrtd.CardServiceProtocolException) {
+                                // Provide additional structured diagnostics without sensitive data
+                                logAnalyticsEvent("nfc_bac_protocol_error", mapOf(
+                                    "attempt" to attempts,
+                                    "message_contains_sw" to (errMsg.contains("SW = ")),
+                                    "message_length" to errMsg.length
+                                ))
+                            }
                             if (attempts == maxAttempts) {
                                 eventMessageEmitter(Messages.BAC_FAILED)
-                                throw e // Re-throw on final attempt
+                                throw e
                             }
                         }
+                    }
+                }
+
+                // Ensure we have established authentication before reading
+                if (!paceSucceeded && !bacSucceeded) {
+                    throw IOException("Authentication not established; cannot read data groups")
+                }
+
+                // Select applet after authentication established; handle 0x6982 gracefully
+                try {
+                    Log.e("MY_LOGS", "Sending select applet command after auth. paceSucceeded=$paceSucceeded, bacSucceeded=$bacSucceeded")
+                    service.sendSelectApplet(paceSucceeded)
+                    logAnalyticsEvent("nfc_select_applet_succeeded", mapOf(
+                        "pace_succeeded" to paceSucceeded,
+                        "bac_succeeded" to bacSucceeded
+                    ))
+                } catch (e: Exception) {
+                    val msg = e.message ?: ""
+                    logAnalyticsError("nfc_select_applet_failed", "Select applet failed: ${e.message}")
+                    if (msg.contains("6982") || msg.contains("SECURITY STATUS NOT SATISFIED", ignoreCase = true)) {
+                        Log.w(TAG, "Select applet returned 6982; proceeding after established auth")
+                    } else {
+                        throw e
                     }
                 }
 
