@@ -5234,7 +5234,6 @@ __metadata:
     react-native-logs: "npm:^5.3.0"
     react-native-nfc-manager: "npm:^3.15.1"
     react-native-passport-reader: "npm:^1.0.3"
-    react-native-round-flags: "npm:^1.0.4"
     react-native-safe-area-context: "npm:^5.5.1"
     react-native-screens: "npm:4.9.0"
     react-native-sqlite-storage: "npm:^6.0.1"
@@ -22582,13 +22581,6 @@ __metadata:
   version: 1.0.3
   resolution: "react-native-passport-reader@npm:1.0.3"
   checksum: 10c0/bfb7454d4859d40c10a28faacb279e135faec215b29ee7965592651ed205dd298ae5282aba9c403c729d0c8a78cadab46b7d8825c6782e29248f1cadf0a1e794
-  languageName: node
-  linkType: hard
-
-"react-native-round-flags@npm:^1.0.4":
-  version: 1.0.4
-  resolution: "react-native-round-flags@npm:1.0.4"
-  checksum: 10c0/d09bf2fe9fd16aac3b7eba9034b30cb5a21c6dff9f9f46670cba3b393c0a8b8b37c06fde8292eb1ff492568e89619883f499091b689ddf1e556cf96e2e2ca03a
   languageName: node
   linkType: hard
 
