@@ -29,6 +29,7 @@ on:
 
 jobs:
   e2e-android:
+    if: false # Temporarily disable Android E2E until emulator disk issue resolved
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
