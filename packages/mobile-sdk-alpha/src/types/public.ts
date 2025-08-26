@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
+
 export type { PassportValidationCallbacks } from '../validation/document';
 export interface Config {
   endpoints?: { api?: string; teeWs?: string; artifactsCdn?: string };
