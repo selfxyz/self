@@ -64,6 +64,10 @@ export interface AnalyticsAdapter {
   trackEvent(event: string, payload?: TrackEventParams): void;
 }
 
+export interface AuthAdapter {
+  getPrivateKey(): Promise<string>;
+}
+
 export interface ClockAdapter {
   now(): number;
   sleep(ms: number, signal?: AbortSignal): Promise<void>;
@@ -91,7 +95,8 @@ export interface Adapters {
   network: NetworkAdapter;
   clock: ClockAdapter;
   logger: LoggerAdapter;
-  analytics: AnalyticsAdapter;
+  analytics?: AnalyticsAdapter;
+  auth: AuthAdapter;
   documents: DocumentsAdapter;
 }
 
@@ -171,6 +176,8 @@ export interface SelfClient {
   ): Promise<ProofHandle>;
   extractMRZInfo(mrz: string): MRZInfo;
   trackEvent(event: string, payload?: TrackEventParams): void;
+  getPrivateKey(): Promise<string>;
+  hasPrivateKey(): Promise<boolean>;
   on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
 

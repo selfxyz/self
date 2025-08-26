@@ -6,7 +6,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+
 import { black, slate50, slate200, teal500, white } from '@/utils/colors';
 import { confirmTap } from '@/utils/haptic';
 
@@ -16,12 +17,13 @@ const DevPrivateKeyScreen: React.FC = () => {
   );
   const [isPrivateKeyRevealed, setIsPrivateKeyRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const selfClient = useSelfClient();
 
   useEffect(() => {
-    unsafe_getPrivateKey().then(key =>
-      setPrivateKey(key || 'No private key found'),
-    );
-  }, []);
+    selfClient
+      .getPrivateKey()
+      .then(key => setPrivateKey(key || 'No private key found'));
+  }, [selfClient]);
 
   const handleRevealPrivateKey = useCallback(() => {
     confirmTap();
