@@ -35,8 +35,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { navigationRef } from '@/navigation';
-// this will be pass as property of from selfClient
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
 // will need to be passed in from selfClient
 import {
   clearPassportData,
@@ -651,8 +649,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       const { data: passportData } = selectedDocument;
 
-      // TODO call on self client
-      const secret = await unsafe_getPrivateKey();
+      const secret = await selfClient.getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');
         trackEvent(ProofEvents.LOAD_SECRET_FAILED);

@@ -47,7 +47,7 @@ const optionalDefaults: Partial<Adapters> = {
   },
 };
 
-const REQUIRED_ADAPTERS = ['scanner', 'network', 'crypto', 'documents'] as const;
+const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
 
 /**
  * Creates a fully configured {@link SelfClient} instance.
