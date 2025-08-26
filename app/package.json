@@ -53,7 +53,7 @@
     "sync-versions": "bundle exec fastlane ios sync_version && bundle exec fastlane android sync_version",
     "tag:release": "node scripts/tag.cjs release",
     "tag:remove": "node scripts/tag.cjs remove",
-    "test": "jest --passWithNoTests && node --test scripts/tests/*.cjs",
+    "test": "yarn build:deps && jest --passWithNoTests && node --test scripts/tests/*.cjs",
     "test:build": "yarn build:deps && yarn types && node ./scripts/bundle-analyze-ci.cjs ios && yarn test",
     "test:coverage": "jest --coverage --passWithNoTests",
     "test:coverage:ci": "jest --coverage --passWithNoTests --ci --coverageReporters=lcov --coverageReporters=text --coverageReporters=json",

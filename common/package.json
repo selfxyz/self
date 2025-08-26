@@ -338,10 +338,10 @@
     "nice:check": "yarn lint && yarn lint:imports:check",
     "prepublishOnly": "yarn build",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
     "test:exports": "node scripts/validateExports.js && node scripts/testExports.js",
     "test:scope": "vitest run tests/scope.test.ts",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "types": "tsc -p tsconfig.json"
   },
   "dependencies": {
