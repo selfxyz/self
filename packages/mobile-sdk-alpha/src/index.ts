@@ -5,9 +5,11 @@
 // Types
 export type {
   Adapters,
+  AnalyticsAdapter,
   ClockAdapter,
   Config,
   CryptoAdapter,
+  DocumentsAdapter,
   HttpAdapter,
   LogLevel,
   LoggerAdapter,
@@ -27,6 +29,7 @@ export type {
   ScannerAdapter,
   SelfClient,
   StorageAdapter,
+  TrackEventParams,
   Unsubscribe,
   ValidationInput,
   ValidationResult,
@@ -85,6 +88,8 @@ export { extractMRZInfo } from './mrz';
 
 export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
+export { getAllDocuments, hasAnyValidRegisteredDocument } from './documents/utils';
+
 // Core functions
 export { isPassportDataValid } from './validation/document';
 
@@ -97,5 +102,6 @@ export { scanQRProof } from './qr';
 
 // Hooks
 export { useDocumentManager } from './hooks/useDocumentManager';
+
 // Error handling
 export { webScannerShim } from './adapters/web/shims';

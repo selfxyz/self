@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { glob } = require('glob');
 
-const LICENSE_HEADER_PATTERN = /SPDX-License-Identifier:/;
+const LICENSE_HEADER_PATTERN = /^\/\/\s*SPDX-FileCopyrightText:/;
 const EXTENSIONS = ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'];
 
 function checkFile(filePath) {

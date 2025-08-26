@@ -76,6 +76,9 @@ const passportScreens = {
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
+    initialParams: {
+      passportData: null,
+    },
   },
   PassportNFCMethodSelection: {
     screen: NFCMethodSelectionScreen,

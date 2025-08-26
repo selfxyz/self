@@ -6,6 +6,7 @@ export type {
   Adapters,
   ClockAdapter,
   CryptoAdapter,
+  DocumentsAdapter,
   HttpAdapter,
   LoggerAdapter,
   NetworkAdapter,

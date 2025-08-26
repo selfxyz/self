@@ -54,6 +54,8 @@ export { defaultConfig } from './config/defaults';
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
+export { getAllDocuments, hasAnyValidRegisteredDocument } from './documents/utils';
+
 // Core functions
 export { isPassportDataValid } from './validation/document';
 

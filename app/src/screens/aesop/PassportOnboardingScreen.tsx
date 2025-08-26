@@ -7,6 +7,12 @@ import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -15,14 +21,13 @@ import TextsContainer from '@/components/TextsContainer';
 import Additional from '@/components/typography/Additional';
 import Description from '@/components/typography/Description';
 import { DescriptionTitle } from '@/components/typography/DescriptionTitle';
-import { PassportEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '@/utils/colors';
-import { hasAnyValidRegisteredDocument } from '@/utils/proving/validateDocument';
 
 const PassportOnboardingScreen: React.FC = () => {
+  const client = useSelfClient();
   const handleCameraPress = useHapticNavigation('PassportCamera');
   const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
@@ -31,7 +36,7 @@ const PassportOnboardingScreen: React.FC = () => {
     action: 'cancel',
   });
   const onCancelPress = async () => {
-    const hasValidDocument = await hasAnyValidRegisteredDocument();
+    const hasValidDocument = await hasAnyValidRegisteredDocument(client);
     if (hasValidDocument) {
       navigateToHome();
     } else {

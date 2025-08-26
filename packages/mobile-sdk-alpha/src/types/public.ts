@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export type { PassportData } from '@selfxyz/common/utils/types';
+import { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
+
 export type { PassportValidationCallbacks } from '../validation/document';
 export interface Config {
   endpoints?: { api?: string; teeWs?: string; artifactsCdn?: string };
@@ -32,6 +33,37 @@ export interface MRZInfo {
   validation: MRZValidation;
 }
 
+/** * Generic reasons:
+ * - network_error: Network connectivity issues
+ * - user_cancelled: User cancelled the operation
+ * - permission_denied: Permission not granted
+ * - invalid_input: Invalid user input
+ * - timeout: Operation timed out
+ * - unknown_error: Unspecified error * * Auth specific:
+ * - invalid_credentials: Invalid login credentials
+ * - biometric_unavailable: Biometric authentication unavailable
+ * - invalid_mnemonic: Invalid mnemonic phrase * * Passport specific:
+ * - invalid_format: Invalid passport format
+ * - expired_passport: Passport is expired
+ * - scan_error: Error during scanning
+ * - nfc_error: NFC read error * * Proof specific:
+ * - verification_failed: Proof verification failed
+ * - session_expired: Session expired
+ * - missing_fields: Required fields missing * * Backup specific:
+ * - backup_not_found: Backup not found
+ * - cloud_service_unavailable: Cloud service unavailable
+ * */
+export interface TrackEventParams {
+  reason?: string | null;
+  duration_seconds?: number;
+  attempt_count?: number;
+  [key: string]: unknown;
+}
+
+export interface AnalyticsAdapter {
+  trackEvent(event: string, payload?: TrackEventParams): void;
+}
+
 export interface ClockAdapter {
   now(): number;
   sleep(ms: number, signal?: AbortSignal): Promise<void>;
@@ -59,6 +91,8 @@ export interface Adapters {
   network: NetworkAdapter;
   clock: ClockAdapter;
   logger: LoggerAdapter;
+  analytics: AnalyticsAdapter;
+  documents: DocumentsAdapter;
 }
 
 export interface ProofHandle {
@@ -116,6 +150,12 @@ export type ScanResult =
 export interface ScannerAdapter {
   scan(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
 }
+
+export interface DocumentsAdapter {
+  loadDocumentCatalog(): Promise<DocumentCatalog>;
+  loadDocumentById(id: string): Promise<PassportData | null>;
+}
+
 export interface SelfClient {
   scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
   validateDocument(input: ValidationInput): Promise<ValidationResult>;
@@ -130,8 +170,12 @@ export interface SelfClient {
     },
   ): Promise<ProofHandle>;
   extractMRZInfo(mrz: string): MRZInfo;
+  trackEvent(event: string, payload?: TrackEventParams): void;
   on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
+
+  loadDocumentCatalog(): Promise<DocumentCatalog>;
+  loadDocumentById(id: string): Promise<PassportData | null>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

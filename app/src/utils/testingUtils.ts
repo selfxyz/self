@@ -4,7 +4,7 @@
 
 import Keychain from 'react-native-keychain';
 
-import { loadDocumentCatalog } from '@/providers/passportDataProvider';
+import { loadDocumentCatalogDirectlyFromKeychain as loadDocumentCatalog } from '@/providers/passportDataProvider';
 
 /**
  * Testing utility function to clear the document catalog for migration testing.

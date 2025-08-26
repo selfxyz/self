@@ -11,10 +11,12 @@ import {
   usePreventRemove,
 } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { pressedStyle } from '@/components/buttons/pressedStyle';
 import { BodyText } from '@/components/typography/BodyText';
 import { Caption } from '@/components/typography/Caption';
-import { ProofEvents } from '@/consts/analytics';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
@@ -23,7 +25,6 @@ import ScanIcon from '@/images/icons/qr_scan.svg';
 import WarnIcon from '@/images/icons/warning.svg';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
 import { amber500, black, neutral700, slate800, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 
@@ -38,9 +39,8 @@ const ScanButton = styled(Button, {
   justifyContent: 'center',
 });
 
-const { trackEvent } = analytics();
-
 const HomeScreen: React.FC = () => {
+  const selfClient = useSelfClient();
   useConnectionModal();
   const navigation = useNavigation();
   const { getAllDocuments } = usePassport();
@@ -72,12 +72,12 @@ const HomeScreen: React.FC = () => {
 
   const goToQRCodeViewFinder = useHapticNavigation('QRCodeViewFinder');
   const onScanButtonPress = useCallback(() => {
-    trackEvent(ProofEvents.QR_SCAN_REQUESTED, {
+    selfClient.trackEvent(ProofEvents.QR_SCAN_REQUESTED, {
       from: 'Home',
     });
 
     goToQRCodeViewFinder();
-  }, [goToQRCodeViewFinder]);
+  }, [goToQRCodeViewFinder, selfClient]);
 
   // Prevents back navigation
   usePreventRemove(true, () => {});

@@ -24,11 +24,10 @@ import {
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
 import type { PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { DocumentEvents } from '@/consts/analytics';
 import {
-  getAllDocuments,
-  loadDocumentCatalog,
+  getAllDocumentsDirectlyFromKeychain,
   loadPassportDataAndSecret,
   loadSelectedDocument,
   setSelectedDocument,
@@ -51,7 +50,8 @@ export type PassportSupportStatus =
  * This function checks and updates registration states for all documents and updates the `isRegistered`.
  */
 export async function checkAndUpdateRegistrationStates(): Promise<void> {
-  const allDocuments = await getAllDocuments();
+  const allDocuments = await getAllDocumentsDirectlyFromKeychain();
+
   for (const documentId of Object.keys(allDocuments)) {
     try {
       await setSelectedDocument(documentId);
@@ -314,16 +314,6 @@ function formatCSCAPem(cscaPem: string): string {
     cleanedPem = `-----BEGIN CERTIFICATE-----\n${cleanedPem}\n-----END CERTIFICATE-----`;
   }
   return cleanedPem;
-}
-
-export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
-  try {
-    const catalog = await loadDocumentCatalog();
-    return catalog.documents.some(doc => doc.isRegistered === true);
-  } catch (error) {
-    console.error('Error loading document catalog:', error);
-    return false;
-  }
 }
 
 export async function isDocumentNullified(passportData: PassportData) {

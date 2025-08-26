@@ -17,6 +17,64 @@ interface SendFeedbackEmailOptions {
 }
 
 /**
+ * Sends a notification email requesting support for a specific country
+ * @param options Configuration for the country support notification email
+ */
+export const sendCountrySupportNotification = async ({
+  countryName,
+  countryCode,
+  documentCategory,
+  subject = `Country Support Request: ${countryName}`,
+  recipient = 'team@self.xyz',
+}: SendCountrySupportNotificationOptions): Promise<void> => {
+  const deviceInfo = [
+    ['device', `${Platform.OS}@${Platform.Version}`],
+    ['app', `v${version}`],
+    [
+      'locales',
+      getLocales()
+        .map(locale => `${locale.languageCode}-${locale.countryCode}`)
+        .join(','),
+    ],
+    ['userCountry', getCountry()],
+    ['requestedCountry', countryCode || 'Unknown'],
+    ['documentCategory', documentCategory || 'Unknown'],
+    ['tz', getTimeZone()],
+    ['ts', new Date().toISOString()],
+    ['origin', 'unsupported_passport_screen'],
+  ] as [string, string][];
+
+  const documentTypeText =
+    documentCategory === 'id_card' ? 'ID cards' : 'passports';
+
+  const body = `Hi SELF Team,
+
+I would like to request support for ${countryName} ${documentTypeText} in the SELF app. Please notify me when support becomes available.
+
+Additional comments (optional):
+
+
+---
+Technical Details (do not modify):
+${deviceInfo.map(([k, v]) => `${k}=${v}`).join('\n')}
+---`;
+
+  await Linking.openURL(
+    `mailto:${recipient}?subject=${encodeURIComponent(
+      subject,
+    )}&body=${encodeURIComponent(body)}`,
+  );
+};
+
+interface SendCountrySupportNotificationOptions {
+  countryName: string;
+  countryCode?: string;
+  documentCategory?: string;
+  subject?: string;
+  recipient?: string;
+}
+
+/**
  * Sends a feedback email with device information and user message
  * @param options Configuration for the feedback email
  */

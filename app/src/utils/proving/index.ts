@@ -17,9 +17,6 @@ export {
 export { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
 
 // From validateDocument - used in recovery and splash screens
-export {
-  hasAnyValidRegisteredDocument,
-  isUserRegisteredWithAlternativeCSCA,
-} from '@/utils/proving/validateDocument';
+export { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
 
 export { useProvingStore } from '@/utils/proving/provingMachine';

@@ -8,13 +8,17 @@ import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+
 import splashAnimation from '@/assets/animations/splash.json';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
-  hasAnyValidRegisteredDocument,
   initializeNativeModules,
   migrateFromLegacyStorage,
 } from '@/providers/passportDataProvider';
@@ -23,6 +27,7 @@ import { black } from '@/utils/colors';
 import { impactLight } from '@/utils/haptic';
 
 const SplashScreen: React.FC = ({}) => {
+  const selfClient = useSelfClient();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { checkBiometricsAvailable } = useAuth();
@@ -60,7 +65,7 @@ const SplashScreen: React.FC = ({}) => {
             await checkAndUpdateRegistrationStates();
           }
 
-          const hasValid = await hasAnyValidRegisteredDocument();
+          const hasValid = await hasAnyValidRegisteredDocument(selfClient);
           setNextScreen(hasValid ? 'Home' : 'Launch');
         } catch (error) {
           console.error(`Error in SplashScreen data loading: ${error}`);

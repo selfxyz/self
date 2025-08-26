@@ -9,16 +9,17 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import Description from '@/components/typography/Description';
-import { BackupEvents } from '@/consts/analytics';
 import Paste from '@/images/icons/paste.svg';
 import { useAuth } from '@/providers/authProvider';
 import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import analytics from '@/utils/analytics';
 import {
   black,
   slate300,
@@ -32,7 +33,7 @@ import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDoc
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation = useNavigation();
   const { restoreAccountFromMnemonic } = useAuth();
-  const { trackEvent } = analytics();
+  const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {

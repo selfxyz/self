@@ -4,8 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { createSelfClient } from '../src/index';
-import { MrzParseError } from '../src/processing/mrz';
+import { createSelfClient, MrzParseError } from '../src/index';
 import { badCheckDigitsMRZ, expectedMRZResult, invalidMRZ, mockAdapters, sampleMRZ } from './utils/testHelpers';
 
 describe('createSelfClient API', () => {

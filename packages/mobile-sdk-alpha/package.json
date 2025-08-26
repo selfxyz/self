@@ -23,6 +23,11 @@
       "types": "./dist/esm/browser.d.ts",
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
+    },
+    "./constants/analytics": {
+      "types": "./dist/esm/constants/analytics.d.ts",
+      "import": "./dist/esm/constants/analytics.js",
+      "require": "./dist/cjs/constants/analytics.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -45,7 +50,7 @@
     "test": "vitest run",
     "test:build": "yarn build && yarn test && yarn types && yarn lint",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "types": "tsc -p tsconfig.json --noEmit",
+    "types": "yarn build",
     "validate:exports": "node ./scripts/validate-exports.mjs",
     "validate:pkg": "node ./scripts/verify-conditions.mjs"
   },

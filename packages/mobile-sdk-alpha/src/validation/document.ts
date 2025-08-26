@@ -4,8 +4,7 @@
 
 import { hash } from '@selfxyz/common/utils/hash/sha';
 import { formatMrz } from '@selfxyz/common/utils/passportFormat';
-
-import type { PassportData } from '../types/public';
+import type { PassportData } from '@selfxyz/common/utils/types';
 
 /**
  * Checks if two numeric arrays contain the same values in the same order.
