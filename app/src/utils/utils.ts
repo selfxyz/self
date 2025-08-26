@@ -6,7 +6,7 @@ export function extractMRZInfo(mrzString: string) {
 
   //line 1 and line 2 - concated
   const TD1_REGEX =
-    /^(?<documentType>[A-Z0-9<]{2})(?<issuingCountry>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})(?<optionalData1>[A-Z0-9<]{15})(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<sex>[MF<]{1})(?<dateOfExpiry>[0-9]{6})(?<checkDigitDateOfExpiry>[0-9]{1})(?<nationality>[A-Z<]{3})(?<optionalData2>[A-Z0-9<]{7})/;
+    /^([A-Z0-9<]{2})([A-Z<]{3})([A-Z0-9<]{9})([0-9]{1})([A-Z0-9<]{15})([0-9]{6})([0-9]{1})([MF<]{1})([0-9]{6})([0-9]{1})([A-Z<]{3})([A-Z0-9<]{7})/;
   const TD3_line_2_REGEX = /^([A-Z0-9<]{9})([0-9ILDSOG])([A-Z<]{3})/;
 
   const isTD1 = TD1_REGEX.test(mrzLines[0]) || mrzLines[0].startsWith('I');
@@ -46,20 +46,30 @@ export function extractMRZInfo(mrzString: string) {
   };
 }
 
-// Function to format date from 'YYYY-MM-DD 00:00:00 +0000' to 'YYMMDD'
+// Function to ensure date is in YYMMDD format
+// On iOS, dates come as YYMMDD (6 chars), on Android they come as YYYY-MM-DD 00:00:00 +0000
 export function formatDateToYYMMDD(inputDate: string) {
-  // Validate input string length to prevent substring errors
-  if (!inputDate || inputDate.length < 10) {
-    throw new Error('Invalid date format: input string must be at least 10 characters long');
+  if (!inputDate) {
+    throw new Error('Invalid date format: input string cannot be empty');
   }
 
-  // Extract the date components directly from the input string
-  const year = inputDate.substring(2, 4); // Get YY part
-  const month = inputDate.substring(5, 7); // Get MM part
-  const day = inputDate.substring(8, 10); // Get DD part
+  // If the date is already in YYMMDD format (6 characters), return it as is
+  if (inputDate.length === 6) {
+    return inputDate;
+  }
 
-  // Concatenate components into YYMMDD format
-  return year + month + day;
+  // If the date is in YYYY-MM-DD format (at least 10 characters), convert it
+  if (inputDate.length >= 10) {
+    // Extract the date components directly from the input string
+    const year = inputDate.substring(2, 4); // Get YY part
+    const month = inputDate.substring(5, 7); // Get MM part
+    const day = inputDate.substring(8, 10); // Get DD part
+
+    // Concatenate components into YYMMDD format
+    return year + month + day;
+  }
+
+  throw new Error('Invalid date format: expected YYMMDD (6 chars) or YYYY-MM-DD format (10+ chars)');
 }
 
 export function checkScannedInfo(
