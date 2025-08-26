@@ -233,12 +233,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('app/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-
-      - name: Cache Ruby gems
-        uses: ./.github/actions/cache-bundler
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          path: app/vendor/bundle
-          lock-file: app/Gemfile.lock
-          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: app
       - name: Cache Pods
         uses: ./.github/actions/cache-pods
         with:
@@ -253,26 +253,26 @@ jobs:
             app/ios/build
             ~/Library/Developer/Xcode/DerivedData
             ~/Library/Caches/com.apple.dt.Xcode
-          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
+          key: ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
           restore-keys: |
-            ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-
-            ${{ runner.os }}-xcode-
+            ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}-
+            ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-
       - name: Cache Xcode Index
         uses: actions/cache@v4
         with:
           path: app/ios/build/Index.noindex
-          key: ${{ runner.os }}-xcode-index-${{ hashFiles('app/ios/Podfile.lock') }}
+          key: ${{ runner.os }}-xcode-index-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-xcode-index-
+            ${{ runner.os }}-xcode-index-${{ env.XCODE_VERSION }}-
       - name: Cache iOS Simulator
         uses: actions/cache@v4
         with:
           path: |
             ~/Library/Developer/CoreSimulator/Devices
             ~/Library/Developer/Xcode/iOS DeviceSupport
-          key: ${{ runner.os }}-simulator-v1
+          key: ${{ runner.os }}-simulator-${{ env.XCODE_VERSION }}-v1
           restore-keys: |
-            ${{ runner.os }}-simulator-
+            ${{ runner.os }}-simulator-${{ env.XCODE_VERSION }}-
       - name: Verify iOS Runtime
         run: |
           echo "📱 Verifying iOS Runtime availability..."
@@ -287,9 +287,6 @@ jobs:
         run: |
           echo "Installing iOS dependencies..."
           cd app/ios
-          echo "📦 Installing Ruby gems (Bundler)…"
-          bundle config set path 'vendor/bundle'
-          bundle install --jobs 4 --retry 3
           echo "📦 Installing pods via centralized script…"
           bundle exec bash scripts/pod-install-with-cache-fix.sh || { echo "❌ Pod install failed"; exit 1; }
       - name: Setup iOS Simulator
