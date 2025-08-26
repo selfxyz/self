@@ -14,7 +14,6 @@ import type {
   DocumentCatalog,
   DocumentMetadata,
 } from '@selfxyz/common/utils/types';
-
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
