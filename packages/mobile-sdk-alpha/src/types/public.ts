@@ -180,7 +180,7 @@ export interface SelfClient {
   ): Promise<ProofHandle>;
   extractMRZInfo(mrz: string): MRZInfo;
   trackEvent(event: string, payload?: TrackEventParams): void;
-  getPrivateKey(): Promise<string>;
+  getPrivateKey(): Promise<string | null>;
   hasPrivateKey(): Promise<boolean>;
   on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;

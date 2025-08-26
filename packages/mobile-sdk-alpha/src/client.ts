@@ -132,13 +132,13 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
    * Retrieves the private key via the auth adapter.
    * With great power comes great responsibility
    */
-  async function getPrivateKey(): Promise<string> {
+  async function getPrivateKey(): Promise<string | null> {
     if (!adapters.auth) throw notImplemented('auth');
     return adapters.auth.getPrivateKey();
   }
 
   async function hasPrivateKey(): Promise<boolean> {
-    if (!adapters.auth) throw notImplemented('auth');
+    if (!adapters.auth) return false;
     try {
       const key = await adapters.auth.getPrivateKey();
       return !!key;
