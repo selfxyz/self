@@ -19,13 +19,15 @@ jobs:
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-      - name: Build @selfxyz/common
-        run: yarn workspace @selfxyz/common build
+      - name: Build dependencies
+        run: yarn workspace @selfxyz/mobile-app run build:deps
       - name: Cache build artifacts
         uses: actions/cache/save@v4
         with:
-          path: common/dist
-          key: common-build-${{ runner.os }}-${{ github.sha }}
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: build-deps-${{ runner.os }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
 
   lint:
     runs-on: ubuntu-latest
@@ -64,17 +66,17 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
-        id: restore-common-dist
+        id: restore-build-deps
         uses: actions/cache/restore@v4
         with:
-          path: common/dist
-          key: common-build-${{ runner.os }}-${{ github.sha }}
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: build-deps-${{ runner.os }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
           fail-on-cache-miss: false
       - name: Build dependencies (fallback on cache miss)
-        if: steps.restore-common-dist.outputs.cache-hit != 'true'
-        run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/mobile-sdk-alpha build
+        if: steps.restore-build-deps.outputs.cache-hit != 'true'
+        run: yarn workspace @selfxyz/mobile-app run build:deps
       - name: Yarn types
         run: yarn types
 
@@ -96,14 +98,16 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
-        id: restore-common-dist
+        id: restore-build-deps
         uses: actions/cache/restore@v4
         with:
-          path: common/dist
-          key: common-build-${{ runner.os }}-${{ github.sha }}
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: build-deps-${{ runner.os }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
           fail-on-cache-miss: false
-      - name: Build @selfxyz/common (fallback on cache miss)
-        if: steps.restore-common-dist.outputs.cache-hit != 'true'
-        run: yarn workspace @selfxyz/common build
+      - name: Build dependencies (fallback on cache miss)
+        if: steps.restore-build-deps.outputs.cache-hit != 'true'
+        run: yarn workspace @selfxyz/mobile-app run build:deps
       - name: Run @selfxyz/common tests
         run: yarn workspace @selfxyz/common test
