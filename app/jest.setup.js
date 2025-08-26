@@ -8,6 +8,11 @@ require('react-native-gesture-handler/jestSetup');
 
 jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
+jest.mock('@env', () => ({
+  ENABLE_DEBUG_LOGS: 'false',
+  MIXPANEL_NFC_PROJECT_TOKEN: 'test-token',
+}));
+
 global.FileReader = class {
   constructor() {
     this.onload = null;
@@ -197,11 +202,28 @@ jest.mock('react-native-nfc-manager', () => ({
 // Mock react-native-passport-reader
 jest.mock('react-native-passport-reader', () => ({
   default: {
-    initialize: jest.fn(),
+    configure: jest.fn(),
     scanPassport: jest.fn(),
     readPassport: jest.fn(),
     cancelPassportRead: jest.fn(),
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
   },
+}));
+
+const { NativeModules } = require('react-native');
+
+NativeModules.PassportReader = {
+  configure: jest.fn(),
+  scanPassport: jest.fn(),
+  trackEvent: jest.fn(),
+  flush: jest.fn(),
+};
+
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: jest.fn(() => jest.fn()),
+  fetch: jest.fn(() => Promise.resolve({ isConnected: true })),
 }));
 
 // Mock @stablelib packages

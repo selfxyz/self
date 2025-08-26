@@ -4,9 +4,15 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Buffer } from 'buffer';
-import { NativeModules, Platform } from 'react-native';
+import {
+  AppState,
+  type AppStateStatus,
+  NativeModules,
+  Platform,
+} from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
+import NetInfo from '@react-native-community/netinfo';
 
 import type { PassportData } from '@selfxyz/common/types';
 
@@ -37,10 +43,84 @@ interface Inputs {
   usePacePolling?: boolean;
 }
 
+// --- Mixpanel flush strategy ---
+let mixpanelConfigured = false;
+let eventCount = 0;
+let flushTimer: ReturnType<typeof setInterval> | null = null;
+let isConnected = true;
+const eventQueue: Array<{
+  name: string;
+  properties?: Record<string, unknown>;
+}> = [];
+
+export const configureNfcAnalytics = () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
+  const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
+  NativeModules.PassportReader.configure(
+    MIXPANEL_NFC_PROJECT_TOKEN,
+    enableDebugLogs,
+    {
+      flushInterval: 30,
+      flushCount: 5,
+      flushOnBackground: true,
+      flushOnForeground: true,
+      flushOnNetworkChange: true,
+    },
+  );
+  setupFlushPolicies();
+  mixpanelConfigured = true;
+};
+
+const setupFlushPolicies = () => {
+  if (flushTimer) return;
+  flushTimer = setInterval(flushMixpanelEvents, 30000);
+
+  AppState.addEventListener('change', (state: AppStateStatus) => {
+    if (state === 'background' || state === 'active') {
+      flushMixpanelEvents();
+    }
+  });
+
+  NetInfo.addEventListener(state => {
+    isConnected = state.isConnected ?? true;
+    if (isConnected) {
+      flushMixpanelEvents();
+    }
+  });
+};
+
+export const flushMixpanelEvents = () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  try {
+    if (__DEV__) console.log('[Mixpanel] flush');
+    // Send any queued events before flushing
+    while (eventQueue.length > 0) {
+      const evt = eventQueue.shift()!;
+      NativeModules.PassportReader?.trackEvent?.(evt.name, evt.properties);
+    }
+    NativeModules.PassportReader?.flush?.();
+    eventCount = 0;
+  } catch (err) {
+    if (__DEV__) console.warn('Mixpanel flush failed', err);
+    // re-queue on failure
+    if (typeof err !== 'undefined') {
+      // no-op, events are already queued if failure happened before flush
+    }
+  }
+};
+
 export const parseScanResponse = (response: unknown) => {
   return Platform.OS === 'android'
     ? handleResponseAndroid(response as AndroidScanResponse)
     : handleResponseIOS(response);
+};
+
+export const scan = async (inputs: Inputs) => {
+  configureNfcAnalytics();
+
+  return Platform.OS === 'android'
+    ? await scanAndroid(inputs)
+    : await scanIOS(inputs);
 };
 
 const scanAndroid = async (inputs: Inputs) => {
@@ -68,21 +148,27 @@ const scanIOS = async (inputs: Inputs) => {
   );
 };
 
-export const scan = async (inputs: Inputs) => {
-  if (MIXPANEL_NFC_PROJECT_TOKEN) {
-    if (Platform.OS === 'ios') {
-      const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
-      NativeModules.PassportReader.configure(
-        MIXPANEL_NFC_PROJECT_TOKEN,
-        enableDebugLogs,
-      );
-    } else {
-    }
+export const trackNfcEvent = (
+  name: string,
+  properties?: Record<string, unknown>,
+) => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  if (!mixpanelConfigured) configureNfcAnalytics();
+
+  if (!isConnected) {
+    eventQueue.push({ name, properties });
+    return;
   }
 
-  return Platform.OS === 'android'
-    ? await scanAndroid(inputs)
-    : await scanIOS(inputs);
+  try {
+    NativeModules.PassportReader?.trackEvent?.(name, properties);
+    eventCount++;
+    if (eventCount >= 5) {
+      flushMixpanelEvents();
+    }
+  } catch (err) {
+    eventQueue.push({ name, properties });
+  }
 };
 
 const handleResponseIOS = (response: unknown) => {

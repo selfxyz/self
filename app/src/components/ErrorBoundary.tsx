@@ -8,6 +8,7 @@ import { Text, View } from 'react-native';
 
 import { captureException } from '@/Sentry';
 import analytics from '@/utils/analytics';
+import { flushMixpanelEvents, trackNfcEvent } from '@/utils/nfcScanner';
 
 const { flush: flushAnalytics } = analytics();
 
@@ -30,6 +31,11 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
+    trackNfcEvent('error_boundary', {
+      message: error.message,
+      stack: info.componentStack,
+    });
+    flushMixpanelEvents();
     // Flush analytics before the app crashes
     flushAnalytics();
     captureException(error, {

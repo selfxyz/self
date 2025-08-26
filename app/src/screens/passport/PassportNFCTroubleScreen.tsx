@@ -16,6 +16,7 @@ import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import analytics from '@/utils/analytics';
 import { slate500 } from '@/utils/colors';
 import { sendFeedbackEmail } from '@/utils/email';
+import { flushMixpanelEvents } from '@/utils/nfcScanner';
 
 const { flush: flushAnalytics } = analytics();
 
@@ -56,6 +57,7 @@ const PassportNFCTrouble: React.FC = () => {
   // error screen, flush analytics
   useEffect(() => {
     flushAnalytics();
+    flushMixpanelEvents();
   }, []);
 
   // 5-taps with a single finger
