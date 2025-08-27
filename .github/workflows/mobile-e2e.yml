@@ -351,7 +351,8 @@ jobs:
           # Use cached derived data and enable parallel builds for faster compilation
           # Additional flags disable indexing, restrict architecture, and use whole-module Swift compilation
           # Use the simulator that was set up earlier in the workflow
-          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
+          FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
+            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
