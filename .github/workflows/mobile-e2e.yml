@@ -17,12 +17,11 @@ env:
   MAESTRO_VERSION: 1.41.0
 
 on:
-  push:
-    branches: [main, release/**]
-    paths:
-      - "app/**"
-      - ".github/workflows/mobile-e2e.yml"
   pull_request:
+    branches:
+      - dev
+      - staging
+      - main
     paths:
       - "app/**"
       - ".github/workflows/mobile-e2e.yml"

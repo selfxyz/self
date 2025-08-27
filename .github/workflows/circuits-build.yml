@@ -1,13 +1,9 @@
 name: Circuits Build
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "circuits/circuits/**"
-      - ".github/workflows/artifacts.yml"
   pull_request:
     branches:
+      - dev
+      - staging
       - main
     paths:
       - "circuits/circuits/**"
