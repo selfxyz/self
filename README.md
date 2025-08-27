@@ -88,7 +88,6 @@ We are actively looking for contributors. Please check the [open issues](https:/
 
 > **Important:** Please open your pull request from the `staging` branch. Pull requests from other branches will be automatically closed.
 
-
 ## Contact us
 
 [Contact us](https://t.me/selfprotocolbuilder) on telegram for feedback or questions.
