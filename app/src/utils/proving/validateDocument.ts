@@ -22,10 +22,16 @@ import {
   generateNullifier,
 } from '@selfxyz/common/utils/passports';
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
-import type { PassportValidationCallbacks, SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type {
+  PassportValidationCallbacks,
+  SelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { getAllDocuments, loadSelectedDocument } from '@selfxyz/mobile-sdk-alpha/documents/utils';
+import {
+  getAllDocuments,
+  loadSelectedDocument,
+} from '@selfxyz/mobile-sdk-alpha/documents/utils';
 
 import {
   getAllDocumentsDirectlyFromKeychain,
@@ -49,7 +55,9 @@ export type PassportSupportStatus =
 /**
  * This function checks and updates registration states for all documents and updates the `isRegistered`.
  */
-export async function checkAndUpdateRegistrationStates(selfClient: SelfClient): Promise<void> {
+export async function checkAndUpdateRegistrationStates(
+  selfClient: SelfClient,
+): Promise<void> {
   const allDocuments = await getAllDocuments(selfClient);
 
   for (const documentId of Object.keys(allDocuments)) {

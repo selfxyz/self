@@ -64,7 +64,10 @@ import {
   SelfClient,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { getAllDocuments, loadSelectedDocument } from '@selfxyz/mobile-sdk-alpha/documents/utils';
+import {
+  getAllDocuments,
+  loadSelectedDocument,
+} from '@selfxyz/mobile-sdk-alpha/documents/utils';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 
@@ -178,7 +181,11 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const selfClient = useSelfClient();
 
   const getData = useCallback(
-    () => _getSecurely<PassportData>(() => loadPassportData(selfClient), str => JSON.parse(str)),
+    () =>
+      _getSecurely<PassportData>(
+        () => loadPassportData(selfClient),
+        str => JSON.parse(str),
+      ),
     [_getSecurely],
   );
 
@@ -234,7 +241,8 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
       updateDocumentRegistrationState: updateDocumentRegistrationState,
       checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
-      checkAndUpdateRegistrationStates: () => checkAndUpdateRegistrationStates(selfClient),
+      checkAndUpdateRegistrationStates: () =>
+        checkAndUpdateRegistrationStates(selfClient),
     }),
     [
       getData,
@@ -253,7 +261,9 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   );
 };
 
-export async function checkAndUpdateRegistrationStates(selfClient: SelfClient): Promise<void> {
+export async function checkAndUpdateRegistrationStates(
+  selfClient: SelfClient,
+): Promise<void> {
   // Lazy import to avoid circular dependency
   const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
     await import('@/utils/proving/validateDocument');
@@ -569,7 +579,9 @@ export async function loadPassportDataAndSecret(selfClient: SelfClient) {
   });
 }
 
-export async function loadSelectedPassportData(selfClient: SelfClient): Promise<string | false> {
+export async function loadSelectedPassportData(
+  selfClient: SelfClient,
+): Promise<string | false> {
   // Try new system first
   const selected = await loadSelectedDocument(selfClient);
   if (selected) {
@@ -580,7 +592,9 @@ export async function loadSelectedPassportData(selfClient: SelfClient): Promise<
   return await loadPassportData(selfClient);
 }
 
-export async function loadSelectedPassportDataAndSecret(selfClient: SelfClient) {
+export async function loadSelectedPassportDataAndSecret(
+  selfClient: SelfClient,
+) {
   const passportData = await loadSelectedPassportData(selfClient);
   const secret = await unsafe_getPrivateKey();
   if (!secret || !passportData) {
