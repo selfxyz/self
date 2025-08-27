@@ -130,7 +130,7 @@ describe('createSelfClient', () => {
       });
 
       client.trackEvent('test_event');
-      expect(trackEvent).toHaveBeenCalledOnce()
+      expect(trackEvent).toHaveBeenCalledOnce();
       expect(trackEvent).toHaveBeenCalledWith('test_event', undefined);
       client.trackEvent('another_event', { foo: 'bar' });
       expect(trackEvent).toHaveBeenCalledWith('another_event', { foo: 'bar' });
@@ -180,8 +180,8 @@ const crypto: CryptoAdapter = {
 };
 
 const auth: AuthAdapter = {
-  getPrivateKey: async () => 'secret'
-}
+  getPrivateKey: async () => 'secret',
+};
 
 const documents: DocumentsAdapter = {
   loadDocumentCatalog: async () => ({ documents: [] }),
