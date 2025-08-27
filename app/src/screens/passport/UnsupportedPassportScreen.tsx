@@ -11,11 +11,9 @@ import type { RouteProp } from '@react-navigation/native';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types';
-import {
-  hasAnyValidRegisteredDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { hasAnyValidRegisteredDocument } from '@selfxyz/mobile-sdk-alpha/documents/utils';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
