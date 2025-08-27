@@ -146,13 +146,8 @@ target "Self" do
 
     # Add E2E_TESTING compilation condition for main app target when environment variable is set
     if ENV["E2E_TESTING"] == "1"
-      puts "🔧 Setting up E2E_TESTING compilation condition..."
       # Find Self.xcodeproj and add E2E_TESTING compilation condition
       self_project_path = File.join(installer.sandbox.project_path, "../Self.xcodeproj")
-      # Alternative path if the above doesn't work
-      unless File.exist?(self_project_path)
-        self_project_path = File.join(Dir.pwd, "Self.xcodeproj")
-      end
       if File.exist?(self_project_path)
         project = Xcodeproj::Project.open(self_project_path)
         project.targets.each do |target|
@@ -161,20 +156,12 @@ target "Self" do
               existing_conditions = config.build_settings["SWIFT_ACTIVE_COMPILATION_CONDITIONS"] || ""
               unless existing_conditions.to_s.include?("E2E_TESTING")
                 config.build_settings["SWIFT_ACTIVE_COMPILATION_CONDITIONS"] = (existing_conditions.to_s + " E2E_TESTING").strip
-                puts "✅ Added E2E_TESTING to SWIFT_ACTIVE_COMPILATION_CONDITIONS for #{config.name} configuration"
-              else
-                puts "ℹ️  E2E_TESTING already present in SWIFT_ACTIVE_COMPILATION_CONDITIONS for #{config.name} configuration"
               end
             end
           end
         end
         project.save
-        puts "💾 Saved Self.xcodeproj with E2E_TESTING configuration"
-      else
-        puts "⚠️  Self.xcodeproj not found at #{self_project_path}"
       end
-    else
-      puts "ℹ️  E2E_TESTING not set - using normal build configuration"
     end
   end
 end
