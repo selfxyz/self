@@ -205,10 +205,10 @@ describe('Error handling', () => {
 ### Test Commands
 ```bash
 # iOS E2E
-yarn test:e2e:ios
+yarn test:e2e ios
 
 # Android E2E
-yarn test:e2e:android
+yarn test:e2e android
 ```
 
 ### Test Data Management
@@ -221,8 +221,8 @@ yarn test:e2e:android
 ### Bundle Analysis
 ```bash
 # Analyze bundle size
-yarn analyze:bundle:ios
-yarn analyze:bundle:android
+yarn analyze:bundle ios
+yarn analyze:bundle android
 
 # Tree shaking analysis
 yarn analyze:tree-shaking

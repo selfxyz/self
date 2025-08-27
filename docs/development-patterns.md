@@ -156,7 +156,7 @@ src/
 ### Scripts
 - `yarn ios` / `yarn android` for platform-specific builds
 - `yarn test` for Jest testing
-- `yarn test:e2e:ios` / `yarn test:e2e:android` for E2E
+- `yarn test:e2e ios` / `yarn test:e2e android` for E2E
 - Fastlane for deployment automation
 
 ### Dependencies

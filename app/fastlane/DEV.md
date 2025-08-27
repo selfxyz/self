@@ -5,7 +5,7 @@ This document outlines how to work with the Fastlane setup and the GitHub Action
 > **⚠️ IMPORTANT - Manual Version Management Required**
 >
 > Build numbers are **manually managed** in this project. Before every deployment, you **must**:
-> 1. Run `yarn bump-version:patch|minor|major` to increment the version
+> 1. Run `yarn bump-version patch|minor|major` to increment the version
 > 2. Run `yarn sync-versions` to update native files
 > 3. Commit and push the changes
 >
@@ -30,9 +30,9 @@ This document outlines how to work with the Fastlane setup and the GitHub Action
 
 ```sh
 # 1. First, bump the version (choose one)
-yarn bump-version:patch         # For patch releases (1.0.0 → 1.0.1)
-yarn bump-version:minor         # For minor releases (1.0.0 → 1.1.0)
-yarn bump-version:major         # For major releases (1.0.0 → 2.0.0)
+yarn bump-version patch         # For patch releases (1.0.0 → 1.0.1)
+yarn bump-version minor         # For minor releases (1.0.0 → 1.1.0)
+yarn bump-version major         # For major releases (1.0.0 → 2.0.0)
 
 # 2. Sync version to native files
 yarn sync-versions
@@ -44,9 +44,9 @@ git add . && git commit -m "Bump version" && git push
 **🚀 Then deploy with these yarn commands:**
 
 ```sh
-yarn mobile-deploy              # Deploy to both iOS and Android
-yarn mobile-deploy:ios          # Deploy to iOS TestFlight only
-yarn mobile-deploy:android      # Deploy to Android Internal Testing only
+yarn mobile-deploy             # Deploy to both iOS and Android
+yarn mobile-deploy ios         # Deploy to iOS TestFlight only
+yarn mobile-deploy android     # Deploy to Android Internal Testing only
 ```
 
 These commands will show you a confirmation dialog with deployment details before proceeding.
@@ -62,10 +62,10 @@ The yarn commands provide safety checks and handle both local and GitHub runner 
 yarn mobile-deploy
 
 # Deploy to iOS TestFlight only
-yarn mobile-deploy:ios
+yarn mobile-deploy ios
 
 # Deploy to Android Internal Testing only
-yarn mobile-deploy:android
+yarn mobile-deploy android
 ```
 
 ### Alternative: Direct Script Usage
@@ -94,7 +94,7 @@ node scripts/mobile-deploy-confirm.cjs both
 **Local Fastlane:**
 - Builds and uploads directly from your machine
 - Requires local certificates and API keys
-- Set `FORCE_UPLOAD_LOCAL_DEV=true` to enable
+- Use `--local` flag to enable
 - Only use if you have local development setup
 
 ### Local Deployment (Advanced Users)
@@ -103,13 +103,13 @@ If you have local certificates and API keys set up, you can use local deployment
 
 ```sh
 # Deploy to internal testing using local fastlane (with confirmation)
-yarn mobile-local-deploy          # Deploy to both platforms using local fastlane
-yarn mobile-local-deploy:ios      # Deploy iOS to TestFlight Internal Testing
-yarn mobile-local-deploy:android  # Deploy Android to Google Play Internal Testing
+yarn mobile-deploy --local             # Deploy to both platforms using local fastlane
+yarn mobile-deploy --local ios         # Deploy iOS to TestFlight Internal Testing
+yarn mobile-deploy --local android     # Deploy Android to Google Play Internal Testing
 ```
 
 **Important Notes:**
-- All `mobile-local-deploy` commands use the same confirmation script as regular deployment
+- The `--local` flag uses the same confirmation script as regular deployment
 - Local deployment goes to **internal testing** (TestFlight Internal Testing / Google Play Internal Testing)
 - This is safer than the previous behavior which went directly to production stores
 - For production deployment, use the GitHub runner method or call fastlane directly (not recommended)
@@ -294,12 +294,11 @@ For iOS builds, you can also use Fastlane directly:
 
 #### Local Deployment with Confirmation 🚀
 
-**`yarn mobile-local-deploy`**
-**`yarn mobile-local-deploy:ios`**
-**`yarn mobile-local-deploy:android`**
+**`yarn mobile-deploy --local`**
+**`yarn mobile-deploy --local ios`**
+**`yarn mobile-deploy --local android`**
 
 * Runs the `internal_test` Fastlane lane with local development settings
-* Uses `FORCE_UPLOAD_LOCAL_DEV=true` to bypass CI checks
 * Shows confirmation dialog before proceeding
 * Deploys to **internal testing** (TestFlight Internal Testing / Google Play Internal Testing)
 * Requires local certificates and API keys to be configured
@@ -316,7 +315,7 @@ For more control, you can run Fastlane directly with local development settings:
 
 **⚠️ Required before every deployment:**
 
-**`yarn bump-version:major|minor|patch`**
+**`yarn bump-version <major|minor|patch>`**
 
 * Increments version in `package.json` according to semantic versioning
 * Creates version commit and tag automatically
@@ -333,9 +332,9 @@ For more control, you can run Fastlane directly with local development settings:
 
 ```bash
 # 1. Bump version (choose appropriate level)
-yarn bump-version:patch         # For bug fixes
-yarn bump-version:minor         # For new features
-yarn bump-version:major         # For breaking changes
+yarn bump-version patch         # For bug fixes
+yarn bump-version minor         # For new features
+yarn bump-version major         # For breaking changes
 
 # 2. Sync to native files
 yarn sync-versions
@@ -433,9 +432,9 @@ Build numbers and version codes must be manually incremented before deployment u
 1. **Update Version Number:**
    ```bash
    # Increment version in package.json (choose one)
-   yarn bump-version:major    # For major releases (1.0.0 → 2.0.0)
-   yarn bump-version:minor    # For minor releases (1.0.0 → 1.1.0)
-   yarn bump-version:patch    # For patch releases (1.0.0 → 1.0.1)
+   yarn bump-version major    # For major releases (1.0.0 → 2.0.0)
+   yarn bump-version minor    # For minor releases (1.0.0 → 1.1.0)
+   yarn bump-version patch    # For patch releases (1.0.0 → 1.0.1)
    ```
 
 2. **Sync to Native Files:**
@@ -596,7 +595,7 @@ If you encounter issues with version syncing between `package.json` and native p
 3. **Fixing Discrepancies:**
    * **Always update `package.json` version first** using the `bump-version` scripts:
      ```bash
-     yarn bump-version:patch  # or minor/major
+    yarn bump-version patch  # or minor/major
      ```
    * Then run `sync-versions` to update native files:
      ```bash

@@ -112,37 +112,25 @@ function validatePlatform(platform) {
  * Displays usage information and exits
  */
 function displayUsageAndExit() {
-  console.error('Usage: node mobile-deploy-confirm.cjs <ios|android|both>');
+  console.error(
+    'Usage: node mobile-deploy-confirm.cjs [ios|android|both] [--local]',
+  );
   console.error('');
   console.error('Recommended: Use yarn commands instead:');
   console.error(
-    '  yarn mobile-deploy              # Deploy to both platforms (GitHub runner)',
+    '  yarn mobile-deploy [ios|android|both]          # GitHub runner',
   );
   console.error(
-    '  yarn mobile-deploy:ios          # Deploy to iOS only (GitHub runner)',
-  );
-  console.error(
-    '  yarn mobile-deploy:android      # Deploy to Android only (GitHub runner)',
-  );
-  console.error(
-    '  yarn mobile-local-deploy        # Deploy to both platforms (local fastlane)',
-  );
-  console.error(
-    '  yarn mobile-local-deploy:ios    # Deploy to iOS only (local fastlane)',
-  );
-  console.error(
-    '  yarn mobile-local-deploy:android # Deploy to Android only (local fastlane)',
+    '  yarn mobile-deploy --local [ios|android|both]  # Local fastlane',
   );
   console.error('');
   console.error('Direct script usage:');
   console.error('  node mobile-deploy-confirm.cjs ios');
   console.error('  node mobile-deploy-confirm.cjs android');
   console.error('  node mobile-deploy-confirm.cjs both');
+  console.error('  node mobile-deploy-confirm.cjs ios --local');
   console.error('');
   console.error('Environment Variables:');
-  console.error(
-    '  FORCE_UPLOAD_LOCAL_DEV=true   Use local fastlane instead of GitHub runner',
-  );
   console.error(
     '  IOS_PROJECT_PBXPROJ_PATH      Override iOS project.pbxproj path',
   );
@@ -642,7 +630,12 @@ async function executeDeployment(platform, deploymentMethod) {
  * Main function that orchestrates the deployment confirmation process
  */
 async function main() {
-  const platform = process.argv[2];
+  const args = process.argv.slice(2);
+  const isLocal = args.includes('--local');
+  if (isLocal) {
+    process.env.FORCE_UPLOAD_LOCAL_DEV = 'true';
+  }
+  const platform = args.find(a => !a.startsWith('-')) || 'both';
 
   if (!validatePlatform(platform)) {
     displayUsageAndExit();

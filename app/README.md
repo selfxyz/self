@@ -212,14 +212,14 @@ export DEVELOPMENT_TEAM="<your-development-team-id>"
 node scripts/version.cjs status
 
 # Create a new release (interactive)
-yarn release              # Patch release (1.0.0 → 1.0.1)
-yarn release:minor        # Minor release (1.0.0 → 1.1.0)
-yarn release:major        # Major release (1.0.0 → 2.0.0)
+yarn release patch         # Patch release (1.0.0 → 1.0.1)
+yarn release minor         # Minor release (1.0.0 → 1.1.0)
+yarn release major         # Major release (1.0.0 → 2.0.0)
 
 # Deploy manually (with prompts)
-yarn mobile-deploy        # Deploy both platforms
-yarn mobile-deploy:ios    # Deploy iOS only
-yarn mobile-deploy:android # Deploy Android only
+yarn mobile-deploy             # Deploy both platforms
+yarn mobile-deploy ios         # Deploy iOS only
+yarn mobile-deploy android     # Deploy Android only
 
 # Version management
 node scripts/version.cjs bump patch    # Bump version
@@ -248,7 +248,7 @@ For hotfixes or manual releases:
 
 ```bash
 # 1. Create a release (bumps version, creates tag, generates changelog)
-yarn release:patch
+yarn release patch
 
 # 2. Push to remote
 git push && git push --tags
@@ -367,8 +367,8 @@ brew install maestro
 Then build the app and run the flow:
 
 ```bash
-yarn test:e2e:android  # Android
-yarn test:e2e:ios      # iOS
+yarn test:e2e android  # Android
+yarn test:e2e ios      # iOS
 ```
 
 The flow definition for Android is in [`tests/e2e/launch.android.flow.yaml`](tests/e2e/launch.android.flow.yaml) and for iOS is in [`tests/e2e/launch.ios.flow.yaml`](tests/e2e/launch.ios.flow.yaml).
