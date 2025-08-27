@@ -4,13 +4,9 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Buffer } from 'buffer';
-import {
-  AppState,
-  type AppStateStatus,
-  NativeModules,
-  Platform,
-} from 'react-native';
-import PassportReader from 'react-native-passport-reader';
+import type { AppStateStatus } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
+import { reset, scan as scanDocument } from 'react-native-passport-reader';
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import NetInfo from '@react-native-community/netinfo';
 
@@ -124,8 +120,8 @@ export const scan = async (inputs: Inputs) => {
 };
 
 const scanAndroid = async (inputs: Inputs) => {
-  PassportReader.reset();
-  return await PassportReader.scan({
+  reset();
+  return await scanDocument({
     documentNumber: inputs.passportNumber,
     dateOfBirth: inputs.dateOfBirth,
     dateOfExpiry: inputs.dateOfExpiry,
@@ -135,7 +131,7 @@ const scanAndroid = async (inputs: Inputs) => {
 };
 
 const scanIOS = async (inputs: Inputs) => {
-  return await NativeModules.PassportReader.scanPassport(
+  return await NativeModules.PassportReader.scanDocument(
     inputs.passportNumber,
     inputs.dateOfBirth,
     inputs.dateOfExpiry,
