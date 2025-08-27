@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
@@ -19,6 +23,7 @@ import type {
   ValidationInput,
   ValidationResult,
 } from './types/public';
+import { TrackEventParams } from './types/public';
 
 /**
  * Optional adapter implementations used when a consumer does not provide their
@@ -42,6 +47,8 @@ const optionalDefaults: Partial<Adapters> = {
   },
 };
 
+const REQUIRED_ADAPTERS = ['scanner', 'network', 'crypto', 'documents'] as const;
+
 /**
  * Creates a fully configured {@link SelfClient} instance.
  *
@@ -51,9 +58,9 @@ const optionalDefaults: Partial<Adapters> = {
  */
 export function createSelfClient({ config, adapters }: { config: Config; adapters: Partial<Adapters> }): SelfClient {
   const cfg = mergeConfig(defaultConfig, config);
-  const required: (keyof Adapters)[] = ['scanner', 'network', 'crypto'];
-  for (const name of required) {
-    if (!(name in adapters) || !adapters[name]) throw notImplemented(name);
+
+  for (const name of REQUIRED_ADAPTERS) {
+    if (!(name in adapters) || !adapters[name as keyof Adapters]) throw notImplemented(name);
   }
 
   const _adapters = { ...optionalDefaults, ...adapters } as Adapters;
@@ -114,14 +121,30 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     };
   }
 
+  async function trackEvent(event: string, payload?: TrackEventParams): Promise<void> {
+    if (!adapters.analytics) {
+      return;
+    }
+    return adapters.analytics.trackEvent(event, payload);
+  }
+
   return {
     scanDocument,
     validateDocument,
+    trackEvent,
     checkRegistration,
     registerDocument,
     generateProof,
     extractMRZInfo: parseMRZInfo,
     on,
     emit,
+
+    // TODO: inline for now
+    loadDocumentCatalog: async () => {
+      return _adapters.documents.loadDocumentCatalog();
+    },
+    loadDocumentById: async (id: string) => {
+      return _adapters.documents.loadDocumentById(id);
+    },
   };
 }

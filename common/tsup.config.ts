@@ -19,6 +19,7 @@ const entry = {
   'src/constants/mockCertificates': 'src/constants/mockCertificates.ts',
   'src/constants/sampleDataHashes': 'src/constants/sampleDataHashes.ts',
   // Granular utils exports
+  'src/utils/attest': 'src/utils/attest.ts',
   'src/utils/hash': 'src/utils/hash.ts',
   'src/utils/bytes': 'src/utils/bytes.ts',
   'src/utils/trees': 'src/utils/trees.ts',

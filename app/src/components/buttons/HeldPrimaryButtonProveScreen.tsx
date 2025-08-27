@@ -1,13 +1,16 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
 import { useMachine } from '@xstate/react';
 
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { HeldPrimaryButton } from '@/components/buttons/PrimaryButtonLongHold';
 import Description from '@/components/typography/Description';
-import { ProofEvents } from '@/consts/analytics';
 import { black } from '@/utils/colors';
 
 interface HeldPrimaryButtonProveScreenProps {

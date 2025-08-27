@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -6,13 +8,17 @@ import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+
 import splashAnimation from '@/assets/animations/splash.json';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
-  hasAnyValidRegisteredDocument,
   initializeNativeModules,
   migrateFromLegacyStorage,
 } from '@/providers/passportDataProvider';
@@ -26,6 +32,7 @@ import {
 import { impactLight } from '@/utils/haptic';
 
 const SplashScreen: React.FC = ({}) => {
+  const selfClient = useSelfClient();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { checkBiometricsAvailable } = useAuth();
@@ -64,7 +71,7 @@ const SplashScreen: React.FC = ({}) => {
             await checkAndUpdateRegistrationStates();
           }
 
-          const hasValid = await hasAnyValidRegisteredDocument();
+          const hasValid = await hasAnyValidRegisteredDocument(selfClient);
           const parentScreen = hasValid ? 'Home' : 'Launch';
 
           setDeeplinkParentScreen(parentScreen);
@@ -76,7 +83,7 @@ const SplashScreen: React.FC = ({}) => {
             }
             setQueuedDeepLink(queuedUrl);
           } else {
-            setNextScreen(parentScreen);
+            setNextScreen(hasValid ? 'Home' : 'Launch');
           }
         } catch (error) {
           console.error(`Error in SplashScreen data loading: ${error}`);

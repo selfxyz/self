@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
@@ -7,16 +9,17 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import Description from '@/components/typography/Description';
-import { BackupEvents } from '@/consts/analytics';
 import Paste from '@/images/icons/paste.svg';
 import { useAuth } from '@/providers/authProvider';
 import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import analytics from '@/utils/analytics';
 import {
   black,
   slate300,
@@ -30,7 +33,7 @@ import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDoc
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation = useNavigation();
   const { restoreAccountFromMnemonic } = useAuth();
-  const { trackEvent } = analytics();
+  const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {

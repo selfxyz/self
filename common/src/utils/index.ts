@@ -50,3 +50,12 @@ export { getSKIPEM } from './csca.js';
 export { initElliptic } from './certificate_parsing/elliptic.js';
 export { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 export { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData.js';
+export {
+  clientKey,
+  clientPublicKeyHex,
+  ec,
+  encryptAES256GCM,
+  getPayload,
+  getWSDbRelayerUrl,
+} from './proving.js';
+export type { TEEPayload, TEEPayloadBase, TEEPayloadDisclose } from './proving.js';

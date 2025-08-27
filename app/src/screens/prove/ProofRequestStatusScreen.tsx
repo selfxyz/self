@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -6,6 +8,9 @@ import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
+
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import loadingAnimation from '@/assets/animations/loading/misc.json';
 import failAnimation from '@/assets/animations/proof_failed.json';
@@ -15,13 +20,11 @@ import { BodyText } from '@/components/typography/BodyText';
 import Description from '@/components/typography/Description';
 import { typography } from '@/components/typography/styles';
 import { Title } from '@/components/typography/Title';
-import { ProofEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
-import analytics from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import {
   buttonTap,
@@ -30,9 +33,8 @@ import {
 } from '@/utils/haptic';
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
-const { trackEvent } = analytics();
-
 const SuccessScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const { selfApp, cleanSelfApp } = useSelfAppStore();
   const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
@@ -119,6 +121,7 @@ const SuccessScreen: React.FC = () => {
       setAnimationSource(loadingAnimation);
     }
   }, [
+    trackEvent,
     currentState,
     isFocused,
     appName,

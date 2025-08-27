@@ -1,12 +1,10 @@
 {
-  "name": "check-package-versions-tests",
+  "name": "scripts-tests",
   "version": "1.0.0",
+  "description": "Tests for project scripts",
   "type": "module",
   "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "devDependencies": {
-    "vitest": "^1.6.0"
+    "test": "node check-license-headers.test.mjs",
+    "test:license-headers": "node check-license-headers.test.mjs"
   }
 }

@@ -142,6 +142,11 @@ export const shimConfigs = [
     name: 'utils/circuits/registerInputs',
   },
   {
+    shimPath: 'utils/attest',
+    targetPath: '../../esm/src/utils/attest.js',
+    name: 'utils/attest',
+  },
+  {
     shimPath: 'utils/contracts',
     targetPath: '../../esm/src/utils/contracts/index.js',
     name: 'utils/contracts',
