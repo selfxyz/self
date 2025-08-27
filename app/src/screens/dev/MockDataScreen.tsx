@@ -14,10 +14,9 @@ import {
   Separator,
   Sheet,
   Spinner,
+  Stack,
   Switch,
   Text,
-  XStack,
-  YStack,
 } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
@@ -149,7 +148,7 @@ const getExpiryDateFromYears = (years: number): string => {
 
 const MockPassportTitleCard = () => {
   return (
-    <YStack
+    <Stack
       backgroundColor="#18181B"
       borderRadius={12}
       borderColor="#27272A"
@@ -159,7 +158,7 @@ const MockPassportTitleCard = () => {
       padding={20}
       gap={20}
     >
-      <YStack
+      <Stack
         minWidth={46}
         minHeight={46}
         backgroundColor="#606060"
@@ -168,8 +167,8 @@ const MockPassportTitleCard = () => {
         borderRadius={3}
       >
         <IdIcon />
-      </YStack>
-      <YStack flex={1} flexDirection="column" gap={2}>
+      </Stack>
+      <Stack flex={1} flexDirection="column" gap={2}>
         <Text fontFamily={dinot} fontWeight={500} fontSize="$6" color={white}>
           Generate mock passport data
         </Text>
@@ -177,15 +176,15 @@ const MockPassportTitleCard = () => {
           Configure data parameters to generate a mock passport for testing
           purposes on the Self Protocol.
         </Caption>
-      </YStack>
-    </YStack>
+      </Stack>
+    </Stack>
   );
 };
 
 const HeroBanner = () => {
   return (
-    <YStack backgroundColor={white} marginBottom="$6" position="relative">
-      <YStack
+    <Stack backgroundColor={white} marginBottom="$6" position="relative">
+      <Stack
         backgroundColor={black}
         zIndex={1}
         position="absolute"
@@ -194,20 +193,20 @@ const HeroBanner = () => {
         right={0}
         bottom="15%"
       />
-      <YStack zIndex={2}>
-        <YStack padding="$4">
+      <Stack zIndex={2}>
+        <Stack padding="$4">
           <MockPassportTitleCard />
-        </YStack>
-        <YStack
+        </Stack>
+        <Stack
           shadowColor={black}
           shadowOffset={{ width: 0, height: 2 }}
           shadowOpacity={0.5}
           shadowRadius={5}
         >
           <SelfDevCard width="100%" />
-        </YStack>
-      </YStack>
-    </YStack>
+        </Stack>
+      </Stack>
+    </Stack>
   );
 };
 
@@ -224,7 +223,7 @@ const FormSection: React.FC<FormSectionProps> = ({
 }) => {
   const borderBottomWidth = endSection ? 0 : 1;
   return (
-    <YStack
+    <Stack
       padding={20}
       justifyContent="space-between"
       gap={10}
@@ -240,7 +239,7 @@ const FormSection: React.FC<FormSectionProps> = ({
         {title}
       </Text>
       {children}
-    </YStack>
+    </Stack>
   );
 };
 
@@ -365,7 +364,7 @@ const MockDataScreen: React.FC = () => {
 
   const { bottom } = useSafeAreaInsets();
   return (
-    <YStack
+    <Stack
       flex={1}
       backgroundColor={white}
       paddingBottom={bottom + extraYPadding}
@@ -374,11 +373,11 @@ const MockDataScreen: React.FC = () => {
         <GestureDetector gesture={devModeTap}>
           <HeroBanner />
         </GestureDetector>
-        <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
+        <Stack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
           <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
             Mock Passport Parameters
           </Text>
-          <YStack
+          <Stack
             borderRadius={10}
             borderWidth={1}
             borderColor={slate200}
@@ -397,12 +396,12 @@ const MockDataScreen: React.FC = () => {
                 borderWidth={1}
                 borderRadius={5}
               >
-                <XStack justifyContent="space-between" width="100%">
+                <Stack justifyContent="space-between" width="100%">
                   <Text fontSize="$4" fontFamily={plexMono} color={black}>
                     {selectedAlgorithm}
                   </Text>
                   <ChevronDown size={20} color={slate500} />
-                </XStack>
+                </Stack>
               </Button>
             </FormSection>
 
@@ -419,7 +418,7 @@ const MockDataScreen: React.FC = () => {
                 borderWidth={1}
                 borderRadius={5}
               >
-                <XStack justifyContent="space-between" width="100%">
+                <Stack justifyContent="space-between" width="100%">
                   <Text
                     fontSize="$4"
                     fontFamily={plexMono}
@@ -433,7 +432,7 @@ const MockDataScreen: React.FC = () => {
                     }
                   </Text>
                   <ChevronDown size={20} color={slate500} />
-                </XStack>
+                </Stack>
               </Button>
             </FormSection>
 
@@ -451,7 +450,7 @@ const MockDataScreen: React.FC = () => {
                 borderWidth={1}
                 borderRadius={5}
               >
-                <XStack justifyContent="space-between" width="100%">
+                <Stack justifyContent="space-between" width="100%">
                   <Text
                     fontSize="$4"
                     fontFamily={plexMono}
@@ -463,12 +462,12 @@ const MockDataScreen: React.FC = () => {
                     {countryCodes[selectedCountry as keyof typeof countryCodes]}
                   </Text>
                   <ChevronDown size={20} color={slate500} />
-                </XStack>
+                </Stack>
               </Button>
             </FormSection>
 
             <FormSection title="Age">
-              <XStack
+              <Stack
                 alignItems="center"
                 gap="$2"
                 justifyContent="space-between"
@@ -514,11 +513,11 @@ const MockDataScreen: React.FC = () => {
                 >
                   <Plus color={slate500} />
                 </Button>
-              </XStack>
+              </Stack>
             </FormSection>
 
             <FormSection title="Passport Expires In">
-              <XStack
+              <Stack
                 alignItems="center"
                 gap="$2"
                 justifyContent="space-between"
@@ -564,12 +563,12 @@ const MockDataScreen: React.FC = () => {
                 >
                   <Plus color={slate500} />
                 </Button>
-              </XStack>
+              </Stack>
             </FormSection>
 
             <FormSection title="In OFAC sanction list" endSection={true}>
-              <YStack flexDirection="column" gap="$2">
-                <YStack
+              <Stack flexDirection="column" gap="$2">
+                <Stack
                   flexDirection="row"
                   justifyContent="space-between"
                   alignItems="center"
@@ -609,8 +608,8 @@ const MockDataScreen: React.FC = () => {
                       unstyled={true}
                     />
                   </Switch>
-                </YStack>
-                <YStack
+                </Stack>
+                <Stack
                   flexDirection="row"
                   gap="$3"
                   alignItems="center"
@@ -627,10 +626,10 @@ const MockDataScreen: React.FC = () => {
                     OFAC list is a list of people who are suspected of being
                     involved in terrorism or other illegal activities.
                   </Text>
-                </YStack>
-              </YStack>
+                </Stack>
+              </Stack>
             </FormSection>
-            <YStack
+            <Stack
               paddingHorizontal="$4"
               paddingVertical="$2"
               marginBottom="$3"
@@ -646,11 +645,11 @@ const MockDataScreen: React.FC = () => {
               >
                 Reset all values
               </Button>
-            </YStack>
-          </YStack>
-        </YStack>
+            </Stack>
+          </Stack>
+        </Stack>
 
-        <YStack paddingHorizontal="$4" paddingBottom="$4">
+        <Stack paddingHorizontal="$4" paddingBottom="$4">
           <ButtonsContainer>
             <PrimaryButton
               trackEvent={MockDataEvents.GENERATE_DATA}
@@ -664,7 +663,7 @@ const MockDataScreen: React.FC = () => {
               )}
             </PrimaryButton>
           </ButtonsContainer>
-        </YStack>
+        </Stack>
       </ScrollView>
 
       <Sheet
@@ -681,14 +680,14 @@ const MockDataScreen: React.FC = () => {
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
-          <YStack padding="$4">
-            <XStack
+          <Stack padding="$4">
+            <Stack
               alignItems="center"
               justifyContent="space-between"
               marginBottom="$4"
             >
               <Text fontSize="$8">Select a document type</Text>
-              <XStack
+              <Stack
                 onPress={() => {
                   selectionChange();
                   setDocumentTypeSheetOpen(false);
@@ -696,8 +695,8 @@ const MockDataScreen: React.FC = () => {
                 padding="$2"
               >
                 <X color={borderColor} size="$1.5" marginRight="$2" />
-              </XStack>
-            </XStack>
+              </Stack>
+            </Stack>
             <Separator borderColor={separatorColor} marginBottom="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
               {Object.entries(documentTypes).map(([docType, displayText]) => (
@@ -712,13 +711,13 @@ const MockDataScreen: React.FC = () => {
                     trackEvent(MockDataEvents.SELECT_DOCUMENT_TYPE);
                   }}
                 >
-                  <XStack paddingVertical="$3" paddingHorizontal="$2">
+                  <Stack paddingVertical="$3" paddingHorizontal="$2">
                     <Text fontSize="$4">{displayText}</Text>
-                  </XStack>
+                  </Stack>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          </YStack>
+          </Stack>
         </Sheet.Frame>
       </Sheet>
 
@@ -736,14 +735,14 @@ const MockDataScreen: React.FC = () => {
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
-          <YStack padding="$4">
-            <XStack
+          <Stack padding="$4">
+            <Stack
               alignItems="center"
               justifyContent="space-between"
               marginBottom="$4"
             >
               <Text fontSize="$8">Select a country</Text>
-              <XStack
+              <Stack
                 onPress={() => {
                   selectionChange();
                   setCountrySheetOpen(false);
@@ -751,8 +750,8 @@ const MockDataScreen: React.FC = () => {
                 padding="$2"
               >
                 <X color={borderColor} size="$1.5" marginRight="$2" />
-              </XStack>
-            </XStack>
+              </Stack>
+            </Stack>
             <Separator borderColor={separatorColor} marginBottom="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
               {Object.keys(countryCodes).map(countryCode => (
@@ -765,16 +764,16 @@ const MockDataScreen: React.FC = () => {
                     trackEvent(MockDataEvents.SELECT_COUNTRY);
                   }}
                 >
-                  <XStack paddingVertical="$3" paddingHorizontal="$2">
+                  <Stack paddingVertical="$3" paddingHorizontal="$2">
                     <Text fontSize="$4">
                       {countryCodes[countryCode as keyof typeof countryCodes]}{' '}
                       {flag(getCountryISO2(countryCode))}
                     </Text>
-                  </XStack>
+                  </Stack>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-          </YStack>
+          </Stack>
         </Sheet.Frame>
       </Sheet>
 
@@ -792,14 +791,14 @@ const MockDataScreen: React.FC = () => {
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
-          <YStack padding="$4">
-            <XStack
+          <Stack padding="$4">
+            <Stack
               alignItems="center"
               justifyContent="space-between"
               marginBottom="$4"
             >
               <Text fontSize="$8">Select an algorithm</Text>
-              <XStack
+              <Stack
                 onPress={() => {
                   selectionChange();
                   setAlgorithmSheetOpen(false);
@@ -807,11 +806,11 @@ const MockDataScreen: React.FC = () => {
                 padding="$2"
               >
                 <X color={borderColor} size="$1.5" marginRight="$2" />
-              </XStack>
-            </XStack>
+              </Stack>
+            </Stack>
             <Separator borderColor={separatorColor} marginBottom="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
-              <YStack paddingBottom="$10">
+              <Stack paddingBottom="$10">
                 {Object.keys(signatureAlgorithmToStrictSignatureAlgorithm).map(
                   algorithm => (
                     <TouchableOpacity
@@ -823,18 +822,18 @@ const MockDataScreen: React.FC = () => {
                         trackEvent(MockDataEvents.SELECT_ALGORITHM);
                       }}
                     >
-                      <XStack paddingVertical="$3" paddingHorizontal="$2">
+                      <Stack paddingVertical="$3" paddingHorizontal="$2">
                         <Text fontSize="$4">{algorithm}</Text>
-                      </XStack>
+                      </Stack>
                     </TouchableOpacity>
                   ),
                 )}
-              </YStack>
+              </Stack>
             </ScrollView>
-          </YStack>
+          </Stack>
         </Sheet.Frame>
       </Sheet>
-    </YStack>
+    </Stack>
   );
 };
 

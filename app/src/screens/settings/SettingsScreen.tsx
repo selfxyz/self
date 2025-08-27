@@ -8,7 +8,7 @@ import { Linking, Platform, Share } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
-import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
+import { Button, ScrollView, Stack, View } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText } from '@tamagui/lucide-icons';
@@ -213,7 +213,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
   return (
     <GestureDetector gesture={devModeTap}>
       <View backgroundColor={white}>
-        <YStack
+        <Stack
           backgroundColor={black}
           gap={20}
           justifyContent="space-between"
@@ -224,7 +224,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
           borderTopRightRadius={30}
         >
           <ScrollView>
-            <YStack
+            <Stack
               alignItems="flex-start"
               justifyContent="flex-start"
               width="100%"
@@ -238,9 +238,9 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
                   {menuText}
                 </MenuButton>
               ))}
-            </YStack>
+            </Stack>
           </ScrollView>
-          <YStack
+          <Stack
             alignItems="center"
             gap={20}
             justifyContent="center"
@@ -263,18 +263,18 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             >
               <BodyText color={white}>Leave an app store review</BodyText>
             </Button>
-            <XStack gap={32}>
+            <Stack gap={32}>
               {social.map(([Icon, href], i) => (
                 <SocialButton key={i} Icon={Icon} href={href} />
               ))}
-            </XStack>
+            </Stack>
             <BodyText color={amber500} fontSize={15}>
               SELF
             </BodyText>
             {/* Dont remove if not viewing on ios */}
             <View marginBottom={bottom} />
-          </YStack>
-        </YStack>
+          </Stack>
+        </Stack>
       </View>
     </GestureDetector>
   );

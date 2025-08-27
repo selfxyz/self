@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { Platform, ScrollView } from 'react-native';
-import { Input, YStack } from 'tamagui';
+import { Input, Stack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -136,13 +136,13 @@ const NFCMethodSelectionScreen: React.FC = () => {
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection backgroundColor={white}>
         <ScrollView showsVerticalScrollIndicator={false}>
-          <YStack paddingTop={20} gap={20}>
+          <Stack paddingTop={20} gap={20}>
             <Title>Choose NFC Scan Method</Title>
 
             {NFC_METHODS.filter(method =>
               method.platform.includes(Platform.OS),
             ).map(method => (
-              <YStack
+              <Stack
                 key={method.key}
                 borderWidth={selectedMethod === method.key ? 2 : 1}
                 borderColor={selectedMethod === method.key ? '#007AFF' : '#ccc'}
@@ -157,7 +157,7 @@ const NFCMethodSelectionScreen: React.FC = () => {
                 <Title>{method.label}</Title>
                 <Description>{method.description}</Description>
                 {method.key === 'can' && selectedMethod === 'can' && (
-                  <YStack marginTop={12} gap={8}>
+                  <Stack marginTop={12} gap={8}>
                     <Input
                       placeholder="Enter CAN number"
                       value={canValue}
@@ -170,11 +170,11 @@ const NFCMethodSelectionScreen: React.FC = () => {
                     {error ? (
                       <Description color="red">{error}</Description>
                     ) : null}
-                  </YStack>
+                  </Stack>
                 )}
                 {method.key === 'mrzCorrection' &&
                   selectedMethod === 'mrzCorrection' && (
-                    <YStack marginTop={12} gap={8}>
+                    <Stack marginTop={12} gap={8}>
                       <Input
                         placeholder="Enter Passport/ID Number"
                         value={passportNumber}
@@ -198,11 +198,11 @@ const NFCMethodSelectionScreen: React.FC = () => {
                         keyboardType="numeric"
                         maxLength={6}
                       />
-                    </YStack>
+                    </Stack>
                   )}
-              </YStack>
+              </Stack>
             ))}
-          </YStack>
+          </Stack>
         </ScrollView>
       </ExpandableBottomLayout.TopSection>
 

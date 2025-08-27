@@ -16,7 +16,7 @@ import type {
   NativeSyntheticEvent,
 } from 'react-native';
 import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Image, Text, View, XStack, YStack } from 'tamagui';
+import { Image, Stack, Text, View } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
@@ -200,7 +200,7 @@ const ProveScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <YStack alignItems="center">
+        <Stack alignItems="center">
           {!selectedApp?.sessionId ? (
             <LottieView
               source={miscAnimation}
@@ -214,7 +214,7 @@ const ProveScreen: React.FC = () => {
               progress={0}
             />
           ) : (
-            <YStack alignItems="center" justifyContent="center">
+            <Stack alignItems="center" justifyContent="center">
               {logoSource && (
                 <Image
                   marginBottom={20}
@@ -231,9 +231,9 @@ const ProveScreen: React.FC = () => {
                 <Text color={white}>{selectedApp.appName}</Text> is requesting
                 that you prove the following information:
               </BodyText>
-            </YStack>
+            </Stack>
           )}
-        </YStack>
+        </Stack>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
         paddingBottom={20}
@@ -274,7 +274,7 @@ const ProveScreen: React.FC = () => {
                   borderRadius={8}
                   marginBottom={10}
                 >
-                  <XStack alignItems="center" justifyContent="space-between">
+                  <Stack alignItems="center" justifyContent="space-between">
                     <View
                       flex={1}
                       marginRight={selectedApp?.userIdType === 'hex' ? 12 : 0}
@@ -304,7 +304,7 @@ const ProveScreen: React.FC = () => {
                         )}
                       </View>
                     )}
-                  </XStack>
+                  </Stack>
                   {selectedApp?.userIdType === 'hex' && (
                     <BodyText
                       fontSize={12}

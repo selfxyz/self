@@ -3,15 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  Button,
-  Input,
-  ScrollView,
-  Switch,
-  Text,
-  XStack,
-  YStack,
-} from 'tamagui';
+import { Button, Input, ScrollView, Stack, Switch, Text } from 'tamagui';
 
 import type { FeatureFlagValue } from '@/RemoteConfig';
 import {
@@ -233,7 +225,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
       case 'string':
       case 'number':
         return (
-          <YStack flex={1} gap="$1">
+          <Stack flex={1} gap="$1">
             <Input
               value={textInputValues[flag.key] || ''}
               onChangeText={value => {
@@ -262,7 +254,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 {inputErrors[flag.key]}
               </Text>
             )}
-          </YStack>
+          </Stack>
         );
       default:
         return null;
@@ -270,15 +262,15 @@ const DevFeatureFlagsScreen: React.FC = () => {
   };
 
   return (
-    <YStack
+    <Stack
       flex={1}
       backgroundColor="white"
       paddingHorizontal="$4"
       paddingTop="$4"
     >
-      <YStack marginBottom="$4">
-        <XStack justifyContent="space-between" alignItems="center">
-          <XStack alignItems="center" gap="$2">
+      <Stack marginBottom="$4">
+        <Stack justifyContent="space-between" alignItems="center">
+          <Stack alignItems="center" gap="$2">
             <Button size="$3" onPress={handleRefresh} disabled={isLoading}>
               {isLoading ? 'Refreshing...' : 'Refresh'}
             </Button>
@@ -291,19 +283,19 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 Reset
               </Button>
             )}
-          </XStack>
+          </Stack>
           {lastRefresh && (
             <Text fontSize="$2" color="$gray9">
               Last updated: {lastRefresh.toLocaleTimeString()}
             </Text>
           )}
-        </XStack>
-      </YStack>
+        </Stack>
+      </Stack>
 
       <ScrollView showsVerticalScrollIndicator={false} marginTop="$4">
-        <YStack gap="$3" paddingBottom="$8">
+        <Stack gap="$3" paddingBottom="$8">
           {errorState && (
-            <YStack
+            <Stack
               padding="$4"
               borderWidth={1}
               borderColor="$red6"
@@ -315,10 +307,10 @@ const DevFeatureFlagsScreen: React.FC = () => {
               <Text color="$red11" fontSize="$4" textAlign="center">
                 {errorState}
               </Text>
-            </YStack>
+            </Stack>
           )}
           {featureFlags.length === 0 ? (
-            <YStack
+            <Stack
               padding="$4"
               borderWidth={1}
               borderColor="$gray6"
@@ -339,10 +331,10 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 Feature flags will appear here once they are configured in
                 Firebase Remote Config
               </Text>
-            </YStack>
+            </Stack>
           ) : (
             featureFlags.map(flag => (
-              <YStack
+              <Stack
                 key={flag.key}
                 padding="$3"
                 borderWidth={1}
@@ -350,8 +342,8 @@ const DevFeatureFlagsScreen: React.FC = () => {
                 borderRadius="$4"
                 marginBottom="$2"
               >
-                <XStack justifyContent="space-between" alignItems="center">
-                  <YStack flex={1} marginRight="$4">
+                <Stack justifyContent="space-between" alignItems="center">
+                  <Stack flex={1} marginRight="$4">
                     <Text fontSize="$4" fontWeight="500">
                       {flag.key}
                     </Text>
@@ -361,22 +353,22 @@ const DevFeatureFlagsScreen: React.FC = () => {
                         {formatDisplayValue(flag.remoteValue, flag.type)}
                       </Text>
                     )}
-                  </YStack>
-                  <XStack
+                  </Stack>
+                  <Stack
                     alignItems="center"
                     gap="$3"
                     flex={1}
                     justifyContent="flex-end"
                   >
                     {renderFlagInput(flag)}
-                  </XStack>
-                </XStack>
-              </YStack>
+                  </Stack>
+                </Stack>
+              </Stack>
             ))
           )}
-        </YStack>
+        </Stack>
       </ScrollView>
-    </YStack>
+    </Stack>
   );
 };
 

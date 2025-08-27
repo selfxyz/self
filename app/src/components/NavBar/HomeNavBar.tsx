@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, XStack } from 'tamagui';
+import { Button, Stack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { Clipboard as ClipboardIcon } from '@tamagui/lucide-icons';
@@ -97,7 +97,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
       </NavBar.Title>
       <NavBar.RightAction
         component={
-          <XStack alignItems="center" gap={10}>
+          <Stack alignItems="center" gap={10}>
             <ClipboardIcon
               size={24}
               color={neutral400}
@@ -114,7 +114,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
                 props.navigation.navigate('Settings');
               }}
             />
-          </XStack>
+          </Stack>
         }
       />
     </NavBar.Container>

@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 // Tamagui imports for web
-import { AnimatePresence, YStack } from 'tamagui';
+import { AnimatePresence, Stack } from 'tamagui';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import type { HeldPrimaryButtonProps } from '@/components/buttons/PrimaryButtonLongHold.shared';
@@ -59,7 +59,7 @@ export function HeldPrimaryButton({
     return (
       <AnimatePresence>
         {isPressed && (
-          <YStack
+          <Stack
             key="fill"
             position="absolute"
             top={0}

@@ -4,7 +4,7 @@
 
 import React, { useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Button, XStack, YStack } from 'tamagui';
+import { Button, Stack } from 'tamagui';
 
 import { Caption } from '@/components/typography/Caption';
 import { black, slate400, white, zinc800, zinc900 } from '@/utils/colors';
@@ -91,8 +91,8 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
     >
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          <YStack gap="$4" padding="$4">
-            <XStack justifyContent="space-between" alignItems="center">
+          <Stack gap="$4" padding="$4">
+            <Stack justifyContent="space-between" alignItems="center">
               <Text style={styles.title}>Send Feedback</Text>
               <Button
                 size="$2"
@@ -102,11 +102,11 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
               >
                 ✕
               </Button>
-            </XStack>
+            </Stack>
 
-            <YStack gap="$2">
+            <Stack gap="$2">
               <Caption style={styles.label}>Category</Caption>
-              <XStack gap="$2" flexWrap="wrap">
+              <Stack gap="$2" flexWrap="wrap">
                 {categories.map(cat => (
                   <Button
                     key={cat.value}
@@ -122,14 +122,14 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
                     {cat.label}
                   </Button>
                 ))}
-              </XStack>
-            </YStack>
+              </Stack>
+            </Stack>
 
-            <YStack gap="$2">
+            <Stack gap="$2">
               <Caption style={styles.label}>
                 Contact Information (Optional)
               </Caption>
-              <XStack gap="$2">
+              <Stack gap="$2">
                 <TextInput
                   style={[styles.textInput, { flex: 1, minHeight: 48 }]}
                   placeholder="Name"
@@ -148,10 +148,10 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
                   autoCapitalize="none"
                   editable={!isSubmitting}
                 />
-              </XStack>
-            </YStack>
+              </Stack>
+            </Stack>
 
-            <YStack gap="$2">
+            <Stack gap="$2">
               <Caption style={styles.label}>Your Feedback</Caption>
               <TextInput
                 style={styles.textInput}
@@ -164,7 +164,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
                 textAlignVertical="top"
                 editable={!isSubmitting}
               />
-            </YStack>
+            </Stack>
 
             <Button
               size="$4"
@@ -175,7 +175,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({
             >
               {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
             </Button>
-          </YStack>
+          </Stack>
         </View>
       </View>
     </Modal>

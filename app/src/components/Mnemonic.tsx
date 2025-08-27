@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useState } from 'react';
-import { Button, Text, XStack, YStack } from 'tamagui';
+import { Button, Stack, Text } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import { useSettingStore } from '@/stores/settingStore';
@@ -28,7 +28,7 @@ interface WordPill {
 }
 const WordPill = ({ index, word }: WordPill) => {
   return (
-    <XStack
+    <Stack
       key={index}
       borderColor={slate300}
       backgroundColor={white}
@@ -44,7 +44,7 @@ const WordPill = ({ index, word }: WordPill) => {
       <Text color={slate500} fontSize={14} fontWeight={500}>
         {word}
       </Text>
-    </XStack>
+    </Stack>
   );
 };
 const REDACTED = new Array(24)
@@ -68,8 +68,8 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
   }, [onRevealWords, revealWords, setHasViewedRecoveryPhrase, words]);
 
   return (
-    <YStack position="relative" alignItems="stretch" gap={0}>
-      <XStack
+    <Stack position="relative" alignItems="stretch" gap={0}>
+      <Stack
         borderColor={slate200}
         backgroundColor={slate50}
         borderWidth="$1"
@@ -84,8 +84,8 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
         {(revealWords ? words : REDACTED).map((word, i) => (
           <WordPill key={i} word={word} index={i} />
         ))}
-      </XStack>
-      <XStack
+      </Stack>
+      <Stack
         borderTopColor={slate200}
         borderTopWidth="$1"
         justifyContent="center"
@@ -109,8 +109,8 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
             ? `${copied ? 'COPIED' : 'COPY'} TO CLIPBOARD`
             : 'TAP TO REVEAL'}
         </Button>
-      </XStack>
-    </YStack>
+      </Stack>
+    </Stack>
   );
 };
 

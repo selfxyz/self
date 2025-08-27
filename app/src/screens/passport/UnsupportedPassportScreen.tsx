@@ -6,7 +6,7 @@ import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useEffect, useMemo } from 'react';
 import { View } from 'react-native';
 import * as CountryFlags from 'react-native-svg-circle-country-flags';
-import { XStack, YStack } from 'tamagui';
+import { Stack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 
 import { countryCodes } from '@selfxyz/common/constants';
@@ -135,13 +135,13 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={white}>
-        <YStack
+        <Stack
           flex={1}
           justifyContent="center"
           alignItems="center"
           marginTop={100}
         >
-          <XStack
+          <Stack
             justifyContent="center"
             alignItems="center"
             marginBottom={20}
@@ -152,7 +152,7 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
                 <CountryFlagComponent width={60} height={60} />
               </View>
             )}
-          </XStack>
+          </Stack>
           <Title
             fontSize={32}
             textAlign="center"
@@ -180,7 +180,7 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
           >
             Sign up for live updates.
           </BodyText>
-        </YStack>
+        </Stack>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
         gap={16}

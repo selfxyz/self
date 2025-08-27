@@ -6,7 +6,7 @@ import type { PropsWithChildren } from 'react';
 import React, { cloneElement, isValidElement, useMemo, useState } from 'react';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
-import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
+import { Adapt, Button, Select, Sheet, Stack, Text } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
@@ -77,7 +77,7 @@ function ParameterSection({
   };
 
   return (
-    <YStack
+    <Stack
       width="100%"
       backgroundColor={darkMode ? slate900 : slate100}
       borderRadius="$4"
@@ -87,13 +87,13 @@ function ParameterSection({
       flexDirection="column"
       gap="$3"
     >
-      <XStack
+      <Stack
         width="100%"
         flexDirection="row"
         justifyContent="flex-start"
         gap="$4"
       >
-        <YStack
+        <Stack
           backgroundColor="gray"
           borderRadius={5}
           width={46}
@@ -103,8 +103,8 @@ function ParameterSection({
           padding="$2"
         >
           {renderIcon()}
-        </YStack>
-        <YStack flexDirection="column" gap="$1">
+        </Stack>
+        <Stack flexDirection="column" gap="$1">
           <Text
             fontSize="$5"
             color={darkMode ? white : slate600}
@@ -115,10 +115,10 @@ function ParameterSection({
           <Text fontSize="$3" color={slate400} fontFamily={dinot}>
             {description}
           </Text>
-        </YStack>
-      </XStack>
+        </Stack>
+      </Stack>
       {children}
-    </YStack>
+    </Stack>
   );
 }
 
@@ -173,7 +173,7 @@ const ScreenSelector = ({}) => {
           padding={0}
           onPress={() => setOpen(true)}
         >
-          <XStack
+          <Stack
             width="100%"
             justifyContent="space-between"
             paddingVertical="$3"
@@ -184,7 +184,7 @@ const ScreenSelector = ({}) => {
               Select screen
             </Text>
             <ChevronDown color={slate500} strokeWidth={2.5} />
-          </XStack>
+          </Stack>
         </Button>
       </Select.Trigger>
 
@@ -275,7 +275,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <YStack
+      <Stack
         gap="$3"
         alignItems="center"
         backgroundColor="white"
@@ -308,7 +308,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
               },
             },
           ].map(({ label, onPress }) => (
-            <YStack gap="$2" key={label}>
+            <Stack gap="$2" key={label}>
               <Button
                 style={{ backgroundColor: 'white' }}
                 borderColor={slate200}
@@ -317,7 +317,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                 padding={0}
                 onPress={onPress}
               >
-                <XStack
+                <Stack
                   width="100%"
                   justifyContent="space-between"
                   paddingVertical="$3"
@@ -328,9 +328,9 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                     {label}
                   </Text>
                   <ChevronRight color={slate500} strokeWidth={2.5} />
-                </XStack>
+                </Stack>
               </Button>
-            </YStack>
+            </Stack>
           ))}
         </ParameterSection>
 
@@ -389,7 +389,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             </Button>
           ))}
         </ParameterSection>
-      </YStack>
+      </Stack>
     </ScrollView>
   );
 };

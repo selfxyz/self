@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { View, YStack } from 'tamagui';
+import { Stack, View } from 'tamagui';
 
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -37,14 +37,14 @@ const AccountRecoveryScreen: React.FC = () => {
         </View>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
+        <Stack alignItems="center" gap="$2.5" paddingBottom="$2.5">
           <Title>Restore your Self account</Title>
           <Description>
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
           </Description>
 
-          <YStack gap="$2.5" width="100%" paddingTop="$6">
+          <Stack gap="$2.5" width="100%" paddingTop="$6">
             <PrimaryButton
               trackEvent={BackupEvents.ACCOUNT_RECOVERY_STARTED}
               onPress={onRestoreAccountPress}
@@ -57,8 +57,8 @@ const AccountRecoveryScreen: React.FC = () => {
             >
               Create new account
             </SecondaryButton>
-          </YStack>
-        </YStack>
+          </Stack>
+        </Stack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

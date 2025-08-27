@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback } from 'react';
-import { Button, Text, YStack } from 'tamagui';
+import { Button, Stack, Text } from 'tamagui';
 
 import { useSelfClient } from '../../context';
 import type { ScreenProps } from '../../types/ui';
@@ -25,11 +25,11 @@ export const NFCScannerScreen = ({ onSuccess, onFailure }: ScreenProps) => {
   );
 
   return (
-    <YStack space="$4" padding="$4">
+    <Stack space="$4" padding="$4">
       <Text fontSize="$6" fontWeight="bold">
         NFC Scanner
       </Text>
       <Button onPress={() => onNFCScan({})}>Simulate NFC Scan</Button>
-    </YStack>
+    </Stack>
   );
 };

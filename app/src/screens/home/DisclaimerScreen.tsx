@@ -5,7 +5,7 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
-import { YStack } from 'tamagui';
+import { Stack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -38,12 +38,12 @@ const DisclaimerScreen: React.FC = () => {
           cacheComposition={true}
           renderMode="HARDWARE"
         />
-        <YStack flex={1} justifyContent="flex-end" paddingBottom="$4">
+        <Stack flex={1} justifyContent="flex-end" paddingBottom="$4">
           <SubHeader style={{ color: white }}>Caution</SubHeader>
-        </YStack>
+        </Stack>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack gap="$2.5">
+        <Stack gap="$2.5">
           <Caution>
             Apps that request sensitive or personally identifiable information
             (like passwords, Social Security numbers, or financial details)
@@ -63,7 +63,7 @@ const DisclaimerScreen: React.FC = () => {
           >
             Dismiss
           </PrimaryButton>
-        </YStack>
+        </Stack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

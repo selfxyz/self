@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Button, Text, YStack } from 'tamagui';
+import { Button, Stack, Text } from 'tamagui';
 
 import type { PassportCameraProps } from '../../types/ui';
 
 // Simple placeholder component - this would be replaced with actual camera UI
 export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => (
-  <YStack space="$4" padding="$4">
+  <Stack space="$4" padding="$4">
     <Text fontSize="$6" fontWeight="bold">
       Passport Camera
     </Text>
@@ -33,5 +33,5 @@ export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => 
     >
       Simulate MRZ Detection
     </Button>
-  </YStack>
+  </Stack>
 );

@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useState } from 'react';
-import { Separator, View, XStack, YStack } from 'tamagui';
+import { Separator, Stack, View } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -111,7 +111,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         </View>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
+        <Stack alignItems="center" gap="$2.5" paddingBottom="$2.5">
           <Title>Restore your Self account</Title>
           <Description>
             By continuing, you certify that this passport belongs to you and is
@@ -124,7 +124,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             )}
           </Description>
 
-          <YStack gap="$2.5" width="100%" paddingTop="$6">
+          <Stack gap="$2.5" width="100%" paddingTop="$6">
             <PrimaryButton
               trackEvent={BackupEvents.CLOUD_BACKUP_STARTED}
               onPress={onRestoreFromCloudPress}
@@ -133,25 +133,25 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               {restoring ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
               {restoring ? '…' : ''}
             </PrimaryButton>
-            <XStack gap={64} alignItems="center" justifyContent="space-between">
+            <Stack gap={64} alignItems="center" justifyContent="space-between">
               <Separator flexGrow={1} />
               <Caption>OR</Caption>
               <Separator flexGrow={1} />
-            </XStack>
+            </Stack>
             <SecondaryButton
               trackEvent={BackupEvents.MANUAL_RECOVERY_SELECTED}
               onPress={handleManualRecoveryPress}
               disabled={restoring}
             >
-              <XStack alignItems="center" justifyContent="center">
+              <Stack alignItems="center" justifyContent="center">
                 <Keyboard height={25} width={40} color={slate500} />
                 <View paddingLeft={12}>
                   <Description>Enter recovery phrase</Description>
                 </View>
-              </XStack>
+              </Stack>
             </SecondaryButton>
-          </YStack>
-        </YStack>
+          </Stack>
+        </Stack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

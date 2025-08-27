@@ -5,13 +5,13 @@
 import React, { useMemo } from 'react';
 import type { SystemBarStyle } from 'react-native-edge-to-edge';
 import { SystemBars } from 'react-native-edge-to-edge';
-import type { TextProps, ViewProps, XStackProps } from 'tamagui';
-import { Button, View, XStack } from 'tamagui';
+import type { StackProps, TextProps, ViewProps } from 'tamagui';
+import { Button, Stack, View } from 'tamagui';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
 import { Title } from '@/components/typography/Title';
 
-interface NavBarProps extends XStackProps {
+interface NavBarProps extends StackProps {
   children: React.ReactNode;
   backgroundColor?: string;
   barStyle?: SystemBarStyle;
@@ -96,7 +96,7 @@ const Container: React.FC<NavBarProps> = ({
   return (
     <>
       <SystemBars style={barStyle} />
-      <XStack
+      <Stack
         backgroundColor={backgroundColor}
         flexGrow={1}
         justifyContent="flex-start"
@@ -104,7 +104,7 @@ const Container: React.FC<NavBarProps> = ({
         {...props}
       >
         {children}
-      </XStack>
+      </Stack>
     </>
   );
 };

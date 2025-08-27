@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
-import { styled, View, XStack, YStack } from 'tamagui';
+import { Stack, styled, View } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -106,18 +106,18 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
         borderRadius={10}
         marginHorizontal={8}
       >
-        <YStack gap={40}>
-          <XStack alignItems="center" justifyContent="space-between">
+        <Stack gap={40}>
+          <Stack alignItems="center" justifyContent="space-between">
             <LogoInversed />
             {params?.preventDismiss ? null : <ModalClose onPress={onClose} />}
-          </XStack>
-          <YStack gap={20}>
+          </Stack>
+          <Stack gap={20}>
             <Title textAlign="left">{params?.titleText}</Title>
             <Description style={{ textAlign: 'left' }}>
               {params?.bodyText}
             </Description>
-          </YStack>
-          <YStack gap={12}>
+          </Stack>
+          <Stack gap={12}>
             <PrimaryButton onPress={onButtonPressed}>
               {params?.buttonText}
             </PrimaryButton>
@@ -126,8 +126,8 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
                 {params?.secondaryButtonText}
               </SecondaryButton>
             )}
-          </YStack>
-        </YStack>
+          </Stack>
+        </Stack>
       </View>
     </ModalBackDrop>
   );

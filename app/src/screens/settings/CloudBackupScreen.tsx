@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { YStack } from 'tamagui';
+import { Stack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -113,7 +113,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         flexGrow={1}
         backgroundColor={white}
       >
-        <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
+        <Stack alignItems="center" gap="$2.5" paddingBottom="$2.5">
           <Title>
             {cloudBackupEnabled
               ? `${STORAGE_NAME} is enabled`
@@ -137,7 +137,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
             )}
           </Caption>
 
-          <YStack gap="$2.5" width="100%" paddingTop="$6">
+          <Stack gap="$2.5" width="100%" paddingTop="$6">
             {cloudBackupEnabled ? (
               <SecondaryButton
                 onPress={disableCloudBackups}
@@ -161,8 +161,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               cloudBackupEnabled={cloudBackupEnabled}
               nextScreen={params?.nextScreen}
             />
-          </YStack>
-        </YStack>
+          </Stack>
+        </Stack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

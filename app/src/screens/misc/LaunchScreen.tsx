@@ -6,7 +6,7 @@ import React from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Anchor, Text, YStack } from 'tamagui';
+import { Anchor, Stack, Text } from 'tamagui';
 
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -34,7 +34,7 @@ const LaunchScreen: React.FC = () => {
     });
 
   return (
-    <YStack
+    <Stack
       backgroundColor={black}
       flex={1}
       justifyContent="space-between"
@@ -59,8 +59,8 @@ const LaunchScreen: React.FC = () => {
         </View>
       </View>
 
-      <YStack gap="$3" width="100%" alignItems="center" marginBottom={20}>
-        <YStack gap="$3" width="100%">
+      <Stack gap="$3" width="100%" alignItems="center" marginBottom={20}>
+        <Stack gap="$3" width="100%">
           <AbstractButton
             bgColor={black}
             borderColor={zinc800}
@@ -87,7 +87,7 @@ const LaunchScreen: React.FC = () => {
           >
             I have a Passport or Biometric ID
           </AbstractButton>
-        </YStack>
+        </Stack>
 
         <Caption style={styles.notice}>
           By continuing, you agree to the&nbsp;
@@ -100,8 +100,8 @@ const LaunchScreen: React.FC = () => {
           </Anchor>
           &nbsp;of Self provided by Self Inc.
         </Caption>
-      </YStack>
-    </YStack>
+      </Stack>
+    </Stack>
   );
 };
 

@@ -4,7 +4,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ScrollView, Separator, XStack, YStack } from 'tamagui';
+import { ScrollView, Separator, Stack } from 'tamagui';
 import { useFocusEffect } from '@react-navigation/native';
 
 import type { PassportMetadata } from '@selfxyz/common/types';
@@ -48,15 +48,15 @@ const InfoRow: React.FC<{
   label: string;
   value: string | number;
 }> = ({ label, value }) => (
-  <YStack>
-    <XStack paddingVertical="$4" justifyContent="space-between">
+  <Stack>
+    <Stack paddingVertical="$4" justifyContent="space-between">
       <Caption size="large">{label}</Caption>
       <Caption color={black} size="large">
         {value}
       </Caption>
-    </XStack>
+    </Stack>
     <Separator borderColor={slate200} />
-  </YStack>
+  </Stack>
 );
 
 const PassportDataInfoScreen: React.FC = () => {
@@ -87,7 +87,7 @@ const PassportDataInfoScreen: React.FC = () => {
   });
 
   return (
-    <YStack
+    <Stack
       flex={1}
       gap="$2"
       justifyContent="flex-start"
@@ -113,7 +113,7 @@ const PassportDataInfoScreen: React.FC = () => {
           />
         ))}
       </ScrollView>
-    </YStack>
+    </Stack>
   );
 };
 

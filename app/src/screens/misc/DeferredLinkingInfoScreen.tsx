@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { YStack } from 'tamagui';
+import { Stack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -19,12 +19,12 @@ const DeferredLinkingInfoScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <YStack flex={1} justifyContent="flex-end" paddingBottom="$4">
+        <Stack flex={1} justifyContent="flex-end" paddingBottom="$4">
           <Title style={{ color: white }}>Deferred linking</Title>
-        </YStack>
+        </Stack>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack gap="$2.5">
+        <Stack gap="$2.5">
           <Description style={{ textAlign: 'left' }}>
             To use this feature, you need to come from a website implementing
             Self deferred linking. This will copy the request to your clipboard.
@@ -43,7 +43,7 @@ const DeferredLinkingInfoScreen: React.FC = () => {
           >
             Got it
           </PrimaryButton>
-        </YStack>
+        </Stack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { XStack, YStack } from 'tamagui';
+import { Stack } from 'tamagui';
 
 import type { Country3LetterCode } from '@selfxyz/common/constants';
 import { countryCodes } from '@selfxyz/common/constants';
@@ -42,7 +42,7 @@ export default function Disclosures({ disclosures }: DisclosureProps) {
   ] as const;
 
   return (
-    <YStack>
+    <Stack>
       {ORDERED_KEYS.map(key => {
         const isEnabled = disclosures[key];
         if (
@@ -91,7 +91,7 @@ export default function Disclosures({ disclosures }: DisclosureProps) {
         }
         return <DisclosureItem key={key} text={text} />;
       })}
-    </YStack>
+    </Stack>
   );
 }
 
@@ -107,7 +107,7 @@ const DisclosureItem: React.FC<DisclosureItemProps> = ({
   text,
 }: DisclosureItemProps) => {
   return (
-    <XStack
+    <Stack
       gap={10}
       borderBottomColor={slate200}
       borderBottomWidth={1}
@@ -118,7 +118,7 @@ const DisclosureItem: React.FC<DisclosureItemProps> = ({
       <BodyText textBreakStrategy="balanced" color={slate500}>
         {text}
       </BodyText>
-    </XStack>
+    </Stack>
   );
 };
 
@@ -132,12 +132,12 @@ const DisclosureItem: React.FC<DisclosureItemProps> = ({
 //   address,
 // }: DiscloseAddressProps) => {
 //   return (
-//     <YStack gap={10} paddingVertical={22} paddingHorizontal={10}>
-//       <XStack gap={10}>
+//     <Stack gap={10} paddingVertical={22} paddingHorizontal={10}>
+//       <Stack gap={10}>
 //         <CheckMark width={22} />
 //         <BodyText color={slate500}>{text}</BodyText>
-//       </XStack>
-//       <YStack
+//       </Stack>
+//       <Stack
 //         gap={8}
 //         borderRadius={10}
 //         borderColor={slate200}
@@ -147,7 +147,7 @@ const DisclosureItem: React.FC<DisclosureItemProps> = ({
 //       >
 //         <BodyText color={slate400}>Address</BodyText>
 //         <Numerical>{address}</Numerical>
-//       </YStack>
-//     </YStack>
+//       </Stack>
+//     </Stack>
 //   );
 // };

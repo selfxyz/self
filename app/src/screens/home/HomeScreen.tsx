@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, styled, YStack } from 'tamagui';
+import { Button, Stack, styled } from 'tamagui';
 import {
   useFocusEffect,
   useNavigation,
@@ -83,7 +83,7 @@ const HomeScreen: React.FC = () => {
   usePreventRemove(true, () => {});
   const { bottom } = useSafeAreaInsets();
   return (
-    <YStack
+    <Stack
       backgroundColor={black}
       gap={20}
       justifyContent="space-between"
@@ -91,14 +91,14 @@ const HomeScreen: React.FC = () => {
       paddingHorizontal={20}
       paddingBottom={bottom + extraYPadding}
     >
-      <YStack alignItems="center" gap={20} justifyContent="flex-start">
+      <Stack alignItems="center" gap={20} justifyContent="flex-start">
         <SelfCard width="100%" />
         <Caption color={amber500} opacity={0.3} textTransform="uppercase">
           Only visible to you
         </Caption>
         <PrivacyNote />
-      </YStack>
-      <YStack alignItems="center" gap={20} justifyContent="flex-end">
+      </Stack>
+      <Stack alignItems="center" gap={20} justifyContent="flex-end">
         <ScanButton
           onPress={onScanButtonPress}
           hitSlop={100}
@@ -115,8 +115,8 @@ const HomeScreen: React.FC = () => {
         >
           Prove your SELF
         </Caption>
-      </YStack>
-    </YStack>
+      </Stack>
+    </Stack>
   );
 };
 
@@ -146,7 +146,7 @@ function PrivacyNote() {
 
 export default HomeScreen;
 
-const Card = styled(YStack, {
+const Card = styled(Stack, {
   width: '100%',
 
   flexGrow: 0,

@@ -4,7 +4,7 @@
 
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { Card, Image, Text, XStack, YStack } from 'tamagui';
+import { Card, Image, Stack, Text } from 'tamagui';
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 
 import type { ProofHistory } from '@/stores/proof-types';
@@ -142,10 +142,10 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
   }, [data.userId, data.endpointType, data.userIdType]);
 
   return (
-    <YStack flex={1} backgroundColor={white}>
+    <Stack flex={1} backgroundColor={white}>
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <YStack flex={1} padding={20}>
-          <YStack
+        <Stack flex={1} padding={20}>
+          <Stack
             backgroundColor={black}
             borderBottomLeftRadius={0}
             borderBottomRightRadius={0}
@@ -153,7 +153,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
             borderTopRightRadius={10}
             paddingBottom={20}
           >
-            <YStack alignItems="center" gap={12} marginTop={40}>
+            <Stack alignItems="center" gap={12} marginTop={40}>
               {/* TODO: add background gradient */}
               {logoSource && (
                 <Image
@@ -181,9 +181,9 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
               >
                 {data.appName}
               </Text>
-            </YStack>
+            </Stack>
 
-            <YStack alignItems="center" paddingHorizontal={20} marginTop={20}>
+            <Stack alignItems="center" paddingHorizontal={20} marginTop={20}>
               <Text
                 color={zinc400}
                 fontSize={16}
@@ -195,15 +195,15 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                 the following information from your verified{' '}
                 <Text color={white}>Passport.</Text>
               </Text>
-            </YStack>
-          </YStack>
+            </Stack>
+          </Stack>
 
-          <YStack
+          <Stack
             backgroundColor={blue100}
             paddingVertical={12}
             paddingHorizontal={20}
           >
-            <XStack alignItems="center" gap={8}>
+            <Stack alignItems="center" gap={8}>
               <CheckSquare2 color={blue600} size={12} />
               <Text
                 color={blue600}
@@ -222,8 +222,8 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
               >
                 {formattedDate}
               </Text>
-            </XStack>
-          </YStack>
+            </Stack>
+          </Stack>
 
           <Card
             backgroundColor={slate100}
@@ -235,8 +235,8 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
             borderBottomLeftRadius={10}
             borderBottomRightRadius={10}
           >
-            <YStack gap={10}>
-              <YStack
+            <Stack gap={10}>
+              <Stack
                 backgroundColor={isEthereumAddress ? blue600 : white}
                 paddingTop={12}
                 paddingBottom={12}
@@ -249,7 +249,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                     : styles.walletContainer
                 }
               >
-                <XStack
+                <Stack
                   backgroundColor={isEthereumAddress ? blue700 : slate100}
                   paddingVertical={4}
                   paddingHorizontal={6}
@@ -283,12 +283,12 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                       {data.userId.slice(0, 2)}...{data.userId.slice(-4)}
                     </Text>
                   )}
-                </XStack>
-              </YStack>
+                </Stack>
+              </Stack>
 
-              <YStack gap={16}>
+              <Stack gap={16}>
                 {disclosures.map((disclosure, index) => (
-                  <XStack
+                  <Stack
                     key={index}
                     backgroundColor={slate100}
                     paddingVertical={16}
@@ -296,7 +296,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                     borderRadius={12}
                     alignItems="center"
                   >
-                    <YStack
+                    <Stack
                       backgroundColor={
                         data.status === ProofStatus.SUCCESS
                           ? emerald500
@@ -319,14 +319,14 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                       {disclosure}
                     </Text>
                     <Info color={blue600} size={16} fontWeight={700} />
-                  </XStack>
+                  </Stack>
                 ))}
-              </YStack>
-            </YStack>
+              </Stack>
+            </Stack>
           </Card>
-        </YStack>
+        </Stack>
       </ScrollView>
-    </YStack>
+    </Stack>
   );
 };
 

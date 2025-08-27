@@ -7,7 +7,7 @@ import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ScrollView, Text, XStack, YStack } from 'tamagui';
+import { ScrollView, Stack, Text } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import { countryCodes } from '@selfxyz/common/constants';
@@ -87,20 +87,20 @@ const MockDataScreenDeepLink: React.FC = () => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <YStack
+    <Stack
       flex={1}
       backgroundColor={white}
       paddingTop={top}
       paddingBottom={bottom + extraYPadding}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
-          <YStack alignItems="center" marginBottom={'$5'} marginTop={'$14'}>
+        <Stack paddingHorizontal="$4" paddingBottom="$4" gap="$5">
+          <Stack alignItems="center" marginBottom={'$5'} marginTop={'$14'}>
             <Title>Onboard your Developer ID</Title>
-          </YStack>
-          <XStack alignItems="center" justifyContent="space-between">
+          </Stack>
+          <Stack alignItems="center" justifyContent="space-between">
             <BodyText>Name</BodyText>
-            <XStack
+            <Stack
               alignItems="center"
               gap="$2"
               padding="$2"
@@ -111,11 +111,11 @@ const MockDataScreenDeepLink: React.FC = () => {
               borderRadius="$4"
             >
               <Text fontSize="$4">{deepLinkName}</Text>
-            </XStack>
-          </XStack>
-          <XStack alignItems="center" justifyContent="space-between">
+            </Stack>
+          </Stack>
+          <Stack alignItems="center" justifyContent="space-between">
             <BodyText>Surname</BodyText>
-            <XStack
+            <Stack
               alignItems="center"
               gap="$2"
               padding="$2"
@@ -126,11 +126,11 @@ const MockDataScreenDeepLink: React.FC = () => {
               borderRadius="$4"
             >
               <Text fontSize="$4">{deepLinkSurname}</Text>
-            </XStack>
-          </XStack>
-          <XStack alignItems="center" justifyContent="space-between">
+            </Stack>
+          </Stack>
+          <Stack alignItems="center" justifyContent="space-between">
             <BodyText>Birth Date (YYMMDD)</BodyText>
-            <XStack
+            <Stack
               alignItems="center"
               gap="$2"
               padding="$2"
@@ -141,12 +141,12 @@ const MockDataScreenDeepLink: React.FC = () => {
               borderRadius="$4"
             >
               <Text fontSize="$4">{deepLinkBirthDate}</Text>
-            </XStack>
-          </XStack>
+            </Stack>
+          </Stack>
 
-          <XStack alignItems="center" justifyContent="space-between">
+          <Stack alignItems="center" justifyContent="space-between">
             <BodyText>Gender</BodyText>
-            <XStack
+            <Stack
               alignItems="center"
               gap="$2"
               padding="$2"
@@ -157,12 +157,12 @@ const MockDataScreenDeepLink: React.FC = () => {
               borderRadius="$4"
             >
               <Text fontSize="$4">{deepLinkGender?.toUpperCase()}</Text>
-            </XStack>
-          </XStack>
+            </Stack>
+          </Stack>
 
-          <XStack alignItems="center" justifyContent="space-between">
+          <Stack alignItems="center" justifyContent="space-between">
             <BodyText>Nationality</BodyText>
-            <XStack
+            <Stack
               alignItems="center"
               gap="$2"
               padding="$2"
@@ -180,12 +180,12 @@ const MockDataScreenDeepLink: React.FC = () => {
                   ? flag(getCountryISO2(selectedCountry))
                   : ''}
               </Text>
-            </XStack>
-          </XStack>
-        </YStack>
+            </Stack>
+          </Stack>
+        </Stack>
       </ScrollView>
 
-      <YStack paddingHorizontal="$4" paddingBottom="$4">
+      <Stack paddingHorizontal="$4" paddingBottom="$4">
         <ButtonsContainer>
           <PrimaryButton
             trackEvent={MockDataEvents.CREATE_DEEP_LINK}
@@ -199,8 +199,8 @@ const MockDataScreenDeepLink: React.FC = () => {
             </View>
           </PrimaryButton>
         </ButtonsContainer>
-      </YStack>
-    </YStack>
+      </Stack>
+    </Stack>
   );
 };
 

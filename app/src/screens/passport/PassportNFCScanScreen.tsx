@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
-import { Button, Image, XStack } from 'tamagui';
+import { Button, Image, Stack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import {
   useFocusEffect,
@@ -496,7 +496,7 @@ const PassportNFCScanScreen: React.FC = () => {
           <>
             <TextsContainer>
               <GestureDetector gesture={devModeTap}>
-                <XStack
+                <Stack
                   justifyContent="space-between"
                   alignItems="center"
                   gap="$1.5"
@@ -508,7 +508,7 @@ const PassportNFCScanScreen: React.FC = () => {
                     icon={<CircleHelp size={28} color={slate500} />}
                     aria-label="Help"
                   />
-                </XStack>
+                </Stack>
               </GestureDetector>
               {isNfcEnabled ? (
                 <>

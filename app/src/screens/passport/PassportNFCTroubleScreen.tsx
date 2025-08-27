@@ -4,7 +4,7 @@
 
 import React, { useEffect } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { YStack } from 'tamagui';
+import { Stack } from 'tamagui';
 
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import type { TipProps } from '@/components/Tips';
@@ -73,7 +73,7 @@ const PassportNFCTrouble: React.FC = () => {
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
         // Add top padding before buttons and normalize spacing
-        <YStack marginTop={16} marginBottom={0} gap={10}>
+        <Stack marginTop={16} marginBottom={0} gap={10}>
           <SecondaryButton
             onPress={() =>
               sendFeedbackEmail({
@@ -85,15 +85,10 @@ const PassportNFCTrouble: React.FC = () => {
           >
             Report Issue
           </SecondaryButton>
-        </YStack>
+        </Stack>
       }
     >
-      <YStack
-        paddingTop={24}
-        paddingHorizontal={10}
-        paddingBottom={32}
-        gap={20}
-      >
+      <Stack paddingTop={24} paddingHorizontal={10} paddingBottom={32} gap={20}>
         <GestureDetector gesture={devModeTap}>
           <Caption size="large" color={slate500}>
             Here are some tips to help you successfully scan the RFID chip:
@@ -106,7 +101,7 @@ const PassportNFCTrouble: React.FC = () => {
           device supports NFC and that your passport's RFID is functioning
           properly.
         </Caption>
-      </YStack>
+      </Stack>
     </SimpleScrolledTitleLayout>
   );
 };

@@ -5,7 +5,7 @@
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useRef } from 'react';
 import { Platform, StyleSheet } from 'react-native';
-import { View, XStack, YStack } from 'tamagui';
+import { Stack, View } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 
 import {
@@ -148,10 +148,10 @@ const PassportCameraScreen: React.FC = () => {
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack alignItems="center" gap="$2.5">
-          <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
+        <Stack alignItems="center" gap="$2.5">
+          <Stack alignItems="center" gap="$6" paddingBottom="$2.5">
             <Title>Scan your ID</Title>
-            <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
+            <Stack gap="$6" alignSelf="flex-start" alignItems="flex-start">
               <View paddingTop="$2">
                 <Scan height={40} width={40} color={slate800} />
               </View>
@@ -164,8 +164,8 @@ const PassportCameraScreen: React.FC = () => {
                   in the viewfinder
                 </Additional>
               </View>
-            </XStack>
-          </YStack>
+            </Stack>
+          </Stack>
 
           <Additional style={styles.disclaimer}>
             SELF WILL NOT CAPTURE AN IMAGE OF YOUR PASSPORT.
@@ -177,7 +177,7 @@ const PassportCameraScreen: React.FC = () => {
           >
             Cancel
           </SecondaryButton>
-        </YStack>
+        </Stack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

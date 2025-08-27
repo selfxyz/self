@@ -5,7 +5,7 @@
 import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
 import { Keyboard, StyleSheet } from 'react-native';
-import { Text, TextArea, View, XStack, YStack } from 'tamagui';
+import { Stack, Text, TextArea, View } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
@@ -82,7 +82,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
   }, [mnemonic, navigation, restoreAccountFromMnemonic, trackEvent]);
 
   return (
-    <YStack
+    <Stack
       alignItems="center"
       gap="$6"
       paddingBottom="$2.5"
@@ -109,7 +109,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
           }
           onChangeText={setMnemonic}
         />
-        <XStack
+        <Stack
           gap="$2"
           position="absolute"
           bottom={0}
@@ -121,7 +121,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
         >
           <Paste color={white} height={20} width={20} />
           <Text style={styles.pasteText}>PASTE</Text>
-        </XStack>
+        </Stack>
       </View>
 
       <SecondaryButton
@@ -130,7 +130,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
       >
         Continue
       </SecondaryButton>
-    </YStack>
+    </Stack>
   );
 };
 

@@ -5,7 +5,7 @@
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { TextStyle, ViewStyle } from 'tamagui';
-import { XStack, YStack } from 'tamagui';
+import { Stack } from 'tamagui';
 import type {
   NativeStackHeaderProps,
   NativeStackNavigationOptions,
@@ -46,7 +46,7 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
   const segments = Array.from({ length: totalSteps }, (_, index) => index + 1);
 
   return (
-    <YStack>
+    <Stack>
       <NavBar.Container
         gap={14}
         paddingHorizontal={20}
@@ -60,8 +60,8 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
             : 'dark'
         }
       >
-        <XStack width="100%" alignItems="center">
-          <XStack width={50} justifyContent="flex-start">
+        <Stack width="100%" alignItems="center">
+          <Stack width={50} justifyContent="flex-start">
             <NavBar.LeftAction
               component={
                 options.headerBackTitle || (canGoBack() ? 'back' : undefined)
@@ -72,28 +72,28 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
               }}
               {...(options.headerTitleStyle as ViewStyle)}
             />
-          </XStack>
+          </Stack>
 
-          <XStack flex={1} justifyContent="center" alignItems="center">
+          <Stack flex={1} justifyContent="center" alignItems="center">
             <NavBar.Title {...(options.headerTitleStyle as ViewStyle)}>
               {props.options.title}
             </NavBar.Title>
-          </XStack>
+          </Stack>
 
-          <XStack width={50} />
-        </XStack>
+          <Stack width={50} />
+        </Stack>
       </NavBar.Container>
 
-      <YStack
+      <Stack
         backgroundColor={
           (props.options.headerStyle as ViewStyle)?.backgroundColor || white
         }
         paddingHorizontal={20}
         paddingBottom={20}
       >
-        <XStack width="100%" height={4} gap={4}>
+        <Stack width="100%" height={4} gap={4}>
           {segments.map((step, index) => (
-            <YStack
+            <Stack
               key={step}
               flex={1}
               height={5}
@@ -106,8 +106,8 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
               overflow="hidden"
             />
           ))}
-        </XStack>
-      </YStack>
-    </YStack>
+        </Stack>
+      </Stack>
+    </Stack>
   );
 };

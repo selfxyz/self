@@ -6,7 +6,7 @@ import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, YStack } from 'tamagui';
+import { Stack, Text } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 
@@ -161,7 +161,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   );
 
   return (
-    <YStack
+    <Stack
       backgroundColor={black}
       gap={20}
       justifyContent="space-between"
@@ -201,7 +201,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
           </Text>
         </View>
       </View>
-    </YStack>
+    </Stack>
   );
 };
 

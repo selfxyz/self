@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react';
 import { Modal, StyleSheet } from 'react-native';
-import { styled, View, XStack, YStack } from 'tamagui';
+import { Stack, styled, View } from 'tamagui';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -104,20 +104,20 @@ const FeedbackModalScreen: React.FC<FeedbackModalScreenProps> = ({
           borderRadius={10}
           marginHorizontal={8}
         >
-          <YStack gap={40}>
-            <XStack alignItems="center" justifyContent="space-between">
+          <Stack gap={40}>
+            <Stack alignItems="center" justifyContent="space-between">
               <LogoInversed />
               {modalParams.preventDismiss ? null : (
                 <ModalClose onPress={onClose} />
               )}
-            </XStack>
-            <YStack gap={20}>
+            </Stack>
+            <Stack gap={20}>
               <Title textAlign="left">{modalParams.titleText}</Title>
               <Description style={styles.description}>
                 {modalParams.bodyText}
               </Description>
-            </YStack>
-            <YStack gap={12}>
+            </Stack>
+            <Stack gap={12}>
               <PrimaryButton onPress={onButtonPressed}>
                 {modalParams.buttonText}
               </PrimaryButton>
@@ -126,8 +126,8 @@ const FeedbackModalScreen: React.FC<FeedbackModalScreenProps> = ({
                   {modalParams.secondaryButtonText}
                 </SecondaryButton>
               )}
-            </YStack>
-          </YStack>
+            </Stack>
+          </Stack>
         </View>
       </ModalBackDrop>
     </Modal>

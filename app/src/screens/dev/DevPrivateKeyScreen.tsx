@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Text, XStack, YStack } from 'tamagui';
+import { Button, Stack, Text } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
@@ -55,9 +55,9 @@ const DevPrivateKeyScreen: React.FC = () => {
   }, [privateKey]);
 
   return (
-    <YStack padding="$4">
-      <YStack position="relative" alignItems="stretch" gap={0}>
-        <XStack
+    <Stack padding="$4">
+      <Stack position="relative" alignItems="stretch" gap={0}>
+        <Stack
           borderColor={slate200}
           backgroundColor={slate50}
           borderWidth="$1"
@@ -72,8 +72,8 @@ const DevPrivateKeyScreen: React.FC = () => {
           <Text>
             {isPrivateKeyRevealed ? privateKey : getRedactedPrivateKey()}
           </Text>
-        </XStack>
-        <XStack
+        </Stack>
+        <Stack
           borderTopColor={slate200}
           borderTopWidth="$1"
           justifyContent="center"
@@ -101,9 +101,9 @@ const DevPrivateKeyScreen: React.FC = () => {
               ? `${copied ? 'COPIED' : 'COPY'} TO CLIPBOARD`
               : 'TAP TO REVEAL'}
           </Button>
-        </XStack>
-      </YStack>
-    </YStack>
+        </Stack>
+      </Stack>
+    </Stack>
   );
 };
 

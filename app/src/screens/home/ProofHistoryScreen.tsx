@@ -10,7 +10,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
+import { Card, Image, Stack, Text, View } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
@@ -208,7 +208,7 @@ const ProofHistoryScreen: React.FC = () => {
 
         return (
           <View paddingHorizontal={20}>
-            <YStack gap={8}>
+            <Stack gap={8}>
               <Card
                 borderTopLeftRadius={isFirstItem ? borderRadiusSize : 0}
                 borderTopRightRadius={isFirstItem ? borderRadiusSize : 0}
@@ -222,7 +222,7 @@ const ProofHistoryScreen: React.FC = () => {
                   navigation.navigate('ProofHistoryDetail', { data: item })
                 }
               >
-                <XStack alignItems="center">
+                <Stack alignItems="center">
                   {logoSource && (
                     <Image
                       source={logoSource}
@@ -234,17 +234,17 @@ const ProofHistoryScreen: React.FC = () => {
                       objectFit="contain"
                     />
                   )}
-                  <YStack flex={1}>
+                  <Stack flex={1}>
                     <BodyText fontSize={20} color={black} fontWeight="500">
                       {item.appName}
                     </BodyText>
                     <BodyText color={slate300} gap={2} fontSize={14}>
                       {formatDate(item.timestamp)}
                     </BodyText>
-                  </YStack>
+                  </Stack>
                   {(item.endpointType === 'staging_celo' ||
                     item.endpointType === 'celo') && (
-                    <XStack
+                    <Stack
                       backgroundColor={blue100}
                       paddingVertical={2}
                       paddingHorizontal={8}
@@ -252,9 +252,9 @@ const ProofHistoryScreen: React.FC = () => {
                       alignItems="center"
                     >
                       <Wallet color={blue600} height={14} width={14} />
-                    </XStack>
+                    </Stack>
                   )}
-                  <XStack
+                  <Stack
                     backgroundColor={blue100}
                     paddingVertical={2}
                     paddingHorizontal={8}
@@ -271,9 +271,9 @@ const ProofHistoryScreen: React.FC = () => {
                       {disclosureCount}
                     </Text>
                     <CheckSquare2 color={blue600} height={14} width={14} />
-                  </XStack>
+                  </Stack>
                   {item.status === ProofStatus.FAILURE && (
-                    <XStack
+                    <Stack
                       paddingVertical={2}
                       paddingHorizontal={8}
                       borderRadius={4}
@@ -289,11 +289,11 @@ const ProofHistoryScreen: React.FC = () => {
                         FAIL
                       </Text>
                       <XCircle color={red500} height={14} width={14} />
-                    </XStack>
+                    </Stack>
                   )}
-                </XStack>
+                </Stack>
               </Card>
-            </YStack>
+            </Stack>
           </View>
         );
       } catch (e) {
@@ -373,7 +373,7 @@ const ProofHistoryScreen: React.FC = () => {
   }, [isLoading, refreshing]);
 
   return (
-    <YStack
+    <Stack
       flex={1}
       backgroundColor={slate50}
       paddingBottom={bottom + extraYPadding}
@@ -401,7 +401,7 @@ const ProofHistoryScreen: React.FC = () => {
         windowSize={10}
         removeClippedSubviews={true}
       />
-    </YStack>
+    </Stack>
   );
 };
 

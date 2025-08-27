@@ -4,7 +4,7 @@
 
 import LottieView from 'lottie-react-native';
 import React from 'react';
-import { YStack } from 'tamagui';
+import { Stack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -34,7 +34,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack
+        <Stack
           paddingTop={40}
           paddingHorizontal={10}
           paddingBottom={20}
@@ -48,7 +48,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
             Your passport information is now protected by Self ID. Just scan a
             participating partner's QR code to prove your identity.
           </Description>
-        </YStack>
+        </Stack>
         <PrimaryButton
           trackEvent={BackupEvents.ACCOUNT_VERIFICATION_COMPLETED}
           onPress={() => {

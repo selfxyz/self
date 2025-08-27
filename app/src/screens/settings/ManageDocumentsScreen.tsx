@@ -5,7 +5,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, ScrollView, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button, ScrollView, Spinner, Stack, Text } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, Eraser } from '@tamagui/lucide-icons';
@@ -148,7 +148,7 @@ const PassportDataSelector = () => {
 
   if (loading) {
     return (
-      <YStack gap="$3" alignItems="center" padding="$4">
+      <Stack gap="$3" alignItems="center" padding="$4">
         <Text
           color={textBlack}
           fontWeight="bold"
@@ -157,19 +157,19 @@ const PassportDataSelector = () => {
         >
           Available Documents
         </Text>
-        <YStack gap="$3" alignItems="center" paddingVertical="$6">
+        <Stack gap="$3" alignItems="center" paddingVertical="$6">
           <Spinner size="large" />
           <Text color={textBlack} fontSize="$4" opacity={0.7}>
             Loading documents...
           </Text>
-        </YStack>
-      </YStack>
+        </Stack>
+      </Stack>
     );
   }
 
   if (documentCatalog.documents.length === 0) {
     return (
-      <YStack gap="$2" alignItems="center">
+      <Stack gap="$2" alignItems="center">
         <Text
           color={textBlack}
           fontWeight="bold"
@@ -182,12 +182,12 @@ const PassportDataSelector = () => {
         <Text color={textBlack} fontSize="$4">
           No documents found
         </Text>
-      </YStack>
+      </Stack>
     );
   }
 
   return (
-    <YStack gap="$3" width="100%">
+    <Stack gap="$3" width="100%">
       <Text
         color={textBlack}
         fontWeight="bold"
@@ -197,7 +197,7 @@ const PassportDataSelector = () => {
         Available Documents
       </Text>
       {documentCatalog.documents.map((metadata: DocumentMetadata) => (
-        <YStack
+        <Stack
           key={metadata.id}
           padding="$3"
           borderWidth={1}
@@ -215,12 +215,12 @@ const PassportDataSelector = () => {
           onPress={() => handleDocumentSelection(metadata.id)}
           pressStyle={{ opacity: 0.8 }}
         >
-          <XStack
+          <Stack
             alignItems="center"
             justifyContent="space-between"
             marginBottom="$2"
           >
-            <XStack alignItems="center" gap="$3" flex={1}>
+            <Stack alignItems="center" gap="$3" flex={1}>
               <Button
                 size="$2"
                 circular
@@ -237,15 +237,15 @@ const PassportDataSelector = () => {
                   <Check size={12} color="white" />
                 )}
               </Button>
-              <YStack flex={1}>
+              <Stack flex={1}>
                 <Text color={textBlack} fontWeight="bold" fontSize="$4">
                   {getDisplayName(metadata.documentType)}
                 </Text>
                 <Text color={textBlack} fontSize="$3" opacity={0.7}>
                   {getDocumentInfo(metadata)}
                 </Text>
-              </YStack>
-            </XStack>
+              </Stack>
+            </Stack>
             <Button
               backgroundColor="white"
               justifyContent="center"
@@ -259,10 +259,10 @@ const PassportDataSelector = () => {
             >
               <Eraser color={textBlack} size={16} />
             </Button>
-          </XStack>
-        </YStack>
+          </Stack>
+        </Stack>
       ))}
-    </YStack>
+    </Stack>
   );
 };
 
@@ -290,18 +290,18 @@ const ManageDocumentsScreen: React.FC = () => {
   };
 
   return (
-    <YStack
+    <Stack
       flex={1}
       backgroundColor={white}
       paddingHorizontal="$4"
       paddingBottom={bottom + extraYPadding}
     >
-      <YStack gap="$6" paddingVertical="$4" flex={1}>
+      <Stack gap="$6" paddingVertical="$4" flex={1}>
         <ScrollView showsVerticalScrollIndicator={false} flex={1}>
           <PassportDataSelector />
         </ScrollView>
 
-        <YStack gap="$3" marginTop="$4">
+        <Stack gap="$3" marginTop="$4">
           <Text
             color={textBlack}
             fontWeight="bold"
@@ -322,9 +322,9 @@ const ManageDocumentsScreen: React.FC = () => {
               </SecondaryButton>
             )}
           </ButtonsContainer>
-        </YStack>
-      </YStack>
-    </YStack>
+        </Stack>
+      </Stack>
+    </Stack>
   );
 };
 
