@@ -3,6 +3,7 @@
 /* eslint-disable sort-exports/sort-exports */
 
 import type {
+  AuthAdapter,
   CryptoAdapter,
   DocumentsAdapter,
   NetworkAdapter,
@@ -50,7 +51,12 @@ export const mockScanner: ScannerAdapter = {
   }),
 };
 
+export const mockAuth: AuthAdapter = {
+  getPrivateKey: async () => '0x-mock-private-key',
+};
+
 export const mockAdapters = {
+  auth: mockAuth,
   scanner: mockScanner,
   network: mockNetwork,
   crypto: mockCrypto,

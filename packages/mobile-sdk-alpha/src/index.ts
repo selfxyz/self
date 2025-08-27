@@ -6,6 +6,7 @@
 export type {
   Adapters,
   AnalyticsAdapter,
+  AuthAdapter,
   ClockAdapter,
   Config,
   CryptoAdapter,
