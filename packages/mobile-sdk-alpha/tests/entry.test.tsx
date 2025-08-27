@@ -25,7 +25,7 @@ describe('SelfMobileSdk Entry Component', () => {
       </SelfMobileSdk>,
     );
 
-    expect(screen.getByText(expectedMRZResult.passportNumber)).toBeTruthy();
+    expect(screen.getByText(expectedMRZResult.documentNumber)).toBeTruthy();
   });
 
   it('renders children correctly', () => {

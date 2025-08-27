@@ -67,6 +67,6 @@ export const mockAdapters = {
 
 // Shared test expectations
 export const expectedMRZResult = {
-  passportNumber: 'L898902C3',
+  documentNumber: 'L898902C3',
   validation: { overall: true },
 };

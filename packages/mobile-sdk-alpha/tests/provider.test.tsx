@@ -23,7 +23,7 @@ describe('SelfClientProvider Context', () => {
     const { result } = renderHook(() => useSelfClient(), { wrapper });
     const info = result.current.extractMRZInfo(sampleMRZ);
 
-    expect(info.documentNumber).toBe(expectedMRZResult.passportNumber);
+    expect(info.documentNumber).toBe(expectedMRZResult.documentNumber);
     expect(info.validation).toBeDefined();
     expect(info.validation?.overall).toBe(expectedMRZResult.validation.overall);
   });

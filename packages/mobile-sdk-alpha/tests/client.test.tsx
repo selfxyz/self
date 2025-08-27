@@ -20,7 +20,7 @@ describe('createSelfClient API', () => {
     const client = createSelfClient({ config: {}, adapters: mockAdapters });
     const info = client.extractMRZInfo(sampleMRZ);
 
-    expect(info.passportNumber).toBe(expectedMRZResult.passportNumber);
+    expect(info.documentNumber).toBe(expectedMRZResult.documentNumber);
     expect(info.validation.overall).toBe(expectedMRZResult.validation.overall);
   });
 

@@ -10,4 +10,10 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
   },
+  resolve: {
+    alias: {
+      // Mock React Native modules for testing
+      'react-native': 'react-native-web',
+    },
+  },
 });
