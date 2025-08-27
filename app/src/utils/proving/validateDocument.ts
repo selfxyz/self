@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { poseidon2, poseidon5 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
@@ -22,11 +24,10 @@ import {
 import { getLeafDscTree } from '@selfxyz/common/utils/trees';
 import type { PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { DocumentEvents } from '@/consts/analytics';
 import {
-  getAllDocuments,
-  loadDocumentCatalog,
+  getAllDocumentsDirectlyFromKeychain,
   loadPassportDataAndSecret,
   loadSelectedDocument,
   setSelectedDocument,
@@ -49,7 +50,8 @@ export type PassportSupportStatus =
  * This function checks and updates registration states for all documents and updates the `isRegistered`.
  */
 export async function checkAndUpdateRegistrationStates(): Promise<void> {
-  const allDocuments = await getAllDocuments();
+  const allDocuments = await getAllDocumentsDirectlyFromKeychain();
+
   for (const documentId of Object.keys(allDocuments)) {
     try {
       await setSelectedDocument(documentId);
@@ -312,16 +314,6 @@ function formatCSCAPem(cscaPem: string): string {
     cleanedPem = `-----BEGIN CERTIFICATE-----\n${cleanedPem}\n-----END CERTIFICATE-----`;
   }
   return cleanedPem;
-}
-
-export async function hasAnyValidRegisteredDocument(): Promise<boolean> {
-  try {
-    const catalog = await loadDocumentCatalog();
-    return catalog.documents.some(doc => doc.isRegistered === true);
-  } catch (error) {
-    console.error('Error loading document catalog:', error);
-    return false;
-  }
 }
 
 export async function isDocumentNullified(passportData: PassportData) {

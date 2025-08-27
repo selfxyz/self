@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 // Browser-safe exports with explicit tree-shaking friendly imports
 
 // Types
@@ -49,6 +53,8 @@ export { defaultConfig } from './config/defaults';
 
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+
+export { getAllDocuments, hasAnyValidRegisteredDocument } from './documents/utils';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';

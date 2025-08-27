@@ -5,6 +5,20 @@ export type DocumentCategory = 'passport' | 'id_card';
 
 export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
 
+export interface DocumentCatalog {
+  documents: DocumentMetadata[];
+  selectedDocumentId?: string; // This is now a contentHash
+}
+
+export interface DocumentMetadata {
+  id: string; // contentHash as ID for deduplication
+  documentType: string; // passport, mock_passport, id_card, etc.
+  documentCategory: DocumentCategory; // passport, id_card, aadhaar
+  data: string; // DG1/MRZ data for passports/IDs, relevant data for aadhaar
+  mock: boolean; // whether this is a mock document
+  isRegistered?: boolean; // whether the document is registered onChain
+}
+
 export type OfacTree = {
   passportNoAndNationality: any;
   nameAndDob: any;

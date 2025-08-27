@@ -10,7 +10,7 @@ env:
   GH_CACHE_VERSION: v1 # Global cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
+  GRADLE_OPTS: -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
   CI: true
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
@@ -29,12 +29,7 @@ on:
 
 jobs:
   e2e-android:
-    # TODO: The Android E2E test job is temporarily disabled due to a recurring
-    # Maestro driver timeout issue in the CI environment. The emulator becomes
-    # unresponsive, preventing Maestro from connecting. This needs further
-    # investigation, but has been disabled to unblock the pipeline.
-    # To test locally, run `./scripts/test-e2e-local.sh android --workflow-match`
-    if: false
+    if: false # Temporarily disable Android E2E until emulator disk issue resolved
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
@@ -61,13 +56,13 @@ jobs:
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn dependencies
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
-          path: .yarn/cache
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - run: yarn install --immutable --silent
+      - name: Validate Maestro test file
+        run: |
+          [ -f app/tests/e2e/launch.android.flow.yaml ] || { echo "❌ Android E2E test file missing"; exit 1; }
       - name: Cache Maestro
         id: cache-maestro
         uses: actions/cache@v4
@@ -90,12 +85,6 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-
-      - name: Cache NDK
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
-          key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
       - name: Install NDK
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Build dependencies (outside emulator)
@@ -103,29 +92,12 @@ jobs:
           echo "Building dependencies..."
           yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
-      - name: Cache Android build
-        uses: actions/cache@v4
-        with:
-          path: |
-            app/android/app/build
-            app/android/.gradle
-          key: ${{ runner.os }}-android-build-${{ hashFiles('app/android/**/*.gradle*', 'app/android/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-android-build-
       - name: Build Android APK
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
-          arch: x86_64
-          target: google_apis
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
-          disable-animations: true
-          script: |
-            echo "Building Android APK..."
-            chmod +x app/android/gradlew
-            (cd app/android && ./gradlew assembleRelease --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
-            echo "✅ Android build succeeded"
+        run: |
+          echo "Building Android APK..."
+          chmod +x app/android/gradlew
+          (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
+          echo "✅ Android build succeeded"
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -137,7 +109,7 @@ jobs:
           disable-animations: true
           script: |
             echo "Installing app on emulator..."
-            APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
+            APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
             [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
             adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
             echo "✅ App installed successfully"
@@ -147,9 +119,7 @@ jobs:
 
             echo "🎭 Running Maestro tests..."
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
-            maestro test tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
-        env:
-          E2E_BUILD: "true"
+            maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -191,13 +161,13 @@ jobs:
       - run: corepack enable
       - run: corepack prepare yarn@4.6.0 --activate
       - name: Cache Yarn dependencies
-        uses: actions/cache@v4
+        uses: ./.github/actions/cache-yarn
         with:
-          path: .yarn/cache
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - run: yarn install --immutable --silent
+      - name: Validate Maestro test file
+        run: |
+          [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
       - name: Cache Maestro
         id: cache-maestro
         uses: actions/cache@v4
@@ -226,19 +196,12 @@ jobs:
           xcodebuild -version
           echo "Xcode path:"
           xcode-select -p
-      - name: Cache Node modules
-        uses: actions/cache@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          path: app/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('app/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-
-      - name: Cache Ruby gems
-        uses: ./.github/actions/cache-bundler
-        with:
-          path: app/vendor/bundle
-          lock-file: app/Gemfile.lock
-          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: app
       - name: Cache Pods
         uses: ./.github/actions/cache-pods
         with:
@@ -246,33 +209,14 @@ jobs:
             app/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: app/ios/Podfile.lock
-      - name: Cache Xcode build
+      - name: Cache DerivedData
         uses: actions/cache@v4
         with:
-          path: |
-            app/ios/build
-            ~/Library/Developer/Xcode/DerivedData
-            ~/Library/Caches/com.apple.dt.Xcode
-          key: ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-${{ hashFiles('app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace/contents.xcworkspacedata') }}
+          path: app/ios/build
+          key: ${{ runner.os }}-derived-data-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
           restore-keys: |
-            ${{ runner.os }}-xcode-${{ hashFiles('app/ios/Podfile.lock') }}-
-            ${{ runner.os }}-xcode-
-      - name: Cache Xcode Index
-        uses: actions/cache@v4
-        with:
-          path: app/ios/build/Index.noindex
-          key: ${{ runner.os }}-xcode-index-${{ hashFiles('app/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-xcode-index-
-      - name: Cache iOS Simulator
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/Library/Developer/CoreSimulator/Devices
-            ~/Library/Developer/Xcode/iOS DeviceSupport
-          key: ${{ runner.os }}-simulator-v1
-          restore-keys: |
-            ${{ runner.os }}-simulator-
+            ${{ runner.os }}-derived-data-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}-
+            ${{ runner.os }}-derived-data-${{ env.XCODE_VERSION }}-
       - name: Verify iOS Runtime
         run: |
           echo "📱 Verifying iOS Runtime availability..."
@@ -286,8 +230,9 @@ jobs:
       - name: Install iOS dependencies
         run: |
           echo "Installing iOS dependencies..."
-          (cd app/ios && pod install --silent) || { echo "❌ Pod install failed"; exit 1; }
-          echo "✅ Pods installed successfully"
+          cd app/ios
+          echo "📦 Installing pods via centralized script…"
+          BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh || { echo "❌ Pod install failed"; exit 1; }
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."
@@ -358,13 +303,29 @@ jobs:
           # Store simulator ID for later use
           echo "IOS_SIMULATOR_ID=$AVAILABLE_SIMULATOR" >> $GITHUB_ENV
           echo "IOS_SIMULATOR_NAME=$SIMULATOR_NAME" >> $GITHUB_ENV
+      - name: Resolve iOS workspace
+        run: |
+          WORKSPACE_OPEN="app/ios/OpenPassport.xcworkspace"
+          WORKSPACE_SELF="app/ios/Self.xcworkspace"
+
+          if xcodebuild -list -workspace "$WORKSPACE_OPEN" 2>/dev/null | grep -q "OpenPassport"; then
+            WORKSPACE_PATH="$WORKSPACE_OPEN"
+          else
+            WORKSPACE_PATH="$WORKSPACE_SELF"
+          fi
+
+          echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$GITHUB_ENV"
+          echo "Resolved workspace: $WORKSPACE_PATH"
       - name: Build iOS App
         run: |
           echo "Building iOS app..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
           # Verify workspace exists before building
-          WORKSPACE_PATH="app/ios/${{ env.IOS_PROJECT_NAME }}.xcworkspace"
+          if [ -z "$WORKSPACE_PATH" ]; then
+            echo "❌ WORKSPACE_PATH is not set"
+            exit 1
+          fi
           if [ ! -d "$WORKSPACE_PATH" ]; then
             echo "❌ Workspace not found at: $WORKSPACE_PATH"
             echo "Available workspaces:"
@@ -388,13 +349,15 @@ jobs:
           echo "✅ Using scheme: ${{ env.IOS_PROJECT_SCHEME }}"
 
           # Use cached derived data and enable parallel builds for faster compilation
+          # Additional flags disable indexing, restrict architecture, and use whole-module Swift compilation
           # Use the simulator that was set up earlier in the workflow
-          xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Release -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet || { echo "❌ iOS build failed"; exit 1; }
+          FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
+            xcodebuild -workspace "$WORKSPACE_PATH" -scheme ${{ env.IOS_PROJECT_SCHEME }} -configuration Debug -destination "id=${{ env.IOS_SIMULATOR_ID }}" -derivedDataPath app/ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets -quiet COMPILER_INDEX_STORE_ENABLE=NO ONLY_ACTIVE_ARCH=YES SWIFT_COMPILATION_MODE=wholemodule || { echo "❌ iOS build failed"; exit 1; }
           echo "✅ iOS build succeeded"
       - name: Install and Test on iOS
         run: |
           echo "Installing app on simulator..."
-          APP_PATH=$(find app/ios/build/Build/Products/Release-iphonesimulator -name "*.app" | head -1)
+          APP_PATH=$(find app/ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
           [ -z "$APP_PATH" ] && { echo "❌ Could not find built iOS app"; exit 1; }
           echo "Found app at: $APP_PATH"
 

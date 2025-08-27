@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { Suspense, useEffect } from 'react';
 import { Platform, View } from 'react-native';
@@ -14,9 +16,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
 import { getAesopScreens } from '@/navigation/aesop';
-// Import dev screens type for conditional inclusion
-import type devScreensType from '@/navigation/dev';
-// Dev screens are conditionally loaded to avoid bundling in production
+import devScreens from '@/navigation/devTools';
 import homeScreens from '@/navigation/home';
 import miscScreens from '@/navigation/misc';
 import passportScreens from '@/navigation/passport';
@@ -27,11 +27,6 @@ import analytics from '@/utils/analytics';
 import { white } from '@/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
-// Conditionally load dev screens only in development
-const devScreens: typeof devScreensType = __DEV__
-  ? require('@/navigation/dev').default
-  : ({} as typeof devScreensType);
-
 export const navigationScreens = {
   ...miscScreens,
   ...passportScreens,
@@ -39,7 +34,7 @@ export const navigationScreens = {
   ...proveScreens,
   ...settingsScreens,
   ...recoveryScreens,
-  ...devScreens,
+  ...devScreens, // allow in production for testing
   // add last to override other screens
   ...getAesopScreens(),
 };

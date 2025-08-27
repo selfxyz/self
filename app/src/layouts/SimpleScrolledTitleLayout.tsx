@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
 import React from 'react';
@@ -38,17 +40,22 @@ export default function SimpleScrolledTitleLayout({
           {header}
         </YStack>
         <ScrollView flex={1} showsVerticalScrollIndicator={false}>
-          <YStack paddingTop={0} paddingBottom={20} flex={1}>
+          <YStack paddingTop={0} paddingBottom={12} flex={1}>
             {children}
           </YStack>
         </ScrollView>
-        {footer && <YStack marginBottom={18}>{footer}</YStack>}
+        {footer && (
+          <YStack marginTop={8} marginBottom={12}>
+            {footer}
+          </YStack>
+        )}
         {secondaryButtonText && onSecondaryButtonPress && (
-          <SecondaryButton onPress={onSecondaryButtonPress} marginBottom={16}>
+          <SecondaryButton onPress={onSecondaryButtonPress} marginBottom={12}>
             {secondaryButtonText}
           </SecondaryButton>
         )}
-        <YStack paddingBottom={insets.bottom + 12}>
+        {/* Anchor the Dismiss button to bottom with only safe area padding */}
+        <YStack paddingBottom={insets.bottom + 8}>
           <PrimaryButton onPress={onDismiss}>Dismiss</PrimaryButton>
         </YStack>
       </ExpandableBottomLayout.FullSection>

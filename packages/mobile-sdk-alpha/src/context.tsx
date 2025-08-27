@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 import { createContext, type PropsWithChildren, useContext, useMemo } from 'react';
 
 import { createSelfClient } from './client';
@@ -48,7 +52,7 @@ export function SelfClientProvider({ config, adapters = {}, children }: PropsWit
  * @throws If used outside of a {@link SelfClientProvider}.
  */
 export function useSelfClient(): SelfClient {
-  const ctx = useContext(SelfClientContext);
-  if (!ctx) throw new Error('useSelfClient must be used within a SelfClientProvider');
-  return ctx;
+  const client = useContext(SelfClientContext);
+  if (!client) throw new Error('useSelfClient must be used within a SelfClientProvider');
+  return client;
 }

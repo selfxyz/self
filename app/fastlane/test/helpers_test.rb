@@ -221,7 +221,7 @@ class HelpersTest < Minitest::Test
   def test_android_verify_version_code_missing_version_code_line
     # Test the error handling when versionCode is missing
     gradle_file = Tempfile.new(["build", ".gradle"])
-    gradle_file.write("applicationId 'com.example.app'\nminSdkVersion 21\n")
+    gradle_file.write("applicationId 'com.example.app'\nminSdkVersion 24\n")
     gradle_file.close
 
     # Test the logic that we improved

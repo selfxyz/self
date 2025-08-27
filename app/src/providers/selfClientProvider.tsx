@@ -1,12 +1,19 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { type PropsWithChildren, useMemo } from 'react';
 
 import {
+  Adapters,
   SelfClientProvider as SDKSelfClientProvider,
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
+import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
+
+import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
+import analytics from '@/utils/analytics';
 
 /**
  * Provides a configured Self SDK client instance to all descendants.
@@ -18,7 +25,7 @@ import {
  */
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
-  const adapters = useMemo(
+  const adapters: Partial<Adapters> = useMemo(
     () => ({
       scanner: webScannerShim,
       network: {
@@ -47,6 +54,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
           },
         },
       },
+      documents: selfClientDocumentsAdapter,
       crypto: {
         async hash(
           data: Uint8Array,
@@ -67,6 +75,11 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
           throw new Error(
             `crypto.sign adapter not implemented for keyRef: ${_keyRef}`,
           );
+        },
+      },
+      analytics: {
+        trackEvent: (event: string, data?: TrackEventParams) => {
+          analytics().trackEvent(event, data);
         },
       },
     }),

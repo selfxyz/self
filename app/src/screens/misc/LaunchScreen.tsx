@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
@@ -6,10 +8,11 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
 
+import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import AbstractButton from '@/components/buttons/AbstractButton';
 import { BodyText } from '@/components/typography/BodyText';
 import { Caption } from '@/components/typography/Caption';
-import { AppEvents } from '@/consts/analytics';
 import { privacyUrl, supportedBiometricIdsUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';

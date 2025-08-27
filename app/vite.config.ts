@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import path from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -153,11 +155,9 @@ export default defineConfig({
           'screens-prove-validation-core': [
             './src/utils/proving/validateDocument.ts',
           ],
-          'screens-prove-attest': ['./src/utils/proving/attest.ts'],
           'screens-prove-utils': [
             './src/utils/proving/index.ts',
             './src/utils/proving/provingInputs.ts',
-            './src/utils/proving/cose.ts',
             './src/utils/proving/loadingScreenStateText.ts',
           ],
 
@@ -169,7 +169,7 @@ export default defineConfig({
           // Other screens
           'screens-settings': ['./src/navigation/settings.ts'],
           'screens-recovery': ['./src/navigation/recovery.ts'],
-          'screens-dev': ['./src/navigation/dev.ts'],
+          'screens-dev': ['./src/navigation/devTools.ts'],
           'screens-aesop': ['./src/navigation/aesop.ts'],
         },
       },

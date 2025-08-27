@@ -1,5 +1,9 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 /* eslint-disable sort-exports/sort-exports */
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../../src';
+import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../../src';
 
 // Shared test data
 export const sampleMRZ = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
@@ -49,10 +53,16 @@ export const mockCrypto: CryptoAdapter = {
   sign: async () => new Uint8Array(),
 };
 
+export const mockDocuments: DocumentsAdapter = {
+  loadDocumentCatalog: async () => ({ documents: [] }),
+  loadDocumentById: async () => null,
+};
+
 export const mockAdapters = {
   scanner: mockScanner,
   network: mockNetwork,
   crypto: mockCrypto,
+  documents: mockDocuments,
 };
 
 // Shared test expectations
