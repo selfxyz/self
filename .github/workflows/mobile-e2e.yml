@@ -212,7 +212,7 @@ jobs:
       - name: Cache DerivedData
         uses: actions/cache@v4
         with:
-          path: ~/Library/Developer/Xcode/DerivedData
+          path: app/ios/build
           key: ${{ runner.os }}-derived-data-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
           restore-keys: |
             ${{ runner.os }}-derived-data-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}-
@@ -232,7 +232,7 @@ jobs:
           echo "Installing iOS dependencies..."
           cd app/ios
           echo "📦 Installing pods via centralized script…"
-          bundle exec bash scripts/pod-install-with-cache-fix.sh || { echo "❌ Pod install failed"; exit 1; }
+          BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh || { echo "❌ Pod install failed"; exit 1; }
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."
