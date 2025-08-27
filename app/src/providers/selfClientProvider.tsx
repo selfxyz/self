@@ -27,7 +27,7 @@ import { unsafe_getPrivateKey } from './authProvider';
  */
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
-  const adapters: Partial<Adapters> = useMemo(
+  const adapters: Adapters = useMemo(
     () => ({
       scanner: webScannerShim,
       network: {
