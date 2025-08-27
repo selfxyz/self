@@ -14,6 +14,7 @@ describe('createSelfClient', () => {
     expect(() =>
       createSelfClient({
         config: {},
+        // @ts-expect-error -- missing adapters
         adapters: {
           documents,
           auth,
@@ -25,18 +26,21 @@ describe('createSelfClient', () => {
   });
 
   it('throws when network adapter missing during creation', () => {
+    // @ts-expect-error -- missing adapters
     expect(() => createSelfClient({ config: {}, adapters: { scanner, crypto, documents, auth } })).toThrow(
       'network adapter not provided',
     );
   });
 
   it('throws when crypto adapter missing during creation', () => {
+    // @ts-expect-error -- missing adapters
     expect(() => createSelfClient({ config: {}, adapters: { scanner, network, documents, auth } })).toThrow(
       'crypto adapter not provided',
     );
   });
 
   it('throws when documents adapter missing during creation', () => {
+    // @ts-expect-error -- missing adapters
     expect(() => createSelfClient({ config: {}, adapters: { scanner, network, crypto, auth } })).toThrow(
       'documents adapter not provided',
     );
