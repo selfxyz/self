@@ -151,6 +151,31 @@ function fixLicenseHeader(filePath) {
   const lines = content.split('\n');
   const headerInfo = findLicenseHeaderIndex(lines);
 
+  // If no header exists, add the canonical header
+  if (headerInfo.index === -1) {
+    const newLines = [
+      ...CANONICAL_HEADER_LINES,
+      '', // Add empty line after header
+      ...lines,
+    ];
+    const fixedContent = newLines.join('\n');
+    fs.writeFileSync(filePath, fixedContent, 'utf8');
+    return true;
+  }
+
+  // If header exists but is invalid, replace with canonical header
+  if (headerInfo.index !== -1 && !headerInfo.valid) {
+    const newLines = [
+      ...CANONICAL_HEADER_LINES,
+      '', // Add empty line after header
+      ...lines.slice(headerInfo.endIndex + 1),
+    ];
+    const fixedContent = newLines.join('\n');
+    fs.writeFileSync(filePath, fixedContent, 'utf8');
+    return true;
+  }
+
+  // If header exists and is valid but missing newline
   if (headerInfo.index !== -1 && headerInfo.valid) {
     const headerEndIndex = headerInfo.endIndex;
     if (lines[headerEndIndex + 1] !== '') {

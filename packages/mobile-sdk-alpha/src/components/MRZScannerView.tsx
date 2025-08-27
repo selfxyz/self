@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 import { useCallback, useRef } from 'react';
 import type { DimensionValue, NativeSyntheticEvent, ViewProps, ViewStyle } from 'react-native';
 import { NativeModules, PixelRatio, Platform, requireNativeComponent, StyleSheet, View } from 'react-native';
