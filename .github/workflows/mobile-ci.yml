@@ -63,6 +63,8 @@ jobs:
             node_modules
             app/node_modules
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
       - name: Restore Built Dependencies
         id: built-deps-restore
         uses: actions/cache/restore@v4
@@ -85,8 +87,6 @@ jobs:
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
       - name: Run linter
         run: yarn lint
         working-directory: ./app
@@ -131,6 +131,8 @@ jobs:
             node_modules
             app/node_modules
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
       - name: Restore Built Dependencies
         id: built-deps-restore
         uses: actions/cache/restore@v4
@@ -153,8 +155,6 @@ jobs:
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
       - name: Test
         run: yarn test
         working-directory: ./app
@@ -251,6 +251,8 @@ jobs:
           key: ${{ runner.os }}-xcode-index-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-xcode-index-${{ env.XCODE_VERSION }}-
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/yarn-install
       - name: Restore Built Dependencies
         id: built-deps-restore
         uses: actions/cache/restore@v4
@@ -273,8 +275,6 @@ jobs:
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/yarn-install
       - name: Install Ruby Dependencies
         run: |
           echo "Installing Ruby dependencies..."
@@ -410,6 +410,8 @@ jobs:
           key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
       - name: Install NDK
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/yarn-install
       - name: Restore Built Dependencies
         id: built-deps-restore
         uses: actions/cache/restore@v4
@@ -432,8 +434,6 @@ jobs:
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/yarn-install
       - name: Build Android
         run: |
           cd android
