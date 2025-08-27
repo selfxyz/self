@@ -28,7 +28,7 @@ export interface SelfClientProviderProps {
    * Partial set of adapter implementations. Any missing optional adapters will
    * be replaced with default no-op implementations.
    */
-  adapters?: Partial<Adapters>;
+  adapters: Adapters;
 }
 
 export { SelfClientContext };
@@ -40,7 +40,7 @@ export { SelfClientContext };
  * Consumers should ensure that `config` and `adapters` are referentially stable
  * (e.g. wrapped in `useMemo`) to avoid recreating the client on every render.
  */
-export function SelfClientProvider({ config, adapters = {}, children }: PropsWithChildren<SelfClientProviderProps>) {
+export function SelfClientProvider({ config, adapters, children }: PropsWithChildren<SelfClientProviderProps>) {
   const client = useMemo(() => createSelfClient({ config, adapters }), [config, adapters]);
 
   return <SelfClientContext.Provider value={client}>{children}</SelfClientContext.Provider>;

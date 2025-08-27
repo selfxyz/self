@@ -9,11 +9,11 @@ import type { Adapters, Config } from '../types/public';
 
 export interface SelfMobileSdkProps {
   config: Config;
-  adapters?: Partial<Adapters>;
+  adapters: Adapters;
   children?: ReactNode;
 }
 
-export const SelfMobileSdk = ({ config, adapters = {}, children }: SelfMobileSdkProps) => (
+export const SelfMobileSdk = ({ config, adapters, children }: SelfMobileSdkProps) => (
   <SelfClientProvider config={config} adapters={adapters}>
     {children}
   </SelfClientProvider>

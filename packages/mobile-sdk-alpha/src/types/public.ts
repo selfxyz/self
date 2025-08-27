@@ -93,12 +93,12 @@ export interface Progress {
   percent?: number;
 }
 export interface Adapters {
-  storage: StorageAdapter;
+  storage?: StorageAdapter;
   scanner: ScannerAdapter;
   crypto: CryptoAdapter;
   network: NetworkAdapter;
-  clock: ClockAdapter;
-  logger: LoggerAdapter;
+  clock?: ClockAdapter;
+  logger?: LoggerAdapter;
   analytics?: AnalyticsAdapter;
   auth: AuthAdapter;
   documents: DocumentsAdapter;
