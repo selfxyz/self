@@ -151,12 +151,6 @@ vi.mock('react-native', () => ({
   experimental_useFormStatus: vi.fn(),
   experimental_useFormState: vi.fn(),
   experimental_useCacheRefresh: vi.fn(),
-  experimental_use: vi.fn(),
-  experimental_useOptimistic: vi.fn(),
-  experimental_useActionState: vi.fn(),
-  experimental_useFormStatus: vi.fn(),
-  experimental_useFormState: vi.fn(),
-  experimental_useCacheRefresh: vi.fn(),
 }));
 
 // Mock window.matchMedia for Tamagui components
