@@ -62,6 +62,7 @@ function createTestClient() {
   return createSelfClient({
     config: {},
     adapters: {
+      auth: { getPrivateKey: jest.fn() },
       scanner: { scan: jest.fn() },
       network: {
         http: { fetch: jest.fn() },
