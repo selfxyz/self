@@ -12,6 +12,7 @@ let scan: any;
 if (Platform.OS === 'android') {
   // Android uses the react-native-passport-reader package
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const AndroidPassportReader = require('react-native-passport-reader');
     PassportReader = AndroidPassportReader;
     reset = AndroidPassportReader.reset;
