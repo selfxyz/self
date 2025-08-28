@@ -170,7 +170,7 @@ export const PassportContext = createContext<IPassportContext>({
   markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
   updateDocumentRegistrationState: updateDocumentRegistrationState,
   checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
-  checkAndUpdateRegistrationStates: () => Promise.resolve(),
+  checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
