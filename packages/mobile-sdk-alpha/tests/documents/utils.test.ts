@@ -12,6 +12,9 @@ const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAda
   return createSelfClient({
     config: defaultConfig,
     adapters: {
+      auth: {
+        getPrivateKey: async () => null,
+      },
       documents: documentsAdapter,
       crypto: {
         hash: async () => new Uint8Array(),
