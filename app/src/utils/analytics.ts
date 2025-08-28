@@ -201,17 +201,20 @@ const flushMixpanelEvents = async () => {
 export const configureNfcAnalytics = async () => {
   if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
   const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
-  if (PassportReader.configure) {
-    await Promise.resolve(
-      PassportReader.configure(MIXPANEL_NFC_PROJECT_TOKEN, enableDebugLogs, {
-        flushInterval: 20,
-        flushCount: 5,
-        flushOnBackground: true,
-        flushOnForeground: true,
-        flushOnNetworkChange: true,
-      }),
-    );
+
+  // Check if PassportReader and configure method exist (Android doesn't have configure)
+  if (PassportReader && typeof PassportReader.configure === 'function') {
+    try {
+      // iOS configure method only accepts token and enableDebugLogs
+      // Android doesn't have this method at all
+      await Promise.resolve(
+        PassportReader.configure(MIXPANEL_NFC_PROJECT_TOKEN, enableDebugLogs),
+      );
+    } catch (error) {
+      console.warn('Failed to configure NFC analytics:', error);
+    }
   }
+
   setupFlushPolicies();
   mixpanelConfigured = true;
 };

@@ -12,10 +12,9 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
+import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
-
-import { unsafe_getPrivateKey } from './authProvider';
 
 /**
  * Provides a configured Self SDK client instance to all descendants.

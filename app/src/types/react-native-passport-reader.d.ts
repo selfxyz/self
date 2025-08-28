@@ -13,21 +13,21 @@ declare module 'react-native-passport-reader' {
   }
 
   interface PassportReader {
-    configure(
-      token: string,
-      enableDebug?: boolean,
-      flushPolicies?: {
-        flushInterval?: number;
-        flushCount?: number;
-        flushOnBackground?: boolean;
-        flushOnForeground?: boolean;
-        flushOnNetworkChange?: boolean;
-      },
-    ): void;
+    configure?(token: string, enableDebug?: boolean): void;
     trackEvent?(name: string, properties?: Record<string, unknown>): void;
     flush?(): void;
     reset(): void;
-    scan(options: ScanOptions): Promise<{
+    scanPassport(
+      passportNumber: string,
+      dateOfBirth: string,
+      dateOfExpiry: string,
+      canNumber: string,
+      useCan: boolean,
+      skipPACE: boolean,
+      skipCA: boolean,
+      extendedMode: boolean,
+      usePacePolling: boolean,
+    ): Promise<{
       mrz: string;
       eContent: string;
       encryptedDigest: string;

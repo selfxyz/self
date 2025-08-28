@@ -68,13 +68,17 @@ const scanAndroid = async (inputs: Inputs) => {
 
 const scanIOS = async (inputs: Inputs) => {
   return await Promise.resolve(
-    PassportReader.scan({
-      documentNumber: inputs.passportNumber,
-      dateOfBirth: inputs.dateOfBirth,
-      dateOfExpiry: inputs.dateOfExpiry,
-      canNumber: inputs.canNumber ?? '',
-      useCan: inputs.useCan ?? false,
-    }),
+    PassportReader.scanPassport(
+      inputs.passportNumber,
+      inputs.dateOfBirth,
+      inputs.dateOfExpiry,
+      inputs.canNumber ?? '',
+      inputs.useCan ?? false,
+      inputs.skipPACE ?? false,
+      inputs.skipCA ?? false,
+      inputs.extendedMode ?? false,
+      inputs.usePacePolling ?? false,
+    ),
   );
 };
 

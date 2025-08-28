@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useProtocolStore } from '../../../src/stores/protocolStore';
-import { useProvingStore } from '../../../src/utils/proving/provingMachine';
+import { useProtocolStore } from '@/stores/protocolStore';
+import { useProvingStore } from '@/utils/proving/provingMachine';
+
 import { actorMock } from './actorMock';
 
 jest.mock('xstate', () => {
@@ -23,13 +24,13 @@ jest.mock('xstate', () => {
   };
 });
 
-jest.mock('../../../src/utils/analytics', () => () => ({
+jest.mock('@/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
-jest.mock('../../../src/providers/passportDataProvider', () => ({
+jest.mock('@/providers/passportDataProvider', () => ({
   loadSelectedDocument: jest.fn(),
 }));
-jest.mock('../../../src/providers/authProvider', () => ({
+jest.mock('@/providers/authProvider', () => ({
   unsafe_getPrivateKey: jest.fn(),
 }));
 
@@ -38,7 +39,7 @@ describe('startFetchingData', () => {
     jest.clearAllMocks();
     const {
       loadSelectedDocument,
-    } = require('../../../src/providers/passportDataProvider');
+    } = require('@/providers/passportDataProvider');
     loadSelectedDocument.mockResolvedValue({
       data: {
         documentCategory: 'passport',
@@ -46,9 +47,7 @@ describe('startFetchingData', () => {
         dsc_parsed: { authorityKeyIdentifier: 'key' },
       },
     });
-    const {
-      unsafe_getPrivateKey,
-    } = require('../../../src/providers/authProvider');
+    const { unsafe_getPrivateKey } = require('@/providers/authProvider');
     unsafe_getPrivateKey.mockResolvedValue('secret');
     useProtocolStore.setState({
       passport: { fetch_all: jest.fn().mockResolvedValue(undefined) },

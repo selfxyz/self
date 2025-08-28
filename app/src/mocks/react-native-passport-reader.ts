@@ -6,17 +6,7 @@
 
 // Mock PassportReader object with analytics methods
 export const PassportReader = {
-  configure: (
-    token: string,
-    enableDebug?: boolean,
-    flushPolicies?: {
-      flushInterval?: number;
-      flushCount?: number;
-      flushOnBackground?: boolean;
-      flushOnForeground?: boolean;
-      flushOnNetworkChange?: boolean;
-    },
-  ) => {
+  configure: (token: string, enableDebug?: boolean) => {
     // No-op for web
     return Promise.resolve();
   },
@@ -32,7 +22,7 @@ export const PassportReader = {
     // No-op for web
     return Promise.resolve();
   },
-  scan: async () => {
+  scanPassport: async () => {
     throw new Error('NFC scanning is not supported on web');
   },
 };
