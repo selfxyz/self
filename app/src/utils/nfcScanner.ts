@@ -2,13 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Buffer } from 'buffer';
-import { NativeModules, Platform } from 'react-native';
-import PassportReader from 'react-native-passport-reader';
-import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
+import { Platform } from 'react-native';
+import {
+  PassportReader,
+  reset,
+  scan as scanDocument,
+} from 'react-native-passport-reader';
 
 import type { PassportData } from '@selfxyz/common/types';
+
+import { configureNfcAnalytics } from '@/utils/analytics';
 
 interface AndroidScanResponse {
   mrz: string;
@@ -43,9 +47,17 @@ export const parseScanResponse = (response: unknown) => {
     : handleResponseIOS(response);
 };
 
+export const scan = async (inputs: Inputs) => {
+  await configureNfcAnalytics();
+
+  return Platform.OS === 'android'
+    ? await scanAndroid(inputs)
+    : await scanIOS(inputs);
+};
+
 const scanAndroid = async (inputs: Inputs) => {
-  PassportReader.reset();
-  return await PassportReader.scan({
+  reset();
+  return await scanDocument({
     documentNumber: inputs.passportNumber,
     dateOfBirth: inputs.dateOfBirth,
     dateOfExpiry: inputs.dateOfExpiry,
@@ -55,34 +67,15 @@ const scanAndroid = async (inputs: Inputs) => {
 };
 
 const scanIOS = async (inputs: Inputs) => {
-  return await NativeModules.PassportReader.scanPassport(
-    inputs.passportNumber,
-    inputs.dateOfBirth,
-    inputs.dateOfExpiry,
-    inputs.canNumber ?? '',
-    inputs.useCan ?? false,
-    inputs.skipPACE ?? false,
-    inputs.skipCA ?? false,
-    inputs.extendedMode ?? false,
-    inputs.usePacePolling ?? false,
+  return await Promise.resolve(
+    PassportReader.scan({
+      documentNumber: inputs.passportNumber,
+      dateOfBirth: inputs.dateOfBirth,
+      dateOfExpiry: inputs.dateOfExpiry,
+      canNumber: inputs.canNumber ?? '',
+      useCan: inputs.useCan ?? false,
+    }),
   );
-};
-
-export const scan = async (inputs: Inputs) => {
-  if (MIXPANEL_NFC_PROJECT_TOKEN) {
-    if (Platform.OS === 'ios') {
-      const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
-      NativeModules.PassportReader.configure(
-        MIXPANEL_NFC_PROJECT_TOKEN,
-        enableDebugLogs,
-      );
-    } else {
-    }
-  }
-
-  return Platform.OS === 'android'
-    ? await scanAndroid(inputs)
-    : await scanIOS(inputs);
 };
 
 const handleResponseIOS = (response: unknown) => {

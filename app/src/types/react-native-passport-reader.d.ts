@@ -13,7 +13,19 @@ declare module 'react-native-passport-reader' {
   }
 
   interface PassportReader {
-    configure(token: string): void;
+    configure(
+      token: string,
+      enableDebug?: boolean,
+      flushPolicies?: {
+        flushInterval?: number;
+        flushCount?: number;
+        flushOnBackground?: boolean;
+        flushOnForeground?: boolean;
+        flushOnNetworkChange?: boolean;
+      },
+    ): void;
+    trackEvent?(name: string, properties?: Record<string, unknown>): void;
+    flush?(): void;
     reset(): void;
     scan(options: ScanOptions): Promise<{
       mrz: string;
@@ -33,6 +45,23 @@ declare module 'react-native-passport-reader' {
     }>;
   }
 
-  const PassportReader: PassportReader;
-  export default PassportReader;
+  export const PassportReader: PassportReader;
+  export function configure(token: string): void;
+  export function reset(): void;
+  export function scan(options: ScanOptions): Promise<{
+    mrz: string;
+    eContent: string;
+    encryptedDigest: string;
+    photo: {
+      base64: string;
+    };
+    digestAlgorithm: string;
+    signerInfoDigestAlgorithm: string;
+    digestEncryptionAlgorithm: string;
+    LDSVersion: string;
+    unicodeVersion: string;
+    encapContent: string;
+    documentSigningCertificate: string;
+    dataGroupHashes: string;
+  }>;
 }

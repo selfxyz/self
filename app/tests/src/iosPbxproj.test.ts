@@ -6,11 +6,11 @@
  * @jest-environment node
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 describe('iOS project.pbxproj Configuration', () => {
-  const projectPath = path.join(
+  const projectPath = join(
     __dirname,
     '../../ios/Self.xcodeproj/project.pbxproj',
   );
@@ -18,7 +18,7 @@ describe('iOS project.pbxproj Configuration', () => {
 
   beforeAll(() => {
     try {
-      projectContent = fs.readFileSync(projectPath, 'utf8');
+      projectContent = readFileSync(projectPath, 'utf8');
     } catch (error) {
       throw new Error(
         `Failed to read iOS project file at ${projectPath}: ${error instanceof Error ? error.message : String(error)}`,

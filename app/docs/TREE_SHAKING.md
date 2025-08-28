@@ -77,7 +77,7 @@ Bundle Sizes (smallest to largest):
 
 The import analyzer will categorize your imports:
 
-- ⭐ **Star imports** (`import * as`) - Prevents tree shaking
+- ⭐ **Namespace imports** (importing entire modules) - Prevents tree shaking
 - 📝 **Named imports** (`import { ... }`) - Moderate tree shaking
 - 🎯 **Granular imports** (`import { ... } from '@selfxyz/common/constants'`) - Best tree shaking
 
@@ -93,7 +93,7 @@ You'll get a score based on your import patterns:
 ### ❌ Avoid: Star Imports
 ```typescript
 // This imports everything, preventing tree shaking
-import * as common from '@selfxyz/common';
+import common from '@selfxyz/common';
 console.log(common.API_URL);
 ```
 
@@ -286,7 +286,7 @@ Tree shaking is automatically tested in CI:
 
 ### 1. Replace Star Imports
 ```diff
-- import * as common from '@selfxyz/common';
+- import common from '@selfxyz/common';
 + import { API_URL } from '@selfxyz/common/constants';
 + import { hash } from '@selfxyz/common/utils';
 ```

@@ -13,11 +13,9 @@ import { Caption } from '@/components/typography/Caption';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import analytics from '@/utils/analytics';
+import analytics, { flushAllAnalytics } from '@/utils/analytics';
 import { slate500 } from '@/utils/colors';
 import { sendFeedbackEmail } from '@/utils/email';
-
-const { flush: flushAnalytics } = analytics();
 
 const tips: TipProps[] = [
   {
@@ -55,7 +53,7 @@ const PassportNFCTrouble: React.FC = () => {
 
   // error screen, flush analytics
   useEffect(() => {
-    flushAnalytics();
+    flushAllAnalytics();
   }, []);
 
   // 5-taps with a single finger

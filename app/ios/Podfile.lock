@@ -2088,7 +2088,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - segment-analytics-react-native (2.21.1):
+  - segment-analytics-react-native (2.21.2):
     - React-Core
     - sovran-react-native
   - Sentry/HybridSDK (8.52.1)

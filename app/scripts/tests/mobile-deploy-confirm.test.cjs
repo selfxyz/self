@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-const fs = require('fs');
-const path = require('path');
+const { existsSync, readFileSync } = require('fs');
+const { join } = require('path');
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 
@@ -163,13 +163,10 @@ describe('Mobile Deploy Confirm - File Parsing', () => {
 
   describe('Real File Integration Tests', () => {
     it('should parse actual iOS Info.plist if it exists', () => {
-      const infoPlistPath = path.join(
-        __dirname,
-        '../ios/OpenPassport/Info.plist',
-      );
+      const infoPlistPath = join(__dirname, '../ios/OpenPassport/Info.plist');
 
-      if (fs.existsSync(infoPlistPath)) {
-        const content = fs.readFileSync(infoPlistPath, 'utf8');
+      if (existsSync(infoPlistPath)) {
+        const content = readFileSync(infoPlistPath, 'utf8');
         const version = extractIOSVersion(content);
 
         // Should either be a valid version or 'Unknown'
@@ -181,13 +178,13 @@ describe('Mobile Deploy Confirm - File Parsing', () => {
     });
 
     it('should parse actual iOS project.pbxproj if it exists', () => {
-      const projectPath = path.join(
+      const projectPath = join(
         __dirname,
         '../ios/Self.xcodeproj/project.pbxproj',
       );
 
-      if (fs.existsSync(projectPath)) {
-        const content = fs.readFileSync(projectPath, 'utf8');
+      if (existsSync(projectPath)) {
+        const content = readFileSync(projectPath, 'utf8');
         const build = extractIOSBuild(content);
 
         // Should either be a valid build number or 'Unknown'
@@ -204,13 +201,10 @@ describe('Mobile Deploy Confirm - File Parsing', () => {
     });
 
     it('should parse actual Android build.gradle if it exists', () => {
-      const buildGradlePath = path.join(
-        __dirname,
-        '../android/app/build.gradle',
-      );
+      const buildGradlePath = join(__dirname, '../android/app/build.gradle');
 
-      if (fs.existsSync(buildGradlePath)) {
-        const content = fs.readFileSync(buildGradlePath, 'utf8');
+      if (existsSync(buildGradlePath)) {
+        const content = readFileSync(buildGradlePath, 'utf8');
         const version = extractAndroidVersion(content);
         const versionCode = extractAndroidVersionCode(content);
 
@@ -232,10 +226,10 @@ describe('Mobile Deploy Confirm - File Parsing', () => {
     });
 
     it('should parse actual package.json if it exists', () => {
-      const packageJsonPath = path.join(__dirname, '../package.json');
+      const packageJsonPath = join(__dirname, '../package.json');
 
-      if (fs.existsSync(packageJsonPath)) {
-        const content = fs.readFileSync(packageJsonPath, 'utf8');
+      if (existsSync(packageJsonPath)) {
+        const content = readFileSync(packageJsonPath, 'utf8');
         const packageJson = JSON.parse(content);
 
         assert.ok(Object.hasOwn(packageJson, 'version'));

@@ -3,7 +3,15 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { SENTRY_DSN } from '@env';
-import * as Sentry from '@sentry/react-native';
+import {
+  captureException as sentryCaptureException,
+  captureFeedback as sentryCaptureFeedback,
+  captureMessage as sentryCaptureMessage,
+  consoleLoggingIntegration,
+  feedbackIntegration,
+  init as sentryInit,
+  wrap,
+} from '@sentry/react-native';
 
 export const captureException = (
   error: Error,
@@ -12,7 +20,7 @@ export const captureException = (
   if (isSentryDisabled) {
     return;
   }
-  Sentry.captureException(error, {
+  sentryCaptureException(error, {
     extra: context,
   });
 };
@@ -25,7 +33,7 @@ export const captureFeedback = (
     return;
   }
 
-  Sentry.captureFeedback(
+  sentryCaptureFeedback(
     {
       message: feedback,
       name: context?.name,
@@ -53,17 +61,17 @@ export const captureMessage = (
   if (isSentryDisabled) {
     return;
   }
-  Sentry.captureMessage(message, {
+  sentryCaptureMessage(message, {
     extra: context,
   });
 };
 
 export const initSentry = () => {
   if (isSentryDisabled) {
-    return null;
+    return;
   }
 
-  Sentry.init({
+  sentryInit({
     dsn: SENTRY_DSN,
     debug: false,
     enableAutoSessionTracking: true,
@@ -82,10 +90,10 @@ export const initSentry = () => {
       return event;
     },
     integrations: [
-      Sentry.consoleLoggingIntegration({
+      consoleLoggingIntegration({
         levels: ['log', 'error', 'warn', 'info', 'debug'],
       }),
-      Sentry.feedbackIntegration({
+      feedbackIntegration({
         buttonOptions: {
           styles: {
             triggerButton: {
@@ -106,11 +114,10 @@ export const initSentry = () => {
       enableLogs: true,
     },
   });
-  return Sentry;
 };
 
 export const isSentryDisabled = !SENTRY_DSN;
 
 export const wrapWithSentry = (App: React.ComponentType) => {
-  return isSentryDisabled ? App : Sentry.wrap(App);
+  return isSentryDisabled ? App : wrap(App);
 };

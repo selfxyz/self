@@ -9,7 +9,7 @@
  * Ensures there's a newline after license headers
  */
 
-import fs from 'fs';
+import { readdirSync, statSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 // Legacy composite format (being phased out)
@@ -30,11 +30,11 @@ function findFiles(
   const files = [];
 
   function traverse(currentDir) {
-    const items = fs.readdirSync(currentDir);
+    const items = readdirSync(currentDir);
 
     for (const item of items) {
       const fullPath = path.join(currentDir, item);
-      const stat = fs.statSync(fullPath);
+      const stat = statSync(fullPath);
 
       if (stat.isDirectory()) {
         // Skip node_modules, .git, and other common directories
@@ -107,7 +107,7 @@ function checkLicenseHeader(
   filePath,
   { requireHeader = false, projectRoot = process.cwd() } = {},
 ) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   const headerInfo = findLicenseHeaderIndex(lines);
 
@@ -147,7 +147,7 @@ function checkLicenseHeader(
 }
 
 function fixLicenseHeader(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   const headerInfo = findLicenseHeaderIndex(lines);
 
@@ -157,7 +157,7 @@ function fixLicenseHeader(filePath) {
       // Insert empty line after license header
       lines.splice(headerEndIndex + 1, 0, '');
       const fixedContent = lines.join('\n');
-      fs.writeFileSync(filePath, fixedContent, 'utf8');
+      writeFileSync(filePath, fixedContent, 'utf8');
       return true;
     }
   }
