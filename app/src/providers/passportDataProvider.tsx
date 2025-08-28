@@ -569,10 +569,10 @@ export async function loadPassportDataAndSecret() {
   });
 }
 
-export const loadSelectedDocumentDirectlyFromKeychain = async (): Promise<{
+export async function loadSelectedDocumentDirectlyFromKeychain(): Promise<{
   data: PassportData;
   metadata: DocumentMetadata;
-} | null> => {
+} | null> {
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   console.log('Catalog loaded');
 
@@ -610,7 +610,7 @@ export const loadSelectedDocumentDirectlyFromKeychain = async (): Promise<{
 
   console.log('Successfully loaded document:', metadata.documentType);
   return { data, metadata };
-};
+}
 
 export async function loadSelectedPassportData(): Promise<string | false> {
   // Try new system first
