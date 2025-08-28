@@ -42,7 +42,7 @@ export default defineConfig({
         __dirname,
         'src/mocks/react-native-gesture-handler.ts',
       ),
-      'react-native-passport-reader': path.resolve(
+      'react-native-passport-reader': resolve(
         __dirname,
         'src/mocks/react-native-passport-reader.ts',
       ),
