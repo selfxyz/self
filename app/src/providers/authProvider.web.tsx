@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /*
  * This entire file is a stub and MUST be replaced
@@ -14,9 +16,10 @@ import React, {
   useState,
 } from 'react';
 
-import { AuthEvents } from '../consts/analytics';
-import type { Mnemonic } from '../types/mnemonic';
-import analytics from '../utils/analytics';
+import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
+import type { Mnemonic } from '@/types/mnemonic';
+import analytics from '@/utils/analytics';
 
 const { trackEvent } = analytics();
 
@@ -105,11 +108,12 @@ const _getSecurely = async function <T>(
       signature: 'authenticated',
       data: formatter(dataString),
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in _getSecurely:', error);
+    const message = error instanceof Error ? error.message : String(error);
     trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
       reason: 'unknown_error',
-      error: error.message,
+      error: message,
     });
     throw error;
   }
@@ -190,8 +194,11 @@ export const AuthProvider = ({
         } else {
           return { success: false, error: 'No private key provided' };
         }
-      } catch (error: any) {
-        return { success: false, error: error.message };
+      } catch (err: unknown) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+        };
       }
     })();
 

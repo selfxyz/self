@@ -1,23 +1,24 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
 import { styled, View, XStack, YStack } from 'tamagui';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import ModalClose from '../../images/icons/modal_close.svg';
-import LogoInversed from '../../images/logo_inversed.svg';
-import { white } from '../../utils/colors';
-import { confirmTap, impactLight } from '../../utils/haptic';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import ModalClose from '@/images/icons/modal_close.svg';
+import LogoInversed from '@/images/logo_inversed.svg';
+import { white } from '@/utils/colors';
+import { confirmTap, impactLight } from '@/utils/haptic';
 import {
   getModalCallbacks,
   unregisterModalCallbacks,
-} from '../../utils/modalCallbackRegistry';
-
-import type { StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+} from '@/utils/modalCallbackRegistry';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',
@@ -46,7 +47,7 @@ export interface ModalParams extends Record<string, any> {
   preventDismiss?: boolean;
 }
 
-interface ModalScreenProps extends StaticScreenProps<ModalNavigationParams> {}
+type ModalScreenProps = StaticScreenProps<ModalNavigationParams>;
 
 const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   const navigation = useNavigation();

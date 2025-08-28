@@ -1,7 +1,9 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { HapticOptions, HapticType } from './shared';
-import { defaultOptions } from './shared';
+import type { HapticOptions, HapticType } from '@/utils/haptic/shared';
+import { defaultOptions } from '@/utils/haptic/shared';
 
 /**
  * Triggers haptic feedback or vibration based on platform.

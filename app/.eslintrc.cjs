@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
@@ -26,9 +30,7 @@ module.exports = {
     'web/dist/',
     '.tamagui/*',
     '*.js.map',
-    '*.d.ts',
-    'metro.config.cjs',
-    'docs/examples/',
+    'tests/e2e/',
   ],
   settings: {
     react: { version: 'detect' },
@@ -53,34 +55,29 @@ module.exports = {
       {
         groups: [
           // Node.js built-ins
-
           ['^node:'],
           ['^node:.*/'],
-          // External packages
 
-          ['^[a-zA-Z]'],
+          // External packages (including @-prefixed external packages)
+          ['^[a-zA-Z]', '^@(?!selfxyz|/)'],
+
           // Internal workspace packages
-
           ['^@selfxyz/'],
-          // Internal relative imports
 
+          // Internal alias imports (new @/ alias)
+          ['^@/'],
+
+          // Internal relative imports
           ['^[./]'],
         ],
       },
     ],
 
-    // Export sorting - using sort-exports for better type prioritization
+    // Export sorting
 
     'sort-exports/sort-exports': [
       'error',
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
-    ],
-
-    // Type import enforcement
-
-    '@typescript-eslint/consistent-type-imports': [
-      'error',
-      { prefer: 'type-imports' },
     ],
 
     // Standard import rules
@@ -89,25 +86,26 @@ module.exports = {
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
 
-    // Header rule - configured to prevent duplicates, single line header only
-
-    'header/header': [
-      'error',
-      'line',
-      ' SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11',
-    ],
+    // Header rule - DISABLED in favor of check-license-headers.mjs script
+    // 'header/header': [
+    //   'error',
+    //   'line',
+    //   ' SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11',
+    // ],
 
     // Prevent empty lines at the beginning and end of files, and limit consecutive empty lines
+    // Exception: allow one empty line after license header at file start
 
     'no-multiple-empty-lines': [
       'error',
       {
         max: 1,
         maxEOF: 0,
-        maxBOF: 0,
+        maxBOF: 1, // Allow one empty line at beginning (for license header)
       },
     ],
-    // Enforce empty line after header comments (but not at file start)
+    // Keep lines-around-comment rule disabled for normal comments
+    // License header newlines will be enforced by the check-license-headers.mjs script
 
     'lines-around-comment': [
       'error',
@@ -115,7 +113,7 @@ module.exports = {
         beforeBlockComment: false,
         afterBlockComment: false,
         beforeLineComment: false,
-        afterLineComment: false,
+        afterLineComment: false, // Keep disabled - license script handles this
         allowBlockStart: true,
         allowBlockEnd: false,
         allowObjectStart: false,
@@ -151,9 +149,11 @@ module.exports = {
     'prefer-const': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-require-imports': 'error',
+    '@typescript-eslint/no-empty-object-type': 'warn',
+    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-expressions': 'warn',
     'no-redeclare': 'off',
-    '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-namespace': 'off',
     'no-case-declarations': 'off',
     'react/no-children-prop': 'off',
@@ -167,20 +167,13 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.cjs'],
-      env: {
-        node: true,
-        commonjs: true,
-        es6: true,
-      },
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'script',
-      },
+      files: ['docs/examples/**/*.ts'],
       rules: {
-        'header/header': 'off',
-        '@typescript-eslint/no-var-requires': 'off',
-        'no-undef': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        'no-console': 'off',
+        'no-unused-vars': 'off',
+        'import/no-unresolved': 'off',
       },
     },
     {
@@ -191,10 +184,68 @@ module.exports = {
         'src/providers/passportDataProvider.tsx',
         'src/utils/cloudBackup/helpers.ts',
         'src/utils/haptic/index.ts',
-        'src/utils/proving/provingUtils.ts',
       ],
       rules: {
         'sort-exports/sort-exports': 'off',
+      },
+    },
+    {
+      files: ['tests/**/*.{ts,tsx}'],
+      env: {
+        jest: true,
+      },
+      parserOptions: {
+        project: './tsconfig.test.json',
+      },
+      rules: {
+        // Allow console logging and relaxed typing in tests
+        'no-console': 'off',
+        // Allow require() imports in tests for mocking
+        '@typescript-eslint/no-require-imports': 'off',
+        // Allow any types in tests for mocking
+        '@typescript-eslint/no-explicit-any': 'off',
+      },
+    },
+    {
+      // Allow console logging in scripts
+      files: ['scripts/**/*.cjs', 'scripts/*.cjs'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
+    {
+      // Allow require imports for dynamic imports in proving machine
+      files: ['src/utils/proving/provingMachine.ts'],
+      rules: {
+        '@typescript-eslint/no-require-imports': 'off',
+      },
+    },
+    {
+      // Allow require imports for conditional loading in navigation
+      files: ['src/navigation/index.tsx'],
+      rules: {
+        '@typescript-eslint/no-require-imports': 'off',
+      },
+    },
+    {
+      files: ['*.cjs', '*.js'],
+      env: {
+        node: true,
+        commonjs: true,
+        es6: true,
+      },
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'script',
+      },
+      rules: {
+        'no-console': 'off',
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/no-require-imports': 'off',
+        'no-undef': 'off',
       },
     },
   ],

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+
 require "minitest/autorun"
 require_relative "../helpers"
 
@@ -219,7 +221,7 @@ class HelpersTest < Minitest::Test
   def test_android_verify_version_code_missing_version_code_line
     # Test the error handling when versionCode is missing
     gradle_file = Tempfile.new(["build", ".gradle"])
-    gradle_file.write("applicationId 'com.example.app'\nminSdkVersion 21\n")
+    gradle_file.write("applicationId 'com.example.app'\nminSdkVersion 24\n")
     gradle_file.close
 
     # Test the logic that we improved

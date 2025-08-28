@@ -1,17 +1,22 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import React, { useMemo, useState } from 'react';
-import type { StyleProp } from 'react-native';
+import React, { cloneElement, isValidElement, useMemo, useState } from 'react';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Alert, ScrollView } from 'react-native';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
 
-import BugIcon from '../../images/icons/bug_icon.svg';
-import IdIcon from '../../images/icons/id_icon.svg';
-import WarningIcon from '../../images/icons/warning.svg';
-import type { RootStackParamList } from '../../navigation';
-import { unsafe_clearSecrets } from '../../providers/authProvider';
-import { usePassport } from '../../providers/passportDataProvider';
+import BugIcon from '@/images/icons/bug_icon.svg';
+import IdIcon from '@/images/icons/id_icon.svg';
+import WarningIcon from '@/images/icons/warning.svg';
+import type { RootStackParamList } from '@/navigation';
+import { unsafe_clearSecrets } from '@/providers/authProvider';
+import { usePassport } from '@/providers/passportDataProvider';
 import {
   red500,
   slate100,
@@ -23,12 +28,8 @@ import {
   slate900,
   white,
   yellow500,
-} from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
-
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Check, ChevronDown, ChevronRight } from '@tamagui/lucide-icons';
+} from '@/utils/colors';
+import { dinot } from '@/utils/fonts';
 
 interface DevSettingsScreenProps extends PropsWithChildren {
   color?: string;
@@ -43,7 +44,7 @@ interface DevSettingsScreenProps extends PropsWithChildren {
     | 'space-evenly';
   userSelect?: 'all' | 'text' | 'none' | 'contain';
   textAlign?: 'center' | 'left' | 'right';
-  style?: StyleProp<any>;
+  style?: StyleProp<TextStyle | ViewStyle>;
 }
 
 function ParameterSection({
@@ -63,12 +64,12 @@ function ParameterSection({
     const iconElement =
       typeof icon === 'function'
         ? (icon as () => React.ReactNode)()
-        : React.isValidElement(icon)
+        : isValidElement(icon)
           ? icon
           : null;
 
     return iconElement
-      ? React.cloneElement(iconElement as React.ReactElement, {
+      ? cloneElement(iconElement as React.ReactElement, {
           width: '100%',
           height: '100%',
         })
@@ -158,8 +159,8 @@ const ScreenSelector = ({}) => {
     <Select
       open={open}
       onOpenChange={setOpen}
-      onValueChange={(screen: any) => {
-        navigation.navigate(screen);
+      onValueChange={(screen: keyof RootStackParamList) => {
+        navigation.navigate(screen as never);
       }}
       disablePreventBodyScroll
     >
@@ -187,7 +188,7 @@ const ScreenSelector = ({}) => {
         </Button>
       </Select.Trigger>
 
-      <Adapt when={'sm' as any} platform="touch">
+      <Adapt when={true} platform="touch">
         <Sheet native modal dismissOnSnapToBottom animation="medium">
           <Sheet.Frame>
             <Sheet.ScrollView>
@@ -348,11 +349,16 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           darkMode={true}
         >
           {[
-            {
-              label: 'Display your private key',
-              onPress: () => navigation.navigate('DevPrivateKey'),
-              dangerTheme: false,
-            },
+            // Only show private key button in development
+            ...(__DEV__
+              ? [
+                  {
+                    label: 'Display your private key',
+                    onPress: () => navigation.navigate('DevPrivateKey'),
+                    dangerTheme: false,
+                  },
+                ]
+              : []),
             {
               label: 'Delete your private key',
               onPress: handleClearSecretsPress,

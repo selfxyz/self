@@ -197,20 +197,31 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
     @ReactMethod
     fun scan(opts: ReadableMap, promise: Promise) {
+        // Log scan start
+        logAnalyticsEvent("nfc_scan_started", mapOf(
+            "use_can" to (opts.getBoolean(PARAM_USE_CAN) ?: false),
+            "has_document_number" to (!opts.getString(PARAM_DOC_NUM).isNullOrEmpty()),
+            "has_can_number" to (!opts.getString(PARAM_CAN).isNullOrEmpty()),
+            "platform" to "android"
+        ))
+        
         eventMessageEmitter(Messages.SCANNING)
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(reactApplicationContext)
         // val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
         if (mNfcAdapter == null) {
+            logAnalyticsError("nfc_not_supported", "NFC chip reading not supported")
             promise.reject("E_NOT_SUPPORTED", "NFC chip reading not supported")
             return
         }
 
         if (!mNfcAdapter.isEnabled) {
+            logAnalyticsError("nfc_not_enabled", "NFC chip reading not enabled")
             promise.reject("E_NOT_ENABLED", "NFC chip reading not enabled")
             return
         }
 
         if (scanPromise != null) {
+            logAnalyticsError("nfc_already_scanning", "Already running a scan")
             promise.reject("E_ONE_REQ_AT_A_TIME", "Already running a scan")
             return
         }
@@ -298,12 +309,14 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         override fun doInBackground(vararg params: Void?): Exception? {
             try {
+                logAnalyticsEvent("nfc_reading_started")
                 eventMessageEmitter(Messages.STOP_MOVING)
                 isoDep.timeout = 20000
                 Log.e("MY_LOGS", "This should obvsly log")
                 val cardService = try {
                     CardService.getInstance(isoDep)
                 } catch (e: Exception) {
+                    logAnalyticsError("nfc_card_service_failed", "Failed to get CardService instance: ${e.message}")
                     Log.e("MY_LOGS", "Failed to get CardService instance", e)
                     throw e
                 }
@@ -311,6 +324,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 try {
                     cardService.open()
                 } catch (e: Exception) {
+                    logAnalyticsError("nfc_card_service_open_failed", "Failed to open CardService: ${e.message}")
                     Log.e("MY_LOGS", "Failed to open CardService", e)
                     isoDep.close()
                     Thread.sleep(500)
@@ -318,6 +332,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     cardService.open()
                 }
                 Log.e("MY_LOGS", "cardService opened")
+                logAnalyticsEvent("nfc_card_service_opened")
                 val service = PassportService(
                     cardService,
                     PassportService.NORMAL_MAX_TRANCEIVE_LENGTH * 2,
@@ -328,6 +343,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 Log.e("MY_LOGS", "service gotten")
                 service.open()
                 Log.e("MY_LOGS", "service opened")
+                logAnalyticsEvent("nfc_passport_service_opened")
                 var paceSucceeded = false
                 try {
                     Log.e("MY_LOGS", "trying to get cardAccessFile...")
@@ -347,10 +363,16 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             )
                             Log.e("MY_LOGS", "PACE succeeded")
                             paceSucceeded = true
+                            logAnalyticsEvent("nfc_pace_succeeded")
                             eventMessageEmitter(Messages.PACE_SUCCEEDED)
                         }
                     }
                 } catch (e: Exception) {
+                    logAnalyticsError("nfc_pace_failed", "PACE authentication failed: ${e.message}")
+                    logAnalyticsEvent("nfc_pace_attempted", mapOf(
+                        "success" to false,
+                        "error_type" to e.javaClass.simpleName
+                    ))
                     Log.w("MY_LOGS", e)
                     eventMessageEmitter(Messages.PACE_FAILED)
                 }
@@ -384,9 +406,20 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             }
                             
                             bacSucceeded = true
+                            logAnalyticsEvent("nfc_bac_succeeded", mapOf("attempts" to attempts))
+                            logAnalyticsEvent("nfc_bac_attempted", mapOf(
+                                "success" to true,
+                                "attempts" to attempts
+                            ))
                             Log.e("MY_LOGS", "BAC succeeded on attempt $attempts")
                             eventMessageEmitter(Messages.BAC_SUCCEEDED)
                         } catch (e: Exception) {
+                            logAnalyticsError("nfc_bac_attempt_failed", "BAC attempt $attempts failed: ${e.message}")
+                            logAnalyticsEvent("nfc_bac_attempted", mapOf(
+                                "success" to false,
+                                "attempt" to attempts,
+                                "error_type" to e.javaClass.simpleName
+                            ))
                             Log.e("MY_LOGS", "BAC attempt $attempts failed: ${e.message}")
                             if (attempts == maxAttempts) {
                                 eventMessageEmitter(Messages.BAC_FAILED)
@@ -396,17 +429,24 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     }
                 }
 
+
+                logAnalyticsEvent("nfc_reading_data_groups")
                 eventMessageEmitter(Messages.READING_DG1)
+                logAnalyticsEvent("nfc_reading_dg1_started")
                 val dg1In = service.getInputStream(PassportService.EF_DG1)
                 dg1File = DG1File(dg1In)
+                logAnalyticsEvent("nfc_reading_dg1_completed")
                 eventMessageEmitter(Messages.READING_DG1_SUCCEEDED)
                 // eventMessageEmitter("Reading DG2.....")
                 // val dg2In = service.getInputStream(PassportService.EF_DG2)
                 // dg2File = DG2File(dg2In)
+                logAnalyticsEvent("nfc_reading_sod_started")
                 eventMessageEmitter(Messages.READING_SOD)
                 val sodIn = service.getInputStream(PassportService.EF_SOD)
                 sodFile = SODFile(sodIn)
+                logAnalyticsEvent("nfc_reading_sod_completed")
                 eventMessageEmitter(Messages.READING_SOD_SUCCEEDED)
+
                 // val gson = Gson()
                 // Log.d(TAG, "============FIRST CONSOLE LOG=============")
                 // Log.d(TAG, "dg1File: " + gson.toJson(dg1File))
@@ -436,8 +476,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 // }
                 // Log.d(TAG, "============LET'S VERIFY THE SIGNATURE=============")
                 eventMessageEmitter(Messages.AUTH)
+                logAnalyticsEvent("nfc_authentication_started")
                 doChipAuth(service)
                 doPassiveAuth()
+                logAnalyticsEvent("nfc_authentication_completed")
 
                 // Log.d(TAG, "============SIGNATURE VERIFIED=============")
                 // sendDataToJS(PassportData(dg1File, dg2File, sodFile))
@@ -458,6 +500,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 //     imageBase64 = Base64.encodeToString(buffer, Base64.DEFAULT)
                 // }
             } catch (e: Exception) {
+                logAnalyticsError("nfc_reading_failed", "NFC reading failed: ${e.message}")
                 eventMessageEmitter(Messages.RESET)
                 return e
             }
@@ -466,11 +509,13 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         private fun doChipAuth(service: PassportService) {
             try {
+                logAnalyticsEvent("nfc_reading_dg14_started")
                 eventMessageEmitter(Messages.READING_DG14)
                 val dg14In = service.getInputStream(PassportService.EF_DG14)
                 dg14Encoded = IOUtils.toByteArray(dg14In)
                 val dg14InByte = ByteArrayInputStream(dg14Encoded)
                 dg14File = DG14File(dg14InByte)
+                logAnalyticsEvent("nfc_reading_dg14_completed")
                 val dg14FileSecurityInfo = dg14File.securityInfos
                 for (securityInfo: SecurityInfo in dg14FileSecurityInfo) {
                     if (securityInfo is ChipAuthenticationPublicKeyInfo) {
@@ -481,16 +526,19 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             securityInfo.subjectPublicKey,
                         )
                         chipAuthSucceeded = true
+                        logAnalyticsEvent("nfc_chip_auth_succeeded")
                         eventMessageEmitter(Messages.CHIP_AUTH_SUCCEEDED)
                     }
                 }
             } catch (e: Exception) {
+                logAnalyticsError("nfc_chip_auth_failed", "Chip authentication failed: ${e.message}")
                 Log.w(TAG, e)
             }
         }
 
         private fun doPassiveAuth() {
             try {
+                logAnalyticsEvent("nfc_passive_auth_started")
                 Log.d(TAG, "Starting passive authentication...")
                 val digest = MessageDigest.getInstance(sodFile.digestAlgorithm)
                 Log.d(TAG, "Using digest algorithm: ${sodFile.digestAlgorithm}")
@@ -522,11 +570,13 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
                 Log.d(TAG, "Comparing data group hashes...")
                 eventMessageEmitter(Messages.COMPARING)
+                logAnalyticsEvent("nfc_data_group_hash_verification_started")
                 // if (Arrays.equals(dg1Hash, dataHashes[1]) && Arrays.equals(dg2Hash, dataHashes[2])
                 if (Arrays.equals(dg1Hash, dataHashes[1])
                     && (!chipAuthSucceeded || Arrays.equals(dg14Hash, dataHashes[14]))) {
 
                     Log.d(TAG, "Data group hashes match.")
+                    logAnalyticsEvent("nfc_data_group_hash_verification_succeeded")
 
                     val asn1InputStream = ASN1InputStream(getReactApplicationContext().assets.open("masterList"))
                     val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
@@ -559,17 +609,23 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
                     val docSigningCertificates = sodFile.docSigningCertificates
                     Log.d(TAG, "Checking document signing certificates for validity...")
+                    logAnalyticsEvent("nfc_certificate_validation_started", mapOf(
+                        "certificate_count" to docSigningCertificates.size
+                    ))
                     for (docSigningCertificate: X509Certificate in docSigningCertificates) {
                         docSigningCertificate.checkValidity()
                         Log.d(TAG, "Certificate: ${docSigningCertificate.subjectDN} is valid.")
                     }
+                    logAnalyticsEvent("nfc_certificate_validation_succeeded")
 
                     val cp = cf.generateCertPath(docSigningCertificates)
                     val pkixParameters = PKIXParameters(keystore)
                     pkixParameters.isRevocationEnabled = false
                     val cpv = CertPathValidator.getInstance(CertPathValidator.getDefaultType())
                     Log.d(TAG, "Validating certificate path...")
+                    logAnalyticsEvent("nfc_certificate_path_validation_started")
                     cpv.validate(cp, pkixParameters)
+                    logAnalyticsEvent("nfc_certificate_path_validation_succeeded")
                     var sodDigestEncryptionAlgorithm = sodFile.docSigningCertificate.sigAlgName
                     var isSSA = false
                     if ((sodDigestEncryptionAlgorithm == "SSAwithRSA/PSS")) {
@@ -584,10 +640,23 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     sign.initVerify(sodFile.docSigningCertificate)
                     sign.update(sodFile.eContent)
 
+                    logAnalyticsEvent("nfc_signature_verification_started", mapOf(
+                        "algorithm" to sodDigestEncryptionAlgorithm
+                    ))
                     passiveAuthSuccess = sign.verify(sodFile.encryptedDigest)
+                    if (passiveAuthSuccess) {
+                        logAnalyticsEvent("nfc_signature_verification_succeeded")
+                        logAnalyticsEvent("nfc_passive_auth_succeeded")
+                    } else {
+                        logAnalyticsError("nfc_signature_verification_failed", "Signature verification failed")
+                        logAnalyticsError("nfc_passive_auth_failed", "Signature verification failed")
+                    }
                     Log.d(TAG, "Passive authentication success: $passiveAuthSuccess")
+                } else {
+                    logAnalyticsError("nfc_passive_auth_failed", "Data group hashes do not match")
                 }
             } catch (e: Exception) {
+                logAnalyticsError("nfc_passive_auth_failed", "Passive authentication failed: ${e.message}")
                 eventMessageEmitter(Messages.RESET)
                 Log.w(TAG, "Exception in passive authentication", e)
             }
@@ -599,14 +668,21 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             if (result != null) {
                 // Log.w(TAG, exceptionStack(result))
                 if (result is IOException) {
+                    logAnalyticsError("nfc_scan_failed_disconnect", "Lost connection to chip on card")
                     scanPromise?.reject("E_SCAN_FAILED_DISCONNECT", "Lost connection to chip on card")
                 } else {
+                    logAnalyticsError("nfc_scan_failed", "Scan failed: ${result.message}")
                     scanPromise?.reject("E_SCAN_FAILED", result)
                 }
 
                 resetState()
                 return
             }
+
+            logAnalyticsEvent("nfc_scan_completed", mapOf(
+                "chip_auth_succeeded" to chipAuthSucceeded,
+                "passive_auth_success" to passiveAuthSuccess
+            ))
 
             val mrzInfo = dg1File.mrzInfo
 
@@ -735,8 +811,58 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         }
     }
 
+    private fun logAnalyticsEvent(eventName: String, params: Map<String, Any> = emptyMap()) {
+        try {
+            val logData = JSONObject()
+            logData.put("level", "info")
+            logData.put("category", "NFC")
+            logData.put("message", "Analytics Event: $eventName")
+            if (params.isNotEmpty()) {
+                logData.put("data", JSONObject(Gson().toJson(params)))
+            }
+            
+            // Send to React Native via logEvent emission using the same working approach
+            emitLogEvent(logData.toString())
+            
+            // Also log to Android logs for debugging
+            Log.d(TAG, "Analytics event: $eventName with params: $params")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error logging analytics event", e)
+        }
+    }
+
+    private fun logAnalyticsError(eventName: String, message: String) {
+        try {
+            val logData = JSONObject()
+            logData.put("level", "error")
+            logData.put("category", "NFC")
+            logData.put("message", "Analytics Error: $message")
+            logData.put("data", JSONObject().apply {
+                put("event", eventName)
+                put("error_description", message)
+            })
+            
+            emitLogEvent(logData.toString())
+            
+            Log.e(TAG, "Analytics error: $eventName - $message")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error logging analytics error", e)
+        }
+    }
+
+    private fun emitLogEvent(message: String) {
+        if (reactContext.hasActiveCatalystInstance()) {
+            reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit("logEvent", message)
+        } else {
+            Log.d(TAG, "Cannot emit logEvent - no active catalyst instance")
+        }
+    }
+
     @ReactMethod
     fun reset() {
+        logAnalyticsEvent("nfc_scan_reset")
         resetState()
     }
 

@@ -1,17 +1,16 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
-
-import { unsafe_getPrivateKey } from '../../providers/authProvider';
-import { black, slate50, slate200, teal500, white } from '../../utils/colors';
-import { confirmTap } from '../../utils/haptic';
-
 import Clipboard from '@react-native-clipboard/clipboard';
 
-interface DevPrivateKeyScreen {}
+import { unsafe_getPrivateKey } from '@/providers/authProvider';
+import { black, slate50, slate200, teal500, white } from '@/utils/colors';
+import { confirmTap } from '@/utils/haptic';
 
-const DevPrivateKeyScreen: React.FC<DevPrivateKeyScreen> = ({}) => {
+const DevPrivateKeyScreen: React.FC = () => {
   const [privateKey, setPrivateKey] = useState<string | null>(
     'Loading private key…',
   );
@@ -34,7 +33,7 @@ const DevPrivateKeyScreen: React.FC<DevPrivateKeyScreen> = ({}) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     }
-  }, [isPrivateKeyRevealed]);
+  }, [isPrivateKeyRevealed, privateKey]);
 
   const getRedactedPrivateKey = useCallback(() => {
     if (

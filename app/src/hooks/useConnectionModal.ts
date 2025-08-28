@@ -1,14 +1,17 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { SettingsEvents } from '../consts/analytics';
-import { navigationRef } from '../navigation';
-import { useSettingStore } from '../stores/settingStore';
-import analytics from '../utils/analytics';
-import { useModal } from './useModal';
-import { useNetInfo } from './useNetInfo';
+import { SettingsEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
+import { useModal } from '@/hooks/useModal';
+import { useNetInfo } from '@/hooks/useNetInfo';
+import { navigationRef } from '@/navigation';
+import { useSettingStore } from '@/stores/settingStore';
+import analytics from '@/utils/analytics';
 
 const { trackEvent } = analytics();
 

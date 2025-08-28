@@ -1,18 +1,21 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { YStack } from 'tamagui';
 
-import type { TipProps } from '../../components/Tips';
-import Tips from '../../components/Tips';
-import { Caption } from '../../components/typography/Caption';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
-import analytics from '../../utils/analytics';
-import { slate500 } from '../../utils/colors';
-
-const { flush: flushAnalytics } = analytics();
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import type { TipProps } from '@/components/Tips';
+import Tips from '@/components/Tips';
+import { Caption } from '@/components/typography/Caption';
+import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
+import analytics, { flushAllAnalytics } from '@/utils/analytics';
+import { slate500 } from '@/utils/colors';
+import { sendFeedbackEmail } from '@/utils/email';
 
 const tips: TipProps[] = [
   {
@@ -46,10 +49,11 @@ const PassportNFCTrouble: React.FC = () => {
   const goToNFCMethodSelection = useHapticNavigation(
     'PassportNFCMethodSelection',
   );
+  useFeedbackAutoHide();
 
   // error screen, flush analytics
   useEffect(() => {
-    flushAnalytics();
+    flushAllAnalytics();
   }, []);
 
   // 5-taps with a single finger
@@ -65,6 +69,22 @@ const PassportNFCTrouble: React.FC = () => {
       onDismiss={go}
       secondaryButtonText="Open NFC Options"
       onSecondaryButtonPress={goToNFCMethodSelection}
+      footer={
+        // Add top padding before buttons and normalize spacing
+        <YStack marginTop={16} marginBottom={0} gap={10}>
+          <SecondaryButton
+            onPress={() =>
+              sendFeedbackEmail({
+                message: 'User reported an issue from NFC trouble screen',
+                origin: 'passport/nfc-trouble',
+              })
+            }
+            marginBottom={0}
+          >
+            Report Issue
+          </SecondaryButton>
+        </YStack>
+      }
     >
       <YStack
         paddingTop={24}

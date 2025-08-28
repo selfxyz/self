@@ -1,11 +1,13 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { PassportMetadata } from '../../../src/utils/proving/loadingScreenStateText';
+import type { PassportMetadata } from '@/utils/proving/loadingScreenStateText';
 import {
   getLoadingScreenText,
   getProvingTimeEstimate,
-} from '../../../src/utils/proving/loadingScreenStateText';
-import type { ProvingStateType } from '../../../src/utils/proving/provingMachine';
+} from '@/utils/proving/loadingScreenStateText';
+import type { ProvingStateType } from '@/utils/proving/provingMachine';
 
 describe('stateLoadingScreenText', () => {
   // Default metadata for basic tests
@@ -73,10 +75,7 @@ describe('stateLoadingScreenText', () => {
     });
 
     it('should handle undefined metadata', () => {
-      const result = getLoadingScreenText(
-        'proving',
-        undefined as unknown as PassportMetadata,
-      );
+      const result = getLoadingScreenText('proving', undefined);
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
       expect(result.estimatedTime).toBe('30 - 90 SECONDS'); // Should use default time estimate

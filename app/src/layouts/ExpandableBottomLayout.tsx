@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
 import {
@@ -13,8 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { ViewProps } from 'tamagui';
 import { View } from 'tamagui';
 
-import { black, white } from '../utils/colors';
-import { extraYPadding } from '../utils/constants';
+import { black, white } from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
 
 // Get the current font scale factor
 const fontScale = PixelRatio.getFontScale();
@@ -72,7 +74,7 @@ const TopSection: React.FC<TopSectionProps> = ({
   );
 };
 
-interface FullSectionProps extends ViewProps {}
+type FullSectionProps = ViewProps;
 /*
  * Rather than using a top and bottom section, this component is te entire thing.
  * It leave space for the safe area insets and provides basic padding

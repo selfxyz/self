@@ -1,30 +1,31 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { Suspense, useEffect } from 'react';
 import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Text } from 'tamagui';
-
-import { DefaultNavBar } from '../components/NavBar';
-import AppLayout from '../layouts/AppLayout';
-import analytics from '../utils/analytics';
-import { white } from '../utils/colors';
-import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
-import { getAesopScreens } from './aesop';
-import devScreens from './dev';
-import homeScreens from './home';
-import miscScreens from './misc';
-import passportScreens from './passport';
-import proveScreens from './prove';
-import recoveryScreens from './recovery';
-import settingsScreens from './settings';
-
 import type { StaticParamList } from '@react-navigation/native';
 import {
   createNavigationContainerRef,
   createStaticNavigation,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import { DefaultNavBar } from '@/components/NavBar';
+import AppLayout from '@/layouts/AppLayout';
+import { getAesopScreens } from '@/navigation/aesop';
+import devScreens from '@/navigation/devTools';
+import homeScreens from '@/navigation/home';
+import miscScreens from '@/navigation/misc';
+import passportScreens from '@/navigation/passport';
+import proveScreens from '@/navigation/prove';
+import recoveryScreens from '@/navigation/recovery';
+import settingsScreens from '@/navigation/settings';
+import analytics from '@/utils/analytics';
+import { white } from '@/utils/colors';
+import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
 export const navigationScreens = {
   ...miscScreens,
@@ -33,13 +34,10 @@ export const navigationScreens = {
   ...proveScreens,
   ...settingsScreens,
   ...recoveryScreens,
-  ...devScreens,
+  ...devScreens, // allow in production for testing
   // add last to override other screens
   ...getAesopScreens(),
 };
-
-export type RootStackParamList = StaticParamList<typeof AppNavigation>;
-
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
   initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
@@ -51,11 +49,14 @@ const AppNavigation = createNativeStackNavigator({
   screens: navigationScreens,
 });
 
+export type RootStackParamList = StaticParamList<typeof AppNavigation>;
+
 // Create a ref that we can use to access the navigation state
-export const navigationRef = createNavigationContainerRef();
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 declare global {
   namespace ReactNavigation {
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface RootParamList extends RootStackParamList {}
   }
 }
@@ -78,7 +79,7 @@ const NavigationWithTracking = () => {
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
     if (currentRoute) {
-      console.log(`Screen View: ${currentRoute.name}`);
+      if (__DEV__) console.log(`Screen View: ${currentRoute.name}`);
       trackScreenView(`${currentRoute.name}`, {
         screenName: currentRoute.name,
       });

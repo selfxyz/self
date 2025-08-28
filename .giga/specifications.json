@@ -1,0 +1,22 @@
+[
+  {
+    "fileName": "main-overview.mdc",
+    "path": ".cursor/rules",
+    "description": "Complete system overview of the identity verification platform, covering the passport/ID verification workflow, zero-knowledge proof system, and compliance mechanisms"
+  },
+  {
+    "fileName": "mobile-sdk-migration.mdc",
+    "path": ".cursor/rules",
+    "description": "Comprehensive migration strategy and testing-first approach for porting identity verification logic from app to mobile-sdk-alpha package with detailed checklist and validation workflow"
+  },
+  {
+    "fileName": "technical-specification.mdc",
+    "path": ".cursor/rules",
+    "description": "Consolidated technical implementation specification for zero-knowledge proof circuits, data models, verification workflows, and implementation requirements with performance constraints"
+  },
+  {
+    "fileName": "compliance-verification.mdc",
+    "path": ".cursor/rules",
+    "description": "Critical compliance verification requirements for OFAC checks, age verification, and forbidden country validation with specific implementation details and constraints"
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "jest"],
+    "paths": {
+      "@env": ["./env.ts"],
+      "@selfxyz/common": ["../common"],
+      "@selfxyz/common/*": ["../common/*"],
+      "@": ["./src"],
+      "@/*": ["./src/*"],
+      "@tests": ["./tests/src"],
+      "@tests/*": ["./tests/src/*"]
+    }
+  },
+  "include": ["tests/**/*", "src/**/*"],
+  "exclude": [
+    "*.config.cjs",
+    "*.config.js",
+    "*.config.ts",
+    ".babelrc",
+    ".bundle/**/*",
+    ".codecov.yml",
+    ".eslintrc.cjs",
+    ".gitattributes",
+    ".gitignore",
+    ".prettierignore",
+    ".prettierrc",
+    ".ruby-version",
+    ".tamagui/*",
+    ".tool-versions",
+    ".yarn/**/*",
+    "android/**/*",
+    "app.json",
+    "babel.config.cjs",
+    "build/**/*",
+    "deployments/**/*",
+    "fastlane/**/*",
+    "firebase.json",
+    "ios/**/*",
+    "jest.config.cjs",
+    "jest.setup.js",
+    "metro.config.cjs",
+    "node_modules",
+    "scripts/**/*",
+    "vendor/**/*",
+    "vite.config.ts",
+    "web/**/*"
+  ]
+}

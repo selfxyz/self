@@ -1,18 +1,19 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { PermissionsAndroid, Platform } from 'react-native';
+import messaging from '@react-native-firebase/messaging';
 
 import type {
   DeviceTokenRegistration,
   RemoteMessage,
-} from './notificationService.shared';
+} from '@/utils/notifications/notificationService.shared';
 import {
   API_URL,
   API_URL_STAGING,
   getStateMessage,
-} from './notificationService.shared';
-
-import messaging from '@react-native-firebase/messaging';
+} from '@/utils/notifications/notificationService.shared';
 
 export async function getFCMToken(): Promise<string | null> {
   try {
@@ -29,10 +30,10 @@ export async function getFCMToken(): Promise<string | null> {
 }
 // Determine if running in test environment
 const isTestEnv = process.env.NODE_ENV === 'test';
-const log = (...args: any[]) => {
+const log = (...args: unknown[]) => {
   if (!isTestEnv) console.log(...args);
 };
-const error = (...args: any[]) => {
+const error = (...args: unknown[]) => {
   if (!isTestEnv) console.error(...args);
 };
 

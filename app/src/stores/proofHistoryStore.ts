@@ -1,13 +1,15 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { io } from 'socket.io-client';
 import { create } from 'zustand';
 
 import { WS_DB_RELAYER } from '@selfxyz/common/constants';
 
-import { database } from './database';
-import type { ProofHistory } from './proof-types';
-import { ProofStatus } from './proof-types';
+import { database } from '@/stores/database';
+import type { ProofHistory } from '@/stores/proof-types';
+import { ProofStatus } from '@/stores/proof-types';
 
 interface ProofHistoryState {
   proofHistory: ProofHistory[];
@@ -38,7 +40,6 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       // Throttling mechanism - prevent sync if called too frequently
       const now = Date.now();
       if (now - lastSyncTime < SYNC_THROTTLE_MS) {
-        console.log('Sync throttled - too soon since last sync');
         return;
       }
       lastSyncTime = now;
@@ -50,7 +51,6 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       const pendingProofs = await database.getPendingProofs();
 
       if (pendingProofs.rows.length === 0) {
-        console.log('No pending proofs to sync');
         return;
       }
 
@@ -59,8 +59,9 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         transports: ['websocket'],
       });
       setTimeout(() => {
-        websocket.connected && websocket.disconnect();
-        console.log('WebSocket disconnected after timeout');
+        if (websocket.connected) {
+          websocket.disconnect();
+        }
         // disconnect after 2 minutes
       }, SYNC_THROTTLE_MS * 4);
 
@@ -74,13 +75,10 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
           typeof message === 'string' ? JSON.parse(message) : message;
 
         if (data.status === 3) {
-          console.log('Failed to generate proof');
           get().updateProofStatus(data.request_id, ProofStatus.FAILURE);
         } else if (data.status === 4) {
-          console.log('Proof verified');
           get().updateProofStatus(data.request_id, ProofStatus.SUCCESS);
         } else if (data.status === 5) {
-          console.log('Failed to verify proof');
           get().updateProofStatus(data.request_id, ProofStatus.FAILURE);
         }
         websocket.emit('unsubscribe', data.request_id);

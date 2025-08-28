@@ -1,8 +1,10 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect } from 'react';
 
-import type { extractMRZInfo } from '../../utils/utils';
+import { type SelfClient, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 // TODO: Web find a lightweight ocr or mrz scanner.
 
@@ -10,7 +12,7 @@ export interface PassportCameraProps {
   isMounted: boolean;
   onPassportRead: (
     error: Error | null,
-    mrzData?: ReturnType<typeof extractMRZInfo>,
+    mrzData?: ReturnType<SelfClient['extractMRZInfo']>,
   ) => void;
 }
 
@@ -18,6 +20,16 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   onPassportRead,
   isMounted,
 }) => {
+  const selfClient = useSelfClient();
+  const _onPassportRead = useCallback(
+    (mrz: string) => {
+      if (!isMounted) {
+        return;
+      }
+      onPassportRead(null, selfClient.extractMRZInfo(mrz));
+    },
+    [onPassportRead, isMounted, selfClient],
+  );
   const handleError = useCallback(() => {
     if (!isMounted) {
       return;
@@ -28,6 +40,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
 
   // Web stub - no functionality yet
   useEffect(() => {
+    void _onPassportRead; // noop until web implementation exists
     // Simulate that the component is not ready for web
     if (isMounted) {
       console.warn('PassportCamera: Web implementation not yet available');
@@ -37,7 +50,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [isMounted, handleError]);
+  }, [isMounted, handleError, _onPassportRead]);
 
   return (
     <div

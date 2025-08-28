@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 module.exports = {
   preset: 'react-native',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
@@ -9,5 +13,14 @@ module.exports = {
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
     '\\.svg$': '<rootDir>/tests/__setup__/svgMock.js',
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@$': '<rootDir>/src',
+    '^@tests/(.*)$': '<rootDir>/tests/src/$1',
+    '^@tests$': '<rootDir>/tests/src',
+  },
+  globals: {
+    'ts-jest': {
+      tsconfig: 'tsconfig.test.json',
+    },
   },
 };

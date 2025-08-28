@@ -1,7 +1,9 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-const fs = require('fs');
-const path = require('path');
+const { readFileSync } = require('fs');
+const { join } = require('path');
 let { execSync } = require('child_process');
 
 // Constants
@@ -61,8 +63,8 @@ const REGEX_PATTERNS = {
  */
 function safeReadFile(filePath, description) {
   try {
-    return fs.readFileSync(filePath, 'utf8');
-  } catch (error) {
+    return readFileSync(filePath, 'utf8');
+  } catch {
     console.warn(`Warning: Could not read ${description} at ${filePath}`);
     return null;
   }
@@ -91,7 +93,7 @@ function safeExecSync(command, description) {
 
   try {
     return execSync(command, { encoding: 'utf8' }).trim();
-  } catch (error) {
+  } catch {
     console.warn(`Warning: Could not ${description}`);
     return null;
   }
@@ -174,9 +176,9 @@ function getDeploymentMethod() {
  * @returns {string} The main version number
  */
 function getMainVersion() {
-  const packageJsonPath = path.join(__dirname, FILE_PATHS.PACKAGE_JSON);
+  const packageJsonPath = join(__dirname, FILE_PATHS.PACKAGE_JSON);
   try {
-    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
     return packageJson.version || 'Unknown';
   } catch (error) {
     console.warn(`Warning: Could not parse package.json: ${error.message}`);
@@ -189,7 +191,7 @@ function getMainVersion() {
  * @returns {Object} iOS version information
  */
 function getIOSVersion() {
-  const infoPlistPath = path.join(__dirname, FILE_PATHS.IOS_INFO_PLIST);
+  const infoPlistPath = join(__dirname, FILE_PATHS.IOS_INFO_PLIST);
   const infoPlist = safeReadFile(infoPlistPath, 'iOS Info.plist');
 
   if (!infoPlist) {
@@ -203,7 +205,7 @@ function getIOSVersion() {
   // Allow iOS project path to be overridden by environment variable
   const iosProjectPath =
     process.env.IOS_PROJECT_PBXPROJ_PATH || FILE_PATHS.IOS_PROJECT_PBXPROJ;
-  const projectPath = path.join(__dirname, iosProjectPath);
+  const projectPath = join(__dirname, iosProjectPath);
   const projectFile = safeReadFile(projectPath, 'iOS project.pbxproj');
 
   let build = 'Unknown';
@@ -220,7 +222,7 @@ function getIOSVersion() {
  * @returns {Object} Android version information
  */
 function getAndroidVersion() {
-  const buildGradlePath = path.join(__dirname, FILE_PATHS.ANDROID_BUILD_GRADLE);
+  const buildGradlePath = join(__dirname, FILE_PATHS.ANDROID_BUILD_GRADLE);
   const buildGradle = safeReadFile(buildGradlePath, 'Android build.gradle');
 
   if (!buildGradle) {
@@ -245,9 +247,9 @@ function getAndroidVersion() {
  * @returns {Object|null} Version data or null if not found
  */
 function getVersionJsonData() {
-  const versionJsonPath = path.join(__dirname, FILE_PATHS.VERSION_JSON);
+  const versionJsonPath = join(__dirname, FILE_PATHS.VERSION_JSON);
   try {
-    const versionData = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
+    const versionData = JSON.parse(readFileSync(versionJsonPath, 'utf8'));
     return versionData;
   } catch (error) {
     console.warn(`Warning: Could not read version.json: ${error.message}`);
@@ -353,7 +355,7 @@ function displayPlatformVersions(platform, versions) {
     const currentBuild = versions.ios.build;
     const nextBuild = versions.versionJson
       ? versions.versionJson.ios.build + 1
-      : parseInt(currentBuild) + 1;
+      : parseInt(currentBuild, 10) + 1;
     const lastDeployed = versions.versionJson
       ? getTimeAgo(versions.versionJson.ios.lastDeployed)
       : 'Unknown';
@@ -371,7 +373,7 @@ function displayPlatformVersions(platform, versions) {
     const currentBuild = versions.android.versionCode;
     const nextBuild = versions.versionJson
       ? versions.versionJson.android.build + 1
-      : parseInt(currentBuild) + 1;
+      : parseInt(currentBuild, 10) + 1;
     const lastDeployed = versions.versionJson
       ? getTimeAgo(versions.versionJson.android.lastDeployed)
       : 'Unknown';
@@ -391,7 +393,7 @@ function displayPlatformVersions(platform, versions) {
   if (versions.versionJson) {
     if (platform === PLATFORMS.IOS || platform === PLATFORMS.BOTH) {
       const jsonBuild = versions.versionJson.ios.build;
-      const actualBuild = parseInt(versions.ios.build);
+      const actualBuild = parseInt(versions.ios.build, 10);
       if (jsonBuild !== actualBuild) {
         console.log(
           `\n${CONSOLE_SYMBOLS.WARNING} iOS build mismatch: version.json has ${jsonBuild}, but Xcode has ${actualBuild}`,
@@ -401,7 +403,7 @@ function displayPlatformVersions(platform, versions) {
 
     if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH) {
       const jsonBuild = versions.versionJson.android.build;
-      const actualBuild = parseInt(versions.android.versionCode);
+      const actualBuild = parseInt(versions.android.versionCode, 10);
       if (jsonBuild !== actualBuild) {
         console.log(
           `\n${CONSOLE_SYMBOLS.WARNING} Android build mismatch: version.json has ${jsonBuild}, but gradle has ${actualBuild}`,
@@ -474,7 +476,7 @@ function performYarnReinstall() {
   );
   execSync('yarn reinstall', {
     stdio: 'inherit',
-    cwd: path.join(__dirname, '..'),
+    cwd: join(__dirname, '..'),
   });
   console.log(
     `${CONSOLE_SYMBOLS.SUCCESS} Yarn reinstall completed successfully!`,
@@ -513,7 +515,7 @@ let performIOSBuildCleanup = function (platform) {
   console.log(`\n${CONSOLE_SYMBOLS.BROOM} Cleaning up iOS build artifacts...`);
 
   try {
-    const cleanupScript = path.join(__dirname, 'cleanup-ios-build.sh');
+    const cleanupScript = join(__dirname, 'cleanup-ios-build.sh');
     execSync(`bash "${cleanupScript}"`, {
       stdio: 'inherit',
       cwd: __dirname,

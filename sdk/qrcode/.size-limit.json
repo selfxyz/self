@@ -1,26 +1,25 @@
 [
   {
-    "path": "./dist/index.js",
-    "name": "import SelfQRcodeWrapper from '@selfxyz/qrcode'",
-    "import": "{ default }",
-    "limit": "800 ms"
+    "path": "./dist/cjs/index.cjs",
+    "name": "Full bundle",
+    "limit": "80 s"
   },
   {
-    "path": "./dist/index.js",
-    "name": "import { SelfAppBuilder } from '@selfxyz/qrcode'",
-    "import": "{ SelfAppBuilder }",
-    "limit": "800 ms"
+    "path": "./dist/cjs/index.cjs",
+    "name": "SelfQRcodeWrapper import",
+    "import": "SelfQRcodeWrapper",
+    "limit": "80 s"
   },
   {
-    "path": "./dist/index.js",
-    "name": "import { SelfQRcode } from '@selfxyz/qrcode'",
-    "import": "{ SelfQRcode }",
-    "limit": "800 ms"
+    "path": "./dist/cjs/index.cjs",
+    "name": "SelfQRcode import",
+    "import": "SelfQRcode",
+    "limit": "80 s"
   },
   {
-    "path": "./dist/index.js",
-    "name": "import { countries } from '@selfxyz/qrcode'",
-    "import": "{ countries }",
-    "limit": "800 ms"
+    "path": "./dist/cjs/index.cjs",
+    "name": "countries import",
+    "import": "countries",
+    "limit": "80 s"
   }
 ]

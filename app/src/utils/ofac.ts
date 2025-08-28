@@ -1,12 +1,9 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { TREE_URL, TREE_URL_STAGING } from '@selfxyz/common/constants';
-
-export interface OfacTrees {
-  passportNoAndNationality: any;
-  nameAndDob: any;
-  nameAndYob: any;
-}
+import type { OfacTree } from '@selfxyz/common/utils/types';
 
 export type OfacVariant = 'passport' | 'id_card';
 
@@ -31,7 +28,7 @@ const fetchTree = async (url: string): Promise<any> => {
 export const fetchOfacTrees = async (
   environment: 'prod' | 'stg',
   variant: OfacVariant = 'passport',
-): Promise<OfacTrees> => {
+): Promise<OfacTree> => {
   const baseUrl = environment === 'prod' ? TREE_URL : TREE_URL_STAGING;
 
   const ppNoNatUrl = `${baseUrl}/ofac/passport-no-nationality`;

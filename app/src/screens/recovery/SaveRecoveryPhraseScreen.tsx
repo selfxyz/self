@@ -1,25 +1,23 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useState } from 'react';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Mnemonic from '../../components/Mnemonic';
-import { Caption } from '../../components/typography/Caption';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import useMnemonic from '../../hooks/useMnemonic';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useSettingStore } from '../../stores/settingStore';
-import { STORAGE_NAME } from '../../utils/cloudBackup';
-import { black, slate400, white } from '../../utils/colors';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import Mnemonic from '@/components/Mnemonic';
+import { Caption } from '@/components/typography/Caption';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import useMnemonic from '@/hooks/useMnemonic';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { useSettingStore } from '@/stores/settingStore';
+import { STORAGE_NAME } from '@/utils/cloudBackup';
+import { black, slate400, white } from '@/utils/colors';
 
-interface SaveRecoveryPhraseScreenProps {}
-
-const SaveRecoveryPhraseScreen: React.FC<
-  SaveRecoveryPhraseScreenProps
-> = ({}) => {
+const SaveRecoveryPhraseScreen: React.FC = () => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
   const { mnemonic, loadMnemonic } = useMnemonic();
   const { cloudBackupEnabled } = useSettingStore();

@@ -1,15 +1,16 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { TextStyle, ViewStyle } from 'tamagui';
-
-import { white } from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-import { buttonTap } from '../../utils/haptic';
-import { NavBar } from './BaseNavBar';
-
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
+
+import { NavBar } from '@/components/NavBar/BaseNavBar';
+import { white } from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
+import { buttonTap } from '@/utils/haptic';
 
 export const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;

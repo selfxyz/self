@@ -1,10 +1,22 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /* global jest */
 /** @jest-environment jsdom */
 require('react-native-gesture-handler/jestSetup');
 
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+// Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
+jest.mock(
+  'react-native/src/private/animated/NativeAnimatedHelper',
+  () => ({}),
+  { virtual: true },
+);
+
+jest.mock('@env', () => ({
+  ENABLE_DEBUG_LOGS: 'false',
+  MIXPANEL_NFC_PROJECT_TOKEN: 'test-token',
+}));
 
 global.FileReader = class {
   constructor() {
@@ -78,6 +90,9 @@ jest.mock('@segment/analytics-react-native', () => {
     BackgroundFlushPolicy: MockFlushPolicy,
   };
 });
+
+// Note: @selfxyz/mobile-sdk-alpha is NOT mocked to allow testing real package methods
+// This is intentional for the mobile-sdk-alpha migration testing
 
 // Mock react-native-keychain
 jest.mock('react-native-keychain', () => ({
@@ -192,11 +207,28 @@ jest.mock('react-native-nfc-manager', () => ({
 // Mock react-native-passport-reader
 jest.mock('react-native-passport-reader', () => ({
   default: {
-    initialize: jest.fn(),
+    configure: jest.fn(),
     scanPassport: jest.fn(),
     readPassport: jest.fn(),
     cancelPassportRead: jest.fn(),
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
   },
+}));
+
+const { NativeModules } = require('react-native');
+
+NativeModules.PassportReader = {
+  configure: jest.fn(),
+  scanPassport: jest.fn(),
+  trackEvent: jest.fn(),
+  flush: jest.fn(),
+};
+
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: jest.fn(() => jest.fn()),
+  fetch: jest.fn(() => Promise.resolve({ isConnected: true })),
 }));
 
 // Mock @stablelib packages

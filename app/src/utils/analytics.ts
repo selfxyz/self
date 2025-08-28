@@ -1,54 +1,74 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { createSegmentClient } from '../Segment';
+import { AppState, type AppStateStatus } from 'react-native';
+import { NativeModules } from 'react-native';
+import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
+import NetInfo from '@react-native-community/netinfo';
+import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 
-/**
- * Generic reasons:
- * - network_error: Network connectivity issues
- * - user_cancelled: User cancelled the operation
- * - permission_denied: Permission not granted
- * - invalid_input: Invalid user input
- * - timeout: Operation timed out
- * - unknown_error: Unspecified error
- *
- * Auth specific:
- * - invalid_credentials: Invalid login credentials
- * - biometric_unavailable: Biometric authentication unavailable
- * - invalid_mnemonic: Invalid mnemonic phrase
- *
- * Passport specific:
- * - invalid_format: Invalid passport format
- * - expired_passport: Passport is expired
- * - scan_error: Error during scanning
- * - nfc_error: NFC read error
- *
- * Proof specific:
- * - verification_failed: Proof verification failed
- * - session_expired: Session expired
- * - missing_fields: Required fields missing
- *
- * Backup specific:
- * - backup_not_found: Backup not found
- * - cloud_service_unavailable: Cloud service unavailable
- */
+import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
-export interface EventParams {
-  reason?: string | null;
-  duration_seconds?: number;
-  attempt_count?: number;
-  [key: string]: any;
-}
+import { createSegmentClient } from '@/Segment';
 
 const segmentClient = createSegmentClient();
 
-function cleanParams(params: Record<string, any>) {
-  const newParams = {};
-  for (const key of Object.keys(params)) {
-    if (typeof params[key] !== 'function') {
-      (newParams as Record<string, any>)[key] = params[key];
-    }
+// --- Analytics flush strategy ---
+let mixpanelConfigured = false;
+let eventCount = 0;
+let isConnected = true;
+const eventQueue: Array<{
+  name: string;
+  properties?: Record<string, unknown>;
+}> = [];
+
+function coerceToJsonValue(
+  value: unknown,
+  seen = new WeakSet(),
+): JsonValue | undefined {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value as JsonValue;
   }
-  return newParams;
+  if (Array.isArray(value)) {
+    const arr: JsonValue[] = [];
+    for (const item of value) {
+      const v = coerceToJsonValue(item, seen);
+      if (v === undefined) continue;
+      arr.push(v);
+    }
+    return arr as JsonValue;
+  }
+  if (typeof value === 'object' && value) {
+    // Check for circular references
+    if (seen.has(value)) {
+      return undefined; // Skip circular references
+    }
+    seen.add(value);
+
+    const obj: JsonMap = {};
+    for (const [k, v] of Object.entries(value)) {
+      const coerced = coerceToJsonValue(v, seen);
+      if (coerced !== undefined) obj[k] = coerced;
+    }
+    return obj as JsonValue;
+  }
+  // drop functions/undefined/symbols
+  return undefined;
+}
+
+function cleanParams(params: Record<string, unknown>): JsonMap {
+  const cleaned: JsonMap = {};
+  for (const [key, value] of Object.entries(params)) {
+    const v = coerceToJsonValue(value);
+    if (v !== undefined) cleaned[key] = v;
+  }
+  return cleaned;
 }
 
 /**
@@ -56,23 +76,16 @@ function cleanParams(params: Record<string, any>) {
  * - Ensures numeric values are properly formatted
  */
 function validateParams(
-  properties?: Record<string, any>,
-): Record<string, any> | undefined {
+  properties?: Record<string, unknown>,
+): JsonMap | undefined {
   if (!properties) return undefined;
 
   const validatedProps = { ...properties };
 
   // Ensure duration is formatted as a number with at most 2 decimal places
   if (validatedProps.duration_seconds !== undefined) {
-    if (typeof validatedProps.duration_seconds === 'string') {
-      validatedProps.duration_seconds = parseFloat(
-        validatedProps.duration_seconds,
-      );
-    }
-    // Format to 2 decimal places
-    validatedProps.duration_seconds = parseFloat(
-      validatedProps.duration_seconds.toFixed(2),
-    );
+    const duration = Number(validatedProps.duration_seconds);
+    validatedProps.duration_seconds = parseFloat(duration.toFixed(2));
   }
 
   return cleanParams(validatedProps);
@@ -86,7 +99,7 @@ const analytics = () => {
   function _track(
     type: 'event' | 'screen',
     eventName: string,
-    properties?: Record<string, any>,
+    properties?: Record<string, unknown>,
   ) {
     // Validate and clean properties
     const validatedProps = validateParams(properties);
@@ -102,7 +115,7 @@ const analytics = () => {
     if (!segmentClient) {
       return;
     }
-    const trackMethod = (e: string, p?: Record<string, any>) =>
+    const trackMethod = (e: string, p?: JsonMap) =>
       type === 'screen'
         ? segmentClient.screen(e, p)
         : segmentClient.track(e, p);
@@ -118,10 +131,13 @@ const analytics = () => {
 
   return {
     // Using LiteralCheck will allow constants but not plain string literals
-    trackEvent: (eventName: string, properties?: EventParams) => {
+    trackEvent: (eventName: string, properties?: TrackEventParams) => {
       _track('event', eventName, properties);
     },
-    trackScreenView: (screenName: string, properties?: Record<string, any>) => {
+    trackScreenView: (
+      screenName: string,
+      properties?: Record<string, unknown>,
+    ) => {
       _track('screen', screenName, properties);
     },
     flush: () => {
@@ -133,3 +149,101 @@ const analytics = () => {
 };
 
 export default analytics;
+
+/**
+ * Cleanup function to clear event queues
+ */
+export const cleanupAnalytics = () => {
+  eventQueue.length = 0;
+  eventCount = 0;
+};
+
+const setupFlushPolicies = () => {
+  AppState.addEventListener('change', (state: AppStateStatus) => {
+    if (state === 'background' || state === 'active') {
+      flushMixpanelEvents();
+    }
+  });
+
+  NetInfo.addEventListener(state => {
+    isConnected = state.isConnected ?? true;
+    if (isConnected) {
+      flushMixpanelEvents();
+    }
+  });
+};
+
+const flushMixpanelEvents = () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  try {
+    if (__DEV__) console.log('[Mixpanel] flush');
+    // Send any queued events before flushing
+    while (eventQueue.length > 0) {
+      const evt = eventQueue.shift()!;
+      NativeModules.PassportReader?.trackEvent?.(evt.name, evt.properties);
+    }
+    NativeModules.PassportReader?.flush?.();
+    eventCount = 0;
+  } catch (err) {
+    if (__DEV__) console.warn('Mixpanel flush failed', err);
+    // re-queue on failure
+    if (typeof err !== 'undefined') {
+      // no-op, events are already queued if failure happened before flush
+    }
+  }
+};
+
+// --- Mixpanel NFC Analytics ---
+export const configureNfcAnalytics = () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
+  const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
+  NativeModules.PassportReader.configure(
+    MIXPANEL_NFC_PROJECT_TOKEN,
+    enableDebugLogs,
+    {
+      flushInterval: 20,
+      flushCount: 5,
+      flushOnBackground: true,
+      flushOnForeground: true,
+      flushOnNetworkChange: true,
+    },
+  );
+  setupFlushPolicies();
+  mixpanelConfigured = true;
+};
+
+/**
+ * Consolidated analytics flush function that flushes both Segment and Mixpanel events
+ * This should be called when you want to ensure all analytics events are sent immediately
+ */
+export const flushAllAnalytics = () => {
+  // Flush Segment analytics
+  const { flush: flushAnalytics } = analytics();
+  flushAnalytics();
+
+  // Flush Mixpanel events
+  flushMixpanelEvents();
+};
+
+export const trackNfcEvent = (
+  name: string,
+  properties?: Record<string, unknown>,
+) => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  if (!mixpanelConfigured) configureNfcAnalytics();
+
+  if (!isConnected) {
+    eventQueue.push({ name, properties });
+    return;
+  }
+
+  try {
+    NativeModules.PassportReader?.trackEvent?.(name, properties);
+    eventCount++;
+    if (eventCount >= 5) {
+      flushMixpanelEvents();
+    }
+  } catch (err) {
+    eventQueue.push({ name, properties });
+  }
+};

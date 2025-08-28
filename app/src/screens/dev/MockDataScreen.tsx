@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
@@ -17,6 +19,8 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import type { IdDocInput } from '@selfxyz/common/utils';
@@ -26,16 +30,17 @@ import {
   genMockIdDoc,
   initPassportDataParsing,
 } from '@selfxyz/common/utils/passports';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import { Caption } from '../../components/typography/Caption';
-import { MockDataEvents } from '../../consts/analytics';
-import SelfDevCard from '../../images/card-dev.svg';
-import IdIcon from '../../images/icons/id_icon.svg';
-import NoteIcon from '../../images/icons/note.svg';
-import { storePassportData } from '../../providers/passportDataProvider';
-import analytics from '../../utils/analytics';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import ButtonsContainer from '@/components/ButtonsContainer';
+import { Caption } from '@/components/typography/Caption';
+import SelfDevCard from '@/images/card-dev.svg';
+import IdIcon from '@/images/icons/id_icon.svg';
+import NoteIcon from '@/images/icons/note.svg';
+import { storePassportData } from '@/providers/passportDataProvider';
+import analytics from '@/utils/analytics';
 import {
   black,
   borderColor,
@@ -47,17 +52,10 @@ import {
   textBlack,
   white,
   zinc400,
-} from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-import { dinot, plexMono } from '../../utils/fonts';
-import { buttonTap, selectionChange } from '../../utils/haptic';
-
-import { useNavigation } from '@react-navigation/native';
-import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
-
-const { trackEvent } = analytics();
-
-interface MockDataScreenProps {}
+} from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
+import { dinot, plexMono } from '@/utils/fonts';
+import { buttonTap, selectionChange } from '@/utils/haptic';
 
 const documentTypes = {
   mock_passport: 'Passport',
@@ -126,6 +124,7 @@ const signatureAlgorithmToStrictSignatureAlgorithm = {
     'ecdsa_sha512_brainpoolP384r1_384',
   ],
   'sha512 poland': ['sha512', 'sha512', 'rsa_sha256_65537_4096'],
+  'not existing': ['sha512', 'sha384', 'rsa_sha256_65537_4096'],
 } as const;
 
 const formatDateToYYMMDD = (date: Date): string => {
@@ -245,7 +244,8 @@ const FormSection: React.FC<FormSectionProps> = ({
   );
 };
 
-const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
+const MockDataScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const navigation = useNavigation();
   const [age, setAge] = useState(21);
   const [expiryYears, setExpiryYears] = useState(5);
@@ -289,7 +289,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   };
 
   const handleGenerate = useCallback(async () => {
-    console.log('selectedDocumentType', selectedDocumentType);
     setIsGenerating(true);
     try {
       const randomPassportNumber = Math.random()

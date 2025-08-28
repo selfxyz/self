@@ -1,0 +1,120 @@
+name: Core SDK CI
+
+on:
+  pull_request:
+    paths:
+      - "sdk/core/**"
+      - "common/**"
+      - ".github/workflows/core-sdk-ci.yml"
+      - ".github/actions/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build dependencies
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/core build
+      - name: Cache build artifacts
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            sdk/core/dist
+            node_modules
+            sdk/core/node_modules
+            common/node_modules
+          key: core-sdk-build-${{ github.sha }}
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.6.0 --activate
+      - name: Restore build artifacts
+        id: build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            sdk/core/dist
+            node_modules
+            sdk/core/node_modules
+            common/node_modules
+          key: core-sdk-build-${{ github.sha }}
+          fail-on-cache-miss: true
+      - name: Install Dependencies
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        uses: ./.github/actions/yarn-install
+      - name: Run linter
+        run: yarn workspace @selfxyz/core lint
+
+  types:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.6.0 --activate
+      - name: Restore build artifacts
+        id: build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            sdk/core/dist
+            node_modules
+            sdk/core/node_modules
+            common/node_modules
+          key: core-sdk-build-${{ github.sha }}
+          fail-on-cache-miss: true
+      - name: Install Dependencies
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        uses: ./.github/actions/yarn-install
+      - name: Type checking
+        run: yarn workspace @selfxyz/core types
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@4.6.0 --activate
+      - name: Restore build artifacts
+        id: build-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            sdk/core/dist
+            node_modules
+            sdk/core/node_modules
+            common/node_modules
+          key: core-sdk-build-${{ github.sha }}
+          fail-on-cache-miss: true
+      - name: Install Dependencies
+        if: steps.build-cache.outputs.cache-hit != 'true'
+        uses: ./.github/actions/yarn-install
+      - name: Run tests
+        run: yarn workspace @selfxyz/core test

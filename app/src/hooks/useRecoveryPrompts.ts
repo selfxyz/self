@@ -1,11 +1,13 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useEffect } from 'react';
 
-import { navigationRef } from '../navigation';
-import { usePassport } from '../providers/passportDataProvider';
-import { useSettingStore } from '../stores/settingStore';
-import { useModal } from './useModal';
+import { useModal } from '@/hooks/useModal';
+import { navigationRef } from '@/navigation';
+import { usePassport } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
 
 // TODO: need to debug and test the logic. it pops up too often.
 export default function useRecoveryPrompts() {
@@ -43,7 +45,7 @@ export default function useRecoveryPrompts() {
           if (shouldPrompt) {
             showModal();
           }
-        } catch (error) {
+        } catch {
           // Silently fail to avoid breaking the hook
           // If we can't get documents, we shouldn't show the prompt
           return;

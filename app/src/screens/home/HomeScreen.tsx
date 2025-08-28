@@ -1,36 +1,32 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, styled, YStack } from 'tamagui';
-
-import { pressedStyle } from '../../components/buttons/pressedStyle';
-import { BodyText } from '../../components/typography/BodyText';
-import { Caption } from '../../components/typography/Caption';
-import { ProofEvents } from '../../consts/analytics';
-import { useAppUpdates } from '../../hooks/useAppUpdates';
-import useConnectionModal from '../../hooks/useConnectionModal';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import SelfCard from '../../images/card-style-1.svg';
-import ScanIcon from '../../images/icons/qr_scan.svg';
-import WarnIcon from '../../images/icons/warning.svg';
-import { usePassport } from '../../providers/passportDataProvider';
-import { useSettingStore } from '../../stores/settingStore';
-import analytics from '../../utils/analytics';
-import {
-  amber500,
-  black,
-  neutral700,
-  slate800,
-  white,
-} from '../../utils/colors';
-import { extraYPadding } from '../../utils/constants';
-
 import {
   useFocusEffect,
   useNavigation,
   usePreventRemove,
 } from '@react-navigation/native';
+
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
+import { pressedStyle } from '@/components/buttons/pressedStyle';
+import { BodyText } from '@/components/typography/BodyText';
+import { Caption } from '@/components/typography/Caption';
+import { useAppUpdates } from '@/hooks/useAppUpdates';
+import useConnectionModal from '@/hooks/useConnectionModal';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import SelfCard from '@/images/card-style-1.svg';
+import ScanIcon from '@/images/icons/qr_scan.svg';
+import WarnIcon from '@/images/icons/warning.svg';
+import { usePassport } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
+import { amber500, black, neutral700, slate800, white } from '@/utils/colors';
+import { extraYPadding } from '@/utils/constants';
 
 const ScanButton = styled(Button, {
   borderRadius: 20,
@@ -43,9 +39,8 @@ const ScanButton = styled(Button, {
   justifyContent: 'center',
 });
 
-const { trackEvent } = analytics();
-
 const HomeScreen: React.FC = () => {
+  const selfClient = useSelfClient();
   useConnectionModal();
   const navigation = useNavigation();
   const { getAllDocuments } = usePassport();
@@ -77,12 +72,12 @@ const HomeScreen: React.FC = () => {
 
   const goToQRCodeViewFinder = useHapticNavigation('QRCodeViewFinder');
   const onScanButtonPress = useCallback(() => {
-    trackEvent(ProofEvents.QR_SCAN_REQUESTED, {
+    selfClient.trackEvent(ProofEvents.QR_SCAN_REQUESTED, {
       from: 'Home',
     });
 
     goToQRCodeViewFinder();
-  }, [trackEvent, goToQRCodeViewFinder]);
+  }, [goToQRCodeViewFinder, selfClient]);
 
   // Prevents back navigation
   usePreventRemove(true, () => {});

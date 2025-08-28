@@ -1,11 +1,14 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { ethers } from 'ethers';
 import { Platform } from 'react-native';
 import { CloudStorage, CloudStorageScope } from 'react-native-cloud-storage';
 
+import type { Mnemonic } from '@/types/mnemonic';
+
 import { name } from '../../../package.json';
-import type { Mnemonic } from '../../types/mnemonic';
 
 export const FOLDER = `/${name}`;
 export const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;
@@ -37,7 +40,7 @@ export function parseMnemonic(mnemonicString: string): Mnemonic {
 
   try {
     parsed = JSON.parse(mnemonicString);
-  } catch (e) {
+  } catch {
     throw new Error('Invalid JSON format in mnemonic backup');
   }
 

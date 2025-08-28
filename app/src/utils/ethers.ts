@@ -1,8 +1,9 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 // https://docs.ethers.org/v6/cookbook/react-native/
 import { ethers } from 'ethers';
-
 import { hmac } from '@noble/hashes/hmac';
 import { pbkdf2 as noblePbkdf2 } from '@noble/hashes/pbkdf2';
 import { sha256 as nobleSha256 } from '@noble/hashes/sha256';

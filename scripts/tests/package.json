@@ -1,0 +1,10 @@
+{
+  "name": "scripts-tests",
+  "version": "1.0.0",
+  "description": "Tests for project scripts",
+  "type": "module",
+  "scripts": {
+    "test": "node check-license-headers.test.mjs",
+    "test:license-headers": "node check-license-headers.test.mjs"
+  }
+}

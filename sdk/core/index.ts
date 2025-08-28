@@ -7,6 +7,13 @@ import type { IConfigStorage } from 'src/store/interface.js';
 import { DefaultConfigStore } from 'src/store/DefaultConfigStore.js';
 import { AllIds } from 'src/utils/constants.js';
 import { InMemoryConfigStore } from 'src/store/InMemoryConfigStore.js';
+import {
+  ConfigMismatchError,
+  ConfigMismatch,
+  RegistryContractError,
+  VerifierContractError,
+  ProofError,
+} from 'src/errors/index.js';
 
 export {
   SelfBackendVerifier,
@@ -20,4 +27,9 @@ export {
   AllIds,
   VerificationResult,
   VerificationConfig,
+  ConfigMismatchError,
+  ConfigMismatch,
+  RegistryContractError,
+  VerifierContractError,
+  ProofError,
 };

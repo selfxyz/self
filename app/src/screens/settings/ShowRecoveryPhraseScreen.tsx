@@ -1,17 +1,15 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
 
-import Mnemonic from '../../components/Mnemonic';
-import Description from '../../components/typography/Description';
-import useMnemonic from '../../hooks/useMnemonic';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import Mnemonic from '@/components/Mnemonic';
+import Description from '@/components/typography/Description';
+import useMnemonic from '@/hooks/useMnemonic';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 
-interface ShowRecoveryPhraseScreenProps {}
-
-const ShowRecoveryPhraseScreen: React.FC<
-  ShowRecoveryPhraseScreenProps
-> = ({}) => {
+const ShowRecoveryPhraseScreen: React.FC = () => {
   const { mnemonic, loadMnemonic } = useMnemonic();
 
   const onRevealWords = useCallback(async () => {

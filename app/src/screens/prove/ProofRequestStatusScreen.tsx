@@ -1,39 +1,40 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
+import { useIsFocused } from '@react-navigation/native';
 
-import loadingAnimation from '../../assets/animations/loading/misc.json';
-import failAnimation from '../../assets/animations/proof_failed.json';
-import succesAnimation from '../../assets/animations/proof_success.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { BodyText } from '../../components/typography/BodyText';
-import Description from '../../components/typography/Description';
-import { typography } from '../../components/typography/styles';
-import { Title } from '../../components/typography/Title';
-import { ProofEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { ProofStatus } from '../../stores/proof-types';
-import { useProofHistoryStore } from '../../stores/proofHistoryStore';
-import { useSelfAppStore } from '../../stores/selfAppStore';
-import analytics from '../../utils/analytics';
-import { black, white } from '../../utils/colors';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
+import loadingAnimation from '@/assets/animations/loading/misc.json';
+import failAnimation from '@/assets/animations/proof_failed.json';
+import succesAnimation from '@/assets/animations/proof_success.json';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { BodyText } from '@/components/typography/BodyText';
+import Description from '@/components/typography/Description';
+import { typography } from '@/components/typography/styles';
+import { Title } from '@/components/typography/Title';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { ProofStatus } from '@/stores/proof-types';
+import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import { useSelfAppStore } from '@/stores/selfAppStore';
+import { black, white } from '@/utils/colors';
 import {
   buttonTap,
   notificationError,
   notificationSuccess,
-} from '../../utils/haptic';
-import { useProvingStore } from '../../utils/proving/provingMachine';
-
-import { useIsFocused } from '@react-navigation/native';
-
-const { trackEvent } = analytics();
+} from '@/utils/haptic';
+import { useProvingStore } from '@/utils/proving/provingMachine';
 
 const SuccessScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const { selfApp, cleanSelfApp } = useSelfAppStore();
   const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
@@ -50,22 +51,21 @@ const SuccessScreen: React.FC = () => {
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
-  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  function onOkPress() {
+  const onOkPress = useCallback(() => {
     buttonTap();
     goHome();
     setTimeout(() => {
       cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
-  }
+  }, [goHome, cleanSelfApp]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
   }
 
   function cancelCountdown() {
-    console.log('[ProofRequestStatusScreen] Cancelling countdown');
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -75,10 +75,6 @@ const SuccessScreen: React.FC = () => {
 
   useEffect(() => {
     if (isFocused) {
-      console.log(
-        '[ProofRequestStatusScreen] State update while focused:',
-        currentState,
-      );
     }
     if (currentState === 'completed') {
       notificationSuccess();
@@ -92,14 +88,12 @@ const SuccessScreen: React.FC = () => {
       if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
         if (selfApp?.deeplinkCallback) {
           try {
-            new URL(selfApp.deeplinkCallback);
-            setCountdown(5);
-            setCountdownStarted(true);
-            console.log(
-              '[ProofRequestStatusScreen] Countdown started:',
-              countdown,
-            );
-          } catch (error) {
+            const url = new URL(selfApp.deeplinkCallback);
+            if (url) {
+              setCountdown(5);
+              setCountdownStarted(true);
+            }
+          } catch {
             console.warn(
               'Invalid deep link URL provided:',
               selfApp.deeplinkCallback,
@@ -127,6 +121,7 @@ const SuccessScreen: React.FC = () => {
       setAnimationSource(loadingAnimation);
     }
   }, [
+    trackEvent,
     currentState,
     isFocused,
     appName,

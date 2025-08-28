@@ -1,10 +1,12 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import forge from 'node-forge';
 import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { v4 } from 'uuid';
-import type { AnyActorRef } from 'xstate';
+import type { AnyActorRef, StateFrom } from 'xstate';
 import { createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
@@ -14,25 +16,7 @@ import {
   getCircuitNameFromPassportData,
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
-
-import { PassportEvents, ProofEvents } from '../../consts/analytics';
-import { navigationRef } from '../../navigation';
-import { unsafe_getPrivateKey } from '../../providers/authProvider';
-import {
-  clearPassportData,
-  loadSelectedDocument,
-  markCurrentDocumentAsRegistered,
-  reStorePassportDataWithRightCSCA,
-} from '../../providers/passportDataProvider';
-import { useProtocolStore } from '../../stores/protocolStore';
-import { useSelfAppStore } from '../../stores/selfAppStore';
-import analytics from '../analytics';
-import { getPublicKey, verifyAttestation } from './attest';
-import {
-  generateTEEInputsDisclose,
-  generateTEEInputsDSC,
-  generateTEEInputsRegister,
-} from './provingInputs';
+import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
 import {
   clientKey,
   clientPublicKeyHex,
@@ -40,15 +24,41 @@ import {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from './provingUtils';
+} from '@selfxyz/common/utils/proving';
+import {
+  hasAnyValidRegisteredDocument,
+  SelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import {
+  PassportEvents,
+  ProofEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
+import { navigationRef } from '@/navigation';
+// this will be pass as property of from selfClient
+import { unsafe_getPrivateKey } from '@/providers/authProvider';
+// will need to be passed in from selfClient
+import {
+  clearPassportData,
+  loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+} from '@/providers/passportDataProvider';
+import { useProtocolStore } from '@/stores/protocolStore';
+import { useSelfAppStore } from '@/stores/selfAppStore';
+import analytics from '@/utils/analytics';
+import {
+  generateTEEInputsDisclose,
+  generateTEEInputsDSC,
+  generateTEEInputsRegister,
+} from '@/utils/proving/provingInputs';
 import {
   checkIfPassportDscIsInTree,
   checkPassportSupported,
-  hasAnyValidRegisteredDocument,
   isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
-} from './validateDocument';
+} from '@/utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 
@@ -160,14 +170,14 @@ export const getPostVerificationRoute = () => {
 
 interface ProvingState {
   currentState: ProvingStateType;
-  attestation: any;
+  attestation: number[] | null;
   serverPublicKey: string | null;
   sharedKey: Buffer | null;
   wsConnection: WebSocket | null;
   socketConnection: Socket | null;
   uuid: string | null;
   userConfirmed: boolean;
-  passportData: any | null;
+  passportData: PassportData | null;
   secret: string | null;
   circuitType: provingMachineCircuitType | null;
   error_code: string | null;
@@ -177,19 +187,20 @@ interface ProvingState {
   env: 'prod' | 'stg' | null;
   setFcmToken: (token: string) => void;
   init: (
+    selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
   ) => Promise<void>;
   startFetchingData: () => Promise<void>;
-  validatingDocument: () => Promise<void>;
+  validatingDocument: (selfClient: SelfClient) => Promise<void>;
   initTeeConnection: () => Promise<boolean>;
   startProving: () => Promise<void>;
-  postProving: () => void;
+  postProving: (selfClient: SelfClient) => void;
   setUserConfirmed: () => void;
   _closeConnections: () => void;
-  _generatePayload: () => Promise<any>;
+  _generatePayload: () => Promise<unknown>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
-  _handleRegisterErrorOrFailure: () => void;
+  _handleRegisterErrorOrFailure: (selfClient: SelfClient) => void;
   _startSocketIOStatusListener: (
     receivedUuid: string,
     endpointType: EndpointType,
@@ -202,8 +213,11 @@ interface ProvingState {
 export const useProvingStore = create<ProvingState>((set, get) => {
   let actor: AnyActorRef | null = null;
 
-  function setupActorSubscriptions(newActor: AnyActorRef) {
-    newActor.subscribe((state: any) => {
+  function setupActorSubscriptions(
+    newActor: AnyActorRef,
+    selfClient: SelfClient,
+  ) {
+    newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
       console.log(`State transition: ${state.value}`);
       trackEvent(ProofEvents.PROVING_STATE_CHANGE, { state: state.value });
       set({ currentState: state.value as ProvingStateType });
@@ -212,7 +226,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startFetchingData();
       }
       if (state.value === 'validating_document') {
-        get().validatingDocument();
+        get().validatingDocument(selfClient);
       }
 
       if (state.value === 'init_tee_connexion') {
@@ -224,7 +238,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'post_proving') {
-        get().postProving();
+        get().postProving(selfClient);
       }
       if (
         get().circuitType !== 'disclose' &&
@@ -232,7 +246,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       ) {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            get()._handleRegisterErrorOrFailure();
+            get()._handleRegisterErrorOrFailure(selfClient);
           }
         }, 3000);
       }
@@ -246,7 +260,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           (async () => {
             try {
               await markCurrentDocumentAsRegistered();
-              console.log('Document marked as registered on-chain');
             } catch (error) {
               //This will be checked and updated when the app launches the next time
               console.error('Error marking document as registered:', error);
@@ -265,7 +278,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
       if (state.value === 'passport_not_supported') {
         if (navigationRef.isReady()) {
-          navigationRef.navigate('UnsupportedPassport');
+          const currentPassportData = get().passportData;
+          (navigationRef as any).navigate('UnsupportedPassport', {
+            passportData: currentPassportData,
+          });
         }
       }
       if (state.value === 'account_recovery_choice') {
@@ -360,7 +376,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           !result.error
         ) {
           trackEvent(ProofEvents.WS_HELLO_ACK);
-          console.log('Received message with status:', result.id);
+          // Received status from TEE
           const statusUuid = result.result;
           if (get().uuid !== statusUuid) {
             console.warn(
@@ -397,12 +413,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         console.error('Error processing WebSocket message:', error);
         if (get().currentState === 'init_tee_connexion') {
           trackEvent(ProofEvents.TEE_CONN_FAILED, {
-            message: (error as any).message,
+            message: error instanceof Error ? error.message : String(error),
           });
           actor!.send({ type: 'CONNECT_ERROR' });
         } else {
           trackEvent(ProofEvents.TEE_WS_ERROR, {
-            error: (error as any).message,
+            error: error instanceof Error ? error.message : String(error),
           });
           trackEvent(ProofEvents.PROOF_FAILED, {
             circuitType: get().circuitType,
@@ -413,9 +429,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    _handleRegisterErrorOrFailure: async () => {
+    _handleRegisterErrorOrFailure: async (selfClient: SelfClient) => {
       try {
-        const hasValid = await hasAnyValidRegisteredDocument();
+        const hasValid = await hasAnyValidRegisteredDocument(selfClient);
+
         if (navigationRef.isReady()) {
           if (hasValid) {
             navigationRef.navigate('Home');
@@ -423,7 +440,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             navigationRef.navigate('Launch');
           }
         }
-      } catch (error) {
+      } catch {
         if (navigationRef.isReady()) {
           navigationRef.navigate('Launch');
         }
@@ -455,7 +472,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       socket.on('connect_error', error => {
         console.error('SocketIO connection error:', error);
         trackEvent(ProofEvents.SOCKETIO_CONNECT_ERROR, {
-          message: (error as any).message,
+          message: error instanceof Error ? error.message : String(error),
         });
         trackEvent(ProofEvents.PROOF_FAILED, {
           circuitType: get().circuitType,
@@ -465,8 +482,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         set({ socketConnection: null });
       });
 
-      socket.on('disconnect', (reason: string) => {
-        console.log(`SocketIO disconnected. Reason: ${reason}`);
+      socket.on('disconnect', (_reason: string) => {
         const currentActor = actor;
 
         if (get().currentState === 'ready_to_prove' && currentActor) {
@@ -483,10 +499,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         set({ socketConnection: null });
       });
 
-      socket.on('status', (message: any) => {
+      socket.on('status', (message: unknown) => {
         const data =
           typeof message === 'string' ? JSON.parse(message) : message;
-        console.log('Received status update with status:', data.status);
         trackEvent(ProofEvents.SOCKETIO_STATUS_RECEIVED, {
           status: data.status,
         });
@@ -563,9 +578,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     _handleWsClose: (event: CloseEvent) => {
-      console.log(
-        `TEE WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`,
-      );
       trackEvent(ProofEvents.TEE_WS_CLOSED, {
         code: event.code,
         reason: event.reason,
@@ -594,6 +606,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     init: async (
+      selfClient: SelfClient,
       circuitType: 'dsc' | 'disclose' | 'register',
       userConfirmed: boolean = false,
     ) => {
@@ -624,7 +637,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
 
       actor = createActor(provingMachine);
-      setupActorSubscriptions(actor);
+      setupActorSubscriptions(actor, selfClient);
       actor.start();
 
       trackEvent(ProofEvents.DOCUMENT_LOAD_STARTED);
@@ -638,6 +651,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       const { data: passportData } = selectedDocument;
 
+      // TODO call on self client
       const secret = await unsafe_getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');
@@ -679,18 +693,21 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       } catch (error) {
         console.error('Error fetching data:', error);
         trackEvent(ProofEvents.FETCH_DATA_FAILED, {
-          message: (error as any).message,
+          message: error instanceof Error ? error.message : String(error),
         });
         actor!.send({ type: 'FETCH_ERROR' });
       }
     },
 
-    validatingDocument: async () => {
+    validatingDocument: async (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
       trackEvent(ProofEvents.VALIDATION_STARTED);
       try {
         const { passportData, secret, circuitType } = get();
+        if (!passportData) {
+          throw new Error('PassportData is not available');
+        }
         const isSupported = await checkPassportSupported(passportData);
         if (isSupported.status !== 'passport_supported') {
           console.error(
@@ -719,7 +736,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
           } else {
-            console.log('Passport is not registered with local CSCA');
             actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
             return;
           }
@@ -739,7 +755,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             (async () => {
               try {
                 await markCurrentDocumentAsRegistered();
-                console.log('Document marked as registered (already on-chain)');
               } catch (error) {
                 //it will be checked and marked as registered during next app launch
                 console.error('Error marking document as registered:', error);
@@ -752,7 +767,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           }
           const isNullifierOnchain = await isDocumentNullified(passportData);
           if (isNullifierOnchain) {
-            console.log(
+            console.warn(
               'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
             );
             trackEvent(ProofEvents.PASSPORT_NULLIFIER_ONCHAIN);
@@ -764,7 +779,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             passportData,
             useProtocolStore.getState()[document].dsc_tree,
           );
-          console.log('isDscRegistered: ', isDscRegistered);
           if (isDscRegistered) {
             trackEvent(ProofEvents.DSC_IN_TREE);
             set({ circuitType: 'register' });
@@ -775,14 +789,17 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       } catch (error) {
         console.error('Error validating passport:', error);
         trackEvent(ProofEvents.VALIDATION_FAILED, {
-          message: (error as any).message,
+          message: error instanceof Error ? error.message : String(error),
         });
         actor!.send({ type: 'VALIDATION_ERROR' });
       }
     },
 
     initTeeConnection: async (): Promise<boolean> => {
-      const { passportData }: { passportData: PassportData } = get();
+      const { passportData } = get();
+      if (!passportData) {
+        throw new Error('PassportData is not available');
+      }
       const document: DocumentCategory = passportData.documentCategory;
       const circuitsMapping =
         useProtocolStore.getState()[document].circuits_dns_mapping;
@@ -887,7 +904,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           try {
             const {
               registerDeviceToken,
-            } = require('../../utils/notifications/notificationService');
+            } = require('@/utils/notifications/notificationService');
             const isMockPassport = passportData?.mock;
             trackEvent(ProofEvents.DEVICE_TOKEN_REG_STARTED);
             await registerDeviceToken(uuid, fcmToken, isMockPassport);
@@ -895,7 +912,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           } catch (error) {
             console.error('Error registering device token:', error);
             trackEvent(ProofEvents.DEVICE_TOKEN_REG_FAILED, {
-              message: (error as any).message,
+              message: error instanceof Error ? error.message : String(error),
             });
             // Continue with the proving process even if token registration fails
           }
@@ -925,7 +942,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    postProving: () => {
+    postProving: (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       trackEvent(ProofEvents.POST_PROVING_STARTED);
@@ -935,7 +952,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             from: 'dsc',
             to: 'register',
           });
-          get().init('register', true);
+          get().init(selfClient, 'register', true);
         }, 1500);
       } else if (circuitType === 'register') {
         trackEvent(ProofEvents.POST_PROVING_COMPLETED);
@@ -980,6 +997,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _generatePayload: async () => {
       const { circuitType, passportData, secret, uuid, sharedKey, env } = get();
+      if (!passportData) {
+        throw new Error('PassportData is not available');
+      }
       const document: DocumentCategory = passportData.documentCategory;
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.

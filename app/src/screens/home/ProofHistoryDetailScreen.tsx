@@ -1,11 +1,14 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
+import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 
-import type { ProofHistory } from '../../stores/proof-types';
-import { ProofStatus } from '../../stores/proof-types';
+import type { ProofHistory } from '@/stores/proof-types';
+import { ProofStatus } from '@/stores/proof-types';
 import {
   black,
   blue100,
@@ -18,10 +21,8 @@ import {
   white,
   zinc400,
   zinc500,
-} from '../../utils/colors';
-import { advercase, dinot, plexMono } from '../../utils/fonts';
-
-import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
+} from '@/utils/colors';
+import { advercase, dinot, plexMono } from '@/utils/fonts';
 
 type ProofHistoryDetailScreenProps = {
   route: {

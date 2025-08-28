@@ -13,7 +13,12 @@ import { AttestationId, VcAndDiscloseProof, VerificationConfig } from './types/t
 import { Country3LetterCode } from '@selfxyz/common/constants';
 import { calculateUserIdentifierHash } from './utils/hash.js';
 import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
-import { ConfigMismatch, ConfigMismatchError } from './errors.js';
+import {
+  ConfigMismatch,
+  ConfigMismatchError,
+  RegistryContractError,
+  VerifierContractError,
+} from './errors/index.js';
 import { IConfigStorage } from './store/interface.js';
 import { unpackForbiddenCountriesList } from './utils/utils.js';
 import { BigNumberish } from 'ethers';
@@ -113,7 +118,7 @@ export class SelfBackendVerifier {
         '0x' + attestationId.toString(16).padStart(64, '0')
       );
       if (registryAddress === '0x0000000000000000000000000000000000000000') {
-        throw new Error('Registry contract not found');
+        throw new RegistryContractError('Registry contract not found');
       }
       const registryContract = Registry__factory.connect(registryAddress, this.provider);
       const currentRoot = await registryContract.checkIdentityCommitmentRoot(
@@ -128,7 +133,7 @@ export class SelfBackendVerifier {
         });
       }
     } catch (error) {
-      throw new Error('Registry contract not found');
+      throw new RegistryContractError('Registry contract not found');
     }
 
     //check if attestation id matches
@@ -282,11 +287,11 @@ export class SelfBackendVerifier {
         '0x' + attestationId.toString(16).padStart(64, '0')
       );
       if (verifierAddress === '0x0000000000000000000000000000000000000000') {
-        throw new Error('Verifier contract not found');
+        throw new VerifierContractError('Verifier contract not found');
       }
       verifierContract = Verifier__factory.connect(verifierAddress, this.provider);
     } catch (error) {
-      throw new Error('Verifier contract not found');
+      throw new VerifierContractError('Verifier contract not found');
     }
 
     let isValid = false;

@@ -1,44 +1,45 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 // Level 3 Function-Based Import Example - Maximum Tree Shaking
 // This demonstrates the new function-level imports for ultimate optimization
 // ✅ Uses clean re-exports (safe, no regression risk)
 
 // ✅ LEVEL 3: Import only specific hash functions (not entire hash module)
-import { hash } from '@selfxyz/common/utils/hash/sha';
-import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon';
-
-// ✅ LEVEL 3: Import only specific circuit generator (not entire circuits module)
-import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs';
-
-// ✅ LEVEL 3: Import only specific passport functions (not entire passports module)
-import { generateCommitment } from '@selfxyz/common/utils/passports/commitment';
-import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core';
-
-// ✅ LEVEL 3: Import only specific certificate parsing (not entire certificates module)
-import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseSimple';
-
 // Import only core constants (same as Level 2)
 import {
   API_URL,
   PASSPORT_ATTESTATION_ID,
 } from '@selfxyz/common/constants/constants';
-
 // Import only passport types (same as Level 2)
 import type { PassportData } from '@selfxyz/common/types/passport';
+// ✅ LEVEL 3: Import only specific certificate parsing (not entire certificates module)
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseSimple';
+// ✅ LEVEL 3: Import only specific circuit generator (not entire circuits module)
+import { generateCircuitInputsDSC } from '@selfxyz/common/utils/circuits/dscInputs';
+import { flexiblePoseidon } from '@selfxyz/common/utils/hash/poseidon';
+import { hash } from '@selfxyz/common/utils/hash/sha';
+// ✅ LEVEL 3: Import only specific passport functions (not entire passports module)
+import { generateCommitment } from '@selfxyz/common/utils/passports/commitment';
+import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core';
 
 export function optimalLevel3Example(data: PassportData, secret: string) {
   // This will result in the smallest possible bundle
   // Only the specific individual functions we use are included
   // Bundle size reduction: ~75-90% compared to broad imports!
-
   console.log('Using API:', API_URL);
+
   console.log('Attestation ID:', PASSPORT_ATTESTATION_ID);
 
   // Use specific hash function from SHA module
   const hashedData = hash([1, 2, 3, 4], 'hex');
+
   console.log('SHA hashed data:', hashedData);
 
   // Use specific Poseidon function for commitment
   const poseidonHash = flexiblePoseidon([BigInt(1), BigInt(2)]);
+
   console.log('Poseidon hash:', poseidonHash);
 
   // Use specific passport functions

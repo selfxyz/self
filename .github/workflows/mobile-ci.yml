@@ -1,69 +1,441 @@
 name: Mobile CI
 env:
   # Build environment versions
-  NODE_VERSION: 18
+  # Node version is read from .nvmrc during workflow execution
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
+  ANDROID_NDK_VERSION: 27.0.11718014
+  XCODE_VERSION: 16.4
   # Path configuration
   WORKSPACE: ${{ github.workspace }}
   APP_PATH: ${{ github.workspace }}/app
+  # Cache versions
+  GH_CACHE_VERSION: v1 # Global cache version
+  GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
+  # Performance optimizations
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.configureondemand=true -Dorg.gradle.caching=true
+  CI: true
 on:
   push:
     paths:
       - "common/**"
       - "app/**"
-      - ".github/workflows/app.yml"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/mobile-ci.yml"
       - ".github/actions/**"
+  workflow_dispatch: {}
+
+concurrency:
+  group: mobile-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
-    runs-on: macos-14
+  build-deps:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate Yarn 4.6.0
+        run: corepack prepare yarn@4.6.0 --activate
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            app/node_modules
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-      - name: Build Dependencies
-        run: yarn build:deps
-        working-directory: ./app
+      - name: Restore Built Dependencies
+        id: built-deps-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+          fail-on-cache-miss: false
+      - name: Build dependencies (cache miss)
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss for built dependencies. Building now..."
+          yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Run linter
         run: yarn lint
         working-directory: ./app
       - name: Run prettier
         run: yarn fmt
         working-directory: ./app
+      - name: Check license headers
+        run: node scripts/check-license-headers.mjs --check
+        working-directory: ./
 
   test:
-    runs-on: macos-14
+    runs-on: macos-latest
+    needs: build-deps
     steps:
       - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate Yarn 4.6.0
+        run: corepack prepare yarn@4.6.0 --activate
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            app/node_modules
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-
-      - name: Build
-        run: yarn build:deps
-        working-directory: ./app
+      - name: Restore Built Dependencies
+        id: built-deps-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+          fail-on-cache-miss: false
+      - name: Build dependencies (cache miss)
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss for built dependencies. Building now..."
+          yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Test
         run: yarn test
         working-directory: ./app
-  build:
-    runs-on: macos-14
+  build-ios:
+    runs-on: macos-latest
+    needs: build-deps
+    env:
+      # iOS project configuration - hardcoded for CI stability
+      IOS_PROJECT_NAME: "Self"
+      IOS_PROJECT_SCHEME: "OpenPassport"
     steps:
       - uses: actions/checkout@v4
-
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate Yarn 4.6.0
+        run: corepack prepare yarn@4.6.0 --activate
       - name: Set up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          # some cocoapods won't compile with xcode 16.3
-          xcode-version: "16.2"
+          xcode-version: ${{ env.XCODE_VERSION }}
+      - name: Configure Xcode path
+        run: |
+          echo "🔧 Configuring Xcode path to fix iOS SDK issues..."
+          # Fix for macOS 15 runner iOS SDK issues
+          # See: https://github.com/actions/runner-images/issues/12758
+          sudo xcode-select --switch /Applications/Xcode_${{ env.XCODE_VERSION }}.app
+          echo "✅ Xcode path configured"
 
-      - uses: actions/checkout@v4
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/mobile-setup
+          # Verify Xcode setup
+          echo "Xcode version:"
+          xcodebuild -version
+          echo "Xcode path:"
+          xcode-select -p
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          app_path: ${{ env.APP_PATH }}
-          node_version: ${{ env.NODE_VERSION }}
-          ruby_version: ${{ env.RUBY_VERSION }}
-          workspace: ${{ env.WORKSPACE }}
-      - name: Install And Build
-        run: yarn install-app
+          ruby-version: ${{ env.RUBY_VERSION }}
+          bundler-cache: false
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            app/node_modules
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Cache Ruby gems
+        uses: ./.github/actions/cache-bundler
+        with:
+          path: app/ios/vendor/bundle
+          lock-file: app/Gemfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
+      - name: Cache Pods
+        uses: ./.github/actions/cache-pods
+        with:
+          path: |
+            app/ios/Pods
+            ~/Library/Caches/CocoaPods
+          lock-file: app/ios/Podfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}
+      - name: Cache Xcode build
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/ios/build
+            ~/Library/Developer/Xcode/DerivedData
+            ~/Library/Caches/com.apple.dt.Xcode
+          key: ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock', 'app/ios/OpenPassport.xcworkspace/contents.xcworkspacedata', 'app/ios/Self.xcworkspace/contents.xcworkspacedata') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}-
+            ${{ runner.os }}-xcode-${{ env.XCODE_VERSION }}-
+      - name: Cache Xcode Index
+        uses: actions/cache@v4
+        with:
+          path: app/ios/build/Index.noindex
+          key: ${{ runner.os }}-xcode-index-${{ env.XCODE_VERSION }}-${{ hashFiles('app/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-xcode-index-${{ env.XCODE_VERSION }}-
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Restore Built Dependencies
+        id: built-deps-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+          fail-on-cache-miss: false
+      - name: Build dependencies (cache miss)
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss for built dependencies. Building now..."
+          yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+      - name: Install Ruby Dependencies
+        run: |
+          echo "Installing Ruby dependencies..."
+          bundle config set --local path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+        working-directory: ./app
+      - name: Install iOS Dependencies
+        run: |
+          echo "Installing iOS dependencies..."
+          cd ios
+          # Reuse the same guarded flow as local to ensure reproducibility
+          bundle exec bash scripts/pod-install-with-cache-fix.sh
+        working-directory: ./app
+      - name: Resolve iOS workspace
+        run: |
+          WORKSPACE_OPEN="ios/OpenPassport.xcworkspace"
+          WORKSPACE_SELF="ios/Self.xcworkspace"
+
+          if xcodebuild -list -workspace "$WORKSPACE_OPEN" 2>/dev/null | grep -q "OpenPassport"; then
+            WORKSPACE_PATH="$WORKSPACE_OPEN"
+          else
+            WORKSPACE_PATH="$WORKSPACE_SELF"
+          fi
+
+          echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$GITHUB_ENV"
+          echo "Resolved workspace: $WORKSPACE_PATH"
+        working-directory: ./app
+      - name: Verify iOS Workspace
+        run: |
+          echo "Verifying iOS workspace setup..."
+
+          if [ -z "$WORKSPACE_PATH" ]; then
+            echo "❌ WORKSPACE_PATH is not set"
+            exit 1
+          fi
+
+          if [ ! -d "$WORKSPACE_PATH" ]; then
+            echo "❌ Workspace not found at: $WORKSPACE_PATH"
+            echo "Available workspaces:"
+            find ios -name "*.xcworkspace" -type d
+            exit 1
+          fi
+
+          if [ ! -d "ios/Pods" ]; then
+            echo "❌ Pods directory is missing"
+            exit 1
+          fi
+
+          # Verify scheme exists by listing available schemes
+          echo "Verifying scheme availability..."
+          AVAILABLE_SCHEMES=$(xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 200 "Schemes:" | grep -v "Schemes:" | xargs)
+          echo "Available schemes (first 20): $(echo $AVAILABLE_SCHEMES | cut -d' ' -f1-20)..."
+
+          if [[ ! "$AVAILABLE_SCHEMES" =~ ${{ env.IOS_PROJECT_SCHEME }} ]]; then
+            echo "❌ Scheme '${{ env.IOS_PROJECT_SCHEME }}' not found"
+            echo "Full scheme list:"
+            xcodebuild -list -workspace "$WORKSPACE_PATH" 2>/dev/null | grep -A 200 "Schemes:" | grep -v "Schemes:" | head -50
+            exit 1
+          fi
+
+          echo "✅ iOS workspace is properly configured"
+          echo "✅ Using workspace: $WORKSPACE_PATH"
+          echo "✅ Using scheme: ${{ env.IOS_PROJECT_SCHEME }}"
+        working-directory: ./app
+      - name: Build iOS
+        run: |
+          echo "Building iOS app for simulator (no signing required)..."
+          echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
+          # Build for iOS Simulator to avoid code signing issues in CI
+          xcodebuild -workspace "$WORKSPACE_PATH" \
+            -scheme ${{ env.IOS_PROJECT_SCHEME }} \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath ios/build \
+            -jobs "$(sysctl -n hw.ncpu)" \
+            -parallelizeTargets \
+            -quiet || { echo "❌ iOS build failed"; exit 1; }
+          echo "✅ iOS build succeeded"
+        working-directory: ./app
+
+  build-android:
+    runs-on: ubuntu-latest
+    needs: build-deps
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Activate Yarn 4.6.0
+        run: corepack prepare yarn@4.6.0 --activate
+      - name: Cache Yarn
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            app/node_modules
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Cache Gradle
+        uses: ./.github/actions/cache-gradle
+        with:
+          cache-version: ${{ env.GH_CACHE_VERSION }}
+      - name: Setup Java environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+      - name: Cache NDK
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.ANDROID_HOME }}/ndk/${{ env.ANDROID_NDK_VERSION }}
+          key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
+      - name: Install NDK
+        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Restore Built Dependencies
+        id: built-deps-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+          fail-on-cache-miss: false
+      - name: Build dependencies (cache miss)
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        run: |
+          echo "Cache miss for built dependencies. Building now..."
+          yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Save Built Dependencies
+        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+      - name: Build Android
+        run: |
+          cd android
+          ./gradlew assembleDebug
         working-directory: ./app

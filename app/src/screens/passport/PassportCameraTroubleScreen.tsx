@@ -1,19 +1,21 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
 
-import type { TipProps } from '../../components/Tips';
-import Tips from '../../components/Tips';
-import { Caption } from '../../components/typography/Caption';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import Activity from '../../images/icons/activity.svg';
-import PassportCameraBulb from '../../images/icons/passport_camera_bulb.svg';
-import PassportCameraScan from '../../images/icons/passport_camera_scan.svg';
-import QrScan from '../../images/icons/qr_scan.svg';
-import Star from '../../images/icons/star.svg';
-import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
-import analytics from '../../utils/analytics';
-import { slate500 } from '../../utils/colors';
+import type { TipProps } from '@/components/Tips';
+import Tips from '@/components/Tips';
+import { Caption } from '@/components/typography/Caption';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import Activity from '@/images/icons/activity.svg';
+import PassportCameraBulb from '@/images/icons/passport_camera_bulb.svg';
+import PassportCameraScan from '@/images/icons/passport_camera_scan.svg';
+import QrScan from '@/images/icons/qr_scan.svg';
+import Star from '@/images/icons/star.svg';
+import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
+import analytics from '@/utils/analytics';
+import { slate500 } from '@/utils/colors';
 
 const { flush: flushAnalytics } = analytics();
 

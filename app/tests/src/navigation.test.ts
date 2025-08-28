@@ -1,8 +1,10 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 describe('navigation', () => {
   it('should have the correct navigation screens', () => {
-    const navigationScreens = require('../../src/navigation').navigationScreens;
+    const navigationScreens = require('@/navigation').navigationScreens;
     const listOfScreens = Object.keys(navigationScreens).sort();
     expect(listOfScreens).toEqual([
       'AccountRecovery',
@@ -11,6 +13,7 @@ describe('navigation', () => {
       'CloudBackupSettings',
       'ConfirmBelongingScreen',
       'CreateMock',
+      'DeferredLinkingInfo',
       'DevFeatureFlags',
       'DevHapticFeedback',
       'DevPrivateKey',
@@ -51,20 +54,18 @@ describe('navigation', () => {
     });
 
     it('should use regular passport screens when shouldShowAesopRedesign is false', () => {
-      const navigationScreens =
-        require('../../src/navigation').navigationScreens;
+      const navigationScreens = require('@/navigation').navigationScreens;
       expect(
         navigationScreens.PassportOnboarding.options.title,
       ).toBeUndefined();
     });
 
     it('should use aesop design passport screens when shouldShowAesopRedesign is true', () => {
-      jest.mock('../../src/hooks/useAesopRedesign', () => ({
+      jest.mock('@/hooks/useAesopRedesign', () => ({
         shouldShowAesopRedesign: jest.fn().mockReturnValue(true),
       }));
 
-      const navigationScreens =
-        require('../../src/navigation').navigationScreens;
+      const navigationScreens = require('@/navigation').navigationScreens;
       expect(navigationScreens.PassportOnboarding.options.title).toBeDefined();
     });
   });

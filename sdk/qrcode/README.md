@@ -168,9 +168,7 @@ function VerificationPage() {
         size={350}
       />
 
-      <p className="text-sm text-gray-500">
-        User ID: {userId.substring(0, 8)}...
-      </p>
+      <p className="text-sm text-gray-500">User ID: {userId.substring(0, 8)}...</p>
     </div>
   );
 }

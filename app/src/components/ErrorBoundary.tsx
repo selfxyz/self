@@ -1,11 +1,13 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { ErrorInfo } from 'react';
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
-import analytics from '../utils/analytics';
-
-const { flush: flushAnalytics } = analytics();
+import { captureException } from '@/Sentry';
+import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 
 interface Props {
   children: React.ReactNode;
@@ -25,12 +27,17 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  componentDidCatch() {
-    // Flush analytics before the app crashes
-    flushAnalytics();
-    // TODO Sentry React docs recommend Sentry.captureReactException(error, info);
-    // https://docs.sentry.io/platforms/javascript/guides/react/features/error-boundary/
-    // but ill wait so as to have few changes on native app
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    trackNfcEvent('error_boundary', {
+      message: error.message,
+      stack: info.componentStack,
+    });
+    // Flush all analytics before the app crashes
+    flushAllAnalytics();
+    captureException(error, {
+      componentStack: info.componentStack,
+      errorBoundary: true,
+    });
   }
 
   render() {

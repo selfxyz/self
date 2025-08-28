@@ -121,3 +121,9 @@ export class SelfAppBuilder {
 export function getUniversalLink(selfApp: SelfApp): string {
   return `${REDIRECT_URL}?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
 }
+
+export interface DeferredLinkingTokenResponse {
+  campaign_id: string;
+  campaign_user_id: string;
+  self_app: string; // SelfApp is serialized as a string
+}

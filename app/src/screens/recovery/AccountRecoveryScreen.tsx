@@ -1,21 +1,22 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
 import { View, YStack } from 'tamagui';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
-import { BackupEvents } from '../../consts/analytics';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import RestoreAccountSvg from '../../images/icons/restore_account.svg';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate600, white } from '../../utils/colors';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-interface AccountRecoveryScreenProps {}
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import Description from '@/components/typography/Description';
+import { Title } from '@/components/typography/Title';
+import useHapticNavigation from '@/hooks/useHapticNavigation';
+import RestoreAccountSvg from '@/images/icons/restore_account.svg';
+import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { black, slate600, white } from '@/utils/colors';
 
-const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
+const AccountRecoveryScreen: React.FC = () => {
   const onRestoreAccountPress = useHapticNavigation('AccountRecoveryChoice');
   const onCreateAccountPress = useHapticNavigation('CloudBackupSettings', {
     params: {

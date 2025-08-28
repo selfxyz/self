@@ -1,13 +1,18 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect, useState } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 // Tamagui imports for web
 import { AnimatePresence, YStack } from 'tamagui';
 
-import { PrimaryButton } from './PrimaryButton';
-import type { HeldPrimaryButtonProps } from './PrimaryButtonLongHold.shared';
-import { ACTION_TIMER, COLORS } from './PrimaryButtonLongHold.shared';
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import type { HeldPrimaryButtonProps } from '@/components/buttons/PrimaryButtonLongHold.shared';
+import {
+  ACTION_TIMER,
+  COLORS,
+} from '@/components/buttons/PrimaryButtonLongHold.shared';
 
 export function HeldPrimaryButton({
   children,

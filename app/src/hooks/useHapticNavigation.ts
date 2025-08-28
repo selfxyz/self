@@ -1,14 +1,22 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback } from 'react';
-
-import type { RootStackParamList } from '../navigation/index';
-import { impactLight, impactMedium, selectionChange } from '../utils/haptic';
-
+import type { NavigationProp } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import type { RootStackParamList } from '@/navigation/index';
+import { impactLight, impactMedium, selectionChange } from '@/utils/haptic';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
+
+type ExtendedNavigation = NavigationProp<RootStackParamList> & {
+  popTo?: <T extends keyof RootStackParamList>(
+    screen: T,
+    params?: RootStackParamList[T],
+  ) => void;
+};
 
 const useHapticNavigation = <S extends keyof RootStackParamList>(
   screen: S,
@@ -17,8 +25,7 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
     action?: NavigationAction;
   } = {},
 ) => {
-  const navigation =
-    useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
+  const navigation = useNavigation<ExtendedNavigation>();
 
   return useCallback(() => {
     const navParams = options.params;
@@ -26,12 +33,9 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
       case 'cancel':
         selectionChange();
         if (navParams !== undefined) {
-          (navigation.popTo as (screen: S, params: typeof navParams) => void)(
-            screen,
-            navParams,
-          );
+          navigation.popTo?.(screen, navParams);
         } else {
-          (navigation.popTo as (screen: S) => void)(screen);
+          navigation.popTo?.(screen);
         }
         return;
 
@@ -43,14 +47,19 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
       default:
         impactLight();
     }
-    // it is safe to cast options.params as any because it is correct when entering the function
     if (navParams !== undefined) {
-      (navigation.navigate as (screen: S, params: typeof navParams) => void)(
-        screen,
-        navParams,
-      );
+      (
+        navigation.navigate as <T extends keyof RootStackParamList>(
+          screen: T,
+          params: RootStackParamList[T],
+        ) => void
+      )(screen, navParams);
     } else {
-      (navigation.navigate as (screen: S) => void)(screen);
+      (
+        navigation.navigate as <T extends keyof RootStackParamList>(
+          screen: T,
+        ) => void
+      )(screen);
     }
   }, [navigation, screen, options]);
 };

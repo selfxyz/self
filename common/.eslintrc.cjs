@@ -58,9 +58,6 @@ module.exports = {
       { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
     ],
 
-    // Type import enforcement - critical for tree shaking
-    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
-
     // Standard import rules
     'import/first': 'error',
     'import/newline-after-import': 'error',
@@ -69,7 +66,6 @@ module.exports = {
     // TypeScript Rules - only essential ones
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-unused-vars': 'off',
-    '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
 

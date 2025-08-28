@@ -3,10 +3,22 @@ fastlane documentation
 
 # Installation
 
-Make sure you have the latest version of the Xcode command line tools installed:
+Make sure you have the Xcode command line tools installed:
 
 ```sh
 xcode-select --install
+```
+
+**Note:** The above command installs only the Command Line Tools, not the full Xcode app. Some Fastlane lanes and CocoaPods require the full Xcode app and the correct DEVELOPER_DIR. To verify your setup and switch to the proper Xcode app if needed:
+
+```bash
+# Verify Xcode and CLT
+xcodebuild -version
+xcode-select -p
+
+# If needed, point to the correct Xcode app:
+sudo xcode-select -s /Applications/Xcode.app
+sudo xcodebuild -runFirstLaunch
 ```
 
 For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
@@ -30,6 +42,14 @@ Sync ios version
 ```
 
 Push a new build to TestFlight Internal Testing
+
+### ios deploy_auto
+
+```sh
+[bundle exec] fastlane ios deploy_auto
+```
+
+Deploy iOS app with automatic version management
 
 ----
 
@@ -59,6 +79,14 @@ Push a new build to Google Play Internal Testing
 ```
 
 Push a new build to Google Play Store
+
+### android deploy_auto
+
+```sh
+[bundle exec] fastlane android deploy_auto
+```
+
+Deploy Android app with automatic version management
 
 ----
 

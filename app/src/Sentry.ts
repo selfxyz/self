@@ -1,7 +1,17 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { SENTRY_DSN } from '@env';
-import * as Sentry from '@sentry/react-native';
+import {
+  captureException as sentryCaptureException,
+  captureFeedback as sentryCaptureFeedback,
+  captureMessage as sentryCaptureMessage,
+  consoleLoggingIntegration,
+  feedbackIntegration,
+  init as sentryInit,
+  wrap,
+} from '@sentry/react-native';
 
 export const captureException = (
   error: Error,
@@ -10,9 +20,38 @@ export const captureException = (
   if (isSentryDisabled) {
     return;
   }
-  Sentry.captureException(error, {
+  sentryCaptureException(error, {
     extra: context,
   });
+};
+
+export const captureFeedback = (
+  feedback: string,
+  context?: Record<string, any>,
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+
+  sentryCaptureFeedback(
+    {
+      message: feedback,
+      name: context?.name,
+      email: context?.email,
+      tags: {
+        category: context?.category || 'general',
+        source: context?.source || 'feedback_modal',
+      },
+    },
+    {
+      captureContext: {
+        tags: {
+          category: context?.category || 'general',
+          source: context?.source || 'feedback_modal',
+        },
+      },
+    },
+  );
 };
 
 export const captureMessage = (
@@ -22,17 +61,17 @@ export const captureMessage = (
   if (isSentryDisabled) {
     return;
   }
-  Sentry.captureMessage(message, {
+  sentryCaptureMessage(message, {
     extra: context,
   });
 };
 
 export const initSentry = () => {
   if (isSentryDisabled) {
-    return null;
+    return;
   }
 
-  Sentry.init({
+  sentryInit({
     dsn: SENTRY_DSN,
     debug: false,
     enableAutoSessionTracking: true,
@@ -50,12 +89,35 @@ export const initSentry = () => {
       }
       return event;
     },
+    integrations: [
+      consoleLoggingIntegration({
+        levels: ['log', 'error', 'warn', 'info', 'debug'],
+      }),
+      feedbackIntegration({
+        buttonOptions: {
+          styles: {
+            triggerButton: {
+              position: 'absolute',
+              top: 20,
+              right: 20,
+              bottom: undefined,
+              marginTop: 100,
+            },
+          },
+        },
+        enableTakeScreenshot: true,
+        namePlaceholder: 'Fullname',
+        emailPlaceholder: 'Email',
+      }),
+    ],
+    _experiments: {
+      enableLogs: true,
+    },
   });
-  return Sentry;
 };
 
 export const isSentryDisabled = !SENTRY_DSN;
 
 export const wrapWithSentry = (App: React.ComponentType) => {
-  return isSentryDisabled ? App : Sentry.wrap(App);
+  return isSentryDisabled ? App : wrap(App);
 };

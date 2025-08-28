@@ -1,15 +1,63 @@
-import type { Options } from 'tsup';
+import path from 'path';
+import { defineConfig } from 'tsup';
+import { fileURLToPath } from 'url';
 
-const env = process.env.NODE_ENV;
+// Shared entry map to keep ESM/CJS builds in sync
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-export const tsup: Options = {
-  splitting: true,
-  clean: true, // clean up the dist folder
-  dts: true, // generate dts files
-  format: ['cjs', 'esm'], // generate cjs and esm files
-  skipNodeModulesBundle: true,
-  entryPoints: ['index.ts', 'animations/**/*', 'components/**/*', 'utils/**/*'],
-  watch: env === 'development',
-  target: 'es2020',
-  outDir: 'dist',
+const entries = {
+  index: 'index.ts',
+  'components/LED': 'components/LED.tsx',
+  'components/SelfQRcode': 'components/SelfQRcode.tsx',
+  'utils/utils': 'utils/utils.ts',
+  'utils/styles': 'utils/styles.ts',
+  'utils/websocket': 'utils/websocket.ts',
 };
+
+export default defineConfig([
+  {
+    tsconfig: './tsconfig.json',
+    entry: entries,
+    format: ['esm'],
+    outDir: path.resolve(__dirname, 'dist/esm'),
+    outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
+    dts: false,
+    splitting: false,
+    clean: true,
+    sourcemap: true,
+    target: 'es2020',
+    platform: 'neutral',
+    external: [
+      /^react/,
+      /^react-dom/,
+      /^react\/jsx-runtime$/,
+      /^lottie-react/,
+      /^qrcode.react/,
+      /^socket.io-client/,
+      /^node-forge/,
+    ],
+  },
+  {
+    tsconfig: './tsconfig.cjs.json',
+    entry: entries,
+    format: ['cjs'],
+    outDir: path.resolve(__dirname, 'dist/cjs'),
+    outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
+    dts: false,
+    splitting: false,
+    clean: false,
+    sourcemap: true,
+    target: 'es2020',
+    platform: 'neutral',
+    external: [
+      /^react/,
+      /^react-dom/,
+      /^react\/jsx-runtime$/,
+      /^lottie-react/,
+      /^qrcode.react/,
+      /^socket.io-client/,
+      /^node-forge/,
+    ],
+  },
+]);

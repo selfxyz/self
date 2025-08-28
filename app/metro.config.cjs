@@ -1,10 +1,16 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('node:path');
+
 const defaultConfig = getDefaultConfig(__dirname);
 const { assetExts, sourceExts } = defaultConfig.resolver;
 
 const monorepoRoot = path.resolve(__dirname, '../');
 const commonPath = path.join(__dirname, '/../common');
+const sdkAlphaPath = path.join(__dirname, '/../packages/mobile-sdk-alpha');
 const trueMonorepoNodeModules = path.resolve(__dirname, '../node_modules');
 const extraNodeModules = {
   stream: require.resolve('stream-browserify'),
@@ -12,7 +18,13 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  '@': path.join(__dirname, 'src'),
   '@selfxyz/common': path.resolve(commonPath, 'dist'),
+  '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
+  '@selfxyz/mobile-sdk-alpha/constants/analytics': path.resolve(
+    sdkAlphaPath,
+    'dist/esm/constants/analytics.js',
+  ),
   // Main exports
   '@selfxyz/common/utils': path.resolve(
     commonPath,
@@ -52,6 +64,10 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/hash.js',
   ),
+  '@selfxyz/common/utils/attest': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/attest.js',
+  ),
   '@selfxyz/common/utils/bytes': path.resolve(
     commonPath,
     'dist/esm/src/utils/bytes.js',
@@ -63,6 +79,10 @@ const extraNodeModules = {
   '@selfxyz/common/utils/scope': path.resolve(
     commonPath,
     'dist/esm/src/utils/scope.js',
+  ),
+  '@selfxyz/common/utils/proving': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/proving.js',
   ),
   '@selfxyz/common/utils/appType': path.resolve(
     commonPath,
@@ -158,6 +178,7 @@ const watchFolders = [
   path.resolve(commonPath),
   trueMonorepoNodeModules,
   path.join(__dirname, 'src'),
+  path.resolve(sdkAlphaPath),
 ];
 
 /**

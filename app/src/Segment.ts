@@ -1,6 +1,7 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import '@ethersproject/shims';
 import { SEGMENT_KEY } from '@env';
 import type { SegmentEvent } from '@segment/analytics-react-native';
 import {
@@ -8,7 +9,10 @@ import {
   createClient,
   EventPlugin,
   PluginType,
+  StartupFlushPolicy,
 } from '@segment/analytics-react-native';
+
+import '@ethersproject/shims';
 
 let segmentClient: ReturnType<typeof createClient> | null = null;
 
@@ -45,7 +49,7 @@ export const createSegmentClient = () => {
     return segmentClient;
   }
 
-  const flushPolicies = [new BackgroundFlushPolicy()];
+  const flushPolicies = [new BackgroundFlushPolicy(), new StartupFlushPolicy()];
 
   const client = createClient({
     writeKey: SEGMENT_KEY,
@@ -53,6 +57,8 @@ export const createSegmentClient = () => {
     trackDeepLinks: true,
     debug: __DEV__,
     collectDeviceId: false,
+    flushAt: 20, // Flush every 20 events
+    flushInterval: 20000, // Flush every 20 seconds
     defaultSettings: {
       integrations: {
         'Segment.io': {

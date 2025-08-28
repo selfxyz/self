@@ -1,0 +1,277 @@
+name: QRCode SDK CI
+
+env:
+  # Build environment versions
+  # Node version is read from .nvmrc during workflow execution
+  # Cache versioning - increment these to bust caches when needed
+  GH_CACHE_VERSION: v1 # Global cache version
+  GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
+  GH_SDK_CACHE_VERSION: v1 # SDK build cache version
+
+on:
+  pull_request:
+    paths:
+      - "sdk/qrcode/**"
+      - "common/**"
+      - ".github/workflows/qrcode-sdk-ci.yml"
+      - ".github/actions/**"
+  push:
+    branches: [main, develop]
+    paths:
+      - "sdk/qrcode/**"
+      - "common/**"
+
+jobs:
+  # Build dependencies once and cache for other jobs
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Yarn dependencies
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            sdk/qrcode/node_modules
+            common/node_modules
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build dependencies
+        shell: bash
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/qrcode build
+
+      - name: Cache build artifacts
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            common/dist
+            sdk/qrcode/dist
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
+
+  # Quality checks job
+  quality-checks:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Yarn dependencies
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            sdk/qrcode/node_modules
+            common/node_modules
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            sdk/qrcode/dist
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Run linter
+        run: yarn workspace @selfxyz/qrcode lint:imports:check
+
+      - name: Check Prettier formatting
+        run: yarn workspace @selfxyz/qrcode lint
+
+      - name: Type checking
+        run: yarn workspace @selfxyz/qrcode types
+
+      - name: Log cache status
+        run: |
+          echo "Cache hit results:"
+          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+
+  # Build verification job
+  build-verification:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Yarn dependencies
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            sdk/qrcode/node_modules
+            common/node_modules
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            sdk/qrcode/dist
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Verify build artifacts
+        run: |
+          echo "Verifying build artifacts..."
+          ls -la common/dist/
+          ls -la sdk/qrcode/dist/
+          echo "✅ Build artifacts verified"
+
+  # Integration test job
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache Yarn dependencies
+        id: yarn-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            sdk/qrcode/node_modules
+            common/node_modules
+          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            sdk/qrcode/dist
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Run tests
+        run: yarn workspace @selfxyz/qrcode test
+
+      - name: Test package import
+        run: |
+          echo "Testing package import..."
+          node -e "
+            const pkg = require('./sdk/qrcode/dist/cjs/index.cjs');
+            console.log('✅ Package imported successfully');
+            console.log('Package exports:', Object.keys(pkg));
+          "
+
+      - name: Log cache status
+        run: |
+          echo "Cache hit results:"
+          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"

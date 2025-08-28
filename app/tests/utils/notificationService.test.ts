@@ -1,8 +1,10 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { PermissionsAndroid, Platform } from 'react-native';
 
-jest.unmock('../../src/utils/notifications/notificationService');
+jest.unmock('@/utils/notifications/notificationService');
 
 jest.mock('@react-native-firebase/messaging', () => {
   const instance = {
@@ -28,7 +30,7 @@ describe('notificationService', () => {
       ._instance;
     messagingMock.requestPermission.mockReset();
     messagingMock.getToken.mockReset();
-    service = require('../../src/utils/notifications/notificationService');
+    service = require('@/utils/notifications/notificationService');
     (fetch as jest.Mock).mockResolvedValue({ ok: true, text: jest.fn() });
     messagingMock.requestPermission.mockResolvedValue(1);
     messagingMock.getToken.mockResolvedValue('token');

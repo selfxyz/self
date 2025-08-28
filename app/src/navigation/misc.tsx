@@ -1,19 +1,23 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { lazy } from 'react';
 import { SystemBars } from 'react-native-edge-to-edge';
+import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 // Important: SplashScreen is imported directly and not lazy-loaded.
 // This is because it's used as a fallback for the Suspense boundary in the root navigator,
 // ensuring it's immediately available at startup.
-import SplashScreen from '../screens/misc/SplashScreen';
-import { black } from '../utils/colors';
+import SplashScreen from '@/screens/misc/SplashScreen';
+import { black } from '@/utils/colors';
 
-import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-
-const LaunchScreen = lazy(() => import('../screens/misc/LaunchScreen'));
-const LoadingScreen = lazy(() => import('../screens/misc/LoadingScreen'));
-const ModalScreen = lazy(() => import('../screens/misc/ModalScreen'));
+const LaunchScreen = lazy(() => import('@/screens/misc/LaunchScreen'));
+const LoadingScreen = lazy(() => import('@/screens/misc/LoadingScreen'));
+const ModalScreen = lazy(() => import('@/screens/misc/ModalScreen'));
+const DeferredLinkingInfoScreen = lazy(
+  () => import('@/screens/misc/DeferredLinkingInfoScreen'),
+);
 
 const miscScreens = {
   Launch: {
@@ -36,6 +40,13 @@ const miscScreens = {
       headerShown: false,
       presentation: 'transparentModal',
       animation: 'fade',
+      contentStyle: { backgroundColor: 'transparent' },
+    } as NativeStackNavigationOptions,
+  },
+  DeferredLinkingInfo: {
+    screen: DeferredLinkingInfoScreen,
+    options: {
+      headerShown: false,
     } as NativeStackNavigationOptions,
   },
 

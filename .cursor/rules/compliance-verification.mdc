@@ -1,0 +1,99 @@
+---
+description: Critical compliance verification requirements for OFAC checks, age verification, and forbidden country validation
+version: 1.0.0
+status: active
+owners:
+  - team: compliance-platform
+  - team: mobile-identity
+lastUpdated: 2025-01-12
+specId: compliance-verification
+importanceScore: 95
+importanceJustification: Direct implementation of critical regulatory compliance requirements with multiple verification layers and sophisticated identity validation.
+contextUsageNote: If this file is used to add in-context notes, include a single italicized line stating what specific information was used from this file in sentence case.
+---
+
+# Compliance Verification Requirements
+
+## 1. OFAC Compliance Checks
+
+### Three-Tier Verification System
+- **Passport Number Check**: Direct passport number validation against OFAC lists
+- **Name + DOB Check**: Full name with exact date of birth verification
+- **Name + Year Check**: Name with year of birth verification (defaults to Jan-01)
+
+### Data Normalization Requirements
+- **Names**: Case-folding, Unicode NFKC normalization, diacritics removal
+- **Fuzzy Matching**: Jaro–Winkler algorithm with ≥0.92 threshold
+- **Passport Numbers**: Whitespace/punctuation removal, country-specific format validation
+- **Dates**: ISO 8601 format (YYYY-MM-DD) required
+
+### Privacy Protection
+- **No Raw PII**: All PII committed via domain-separated hashes (Poseidon("ofac-v1" || value))
+- **Per-Issuer Salt**: Unique salt per issuing country for additional privacy
+- **On-Chain Privacy**: Only nullifiers/commitments published, no linkable identity data
+
+## 2. Age Verification
+
+### Implementation Requirements
+- **Granularity**: Day-level precision for age verification
+- **Format**: "olderThan" checks with ISO 8601 date inputs
+- **Privacy**: Age verification without revealing actual date of birth
+- **Zero-Knowledge**: Proof of age without disclosing DOB
+
+### Circuit Implementation
+- **Location**: `circuits/circuits/disclose/disclose.circom`
+- **Input**: Date of birth (private), minimum age (public)
+- **Output**: Boolean proof of age requirement satisfaction
+- **Validation**: Day-level comparison with proper date arithmetic
+
+## 3. Forbidden Country Validation
+
+### Data Structure
+- **Implementation**: Bloom filter with ≤1e-6 false positive rate
+- **Distribution**: JWS/JWT protected with key rotation and KID
+- **Update Cadence**: Weekly updates with 24-hour cache TTL
+- **Versioning**: Filter seed versioning for updates
+
+### Validation Process
+- **Country Code**: ISO 3166-1 alpha-3 format validation
+- **Zero-Knowledge**: Proof of non-inclusion without revealing country
+- **Circuit Integration**: Integrated into disclosure proof circuit
+- **Fallback**: Graceful degradation when filter unavailable
+
+## 4. Time and Replay Control
+
+### Timestamp Requirements
+- **Time Source**: UTC timestamps only
+- **Clock Drift**: ±5 minutes tolerance allowed
+- **Window**: 24-hour verification window with drift adjustment
+- **Binding**: Timestamp bound into proof signature to prevent replay
+
+### Mobile Client Considerations
+- **Trusted Time**: Server-signed time tokens or chain block timestamps
+- **Device Clock**: Do not trust device wall-clock alone
+- **Time Anchor**: Include trusted time anchor in proof generation
+- **Validation**: Verify time anchor authenticity before proof generation
+
+## 5. Implementation Constraints
+
+### Performance Requirements
+- **Proof Generation**: <60s on mid-tier mobile devices
+- **Memory Usage**: <300MB peak memory
+- **Network Calls**: Idempotent with exponential backoff
+- **Offline Support**: Cached data with ETag/versioning
+
+### Error Handling
+- **Graceful Degradation**: Fallback when external services unavailable
+- **Error Codes**: Deterministic error codes without sensitive data
+- **Retry Logic**: Exponential backoff with jitter
+- **User Feedback**: Clear error messages without PII exposure
+
+### Security Requirements
+- **Cryptographic Standards**: Approved algorithms and key sizes
+- **Key Management**: Proper rotation and secure storage
+- **Randomness**: CSPRNG with entropy validation
+- **Audit Trails**: Privacy-preserving audit logs
+
+This specification focuses on the critical compliance requirements with specific implementation details and constraints.
+
+$END$
