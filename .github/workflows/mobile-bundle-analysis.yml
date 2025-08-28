@@ -10,6 +10,7 @@ on:
   pull_request:
     paths:
       - "app/**"
+      - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-bundle-analysis.yml"
       - ".github/actions/**"
   workflow_dispatch:

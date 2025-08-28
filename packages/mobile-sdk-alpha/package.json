@@ -50,18 +50,13 @@
     "test": "vitest run",
     "test:build": "yarn build && yarn test && yarn types && yarn lint",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "types": "yarn build",
+    "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
     "validate:pkg": "node ./scripts/verify-conditions.mjs"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:*",
     "tslib": "^2.6.2"
-  },
-  "peerDependencies": {
-    "react": "^18.3.1",
-    "react-native": "^0.75.4",
-    "tamagui": "^1.126.0"
   },
   "devDependencies": {
     "@testing-library/react": "^14.1.2",
@@ -77,10 +72,15 @@
     "jsdom": "^24.0.0",
     "prettier": "^3.5.3",
     "react": "^18.3.1",
-    "react-native": "0.75.4",
+    "react-native": "0.76.9",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",
     "vitest": "^1.6.0"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-native": "^0.76.9",
+    "tamagui": "^1.126.0"
   },
   "packageManager": "yarn@4.6.0",
   "publishConfig": {

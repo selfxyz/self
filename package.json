@@ -27,6 +27,10 @@
     "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
+  "resolutions": {
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "gitleaks": "1.0.0",
@@ -35,10 +39,6 @@
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
     "typescript": "^5.9.2"
-  },
-  "resolutions": {
-    "@typescript-eslint/eslint-plugin": "^8.39.0",
-    "@typescript-eslint/parser": "^8.39.0"
   },
   "packageManager": "yarn@4.6.0",
   "engines": {

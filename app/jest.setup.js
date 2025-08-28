@@ -6,7 +6,12 @@
 /** @jest-environment jsdom */
 require('react-native-gesture-handler/jestSetup');
 
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+// Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
+jest.mock(
+  'react-native/src/private/animated/NativeAnimatedHelper',
+  () => ({}),
+  { virtual: true },
+);
 
 jest.mock('@env', () => ({
   ENABLE_DEBUG_LOGS: 'false',

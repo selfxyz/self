@@ -115,6 +115,15 @@ jobs:
       - name: Print Circom version
         run: circom --version
 
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            circuits/node_modules
+          cache-version: v1
+
       - name: Install Yarn dependencies
         uses: ./.github/actions/yarn-install
         with:

@@ -30,7 +30,7 @@ describe('Android build.gradle Configuration', () => {
   });
 
   it('sets the expected SDK version numbers', () => {
-    expect(rootGradleContent).toMatch(/minSdkVersion\s*=\s*23/);
+    expect(rootGradleContent).toMatch(/minSdkVersion\s*=\s*24/);
     expect(rootGradleContent).toMatch(/targetSdkVersion\s*=\s*35/);
   });
 

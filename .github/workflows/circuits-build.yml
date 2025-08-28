@@ -14,6 +14,10 @@ on:
       - ".github/workflows/artifacts.yml"
   workflow_dispatch:
 
+concurrency:
+  group: circuits-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ["self-hosted", "selfxyz-org", "ubuntu-22-04", "128ram"]
