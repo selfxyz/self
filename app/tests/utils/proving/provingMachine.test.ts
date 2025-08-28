@@ -4,7 +4,7 @@
 
 import { act, renderHook } from '@testing-library/react-native';
 
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
@@ -15,7 +15,7 @@ jest.mock('@/navigation', () => ({
   },
 }));
 
-jest.mock('@selfxyz/mobile-sdk-alpha/documents/utils', () => {
+jest.mock('@selfxyz/mobile-sdk-alpha', () => {
   return {
     loadSelectedDocument: jest.fn().mockResolvedValue(null),
   };
