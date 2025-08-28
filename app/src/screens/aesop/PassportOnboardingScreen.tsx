@@ -7,9 +7,11 @@ import React, { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { hasAnyValidRegisteredDocument } from '@selfxyz/mobile-sdk-alpha/documents/utils';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

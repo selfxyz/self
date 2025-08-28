@@ -8,8 +8,10 @@ import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { hasAnyValidRegisteredDocument } from '@selfxyz/mobile-sdk-alpha/documents/utils';
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import splashAnimation from '@/assets/animations/splash.json';
 import type { RootStackParamList } from '@/navigation';
@@ -60,7 +62,7 @@ const SplashScreen: React.FC = ({}) => {
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           if (needsMigration) {
-            await checkAndUpdateRegistrationStates(selfClient);
+            await checkAndUpdateRegistrationStates();
           }
 
           const hasValid = await hasAnyValidRegisteredDocument(selfClient);

@@ -61,13 +61,10 @@ import type {
 } from '@selfxyz/common/utils/types';
 import {
   DocumentsAdapter,
+  getAllDocuments,
   SelfClient,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import {
-  getAllDocuments,
-  loadSelectedDocument,
-} from '@selfxyz/mobile-sdk-alpha/documents/utils';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 
@@ -181,17 +178,13 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const selfClient = useSelfClient();
 
   const getData = useCallback(
-    () =>
-      _getSecurely<PassportData>(
-        () => loadPassportData(selfClient),
-        str => JSON.parse(str),
-      ),
+    () => _getSecurely<PassportData>(loadPassportData, str => JSON.parse(str)),
     [_getSecurely],
   );
 
   const getSelectedData = useCallback(() => {
     return _getSecurely<PassportData>(
-      () => loadSelectedPassportData(selfClient),
+      () => loadSelectedPassportData(),
       str => JSON.parse(str),
     );
   }, [_getSecurely]);
@@ -206,7 +199,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const getPassportDataAndSecret = useCallback(
     () =>
       _getSecurely<{ passportData: PassportData; secret: string }>(
-        () => loadPassportDataAndSecret(selfClient),
+        loadPassportDataAndSecret,
         str => JSON.parse(str),
       ),
     [_getSecurely],
@@ -214,7 +207,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
 
   const getSelectedPassportDataAndSecret = useCallback(() => {
     return _getSecurely<{ passportData: PassportData; secret: string }>(
-      () => loadSelectedPassportDataAndSecret(selfClient),
+      () => loadSelectedPassportDataAndSecret(),
       str => JSON.parse(str),
     );
   }, [_getSecurely]);
@@ -241,8 +234,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
       updateDocumentRegistrationState: updateDocumentRegistrationState,
       checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
-      checkAndUpdateRegistrationStates: () =>
-        checkAndUpdateRegistrationStates(selfClient),
+      checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
     }),
     [
       getData,
@@ -261,13 +253,11 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   );
 };
 
-export async function checkAndUpdateRegistrationStates(
-  selfClient: SelfClient,
-): Promise<void> {
+export async function checkAndUpdateRegistrationStates(): Promise<void> {
   // Lazy import to avoid circular dependency
   const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
     await import('@/utils/proving/validateDocument');
-  return validateDocCheckAndUpdate(selfClient);
+  return validateDocCheckAndUpdate();
 }
 
 export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
@@ -525,9 +515,9 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
   return { documents: [] };
 }
 
-export async function loadPassportData(selfClient: SelfClient) {
+export async function loadPassportData() {
   // Try new system first
-  const selected = await loadSelectedDocument(selfClient);
+  const selected = await loadSelectedDocumentDirectlyFromKeychain();
   if (selected) {
     return JSON.stringify(selected.data);
   }
@@ -567,8 +557,8 @@ export async function loadPassportData(selfClient: SelfClient) {
   return false;
 }
 
-export async function loadPassportDataAndSecret(selfClient: SelfClient) {
-  const passportData = await loadPassportData(selfClient);
+export async function loadPassportDataAndSecret() {
+  const passportData = await loadPassportData();
   const secret = await unsafe_getPrivateKey();
   if (!secret || !passportData) {
     return false;
@@ -579,23 +569,62 @@ export async function loadPassportDataAndSecret(selfClient: SelfClient) {
   });
 }
 
-export async function loadSelectedPassportData(
-  selfClient: SelfClient,
-): Promise<string | false> {
+export const loadSelectedDocumentDirectlyFromKeychain = async (): Promise<{
+  data: PassportData;
+  metadata: DocumentMetadata;
+} | null> => {
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
+  console.log('Catalog loaded');
+
+  if (!catalog.selectedDocumentId) {
+    console.log('No selectedDocumentId found');
+    if (catalog.documents.length > 0) {
+      console.log('Using first document as fallback');
+      catalog.selectedDocumentId = catalog.documents[0].id;
+
+      await saveDocumentCatalogDirectlyToKeychain(catalog);
+    } else {
+      console.log('No documents in catalog, returning null');
+      return null;
+    }
+  }
+
+  const metadata = catalog.documents.find(
+    d => d.id === catalog.selectedDocumentId,
+  );
+  if (!metadata) {
+    console.log(
+      'Metadata not found for selectedDocumentId:',
+      catalog.selectedDocumentId,
+    );
+    return null;
+  }
+
+  const data = await loadDocumentByIdDirectlyFromKeychain(
+    catalog.selectedDocumentId,
+  );
+  if (!data) {
+    console.log('Document data not found for id:', catalog.selectedDocumentId);
+    return null;
+  }
+
+  console.log('Successfully loaded document:', metadata.documentType);
+  return { data, metadata };
+};
+
+export async function loadSelectedPassportData(): Promise<string | false> {
   // Try new system first
-  const selected = await loadSelectedDocument(selfClient);
+  const selected = await loadSelectedDocumentDirectlyFromKeychain();
   if (selected) {
     return JSON.stringify(selected.data);
   }
 
   // Fallback to legacy system
-  return await loadPassportData(selfClient);
+  return await loadPassportData();
 }
 
-export async function loadSelectedPassportDataAndSecret(
-  selfClient: SelfClient,
-) {
-  const passportData = await loadSelectedPassportData(selfClient);
+export async function loadSelectedPassportDataAndSecret() {
+  const passportData = await loadSelectedPassportData();
   const secret = await unsafe_getPrivateKey();
   if (!secret || !passportData) {
     return false;

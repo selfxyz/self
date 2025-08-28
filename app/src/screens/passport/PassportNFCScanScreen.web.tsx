@@ -5,9 +5,11 @@
 import React from 'react';
 import { Image } from 'tamagui';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { hasAnyValidRegisteredDocument } from '@selfxyz/mobile-sdk-alpha/documents/utils';
 
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';

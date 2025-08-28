@@ -25,15 +25,15 @@ import {
   getPayload,
   getWSDbRelayerUrl,
 } from '@selfxyz/common/utils/proving';
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
+  SelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  hasAnyValidRegisteredDocument,
-  loadSelectedDocument,
-} from '@selfxyz/mobile-sdk-alpha/documents/utils';
 
 import { navigationRef } from '@/navigation';
 // will need to be passed in from selfClient

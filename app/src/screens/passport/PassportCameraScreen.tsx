@@ -8,9 +8,12 @@ import { Platform, StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 
-import { formatDateToYYMMDD, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  formatDateToYYMMDD,
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { hasAnyValidRegisteredDocument } from '@selfxyz/mobile-sdk-alpha/documents/utils';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';

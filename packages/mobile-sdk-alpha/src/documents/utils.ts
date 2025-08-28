@@ -51,7 +51,9 @@ export const hasAnyValidRegisteredDocument = async (client: SelfClient): Promise
   }
 };
 
-export const loadSelectedDocument = async (selfClient: SelfClient): Promise<{
+export const loadSelectedDocument = async (
+  selfClient: SelfClient,
+): Promise<{
   data: PassportData;
   metadata: DocumentMetadata;
 } | null> => {
@@ -65,27 +67,19 @@ export const loadSelectedDocument = async (selfClient: SelfClient): Promise<{
       catalog.selectedDocumentId = catalog.documents[0].id;
 
       await selfClient.saveDocumentCatalog(catalog);
-
     } else {
       console.log('No documents in catalog, returning null');
       return null;
     }
   }
 
-  const metadata = catalog.documents.find(
-    d => d.id === catalog.selectedDocumentId,
-  );
+  const metadata = catalog.documents.find(d => d.id === catalog.selectedDocumentId);
   if (!metadata) {
-    console.log(
-      'Metadata not found for selectedDocumentId:',
-      catalog.selectedDocumentId,
-    );
+    console.log('Metadata not found for selectedDocumentId:', catalog.selectedDocumentId);
     return null;
   }
 
-  const data = await selfClient.loadDocumentById(
-    catalog.selectedDocumentId,
-  );
+  const data = await selfClient.loadDocumentById(catalog.selectedDocumentId);
   if (!data) {
     console.log('Document data not found for id:', catalog.selectedDocumentId);
     return null;

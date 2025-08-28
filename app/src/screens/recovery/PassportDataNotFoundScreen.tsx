@@ -4,8 +4,10 @@
 
 import React, { useEffect } from 'react';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { hasAnyValidRegisteredDocument } from '@selfxyz/mobile-sdk-alpha/documents/utils';
+import {
+  hasAnyValidRegisteredDocument,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import Description from '@/components/typography/Description';

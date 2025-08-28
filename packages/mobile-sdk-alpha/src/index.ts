@@ -86,6 +86,9 @@ export { extractMRZInfo } from './mrz';
 
 export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
+// Documents utils
+export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
+
 // Core functions
 export { isPassportDataValid } from './validation/document';
 

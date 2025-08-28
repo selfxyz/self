@@ -28,11 +28,6 @@
       "types": "./dist/esm/constants/analytics.d.ts",
       "import": "./dist/esm/constants/analytics.js",
       "require": "./dist/cjs/constants/analytics.cjs"
-    },
-    "./documents/utils": {
-      "types": "./dist/esm/documents/utils.d.ts",
-      "import": "./dist/esm/documents/utils.js",
-      "require": "./dist/cjs/documents/utils.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
