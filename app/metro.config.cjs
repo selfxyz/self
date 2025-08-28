@@ -104,6 +104,10 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/passports/format.js',
   ),
+  '@selfxyz/common/utils/passports/validate': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/passports/validate.js',
+  ),
   '@selfxyz/common/utils/passportMock': path.resolve(
     commonPath,
     'dist/esm/src/utils/passports/mock.js',

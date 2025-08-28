@@ -271,6 +271,11 @@
       "import": "./dist/esm/src/utils/passports/passport.js",
       "require": "./dist/cjs/src/utils/passports/passport.cjs"
     },
+    "./utils/passports/validate": {
+      "types": "./dist/esm/src/utils/passports/validate.d.ts",
+      "import": "./dist/esm/src/utils/passports/validate.js",
+      "require": "./dist/cjs/src/utils/passports/validate.cjs"
+    },
     "./utils/passports/genMockIdDoc": {
       "types": "./dist/esm/src/utils/passports/genMockIdDoc.d.ts",
       "import": "./dist/esm/src/utils/passports/genMockIdDoc.js",

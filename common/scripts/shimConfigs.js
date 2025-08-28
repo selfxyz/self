@@ -215,6 +215,11 @@ export const shimConfigs = [
     name: 'utils/passports/mockDsc',
   },
   {
+    shimPath: 'utils/passports/validate',
+    targetPath: '../../../esm/src/utils/passports/validate.js',
+    name: 'utils/passports/validate',
+  },
+  {
     shimPath: 'utils/passports/mockGeneration',
     targetPath: '../../../esm/src/utils/passports/mockGeneration.js',
     name: 'utils/passports/mockGeneration',
