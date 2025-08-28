@@ -16,7 +16,11 @@ import {
   parseMnemonic,
   withRetries,
 } from '@/utils/cloudBackup/helpers';
-import * as ios from '@/utils/cloudBackup/ios';
+import {
+  disableBackup as disableIosBackup,
+  download as iosDownload,
+  upload as iosUpload,
+} from '@/utils/cloudBackup/ios';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 
@@ -30,7 +34,7 @@ function isDriveFile(file: unknown): file is { id: string } {
 
 export async function disableBackup() {
   if (Platform.OS === 'ios') {
-    await ios.disableBackup();
+    await disableIosBackup();
     return;
   }
   const gdrive = await createGDrive();
@@ -56,7 +60,7 @@ export async function disableBackup() {
 
 export async function download() {
   if (Platform.OS === 'ios') {
-    return ios.download();
+    return iosDownload();
   }
 
   const gdrive = await createGDrive();
@@ -94,7 +98,7 @@ export async function upload(mnemonic: Mnemonic) {
     );
   }
   if (Platform.OS === 'ios') {
-    await ios.upload(mnemonic);
+    await iosUpload(mnemonic);
   } else {
     const gdrive = await createGDrive();
     if (!gdrive) {

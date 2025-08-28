@@ -13,7 +13,7 @@ const TEST_CONFIGS = [
   {
     name: 'full-import',
     description: 'Import everything from @selfxyz/common (worst case)',
-    imports: `import * as common from '@selfxyz/common';
+    imports: `import common from '@selfxyz/common';
 console.log('API_URL:', common.API_URL);
 console.log('hash function exists:', typeof common.hash);`,
   },
@@ -219,7 +219,7 @@ function generateReport(results) {
       '✅ Use granular imports like "@selfxyz/common/constants" for better tree shaking',
     );
   }
-  console.log('✅ Avoid "import * as" patterns when possible');
+  console.log('✅ Avoid namespace import patterns when possible');
   console.log('✅ Import only what you need from each module');
 
   // Check if tree shaking is working

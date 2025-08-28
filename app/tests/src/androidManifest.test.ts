@@ -6,8 +6,8 @@
  * @jest-environment node
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 
 describe('Android Manifest Configuration', () => {
   const manifestPath = path.join(
