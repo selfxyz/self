@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+
 import { useProtocolStore } from '@/stores/protocolStore';
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
@@ -29,9 +31,20 @@ jest.mock('@/utils/analytics', () => () => ({
 }));
 jest.mock('@/providers/passportDataProvider', () => ({
   loadSelectedDocument: jest.fn(),
+  unsafe_getPrivateKey: jest.fn(),
 }));
 jest.mock('@/providers/authProvider', () => ({
   unsafe_getPrivateKey: jest.fn(),
+}));
+
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  loadSelectedDocument: jest.fn().mockResolvedValue({
+    data: {
+      documentCategory: 'passport',
+      mock: false,
+      dsc_parsed: { authorityKeyIdentifier: 'key' },
+    },
+  }),
 }));
 
 describe('startFetchingData', () => {
@@ -52,18 +65,19 @@ describe('startFetchingData', () => {
 
     // Create mock selfClient
     const mockSelfClient = {
-      getPrivateKey: jest.fn().mockResolvedValue('mock-private-key'),
-    };
+      getPrivateKey: jest.fn().mockResolvedValue('mock-secret'),
+    } as unknown as SelfClient;
 
     useProtocolStore.setState({
       passport: { fetch_all: jest.fn().mockResolvedValue(undefined) },
     } as any);
-    await useProvingStore.getState().init(mockSelfClient as any, 'register');
+    await useProvingStore.getState().init(mockSelfClient, 'register');
     actorMock.send.mockClear();
     useProtocolStore.setState({
       passport: { fetch_all: jest.fn() },
     } as any);
     useProvingStore.setState({
+      // @ts-expect-error
       passportData: { documentCategory: 'passport', mock: false },
       env: 'prod',
     });
