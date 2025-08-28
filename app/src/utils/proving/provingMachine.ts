@@ -674,6 +674,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       trackEvent(ProofEvents.FETCH_DATA_STARTED);
       try {
         const { passportData, env } = get();
+        if (!passportData) {
+          throw new Error('PassportData is not available');
+        }
         if (!passportData?.dsc_parsed) {
           console.error('Missing parsed DSC in passport data');
           trackEvent(ProofEvents.FETCH_DATA_FAILED, {
