@@ -73,9 +73,7 @@ export async function generateRegisterProof(secret: string, passportData: Passpo
   );
 
   // Verify the proof
-  const vKey = JSON.parse(
-    readFileSync(registerCircuits["register_sha256_sha256_sha256_rsa_65537_4096"].vkey, "utf8"),
-  );
+  const vKey = JSON.parse(readFileSync(registerCircuits["register_sha256_sha256_sha256_rsa_65537_4096"].vkey, "utf8"));
   const isValid = await groth16.verify(vKey, registerProof.publicSignals, registerProof.proof);
   if (!isValid) {
     throw new Error("Generated register proof verification failed");
