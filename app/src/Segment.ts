@@ -9,6 +9,7 @@ import {
   createClient,
   EventPlugin,
   PluginType,
+  StartupFlushPolicy,
 } from '@segment/analytics-react-native';
 
 import '@ethersproject/shims';
@@ -48,7 +49,7 @@ export const createSegmentClient = () => {
     return segmentClient;
   }
 
-  const flushPolicies = [new BackgroundFlushPolicy()];
+  const flushPolicies = [new BackgroundFlushPolicy(), new StartupFlushPolicy()];
 
   const client = createClient({
     writeKey: SEGMENT_KEY,
@@ -56,6 +57,8 @@ export const createSegmentClient = () => {
     trackDeepLinks: true,
     debug: __DEV__,
     collectDeviceId: false,
+    flushAt: 20, // Flush every 20 events
+    flushInterval: 20000, // Flush every 20 seconds
     defaultSettings: {
       integrations: {
         'Segment.io': {

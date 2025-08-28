@@ -12,8 +12,6 @@ import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import analytics, { flushAllAnalytics } from '@/utils/analytics';
 import { slate500 } from '@/utils/colors';
 
-const { flush: flushAnalytics } = analytics();
-
 const tips: TipProps[] = [
   {
     title: 'Ensure Valid QR Code',

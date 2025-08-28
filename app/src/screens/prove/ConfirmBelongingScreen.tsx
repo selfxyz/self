@@ -79,7 +79,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       trackNfcEvent(ProofEvents.PROVING_PROCESS_ERROR, {
         error: message,
       });
-      const { flush: flushAnalytics } = analytics();
+
       flushAllAnalytics();
     } finally {
       setRequestingPermission(false);

@@ -45,7 +45,7 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import analytics, { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
+import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, slate100, slate400, slate500, white } from '@/utils/colors';
 import { sendFeedbackEmail } from '@/utils/email';
 import { dinot } from '@/utils/fonts';
@@ -80,7 +80,7 @@ type PassportNFCScanRoute = RouteProp<
 const PassportNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
-  const { flush: flushAnalytics } = analytics();
+
   const navigation = useNavigation();
   const route = useRoute<PassportNFCScanRoute>();
   const { showModal } = useFeedback();

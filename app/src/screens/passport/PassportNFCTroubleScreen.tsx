@@ -17,8 +17,6 @@ import analytics, { flushAllAnalytics } from '@/utils/analytics';
 import { slate500 } from '@/utils/colors';
 import { sendFeedbackEmail } from '@/utils/email';
 
-const { flush: flushAnalytics } = analytics();
-
 const tips: TipProps[] = [
   {
     title: 'Know Your Chip Location',

@@ -14,10 +14,9 @@ import { createSegmentClient } from '@/Segment';
 
 const segmentClient = createSegmentClient();
 
-// --- Mixpanel flush strategy ---
+// --- Analytics flush strategy ---
 let mixpanelConfigured = false;
 let eventCount = 0;
-let flushTimer: ReturnType<typeof setInterval> | null = null;
 let isConnected = true;
 const eventQueue: Array<{
   name: string;
@@ -152,21 +151,14 @@ const analytics = () => {
 export default analytics;
 
 /**
- * Cleanup function to clear timers and event queues
+ * Cleanup function to clear event queues
  */
 export const cleanupAnalytics = () => {
-  if (flushTimer) {
-    clearInterval(flushTimer);
-    flushTimer = null;
-  }
   eventQueue.length = 0;
   eventCount = 0;
 };
 
 const setupFlushPolicies = () => {
-  if (flushTimer) return;
-  flushTimer = setInterval(flushMixpanelEvents, 30000);
-
   AppState.addEventListener('change', (state: AppStateStatus) => {
     if (state === 'background' || state === 'active') {
       flushMixpanelEvents();
@@ -209,7 +201,7 @@ export const configureNfcAnalytics = () => {
     MIXPANEL_NFC_PROJECT_TOKEN,
     enableDebugLogs,
     {
-      flushInterval: 30,
+      flushInterval: 20,
       flushCount: 5,
       flushOnBackground: true,
       flushOnForeground: true,
