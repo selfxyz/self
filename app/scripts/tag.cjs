@@ -4,13 +4,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { readFileSync } = require('fs');
+const { join } = require('path');
 
 // Get package version
 function getVersion() {
   const packageJson = JSON.parse(
-    fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'),
+    readFileSync(join(__dirname, '../package.json'), 'utf8'),
   );
   return packageJson.version;
 }

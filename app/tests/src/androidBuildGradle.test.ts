@@ -7,11 +7,11 @@
  */
 
 import { readFileSync } from 'fs';
-import path from 'path';
+import { join } from 'path';
 
 describe('Android build.gradle Configuration', () => {
-  const gradlePath = path.join(__dirname, '../../android/app/build.gradle');
-  const rootGradlePath = path.join(__dirname, '../../android/build.gradle');
+  const gradlePath = join(__dirname, '../../android/app/build.gradle');
+  const rootGradlePath = join(__dirname, '../../android/build.gradle');
   let gradleContent: string;
   let rootGradleContent: string;
 

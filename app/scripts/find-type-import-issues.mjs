@@ -18,11 +18,11 @@ import {
   statSync,
   readFileSync,
 } from 'fs';
-import path from 'path';
+import { dirname, extname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 // Patterns to match
 const PATTERNS = {
@@ -73,7 +73,7 @@ function shouldIgnoreFileByName(filePath) {
 }
 
 function shouldScanFile(filePath) {
-  const ext = path.extname(filePath);
+  const ext = extname(filePath);
   return SCAN_EXTENSIONS.includes(ext);
 }
 
@@ -110,7 +110,7 @@ function scanDirectory(dirPath) {
   const items = readdirSync(dirPath);
 
   for (const item of items) {
-    const fullPath = path.join(dirPath, item);
+    const fullPath = join(dirPath, item);
     const stat = statSync(fullPath);
 
     if (stat.isDirectory()) {
@@ -171,7 +171,7 @@ function formatResults(results) {
 }
 
 function main() {
-  const projectRoot = path.resolve(__dirname, '..');
+  const projectRoot = resolve(__dirname, '..');
   process.chdir(projectRoot);
 
   console.log('🔍 Scanning for improperly formatted type imports/exports...\n');
@@ -179,7 +179,7 @@ function main() {
   const allResults = [];
 
   SCAN_DIRS.forEach(dir => {
-    const fullPath = path.join(projectRoot, dir);
+    const fullPath = join(projectRoot, dir);
     if (existsSync(fullPath)) {
       const results = scanDirectory(fullPath);
       allResults.push(...results);

@@ -2,24 +2,24 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-const fs = require('fs');
-const path = require('path');
+const { mkdtempSync, mkdirSync, writeFileSync, readFileSync } = require('fs');
+const { join, resolve } = require('path');
 const os = require('os');
 const { execSync } = require('child_process');
 const { spawnSync } = require('child_process');
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 
-const SCRIPT = path.resolve(__dirname, '../cleanup-ios-build.sh');
+const SCRIPT = resolve(__dirname, '../cleanup-ios-build.sh');
 
 describe('cleanup-ios-build.sh', () => {
   it('resets pbxproj and reapplies versions', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cleanup-test-'));
+    const tmp = mkdtempSync(join(os.tmpdir(), 'cleanup-test-'));
     const projectName = 'MyApp';
-    const iosDir = path.join(tmp, 'ios', `${projectName}.xcodeproj`);
-    fs.mkdirSync(iosDir, { recursive: true });
-    const pbxPath = path.join(iosDir, 'project.pbxproj');
-    fs.writeFileSync(
+    const iosDir = join(tmp, 'ios', `${projectName}.xcodeproj`);
+    mkdirSync(iosDir, { recursive: true });
+    const pbxPath = join(iosDir, 'project.pbxproj');
+    writeFileSync(
       pbxPath,
       'CURRENT_PROJECT_VERSION = 1;\nMARKETING_VERSION = 1.0.0;\n',
     );
@@ -32,7 +32,7 @@ describe('cleanup-ios-build.sh', () => {
     execSync(`git add ${pbxPath}`);
     execSync('git commit -m init -q');
 
-    fs.writeFileSync(
+    writeFileSync(
       pbxPath,
       'CURRENT_PROJECT_VERSION = 2;\nMARKETING_VERSION = 2.0.0;\nSomeArtifact = 123;\n',
     );
@@ -40,14 +40,14 @@ describe('cleanup-ios-build.sh', () => {
     execSync(`IOS_PROJECT_NAME=${projectName} bash ${SCRIPT}`);
     process.chdir(cwd);
 
-    const result = fs.readFileSync(pbxPath, 'utf8');
+    const result = readFileSync(pbxPath, 'utf8');
     assert(result.includes('CURRENT_PROJECT_VERSION = 2;'));
     assert(result.includes('MARKETING_VERSION = 2.0.0;'));
     assert(!result.includes('SomeArtifact'));
   });
 
   it('fails when the pbxproj file does not exist', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cleanup-test-'));
+    const tmp = mkdtempSync(join(os.tmpdir(), 'cleanup-test-'));
 
     const result = spawnSync('bash', [SCRIPT], {
       cwd: tmp,
@@ -60,12 +60,12 @@ describe('cleanup-ios-build.sh', () => {
   });
 
   it('fails when version information cannot be extracted', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cleanup-test-'));
+    const tmp = mkdtempSync(join(os.tmpdir(), 'cleanup-test-'));
     const projectName = 'BadApp';
-    const iosDir = path.join(tmp, 'ios', `${projectName}.xcodeproj`);
-    fs.mkdirSync(iosDir, { recursive: true });
-    const pbxPath = path.join(iosDir, 'project.pbxproj');
-    fs.writeFileSync(
+    const iosDir = join(tmp, 'ios', `${projectName}.xcodeproj`);
+    mkdirSync(iosDir, { recursive: true });
+    const pbxPath = join(iosDir, 'project.pbxproj');
+    writeFileSync(
       pbxPath,
       'CURRENT_PROJECT_VERSION = ;\nMARKETING_VERSION = ;\n',
     );

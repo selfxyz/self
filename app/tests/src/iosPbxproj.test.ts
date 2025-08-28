@@ -7,10 +7,10 @@
  */
 
 import { readFileSync } from 'fs';
-import path from 'path';
+import { join } from 'path';
 
 describe('iOS project.pbxproj Configuration', () => {
-  const projectPath = path.join(
+  const projectPath = join(
     __dirname,
     '../../ios/Self.xcodeproj/project.pbxproj',
   );

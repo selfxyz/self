@@ -7,10 +7,10 @@
  */
 
 import { readFileSync } from 'fs';
-import path from 'path';
+import { join } from 'path';
 
 describe('Android Manifest Configuration', () => {
-  const manifestPath = path.join(
+  const manifestPath = join(
     __dirname,
     '../../android/app/src/main/AndroidManifest.xml',
   );

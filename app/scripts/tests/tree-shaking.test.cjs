@@ -5,13 +5,13 @@
 
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
-const path = require('path');
-const fs = require('fs');
+const { join } = require('path');
+const { existsSync, statSync, readFileSync } = require('fs');
 
 // Test the core tree-shaking infrastructure that's still valuable
 describe('Tree Shaking Infrastructure Tests', () => {
   it('should have tree-shaking analysis scripts', () => {
-    const scriptsDir = path.join(__dirname, '..');
+    const scriptsDir = join(__dirname, '..');
 
     const expectedScripts = [
       'test-tree-shaking.cjs',
@@ -19,10 +19,10 @@ describe('Tree Shaking Infrastructure Tests', () => {
     ];
 
     expectedScripts.forEach(script => {
-      const scriptPath = path.join(scriptsDir, script);
-      assert(fs.existsSync(scriptPath), `Script ${script} should exist`);
+      const scriptPath = join(scriptsDir, script);
+      assert(existsSync(scriptPath), `Script ${script} should exist`);
 
-      const stats = fs.statSync(scriptPath);
+      const stats = statSync(scriptPath);
       assert(stats.isFile(), `${script} should be a file`);
 
       // Check if file is executable (has execute permission)
@@ -32,10 +32,10 @@ describe('Tree Shaking Infrastructure Tests', () => {
   });
 
   it('should have Vite config with bundle analyzer', () => {
-    const viteConfigPath = path.join(__dirname, '..', '..', 'vite.config.ts');
-    assert(fs.existsSync(viteConfigPath), 'vite.config.ts should exist');
+    const viteConfigPath = join(__dirname, '..', '..', 'vite.config.ts');
+    assert(existsSync(viteConfigPath), 'vite.config.ts should exist');
 
-    const viteConfig = fs.readFileSync(viteConfigPath, 'utf8');
+    const viteConfig = readFileSync(viteConfigPath, 'utf8');
     assert(
       viteConfig.includes('rollup-plugin-visualizer'),
       'Vite config should import visualizer',
@@ -53,7 +53,7 @@ describe('Tree Shaking Infrastructure Tests', () => {
 
 describe('Package Configuration Validation', () => {
   it('should validate @selfxyz/common package configuration', () => {
-    const commonPackagePath = path.join(
+    const commonPackagePath = join(
       __dirname,
       '..',
       '..',
@@ -62,13 +62,11 @@ describe('Package Configuration Validation', () => {
       'package.json',
     );
     assert(
-      fs.existsSync(commonPackagePath),
+      existsSync(commonPackagePath),
       '@selfxyz/common package.json should exist',
     );
 
-    const commonPackage = JSON.parse(
-      fs.readFileSync(commonPackagePath, 'utf8'),
-    );
+    const commonPackage = JSON.parse(readFileSync(commonPackagePath, 'utf8'));
 
     assert(commonPackage.type === 'module', 'Should use ESM modules');
     assert(commonPackage.exports, 'Should have granular exports defined');
