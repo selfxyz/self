@@ -17,6 +17,10 @@ module.exports = {
     '^@$': '<rootDir>/src',
     '^@tests/(.*)$': '<rootDir>/tests/src/$1',
     '^@tests$': '<rootDir>/tests/src',
+    '^@selfxyz/mobile-sdk-alpha$':
+      '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
+    '^@selfxyz/mobile-sdk-alpha/(.*)$':
+      '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/$1.cjs',
   },
   globals: {
     'ts-jest': {
