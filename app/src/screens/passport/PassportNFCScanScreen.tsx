@@ -45,7 +45,11 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
+import {
+  flushAllAnalytics,
+  setNfcScanningActive,
+  trackNfcEvent,
+} from '@/utils/analytics';
 import { black, slate100, slate400, slate500, white } from '@/utils/colors';
 import { sendFeedbackEmail } from '@/utils/email';
 import { dinot } from '@/utils/fonts';
@@ -200,12 +204,17 @@ const PassportNFCScanScreen: React.FC = () => {
       // Add timestamp when scan starts
       scanCancelledRef.current = false;
       const scanStartTime = Date.now();
+
+      // Mark NFC scanning as active to prevent analytics flush interference
+      setNfcScanningActive(true);
+
       if (scanTimeoutRef.current) {
         clearTimeout(scanTimeoutRef.current);
         scanTimeoutRef.current = null;
       }
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
+        setNfcScanningActive(false); // Clear scanning state on timeout
         trackEvent(PassportEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
@@ -367,9 +376,9 @@ const PassportNFCScanScreen: React.FC = () => {
           scanTimeoutRef.current = null;
         }
         setIsNfcSheetOpen(false);
+        setNfcScanningActive(false);
       }
     } else if (isNfcSupported) {
-      flushAllAnalytics();
       if (Platform.OS === 'ios') {
         Linking.openURL('App-Prefs:root=General&path=About');
       } else {
