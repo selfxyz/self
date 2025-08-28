@@ -1495,9 +1495,9 @@ PODS:
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-nfc-manager (3.16.1):
+  - react-native-nfc-manager (3.16.3):
     - React-Core
-  - react-native-safe-area-context (5.5.1):
+  - react-native-safe-area-context (5.6.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1510,8 +1510,8 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-safe-area-context/common (= 5.5.1)
-    - react-native-safe-area-context/fabric (= 5.5.1)
+    - react-native-safe-area-context/common (= 5.6.1)
+    - react-native-safe-area-context/fabric (= 5.6.1)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1520,7 +1520,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/common (5.5.1):
+  - react-native-safe-area-context/common (5.6.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1541,7 +1541,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/fabric (5.5.1):
+  - react-native-safe-area-context/fabric (5.6.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1858,7 +1858,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNCClipboard (1.13.2):
+  - RNCClipboard (1.16.3):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1893,7 +1893,7 @@ PODS:
     - Firebase/RemoteConfig (= 10.24.0)
     - React-Core
     - RNFBApp
-  - RNGestureHandler (2.24.0):
+  - RNGestureHandler (2.19.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1903,7 +1903,6 @@ PODS:
     - React-Core
     - React-debug
     - React-Fabric
-    - React-FabricComponents
     - React-featureflags
     - React-graphics
     - React-ImageManager
@@ -1936,7 +1935,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNLocalize (3.4.1):
+  - RNLocalize (3.5.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1978,7 +1977,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (4.9.0):
+  - RNScreens (4.15.3):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1999,9 +1998,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNScreens/common (= 4.9.0)
+    - RNScreens/common (= 4.15.3)
     - Yoga
-  - RNScreens/common (4.9.0):
+  - RNScreens/common (4.15.3):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2046,7 +2045,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Sentry/HybridSDK (= 8.52.1)
     - Yoga
-  - RNSVG (15.12.0):
+  - RNSVG (15.12.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2066,9 +2065,9 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.12.0)
+    - RNSVG/common (= 15.12.1)
     - Yoga
-  - RNSVG/common (15.12.0):
+  - RNSVG/common (15.12.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2488,8 +2487,8 @@ SPEC CHECKSUMS:
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-nfc-manager: a280ef94cd4871a471b052f0dc70381cf1223049
-  react-native-safe-area-context: 2f1d83da763f858d622978e20a2c8a6e3bddc303
+  react-native-nfc-manager: 66a00e5ddab9704efebe19d605b1b8afb0bb1bd7
+  react-native-safe-area-context: 90a89cb349c7f8168a707e6452288c2f665b9fd1
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   React-nativeconfig: 415626a63057638759bcc75e0a96e2e07771a479
   React-NativeModulesApple: d33b55553c6957ff94835574636838d78121a1c6
@@ -2519,18 +2518,18 @@ SPEC CHECKSUMS:
   ReactCodegen: 1ab18f5b89b9922f298e9216c7347d26ef5b6408
   ReactCommon: b2eb96a61b826ff327a773a74357b302cf6da678
   RNCAsyncStorage: 0003b916f1a69fe2d20b7910e0d08da3d32c7bd6
-  RNCClipboard: 0fa6a2ecc67c5de35a13672dda4086a49003ff7a
+  RNCClipboard: a4827e134e4774e97fa86f7f986694dd89320f13
   RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
   RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
   RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
-  RNGestureHandler: b69033378d5ab4b1b239bcd4bc916aeb291f90db
+  RNGestureHandler: a63b531307e5b2e6ea21d053a1a7ad4cf9695c57
   RNKeychain: 471ceef8c13f15a5534c3cd2674dbbd9d0680e52
-  RNLocalize: 50e9c58a3bb02038fa648560fef9c4abd394864d
+  RNLocalize: a2c93da4b4afae4630d4b3be79320c11c4342d1f
   RNReactNativeHapticFeedback: e526ac4a7ca9fb23c7843ea4fd7d823166054c73
-  RNScreens: 224dba0e9e7674d911ebf3931eddca686f133e8a
+  RNScreens: 806e1449a8ec63c2a4e4cf8a63cc80203ccda9b8
   RNSentry: d240d406990e08d9b1fa967aaac67b7cb61b32e2
-  RNSVG: e1a716d635c65297c86e874eeb6adf3704a2e50a
+  RNSVG: 0c1fc3e7b147949dc15644845e9124947ac8c9bb
   segment-analytics-react-native: 5c3e8a4ee6d7532a011ed862d7c7d4fb5e5303e2
   Sentry: 2cbbe3592f30050c60e916c63c7f5a2fa584005e
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
