@@ -2530,7 +2530,7 @@ SPEC CHECKSUMS:
   RNScreens: 806e1449a8ec63c2a4e4cf8a63cc80203ccda9b8
   RNSentry: d240d406990e08d9b1fa967aaac67b7cb61b32e2
   RNSVG: 0c1fc3e7b147949dc15644845e9124947ac8c9bb
-  segment-analytics-react-native: 5c3e8a4ee6d7532a011ed862d7c7d4fb5e5303e2
+  segment-analytics-react-native: bad4c2c7b63818bd493caa2b5759fca59e4ae9a7
   Sentry: 2cbbe3592f30050c60e916c63c7f5a2fa584005e
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594
