@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-const fs = require('fs');
-const path = require('path');
+const { readFileSync, writeFileSync } = require('fs');
+const { join } = require('path');
 
-const VERSION_FILE = path.join(__dirname, '..', 'version.json');
-const PACKAGE_JSON = path.join(__dirname, '..', 'package.json');
+const VERSION_FILE = join(__dirname, '..', 'version.json');
+const PACKAGE_JSON = join(__dirname, '..', 'package.json');
 
 function readVersionFile() {
   try {
-    const data = fs.readFileSync(VERSION_FILE, 'utf8');
+    const data = readFileSync(VERSION_FILE, 'utf8');
     return JSON.parse(data);
   } catch (error) {
     console.error('Error reading version.json:', error);
@@ -21,7 +21,7 @@ function readVersionFile() {
 
 function writeVersionFile(data) {
   try {
-    fs.writeFileSync(VERSION_FILE, JSON.stringify(data, null, 2) + '\n');
+    writeFileSync(VERSION_FILE, JSON.stringify(data, null, 2) + '\n');
   } catch (error) {
     console.error('Error writing version.json:', error);
     process.exit(1);
@@ -30,7 +30,7 @@ function writeVersionFile(data) {
 
 function getPackageVersion() {
   try {
-    const packageData = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
+    const packageData = JSON.parse(readFileSync(PACKAGE_JSON, 'utf8'));
     return packageData.version;
   } catch (error) {
     console.error('Error reading package.json:', error);

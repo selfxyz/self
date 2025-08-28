@@ -13,6 +13,11 @@ jest.mock(
   { virtual: true },
 );
 
+jest.mock('@env', () => ({
+  ENABLE_DEBUG_LOGS: 'false',
+  MIXPANEL_NFC_PROJECT_TOKEN: 'test-token',
+}));
+
 global.FileReader = class {
   constructor() {
     this.onload = null;
@@ -146,7 +151,7 @@ jest.mock('react-native-check-version', () => ({
 
 // Mock @react-native-community/netinfo
 jest.mock('@react-native-community/netinfo', () => ({
-  addEventListener: jest.fn(),
+  addEventListener: jest.fn(() => jest.fn()),
   useNetInfo: jest.fn().mockReturnValue({
     type: 'wifi',
     isConnected: true,
@@ -156,7 +161,9 @@ jest.mock('@react-native-community/netinfo', () => ({
       cellularGeneration: '4g',
     },
   }),
-  fetch: jest.fn(),
+  fetch: jest
+    .fn()
+    .mockResolvedValue({ isConnected: true, isInternetReachable: true }),
 }));
 
 // Mock react-native-nfc-manager
@@ -200,14 +207,37 @@ jest.mock('react-native-nfc-manager', () => ({
 }));
 
 // Mock react-native-passport-reader
-jest.mock('react-native-passport-reader', () => ({
-  default: {
-    initialize: jest.fn(),
-    scanPassport: jest.fn(),
+jest.mock('react-native-passport-reader', () => {
+  const mockScanPassport = jest.fn();
+  // Mock the parameter count for scanPassport (iOS native method takes 9 parameters)
+  Object.defineProperty(mockScanPassport, 'length', { value: 9 });
+
+  const mockPassportReader = {
+    configure: jest.fn(),
+    scanPassport: mockScanPassport,
     readPassport: jest.fn(),
     cancelPassportRead: jest.fn(),
-  },
-}));
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  };
+
+  return {
+    PassportReader: mockPassportReader,
+    default: mockPassportReader,
+    reset: jest.fn(),
+    scan: jest.fn(),
+  };
+});
+
+const { NativeModules } = require('react-native');
+
+NativeModules.PassportReader = {
+  configure: jest.fn(),
+  scanPassport: jest.fn(),
+  trackEvent: jest.fn(),
+  flush: jest.fn(),
+};
 
 // Mock @stablelib packages
 jest.mock('@stablelib/cbor', () => ({

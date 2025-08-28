@@ -30,7 +30,7 @@ import { TrackEventParams } from './types/public';
  * own. These defaults are intentionally minimal no-ops suitable for tests and
  * non-production environments.
  */
-const optionalDefaults: Partial<Adapters> = {
+const optionalDefaults: Required<Pick<Adapters, 'storage' | 'clock' | 'logger'>> = {
   storage: {
     get: async () => null,
     set: async () => {},
@@ -47,7 +47,7 @@ const optionalDefaults: Partial<Adapters> = {
   },
 };
 
-const REQUIRED_ADAPTERS = ['scanner', 'network', 'crypto', 'documents'] as const;
+const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
 
 /**
  * Creates a fully configured {@link SelfClient} instance.
@@ -56,14 +56,14 @@ const REQUIRED_ADAPTERS = ['scanner', 'network', 'crypto', 'documents'] as const
  * provided configuration with sensible defaults. Missing optional adapters are
  * filled with benign no-op implementations.
  */
-export function createSelfClient({ config, adapters }: { config: Config; adapters: Partial<Adapters> }): SelfClient {
+export function createSelfClient({ config, adapters }: { config: Config; adapters: Adapters }): SelfClient {
   const cfg = mergeConfig(defaultConfig, config);
 
   for (const name of REQUIRED_ADAPTERS) {
     if (!(name in adapters) || !adapters[name as keyof Adapters]) throw notImplemented(name);
   }
 
-  const _adapters = { ...optionalDefaults, ...adapters } as Adapters;
+  const _adapters = { ...optionalDefaults, ...adapters };
   const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
 
   function on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe {
@@ -128,10 +128,30 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     return adapters.analytics.trackEvent(event, payload);
   }
 
+  /**
+   * Retrieves the private key via the auth adapter.
+   * With great power comes great responsibility
+   */
+  async function getPrivateKey(): Promise<string | null> {
+    return adapters.auth.getPrivateKey();
+  }
+
+  async function hasPrivateKey(): Promise<boolean> {
+    if (!adapters.auth) return false;
+    try {
+      const key = await adapters.auth.getPrivateKey();
+      return !!key;
+    } catch {
+      return false;
+    }
+  }
+
   return {
     scanDocument,
     validateDocument,
     trackEvent,
+    getPrivateKey,
+    hasPrivateKey,
     checkRegistration,
     registerDocument,
     generateProof,

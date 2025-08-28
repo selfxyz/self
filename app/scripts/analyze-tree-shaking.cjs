@@ -4,8 +4,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { existsSync, readdirSync, statSync, readFileSync } = require('fs');
+const { basename, join, relative } = require('path');
 
 function formatBytes(bytes) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -18,36 +18,35 @@ function analyzeWebBundle() {
   console.log('🕸️  Analyzing Web Bundle for Tree Shaking');
   console.log('=========================================');
 
-  const distDir = path.join(__dirname, '..', 'web', 'dist');
-  const assetsDir = path.join(distDir, 'assets');
+  const distDir = join(__dirname, '..', 'web', 'dist');
+  const assetsDir = join(distDir, 'assets');
 
-  if (!fs.existsSync(distDir)) {
+  if (!existsSync(distDir)) {
     console.log('❌ Web build not found. Run "yarn web:build" first.');
     return;
   }
 
   // Analyze chunk sizes - check both dist/ and dist/assets/
   let files = [];
-  if (fs.existsSync(assetsDir)) {
-    files = fs
-      .readdirSync(assetsDir)
+  if (existsSync(assetsDir)) {
+    files = readdirSync(assetsDir)
       .filter(f => f.endsWith('.js'))
-      .map(f => path.join('assets', f));
+      .map(f => join('assets', f));
   }
   if (files.length === 0) {
-    files = fs.readdirSync(distDir).filter(f => f.endsWith('.js'));
+    files = readdirSync(distDir).filter(f => f.endsWith('.js'));
   }
 
   console.log('\n📦 JavaScript Chunks:');
   let totalSize = 0;
 
   files.forEach(file => {
-    const filePath = path.join(distDir, file);
-    const size = fs.statSync(filePath).size;
+    const filePath = join(distDir, file);
+    const size = statSync(filePath).size;
     totalSize += size;
 
     // Categorize chunks - use just the filename for categorization
-    const fileName = path.basename(file);
+    const fileName = basename(file);
     let category = '📄';
     if (fileName.includes('vendor-')) category = '📚';
     if (fileName.includes('screens-')) category = '🖥️ ';
@@ -65,18 +64,18 @@ function analyzeWebBundle() {
   console.log(`\n📊 Total JavaScript: ${formatBytes(totalSize)}`);
 
   // Check for source maps (indicates tree shaking info)
-  const sourceMaps = files.filter(f => path.basename(f).endsWith('.map'));
+  const sourceMaps = files.filter(f => basename(f).endsWith('.map'));
   if (sourceMaps.length > 0) {
     console.log(`📍 Source maps available: ${sourceMaps.length} files`);
   }
 
   // Analyze vendor chunks for common imports
-  const vendorChunks = files.filter(f => path.basename(f).includes('vendor-'));
+  const vendorChunks = files.filter(f => basename(f).includes('vendor-'));
   if (vendorChunks.length > 0) {
     console.log('\n🔍 Vendor Chunk Analysis:');
     vendorChunks.forEach(chunk => {
-      const size = fs.statSync(path.join(distDir, chunk)).size;
-      const chunkName = path.basename(chunk);
+      const size = statSync(join(distDir, chunk)).size;
+      const chunkName = basename(chunk);
       console.log(`   ${chunkName}: ${formatBytes(size)}`);
     });
   }
@@ -86,9 +85,7 @@ function analyzeWebBundle() {
 
   try {
     // Check if chunks are split (good for tree shaking)
-    const nonVendorChunks = files.filter(
-      f => !path.basename(f).includes('vendor-'),
-    );
+    const nonVendorChunks = files.filter(f => !basename(f).includes('vendor-'));
     if (nonVendorChunks.length > 1) {
       console.log('✅ Code splitting enabled - helps with tree shaking');
     }
@@ -100,15 +97,15 @@ function analyzeWebBundle() {
 
     // Identify large chunks that could benefit from tree shaking
     const largeChunks = files.filter(f => {
-      const size = fs.statSync(path.join(distDir, f)).size;
+      const size = statSync(join(distDir, f)).size;
       return size > 1024 * 1024; // > 1MB
     });
 
     if (largeChunks.length > 0) {
       console.log('\n⚠️  LARGE CHUNKS DETECTED:');
       largeChunks.forEach(chunk => {
-        const size = fs.statSync(path.join(distDir, chunk)).size;
-        const chunkName = path.basename(chunk);
+        const size = statSync(join(distDir, chunk)).size;
+        const chunkName = basename(chunk);
         console.log(
           `   ${chunkName}: ${formatBytes(size)} - Consider tree shaking optimization`,
         );
@@ -136,7 +133,7 @@ function analyzeReactNativeBundle(platform) {
   console.log('============================================');
 
   // Use existing bundle analysis but with tree shaking focus
-  const bundleAnalyzeScript = path.join(__dirname, 'bundle-analyze-ci.cjs');
+  const bundleAnalyzeScript = join(__dirname, 'bundle-analyze-ci.cjs');
 
   try {
     console.log('🔨 Running bundle analysis...');
@@ -145,18 +142,13 @@ function analyzeReactNativeBundle(platform) {
     });
 
     // Additional tree shaking specific analysis
-    const tmpDir = path.join(
+    const tmpDir = join(
       require('os').tmpdir(),
       'react-native-bundle-visualizer',
     );
-    const reportPath = path.join(
-      tmpDir,
-      'OpenPassport',
-      'output',
-      'explorer.html',
-    );
+    const reportPath = join(tmpDir, 'OpenPassport', 'output', 'explorer.html');
 
-    if (fs.existsSync(reportPath)) {
+    if (existsSync(reportPath)) {
       console.log(`\n📊 Detailed bundle report: ${reportPath}`);
       console.log('💡 Look for:');
       console.log('   - Unused modules from @selfxyz/common');
@@ -269,9 +261,9 @@ function compareImportPatterns() {
   console.log('\n🔬 Import Pattern Analysis');
   console.log('==========================');
 
-  const srcDir = path.join(__dirname, '..', 'src');
+  const srcDir = join(__dirname, '..', 'src');
 
-  if (!fs.existsSync(srcDir)) {
+  if (!existsSync(srcDir)) {
     console.log('❌ Source directory not found');
     return;
   }
@@ -279,11 +271,11 @@ function compareImportPatterns() {
   // Find TypeScript/JavaScript files
   const findFiles = (dir, extensions = ['.ts', '.tsx', '.js', '.jsx']) => {
     const files = [];
-    const items = fs.readdirSync(dir);
+    const items = readdirSync(dir);
 
     for (const item of items) {
-      const fullPath = path.join(dir, item);
-      if (fs.statSync(fullPath).isDirectory()) {
+      const fullPath = join(dir, item);
+      if (statSync(fullPath).isDirectory()) {
         files.push(...findFiles(fullPath, extensions));
       } else if (extensions.some(ext => item.endsWith(ext))) {
         files.push(fullPath);
@@ -310,7 +302,7 @@ function compareImportPatterns() {
   const fileConversionOpportunities = [];
 
   files.forEach(file => {
-    const content = fs.readFileSync(file, 'utf8');
+    const content = readFileSync(file, 'utf8');
     totalFiles++;
 
     // Check for @selfxyz/common imports
@@ -321,7 +313,7 @@ function compareImportPatterns() {
       filesWithCommonImports++;
 
       const fileInfo = {
-        file: path.relative(srcDir, file),
+        file: relative(srcDir, file),
         imports: [],
         conversionOpportunities: [],
         priority: 0,
@@ -331,7 +323,7 @@ function compareImportPatterns() {
         if (match.includes('* as')) {
           starImports++;
           importPatterns.star.push({
-            file: path.relative(srcDir, file),
+            file: relative(srcDir, file),
             import: match.trim(),
           });
           fileInfo.imports.push({ type: 'star', import: match.trim() });
@@ -343,14 +335,14 @@ function compareImportPatterns() {
         ) {
           granularImports++;
           importPatterns.granular.push({
-            file: path.relative(srcDir, file),
+            file: relative(srcDir, file),
             import: match.trim(),
           });
           fileInfo.imports.push({ type: 'granular', import: match.trim() });
         } else {
           namedImports++;
           importPatterns.mixed.push({
-            file: path.relative(srcDir, file),
+            file: relative(srcDir, file),
             import: match.trim(),
           });
           fileInfo.imports.push({ type: 'mixed', import: match.trim() });

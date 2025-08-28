@@ -14,6 +14,7 @@ import {
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
+import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
 
@@ -27,7 +28,7 @@ import analytics from '@/utils/analytics';
  */
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
-  const adapters: Partial<Adapters> = useMemo(
+  const adapters: Adapters = useMemo(
     () => ({
       scanner:
         Platform.OS === 'web' ? webScannerShim : reactNativeScannerAdapter,
@@ -84,6 +85,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         trackEvent: (event: string, data?: TrackEventParams) => {
           analytics().trackEvent(event, data);
         },
+      },
+      auth: {
+        getPrivateKey: () => unsafe_getPrivateKey(),
       },
     }),
     [],

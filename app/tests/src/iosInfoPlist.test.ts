@@ -6,15 +6,15 @@
  * @jest-environment node
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 describe('iOS Info.plist Configuration', () => {
-  const plistPath = path.join(__dirname, '../../ios/OpenPassport/Info.plist');
+  const plistPath = join(__dirname, '../../ios/OpenPassport/Info.plist');
   let plistContent: string;
 
   beforeAll(() => {
-    plistContent = fs.readFileSync(plistPath, 'utf8');
+    plistContent = readFileSync(plistPath, 'utf8');
   });
 
   it('contains the proofofpassport URL scheme', () => {

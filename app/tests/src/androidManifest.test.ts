@@ -6,11 +6,11 @@
  * @jest-environment node
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 describe('Android Manifest Configuration', () => {
-  const manifestPath = path.join(
+  const manifestPath = join(
     __dirname,
     '../../android/app/src/main/AndroidManifest.xml',
   );
@@ -18,7 +18,7 @@ describe('Android Manifest Configuration', () => {
 
   beforeAll(() => {
     // Read the manifest file
-    manifestContent = fs.readFileSync(manifestPath, 'utf8');
+    manifestContent = readFileSync(manifestPath, 'utf8');
   });
 
   describe('Critical Deeplink Configuration', () => {

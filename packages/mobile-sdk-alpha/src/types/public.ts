@@ -65,6 +65,14 @@ export interface AnalyticsAdapter {
   trackEvent(event: string, payload?: TrackEventParams): void;
 }
 
+export interface AuthAdapter {
+  /**
+   * Returns the hex-encoded private key.
+   * This key should only be used for self and not other crypto operations or signing.
+   */
+  getPrivateKey(): Promise<string | null>;
+}
+
 export interface ClockAdapter {
   now(): number;
   sleep(ms: number, signal?: AbortSignal): Promise<void>;
@@ -86,13 +94,14 @@ export interface Progress {
   percent?: number;
 }
 export interface Adapters {
-  storage: StorageAdapter;
+  storage?: StorageAdapter;
   scanner: ScannerAdapter;
   crypto: CryptoAdapter;
   network: NetworkAdapter;
-  clock: ClockAdapter;
-  logger: LoggerAdapter;
-  analytics: AnalyticsAdapter;
+  clock?: ClockAdapter;
+  logger?: LoggerAdapter;
+  analytics?: AnalyticsAdapter;
+  auth: AuthAdapter;
   documents: DocumentsAdapter;
 }
 
@@ -190,6 +199,8 @@ export interface SelfClient {
   ): Promise<ProofHandle>;
   extractMRZInfo(mrz: string): MRZInfo;
   trackEvent(event: string, payload?: TrackEventParams): void;
+  getPrivateKey(): Promise<string | null>;
+  hasPrivateKey(): Promise<boolean>;
   on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
 

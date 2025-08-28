@@ -58,11 +58,16 @@ export const mockDocuments: DocumentsAdapter = {
   loadDocumentById: async () => null,
 };
 
+const mockAuth = {
+  getPrivateKey: async () => 'stubbed-private-key',
+};
+
 export const mockAdapters = {
   scanner: mockScanner,
   network: mockNetwork,
   crypto: mockCrypto,
   documents: mockDocuments,
+  auth: mockAuth,
 };
 
 // Shared test expectations

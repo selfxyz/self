@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { AppState, type AppStateStatus } from 'react-native';
+import { PassportReader } from 'react-native-passport-reader';
+import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
+import NetInfo from '@react-native-community/netinfo';
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 
 import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
@@ -9,6 +13,15 @@ import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 import { createSegmentClient } from '@/Segment';
 
 const segmentClient = createSegmentClient();
+
+// --- Analytics flush strategy ---
+let mixpanelConfigured = false;
+let eventCount = 0;
+let isConnected = true;
+const eventQueue: Array<{
+  name: string;
+  properties?: Record<string, unknown>;
+}> = [];
 
 function coerceToJsonValue(
   value: unknown,
@@ -136,3 +149,113 @@ const analytics = () => {
 };
 
 export default analytics;
+
+/**
+ * Cleanup function to clear event queues
+ */
+export const cleanupAnalytics = () => {
+  eventQueue.length = 0;
+  eventCount = 0;
+};
+
+const setupFlushPolicies = () => {
+  AppState.addEventListener('change', (state: AppStateStatus) => {
+    if (state === 'background' || state === 'active') {
+      flushMixpanelEvents().catch(console.warn);
+    }
+  });
+
+  NetInfo.addEventListener(state => {
+    isConnected = state.isConnected ?? true;
+    if (isConnected) {
+      flushMixpanelEvents().catch(console.warn);
+    }
+  });
+};
+
+const flushMixpanelEvents = async () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  try {
+    if (__DEV__) console.log('[Mixpanel] flush');
+    // Send any queued events before flushing
+    while (eventQueue.length > 0) {
+      const evt = eventQueue.shift()!;
+      if (PassportReader.trackEvent) {
+        await Promise.resolve(
+          PassportReader.trackEvent(evt.name, evt.properties),
+        );
+      }
+    }
+    if (PassportReader.flush) await Promise.resolve(PassportReader.flush());
+    eventCount = 0;
+  } catch (err) {
+    if (__DEV__) console.warn('Mixpanel flush failed', err);
+    // re-queue on failure
+    if (typeof err !== 'undefined') {
+      // no-op, events are already queued if failure happened before flush
+    }
+  }
+};
+
+// --- Mixpanel NFC Analytics ---
+export const configureNfcAnalytics = async () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
+  const enableDebugLogs =
+    String(ENABLE_DEBUG_LOGS ?? '')
+      .trim()
+      .toLowerCase() === 'true';
+
+  // Check if PassportReader and configure method exist (Android doesn't have configure)
+  if (PassportReader && typeof PassportReader.configure === 'function') {
+    try {
+      // iOS configure method only accepts token and enableDebugLogs
+      // Android doesn't have this method at all
+      await Promise.resolve(
+        PassportReader.configure(MIXPANEL_NFC_PROJECT_TOKEN, enableDebugLogs),
+      );
+    } catch (error) {
+      console.warn('Failed to configure NFC analytics:', error);
+    }
+  }
+
+  setupFlushPolicies();
+  mixpanelConfigured = true;
+};
+
+/**
+ * Consolidated analytics flush function that flushes both Segment and Mixpanel events
+ * This should be called when you want to ensure all analytics events are sent immediately
+ */
+export const flushAllAnalytics = () => {
+  // Flush Segment analytics
+  const { flush: flushAnalytics } = analytics();
+  flushAnalytics();
+
+  // Flush Mixpanel events
+  flushMixpanelEvents().catch(console.warn);
+};
+
+export const trackNfcEvent = async (
+  name: string,
+  properties?: Record<string, unknown>,
+) => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  if (!mixpanelConfigured) await configureNfcAnalytics();
+
+  if (!isConnected) {
+    eventQueue.push({ name, properties });
+    return;
+  }
+
+  try {
+    if (PassportReader.trackEvent) {
+      await Promise.resolve(PassportReader.trackEvent(name, properties));
+    }
+    eventCount++;
+    if (eventCount >= 5) {
+      flushMixpanelEvents().catch(console.warn);
+    }
+  } catch {
+    eventQueue.push({ name, properties });
+  }
+};

@@ -12,12 +12,12 @@
  * (e.g., `import type { X }`).
  */
 
-import fs from 'fs';
-import path from 'path';
+import { existsSync, readdirSync, statSync, readFileSync } from 'fs';
+import { dirname, extname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 // Patterns to match
 const PATTERNS = {
@@ -68,12 +68,12 @@ function shouldIgnoreFileByName(filePath) {
 }
 
 function shouldScanFile(filePath) {
-  const ext = path.extname(filePath);
+  const ext = extname(filePath);
   return SCAN_EXTENSIONS.includes(ext);
 }
 
 function findIssuesInFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   const issues = [];
 
@@ -98,15 +98,15 @@ function findIssuesInFile(filePath) {
 function scanDirectory(dirPath) {
   const results = [];
 
-  if (!fs.existsSync(dirPath)) {
+  if (!existsSync(dirPath)) {
     return results;
   }
 
-  const items = fs.readdirSync(dirPath);
+  const items = readdirSync(dirPath);
 
   for (const item of items) {
-    const fullPath = path.join(dirPath, item);
-    const stat = fs.statSync(fullPath);
+    const fullPath = join(dirPath, item);
+    const stat = statSync(fullPath);
 
     if (stat.isDirectory()) {
       if (!shouldIgnoreFile(fullPath)) {
@@ -166,7 +166,7 @@ function formatResults(results) {
 }
 
 function main() {
-  const projectRoot = path.resolve(__dirname, '..');
+  const projectRoot = resolve(__dirname, '..');
   process.chdir(projectRoot);
 
   console.log('🔍 Scanning for improperly formatted type imports/exports...\n');
@@ -174,8 +174,8 @@ function main() {
   const allResults = [];
 
   SCAN_DIRS.forEach(dir => {
-    const fullPath = path.join(projectRoot, dir);
-    if (fs.existsSync(fullPath)) {
+    const fullPath = join(projectRoot, dir);
+    if (existsSync(fullPath)) {
       const results = scanDirectory(fullPath);
       allResults.push(...results);
     }

@@ -6,6 +6,7 @@
 export type {
   Adapters,
   AnalyticsAdapter,
+  AuthAdapter,
   ClockAdapter,
   Config,
   CryptoAdapter,
@@ -40,7 +41,7 @@ export type {
 // MRZ module
 export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
 
-export type { DocumentData, DocumentMetadata, ExternalAdapter, PassportCameraProps, ScreenProps } from './types/ui';
+export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
 export type { MRZScanOptions } from './mrz';
 
@@ -64,9 +65,6 @@ export {
 } from './errors';
 
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
-
-// Flow Components
-export { OnboardingFlow } from './components/flows/OnboardingFlow';
 
 // Screen Components
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
@@ -101,9 +99,6 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
 export { scanQRProof } from './qr';
-
-// Hooks
-export { useDocumentManager } from './hooks/useDocumentManager';
 
 // Error handling
 export { webScannerShim } from './adapters/web/shims';

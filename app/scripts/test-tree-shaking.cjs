@@ -4,8 +4,15 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const {
+  mkdirSync,
+  writeFileSync,
+  existsSync,
+  statSync,
+  copyFileSync,
+  readdirSync,
+} = require('fs');
+const { join, resolve } = require('path');
 const os = require('os');
 
 // Tree shaking test configurations
@@ -13,7 +20,7 @@ const TEST_CONFIGS = [
   {
     name: 'full-import',
     description: 'Import everything from @selfxyz/common (worst case)',
-    imports: `import * as common from '@selfxyz/common';
+    imports: `import common from '@selfxyz/common';
 console.log('API_URL:', common.API_URL);
 console.log('hash function exists:', typeof common.hash);`,
   },
@@ -54,8 +61,8 @@ function formatBytes(bytes) {
 }
 
 function createTestApp(config, testDir, commonPackagePath) {
-  const appDir = path.join(testDir, config.name);
-  fs.mkdirSync(appDir, { recursive: true });
+  const appDir = join(testDir, config.name);
+  mkdirSync(appDir, { recursive: true });
 
   // Create package.json
   const packageJson = {
@@ -68,8 +75,8 @@ function createTestApp(config, testDir, commonPackagePath) {
     },
   };
 
-  fs.writeFileSync(
-    path.join(appDir, 'package.json'),
+  writeFileSync(
+    join(appDir, 'package.json'),
     JSON.stringify(packageJson, null, 2),
   );
 
@@ -78,7 +85,7 @@ function createTestApp(config, testDir, commonPackagePath) {
 ${config.imports}
 `;
 
-  fs.writeFileSync(path.join(appDir, 'index.js'), testContent);
+  writeFileSync(join(appDir, 'index.js'), testContent);
 
   return appDir;
 }
@@ -115,7 +122,7 @@ module.exports = {
 };
 `;
 
-  fs.writeFileSync(path.join(appDir, 'webpack.config.cjs'), webpackConfig);
+  writeFileSync(join(appDir, 'webpack.config.cjs'), webpackConfig);
 }
 
 function runTest(config, testDir, commonPackagePath) {
@@ -150,9 +157,9 @@ function runTest(config, testDir, commonPackagePath) {
     });
 
     // Measure bundle size
-    const bundlePath = path.join(appDir, 'dist', 'bundle.js');
-    if (fs.existsSync(bundlePath)) {
-      const bundleSize = fs.statSync(bundlePath).size;
+    const bundlePath = join(appDir, 'dist', 'bundle.js');
+    if (existsSync(bundlePath)) {
+      const bundleSize = statSync(bundlePath).size;
       console.log(`   📊 Bundle size: ${formatBytes(bundleSize)}`);
       return { config: config.name, size: bundleSize };
     } else {
@@ -219,7 +226,7 @@ function generateReport(results) {
       '✅ Use granular imports like "@selfxyz/common/constants" for better tree shaking',
     );
   }
-  console.log('✅ Avoid "import * as" patterns when possible');
+  console.log('✅ Avoid namespace import patterns when possible');
   console.log('✅ Import only what you need from each module');
 
   // Check if tree shaking is working
@@ -245,51 +252,51 @@ async function main() {
   console.log('==================================');
 
   // Create temporary test directory
-  const testDir = path.join(
+  const testDir = join(
     os.tmpdir(),
     'tree-shaking-tests',
     Date.now().toString(),
   );
-  fs.mkdirSync(testDir, { recursive: true });
+  mkdirSync(testDir, { recursive: true });
 
   console.log(`📁 Test directory: ${testDir}`);
 
   try {
     // Ensure @selfxyz/common is built
     console.log('\n🔨 Building @selfxyz/common...');
-    const commonDir = path.join(__dirname, '..', '..', 'common');
+    const commonDir = join(__dirname, '..', '..', 'common');
     execSync('yarn workspace @selfxyz/common build', {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..', '..'),
+      cwd: join(__dirname, '..', '..'),
     });
 
     // Copy the built common package to test directory for file:// reference
-    const commonPackagePath = path.join(testDir, 'common-package');
+    const commonPackagePath = join(testDir, 'common-package');
     console.log(`📦 Copying @selfxyz/common to test directory...`);
 
     // Copy package.json, dist folder, and other necessary files
-    fs.mkdirSync(commonPackagePath, { recursive: true });
-    fs.copyFileSync(
-      path.join(commonDir, 'package.json'),
-      path.join(commonPackagePath, 'package.json'),
+    mkdirSync(commonPackagePath, { recursive: true });
+    copyFileSync(
+      join(commonDir, 'package.json'),
+      join(commonPackagePath, 'package.json'),
     );
 
     // Copy dist directory recursively
     const copyDir = (src, dest) => {
-      fs.mkdirSync(dest, { recursive: true });
-      const entries = fs.readdirSync(src, { withFileTypes: true });
+      mkdirSync(dest, { recursive: true });
+      const entries = readdirSync(src, { withFileTypes: true });
       for (const entry of entries) {
-        const srcPath = path.join(src, entry.name);
-        const destPath = path.join(dest, entry.name);
+        const srcPath = join(src, entry.name);
+        const destPath = join(dest, entry.name);
         if (entry.isDirectory()) {
           copyDir(srcPath, destPath);
         } else {
-          fs.copyFileSync(srcPath, destPath);
+          copyFileSync(srcPath, destPath);
         }
       }
     };
 
-    copyDir(path.join(commonDir, 'dist'), path.join(commonPackagePath, 'dist'));
+    copyDir(join(commonDir, 'dist'), join(commonPackagePath, 'dist'));
 
     // Run all tests
     const results = [];

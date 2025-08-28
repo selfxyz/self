@@ -5,9 +5,14 @@
 
 const { describe, it, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const path = require('node:path');
+const { join, dirname } = require('node:path');
 const os = require('node:os');
-const fs = require('node:fs');
+const {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+} = require('node:fs');
 
 const { Project, ScriptTarget, ModuleKind } = require('ts-morph');
 
@@ -17,13 +22,13 @@ const {
 } = require('../alias-imports.cjs');
 
 function createTempDir() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'alias-imports-'));
+  const dir = mkdtempSync(join(os.tmpdir(), 'alias-imports-'));
   return dir;
 }
 
 function writeFileEnsured(filePath, content) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, content, 'utf8');
+  mkdirSync(dirname(filePath), { recursive: true });
+  writeFileSync(filePath, content, 'utf8');
 }
 
 describe('alias-imports transform', () => {
@@ -36,9 +41,9 @@ describe('alias-imports transform', () => {
   it('transforms relative TS import to @src alias', () => {
     // Arrange: fake app structure
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const fileA = path.join(srcDir, 'utils', 'a.ts');
-    const fileB = path.join(srcDir, 'components', 'b.ts');
+    const srcDir = join(appRoot, 'src');
+    const fileA = join(srcDir, 'utils', 'a.ts');
+    const fileB = join(srcDir, 'components', 'b.ts');
 
     writeFileEnsured(fileA, 'export const A = 1;\n');
     writeFileEnsured(
@@ -53,7 +58,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     // Act
     transformProjectToAliasImports(project, appRoot);
@@ -67,9 +72,9 @@ describe('alias-imports transform', () => {
 
   it('transforms relative require to @src alias', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const fileA = path.join(srcDir, 'utils', 'x.ts');
-    const fileC = path.join(srcDir, 'lib', 'c.ts');
+    const srcDir = join(appRoot, 'src');
+    const fileA = join(srcDir, 'utils', 'x.ts');
+    const fileC = join(srcDir, 'lib', 'c.ts');
 
     writeFileEnsured(fileA, 'module.exports = { X: 1 };\n');
     writeFileEnsured(
@@ -84,7 +89,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -94,9 +99,9 @@ describe('alias-imports transform', () => {
 
   it('transforms relative TS import in tests to @tests alias', () => {
     const appRoot = tempRoot;
-    const testsSrcDir = path.join(appRoot, 'tests', 'src');
-    const fileUtil = path.join(testsSrcDir, 'utils', 'helper.ts');
-    const fileSpec = path.join(testsSrcDir, 'specs', 'feature.spec.ts');
+    const testsSrcDir = join(appRoot, 'tests', 'src');
+    const fileUtil = join(testsSrcDir, 'utils', 'helper.ts');
+    const fileSpec = join(testsSrcDir, 'specs', 'feature.spec.ts');
 
     writeFileEnsured(fileUtil, 'export const helper = () => 42;\n');
     writeFileEnsured(
@@ -111,7 +116,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(testsSrcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(testsSrcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -126,10 +131,10 @@ describe('alias-imports transform', () => {
 
   it('ignores relative imports that resolve outside src', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const siblingDir = path.join(appRoot, 'sibling');
-    const fileSib = path.join(siblingDir, 's.ts');
-    const fileInside = path.join(srcDir, 'feature', 'inside.ts');
+    const srcDir = join(appRoot, 'src');
+    const siblingDir = join(appRoot, 'sibling');
+    const fileSib = join(siblingDir, 's.ts');
+    const fileInside = join(srcDir, 'feature', 'inside.ts');
 
     writeFileEnsured(fileSib, 'export const S = 1;\n');
     writeFileEnsured(
@@ -144,7 +149,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -155,8 +160,8 @@ describe('alias-imports transform', () => {
 
   it('CLI runner executes without throwing on empty project', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    fs.mkdirSync(srcDir, { recursive: true });
+    const srcDir = join(appRoot, 'src');
+    mkdirSync(srcDir, { recursive: true });
 
     const project = new Project({
       compilerOptions: {
@@ -172,11 +177,11 @@ describe('alias-imports transform', () => {
 
   it("transforms deep relative TS import '../../../src/...' to @src alias from tests", () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const testsSrcDir = path.join(appRoot, 'tests', 'src');
-    const fileHaptic = path.join(srcDir, 'utils', 'haptic.ts');
-    const deepSpecDir = path.join(testsSrcDir, 'deep');
-    const deepSpecFile = path.join(deepSpecDir, 'spec.ts');
+    const srcDir = join(appRoot, 'src');
+    const testsSrcDir = join(appRoot, 'tests', 'src');
+    const fileHaptic = join(srcDir, 'utils', 'haptic.ts');
+    const deepSpecDir = join(testsSrcDir, 'deep');
+    const deepSpecFile = join(deepSpecDir, 'spec.ts');
 
     writeFileEnsured(fileHaptic, 'export const h = 1;\n');
     writeFileEnsured(
@@ -191,7 +196,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(testsSrcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(testsSrcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -203,11 +208,11 @@ describe('alias-imports transform', () => {
 
   it("transforms deep relative require '../../../src/...' to @src alias from tests", () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const testsSrcDir = path.join(appRoot, 'tests', 'src');
-    const fileHaptic = path.join(srcDir, 'utils', 'haptic.ts');
-    const deepSpecDir = path.join(testsSrcDir, 'deep');
-    const deepSpecFile = path.join(deepSpecDir, 'req.ts');
+    const srcDir = join(appRoot, 'src');
+    const testsSrcDir = join(appRoot, 'tests', 'src');
+    const fileHaptic = join(srcDir, 'utils', 'haptic.ts');
+    const deepSpecDir = join(testsSrcDir, 'deep');
+    const deepSpecFile = join(deepSpecDir, 'req.ts');
 
     writeFileEnsured(fileHaptic, 'module.exports = { h: 1 };\n');
     writeFileEnsured(
@@ -222,7 +227,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(testsSrcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(testsSrcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -232,9 +237,9 @@ describe('alias-imports transform', () => {
 
   it('aliases export star re-exports with ../ from sibling directory', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const fileA = path.join(srcDir, 'utils', 'a.ts');
-    const fileIndex = path.join(srcDir, 'components', 'index.ts');
+    const srcDir = join(appRoot, 'src');
+    const fileA = join(srcDir, 'utils', 'a.ts');
+    const fileIndex = join(srcDir, 'components', 'index.ts');
 
     writeFileEnsured(fileA, 'export const A = 1;\n');
     writeFileEnsured(fileIndex, "export * from '../utils/a';\n");
@@ -246,7 +251,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -257,9 +262,9 @@ describe('alias-imports transform', () => {
 
   it('aliases export named re-exports with ../ from sibling directory', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const fileA = path.join(srcDir, 'utils', 'a.ts');
-    const fileIndex = path.join(srcDir, 'components', 'index.ts');
+    const srcDir = join(appRoot, 'src');
+    const fileA = join(srcDir, 'utils', 'a.ts');
+    const fileIndex = join(srcDir, 'components', 'index.ts');
 
     writeFileEnsured(fileA, 'export const A = 1;\n');
     writeFileEnsured(fileIndex, "export { A as AA } from '../utils/a';\n");
@@ -271,7 +276,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -282,9 +287,9 @@ describe('alias-imports transform', () => {
 
   it('aliases dynamic import() with relative specifier', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const utils = path.join(srcDir, 'utils', 'lazy.ts');
-    const feature = path.join(srcDir, 'feature', 'index.ts');
+    const srcDir = join(appRoot, 'src');
+    const utils = join(srcDir, 'utils', 'lazy.ts');
+    const feature = join(srcDir, 'feature', 'index.ts');
 
     writeFileEnsured(utils, 'export const lazy = 1;\n');
     writeFileEnsured(
@@ -299,7 +304,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -310,9 +315,9 @@ describe('alias-imports transform', () => {
 
   it('aliases jest.mock relative specifier', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const utils = path.join(srcDir, 'utils', 'mod.ts');
-    const feature = path.join(srcDir, 'feature', 'index.test.ts');
+    const srcDir = join(appRoot, 'src');
+    const utils = join(srcDir, 'utils', 'mod.ts');
+    const feature = join(srcDir, 'feature', 'index.test.ts');
 
     writeFileEnsured(utils, 'export const v = 1;\n');
     writeFileEnsured(
@@ -327,7 +332,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -338,9 +343,9 @@ describe('alias-imports transform', () => {
 
   it('aliases jest.doMock and jest.unmock relative specifiers', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const utils = path.join(srcDir, 'utils', 'mod2.ts');
-    const feature = path.join(srcDir, 'feature', 'index2.test.ts');
+    const srcDir = join(appRoot, 'src');
+    const utils = join(srcDir, 'utils', 'mod2.ts');
+    const feature = join(srcDir, 'feature', 'index2.test.ts');
 
     writeFileEnsured(utils, 'export const v = 2;\n');
     writeFileEnsured(
@@ -355,7 +360,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -367,9 +372,9 @@ describe('alias-imports transform', () => {
 
   it('aliases relative imports starting with ./', () => {
     const appRoot = tempRoot;
-    const srcDir = path.join(appRoot, 'src');
-    const utils = path.join(srcDir, 'utils', 'haptic', 'trigger.ts');
-    const index = path.join(srcDir, 'utils', 'haptic', 'index.ts');
+    const srcDir = join(appRoot, 'src');
+    const utils = join(srcDir, 'utils', 'haptic', 'trigger.ts');
+    const index = join(srcDir, 'utils', 'haptic', 'index.ts');
 
     writeFileEnsured(utils, 'export const triggerFeedback = () => {};\n');
     writeFileEnsured(
@@ -384,7 +389,7 @@ describe('alias-imports transform', () => {
         baseUrl: appRoot,
       },
     });
-    project.addSourceFilesAtPaths(path.join(srcDir, '**/*.{ts,tsx}'));
+    project.addSourceFilesAtPaths(join(srcDir, '**/*.{ts,tsx}'));
 
     transformProjectToAliasImports(project, appRoot);
 
@@ -400,9 +405,9 @@ describe('alias-imports transform', () => {
   describe('Migration functionality', () => {
     it('migrates @src/ import to @/', () => {
       const appRoot = tempRoot;
-      const srcDir = path.join(appRoot, 'src');
-      const fileA = path.join(srcDir, 'components', 'Button.tsx');
-      const fileB = path.join(srcDir, 'utils', 'colors.ts');
+      const srcDir = join(appRoot, 'src');
+      const fileA = join(srcDir, 'components', 'Button.tsx');
+      const fileB = join(srcDir, 'utils', 'colors.ts');
 
       writeFileEnsured(
         fileA,
@@ -414,21 +419,21 @@ describe('alias-imports transform', () => {
       );
 
       // Simulate the migration: replace @src/ with @/
-      const content = fs.readFileSync(fileB, 'utf8');
+      const content = readFileSync(fileB, 'utf8');
       const migratedContent = content.replace(/@src\//g, '@/');
-      fs.writeFileSync(fileB, migratedContent, 'utf8');
+      writeFileSync(fileB, migratedContent, 'utf8');
 
       // Verify the migration worked
-      const finalContent = fs.readFileSync(fileB, 'utf8');
+      const finalContent = readFileSync(fileB, 'utf8');
       assert.ok(finalContent.includes("from '@/components/Button'"));
       assert.ok(!finalContent.includes('@src/'));
     });
 
     it('migrates @src/ export to @/', () => {
       const appRoot = tempRoot;
-      const srcDir = path.join(appRoot, 'src');
-      const fileA = path.join(srcDir, 'components', 'Button.tsx');
-      const fileIndex = path.join(srcDir, 'components', 'index.ts');
+      const srcDir = join(appRoot, 'src');
+      const fileA = join(srcDir, 'components', 'Button.tsx');
+      const fileIndex = join(srcDir, 'components', 'index.ts');
 
       writeFileEnsured(
         fileA,
@@ -440,21 +445,21 @@ describe('alias-imports transform', () => {
       );
 
       // Simulate the migration: replace @src/ with @/
-      const content = fs.readFileSync(fileIndex, 'utf8');
+      const content = readFileSync(fileIndex, 'utf8');
       const migratedContent = content.replace(/@src\//g, '@/');
-      fs.writeFileSync(fileIndex, migratedContent, 'utf8');
+      writeFileSync(fileIndex, migratedContent, 'utf8');
 
       // Verify the migration worked
-      const finalContent = fs.readFileSync(fileIndex, 'utf8');
+      const finalContent = readFileSync(fileIndex, 'utf8');
       assert.ok(finalContent.includes("from '@/components/Button'"));
       assert.ok(!finalContent.includes('@src/'));
     });
 
     it('migrates @src/ require to @/', () => {
       const appRoot = tempRoot;
-      const srcDir = path.join(appRoot, 'src');
-      const fileA = path.join(srcDir, 'utils', 'colors.ts');
-      const fileB = path.join(srcDir, 'components', 'Theme.tsx');
+      const srcDir = join(appRoot, 'src');
+      const fileA = join(srcDir, 'utils', 'colors.ts');
+      const fileB = join(srcDir, 'components', 'Theme.tsx');
 
       writeFileEnsured(
         fileA,
@@ -466,21 +471,21 @@ describe('alias-imports transform', () => {
       );
 
       // Simulate the migration: replace @src/ with @/
-      const content = fs.readFileSync(fileB, 'utf8');
+      const content = readFileSync(fileB, 'utf8');
       const migratedContent = content.replace(/@src\//g, '@/');
-      fs.writeFileSync(fileB, migratedContent, 'utf8');
+      writeFileSync(fileB, migratedContent, 'utf8');
 
       // Verify the migration worked
-      const finalContent = fs.readFileSync(fileB, 'utf8');
+      const finalContent = readFileSync(fileB, 'utf8');
       assert.ok(finalContent.includes("require('@/utils/colors')"));
       assert.ok(!finalContent.includes('@src/'));
     });
 
     it('preserves full paths (no aggressive optimization)', () => {
       const appRoot = tempRoot;
-      const srcDir = path.join(appRoot, 'src');
-      const fileA = path.join(srcDir, 'components', 'buttons', 'Button.tsx');
-      const fileB = path.join(srcDir, 'screens', 'Home.tsx');
+      const srcDir = join(appRoot, 'src');
+      const fileA = join(srcDir, 'components', 'buttons', 'Button.tsx');
+      const fileB = join(srcDir, 'screens', 'Home.tsx');
 
       writeFileEnsured(
         fileA,
@@ -492,12 +497,12 @@ describe('alias-imports transform', () => {
       );
 
       // Simulate the migration: replace @src/ with @/
-      const content = fs.readFileSync(fileB, 'utf8');
+      const content = readFileSync(fileB, 'utf8');
       const migratedContent = content.replace(/@src\//g, '@/');
-      fs.writeFileSync(fileB, migratedContent, 'utf8');
+      writeFileSync(fileB, migratedContent, 'utf8');
 
       // Verify the migration preserved the full path
-      const finalContent = fs.readFileSync(fileB, 'utf8');
+      const finalContent = readFileSync(fileB, 'utf8');
       assert.ok(finalContent.includes("from '@/components/buttons/Button'"));
       assert.ok(!finalContent.includes("from '@/Button'"));
       assert.ok(!finalContent.includes('@src/'));
@@ -505,10 +510,10 @@ describe('alias-imports transform', () => {
 
     it('migrates multiple @src/ imports in same file', () => {
       const appRoot = tempRoot;
-      const srcDir = path.join(appRoot, 'src');
-      const fileA = path.join(srcDir, 'utils', 'colors.ts');
-      const fileB = path.join(srcDir, 'utils', 'dateFormatter.ts');
-      const fileC = path.join(srcDir, 'screens', 'Home.tsx');
+      const srcDir = join(appRoot, 'src');
+      const fileA = join(srcDir, 'utils', 'colors.ts');
+      const fileB = join(srcDir, 'utils', 'dateFormatter.ts');
+      const fileC = join(srcDir, 'screens', 'Home.tsx');
 
       writeFileEnsured(
         fileA,
@@ -524,12 +529,12 @@ describe('alias-imports transform', () => {
       );
 
       // Simulate the migration: replace @src/ with @/
-      const content = fs.readFileSync(fileC, 'utf8');
+      const content = readFileSync(fileC, 'utf8');
       const migratedContent = content.replace(/@src\//g, '@/');
-      fs.writeFileSync(fileC, migratedContent, 'utf8');
+      writeFileSync(fileC, migratedContent, 'utf8');
 
       // Verify all imports were migrated
-      const finalContent = fs.readFileSync(fileC, 'utf8');
+      const finalContent = readFileSync(fileC, 'utf8');
       assert.ok(finalContent.includes("from '@/components/buttons/Button'"));
       assert.ok(finalContent.includes("from '@/utils/colors'"));
       assert.ok(finalContent.includes("from '@/utils/dateFormatter'"));

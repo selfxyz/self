@@ -35,8 +35,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { navigationRef } from '@/navigation';
-// this will be pass as property of from selfClient
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
 // will need to be passed in from selfClient
 import {
   clearPassportData,
@@ -185,6 +183,7 @@ interface ProvingState {
   endpointType: EndpointType | null;
   fcmToken: string | null;
   env: 'prod' | 'stg' | null;
+  selfClient: SelfClient | null;
   setFcmToken: (token: string) => void;
   init: (
     selfClient: SelfClient,
@@ -332,6 +331,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     reason: null,
     endpointType: null,
     fcmToken: null,
+    selfClient: null,
     setFcmToken: (token: string) => {
       set({ fcmToken: token });
       trackEvent(ProofEvents.FCM_TOKEN_STORED);
@@ -634,6 +634,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        selfClient,
       });
 
       actor = createActor(provingMachine);
@@ -651,8 +652,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       const { data: passportData } = selectedDocument;
 
-      // TODO call on self client
-      const secret = await unsafe_getPrivateKey();
+      const secret = await get().selfClient?.getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');
         trackEvent(ProofEvents.LOAD_SECRET_FAILED);
@@ -676,6 +676,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         const { passportData, env } = get();
         if (!passportData) {
           throw new Error('PassportData is not available');
+        }
+        if (!passportData?.dsc_parsed) {
+          console.error('Missing parsed DSC in passport data');
+          trackEvent(ProofEvents.FETCH_DATA_FAILED, {
+            message: 'Missing parsed DSC in passport data',
+          });
+          actor!.send({ type: 'FETCH_ERROR' });
+          return;
         }
         const document: DocumentCategory = passportData.documentCategory;
         await useProtocolStore
