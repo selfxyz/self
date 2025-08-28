@@ -21,10 +21,9 @@ import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
-import analytics from '@/utils/analytics';
+import analytics, { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import { notificationSuccess } from '@/utils/haptic';
-import { flushMixpanelEvents, trackNfcEvent } from '@/utils/nfcScanner';
 import {
   getFCMToken,
   requestNotificationPermission,
@@ -81,8 +80,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
         error: message,
       });
       const { flush: flushAnalytics } = analytics();
-      flushAnalytics();
-      flushMixpanelEvents();
+      flushAllAnalytics();
     } finally {
       setRequestingPermission(false);
     }

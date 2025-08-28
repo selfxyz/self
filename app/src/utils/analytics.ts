@@ -2,6 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { AppState, type AppStateStatus } from 'react-native';
+import { NativeModules } from 'react-native';
+import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
+import NetInfo from '@react-native-community/netinfo';
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 
 import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
@@ -9,6 +13,16 @@ import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 import { createSegmentClient } from '@/Segment';
 
 const segmentClient = createSegmentClient();
+
+// --- Mixpanel flush strategy ---
+let mixpanelConfigured = false;
+let eventCount = 0;
+let flushTimer: ReturnType<typeof setInterval> | null = null;
+let isConnected = true;
+const eventQueue: Array<{
+  name: string;
+  properties?: Record<string, unknown>;
+}> = [];
 
 function coerceToJsonValue(
   value: unknown,
@@ -91,13 +105,13 @@ const analytics = () => {
     // Validate and clean properties
     const validatedProps = validateParams(properties);
 
-    if (__DEV__) {
-      console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
-        name: eventName,
-        properties: validatedProps,
-      });
-      return;
-    }
+    // if (__DEV__) {
+    //   console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
+    //     name: eventName,
+    //     properties: validatedProps,
+    //   });
+    //   return;
+    // }
 
     if (!segmentClient) {
       return;
@@ -136,3 +150,108 @@ const analytics = () => {
 };
 
 export default analytics;
+
+/**
+ * Cleanup function to clear timers and event queues
+ */
+export const cleanupAnalytics = () => {
+  if (flushTimer) {
+    clearInterval(flushTimer);
+    flushTimer = null;
+  }
+  eventQueue.length = 0;
+  eventCount = 0;
+};
+
+const setupFlushPolicies = () => {
+  if (flushTimer) return;
+  flushTimer = setInterval(flushMixpanelEvents, 30000);
+
+  AppState.addEventListener('change', (state: AppStateStatus) => {
+    if (state === 'background' || state === 'active') {
+      flushMixpanelEvents();
+    }
+  });
+
+  NetInfo.addEventListener(state => {
+    isConnected = state.isConnected ?? true;
+    if (isConnected) {
+      flushMixpanelEvents();
+    }
+  });
+};
+
+const flushMixpanelEvents = () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  try {
+    if (__DEV__) console.log('[Mixpanel] flush');
+    // Send any queued events before flushing
+    while (eventQueue.length > 0) {
+      const evt = eventQueue.shift()!;
+      NativeModules.PassportReader?.trackEvent?.(evt.name, evt.properties);
+    }
+    NativeModules.PassportReader?.flush?.();
+    eventCount = 0;
+  } catch (err) {
+    if (__DEV__) console.warn('Mixpanel flush failed', err);
+    // re-queue on failure
+    if (typeof err !== 'undefined') {
+      // no-op, events are already queued if failure happened before flush
+    }
+  }
+};
+
+// --- Mixpanel NFC Analytics ---
+export const configureNfcAnalytics = () => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
+  const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
+  NativeModules.PassportReader.configure(
+    MIXPANEL_NFC_PROJECT_TOKEN,
+    enableDebugLogs,
+    {
+      flushInterval: 30,
+      flushCount: 5,
+      flushOnBackground: true,
+      flushOnForeground: true,
+      flushOnNetworkChange: true,
+    },
+  );
+  setupFlushPolicies();
+  mixpanelConfigured = true;
+};
+
+/**
+ * Consolidated analytics flush function that flushes both Segment and Mixpanel events
+ * This should be called when you want to ensure all analytics events are sent immediately
+ */
+export const flushAllAnalytics = () => {
+  // Flush Segment analytics
+  const { flush: flushAnalytics } = analytics();
+  flushAnalytics();
+
+  // Flush Mixpanel events
+  flushMixpanelEvents();
+};
+
+export const trackNfcEvent = (
+  name: string,
+  properties?: Record<string, unknown>,
+) => {
+  if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  if (!mixpanelConfigured) configureNfcAnalytics();
+
+  if (!isConnected) {
+    eventQueue.push({ name, properties });
+    return;
+  }
+
+  try {
+    NativeModules.PassportReader?.trackEvent?.(name, properties);
+    eventCount++;
+    if (eventCount >= 5) {
+      flushMixpanelEvents();
+    }
+  } catch (err) {
+    eventQueue.push({ name, properties });
+  }
+};

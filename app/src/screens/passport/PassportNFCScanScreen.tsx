@@ -45,7 +45,7 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
-import analytics from '@/utils/analytics';
+import analytics, { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, slate100, slate400, slate500, white } from '@/utils/colors';
 import { sendFeedbackEmail } from '@/utils/email';
 import { dinot } from '@/utils/fonts';
@@ -55,12 +55,7 @@ import {
   feedbackUnsuccessful,
   impactLight,
 } from '@/utils/haptic';
-import {
-  flushMixpanelEvents,
-  parseScanResponse,
-  scan,
-  trackNfcEvent,
-} from '@/utils/nfcScanner';
+import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { sanitizeErrorMessage } from '@/utils/utils';
 
 const emitter =
@@ -144,8 +139,7 @@ const PassportNFCScanScreen: React.FC = () => {
 
   const openErrorModal = useCallback(
     (message: string) => {
-      flushAnalytics();
-      flushMixpanelEvents();
+      flushAllAnalytics();
       showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
@@ -375,8 +369,7 @@ const PassportNFCScanScreen: React.FC = () => {
         setIsNfcSheetOpen(false);
       }
     } else if (isNfcSupported) {
-      flushAnalytics();
-      flushMixpanelEvents();
+      flushAllAnalytics();
       if (Platform.OS === 'ios') {
         Linking.openURL('App-Prefs:root=General&path=About');
       } else {
@@ -403,8 +396,7 @@ const PassportNFCScanScreen: React.FC = () => {
   });
 
   const onCancelPress = async () => {
-    flushAnalytics();
-    flushMixpanelEvents();
+    flushAllAnalytics();
     const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
     if (hasValidDocument) {
       navigateToHome();

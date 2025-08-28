@@ -7,10 +7,7 @@ import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
 import { captureException } from '@/Sentry';
-import analytics from '@/utils/analytics';
-import { flushMixpanelEvents, trackNfcEvent } from '@/utils/nfcScanner';
-
-const { flush: flushAnalytics } = analytics();
+import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 
 interface Props {
   children: React.ReactNode;
@@ -35,9 +32,8 @@ class ErrorBoundary extends Component<Props, State> {
       message: error.message,
       stack: info.componentStack,
     });
-    flushMixpanelEvents();
-    // Flush analytics before the app crashes
-    flushAnalytics();
+    // Flush all analytics before the app crashes
+    flushAllAnalytics();
     captureException(error, {
       componentStack: info.componentStack,
       errorBoundary: true,
