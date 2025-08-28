@@ -200,7 +200,10 @@ const flushMixpanelEvents = async () => {
 // --- Mixpanel NFC Analytics ---
 export const configureNfcAnalytics = async () => {
   if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
-  const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
+  const enableDebugLogs =
+    String(ENABLE_DEBUG_LOGS ?? '')
+      .trim()
+      .toLowerCase() === 'true';
 
   // Check if PassportReader and configure method exist (Android doesn't have configure)
   if (PassportReader && typeof PassportReader.configure === 'function') {

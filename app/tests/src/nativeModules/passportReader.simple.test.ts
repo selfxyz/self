@@ -117,17 +117,13 @@ describe('PassportReader Simple Contract Tests', () => {
       expect(typeof PassportReader.scanPassport).toBe('function');
 
       // Optional methods should be function or undefined
-      if (PassportReader.configure !== undefined) {
-        expect(typeof PassportReader.configure).toBe('function');
-      }
-
-      if (PassportReader.trackEvent !== undefined) {
-        expect(typeof PassportReader.trackEvent).toBe('function');
-      }
-
-      if (PassportReader.flush !== undefined) {
-        expect(typeof PassportReader.flush).toBe('function');
-      }
+      expect(['function', 'undefined']).toContain(
+        typeof PassportReader.configure,
+      );
+      expect(['function', 'undefined']).toContain(
+        typeof PassportReader.trackEvent,
+      );
+      expect(['function', 'undefined']).toContain(typeof PassportReader.flush);
     });
   });
 });
