@@ -13,6 +13,7 @@ import React
 import NFCPassportReader
 #endif
 import Security
+import Mixpanel
 
 #if !E2E_TESTING
 @available(iOS 13, macOS 10.15, *)
@@ -57,7 +58,11 @@ class PassportReader: NSObject {
 
     @objc(trackEvent:properties:)
     func trackEvent(_ name: String, properties: [String: Any]?) {
-        analytics?.trackEvent(name, properties: properties)
+        if let mpProps = properties as? Properties {
+            analytics?.trackEvent(name, properties: mpProps)
+        } else {
+            analytics?.trackEvent(name, properties: nil)
+        }
     }
 
     @objc(flush)
