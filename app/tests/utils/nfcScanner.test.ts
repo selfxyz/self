@@ -5,7 +5,13 @@
 import { Platform } from 'react-native';
 import { PassportReader } from 'react-native-passport-reader';
 
+import { configureNfcAnalytics } from '@/utils/analytics';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
+
+// Mock the analytics module
+jest.mock('@/utils/analytics', () => ({
+  configureNfcAnalytics: jest.fn().mockResolvedValue(undefined),
+}));
 
 describe('parseScanResponse', () => {
   beforeEach(() => {
@@ -248,15 +254,17 @@ describe('scan', () => {
         dataGroupHashes: JSON.stringify({}),
       });
 
-      const mockConfigure = jest.fn().mockResolvedValue(undefined);
+      const mockConfigureNfcAnalytics =
+        configureNfcAnalytics as jest.MockedFunction<
+          typeof configureNfcAnalytics
+        >;
 
       (PassportReader as any).scanPassport = mockScanPassport;
-      (PassportReader as any).configure = mockConfigure;
 
       await scan(mockInputs);
 
       // Should configure analytics before scanning
-      expect(mockConfigure).toHaveBeenCalled();
+      expect(mockConfigureNfcAnalytics).toHaveBeenCalled();
       expect(mockScanPassport).toHaveBeenCalled();
     });
   });

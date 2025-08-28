@@ -183,6 +183,7 @@ interface ProvingState {
   endpointType: EndpointType | null;
   fcmToken: string | null;
   env: 'prod' | 'stg' | null;
+  selfClient: SelfClient | null;
   setFcmToken: (token: string) => void;
   init: (
     selfClient: SelfClient,
@@ -330,6 +331,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     reason: null,
     endpointType: null,
     fcmToken: null,
+    selfClient: null,
     setFcmToken: (token: string) => {
       set({ fcmToken: token });
       trackEvent(ProofEvents.FCM_TOKEN_STORED);
@@ -632,6 +634,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        selfClient,
       });
 
       actor = createActor(provingMachine);
@@ -649,7 +652,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       const { data: passportData } = selectedDocument;
 
-      const secret = await selfClient.getPrivateKey();
+      const secret = await get().selfClient?.getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');
         trackEvent(ProofEvents.LOAD_SECRET_FAILED);

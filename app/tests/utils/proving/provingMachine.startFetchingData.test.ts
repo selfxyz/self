@@ -49,10 +49,16 @@ describe('startFetchingData', () => {
     });
     const { unsafe_getPrivateKey } = require('@/providers/authProvider');
     unsafe_getPrivateKey.mockResolvedValue('secret');
+
+    // Create mock selfClient
+    const mockSelfClient = {
+      getPrivateKey: jest.fn().mockResolvedValue('mock-private-key'),
+    };
+
     useProtocolStore.setState({
       passport: { fetch_all: jest.fn().mockResolvedValue(undefined) },
     } as any);
-    await useProvingStore.getState().init('register');
+    await useProvingStore.getState().init(mockSelfClient as any, 'register');
     actorMock.send.mockClear();
     useProtocolStore.setState({
       passport: { fetch_all: jest.fn() },
