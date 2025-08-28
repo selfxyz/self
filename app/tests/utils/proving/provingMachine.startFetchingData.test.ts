@@ -37,15 +37,22 @@ jest.mock('@/providers/authProvider', () => ({
   unsafe_getPrivateKey: jest.fn(),
 }));
 
-jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
-  loadSelectedDocument: jest.fn().mockResolvedValue({
-    data: {
-      documentCategory: 'passport',
-      mock: false,
-      dsc_parsed: { authorityKeyIdentifier: 'key' },
-    },
-  }),
-}));
+// app/tests/utils/proving/provingMachine.startFetchingData.test.ts
+
+jest.mock('@selfxyz/mobile-sdk-alpha', () => {
+  const actual = jest.requireActual('@selfxyz/mobile-sdk-alpha');
+  return {
+    __esModule: true,
+    ...actual,
+    loadSelectedDocument: jest.fn().mockResolvedValue({
+      data: {
+        documentCategory: 'passport',
+        mock: false,
+        dsc_parsed: { authorityKeyIdentifier: 'key' },
+      },
+    }),
+  };
+});
 
 describe('startFetchingData', () => {
   beforeEach(async () => {
