@@ -4,10 +4,22 @@
 
 import { NativeModules, Platform } from 'react-native';
 
+type ScanOptions = {
+  documentNumber: string;
+  dateOfBirth: string; // YYMMDD
+  dateOfExpiry: string; // YYMMDD
+  canNumber?: string;
+  useCan?: boolean;
+  skipPACE?: boolean;
+  skipCA?: boolean;
+  extendedMode?: boolean;
+  usePacePolling?: boolean;
+};
+
 // Platform-specific PassportReader implementation
 let PassportReader: any;
 let reset: any;
-let scan: any;
+let scan: ((options: ScanOptions) => Promise<any>) | null;
 
 if (Platform.OS === 'android') {
   // Android uses the react-native-passport-reader package
@@ -32,7 +44,7 @@ if (Platform.OS === 'android') {
 
   // iOS uses scanPassport method with different signature
   scan = PassportReader?.scanPassport
-    ? (options: any) => {
+    ? async (options: ScanOptions) => {
         const {
           documentNumber,
           dateOfBirth,
@@ -45,7 +57,7 @@ if (Platform.OS === 'android') {
           usePacePolling = true,
         } = options;
 
-        return PassportReader.scanPassport(
+        const result = await PassportReader.scanPassport(
           documentNumber,
           dateOfBirth,
           dateOfExpiry,
@@ -56,6 +68,12 @@ if (Platform.OS === 'android') {
           extendedMode,
           usePacePolling,
         );
+        // iOS native returns a JSON string; normalize to object.
+        try {
+          return typeof result === 'string' ? JSON.parse(result) : result;
+        } catch {
+          return result;
+        }
       }
     : null;
 } else {
@@ -66,5 +84,6 @@ if (Platform.OS === 'android') {
   scan = null;
 }
 
+export type { ScanOptions };
 export { PassportReader, reset, scan };
 export default PassportReader;
