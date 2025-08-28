@@ -95,7 +95,7 @@ concurrency:
 
 jobs:
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-latest-large
     if: (inputs.platform == 'ios' || inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
