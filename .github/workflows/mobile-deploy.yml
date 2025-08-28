@@ -103,6 +103,9 @@ jobs:
           echo "📦 Version bump: ${{ inputs.version_bump }}"
 
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: staging
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -117,7 +120,23 @@ jobs:
           echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
+      - name: Verify branch and commit (iOS)
+        if: inputs.platform != 'android'
+        run: |
+          echo "🔍 Verifying we're building from the correct branch and commit..."
+          echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
+          echo "Current commit: $(git rev-parse HEAD)"
+          echo "Current commit message: $(git log -1 --pretty=format:'%s')"
+          echo "Staging HEAD commit: $(git rev-parse origin/staging)"
+          echo "Staging HEAD message: $(git log -1 --pretty=format:'%s' origin/staging)"
 
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
+            echo "⚠️ WARNING: Current commit differs from latest staging commit"
+            echo "This might indicate we're not building from the latest staging branch"
+            git log --oneline HEAD..origin/staging || true
+          else
+            echo "✅ Building from latest staging commit"
+          fi
 
       - name: Set up Xcode
         if: inputs.platform != 'android'
@@ -147,8 +166,9 @@ jobs:
             .yarn/cache
             node_modules
             ${{ env.APP_PATH }}/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}-
             ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
             ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-
 
@@ -157,8 +177,9 @@ jobs:
         uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
+          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-
             ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
             ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-
 
@@ -170,7 +191,7 @@ jobs:
             ${{ env.APP_PATH }}/ios/Pods
             ~/Library/Caches/CocoaPods
           lock-file: app/ios/Podfile.lock
-          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_PODS_CACHE_VERSION }}-${{ github.sha }}
 
       - name: Log cache status
         run: |
@@ -572,6 +593,9 @@ jobs:
 
       - uses: actions/checkout@v4
         if: inputs.platform != 'ios'
+        with:
+          fetch-depth: 0
+          ref: staging
       - uses: 'google-github-actions/auth@v2'
         with:
           project_id: 'plucky-tempo-454713-r0'
@@ -648,6 +672,24 @@ jobs:
           echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
+      - name: Verify branch and commit (Android)
+        if: inputs.platform != 'ios'
+        run: |
+          echo "🔍 Verifying we're building from the correct branch and commit..."
+          echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
+          echo "Current commit: $(git rev-parse HEAD)"
+          echo "Current commit message: $(git log -1 --pretty=format:'%s')"
+          echo "Staging HEAD commit: $(git rev-parse origin/staging)"
+          echo "Staging HEAD message: $(git log -1 --pretty=format:'%s' origin/staging)"
+
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
+            echo "⚠️ WARNING: Current commit differs from latest staging commit"
+            echo "This might indicate we're not building from the latest staging branch"
+            git log --oneline HEAD..origin/staging || true
+          else
+            echo "✅ Building from latest staging commit"
+          fi
+
       - name: Cache Yarn dependencies
         id: yarn-cache
         uses: ./.github/actions/cache-yarn
@@ -656,8 +698,9 @@ jobs:
             .yarn/cache
             node_modules
             ${{ env.APP_PATH }}/node_modules
-          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-${{ hashFiles('yarn.lock') }}-
             ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-${{ env.GH_YARN_CACHE_VERSION }}-
             ${{ runner.os }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ env.GH_CACHE_VERSION }}-
 
@@ -666,8 +709,9 @@ jobs:
         uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
+          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-
             ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
             ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-
 
@@ -675,14 +719,14 @@ jobs:
         id: gradle-cache
         uses: ./.github/actions/cache-gradle
         with:
-          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GRADLE_CACHE_VERSION }}-${{ github.sha }}
 
       - name: Cache Android NDK
         id: ndk-cache
         uses: actions/cache@v4
         with:
           path: ${{ env.ANDROID_SDK_ROOT }}/ndk/${{ env.ANDROID_NDK_VERSION }}
-          key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}
+          key: ${{ runner.os }}-ndk-${{ env.ANDROID_NDK_VERSION }}-${{ github.sha }}
 
       - name: Log cache status
         run: |
@@ -877,6 +921,7 @@ jobs:
         with:
           token: ${{ github.token }}
           fetch-depth: 0
+          ref: staging
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -950,6 +995,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: staging
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
