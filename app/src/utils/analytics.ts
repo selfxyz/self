@@ -104,13 +104,13 @@ const analytics = () => {
     // Validate and clean properties
     const validatedProps = validateParams(properties);
 
-    // if (__DEV__) {
-    //   console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
-    //     name: eventName,
-    //     properties: validatedProps,
-    //   });
-    //   return;
-    // }
+    if (__DEV__) {
+      console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
+        name: eventName,
+        properties: validatedProps,
+      });
+      return;
+    }
 
     if (!segmentClient) {
       return;
