@@ -3,14 +3,16 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { type PropsWithChildren, useMemo } from 'react';
+import { Platform } from 'react-native';
 
 import {
   Adapters,
+  reactNativeScannerAdapter,
   SelfClientProvider as SDKSelfClientProvider,
+  type TrackEventParams,
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
-import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
@@ -27,7 +29,8 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
   const adapters: Partial<Adapters> = useMemo(
     () => ({
-      scanner: webScannerShim,
+      scanner:
+        Platform.OS === 'web' ? webScannerShim : reactNativeScannerAdapter,
       network: {
         http: {
           fetch: (input: RequestInfo, init?: RequestInit) => fetch(input, init),

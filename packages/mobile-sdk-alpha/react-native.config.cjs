@@ -13,8 +13,8 @@ module.exports = {
         android: {
           sourceDir: './android',
           manifestPath: 'src/main/AndroidManifest.xml',
-          packageImportPath: 'import com.selfxyz.selfSDK.RNPassportReaderPackage;',
-          packageInstance: 'new RNPassportReaderPackage()',
+          packageImportPath: 'import com.selfxyz.selfSDK.RNSelfPassportReaderPackage;',
+          packageInstance: 'new RNSelfPassportReaderPackage()',
         },
       },
     },

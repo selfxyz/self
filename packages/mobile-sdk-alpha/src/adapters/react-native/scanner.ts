@@ -13,6 +13,8 @@ export const reactNativeScannerAdapter: ScannerAdapter = {
       return await scanIOS(opts);
     } else if (Platform.OS === 'android') {
       return await scanAndroid(opts);
+    } else if (opts.mode === 'qr') {
+      return { mode: 'qr', data: 'self://stub-qr' };
     }
     throw new Error(`Platform ${Platform.OS} not supported`);
   },
@@ -21,12 +23,11 @@ export const reactNativeScannerAdapter: ScannerAdapter = {
 async function scanIOS(opts: ScanOpts): Promise<ScanResult> {
   const { SelfMRZScannerModule, PassportReader } = NativeModules;
 
-  if (!SelfMRZScannerModule) {
-    throw new Error('SelfMRZScannerModule not found, check if its linked correctly');
-  }
-
   switch (opts.mode) {
     case 'mrz':
+      if (!SelfMRZScannerModule) {
+        throw new Error('SelfMRZScannerModule not found, check if its linked correctly');
+      }
       try {
         const result = await SelfMRZScannerModule.startScanning();
         const documentType = result.data.documentType.startsWith('P') ? 'passport' : 'id_card';

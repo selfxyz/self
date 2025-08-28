@@ -11,6 +11,7 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import io.tradle.nfc.RNPassportReaderModule
+import com.selfxyz.selfSDK.RNSelfPassportReaderModule
 
 class MainActivity : ReactActivity() {
   /**
@@ -30,6 +31,7 @@ class MainActivity : ReactActivity() {
     super.onNewIntent(intent)
     Log.d("MAIN_ACTIVITY", "onNewIntent: " + intent.action)
     RNPassportReaderModule.getInstance().receiveIntent(intent)
+    // RNSelfPassportReaderModule.getInstance().receiveIntent(intent)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {

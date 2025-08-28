@@ -158,7 +158,7 @@ class Foo(json: String) : JSONObject(json) {
 }
 
 
-class RNPassportReaderModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), LifecycleEventListener {
+class RNSelfPassportReaderModule(private val reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext), LifecycleEventListener {
     // private var passportNumberFromIntent = false
     // private var encodePhotoToBase64 = false
     private var scanPromise: Promise? = null
@@ -234,7 +234,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         this.opts = opts
         this.scanPromise = promise
-        Log.d("RNPassportReaderModule", "opts set to: " + opts.toString())
+        Log.d("RNSelfPassportReaderModule", "opts set to: " + opts.toString())
     }
 
     private fun resetState() {
@@ -266,7 +266,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     }
 
     fun receiveIntent(intent: Intent) {
-        Log.d("RNPassportReaderModule", "receiveIntent: " + intent.action)
+        Log.d("RNSelfPassportReaderModule", "receiveIntent: " + intent.action)
         if (scanPromise == null) return
         if (NfcAdapter.ACTION_TECH_DISCOVERED == intent.action) {
             val tag: Tag? = intent.extras?.getParcelable(NfcAdapter.EXTRA_TAG)
@@ -804,7 +804,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         return try {
             SimpleDateFormat("yyMMdd", Locale.US).format(SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(input)!!)
         } catch (e: ParseException) {
-            // Log.w(RNPassportReaderModule::class.java.simpleName, e)
+            // Log.w(RNSelfPassportReaderModule::class.java.simpleName, e)
             null
         }
     }
@@ -875,7 +875,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     }
 
     companion object {
-        private val TAG = RNPassportReaderModule::class.java.simpleName
+        private val TAG = RNSelfPassportReaderModule::class.java.simpleName
         private const val PARAM_DOC_NUM = "documentNumber";
         private const val PARAM_DOB = "dateOfBirth";
         private const val PARAM_DOE = "dateOfExpiry";
@@ -883,10 +883,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         private const val PARAM_USE_CAN = "useCan";
         const val JPEG_DATA_URI_PREFIX = "data:image/jpeg;base64,"
         private const val KEY_IS_SUPPORTED = "isSupported"
-        private var instance: RNPassportReaderModule? = null
+        private var instance: RNSelfPassportReaderModule? = null
 
-        fun getInstance(): RNPassportReaderModule {
-            return instance ?: throw IllegalStateException("RNPassportReaderModule instance is not initialized")
+        fun getInstance(): RNSelfPassportReaderModule {
+            return instance ?: throw IllegalStateException("RNSelfPassportReaderModule instance is not initialized")
         }
     }
 }
