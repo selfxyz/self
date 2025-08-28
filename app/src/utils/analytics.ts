@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { AppState, type AppStateStatus } from 'react-native';
-import { NativeModules } from 'react-native';
+import { PassportReader } from 'react-native-passport-reader';
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
@@ -161,28 +161,32 @@ export const cleanupAnalytics = () => {
 const setupFlushPolicies = () => {
   AppState.addEventListener('change', (state: AppStateStatus) => {
     if (state === 'background' || state === 'active') {
-      flushMixpanelEvents();
+      flushMixpanelEvents().catch(console.warn);
     }
   });
 
   NetInfo.addEventListener(state => {
     isConnected = state.isConnected ?? true;
     if (isConnected) {
-      flushMixpanelEvents();
+      flushMixpanelEvents().catch(console.warn);
     }
   });
 };
 
-const flushMixpanelEvents = () => {
+const flushMixpanelEvents = async () => {
   if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
   try {
     if (__DEV__) console.log('[Mixpanel] flush');
     // Send any queued events before flushing
     while (eventQueue.length > 0) {
       const evt = eventQueue.shift()!;
-      NativeModules.PassportReader?.trackEvent?.(evt.name, evt.properties);
+      if (PassportReader.trackEvent) {
+        await Promise.resolve(
+          PassportReader.trackEvent(evt.name, evt.properties),
+        );
+      }
     }
-    NativeModules.PassportReader?.flush?.();
+    if (PassportReader.flush) await Promise.resolve(PassportReader.flush());
     eventCount = 0;
   } catch (err) {
     if (__DEV__) console.warn('Mixpanel flush failed', err);
@@ -194,20 +198,20 @@ const flushMixpanelEvents = () => {
 };
 
 // --- Mixpanel NFC Analytics ---
-export const configureNfcAnalytics = () => {
+export const configureNfcAnalytics = async () => {
   if (!MIXPANEL_NFC_PROJECT_TOKEN || mixpanelConfigured) return;
   const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
-  NativeModules.PassportReader.configure(
-    MIXPANEL_NFC_PROJECT_TOKEN,
-    enableDebugLogs,
-    {
-      flushInterval: 20,
-      flushCount: 5,
-      flushOnBackground: true,
-      flushOnForeground: true,
-      flushOnNetworkChange: true,
-    },
-  );
+  if (PassportReader.configure) {
+    await Promise.resolve(
+      PassportReader.configure(MIXPANEL_NFC_PROJECT_TOKEN, enableDebugLogs, {
+        flushInterval: 20,
+        flushCount: 5,
+        flushOnBackground: true,
+        flushOnForeground: true,
+        flushOnNetworkChange: true,
+      }),
+    );
+  }
   setupFlushPolicies();
   mixpanelConfigured = true;
 };
@@ -222,15 +226,15 @@ export const flushAllAnalytics = () => {
   flushAnalytics();
 
   // Flush Mixpanel events
-  flushMixpanelEvents();
+  flushMixpanelEvents().catch(console.warn);
 };
 
-export const trackNfcEvent = (
+export const trackNfcEvent = async (
   name: string,
   properties?: Record<string, unknown>,
 ) => {
   if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
-  if (!mixpanelConfigured) configureNfcAnalytics();
+  if (!mixpanelConfigured) await configureNfcAnalytics();
 
   if (!isConnected) {
     eventQueue.push({ name, properties });
@@ -238,12 +242,14 @@ export const trackNfcEvent = (
   }
 
   try {
-    NativeModules.PassportReader?.trackEvent?.(name, properties);
+    if (PassportReader.trackEvent) {
+      await Promise.resolve(PassportReader.trackEvent(name, properties));
+    }
     eventCount++;
     if (eventCount >= 5) {
-      flushMixpanelEvents();
+      flushMixpanelEvents().catch(console.warn);
     }
-  } catch (err) {
+  } catch {
     eventQueue.push({ name, properties });
   }
 };
