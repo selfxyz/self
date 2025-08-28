@@ -12,12 +12,7 @@
  * (e.g., `import type { X }`).
  */
 
-import {
-  existsSync,
-  readdirSync,
-  statSync,
-  readFileSync,
-} from 'fs';
+import { existsSync, readdirSync, statSync, readFileSync } from 'fs';
 import { dirname, extname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 

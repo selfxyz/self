@@ -9,12 +9,7 @@
  * Ensures there's a newline after license headers
  */
 
-import {
-  readdirSync,
-  statSync,
-  readFileSync,
-  writeFileSync,
-} from 'fs';
+import { readdirSync, statSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 // Legacy composite format (being phased out)

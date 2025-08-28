@@ -8,12 +8,7 @@
  * Migration tool to convert composite SPDX headers to canonical multi-line format
  */
 
-import {
-  readdirSync,
-  statSync,
-  readFileSync,
-  writeFileSync,
-} from 'fs';
+import { readdirSync, statSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 // Current composite format
@@ -114,7 +109,7 @@ function analyzeFile(filePath) {
 }
 
 function migrateFile(filePath, dryRun = false) {
-    const content = readFileSync(filePath, 'utf8');
+  const content = readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   const analysis = analyzeFile(filePath);
 

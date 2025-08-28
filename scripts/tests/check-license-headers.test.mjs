@@ -9,13 +9,7 @@
  */
 
 import { strict as assert } from 'assert';
-import {
-  existsSync,
-  rmSync,
-  mkdirSync,
-  writeFileSync,
-  readFileSync,
-} from 'fs';
+import { existsSync, rmSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
