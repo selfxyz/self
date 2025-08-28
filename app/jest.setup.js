@@ -151,7 +151,7 @@ jest.mock('react-native-check-version', () => ({
 
 // Mock @react-native-community/netinfo
 jest.mock('@react-native-community/netinfo', () => ({
-  addEventListener: jest.fn(() => jest.fn()),
+  addEventListener: jest.fn(),
   useNetInfo: jest.fn().mockReturnValue({
     type: 'wifi',
     isConnected: true,
@@ -161,9 +161,7 @@ jest.mock('@react-native-community/netinfo', () => ({
       cellularGeneration: '4g',
     },
   }),
-  fetch: jest
-    .fn()
-    .mockResolvedValue({ isConnected: true, isInternetReachable: true }),
+  fetch: jest.fn(),
 }));
 
 // Mock react-native-nfc-manager
@@ -227,6 +225,11 @@ NativeModules.PassportReader = {
   trackEvent: jest.fn(),
   flush: jest.fn(),
 };
+
+jest.mock('@react-native-community/netinfo', () => ({
+  addEventListener: jest.fn(() => jest.fn()),
+  fetch: jest.fn(() => Promise.resolve({ isConnected: true })),
+}));
 
 // Mock @stablelib packages
 jest.mock('@stablelib/cbor', () => ({

@@ -3,12 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Buffer } from 'buffer';
-import { Platform } from 'react-native';
-import {
-  PassportReader,
-  reset,
-  scan as scanDocument,
-} from 'react-native-passport-reader';
+import { NativeModules, Platform } from 'react-native';
+import { reset, scan as scanDocument } from 'react-native-passport-reader';
 
 import type { PassportData } from '@selfxyz/common/types';
 
@@ -48,7 +44,7 @@ export const parseScanResponse = (response: unknown) => {
 };
 
 export const scan = async (inputs: Inputs) => {
-  await configureNfcAnalytics();
+  configureNfcAnalytics();
 
   return Platform.OS === 'android'
     ? await scanAndroid(inputs)
@@ -67,14 +63,16 @@ const scanAndroid = async (inputs: Inputs) => {
 };
 
 const scanIOS = async (inputs: Inputs) => {
-  return await Promise.resolve(
-    PassportReader.scan({
-      documentNumber: inputs.passportNumber,
-      dateOfBirth: inputs.dateOfBirth,
-      dateOfExpiry: inputs.dateOfExpiry,
-      canNumber: inputs.canNumber ?? '',
-      useCan: inputs.useCan ?? false,
-    }),
+  return await NativeModules.PassportReader.scanDocument(
+    inputs.passportNumber,
+    inputs.dateOfBirth,
+    inputs.dateOfExpiry,
+    inputs.canNumber ?? '',
+    inputs.useCan ?? false,
+    inputs.skipPACE ?? false,
+    inputs.skipCA ?? false,
+    inputs.extendedMode ?? false,
+    inputs.usePacePolling ?? false,
   );
 };
 
