@@ -6,7 +6,7 @@
  * @jest-environment node
  */
 
-import fs from 'fs';
+import { readFileSync } from 'fs';
 import path from 'path';
 
 describe('iOS Info.plist Configuration', () => {
@@ -14,7 +14,7 @@ describe('iOS Info.plist Configuration', () => {
   let plistContent: string;
 
   beforeAll(() => {
-    plistContent = fs.readFileSync(plistPath, 'utf8');
+    plistContent = readFileSync(plistPath, 'utf8');
   });
 
   it('contains the proofofpassport URL scheme', () => {

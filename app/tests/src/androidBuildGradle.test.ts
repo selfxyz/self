@@ -6,7 +6,7 @@
  * @jest-environment node
  */
 
-import fs from 'fs';
+import { readFileSync } from 'fs';
 import path from 'path';
 
 describe('Android build.gradle Configuration', () => {
@@ -16,8 +16,8 @@ describe('Android build.gradle Configuration', () => {
   let rootGradleContent: string;
 
   beforeAll(() => {
-    gradleContent = fs.readFileSync(gradlePath, 'utf8');
-    rootGradleContent = fs.readFileSync(rootGradlePath, 'utf8');
+    gradleContent = readFileSync(gradlePath, 'utf8');
+    rootGradleContent = readFileSync(rootGradlePath, 'utf8');
   });
 
   it('references SDK versions from the root project', () => {

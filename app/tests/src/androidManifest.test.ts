@@ -6,7 +6,7 @@
  * @jest-environment node
  */
 
-import fs from 'fs';
+import { readFileSync } from 'fs';
 import path from 'path';
 
 describe('Android Manifest Configuration', () => {
@@ -18,7 +18,7 @@ describe('Android Manifest Configuration', () => {
 
   beforeAll(() => {
     // Read the manifest file
-    manifestContent = fs.readFileSync(manifestPath, 'utf8');
+    manifestContent = readFileSync(manifestPath, 'utf8');
   });
 
   describe('Critical Deeplink Configuration', () => {

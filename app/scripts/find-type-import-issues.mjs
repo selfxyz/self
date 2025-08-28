@@ -12,7 +12,12 @@
  * (e.g., `import type { X }`).
  */
 
-import fs from 'fs';
+import {
+  existsSync,
+  readdirSync,
+  statSync,
+  readFileSync,
+} from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -73,7 +78,7 @@ function shouldScanFile(filePath) {
 }
 
 function findIssuesInFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   const issues = [];
 
@@ -98,15 +103,15 @@ function findIssuesInFile(filePath) {
 function scanDirectory(dirPath) {
   const results = [];
 
-  if (!fs.existsSync(dirPath)) {
+  if (!existsSync(dirPath)) {
     return results;
   }
 
-  const items = fs.readdirSync(dirPath);
+  const items = readdirSync(dirPath);
 
   for (const item of items) {
     const fullPath = path.join(dirPath, item);
-    const stat = fs.statSync(fullPath);
+    const stat = statSync(fullPath);
 
     if (stat.isDirectory()) {
       if (!shouldIgnoreFile(fullPath)) {
@@ -175,7 +180,7 @@ function main() {
 
   SCAN_DIRS.forEach(dir => {
     const fullPath = path.join(projectRoot, dir);
-    if (fs.existsSync(fullPath)) {
+    if (existsSync(fullPath)) {
       const results = scanDirectory(fullPath);
       allResults.push(...results);
     }

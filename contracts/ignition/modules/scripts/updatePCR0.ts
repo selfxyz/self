@@ -1,6 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import hre from "hardhat";
-import fs from "fs";
+import { readFileSync } from "fs";
 import path from "path";
 import { ethers } from "ethers";
 
@@ -9,8 +9,7 @@ export default buildModule("UpdatePCR0", (m) => {
   const journalPath = path.join(__dirname, "../../deployments", `chain-${networkName}`, "journal.jsonl");
 
   // Read and parse the journal file
-  const journal = fs
-    .readFileSync(journalPath, "utf8")
+  const journal = readFileSync(journalPath, "utf8")
     .split("\n")
     .filter(Boolean)
     .map((line) => JSON.parse(line));
