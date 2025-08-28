@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { AppState, type AppStateStatus } from 'react-native';
-import { PassportReader } from 'react-native-passport-reader';
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
@@ -11,6 +10,7 @@ import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
 import { createSegmentClient } from '@/Segment';
+import { PassportReader } from '@/utils/passportReader';
 
 const segmentClient = createSegmentClient();
 

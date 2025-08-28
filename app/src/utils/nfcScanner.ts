@@ -4,15 +4,15 @@
 
 import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
-import {
-  PassportReader,
-  reset,
-  scan as scanDocument,
-} from 'react-native-passport-reader';
 
 import type { PassportData } from '@selfxyz/common/types';
 
 import { configureNfcAnalytics } from '@/utils/analytics';
+import {
+  PassportReader,
+  reset,
+  scan as scanDocument,
+} from '@/utils/passportReader';
 
 interface AndroidScanResponse {
   mrz: string;

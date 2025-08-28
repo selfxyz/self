@@ -3,10 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Platform } from 'react-native';
-import { PassportReader } from 'react-native-passport-reader';
 
 import { configureNfcAnalytics } from '@/utils/analytics';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
+import { PassportReader } from '@/utils/passportReader';
 
 // Mock the analytics module
 jest.mock('@/utils/analytics', () => ({

@@ -46,10 +46,23 @@ class PassportReader: NSObject {
         super.init()
     }
 
+    private var analytics: SelfAnalytics?
+
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
         let analytics = SelfAnalytics(token: token, enableDebugLogs: enableDebugLogs)
+        self.analytics = analytics
         self.passportReader = NFCPassportReader.PassportReader(analytics: analytics)
+    }
+
+    @objc(trackEvent:properties:)
+    func trackEvent(_ name: String, properties: [String: Any]?) {
+        analytics?.trackEvent(name, properties: properties)
+    }
+
+    @objc(flush)
+    func flush() {
+        analytics?.flush()
     }
 
     func getMRZKey(passportNumber: String, dateOfBirth: String, dateOfExpiry: String ) -> String {
