@@ -92,7 +92,7 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-14-large
+    runs-on: macos-latest-large
     if: (inputs.platform == 'ios' || inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
@@ -595,7 +595,7 @@ jobs:
           echo "💡 GitHub Actions cache limit: 10GB per repository"
 
   build-android:
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest-4-cores
     if: (inputs.platform == 'android' || inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
