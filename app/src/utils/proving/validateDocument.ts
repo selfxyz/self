@@ -11,7 +11,7 @@ import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   getAllDocumentsDirectlyFromKeychain,
   loadPassportDataAndSecret,
-  loadSelectedDocument,
+  loadSelectedDocumentDirectlyFromKeychain,
   setSelectedDocument,
   storePassportData,
   updateDocumentRegistrationState,
@@ -30,7 +30,7 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
   for (const documentId of Object.keys(allDocuments)) {
     try {
       await setSelectedDocument(documentId);
-      const selectedDocument = await loadSelectedDocument();
+      const selectedDocument = await loadSelectedDocumentDirectlyFromKeychain();
       if (!selectedDocument) continue;
       let { data: passportData } = selectedDocument;
       // Track whether any specific failure callback fired to avoid duplicate generic events

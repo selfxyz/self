@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-import { useProtocolStore } from '../../../src/stores/protocolStore';
-import { useProvingStore } from '../../../src/utils/proving/provingMachine';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+
+import { useProtocolStore } from '@/stores/protocolStore';
+import { useProvingStore } from '@/utils/proving/provingMachine';
+
 import { actorMock } from './actorMock';
 
 jest.mock('xstate', () => {
@@ -23,22 +26,40 @@ jest.mock('xstate', () => {
   };
 });
 
-jest.mock('../../../src/utils/analytics', () => () => ({
+jest.mock('@/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
-jest.mock('../../../src/providers/passportDataProvider', () => ({
+jest.mock('@/providers/passportDataProvider', () => ({
   loadSelectedDocument: jest.fn(),
-}));
-jest.mock('../../../src/providers/authProvider', () => ({
   unsafe_getPrivateKey: jest.fn(),
 }));
+jest.mock('@/providers/authProvider', () => ({
+  unsafe_getPrivateKey: jest.fn(),
+}));
+
+// app/tests/utils/proving/provingMachine.startFetchingData.test.ts
+
+jest.mock('@selfxyz/mobile-sdk-alpha', () => {
+  const actual = jest.requireActual('@selfxyz/mobile-sdk-alpha');
+  return {
+    __esModule: true,
+    ...actual,
+    loadSelectedDocument: jest.fn().mockResolvedValue({
+      data: {
+        documentCategory: 'passport',
+        mock: false,
+        dsc_parsed: { authorityKeyIdentifier: 'key' },
+      },
+    }),
+  };
+});
 
 describe('startFetchingData', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
     const {
       loadSelectedDocument,
-    } = require('../../../src/providers/passportDataProvider');
+    } = require('@/providers/passportDataProvider');
     loadSelectedDocument.mockResolvedValue({
       data: {
         documentCategory: 'passport',
@@ -46,19 +67,24 @@ describe('startFetchingData', () => {
         dsc_parsed: { authorityKeyIdentifier: 'key' },
       },
     });
-    const {
-      unsafe_getPrivateKey,
-    } = require('../../../src/providers/authProvider');
+    const { unsafe_getPrivateKey } = require('@/providers/authProvider');
     unsafe_getPrivateKey.mockResolvedValue('secret');
+
+    // Create mock selfClient
+    const mockSelfClient = {
+      getPrivateKey: jest.fn().mockResolvedValue('mock-secret'),
+    } as unknown as SelfClient;
+
     useProtocolStore.setState({
       passport: { fetch_all: jest.fn().mockResolvedValue(undefined) },
     } as any);
-    await useProvingStore.getState().init('register');
+    await useProvingStore.getState().init(mockSelfClient, 'register');
     actorMock.send.mockClear();
     useProtocolStore.setState({
       passport: { fetch_all: jest.fn() },
     } as any);
     useProvingStore.setState({
+      // @ts-expect-error
       passportData: { documentCategory: 'passport', mock: false },
       env: 'prod',
     });

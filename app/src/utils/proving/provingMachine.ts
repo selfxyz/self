@@ -34,6 +34,7 @@ import {
 } from '@selfxyz/common/utils/proving';
 import {
   hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
   SelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -45,7 +46,6 @@ import { navigationRef } from '@/navigation';
 // will need to be passed in from selfClient
 import {
   clearPassportData,
-  loadSelectedDocument,
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
@@ -183,6 +183,7 @@ interface ProvingState {
   endpointType: EndpointType | null;
   fcmToken: string | null;
   env: 'prod' | 'stg' | null;
+  selfClient: SelfClient | null;
   setFcmToken: (token: string) => void;
   init: (
     selfClient: SelfClient,
@@ -330,6 +331,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     reason: null,
     endpointType: null,
     fcmToken: null,
+    selfClient: null,
     setFcmToken: (token: string) => {
       set({ fcmToken: token });
       trackEvent(ProofEvents.FCM_TOKEN_STORED);
@@ -632,6 +634,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        selfClient,
       });
 
       actor = createActor(provingMachine);
@@ -639,7 +642,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       actor.start();
 
       trackEvent(ProofEvents.DOCUMENT_LOAD_STARTED);
-      const selectedDocument = await loadSelectedDocument();
+      const selectedDocument = await loadSelectedDocument(selfClient);
       if (!selectedDocument) {
         console.error('No document found for proving');
         trackEvent(PassportEvents.PASSPORT_DATA_NOT_FOUND, { stage: 'init' });
@@ -649,7 +652,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       const { data: passportData } = selectedDocument;
 
-      const secret = await selfClient.getPrivateKey();
+      const secret = await get().selfClient?.getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');
         trackEvent(ProofEvents.LOAD_SECRET_FAILED);
