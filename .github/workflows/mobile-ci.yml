@@ -98,7 +98,7 @@ jobs:
         working-directory: ./
 
   test:
-    runs-on: macos-latest-large
+    runs-on: macos-latest
     needs: build-deps
     steps:
       - uses: actions/checkout@v4
