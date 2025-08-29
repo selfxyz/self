@@ -556,7 +556,7 @@ class RNSelfPassportReaderModule(private val reactContext: ReactApplicationConte
 
                 val dg14Hash = if (chipAuthSucceeded) digest.digest(dg14Encoded) else ByteArray(0)
                 val dg1Hash = digest.digest(dg1File.encoded)
-                val dg2Hash = digest.digest(dg2File.encoded)
+                // val dg2Hash = digest.digest(dg2File.encoded)
 
                 // val gson = Gson()
                 // Log.d(TAG, "dataHashes " + gson.toJson(dataHashes))

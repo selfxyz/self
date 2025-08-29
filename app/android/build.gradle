@@ -33,7 +33,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
         jcenter()
         maven {
             url("$rootDir/../../node_modules/react-native/android")
