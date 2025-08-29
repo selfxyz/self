@@ -19,85 +19,98 @@ yarn build
 
 ### 3. Integrate SDK into `/app`
 
-- Swap MRZ modules for SDK adapters.
-- Ensure the app still builds and tests.
+- In `app/src/providers/passportDataProvider.tsx` replace local MRZ helpers with `extractMRZInfo` from `@selfxyz/mobile-sdk-alpha/mrz` and `parseNFCResponse` from `@selfxyz/mobile-sdk-alpha/nfc`.
+- Update `app/src/components/native/PassportCamera.tsx` and `app/src/utils/nfcScanner.ts` to use the SDK exports.
+- Run `yarn workspace @selfxyz/mobile-app build && yarn workspace @selfxyz/mobile-app test`.
 
 ### 4. Proof input generation
 
-- Move register and disclose helpers into `src/proving/`.
-- Accept trees and other deps as function arguments.
-- Cover both helpers with unit tests.
+- Move `generateTEEInputsRegister` and `generateTEEInputsDisclose` from `app/src/utils/proving/provingInputs.ts` into new files under `packages/mobile-sdk-alpha/src/proving/register.ts` and `packages/mobile-sdk-alpha/src/proving/disclose.ts`.
+- Replace `useProtocolStore` with a `getTree(document, kind)` callback so helpers are stateless.
+- Add tests in `packages/mobile-sdk-alpha/tests/proving.{register,disclose}.test.ts`.
 
 ### 5. Crypto adapters
 
-- Define a `CryptoAdapter` interface and a `timingSafeEqual` helper.
-- Implement WebCrypto and noble versions and pick at runtime.
-- Add parity tests between implementations.
+- Create `src/adapters/crypto/index.ts` exporting a `CryptoAdapter` interface with `getRandomValues`, `digest` and `timingSafeEqual`.
+- Implement `src/adapters/crypto/webcrypto.ts` and `src/adapters/crypto/noble.ts` and wire runtime detection in `src/adapters/crypto/index.ts`.
+- Add parity tests in `tests/crypto.test.ts` ensuring both adapters produce identical results.
 
 ### 6. TEE session management
 
-- Wrap WebSockets with abort, timeout, and progress support.
-- Test with a mocked server and document usage.
+- Implement `WsAdapter` in `src/adapters/ws/websocket.ts` wrapping `WebSocket` with abort, timeout, and progress callbacks.
+- Export the adapter through `src/adapters/index.ts`.
+- Add tests under `tests/ws.test.ts` using a mocked server in `tests/ws.server.ts`.
 
 ### 7. Attestation verification
 
-- Port PCR0 check and public-key extraction.
-- Add a minimal certificate-chain verifier.
+- Port `parseCertificateSimple` and PCR0 utilities from `common/src/utils/certificate_parsing/` into `src/attestation/verify.ts`.
+- Expose `verifyAttestation(cert: ArrayBuffer, quote: ArrayBuffer)` that returns the public key.
+- Cover the verifier with unit tests in `tests/attestation.test.ts`.
 
 ### 8. Protocol synchronization
 
-- Fetch protocol trees page by page and cache them.
-- Verify computed roots and respect `Retry-After`.
+- Add `src/protocol/sync.ts` with `fetchProtocolTrees(fetchPage, cache)` to paginate and cache trees.
+- Verify roots against `@selfxyz/common/utils/proving` and honor `Retry-After` headers.
+- Write tests in `tests/protocol.test.ts` with a fake server.
 
 ### 9. Artifact management
 
-- Define a manifest format and verify signatures.
-- Download artifacts from an allow-listed CDN and stream-hash data.
+- Describe the manifest JSON schema in `src/artifacts/manifest.ts`.
+- Implement `downloadArtifact(url, storage)` in `src/artifacts/download.ts` that stream-hashes data and verifies signatures with a pinned key.
+- Test manifest verification and streaming in `tests/artifacts.test.ts`.
 
 ### 10. React Native providers and hooks
 
-- Extract `SelfClientProvider` and other contexts from the app.
-- Expose hooks that consume these providers and accept adapter overrides.
+- Move `app/src/providers/selfClientProvider.tsx` into `src/context.tsx` and expose a `SelfClientProvider` that accepts adapter instances (`crypto`, `ws`, `storage`, `logger`).
+- Add hooks like `useSelfClient` and `useDocuments` in `src/hooks/`.
+- Remove the wrapper from the app and import the provider directly from the SDK.
 
 ### 11. Batteries-included components
 
-- Build starter pieces (scanner, buttons) from existing hooks.
-- Allow adapter overrides while keeping defaults.
+- Create `src/components/Scanner.tsx` using `useScanner` and `SelfClientProvider`.
+- Add `src/components/ScanButton.tsx` that triggers MRZ and NFC flows with optional adapter props.
+- Document usage in `docs/components.md`.
 
 ### 12. Sample applications
 
-- Create React Native and web demos showing core flows.
-- Document the `OpenPassport` URL scheme for iOS.
+- Scaffold `examples/react-native/` and `examples/web/` showcasing scan → proof flows.
+- Include iOS `OpenPassport` URL scheme setup in `examples/react-native/README.md`.
+- Ensure both samples use the published SDK rather than local files.
 
 ### 13. In-SDK lightweight demo
 
-- Embed a tiny demo app under the SDK with theming hooks.
-- Include build and run docs.
+- Add `demo/` inside the package with `App.tsx` using `SelfClientProvider` and theming hooks.
+- Provide run instructions in `demo/README.md` for `yarn demo ios` and `yarn demo android`.
+- Wire demo entry in `package.json` scripts.
 
 ## Architecture tasks
 
 ### 4. SDK lifecycle management
 
-- Turn `createSelfClient` into a class with `initialize` and `deinitialize`.
-- Store config on the instance.
+- Refactor `src/client.ts` so `createSelfClient` becomes `class SelfClient` with `initialize()` and `deinitialize()` methods.
+- Persist configuration on the instance rather than module globals.
+- Update exports in `src/index.ts`.
 
 ### 5. Package targets
 
-- Add exports for web builds and keep RN build first.
-- Plan for future targets like Capacitor or Cordova.
+- Add a `"./web"` entry to `package.json#exports` pointing to `dist/web/index.js` while keeping React Native as the default.
+- Update `tsup.config.ts` to produce a web build target.
+- Note possible future targets (Capacitor, Cordova) in comments.
 
 ### 6. Dogfood in `/app`
 
-- Exercise real flows in the monorepo app.
-- Replace remaining MRZ modules with SDK adapters.
+- Update `app/src/utils/proving/provingMachine.ts` and screens in `app/src/screens/prove/` to consume SDK methods.
+- Remove deprecated MRZ utilities from the app and import from `@selfxyz/mobile-sdk-alpha`.
+- Confirm flows via `yarn workspace @selfxyz/mobile-app test`.
 
 ### 7. Android demo app
 
-- Scaffold a minimal RN Android project showing MRZ → proof.
-- Document setup steps.
+- Create `examples/android-demo/` with React Native CLI, wiring scanning and proof generation through the SDK.
+- Provide setup instructions in `examples/android-demo/README.md`.
+- Link the demo in the main `README.md`.
 
 ## Consolidation toward `@selfxyz/common`
 
-- Extract document catalog helpers and keychain wrappers into `@selfxyz/common`.
-- Move analytics and auth adapters to a shared package.
-- Re-export storage types for reuse outside the mobile app.
+- Move `calculateContentHash` and related catalog helpers from `app/src/providers/passportDataProvider.tsx` to `common/src/utils/documents/` and re-export via `@selfxyz/common`.
+- Pull keychain wrappers like `storeDocument` into `common/src/utils/storage/passport.ts`.
+- Publish shared analytics/auth adapters (currently in `app/src/utils/analytics.ts` and `app/src/providers/authProvider.tsx`) through a new package and re-export types from `@selfxyz/common`.
