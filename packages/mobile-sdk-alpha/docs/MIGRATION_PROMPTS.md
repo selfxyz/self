@@ -53,31 +53,25 @@ yarn build
 - Verify roots against `@selfxyz/common/utils/proving` and honor `Retry-After` headers.
 - Write tests in `tests/protocol.test.ts` with a fake server.
 
-### 9. Artifact management
-
-- Describe the manifest JSON schema in `src/artifacts/manifest.ts`.
-- Implement `downloadArtifact(url, storage)` in `src/artifacts/download.ts` that stream-hashes data and verifies signatures with a pinned key.
-- Test manifest verification and streaming in `tests/artifacts.test.ts`.
-
-### 10. React Native providers and hooks
+### 9. React Native providers and hooks
 
 - Move `app/src/providers/selfClientProvider.tsx` into `src/context.tsx` and expose a `SelfClientProvider` that accepts adapter instances (`crypto`, `ws`, `storage`, `logger`).
 - Add hooks like `useSelfClient` and `useDocuments` in `src/hooks/`.
 - Remove the wrapper from the app and import the provider directly from the SDK.
 
-### 11. Batteries-included components
+### 10. Batteries-included components
 
 - Create `src/components/Scanner.tsx` using `useScanner` and `SelfClientProvider`.
 - Add `src/components/ScanButton.tsx` that triggers MRZ and NFC flows with optional adapter props.
 - Document usage in `docs/components.md`.
 
-### 12. Sample applications
+### 11. Sample applications
 
 - Scaffold `examples/react-native/` and `examples/web/` showcasing scan → proof flows.
 - Include iOS `OpenPassport` URL scheme setup in `examples/react-native/README.md`.
 - Ensure both samples use the published SDK rather than local files.
 
-### 13. In-SDK lightweight demo
+### 12. In-SDK lightweight demo
 
 - Add `demo/` inside the package with `App.tsx` using `SelfClientProvider` and theming hooks.
 - Provide run instructions in `demo/README.md` for `yarn demo ios` and `yarn demo android`.

@@ -37,33 +37,25 @@ This is the running to‑do list for the mobile SDK. When you wrap up a task, mo
 - [ ] Rate‑limit with exponential backoff and jitter
 - [ ] Cap memory use and honor `Retry‑After` headers
 
-### 9. Artifact management
-
-- [ ] Define a manifest schema and verify integrity
-- [ ] Download from a CDN with caching and a storage adapter
-- [ ] Verify manifest signatures with a pinned public key before caching
-- [ ] Enforce an allowlist and validate `Content-Length`
-- [ ] Hash streams so we don't buffer large files
-
-### 10. React Native providers and hooks
+### 9. React Native providers and hooks
 
 - [ ] Decouple context providers and hooks from adapter implementations
 - [ ] Move `SelfClientProvider` and its adapters into the SDK, exposing adapter props
 - [ ] Accept adapter instances via props to avoid tight coupling
 - [ ] Map provider boundaries to the architecture tasks for crypto, sessions, attestation, protocol sync, and artifacts
 
-### 11. Batteries‑included components
+### 10. Batteries‑included components
 
 - [ ] Ship minimal components (e.g., scanners, buttons) that compose existing hooks and providers
 - [ ] Expose configuration props for custom adapters while keeping sensible defaults
 - [ ] Link component usage to architecture guidelines and adapter tasks
 
-### 12. Sample applications
+### 11. Sample applications
 
 - [ ] React Native and web demos showcasing core flows
 - [ ] iOS `OpenPassport` URL scheme
 
-### 13. In‑SDK lightweight demo
+### 12. In‑SDK lightweight demo
 
 - [ ] Embed a small React Native demo inside the SDK with theming hooks
 - [ ] Provide build and run instructions
