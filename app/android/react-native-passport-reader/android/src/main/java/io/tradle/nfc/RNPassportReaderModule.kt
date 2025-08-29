@@ -157,7 +157,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     // private var encodePhotoToBase64 = false
     private var scanPromise: Promise? = null
     private var opts: ReadableMap? = null
-
+    private val apduLogger = APDULogger()
+    private var currentSessionId: String? = null
+    
     data class Data(val id: String, val digest: String, val signature: String, val publicKey: String)
 
     data class PassportData(
@@ -173,6 +175,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     init {
       instance = this
       reactContext.addLifecycleEventListener(this)
+      apduLogger.setModuleReference(this)
     }
 
     override fun onCatalystInstanceDestroy() {
@@ -197,6 +200,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
     @ReactMethod
     fun scan(opts: ReadableMap, promise: Promise) {
+        currentSessionId = generateSessionId()
+        
+        apduLogger.setContext("session_id", currentSessionId!!)
+        
         // Log scan start
         logAnalyticsEvent("nfc_scan_started", mapOf(
             "use_can" to (opts.getBoolean(PARAM_USE_CAN) ?: false),
@@ -228,7 +235,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         this.opts = opts
         this.scanPromise = promise
-        Log.d("RNPassportReaderModule", "opts set to: " + opts.toString())
+        // Log.d("RNPassportReaderModule", "opts set to: " + opts.toString())
     }
 
     private fun resetState() {
@@ -341,6 +348,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     false,
                 )
                 Log.e("MY_LOGS", "service gotten")
+                
+                service.addAPDUListener(apduLogger)
+                
                 service.open()
                 Log.e("MY_LOGS", "service opened")
                 logAnalyticsEvent("nfc_passport_service_opened")
@@ -356,6 +366,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                         if (securityInfo is PACEInfo) {
                             Log.e("MY_LOGS", "trying PACE...")
                             eventMessageEmitter(Messages.PACE_STARTED)
+                            apduLogger.setContext("operation", "pace_authentication")
+                            apduLogger.setContext("auth_key_type", authKey.javaClass.simpleName)
+                            
                             // Determine proper PACE key: use CAN key if provided; otherwise derive PACE MRZ key from BAC
                             val paceKeyToUse: PACEKeySpec? = when (authKey) {
                                 is PACEKeySpec -> authKey
@@ -397,6 +410,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     val maxAttempts = 3
 
                     eventMessageEmitter(Messages.BAC_STARTED)
+                    
+                    apduLogger.setContext("operation", "bac_authentication")
+                    apduLogger.setContext("auth_key_type", authKey.javaClass.simpleName)
+                    
                     while (!bacSucceeded && attempts < maxAttempts) {
                         try {
                             attempts++
@@ -469,6 +486,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
 
                 logAnalyticsEvent("nfc_reading_data_groups")
+                
+                apduLogger.setContext("operation", "reading_data_groups")
+                apduLogger.setContext("pace_succeeded", paceSucceeded)
+                apduLogger.setContext("bac_succeeded", bacSucceeded)
+                
                 eventMessageEmitter(Messages.READING_DG1)
                 logAnalyticsEvent("nfc_reading_dg1_started")
                 val dg1In = service.getInputStream(PassportService.EF_DG1)
@@ -547,6 +569,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         private fun doChipAuth(service: PassportService) {
             try {
+                apduLogger.setContext("operation", "chip_authentication")
+                
                 logAnalyticsEvent("nfc_reading_dg14_started")
                 eventMessageEmitter(Messages.READING_DG14)
                 val dg14In = service.getInputStream(PassportService.EF_DG14)
@@ -576,6 +600,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         private fun doPassiveAuth() {
             try {
+                apduLogger.setContext("operation", "passive_authentication")
+                apduLogger.setContext("chip_auth_succeeded", chipAuthSucceeded)
+                
                 logAnalyticsEvent("nfc_passive_auth_started")
                 Log.d(TAG, "Starting passive authentication...")
                 val digest = MessageDigest.getInstance(sodFile.digestAlgorithm)
@@ -713,7 +740,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     scanPromise?.reject("E_SCAN_FAILED", result)
                 }
 
-                resetState()
+            apduLogger.clearContext()
+            
+            resetState()
                 return
             }
 
@@ -823,6 +852,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             eventMessageEmitter(Messages.COMPLETED)
             scanPromise?.resolve(passport)
             eventMessageEmitter(Messages.RESET)
+            
+            apduLogger.clearContext()
+            
             resetState()
         }
     }
@@ -849,7 +881,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         }
     }
 
-    private fun logAnalyticsEvent(eventName: String, params: Map<String, Any> = emptyMap()) {
+    fun logAnalyticsEvent(eventName: String, params: Map<String, Any> = emptyMap()) {
         try {
             val logData = JSONObject()
             logData.put("level", "info")
@@ -901,7 +933,16 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     @ReactMethod
     fun reset() {
         logAnalyticsEvent("nfc_scan_reset")
+        apduLogger.clearContext()
+        
         resetState()
+    }
+    
+    /**
+     * Generate a unique session ID for tracking passport reading sessions
+     */
+    private fun generateSessionId(): String {
+        return "nfc_${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(8)}"
     }
 
     companion object {
