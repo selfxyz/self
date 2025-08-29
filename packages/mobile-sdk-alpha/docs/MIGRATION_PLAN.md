@@ -91,3 +91,9 @@ Here’s the running list of work left for the mobile SDK. When something is fin
 - [ ] Ship a minimal React Native Android project
 - [ ] Demonstrate MRZ → proof generation flow
 - [ ] Provide build and run instructions
+
+## Consolidation toward `@selfxyz/common`
+
+- [ ] Pull document catalog helpers and keychain wrappers out of the app and into `@selfxyz/common`
+- [ ] Share analytics and auth adapters through a common or dedicated package
+- [ ] Re-export storage types so other apps can reuse them without the mobile app context

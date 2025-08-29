@@ -95,3 +95,9 @@ yarn build
 
 - Scaffold a minimal RN Android project showing MRZ → proof.
 - Document setup steps.
+
+## Consolidation toward `@selfxyz/common`
+
+- Extract document catalog helpers and keychain wrappers into `@selfxyz/common`.
+- Move analytics and auth adapters to a shared package.
+- Re-export storage types for reuse outside the mobile app.
