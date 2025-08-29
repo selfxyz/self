@@ -16,7 +16,12 @@ import { packBytesAndPoseidon } from '../../utils/hash/poseidon.js';
 import { hash } from '../../utils/hash/sha.js';
 import { formatMrz } from '../../utils/passports/format.js';
 import { getLeafDscTree } from '../../utils/trees.js';
-import type { DeployedCircuits, DocumentCategory, PassportData } from '../types.js';
+import {
+  AttestationIdHex,
+  type DeployedCircuits,
+  type DocumentCategory,
+  type PassportData,
+} from '../types.js';
 import { generateCommitment, generateNullifier } from './passport.js';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
@@ -146,23 +151,33 @@ export async function isDocumentNullified(passportData: PassportData) {
   const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
   const attestationId =
     passportData.documentCategory === 'passport'
-      ? '0x0000000000000000000000000000000000000000000000000000000000000001'
-      : '0x0000000000000000000000000000000000000000000000000000000000000002';
+      ? AttestationIdHex.passport
+      : AttestationIdHex.id_card;
   console.log('checking for nullifier', nullifierHex, attestationId);
   const baseUrl = passportData.mock === false ? API_URL : API_URL_STAGING;
-  const response = await fetch(`${baseUrl}/is-nullifier-onchain-with-attestation-id`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      nullifier: nullifierHex,
-      attestation_id: attestationId,
-    }),
-  });
-  const data = await response.json();
-  console.log('isDocumentNullified', data);
-  return data.data;
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(`${baseUrl}/is-nullifier-onchain-with-attestation-id`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nullifier: nullifierHex, attestation_id: attestationId }),
+      signal: controller.signal,
+    });
+    clearTimeout(t);
+    if (!response.ok) {
+      throw new Error(`isDocumentNullified non-OK response: ${response.status}`);
+    }
+    const data = await response.json();
+    return Boolean(data?.data);
+  } catch (e) {
+    const erorr = e instanceof Error ? e : new Error(String(e));
+    clearTimeout(t);
+    // re throw so our catcher can get this
+    throw new Error(
+      `isDocumentNullified request failed: ${erorr.name} ${erorr.message} \n ${erorr.stack}`
+    );
+  }
 }
 
 export async function isUserRegistered(
