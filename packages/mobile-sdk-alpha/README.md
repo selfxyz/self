@@ -63,7 +63,7 @@ Track remaining tasks in [MIGRATION_PLAN.md](./docs/MIGRATION_PLAN.md) and see c
 
 ## Architecture
 
-Architecture considerations live in [ARCHITECTURE_PROMPTS.md](./docs/ARCHITECTURE_PROMPTS.md).
+Migration and architecture prompts live in [PROMPTS.md](./docs/PROMPTS.md).
 
 ## Testing
 

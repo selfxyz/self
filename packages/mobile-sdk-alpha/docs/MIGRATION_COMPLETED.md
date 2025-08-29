@@ -1,49 +1,43 @@
 # Completed Mobile SDK Migration Tasks
 
-This record lists migration and architecture tasks that are done. Remaining work lives in [MIGRATION_PLAN.md](./MIGRATION_PLAN.md).
+This log captures what’s already landed. Everything still in flight lives in [MIGRATION_PLAN.md](./MIGRATION_PLAN.md).
 
 ## Migration
 
-### 1. Processing helpers (MRZ)
+### 1. MRZ processing helpers
 
-- Finalized MRZ utilities
-- Re-exported helpers through the SDK entry point
-- Created modular structure with `src/mrz/` and `src/qr/`
-- Implemented error handling using `notImplemented`
-- Used type aliases instead of empty interfaces
+- MRZ utilities are in place and re‑exported through the SDK.
+- The code now lives under `src/mrz/` and `src/qr/`.
+- `notImplemented` guards unfinished paths.
+- Type aliases keep things lean.
 
 ### 2. Validation module
 
-- Ported stateless document checks
-- Covered validation logic with unit tests
+- Stateless document checks were ported and covered by unit tests.
 
 ### 12. Integrate SDK into `/app`
 
-- Consumed `@selfxyz/mobile-sdk-alpha` in the `app` workspace
-- Wired app screens to SDK processing and validation helpers
+- The `app` workspace consumes `@selfxyz/mobile-sdk-alpha`.
+- Screens are wired to SDK processing and validation helpers.
 
 ## Architecture
 
 ### 1. Modular feature directories
 
-- Grouped new capabilities in dedicated folders
-- Re-exported from `src/index.ts` with explicit named exports
-- Created `src/mrz/` and `src/qr/` modules
-- Implemented error handling with `notImplemented`
-- Used type aliases instead of empty interfaces
+- New capabilities sit in dedicated folders and are re‑exported via `src/index.ts`.
+- Error paths use `notImplemented`.
+- Type aliases replaced empty interfaces.
 
 ### 2. Bridge layer for native events
 
-- Wrapped `NativeModules`/`NativeEventEmitter` with shared adapter
-- Created unified event handling interface
-- Implemented platform-specific event bridges
+- `NativeModules` and `NativeEventEmitter` are wrapped in a shared adapter.
+- Platforms share a unified event interface.
 
 ### 3. Exception classes
 
-- Added typed errors (`InitError`, `LivenessError`, `NfcParseError`, `MrzParseError`)
-- Surfaced typed errors instead of generic `Error`
-- Ensured consistent error categorization
+- Added typed errors (`InitError`, `LivenessError`, `NfcParseError`, `MrzParseError`).
+- The SDK now surfaces these instead of generic `Error`.
 
 ### 6. Dogfood in `/app`
 
-- Integrated the SDK into the monorepo's `app` workspace
+- The SDK is integrated into the monorepo’s app for real-world testing.
