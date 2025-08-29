@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { isUserRegistered } from '@selfxyz/common/dist/esm/src/utils/passports/validate';
 import type { PassportData } from '@selfxyz/common/types';
+import { isUserRegistered } from '@selfxyz/common/utils/passports/validate';
 import type { PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';

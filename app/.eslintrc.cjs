@@ -144,7 +144,7 @@ module.exports = {
     // General JavaScript Rules
     // Warn on common issues but don't block development
 
-    'no-console': 'warn',
+    'no-console': 'off',
     'no-empty-pattern': 'off',
     'prefer-const': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
