@@ -17,57 +17,57 @@ yarn build
 
 ## Migration tasks
 
-### 3. Proof input generation
+### 3. Integrate SDK into `/app`
+
+- Swap MRZ modules for SDK adapters.
+- Ensure the app still builds and tests.
+
+### 4. Proof input generation
 
 - Move register and disclose helpers into `src/proving/`.
 - Accept trees and other deps as function arguments.
 - Cover both helpers with unit tests.
 
-### 4. Crypto adapters
+### 5. Crypto adapters
 
 - Define a `CryptoAdapter` interface and a `timingSafeEqual` helper.
 - Implement WebCrypto and noble versions and pick at runtime.
 - Add parity tests between implementations.
 
-### 5. TEE session management
+### 6. TEE session management
 
 - Wrap WebSockets with abort, timeout, and progress support.
 - Test with a mocked server and document usage.
 
-### 6. Attestation verification
+### 7. Attestation verification
 
 - Port PCR0 check and public-key extraction.
 - Add a minimal certificate-chain verifier.
 
-### 7. Protocol synchronization
+### 8. Protocol synchronization
 
 - Fetch protocol trees page by page and cache them.
 - Verify computed roots and respect `Retry-After`.
 
-### 8. Artifact management
+### 9. Artifact management
 
 - Define a manifest format and verify signatures.
 - Download artifacts from an allow-listed CDN and stream-hash data.
 
-### 9. React Native providers and hooks
+### 10. React Native providers and hooks
 
-- Extract providers for crypto, sessions, attestation, protocol sync, and artifacts.
-- Expose hooks that consume those contexts.
+- Extract `SelfClientProvider` and other contexts from the app.
+- Expose hooks that consume these providers and accept adapter overrides.
 
-### 10. Batteries-included components
+### 11. Batteries-included components
 
 - Build starter pieces (scanner, buttons) from existing hooks.
 - Allow adapter overrides while keeping defaults.
 
-### 11. Sample applications
+### 12. Sample applications
 
 - Create React Native and web demos showing core flows.
 - Document the `OpenPassport` URL scheme for iOS.
-
-### 12. Integrate SDK into `/app`
-
-- Swap MRZ modules for SDK adapters.
-- Ensure the app still builds and tests.
 
 ### 13. In-SDK lightweight demo
 

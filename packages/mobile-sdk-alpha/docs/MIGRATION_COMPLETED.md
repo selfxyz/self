@@ -15,7 +15,7 @@ This log captures what’s already landed. Everything still in flight lives in [
 
 - Stateless document checks were ported and covered by unit tests.
 
-### 12. Integrate SDK into `/app`
+### 3. Integrate SDK into `/app`
 
 - The `app` workspace consumes `@selfxyz/mobile-sdk-alpha`.
 - Screens are wired to SDK processing and validation helpers.
@@ -37,7 +37,3 @@ This log captures what’s already landed. Everything still in flight lives in [
 
 - Added typed errors (`InitError`, `LivenessError`, `NfcParseError`, `MrzParseError`).
 - The SDK now surfaces these instead of generic `Error`.
-
-### 6. Dogfood in `/app`
-
-- The SDK is integrated into the monorepo’s app for real-world testing.

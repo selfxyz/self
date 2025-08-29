@@ -4,11 +4,16 @@ Here’s the running list of work left for the mobile SDK. When something is fin
 
 ## Migration tasks
 
-### 3. Proof input generation
+### 3. Integrate SDK into `/app`
+
+- [ ] Replace MRZ modules with SDK adapters
+- [ ] Validate builds and unit tests
+
+### 4. Proof input generation
 
 - [ ] Port helpers that prepare register and disclose inputs for the TEE
 
-### 4. Crypto adapters
+### 5. Crypto adapters
 
 - [ ] Choose between WebCrypto and noble implementations at runtime
 - [ ] Cross-check results between implementations
@@ -16,23 +21,23 @@ Here’s the running list of work left for the mobile SDK. When something is fin
 - [ ] Guarantee random bytes come from a CSPRNG
 - [ ] Compare secrets with a timing-safe helper
 
-### 5. TEE session management
+### 6. TEE session management
 
 - [ ] Wrap WebSockets to handle aborts, timeouts, and progress events
 
-### 6. Attestation verification
+### 7. Attestation verification
 
 - [ ] Check PCR0 and extract the public key
 - [ ] Add a lightweight certificate chain check
 
-### 7. Protocol synchronization
+### 8. Protocol synchronization
 
 - [ ] Fetch protocol trees with pagination and a TTL cache
 - [ ] Verify computed roots against server data
 - [ ] Rate-limit with exponential backoff and jitter
 - [ ] Cap memory use and honor `Retry-After` headers
 
-### 8. Artifact management
+### 9. Artifact management
 
 - [ ] Define a manifest schema and verify integrity
 - [ ] Download from a CDN with caching and a storage adapter
@@ -40,27 +45,23 @@ Here’s the running list of work left for the mobile SDK. When something is fin
 - [ ] Enforce an allowlist and validate `Content-Length`
 - [ ] Hash streams to avoid buffering large files
 
-### 9. React Native providers and hooks
+### 10. React Native providers and hooks
 
 - [ ] Decouple context providers and hooks from adapter implementations
+- [ ] Move `SelfClientProvider` and its adapters into the SDK, exposing adapter props
 - [ ] Accept adapter instances via props to avoid tight coupling
 - [ ] Map provider boundaries to the architecture tasks for crypto, sessions, attestation, protocol sync, and artifacts
 
-### 10. Batteries-included components
+### 11. Batteries-included components
 
 - [ ] Ship minimal components (e.g., scanners, buttons) that compose existing hooks and providers
 - [ ] Expose configuration props for custom adapters while keeping sane defaults
 - [ ] Link component usage to architecture guidelines and adapter tasks
 
-### 11. Sample applications
+### 12. Sample applications
 
 - [ ] React Native and web demos showcasing core flows
 - [ ] iOS `OpenPassport` URL scheme
-
-### 12. Integrate SDK into `/app`
-
-- [ ] Replace MRZ modules with SDK adapters
-- [ ] Validate builds and unit tests
 
 ### 13. In-SDK lightweight demo
 
