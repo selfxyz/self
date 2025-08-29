@@ -1,6 +1,6 @@
 # Architecture Prompts
 
-Each item from the architecture checklist expands into concrete tasks. Pick items independently to parallelize work.
+The [MIGRATION_PLAN.md](./MIGRATION_PLAN.md) tracks remaining architecture work alongside migration tasks. The sections below expand those items so agents can take on tasks independently. Completed items are documented in [MIGRATION_COMPLETED.md](./MIGRATION_COMPLETED.md).
 
 > **Note**: This document uses standard Markdown `<details>` and `<summary>` tags for collapsible sections.
 
@@ -16,36 +16,6 @@ yarn workspace @selfxyz/mobile-sdk-alpha test
 yarn lint
 yarn build
 ```
-
-## 1. Modular feature directories ✅ COMPLETED
-
-<details>
-<summary><strong>Split features into dedicated folders</strong></summary>
-
-1. ✅ Under `src/`, create folders like `mrz/` and `qr/` as features are added.
-2. ✅ Re-export feature APIs from `src/index.ts` using explicit named exports to keep tree shaking intact.
-
-</details>
-
-## 2. Bridge layer for native events ✅ COMPLETED
-
-<details>
-<summary><strong>Introduce shared event bridge</strong></summary>
-
-1. ✅ Add `src/bridge/nativeEvents.ts` wrapping `NativeModules` and `NativeEventEmitter`.
-2. ✅ Expose `addListener` and `removeListener` helpers so modules can register without touching React Native directly.
-
-</details>
-
-## 3. Exception classes ✅ COMPLETED
-
-<details>
-<summary><strong>Add typed error hierarchy</strong></summary>
-
-1. ✅ Create `src/errors/` with classes like `InitError` and `LivenessError` extending `Error`.
-2. ✅ Replace generic throws with these classes and document them in the README.
-
-</details>
 
 ## 4. SDK lifecycle management
 
@@ -72,8 +42,8 @@ yarn build
 <details>
 <summary><strong>Integrate with monorepo app</strong></summary>
 
-1. ✅ Add `@selfxyz/mobile-sdk-alpha` to `app/package.json` and wire flows to use the SDK.
-2. Validate builds and tests in the `app` workspace.
+1. Validate builds and tests in the `app` workspace.
+2. Replace existing MRZ modules with SDK adapters.
 
 </details>
 

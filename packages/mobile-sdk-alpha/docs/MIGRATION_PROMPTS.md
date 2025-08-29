@@ -1,6 +1,6 @@
 # Migration Prompts
 
-Each chapter from the migration checklist includes granular tasks below. Pick tasks independently to parallelize work.
+The [MIGRATION_PLAN.md](./MIGRATION_PLAN.md) lists remaining work. The sections below expand those items so agents can pick tasks independently and work in parallel. Completed tasks live in [MIGRATION_COMPLETED.md](./MIGRATION_COMPLETED.md).
 
 > **Note**: This document uses standard Markdown `<details>` and `<summary>` tags for collapsible task sections, ensuring proper rendering on GitHub and other Markdown viewers.
 
@@ -21,55 +21,6 @@ yarn workspace @selfxyz/mobile-sdk-alpha test
 yarn lint
 yarn build
 ```
-
-## 1. Processing helpers (MRZ) ✅ COMPLETED
-
-<details>
-<summary><strong>Test MRZ parsing utilities</strong></summary>
-
-1. In `tests/processing/`, add test cases for `extractMRZInfo` and `formatDateToYYMMDD` covering valid/invalid inputs.
-2. Use sample MRZ strings from ICAO specs for fixtures.
-
-</details>
-
-<details>
-<summary><strong>Expose processing utilities</strong></summary>
-
-1. ✅ Update `src/index.ts` to re-export MRZ helpers.
-2. ✅ Create modular structure with `src/mrz/` and `src/qr/` modules.
-3. ✅ Implement proper error handling using `notImplemented` helper.
-4. ✅ Use type aliases instead of empty interfaces for better tree shaking.
-5. ✅ Document them in `README.md` under a "Processing utilities" section.
-
-</details>
-
-## 2. Validation module ✅ COMPLETED
-
-<details>
-<summary><strong>Port minimal document validation</strong></summary>
-
-1. ✅ Create `src/validation/document.ts`.
-2. ✅ Port `isPassportDataValid` logic without analytics or store calls.
-3. ✅ Type the function using `PassportData` from `src/types/public.ts`.
-
-</details>
-
-<details>
-  <summary><strong>Test document validation</strong></summary>
-
-1. ✅ Add `tests/validation/document.test.ts` with cases for missing metadata and hash mismatches.
-2. ✅ Run via `yarn workspace @selfxyz/mobile-sdk-alpha test`.
-
-</details>
-
-<details>
-<summary><strong>Add validation callbacks</strong></summary>
-
-1. ✅ Extend `isPassportDataValid` to accept per-error callbacks (e.g., `onPassportMetadataNull`).
-2. ✅ Use these hooks in the app to forward analytics events.
-3. ✅ Cover callback invocations in unit tests.
-
-</details>
 
 ## 3. Proof input generation
 
@@ -288,10 +239,8 @@ yarn build
 <details>
 <summary><strong>Integrate SDK in /app</strong></summary>
 
-1. ✅ Add `@selfxyz/mobile-sdk-alpha` to `app/package.json`.
-2. Replace existing MRZ scanning modules with SDK adapters.
-3. ✅ Wire app screens to SDK processing and validation helpers (e.g., `loadSelectedDocument`).
-4. Validate builds and unit tests in the `app` workspace.
+1. Replace existing MRZ scanning modules with SDK adapters.
+2. Validate builds and unit tests in the `app` workspace.
 
 </details>
 
