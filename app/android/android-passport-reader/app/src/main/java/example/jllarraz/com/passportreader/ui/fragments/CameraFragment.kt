@@ -108,39 +108,6 @@ abstract class CameraFragment : androidx.fragment.app.Fragment(), ActivityCompat
 
     }
 
-    private fun setZoomProperties(zoom: Zoom.VariableZoom) {
-        cameraZoom = zoom
-        setZoomProgress(zoomProgress, cameraZoom!!)
-
-    }
-
-
-    private fun setZoomProgress(progress: Int, zoom: Zoom.VariableZoom) {
-        zoomProgress = progress
-        fotoapparat?.setZoom(progress.toFloat() / zoom.maxZoom)
-    }
-
-
-    /** Determine the space between the first two fingers  */
-    private fun getFingerSpacing(event: MotionEvent): Float {
-        // ...
-        val x = event.getX(0) - event.getX(1)
-        val y = event.getY(0) - event.getY(1)
-
-        return Math.sqrt((x * x + y * y).toDouble()).toFloat()
-    }
-
-
-    protected fun setFlash(isEnable: Boolean) {
-        configuration = configuration.copy(flashMode = if (isEnable) torch() else off())
-        fotoapparat?.updateConfiguration(configuration)
-    }
-
-    protected fun setFocusMode(focusModeSelector: FocusModeSelector) {
-        configuration = configuration.copy(focusMode = focusModeSelector)
-        fotoapparat?.updateConfiguration(configuration)
-    }
-
     override fun onResume() {
         super.onResume()
 
@@ -178,6 +145,37 @@ abstract class CameraFragment : androidx.fragment.app.Fragment(), ActivityCompat
 
     }
 
+    protected fun setFlash(isEnable: Boolean) {
+        configuration = configuration.copy(flashMode = if (isEnable) torch() else off())
+        fotoapparat?.updateConfiguration(configuration)
+    }
+
+    protected fun setFocusMode(focusModeSelector: FocusModeSelector) {
+        configuration = configuration.copy(focusMode = focusModeSelector)
+        fotoapparat?.updateConfiguration(configuration)
+    }
+
+    private fun setZoomProperties(zoom: Zoom.VariableZoom) {
+        cameraZoom = zoom
+        setZoomProgress(zoomProgress, cameraZoom!!)
+
+    }
+
+
+    private fun setZoomProgress(progress: Int, zoom: Zoom.VariableZoom) {
+        zoomProgress = progress
+        fotoapparat?.setZoom(progress.toFloat() / zoom.maxZoom)
+    }
+
+
+    /** Determine the space between the first two fingers  */
+    private fun getFingerSpacing(event: MotionEvent): Float {
+        // ...
+        val x = event.getX(0) - event.getX(1)
+        val y = event.getY(0) - event.getY(1)
+
+        return Math.sqrt((x * x + y * y).toDouble()).toFloat()
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -246,24 +244,6 @@ abstract class CameraFragment : androidx.fragment.app.Fragment(), ActivityCompat
     //
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    protected fun hasCameraPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(context!!, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-    }
-
-    protected fun checkPermissions(permissions: ArrayList<String> = ArrayList()) {
-        //request permission
-        val hasPermissionCamera = ContextCompat.checkSelfPermission(context!!,
-                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-        if (!hasPermissionCamera && !permissions.contains(Manifest.permission.CAMERA)) {
-            permissions.add(Manifest.permission.CAMERA)
-        }
-
-        if (permissions.isNotEmpty()) {
-            requestPermissions(permissions.toArray(arrayOf<String>()),
-                    REQUEST_PERMISSIONS)
-        }
-    }
-
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>,
                                             grantResults: IntArray) {
@@ -310,22 +290,30 @@ abstract class CameraFragment : androidx.fragment.app.Fragment(), ActivityCompat
                 .show(childFragmentManager, FRAGMENT_DIALOG)
     }
 
+    protected fun hasCameraPermission(): Boolean {
+        return ContextCompat.checkSelfPermission(context!!, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
+    }
+
+    protected fun checkPermissions(permissions: ArrayList<String> = ArrayList()) {
+        //request permission
+        val hasPermissionCamera = ContextCompat.checkSelfPermission(context!!,
+                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        if (!hasPermissionCamera && !permissions.contains(Manifest.permission.CAMERA)) {
+            permissions.add(Manifest.permission.CAMERA)
+        }
+
+        if (permissions.isNotEmpty()) {
+            requestPermissions(permissions.toArray(arrayOf<String>()),
+                    REQUEST_PERMISSIONS)
+        }
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////
     //
     //        Dialogs UI
     //
     ////////////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Shows a [Toast] on the UI thread.
-     *
-     * @param text The message to show
-     */
-    private fun showToast(text: String) {
-        val activity = activity
-        activity?.runOnUiThread { Toast.makeText(activity, text, Toast.LENGTH_SHORT).show() }
-    }
 
     /**
      * Shows an error message dialog.
@@ -400,6 +388,16 @@ abstract class CameraFragment : androidx.fragment.app.Fragment(), ActivityCompat
         } catch (e: Exception) {
         }
         return 0
+    }
+
+    /**
+     * Shows a [Toast] on the UI thread.
+     *
+     * @param text The message to show
+     */
+    private fun showToast(text: String) {
+        val activity = activity
+        activity?.runOnUiThread { Toast.makeText(activity, text, Toast.LENGTH_SHORT).show() }
     }
 
 
