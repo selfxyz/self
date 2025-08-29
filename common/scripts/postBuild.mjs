@@ -1,6 +1,7 @@
-import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
 import { shimConfigs } from './shimConfigs.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -25,6 +26,7 @@ const distPackageJson = {
     '.': './esm/index.js',
     './constants': './esm/src/constants/index.js',
     './utils': './esm/src/utils/index.js',
+    './utils/passports/validate': './esm/src/utils/passports/validate.js',
     './types': './esm/src/types/index.js',
   },
 };

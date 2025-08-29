@@ -182,6 +182,7 @@ export interface ScannerAdapter {
 export interface DocumentsAdapter {
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   loadDocumentById(id: string): Promise<PassportData | null>;
+  saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
 }
 
 export interface SelfClient {
@@ -206,6 +207,7 @@ export interface SelfClient {
 
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   loadDocumentById(id: string): Promise<PassportData | null>;
+  saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

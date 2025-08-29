@@ -20,7 +20,7 @@ import {
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
 } from '@selfxyz/common/constants';
-import type { OfacTree } from '@selfxyz/common/utils/types';
+import type { DeployedCircuits, OfacTree } from '@selfxyz/common/utils/types';
 
 import { fetchOfacTrees } from '@/utils/ofac';
 
@@ -29,7 +29,7 @@ interface ProtocolState {
     commitment_tree: any;
     dsc_tree: any;
     csca_tree: string[][] | null;
-    deployed_circuits: any;
+    deployed_circuits: DeployedCircuits | null;
     circuits_dns_mapping: any;
     alternative_csca: Record<string, string>;
     ofac_trees: OfacTree | null;
@@ -49,7 +49,7 @@ interface ProtocolState {
     commitment_tree: any;
     dsc_tree: any;
     csca_tree: string[][] | null;
-    deployed_circuits: any;
+    deployed_circuits: DeployedCircuits | null;
     circuits_dns_mapping: any;
     alternative_csca: Record<string, string>;
     ofac_trees: OfacTree | null;

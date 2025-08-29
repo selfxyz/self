@@ -18,6 +18,13 @@ import {
 } from '@selfxyz/common/utils';
 import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
 import {
+  checkDocumentSupported,
+  checkIfPassportDscIsInTree,
+  isDocumentNullified,
+  isUserRegistered,
+  isUserRegisteredWithAlternativeCSCA,
+} from '@selfxyz/common/utils/passports/validate';
+import {
   clientKey,
   clientPublicKeyHex,
   ec,
@@ -27,6 +34,7 @@ import {
 } from '@selfxyz/common/utils/proving';
 import {
   hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
   SelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -38,7 +46,6 @@ import { navigationRef } from '@/navigation';
 // will need to be passed in from selfClient
 import {
   clearPassportData,
-  loadSelectedDocument,
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
@@ -50,13 +57,6 @@ import {
   generateTEEInputsDSC,
   generateTEEInputsRegister,
 } from '@/utils/proving/provingInputs';
-import {
-  checkIfPassportDscIsInTree,
-  checkPassportSupported,
-  isDocumentNullified,
-  isUserRegistered,
-  isUserRegisteredWithAlternativeCSCA,
-} from '@/utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 
@@ -642,7 +642,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       actor.start();
 
       trackEvent(ProofEvents.DOCUMENT_LOAD_STARTED);
-      const selectedDocument = await loadSelectedDocument();
+      const selectedDocument = await loadSelectedDocument(selfClient);
       if (!selectedDocument) {
         console.error('No document found for proving');
         trackEvent(PassportEvents.PASSPORT_DATA_NOT_FOUND, { stage: 'init' });
@@ -711,7 +711,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (!passportData) {
           throw new Error('PassportData is not available');
         }
-        const isSupported = await checkPassportSupported(passportData);
+        const isSupported = await checkDocumentSupported(passportData, {
+          getDeployedCircuits: (documentCategory: DocumentCategory) =>
+            useProtocolStore.getState()[documentCategory].deployed_circuits!,
+        });
         if (isSupported.status !== 'passport_supported') {
           console.error(
             'Passport not supported:',
@@ -726,13 +729,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           actor!.send({ type: 'PASSPORT_NOT_SUPPORTED' });
           return;
         }
-
+        const getCommitmentTree = (documentCategory: DocumentCategory) =>
+          useProtocolStore.getState()[documentCategory].commitment_tree;
         /// disclosure
         if (circuitType === 'disclose') {
           // check if the user is registered using the csca from the passport data.
           const isRegisteredWithLocalCSCA = await isUserRegistered(
             passportData,
             secret as string,
+            getCommitmentTree,
           );
           if (isRegisteredWithLocalCSCA) {
             trackEvent(ProofEvents.VALIDATION_SUCCESS);
@@ -750,6 +755,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             await isUserRegisteredWithAlternativeCSCA(
               passportData,
               secret as string,
+              {
+                getCommitmentTree,
+                getAltCSCA: docType =>
+                  useProtocolStore.getState()[docType].alternative_csca,
+              },
             );
           if (isRegistered) {
             reStorePassportDataWithRightCSCA(passportData, csca as string);

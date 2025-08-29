@@ -13,6 +13,7 @@ import React
 import NFCPassportReader
 #endif
 import Security
+import Mixpanel
 
 #if !E2E_TESTING
 @available(iOS 13, macOS 10.15, *)
@@ -46,10 +47,27 @@ class PassportReader: NSObject {
         super.init()
     }
 
+    private var analytics: SelfAnalytics?
+
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
         let analytics = SelfAnalytics(token: token, enableDebugLogs: enableDebugLogs)
+        self.analytics = analytics
         self.passportReader = NFCPassportReader.PassportReader(analytics: analytics)
+    }
+
+    @objc(trackEvent:properties:)
+    func trackEvent(_ name: String, properties: [String: Any]?) {
+        if let mpProps = properties as? Properties {
+            analytics?.trackEvent(name, properties: mpProps)
+        } else {
+            analytics?.trackEvent(name, properties: nil)
+        }
+    }
+
+    @objc(flush)
+    func flush() {
+        analytics?.flush()
     }
 
     func getMRZKey(passportNumber: String, dateOfBirth: String, dateOfExpiry: String ) -> String {

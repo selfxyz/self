@@ -9,6 +9,7 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -20,6 +21,7 @@ import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import { useProtocolStore } from '@/stores/protocolStore';
 import {
   black,
   slate300,
@@ -28,7 +30,6 @@ import {
   slate700,
   white,
 } from '@/utils/colors';
-import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
 
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -65,6 +66,14 @@ const RecoverWithPhraseScreen: React.FC = () => {
     const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
       passportData,
       secret as string,
+      {
+        getCommitmentTree(docCategory) {
+          return useProtocolStore.getState()[docCategory].commitment_tree;
+        },
+        getAltCSCA(docCategory) {
+          return useProtocolStore.getState()[docCategory].alternative_csca;
+        },
+      },
     );
     if (!isRegistered) {
       console.warn(

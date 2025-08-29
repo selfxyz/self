@@ -56,6 +56,7 @@ export const mockCrypto: CryptoAdapter = {
 export const mockDocuments: DocumentsAdapter = {
   loadDocumentCatalog: async () => ({ documents: [] }),
   loadDocumentById: async () => null,
+  saveDocumentCatalog: () => Promise.resolve(),
 };
 
 const mockAuth = {

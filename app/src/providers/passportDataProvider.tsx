@@ -59,12 +59,8 @@ import type {
   DocumentMetadata,
   PassportData,
 } from '@selfxyz/common/utils/types';
-import {
-  DocumentsAdapter,
-  getAllDocuments,
-  SelfClient,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 
@@ -312,7 +308,7 @@ export async function clearPassportData() {
   }
 
   // Clear catalog
-  await saveDocumentCatalog({ documents: [] });
+  await saveDocumentCatalogDirectlyToKeychain({ documents: [] });
 }
 
 export async function clearSpecificPassportData(documentType: string) {
@@ -341,7 +337,7 @@ export async function deleteDocument(documentId: string): Promise<void> {
     }
   }
 
-  await saveDocumentCatalog(catalog);
+  await saveDocumentCatalogDirectlyToKeychain(catalog);
 
   // Delete the actual document
   try {
@@ -474,6 +470,7 @@ export async function loadDocumentByIdDirectlyFromKeychain(
 export const selfClientDocumentsAdapter: DocumentsAdapter = {
   loadDocumentCatalog: loadDocumentCatalogDirectlyFromKeychain,
   loadDocumentById: loadDocumentByIdDirectlyFromKeychain,
+  saveDocumentCatalog: saveDocumentCatalogDirectlyToKeychain,
 };
 
 export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<DocumentCatalog> {
@@ -516,7 +513,7 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
 
 export async function loadPassportData() {
   // Try new system first
-  const selected = await loadSelectedDocument();
+  const selected = await loadSelectedDocumentDirectlyFromKeychain();
   if (selected) {
     return JSON.stringify(selected.data);
   }
@@ -568,7 +565,7 @@ export async function loadPassportDataAndSecret() {
   });
 }
 
-export async function loadSelectedDocument(): Promise<{
+export async function loadSelectedDocumentDirectlyFromKeychain(): Promise<{
   data: PassportData;
   metadata: DocumentMetadata;
 } | null> {
@@ -580,7 +577,8 @@ export async function loadSelectedDocument(): Promise<{
     if (catalog.documents.length > 0) {
       console.log('Using first document as fallback');
       catalog.selectedDocumentId = catalog.documents[0].id;
-      await saveDocumentCatalog(catalog);
+
+      await saveDocumentCatalogDirectlyToKeychain(catalog);
     } else {
       console.log('No documents in catalog, returning null');
       return null;
@@ -612,7 +610,7 @@ export async function loadSelectedDocument(): Promise<{
 
 export async function loadSelectedPassportData(): Promise<string | false> {
   // Try new system first
-  const selected = await loadSelectedDocument();
+  const selected = await loadSelectedDocumentDirectlyFromKeychain();
   if (selected) {
     return JSON.stringify(selected.data);
   }
@@ -765,7 +763,7 @@ export async function reStorePassportDataWithRightCSCA(
   }
 }
 
-export async function saveDocumentCatalog(
+export async function saveDocumentCatalogDirectlyToKeychain(
   catalog: DocumentCatalog,
 ): Promise<void> {
   await Keychain.setGenericPassword('catalog', JSON.stringify(catalog), {
@@ -787,7 +785,7 @@ export async function setSelectedDocument(documentId: string): Promise<void> {
 
   if (metadata) {
     catalog.selectedDocumentId = documentId;
-    await saveDocumentCatalog(catalog);
+    await saveDocumentCatalogDirectlyToKeychain(catalog);
 
     notifyDocumentChange(metadata.mock);
   }
@@ -817,7 +815,7 @@ export async function storeDocumentWithDeduplication(
 
     // Update selected document to this one
     catalog.selectedDocumentId = contentHash;
-    await saveDocumentCatalog(catalog);
+    await saveDocumentCatalogDirectlyToKeychain(catalog);
     return contentHash;
   }
 
@@ -840,7 +838,7 @@ export async function storeDocumentWithDeduplication(
 
   catalog.documents.push(metadata);
   catalog.selectedDocumentId = contentHash;
-  await saveDocumentCatalog(catalog);
+  await saveDocumentCatalogDirectlyToKeychain(catalog);
 
   return contentHash;
 }
@@ -858,7 +856,7 @@ export async function updateDocumentRegistrationState(
 
   if (documentIndex !== -1) {
     catalog.documents[documentIndex].isRegistered = isRegistered;
-    await saveDocumentCatalog(catalog);
+    await saveDocumentCatalogDirectlyToKeychain(catalog);
     console.log(
       `Updated registration state for document ${documentId}: ${isRegistered}`,
     );

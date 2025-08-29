@@ -190,4 +190,5 @@ const auth: AuthAdapter = {
 const documents: DocumentsAdapter = {
   loadDocumentCatalog: async () => ({ documents: [] }),
   loadDocumentById: async () => null,
+  saveDocumentCatalog: async () => {},
 };

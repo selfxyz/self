@@ -7,7 +7,7 @@
  * These tests verify critical interface requirements without conditional expects
  */
 
-import { PassportReader } from 'react-native-passport-reader';
+import { PassportReader } from '@/utils/passportReader';
 
 describe('PassportReader Simple Contract Tests', () => {
   describe('Critical Interface Requirements', () => {

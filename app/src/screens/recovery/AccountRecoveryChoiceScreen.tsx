@@ -6,6 +6,7 @@ import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -23,10 +24,10 @@ import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import { useProtocolStore } from '@/stores/protocolStore';
 import { useSettingStore } from '@/stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
-import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();
@@ -60,6 +61,14 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
         passportData,
         secret,
+        {
+          getCommitmentTree(docCategory) {
+            return useProtocolStore.getState()[docCategory].commitment_tree;
+          },
+          getAltCSCA(docCategory) {
+            return useProtocolStore.getState()[docCategory].alternative_csca;
+          },
+        },
       );
       if (!isRegistered) {
         console.warn(

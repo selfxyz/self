@@ -57,13 +57,13 @@ The SDK surfaces typed errors for clearer diagnostics:
 
 All errors extend `SdkError`, which includes a `code`, `category`, and `retryable` flag.
 
-## Migration checklist
+## Migration plan
 
-Track progress in [MIGRATION_CHECKLIST.md](./docs/MIGRATION_CHECKLIST.md).
+Track remaining tasks in [MIGRATION_PLAN.md](./docs/MIGRATION_PLAN.md) and see completed work in [MIGRATION_COMPLETED.md](./docs/MIGRATION_COMPLETED.md).
 
-## Architecture checklist
+## Architecture
 
-Plan implementation with [ARCHITECTURE.md](./docs/ARCHITECTURE.md) and task prompts in [ARCHITECTURE_PROMPTS.md](./docs/ARCHITECTURE_PROMPTS.md).
+Migration and architecture prompts live in [PROMPTS.md](./docs/PROMPTS.md).
 
 ## Testing
 

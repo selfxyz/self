@@ -50,3 +50,41 @@ export const hasAnyValidRegisteredDocument = async (client: SelfClient): Promise
     return false;
   }
 };
+
+export const loadSelectedDocument = async (
+  selfClient: SelfClient,
+): Promise<{
+  data: PassportData;
+  metadata: DocumentMetadata;
+} | null> => {
+  const catalog = await selfClient.loadDocumentCatalog();
+  console.log('Catalog loaded');
+
+  if (!catalog.selectedDocumentId) {
+    console.log('No selectedDocumentId found');
+    if (catalog.documents.length > 0) {
+      console.log('Using first document as fallback');
+      catalog.selectedDocumentId = catalog.documents[0].id;
+
+      await selfClient.saveDocumentCatalog(catalog);
+    } else {
+      console.log('No documents in catalog, returning null');
+      return null;
+    }
+  }
+
+  const metadata = catalog.documents.find(d => d.id === catalog.selectedDocumentId);
+  if (!metadata) {
+    console.log('Metadata not found for selectedDocumentId:', catalog.selectedDocumentId);
+    return null;
+  }
+
+  const data = await selfClient.loadDocumentById(catalog.selectedDocumentId);
+  if (!data) {
+    console.log('Document data not found for id:', catalog.selectedDocumentId);
+    return null;
+  }
+
+  console.log('Successfully loaded document:', metadata.documentType);
+  return { data, metadata };
+};

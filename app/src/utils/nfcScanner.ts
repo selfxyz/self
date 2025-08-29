@@ -4,15 +4,15 @@
 
 import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
-import {
-  PassportReader,
-  reset,
-  scan as scanDocument,
-} from 'react-native-passport-reader';
 
 import type { PassportData } from '@selfxyz/common/types';
 
 import { configureNfcAnalytics } from '@/utils/analytics';
+import {
+  PassportReader,
+  reset,
+  scan as scanDocument,
+} from '@/utils/passportReader';
 
 interface AndroidScanResponse {
   mrz: string;
@@ -57,6 +57,14 @@ export const scan = async (inputs: Inputs) => {
 
 const scanAndroid = async (inputs: Inputs) => {
   reset();
+
+  if (!scanDocument) {
+    console.warn(
+      'Android passport scanner is not available - native module failed to load',
+    );
+    return Promise.reject(new Error('NFC scanning is currently unavailable.'));
+  }
+
   return await scanDocument({
     documentNumber: inputs.passportNumber,
     dateOfBirth: inputs.dateOfBirth,
@@ -67,6 +75,17 @@ const scanAndroid = async (inputs: Inputs) => {
 };
 
 const scanIOS = async (inputs: Inputs) => {
+  if (!PassportReader?.scanPassport) {
+    console.warn(
+      'iOS passport scanner is not available - native module failed to load',
+    );
+    return Promise.reject(
+      new Error(
+        'NFC scanning is currently unavailable. Please ensure the app is properly installed.',
+      ),
+    );
+  }
+
   return await Promise.resolve(
     PassportReader.scanPassport(
       inputs.passportNumber,

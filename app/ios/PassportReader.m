@@ -15,6 +15,11 @@
 RCT_EXTERN_METHOD(configure:(NSString *)token
                   enableDebugLogs:(BOOL)enableDebugLogs)
 
+RCT_EXTERN_METHOD(trackEvent:(NSString *)name
+                  properties:(NSDictionary *)properties)
+
+RCT_EXTERN_METHOD(flush)
+
 RCT_EXTERN_METHOD(scanPassport:(NSString *)passportNumber
                   dateOfBirth:(NSString *)dateOfBirth
                   dateOfExpiry:(NSString *)dateOfExpiry

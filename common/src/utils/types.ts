@@ -1,14 +1,19 @@
 import type { CertificateData } from './certificate_parsing/dataStructure.js';
 import type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 
-export type DocumentCategory = 'passport' | 'id_card';
-
-export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
+export type DeployedCircuits = {
+  REGISTER: string[];
+  REGISTER_ID: string[];
+  DSC: string[];
+  DSC_ID: string[];
+};
 
 export interface DocumentCatalog {
   documents: DocumentMetadata[];
   selectedDocumentId?: string; // This is now a contentHash
 }
+
+export type DocumentCategory = 'passport' | 'id_card';
 
 export interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication
@@ -18,6 +23,8 @@ export interface DocumentMetadata {
   mock: boolean; // whether this is a mock document
   isRegistered?: boolean; // whether the document is registered onChain
 }
+
+export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
 
 export type OfacTree = {
   passportNoAndNationality: any;
@@ -99,6 +106,13 @@ export type SignatureAlgorithm =
   | 'ecdsa_sha256_brainpoolP224r1_224'
   | 'ecdsa_sha384_brainpoolP512r1_512'
   | 'ecdsa_sha512_brainpoolP512r1_512';
+
+// keys should match DocumentCategory
+export enum AttestationIdHex {
+  invalid = '0x0000000000000000000000000000000000000000000000000000000000000000',
+  passport = '0x0000000000000000000000000000000000000000000000000000000000000001',
+  id_card = '0x0000000000000000000000000000000000000000000000000000000000000002',
+}
 
 export function castCSCAProof(proof: any): Proof {
   return {

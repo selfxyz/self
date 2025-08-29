@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   build-deps:
-    runs-on: macos-latest
+    runs-on: macos-latest-large
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
@@ -159,7 +159,7 @@ jobs:
         run: yarn test
         working-directory: ./app
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-latest-large
     needs: build-deps
     env:
       # iOS project configuration - hardcoded for CI stability

@@ -237,7 +237,30 @@ NativeModules.PassportReader = {
   scanPassport: jest.fn(),
   trackEvent: jest.fn(),
   flush: jest.fn(),
+  reset: jest.fn(),
 };
+
+// Mock @/utils/passportReader to properly expose the interface expected by tests
+jest.mock('./src/utils/passportReader', () => {
+  const mockScanPassport = jest.fn();
+  // Mock the parameter count for scanPassport (iOS native method takes 9 parameters)
+  Object.defineProperty(mockScanPassport, 'length', { value: 9 });
+
+  const mockPassportReader = {
+    configure: jest.fn(),
+    scanPassport: mockScanPassport,
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  };
+
+  return {
+    PassportReader: mockPassportReader,
+    reset: jest.fn(),
+    scan: jest.fn(),
+    default: mockPassportReader,
+  };
+});
 
 // Mock @stablelib packages
 jest.mock('@stablelib/cbor', () => ({

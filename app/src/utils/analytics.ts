@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { AppState, type AppStateStatus } from 'react-native';
-import { PassportReader } from 'react-native-passport-reader';
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
@@ -11,6 +10,7 @@ import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
 import { createSegmentClient } from '@/Segment';
+import { PassportReader } from '@/utils/passportReader';
 
 const segmentClient = createSegmentClient();
 
@@ -18,6 +18,7 @@ const segmentClient = createSegmentClient();
 let mixpanelConfigured = false;
 let eventCount = 0;
 let isConnected = true;
+let isNfcScanningActive = false; // Track NFC scanning state
 const eventQueue: Array<{
   name: string;
   properties?: Record<string, unknown>;
@@ -160,14 +161,19 @@ export const cleanupAnalytics = () => {
 
 const setupFlushPolicies = () => {
   AppState.addEventListener('change', (state: AppStateStatus) => {
-    if (state === 'background' || state === 'active') {
+    // Never flush during active NFC scanning to prevent interference
+    if (
+      (state === 'background' || state === 'active') &&
+      !isNfcScanningActive
+    ) {
       flushMixpanelEvents().catch(console.warn);
     }
   });
 
   NetInfo.addEventListener(state => {
     isConnected = state.isConnected ?? true;
-    if (isConnected) {
+    // Never flush during active NFC scanning to prevent interference
+    if (isConnected && !isNfcScanningActive) {
       flushMixpanelEvents().catch(console.warn);
     }
   });
@@ -175,6 +181,11 @@ const setupFlushPolicies = () => {
 
 const flushMixpanelEvents = async () => {
   if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
+  // Skip flush if NFC scanning is active to prevent interference
+  if (isNfcScanningActive) {
+    if (__DEV__) console.log('[Mixpanel] flush skipped - NFC scanning active');
+    return;
+  }
   try {
     if (__DEV__) console.log('[Mixpanel] flush');
     // Send any queued events before flushing
@@ -231,8 +242,26 @@ export const flushAllAnalytics = () => {
   const { flush: flushAnalytics } = analytics();
   flushAnalytics();
 
-  // Flush Mixpanel events
-  flushMixpanelEvents().catch(console.warn);
+  // Never flush Mixpanel during active NFC scanning to prevent interference
+  if (!isNfcScanningActive) {
+    flushMixpanelEvents().catch(console.warn);
+  }
+};
+
+/**
+ * Set NFC scanning state to prevent analytics flush interference
+ */
+export const setNfcScanningActive = (active: boolean) => {
+  isNfcScanningActive = active;
+  if (__DEV__)
+    console.log(
+      `[NFC Analytics] Scanning state: ${active ? 'active' : 'inactive'}`,
+    );
+
+  // Flush queued events when scanning completes
+  if (!active && eventQueue.length > 0) {
+    flushMixpanelEvents().catch(console.warn);
+  }
 };
 
 export const trackNfcEvent = async (
@@ -242,7 +271,7 @@ export const trackNfcEvent = async (
   if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
   if (!mixpanelConfigured) await configureNfcAnalytics();
 
-  if (!isConnected) {
+  if (!isConnected || isNfcScanningActive) {
     eventQueue.push({ name, properties });
     return;
   }
@@ -252,7 +281,8 @@ export const trackNfcEvent = async (
       await Promise.resolve(PassportReader.trackEvent(name, properties));
     }
     eventCount++;
-    if (eventCount >= 5) {
+    // Prevent automatic flush during NFC scanning
+    if (eventCount >= 5 && !isNfcScanningActive) {
       flushMixpanelEvents().catch(console.warn);
     }
   } catch {

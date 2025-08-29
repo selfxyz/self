@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { DocumentCatalog } from '@selfxyz/common/utils/types';
+
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
@@ -165,6 +167,9 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     },
     loadDocumentById: async (id: string) => {
       return _adapters.documents.loadDocumentById(id);
+    },
+    saveDocumentCatalog: async (catalog: DocumentCatalog) => {
+      return _adapters.documents.saveDocumentCatalog(catalog);
     },
   };
 }
