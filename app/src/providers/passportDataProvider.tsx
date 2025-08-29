@@ -59,12 +59,8 @@ import type {
   DocumentMetadata,
   PassportData,
 } from '@selfxyz/common/utils/types';
-import {
-  DocumentsAdapter,
-  getAllDocuments,
-  SelfClient,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 
