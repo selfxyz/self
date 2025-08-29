@@ -133,6 +133,7 @@ describe('isDocumentNullified', () => {
 
     globalThis.fetch = vi.fn(() =>
       Promise.resolve({
+        ok: true,
         json: () => Promise.resolve(fakeResponse),
       } as Response)
     );
@@ -150,6 +151,7 @@ describe('isDocumentNullified', () => {
           nullifier: expectedNullifierHex,
           attestation_id: expectedAttestation,
         }),
+        signal: expect.any(AbortSignal),
       }
     );
     expect(result).toBe(true);
@@ -165,6 +167,7 @@ describe('isDocumentNullified', () => {
 
     globalThis.fetch = vi.fn(() =>
       Promise.resolve({
+        ok: true,
         json: () => Promise.resolve(fakeResponse),
       } as Response)
     );
@@ -182,6 +185,7 @@ describe('isDocumentNullified', () => {
           nullifier: expectedNullifierHex,
           attestation_id: expectedAttestation,
         }),
+        signal: expect.any(AbortSignal),
       }
     );
     expect(result).toBe(false);

@@ -107,6 +107,13 @@ export type SignatureAlgorithm =
   | 'ecdsa_sha384_brainpoolP512r1_512'
   | 'ecdsa_sha512_brainpoolP512r1_512';
 
+// keys should match DocumentCategory
+export enum AttestationIdHex {
+  invalid = '0x0000000000000000000000000000000000000000000000000000000000000000',
+  passport = '0x0000000000000000000000000000000000000000000000000000000000000001',
+  id_card = '0x0000000000000000000000000000000000000000000000000000000000000002',
+}
+
 export function castCSCAProof(proof: any): Proof {
   return {
     proof: {
