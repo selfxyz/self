@@ -1,29 +1,29 @@
 # Mobile SDK Migration Plan
 
-Here’s the running list of work left for the mobile SDK. When something is finished, move it to [MIGRATION_COMPLETED.md](./MIGRATION_COMPLETED.md).
+This is the running to‑do list for the mobile SDK. When you wrap up a task, move it to [MIGRATION_COMPLETED.md](./MIGRATION_COMPLETED.md) so we keep a record.
 
 ## Migration tasks
 
-### 3. Integrate SDK into `/app`
+### 3. Bring the SDK into `/app`
 
-- [ ] Replace MRZ modules with SDK adapters
-- [ ] Validate builds and unit tests
+- [ ] Swap the MRZ modules for the SDK’s adapters
+- [ ] Make sure the app still builds and the unit tests pass
 
-### 4. Proof input generation
+### 4. Generate proof inputs
 
-- [ ] Port helpers that prepare register and disclose inputs for the TEE
+- [ ] Port helpers that prep register and disclose inputs for the TEE
 
 ### 5. Crypto adapters
 
-- [ ] Choose between WebCrypto and noble implementations at runtime
-- [ ] Cross-check results between implementations
-- [ ] Detect WebCrypto support on React Native/Hermes
+- [ ] Pick WebCrypto or noble at runtime
+- [ ] Cross‑check outputs between the two
+- [ ] Detect WebCrypto support when running on React Native/Hermes
 - [ ] Guarantee random bytes come from a CSPRNG
 - [ ] Compare secrets with a timing-safe helper
 
 ### 6. TEE session management
 
-- [ ] Wrap WebSockets to handle aborts, timeouts, and progress events
+- [ ] Wrap WebSockets so we can handle aborts, timeouts, and progress events
 
 ### 7. Attestation verification
 
@@ -32,10 +32,10 @@ Here’s the running list of work left for the mobile SDK. When something is fin
 
 ### 8. Protocol synchronization
 
-- [ ] Fetch protocol trees with pagination and a TTL cache
+- [ ] Fetch protocol trees with pagination and a short TTL cache
 - [ ] Verify computed roots against server data
-- [ ] Rate-limit with exponential backoff and jitter
-- [ ] Cap memory use and honor `Retry-After` headers
+- [ ] Rate‑limit with exponential backoff and jitter
+- [ ] Cap memory use and honor `Retry‑After` headers
 
 ### 9. Artifact management
 
@@ -43,7 +43,7 @@ Here’s the running list of work left for the mobile SDK. When something is fin
 - [ ] Download from a CDN with caching and a storage adapter
 - [ ] Verify manifest signatures with a pinned public key before caching
 - [ ] Enforce an allowlist and validate `Content-Length`
-- [ ] Hash streams to avoid buffering large files
+- [ ] Hash streams so we don't buffer large files
 
 ### 10. React Native providers and hooks
 
@@ -52,10 +52,10 @@ Here’s the running list of work left for the mobile SDK. When something is fin
 - [ ] Accept adapter instances via props to avoid tight coupling
 - [ ] Map provider boundaries to the architecture tasks for crypto, sessions, attestation, protocol sync, and artifacts
 
-### 11. Batteries-included components
+### 11. Batteries‑included components
 
 - [ ] Ship minimal components (e.g., scanners, buttons) that compose existing hooks and providers
-- [ ] Expose configuration props for custom adapters while keeping sane defaults
+- [ ] Expose configuration props for custom adapters while keeping sensible defaults
 - [ ] Link component usage to architecture guidelines and adapter tasks
 
 ### 12. Sample applications
@@ -63,14 +63,14 @@ Here’s the running list of work left for the mobile SDK. When something is fin
 - [ ] React Native and web demos showcasing core flows
 - [ ] iOS `OpenPassport` URL scheme
 
-### 13. In-SDK lightweight demo
+### 13. In‑SDK lightweight demo
 
 - [ ] Embed a small React Native demo inside the SDK with theming hooks
 - [ ] Provide build and run instructions
 
 ## Architecture tasks
 
-### 4. SDK lifecycle management
+### 4. Manage the SDK lifecycle
 
 - [ ] Turn `createSelfClient` into a class
 - [ ] Add `initialize()` and `deinitialize()` hooks
