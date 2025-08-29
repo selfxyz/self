@@ -5,11 +5,7 @@ include "../crypto/signature/rsapss/rsapss65537.circom";
 include "../crypto/signature/ecdsa/ecdsaVerifier.circom";
 include "../crypto/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
 include "../crypto/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
-include "../crypto/signature/rsa/VerifyRsa64321Pkcs1v1_5.circom";
-include "../crypto/signature/rsa/verifyRsa130689Pkcs1v1_5.circom";
-include "../crypto/signature/rsa/verifyRsa122125Pkcs1v1_5.circom";
-include "../crypto/signature/rsa/verifyRsa107903Pkcs1v1_5.circom";
-include "../crypto/signature/rsa/verifyRsa56611Pkcs1v1_5.circom";
+include "../crypto/signature/rsa/verifyRsaGenericPkcs1v1_5.circom";
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 
 /// @title SignatureVerifier
@@ -53,56 +49,22 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa65537.modulus <== pubKey;
         rsa65537.signature <== signature;
-    } else if (signatureAlgorithm == 47) {
-        component rsa64321 = VerifyRsa64321Pkcs1v1_5(n, k, HASH_LEN_BITS);
+    } else if (
+        signatureAlgorithm == 47
+        || signatureAlgorithm == 48
+        || signatureAlgorithm == 49
+        || signatureAlgorithm == 50
+        || signatureAlgorithm == 51
+    ) {
+        component rsaGeneric = VerifyRsaGenericPkcs1v1_5(n, k, HASH_LEN_BITS, signatureAlgorithm);
         for (var i = 0; i < msg_len; i++) {
-            rsa64321.message[i] <== hashParsed[i];
+            rsaGeneric.message[i] <== hashParsed[i];
         }
         for (var i = msg_len; i < k; i++) {
-            rsa64321.message[i] <== 0;
+            rsaGeneric.message[i] <== 0;
         }
-        rsa64321.modulus <== pubKey;
-        rsa64321.signature <== signature;
-    } else if (signatureAlgorithm == 48) {
-        component rsa130689 = VerifyRsa130689Pkcs1v1_5(n, k, HASH_LEN_BITS);
-        for (var i = 0; i < msg_len; i++) {
-            rsa130689.message[i] <== hashParsed[i];
-        }
-        for (var i = msg_len; i < k; i++) {
-            rsa130689.message[i] <== 0;
-        }
-        rsa130689.modulus <== pubKey;
-        rsa130689.signature <== signature;
-    } else if(signatureAlgorithm == 49) {
-        component rsa122125 = VerifyRsa122125Pkcs1v1_5(n, k, HASH_LEN_BITS);
-        for (var i = 0; i < msg_len; i++) {
-            rsa122125.message[i] <== hashParsed[i];
-        }
-        for (var i = msg_len; i < k; i++) {
-            rsa122125.message[i] <== 0;
-        }
-        rsa122125.modulus <== pubKey;
-        rsa122125.signature <== signature;
-    } else if (signatureAlgorithm == 50) {
-        component rsa107903 = VerifyRsa107903Pkcs1v1_5(n, k, HASH_LEN_BITS);
-        for (var i = 0; i < msg_len; i++) {
-            rsa107903.message[i] <== hashParsed[i];
-        }
-        for (var i = msg_len; i < k; i++) {
-            rsa107903.message[i] <== 0;
-        }
-        rsa107903.modulus <== pubKey;
-        rsa107903.signature <== signature;
-    } else if (signatureAlgorithm == 51) {
-        component rsa56611 = VerifyRsa56611Pkcs1v1_5(n, k, HASH_LEN_BITS);
-        for (var i = 0; i < msg_len; i++) {
-            rsa56611.message[i] <== hashParsed[i];
-        }
-        for (var i = msg_len; i < k; i++) {
-            rsa56611.message[i] <== 0;
-        }
-        rsa56611.modulus <== pubKey;
-        rsa56611.signature <== signature;
+        rsaGeneric.modulus <== pubKey;
+        rsaGeneric.signature <== signature;
     } else if (
         signatureAlgorithm == 13
         || signatureAlgorithm == 32

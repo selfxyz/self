@@ -4,8 +4,8 @@ include "@openpassport/zk-email-circuits/lib/bigint.circom";
 include "./pkcs1v1_5Padding.circom";
 include "../FpPowMod.circom";
 
-/// @title VerifyRsa56611Pkcs1v1_5
-/// @notice Verifies RSA signatures with exponent 56611 using PKCS#1 v1.5 padding
+/// @title VerifyRsaGenericPkcs1v1_5
+/// @notice Verifies RSA signatures with generic exponent using PKCS#1 v1.5 padding
 /// @dev Supports RSA key sizes of 2048, 3072, and 4096 bits
 /// @param CHUNK_SIZE Number of bits per chunk (typically 64)
 /// @param CHUNK_NUMBER Number of chunks (32 for 2048-bit RSA, 48 for 3072-bit, 64 for 4096-bit)
@@ -13,7 +13,7 @@ include "../FpPowMod.circom";
 /// @input signature The RSA signature split into chunks
 /// @input modulus The RSA modulus split into chunks
 /// @input message The message hash to verify
-template VerifyRsa56611Pkcs1v1_5(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
+template VerifyRsaGenericPkcs1v1_5(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE, signatureAlgorithm) {
     signal input signature[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER];
 
@@ -38,7 +38,7 @@ template VerifyRsa56611Pkcs1v1_5(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
     bigLessThan.out === 1;
 
     // 3. Compute the signature^exponent mod modulus
-    component bigPow = FpPow56611Mod(CHUNK_SIZE, CHUNK_NUMBER);
+    component bigPow = FpPowGenericMod(CHUNK_SIZE, CHUNK_NUMBER, signatureAlgorithm);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         bigPow.base[i] <== signature[i];
         bigPow.modulus[i] <== modulus[i];

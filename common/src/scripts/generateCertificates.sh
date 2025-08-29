@@ -269,7 +269,7 @@ generate_certificate dsc sha256 rsa 3 2048 --signer sha256_rsa_3_4096
 generate_certificate dsc sha256 rsa 3 4096 --signer sha256_rsa_3_4096
 
 # RSA-PSS certificates
-generate_certificate csca sha256 rsapss 32 65537 4096 --force
+generate_certificate csca sha256 rsapss 32 65537 4096
 generate_certificate csca sha256 rsapss 32 65537 2048
 generate_certificate csca sha256 rsapss 32 65537 3072
 generate_certificate dsc sha256 rsapss 32 65537 4096 --signer sha256_rsapss_32_65537_4096 --force
