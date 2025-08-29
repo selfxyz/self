@@ -11,12 +11,13 @@ export interface TestCase {
 
 export const sigAlgs: TestCase[] = [
   {
-    dgHashAlgo: 'sha256',
-    eContentHashAlgo: 'sha256',
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
     hashFunction: 'sha256',
-    sigAlg: 'rsa',
+    sigAlg: 'rsapss',
     domainParameter: '65537',
     keyLength: '2048',
+    saltLength: '32',
   },
 ];
 
