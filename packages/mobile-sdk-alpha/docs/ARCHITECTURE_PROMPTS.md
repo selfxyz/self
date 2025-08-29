@@ -17,33 +17,33 @@ yarn lint
 yarn build
 ```
 
-## 1. Modular feature directories
+## 1. Modular feature directories ✅ COMPLETED
 
 <details>
 <summary><strong>Split features into dedicated folders</strong></summary>
 
-1. Under `src/`, create folders like `mrz/` and `qr/` as features are added.
-2. Re-export feature APIs from `src/index.ts` using explicit named exports to keep tree shaking intact.
+1. ✅ Under `src/`, create folders like `mrz/` and `qr/` as features are added.
+2. ✅ Re-export feature APIs from `src/index.ts` using explicit named exports to keep tree shaking intact.
 
 </details>
 
-## 2. Bridge layer for native events
+## 2. Bridge layer for native events ✅ COMPLETED
 
 <details>
 <summary><strong>Introduce shared event bridge</strong></summary>
 
-1. Add `src/bridge/nativeEvents.ts` wrapping `NativeModules` and `NativeEventEmitter`.
-2. Expose `addListener` and `removeListener` helpers so modules can register without touching React Native directly.
+1. ✅ Add `src/bridge/nativeEvents.ts` wrapping `NativeModules` and `NativeEventEmitter`.
+2. ✅ Expose `addListener` and `removeListener` helpers so modules can register without touching React Native directly.
 
 </details>
 
-## 3. Exception classes
+## 3. Exception classes ✅ COMPLETED
 
 <details>
 <summary><strong>Add typed error hierarchy</strong></summary>
 
-1. Create `src/errors/` with classes like `InitError` and `LivenessError` extending `Error`.
-2. Replace generic throws with these classes and document them in the README.
+1. ✅ Create `src/errors/` with classes like `InitError` and `LivenessError` extending `Error`.
+2. ✅ Replace generic throws with these classes and document them in the README.
 
 </details>
 
@@ -72,7 +72,7 @@ yarn build
 <details>
 <summary><strong>Integrate with monorepo app</strong></summary>
 
-1. Add `@selfxyz/mobile-sdk-alpha` to `app/package.json` and wire flows to use the SDK.
+1. ✅ Add `@selfxyz/mobile-sdk-alpha` to `app/package.json` and wire flows to use the SDK.
 2. Validate builds and tests in the `app` workspace.
 
 </details>

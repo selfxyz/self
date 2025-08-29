@@ -72,9 +72,10 @@
 
 ## 12. Integrate SDK into `/app`
 
-- Consume `@selfxyz/mobile-sdk-alpha` inside the `app` workspace.
-- Replace MRZ modules with SDK adapters and wire processing helpers.
-- Validate builds and unit tests.
+- [x] Consume `@selfxyz/mobile-sdk-alpha` inside the `app` workspace.
+- [ ] Replace MRZ modules with SDK adapters.
+- [x] Wire app screens to SDK processing and validation helpers.
+- [ ] Validate builds and unit tests.
 
 ## 13. In-SDK lightweight demo
 

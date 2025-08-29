@@ -16,13 +16,13 @@ The alpha SDK follows an adapter-first, React Native–oriented design. Tree-sha
 - [x] Implement proper error handling with `notImplemented` helper
 - [x] Use type aliases instead of empty interfaces for better tree shaking
 
-### 2. Bridge layer for native events
+### 2. Bridge layer for native events ✅ COMPLETED
 
 - [x] Wrap `NativeModules`/`NativeEventEmitter` so features register listeners through a shared adapter
 - [x] Create unified event handling interface
 - [x] Implement platform-specific event bridges
 
-### 3. Exception classes ✅
+### 3. Exception classes ✅ COMPLETED
 
 - [x] Add typed errors (`InitError`, `LivenessError`, `NfcParseError`, `MrzParseError`)
 - [x] Surface typed errors instead of generic `Error`
@@ -42,7 +42,7 @@ The alpha SDK follows an adapter-first, React Native–oriented design. Tree-sha
 
 ### 6. Dogfood in `/app`
 
-- [ ] Integrate the SDK into the monorepo's `app` workspace
+- [x] Integrate the SDK into the monorepo's `app` workspace
 - [ ] Validate real flows
 - [ ] Replace existing MRZ modules with SDK adapters
 

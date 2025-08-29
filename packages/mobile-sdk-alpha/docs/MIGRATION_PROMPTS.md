@@ -39,35 +39,35 @@ yarn build
 2. ✅ Create modular structure with `src/mrz/` and `src/qr/` modules.
 3. ✅ Implement proper error handling using `notImplemented` helper.
 4. ✅ Use type aliases instead of empty interfaces for better tree shaking.
-5. Document them in `README.md` under a "Processing utilities" section.
+5. ✅ Document them in `README.md` under a "Processing utilities" section.
 
 </details>
 
-## 2. Validation module
+## 2. Validation module ✅ COMPLETED
 
 <details>
 <summary><strong>Port minimal document validation</strong></summary>
 
-1. Create `src/validation/document.ts`.
-2. Port `isPassportDataValid` logic without analytics or store calls.
-3. Type the function using `PassportData` from `src/types/public.ts`.
+1. ✅ Create `src/validation/document.ts`.
+2. ✅ Port `isPassportDataValid` logic without analytics or store calls.
+3. ✅ Type the function using `PassportData` from `src/types/public.ts`.
 
 </details>
 
 <details>
   <summary><strong>Test document validation</strong></summary>
 
-1. Add `tests/validation/document.test.ts` with cases for missing metadata and hash mismatches.
-2. Run via `yarn workspace @selfxyz/mobile-sdk-alpha test`.
+1. ✅ Add `tests/validation/document.test.ts` with cases for missing metadata and hash mismatches.
+2. ✅ Run via `yarn workspace @selfxyz/mobile-sdk-alpha test`.
 
 </details>
 
 <details>
 <summary><strong>Add validation callbacks</strong></summary>
 
-1. Extend `isPassportDataValid` to accept per-error callbacks (e.g., `onPassportMetadataNull`).
-2. Use these hooks in the app to forward analytics events.
-3. Cover callback invocations in unit tests.
+1. ✅ Extend `isPassportDataValid` to accept per-error callbacks (e.g., `onPassportMetadataNull`).
+2. ✅ Use these hooks in the app to forward analytics events.
+3. ✅ Cover callback invocations in unit tests.
 
 </details>
 
@@ -288,9 +288,9 @@ yarn build
 <details>
 <summary><strong>Integrate SDK in /app</strong></summary>
 
-1. Add `@selfxyz/mobile-sdk-alpha` to `app/package.json`.
+1. ✅ Add `@selfxyz/mobile-sdk-alpha` to `app/package.json`.
 2. Replace existing MRZ scanning modules with SDK adapters.
-3. Wire app screens to SDK processing and validation helpers.
+3. ✅ Wire app screens to SDK processing and validation helpers (e.g., `loadSelectedDocument`).
 4. Validate builds and unit tests in the `app` workspace.
 
 </details>
