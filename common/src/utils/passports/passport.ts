@@ -1,4 +1,4 @@
-import * as forge from 'node-forge';
+import forge from 'node-forge';
 import { poseidon5 } from 'poseidon-lite';
 
 import type { hashAlgos } from '../../constants/constants.js';
