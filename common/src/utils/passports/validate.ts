@@ -36,7 +36,7 @@ export type PassportSupportStatus =
 export async function checkDocumentSupported(
   passportData: PassportData,
   opts: {
-    getDeployedCircuits: () => DeployedCircuits;
+    getDeployedCircuits: (docCategory: DocumentCategory) => DeployedCircuits;
   }
 ): Promise<{
   status: PassportSupportStatus;
@@ -53,7 +53,7 @@ export async function checkDocumentSupported(
     return { status: 'csca_not_found', details: passportData.dsc };
   }
   const circuitNameRegister = getCircuitNameFromPassportData(passportData, 'register');
-  const deployedCircuits = opts.getDeployedCircuits();
+  const deployedCircuits = opts.getDeployedCircuits(passportData.documentCategory);
   if (
     !circuitNameRegister ||
     !(

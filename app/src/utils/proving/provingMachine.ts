@@ -712,9 +712,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           throw new Error('PassportData is not available');
         }
         const isSupported = await checkDocumentSupported(passportData, {
-          getDeployedCircuits: () =>
-            useProtocolStore.getState()[passportData.documentCategory]
-              .deployed_circuits!,
+          getDeployedCircuits: (documentCategory: DocumentCategory) =>
+            useProtocolStore.getState()[documentCategory].deployed_circuits!,
         });
         if (isSupported.status !== 'passport_supported') {
           console.error(
@@ -730,8 +729,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           actor!.send({ type: 'PASSPORT_NOT_SUPPORTED' });
           return;
         }
-        const getCommitmentTree = (docType: DocumentCategory) =>
-          useProtocolStore.getState()[docType].commitment_tree;
+        const getCommitmentTree = (documentCategory: DocumentCategory) =>
+          useProtocolStore.getState()[documentCategory].commitment_tree;
         /// disclosure
         if (circuitType === 'disclose') {
           // check if the user is registered using the csca from the passport data.
