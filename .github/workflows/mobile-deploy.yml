@@ -92,7 +92,7 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-14-large
     if: (inputs.platform == 'ios' || inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
@@ -437,8 +437,14 @@ jobs:
 
       - name: Build Dependencies (iOS)
         if: inputs.platform != 'android'
+        env:
+          # Enhanced Node.js optimizations for lazy loading and memory management
+          NODE_OPTIONS: "--max-old-space-size=12288 --optimize-for-size --gc-global --experimental-modules --max-semi-space-size=128"
+          # React Native specific optimizations
+          RCT_METRO_PORT: 8081
+          REACT_NATIVE_UNSTABLE_LEAN_CORE: 1
         run: |
-          echo "🏗️ Building SDK dependencies..."
+          echo "🏗️ Building SDK dependencies with optimized memory settings..."
           cd ${{ env.APP_PATH }}
           yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
@@ -462,7 +468,7 @@ jobs:
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
-          NODE_OPTIONS: "--max-old-space-size=8192"
+          NODE_OPTIONS: "--max-old-space-size=12288 --optimize-for-size --gc-global --experimental-modules --max-semi-space-size=128"
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
@@ -589,7 +595,7 @@ jobs:
           echo "💡 GitHub Actions cache limit: 10GB per repository"
 
   build-android:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-8-cores
     if: (inputs.platform == 'android' || inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
@@ -840,8 +846,16 @@ jobs:
 
       - name: Build Dependencies (Android)
         if: inputs.platform != 'ios'
+        env:
+          # Enhanced Node.js optimizations for lazy loading and memory management
+          NODE_OPTIONS: "--max-old-space-size=12288 --optimize-for-size --gc-global --experimental-modules --max-semi-space-size=128"
+          # React Native specific optimizations
+          RCT_METRO_PORT: 8081
+          REACT_NATIVE_UNSTABLE_LEAN_CORE: 1
+          # Gradle specific optimizations for larger memory builds
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx6144m -XX:MaxMetaspaceSize=1536m -Dorg.gradle.workers.max=6 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
         run: |
-          echo "🏗️ Building SDK dependencies..."
+          echo "🏗️ Building SDK dependencies with optimized memory settings..."
           cd ${{ env.APP_PATH }}
           yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
@@ -855,7 +869,12 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
-          NODE_OPTIONS: "--max-old-space-size=8192"
+          NODE_OPTIONS: "--max-old-space-size=12288 --optimize-for-size --gc-global --experimental-modules --max-semi-space-size=128"
+          # React Native specific optimizations
+          RCT_METRO_PORT: 8081
+          REACT_NATIVE_UNSTABLE_LEAN_CORE: 1
+          # Enhanced Gradle memory allocation for large builds
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx6144m -XX:MaxMetaspaceSize=1536m -Dorg.gradle.workers.max=6 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
         run: |
           cd ${{ env.APP_PATH }}
 
