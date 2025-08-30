@@ -279,7 +279,7 @@ const ManageDocumentsScreen: React.FC = () => {
   const handleScanDocument = () => {
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_SCAN_SELECTED);
-    navigation.navigate('PassportOnboarding');
+    navigation.navigate('DocumentOnboarding');
   };
 
   const handleGenerateMock = () => {

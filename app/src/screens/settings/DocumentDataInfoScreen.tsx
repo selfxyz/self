@@ -59,7 +59,7 @@ const InfoRow: React.FC<{
   </YStack>
 );
 
-const PassportDataInfoScreen: React.FC = () => {
+const DocumentDataInfoScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();
   const { getData } = usePassport();
   const [metadata, setMetadata] = useState<PassportMetadata | null>(null);
@@ -117,4 +117,4 @@ const PassportDataInfoScreen: React.FC = () => {
   );
 };
 
-export default PassportDataInfoScreen;
+export default DocumentDataInfoScreen;

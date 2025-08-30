@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-import { lazyWithPreload } from '@/navigation/lazyWithPreload';
+import React, { lazy } from 'react';
 import { SystemBars } from 'react-native-edge-to-edge';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
@@ -13,16 +12,16 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import SplashScreen from '@/screens/system/SplashScreen';
 import { black } from '@/utils/colors';
 
-const LaunchScreen = lazyWithPreload(
+const LaunchScreen = lazy(
   () => import('@/screens/system/LaunchScreen'),
 );
-const LoadingScreen = lazyWithPreload(
+const LoadingScreen = lazy(
   () => import('@/screens/system/Loading'),
 );
-const ModalScreen = lazyWithPreload(
+const ModalScreen = lazy(
   () => import('@/screens/system/ModalScreen'),
 );
-const DeferredLinkingInfoScreen = lazyWithPreload(
+const DeferredLinkingInfoScreen = lazy(
   () => import('@/screens/system/DeferredLinkingInfoScreen'),
 );
 

@@ -2,49 +2,49 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazyWithPreload } from '@/navigation/lazyWithPreload';
+import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-const PassportCameraScreen = lazyWithPreload(
-  () => import('@/screens/passport/PassportCameraScreen'),
+const DocumentCameraScreen = lazy(
+  () => import('@/screens/document/DocumentCameraScreen'),
 );
-const PassportCameraTrouble = lazyWithPreload(
-  () => import('@/screens/passport/PassportCameraTroubleScreen'),
+const DocumentCameraTroubleScreen = lazy(
+  () => import('@/screens/document/DocumentCameraTroubleScreen'),
 );
-const PassportNFCScanScreen = lazyWithPreload(
-  () => import('@/screens/passport/PassportNFCScanScreen'),
+const DocumentNFCScanScreen = lazy(
+  () => import('@/screens/document/DocumentNFCScanScreen'),
 );
-const PassportNFCTrouble = lazyWithPreload(
-  () => import('@/screens/passport/PassportNFCTroubleScreen'),
+const DocumentNFCTroubleScreen = lazy(
+  () => import('@/screens/document/DocumentNFCTroubleScreen'),
 );
-const PassportOnboardingScreen = lazyWithPreload(
-  () => import('@/screens/passport/PassportOnboardingScreen'),
+const DocumentOnboardingScreen = lazy(
+  () => import('@/screens/document/DocumentOnboardingScreen'),
 );
-const UnsupportedPassportScreen = lazyWithPreload(
-  () => import('@/screens/passport/UnsupportedPassportScreen'),
+const UnsupportedDocumentScreen = lazy(
+  () => import('@/screens/document/UnsupportedDocumentScreen'),
 );
-const PassportNFCMethodSelectionScreen = lazyWithPreload(
-  () => import('@/screens/passport/PassportNFCMethodSelectionScreen'),
+const DocumentNFCMethodSelectionScreen = lazy(
+  () => import('@/screens/document/DocumentNFCMethodSelectionScreen'),
 );
 
-const passportScreens = {
-  PassportCamera: {
-    screen: PassportCameraScreen,
+const documentScreens = {
+  DocumentCamera: {
+    screen: DocumentCameraScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
-  PassportCameraTrouble: {
-    screen: PassportCameraTrouble,
+  DocumentCameraTrouble: {
+    screen: DocumentCameraTroubleScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
       presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
-  PassportNFCScan: {
-    screen: PassportNFCScanScreen,
+  DocumentNFCScan: {
+    screen: DocumentNFCScanScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
@@ -55,24 +55,24 @@ const passportScreens = {
       dateOfExpiry: '',
     },
   },
-  PassportNFCTrouble: {
-    screen: PassportNFCTrouble,
+  DocumentNFCTrouble: {
+    screen: DocumentNFCTroubleScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
       presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
-  PassportOnboarding: {
-    screen: PassportOnboardingScreen,
+  DocumentOnboarding: {
+    screen: DocumentOnboardingScreen,
     options: {
       animation: 'slide_from_bottom',
       // presentation: 'modal' wanted to do this but seems to break stuff
       headerShown: false,
     } as NativeStackNavigationOptions,
   },
-  UnsupportedPassport: {
-    screen: UnsupportedPassportScreen,
+  UnsupportedDocument: {
+    screen: UnsupportedDocumentScreen,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
@@ -80,8 +80,8 @@ const passportScreens = {
       passportData: null,
     },
   },
-  PassportNFCMethodSelection: {
-    screen: PassportNFCMethodSelectionScreen,
+  DocumentNFCMethodSelection: {
+    screen: DocumentNFCMethodSelectionScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
@@ -89,4 +89,4 @@ const passportScreens = {
   },
 };
 
-export default passportScreens;
+export default documentScreens;

@@ -44,10 +44,10 @@ const tips: TipProps[] = [
   },
 ];
 
-const PassportNFCTrouble: React.FC = () => {
-  const go = useHapticNavigation('PassportNFCScan', { action: 'cancel' });
+const DocumentNFCTroubleScreen: React.FC = () => {
+  const go = useHapticNavigation('DocumentNFCScan', { action: 'cancel' });
   const goToNFCMethodSelection = useHapticNavigation(
-    'PassportNFCMethodSelection',
+    'DocumentNFCMethodSelection',
   );
   useFeedbackAutoHide();
 
@@ -109,4 +109,4 @@ const PassportNFCTrouble: React.FC = () => {
   );
 };
 
-export default PassportNFCTrouble;
+export default DocumentNFCTroubleScreen;

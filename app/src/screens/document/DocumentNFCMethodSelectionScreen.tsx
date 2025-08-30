@@ -88,7 +88,7 @@ const NFC_METHODS = [
   // },
 ];
 
-const PassportNFCMethodSelectionScreen: React.FC = () => {
+const DocumentNFCMethodSelectionScreen: React.FC = () => {
   const navigation = useNavigation();
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
@@ -129,7 +129,7 @@ const PassportNFCMethodSelectionScreen: React.FC = () => {
     if (selectedMethod === 'can') {
       params.canNumber = canValue;
     }
-    navigation.navigate('PassportNFCScan', params as never);
+    navigation.navigate('DocumentNFCScan', params as never);
   };
 
   return (
@@ -218,4 +218,4 @@ const PassportNFCMethodSelectionScreen: React.FC = () => {
   );
 };
 
-export default PassportNFCMethodSelectionScreen;
+export default DocumentNFCMethodSelectionScreen;

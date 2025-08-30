@@ -2,24 +2,24 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazyWithPreload } from '@/navigation/lazyWithPreload';
+import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { black, white } from '@/utils/colors';
 
-const ConfirmBelongingScreen = lazyWithPreload(
+const ConfirmBelongingScreen = lazy(
   () => import('@/screens/prove/ConfirmBelongingScreen'),
 );
-const ProofRequestStatusScreen = lazyWithPreload(
+const ProofRequestStatusScreen = lazy(
   () => import('@/screens/prove/ProofRequestStatusScreen'),
 );
-const ProveScreen = lazyWithPreload(
+const ProveScreen = lazy(
   () => import('@/screens/prove/ProveScreen'),
 );
-const QRCodeTroubleScreen = lazyWithPreload(
+const QRCodeTroubleScreen = lazy(
   () => import('@/screens/prove/QRCodeTroubleScreen'),
 );
-const QRCodeViewFinderScreen = lazyWithPreload(
+const QRCodeViewFinderScreen = lazy(
   () => import('@/screens/prove/QRCodeViewFinderScreen'),
 );
 

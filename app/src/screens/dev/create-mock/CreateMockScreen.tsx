@@ -375,7 +375,7 @@ const CreateMockScreen: React.FC = () => {
         </GestureDetector>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
           <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
-            Mock Passport Parameters
+            Mock Document Parameters
           </Text>
           <YStack
             borderRadius={10}
@@ -659,7 +659,7 @@ const CreateMockScreen: React.FC = () => {
               {isGenerating ? (
                 <Spinner color="gray" size="small" />
               ) : (
-                'Generate Mock Passport'
+                'Generate Mock Document'
               )}
             </PrimaryButton>
           </ButtonsContainer>

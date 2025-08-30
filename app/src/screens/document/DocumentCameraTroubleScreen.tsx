@@ -47,8 +47,8 @@ const tips: TipProps[] = [
   },
 ];
 
-const PassportCameraTrouble: React.FC = () => {
-  const go = useHapticNavigation('PassportCamera', { action: 'cancel' });
+const DocumentCameraTroubleScreen: React.FC = () => {
+  const go = useHapticNavigation('DocumentCamera', { action: 'cancel' });
 
   // error screen, flush analytics
   useEffect(() => {
@@ -76,4 +76,4 @@ const PassportCameraTrouble: React.FC = () => {
   );
 };
 
-export default PassportCameraTrouble;
+export default DocumentCameraTroubleScreen;

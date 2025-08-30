@@ -19,7 +19,7 @@ import { black, slate200, white } from '@/utils/colors';
 
 const { flush: flushAnalytics } = analytics();
 
-const PassportDataNotFound: React.FC = () => {
+const DocumentDataNotFoundScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
@@ -63,4 +63,4 @@ const PassportDataNotFound: React.FC = () => {
   );
 };
 
-export default PassportDataNotFound;
+export default DocumentDataNotFoundScreen;

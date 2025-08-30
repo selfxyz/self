@@ -6,20 +6,20 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 
 import { ProgressNavBar } from '@/components/NavBar';
 import { shouldShowAesopRedesign } from '@/hooks/useAesopRedesign';
-import { lazyWithPreload } from '@/navigation/lazyWithPreload';
+import { lazy } from 'react';
 import { white } from '@/utils/colors';
 
-const PassportOnboardingScreen = lazyWithPreload(
-  () => import('@/screens/aesop/PassportOnboardingScreen'),
+const DocumentOnboardingScreen = lazy(
+  () => import('@/screens/aesop/DocumentOnboardingScreen'),
 );
 
 const aesopScreens = {
-  PassportOnboarding: {
-    screen: PassportOnboardingScreen,
+  DocumentOnboarding: {
+    screen: DocumentOnboardingScreen,
     options: {
       animation: 'slide_from_bottom',
       header: ProgressNavBar,
-      title: 'Scan your passport',
+      title: 'Scan your document',
       headerStyle: {
         backgroundColor: white,
       },

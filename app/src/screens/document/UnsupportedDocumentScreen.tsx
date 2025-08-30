@@ -36,20 +36,20 @@ type CountryFlagComponent = React.ComponentType<{
 }>;
 type CountryFlagsRecord = Record<string, CountryFlagComponent>;
 
-type UnsupportedPassportScreenRouteProp = RouteProp<
+type UnsupportedDocumentScreenRouteProp = RouteProp<
   {
-    UnsupportedPassport: {
+    UnsupportedDocument: {
       passportData: PassportData | null;
     };
   },
-  'UnsupportedPassport'
+  'UnsupportedDocument'
 >;
 
-interface UnsupportedPassportScreenProps {
-  route: UnsupportedPassportScreenRouteProp;
+interface UnsupportedDocumentScreenProps {
+  route: UnsupportedDocumentScreenRouteProp;
 }
 
-const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
+const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
   route,
 }) => {
   const selfClient = useSelfClient();
@@ -213,4 +213,4 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
   );
 };
 
-export default UnsupportedPassportScreen;
+export default UnsupportedDocumentScreen;

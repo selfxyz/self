@@ -4,25 +4,25 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { lazyWithPreload } from '@/navigation/lazyWithPreload';
+import { lazy } from 'react';
 import { black, white } from '@/utils/colors';
 
-const DevFeatureFlagsScreen = lazyWithPreload(
+const DevFeatureFlagsScreen = lazy(
   () => import('@/screens/dev/feature-flags'),
 );
-const DevHapticFeedbackScreen = lazyWithPreload(
+const DevHapticFeedbackScreen = lazy(
   () => import('@/screens/dev/haptic-feedback'),
 );
-const DevSettingsScreen = lazyWithPreload(
+const DevSettingsScreen = lazy(
   () => import('@/screens/dev/settings'),
 );
-const CreateMockScreen = lazyWithPreload(
+const CreateMockScreen = lazy(
   () => import('@/screens/dev/create-mock'),
 );
-const CreateMockScreenDeepLink = lazyWithPreload(
+const CreateMockScreenDeepLink = lazy(
   () => import('@/screens/dev/create-mock/CreateMockScreenDeepLink'),
 );
-const DevPrivateKeyScreen = lazyWithPreload(
+const DevPrivateKeyScreen = lazy(
   () => import('@/screens/dev/private-key'),
 );
 
@@ -41,7 +41,7 @@ const devScreens = {
     screen: CreateMockScreen,
     options: {
       ...devHeaderOptions,
-      title: 'Mock Passport',
+      title: 'Mock Document',
     } as NativeStackNavigationOptions,
   },
   MockDataDeepLink: {

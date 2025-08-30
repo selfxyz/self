@@ -5,19 +5,19 @@
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { HomeNavBar } from '@/components/NavBar';
-import { lazyWithPreload } from '@/navigation/lazyWithPreload';
+import { lazy } from 'react';
 import { black } from '@/utils/colors';
 
-const DisclaimerScreen = lazyWithPreload(
+const DisclaimerScreen = lazy(
   () => import('@/screens/home/DisclaimerScreen'),
 );
-const HomeScreen = lazyWithPreload(
+const HomeScreen = lazy(
   () => import('@/screens/home/HomeScreen'),
 );
-const ProofHistoryDetailScreen = lazyWithPreload(
+const ProofHistoryDetailScreen = lazy(
   () => import('@/screens/home/ProofHistoryDetailScreen'),
 );
-const ProofHistoryScreen = lazyWithPreload(
+const ProofHistoryScreen = lazy(
   () => import('@/screens/home/ProofHistoryScreen'),
 );
 const homeScreens = {

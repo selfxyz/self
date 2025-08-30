@@ -23,7 +23,7 @@ import { advercase, dinot } from '@/utils/fonts';
 
 const LaunchScreen: React.FC = () => {
   useConnectionModal();
-  const onStartPress = useHapticNavigation('PassportOnboarding');
+  const onStartPress = useHapticNavigation('DocumentOnboarding');
   const createMock = useHapticNavigation('CreateMock');
   const { bottom } = useSafeAreaInsets();
 

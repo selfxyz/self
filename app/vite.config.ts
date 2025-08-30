@@ -148,7 +148,7 @@ export default defineConfig({
           'vendor-state-zustand': ['zustand'],
 
           // Screen-specific chunks - more granular
-          'screens-passport-core': ['./src/navigation/passport.ts'],
+          'screens-document-core': ['./src/navigation/document.ts'],
           'screens-passport-nfc': ['./src/utils/nfcScanner.ts'],
 
           // Proving - split into even smaller chunks

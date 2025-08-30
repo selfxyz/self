@@ -33,7 +33,7 @@ import { checkScannedInfo } from '@/utils/utils';
 
 const { trackEvent } = analytics();
 
-const PassportCameraScreen: React.FC = () => {
+const DocumentCameraScreen: React.FC = () => {
   const client = useSelfClient();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -98,7 +98,7 @@ const PassportCameraScreen: React.FC = () => {
           dateOfExpiryLength: formattedDateOfExpiry.length,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
-        navigation.navigate('PassportCameraTrouble');
+        navigation.navigate('DocumentCameraTrouble');
         return;
       }
 
@@ -114,7 +114,7 @@ const PassportCameraScreen: React.FC = () => {
         duration_seconds: parseFloat(scanDurationSeconds),
       });
 
-      navigation.navigate('PassportNFCScan');
+      navigation.navigate('DocumentNFCScan');
     },
     [store, navigation],
   );
@@ -183,7 +183,7 @@ const PassportCameraScreen: React.FC = () => {
   );
 };
 
-export default PassportCameraScreen;
+export default DocumentCameraScreen;
 
 const styles = StyleSheet.create({
   animation: {

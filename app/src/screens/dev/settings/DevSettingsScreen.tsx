@@ -128,10 +128,10 @@ const items = [
   'DevHapticFeedback',
   'Splash',
   'Launch',
-  'PassportOnboarding',
-  'PassportCamera',
-  'PassportNFCScan',
-  'PassportDataInfo',
+  'DocumentOnboarding',
+  'DocumentCamera',
+  'DocumentNFCScan',
+  'DocumentDataInfo',
   'Loading',
   'AccountVerifiedSuccess',
   'ConfirmBelonging',
@@ -147,9 +147,9 @@ const items = [
   'RecoverWithPhrase',
   'ShowRecoveryPhrase',
   'CloudBackupSettings',
-  'UnsupportedPassport',
-  'PassportCameraTrouble',
-  'PassportNFCTrouble',
+  'UnsupportedDocument',
+  'DocumentCameraTrouble',
+  'DocumentNFCTrouble',
 ] satisfies (keyof RootStackParamList)[];
 
 const ScreenSelector = ({}) => {
@@ -304,7 +304,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             {
               label: 'Scan new ID Document',
               onPress: () => {
-                navigation.navigate('PassportOnboarding');
+                navigation.navigate('DocumentOnboarding');
               },
             },
           ].map(({ label, onPress }) => (

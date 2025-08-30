@@ -2,27 +2,27 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazyWithPreload } from '@/navigation/lazyWithPreload';
+import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { black, slate300 } from '@/utils/colors';
 
-const AccountRecoveryChoiceScreen = lazyWithPreload(
+const AccountRecoveryChoiceScreen = lazy(
   () => import('@/screens/recovery/AccountRecoveryChoiceScreen'),
 );
-const AccountRecoveryScreen = lazyWithPreload(
+const AccountRecoveryScreen = lazy(
   () => import('@/screens/recovery/AccountRecoveryScreen'),
 );
-const AccountVerifiedSuccessScreen = lazyWithPreload(
+const AccountVerifiedSuccessScreen = lazy(
   () => import('@/screens/recovery/AccountVerifiedSuccessScreen'),
 );
-const PassportDataNotFound = lazyWithPreload(
-  () => import('@/screens/recovery/PassportDataNotFoundScreen'),
+const DocumentDataNotFound = lazy(
+  () => import('@/screens/recovery/DocumentDataNotFoundScreen'),
 );
-const RecoverWithPhraseScreen = lazyWithPreload(
+const RecoverWithPhraseScreen = lazy(
   () => import('@/screens/recovery/RecoverWithPhraseScreen'),
 );
-const SaveRecoveryPhraseScreen = lazyWithPreload(
+const SaveRecoveryPhraseScreen = lazy(
   () => import('@/screens/recovery/SaveRecoveryPhraseScreen'),
 );
 
@@ -46,8 +46,8 @@ const recoveryScreens = {
       animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
-  PassportDataNotFound: {
-    screen: PassportDataNotFound,
+  DocumentDataNotFound: {
+    screen: DocumentDataNotFound,
     options: {
       headerShown: false,
       gestureEnabled: false,

@@ -19,7 +19,7 @@ import { getAesopScreens } from '@/navigation/aesop';
 import devScreens from '@/navigation/dev';
 import homeScreens from '@/navigation/home';
 import systemScreens from '@/navigation/system';
-import passportScreens from '@/navigation/passport';
+import documentScreens from '@/navigation/document';
 import proveScreens from '@/navigation/prove';
 import recoveryScreens from '@/navigation/recovery';
 import settingsScreens from '@/navigation/settings';
@@ -29,7 +29,7 @@ import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
 export const navigationScreens = {
   ...systemScreens,
-  ...passportScreens,
+  ...documentScreens,
   ...homeScreens,
   ...proveScreens,
   ...settingsScreens,
@@ -38,20 +38,9 @@ export const navigationScreens = {
   // add last to override other screens
   ...getAesopScreens(),
 };
-const debugScreen = process.env.DEBUG_SCREEN as keyof typeof navigationScreens | undefined;
-
-if (debugScreen && navigationScreens[debugScreen]) {
-  (navigationScreens[debugScreen].screen as any).preload?.();
-}
-
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
-  initialRouteName:
-    debugScreen && navigationScreens[debugScreen]
-      ? debugScreen
-      : Platform.OS === 'web'
-        ? 'Home'
-        : 'Splash',
+  initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,

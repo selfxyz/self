@@ -21,7 +21,7 @@ import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate100, white } from '@/utils/colors';
 
-const PassportNFCScanScreen: React.FC = () => {
+const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
@@ -74,4 +74,4 @@ const PassportNFCScanScreen: React.FC = () => {
   );
 };
 
-export default PassportNFCScanScreen;
+export default DocumentNFCScanScreen;
