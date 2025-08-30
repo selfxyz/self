@@ -4,18 +4,11 @@
 
 import React from 'react';
 import renderer from 'react-test-renderer';
-import {Text} from 'react-native';
+import { Text } from 'react-native';
 import App from '../App';
 
 test('renders menu items', () => {
   const rendered = renderer.create(<App />);
-  const texts = rendered.root
-    .findAllByType(Text)
-    .map(node => node.props.children);
-  expect(texts).toEqual([
-    'Self Demo App',
-    'Register Document',
-    'Generate Mock',
-    'Prove QR Code',
-  ]);
+  const texts = rendered.root.findAllByType(Text).map(node => node.props.children);
+  expect(texts).toEqual(['Self Demo App', 'Register Document', 'Generate Mock', 'Prove QR Code']);
 });
