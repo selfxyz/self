@@ -30,7 +30,7 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
-    // CRITICAL CHANGE: Use OpenSourceMergedSoMapping for RN 0.76+ Hermes support
+    // Initialize SoLoader with the merged mapping to support Hermes on RN 0.76+
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       DefaultNewArchitectureEntryPoint.load()

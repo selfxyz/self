@@ -99,7 +99,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.20.0, @babel/core@npm:^7.28.3":
+"@babel/core@npm:^7.20.0, @babel/core@npm:^7.27.1, @babel/core@npm:^7.28.3":
   version: 7.28.3
   resolution: "@babel/core@npm:7.28.3"
   dependencies:
@@ -14092,6 +14092,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "demo-app@workspace:packages/mobile-sdk-alpha/demo-app"
   dependencies:
+    "@babel/core": "npm:^7.27.1"
     "@babel/plugin-transform-modules-commonjs": "npm:^7.27.1"
     "@babel/runtime": "npm:^7.25.0"
     "@react-native/gradle-plugin": "npm:0.76.9"

@@ -3,5 +3,5 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 module.exports = {
-  presets: ['module:metro-react-native-babel-preset'],
+  presets: ['module:@react-native/babel-preset'],
 };
