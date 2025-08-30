@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     )
 
     let rootView = RCTRootView(
-      bridge: bridge!,
+      bridge: bridge,
       moduleName: "SelfDemoApp",
       initialProperties: nil
     )

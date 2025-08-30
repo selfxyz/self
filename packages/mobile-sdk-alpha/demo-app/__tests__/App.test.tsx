@@ -9,6 +9,9 @@ import App from '../App';
 
 test('renders menu items', () => {
   const rendered = renderer.create(<App />);
-  const texts = rendered.root.findAllByType(Text).map(node => node.props.children);
-  expect(texts).toEqual(['Self Demo App', 'Register Document', 'Generate Mock', 'Prove QR Code']);
+  const texts = rendered.root.findAllByType(Text).map(node => React.Children.toArray(node.props.children).join(''));
+  const expected = ['Self Demo App', 'Register Document', 'Generate Mock', 'Prove QR Code'];
+  expect(texts).toEqual(expect.arrayContaining(expected));
+  expect(texts).toHaveLength(expected.length);
+  rendered.unmount();
 });

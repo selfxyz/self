@@ -17,8 +17,8 @@
     "react-native": "0.76.9"
   },
   "devDependencies": {
-    "@babel/core": "^7.27.1",
-    "@babel/plugin-transform-modules-commonjs": "^7.27.1",
+    "@babel/core": "7.25.0",
+    "babel-jest": "29.7.0",
     "@tsconfig/react-native": "3.0.0",
     "@types/jest": "29.5.11",
     "@types/react": "18.3.4",
