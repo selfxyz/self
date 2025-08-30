@@ -86,6 +86,8 @@ export { extractMRZInfo } from './mrz';
 
 export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
+export { generateMockPassport, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+
 // Documents utils
 export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
 

@@ -64,3 +64,8 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { scanQRProof } from './qr';
 
 export { webScannerShim } from './adapters/web/shims';
+
+export {
+  generateMockPassport,
+  signatureAlgorithmToStrictSignatureAlgorithm,
+} from './mock/generator';
