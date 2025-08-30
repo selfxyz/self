@@ -4,7 +4,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { generateMockPassport, signatureAlgorithmToStrictSignatureAlgorithm } from '../../src/mock/generator';
+import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '../../src/mock/generator';
 
 // Mock the external dependencies
 vi.mock('@selfxyz/common/utils/csca', () => ({
@@ -76,7 +76,7 @@ describe('Mock Generator Helper Functions', () => {
   });
 });
 
-describe('generateMockPassport', () => {
+describe('generateMockDocument', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -113,7 +113,7 @@ describe('generateMockPassport', () => {
   };
 
   it('should generate mock passport with default options', async () => {
-    const result = await generateMockPassport(defaultOptions);
+    const result = await generateMockDocument(defaultOptions);
 
     expect(result).toBeDefined();
     expect(getSKIPEM).toHaveBeenCalledWith('staging');
@@ -137,7 +137,7 @@ describe('generateMockPassport', () => {
   it('should generate mock ID card when document type is mock_id_card', async () => {
     const options = { ...defaultOptions, selectedDocumentType: 'mock_id_card' as const };
 
-    await generateMockPassport(options);
+    await generateMockDocument(options);
 
     expect(genMockIdDoc).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -150,7 +150,7 @@ describe('generateMockPassport', () => {
   it('should use OFAC-listed person data when isInOfacList is true', async () => {
     const options = { ...defaultOptions, isInOfacList: true };
 
-    await generateMockPassport(options);
+    await generateMockDocument(options);
 
     expect(genMockIdDoc).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -165,7 +165,7 @@ describe('generateMockPassport', () => {
   it('should calculate age-based birth date when not in OFAC list', async () => {
     const options = { ...defaultOptions, age: 25, isInOfacList: false };
 
-    await generateMockPassport(options);
+    await generateMockDocument(options);
 
     const callArgs = vi.mocked(genMockIdDoc).mock.calls[0][0];
     expect(callArgs.birthDate).toMatch(/^\d{6}$/);
@@ -173,8 +173,8 @@ describe('generateMockPassport', () => {
   });
 
   it('should generate random passport numbers', async () => {
-    await generateMockPassport(defaultOptions);
-    await generateMockPassport(defaultOptions);
+    await generateMockDocument(defaultOptions);
+    await generateMockDocument(defaultOptions);
 
     const call1Args = vi.mocked(genMockIdDoc).mock.calls[0]?.[0];
     const call2Args = vi.mocked(genMockIdDoc).mock.calls[1]?.[0];
@@ -192,7 +192,7 @@ describe('generateMockPassport', () => {
 
     for (const algorithm of algorithms) {
       const options = { ...defaultOptions, selectedAlgorithm: algorithm };
-      await generateMockPassport(options);
+      await generateMockDocument(options);
 
       const expectedMapping =
         signatureAlgorithmToStrictSignatureAlgorithm[
@@ -205,7 +205,7 @@ describe('generateMockPassport', () => {
   it('should set expiry date based on years parameter', async () => {
     const options = { ...defaultOptions, expiryYears: 5 };
 
-    await generateMockPassport(options);
+    await generateMockDocument(options);
 
     const callArgs = vi.mocked(genMockIdDoc).mock.calls[0]?.[0];
     expect(callArgs).toBeDefined();
@@ -221,7 +221,7 @@ describe('generateMockPassport', () => {
   it('should fall back to default DSC when generateMockDSC fails', async () => {
     vi.mocked(generateMockDSC).mockRejectedValueOnce(new Error('DSC generation failed'));
 
-    const result = await generateMockPassport(defaultOptions);
+    const result = await generateMockDocument(defaultOptions);
 
     expect(result).toBeDefined();
     expect(genMockIdDoc).toHaveBeenCalledWith(
@@ -237,7 +237,7 @@ describe('generateMockPassport', () => {
 
     for (const country of countries) {
       const options = { ...defaultOptions, selectedCountry: country };
-      await generateMockPassport(options);
+      await generateMockDocument(options);
 
       const callArgs = vi.mocked(genMockIdDoc).mock.calls[vi.mocked(genMockIdDoc).mock.calls.length - 1]?.[0];
       expect(callArgs).toBeDefined();
@@ -246,7 +246,7 @@ describe('generateMockPassport', () => {
   });
 
   it('should preserve all required ID document fields', async () => {
-    await generateMockPassport(defaultOptions);
+    await generateMockDocument(defaultOptions);
 
     const callArgs = vi.mocked(genMockIdDoc).mock.calls[0][0];
 
@@ -389,7 +389,7 @@ describe('signatureAlgorithmToStrictSignatureAlgorithm', () => {
   });
 });
 
-describe('generateMockPassport integration', () => {
+describe('generateMockDocument integration', () => {
   const defaultOptions = {
     age: 30,
     expiryYears: 10,
@@ -426,7 +426,7 @@ describe('generateMockPassport integration', () => {
   });
 
   it('should handle successful DSC generation path', async () => {
-    const result = await generateMockPassport(defaultOptions);
+    const result = await generateMockDocument(defaultOptions);
 
     expect(generateMockDSC).toHaveBeenCalledWith('rsa_sha256_65537_2048');
     expect(genMockIdDoc).toHaveBeenCalledWith(
@@ -440,7 +440,7 @@ describe('generateMockPassport integration', () => {
     const mockError = new Error('DSC generation failed');
     vi.mocked(generateMockDSC).mockRejectedValueOnce(mockError);
 
-    const result = await generateMockPassport(defaultOptions);
+    const result = await generateMockDocument(defaultOptions);
 
     expect(generateMockDSC).toHaveBeenCalledWith('rsa_sha256_65537_2048');
     // Should call genMockIdDoc without DSC (fallback mode)
@@ -449,8 +449,8 @@ describe('generateMockPassport integration', () => {
   });
 
   it('should generate different passport numbers on subsequent calls', async () => {
-    await generateMockPassport(defaultOptions);
-    await generateMockPassport(defaultOptions);
+    await generateMockDocument(defaultOptions);
+    await generateMockDocument(defaultOptions);
 
     const call1Args = vi.mocked(genMockIdDoc).mock.calls[0]?.[0];
     const call2Args = vi.mocked(genMockIdDoc).mock.calls[1]?.[0];
@@ -467,7 +467,7 @@ describe('generateMockPassport integration', () => {
 
     for (const age of edgeCases) {
       const options = { ...defaultOptions, age };
-      await generateMockPassport(options);
+      await generateMockDocument(options);
 
       const callArgs = vi.mocked(genMockIdDoc).mock.calls[vi.mocked(genMockIdDoc).mock.calls.length - 1]?.[0];
       expect(callArgs).toBeDefined();
@@ -480,7 +480,7 @@ describe('generateMockPassport integration', () => {
 
     for (const years of expiryYears) {
       const options = { ...defaultOptions, expiryYears: years };
-      await generateMockPassport(options);
+      await generateMockDocument(options);
 
       const callArgs = vi.mocked(genMockIdDoc).mock.calls[vi.mocked(genMockIdDoc).mock.calls.length - 1]?.[0];
       expect(callArgs).toBeDefined();
@@ -492,7 +492,7 @@ describe('generateMockPassport integration', () => {
     const testAlgorithm = 'sha384 brainpoolP384r1';
     const options = { ...defaultOptions, selectedAlgorithm: testAlgorithm };
 
-    await generateMockPassport(options);
+    await generateMockDocument(options);
 
     const callArgs = vi.mocked(genMockIdDoc).mock.calls[0]?.[0];
     expect(callArgs).toBeDefined();
@@ -502,7 +502,7 @@ describe('generateMockPassport integration', () => {
   });
 
   it('should always call getSKIPEM with staging parameter', async () => {
-    await generateMockPassport(defaultOptions);
+    await generateMockDocument(defaultOptions);
 
     expect(getSKIPEM).toHaveBeenCalledWith('staging');
     expect(getSKIPEM).toHaveBeenCalledTimes(1);
@@ -517,7 +517,7 @@ describe('generateMockPassport integration', () => {
       selectedDocumentType: 'mock_id_card' as const,
     };
 
-    await generateMockPassport(options);
+    await generateMockDocument(options);
 
     const callArgs = vi.mocked(genMockIdDoc).mock.calls[0]?.[0];
 
@@ -536,7 +536,7 @@ describe('generateMockPassport integration', () => {
   it('should handle special algorithm edge case', async () => {
     const options = { ...defaultOptions, selectedAlgorithm: 'not existing' };
 
-    await generateMockPassport(options);
+    await generateMockDocument(options);
 
     const callArgs = vi.mocked(genMockIdDoc).mock.calls[0]?.[0];
     expect(callArgs).toBeDefined();

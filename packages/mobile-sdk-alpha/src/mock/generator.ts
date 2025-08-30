@@ -6,7 +6,7 @@ import type { IdDocInput } from '@selfxyz/common/utils';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import { generateMockDSC, genMockIdDoc, initPassportDataParsing } from '@selfxyz/common/utils/passports';
 
-export interface GenerateMockPassportOptions {
+export interface GenerateMockDocumentOptions {
   age: number;
   expiryYears: number;
   isInOfacList: boolean;
@@ -31,14 +31,14 @@ const getExpiryDateFromYears = (years: number): string => {
   return formatDateToYYMMDD(date);
 };
 
-export async function generateMockPassport({
+export async function generateMockDocument({
   age,
   expiryYears,
   isInOfacList,
   selectedAlgorithm,
   selectedCountry,
   selectedDocumentType,
-}: GenerateMockPassportOptions) {
+}: GenerateMockDocumentOptions) {
   const randomPassportNumber = Math.random()
     .toString(36)
     .substring(2, 11)
