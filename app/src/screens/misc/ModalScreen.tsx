@@ -37,7 +37,7 @@ export interface ModalNavigationParams
   callbackId: number;
 }
 
-export interface ModalParams extends Record<string, any> {
+export interface ModalParams extends Record<string, unknown> {
   titleText: string;
   bodyText: string;
   buttonText: string;

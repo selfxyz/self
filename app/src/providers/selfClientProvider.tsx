@@ -16,6 +16,8 @@ import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
 
+type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
+
 /**
  * Provides a configured Self SDK client instance to all descendants.
  *
@@ -61,7 +63,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
           data: Uint8Array,
           algo: 'sha256' = 'sha256',
         ): Promise<Uint8Array> {
-          const subtle = (globalThis as any)?.crypto?.subtle;
+          const subtle = (globalThis as GlobalCrypto)?.crypto?.subtle;
           if (!subtle?.digest) {
             throw new Error(
               'WebCrypto subtle.digest is not available; provide a crypto adapter/polyfill for React Native.',

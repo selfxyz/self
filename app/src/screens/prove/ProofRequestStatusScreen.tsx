@@ -48,7 +48,8 @@ const SuccessScreen: React.FC = () => {
 
   const isFocused = useIsFocused();
 
-  const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
+  const [animationSource, setAnimationSource] =
+    useState<typeof loadingAnimation>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
