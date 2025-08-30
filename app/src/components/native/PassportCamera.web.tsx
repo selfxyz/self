@@ -40,7 +40,6 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
 
   // Web stub - no functionality yet
   useEffect(() => {
-    void _onPassportRead; // noop until web implementation exists
     // Simulate that the component is not ready for web
     if (isMounted) {
       console.warn('PassportCamera: Web implementation not yet available');

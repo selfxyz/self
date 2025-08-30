@@ -176,6 +176,7 @@ const ProveScreen: React.FC = () => {
       isContentShorterThanScrollView,
       selectedApp,
       provingStore.uuid,
+      trackEvent,
     ],
   );
 

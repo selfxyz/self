@@ -44,7 +44,7 @@ export const Gesture = {
 
 export const GestureDetector: React.FC<{
   children: React.ReactNode;
-  gesture?: any;
+  gesture?: unknown;
 }> = ({ children, gesture: _gesture }) => {
   return createElement('div', {}, children);
 };
@@ -52,7 +52,7 @@ export const GestureDetector: React.FC<{
 // Mock GestureHandlerRootView as a simple wrapper
 export const GestureHandlerRootView: React.FC<{
   children: React.ReactNode;
-  [key: string]: any;
+  [key: string]: unknown;
 }> = ({ children, ...props }) => {
   return createElement('div', props, children);
 };

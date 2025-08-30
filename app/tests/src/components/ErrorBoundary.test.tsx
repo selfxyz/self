@@ -6,7 +6,6 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
-const mockFlush = jest.fn();
 const mockTrackNfcEvent = jest.fn();
 const mockFlushAllAnalytics = jest.fn();
 

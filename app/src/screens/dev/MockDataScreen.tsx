@@ -40,7 +40,6 @@ import SelfDevCard from '@/images/card-dev.svg';
 import IdIcon from '@/images/icons/id_icon.svg';
 import NoteIcon from '@/images/icons/note.svg';
 import { storePassportData } from '@/providers/passportDataProvider';
-import analytics from '@/utils/analytics';
 import {
   black,
   borderColor,

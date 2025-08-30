@@ -37,11 +37,11 @@ export interface ModalNavigationParams
   callbackId: number;
 }
 
-export interface ModalParams extends Record<string, any> {
+export interface ModalParams extends Record<string, unknown> {
   titleText: string;
   bodyText: string;
-  buttonText: string;
-  secondaryButtonText?: string;
+  buttonText: React.ReactNode;
+  secondaryButtonText?: React.ReactNode;
   onButtonPress: (() => Promise<void>) | (() => void);
   onModalDismiss: () => void;
   preventDismiss?: boolean;
@@ -119,11 +119,11 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
           </YStack>
           <YStack gap={12}>
             <PrimaryButton onPress={onButtonPressed}>
-              {params?.buttonText}
+              {(params?.buttonText as React.ReactNode) || ''}
             </PrimaryButton>
             {params?.secondaryButtonText && (
               <SecondaryButton onPress={onClose}>
-                {params?.secondaryButtonText}
+                {(params?.secondaryButtonText as React.ReactNode) || ''}
               </SecondaryButton>
             )}
           </YStack>

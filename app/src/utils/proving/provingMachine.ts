@@ -702,7 +702,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    validatingDocument: async (selfClient: SelfClient) => {
+    validatingDocument: async (_selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
       trackEvent(ProofEvents.VALIDATION_STARTED);

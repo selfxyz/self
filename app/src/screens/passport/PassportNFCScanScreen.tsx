@@ -395,6 +395,7 @@ const PassportNFCScanScreen: React.FC = () => {
     isPacePolling,
     navigation,
     openErrorModal,
+    trackEvent,
   ]);
 
   const navigateToLaunch = useHapticNavigation('Launch', {

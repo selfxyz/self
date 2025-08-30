@@ -26,7 +26,7 @@ import { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
 import type { ProvingStateType } from '@/utils/proving/provingMachine';
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
-type LoadingScreenProps = StaticScreenProps<{}>;
+type LoadingScreenProps = StaticScreenProps<Record<string, never>>;
 
 // Define all terminal states that should stop animations and haptics
 const terminalStates: ProvingStateType[] = [

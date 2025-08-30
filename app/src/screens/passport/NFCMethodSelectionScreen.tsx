@@ -129,7 +129,7 @@ const NFCMethodSelectionScreen: React.FC = () => {
     if (selectedMethod === 'can') {
       params.canNumber = canValue;
     }
-    navigation.navigate('PassportNFCScan', params as any);
+    navigation.navigate('PassportNFCScan', params as never);
   };
 
   return (

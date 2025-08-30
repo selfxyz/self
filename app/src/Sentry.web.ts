@@ -14,7 +14,7 @@ import {
 
 export const captureException = (
   error: Error,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;
@@ -26,7 +26,7 @@ export const captureException = (
 
 export const captureFeedback = (
   feedback: string,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;
@@ -35,18 +35,18 @@ export const captureFeedback = (
   sentryCaptureFeedback(
     {
       message: feedback,
-      name: context?.name,
-      email: context?.email,
+      name: context?.name as string | undefined,
+      email: context?.email as string | undefined,
       tags: {
-        category: context?.category || 'general',
-        source: context?.source || 'feedback_modal',
+        category: (context?.category as string) || 'general',
+        source: (context?.source as string) || 'feedback_modal',
       },
     },
     {
       captureContext: {
         tags: {
-          category: context?.category || 'general',
-          source: context?.source || 'feedback_modal',
+          category: (context?.category as string) || 'general',
+          source: (context?.source as string) || 'feedback_modal',
         },
       },
     },
@@ -55,7 +55,7 @@ export const captureFeedback = (
 
 export const captureMessage = (
   message: string,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;

@@ -13,7 +13,7 @@ import { Caption } from '@/components/typography/Caption';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import analytics, { flushAllAnalytics } from '@/utils/analytics';
+import { flushAllAnalytics } from '@/utils/analytics';
 import { slate500 } from '@/utils/colors';
 import { sendFeedbackEmail } from '@/utils/email';
 

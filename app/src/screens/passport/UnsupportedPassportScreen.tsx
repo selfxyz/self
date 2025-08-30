@@ -30,6 +30,12 @@ import { notificationError } from '@/utils/haptic';
 
 const { flush: flushAnalytics } = analytics();
 
+type CountryFlagComponent = React.ComponentType<{
+  width: number;
+  height: number;
+}>;
+type CountryFlagsRecord = Record<string, CountryFlagComponent>;
+
 type UnsupportedPassportScreenRouteProp = RouteProp<
   {
     UnsupportedPassport: {
@@ -92,7 +98,9 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
   // Get country flag component dynamically
   const getCountryFlag = (code: string) => {
     try {
-      const FlagComponent = (CountryFlags as any)[code];
+      const FlagComponent = (CountryFlags as unknown as CountryFlagsRecord)[
+        code.toUpperCase()
+      ];
       if (FlagComponent) {
         return FlagComponent;
       }

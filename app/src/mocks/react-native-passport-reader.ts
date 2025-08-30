@@ -6,11 +6,11 @@
 
 // Mock PassportReader object with analytics methods
 export const PassportReader = {
-  configure: (token: string, enableDebug?: boolean) => {
+  configure: (_token: string, _enableDebug?: boolean) => {
     // No-op for web
     return Promise.resolve();
   },
-  trackEvent: (name: string, properties?: Record<string, unknown>) => {
+  trackEvent: (_name: string, _properties?: Record<string, unknown>) => {
     // No-op for web
     return Promise.resolve();
   },
