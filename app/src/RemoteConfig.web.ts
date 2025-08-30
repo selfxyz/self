@@ -38,10 +38,10 @@ const webStorageBackend: StorageBackend = {
 // Mock Firebase Remote Config for web (since Firebase Web SDK for Remote Config is not installed)
 // In a real implementation, you would import and use the Firebase Web SDK
 class MockFirebaseRemoteConfig implements RemoteConfigBackend {
-  private config: Record<string, unknown> = {};
+  private config: Record<string, FeatureFlagValue> = {};
   private settings: Record<string, unknown> = {};
 
-  setDefaults(defaults: Record<string, unknown>) {
+  setDefaults(defaults: Record<string, FeatureFlagValue>) {
     this.config = { ...defaults };
   }
 

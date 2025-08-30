@@ -99,7 +99,7 @@ const UnsupportedPassportScreen: React.FC<UnsupportedPassportScreenProps> = ({
   const getCountryFlag = (code: string) => {
     try {
       const FlagComponent = (CountryFlags as unknown as CountryFlagsRecord)[
-        code
+        code.toUpperCase()
       ];
       if (FlagComponent) {
         return FlagComponent;

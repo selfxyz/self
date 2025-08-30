@@ -3,6 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 declare module '*.png' {
-  const content: string;
+  const content: any;
   export default content;
 }
