@@ -14092,7 +14092,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "demo-app@workspace:packages/mobile-sdk-alpha/demo-app"
   dependencies:
+    "@babel/plugin-transform-modules-commonjs": "npm:^7.27.1"
     "@babel/runtime": "npm:^7.25.0"
+    "@react-native/gradle-plugin": "npm:0.76.9"
     "@tsconfig/react-native": "npm:3.0.0"
     "@types/jest": "npm:29.5.11"
     "@types/react": "npm:18.3.4"
