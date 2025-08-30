@@ -18,16 +18,18 @@ export interface LocalOverride {
   [key: string]: FeatureFlagValue;
 }
 
+export interface RemoteConfigValue {
+  asBoolean(): boolean;
+  asNumber(): number;
+  asString(): string;
+  getSource(): string;
+}
+
 export interface RemoteConfigBackend {
-  getValue(key: string): {
-    asBoolean(): boolean;
-    asNumber(): number;
-    asString(): string;
-    getSource(): string;
-  };
-  getAll(): Record<string, any>;
-  setDefaults(defaults: Record<string, any>): Promise<void> | void;
-  setConfigSettings(settings: any): Promise<void> | void;
+  getValue(key: string): RemoteConfigValue;
+  getAll(): Record<string, RemoteConfigValue>;
+  setDefaults(defaults: Record<string, FeatureFlagValue>): Promise<void> | void;
+  setConfigSettings(settings: Record<string, unknown>): Promise<void> | void;
   fetchAndActivate(): Promise<boolean>;
 }
 

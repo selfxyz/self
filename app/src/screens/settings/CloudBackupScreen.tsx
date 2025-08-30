@@ -67,7 +67,12 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
           setPending(false);
         },
       }),
-      [loginWithBiometrics, disableBackup, toggleCloudBackupEnabled],
+      [
+        loginWithBiometrics,
+        disableBackup,
+        toggleCloudBackupEnabled,
+        trackEvent,
+      ],
     ),
   );
 

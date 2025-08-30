@@ -110,7 +110,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
         }
       }
     },
-    [doneScanningQR, navigation, navigateToProveScreen],
+    [doneScanningQR, navigation, navigateToProveScreen, trackEvent],
   );
 
   const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;

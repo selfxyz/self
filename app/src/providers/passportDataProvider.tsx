@@ -239,6 +239,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       getAvailableTypes,
       getPassportDataAndSecret,
       getSelectedPassportDataAndSecret,
+      selfClient,
     ],
   );
 

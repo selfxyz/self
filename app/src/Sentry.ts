@@ -15,7 +15,7 @@ import {
 
 export const captureException = (
   error: Error,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;
@@ -27,7 +27,7 @@ export const captureException = (
 
 export const captureFeedback = (
   feedback: string,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;
@@ -56,7 +56,7 @@ export const captureFeedback = (
 
 export const captureMessage = (
   message: string,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;
