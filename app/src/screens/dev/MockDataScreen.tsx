@@ -23,19 +23,17 @@ import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 
 import { countryCodes } from '@selfxyz/common/constants';
-import type { IdDocInput } from '@selfxyz/common/utils';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import {
-  generateMockDSC,
-  genMockIdDoc,
-  initPassportDataParsing,
-} from '@selfxyz/common/utils/passports';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+  generateMockDocument,
+  signatureAlgorithmToStrictSignatureAlgorithm,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import { Caption } from '@/components/typography/Caption';
+import { useMockDataForm } from '@/hooks/useMockDataForm';
 import SelfDevCard from '@/images/card-dev.svg';
 import IdIcon from '@/images/icons/id_icon.svg';
 import NoteIcon from '@/images/icons/note.svg';
@@ -61,92 +59,7 @@ const documentTypes = {
   mock_id_card: 'ID Card',
 };
 
-const signatureAlgorithmToStrictSignatureAlgorithm = {
-  'sha256 rsa 65537 4096': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
-  'sha1 rsa 65537 2048': ['sha1', 'sha1', 'rsa_sha1_65537_2048'],
-  'sha256 brainpoolP256r1': [
-    'sha256',
-    'sha256',
-    'ecdsa_sha256_brainpoolP256r1_256',
-  ],
-  'sha384 brainpoolP384r1': [
-    'sha384',
-    'sha384',
-    'ecdsa_sha384_brainpoolP384r1_384',
-  ],
-  'sha384 secp384r1': ['sha384', 'sha384', 'ecdsa_sha384_secp384r1_384'],
-  'sha256 rsa 65537 2048': ['sha256', 'sha256', 'rsa_sha256_65537_2048'],
-  'sha256 rsa 3 2048': ['sha256', 'sha256', 'rsa_sha256_3_2048'],
-  'sha256 rsa 65537 3072': ['sha256', 'sha256', 'rsa_sha256_65537_3072'],
-  'sha256 rsa 3 4096': ['sha256', 'sha256', 'rsa_sha256_3_4096'],
-  'sha384 rsa 65537 4096': ['sha384', 'sha384', 'rsa_sha384_65537_4096'],
-  'sha512 rsa 65537 2048': ['sha512', 'sha512', 'rsa_sha512_65537_2048'],
-  'sha512 rsa 65537 4096': ['sha512', 'sha512', 'rsa_sha512_65537_4096'],
-  'sha1 rsa 65537 4096': ['sha1', 'sha1', 'rsa_sha1_65537_4096'],
-  'sha256 rsapss 3 2048': ['sha256', 'sha256', 'rsapss_sha256_3_2048'],
-  'sha256 rsapss 3 3072': ['sha256', 'sha256', 'rsapss_sha256_3_3072'],
-  'sha256 rsapss 65537 3072': ['sha256', 'sha256', 'rsapss_sha256_65537_3072'],
-  'sha256 rsapss 65537 4096': ['sha256', 'sha256', 'rsapss_sha256_65537_4096'],
-  'sha384 rsapss 65537 2048': ['sha384', 'sha384', 'rsapss_sha384_65537_2048'],
-  'sha384 rsapss 65537 3072': ['sha384', 'sha384', 'rsapss_sha384_65537_3072'],
-  'sha512 rsapss 65537 2048': ['sha512', 'sha512', 'rsapss_sha512_65537_2048'],
-  'sha512 rsapss 65537 4096': ['sha512', 'sha512', 'rsapss_sha512_65537_4096'],
-  'sha1 secp256r1': ['sha1', 'sha1', 'ecdsa_sha1_secp256r1_256'],
-  'sha224 secp224r1': ['sha224', 'sha224', 'ecdsa_sha224_secp224r1_224'],
-  'sha256 secp256r1': ['sha256', 'sha256', 'ecdsa_sha256_secp256r1_256'],
-  'sha256 secp384r1': ['sha256', 'sha256', 'ecdsa_sha256_secp384r1_384'],
-  'sha1 brainpoolP224r1': ['sha1', 'sha1', 'ecdsa_sha1_brainpoolP224r1_224'],
-  'sha1 brainpoolP256r1': ['sha1', 'sha1', 'ecdsa_sha1_brainpoolP256r1_256'],
-  'sha224 brainpoolP224r1': [
-    'sha224',
-    'sha224',
-    'ecdsa_sha224_brainpoolP224r1_224',
-  ],
-  'sha256 brainpoolP224r1': [
-    'sha256',
-    'sha256',
-    'ecdsa_sha256_brainpoolP224r1_224',
-  ],
-  'sha384 brainpoolP256r1': [
-    'sha384',
-    'sha384',
-    'ecdsa_sha384_brainpoolP256r1_256',
-  ],
-  'sha512 brainpoolP256r1': [
-    'sha512',
-    'sha512',
-    'ecdsa_sha512_brainpoolP256r1_256',
-  ],
-  'sha512 brainpoolP384r1': [
-    'sha512',
-    'sha512',
-    'ecdsa_sha512_brainpoolP384r1_384',
-  ],
-  'sha512 poland': ['sha512', 'sha512', 'rsa_sha256_65537_4096'],
-  'not existing': ['sha512', 'sha384', 'rsa_sha256_65537_4096'],
-} as const;
-
-const formatDateToYYMMDD = (date: Date): string => {
-  return (
-    date.toISOString().slice(2, 4) +
-    date.toISOString().slice(5, 7) +
-    date.toISOString().slice(8, 10)
-  ).toString();
-};
-
-const getBirthDateFromAge = (age: number): string => {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() - age);
-  return formatDateToYYMMDD(date);
-};
-
-const getExpiryDateFromYears = (years: number): string => {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() + years);
-  return formatDateToYYMMDD(date);
-};
-
-const MockPassportTitleCard = () => {
+const MockDocumentTitleCard = () => {
   return (
     <YStack
       backgroundColor="#18181B"
@@ -170,10 +83,10 @@ const MockPassportTitleCard = () => {
       </YStack>
       <YStack flex={1} flexDirection="column" gap={2}>
         <Text fontFamily={dinot} fontWeight={500} fontSize="$6" color={white}>
-          Generate mock passport data
+          Generate mock document data
         </Text>
         <Caption fontFamily={dinot} fontSize="$5" color={zinc400}>
-          Configure data parameters to generate a mock passport for testing
+          Configure data parameters to generate a mock document for testing
           purposes on the Self Protocol.
         </Caption>
       </YStack>
@@ -195,7 +108,7 @@ const HeroBanner = () => {
       />
       <YStack zIndex={2}>
         <YStack padding="$4">
-          <MockPassportTitleCard />
+          <MockDocumentTitleCard />
         </YStack>
         <YStack
           shadowColor={black}
@@ -246,98 +159,37 @@ const FormSection: React.FC<FormSectionProps> = ({
 const MockDataScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();
   const navigation = useNavigation();
-  const [age, setAge] = useState(21);
-  const [expiryYears, setExpiryYears] = useState(5);
+  const {
+    age,
+    setAge,
+    expiryYears,
+    setExpiryYears,
+    selectedCountry,
+    handleCountrySelect,
+    selectedAlgorithm,
+    handleAlgorithmSelect,
+    selectedDocumentType,
+    handleDocumentTypeSelect,
+    isInOfacList,
+    setIsInOfacList,
+    resetFormValues,
+  } = useMockDataForm();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isInOfacList, setIsInOfacList] = useState(true);
-  const [selectedDocumentType, setSelectedDocumentType] = useState<
-    'mock_passport' | 'mock_id_card'
-  >('mock_passport');
-  const [selectedCountry, setSelectedCountry] = useState('USA');
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState(
-    'sha256 rsa 65537 2048',
-  );
   const [isCountrySheetOpen, setCountrySheetOpen] = useState(false);
   const [isAlgorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
   const [isDocumentTypeSheetOpen, setDocumentTypeSheetOpen] = useState(false);
 
-  const resetFormValues = () => {
-    setAge(21);
-    setExpiryYears(5);
-    setIsInOfacList(true);
-    setSelectedDocumentType('mock_passport');
-    setSelectedAlgorithm('sha256 rsa 65537 2048');
-    setSelectedCountry('USA');
-  };
-
-  const handleCountrySelect = (countryCode: string) => {
-    setSelectedCountry(countryCode);
-    setCountrySheetOpen(false);
-  };
-
-  const handleAlgorithmSelect = (algorithm: string) => {
-    setSelectedAlgorithm(algorithm);
-    setAlgorithmSheetOpen(false);
-  };
-
-  const handleDocumentTypeSelect = (
-    documentType: 'mock_passport' | 'mock_id_card',
-  ) => {
-    setSelectedDocumentType(documentType);
-    setDocumentTypeSheetOpen(false);
-  };
-
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const randomPassportNumber = Math.random()
-        .toString(36)
-        .substring(2, 11)
-        .replace(/[^a-z0-9]/gi, '')
-        .toUpperCase();
-      const algorithmMapping =
-        signatureAlgorithmToStrictSignatureAlgorithm[
-          selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-        ];
-      const dgHashAlgo = algorithmMapping[0];
-      const eContentHashAlgo = algorithmMapping[1];
-      const signatureTypeForGeneration = algorithmMapping[2];
-
-      const idDocInput: Partial<IdDocInput> = {
-        nationality: selectedCountry as IdDocInput['nationality'],
-        idType: selectedDocumentType as IdDocInput['idType'],
-        dgHashAlgo: dgHashAlgo as IdDocInput['dgHashAlgo'],
-        eContentHashAlgo: eContentHashAlgo as IdDocInput['eContentHashAlgo'],
-        signatureType:
-          signatureTypeForGeneration as IdDocInput['signatureType'],
-        expiryDate: getExpiryDateFromYears(expiryYears),
-        passportNumber: randomPassportNumber,
-      };
-
-      let dobForGeneration: string;
-      if (isInOfacList) {
-        dobForGeneration = '541007';
-        idDocInput.lastName = 'HENAO MONTOYA';
-        idDocInput.firstName = 'ARCANGEL DE JESUS';
-      } else {
-        dobForGeneration = getBirthDateFromAge(age);
-      }
-      idDocInput.birthDate = dobForGeneration;
-      let mockDSC, rawMockData;
-      try {
-        mockDSC = await generateMockDSC(
-          idDocInput.signatureType || 'rsa_sha256_65537_2048',
-        );
-        rawMockData = genMockIdDoc(idDocInput, mockDSC);
-      } catch (error) {
-        console.warn(
-          'Falling back to default mock DSC. Error during mock DSC generation:',
-          error,
-        );
-        rawMockData = genMockIdDoc(idDocInput);
-      }
-      const skiPem = await getSKIPEM('staging');
-      const parsedMockData = initPassportDataParsing(rawMockData, skiPem);
+      const parsedMockData = await generateMockDocument({
+        age,
+        expiryYears,
+        isInOfacList,
+        selectedAlgorithm,
+        selectedCountry,
+        selectedDocumentType,
+      });
       await storePassportData(parsedMockData);
       navigation.navigate('ConfirmBelongingScreen', {});
     } catch (error) {
@@ -375,7 +227,7 @@ const MockDataScreen: React.FC = () => {
         </GestureDetector>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
           <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
-            Mock Passport Parameters
+            Mock Document Parameters
           </Text>
           <YStack
             borderRadius={10}
@@ -516,7 +368,7 @@ const MockDataScreen: React.FC = () => {
               </XStack>
             </FormSection>
 
-            <FormSection title="Passport Expires In">
+            <FormSection title="Document Expires In">
               <XStack
                 alignItems="center"
                 gap="$2"
@@ -659,7 +511,7 @@ const MockDataScreen: React.FC = () => {
               {isGenerating ? (
                 <Spinner color="gray" size="small" />
               ) : (
-                'Generate Mock Passport'
+                'Generate Mock Document'
               )}
             </PrimaryButton>
           </ButtonsContainer>

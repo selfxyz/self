@@ -27,7 +27,7 @@ const devScreens = {
   CreateMock: {
     screen: MockDataScreen,
     options: {
-      title: 'Mock Passport',
+      title: 'Mock Document',
       headerStyle: {
         backgroundColor: black,
       },
