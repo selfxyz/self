@@ -14,6 +14,9 @@ const config = {
   resolver: {
     extraNodeModules: {
       '@babel/runtime': path.resolve(__dirname, '../../../node_modules/@babel/runtime'),
+      // Pin React and React Native to monorepo root
+      react: path.resolve(__dirname, '../../../node_modules/react'),
+      'react-native': path.resolve(__dirname, '../../../node_modules/react-native'),
     },
     nodeModulesPaths: [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, '../../../node_modules')],
   },
