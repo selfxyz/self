@@ -52,6 +52,8 @@ export { defaultConfig } from './config/defaults';
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
+export { generateMockPassport, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+
 export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
 
 // Core functions
@@ -64,8 +66,3 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { scanQRProof } from './qr';
 
 export { webScannerShim } from './adapters/web/shims';
-
-export {
-  generateMockPassport,
-  signatureAlgorithmToStrictSignatureAlgorithm,
-} from './mock/generator';
