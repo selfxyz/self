@@ -21,7 +21,7 @@ describe('createSelfClient API', () => {
     const info = client.extractMRZInfo(sampleMRZ);
 
     expect(info.documentNumber).toBe(expectedMRZResult.documentNumber);
-    expect(info.validation.overall).toBe(expectedMRZResult.validation.overall);
+    expect(info.validation?.overall).toBe(expectedMRZResult.validation.overall);
   });
 
   it('accepts different adapter configurations', () => {
@@ -42,6 +42,6 @@ describe('createSelfClient API', () => {
   it('flags invalid check digits', () => {
     const client = createSelfClient({ config: {}, adapters: mockAdapters });
     const info = client.extractMRZInfo(badCheckDigitsMRZ);
-    expect(info.validation.overall).toBe(false);
+    expect(info.validation?.overall).toBe(false);
   });
 });
