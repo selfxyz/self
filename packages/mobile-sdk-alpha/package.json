@@ -52,7 +52,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
-    "validate:pkg": "node ./scripts/verify-conditions.mjs"
+    "validate:pkg": "node ./scripts/verify-conditions.mjs",
+    "run:demo": "yarn workspace demo-app start",
+    "build:demo": "yarn workspace demo-app build",
+    "test:demo": "yarn workspace demo-app test"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:*",

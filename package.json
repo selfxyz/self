@@ -8,7 +8,8 @@
     "packages/*",
     "prover/tests",
     "sdk/*",
-    "scripts/tests"
+    "scripts/tests",
+    "packages/mobile-sdk-alpha/demo-app"
   ],
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",

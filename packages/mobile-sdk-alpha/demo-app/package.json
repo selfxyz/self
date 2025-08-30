@@ -1,0 +1,20 @@
+{
+  "name": "demo-app",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "start": "react-native start",
+    "build": "echo 'build stub'",
+    "test": "echo 'test stub'"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-native": "0.76.9"
+  },
+  "devDependencies": {
+    "@tsconfig/react-native": "3.0.0",
+    "@types/react": "18.3.4",
+    "typescript": "5.9.2"
+  }
+}

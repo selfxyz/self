@@ -109,3 +109,16 @@ describe('Real mobile-sdk-alpha Integration', () => {
 - `npm run validate:exports` — ensure named exports only.
 - `npm run validate:pkg` — check packaging and export conditions.
 - `npm run report:exports` — output current public symbols.
+
+## Demo app
+
+A simple React Native playground lives in [`demo-app`](./demo-app).
+
+```bash
+# from repository root
+yarn workspace demo-app start
+
+# or via package scripts
+cd packages/mobile-sdk-alpha
+yarn run:demo
+```
