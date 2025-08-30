@@ -39,6 +39,7 @@
   "scripts": {
     "build": "rm -rf dist && tsup && yarn postbuild",
     "postbuild": "node ./scripts/postBuild.mjs",
+    "build:demo": "yarn workspace demo-app build",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "format": "yarn nice",
@@ -47,15 +48,14 @@
     "nice": "yarn lint:fix && yarn fmt:fix",
     "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
     "report:exports": "node ./scripts/report-exports.mjs",
+    "run:demo": "yarn workspace demo-app start",
     "test": "vitest run",
     "test:build": "yarn build && yarn test && yarn types && yarn lint",
+    "test:demo": "yarn workspace demo-app test",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
-    "validate:pkg": "node ./scripts/verify-conditions.mjs",
-    "run:demo": "yarn workspace demo-app start",
-    "build:demo": "yarn workspace demo-app build",
-    "test:demo": "yarn workspace demo-app test"
+    "validate:pkg": "node ./scripts/verify-conditions.mjs"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:*",

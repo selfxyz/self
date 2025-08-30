@@ -4,8 +4,8 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "start": "react-native start",
     "build": "tsc -p tsconfig.json --noEmit --pretty false",
+    "start": "react-native start",
     "test": "jest"
   },
   "dependencies": {
