@@ -2,18 +2,36 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-const React = require('react');
-const { View, Text } = require('react-native');
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 function App() {
-  return React.createElement(
-    View,
-    { style: { flex: 1, justifyContent: 'center', alignItems: 'center' } },
-    React.createElement(Text, { style: { fontSize: 20, marginBottom: 12 } }, 'Self Demo App'),
-    React.createElement(Text, null, 'Register Document'),
-    React.createElement(Text, null, 'Generate Mock'),
-    React.createElement(Text, null, 'Prove QR Code'),
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Self Demo App</Text>
+      <Text style={styles.item}>Register Document</Text>
+      <Text style={styles.item}>Generate Mock</Text>
+      <Text style={styles.item}>Prove QR Code</Text>
+    </View>
   );
 }
 
-module.exports = { default: App };
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 20,
+    marginBottom: 12,
+    fontWeight: 'bold',
+  },
+  item: {
+    fontSize: 16,
+    marginVertical: 4,
+  },
+});
+
+export default App;
