@@ -1,0 +1,22 @@
+{
+  "name": "@selfxyz/mobile-sdk-alpha-demo",
+  "private": true,
+  "version": "0.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "build": "echo 'bundle step stubbed for demo'",
+    "test": "echo 'no tests yet'"
+  },
+  "dependencies": {
+    "@selfxyz/mobile-sdk-alpha": "workspace:*",
+    "react": "^18.3.1",
+    "react-native": "^0.76.9"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.4",
+    "typescript": "^5.9.2"
+  }
+}

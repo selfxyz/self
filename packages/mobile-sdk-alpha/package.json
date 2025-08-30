@@ -52,7 +52,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
-    "validate:pkg": "node ./scripts/verify-conditions.mjs"
+    "validate:pkg": "node ./scripts/verify-conditions.mjs",
+    "demo:start": "yarn workspace @selfxyz/mobile-sdk-alpha-demo start",
+    "demo:android": "yarn workspace @selfxyz/mobile-sdk-alpha-demo android",
+    "demo:ios": "yarn workspace @selfxyz/mobile-sdk-alpha-demo ios",
+    "demo:test": "yarn workspace @selfxyz/mobile-sdk-alpha-demo test",
+    "demo:build": "yarn workspace @selfxyz/mobile-sdk-alpha-demo build"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:*",
@@ -85,5 +90,8 @@
   "packageManager": "yarn@4.6.0",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "workspaces": [
+    "demo-app"
+  ]
 }

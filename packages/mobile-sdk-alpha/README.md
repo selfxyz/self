@@ -65,6 +65,29 @@ Track remaining tasks in [MIGRATION_PLAN.md](./docs/MIGRATION_PLAN.md) and see c
 
 Migration and architecture prompts live in [PROMPTS.md](./docs/PROMPTS.md).
 
+## Demo app
+
+A minimal React Native demo lives in `demo-app`. It currently displays an unstyled menu with placeholders for:
+
+- Register Document
+- Generate Mock
+- Prove QR Code
+
+Additional screens like MRZ Manual Entry, Proof Request History, and SDK Playground will be wired later.
+
+### Run the demo
+
+```bash
+# From the repo root
+yarn workspace @selfxyz/mobile-sdk-alpha demo:start
+
+# Or build bundles
+yarn workspace @selfxyz/mobile-sdk-alpha demo:build
+
+# Placeholder tests
+yarn workspace @selfxyz/mobile-sdk-alpha demo:test
+```
+
 ## Testing
 
 **IMPORTANT: Do NOT mock this package in tests!**
