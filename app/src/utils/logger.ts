@@ -23,7 +23,7 @@ export {
   SettingsLogger,
 };
 
-const defaultConfig: configLoggerType<unknown, unknown> = {
+const defaultConfig: configLoggerType<any, any> = {
   enabled: __DEV__ ? false : true,
   severity: __DEV__ ? 'debug' : 'warn', //TODO configure this using remote-config
   transport: [lokiTransport],

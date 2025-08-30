@@ -8,6 +8,7 @@
 import type {
   FeatureFlagValue,
   RemoteConfigBackend,
+  RemoteConfigValue,
   StorageBackend,
 } from '@/RemoteConfig.shared';
 import {
@@ -80,8 +81,12 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
     };
   }
 
-  getAll() {
-    return this.config;
+  getAll(): Record<string, RemoteConfigValue> {
+    const result: Record<string, RemoteConfigValue> = {};
+    for (const [key, value] of Object.entries(this.config)) {
+      result[key] = this.getValue(key);
+    }
+    return result;
   }
 }
 

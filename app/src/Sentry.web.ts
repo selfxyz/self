@@ -35,18 +35,18 @@ export const captureFeedback = (
   sentryCaptureFeedback(
     {
       message: feedback,
-      name: context?.name,
-      email: context?.email,
+      name: context?.name as string | undefined,
+      email: context?.email as string | undefined,
       tags: {
-        category: context?.category || 'general',
-        source: context?.source || 'feedback_modal',
+        category: (context?.category as string) || 'general',
+        source: (context?.source as string) || 'feedback_modal',
       },
     },
     {
       captureContext: {
         tags: {
-          category: context?.category || 'general',
-          source: context?.source || 'feedback_modal',
+          category: (context?.category as string) || 'general',
+          source: (context?.source as string) || 'feedback_modal',
         },
       },
     },
