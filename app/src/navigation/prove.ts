@@ -2,40 +2,42 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
+import { lazyWithPreload } from '@/navigation/lazyWithPreload';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { black, white } from '@/utils/colors';
 
-const ConfirmBelongingScreen = lazy(
+const ConfirmBelongingScreen = lazyWithPreload(
   () => import('@/screens/prove/ConfirmBelongingScreen'),
 );
-const ProofRequestStatusScreen = lazy(
+const ProofRequestStatusScreen = lazyWithPreload(
   () => import('@/screens/prove/ProofRequestStatusScreen'),
 );
-const ProveScreen = lazy(() => import('@/screens/prove/ProveScreen'));
-const QRCodeTroubleScreen = lazy(
+const ProveScreen = lazyWithPreload(
+  () => import('@/screens/prove/ProveScreen'),
+);
+const QRCodeTroubleScreen = lazyWithPreload(
   () => import('@/screens/prove/QRCodeTroubleScreen'),
 );
-const QRCodeViewFinderScreen = lazy(
-  () => import('@/screens/prove/ViewFinderScreen'),
+const QRCodeViewFinderScreen = lazyWithPreload(
+  () => import('@/screens/prove/QRCodeViewFinderScreen'),
 );
 
 const proveScreens = {
-  ConfirmBelongingScreen: {
+  ConfirmBelonging: {
     screen: ConfirmBelongingScreen,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
   },
-  ProofRequestStatusScreen: {
+  ProofRequestStatus: {
     screen: ProofRequestStatusScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
-  ProveScreen: {
+  Prove: {
     screen: ProveScreen,
     options: {
       title: 'Request Proof',

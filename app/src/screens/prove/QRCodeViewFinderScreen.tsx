@@ -36,7 +36,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
-  const navigateToProveScreen = useHapticNavigation('ProveScreen');
+  const navigateToProve = useHapticNavigation('Prove');
   const navigateToHome = useHapticNavigation('Home');
   const onCancelPress = useCallback(() => {
     navigateToHome();
@@ -74,7 +74,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
             useSelfAppStore.getState().setSelfApp(selfAppJson);
             useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
             setTimeout(() => {
-              navigateToProveScreen();
+              navigateToProve();
             }, 100);
           } catch (parseError) {
             trackEvent(ProofEvents.QR_SCAN_FAILED, {
@@ -96,7 +96,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
           useSelfAppStore.getState().cleanSelfApp();
           useSelfAppStore.getState().startAppListener(sessionId);
           setTimeout(() => {
-            navigateToProveScreen();
+            navigateToProve();
           }, 100);
         } else {
           trackEvent(ProofEvents.QR_SCAN_FAILED, {
@@ -110,7 +110,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
         }
       }
     },
-    [doneScanningQR, navigation, navigateToProveScreen, trackEvent],
+    [doneScanningQR, navigation, navigateToProve, trackEvent],
   );
 
   const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;

@@ -35,7 +35,7 @@ type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
-  const navigate = useHapticNavigation('LoadingScreen', {
+  const navigate = useHapticNavigation('Loading', {
     params: {},
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);

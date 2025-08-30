@@ -2,42 +2,50 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-// DevPrivateKeyScreen is loaded lazily to avoid bundling in production
+import { lazyWithPreload } from '@/navigation/lazyWithPreload';
 import { black, white } from '@/utils/colors';
 
-const DevFeatureFlagsScreen = lazy(
-  () => import('@/screens/dev/DevFeatureFlagsScreen'),
+const DevFeatureFlagsScreen = lazyWithPreload(
+  () => import('@/screens/dev/feature-flags'),
 );
-const DevHapticFeedbackScreen = lazy(
-  () => import('@/screens/dev/DevHapticFeedback'),
+const DevHapticFeedbackScreen = lazyWithPreload(
+  () => import('@/screens/dev/haptic-feedback'),
 );
-const DevSettingsScreen = lazy(() => import('@/screens/dev/DevSettingsScreen'));
-const MockDataScreen = lazy(() => import('@/screens/dev/MockDataScreen'));
-const MockDataScreenDeepLink = lazy(
-  () => import('@/screens/dev/MockDataScreenDeepLink'),
+const DevSettingsScreen = lazyWithPreload(
+  () => import('@/screens/dev/settings'),
 );
-const DevPrivateKeyScreen = lazy(
-  () => import('@/screens/dev/DevPrivateKeyScreen'),
+const CreateMockScreen = lazyWithPreload(
+  () => import('@/screens/dev/create-mock'),
 );
+const CreateMockScreenDeepLink = lazyWithPreload(
+  () => import('@/screens/dev/create-mock/CreateMockScreenDeepLink'),
+);
+const DevPrivateKeyScreen = lazyWithPreload(
+  () => import('@/screens/dev/private-key'),
+);
+
+const devHeaderOptions: NativeStackNavigationOptions = {
+  headerStyle: {
+    backgroundColor: black,
+  },
+  headerTitleStyle: {
+    color: white,
+  },
+  headerBackTitle: 'close',
+};
 
 const devScreens = {
   CreateMock: {
-    screen: MockDataScreen,
+    screen: CreateMockScreen,
     options: {
+      ...devHeaderOptions,
       title: 'Mock Passport',
-      headerStyle: {
-        backgroundColor: black,
-      },
-      headerTitleStyle: {
-        color: white,
-      },
     } as NativeStackNavigationOptions,
   },
   MockDataDeepLink: {
-    screen: MockDataScreenDeepLink,
+    screen: CreateMockScreenDeepLink,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
@@ -51,14 +59,8 @@ const devScreens = {
   DevSettings: {
     screen: DevSettingsScreen,
     options: {
+      ...devHeaderOptions,
       title: 'Dev Mode',
-      headerStyle: {
-        backgroundColor: black,
-      },
-      headerTitleStyle: {
-        color: white,
-      },
-      headerBackTitle: 'close',
     } as NativeStackNavigationOptions,
   },
   DevFeatureFlags: {
@@ -73,13 +75,8 @@ const devScreens = {
   DevPrivateKey: {
     screen: DevPrivateKeyScreen,
     options: {
+      ...devHeaderOptions,
       title: 'Private Key',
-      headerStyle: {
-        backgroundColor: black,
-      },
-      headerTitleStyle: {
-        color: white,
-      },
     } as NativeStackNavigationOptions,
   },
 };

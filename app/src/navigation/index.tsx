@@ -16,9 +16,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
 import { getAesopScreens } from '@/navigation/aesop';
-import devScreens from '@/navigation/devTools';
+import devScreens from '@/navigation/dev';
 import homeScreens from '@/navigation/home';
-import miscScreens from '@/navigation/misc';
+import systemScreens from '@/navigation/system';
 import passportScreens from '@/navigation/passport';
 import proveScreens from '@/navigation/prove';
 import recoveryScreens from '@/navigation/recovery';
@@ -28,7 +28,7 @@ import { white } from '@/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
 export const navigationScreens = {
-  ...miscScreens,
+  ...systemScreens,
   ...passportScreens,
   ...homeScreens,
   ...proveScreens,
@@ -38,9 +38,20 @@ export const navigationScreens = {
   // add last to override other screens
   ...getAesopScreens(),
 };
+const debugScreen = process.env.DEBUG_SCREEN as keyof typeof navigationScreens | undefined;
+
+if (debugScreen && navigationScreens[debugScreen]) {
+  (navigationScreens[debugScreen].screen as any).preload?.();
+}
+
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
-  initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
+  initialRouteName:
+    debugScreen && navigationScreens[debugScreen]
+      ? debugScreen
+      : Platform.OS === 'web'
+        ? 'Home'
+        : 'Splash',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,

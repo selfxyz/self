@@ -2,27 +2,27 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
+import { lazyWithPreload } from '@/navigation/lazyWithPreload';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { black, slate300 } from '@/utils/colors';
 
-const AccountRecoveryChoiceScreen = lazy(
+const AccountRecoveryChoiceScreen = lazyWithPreload(
   () => import('@/screens/recovery/AccountRecoveryChoiceScreen'),
 );
-const AccountRecoveryScreen = lazy(
+const AccountRecoveryScreen = lazyWithPreload(
   () => import('@/screens/recovery/AccountRecoveryScreen'),
 );
-const AccountVerifiedSuccessScreen = lazy(
+const AccountVerifiedSuccessScreen = lazyWithPreload(
   () => import('@/screens/recovery/AccountVerifiedSuccessScreen'),
 );
-const PassportDataNotFound = lazy(
+const PassportDataNotFound = lazyWithPreload(
   () => import('@/screens/recovery/PassportDataNotFoundScreen'),
 );
-const RecoverWithPhraseScreen = lazy(
+const RecoverWithPhraseScreen = lazyWithPreload(
   () => import('@/screens/recovery/RecoverWithPhraseScreen'),
 );
-const SaveRecoveryPhraseScreen = lazy(
+const SaveRecoveryPhraseScreen = lazyWithPreload(
   () => import('@/screens/recovery/SaveRecoveryPhraseScreen'),
 );
 

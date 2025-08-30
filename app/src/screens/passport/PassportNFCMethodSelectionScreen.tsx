@@ -88,7 +88,7 @@ const NFC_METHODS = [
   // },
 ];
 
-const NFCMethodSelectionScreen: React.FC = () => {
+const PassportNFCMethodSelectionScreen: React.FC = () => {
   const navigation = useNavigation();
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
@@ -218,4 +218,4 @@ const NFCMethodSelectionScreen: React.FC = () => {
   );
 };
 
-export default NFCMethodSelectionScreen;
+export default PassportNFCMethodSelectionScreen;

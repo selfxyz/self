@@ -2,18 +2,20 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
+import { lazyWithPreload } from '@/navigation/lazyWithPreload';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { black, white } from '@/utils/colors';
 
-const ManageDocumentsScreen = lazy(
+const ManageDocumentsScreen = lazyWithPreload(
   () => import('@/screens/settings/ManageDocumentsScreen'),
 );
-const PassportDataInfoScreen = lazy(
+const PassportDataInfoScreen = lazyWithPreload(
   () => import('@/screens/settings/PassportDataInfoScreen'),
 );
-const SettingsScreen = lazy(() => import('@/screens/settings/SettingsScreen'));
+const SettingsScreen = lazyWithPreload(
+  () => import('@/screens/settings/SettingsScreen'),
+);
 
 const settingsScreens = {
   ManageDocuments: {

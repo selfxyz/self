@@ -329,7 +329,7 @@ const PassportNFCScanScreen: React.FC = () => {
           if (scanCancelledRef.current) {
             return;
           }
-          navigation.navigate('ConfirmBelongingScreen', {});
+          navigation.navigate('ConfirmBelonging', {});
         } catch (e: unknown) {
           // Check if scan was cancelled by timeout
           if (scanCancelledRef.current) {

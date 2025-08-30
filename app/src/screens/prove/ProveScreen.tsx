@@ -147,7 +147,7 @@ const ProveScreen: React.FC = () => {
       userIdType: selectedApp?.userIdType,
     });
     setTimeout(() => {
-      navigate('ProofRequestStatusScreen');
+      navigate('ProofRequestStatus');
     }, 100);
   }
 

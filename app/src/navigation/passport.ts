@@ -2,29 +2,29 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
+import { lazyWithPreload } from '@/navigation/lazyWithPreload';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-const PassportCameraScreen = lazy(
+const PassportCameraScreen = lazyWithPreload(
   () => import('@/screens/passport/PassportCameraScreen'),
 );
-const PassportCameraTrouble = lazy(
+const PassportCameraTrouble = lazyWithPreload(
   () => import('@/screens/passport/PassportCameraTroubleScreen'),
 );
-const PassportNFCScanScreen = lazy(
+const PassportNFCScanScreen = lazyWithPreload(
   () => import('@/screens/passport/PassportNFCScanScreen'),
 );
-const PassportNFCTrouble = lazy(
+const PassportNFCTrouble = lazyWithPreload(
   () => import('@/screens/passport/PassportNFCTroubleScreen'),
 );
-const PassportOnboardingScreen = lazy(
+const PassportOnboardingScreen = lazyWithPreload(
   () => import('@/screens/passport/PassportOnboardingScreen'),
 );
-const UnsupportedPassportScreen = lazy(
+const UnsupportedPassportScreen = lazyWithPreload(
   () => import('@/screens/passport/UnsupportedPassportScreen'),
 );
-const NFCMethodSelectionScreen = lazy(
-  () => import('@/screens/passport/NFCMethodSelectionScreen'),
+const PassportNFCMethodSelectionScreen = lazyWithPreload(
+  () => import('@/screens/passport/PassportNFCMethodSelectionScreen'),
 );
 
 const passportScreens = {
@@ -81,7 +81,7 @@ const passportScreens = {
     },
   },
   PassportNFCMethodSelection: {
-    screen: NFCMethodSelectionScreen,
+    screen: PassportNFCMethodSelectionScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',

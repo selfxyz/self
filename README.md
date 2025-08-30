@@ -72,6 +72,16 @@ This project requires **Node.js 22.x**. Use the included `.nvmrc` to match the v
 Run `yarn install` to bootstrap dependencies and husky hooks.
 Gitleaks will scan staged changes on each commit via `yarn gitleaks`.
 
+### Debugging screens
+
+Set `DEBUG_SCREEN` to preload and open a specific screen on startup:
+
+```bash
+DEBUG_SCREEN=PassportOnboarding yarn start
+```
+
+This bypasses lazy loading for the chosen screen, making it easier to debug in isolation.
+
 ## Development Documentation
 
 For detailed development patterns and conventions, see:

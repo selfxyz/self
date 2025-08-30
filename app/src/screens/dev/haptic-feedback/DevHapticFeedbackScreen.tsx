@@ -33,7 +33,7 @@ const StyledButton = styled(Button, {
   touchAction: 'manipulation',
 });
 
-const DevHapticFeedback = () => {
+const DevHapticFeedbackScreen = () => {
   const [loadingProgressEnabled, setLoadingProgressEnabled] = useState(true);
 
   return (
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DevHapticFeedback;
+export default DevHapticFeedbackScreen;

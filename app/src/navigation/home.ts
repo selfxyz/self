@@ -2,18 +2,22 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { HomeNavBar } from '@/components/NavBar';
+import { lazyWithPreload } from '@/navigation/lazyWithPreload';
 import { black } from '@/utils/colors';
 
-const DisclaimerScreen = lazy(() => import('@/screens/home/DisclaimerScreen'));
-const HomeScreen = lazy(() => import('@/screens/home/HomeScreen'));
-const ProofHistoryDetailScreen = lazy(
+const DisclaimerScreen = lazyWithPreload(
+  () => import('@/screens/home/DisclaimerScreen'),
+);
+const HomeScreen = lazyWithPreload(
+  () => import('@/screens/home/HomeScreen'),
+);
+const ProofHistoryDetailScreen = lazyWithPreload(
   () => import('@/screens/home/ProofHistoryDetailScreen'),
 );
-const ProofHistoryScreen = lazy(
+const ProofHistoryScreen = lazyWithPreload(
   () => import('@/screens/home/ProofHistoryScreen'),
 );
 const homeScreens = {

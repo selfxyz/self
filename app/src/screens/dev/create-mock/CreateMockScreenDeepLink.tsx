@@ -25,7 +25,7 @@ import useUserStore from '@/stores/userStore';
 import { black, borderColor, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 
-const MockDataScreenDeepLink: React.FC = () => {
+const CreateMockScreenDeepLink: React.FC = () => {
   const navigation = useNavigation();
 
   const [selectedCountry, setSelectedCountry] = useState('USA');
@@ -56,7 +56,7 @@ const MockDataScreenDeepLink: React.FC = () => {
     };
     const passportData = genMockIdDocAndInitDataParsing(idDocInput);
     await storePassportData(passportData);
-    navigation.navigate('ConfirmBelongingScreen', {});
+    navigation.navigate('ConfirmBelonging', {});
     useUserStore.getState().clearDeepLinkUserDetails();
   }, [navigation]);
 
@@ -204,4 +204,4 @@ const MockDataScreenDeepLink: React.FC = () => {
   );
 };
 
-export default MockDataScreenDeepLink;
+export default CreateMockScreenDeepLink;
