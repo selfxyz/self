@@ -39,10 +39,10 @@
   "scripts": {
     "build": "rm -rf dist && tsup && yarn postbuild",
     "postbuild": "node ./scripts/postBuild.mjs",
-    "build:demo": "yarn workspace demo-app build",
     "demo:android": "yarn workspace demo-app android",
     "demo:ios": "yarn workspace demo-app ios",
     "demo:start": "yarn workspace demo-app start",
+    "demo:test": "yarn workspace demo-app test",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "format": "yarn nice",
