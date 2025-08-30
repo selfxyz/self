@@ -24,7 +24,7 @@ import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import {
-  generateMockPassport,
+  generateMockDocument,
   signatureAlgorithmToStrictSignatureAlgorithm,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -59,7 +59,7 @@ const documentTypes = {
   mock_id_card: 'ID Card',
 };
 
-const MockPassportTitleCard = () => {
+const MockDocumentTitleCard = () => {
   return (
     <YStack
       backgroundColor="#18181B"
@@ -83,10 +83,10 @@ const MockPassportTitleCard = () => {
       </YStack>
       <YStack flex={1} flexDirection="column" gap={2}>
         <Text fontFamily={dinot} fontWeight={500} fontSize="$6" color={white}>
-          Generate mock passport data
+          Generate mock document data
         </Text>
         <Caption fontFamily={dinot} fontSize="$5" color={zinc400}>
-          Configure data parameters to generate a mock passport for testing
+          Configure data parameters to generate a mock document for testing
           purposes on the Self Protocol.
         </Caption>
       </YStack>
@@ -108,7 +108,7 @@ const HeroBanner = () => {
       />
       <YStack zIndex={2}>
         <YStack padding="$4">
-          <MockPassportTitleCard />
+          <MockDocumentTitleCard />
         </YStack>
         <YStack
           shadowColor={black}
@@ -182,7 +182,7 @@ const MockDataScreen: React.FC = () => {
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const parsedMockData = await generateMockPassport({
+      const parsedMockData = await generateMockDocument({
         age,
         expiryYears,
         isInOfacList,
@@ -227,7 +227,7 @@ const MockDataScreen: React.FC = () => {
         </GestureDetector>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
           <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
-            Mock Passport Parameters
+            Mock Document Parameters
           </Text>
           <YStack
             borderRadius={10}
@@ -368,7 +368,7 @@ const MockDataScreen: React.FC = () => {
               </XStack>
             </FormSection>
 
-            <FormSection title="Passport Expires In">
+            <FormSection title="Document Expires In">
               <XStack
                 alignItems="center"
                 gap="$2"
@@ -511,7 +511,7 @@ const MockDataScreen: React.FC = () => {
               {isGenerating ? (
                 <Spinner color="gray" size="small" />
               ) : (
-                'Generate Mock Passport'
+                'Generate Mock Document'
               )}
             </PrimaryButton>
           </ButtonsContainer>
