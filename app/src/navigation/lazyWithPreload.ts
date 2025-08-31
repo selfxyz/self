@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import { lazy, type LazyExoticComponent } from 'react';
 
 // Helper around React.lazy that exposes the underlying dynamic import
 // so callers can manually preload a screen when debugging or profiling.
@@ -11,7 +11,7 @@ import React from 'react';
 export function lazyWithPreload<T extends React.ComponentType<any>>(
   factory: () => Promise<{ default: T }>,
 ) {
-  const Component = React.lazy(factory) as React.LazyExoticComponent<T> & {
+  const Component = lazy(factory) as LazyExoticComponent<T> & {
     preload: () => Promise<{ default: T }>;
   };
   Component.preload = factory;
