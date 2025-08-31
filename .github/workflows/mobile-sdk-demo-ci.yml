@@ -18,6 +18,11 @@ jobs:
           node-version-file: .nvmrc
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+      - name: Build dependencies
+        shell: bash
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Run demo app tests
         run: |
           yarn workspace demo-app test
