@@ -6,10 +6,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
-import {
-  generateMockDocument,
-  signatureAlgorithmToStrictSignatureAlgorithm,
-} from '@selfxyz/mobile-sdk-alpha';
+import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { countryCodes } = require('@selfxyz/common/dist/cjs/src/constants/constants.cjs');
 
@@ -86,13 +83,13 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
         <Switch value={isInOfacList} onValueChange={setIsInOfacList} />
       </View>
       <Text style={styles.label}>Algorithm</Text>
-      <Picker selectedValue={algorithm} onValueChange={itemValue => setAlgorithm(itemValue)}>
+      <Picker selectedValue={algorithm} onValueChange={(itemValue: string) => setAlgorithm(itemValue)}>
         {algorithmOptions.map(alg => (
           <Picker.Item label={alg} value={alg} key={alg} />
         ))}
       </Picker>
       <Text style={styles.label}>Country</Text>
-      <Picker selectedValue={country} onValueChange={itemValue => setCountry(itemValue)}>
+      <Picker selectedValue={country} onValueChange={(itemValue: string) => setCountry(itemValue)}>
         {countryOptions.map(code => (
           <Picker.Item label={`${code} - ${countryCodes[code as keyof typeof countryCodes]}`} value={code} key={code} />
         ))}
@@ -100,7 +97,7 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
       <Text style={styles.label}>Document Type</Text>
       <Picker
         selectedValue={documentType}
-        onValueChange={itemValue => setDocumentType(itemValue as (typeof documentTypeOptions)[number])}
+        onValueChange={(itemValue: string) => setDocumentType(itemValue as (typeof documentTypeOptions)[number])}
       >
         {documentTypeOptions.map(dt => (
           <Picker.Item label={dt} value={dt} key={dt} />

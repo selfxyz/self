@@ -15,13 +15,7 @@ function App() {
 
   if (screen === 'generate') {
     const GenerateMock = require('./src/GenerateMock').default;
-    return (
-      <GenerateMock
-        onGenerate={setMockDocument}
-        onNavigate={navigate}
-        onBack={() => navigate('home')}
-      />
-    );
+    return <GenerateMock onGenerate={setMockDocument} onNavigate={navigate} onBack={() => navigate('home')} />;
   }
 
   if (screen === 'register') {
