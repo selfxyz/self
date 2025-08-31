@@ -13916,6 +13916,8 @@ __metadata:
     babel-jest: "npm:^29.6.3"
     jest: "npm:^29.6.3"
     metro-react-native-babel-preset: "npm:0.76.9"
+    react: "npm:^18.3.1"
+    react-native: "npm:0.76.9"
     react-test-renderer: "npm:^18.3.1"
     typescript: "npm:^5.9.2"
   languageName: unknown

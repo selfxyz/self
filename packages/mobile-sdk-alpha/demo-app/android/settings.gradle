@@ -3,4 +3,3 @@ plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
 rootProject.name = 'SelfDemoApp'
 include ':app'
-includeBuild('/Volumes/files/Projects/selfxyz/selfapp/node_modules/@react-native/gradle-plugin')
