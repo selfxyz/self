@@ -7,16 +7,17 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 
 import { black, white } from '@/utils/colors';
 
-const DevFeatureFlagsScreen = lazy(() => import('@/screens/dev/feature-flags'));
+const DevFeatureFlagsScreen = lazy(
+  () => import('@/screens/dev/DevFeatureFlagsScreen'),
+);
 const DevHapticFeedbackScreen = lazy(
-  () => import('@/screens/dev/haptic-feedback'),
+  () => import('@/screens/dev/DevHapticFeedbackScreen'),
 );
-const DevSettingsScreen = lazy(() => import('@/screens/dev/settings'));
-const CreateMockScreen = lazy(() => import('@/screens/dev/create-mock'));
+const DevSettingsScreen = lazy(() => import('@/screens/dev/DevSettingsScreen'));
+const CreateMockScreen = lazy(() => import('@/screens/dev/CreateMockScreen'));
 const CreateMockScreenDeepLink = lazy(
-  () => import('@/screens/dev/create-mock/CreateMockScreenDeepLink'),
+  () => import('@/screens/dev/CreateMockScreenDeepLink'),
 );
-const DevPrivateKeyScreen = lazy(() => import('@/screens/dev/private-key'));
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
@@ -68,13 +69,6 @@ const devScreens = {
       headerStyle: {
         backgroundColor: white,
       },
-    } as NativeStackNavigationOptions,
-  },
-  DevPrivateKey: {
-    screen: DevPrivateKeyScreen,
-    options: {
-      ...devHeaderOptions,
-      title: 'Private Key',
     } as NativeStackNavigationOptions,
   },
 };
