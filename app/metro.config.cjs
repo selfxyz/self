@@ -18,6 +18,9 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  // Pin React and React Native to monorepo root
+  react: path.join(trueMonorepoNodeModules, 'react'),
+  'react-native': path.join(trueMonorepoNodeModules, 'react-native'),
   '@': path.join(__dirname, 'src'),
   '@selfxyz/common': path.resolve(commonPath, 'dist'),
   '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
