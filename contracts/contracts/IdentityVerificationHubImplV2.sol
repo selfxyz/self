@@ -112,7 +112,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param output The formatted verification output containing proof results.
      * @param userDataToPass The user data passed through to the verification result handler.
      */
-    event VerificationPerformed(
+    event DisclosureVerified(
         address indexed requestor,
         uint8 indexed contractVersion,
         bytes32 indexed attestationId,
@@ -333,17 +333,28 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(baseVerificationInput);
 
         // Perform verification and get output along with user data
-        (bytes memory output, uint256 destChainId, bytes memory userDataToPass, bytes32 configId, uint256 userIdentifier) = _executeVerificationFlow(
-            header,
-            proofData,
-            userContextData
-        );
-
-        // Emit verification event for tracking
-        emit VerificationPerformed(msg.sender, header.contractVersion, header.attestationId, destChainId, configId, userIdentifier, output, userDataToPass);
+        (
+            bytes memory output,
+            uint256 destChainId,
+            bytes memory userDataToPass,
+            bytes32 configId,
+            uint256 userIdentifier
+        ) = _executeVerificationFlow(header, proofData, userContextData);
 
         // Use destChainId and userDataToPass returned from _executeVerificationFlow
         _handleVerificationResult(destChainId, output, userDataToPass);
+
+        // Emit verification event for tracking
+        emit DisclosureVerified(
+            msg.sender,
+            header.contractVersion,
+            header.attestationId,
+            destChainId,
+            configId,
+            userIdentifier,
+            output,
+            userDataToPass
+        );
     }
 
     /**
@@ -577,7 +588,16 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         SelfStructs.HubInputHeader memory header,
         bytes memory proofData,
         bytes calldata userContextData
-    ) internal returns (bytes memory output, uint256 destChainId, bytes memory userDataToPass, bytes32 configId, uint256 userIdentifier) {
+    )
+        internal
+        returns (
+            bytes memory output,
+            uint256 destChainId,
+            bytes memory userDataToPass,
+            bytes32 configId,
+            uint256 userIdentifier
+        )
+    {
         bytes calldata remainingData;
         {
             (configId, destChainId, userIdentifier, remainingData) = _decodeUserContextData(userContextData);
