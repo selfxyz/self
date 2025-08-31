@@ -1,1 +1,1 @@
-export { default } from './DevFeatureFlagsScreen';
+export { default } from '@/screens/dev/feature-flags/DevFeatureFlagsScreen';

@@ -13,9 +13,7 @@ const ConfirmBelongingScreen = lazy(
 const ProofRequestStatusScreen = lazy(
   () => import('@/screens/prove/ProofRequestStatusScreen'),
 );
-const ProveScreen = lazy(
-  () => import('@/screens/prove/ProveScreen'),
-);
+const ProveScreen = lazy(() => import('@/screens/prove/ProveScreen'));
 const QRCodeTroubleScreen = lazy(
   () => import('@/screens/prove/QRCodeTroubleScreen'),
 );

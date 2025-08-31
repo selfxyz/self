@@ -12,15 +12,9 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import SplashScreen from '@/screens/system/SplashScreen';
 import { black } from '@/utils/colors';
 
-const LaunchScreen = lazy(
-  () => import('@/screens/system/LaunchScreen'),
-);
-const LoadingScreen = lazy(
-  () => import('@/screens/system/Loading'),
-);
-const ModalScreen = lazy(
-  () => import('@/screens/system/ModalScreen'),
-);
+const LaunchScreen = lazy(() => import('@/screens/system/LaunchScreen'));
+const LoadingScreen = lazy(() => import('@/screens/system/Loading'));
+const ModalScreen = lazy(() => import('@/screens/system/ModalScreen'));
 const DeferredLinkingInfoScreen = lazy(
   () => import('@/screens/system/DeferredLinkingInfoScreen'),
 );

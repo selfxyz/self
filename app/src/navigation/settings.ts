@@ -16,9 +16,7 @@ const ManageDocumentsScreen = lazy(
 const DocumentDataInfoScreen = lazy(
   () => import('@/screens/settings/DocumentDataInfoScreen'),
 );
-const SettingsScreen = lazy(
-  () => import('@/screens/settings/SettingsScreen'),
-);
+const SettingsScreen = lazy(() => import('@/screens/settings/SettingsScreen'));
 const ShowRecoveryPhraseScreen = lazy(
   () => import('@/screens/settings/ShowRecoveryPhraseScreen'),
 );

@@ -1,1 +1,1 @@
-export { default } from './DevSettingsScreen';
+export { default } from '@/screens/dev/settings/DevSettingsScreen';

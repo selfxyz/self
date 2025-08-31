@@ -1,1 +1,1 @@
-export { default } from './CreateMockScreen';
+export { default } from '@/screens/dev/create-mock/CreateMockScreen';
