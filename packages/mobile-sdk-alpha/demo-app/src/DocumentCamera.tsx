@@ -6,38 +6,27 @@ import React from 'react';
 import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
-  document: Record<string, unknown> | null;
   onBack: () => void;
 };
 
-export default function RegisterDocument({ document, onBack }: Props) {
+export default function DocumentCamera({ onBack }: Props) {
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Register Document</Text>
-      <Text style={styles.subtitle}>Document Registration Flow</Text>
+      <Text style={styles.title}>Document Camera</Text>
+      <Text style={styles.subtitle}>Passport/ID Scanning</Text>
 
       <View style={styles.content}>
         <Text style={styles.description}>
-          This screen would handle document registration with the Self network for identity verification.
+          This screen would handle camera-based document scanning for passports and ID cards.
         </Text>
 
         <View style={styles.features}>
           <Text style={styles.featureTitle}>Features (Not Implemented):</Text>
-          <Text style={styles.feature}>• Document validation and verification</Text>
-          <Text style={styles.feature}>• Zero-knowledge proof generation</Text>
-          <Text style={styles.feature}>• Blockchain registration</Text>
-          <Text style={styles.feature}>• OFAC compliance checks</Text>
-          <Text style={styles.feature}>• Identity attestation</Text>
+          <Text style={styles.feature}>• Camera integration for document scanning</Text>
+          <Text style={styles.feature}>• MRZ (Machine Readable Zone) detection</Text>
+          <Text style={styles.feature}>• Document validation and parsing</Text>
+          <Text style={styles.feature}>• Real-time feedback and guidance</Text>
         </View>
-
-        {document && (
-          <View style={styles.documentSection}>
-            <Text style={styles.documentTitle}>Mock Document Data:</Text>
-            <Text style={styles.documentData} selectable>
-              {JSON.stringify(document, null, 2)}
-            </Text>
-          </View>
-        )}
       </View>
 
       <Button title="Back to Menu" onPress={onBack} />
@@ -88,25 +77,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 8,
     color: '#333',
-  },
-  documentSection: {
-    backgroundColor: '#f0f8ff',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 24,
-  },
-  documentTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  documentData: {
-    fontSize: 12,
-    fontFamily: 'monospace',
-    backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#ddd',
   },
 });

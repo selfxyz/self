@@ -16,6 +16,7 @@ buildscript {
     }
     dependencies {
         classpath("com.android.tools.build:gradle:8.6.0")
+        classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
@@ -25,11 +26,25 @@ allprojects {
         google()
         mavenCentral()
         maven {
-            url("$rootDir/../../node_modules/react-native/android")
+            url("$rootDir/../../../../node_modules/react-native/android")
         }
         maven {
-            url("$rootDir/../../node_modules/jsc-android/dist")
+            url("$rootDir/../../../../node_modules/jsc-android/dist")
         }
         maven { url 'https://jitpack.io' }
     }
 }
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            android {
+                buildFeatures {
+                    buildConfig true
+                }
+            }
+        }
+    }
+}
+
+apply plugin: "com.facebook.react.rootproject"
