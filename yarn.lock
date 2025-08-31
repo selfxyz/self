@@ -4847,7 +4847,7 @@ __metadata:
     poseidon-lite: "npm:^0.3.0"
     poseidon-solidity: "npm:^0.0.5"
     prettier: "npm:3.5.3"
-    prettier-plugin-solidity: "npm:^2.0.0"
+    prettier-plugin-solidity: "npm:^2.1.0"
     snarkjs: "npm:^0.7.4"
     solidity-coverage: "npm:^0.8.14"
     tsup: "npm:^8.5.0"
@@ -21500,7 +21500,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-plugin-solidity@npm:^2.0.0":
+"prettier-plugin-solidity@npm:^2.1.0":
   version: 2.1.0
   resolution: "prettier-plugin-solidity@npm:2.1.0"
   dependencies:
