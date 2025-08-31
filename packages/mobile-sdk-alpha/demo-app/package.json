@@ -4,8 +4,9 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "android": "react-native run-android",
+    "android": "react-native run-android --verbose",
     "build": "tsc -p tsconfig.json --noEmit --pretty false",
+    "clean": "rm -rf ios/build android/app/build android/build && cd android && ./gradlew clean && cd ..",
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest"
