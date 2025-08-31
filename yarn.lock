@@ -5193,7 +5193,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/mobile-sdk-alpha@workspace:^, @selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha":
+"@selfxyz/mobile-sdk-alpha@workspace:*, @selfxyz/mobile-sdk-alpha@workspace:^, @selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha":
   version: 0.0.0-use.local
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:
@@ -13910,6 +13910,7 @@ __metadata:
     "@babel/core": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
     "@react-native/gradle-plugin": "npm:0.76.9"
+    "@selfxyz/mobile-sdk-alpha": "workspace:*"
     "@tsconfig/react-native": "npm:^3.0.6"
     "@types/jest": "npm:^29.5.14"
     "@types/react": "npm:^18.3.4"
