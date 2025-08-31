@@ -9,15 +9,16 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Self Demo App"
+        android:text="@string/self_demo_app"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:accessibilityHeading="true"
         android:layout_marginBottom="16dp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Welcome to the Self SDK Demo"
+        android:text="@string/welcome_to_self_sdk_demo"
         android:textSize="16sp"
         android:textAlignment="center" />
 

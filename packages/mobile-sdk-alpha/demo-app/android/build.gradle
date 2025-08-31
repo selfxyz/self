@@ -31,19 +31,23 @@ allprojects {
         maven {
             url("$rootDir/../../../../node_modules/jsc-android/dist")
         }
-        maven { url 'https://jitpack.io' }
+        exclusiveContent {
+          forRepository {
+            maven { url 'https://jitpack.io' }
+          }
+          filter {
+            includeGroupByRegex "com\\.github\\..*"
+          }
+        }
     }
 }
 
 subprojects {
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            android {
-                buildFeatures {
-                    buildConfig true
-                }
-            }
-        }
+    plugins.withId("com.android.application") {
+        android { buildFeatures { buildConfig true } }
+    }
+    plugins.withId("com.android.library") {
+        android { buildFeatures { buildConfig true } }
     }
 }
 

@@ -10,6 +10,7 @@ showcase
 output/*
 *.tsbuildinfo
 .yarnrc.yml
+.giga/tasks/*
 
 # PR Action Items - prevent accidental commits
 PR-*-ACTION*.md

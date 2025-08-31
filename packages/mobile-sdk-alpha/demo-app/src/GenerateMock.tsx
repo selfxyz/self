@@ -4,9 +4,10 @@
 
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
+
+import { Picker } from '@react-native-picker/picker';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { countryCodes } = require('@selfxyz/common/dist/cjs/src/constants/constants.cjs');
 
@@ -54,9 +55,17 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
     setError(null);
     setResult(null);
     try {
+      const ageNum = Number(age);
+      const expiryNum = Number(expiryYears);
+      if (!Number.isFinite(ageNum) || ageNum < 0 || ageNum > 120) {
+        throw new Error('Age must be a number between 0 and 120');
+      }
+      if (!Number.isFinite(expiryNum) || expiryNum < 0 || expiryNum > 30) {
+        throw new Error('Expiry years must be a number between 0 and 30');
+      }
       const doc = await generateMockDocument({
-        age: Number(age),
-        expiryYears: Number(expiryYears),
+        age: ageNum,
+        expiryYears: expiryNum,
         isInOfacList,
         selectedAlgorithm: algorithm,
         selectedCountry: country,
@@ -65,7 +74,7 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
       setResult(doc);
       onGenerate?.(doc);
     } catch (e) {
-      setError((e as Error).message);
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }

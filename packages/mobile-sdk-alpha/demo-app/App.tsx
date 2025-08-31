@@ -6,6 +6,9 @@ import React, { useState } from 'react';
 import { Button, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Screen = 'home' | 'register' | 'generate' | 'prove' | 'camera' | 'nfc' | 'onboarding' | 'qr';
+type GenerateMockCmp = typeof import('./src/GenerateMock').default;
+type RegisterDocumentCmp = typeof import('./src/RegisterDocument').default;
+type ProveQRCodeCmp = typeof import('./src/ProveQRCode').default;
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
@@ -14,17 +17,17 @@ function App() {
   const navigate = (next: Screen) => setScreen(next);
 
   if (screen === 'generate') {
-    const GenerateMock = require('./src/GenerateMock').default;
+    const GenerateMock = require('./src/GenerateMock').default as GenerateMockCmp;
     return <GenerateMock onGenerate={setMockDocument} onNavigate={navigate} onBack={() => navigate('home')} />;
   }
 
   if (screen === 'register') {
-    const RegisterDocument = require('./src/RegisterDocument').default;
+    const RegisterDocument = require('./src/RegisterDocument').default as RegisterDocumentCmp;
     return <RegisterDocument document={mockDocument} onBack={() => navigate('home')} />;
   }
 
   if (screen === 'prove') {
-    const ProveQRCode = require('./src/ProveQRCode').default;
+    const ProveQRCode = require('./src/ProveQRCode').default as ProveQRCodeCmp;
     return <ProveQRCode document={mockDocument} onBack={() => navigate('home')} />;
   }
 
@@ -78,8 +81,12 @@ function App() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>🎯 Core Features</Text>
         <MenuButton title="✅ Generate Mock Data" onPress={() => navigate('generate')} isWorking={true} />
-        <MenuButton title="⏳ Register Document" onPress={() => navigate('register')} />
-        <MenuButton title="⏳ Prove QR Code" onPress={() => navigate('prove')} />
+        <MenuButton
+          title="⏳ Register Document"
+          onPress={() => navigate('register')}
+          isWorking={Boolean(mockDocument)}
+        />
+        <MenuButton title="⏳ Prove QR Code" onPress={() => navigate('prove')} isWorking={Boolean(mockDocument)} />
       </View>
 
       <View style={styles.section}>

@@ -17,6 +17,7 @@
       "browser": "./dist/esm/browser.js",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs",
+      "react-native": "./dist/esm/index.js",
       "default": "./dist/esm/index.js"
     },
     "./browser": {
@@ -33,6 +34,7 @@
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
+  "react-native": "./dist/esm/index.js",
   "files": [
     "dist"
   ],
@@ -42,7 +44,7 @@
     "demo:android": "yarn workspace demo-app android",
     "demo:clean": "yarn workspace demo-app clean",
     "demo:ios": "yarn workspace demo-app ios",
-    "demo:start": "yarn demo:clean && yarn workspace demo-app start --reset-cache",
+    "demo:start": "yarn build && yarn demo:clean && yarn workspace demo-app start --reset-cache",
     "demo:test": "yarn workspace demo-app test",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",

@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Self Demo App</string>
+  <string name="self_demo_app">Self Demo App</string>
+  <string name="welcome_to_self_sdk_demo">Welcome to the Self SDK Demo</string>
 </resources>
