@@ -26,28 +26,14 @@ allprojects {
         google()
         mavenCentral()
         maven {
+            // All of React Native (JS, Android binaries) is installed from npm
             url("$rootDir/../../../../node_modules/react-native/android")
         }
         maven {
+            // Android JSC is installed from npm
             url("$rootDir/../../../../node_modules/jsc-android/dist")
         }
-        exclusiveContent {
-          forRepository {
-            maven { url 'https://jitpack.io' }
-          }
-          filter {
-            includeGroupByRegex "com\\.github\\..*"
-          }
-        }
-    }
-}
-
-subprojects {
-    plugins.withId("com.android.application") {
-        android { buildFeatures { buildConfig true } }
-    }
-    plugins.withId("com.android.library") {
-        android { buildFeatures { buildConfig true } }
+        maven { url 'https://jitpack.io' }
     }
 }
 
