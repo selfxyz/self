@@ -2,7 +2,20 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export default function ProveQRCode() {
-  // TODO: implement QR code proof
-  return null;
+import React from 'react';
+import { Button, Text, View } from 'react-native';
+
+type Props = {
+  document: Record<string, unknown> | null;
+  onBack: () => void;
+};
+
+export default function ProveQRCode({ document, onBack }: Props) {
+  return (
+    <View>
+      <Text>QR code proof flow not implemented</Text>
+      {document && <Text selectable>{JSON.stringify(document, null, 2)}</Text>}
+      <Button title="Back" onPress={onBack} />
+    </View>
+  );
 }

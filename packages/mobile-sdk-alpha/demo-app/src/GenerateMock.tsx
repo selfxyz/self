@@ -4,27 +4,53 @@
 
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 
-import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
+import {
+  generateMockDocument,
+  signatureAlgorithmToStrictSignatureAlgorithm,
+} from '@selfxyz/mobile-sdk-alpha';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { countryCodes } = require('@selfxyz/common/dist/cjs/src/constants/constants.cjs');
 
 const algorithmOptions = Object.keys(signatureAlgorithmToStrictSignatureAlgorithm);
 const documentTypeOptions = ['mock_passport', 'mock_id_card'] as const;
-const countryOptions = ['US', 'CA', 'GB'];
+const countryOptions = Object.keys(countryCodes);
 
-export default function GenerateMock() {
-  const [age, setAge] = useState('30');
-  const [expiryYears, setExpiryYears] = useState('10');
-  const [isInOfacList, setIsInOfacList] = useState(false);
-  const [algorithmIndex, setAlgorithmIndex] = useState(algorithmOptions.indexOf('sha256 rsa 65537 2048'));
-  const [countryIndex, setCountryIndex] = useState(0);
-  const [documentIndex, setDocumentIndex] = useState(0);
+const defaultAge = '21';
+const defaultExpiryYears = '5';
+const defaultAlgorithm = 'sha256 rsa 65537 2048';
+const defaultCountry = 'USA';
+const defaultDocumentType = 'mock_passport';
+const defaultOfac = true;
+
+type Props = {
+  onGenerate?: (doc: Record<string, unknown>) => void;
+  onNavigate: (screen: 'home' | 'register' | 'prove') => void;
+  onBack: () => void;
+};
+
+export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) {
+  const [age, setAge] = useState(defaultAge);
+  const [expiryYears, setExpiryYears] = useState(defaultExpiryYears);
+  const [isInOfacList, setIsInOfacList] = useState(defaultOfac);
+  const [algorithm, setAlgorithm] = useState(defaultAlgorithm);
+  const [country, setCountry] = useState(defaultCountry);
+  const [documentType, setDocumentType] = useState<(typeof documentTypeOptions)[number]>(defaultDocumentType);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
 
-  const cycleAlgorithm = () => setAlgorithmIndex((algorithmIndex + 1) % algorithmOptions.length);
-  const cycleCountry = () => setCountryIndex((countryIndex + 1) % countryOptions.length);
-  const cycleDocument = () => setDocumentIndex((documentIndex + 1) % documentTypeOptions.length);
+  const reset = () => {
+    setAge(defaultAge);
+    setExpiryYears(defaultExpiryYears);
+    setIsInOfacList(defaultOfac);
+    setAlgorithm(defaultAlgorithm);
+    setCountry(defaultCountry);
+    setDocumentType(defaultDocumentType as (typeof documentTypeOptions)[number]);
+    setResult(null);
+    setError(null);
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -35,11 +61,12 @@ export default function GenerateMock() {
         age: Number(age),
         expiryYears: Number(expiryYears),
         isInOfacList,
-        selectedAlgorithm: algorithmOptions[algorithmIndex],
-        selectedCountry: countryOptions[countryIndex],
-        selectedDocumentType: documentTypeOptions[documentIndex],
+        selectedAlgorithm: algorithm,
+        selectedCountry: country,
+        selectedDocumentType: documentType,
       });
       setResult(doc);
+      onGenerate?.(doc);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -49,6 +76,7 @@ export default function GenerateMock() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Button title="Back" onPress={onBack} />
       <Text style={styles.label}>Age</Text>
       <TextInput style={styles.input} keyboardType="numeric" value={age} onChangeText={setAge} />
       <Text style={styles.label}>Expiry Years</Text>
@@ -57,25 +85,43 @@ export default function GenerateMock() {
         <Text style={styles.label}>OFAC Listed</Text>
         <Switch value={isInOfacList} onValueChange={setIsInOfacList} />
       </View>
-      <View style={styles.selectorRow}>
-        <Text style={styles.label}>Algorithm: {algorithmOptions[algorithmIndex]}</Text>
-        <Button title="Change" onPress={cycleAlgorithm} />
+      <Text style={styles.label}>Algorithm</Text>
+      <Picker selectedValue={algorithm} onValueChange={itemValue => setAlgorithm(itemValue)}>
+        {algorithmOptions.map(alg => (
+          <Picker.Item label={alg} value={alg} key={alg} />
+        ))}
+      </Picker>
+      <Text style={styles.label}>Country</Text>
+      <Picker selectedValue={country} onValueChange={itemValue => setCountry(itemValue)}>
+        {countryOptions.map(code => (
+          <Picker.Item label={`${code} - ${countryCodes[code as keyof typeof countryCodes]}`} value={code} key={code} />
+        ))}
+      </Picker>
+      <Text style={styles.label}>Document Type</Text>
+      <Picker
+        selectedValue={documentType}
+        onValueChange={itemValue => setDocumentType(itemValue as (typeof documentTypeOptions)[number])}
+      >
+        {documentTypeOptions.map(dt => (
+          <Picker.Item label={dt} value={dt} key={dt} />
+        ))}
+      </Picker>
+      <View style={styles.buttonRow}>
+        <Button title="Reset" onPress={reset} />
+        <Button title="Generate" onPress={handleGenerate} disabled={loading} />
       </View>
-      <View style={styles.selectorRow}>
-        <Text style={styles.label}>Country: {countryOptions[countryIndex]}</Text>
-        <Button title="Change" onPress={cycleCountry} />
-      </View>
-      <View style={styles.selectorRow}>
-        <Text style={styles.label}>Document: {documentTypeOptions[documentIndex]}</Text>
-        <Button title="Change" onPress={cycleDocument} />
-      </View>
-      <Button title="Generate" onPress={handleGenerate} disabled={loading} />
       {loading && <ActivityIndicator style={styles.spinner} />}
       {error && <Text style={styles.error}>{error}</Text>}
       {result ? (
-        <Text selectable style={styles.result}>
-          {JSON.stringify(result, null, 2)}
-        </Text>
+        <>
+          <Text selectable style={styles.result}>
+            {JSON.stringify(result, null, 2)}
+          </Text>
+          <View style={styles.navRow}>
+            <Button title="Register Document" onPress={() => onNavigate('register')} />
+            <Button title="Prove QR Code" onPress={() => onNavigate('prove')} />
+          </View>
+        </>
       ) : null}
     </ScrollView>
   );
@@ -96,11 +142,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginVertical: 8,
   },
-  selectorRow: {
+  buttonRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     marginVertical: 8,
+  },
+  navRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
   },
   spinner: { marginVertical: 16 },
   error: { color: 'red', marginTop: 16 },

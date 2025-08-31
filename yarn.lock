@@ -4104,6 +4104,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-picker/picker@npm:^2.11.1":
+  version: 2.11.1
+  resolution: "@react-native-picker/picker@npm:2.11.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/d2e9aeb32ae80f2ab56fa025f1afd6d8ff8051e7078bfd17c6794ff0cc1538d4a2f548098826eb652e6cb64d998070b0111777c78de4dcb468cb71e7e4d93097
+  languageName: node
+  linkType: hard
+
 "@react-native/assets-registry@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/assets-registry@npm:0.76.9"
@@ -13909,7 +13919,9 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
+    "@react-native-picker/picker": "npm:^2.11.1"
     "@react-native/gradle-plugin": "npm:0.76.9"
+    "@selfxyz/common": "workspace:*"
     "@selfxyz/mobile-sdk-alpha": "workspace:*"
     "@tsconfig/react-native": "npm:^3.0.6"
     "@types/jest": "npm:^29.5.14"

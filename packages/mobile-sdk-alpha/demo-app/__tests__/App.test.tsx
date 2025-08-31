@@ -4,14 +4,15 @@
 
 import React from 'react';
 import renderer from 'react-test-renderer';
-import { Text } from 'react-native';
+import { Button, Text } from 'react-native';
 import App from '../App';
 
-test('renders menu items', () => {
+test('renders menu buttons', () => {
   const rendered = renderer.create(<App />);
-  const texts = rendered.root.findAllByType(Text).map(node => React.Children.toArray(node.props.children).join(''));
-  const expected = ['Self Demo App', 'Register Document', 'Generate Mock', 'Prove QR Code'];
-  expect(texts).toEqual(expect.arrayContaining(expected));
-  expect(texts).toHaveLength(expected.length);
+  const titleNode = rendered.root.findAllByType(Text).find(node => node.props.children === 'Self Demo App');
+  expect(titleNode).toBeTruthy();
+  const buttons = rendered.root.findAllByType(Button);
+  const titles = buttons.map(b => b.props.title);
+  expect(titles).toEqual(['Register Document', 'Generate Mock', 'Prove QR Code']);
   rendered.unmount();
 });
