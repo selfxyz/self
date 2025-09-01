@@ -16,9 +16,7 @@
       "types": "./dist/esm/index.d.ts",
       "browser": "./dist/esm/browser.js",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs",
-      "react-native": "./dist/esm/index.js",
-      "default": "./dist/esm/index.js"
+      "require": "./dist/cjs/index.cjs"
     },
     "./browser": {
       "types": "./dist/esm/browser.d.ts",
