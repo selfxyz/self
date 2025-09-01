@@ -90,5 +90,5 @@ template PassportVerifier(DG1_LEN, DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAl
     signal output signedAttrShaBytes[SIGNED_ATTR_HASH_ALGO_BYTES] <== BitsToBytesArray(SIGNED_ATTR_HASH_ALGO)(signedAttrShaBits);
 
     // verify passport signature
-    // SignatureVerifier(signatureAlgorithm, n, k)(signedAttrShaBits, pubKey_dsc, signature_passport);
+    SignatureVerifier(signatureAlgorithm, n, k)(signedAttrShaBits, pubKey_dsc, signature_passport);
 }
