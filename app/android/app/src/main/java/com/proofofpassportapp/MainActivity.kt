@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.content.pm.ActivityInfo
+import androidx.core.view.WindowCompat
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
@@ -29,12 +30,22 @@ class MainActivity : ReactActivity() {
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
     Log.d("MAIN_ACTIVITY", "onNewIntent: " + intent.action)
-    RNPassportReaderModule.getInstance().receiveIntent(intent)
+    try {
+      RNPassportReaderModule.getInstance().receiveIntent(intent)
+    } catch (e: IllegalStateException) {
+      // Module not initialized yet (React context not ready). Ignore safely.
+      Log.w("MAIN_ACTIVITY", "RNPassportReaderModule not ready; deferring NFC intent")
+      setIntent(intent)
+    }
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    // Lock to portrait orientation
-    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    // Prevent fragment state restoration to avoid react-native-screens crash
+    // See: https://github.com/software-mansion/react-native-screens/issues/17#issuecomment-424704978
+    super.onCreate(null)
+    // Ensure edge-to-edge is enabled consistently across Android versions
+    // Android 15 enables by default; on earlier versions, opt-in for immersive layouts
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+    // Allow system to manage orientation for large screens
   }
 }

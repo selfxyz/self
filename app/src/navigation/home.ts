@@ -29,7 +29,6 @@ const homeScreens = {
     options: {
       title: 'Self',
       header: HomeNavBar,
-      navigationBarColor: black,
       presentation: 'card',
     } as NativeStackNavigationOptions,
   },
@@ -37,7 +36,6 @@ const homeScreens = {
     screen: ProofHistoryScreen,
     options: {
       title: 'Approved Requests',
-      navigationBarColor: black,
       headerBackTitle: 'close',
     },
   },

@@ -48,7 +48,6 @@ const settingsScreens = {
       headerTitleStyle: {
         color: black,
       },
-      navigationBarColor: black,
     } as NativeStackNavigationOptions,
     config: {
       screens: {},

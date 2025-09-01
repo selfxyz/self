@@ -43,7 +43,6 @@ const AppNavigation = createNativeStackNavigator({
   initialRouteName: Platform.OS === 'web' ? 'Home' : 'Splash',
   screenOptions: {
     header: DefaultNavBar,
-    navigationBarColor: white,
   },
   layout: AppLayout,
   screens: navigationScreens,

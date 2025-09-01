@@ -24,14 +24,12 @@ const systemScreens = {
     screen: LaunchScreen,
     options: {
       header: () => <SystemBars style="light" />,
-      navigationBarColor: black,
     },
   },
   Loading: {
     screen: LoadingScreen,
     options: {
       headerShown: false,
-      navigationBarColor: black,
     } as NativeStackNavigationOptions,
   },
   Modal: {
@@ -54,7 +52,6 @@ const systemScreens = {
     screen: SplashScreen,
     options: {
       header: () => <SystemBars style="light" />,
-      navigationBarColor: black,
     },
   },
 };
