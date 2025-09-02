@@ -80,7 +80,7 @@ const NFC_METHODS = [
   //   key: 'skipCA',
   //   label: 'Skip CA',
   //   description:
-  //     'Skip Chip Authentication (CA). Chip authentication is like AA, that prevents clonned passports',
+  //     'Skip Chip Authentication (CA). Chip authentication is like AA, that prevents cloned passports',
   //   platform: ['ios'],
   //   params: { skipCA: true },
   // },

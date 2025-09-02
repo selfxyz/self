@@ -79,7 +79,7 @@ const routes =
       ] satisfies [React.FC<SvgProps>, string, RouteOption][])
     : ([
         [Data, 'View passport info', 'PassportDataInfo'],
-        [Feedback, 'Send feeback', 'email_feedback'],
+        [Feedback, 'Send feedback', 'email_feedback'],
         [
           FileText as React.FC<SvgProps>,
           'Manage ID documents',

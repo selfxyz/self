@@ -28,7 +28,7 @@ interface NonPersistedSettingsState {
 type SettingsState = PersistedSettingsState & NonPersistedSettingsState;
 
 /*
- * This store is used to store the settings of the app. Dont store anything sensative here
+ * This store is used to store the settings of the app. Dont store anything sensitive here
  */
 export const useSettingStore = create<SettingsState>()(
   persist(
