@@ -9,7 +9,10 @@
     "clean": "rm -rf ios/build android/app/build android/build && cd android && ./gradlew clean && cd ..",
     "ios": "react-native run-ios",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
+    "preandroid": "yarn prebuild",
+    "preios": "yarn prebuild"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",

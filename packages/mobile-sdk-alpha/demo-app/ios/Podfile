@@ -1,6 +1,6 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command("node", ["-p",
-                                           'require.resolve(
+                                                 'require.resolve(
     "react-native/scripts/react_native_pods.rb",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
@@ -21,7 +21,8 @@ target "SelfDemoApp" do
     :path => config[:reactNativePath],
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/..",
-    :fabric_enabled => false
+    :fabric_enabled => false,
+    :hermes_enabled => true,
   )
 
   post_install do |installer|

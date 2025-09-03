@@ -26,7 +26,9 @@
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
     "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
-    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types ",
+    "build:mobile-sdk": "yarn workspace @selfxyz/mobile-sdk-alpha build && yarn workspace demo-app build",
+    "demo:mobile": "yarn build:mobile-sdk && yarn workspace demo-app start"
   },
   "resolutions": {
     "@babel/core": "^7.28.3",

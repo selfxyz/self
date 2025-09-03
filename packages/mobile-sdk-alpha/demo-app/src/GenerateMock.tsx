@@ -5,11 +5,10 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
+import { countryCodes } from '@selfxyz/common';
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
 
 import { Picker } from '@react-native-picker/picker';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { countryCodes } = require('@selfxyz/common/dist/cjs/src/constants/constants.cjs');
 
 const algorithmOptions = Object.keys(signatureAlgorithmToStrictSignatureAlgorithm);
 const documentTypeOptions = ['mock_passport', 'mock_id_card'] as const;

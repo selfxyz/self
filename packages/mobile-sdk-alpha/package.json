@@ -37,13 +37,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsup && yarn postbuild",
+    "build": "rm -rf dist && tsup && yarn postbuild && yarn demo:validate",
     "postbuild": "node ./scripts/postBuild.mjs",
     "demo:android": "yarn workspace demo-app android",
     "demo:clean": "yarn workspace demo-app clean",
     "demo:ios": "yarn workspace demo-app ios",
     "demo:start": "yarn build && yarn demo:clean && yarn workspace demo-app start --reset-cache",
     "demo:test": "yarn workspace demo-app test",
+    "demo:validate": "yarn workspace demo-app build",
+    "demo:build": "node ./scripts/build-demo.mjs",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "format": "yarn nice",
