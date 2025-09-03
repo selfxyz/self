@@ -243,6 +243,16 @@ generate_certificate() {
 generate_certificate csca sha1 rsa 65537 4096
 generate_certificate dsc sha1 rsa 65537 2048 --signer sha1_rsa_65537_4096
 generate_certificate dsc sha1 rsa 65537 4096 --signer sha1_rsa_65537_4096
+generate_certificate csca sha1 rsa 64321 4096 --force
+generate_certificate dsc sha1 rsa 64321 4096 --signer sha1_rsa_64321_4096 --force
+generate_certificate csca sha256 rsa 130689 4096 --force
+generate_certificate dsc sha256 rsa 130689 4096 --signer sha256_rsa_130689_4096 --force
+generate_certificate csca sha256 rsa 122125 4096 --force
+generate_certificate dsc sha256 rsa 122125 4096 --signer sha256_rsa_122125_4096 --force
+generate_certificate csca sha256 rsa 107903 4096 --force
+generate_certificate dsc sha256 rsa 107903 4096 --signer sha256_rsa_107903_4096 --force
+generate_certificate csca sha256 rsa 56611 4096 --force
+generate_certificate dsc sha256 rsa 56611 4096 --signer sha256_rsa_56611_4096 --force
 generate_certificate csca sha256 rsa 65537 4096
 generate_certificate dsc sha256 rsa 65537 2048 --signer sha256_rsa_65537_4096 --force
 generate_certificate dsc sha256 rsa 65537 3072 --signer sha256_rsa_65537_4096
@@ -262,6 +272,7 @@ generate_certificate dsc sha256 rsa 3 4096 --signer sha256_rsa_3_4096
 generate_certificate csca sha256 rsapss 32 65537 4096
 generate_certificate csca sha256 rsapss 32 65537 2048
 generate_certificate csca sha256 rsapss 32 65537 3072
+generate_certificate dsc sha256 rsapss 32 65537 4096 --signer sha256_rsapss_32_65537_4096 --force
 generate_certificate dsc sha256 rsapss 32 65537 4096 --signer sha256_rsapss_32_65537_4096
 generate_certificate dsc sha256 rsapss 32 65537 2048 --signer sha256_rsapss_32_65537_2048
 generate_certificate dsc sha256 rsapss 64 65537 2048 --signer sha256_rsapss_32_65537_2048 # DMK
@@ -278,6 +289,7 @@ generate_certificate dsc sha384 rsapss 48 65537 3072 --signer sha384_rsapss_48_6
 generate_certificate csca sha512 rsapss 64 65537 4096
 generate_certificate dsc sha512 rsapss 64 65537 4096 --signer sha512_rsapss_64_65537_4096
 generate_certificate dsc sha512 rsapss 64 65537 2048 --signer sha512_rsapss_64_65537_4096
+
 # ECDSA certificates
 generate_certificate csca sha224 ecdsa secp224r1
 generate_certificate dsc sha224 ecdsa secp224r1 --signer sha224_ecdsa_secp224r1
@@ -293,6 +305,7 @@ generate_certificate csca sha256 ecdsa secp521r1
 generate_certificate dsc sha256 ecdsa secp521r1 --signer sha256_ecdsa_secp521r1
 generate_certificate csca sha512 ecdsa secp521r1
 generate_certificate dsc sha512 ecdsa secp521r1 --signer sha512_ecdsa_secp521r1
+
 # Brainpool ECDSA certificates
 generate_certificate csca sha1 ecdsa brainpoolP224r1
 generate_certificate dsc sha1 ecdsa brainpoolP224r1 --signer sha1_ecdsa_brainpoolP224r1

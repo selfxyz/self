@@ -935,8 +935,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         const submitBody = await get()._generatePayload();
         wsConnection.send(JSON.stringify(submitBody));
         trackEvent(ProofEvents.PAYLOAD_SENT);
+        trackEvent(ProofEvents.PROVING_PROCESS_STARTED);
         actor!.send({ type: 'START_PROVING' });
-        trackEvent(ProofEvents.PROOF_VERIFICATION_STARTED);
       } catch (error) {
         console.error('Error during startProving preparation/send:', error);
         trackEvent(ProofEvents.PROOF_FAILED, {

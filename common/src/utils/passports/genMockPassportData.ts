@@ -1,6 +1,6 @@
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
-import * as forge from 'node-forge';
+import forge from 'node-forge';
 
 import type { countryCodes } from '../../constants/constants.js';
 import { getCurveForElliptic } from '../certificate_parsing/curves.js';

@@ -161,6 +161,34 @@ function getMockDSC(signatureType: SignatureAlgorithm) {
       privateKeyPem = mockCertificates.mock_dsc_sha224_ecdsa_secp224r1_key;
       dsc = mockCertificates.mock_dsc_sha224_ecdsa_secp224r1;
       break;
+    case 'rsapss_sha256_65537_4096_32':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_65537_4096_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsapss_32_65537_4096;
+      break;
+    case 'rsapss_sha256_65537_2048_32':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048;
+      break;
+    case 'rsa_sha1_64321_4096':
+      privateKeyPem = mockCertificates.mock_dsc_sha1_rsa_64321_4096_key;
+      dsc = mockCertificates.mock_dsc_sha1_rsa_64321_4096;
+      break;
+    case 'rsa_sha256_130689_4096':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_130689_4096_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_130689_4096;
+      break;
+    case 'rsa_sha256_122125_4096':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_122125_4096_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_122125_4096;
+      break;
+    case 'rsa_sha256_107903_4096':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_107903_4096_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_107903_4096;
+      break;
+    case 'rsa_sha256_56611_4096':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_56611_4096_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_56611_4096;
+      break;
     default:
       throw new Error(`Unsupported signature type: ${signatureType}`);
   }

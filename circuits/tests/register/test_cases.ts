@@ -14,10 +14,9 @@ export const sigAlgs: TestCase[] = [
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
     hashFunction: 'sha256',
-    sigAlg: 'rsapss',
-    domainParameter: '65537',
-    keyLength: '2048',
-    saltLength: '64', // Denmark
+    sigAlg: 'rsa',
+    domainParameter: '3',
+    keyLength: '4096',
   },
 ];
 

@@ -5,6 +5,7 @@ include "../crypto/signature/rsapss/rsapss65537.circom";
 include "../crypto/signature/ecdsa/ecdsaVerifier.circom";
 include "../crypto/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
 include "../crypto/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
+include "../crypto/signature/rsa/verifyRsaGenericPkcs1v1_5.circom";
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 
 /// @title SignatureVerifier
@@ -28,7 +29,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     var msg_len = (HASH_LEN_BITS + n - 1) \ n;
 
     signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
-   
+
     if (
         signatureAlgorithm == 1
         || signatureAlgorithm == 3
@@ -38,7 +39,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 15
         || signatureAlgorithm == 31
         || signatureAlgorithm == 34
-    ) { 
+    ) {
         component rsa65537 = VerifyRsa65537Pkcs1v1_5(n, k, HASH_LEN_BITS);
         for (var i = 0; i < msg_len; i++) {
             rsa65537.message[i] <== hashParsed[i];
@@ -48,7 +49,22 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa65537.modulus <== pubKey;
         rsa65537.signature <== signature;
-
+    } else if (
+        signatureAlgorithm == 47
+        || signatureAlgorithm == 48
+        || signatureAlgorithm == 49
+        || signatureAlgorithm == 50
+        || signatureAlgorithm == 51
+    ) {
+        component rsaGeneric = VerifyRsaGenericPkcs1v1_5(n, k, HASH_LEN_BITS, signatureAlgorithm);
+        for (var i = 0; i < msg_len; i++) {
+            rsaGeneric.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsaGeneric.message[i] <== 0;
+        }
+        rsaGeneric.modulus <== pubKey;
+        rsaGeneric.signature <== signature;
     } else if (
         signatureAlgorithm == 13
         || signatureAlgorithm == 32
@@ -64,7 +80,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsa3.modulus <== pubKey;
         rsa3.signature <== signature;
     } else if (
-        signatureAlgorithm == 4 
+        signatureAlgorithm == 4
         || signatureAlgorithm == 12
         || signatureAlgorithm == 18
         || signatureAlgorithm == 19
@@ -98,11 +114,11 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsaPss3ShaVerification.hashed <== hash; // send the raw hash
 
     } else if (
-        signatureAlgorithm == 9 
-        || signatureAlgorithm == 7 
-        || signatureAlgorithm == 8 
-        || signatureAlgorithm == 9 
-        || signatureAlgorithm == 21 
+        signatureAlgorithm == 9
+        || signatureAlgorithm == 7
+        || signatureAlgorithm == 8
+        || signatureAlgorithm == 9
+        || signatureAlgorithm == 21
         || signatureAlgorithm == 22
         || signatureAlgorithm == 23
         || signatureAlgorithm == 24

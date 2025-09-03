@@ -259,7 +259,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<
 
   return (
     <HeldPrimaryButton
-      trackEvent={ProofEvents.PROOF_VERIFICATION_STARTED}
+      trackEvent={ProofEvents.PROOF_VERIFY_LONG_PRESS}
       onLongPress={() => {
         if (state.matches('ready')) {
           send({ type: 'VERIFY' });
