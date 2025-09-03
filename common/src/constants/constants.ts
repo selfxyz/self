@@ -101,6 +101,7 @@ export const MAX_BYTES_IN_FIELD = 31;
 export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
   rsa_sha256_65537_4096: 512,
   rsa_sha1_65537_4096: 640,
+  rsa_sha1_64321_4096: 640,
   rsapss_sha256_65537_2048: 640,
   rsapss_sha256_65537_3072: 640,
   rsapss_sha256_65537_4096: 768,
@@ -130,7 +131,7 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number],
 export const MAX_PADDED_SIGNED_ATTR_LEN: Record<(typeof hashAlgos)[number], number> = {
   sha1: 128,
   sha224: 128,
-  sha256: 128,
+  sha256: 256,
   sha384: 256,
   sha512: 256,
 };
@@ -242,6 +243,7 @@ export enum SignatureAlgorithmIndex {
   rsapss_sha384_65537_4096 = 35,
   ecdsa_sha1_brainpoolP256r1_256 = 36,
   ecdsa_sha512_secp521r1_521 = 41,
+  rsa_sha1_64321_4096 = 47,
 }
 
 export const TREE_TRACKER_URL = 'https://tree.self.xyz';
