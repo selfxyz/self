@@ -119,7 +119,7 @@ function validateTD3Format(lines: string[]): boolean {
 /**
  * Extract MRZ information from TD3 format
  * TD3 Line 1: DOCUMENTTYPE(1)SUBTYPE(1)ISSUINGCOUNTRY(3)SURNAME<<GIVENNAMES<<<<<<<<<<<<<<<<<<
- * TD3 Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)OPTIONAL(7)FINALCHECK(1)
+ * TD3 Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)PERSONAL(14)PERSONALCHECK(1)FINALCHECK(1)
  */
 function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
   const line1 = lines[0];
@@ -134,7 +134,7 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
   const nameField = line1.slice(5, 44);
   const { surname, givenNames } = parseNames(nameField);
 
-  // Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)OPTIONAL(7)FINALCHECK(1)
+  // Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)PERSONAL(14)PERSONALCHECK(1)FINALCHECK(1)
   const passportNumber = line2.slice(0, 9).replace(/</g, '');
 
   // Robust nationality extraction: scan 4-character window for three contiguous A-Z letters
