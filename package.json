@@ -15,12 +15,8 @@
     "nohoist": [
       "**/react-native",
       "**/react-native/**",
-      "**/@react-native-*",
-      "**/@react-native-*/**",
       "**/@babel/runtime",
-      "**/@babel/runtime/**",
-      "**/metro-*",
-      "**/metro-*/**"
+      "**/@babel/runtime/**"
     ]
   },
   "scripts": {

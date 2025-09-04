@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           # Build demo-app and all its transitive workspace deps in the correct order
-          yarn workspaces foreach -At --from demo-app run build
+          yarn workspaces foreach -R -t --from demo-app run build
       - name: Run demo app tests
         run: |
           yarn workspace demo-app test
