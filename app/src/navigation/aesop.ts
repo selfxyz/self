@@ -9,17 +9,17 @@ import { ProgressNavBar } from '@/components/NavBar';
 import { shouldShowAesopRedesign } from '@/hooks/useAesopRedesign';
 import { white } from '@/utils/colors';
 
-const PassportOnboardingScreen = lazy(
-  () => import('@/screens/aesop/PassportOnboardingScreen'),
+const DocumentOnboardingScreen = lazy(
+  () => import('@/screens/aesop/DocumentOnboardingScreen'),
 );
 
 const aesopScreens = {
-  PassportOnboarding: {
-    screen: PassportOnboardingScreen,
+  DocumentOnboarding: {
+    screen: DocumentOnboardingScreen,
     options: {
       animation: 'slide_from_bottom',
       header: ProgressNavBar,
-      title: 'Scan your passport',
+      title: 'Scan your document',
       headerStyle: {
         backgroundColor: white,
       },

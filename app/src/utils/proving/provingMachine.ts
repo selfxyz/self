@@ -278,7 +278,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'passport_not_supported') {
         if (navigationRef.isReady()) {
           const currentPassportData = get().passportData;
-          (navigationRef as any).navigate('UnsupportedPassport', {
+          (navigationRef as any).navigate('UnsupportedDocument', {
             passportData: currentPassportData,
           });
         }
@@ -290,7 +290,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
       if (state.value === 'passport_data_not_found') {
         if (navigationRef.isReady()) {
-          navigationRef.navigate('PassportDataNotFound');
+          navigationRef.navigate('DocumentDataNotFound');
         }
       }
       if (state.value === 'failure') {
@@ -935,8 +935,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         const submitBody = await get()._generatePayload();
         wsConnection.send(JSON.stringify(submitBody));
         trackEvent(ProofEvents.PAYLOAD_SENT);
+        trackEvent(ProofEvents.PROVING_PROCESS_STARTED);
         actor!.send({ type: 'START_PROVING' });
-        trackEvent(ProofEvents.PROOF_VERIFICATION_STARTED);
       } catch (error) {
         console.error('Error during startProving preparation/send:', error);
         trackEvent(ProofEvents.PROOF_FAILED, {

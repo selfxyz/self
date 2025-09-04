@@ -81,7 +81,7 @@ export const handleUrl = (uri: string) => {
       const selfAppJson = JSON.parse(selfAppStr);
       useSelfAppStore.getState().setSelfApp(selfAppJson);
       useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
-      navigationRef.navigate('ProveScreen');
+      navigationRef.navigate('Prove');
 
       return;
     } catch (error) {
@@ -93,7 +93,7 @@ export const handleUrl = (uri: string) => {
   } else if (sessionId && typeof sessionId === 'string') {
     useSelfAppStore.getState().cleanSelfApp();
     useSelfAppStore.getState().startAppListener(sessionId);
-    navigationRef.navigate('ProveScreen');
+    navigationRef.navigate('Prove');
   } else if (mock_passport) {
     try {
       const data = JSON.parse(mock_passport);

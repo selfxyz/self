@@ -8,7 +8,8 @@
     "packages/*",
     "prover/tests",
     "sdk/*",
-    "scripts/tests"
+    "scripts/tests",
+    "packages/mobile-sdk-alpha/demo-app"
   ],
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
@@ -29,7 +30,15 @@
   },
   "resolutions": {
     "@typescript-eslint/eslint-plugin": "^8.39.0",
-    "@typescript-eslint/parser": "^8.39.0"
+    "@typescript-eslint/parser": "^8.39.0",
+    "@babel/core": "^7.28.3",
+    "@babel/runtime": "^7.28.3",
+    "react": "^18.3.1",
+    "react-native": "0.76.9"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-native": "0.76.9"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

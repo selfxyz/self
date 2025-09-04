@@ -6,7 +6,6 @@ import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { HomeNavBar } from '@/components/NavBar';
-import { black } from '@/utils/colors';
 
 const DisclaimerScreen = lazy(() => import('@/screens/home/DisclaimerScreen'));
 const HomeScreen = lazy(() => import('@/screens/home/HomeScreen'));
@@ -29,7 +28,6 @@ const homeScreens = {
     options: {
       title: 'Self',
       header: HomeNavBar,
-      navigationBarColor: black,
       presentation: 'card',
     } as NativeStackNavigationOptions,
   },
@@ -37,7 +35,6 @@ const homeScreens = {
     screen: ProofHistoryScreen,
     options: {
       title: 'Approved Requests',
-      navigationBarColor: black,
       headerBackTitle: 'close',
     },
   },

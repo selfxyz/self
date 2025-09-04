@@ -5,13 +5,13 @@
 import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-const PassportDataNotFound = lazy(
-  () => import('@/screens/recovery/PassportDataNotFoundScreen'),
+const DocumentDataNotFound = lazy(
+  () => import('@/screens/recovery/DocumentDataNotFoundScreen'),
 );
 
 const recoveryScreens = {
-  PassportDataNotFound: {
-    screen: PassportDataNotFound,
+  DocumentDataNotFound: {
+    screen: DocumentDataNotFound,
     options: {
       headerShown: false,
       gestureEnabled: false,

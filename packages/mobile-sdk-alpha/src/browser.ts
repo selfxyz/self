@@ -52,6 +52,8 @@ export { defaultConfig } from './config/defaults';
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
+export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+
 export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
 
 // Core functions

@@ -140,14 +140,14 @@ const ProveScreen: React.FC = () => {
   function onVerify() {
     provingStore.setUserConfirmed();
     buttonTap();
-    trackEvent(ProofEvents.PROOF_VERIFICATION_STARTED, {
+    trackEvent(ProofEvents.PROOF_VERIFY_CONFIRMATION_ACCEPTED, {
       appName: selectedApp?.appName,
       sessionId: provingStore.uuid,
       endpointType: selectedApp?.endpointType,
       userIdType: selectedApp?.userIdType,
     });
     setTimeout(() => {
-      navigate('ProofRequestStatusScreen');
+      navigate('ProofRequestStatus');
     }, 100);
   }
 

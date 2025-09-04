@@ -51,7 +51,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
         try {
           Clipboard.setString('');
         } catch {}
-        props.navigation.navigate('ProveScreen');
+        props.navigation.navigate('Prove');
       } catch (error) {
         console.error('Error consuming token:', error);
         if (

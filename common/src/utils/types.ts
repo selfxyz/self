@@ -105,7 +105,14 @@ export type SignatureAlgorithm =
   | 'ecdsa_sha224_brainpoolP224r1_224'
   | 'ecdsa_sha256_brainpoolP224r1_224'
   | 'ecdsa_sha384_brainpoolP512r1_512'
-  | 'ecdsa_sha512_brainpoolP512r1_512';
+  | 'ecdsa_sha512_brainpoolP512r1_512'
+  | 'rsapss_sha256_65537_4096_32'
+  | 'rsapss_sha256_65537_2048_32'
+  | 'rsa_sha1_64321_4096'
+  | 'rsa_sha256_130689_4096'
+  | 'rsa_sha256_122125_4096'
+  | 'rsa_sha256_107903_4096'
+  | 'rsa_sha256_56611_4096';
 
 // keys should match DocumentCategory
 export enum AttestationIdHex {

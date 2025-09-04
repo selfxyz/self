@@ -1,0 +1,26 @@
+name: Mobile SDK Demo CI
+
+on:
+  pull_request:
+    paths:
+      - "packages/mobile-sdk-alpha/demo-app/**"
+      - ".github/workflows/mobile-sdk-demo-ci.yml"
+      - ".github/actions/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Run demo app tests
+        run: |
+          yarn workspace demo-app test
+      - name: Build demo app
+        run: |
+          yarn workspace demo-app build

@@ -83,7 +83,7 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
 
   getAll(): Record<string, RemoteConfigValue> {
     const result: Record<string, RemoteConfigValue> = {};
-    for (const [key, value] of Object.entries(this.config)) {
+    for (const [key, _value] of Object.entries(this.config)) {
       result[key] = this.getValue(key);
     }
     return result;
