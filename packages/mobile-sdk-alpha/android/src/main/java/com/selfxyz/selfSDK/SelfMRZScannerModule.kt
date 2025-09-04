@@ -26,7 +26,7 @@ ReactContextBaseJavaModule(reactContext), CameraMLKitFragment.CameraMLKitCallbac
     @ReactMethod
     fun startScanning(promise: Promise) {
       scanPromise = promise
-      val activity = currentActivity as? FragmentActivity ?: return
+        val activity = reactApplicationContext.currentActivity as? FragmentActivity ?: return
 
       activity.runOnUiThread {
         val container = FrameLayout(activity)

@@ -12,7 +12,9 @@ import UIKit
 struct SelfMRZScanner {
     static func scan(image: UIImage, roi: CGRect? = nil, completion: @escaping (String, [CGRect]) -> Void) {
         guard let cgImage = image.cgImage else {
-            completion("Image not valid", [])
+            DispatchQueue.main.async {
+                completion("Image not valid", [])
+            }
             return
         }
 
@@ -23,7 +25,9 @@ struct SelfMRZScanner {
 
             guard let observations = request.results as? [VNRecognizedTextObservation] else {
                 print("No text observations found")
-                completion("No text found", [])
+                DispatchQueue.main.async {
+                    completion("No text found", [])
+                }
                 return
             }
 
@@ -62,12 +66,14 @@ struct SelfMRZScanner {
                 }
             }
 
-            if mrzLines.isEmpty {
-                print("No MRZ lines found")
-                completion("", [])
-            } else {
-                print("Found \(mrzLines.count) MRZ lines")
-                completion(mrzLines.joined(separator: "\n"), boxes)
+            DispatchQueue.main.async {
+                if mrzLines.isEmpty {
+                    print("No MRZ lines found")
+                    completion("", [])
+                } else {
+                    print("Found \(mrzLines.count) MRZ lines")
+                    completion(mrzLines.joined(separator: "\n"), boxes)
+                }
             }
         }
         request.recognitionLevel = .accurate
@@ -92,6 +98,9 @@ struct SelfMRZScanner {
                 try handler.perform([request])
             } catch {
                 print("Failed to perform recognition: \(error)")
+                DispatchQueue.main.async {
+                    completion("Failed to perform recognition: \(error)", [])
+                }
             }
         }
     }

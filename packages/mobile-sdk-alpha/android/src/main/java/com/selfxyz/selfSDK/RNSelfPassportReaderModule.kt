@@ -249,7 +249,7 @@ class RNSelfPassportReaderModule(private val reactContext: ReactApplicationConte
     override fun onHostResume() {
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
         mNfcAdapter?.let {
-            val activity = currentActivity
+            val activity = reactApplicationContext.currentActivity
             activity?.let {
                 val intent = Intent(it.applicationContext, it.javaClass)
                 intent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -262,7 +262,7 @@ class RNSelfPassportReaderModule(private val reactContext: ReactApplicationConte
 
     override fun onHostPause() {
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
-        mNfcAdapter?.disableForegroundDispatch(currentActivity)
+        mNfcAdapter?.disableForegroundDispatch(reactApplicationContext.currentActivity)
     }
 
     fun receiveIntent(intent: Intent) {
