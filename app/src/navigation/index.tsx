@@ -24,7 +24,6 @@ import recoveryScreens from '@/navigation/recovery';
 import settingsScreens from '@/navigation/settings';
 import systemScreens from '@/navigation/system';
 import analytics from '@/utils/analytics';
-import { white } from '@/utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
 export const navigationScreens = {
