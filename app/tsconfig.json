@@ -10,9 +10,7 @@
       "@env": ["./env.ts"],
       "@selfxyz/common": ["../common/src"],
       "@selfxyz/common/*": ["../common/src/*"],
-      "@selfxyz/common/utils/passports/*": [
-        "../common/src/utils/passports/*"
-      ],
+      "@selfxyz/common/utils/passports/*": ["../common/src/utils/passports/*"],
       "@selfxyz/mobile-sdk-alpha": [
         "../packages/mobile-sdk-alpha/src",
         "../packages/mobile-sdk-alpha/dist"

@@ -31,26 +31,31 @@ function checkFile(filePath) {
 
 function main() {
   const args = process.argv.slice(2);
-  const targetDir = args[0] && !args[0].startsWith('--') ? path.resolve(args[0]) : process.cwd();
+  const targetDirs = args.filter(arg => !arg.startsWith('--'));
+  const directories = targetDirs.length > 0
+    ? targetDirs.map(dir => path.resolve(dir))
+    : [process.cwd()];
   let hasErrors = false;
 
-  // Get all relevant files
+  // Get all relevant files from all directories
   const patterns = EXTENSIONS.map(ext => path.join('src', ext));
   patterns.push(...EXTENSIONS.map(ext => path.join('tests', ext)));
   patterns.push(...EXTENSIONS.map(ext => path.join('scripts', ext)));
   patterns.push('*.ts', '*.tsx', '*.js', '*.jsx');
 
-  for (const pattern of patterns) {
-    const files = glob
-      .sync(pattern, {
-        cwd: targetDir,
-        ignore: ['node_modules/**', 'dist/**', 'build/**', '**/*.d.ts'],
-      })
-      .map(file => path.join(targetDir, file));
+  for (const targetDir of directories) {
+    for (const pattern of patterns) {
+      const files = glob
+        .sync(pattern, {
+          cwd: targetDir,
+          ignore: ['node_modules/**', 'dist/**', 'build/**', '**/*.d.ts'],
+        })
+        .map(file => path.join(targetDir, file));
 
-    for (const file of files) {
-      if (!checkFile(file)) {
-        hasErrors = true;
+      for (const file of files) {
+        if (!checkFile(file)) {
+          hasErrors = true;
+        }
       }
     }
   }

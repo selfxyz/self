@@ -4,15 +4,15 @@
   "private": true,
   "main": "index.js",
   "scripts": {
+    "preandroid": "yarn prebuild",
     "android": "react-native run-android --verbose",
+    "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
     "build": "tsc -p tsconfig.json --noEmit --pretty false",
     "clean": "rm -rf ios/build android/app/build android/build && cd android && ./gradlew clean && cd ..",
+    "preios": "yarn prebuild",
     "ios": "react-native run-ios",
     "start": "react-native start",
-    "test": "jest",
-    "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
-    "preandroid": "yarn prebuild",
-    "preios": "yarn prebuild"
+    "test": "jest"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",

@@ -4874,6 +4874,7 @@ __metadata:
     ethers: "npm:^6.11.0"
     expo-modules-core: "npm:^2.2.1"
     jest: "npm:^29.6.3"
+    js-sha256: "npm:^0.11.1"
     js-sha512: "npm:^0.9.0"
     lottie-react: "npm:^2.4.1"
     lottie-react-native: "npm:7.2.2"
@@ -4936,12 +4937,14 @@ __metadata:
     "@typescript-eslint/parser": "npm:^8.0.0"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^10.1.8"
+    eslint-import-resolver-typescript: "npm:^3.7.0"
     eslint-plugin-import: "npm:^2.31.0"
     eslint-plugin-prettier: "npm:^5.5.4"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-sort-exports: "npm:^0.8.0"
     jsdom: "npm:^24.0.0"
     prettier: "npm:^3.5.3"
+    react-native: "npm:^0.81.1"
     tslib: "npm:^2.6.2"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
@@ -4949,7 +4952,6 @@ __metadata:
   peerDependencies:
     react: ^18.3.1
     react-native: ^0.76.9
-    tamagui: ^1.126.0
   languageName: unknown
   linkType: soft
 
@@ -18140,7 +18142,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-sha256@npm:^0.11.0":
+"js-sha256@npm:^0.11.0, js-sha256@npm:^0.11.1":
   version: 0.11.1
   resolution: "js-sha256@npm:0.11.1"
   checksum: 10c0/ef8e294b6f38f218e4834cb653471dd1a76808cea93dc66eaffcb04124116bc36d6cebc4e8866753e184ab4e57892b6ef21918e8ab0450179a7e093ea962d974

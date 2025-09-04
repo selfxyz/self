@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { Button, Text, YStack } from 'tamagui';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { PassportCameraProps } from '../../types/ui';
 
 // Simple placeholder component - this would be replaced with actual camera UI
 export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => (
-  <YStack space="$4" padding="$4">
-    <Text fontSize="$6" fontWeight="bold">
-      Passport Camera
-    </Text>
-    <Button
+  <View style={styles.container}>
+    <Text style={styles.title}>Passport Camera</Text>
+    <TouchableOpacity
+      style={styles.button}
       onPress={() =>
         onMRZDetected({
           passportNumber: 'L898902C3',
@@ -31,7 +31,34 @@ export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => 
         })
       }
     >
-      Simulate MRZ Detection
-    </Button>
-  </YStack>
+      <Text style={styles.buttonText}>Simulate MRZ Detection</Text>
+    </TouchableOpacity>
+  </View>
 );
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

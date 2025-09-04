@@ -182,14 +182,27 @@ function main() {
   const isFix = args.includes('--fix');
   const isCheck = args.includes('--check') || !isFix;
   const requireHeader = args.includes('--require');
-  const dirArg = args.find(arg => !arg.startsWith('--'));
-  const projectRoot = dirArg ? path.resolve(dirArg) : process.cwd();
-  const files = findFiles(projectRoot);
+
+  // Get all directory arguments (non-flag arguments)
+  const dirArgs = args.filter(arg => !arg.startsWith('--'));
+  const projectRoots =
+    dirArgs.length > 0
+      ? dirArgs.map(dir => path.resolve(dir))
+      : [process.cwd()];
+
+  // Collect files from all directories
+  const files = [];
+  for (const projectRoot of projectRoots) {
+    files.push(...findFiles(projectRoot));
+  }
 
   const issues = [];
 
   for (const file of files) {
-    const issue = checkLicenseHeader(file, { requireHeader, projectRoot });
+    const issue = checkLicenseHeader(file, {
+      requireHeader,
+      projectRoot: process.cwd(),
+    });
     if (issue) {
       issues.push(issue);
 
@@ -206,7 +219,7 @@ function main() {
   if (isCheck) {
     // Show which directories require headers
     const requiredDirs = ['app/', 'packages/mobile-sdk-alpha/'];
-    console.log(`📋 License headers required in: ${requiredDirs.join(', ')}\n`);
+    console.log(`📋 License headers required in: ${requiredDirs.join(', ')}`);
 
     if (issues.length === 0) {
       console.log('✅ All license headers are properly formatted');
