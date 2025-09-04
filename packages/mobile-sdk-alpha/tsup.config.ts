@@ -24,6 +24,7 @@ export default defineConfig([
     tsconfig: './tsconfig.json',
     target: 'es2020',
     external: ['react', 'react-native'],
+    noExternal: ['@selfxyz/common'],
     esbuildOptions(options) {
       options.supported = {
         ...options.supported,
@@ -53,6 +54,7 @@ export default defineConfig([
     tsconfig: './tsconfig.cjs.json',
     target: 'es2020',
     external: ['react', 'react-native'],
+    noExternal: ['@selfxyz/common'],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     esbuildOptions(options) {
       options.supported = {
