@@ -10,7 +10,6 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 // This is because it's used as a fallback for the Suspense boundary in the root navigator,
 // ensuring it's immediately available at startup.
 import SplashScreen from '@/screens/system/SplashScreen';
-import { black } from '@/utils/colors';
 
 const LaunchScreen = lazy(() => import('@/screens/system/LaunchScreen'));
 const LoadingScreen = lazy(() => import('@/screens/system/Loading'));
@@ -24,14 +23,12 @@ const systemScreens = {
     screen: LaunchScreen,
     options: {
       header: () => <SystemBars style="light" />,
-      navigationBarColor: black,
     },
   },
   Loading: {
     screen: LoadingScreen,
     options: {
       headerShown: false,
-      navigationBarColor: black,
     } as NativeStackNavigationOptions,
   },
   Modal: {
@@ -54,7 +51,6 @@ const systemScreens = {
     screen: SplashScreen,
     options: {
       header: () => <SystemBars style="light" />,
-      navigationBarColor: black,
     },
   },
 };

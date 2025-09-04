@@ -177,8 +177,8 @@ android {
         exclude 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
         pickFirst '**/libc++_shared.so'
         jniLibs {
-            // Legacy packaging keeps page alignment for 16k page size devices
-            useLegacyPackaging true
+            // Use modern packaging so AGP can 16 KB-align uncompressed .so files
+            useLegacyPackaging false
         }
     }
 }

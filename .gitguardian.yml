@@ -1,4 +1,68 @@
 version: 2
+
+# Ignore specific file patterns (newer format)
+ignore:
+  # Mock certificates for testing (these are intentionally committed test data)
+  - "**/mock_certificates/**/*.key"
+  - "**/mock_certificates/**/*.crt"
+  - "**/mock_certificates/**/*.pem"
+  - "**/constants/mockCertificates.ts"
+
+  # Test data files
+  - "**/test/**/*.key"
+  - "**/test/**/*.crt"
+  - "**/test/**/*.pem"
+  - "**/tests/**/*.key"
+  - "**/tests/**/*.crt"
+  - "**/tests/**/*.pem"
+
+  # Mock data files
+  - "**/mock/**/*.key"
+  - "**/mock/**/*.crt"
+  - "**/mock/**/*.pem"
+
+  # Demo app test data
+  - "**/demo-app/**/mock/**"
+  - "**/demo-app/**/test-data/**"
+
+# Keep the old format for backward compatibility
 exclusion_globs:
+  # Mock certificates for testing (these are intentionally committed test data)
   - "common/src/mock_certificates/**"
   - "common/src/constants/mockCertificates.ts"
+  - "**/test-data/**"
+  - "**/mock-data/**"
+
+  # Test files with mock certificates
+  - "**/test/**/*.key"
+  - "**/test/**/*.crt"
+  - "**/test/**/*.pem"
+  - "**/tests/**/*.key"
+  - "**/tests/**/*.crt"
+  - "**/tests/**/*.pem"
+
+  # Demo app test data
+  - "**/demo-app/**/mock/**"
+  - "**/demo-app/**/test-data/**"
+
+  # Generated test files
+  - "**/generated/**/*.key"
+  - "**/generated/**/*.crt"
+  - "**/generated/**/*.pem"
+
+# Ignore specific secret types for mock files
+ignore_secrets:
+  - "Generic Private Key" # For mock certificate keys
+  - "Generic Certificate" # For mock certificates
+  - "RSA Private Key" # For mock RSA keys
+  - "EC Private Key" # For mock EC keys
+
+# Advanced: Ignore based on file content patterns
+ignore_patterns:
+  # Ignore files that contain "mock" in the path and have key/cert content
+  - pattern: "mock.*\\.(key|crt|pem)$"
+    reason: "Mock certificate files for testing"
+
+  # Ignore TypeScript files that export mock data
+  - pattern: ".*mock.*\\.ts$"
+    reason: "Mock data export files for testing"
