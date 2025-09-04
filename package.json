@@ -11,12 +11,6 @@
       "sdk/*",
       "scripts/tests",
       "packages/mobile-sdk-alpha/demo-app"
-    ],
-    "nohoist": [
-      "**/react-native",
-      "**/react-native/**",
-      "**/@babel/runtime",
-      "**/@babel/runtime/**"
     ]
   },
   "scripts": {
