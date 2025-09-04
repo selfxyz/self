@@ -210,6 +210,8 @@ const config = {
       trueMonorepoNodeModules,
       // Add paths to other package workspaces if needed
     ],
+    unstable_enableSymlinks: true,
+    disableHierarchicalLookup: true,
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
   },
