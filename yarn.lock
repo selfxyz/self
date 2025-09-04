@@ -23492,6 +23492,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "self-workspace-root@workspace:."
   dependencies:
+    "@babel/runtime": "npm:^7.28.3"
     "@types/node": "npm:^22.0.0"
     gitleaks: "npm:1.0.0"
     husky: "npm:9.1.7"
