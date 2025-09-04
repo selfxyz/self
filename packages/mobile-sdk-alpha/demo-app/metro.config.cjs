@@ -18,10 +18,7 @@ const config = {
       react: path.resolve(__dirname, '../../../node_modules/react'),
       'react-native': path.resolve(__dirname, '../../../node_modules/react-native'),
     },
-    nodeModulesPaths: [
-      path.resolve(__dirname, 'node_modules'),
-      path.resolve(__dirname, '../../../node_modules'),
-    ],
+    nodeModulesPaths: [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, '../../../node_modules')],
     unstable_enableSymlinks: true,
     disableHierarchicalLookup: true,
   },
