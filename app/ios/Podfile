@@ -39,7 +39,7 @@ target "Self" do
   pod "lottie-ios"
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
   pod "Mixpanel-swift", "~> 5.0.0"
-  pod "RNReactNativeHapticFeedback", :path => "../../node_modules/react-native-haptic-feedback", :modular_headers => true
+  pod "RNReactNativeHapticFeedback", :path => "../node_modules/react-native-haptic-feedback", :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],

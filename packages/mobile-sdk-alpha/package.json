@@ -14,6 +14,7 @@
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
+      "react-native": "./dist/esm/index.js",
       "browser": "./dist/esm/browser.js",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs"
@@ -23,10 +24,29 @@
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
     },
+    "./constants": {
+      "types": "./dist/esm/constants/index.d.ts",
+      "react-native": "./dist/esm/constants/index.js",
+      "import": "./dist/esm/constants/index.js",
+      "require": "./dist/cjs/constants/index.cjs"
+    },
     "./constants/analytics": {
       "types": "./dist/esm/constants/analytics.d.ts",
+      "react-native": "./dist/esm/constants/analytics.js",
       "import": "./dist/esm/constants/analytics.js",
       "require": "./dist/cjs/constants/analytics.cjs"
+    },
+    "./components": {
+      "types": "./dist/esm/components/index.d.ts",
+      "react-native": "./dist/esm/components/index.js",
+      "import": "./dist/esm/components/index.js",
+      "require": "./dist/cjs/components/index.cjs"
+    },
+    "./hooks": {
+      "types": "./dist/esm/hooks/index.d.ts",
+      "react-native": "./dist/esm/hooks/index.js",
+      "import": "./dist/esm/hooks/index.js",
+      "require": "./dist/cjs/hooks/index.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
