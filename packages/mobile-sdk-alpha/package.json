@@ -92,6 +92,5 @@
   "packageManager": "yarn@4.6.0",
   "publishConfig": {
     "access": "public"
-  },
-  "preferUnplugged": true
+  }
 }
