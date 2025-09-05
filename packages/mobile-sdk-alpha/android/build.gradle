@@ -80,6 +80,13 @@ android {
         abortOnError false
     }
 
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+            res.srcDirs = ['src/main/res']
+        }
+    }
+
     buildFeatures {
         viewBinding true
     }
