@@ -25,10 +25,23 @@ log() {
   fi
 }
 
-# Error handling
+# Error handling with cleanup
 handle_error() {
   local exit_code=$?
   log "ERROR: Command failed with exit code $exit_code"
+
+  # Attempt cleanup on error
+  if [[ -f "/tmp/mobile-sdk-alpha-ci.tgz" ]]; then
+    log "Cleaning up tarball on error..."
+    rm -f "/tmp/mobile-sdk-alpha-ci.tgz"
+  fi
+
+  # Attempt to restore workspace dependency if we're in the app directory
+  if [[ -f "package.json" ]] && grep -q "mobile-sdk-alpha.*file:/tmp" package.json 2>/dev/null; then
+    log "Restoring workspace dependency on error..."
+    yarn add "@selfxyz/mobile-sdk-alpha@workspace:^" 2>/dev/null || true
+  fi
+
   if is_ci; then
     log "Build failed during Android CI setup"
   fi
@@ -122,11 +135,20 @@ else
   }
 fi
 
-# Cleanup
+# Cleanup tarball and restore workspace dependency
+log "Cleaning up..."
+
+# Remove temporary tarball
 if [[ -f "$TARBALL_PATH" ]]; then
   rm -f "$TARBALL_PATH"
   log "Cleaned up temporary tarball"
 fi
+
+# Restore workspace dependency
+log "Restoring workspace dependency..."
+yarn add "@selfxyz/mobile-sdk-alpha@workspace:^" || {
+  log "WARNING: Failed to restore workspace dependency"
+}
 
 log "Mobile CI Build Android completed successfully!"
 
