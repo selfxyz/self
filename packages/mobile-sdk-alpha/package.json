@@ -34,7 +34,11 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "android",
+    "ios",
+    "mobile-sdk-alpha.podspec",
+    "react-native.config.cjs"
   ],
   "scripts": {
     "build": "rm -rf dist && tsup && yarn postbuild",
