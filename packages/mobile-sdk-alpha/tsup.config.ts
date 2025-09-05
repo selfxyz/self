@@ -23,8 +23,7 @@ export default defineConfig([
     outDir: 'dist/esm',
     tsconfig: './tsconfig.json',
     target: 'es2020',
-    external: ['react', 'react-native'],
-    noExternal: ['@selfxyz/common'],
+    external: ['react', 'react-native', '@selfxyz/common'],
     esbuildOptions(options) {
       options.supported = {
         ...options.supported,
@@ -53,8 +52,7 @@ export default defineConfig([
     outDir: 'dist/cjs',
     tsconfig: './tsconfig.cjs.json',
     target: 'es2020',
-    external: ['react', 'react-native'],
-    noExternal: ['@selfxyz/common'],
+    external: ['react', 'react-native', '@selfxyz/common'],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     esbuildOptions(options) {
       options.supported = {
