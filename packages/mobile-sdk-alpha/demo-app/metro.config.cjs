@@ -17,6 +17,11 @@ const config = {
       // Pin React and React Native to monorepo root
       react: path.resolve(__dirname, '../../../node_modules/react'),
       'react-native': path.resolve(__dirname, '../../../node_modules/react-native'),
+      // Crypto polyfills
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer'),
+      util: require.resolve('util'),
+      assert: require.resolve('assert'),
     },
     nodeModulesPaths: [path.resolve(__dirname, 'node_modules'), path.resolve(__dirname, '../../../node_modules')],
   },

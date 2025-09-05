@@ -11922,6 +11922,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"assert@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "assert@npm:2.1.0"
+  dependencies:
+    call-bind: "npm:^1.0.2"
+    is-nan: "npm:^1.3.2"
+    object-is: "npm:^1.1.5"
+    object.assign: "npm:^4.1.4"
+    util: "npm:^0.12.5"
+  checksum: 10c0/7271a5da883c256a1fa690677bf1dd9d6aa882139f2bed1cd15da4f9e7459683e1da8e32a203d6cc6767e5e0f730c77a9532a87b896b4b0af0dd535f668775f0
+  languageName: node
+  linkType: hard
+
 "assertion-error@npm:^1.1.0":
   version: 1.1.0
   resolution: "assertion-error@npm:1.1.0"
@@ -14291,17 +14304,24 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
+    "@noble/hashes": "npm:^1.5.0"
     "@react-native/gradle-plugin": "npm:0.76.9"
     "@tsconfig/react-native": "npm:^3.0.6"
     "@types/jest": "npm:^29.5.14"
     "@types/react": "npm:^18.3.4"
+    assert: "npm:^2.1.0"
     babel-jest: "npm:^29.6.3"
+    buffer: "npm:^6.0.3"
+    ethers: "npm:^6.11.0"
     jest: "npm:^29.6.3"
     metro-react-native-babel-preset: "npm:0.76.9"
     react: "npm:^18.3.1"
     react-native: "npm:0.76.9"
+    react-native-get-random-values: "npm:^1.11.0"
     react-test-renderer: "npm:^18.3.1"
+    stream-browserify: "npm:^3.0.0"
     typescript: "npm:^5.9.2"
+    util: "npm:^0.12.5"
   languageName: unknown
   linkType: soft
 
@@ -18395,6 +18415,16 @@ __metadata:
   version: 2.0.3
   resolution: "is-map@npm:2.0.3"
   checksum: 10c0/2c4d431b74e00fdda7162cd8e4b763d6f6f217edf97d4f8538b94b8702b150610e2c64961340015fe8df5b1fcee33ccd2e9b62619c4a8a3a155f8de6d6d355fc
+  languageName: node
+  linkType: hard
+
+"is-nan@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "is-nan@npm:1.3.2"
+  dependencies:
+    call-bind: "npm:^1.0.0"
+    define-properties: "npm:^1.1.3"
+  checksum: 10c0/8bfb286f85763f9c2e28ea32e9127702fe980ffd15fa5d63ade3be7786559e6e21355d3625dd364c769c033c5aedf0a2ed3d4025d336abf1b9241e3d9eddc5b0
   languageName: node
   linkType: hard
 
