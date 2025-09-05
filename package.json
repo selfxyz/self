@@ -18,7 +18,7 @@
     "format:github": "prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "prettier --parser markdown --write *.md scripts/**/*.md && prettier --parser yaml --write .*.{yml,yaml} --single-quote false && prettier --write scripts/**/*.{js,mjs,ts} && prettier --parser json --write scripts/**/*.json",
     "gitleaks": "gitleaks protect --staged --redact --config=.gitleaks.toml",
-    "postinstall": "patch-package",
+    "postinstall": "node scripts/run-patch-package.cjs",
     "lint": "yarn lint:headers && yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run lint",
     "lint:headers": "node scripts/check-duplicate-headers.cjs app && node scripts/check-license-headers.mjs app --check && node scripts/check-duplicate-headers.cjs packages/mobile-sdk-alpha && node scripts/check-license-headers.mjs packages/mobile-sdk-alpha --check",
     "lint:headers:fix": "node scripts/check-duplicate-headers.cjs app && node scripts/check-license-headers.mjs app --fix && node scripts/check-duplicate-headers.cjs packages/mobile-sdk-alpha && node scripts/check-license-headers.mjs packages/mobile-sdk-alpha --fix",
@@ -46,7 +46,6 @@
     "husky": "9.1.7",
     "knip": "^5.62.0",
     "patch-package": "^8.0.0",
-    "postinstall-postinstall": "^2.1.0",
     "typescript": "^5.9.2"
   },
   "packageManager": "yarn@4.6.0",
