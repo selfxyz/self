@@ -22826,6 +22826,7 @@ __metadata:
     "@types/node": "npm:^22.0.0"
     gitleaks: "npm:1.0.0"
     husky: "npm:9.1.7"
+    js-sha1: "npm:^0.7.0"
     knip: "npm:^5.62.0"
     patch-package: "npm:^8.0.0"
     react: "npm:^18.3.1"
