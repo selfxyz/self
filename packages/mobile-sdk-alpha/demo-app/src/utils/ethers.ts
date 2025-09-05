@@ -16,11 +16,7 @@ function randomBytes(length: number): Uint8Array {
   return globalThis.crypto.getRandomValues(new Uint8Array(length));
 }
 
-function computeHmac(
-  algo: 'sha256' | 'sha512',
-  key: Uint8Array,
-  data: Uint8Array,
-): Uint8Array {
+function computeHmac(algo: 'sha256' | 'sha512', key: Uint8Array, data: Uint8Array): Uint8Array {
   const hash = algo === 'sha256' ? nobleSha256 : nobleSha512;
   return hmac(hash, key, data);
 }
