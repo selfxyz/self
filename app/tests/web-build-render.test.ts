@@ -7,6 +7,9 @@
  */
 
 // Override global error handling to prevent circular references
+import { execSync, spawn } from 'child_process';
+import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
+
 const originalError = global.Error;
 global.Error = class SafeError extends originalError {
   constructor(...args: any[]) {
@@ -19,9 +22,6 @@ global.Error = class SafeError extends originalError {
     });
   }
 };
-
-import { execSync, spawn } from 'child_process';
-import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
 
 // Ensure fetch is available (Node.js 18+ has built-in fetch)
 if (typeof fetch === 'undefined') {
@@ -105,7 +105,8 @@ describe('Web Build and Render', () => {
       previewProcess?.on('error', error => {
         clearTimeout(timeout);
         // Avoid circular references by only using the error message string
-        const errorMessage = error?.message || error?.toString() || 'Unknown error';
+        const errorMessage =
+          error?.message || error?.toString() || 'Unknown error';
         reject(new Error(`Preview server process error: ${errorMessage}`));
       });
 
@@ -136,7 +137,8 @@ describe('Web Build and Render', () => {
         }
       } catch (error) {
         // Safely log error without circular references
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         console.error('Error killing preview process:', errorMessage);
       }
     }

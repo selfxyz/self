@@ -91,22 +91,35 @@ else
   yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH"
 fi
 
-# Verify installation
-if [[ ! -d "node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res" ]]; then
+# Verify installation (check both local and hoisted locations)
+SDK_ANDROID_PATH=""
+if [[ -d "node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res" ]]; then
+  SDK_ANDROID_PATH="node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res"
+elif [[ -d "../node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res" ]]; then
+  SDK_ANDROID_PATH="../node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res"
+else
   log "ERROR: SDK Android resources not found after installation"
+  log "Checked: node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res"
+  log "Checked: ../node_modules/@selfxyz/mobile-sdk-alpha/android/src/main/res"
   exit 1
 fi
 
-# Build Android with appropriate timeout
-log "Building Android..."
+log "SDK Android resources found at: $SDK_ANDROID_PATH"
+
+# Build Android APK (don't install to device)
+log "Building Android APK..."
 if is_ci; then
-  # Longer timeout for CI Android builds
-  timeout 1800 yarn react-native run-android || {
-    log "Android build timed out after 30 minutes"
+  # Build APK only for CI (no device installation)
+  timeout 1800 ./android/gradlew assembleDebug -p android || {
+    log "Android APK build timed out after 30 minutes"
     exit 1
   }
 else
-  yarn react-native run-android
+  # For local development, build APK only
+  ./android/gradlew assembleDebug -p android || {
+    log "Android APK build failed"
+    exit 1
+  }
 fi
 
 # Cleanup
