@@ -4,6 +4,8 @@
   "private": true,
   "main": "index.js",
   "scripts": {
+    "analyze:bundle:android": "yarn prebuild && node scripts/bundle-analyze-ci.cjs android",
+    "analyze:bundle:ios": "yarn prebuild && node scripts/bundle-analyze-ci.cjs ios",
     "preandroid": "yarn prebuild",
     "android": "react-native run-android --verbose",
     "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
@@ -20,13 +22,14 @@
     "@react-native/gradle-plugin": "0.76.9",
     "@selfxyz/common": "workspace:*",
     "@selfxyz/mobile-sdk-alpha": "workspace:*",
+    "find-yarn-workspace-root": "^2.0.0",
     "react": "^18.3.1",
     "react-native": "0.76.9"
   },
   "devDependencies": {
     "@babel/core": "^7.28.3",
-    "@react-native-community/cli": "^20.0.1",
-    "@react-native/metro-config": "^0.81.1",
+    "@react-native-community/cli": "^16.0.3",
+    "@react-native/metro-config": "0.76.9",
     "@tsconfig/react-native": "^3.0.6",
     "@types/jest": "^29.5.14",
     "@types/react": "^18.3.4",
