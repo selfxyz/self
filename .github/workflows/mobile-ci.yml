@@ -434,8 +434,6 @@ jobs:
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-      - name: Build Android
-        run: |
-          cd android
-          ./gradlew assembleDebug
+      - name: Build Android (with AAPT2 symlink fix)
+        run: yarn android:ci
         working-directory: ./app

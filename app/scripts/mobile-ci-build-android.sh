@@ -36,10 +36,17 @@ handle_error() {
     rm -f "/tmp/mobile-sdk-alpha-ci.tgz"
   fi
 
-  # Attempt to restore workspace dependency if we're in the app directory
-  if [[ -f "package.json" ]] && grep -q "mobile-sdk-alpha.*file:/tmp" package.json 2>/dev/null; then
-    log "Restoring workspace dependency on error..."
-    yarn add "@selfxyz/mobile-sdk-alpha@workspace:^" 2>/dev/null || true
+  # Clean up lock file
+  rm -f "/tmp/mobile-ci-build-android.lock" 2>/dev/null || true
+
+  # Attempt to restore backup package files if they exist
+  if [[ -f "package.json.backup" ]] && [[ -f "../yarn.lock.backup" ]]; then
+    log "Restoring backup package files on error..."
+    mv package.json.backup package.json 2>/dev/null || true
+    mv ../yarn.lock.backup ../yarn.lock 2>/dev/null || true
+  elif [[ -f "package.json" ]] && grep -q "mobile-sdk-alpha.*file:/tmp" package.json 2>/dev/null; then
+    log "WARNING: Package files modified but no backup found - manual fix required"
+    log "Please run 'yarn add @selfxyz/mobile-sdk-alpha@workspace:^' to restore"
   fi
 
   if is_ci; then
@@ -57,6 +64,22 @@ if [[ ! -d "$(dirname "$0")/../../packages/mobile-sdk-alpha" ]]; then
   log "ERROR: mobile-sdk-alpha package not found in expected location"
   exit 1
 fi
+
+# Check for and clean up any existing backup files (from previous failed runs)
+if [[ -f "app/package.json.backup" ]] || [[ -f "yarn.lock.backup" ]]; then
+  log "WARNING: Found existing backup files from previous run - cleaning up..."
+  rm -f app/package.json.backup yarn.lock.backup
+fi
+
+# Check if another instance is running
+LOCK_FILE="/tmp/mobile-ci-build-android.lock"
+if [[ -f "$LOCK_FILE" ]]; then
+  log "ERROR: Another instance of this script is already running (lock file exists)"
+  log "If you're sure no other instance is running, remove: $LOCK_FILE"
+  exit 1
+fi
+echo $$ > "$LOCK_FILE"
+trap 'rm -f "$LOCK_FILE"' EXIT
 
 # Go to project root
 PROJECT_ROOT="$(dirname "$0")/../.."
@@ -92,9 +115,33 @@ if [[ ! -f "$TARBALL_PATH" ]]; then
   exit 1
 fi
 
+# Backup package.json and yarn.lock before modification
+log "Backing up package files..."
+cd app
+
+# Ensure we can create backups
+if [[ ! -f "package.json" ]]; then
+  log "ERROR: package.json not found in app directory"
+  exit 1
+fi
+if [[ ! -f "../yarn.lock" ]]; then
+  log "ERROR: yarn.lock not found in project root"
+  exit 1
+fi
+
+# Create backups with error checking
+cp package.json package.json.backup || {
+  log "ERROR: Failed to backup package.json"
+  exit 1
+}
+cp ../yarn.lock ../yarn.lock.backup || {
+  log "ERROR: Failed to backup yarn.lock"
+  exit 1
+}
+log "✅ Package files backed up successfully"
+
 # Install SDK from tarball in app with timeout
 log "Installing SDK as real files..."
-cd app
 if is_ci; then
   timeout 180 yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH" || {
     log "SDK installation timed out after 3 minutes"
@@ -144,11 +191,16 @@ if [[ -f "$TARBALL_PATH" ]]; then
   log "Cleaned up temporary tarball"
 fi
 
-# Restore workspace dependency
-log "Restoring workspace dependency..."
-yarn add "@selfxyz/mobile-sdk-alpha@workspace:^" || {
-  log "WARNING: Failed to restore workspace dependency"
-}
+# Restore original package files
+log "Restoring original package files..."
+if [[ -f "package.json.backup" ]] && [[ -f "../yarn.lock.backup" ]]; then
+  mv package.json.backup package.json
+  mv ../yarn.lock.backup ../yarn.lock
+  log "✅ Package files restored successfully"
+else
+  log "WARNING: Backup files not found - package.json may still reference tarball"
+  log "Please run 'yarn add @selfxyz/mobile-sdk-alpha@workspace:^' manually"
+fi
 
 log "Mobile CI Build Android completed successfully!"
 
