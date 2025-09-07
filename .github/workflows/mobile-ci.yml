@@ -102,7 +102,7 @@ jobs:
         working-directory: ./
 
   test:
-    runs-on: macos-latest
+    runs-on: macos-latest-large
     needs: build-deps
     steps:
       - uses: actions/checkout@v4
