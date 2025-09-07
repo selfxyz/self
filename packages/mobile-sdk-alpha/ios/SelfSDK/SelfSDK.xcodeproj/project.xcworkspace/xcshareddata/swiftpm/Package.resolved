@@ -1,0 +1,41 @@
+{
+  "originHash" : "641baa15781d19846454d9bf0c82bbd4020f7c0ca0a706e8dfce02af0ac4b003",
+  "pins" : [
+    {
+      "identity" : "mixpanel-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mixpanel/mixpanel-swift.git",
+      "state" : {
+        "revision" : "e2619282894502f9378abe04c7f7d92fc523484a",
+        "version" : "5.0.0"
+      }
+    },
+    {
+      "identity" : "nfcpassportreader",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/seshanthS/NFCPassportReader",
+      "state" : {
+        "revision" : "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
+      }
+    },
+    {
+      "identity" : "openssl",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/krzyzanowskim/OpenSSL.git",
+      "state" : {
+        "revision" : "8cb1d641ab5ebce2cd7cf31c93baef07bed672d4",
+        "version" : "1.1.2301"
+      }
+    },
+    {
+      "identity" : "qkmrzparser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Mattijah/QKMRZParser.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "571cf290364911b8d109a54ff189d50c10b56abd"
+      }
+    }
+  ],
+  "version" : 3
+}

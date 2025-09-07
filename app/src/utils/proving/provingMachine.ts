@@ -18,6 +18,13 @@ import {
 } from '@selfxyz/common/utils';
 import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
 import {
+  checkDocumentSupported,
+  checkIfPassportDscIsInTree,
+  isDocumentNullified,
+  isUserRegistered,
+  isUserRegisteredWithAlternativeCSCA,
+} from '@selfxyz/common/utils/passports/validate';
+import {
   clientKey,
   clientPublicKeyHex,
   ec,
@@ -25,13 +32,20 @@ import {
   getPayload,
   getWSDbRelayerUrl,
 } from '@selfxyz/common/utils/proving';
+import {
+  hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
+  SelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import {
+  PassportEvents,
+  ProofEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PassportEvents, ProofEvents } from '@/consts/analytics';
 import { navigationRef } from '@/navigation';
-import { unsafe_getPrivateKey } from '@/providers/authProvider';
+// will need to be passed in from selfClient
 import {
   clearPassportData,
-  loadSelectedDocument,
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
@@ -43,14 +57,6 @@ import {
   generateTEEInputsDSC,
   generateTEEInputsRegister,
 } from '@/utils/proving/provingInputs';
-import {
-  checkIfPassportDscIsInTree,
-  checkPassportSupported,
-  hasAnyValidRegisteredDocument,
-  isDocumentNullified,
-  isUserRegistered,
-  isUserRegisteredWithAlternativeCSCA,
-} from '@/utils/proving/validateDocument';
 
 const { trackEvent } = analytics();
 
@@ -177,21 +183,23 @@ interface ProvingState {
   endpointType: EndpointType | null;
   fcmToken: string | null;
   env: 'prod' | 'stg' | null;
+  selfClient: SelfClient | null;
   setFcmToken: (token: string) => void;
   init: (
+    selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
   ) => Promise<void>;
   startFetchingData: () => Promise<void>;
-  validatingDocument: () => Promise<void>;
+  validatingDocument: (selfClient: SelfClient) => Promise<void>;
   initTeeConnection: () => Promise<boolean>;
   startProving: () => Promise<void>;
-  postProving: () => void;
+  postProving: (selfClient: SelfClient) => void;
   setUserConfirmed: () => void;
   _closeConnections: () => void;
   _generatePayload: () => Promise<unknown>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
-  _handleRegisterErrorOrFailure: () => void;
+  _handleRegisterErrorOrFailure: (selfClient: SelfClient) => void;
   _startSocketIOStatusListener: (
     receivedUuid: string,
     endpointType: EndpointType,
@@ -204,7 +212,10 @@ interface ProvingState {
 export const useProvingStore = create<ProvingState>((set, get) => {
   let actor: AnyActorRef | null = null;
 
-  function setupActorSubscriptions(newActor: AnyActorRef) {
+  function setupActorSubscriptions(
+    newActor: AnyActorRef,
+    selfClient: SelfClient,
+  ) {
     newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
       console.log(`State transition: ${state.value}`);
       trackEvent(ProofEvents.PROVING_STATE_CHANGE, { state: state.value });
@@ -214,7 +225,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startFetchingData();
       }
       if (state.value === 'validating_document') {
-        get().validatingDocument();
+        get().validatingDocument(selfClient);
       }
 
       if (state.value === 'init_tee_connexion') {
@@ -226,7 +237,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'post_proving') {
-        get().postProving();
+        get().postProving(selfClient);
       }
       if (
         get().circuitType !== 'disclose' &&
@@ -234,7 +245,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       ) {
         setTimeout(() => {
           if (navigationRef.isReady()) {
-            get()._handleRegisterErrorOrFailure();
+            get()._handleRegisterErrorOrFailure(selfClient);
           }
         }, 3000);
       }
@@ -267,7 +278,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'passport_not_supported') {
         if (navigationRef.isReady()) {
           const currentPassportData = get().passportData;
-          (navigationRef as any).navigate('UnsupportedPassport', {
+          (navigationRef as any).navigate('UnsupportedDocument', {
             passportData: currentPassportData,
           });
         }
@@ -279,7 +290,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
       if (state.value === 'passport_data_not_found') {
         if (navigationRef.isReady()) {
-          navigationRef.navigate('PassportDataNotFound');
+          navigationRef.navigate('DocumentDataNotFound');
         }
       }
       if (state.value === 'failure') {
@@ -320,6 +331,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     reason: null,
     endpointType: null,
     fcmToken: null,
+    selfClient: null,
     setFcmToken: (token: string) => {
       set({ fcmToken: token });
       trackEvent(ProofEvents.FCM_TOKEN_STORED);
@@ -417,9 +429,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    _handleRegisterErrorOrFailure: async () => {
+    _handleRegisterErrorOrFailure: async (selfClient: SelfClient) => {
       try {
-        const hasValid = await hasAnyValidRegisteredDocument();
+        const hasValid = await hasAnyValidRegisteredDocument(selfClient);
+
         if (navigationRef.isReady()) {
           if (hasValid) {
             navigationRef.navigate('Home');
@@ -593,6 +606,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     init: async (
+      selfClient: SelfClient,
       circuitType: 'dsc' | 'disclose' | 'register',
       userConfirmed: boolean = false,
     ) => {
@@ -620,14 +634,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        selfClient,
       });
 
       actor = createActor(provingMachine);
-      setupActorSubscriptions(actor);
+      setupActorSubscriptions(actor, selfClient);
       actor.start();
 
       trackEvent(ProofEvents.DOCUMENT_LOAD_STARTED);
-      const selectedDocument = await loadSelectedDocument();
+      const selectedDocument = await loadSelectedDocument(selfClient);
       if (!selectedDocument) {
         console.error('No document found for proving');
         trackEvent(PassportEvents.PASSPORT_DATA_NOT_FOUND, { stage: 'init' });
@@ -637,7 +652,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       const { data: passportData } = selectedDocument;
 
-      const secret = await unsafe_getPrivateKey();
+      const secret = await get().selfClient?.getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');
         trackEvent(ProofEvents.LOAD_SECRET_FAILED);
@@ -662,6 +677,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (!passportData) {
           throw new Error('PassportData is not available');
         }
+        if (!passportData?.dsc_parsed) {
+          console.error('Missing parsed DSC in passport data');
+          trackEvent(ProofEvents.FETCH_DATA_FAILED, {
+            message: 'Missing parsed DSC in passport data',
+          });
+          actor!.send({ type: 'FETCH_ERROR' });
+          return;
+        }
         const document: DocumentCategory = passportData.documentCategory;
         await useProtocolStore
           .getState()
@@ -679,7 +702,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    validatingDocument: async () => {
+    validatingDocument: async (_selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
       trackEvent(ProofEvents.VALIDATION_STARTED);
@@ -688,7 +711,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (!passportData) {
           throw new Error('PassportData is not available');
         }
-        const isSupported = await checkPassportSupported(passportData);
+        const isSupported = await checkDocumentSupported(passportData, {
+          getDeployedCircuits: (documentCategory: DocumentCategory) =>
+            useProtocolStore.getState()[documentCategory].deployed_circuits!,
+        });
         if (isSupported.status !== 'passport_supported') {
           console.error(
             'Passport not supported:',
@@ -703,13 +729,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           actor!.send({ type: 'PASSPORT_NOT_SUPPORTED' });
           return;
         }
-
+        const getCommitmentTree = (documentCategory: DocumentCategory) =>
+          useProtocolStore.getState()[documentCategory].commitment_tree;
         /// disclosure
         if (circuitType === 'disclose') {
           // check if the user is registered using the csca from the passport data.
           const isRegisteredWithLocalCSCA = await isUserRegistered(
             passportData,
             secret as string,
+            getCommitmentTree,
           );
           if (isRegisteredWithLocalCSCA) {
             trackEvent(ProofEvents.VALIDATION_SUCCESS);
@@ -727,6 +755,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             await isUserRegisteredWithAlternativeCSCA(
               passportData,
               secret as string,
+              {
+                getCommitmentTree,
+                getAltCSCA: docType =>
+                  useProtocolStore.getState()[docType].alternative_csca,
+              },
             );
           if (isRegistered) {
             reStorePassportDataWithRightCSCA(passportData, csca as string);
@@ -902,8 +935,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         const submitBody = await get()._generatePayload();
         wsConnection.send(JSON.stringify(submitBody));
         trackEvent(ProofEvents.PAYLOAD_SENT);
+        trackEvent(ProofEvents.PROVING_PROCESS_STARTED);
         actor!.send({ type: 'START_PROVING' });
-        trackEvent(ProofEvents.PROOF_VERIFICATION_STARTED);
       } catch (error) {
         console.error('Error during startProving preparation/send:', error);
         trackEvent(ProofEvents.PROOF_FAILED, {
@@ -922,7 +955,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    postProving: () => {
+    postProving: (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       trackEvent(ProofEvents.POST_PROVING_STARTED);
@@ -932,7 +965,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             from: 'dsc',
             to: 'register',
           });
-          get().init('register', true);
+          get().init(selfClient, 'register', true);
         }, 1500);
       } else if (circuitType === 'register') {
         trackEvent(ProofEvents.POST_PROVING_COMPLETED);

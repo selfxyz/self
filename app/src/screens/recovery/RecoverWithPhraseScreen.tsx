@@ -9,16 +9,19 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import Description from '@/components/typography/Description';
-import { BackupEvents } from '@/consts/analytics';
 import Paste from '@/images/icons/paste.svg';
 import { useAuth } from '@/providers/authProvider';
 import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import analytics from '@/utils/analytics';
+import { useProtocolStore } from '@/stores/protocolStore';
 import {
   black,
   slate300,
@@ -27,12 +30,11 @@ import {
   slate700,
   white,
 } from '@/utils/colors';
-import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
 
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation = useNavigation();
   const { restoreAccountFromMnemonic } = useAuth();
-  const { trackEvent } = analytics();
+  const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {
@@ -64,6 +66,14 @@ const RecoverWithPhraseScreen: React.FC = () => {
     const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
       passportData,
       secret as string,
+      {
+        getCommitmentTree(docCategory) {
+          return useProtocolStore.getState()[docCategory].commitment_tree;
+        },
+        getAltCSCA(docCategory) {
+          return useProtocolStore.getState()[docCategory].alternative_csca;
+        },
+      },
     );
     if (!isRegistered) {
       console.warn(

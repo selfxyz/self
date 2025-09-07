@@ -1,0 +1,119 @@
+<resources>
+    <string name="app_name">Passport Reader</string>
+
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string-array name="ocrenginemodes">
+        <item>Tesseract</item>
+        <item>Cube</item>
+        <item>Both</item>
+    </string-array>
+
+    <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
+    <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
+
+    <string name="warning_ocr_install">Installing &amp; Starting OCR</string>
+    <string name="warning_error_ocr_install">Error Installing &amp; Starting OCR</string>
+    <string name="warning_ocr_install_progress">Installation OCR: %1d%%</string>
+
+
+
+    <string name="nfc_title">Put your phone over your passport and don\'t move it</string>
+
+    <string name="label_document_number">Document Number</string>
+    <string name="label_document_expiry">Expiration Date</string>
+    <string name="label_document_issued">Issuing Date</string>
+    <string name="label_document_issuing_state">Issuing State</string>
+    <string name="label_document_nationality">Nationality</string>
+    <string name="label_passport">Passport</string>
+    <string name="label_not_available">NA</string>
+
+    <string name="name">%1s %2s</string>
+
+    <string name="doc_number">Doc Number: %1s</string>
+    <string name="doc_dob">Date of Birth: %1s</string>
+    <string name="doc_expiry">Expiry Date: %1s</string>
+
+    <string name="selection_title">Data Entry</string>
+    <string name="selection_manual">Manual</string>
+    <string name="selection_automatic">Automatic</string>
+
+    <string name="prompt_document_number">Document Number</string>
+    <string name="prompt_document_expiration">Document Expiration (yymmdd)</string>
+    <string name="prompt_document_date_of_birth">Date of Birth (yymmdd)</string>
+
+    <string name="read_nfc">READ NFC</string>
+    <string name="download_csca">Download Spanish CSCA Master List</string>
+    <string name="delete_csca">Delete CSCA Master List</string>
+
+
+    <string name="error_validation_date">Date format is not valid</string>
+    <string name="error_validation_document_number">Document number is not valid</string>
+
+    <string name="warning_no_nfc">There is no NFC available</string>
+    <string name="warning_enable_nfc">You need to enable NFC</string>
+
+    <string name="label_additional_information">Additional person information</string>
+    <string name="label_additional_information_custody">Custody</string>
+    <string name="label_additional_information_dob">Date of birth</string>
+    <string name="label_additional_information_other_names">Other names</string>
+    <string name="label_additional_information_other_valid_td_numbers">Other Td numbers</string>
+    <string name="label_additional_information_permanent_address">Permanent address</string>
+    <string name="label_additional_information_personal_number">Personal number</string>
+    <string name="label_additional_information_personal_summary">Personal summary</string>
+    <string name="label_additional_information_place_of_birth">Place of birth</string>
+    <string name="label_additional_information_profession">Profession</string>
+    <string name="label_additional_information_telephone">Telephone</string>
+    <string name="label_additional_information_title">Title</string>
+
+    <string name="label_authentication">Authentication</string>
+    <string name="label_authentication_bac">BAC</string>
+    <string name="label_authentication_pace">PACE</string>
+    <string name="label_authentication_chip">Chip</string>
+    <string name="label_authentication_passive">Passive</string>
+    <string name="label_authentication_active">Active</string>
+    <string name="label_authentication_eac">EAC</string>
+    <string name="label_authentication_document_signing">Document Signing</string>
+    <string name="label_authentication_country_signing">CSCA</string>
+
+
+    <string name="label_additional_document_information">Additional document information</string>
+    <string name="label_additional_document_information_endorsements_and_observations">Observations</string>
+    <string name="label_additional_document_information_date_and_time_of_personalization">Date personalization</string>
+    <string name="label_additional_document_information_date_of_issue">Date issue</string>
+    <string name="label_additional_document_information_image_front">Image front</string>
+    <string name="label_additional_document_information_image_rear">Image rear</string>
+    <string name="label_additional_document_information_issuing_authority">Issuing authority</string>
+    <string name="label_additional_document_information_names_of_other_persons">Names of other persons</string>
+    <string name="label_additional_document_information_personalization_system_serial_number">System serial number</string>
+    <string name="label_additional_document_information_tax_or_exit_requirements">Tax or exit requirements</string>
+
+
+    <string name="label_document_signing_certificate">Document Signing Certificate</string>
+    <string name="label_country_signing_certificate">Country Signing Certificate</string>
+    <string name="label_certificate_serial_number">Serial number</string>
+    <string name="label_certificate_public_key_algorithm">Public key algorithm</string>
+    <string name="label_certificate_signature_algorithm">Signature algorithm</string>
+    <string name="label_certificate_thumbprint">Certificate thumbprint</string>
+    <string name="label_certificate_issuer">Issuer</string>
+    <string name="label_certificate_subject">Subject</string>
+    <string name="label_certificate_valid_from">Valid from</string>
+    <string name="label_certificate_valid_to">Valid to</string>
+
+
+    <string name="warning_authentication_failed">Authentication has failed! Please try to scan the document again or introduce the data manually.</string>
+    <string name="warning_cla_not_supported">Impossible to read the document. Passport doesn\'t support CLA .</string>
+
+    <string name="document_valid_passport">Valid passport</string>
+    <string name="document_invalid_passport">Invalid Passport</string>
+    <string name="document_unknown_passport_title">Unknown Passport</string>
+    <string name="document_chip_content_success">The passport chip and content are valid</string>
+    <string name="document_content_success">The passport content is valid</string>
+    <string name="document_chip_failure">The passport chip is invalid</string>
+    <string name="document_document_failure">The passport document information is invalid</string>
+    <string name="document_csca_failure">The CSCA information is invalid</string>
+    <string name="document_unknown_passport_message">Unable to authenticate the passport</string>
+
+    <string name="keystore_not_empty_title">Keystore</string>
+    <string name="keystore_not_empty_message">Do you want to replace the current keystore?</string>
+
+</resources>

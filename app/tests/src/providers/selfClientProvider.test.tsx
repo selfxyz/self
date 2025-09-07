@@ -7,7 +7,7 @@ import { renderHook } from '@testing-library/react-native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import SelfClientProvider from '@/providers/selfClientProvider';
+import { SelfClientProvider } from '@/providers/selfClientProvider';
 
 describe('SelfClientProvider', () => {
   it('memoises the client instance', () => {

@@ -1,6 +1,7 @@
 {
   "name": "scripts-tests",
   "version": "1.0.0",
+  "description": "Tests for project scripts",
   "type": "module",
   "description": "Tests for project scripts",
   "scripts": {

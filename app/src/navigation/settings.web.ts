@@ -10,8 +10,8 @@ import { black, white } from '@/utils/colors';
 const ManageDocumentsScreen = lazy(
   () => import('@/screens/settings/ManageDocumentsScreen'),
 );
-const PassportDataInfoScreen = lazy(
-  () => import('@/screens/settings/PassportDataInfoScreen'),
+const DocumentDataInfoScreen = lazy(
+  () => import('@/screens/settings/DocumentDataInfoScreen'),
 );
 const SettingsScreen = lazy(() => import('@/screens/settings/SettingsScreen'));
 
@@ -28,10 +28,10 @@ const settingsScreens = {
       },
     } as NativeStackNavigationOptions,
   },
-  PassportDataInfo: {
-    screen: PassportDataInfoScreen,
+  DocumentDataInfo: {
+    screen: DocumentDataInfoScreen,
     options: {
-      title: 'Passport Data Info',
+      title: 'Document Data Info',
       headerStyle: {
         backgroundColor: white,
       },
@@ -48,7 +48,6 @@ const settingsScreens = {
       headerTitleStyle: {
         color: black,
       },
-      navigationBarColor: black,
     } as NativeStackNavigationOptions,
     config: {
       screens: {},

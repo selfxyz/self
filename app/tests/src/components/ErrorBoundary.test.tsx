@@ -6,12 +6,13 @@ import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
-const mockFlush = jest.fn();
-const mockAnalytics = jest.fn(() => ({
-  flush: mockFlush,
-}));
+const mockTrackNfcEvent = jest.fn();
+const mockFlushAllAnalytics = jest.fn();
 
-jest.doMock('@/utils/analytics', () => mockAnalytics);
+jest.doMock('@/utils/analytics', () => ({
+  trackNfcEvent: mockTrackNfcEvent,
+  flushAllAnalytics: mockFlushAllAnalytics,
+}));
 jest.mock('@/Sentry', () => ({
   captureException: jest.fn(),
 }));
@@ -81,7 +82,11 @@ describe('ErrorBoundary', () => {
     );
 
     consoleError.mockRestore();
-    expect(mockFlush).toHaveBeenCalled();
+    expect(mockTrackNfcEvent).toHaveBeenCalledWith('error_boundary', {
+      message: 'boom',
+      stack: expect.any(String),
+    });
+    expect(mockFlushAllAnalytics).toHaveBeenCalled();
   });
 
   it('renders children normally when no error occurs', () => {

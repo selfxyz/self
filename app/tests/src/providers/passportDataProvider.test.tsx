@@ -6,11 +6,15 @@ import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
 import { render, waitFor } from '@testing-library/react-native';
 
+import { SelfClientProvider } from '@selfxyz/mobile-sdk-alpha';
+
 // Import after mocking
 import {
   PassportProvider,
   usePassport,
 } from '@/providers/passportDataProvider';
+
+import { mockAdapters } from '../../utils/selfClientProvider';
 
 // Mock react-native-keychain before importing the module
 const mockKeychain = {
@@ -128,9 +132,11 @@ describe('PassportDataProvider', () => {
 
   it('should provide context values to children', () => {
     const { getByTestId } = render(
-      <PassportProvider>
-        <TestComponent />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <TestComponent />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     expect(getByTestId('getData-available')).toBeTruthy();
@@ -140,9 +146,11 @@ describe('PassportDataProvider', () => {
 
   it('should provide all required context functions', () => {
     const { getByTestId } = render(
-      <PassportProvider>
-        <TestComponent />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <TestComponent />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     const functionsCount = getByTestId('context-functions-count');
@@ -159,9 +167,11 @@ describe('PassportDataProvider', () => {
 
   it('should support multiple consumers accessing the same context', () => {
     const { getByTestId } = render(
-      <PassportProvider>
-        <MultipleConsumersTest />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <MultipleConsumersTest />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     const consumer1Functions = getByTestId('consumer1-functions');
@@ -176,9 +186,11 @@ describe('PassportDataProvider', () => {
 
   it('should handle context updates and trigger re-renders', async () => {
     const { getByTestId } = render(
-      <PassportProvider>
-        <ContextUpdateTest />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <ContextUpdateTest />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     const updateCount = getByTestId('update-count');
@@ -199,9 +211,11 @@ describe('PassportDataProvider', () => {
 
   it('should handle errors gracefully in context consumers', () => {
     const { getByTestId } = render(
-      <PassportProvider>
-        <ErrorBoundaryTest />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <ErrorBoundaryTest />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     const errorTestResult = getByTestId('error-test-result');
@@ -210,15 +224,21 @@ describe('PassportDataProvider', () => {
 
   it('should render without children gracefully', () => {
     expect(() => {
-      render(<PassportProvider />);
+      render(
+        <SelfClientProvider config={{}} adapters={mockAdapters}>
+          <PassportProvider />
+        </SelfClientProvider>,
+      );
     }).not.toThrow();
   });
 
   it('should provide consistent context values across re-renders', () => {
     const { getByTestId, rerender } = render(
-      <PassportProvider>
-        <TestComponent />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <TestComponent />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     const initialFunctionsCount = getByTestId('context-functions-count').props
@@ -226,9 +246,11 @@ describe('PassportDataProvider', () => {
 
     // Re-render the component
     rerender(
-      <PassportProvider>
-        <TestComponent />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <TestComponent />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     const newFunctionsCount = getByTestId('context-functions-count').props
@@ -238,9 +260,11 @@ describe('PassportDataProvider', () => {
 
   it('should maintain context stability across provider re-renders', () => {
     const { getByTestId, rerender } = render(
-      <PassportProvider>
-        <TestComponent />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <TestComponent />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     const initialFunctionsList = getByTestId('context-functions-list').props
@@ -248,9 +272,11 @@ describe('PassportDataProvider', () => {
 
     // Re-render with different props
     rerender(
-      <PassportProvider authenticationTimeoutinMs={5000}>
-        <TestComponent />
-      </PassportProvider>,
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
+        <PassportProvider>
+          <TestComponent />
+        </PassportProvider>
+      </SelfClientProvider>,
     );
 
     const newFunctionsList = getByTestId('context-functions-list').props
@@ -437,7 +463,8 @@ describe('PassportDataProvider', () => {
       jest.doMock('react-native-keychain', () => mockKeychain);
 
       const passportModule = require('@/providers/passportDataProvider');
-      loadDocumentCatalogLocal = passportModule.loadDocumentCatalog;
+      loadDocumentCatalogLocal =
+        passportModule.loadDocumentCatalogDirectlyFromKeychain;
     });
 
     it('should return empty catalog when Keychain is undefined', async () => {
@@ -449,7 +476,7 @@ describe('PassportDataProvider', () => {
       // Re-import the module after mocking to ensure mock is applied
       const passportModule = require('@/providers/passportDataProvider');
       const loadDocumentCatalogLocalUndefined =
-        passportModule.loadDocumentCatalog;
+        passportModule.loadDocumentCatalogDirectlyFromKeychain;
 
       const result = await loadDocumentCatalogLocalUndefined();
 

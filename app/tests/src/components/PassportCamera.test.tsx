@@ -35,7 +35,7 @@ describe('PassportCamera components', () => {
     render(<NativePassportCamera isMounted onPassportRead={onPassportRead} />);
     const mrz = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
     const parsed = {
-      passportNumber: 'L898902C3',
+      documentNumber: 'L898902C3',
       validation: { overall: true },
     } as any;
     mockExtract.mockReturnValue(parsed);
@@ -52,10 +52,10 @@ describe('PassportCamera components', () => {
 
     const obj = {
       documentNumber: '123456789',
-      expiryDate: '240101',
       birthDate: '900101',
-      documentType: 'P',
+      expiryDate: '240101',
       countryCode: 'UTO',
+      documentType: 'P',
     };
 
     nativeProps.onPassportRead({ nativeEvent: { data: obj } });
@@ -64,7 +64,7 @@ describe('PassportCamera components', () => {
     expect(onPassportRead).toHaveBeenCalledWith(
       null,
       expect.objectContaining({
-        passportNumber: '123456789',
+        documentNumber: '123456789',
         dateOfExpiry: '240101',
         dateOfBirth: '900101',
         documentType: 'P',

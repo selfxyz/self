@@ -271,6 +271,11 @@
       "import": "./dist/esm/src/utils/passports/passport.js",
       "require": "./dist/cjs/src/utils/passports/passport.cjs"
     },
+    "./utils/passports/validate": {
+      "types": "./dist/esm/src/utils/passports/validate.d.ts",
+      "import": "./dist/esm/src/utils/passports/validate.js",
+      "require": "./dist/cjs/src/utils/passports/validate.cjs"
+    },
     "./utils/passports/genMockIdDoc": {
       "types": "./dist/esm/src/utils/passports/genMockIdDoc.d.ts",
       "import": "./dist/esm/src/utils/passports/genMockIdDoc.js",
@@ -338,10 +343,10 @@
     "nice:check": "yarn lint && yarn lint:imports:check",
     "prepublishOnly": "yarn build",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
     "test:exports": "node scripts/validateExports.js && node scripts/testExports.js",
     "test:scope": "vitest run tests/scope.test.ts",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest",
     "types": "tsc -p tsconfig.json"
   },
   "dependencies": {

@@ -18,24 +18,24 @@ const QRCodeTroubleScreen = lazy(
   () => import('@/screens/prove/QRCodeTroubleScreen'),
 );
 const QRCodeViewFinderScreen = lazy(
-  () => import('@/screens/prove/ViewFinderScreen'),
+  () => import('@/screens/prove/QRCodeViewFinderScreen'),
 );
 
 const proveScreens = {
-  ConfirmBelongingScreen: {
+  ConfirmBelonging: {
     screen: ConfirmBelongingScreen,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
   },
-  ProofRequestStatusScreen: {
+  ProofRequestStatus: {
     screen: ProofRequestStatusScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
-  ProveScreen: {
+  Prove: {
     screen: ProveScreen,
     options: {
       title: 'Request Proof',

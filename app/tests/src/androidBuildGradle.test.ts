@@ -6,18 +6,18 @@
  * @jest-environment node
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 describe('Android build.gradle Configuration', () => {
-  const gradlePath = path.join(__dirname, '../../android/app/build.gradle');
-  const rootGradlePath = path.join(__dirname, '../../android/build.gradle');
+  const gradlePath = join(__dirname, '../../android/app/build.gradle');
+  const rootGradlePath = join(__dirname, '../../android/build.gradle');
   let gradleContent: string;
   let rootGradleContent: string;
 
   beforeAll(() => {
-    gradleContent = fs.readFileSync(gradlePath, 'utf8');
-    rootGradleContent = fs.readFileSync(rootGradlePath, 'utf8');
+    gradleContent = readFileSync(gradlePath, 'utf8');
+    rootGradleContent = readFileSync(rootGradlePath, 'utf8');
   });
 
   it('references SDK versions from the root project', () => {
@@ -30,7 +30,7 @@ describe('Android build.gradle Configuration', () => {
   });
 
   it('sets the expected SDK version numbers', () => {
-    expect(rootGradleContent).toMatch(/minSdkVersion\s*=\s*23/);
+    expect(rootGradleContent).toMatch(/minSdkVersion\s*=\s*24/);
     expect(rootGradleContent).toMatch(/targetSdkVersion\s*=\s*35/);
   });
 

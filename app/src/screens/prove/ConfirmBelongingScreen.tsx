@@ -8,15 +8,20 @@ import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  PassportEvents,
+  ProofEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { PassportEvents, ProofEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
-import analytics from '@/utils/analytics';
+import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import { notificationSuccess } from '@/utils/haptic';
 import {
@@ -27,10 +32,10 @@ import { useProvingStore } from '@/utils/proving/provingMachine';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
-const { trackEvent } = analytics();
-
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
-  const navigate = useHapticNavigation('LoadingScreen', {
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
+  const navigate = useHapticNavigation('Loading', {
     params: {},
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);
@@ -39,16 +44,16 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const setFcmToken = useProvingStore(state => state.setFcmToken);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
   const isReadyToProve = currentState === 'ready_to_prove';
-
   useEffect(() => {
     notificationSuccess();
-    init('dsc');
-  }, [init]);
+    init(selfClient, 'dsc');
+  }, [init, selfClient]);
 
   const onOkPress = async () => {
     try {
       setRequestingPermission(true);
       trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
+      trackNfcEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
 
       // Request notification permission
       const permissionGranted = await requestNotificationPermission();
@@ -71,6 +76,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
         error: message,
       });
+      trackNfcEvent(ProofEvents.PROVING_PROCESS_ERROR, {
+        error: message,
+      });
+
+      flushAllAnalytics();
     } finally {
       setRequestingPermission(false);
     }

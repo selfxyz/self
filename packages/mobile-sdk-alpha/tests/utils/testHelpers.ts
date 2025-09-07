@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /* eslint-disable sort-exports/sort-exports */
-import type { CryptoAdapter, NetworkAdapter, ScannerAdapter } from '../../src';
+import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../../src';
 
 // Shared test data
 export const sampleMRZ = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
@@ -13,7 +13,16 @@ export const badCheckDigitsMRZ = sampleMRZ.slice(0, -1) + '1';
 
 // Shared mock adapters
 export const mockScanner: ScannerAdapter = {
-  scan: async () => ({ mode: 'mrz', passportNumber: '', dateOfBirth: '', dateOfExpiry: '' }),
+  scan: async () => ({
+    mode: 'mrz',
+    mrzInfo: {
+      documentNumber: '',
+      dateOfBirth: '',
+      dateOfExpiry: '',
+      issuingCountry: '',
+      documentType: 'passport',
+    },
+  }),
 };
 
 export const mockNetwork: NetworkAdapter = {
@@ -44,14 +53,26 @@ export const mockCrypto: CryptoAdapter = {
   sign: async () => new Uint8Array(),
 };
 
+export const mockDocuments: DocumentsAdapter = {
+  loadDocumentCatalog: async () => ({ documents: [] }),
+  loadDocumentById: async () => null,
+  saveDocumentCatalog: () => Promise.resolve(),
+};
+
+const mockAuth = {
+  getPrivateKey: async () => 'stubbed-private-key',
+};
+
 export const mockAdapters = {
   scanner: mockScanner,
   network: mockNetwork,
   crypto: mockCrypto,
+  documents: mockDocuments,
+  auth: mockAuth,
 };
 
 // Shared test expectations
 export const expectedMRZResult = {
-  passportNumber: 'L898902C3',
+  documentNumber: 'L898902C3',
   validation: { overall: true },
 };

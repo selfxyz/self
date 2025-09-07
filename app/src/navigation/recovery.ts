@@ -16,8 +16,8 @@ const AccountRecoveryScreen = lazy(
 const AccountVerifiedSuccessScreen = lazy(
   () => import('@/screens/recovery/AccountVerifiedSuccessScreen'),
 );
-const PassportDataNotFound = lazy(
-  () => import('@/screens/recovery/PassportDataNotFoundScreen'),
+const DocumentDataNotFound = lazy(
+  () => import('@/screens/recovery/DocumentDataNotFoundScreen'),
 );
 const RecoverWithPhraseScreen = lazy(
   () => import('@/screens/recovery/RecoverWithPhraseScreen'),
@@ -46,8 +46,8 @@ const recoveryScreens = {
       animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
-  PassportDataNotFound: {
-    screen: PassportDataNotFound,
+  DocumentDataNotFound: {
+    screen: DocumentDataNotFound,
     options: {
       headerShown: false,
       gestureEnabled: false,

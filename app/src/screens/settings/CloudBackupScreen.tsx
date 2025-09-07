@@ -7,25 +7,24 @@ import { YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import { Caption } from '@/components/typography/Caption';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { BackupEvents } from '@/consts/analytics';
 import { useModal } from '@/hooks/useModal';
 import Cloud from '@/images/icons/logo_cloud_backup.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, white } from '@/utils/colors';
 import { buttonTap, confirmTap } from '@/utils/haptic';
-
-const { trackEvent } = analytics();
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 
@@ -39,6 +38,7 @@ type CloudBackupScreenProps = StaticScreenProps<
 const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   route: { params },
 }) => {
+  const { trackEvent } = useSelfClient();
   const { getOrCreateMnemonic, loginWithBiometrics } = useAuth();
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
@@ -67,7 +67,12 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
           setPending(false);
         },
       }),
-      [loginWithBiometrics, disableBackup, toggleCloudBackupEnabled],
+      [
+        loginWithBiometrics,
+        disableBackup,
+        toggleCloudBackupEnabled,
+        trackEvent,
+      ],
     ),
   );
 
@@ -95,6 +100,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     getOrCreateMnemonic,
     upload,
     toggleCloudBackupEnabled,
+    trackEvent,
   ]);
 
   const disableCloudBackups = useCallback(() => {
@@ -174,6 +180,7 @@ function BottomButton({
   cloudBackupEnabled: boolean;
   nextScreen?: NextScreen;
 }) {
+  const { trackEvent } = useSelfClient();
   const navigation = useNavigation();
 
   const goBack = () => {

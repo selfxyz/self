@@ -11,32 +11,32 @@ describe('navigation', () => {
       'AccountRecoveryChoice',
       'AccountVerifiedSuccess',
       'CloudBackupSettings',
-      'ConfirmBelongingScreen',
+      'ConfirmBelonging',
       'CreateMock',
       'DeferredLinkingInfo',
       'DevFeatureFlags',
       'DevHapticFeedback',
-      'DevPrivateKey',
+
       'DevSettings',
       'Disclaimer',
+      'DocumentCamera',
+      'DocumentCameraTrouble',
+      'DocumentDataInfo',
+      'DocumentDataNotFound',
+      'DocumentNFCMethodSelection',
+      'DocumentNFCScan',
+      'DocumentNFCTrouble',
+      'DocumentOnboarding',
       'Home',
       'Launch',
-      'LoadingScreen',
+      'Loading',
       'ManageDocuments',
       'MockDataDeepLink',
       'Modal',
-      'PassportCamera',
-      'PassportCameraTrouble',
-      'PassportDataInfo',
-      'PassportDataNotFound',
-      'PassportNFCMethodSelection',
-      'PassportNFCScan',
-      'PassportNFCTrouble',
-      'PassportOnboarding',
       'ProofHistory',
       'ProofHistoryDetail',
-      'ProofRequestStatusScreen',
-      'ProveScreen',
+      'ProofRequestStatus',
+      'Prove',
       'QRCodeTrouble',
       'QRCodeViewFinder',
       'RecoverWithPhrase',
@@ -44,7 +44,7 @@ describe('navigation', () => {
       'Settings',
       'ShowRecoveryPhrase',
       'Splash',
-      'UnsupportedPassport',
+      'UnsupportedDocument',
     ]);
   });
 
@@ -56,7 +56,7 @@ describe('navigation', () => {
     it('should use regular passport screens when shouldShowAesopRedesign is false', () => {
       const navigationScreens = require('@/navigation').navigationScreens;
       expect(
-        navigationScreens.PassportOnboarding.options.title,
+        navigationScreens.DocumentOnboarding.options.title,
       ).toBeUndefined();
     });
 
@@ -66,7 +66,7 @@ describe('navigation', () => {
       }));
 
       const navigationScreens = require('@/navigation').navigationScreens;
-      expect(navigationScreens.PassportOnboarding.options.title).toBeDefined();
+      expect(navigationScreens.DocumentOnboarding.options.title).toBeDefined();
     });
   });
 });

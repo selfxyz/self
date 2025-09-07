@@ -9,10 +9,8 @@ import Tips from '@/components/Tips';
 import { Caption } from '@/components/typography/Caption';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
-import analytics from '@/utils/analytics';
+import { flushAllAnalytics } from '@/utils/analytics';
 import { slate500 } from '@/utils/colors';
-
-const { flush: flushAnalytics } = analytics();
 
 const tips: TipProps[] = [
   {
@@ -49,7 +47,7 @@ const QRCodeTrouble: React.FC = () => {
 
   // error screen, flush analytics
   useEffect(() => {
-    flushAnalytics();
+    flushAllAnalytics();
   }, []);
 
   return (

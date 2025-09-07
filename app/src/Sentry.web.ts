@@ -3,43 +3,50 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { SENTRY_DSN } from '@env';
-import * as Sentry from '@sentry/react';
+import {
+  captureException as sentryCaptureException,
+  captureFeedback as sentryCaptureFeedback,
+  captureMessage as sentryCaptureMessage,
+  feedbackIntegration,
+  init as sentryInit,
+  withProfiler,
+} from '@sentry/react';
 
 export const captureException = (
   error: Error,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;
   }
-  Sentry.captureException(error, {
+  sentryCaptureException(error, {
     extra: context,
   });
 };
 
 export const captureFeedback = (
   feedback: string,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;
   }
 
-  Sentry.captureFeedback(
+  sentryCaptureFeedback(
     {
       message: feedback,
-      name: context?.name,
-      email: context?.email,
+      name: context?.name as string | undefined,
+      email: context?.email as string | undefined,
       tags: {
-        category: context?.category || 'general',
-        source: context?.source || 'feedback_modal',
+        category: (context?.category as string) || 'general',
+        source: (context?.source as string) || 'feedback_modal',
       },
     },
     {
       captureContext: {
         tags: {
-          category: context?.category || 'general',
-          source: context?.source || 'feedback_modal',
+          category: (context?.category as string) || 'general',
+          source: (context?.source as string) || 'feedback_modal',
         },
       },
     },
@@ -48,22 +55,22 @@ export const captureFeedback = (
 
 export const captureMessage = (
   message: string,
-  context?: Record<string, any>,
+  context?: Record<string, unknown>,
 ) => {
   if (isSentryDisabled) {
     return;
   }
-  Sentry.captureMessage(message, {
+  sentryCaptureMessage(message, {
     extra: context,
   });
 };
 
 export const initSentry = () => {
   if (isSentryDisabled) {
-    return null;
+    return;
   }
 
-  Sentry.init({
+  sentryInit({
     dsn: SENTRY_DSN,
     debug: false,
     // Performance Monitoring
@@ -81,7 +88,7 @@ export const initSentry = () => {
       return event;
     },
     integrations: [
-      Sentry.feedbackIntegration({
+      feedbackIntegration({
         buttonOptions: {
           styles: {
             triggerButton: {
@@ -99,11 +106,10 @@ export const initSentry = () => {
       }),
     ],
   });
-  return Sentry;
 };
 
 export const isSentryDisabled = !SENTRY_DSN;
 
 export const wrapWithSentry = (App: React.ComponentType) => {
-  return isSentryDisabled ? App : Sentry.withProfiler(App);
+  return isSentryDisabled ? App : withProfiler(App);
 };

@@ -40,6 +40,7 @@ const distPackageJson = {
   exports: {
     '.': './esm/index.js',
     './browser': './esm/browser.js',
+    './constants/analytics': './esm/constants/analytics.js',
   },
 };
 try {

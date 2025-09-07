@@ -28,11 +28,20 @@ export {
   packBytesAndPoseidon,
 } from './hash.js';
 export {
+  clientKey,
+  clientPublicKeyHex,
+  ec,
+  encryptAES256GCM,
+  getPayload,
+  getWSDbRelayerUrl,
+} from './proving.js';
+export {
   findStartPubKeyIndex,
   generateCommitment,
   generateNullifier,
   initPassportDataParsing,
 } from './passports/passport.js';
+export type { TEEPayload, TEEPayloadBase, TEEPayloadDisclose } from './proving.js';
 export { formatMrz } from './passports/format.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
 export {

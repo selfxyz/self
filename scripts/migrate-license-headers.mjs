@@ -8,7 +8,7 @@
  * Migration tool to convert composite SPDX headers to canonical multi-line format
  */
 
-import fs from 'fs';
+import { readdirSync, statSync, readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 
 // Current composite format
@@ -29,11 +29,11 @@ function findFiles(
   const files = [];
 
   function traverse(currentDir) {
-    const items = fs.readdirSync(currentDir);
+    const items = readdirSync(currentDir);
 
     for (const item of items) {
       const fullPath = path.join(currentDir, item);
-      const stat = fs.statSync(fullPath);
+      const stat = statSync(fullPath);
 
       if (stat.isDirectory()) {
         // Skip common directories
@@ -66,7 +66,7 @@ function findFiles(
 }
 
 function analyzeFile(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
 
   let i = 0;
@@ -109,7 +109,7 @@ function analyzeFile(filePath) {
 }
 
 function migrateFile(filePath, dryRun = false) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   const analysis = analyzeFile(filePath);
 
@@ -123,7 +123,7 @@ function migrateFile(filePath, dryRun = false) {
 
     if (!dryRun) {
       const newContent = lines.join('\n');
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      writeFileSync(filePath, newContent, 'utf8');
     }
 
     return { success: true, reason: 'Migrated composite to canonical' };
@@ -133,7 +133,7 @@ function migrateFile(filePath, dryRun = false) {
 }
 
 function removeHeaderFromFile(filePath, dryRun = false) {
-  const content = fs.readFileSync(filePath, 'utf8');
+  const content = readFileSync(filePath, 'utf8');
   const lines = content.split('\n');
   const analysis = analyzeFile(filePath);
 
@@ -152,7 +152,7 @@ function removeHeaderFromFile(filePath, dryRun = false) {
 
     if (!dryRun) {
       const newContent = lines.join('\n');
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      writeFileSync(filePath, newContent, 'utf8');
     }
 
     return { success: true, reason: 'Removed composite header' };
@@ -167,7 +167,7 @@ function removeHeaderFromFile(filePath, dryRun = false) {
 
     if (!dryRun) {
       const newContent = lines.join('\n');
-      fs.writeFileSync(filePath, newContent, 'utf8');
+      writeFileSync(filePath, newContent, 'utf8');
     }
 
     return { success: true, reason: 'Removed canonical header' };

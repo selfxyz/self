@@ -8,6 +8,7 @@
 import type {
   FeatureFlagValue,
   RemoteConfigBackend,
+  RemoteConfigValue,
   StorageBackend,
 } from '@/RemoteConfig.shared';
 import {
@@ -37,10 +38,10 @@ const webStorageBackend: StorageBackend = {
 // Mock Firebase Remote Config for web (since Firebase Web SDK for Remote Config is not installed)
 // In a real implementation, you would import and use the Firebase Web SDK
 class MockFirebaseRemoteConfig implements RemoteConfigBackend {
-  private config: Record<string, unknown> = {};
+  private config: Record<string, FeatureFlagValue> = {};
   private settings: Record<string, unknown> = {};
 
-  setDefaults(defaults: Record<string, unknown>) {
+  setDefaults(defaults: Record<string, FeatureFlagValue>) {
     this.config = { ...defaults };
   }
 
@@ -80,8 +81,12 @@ class MockFirebaseRemoteConfig implements RemoteConfigBackend {
     };
   }
 
-  getAll() {
-    return this.config;
+  getAll(): Record<string, RemoteConfigValue> {
+    const result: Record<string, RemoteConfigValue> = {};
+    for (const [key, _value] of Object.entries(this.config)) {
+      result[key] = this.getValue(key);
+    }
+    return result;
   }
 }
 

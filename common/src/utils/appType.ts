@@ -6,7 +6,13 @@ import type { UserIdType } from './circuits/uuid.js';
 import { validateUserId } from './circuits/uuid.js';
 import { formatEndpoint } from './scope.js';
 
+export interface DeferredLinkingTokenResponse {
+  campaign_id: string;
+  campaign_user_id: string;
+  self_app: string; // SelfApp is serialized as a string
+}
 export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
+
 export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 
 export interface SelfApp {
@@ -120,10 +126,4 @@ export class SelfAppBuilder {
 
 export function getUniversalLink(selfApp: SelfApp): string {
   return `${REDIRECT_URL}?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
-}
-
-export interface DeferredLinkingTokenResponse {
-  campaign_id: string;
-  campaign_user_id: string;
-  self_app: string; // SelfApp is serialized as a string
 }

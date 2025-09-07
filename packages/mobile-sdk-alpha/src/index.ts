@@ -5,9 +5,12 @@
 // Types
 export type {
   Adapters,
+  AnalyticsAdapter,
+  AuthAdapter,
   ClockAdapter,
   Config,
   CryptoAdapter,
+  DocumentsAdapter,
   HttpAdapter,
   LogLevel,
   LoggerAdapter,
@@ -27,6 +30,7 @@ export type {
   ScannerAdapter,
   SelfClient,
   StorageAdapter,
+  TrackEventParams,
   Unsubscribe,
   ValidationInput,
   ValidationResult,
@@ -37,7 +41,7 @@ export type {
 // MRZ module
 export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
 
-export type { DocumentData, DocumentMetadata, ExternalAdapter, PassportCameraProps, ScreenProps } from './types/ui';
+export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
 export type { MRZScanOptions } from './mrz';
 
@@ -62,9 +66,6 @@ export {
 
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
-// Flow Components
-export { OnboardingFlow } from './components/flows/OnboardingFlow';
-
 // Screen Components
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
@@ -85,6 +86,11 @@ export { extractMRZInfo } from './mrz';
 
 export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
+export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+
+// Documents utils
+export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
+
 // Core functions
 export { isPassportDataValid } from './validation/document';
 
@@ -93,9 +99,9 @@ export { mergeConfig } from './config/merge';
 // Document validation
 export { parseNFCResponse, scanNFC } from './nfc';
 
+export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
+
 export { scanQRProof } from './qr';
 
-// Hooks
-export { useDocumentManager } from './hooks/useDocumentManager';
 // Error handling
 export { webScannerShim } from './adapters/web/shims';

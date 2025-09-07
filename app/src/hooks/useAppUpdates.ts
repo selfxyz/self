@@ -7,16 +7,16 @@ import { Linking } from 'react-native';
 import { checkVersion } from 'react-native-check-version';
 import { useNavigation } from '@react-navigation/native';
 
-import { AppEvents } from '@/consts/analytics';
-import analytics from '@/utils/analytics';
-import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-const { trackEvent } = analytics();
+import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 export const useAppUpdates = (): [boolean, () => void, boolean] => {
   const navigation = useNavigation();
   const [newVersionUrl, setNewVersionUrl] = useState<string | null>(null);
   const [isModalDismissed, setIsModalDismissed] = useState(false);
+  const selfClient = useSelfClient();
 
   useEffect(() => {
     checkVersion().then(version => {
@@ -30,13 +30,13 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
     const callbackId = registerModalCallbacks({
       onButtonPress: async () => {
         if (newVersionUrl !== null) {
-          trackEvent(AppEvents.UPDATE_STARTED);
+          selfClient.trackEvent(AppEvents.UPDATE_STARTED);
           await Linking.openURL(newVersionUrl);
         }
       },
       onModalDismiss: () => {
         setIsModalDismissed(true);
-        trackEvent(AppEvents.UPDATE_MODAL_CLOSED);
+        selfClient.trackEvent(AppEvents.UPDATE_MODAL_CLOSED);
       },
     });
 
@@ -47,7 +47,7 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
       buttonText: 'Update and restart',
       callbackId,
     });
-    trackEvent(AppEvents.UPDATE_MODAL_OPENED);
+    selfClient.trackEvent(AppEvents.UPDATE_MODAL_OPENED);
   };
 
   return [newVersionUrl !== null, showAppUpdateModal, isModalDismissed];

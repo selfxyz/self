@@ -49,7 +49,7 @@ object OcrUtils {
             temp = temp.replace("\r".toRegex(), "").replace("\n".toRegex(), "").replace("\t".toRegex(), "").replace(" ", "")
             fullRead += "$temp-"
         }
-        fullRead = fullRead.toUpperCase()
+        fullRead = fullRead.uppercase()
         Log.d(TAG, "Read: $fullRead")
 
         // We try with TD1 format first (ID Card)

@@ -7,9 +7,10 @@ import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
 import { useMachine } from '@xstate/react';
 
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { HeldPrimaryButton } from '@/components/buttons/PrimaryButtonLongHold';
 import Description from '@/components/typography/Description';
-import { ProofEvents } from '@/consts/analytics';
 import { black } from '@/utils/colors';
 
 interface HeldPrimaryButtonProveScreenProps {
@@ -258,7 +259,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<
 
   return (
     <HeldPrimaryButton
-      trackEvent={ProofEvents.PROOF_VERIFICATION_STARTED}
+      trackEvent={ProofEvents.PROOF_VERIFY_LONG_PRESS}
       onLongPress={() => {
         if (state.matches('ready')) {
           send({ type: 'VERIFY' });

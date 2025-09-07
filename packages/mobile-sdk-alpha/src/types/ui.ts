@@ -26,19 +26,6 @@ export interface DocumentData {
   metadata: DocumentMetadata;
 }
 
-// External adapter interface
-export interface ExternalAdapter {
-  getSecret: () => Promise<string>;
-  getAllDocuments: () => Promise<{
-    [documentId: string]: DocumentData;
-  }>;
-  setDocument: (doc: DocumentData, documentId: string) => Promise<boolean>;
-  onOnboardingSuccess: () => void;
-  onOnboardingFailure: (error: Error) => void;
-  onDisclosureSuccess: () => void;
-  onDisclosureFailure: (error: Error) => void;
-}
-
 // Screen component props
 export interface ScreenProps {
   onSuccess: () => void;

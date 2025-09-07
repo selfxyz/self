@@ -24,17 +24,14 @@
             android:value="ocr" />
 
         <activity android:name=".ui.activities.CameraActivity"
-            android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
             android:windowSoftInputMode="stateAlwaysHidden" />
 
         <activity android:name=".ui.activities.NfcActivity"
-            android:screenOrientation="nosensor"
             android:keepScreenOn="true" />
 
-        <activity android:name=".ui.activities.SelectionActivity"
-            android:screenOrientation="nosensor" />
+        <activity android:name=".ui.activities.SelectionActivity" />
     </application>
 
 </manifest>

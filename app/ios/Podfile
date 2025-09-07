@@ -11,7 +11,10 @@ require Pod::Executable.execute_command("node", ["-p",
 
 project "Self.xcodeproj"
 
-platform :ios, "15.0" if !ENV["ACT"]
+# Define consistent iOS deployment target
+IOS_DEPLOYMENT_TARGET = "15.1"
+
+platform :ios, IOS_DEPLOYMENT_TARGET if !ENV["ACT"]
 prepare_react_native_project!
 
 flipper_enabled = ENV["NO_FLIPPER"] != "1"
@@ -68,7 +71,7 @@ target "Self" do
         end
 
         target.build_configurations.each do |config|
-          config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.0"
+          config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = IOS_DEPLOYMENT_TARGET
           config.build_settings["GCC_PREPROCESSOR_DEFINITIONS"] ||= ["$(inherited)", "_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]
         end
       end

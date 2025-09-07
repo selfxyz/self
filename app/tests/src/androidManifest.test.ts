@@ -6,11 +6,11 @@
  * @jest-environment node
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 describe('Android Manifest Configuration', () => {
-  const manifestPath = path.join(
+  const manifestPath = join(
     __dirname,
     '../../android/app/src/main/AndroidManifest.xml',
   );
@@ -18,7 +18,7 @@ describe('Android Manifest Configuration', () => {
 
   beforeAll(() => {
     // Read the manifest file
-    manifestContent = fs.readFileSync(manifestPath, 'utf8');
+    manifestContent = readFileSync(manifestPath, 'utf8');
   });
 
   describe('Critical Deeplink Configuration', () => {
@@ -125,7 +125,8 @@ describe('Android Manifest Configuration', () => {
       expect(manifestContent).toContain('android:name=".MainActivity"');
       expect(manifestContent).toContain('android:exported="true"');
       expect(manifestContent).toContain('android:launchMode="singleTop"');
-      expect(manifestContent).toContain('android:screenOrientation="portrait"');
+      // Orientation locks removed to support large screens
+      expect(manifestContent).not.toContain('android:screenOrientation');
     });
 
     it('should have main launcher intent filter', () => {

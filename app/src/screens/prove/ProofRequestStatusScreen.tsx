@@ -9,6 +9,9 @@ import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import loadingAnimation from '@/assets/animations/loading/misc.json';
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
@@ -17,13 +20,11 @@ import { BodyText } from '@/components/typography/BodyText';
 import Description from '@/components/typography/Description';
 import { typography } from '@/components/typography/styles';
 import { Title } from '@/components/typography/Title';
-import { ProofEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
-import analytics from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import {
   buttonTap,
@@ -32,9 +33,8 @@ import {
 } from '@/utils/haptic';
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
-const { trackEvent } = analytics();
-
 const SuccessScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const { selfApp, cleanSelfApp } = useSelfAppStore();
   const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
@@ -121,6 +121,7 @@ const SuccessScreen: React.FC = () => {
       setAnimationSource(loadingAnimation);
     }
   }, [
+    trackEvent,
     currentState,
     isFocused,
     appName,

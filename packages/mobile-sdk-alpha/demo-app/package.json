@@ -1,0 +1,37 @@
+{
+  "name": "demo-app",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "android": "react-native run-android",
+    "build": "tsc -p tsconfig.json --noEmit --pretty false",
+    "ios": "react-native run-ios",
+    "start": "react-native start",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.3",
+    "@noble/hashes": "^1.5.0",
+    "@react-native/gradle-plugin": "0.76.9",
+    "assert": "^2.1.0",
+    "buffer": "^6.0.3",
+    "ethers": "^6.11.0",
+    "react": "^18.3.1",
+    "react-native": "0.76.9",
+    "react-native-get-random-values": "^1.11.0",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.3",
+    "@tsconfig/react-native": "^3.0.6",
+    "@types/jest": "^29.5.14",
+    "@types/react": "^18.3.4",
+    "babel-jest": "^29.6.3",
+    "jest": "^29.6.3",
+    "metro-react-native-babel-preset": "0.76.9",
+    "react-test-renderer": "^18.3.1",
+    "typescript": "^5.9.2"
+  }
+}

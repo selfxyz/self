@@ -18,9 +18,16 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  // Pin React and React Native to monorepo root
+  react: path.join(trueMonorepoNodeModules, 'react'),
+  'react-native': path.join(trueMonorepoNodeModules, 'react-native'),
   '@': path.join(__dirname, 'src'),
   '@selfxyz/common': path.resolve(commonPath, 'dist'),
   '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
+  '@selfxyz/mobile-sdk-alpha/constants/analytics': path.resolve(
+    sdkAlphaPath,
+    'dist/esm/constants/analytics.js',
+  ),
   // Main exports
   '@selfxyz/common/utils': path.resolve(
     commonPath,
@@ -99,6 +106,10 @@ const extraNodeModules = {
   '@selfxyz/common/utils/passportFormat': path.resolve(
     commonPath,
     'dist/esm/src/utils/passports/format.js',
+  ),
+  '@selfxyz/common/utils/passports/validate': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/passports/validate.js',
   ),
   '@selfxyz/common/utils/passportMock': path.resolve(
     commonPath,

@@ -90,9 +90,13 @@ on:
         required: false
         default: false
 
+concurrency:
+  group: mobile-deploy-${{ inputs.deployment_track || github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-latest-large
     if: (inputs.platform == 'ios' || inputs.platform == 'both')
     steps:
       - name: Mobile deployment status
@@ -176,8 +180,8 @@ jobs:
         id: gems-cache
         uses: ./.github/actions/cache-bundler
         with:
-          path: ${{ env.APP_PATH }}/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-${{ github.sha }}
+          path: ${{ env.APP_PATH }}/ios/vendor/bundle
+          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-
             ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
@@ -575,8 +579,8 @@ jobs:
             echo "Node modules: $NODE_SIZE"
           fi
 
-          if [ -d "${{ env.APP_PATH }}/vendor/bundle" ]; then
-            GEMS_SIZE=$(du -sh "${{ env.APP_PATH }}/vendor/bundle" | cut -f1)
+          if [ -d "${{ env.APP_PATH }}/ios/vendor/bundle" ]; then
+            GEMS_SIZE=$(du -sh "${{ env.APP_PATH }}/ios/vendor/bundle" | cut -f1)
             echo "Ruby gems: $GEMS_SIZE"
           fi
 
@@ -716,8 +720,8 @@ jobs:
         id: gems-cache
         uses: ./.github/actions/cache-bundler
         with:
-          path: ${{ env.APP_PATH }}/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-${{ github.sha }}
+          path: ${{ env.APP_PATH }}/ios/vendor/bundle
+          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-
             ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
@@ -924,8 +928,8 @@ jobs:
             echo "Node modules: $NODE_SIZE"
           fi
 
-          if [ -d "${{ env.APP_PATH }}/vendor/bundle" ]; then
-            GEMS_SIZE=$(du -sh "${{ env.APP_PATH }}/vendor/bundle" | cut -f1)
+          if [ -d "${{ env.APP_PATH }}/ios/vendor/bundle" ]; then
+            GEMS_SIZE=$(du -sh "${{ env.APP_PATH }}/ios/vendor/bundle" | cut -f1)
             echo "Ruby gems: $GEMS_SIZE"
           fi
 

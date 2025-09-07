@@ -4,13 +4,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { readFileSync } = require('fs');
+const { join } = require('path');
 const { describe, it } = require('node:test');
 const assert = require('node:assert');
 
 describe('bundle-analyze-ci.cjs', () => {
-  const scriptPath = path.join(__dirname, '..', 'bundle-analyze-ci.cjs');
+  const scriptPath = join(__dirname, '..', 'bundle-analyze-ci.cjs');
 
   it('should exit with error when no platform is provided', () => {
     assert.throws(() => {
@@ -25,7 +25,7 @@ describe('bundle-analyze-ci.cjs', () => {
   });
 
   it('should have human-readable thresholds defined', () => {
-    const scriptContent = fs.readFileSync(scriptPath, 'utf8');
+    const scriptContent = readFileSync(scriptPath, 'utf8');
 
     // Check that the DRY checkBundleSize function exists
     assert(scriptContent.includes('function checkBundleSize'));
@@ -37,18 +37,18 @@ describe('bundle-analyze-ci.cjs', () => {
   });
 
   it('should have formatBytes function', () => {
-    const scriptContent = fs.readFileSync(scriptPath, 'utf8');
+    const scriptContent = readFileSync(scriptPath, 'utf8');
     assert(scriptContent.includes('function formatBytes'));
   });
 
   it('should have proper error handling for missing bundle file', () => {
-    const scriptContent = fs.readFileSync(scriptPath, 'utf8');
+    const scriptContent = readFileSync(scriptPath, 'utf8');
     assert(scriptContent.includes('Bundle file not found'));
     assert(scriptContent.includes('process.exit(1)'));
   });
 
   it('should have helpful error message with threshold update instructions', () => {
-    const scriptContent = fs.readFileSync(scriptPath, 'utf8');
+    const scriptContent = readFileSync(scriptPath, 'utf8');
     assert(
       scriptContent.includes(
         'To increase the threshold, edit BUNDLE_THRESHOLDS_MB',
@@ -57,7 +57,7 @@ describe('bundle-analyze-ci.cjs', () => {
   });
 
   it('should use DRY approach with checkBundleSize function', () => {
-    const scriptContent = fs.readFileSync(scriptPath, 'utf8');
+    const scriptContent = readFileSync(scriptPath, 'utf8');
     assert(scriptContent.includes('checkBundleSize(bundleSize, platform)'));
     assert(scriptContent.includes('return false'));
     assert(scriptContent.includes('return true'));

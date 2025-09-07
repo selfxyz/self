@@ -9,7 +9,7 @@
  */
 
 import { strict as assert } from 'assert';
-import fs from 'fs';
+import { existsSync, rmSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
@@ -29,31 +29,31 @@ class TestFileSystem {
   constructor() {
     this.tempDir = path.join(__dirname, 'temp-test-files');
     this.cleanup();
-    fs.mkdirSync(this.tempDir, { recursive: true });
+    mkdirSync(this.tempDir, { recursive: true });
   }
 
   cleanup() {
-    if (fs.existsSync(this.tempDir)) {
-      fs.rmSync(this.tempDir, { recursive: true, force: true });
+    if (existsSync(this.tempDir)) {
+      rmSync(this.tempDir, { recursive: true, force: true });
     }
   }
 
   writeFile(relativePath, content) {
     const fullPath = path.join(this.tempDir, relativePath);
     const dir = path.dirname(fullPath);
-    fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(fullPath, content, 'utf8');
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(fullPath, content, 'utf8');
     return fullPath;
   }
 
   readFile(relativePath) {
     const fullPath = path.join(this.tempDir, relativePath);
-    return fs.readFileSync(fullPath, 'utf8');
+    return readFileSync(fullPath, 'utf8');
   }
 
   exists(relativePath) {
     const fullPath = path.join(this.tempDir, relativePath);
-    return fs.existsSync(fullPath);
+    return existsSync(fullPath);
   }
 }
 

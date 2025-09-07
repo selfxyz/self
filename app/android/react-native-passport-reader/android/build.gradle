@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android'
 android {
     namespace "io.tradle.nfc"
     // Use NDK that supports 16k page size
-    ndkVersion = "27.0.11718014"
+    ndkVersion = "27.1.12297006"
     compileSdkVersion 33
     defaultConfig {
         targetSdkVersion 33
@@ -32,34 +32,14 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation 'com.google.code.gson:gson:2.8.9'  // Check for the latest version
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'com.google.android.material:material:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'com.wdullaer:materialdatetimepicker:3.5.2'
     implementation 'org.jmrtd:jmrtd:0.8.1'
-    // implementation 'org.jmrtd:jmrtd:0.7.42' // getting different errors whether it's 18 or 40 // 23 <== this works
-    // implementation files('../../../../../jmrtd-0.7.18-sources/target/jmrtd-0.7.18.jar')
-    // implementation files('../../app/libs/jmrtd-0.7.18.jar')
     implementation 'net.sf.scuba:scuba-sc-android:0.0.18'
-    // implementation 'com.madgag.spongycastle:prov:1.54.0.0'
     implementation 'com.gemalto.jp2:jp2-android:1.0.3'
     implementation 'com.github.mhshams:jnbis:1.1.0'
-    // implementation 'org.bouncycastle:bcpkix-jdk15on:1.65' // do not update
     implementation 'commons-io:commons-io:2.8.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
-    // implementation 'edu.ucar:jj2000:5.2'
     implementation 'com.facebook.react:react-native:+'
-}
-
-
-apply plugin: 'org.mozilla.rust-android-gradle.rust-android'
-
-cargo {
-    module  = "../../../ark-circom-passport" // this works
-    // module  = "/Users/turboblitz/code/my-code/passport-sbt/app/halo2-passport"
-    libname = "ark_circom_passport"          // Or whatever matches Cargo.toml's [package] name.
-    // targets = ["arm", "x86"]  // failing
-    // targets = ["arm64", "darwin-aarch64"]  // add this one for apple later 
-    targets = ["arm64"]  // Those work
-    apiLevel = 29
-    profile = 'release'
 }

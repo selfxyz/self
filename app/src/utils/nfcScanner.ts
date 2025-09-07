@@ -2,13 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Buffer } from 'buffer';
-import { NativeModules, Platform } from 'react-native';
-import PassportReader from 'react-native-passport-reader';
-import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
+import { Platform } from 'react-native';
 
 import type { PassportData } from '@selfxyz/common/types';
+
+import { configureNfcAnalytics } from '@/utils/analytics';
+import {
+  PassportReader,
+  reset,
+  scan as scanDocument,
+} from '@/utils/passportReader';
 
 interface AndroidScanResponse {
   mrz: string;
@@ -43,9 +47,25 @@ export const parseScanResponse = (response: unknown) => {
     : handleResponseIOS(response);
 };
 
+export const scan = async (inputs: Inputs) => {
+  await configureNfcAnalytics();
+
+  return Platform.OS === 'android'
+    ? await scanAndroid(inputs)
+    : await scanIOS(inputs);
+};
+
 const scanAndroid = async (inputs: Inputs) => {
-  PassportReader.reset();
-  return await PassportReader.scan({
+  reset();
+
+  if (!scanDocument) {
+    console.warn(
+      'Android passport scanner is not available - native module failed to load',
+    );
+    return Promise.reject(new Error('NFC scanning is currently unavailable.'));
+  }
+
+  return await scanDocument({
     documentNumber: inputs.passportNumber,
     dateOfBirth: inputs.dateOfBirth,
     dateOfExpiry: inputs.dateOfExpiry,
@@ -55,34 +75,30 @@ const scanAndroid = async (inputs: Inputs) => {
 };
 
 const scanIOS = async (inputs: Inputs) => {
-  return await NativeModules.PassportReader.scanPassport(
-    inputs.passportNumber,
-    inputs.dateOfBirth,
-    inputs.dateOfExpiry,
-    inputs.canNumber ?? '',
-    inputs.useCan ?? false,
-    inputs.skipPACE ?? false,
-    inputs.skipCA ?? false,
-    inputs.extendedMode ?? false,
-    inputs.usePacePolling ?? false,
-  );
-};
-
-export const scan = async (inputs: Inputs) => {
-  if (MIXPANEL_NFC_PROJECT_TOKEN) {
-    if (Platform.OS === 'ios') {
-      const enableDebugLogs = JSON.parse(String(ENABLE_DEBUG_LOGS));
-      NativeModules.PassportReader.configure(
-        MIXPANEL_NFC_PROJECT_TOKEN,
-        enableDebugLogs,
-      );
-    } else {
-    }
+  if (!PassportReader?.scanPassport) {
+    console.warn(
+      'iOS passport scanner is not available - native module failed to load',
+    );
+    return Promise.reject(
+      new Error(
+        'NFC scanning is currently unavailable. Please ensure the app is properly installed.',
+      ),
+    );
   }
 
-  return Platform.OS === 'android'
-    ? await scanAndroid(inputs)
-    : await scanIOS(inputs);
+  return await Promise.resolve(
+    PassportReader.scanPassport(
+      inputs.passportNumber,
+      inputs.dateOfBirth,
+      inputs.dateOfExpiry,
+      inputs.canNumber ?? '',
+      inputs.useCan ?? false,
+      inputs.skipPACE ?? false,
+      inputs.skipCA ?? false,
+      inputs.extendedMode ?? false,
+      inputs.usePacePolling ?? false,
+    ),
+  );
 };
 
 const handleResponseIOS = (response: unknown) => {

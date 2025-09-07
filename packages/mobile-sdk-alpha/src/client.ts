@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { DocumentCatalog } from '@selfxyz/common/utils/types';
+
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
@@ -23,13 +25,14 @@ import type {
   ValidationInput,
   ValidationResult,
 } from './types/public';
+import { TrackEventParams } from './types/public';
 
 /**
  * Optional adapter implementations used when a consumer does not provide their
  * own. These defaults are intentionally minimal no-ops suitable for tests and
  * non-production environments.
  */
-const optionalDefaults: Partial<Adapters> = {
+const optionalDefaults: Required<Pick<Adapters, 'storage' | 'clock' | 'logger'>> = {
   storage: {
     get: async () => null,
     set: async () => {},
@@ -46,6 +49,8 @@ const optionalDefaults: Partial<Adapters> = {
   },
 };
 
+const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
+
 /**
  * Creates a fully configured {@link SelfClient} instance.
  *
@@ -53,14 +58,14 @@ const optionalDefaults: Partial<Adapters> = {
  * provided configuration with sensible defaults. Missing optional adapters are
  * filled with benign no-op implementations.
  */
-export function createSelfClient({ config, adapters }: { config: Config; adapters: Partial<Adapters> }): SelfClient {
+export function createSelfClient({ config, adapters }: { config: Config; adapters: Adapters }): SelfClient {
   const cfg = mergeConfig(defaultConfig, config);
-  const required: (keyof Adapters)[] = ['scanner', 'network', 'crypto'];
-  for (const name of required) {
-    if (!(name in adapters) || !adapters[name]) throw notImplemented(name);
+
+  for (const name of REQUIRED_ADAPTERS) {
+    if (!(name in adapters) || !adapters[name as keyof Adapters]) throw notImplemented(name);
   }
 
-  const _adapters = { ...optionalDefaults, ...adapters } as Adapters;
+  const _adapters = { ...optionalDefaults, ...adapters };
   const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
 
   function on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe {
@@ -118,14 +123,53 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     };
   }
 
+  async function trackEvent(event: string, payload?: TrackEventParams): Promise<void> {
+    if (!adapters.analytics) {
+      return;
+    }
+    return adapters.analytics.trackEvent(event, payload);
+  }
+
+  /**
+   * Retrieves the private key via the auth adapter.
+   * With great power comes great responsibility
+   */
+  async function getPrivateKey(): Promise<string | null> {
+    return adapters.auth.getPrivateKey();
+  }
+
+  async function hasPrivateKey(): Promise<boolean> {
+    if (!adapters.auth) return false;
+    try {
+      const key = await adapters.auth.getPrivateKey();
+      return !!key;
+    } catch {
+      return false;
+    }
+  }
+
   return {
     scanDocument,
     validateDocument,
+    trackEvent,
+    getPrivateKey,
+    hasPrivateKey,
     checkRegistration,
     registerDocument,
     generateProof,
     extractMRZInfo: parseMRZInfo,
     on,
     emit,
+
+    // TODO: inline for now
+    loadDocumentCatalog: async () => {
+      return _adapters.documents.loadDocumentCatalog();
+    },
+    loadDocumentById: async (id: string) => {
+      return _adapters.documents.loadDocumentById(id);
+    },
+    saveDocumentCatalog: async (catalog: DocumentCatalog) => {
+      return _adapters.documents.saveDocumentCatalog(catalog);
+    },
   };
 }

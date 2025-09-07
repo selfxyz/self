@@ -141,7 +141,7 @@ After deployment, you can check the status:
 
 Before working with this setup, ensure you have the following installed:
 
-* **Node.js** - Version 18 or higher (for JavaScript dependencies and deployment scripts)
+* **Node.js** - Version 22 or higher (for JavaScript dependencies and deployment scripts)
 * **Yarn** - Package manager for JavaScript dependencies
 * **Git** - Required for branch detection and status checking during deployments
 * **GitHub CLI (`gh`)** - **Required** for GitHub runner deployments (default method)
@@ -150,7 +150,7 @@ Before working with this setup, ensure you have the following installed:
   - Used to trigger GitHub Actions workflows for deployments
 * **Ruby** - Fastlane requires Ruby (version 2.6.0 or higher recommended)
 * **Bundler** - For managing Ruby dependencies
-* **Xcode** - For iOS development (Note: Local development currently requires Xcode 16.2 due to compatibility issues with 16.3)
+* **Xcode** - For iOS development (15+; local development currently uses Xcode 16.2 due to compatibility issues with 16.3)
 * **Android Studio** - For Android development
 * **Docker** - Optional, required for local testing with `act`
 
@@ -396,7 +396,7 @@ The workflow consists of parallel jobs for each platform:
 
 #### `build-ios` Job
 
-Runs on `macos-latest` and performs the following steps:
+Runs on `macos-latest-large` and performs the following steps:
 1. Sets up the environment (Node.js, Ruby, CocoaPods)
 2. Processes iOS secrets and certificates
 3. Runs appropriate Fastlane lane based on branch
@@ -624,7 +624,7 @@ If you encounter issues with version syncing between `package.json` and native p
    * Ensure binary is properly signed with distribution certificate
 
 3. **Xcode Version Issues**
-   * Ensure you're using Xcode 16.2 for local development
+   * Ensure you're using Xcode 15+ for local development (currently tested with 16.2)
    * Check that the correct Xcode version is selected with `xcode-select`
 
 ### Android Build Issues

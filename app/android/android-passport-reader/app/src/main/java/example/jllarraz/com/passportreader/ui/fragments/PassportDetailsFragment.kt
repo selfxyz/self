@@ -198,7 +198,7 @@ class PassportDetailsFragment : androidx.fragment.app.Fragment() {
 
                 try {
                     binding?.valueDocumentSigningCertificateThumbprint?.text = StringUtils.bytesToHex(MessageDigest.getInstance("SHA-1").digest(
-                            docSigningCertificate.encoded)).toUpperCase()
+                            docSigningCertificate.encoded)).uppercase()
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

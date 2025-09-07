@@ -128,28 +128,28 @@ const items = [
   'DevHapticFeedback',
   'Splash',
   'Launch',
-  'PassportOnboarding',
-  'PassportCamera',
-  'PassportNFCScan',
-  'PassportDataInfo',
-  'LoadingScreen',
+  'DocumentOnboarding',
+  'DocumentCamera',
+  'DocumentNFCScan',
+  'DocumentDataInfo',
+  'Loading',
   'AccountVerifiedSuccess',
-  'ConfirmBelongingScreen',
+  'ConfirmBelonging',
   'CreateMock',
   'Home',
   'Disclaimer',
   'QRCodeViewFinder',
-  'ProveScreen',
-  'ProofRequestStatusScreen',
+  'Prove',
+  'ProofRequestStatus',
   'Settings',
   'AccountRecovery',
   'SaveRecoveryPhrase',
   'RecoverWithPhrase',
   'ShowRecoveryPhrase',
   'CloudBackupSettings',
-  'UnsupportedPassport',
-  'PassportCameraTrouble',
-  'PassportNFCTrouble',
+  'UnsupportedDocument',
+  'DocumentCameraTrouble',
+  'DocumentNFCTrouble',
 ] satisfies (keyof RootStackParamList)[];
 
 const ScreenSelector = ({}) => {
@@ -304,7 +304,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
             {
               label: 'Scan new ID Document',
               onPress: () => {
-                navigation.navigate('PassportOnboarding');
+                navigation.navigate('DocumentOnboarding');
               },
             },
           ].map(({ label, onPress }) => (
@@ -349,16 +349,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           darkMode={true}
         >
           {[
-            // Only show private key button in development
-            ...(__DEV__
-              ? [
-                  {
-                    label: 'Display your private key',
-                    onPress: () => navigation.navigate('DevPrivateKey'),
-                    dangerTheme: false,
-                  },
-                ]
-              : []),
             {
               label: 'Delete your private key',
               onPress: handleClearSecretsPress,

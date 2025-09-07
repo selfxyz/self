@@ -7,7 +7,8 @@ const DATE_REGEX = /^\d{6}$/
 
 module.exports = {
   ...RNPassportReader,
-  scan
+  scan,
+  reset: RNPassportReader.reset
 }
 
 function scan({ documentNumber, dateOfBirth, dateOfExpiry, canNumber, useCan, quality=1 }) {

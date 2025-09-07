@@ -177,8 +177,8 @@ android {
         exclude 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
         pickFirst '**/libc++_shared.so'
         jniLibs {
-            // Legacy packaging keeps page alignment for 16k page size devices
-            useLegacyPackaging true
+            // Use modern packaging so AGP can 16 KB-align uncompressed .so files
+            useLegacyPackaging false
         }
     }
 }
@@ -190,7 +190,7 @@ dependencies {
         exclude group: 'edu.ucar', module: 'jj2000'
     }
     implementation project(':passportreader')
-    implementation 'org.jmrtd:jmrtd:0.7.18'
+    implementation 'org.jmrtd:jmrtd:0.7.35'
 
     implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
 
