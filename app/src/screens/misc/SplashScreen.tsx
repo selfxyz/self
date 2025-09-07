@@ -20,7 +20,11 @@ import {
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { black } from '@/utils/colors';
-import { getAndClearQueuedUrl, handleUrl, setDeeplinkParentScreen } from '@/utils/deeplinks';
+import {
+  getAndClearQueuedUrl,
+  handleUrl,
+  setDeeplinkParentScreen,
+} from '@/utils/deeplinks';
 import { impactLight } from '@/utils/haptic';
 
 const SplashScreen: React.FC = ({}) => {
