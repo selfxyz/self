@@ -16,7 +16,13 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": false,
-    "types": ["vitest/globals", "react"]
+    "types": ["vitest/globals", "react"],
+    "baseUrl": ".",
+    "paths": {
+      "@selfxyz/common": ["../../common"],
+      "@selfxyz/common/*": ["../../common/*"],
+      "@selfxyz/common/utils/passports/*": ["../../common/utils/passports/*"]
+    }
   },
   "include": ["src", "tests"]
 }
