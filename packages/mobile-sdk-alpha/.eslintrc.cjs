@@ -59,8 +59,8 @@ module.exports = {
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
     'import/export': 'off',
-    'import/no-unresolved': 'off', // Temporarily disable to fix workspace import issues
-    'import/namespace': 'off', // Disable namespace validation that's causing file resolution errors
+    'import/no-unresolved': ['error', { caseSensitive: true }],
+    'import/namespace': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-require-imports': 'error',
     '@typescript-eslint/no-empty-object-type': 'error',
