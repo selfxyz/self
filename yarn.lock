@@ -4925,6 +4925,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^8.0.0"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^10.1.8"
+    eslint-import-resolver-typescript: "npm:^4.4.4"
     eslint-plugin-import: "npm:^2.31.0"
     eslint-plugin-prettier: "npm:^5.5.4"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
