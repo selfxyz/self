@@ -608,7 +608,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: staging
-      - uses: 'google-github-actions/auth@v2'
+      - uses: "google-github-actions/auth@v2"
         with:
           project_id: "plucky-tempo-454713-r0"
           workload_identity_provider: "projects/852920390127/locations/global/workloadIdentityPools/gh-self/providers/github-by-repos"
@@ -832,7 +832,7 @@ jobs:
           done
 
       - name: Set Gradle JVM options
-        if: inputs.platform != 'ios'  # Apply to CI builds (not just ACT)
+        if: inputs.platform != 'ios' # Apply to CI builds (not just ACT)
         run: |
           echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8" >> ${{ env.APP_PATH }}/android/gradle.properties
 
