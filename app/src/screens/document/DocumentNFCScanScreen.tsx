@@ -204,6 +204,18 @@ const DocumentNFCScanScreen: React.FC = () => {
       // Add timestamp when scan starts
       scanCancelledRef.current = false;
       const scanStartTime = Date.now();
+      if (scanTimeoutRef.current) {
+        clearTimeout(scanTimeoutRef.current);
+        scanTimeoutRef.current = null;
+      }
+      scanTimeoutRef.current = setTimeout(() => {
+        scanCancelledRef.current = true;
+        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
+          error: 'timeout',
+        });
+        openErrorModal('Scan timed out. Please try again.');
+        setIsNfcSheetOpen(false);
+      }, 30000);
 
       // Mark NFC scanning as active to prevent analytics flush interference
       setNfcScanningActive(true);

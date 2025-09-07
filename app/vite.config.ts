@@ -173,7 +173,7 @@ export default defineConfig({
           // Other screens
           'screens-settings': ['./src/navigation/settings.ts'],
           'screens-recovery': ['./src/navigation/recovery.ts'],
-          'screens-dev': ['./src/navigation/dev.ts'],
+          'screens-dev': ['./src/navigation/devTools.ts'],
           'screens-aesop': ['./src/navigation/aesop.ts'],
         },
       },

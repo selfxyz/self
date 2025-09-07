@@ -24,6 +24,11 @@ import {
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { black } from '@/utils/colors';
+import {
+  getAndClearQueuedUrl,
+  handleUrl,
+  setDeeplinkParentScreen,
+} from '@/utils/deeplinks';
 import { impactLight } from '@/utils/haptic';
 
 const SplashScreen: React.FC = ({}) => {
@@ -36,6 +41,7 @@ const SplashScreen: React.FC = ({}) => {
   const [nextScreen, setNextScreen] = useState<keyof RootStackParamList | null>(
     null,
   );
+  const [queuedDeepLink, setQueuedDeepLink] = useState<string | null>(null);
   const dataLoadInitiatedRef = useRef(false);
 
   useEffect(() => {
@@ -66,9 +72,22 @@ const SplashScreen: React.FC = ({}) => {
           }
 
           const hasValid = await hasAnyValidRegisteredDocument(selfClient);
-          setNextScreen(hasValid ? 'Home' : 'Launch');
+          const parentScreen = hasValid ? 'Home' : 'Launch';
+
+          setDeeplinkParentScreen(parentScreen);
+
+          const queuedUrl = getAndClearQueuedUrl();
+          if (queuedUrl) {
+            if (typeof __DEV__ !== 'undefined' && __DEV__) {
+              console.log('Processing queued deeplink:', queuedUrl);
+            }
+            setQueuedDeepLink(queuedUrl);
+          } else {
+            setNextScreen(parentScreen);
+          }
         } catch (error) {
           console.error(`Error in SplashScreen data loading: ${error}`);
+          setDeeplinkParentScreen('Launch');
           setNextScreen('Launch');
         }
       };
@@ -83,12 +102,18 @@ const SplashScreen: React.FC = ({}) => {
   }, []);
 
   useEffect(() => {
-    if (isAnimationFinished && nextScreen) {
-      requestAnimationFrame(() => {
-        navigation.navigate(nextScreen as never);
-      });
+    if (isAnimationFinished) {
+      if (queuedDeepLink) {
+        requestAnimationFrame(() => {
+          handleUrl(queuedDeepLink);
+        });
+      } else if (nextScreen) {
+        requestAnimationFrame(() => {
+          navigation.navigate(nextScreen as never);
+        });
+      }
     }
-  }, [isAnimationFinished, nextScreen, navigation]);
+  }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation]);
 
   return (
     <LottieView
