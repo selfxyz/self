@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Tests for project scripts",
   "type": "module",
-  "description": "Tests for project scripts",
   "scripts": {
     "test": "node check-license-headers.test.mjs",
     "test:license-headers": "node check-license-headers.test.mjs"
