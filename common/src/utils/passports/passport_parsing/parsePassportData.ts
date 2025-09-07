@@ -111,12 +111,26 @@ export function parsePassportData(
     passportData.signedAttr
   );
 
-  const brutForcedPublicKeyDetails = brutforceSignatureAlgorithm(passportData);
+  const brutForcedPublicKeyDetails = brutforceSignatureAlgorithm(passportData) || {
+    signatureAlgorithm: 'unknown',
+    hashAlgorithm: 'unknown',
+    saltLength: 0,
+  };
 
   let parsedDsc = null;
   let dscSignatureAlgorithmBits = 0;
 
-  let dscMetaData: DscCertificateMetaData;
+  let dscMetaData: DscCertificateMetaData = {
+    cscaFound: false,
+    cscaHashAlgorithm: 'unknown',
+    cscaSignatureAlgorithm: 'unknown',
+    cscaCurveOrExponent: 'unknown',
+    cscaSignatureAlgorithmBits: 0,
+    cscaSaltLength: 0,
+    csca: '',
+    cscaParsed: undefined as any,
+    cscaBits: 0,
+  };
 
   if (passportData.dsc) {
     parsedDsc = parseCertificateSimple(passportData.dsc);
