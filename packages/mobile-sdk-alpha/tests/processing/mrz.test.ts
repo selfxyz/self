@@ -64,11 +64,11 @@ describe('extractMRZInfo', () => {
 
   it('parses valid TD1 MRZ', () => {
     const info = extractMRZInfo(sampleTD1);
-    expect(info.passportNumber).toBe('X4RTBPFW4');
+    expect(info.documentNumber).toBe('X4RTBPFW4');
     expect(info.issuingCountry).toBe('FRA');
     expect(info.dateOfBirth).toBe('900713');
     expect(info.dateOfExpiry).toBe('300211');
-    expect(info.validation.overall).toBe(true);
+    expect(info.validation?.overall).toBe(true);
   });
 
   it('rejects invalid TD1 MRZ', () => {
@@ -79,7 +79,7 @@ describe('extractMRZInfo', () => {
   it('Fails overall validation for invalid TD1 MRZ', () => {
     const invalid = `IDFRAX4RTBPFW46`;
     const info = extractMRZInfo(invalid);
-    expect(info.validation.overall).toBe(false);
+    expect(info.validation?.overall).toBe(false);
   });
 
   it('rejects malformed MRZ', () => {
