@@ -19,9 +19,9 @@
     "types": ["vitest/globals", "react"],
     "baseUrl": ".",
     "paths": {
-      "@selfxyz/common": ["../../common"],
-      "@selfxyz/common/*": ["../../common/*"],
-      "@selfxyz/common/utils/passports/*": ["../../common/utils/passports/*"]
+      "@selfxyz/common": ["../../common/src"],
+      "@selfxyz/common/*": ["../../common/src/*"],
+      "@selfxyz/common/utils/passports/*": ["../../common/src/utils/passports/*"]
     }
   },
   "include": ["src", "tests"]
