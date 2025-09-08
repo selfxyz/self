@@ -10,3 +10,5 @@ circuits/build/**
 contracts/artifacts/**
 contracts/cache/**
 contracts/typechain-types/**
+.nvmrc
+.watchmanconfig
