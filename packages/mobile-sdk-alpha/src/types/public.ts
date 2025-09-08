@@ -3,7 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
-import { SDKEvent, SDKEventMap, SdkEvents } from './events';
+
+import { SDKEvent, SDKEventMap } from './events';
 
 export type { PassportValidationCallbacks } from '../validation/document';
 export type { DocumentCatalog, PassportData };

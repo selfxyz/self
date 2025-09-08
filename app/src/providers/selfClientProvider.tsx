@@ -7,19 +7,19 @@ import { Platform } from 'react-native';
 
 import {
   Adapters,
+  createListenersMap,
   reactNativeScannerAdapter,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
+import { SdkEvents } from '@selfxyz/mobile-sdk-alpha';
 
+import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
-import { SdkEvents } from '@selfxyz/mobile-sdk-alpha';
-import { navigationRef } from '@/navigation';
-import { PassportData } from '@selfxyz/common/types';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 
@@ -99,61 +99,70 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   );
 
   const appListeners = useMemo(() => {
-    const listeners = new Map<SdkEvents, Set<(p: any) => void>>();
+    const listeners = createListenersMap();
 
-    listeners.set(SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND, new Set([
+    listeners.addListener(
+      SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND,
       () => {
         if (navigationRef.isReady()) {
           navigationRef.navigate('DocumentDataNotFound');
         }
       },
-    ]));
+    );
 
-    listeners.set(SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS, new Set([
+    listeners.addListener(
+      SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS,
       () => {
         if (navigationRef.isReady()) {
           navigationRef.navigate('AccountVerifiedSuccess');
         }
       },
-    ]));
+    );
 
-    listeners.set(SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE, new Set([
-      async (hasValidDocument: boolean) => {
-          setTimeout(() => {
-            if (navigationRef.isReady()) {
-                if (hasValidDocument) {
-                  navigationRef.navigate('Home');
-                } else {
-                  navigationRef.navigate('Launch');
-                }
+    listeners.addListener(
+      SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE,
+      async ({ hasValidDocument }) => {
+        setTimeout(() => {
+          if (navigationRef.isReady()) {
+            if (hasValidDocument) {
+              navigationRef.navigate('Home');
+            } else {
+              navigationRef.navigate('Launch');
             }
-          }, 3000);
+          }
+        }, 3000);
       },
-    ]));
+    );
 
-    listeners.set(SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED, new Set([
-      (passportData: PassportData) => {
+    listeners.addListener(
+      SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED,
+      ({ passportData }) => {
         if (navigationRef.isReady()) {
           navigationRef.navigate('UnsupportedDocument', {
             passportData,
           } as any);
         }
       },
-    ]));
+    );
 
-    listeners.set(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE, new Set([
+    listeners.addListener(
+      SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE,
       () => {
         if (navigationRef.isReady()) {
           navigationRef.navigate('AccountRecoveryChoice');
         }
       },
-    ]));
+    );
 
     return listeners;
   }, []);
 
   return (
-    <SDKSelfClientProvider config={config} adapters={adapters} listeners={appListeners}>
+    <SDKSelfClientProvider
+      config={config}
+      adapters={adapters}
+      listeners={appListeners.listeners}
+    >
       {children}
     </SDKSelfClientProvider>
   );

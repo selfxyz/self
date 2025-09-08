@@ -5,8 +5,8 @@
 import { createContext, type PropsWithChildren, useContext, useMemo } from 'react';
 
 import { createSelfClient } from './client';
-import type { Adapters, Config, SelfClient } from './types/public';
 import { SdkEvents } from './types/events';
+import type { Adapters, Config, SelfClient } from './types/public';
 
 /**
  * React context holding a {@link SelfClient} instance.

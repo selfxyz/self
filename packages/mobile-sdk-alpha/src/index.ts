@@ -69,13 +69,16 @@ export { PassportCameraScreen } from './components/screens/PassportCameraScreen'
 
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
+export { SdkEvents } from './types/events';
+
 // Context and Client
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
 // Components
 export { SelfMobileSdk } from './entry';
 
-export { createSelfClient } from './client';
+// TODO: add to browser
+export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 
@@ -103,5 +106,3 @@ export { scanQRProof } from './qr';
 
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
-
-export { SdkEvents } from './types/events';

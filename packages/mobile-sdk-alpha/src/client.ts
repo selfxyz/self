@@ -8,6 +8,7 @@ import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
+import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
 import type {
   Adapters,
   Config,
@@ -24,7 +25,6 @@ import type {
   ValidationResult,
 } from './types/public';
 import { TrackEventParams } from './types/public';
-import { SdkEvents, SDKEvent, SDKEventMap } from './types/events';
 /**
  * Optional adapter implementations used when a consumer does not provide their
  * own. These defaults are intentionally minimal no-ops suitable for tests and
@@ -49,6 +49,24 @@ const optionalDefaults: Required<Pick<Adapters, 'storage' | 'clock' | 'logger'>>
 
 const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
 
+// TODO: add some tests
+export function createListenersMap(): {
+  listeners: Map<SDKEvent, Set<(p: any) => void>>;
+  addListener: <E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => any) => Unsubscribe;
+} {
+  const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
+
+  const addListener = <E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => Unsubscribe) => {
+    const set = listeners.get(event) ?? new Set();
+    set.add(cb as any);
+    listeners.set(event, set);
+
+    return () => set.delete(cb as any);
+  };
+
+  return { listeners, addListener };
+}
+
 /**
  * Creates a fully configured {@link SelfClient} instance.
  *
@@ -56,7 +74,15 @@ const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] 
  * provided configuration with sensible defaults. Missing optional adapters are
  * filled with benign no-op implementations.
  */
-export function createSelfClient({ config, adapters, listeners }: { config: Config; adapters: Adapters; listeners?: Map<SDKEvent, Set<(p: any) => void>> }): SelfClient {
+export function createSelfClient({
+  config,
+  adapters,
+  listeners,
+}: {
+  config: Config;
+  adapters: Adapters;
+  listeners?: Map<SDKEvent, Set<(p: any) => void>>;
+}): SelfClient {
   const cfg = mergeConfig(defaultConfig, config);
 
   for (const name of REQUIRED_ADAPTERS) {

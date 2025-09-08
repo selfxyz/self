@@ -207,6 +207,11 @@ interface ProvingState {
   _handleWsOpen: () => void;
   _handleWsError: (error: Event) => void;
   _handleWsClose: (event: CloseEvent) => void;
+
+  _handlePassportNotSupported: (selfClient: SelfClient) => void;
+  _handleAccountRecoveryChoice: (selfClient: SelfClient) => void;
+  _handleAccountVerifiedSuccess: (selfClient: SelfClient) => void;
+  _handlePassportDataNotFound: (selfClient: SelfClient) => void;
 }
 
 export const useProvingStore = create<ProvingState>((set, get) => {
@@ -239,11 +244,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'post_proving') {
         get().postProving(selfClient);
       }
+
       if (
         get().circuitType !== 'disclose' &&
         (state.value === 'error' || state.value === 'failure')
       ) {
-          get()._handleRegisterErrorOrFailure(selfClient);
+        get()._handleRegisterErrorOrFailure(selfClient);
       }
 
       if (state.value === 'completed') {
@@ -264,7 +270,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
 
         if (get().circuitType !== 'disclose') {
-          selfClient.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS);
+          get()._handleAccountVerifiedSuccess(selfClient);
         }
 
         if (get().circuitType === 'disclose') {
@@ -273,17 +279,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'passport_not_supported') {
-        selfClient.emit(SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED, {
-          passportData: get().passportData as PassportData,
-        });
+        get()._handlePassportNotSupported(selfClient);
       }
 
       if (state.value === 'account_recovery_choice') {
-        selfClient.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE);
+        get()._handleAccountRecoveryChoice(selfClient);
       }
 
       if (state.value === 'passport_data_not_found') {
-        selfClient.emit(SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND)  ;
+        get()._handlePassportDataNotFound(selfClient);
       }
 
       if (state.value === 'failure') {
@@ -1089,6 +1093,24 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           ...encryptedPayload,
         },
       };
+    },
+
+    _handlePassportNotSupported: (selfClient: SelfClient) => {
+      selfClient.emit(SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED, {
+        passportData: get().passportData as PassportData,
+      });
+    },
+
+    _handleAccountRecoveryChoice: (selfClient: SelfClient) => {
+      selfClient.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE);
+    },
+
+    _handleAccountVerifiedSuccess: (selfClient: SelfClient) => {
+      selfClient.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS);
+    },
+
+    _handlePassportDataNotFound: (selfClient: SelfClient) => {
+      selfClient.emit(SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND);
     },
   };
 });
