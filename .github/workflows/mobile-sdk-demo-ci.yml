@@ -28,4 +28,4 @@ jobs:
           yarn workspace demo-app test
       - name: Build demo app
         run: |
-          yarn workspace demo-app build
+          yarn build:demo

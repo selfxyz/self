@@ -61,7 +61,7 @@
     "react-native.config.cjs"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsup && yarn postbuild && yarn demo:validate",
+    "build": "rm -rf dist && tsup && yarn postbuild",
     "postbuild": "node ./scripts/postBuild.mjs",
     "demo:android": "yarn workspace demo-app android",
     "demo:build": "node ./scripts/build-demo.mjs",
@@ -69,7 +69,6 @@
     "demo:ios": "yarn workspace demo-app ios",
     "demo:start": "yarn build && yarn demo:clean && yarn workspace demo-app start --reset-cache",
     "demo:test": "yarn workspace demo-app test",
-    "demo:validate": "yarn workspace demo-app build",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
