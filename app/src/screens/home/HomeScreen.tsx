@@ -25,6 +25,7 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import WarnIcon from '@/images/icons/warning.svg';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
+import useUserStore from '@/stores/userStore';
 import { neutral700, slate50, slate800, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types';
@@ -44,6 +45,7 @@ const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
   useConnectionModal();
   const navigation = useNavigation();
+  const { setIdDetailsDocumentId } = useUserStore();
   const { getAllDocuments, loadDocumentCatalog, setSelectedDocument } =
     usePassport();
   const [isNewVersionAvailable, showAppUpdateModal, isModalDismissed] =
@@ -150,9 +152,10 @@ const HomeScreen: React.FC = () => {
           return (
             <Pressable
               key={metadata.id}
-              onPress={() =>
-                navigation.navigate('IdDetails', { documentId: metadata.id })
-              }
+              onPress={() => {
+                setIdDetailsDocumentId(metadata.id);
+                navigation.navigate('IdDetails');
+              }}
             >
               <IdCardLayout
                 idDocument={documentData.data}

@@ -48,11 +48,7 @@ const AppNavigation = createNativeStackNavigator({
   screens: navigationScreens,
 });
 
-export type RootStackParamList = StaticParamList<typeof AppNavigation> & {
-  IdDetails: { documentId: string };
-  ProofHistoryDetail: { data: ProofHistory };
-  ProofRequestStatusScreen: undefined;
-};
+export type RootStackParamList = StaticParamList<typeof AppNavigation>;
 
 // Create a ref that we can use to access the navigation state
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();

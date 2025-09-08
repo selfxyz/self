@@ -12,8 +12,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { PassportData } from '@selfxyz/common/types';
 
 import IdCardLayout from '@/components/homeScreen/idCard';
-import type { DocumentCatalog } from '@/providers/passportDataProvider';
 import { usePassport } from '@/providers/passportDataProvider';
+import useUserStore from '@/stores/userStore';
 import ProofHistoryList from '@/screens/home/ProofHistoryList';
 import {
   black,
@@ -23,10 +23,11 @@ import {
   slate500,
   white,
 } from '@/utils/colors';
+import { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types';
 
 const IdDetailsScreen: React.FC = () => {
-  const route = useRoute();
-  const { documentId } = route.params as { documentId: string };
+  const { idDetailsDocumentId } = useUserStore();
+  const documentId = idDetailsDocumentId;
   const { getAllDocuments, loadDocumentCatalog, setSelectedDocument } =
     usePassport();
   const [document, setDocument] = useState<PassportData | null>(null);
@@ -54,11 +55,25 @@ const IdDetailsScreen: React.FC = () => {
 
   const handleConnectId = async () => {
     if (!isConnected) {
-      await setSelectedDocument(documentId);
+      await setSelectedDocument(documentId!);
       const updatedCatalog = await loadDocumentCatalog();
       setDocumentCatalog(updatedCatalog);
     }
   };
+
+  if (!documentId) {
+    return (
+      <YStack
+        flex={1}
+        backgroundColor={slate50}
+        justifyContent="center"
+        alignItems="center"
+        padding={20}
+      >
+        <Text>No document selected</Text>
+      </YStack>
+    );
+  }
 
   if (!document) {
     return (
