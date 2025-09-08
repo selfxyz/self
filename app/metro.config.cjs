@@ -163,6 +163,10 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/csca.js',
   ),
+  '@selfxyz/common/utils/ofac': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/ofac.js',
+  ),
   // Types subpaths
   '@selfxyz/common/types/passport': path.resolve(
     commonPath,

@@ -18,6 +18,10 @@ import {
 } from '@selfxyz/common/utils';
 import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
 import {
+  generateTEEInputsDSC,
+  generateTEEInputsRegister,
+} from '@selfxyz/common/utils/circuits/registerInputs';
+import {
   checkDocumentSupported,
   checkIfPassportDscIsInTree,
   isDocumentNullified,
@@ -52,11 +56,7 @@ import {
 import { useProtocolStore } from '@/stores/protocolStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
-import {
-  generateTEEInputsDisclose,
-  generateTEEInputsDSC,
-  generateTEEInputsRegister,
-} from '@/utils/proving/provingInputs';
+import { generateTEEInputsDisclose } from '@/utils/proving/provingInputs';
 
 const { trackEvent } = analytics();
 

@@ -22,7 +22,7 @@ import {
 } from '@selfxyz/common/constants';
 import type { DeployedCircuits, OfacTree } from '@selfxyz/common/utils/types';
 
-import { fetchOfacTrees } from '@/utils/ofac';
+import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
 
 interface ProtocolState {
   passport: {
