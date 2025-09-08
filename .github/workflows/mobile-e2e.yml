@@ -209,6 +209,14 @@ jobs:
           xcodebuild -version
           echo "Xcode path:"
           xcode-select -p
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}-${{ runner.os }}
+      - name: Configure Xcode to use ccache
+        run: |
+          echo 'CC=ccache clang' >> $GITHUB_ENV
+          echo 'CXX=ccache clang++' >> $GITHUB_ENV
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
