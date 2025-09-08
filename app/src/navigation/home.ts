@@ -4,11 +4,15 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { HomeNavBar } from '@/components/NavBar';
 import DisclaimerScreen from '@/screens/home/DisclaimerScreen';
 import HomeScreen from '@/screens/home/HomeScreen';
 import ProofHistoryDetailScreen from '@/screens/home/ProofHistoryDetailScreen';
 import ProofHistoryScreen from '@/screens/home/ProofHistoryScreen';
+
+import IdDetailsScreen from '@/screens/home/IdDetailsScreen';
+
+import { HomeNavBar, IdDetailsNavBar } from '@/components/NavBar';
+
 
 const homeScreens = {
   Disclaimer: {
@@ -37,6 +41,14 @@ const homeScreens = {
     screen: ProofHistoryDetailScreen,
     options: {
       title: 'Approval',
+    },
+  },
+  IdDetails: {
+    screen: IdDetailsScreen,
+    options: {
+      title: '',
+      header: IdDetailsNavBar, // Use custom header
+      headerBackVisible: false, // Hide default back button
     },
   },
 };

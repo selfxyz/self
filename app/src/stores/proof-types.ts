@@ -42,6 +42,7 @@ export interface ProofHistory {
   timestamp: number;
   disclosures: string;
   logoBase64?: string;
+  documentId: string;
 }
 
 export enum ProofStatus {
