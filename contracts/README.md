@@ -42,9 +42,7 @@ If you want to integrate SelfVerificationRoot.sol into your contract, you should
 ```solidity
 import { SelfVerificationRoot } from "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 
-import {
-  IVcAndDiscloseCircuitVerifier
-} from "@selfxyz/contracts/contracts/interfaces/IVcAndDiscloseCircuitVerifier.sol";
+import { IVcAndDiscloseCircuitVerifier } from "@selfxyz/contracts/contracts/interfaces/IVcAndDiscloseCircuitVerifier.sol";
 
 import { IIdentityVerificationHubV1 } from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV1.sol";
 

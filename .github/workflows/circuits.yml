@@ -1,21 +1,12 @@
 name: Circuits CI
 on:
-  push:
-    branches:
-      - dev
-      - main
-      - openpassportv2
-    paths:
-      - "circuits/**"
-      - "common/**"
   pull_request:
     branches:
       - dev
+      - staging
       - main
-      - openpassportv2
     paths:
       - "circuits/**"
-      - "common/**"
 jobs:
   run_circuit_tests:
     if: github.event.pull_request.draft == false

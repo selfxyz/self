@@ -25,42 +25,16 @@ const config = {
   ],
 
   resolver: {
-    // Prevent Haste module naming collisions from duplicate package.json files
-    blockList: [
-      // Ignore built package.json files to prevent Haste collisions
-      /.*\/dist\/package\.json$/,
-      /.*\/build\/package\.json$/,
-    ],
-    // Enable automatic workspace package resolution
-    enableGlobalPackages: true,
-
-    // Handle subpath exports (@selfxyz/common/constants, @selfxyz/mobile-sdk-alpha/constants/analytics)
-    unstable_enablePackageExports: true,
-
-    // Enable native symlink support (optional, for compatibility)
-    unstable_enableSymlinks: true,
-
-    // Define search order for node modules
-    nodeModulesPaths: [
-      path.resolve(projectRoot, 'node_modules'), // App's own node_modules
-      path.resolve(workspaceRoot, 'node_modules'), // Workspace root node_modules
-    ],
-
-    // Essential packages for the demo app
-    extraNodeModules: {},
-
-    // Support package exports with conditions
-    unstable_conditionNames: ['require', 'react-native'],
-
-    // Custom resolver based on main app approach
-    resolveRequest: (context, moduleName, platform) => {
-      // For relative imports in common source files that end with .js
-      if (context.originModulePath?.includes('/common/src/') && moduleName.endsWith('.js')) {
-        const tsModuleName = moduleName.replace(/\.js$/, '.ts');
-        return context.resolveRequest(context, tsModuleName, platform);
-      }
-      // Default resolution
-      return context.resolveRequest(context, moduleName, platform);
+    extraNodeModules: {
+      '@babel/runtime': path.resolve(__dirname, '../../../node_modules/@babel/runtime'),
+      // Pin React and React Native to monorepo root
+      react: path.resolve(__dirname, '../../../node_modules/react'),
+      'react-native': path.resolve(__dirname, '../../../node_modules/react-native'),
+      // Crypto polyfills
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer'),
+      util: require.resolve('util'),
+      assert: require.resolve('assert'),
     },
   },
 };

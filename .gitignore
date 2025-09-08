@@ -12,5 +12,7 @@ output/*
 .yarnrc.yml
 .giga/tasks/*
 
-# PR Action Items - prevent accidental commits
-PR-*-ACTION*.md
+# CI-generated tarballs (don't commit these!)
+mobile-sdk-alpha-ci.tgz
+**/mobile-sdk-alpha-*.tgz
+/tmp/mobile-sdk-alpha*.tgz

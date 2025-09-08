@@ -62,6 +62,8 @@ function validateTD3Format(lines: string[]): boolean {
 }
 
 function validateTD1Format(lines: string[]): boolean {
+  console.log('validateTD1Format', lines);
+
   const concatenatedLines = lines[0] + lines[1];
   const TD1_REGEX =
     /^(?<documentType>[A-Z0-9<]{2})(?<issuingCountry>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})(?<optionalData1>[A-Z0-9<]{15})(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<sex>[MF<]{1})(?<dateOfExpiry>[0-9]{6})(?<checkDigitDateOfExpiry>[0-9]{1})(?<nationality>[A-Z<]{3})(?<optionalData2>[A-Z0-9<]{7})/;
@@ -86,7 +88,7 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
     .replace(/[^A-Z]/g, '');
 
   // Line 2: PASSPORT(9)CHECK(1)NATIONALITY(3)DOB(6)DOBCHECK(1)SEX(1)EXPIRY(6)EXPIRYCHECK(1)OPTIONAL(7)FINALCHECK(1)
-  const passportNumber = line2.slice(0, 9).replace(/</g, '');
+  const documentNumber = line2.slice(0, 9).replace(/</g, '');
 
   // Robust nationality extraction: scan 4-character window for three contiguous A-Z letters
   const rawNat = line2.slice(10, 14);
@@ -111,7 +113,7 @@ function extractTD3Info(lines: string[]): Omit<MRZInfo, 'validation'> {
   return {
     documentType,
     issuingCountry,
-    passportNumber,
+    documentNumber,
     dateOfBirth,
     dateOfExpiry,
   };
@@ -126,7 +128,7 @@ function extractTD1Info(lines: string[]): Omit<MRZInfo, 'validation'> {
   return {
     documentType: concatenatedLines.slice(0, 2),
     issuingCountry: concatenatedLines.slice(2, 5),
-    passportNumber: concatenatedLines.slice(5, 14).replace(/</g, '').trim(),
+    documentNumber: concatenatedLines.slice(5, 14).replace(/</g, '').trim(),
     dateOfBirth: concatenatedLines.slice(30, 36),
     dateOfExpiry: concatenatedLines.slice(38, 44),
   };

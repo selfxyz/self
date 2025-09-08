@@ -54,7 +54,11 @@
   "react-native": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "android",
+    "ios",
+    "mobile-sdk-alpha.podspec",
+    "react-native.config.cjs"
   ],
   "scripts": {
     "build": "rm -rf dist && tsup && yarn postbuild && yarn demo:validate",
@@ -68,7 +72,7 @@
     "demo:validate": "yarn workspace demo-app build",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
-    "format": "yarn nice",
+    "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "nice": "yarn lint:fix && yarn fmt:fix",
@@ -88,13 +92,14 @@
     "tslib": "^2.6.2"
   },
   "devDependencies": {
+    "@selfxyz/common": "workspace:^",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-import-resolver-typescript": "^3.7.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-simple-import-sort": "^12.1.1",

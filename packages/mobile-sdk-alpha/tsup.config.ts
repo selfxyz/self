@@ -23,8 +23,18 @@ export default defineConfig([
     outDir: 'dist/esm',
     tsconfig: './tsconfig.json',
     target: 'es2020',
-    // preserve license header in output bundles
-    esbuildOptions: options => {
+    external: ['react', 'react-native', '@selfxyz/common'],
+    esbuildOptions(options) {
+      options.supported = {
+        ...options.supported,
+        'import-assertions': true,
+        'import-attributes': true,
+      };
+      // Handle React Native's import typeof syntax
+      options.loader = {
+        ...options.loader,
+        '.js': 'jsx',
+      };
       // keep comments with SPDX in the final file
       options.legalComments = 'eof';
     },
@@ -42,14 +52,19 @@ export default defineConfig([
     outDir: 'dist/cjs',
     tsconfig: './tsconfig.cjs.json',
     target: 'es2020',
+    external: ['react', 'react-native', '@selfxyz/common'],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
-    // preserve license header in output bundles
-    esbuildOptions: options => {
-      // keep comments with SPDX in the final file
-      options.legalComments = 'eof';
-    },
-    banner: {
-      js: banner,
+    esbuildOptions(options) {
+      options.supported = {
+        ...options.supported,
+        'import-assertions': true,
+        'import-attributes': true,
+      };
+      // Handle React Native's import typeof syntax
+      options.loader = {
+        ...options.loader,
+        '.js': 'jsx',
+      };
     },
   },
 ]);

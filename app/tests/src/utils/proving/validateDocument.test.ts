@@ -183,8 +183,9 @@ describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () =
   it('parses a valid MRZ string', () => {
     const client = createTestClient();
     const info = client.extractMRZInfo(validMrz);
-    expect(info.passportNumber).toBe('L898902C3');
-    expect(info.validation.overall).toBe(true);
+    expect(info.documentNumber).toBe('L898902C3');
+    expect(info.validation).toBeDefined();
+    expect(info.validation?.overall).toBe(true);
   });
 
   it('throws on malformed MRZ input', () => {

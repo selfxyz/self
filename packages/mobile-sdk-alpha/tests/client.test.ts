@@ -107,8 +107,8 @@ describe('createSelfClient', () => {
     const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth } });
     const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
     const info = client.extractMRZInfo(sample);
-    expect(info.passportNumber).toBe('L898902C3');
-    expect(info.validation.overall).toBe(true);
+    expect(info.documentNumber).toBe('L898902C3');
+    expect(info.validation?.overall).toBe(true);
   });
 
   it('returns stub registration status', async () => {

@@ -13,6 +13,9 @@ const DevFeatureFlagsScreen = lazy(
 const DevHapticFeedbackScreen = lazy(
   () => import('@/screens/dev/DevHapticFeedbackScreen'),
 );
+const DevPrivateKeyScreen = lazy(
+  () => import('@/screens/dev/DevPrivateKeyScreen'),
+);
 const DevSettingsScreen = lazy(() => import('@/screens/dev/DevSettingsScreen'));
 const CreateMockScreen = lazy(() => import('@/screens/dev/CreateMockScreen'));
 const CreateMockScreenDeepLink = lazy(
@@ -69,6 +72,13 @@ const devScreens = {
       headerStyle: {
         backgroundColor: white,
       },
+    } as NativeStackNavigationOptions,
+  },
+  DevPrivateKey: {
+    screen: DevPrivateKeyScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Private Key',
     } as NativeStackNavigationOptions,
   },
 };

@@ -6,16 +6,20 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { PassportCameraProps } from '../../types/ui';
+import { MRZScannerView } from '../MRZScannerView';
 
 // Simple placeholder component - this would be replaced with actual camera UI
 export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => (
   <View style={styles.container}>
     <Text style={styles.title}>Passport Camera</Text>
+
+    <MRZScannerView onMRZDetected={onMRZDetected} />
+
     <TouchableOpacity
       style={styles.button}
       onPress={() =>
         onMRZDetected({
-          passportNumber: 'L898902C3',
+          documentNumber: 'L898902C3',
           dateOfBirth: '740812',
           dateOfExpiry: '120415',
           issuingCountry: 'UTO',
