@@ -1,15 +1,9 @@
 name: Contracts CI
 on:
-  push:
-    branches:
-      - dev
-      - main
-    paths:
-      - "contracts/**"
-      - "common/**"
   pull_request:
     branches:
       - dev
+      - staging
       - main
     paths:
       - "contracts/**"

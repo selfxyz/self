@@ -5,6 +5,7 @@
 import { Button, Text, YStack } from 'tamagui';
 
 import type { PassportCameraProps } from '../../types/ui';
+import { MRZScannerView } from '../MRZScannerView';
 
 // Simple placeholder component - this would be replaced with actual camera UI
 export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => (
@@ -12,10 +13,12 @@ export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => 
     <Text fontSize="$6" fontWeight="bold">
       Passport Camera
     </Text>
+
+    <MRZScannerView onMRZDetected={onMRZDetected} />
     <Button
       onPress={() =>
         onMRZDetected({
-          passportNumber: 'L898902C3',
+          documentNumber: 'L898902C3',
           dateOfBirth: '740812',
           dateOfExpiry: '120415',
           issuingCountry: 'UTO',

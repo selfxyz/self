@@ -99,6 +99,8 @@ export { mergeConfig } from './config/merge';
 // Document validation
 export { parseNFCResponse, scanNFC } from './nfc';
 
+export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
+
 export { scanQRProof } from './qr';
 
 // Error handling

@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
 
 export type { PassportValidationCallbacks } from '../validation/document';
+export type { DocumentCatalog, PassportData };
 export interface Config {
   endpoints?: { api?: string; teeWs?: string; artifactsCdn?: string };
   timeouts?: {
@@ -25,12 +26,12 @@ export interface HttpAdapter {
   fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
 }
 export interface MRZInfo {
-  passportNumber: string;
+  documentNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
   issuingCountry: string;
   documentType: string;
-  validation: MRZValidation;
+  validation?: MRZValidation; //TODO - not available in IOS currentlt
 }
 
 /** * Generic reasons:
@@ -141,21 +142,39 @@ export interface SDKEventMap {
 export type SDKEvent = keyof SDKEventMap;
 
 export type ScanMode = 'mrz' | 'nfc' | 'qr';
-export interface ScanOpts {
-  mode: ScanMode;
-}
-export type ScanResult =
+
+export type ScanOpts =
+  | { mode: 'mrz' }
   | {
-      mode: 'mrz';
+      mode: 'nfc';
       passportNumber: string;
       dateOfBirth: string;
       dateOfExpiry: string;
-      issuingCountry?: string;
-      // Extended MRZ data when available
-      mrzInfo?: MRZInfo;
+      canNumber?: string;
+      skipPACE?: boolean;
+      skipCA?: boolean;
+      extendedMode?: boolean;
+      usePacePolling?: boolean;
     }
-  | { mode: 'nfc'; raw: unknown }
-  | { mode: 'qr'; data: string };
+  | { mode: 'qr' };
+
+export type ScanResultNFC = {
+  mode: 'nfc';
+  passportData: PassportData;
+};
+
+export type ScanResultMRZ = {
+  mode: 'mrz';
+  mrzInfo: MRZInfo;
+};
+
+export type ScanResultQR = {
+  mode: 'qr';
+  data: string;
+};
+
+export type ScanResult = ScanResultMRZ | ScanResultNFC | ScanResultQR;
+
 export interface ScannerAdapter {
   scan(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
 }

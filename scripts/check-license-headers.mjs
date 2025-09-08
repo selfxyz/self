@@ -206,7 +206,7 @@ function main() {
   if (isCheck) {
     // Show which directories require headers
     const requiredDirs = ['app/', 'packages/mobile-sdk-alpha/'];
-    console.log(`📋 License headers required in: ${requiredDirs.join(', ')}\n`);
+    console.log(`📋 License headers required in: ${requiredDirs.join(', ')}`);
 
     if (issues.length === 0) {
       console.log('✅ All license headers are properly formatted');

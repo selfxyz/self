@@ -24,8 +24,13 @@ module.exports = {
       typescript: {
         alwaysTryTypes: true,
         project: './tsconfig.json',
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
     },
+    'import/ignore': ['react-native'],
   },
   rules: {
     'import/order': 'off',
@@ -54,6 +59,8 @@ module.exports = {
     'import/newline-after-import': 'error',
     'import/no-duplicates': 'error',
     'import/export': 'off',
+    'import/no-unresolved': ['error', { caseSensitive: true }],
+    'import/namespace': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-require-imports': 'error',
     '@typescript-eslint/no-empty-object-type': 'error',

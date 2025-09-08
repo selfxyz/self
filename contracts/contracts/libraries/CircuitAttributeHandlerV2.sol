@@ -185,8 +185,7 @@ library CircuitAttributeHandlerV2 {
     function getOlderThan(bytes32 attestationId, bytes memory charcodes) internal pure returns (uint256) {
         FieldPositions memory positions = getFieldPositions(attestationId);
         return
-            Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart])) *
-            10 +
+            Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart])) * 10 +
             Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart + 1]));
     }
 

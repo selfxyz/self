@@ -72,6 +72,29 @@ const validateAndSanitizeParam = (
   return decodedValue;
 };
 
+/**
+ * Creates a proper navigation stack for deeplink navigation
+ * @param targetScreen - The target screen to navigate to
+ * @param parentScreen - The parent screen that should appear when user goes back (default: 'Home')
+ */
+const createDeeplinkNavigationState = (
+  targetScreen: string,
+  parentScreen: string = 'Home',
+) => ({
+  index: 1, // Current screen index (targetScreen)
+  routes: [{ name: parentScreen }, { name: targetScreen }],
+});
+
+// Store the correct parent screen determined by splash screen
+let correctParentScreen: string = 'Home';
+
+// Function for splash screen to get and clear the queued initial URL
+export const getAndClearQueuedUrl = (): string | null => {
+  const url = queuedInitialUrl;
+  queuedInitialUrl = null;
+  return url;
+};
+
 export const handleUrl = (uri: string) => {
   const validatedParams = parseAndValidateUrlParams(uri);
   const { sessionId, selfApp: selfAppStr, mock_passport } = validatedParams;
@@ -81,19 +104,29 @@ export const handleUrl = (uri: string) => {
       const selfAppJson = JSON.parse(selfAppStr);
       useSelfAppStore.getState().setSelfApp(selfAppJson);
       useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
-      navigationRef.navigate('Prove');
+
+      // Reset navigation stack with correct parent -> ProveScreen
+      navigationRef.reset(
+        createDeeplinkNavigationState('ProveScreen', correctParentScreen),
+      );
 
       return;
     } catch (error) {
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.error('Error parsing selfApp:', error);
       }
-      navigationRef.navigate('QRCodeTrouble');
+      navigationRef.reset(
+        createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
+      );
     }
   } else if (sessionId && typeof sessionId === 'string') {
     useSelfAppStore.getState().cleanSelfApp();
     useSelfAppStore.getState().startAppListener(sessionId);
-    navigationRef.navigate('Prove');
+
+    // Reset navigation stack with correct parent -> ProveScreen
+    navigationRef.reset(
+      createDeeplinkNavigationState('ProveScreen', correctParentScreen),
+    );
   } else if (mock_passport) {
     try {
       const data = JSON.parse(mock_passport);
@@ -120,12 +153,17 @@ export const handleUrl = (uri: string) => {
         gender: rawParams.gender,
       });
 
-      navigationRef.navigate('MockDataDeepLink');
+      // Reset navigation stack with correct parent -> MockDataDeepLink
+      navigationRef.reset(
+        createDeeplinkNavigationState('MockDataDeepLink', correctParentScreen),
+      );
     } catch (error) {
       if (typeof __DEV__ !== 'undefined' && __DEV__) {
         console.error('Error parsing mock_passport data or navigating:', error);
       }
-      navigationRef.navigate('QRCodeTrouble');
+      navigationRef.reset(
+        createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
+      );
     }
   } else if (Platform.OS === 'web') {
     // TODO: web handle links if we need to idk if we do
@@ -134,7 +172,9 @@ export const handleUrl = (uri: string) => {
     if (typeof __DEV__ !== 'undefined' && __DEV__) {
       console.error('No sessionId or selfApp found in the data');
     }
-    navigationRef.navigate('QRCodeTrouble');
+    navigationRef.reset(
+      createDeeplinkNavigationState('QRCodeTrouble', correctParentScreen),
+    );
   }
 };
 
@@ -166,19 +206,29 @@ export const parseAndValidateUrlParams = (uri: string): ValidatedParams => {
   return validatedParams;
 };
 
-export const setupUniversalLinkListenerInNavigation = () => {
-  const handleNavigation = (url: string) => {
-    handleUrl(url);
-  };
+// Store the initial URL for splash screen to handle after initialization
+let queuedInitialUrl: string | null = null;
 
+/**
+ * Sets the correct parent screen for deeplink navigation
+ * This should be called by splash screen after determining the correct screen
+ */
+export const setDeeplinkParentScreen = (screen: string) => {
+  correctParentScreen = screen;
+};
+
+export const setupUniversalLinkListenerInNavigation = () => {
+  // Get the initial URL and store it for splash screen handling
   Linking.getInitialURL().then(url => {
     if (url) {
-      handleNavigation(url);
+      // Store the initial URL instead of handling it immediately
+      queuedInitialUrl = url;
     }
   });
 
+  // Handle subsequent URL events normally (when app is already running)
   const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
-    handleNavigation(url);
+    handleUrl(url);
   });
 
   return () => {

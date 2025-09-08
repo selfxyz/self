@@ -63,6 +63,8 @@ export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
 
+export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
+
 export { scanQRProof } from './qr';
 
 export { webScannerShim } from './adapters/web/shims';

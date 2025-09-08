@@ -1,26 +1,2 @@
 {
-  "ignore_dirs": [
-    "node_modules",
-    "dist",
-    "build",
-    "vendor",
-    "Pods",
-    "ios/build",
-    "android/build",
-    "app/android/build",
-    "app/ios/build",
-    "app/ios/Pods",
-    "contracts/artifacts",
-    "contracts/cache",
-    "circuits/build",
-    "common/node_modules",
-    "contracts/node_modules",
-    "circuits/node_modules",
-    "sdk/node_modules",
-    "packages/mobile-sdk-alpha/node_modules",
-    "packages/mobile-sdk-alpha/demo-app/node_modules",
-    "packages/mobile-sdk-alpha/demo-app/android/build",
-    "packages/mobile-sdk-alpha/demo-app/ios/build",
-    "registry/node_modules"
-  ]
 }

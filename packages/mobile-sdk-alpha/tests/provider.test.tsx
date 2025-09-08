@@ -23,8 +23,9 @@ describe('SelfClientProvider Context', () => {
     const { result } = renderHook(() => useSelfClient(), { wrapper });
     const info = result.current.extractMRZInfo(sampleMRZ);
 
-    expect(info.passportNumber).toBe(expectedMRZResult.passportNumber);
-    expect(info.validation.overall).toBe(expectedMRZResult.validation.overall);
+    expect(info.documentNumber).toBe(expectedMRZResult.documentNumber);
+    expect(info.validation).toBeDefined();
+    expect(info.validation?.overall).toBe(expectedMRZResult.validation.overall);
   });
 
   it('throws error when used outside provider', () => {

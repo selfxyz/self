@@ -84,7 +84,9 @@ These guides provide comprehensive context for AI-assisted development with Chat
 
 ## Contributing
 
-We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know were to start! We offer bounties for significant contributions.
+We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know where to start! We offer bounties for significant contributions.
+
+> **Important:** Please open your pull request from the `staging` branch. Pull requests from other branches will be automatically closed.
 
 ## Contact us
 

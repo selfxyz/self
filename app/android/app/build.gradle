@@ -121,7 +121,7 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 85
+        versionCode 90
         versionName "2.6.4"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
@@ -190,7 +190,7 @@ dependencies {
         exclude group: 'edu.ucar', module: 'jj2000'
     }
     implementation project(':passportreader')
-    implementation 'org.jmrtd:jmrtd:0.7.18'
+    implementation 'org.jmrtd:jmrtd:0.7.35'
 
     implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
 

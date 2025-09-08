@@ -119,6 +119,10 @@ platform :ios do
         # VersionManager doesn't handle semantic versions, use npm
         sh("cd .. && npm version #{version_bump} --no-git-tag-version")
         UI.success("✅ Bumped #{version_bump} version")
+
+        # Sync the new version to iOS project files
+        sync_version
+        UI.success("✅ Synced MARKETING_VERSION to iOS project")
       when "build"
         # Build number is handled in prepare_ios_build
         UI.message("📦 Build number will be incremented during build")
@@ -297,6 +301,18 @@ platform :android do
     upload_android_build(track: "production")
   end
 
+  desc "Build Android app without uploading"
+  lane :build_only do |options|
+    deployment_track = options[:deployment_track] || "internal"
+    version_bump = options[:version_bump] || "build"
+
+    UI.message("🔨 Building Android app (build only)")
+    UI.message("  Track: #{deployment_track}")
+    UI.message("  Version bump: #{version_bump}")
+
+    upload_android_build(options.merge(skip_upload: true))
+  end
+
   desc "Deploy Android app with automatic version management"
   lane :deploy_auto do |options|
     deployment_track = options[:deployment_track] || "internal"
@@ -338,6 +354,7 @@ platform :android do
 
   private_lane :upload_android_build do |options|
     test_mode = options[:test_mode] == true || options[:test_mode] == "true"
+    skip_upload = options[:skip_upload] == true || options[:skip_upload] == "true"
     if local_development
       if ENV["ANDROID_KEYSTORE_PATH"].nil?
         ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.android_create_keystore(android_keystore_path)
@@ -355,8 +372,9 @@ platform :android do
       "ANDROID_KEY_ALIAS",
       "ANDROID_KEY_PASSWORD",
       "ANDROID_PACKAGE_NAME",
-      "ANDROID_PLAY_STORE_JSON_KEY_PATH",
     ]
+    # Only require JSON key path when not running in CI (local development)
+    required_env_vars << "ANDROID_PLAY_STORE_JSON_KEY_PATH" if local_development
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
 
@@ -375,40 +393,69 @@ platform :android do
     target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
 
-    validate_play_store_json_key(
-      json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
-    )
+    # Validate JSON key only in local development; CI uses Workload Identity Federation (ADC)
+    if local_development
+      validate_play_store_json_key(
+        json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
+      )
+    end
 
     Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
       gradle(
         task: "clean bundleRelease --stacktrace --info",
         project_dir: "android/",
         properties: {
-          "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
-          "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
-          "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
-          "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
+          "MYAPP_UPLOAD_STORE_FILE" => ENV["ANDROID_KEYSTORE_PATH"],
+          "MYAPP_UPLOAD_STORE_PASSWORD" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+          "MYAPP_UPLOAD_KEY_ALIAS" => ENV["ANDROID_KEY_ALIAS"],
+          "MYAPP_UPLOAD_KEY_PASSWORD" => ENV["ANDROID_KEY_PASSWORD"] == "EMPTY" ? "" : ENV["ANDROID_KEY_PASSWORD"],
         },
       )
     end
 
-    if test_mode
-      UI.important("🧪 TEST MODE: Skipping Play Store upload")
+    if test_mode || skip_upload
+      if skip_upload
+        UI.important("🔨 BUILD ONLY: Skipping Play Store upload")
+      else
+        UI.important("🧪 TEST MODE: Skipping Play Store upload")
+      end
       UI.success("✅ Build completed successfully!")
       UI.message("📦 AAB path: #{android_aab_path}")
     else
       if should_upload
         begin
-          upload_to_play_store(
+          upload_options = {
             track: options[:track],
-            json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
             package_name: ENV["ANDROID_PACKAGE_NAME"],
             skip_upload_changelogs: true,
             skip_upload_images: true,
             skip_upload_screenshots: true,
             track_promote_release_status: "completed",
             aab: android_aab_path,
-          )
+          }
+          # In local development, use the JSON key file; in CI rely on ADC
+          if local_development
+            upload_options[:json_key] = ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"]
+          else
+            # In CI, try to use ADC credentials file directly
+            adc_creds_path = ENV["GOOGLE_APPLICATION_CREDENTIALS"]
+            if adc_creds_path && File.exist?(adc_creds_path)
+              UI.message("🔑 Using ADC credentials file: #{adc_creds_path}")
+              begin
+                # Try passing the credentials file content as json_key_data
+                creds_content = File.read(adc_creds_path)
+                upload_options[:json_key_data] = creds_content
+              rescue => e
+                UI.error("Failed to read ADC credentials: #{e.message}")
+                # Fallback: let supply try to use ADC automatically
+                UI.message("🔄 Falling back to automatic ADC detection")
+              end
+            else
+              UI.error("❌ ADC credentials not found at: #{adc_creds_path}")
+            end
+          end
+
+          upload_to_play_store(upload_options)
         rescue => e
           if e.message.include?("forbidden") || e.message.include?("403") || e.message.include?("insufficientPermissions")
             UI.error("❌ Play Store upload failed: Insufficient permissions")

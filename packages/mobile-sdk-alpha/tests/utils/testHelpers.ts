@@ -13,7 +13,16 @@ export const badCheckDigitsMRZ = sampleMRZ.slice(0, -1) + '1';
 
 // Shared mock adapters
 export const mockScanner: ScannerAdapter = {
-  scan: async () => ({ mode: 'mrz', passportNumber: '', dateOfBirth: '', dateOfExpiry: '' }),
+  scan: async () => ({
+    mode: 'mrz',
+    mrzInfo: {
+      documentNumber: '',
+      dateOfBirth: '',
+      dateOfExpiry: '',
+      issuingCountry: '',
+      documentType: 'passport',
+    },
+  }),
 };
 
 export const mockNetwork: NetworkAdapter = {
@@ -64,6 +73,6 @@ export const mockAdapters = {
 
 // Shared test expectations
 export const expectedMRZResult = {
-  passportNumber: 'L898902C3',
+  documentNumber: 'L898902C3',
   validation: { overall: true },
 };

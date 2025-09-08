@@ -126,6 +126,7 @@ const items = [
   'DevSettings',
   'DevFeatureFlags',
   'DevHapticFeedback',
+  'DevPrivateKey',
   'Splash',
   'Launch',
   'DocumentOnboarding',
@@ -339,7 +340,32 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           title="Debug Shortcuts"
           description="Jump directly to any screen for testing"
         >
-          <ScreenSelector />
+          <YStack gap="$2">
+            <Button
+              style={{ backgroundColor: 'white' }}
+              borderColor={slate200}
+              borderRadius="$2"
+              height="$5"
+              padding={0}
+              onPress={() => {
+                navigation.navigate('DevPrivateKey');
+              }}
+            >
+              <XStack
+                width="100%"
+                justifyContent="space-between"
+                paddingVertical="$3"
+                paddingLeft="$4"
+                paddingRight="$1.5"
+              >
+                <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+                  View Private Key
+                </Text>
+                <ChevronRight color={slate500} strokeWidth={2.5} />
+              </XStack>
+            </Button>
+            <ScreenSelector />
+          </YStack>
         </ParameterSection>
 
         <ParameterSection

@@ -11,4 +11,10 @@ export default defineConfig({
     setupFiles: ['./tests/setup.ts'],
     exclude: ['demo-app/**'],
   },
+  resolve: {
+    alias: {
+      // Mock React Native modules for testing
+      'react-native': 'react-native-web',
+    },
+  },
 });
