@@ -4,15 +4,12 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import { HomeNavBar, IdDetailsNavBar } from '@/components/NavBar';
 import DisclaimerScreen from '@/screens/home/DisclaimerScreen';
 import HomeScreen from '@/screens/home/HomeScreen';
+import IdDetailsScreen from '@/screens/home/IdDetailsScreen';
 import ProofHistoryDetailScreen from '@/screens/home/ProofHistoryDetailScreen';
 import ProofHistoryScreen from '@/screens/home/ProofHistoryScreen';
-
-import IdDetailsScreen from '@/screens/home/IdDetailsScreen';
-
-import { HomeNavBar, IdDetailsNavBar } from '@/components/NavBar';
-
 
 const homeScreens = {
   Disclaimer: {
