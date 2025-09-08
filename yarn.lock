@@ -4982,39 +4982,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/mobile-sdk-demo@workspace:packages/mobile-sdk-demo":
-  version: 0.0.0-use.local
-  resolution: "@selfxyz/mobile-sdk-demo@workspace:packages/mobile-sdk-demo"
-  dependencies:
-    "@babel/core": "npm:^7.28.3"
-    "@babel/runtime": "npm:^7.28.3"
-    "@noble/hashes": "npm:^1.5.0"
-    "@react-native-community/cli": "npm:^16.0.3"
-    "@react-native-picker/picker": "npm:^2.11.1"
-    "@react-native/gradle-plugin": "npm:0.76.9"
-    "@react-native/metro-config": "npm:0.76.9"
-    "@selfxyz/common": "workspace:*"
-    "@selfxyz/mobile-sdk-alpha": "workspace:*"
-    "@tsconfig/react-native": "npm:^3.0.6"
-    "@types/jest": "npm:^29.5.14"
-    "@types/react": "npm:^18.3.4"
-    assert: "npm:^2.1.0"
-    babel-jest: "npm:^29.6.3"
-    buffer: "npm:^6.0.3"
-    ethers: "npm:^6.11.0"
-    find-yarn-workspace-root: "npm:^2.0.0"
-    jest: "npm:^29.6.3"
-    metro-react-native-babel-preset: "npm:0.76.9"
-    react: "npm:^18.3.1"
-    react-native: "npm:0.76.9"
-    react-native-get-random-values: "npm:^1.11.0"
-    react-test-renderer: "npm:^18.3.1"
-    stream-browserify: "npm:^3.0.0"
-    typescript: "npm:^5.9.2"
-    util: "npm:^0.12.5"
-  languageName: unknown
-  linkType: soft
-
 "@selfxyz/qrcode@workspace:sdk/qrcode":
   version: 0.0.0-use.local
   resolution: "@selfxyz/qrcode@workspace:sdk/qrcode"
@@ -19978,6 +19945,39 @@ __metadata:
   checksum: 10c0/a73a2718f88cd12c3b108ecc530619a1b0f2783d479c7f98e7367375102cc3a28811bab384e17eb731553dc8d7ee9d60283d694a9f676af5f306104e75027d4f
   languageName: node
   linkType: hard
+
+"mobile-sdk-demo@workspace:packages/mobile-sdk-demo":
+  version: 0.0.0-use.local
+  resolution: "mobile-sdk-demo@workspace:packages/mobile-sdk-demo"
+  dependencies:
+    "@babel/core": "npm:^7.28.3"
+    "@babel/runtime": "npm:^7.28.3"
+    "@noble/hashes": "npm:^1.5.0"
+    "@react-native-community/cli": "npm:^16.0.3"
+    "@react-native-picker/picker": "npm:^2.11.1"
+    "@react-native/gradle-plugin": "npm:0.76.9"
+    "@react-native/metro-config": "npm:0.76.9"
+    "@selfxyz/common": "workspace:*"
+    "@selfxyz/mobile-sdk-alpha": "workspace:*"
+    "@tsconfig/react-native": "npm:^3.0.6"
+    "@types/jest": "npm:^29.5.14"
+    "@types/react": "npm:^18.3.4"
+    assert: "npm:^2.1.0"
+    babel-jest: "npm:^29.6.3"
+    buffer: "npm:^6.0.3"
+    ethers: "npm:^6.11.0"
+    find-yarn-workspace-root: "npm:^2.0.0"
+    jest: "npm:^29.6.3"
+    metro-react-native-babel-preset: "npm:0.76.9"
+    react: "npm:^18.3.1"
+    react-native: "npm:0.76.9"
+    react-native-get-random-values: "npm:^1.11.0"
+    react-test-renderer: "npm:^18.3.1"
+    stream-browserify: "npm:^3.0.0"
+    typescript: "npm:^5.9.2"
+    util: "npm:^0.12.5"
+  languageName: unknown
+  linkType: soft
 
 "mocha@npm:^10.0.0, mocha@npm:^10.2.0, mocha@npm:^10.7.3":
   version: 10.8.2

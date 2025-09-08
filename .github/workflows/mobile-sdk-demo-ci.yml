@@ -22,10 +22,10 @@ jobs:
         shell: bash
         run: |
           # Build demo app and all its transitive workspace deps in the correct order
-          yarn workspaces foreach -R -t --from @selfxyz/mobile-sdk-demo run build
+          yarn workspaces foreach -R -t --from mobile-sdk-demo run build
       - name: Run demo app tests
         run: |
-          yarn workspace @selfxyz/mobile-sdk-demo test
+          yarn workspace mobile-sdk-demo test
       - name: Build demo app
         run: |
           yarn build:demo

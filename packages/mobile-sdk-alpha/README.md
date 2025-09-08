@@ -112,17 +112,17 @@ describe('Real mobile-sdk-alpha Integration', () => {
 
 ## Self Demo App
 
-The Self Demo App is a lightweight React Native playground in [`@selfxyz/mobile-sdk-demo`](../mobile-sdk-demo).
+The Self Demo App is a lightweight React Native playground in [`mobile-sdk-demo`](../mobile-sdk-demo).
 
 ```bash
 # start Metro bundler
-yarn workspace @selfxyz/mobile-sdk-demo start
+yarn workspace mobile-sdk-demo start
 
 # type-check
-yarn workspace @selfxyz/mobile-sdk-demo build
+yarn workspace mobile-sdk-demo build
 
 # run tests
-yarn workspace @selfxyz/mobile-sdk-demo test
+yarn workspace mobile-sdk-demo test
 
 # or via package scripts
 cd packages/mobile-sdk-alpha

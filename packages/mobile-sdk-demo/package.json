@@ -1,5 +1,5 @@
 {
-  "name": "@selfxyz/mobile-sdk-demo",
+  "name": "mobile-sdk-demo",
   "version": "0.0.1",
   "private": true,
   "main": "index.js",

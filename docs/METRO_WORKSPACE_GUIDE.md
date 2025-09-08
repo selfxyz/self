@@ -121,7 +121,7 @@ yarn setup:metro-workspace
 - ✅ **Bundle size optimized** - No duplicate package resolution
 - ✅ **TypeScript integration** - Seamless path mapping compatibility
 
-### Demo App (`@selfxyz/mobile-sdk-demo`)
+### Demo App (`mobile-sdk-demo`)
 - ✅ **Automatic workspace resolution** - No configuration needed beyond Metro setup
 - ✅ **React Native condition support** - Platform-specific package exports
 - ✅ **Development experience** - Hot reloading works with workspace changes
