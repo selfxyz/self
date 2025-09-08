@@ -49,7 +49,7 @@
     "demo:test": "yarn workspace demo-app test",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
-    "format": "yarn nice",
+    "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "nice": "yarn lint:fix && yarn fmt:fix",

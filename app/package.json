@@ -43,7 +43,7 @@
     "mobile-local-deploy": "FORCE_UPLOAD_LOCAL_DEV=true node scripts/mobile-deploy-confirm.cjs both",
     "mobile-local-deploy:android": "FORCE_UPLOAD_LOCAL_DEV=true node scripts/mobile-deploy-confirm.cjs android",
     "mobile-local-deploy:ios": "FORCE_UPLOAD_LOCAL_DEV=true node scripts/mobile-deploy-confirm.cjs ios",
-    "nice": "yarn build:deps && yarn imports:fix && yarn lint:fix && yarn fmt:fix",
+    "nice": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn build:deps; fi; yarn imports:fix && yarn lint:fix && yarn fmt:fix'",
     "reinstall": "yarn clean && yarn install && yarn install-app",
     "release": "./scripts/release.sh",
     "release:major": "./scripts/release.sh major",

@@ -14,7 +14,7 @@
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
     "check:versions": "node scripts/check-package-versions.mjs",
-    "format": "yarn format:root && yarn format:github && yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
+    "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "prettier --parser markdown --write *.md scripts/**/*.md && prettier --parser yaml --write .*.{yml,yaml} --single-quote false && prettier --write scripts/**/*.{js,mjs,ts} && prettier --parser json --write scripts/**/*.json",
     "gitleaks": "gitleaks protect --staged --redact --config=.gitleaks.toml",
