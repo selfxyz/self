@@ -7,14 +7,8 @@ export type { DocumentCategory, PassportData } from './types.js';
 export type { IdDocInput } from './passports/genMockIdDoc.js';
 export type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 export type { UserIdType } from './circuits/uuid.js';
-export {
-  EndpointType,
-  Mode,
-  SelfApp,
-  SelfAppBuilder,
-  SelfAppDisclosureConfig,
-  getUniversalLink,
-} from './appType.js';
+export type { EndpointType, Mode, SelfApp, SelfAppDisclosureConfig } from './appType.js';
+export { SelfAppBuilder, getUniversalLink } from './appType.js';
 export { bigIntToString, formatEndpoint, hashEndpointWithScope, stringToBigInt } from './scope.js';
 export { brutforceSignatureAlgorithmDsc } from './passports/passport_parsing/brutForceDscSignature.js';
 export { buildSMT, getLeafCscaTree, getLeafDscTree } from './trees.js';

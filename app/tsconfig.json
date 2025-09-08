@@ -6,6 +6,7 @@
     "baseUrl": ".",
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "paths": {
       "@env": ["./env.ts"],
       "@selfxyz/common": ["../common/src"],

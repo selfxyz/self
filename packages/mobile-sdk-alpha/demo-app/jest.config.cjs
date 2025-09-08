@@ -4,6 +4,7 @@
 
 module.exports = {
   preset: 'react-native',
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   transformIgnorePatterns: ['node_modules/(?!(react-native|@react-native|@selfxyz)/)'],
   moduleDirectories: ['node_modules', '<rootDir>/../../../node_modules'],
@@ -11,6 +12,7 @@ module.exports = {
     '^@babel/runtime(.*)$': '<rootDir>/../../../node_modules/@babel/runtime$1',
     '^react$': '<rootDir>/../../../node_modules/react',
     '^react-native$': '<rootDir>/../../../node_modules/react-native',
-    '^@selfxyz/(.*)$': '<rootDir>/../../../node_modules/@selfxyz/$1',
+    '^@selfxyz/common$': '<rootDir>/../../../common',
+    '^@selfxyz/mobile-sdk-alpha$': '<rootDir>/..',
   },
 };
