@@ -14,10 +14,10 @@ if (!platform || !['android', 'ios'].includes(platform)) {
   process.exit(1);
 }
 
-// Bundle size thresholds in MB - easy to update!
+// Bundle size thresholds in MB - adjusted for demo app
 const BUNDLE_THRESHOLDS_MB = {
-  ios: 38,
-  android: 38,
+  ios: 10, // Smaller threshold for demo app
+  android: 10, // Smaller threshold for demo app
 };
 
 function formatBytes(bytes) {
@@ -31,38 +31,30 @@ function checkBundleSize(bundleSize, targetPlatform) {
   const thresholdMB = BUNDLE_THRESHOLDS_MB[targetPlatform];
   const thresholdBytes = thresholdMB * 1024 * 1024;
 
-  console.log(`\n📦 Bundle size: ${formatBytes(bundleSize)}`);
-  console.log(
-    `🎯 Threshold: ${thresholdMB}MB (${formatBytes(thresholdBytes)})`,
-  );
+  console.log(`\n📦 Demo App Bundle size: ${formatBytes(bundleSize)}`);
+  console.log(`🎯 Threshold: ${thresholdMB}MB (${formatBytes(thresholdBytes)})`);
 
   if (bundleSize > thresholdBytes) {
     const overage = bundleSize - thresholdBytes;
-    console.error(
-      `\n❌ Bundle size exceeds threshold by ${formatBytes(overage)}!`,
-    );
+    console.error(`\n❌ Bundle size exceeds threshold by ${formatBytes(overage)}!`);
     console.error(`   Current: ${formatBytes(bundleSize)}`);
     console.error(`   Threshold: ${thresholdMB}MB`);
     console.error(`   Please reduce bundle size to continue.`);
-    console.error(
-      `\n💡 To increase the threshold, edit BUNDLE_THRESHOLDS_MB in this script.`,
-    );
+    console.error(`\n💡 To increase the threshold, edit BUNDLE_THRESHOLDS_MB in this script.`);
     return false;
   } else {
     const remaining = thresholdBytes - bundleSize;
-    console.log(
-      `✅ Bundle size is within threshold (${formatBytes(remaining)} remaining)`,
-    );
+    console.log(`✅ Demo app bundle size is within threshold (${formatBytes(remaining)} remaining)`);
     return true;
   }
 }
 
 // Use Metro's built-in bundle command
 const tmpDir = os.tmpdir();
-const bundleFile = join(tmpDir, `${platform}.bundle`);
-const sourcemapFile = join(tmpDir, `${platform}.bundle.map`);
+const bundleFile = join(tmpDir, `demo-app-${platform}.bundle`);
+const sourcemapFile = join(tmpDir, `demo-app-${platform}.bundle.map`);
 
-console.log(`🔨 Generating ${platform} bundle using Metro...`);
+console.log(`🔨 Generating demo app ${platform} bundle using Metro...`);
 
 try {
   execSync(
@@ -80,14 +72,14 @@ try {
     },
   );
 } catch (error) {
-  console.error(`❌ Failed to generate bundle: ${error.message}`);
+  console.error(`❌ Failed to generate demo app bundle: ${error.message}`);
   process.exit(1);
 }
 
 // Check bundle size against threshold
 if (existsSync(bundleFile)) {
   const bundleSize = statSync(bundleFile).size;
-  console.log(`📁 Bundle generated at: ${bundleFile}`);
+  console.log(`📁 Demo app bundle generated at: ${bundleFile}`);
   if (!checkBundleSize(bundleSize, platform)) {
     process.exit(1);
   }
@@ -98,10 +90,7 @@ if (existsSync(bundleFile)) {
     unlinkSync(sourcemapFile);
     console.log('🧹 Cleaned up temporary bundle files');
   } catch (cleanupError) {
-    console.warn(
-      '⚠️  Could not clean up temporary files:',
-      cleanupError.message,
-    );
+    console.warn('⚠️  Could not clean up temporary files:', cleanupError.message);
   }
 } else {
   console.error(`❌ Bundle file not found at ${bundleFile}`);

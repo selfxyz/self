@@ -16,7 +16,18 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": false,
-    "types": ["vitest/globals", "react"]
+    "types": ["vitest/globals", "react"],
+    "baseUrl": ".",
+    "paths": {
+      "@selfxyz/common": ["../../common/dist/esm/index"],
+      "@selfxyz/common/constants": ["../../common/dist/esm/src/constants/index"],
+      "@selfxyz/common/types": ["../../common/dist/esm/src/types/index"],
+      "@selfxyz/common/utils": ["../../common/dist/esm/src/utils/index"],
+      "@selfxyz/common/utils/hash/sha": ["../../common/dist/esm/src/utils/hash/sha"],
+      "@selfxyz/common/utils/passportFormat": ["../../common/dist/esm/src/utils/passports/format"],
+      "@selfxyz/common/utils/csca": ["../../common/dist/esm/src/utils/csca"],
+      "@selfxyz/common/utils/passports": ["../../common/dist/esm/src/utils/passports/index"]
+    }
   },
   "include": ["src", "tests"]
 }

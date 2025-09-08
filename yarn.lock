@@ -3635,7 +3635,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@peculiar/x509@npm:^1.12.3":
+"@peculiar/x509@npm:^1.12.3, @peculiar/x509@npm:^1.13.0":
   version: 1.13.0
   resolution: "@peculiar/x509@npm:1.13.0"
   dependencies:
@@ -4808,8 +4808,10 @@ __metadata:
     "@babel/runtime": "npm:^7.28.3"
     "@ethersproject/shims": "npm:^5.7.0"
     "@noble/hashes": "npm:^1.5.0"
+    "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
+    "@peculiar/x509": "npm:^1.13.0"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@react-native-clipboard/clipboard": "npm:1.16.3"
     "@react-native-community/cli": "npm:^16.0.3"
@@ -4831,6 +4833,7 @@ __metadata:
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:7.0.0-beta.1"
+    "@stablelib/cbor": "npm:^2.0.1"
     "@tamagui/animations-css": "npm:^1.129.3"
     "@tamagui/animations-react-native": "npm:^1.129.3"
     "@tamagui/config": "npm:1.126.14"
@@ -4873,7 +4876,11 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.9.1"
     ethers: "npm:^6.11.0"
     expo-modules-core: "npm:^2.2.1"
+    hash.js: "npm:^1.1.7"
+    i18n-iso-countries: "npm:^7.14.0"
     jest: "npm:^29.6.3"
+    js-sha1: "npm:^0.7.0"
+    js-sha256: "npm:^0.11.1"
     js-sha512: "npm:^0.9.0"
     lottie-react: "npm:^2.4.1"
     lottie-react-native: "npm:7.2.2"
@@ -4928,9 +4935,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:
+    "@babel/runtime": "npm:^7.28.3"
     "@selfxyz/common": "workspace:^"
     "@testing-library/react": "npm:^14.1.2"
     "@types/react": "npm:^18.3.4"
+    "@types/react-dom": "npm:^18.3.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.0.0"
     "@typescript-eslint/parser": "npm:^8.0.0"
     eslint: "npm:^8.57.0"
@@ -4942,6 +4951,8 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.8.0"
     jsdom: "npm:^24.0.0"
     prettier: "npm:^3.5.3"
+    react-dom: "npm:^18.3.1"
+    react-native: "npm:^0.81.1"
     tslib: "npm:^2.6.2"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
@@ -4949,7 +4960,6 @@ __metadata:
   peerDependencies:
     react: ^18.3.1
     react-native: ^0.76.9
-    tamagui: ^1.126.0
   languageName: unknown
   linkType: soft
 
@@ -13472,8 +13482,10 @@ __metadata:
     "@babel/core": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
     "@noble/hashes": "npm:^1.5.0"
+    "@react-native-community/cli": "npm:^16.0.3"
     "@react-native-picker/picker": "npm:^2.11.1"
     "@react-native/gradle-plugin": "npm:0.76.9"
+    "@react-native/metro-config": "npm:0.76.9"
     "@selfxyz/common": "workspace:*"
     "@selfxyz/mobile-sdk-alpha": "workspace:*"
     "@tsconfig/react-native": "npm:^3.0.6"
@@ -13483,6 +13495,7 @@ __metadata:
     babel-jest: "npm:^29.6.3"
     buffer: "npm:^6.0.3"
     ethers: "npm:^6.11.0"
+    find-yarn-workspace-root: "npm:^2.0.0"
     jest: "npm:^29.6.3"
     metro-react-native-babel-preset: "npm:0.76.9"
     react: "npm:^18.3.1"
@@ -16815,7 +16828,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18n-iso-countries@npm:^7.13.0":
+"i18n-iso-countries@npm:^7.13.0, i18n-iso-countries@npm:^7.14.0":
   version: 7.14.0
   resolution: "i18n-iso-countries@npm:7.14.0"
   dependencies:
@@ -18170,7 +18183,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-sha256@npm:^0.11.0":
+"js-sha256@npm:^0.11.0, js-sha256@npm:^0.11.1":
   version: 0.11.1
   resolution: "js-sha256@npm:0.11.1"
   checksum: 10c0/ef8e294b6f38f218e4834cb653471dd1a76808cea93dc66eaffcb04124116bc36d6cebc4e8866753e184ab4e57892b6ef21918e8ab0450179a7e093ea962d974
@@ -22850,9 +22863,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "self-workspace-root@workspace:."
   dependencies:
+    "@babel/runtime": "npm:^7.28.3"
     "@types/node": "npm:^22.0.0"
     gitleaks: "npm:1.0.0"
     husky: "npm:9.1.7"
+    js-sha1: "npm:^0.7.0"
     knip: "npm:^5.62.0"
     patch-package: "npm:^8.0.0"
     react: "npm:^18.3.1"

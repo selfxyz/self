@@ -1,16 +1,18 @@
 {
   "name": "self-workspace-root",
-  "workspaces": [
-    "app",
-    "circuits",
-    "common",
-    "contracts",
-    "packages/*",
-    "prover/tests",
-    "sdk/*",
-    "scripts/tests",
-    "packages/mobile-sdk-alpha/demo-app"
-  ],
+  "workspaces": {
+    "packages": [
+      "app",
+      "circuits",
+      "common",
+      "contracts",
+      "packages/*",
+      "packages/mobile-sdk-alpha/demo-app",
+      "prover/tests",
+      "scripts/tests",
+      "sdk/*"
+    ]
+  },
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
     "build:mobile-sdk": "yarn workspace @selfxyz/mobile-sdk-alpha build && yarn workspace demo-app build",
@@ -28,7 +30,7 @@
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
     "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
-    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/common --exclude @selfxyz/mobile-app -i --all run types"
   },
   "resolutions": {
     "@babel/core": "^7.28.3",
@@ -39,6 +41,8 @@
     "react-native": "0.76.9"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.3",
+    "js-sha1": "^0.7.0",
     "react": "^18.3.1",
     "react-native": "0.76.9"
   },

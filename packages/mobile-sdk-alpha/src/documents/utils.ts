@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { DocumentMetadata, PassportData } from '@selfxyz/common/utils/types';
+import { DocumentMetadata, PassportData } from '@selfxyz/common/types';
 
 import { SelfClient } from '../types/public';
 

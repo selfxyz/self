@@ -64,11 +64,9 @@ export {
   sdkError,
 } from './errors';
 
+// Screen Components (React Native-based)
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
-
-// Screen Components
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
-
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
 // Context and Client

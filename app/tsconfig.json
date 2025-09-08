@@ -3,24 +3,26 @@
   "compilerOptions": {
     "lib": ["dom", "esnext"],
     "module": "esnext",
+    "baseUrl": ".",
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "paths": {
       "@env": ["./env.ts"],
-      "@selfxyz/common": ["../common"],
-      "@selfxyz/common/*": ["../common/*"],
-      "@selfxyz/common/utils/passports/*": ["../common/utils/passports/*"],
+      "@selfxyz/common": ["../common/src"],
+      "@selfxyz/common/*": ["../common/src/*"],
+      "@selfxyz/common/utils/passports/*": ["../common/src/utils/passports/*"],
       "@selfxyz/mobile-sdk-alpha": [
         "../packages/mobile-sdk-alpha/src",
         "../packages/mobile-sdk-alpha/dist"
       ],
       "@selfxyz/mobile-sdk-alpha/constants/analytics": [
-        "../packages/mobile-sdk-alpha/dist/esm/constants/analytics.js"
+        "../packages/mobile-sdk-alpha/src/constants/analytics.ts"
       ],
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "declarations.d.ts"],
   "exclude": [
     "*.config.cjs",
     "*.config.js",

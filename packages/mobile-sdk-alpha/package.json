@@ -14,6 +14,7 @@
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
+      "react-native": "./dist/esm/index.js",
       "browser": "./dist/esm/browser.js",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs"
@@ -23,10 +24,29 @@
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
     },
+    "./constants": {
+      "types": "./dist/esm/constants/index.d.ts",
+      "react-native": "./dist/esm/constants/index.js",
+      "import": "./dist/esm/constants/index.js",
+      "require": "./dist/cjs/constants/index.cjs"
+    },
     "./constants/analytics": {
       "types": "./dist/esm/constants/analytics.d.ts",
+      "react-native": "./dist/esm/constants/analytics.js",
       "import": "./dist/esm/constants/analytics.js",
       "require": "./dist/cjs/constants/analytics.cjs"
+    },
+    "./components": {
+      "types": "./dist/esm/components/index.d.ts",
+      "react-native": "./dist/esm/components/index.js",
+      "import": "./dist/esm/components/index.js",
+      "require": "./dist/cjs/components/index.cjs"
+    },
+    "./hooks": {
+      "types": "./dist/esm/hooks/index.d.ts",
+      "react-native": "./dist/esm/hooks/index.js",
+      "import": "./dist/esm/hooks/index.js",
+      "require": "./dist/cjs/hooks/index.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -67,12 +87,15 @@
     "validate:pkg": "node ./scripts/verify-conditions.mjs"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.3",
+    "@selfxyz/common": "workspace:*",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@selfxyz/common": "workspace:^",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^8.57.0",
@@ -84,14 +107,15 @@
     "eslint-plugin-sort-exports": "^0.8.0",
     "jsdom": "^24.0.0",
     "prettier": "^3.5.3",
+    "react-dom": "^18.3.1",
+    "react-native": "^0.81.1",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",
     "vitest": "^1.6.0"
   },
   "peerDependencies": {
     "react": "^18.3.1",
-    "react-native": "^0.76.9",
-    "tamagui": "^1.126.0"
+    "react-native": "^0.76.9"
   },
   "packageManager": "yarn@4.6.0",
   "publishConfig": {
