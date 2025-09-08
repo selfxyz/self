@@ -4,23 +4,23 @@
   "private": true,
   "main": "index.js",
   "scripts": {
+    "preandroid": "yarn prebuild",
     "android": "react-native run-android --verbose",
+    "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
     "build": "tsc -p tsconfig.json --noEmit --pretty false",
     "clean": "rm -rf ios/build android/app/build android/build && cd android && ./gradlew clean && cd ..",
+    "preios": "yarn prebuild",
     "ios": "react-native run-ios",
     "start": "react-native start",
-    "test": "jest",
-    "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
-    "preandroid": "yarn prebuild",
-    "preios": "yarn prebuild"
+    "test": "jest"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",
+    "@noble/hashes": "^1.5.0",
     "@react-native-picker/picker": "^2.11.1",
     "@react-native/gradle-plugin": "0.76.9",
     "@selfxyz/common": "workspace:*",
     "@selfxyz/mobile-sdk-alpha": "workspace:*",
-    "@noble/hashes": "^1.5.0",
     "assert": "^2.1.0",
     "buffer": "^6.0.3",
     "ethers": "^6.11.0",

@@ -4663,7 +4663,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/common@workspace:^, @selfxyz/common@workspace:common":
+"@selfxyz/common@workspace:*, @selfxyz/common@workspace:^, @selfxyz/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
@@ -13472,6 +13472,7 @@ __metadata:
     "@babel/core": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
     "@noble/hashes": "npm:^1.5.0"
+    "@react-native-picker/picker": "npm:^2.11.1"
     "@react-native/gradle-plugin": "npm:0.76.9"
     "@selfxyz/common": "workspace:*"
     "@selfxyz/mobile-sdk-alpha": "workspace:*"
