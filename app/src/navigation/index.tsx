@@ -23,6 +23,7 @@ import proveScreens from '@/navigation/prove';
 import recoveryScreens from '@/navigation/recovery';
 import settingsScreens from '@/navigation/settings';
 import systemScreens from '@/navigation/system';
+import type { ProofHistory } from '@/stores/proof-types';
 import analytics from '@/utils/analytics';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
@@ -47,7 +48,11 @@ const AppNavigation = createNativeStackNavigator({
   screens: navigationScreens,
 });
 
-export type RootStackParamList = StaticParamList<typeof AppNavigation>;
+export type RootStackParamList = StaticParamList<typeof AppNavigation> & {
+  IdDetails: { documentId: string };
+  ProofHistoryDetail: { data: ProofHistory };
+  ProofRequestStatusScreen: undefined;
+};
 
 // Create a ref that we can use to access the navigation state
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();

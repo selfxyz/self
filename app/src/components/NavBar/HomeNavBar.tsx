@@ -13,9 +13,10 @@ import type { SelfApp } from '@selfxyz/common/utils/appType';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import ActivityIcon from '@/images/icons/activity.svg';
+import ScanIcon from '@/images/icons/qr_scan.svg';
 import SettingsIcon from '@/images/icons/settings.svg';
 import { useSelfAppStore } from '@/stores/selfAppStore';
-import { black, neutral400, white } from '@/utils/colors';
+import { black, charcoal, neutral400, slate50, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { buttonTap } from '@/utils/haptic';
 
@@ -70,44 +71,56 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
   };
   return (
     <NavBar.Container
-      backgroundColor={black}
+      backgroundColor={slate50}
       barStyle={'light'}
-      padding={16}
+      padding={8}
       justifyContent="space-between"
       paddingTop={Math.max(insets.top, 15) + extraYPadding}
     >
       <NavBar.LeftAction
         component={
-          <Button
-            size={'$3'}
-            unstyled
-            icon={
-              <ActivityIcon width={'24'} height={'100%'} color={neutral400} />
-            }
-          />
+          <XStack alignItems="center">
+            <Button
+              size={'$3'}
+              unstyled
+              icon={<ScanIcon width={'24'} height={'100%'} color={charcoal} />}
+              onPress={() => {
+                buttonTap();
+                props.navigation.navigate('QRCodeViewFinder');
+              }}
+            />
+            <Button
+              size={'$3'}
+              unstyled
+              marginTop={10}
+              icon={<ClipboardIcon size={24} color={charcoal} />}
+              onPress={handleConsumeToken}
+            />
+          </XStack>
         }
-        // disable icon click for now
-        onPress={() => {
-          buttonTap();
-          props.navigation.navigate('ProofHistory');
-        }}
       />
-      <NavBar.Title size="large" color={white}>
+      <NavBar.Title size="large" color={black}>
         {props.options.title}
       </NavBar.Title>
       <NavBar.RightAction
         component={
-          <XStack alignItems="center" gap={10}>
-            <ClipboardIcon
-              size={24}
-              color={neutral400}
-              onPress={handleConsumeToken}
+          <XStack alignItems="center">
+            <Button
+              size={'$3'}
+              unstyled
+              icon={
+                <ActivityIcon width={'24'} height={'100%'} color={charcoal} />
+              }
+              onPress={() => {
+                buttonTap();
+                props.navigation.navigate('ProofHistory');
+              }}
             />
             <Button
               size={'$3'}
               unstyled
               icon={
-                <SettingsIcon width={'24'} height={'100%'} color={neutral400} />
+                <SettingsIcon width={'24'} height={'100%'} color={charcoal} />
               }
               onPress={() => {
                 buttonTap();
