@@ -12,9 +12,10 @@ import {
   usePreventRemove,
 } from '@react-navigation/native';
 
+import { PassportData } from '@selfxyz/common/dist/esm';
+import { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types';
 import { DocumentMetadata, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { PassportData } from '@selfxyz/common/dist/esm';
 
 import { pressedStyle } from '@/components/buttons/pressedStyle';
 import IdCardLayout from '@/components/homeScreen/idCard';
@@ -28,7 +29,6 @@ import { useSettingStore } from '@/stores/settingStore';
 import useUserStore from '@/stores/userStore';
 import { neutral700, slate50, slate800, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
-import { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types';
 
 const ScanButton = styled(Button, {
   borderRadius: 20,

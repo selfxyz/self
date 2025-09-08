@@ -9,12 +9,13 @@ import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
 import { BlurView } from '@react-native-community/blur';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+import { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types';
 import { PassportData } from '@selfxyz/common/types';
 
 import IdCardLayout from '@/components/homeScreen/idCard';
 import { usePassport } from '@/providers/passportDataProvider';
-import useUserStore from '@/stores/userStore';
 import ProofHistoryList from '@/screens/home/ProofHistoryList';
+import useUserStore from '@/stores/userStore';
 import {
   black,
   slate50,
@@ -23,7 +24,6 @@ import {
   slate500,
   white,
 } from '@/utils/colors';
-import { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types';
 
 const IdDetailsScreen: React.FC = () => {
   const { idDetailsDocumentId } = useUserStore();

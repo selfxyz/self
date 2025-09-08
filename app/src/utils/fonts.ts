@@ -6,4 +6,5 @@ import { Platform } from 'react-native';
 
 export const advercase = 'Advercase-Regular';
 export const dinot = 'DINOT-Medium';
-export const plexMono = Platform.OS === 'ios' ? 'IBM Plex Mono' : 'IBMPlexMono-Regular';
+export const plexMono =
+  Platform.OS === 'ios' ? 'IBM Plex Mono' : 'IBMPlexMono-Regular';
