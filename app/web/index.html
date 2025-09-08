@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Self App</title>
+    <script>
+      // Polyfill Buffer for browser compatibility
+      if (typeof global === 'undefined') {
+        var global = globalThis;
+      }
+    </script>
+    <script type="module">
+      import { Buffer } from 'buffer';
+      window.Buffer = Buffer;
+      globalThis.Buffer = Buffer;
+    </script>
   </head>
   <body>
     <div id="root"></div>

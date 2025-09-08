@@ -6,6 +6,7 @@ import { dirname, resolve } from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgr from 'vite-plugin-svgr';
 import { tamaguiPlugin } from '@tamagui/vite-plugin';
 import react from '@vitejs/plugin-react-swc';
@@ -49,6 +50,15 @@ export default defineConfig({
     },
   },
   plugins: [
+    nodePolyfills({
+      include: ['buffer', 'process', 'util'],
+      globals: {
+        Buffer: true,
+        process: true,
+        global: false,
+      },
+      protocolImports: true,
+    }),
     react(),
     svgr({
       include: '**/*.svg',
@@ -98,7 +108,14 @@ export default defineConfig({
     cssMinify: true,
     cssCodeSplit: true,
     rollupOptions: {
-      external: ['fs', 'path', 'child_process'],
+      external: [
+        'fs',
+        'path',
+        'child_process',
+        'vite-plugin-node-polyfills/shims/buffer',
+        'vite-plugin-node-polyfills/shims/process',
+        'vite-plugin-node-polyfills/shims/util',
+      ],
       output: {
         // Optimize chunk size and minification
         compact: true,
