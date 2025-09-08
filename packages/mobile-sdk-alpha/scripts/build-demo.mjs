@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SDK_ROOT = path.resolve(__dirname, '..');
-const DEMO_APP = path.resolve(SDK_ROOT, 'demo-app');
+const DEMO_APP = path.resolve(SDK_ROOT, '../mobile-sdk-demo');
 
 console.log('🔨 Building Self Mobile SDK Alpha...');
 console.log('📁 SDK Root:', SDK_ROOT);

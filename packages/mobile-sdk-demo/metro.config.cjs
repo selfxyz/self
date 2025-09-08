@@ -9,7 +9,7 @@ const findYarnWorkspaceRoot = require('find-yarn-workspace-root');
 const defaultConfig = getDefaultConfig(__dirname);
 
 const projectRoot = __dirname;
-const workspaceRoot = findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '../../..');
+const workspaceRoot = findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '../..');
 
 /**
  * Modern Metro configuration for demo app using native workspace capabilities
@@ -26,10 +26,10 @@ const config = {
 
   resolver: {
     extraNodeModules: {
-      '@babel/runtime': path.resolve(__dirname, '../../../node_modules/@babel/runtime'),
+      '@babel/runtime': path.resolve(__dirname, '../../node_modules/@babel/runtime'),
       // Pin React and React Native to monorepo root
-      react: path.resolve(__dirname, '../../../node_modules/react'),
-      'react-native': path.resolve(__dirname, '../../../node_modules/react-native'),
+      react: path.resolve(__dirname, '../../node_modules/react'),
+      'react-native': path.resolve(__dirname, '../../node_modules/react-native'),
       // Crypto polyfills
       stream: require.resolve('stream-browserify'),
       buffer: require.resolve('buffer'),
