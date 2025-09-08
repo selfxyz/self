@@ -213,10 +213,8 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ github.job }}-${{ runner.os }}
-      - name: Configure Xcode to use ccache
-        run: |
-          echo 'CC=ccache clang' >> $GITHUB_ENV
-          echo 'CXX=ccache clang++' >> $GITHUB_ENV
+      - name: Add ccache to PATH
+        run: echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
