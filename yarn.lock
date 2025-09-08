@@ -4936,6 +4936,7 @@ __metadata:
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
     vitest: "npm:^1.6.0"
+    zustand: "npm:^4.5.2"
   peerDependencies:
     react: ^18.3.1
     react-native: ^0.76.9

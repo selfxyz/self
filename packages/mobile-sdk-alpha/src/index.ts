@@ -103,5 +103,7 @@ export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
 export { scanQRProof } from './qr';
 
+export { useProtocolStore } from './stores/protocolStore';
+
 // Error handling
 export { webScannerShim } from './adapters/web/shims';

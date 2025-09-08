@@ -45,6 +45,7 @@ import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { navigationRef } from '@/navigation';
 // will need to be passed in from selfClient
@@ -53,7 +54,6 @@ import {
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import { useProtocolStore } from '@/stores/protocolStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
 import { generateTEEInputsDisclose } from '@/utils/proving/provingInputs';

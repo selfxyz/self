@@ -5,8 +5,7 @@
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { SelfApp } from '@selfxyz/common/utils';
 import { generateTEEInputsDiscloseStateless } from '@selfxyz/common/utils/circuits/registerInputs';
-
-import { useProtocolStore } from '@/stores/protocolStore';
+import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 export function generateTEEInputsDisclose(
   secret: string,
