@@ -5,7 +5,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../src';
-import { createSelfClient } from '../src/index';
+import { createSelfClient, SdkEvents } from '../src/index';
 import { AuthAdapter } from '../src/types/public';
 
 describe('createSelfClient', () => {
@@ -90,10 +90,10 @@ describe('createSelfClient', () => {
     const originalSet = Map.prototype.set;
     let eventSet: Set<(p: any) => void> | undefined;
     Map.prototype.set = function (key: any, value: any) {
-      if (key === 'progress') eventSet = value;
+      if (key === SdkEvents.PROGRESS) eventSet = value;
       return originalSet.call(this, key, value);
     };
-    const unsub = client.on('progress', cb);
+    const unsub = client.on(SdkEvents.PROGRESS, cb);
     Map.prototype.set = originalSet;
 
     eventSet?.forEach(fn => fn({ step: 'one' }));

@@ -22,8 +22,6 @@ export type {
   ProofRequest,
   RegistrationInput,
   RegistrationStatus,
-  SDKEvent,
-  SDKEventMap,
   ScanMode,
   ScanOpts,
   ScanResult,
@@ -105,3 +103,5 @@ export { scanQRProof } from './qr';
 
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
+
+export { SdkEvents } from './types/events';

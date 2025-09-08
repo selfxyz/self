@@ -6,6 +6,7 @@ import { createContext, type PropsWithChildren, useContext, useMemo } from 'reac
 
 import { createSelfClient } from './client';
 import type { Adapters, Config, SelfClient } from './types/public';
+import { SdkEvents } from './types/events';
 
 /**
  * React context holding a {@link SelfClient} instance.
@@ -29,6 +30,10 @@ export interface SelfClientProviderProps {
    * be replaced with default no-op implementations.
    */
   adapters: Adapters;
+  /**
+   * Map of event listeners.
+   */
+  listeners?: Map<SdkEvents, Set<(p: any) => void>>;
 }
 
 export { SelfClientContext };

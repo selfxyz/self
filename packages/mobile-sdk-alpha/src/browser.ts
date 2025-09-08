@@ -21,8 +21,6 @@ export type {
   ProofRequest,
   RegistrationInput,
   RegistrationStatus,
-  SDKEvent,
-  SDKEventMap,
   ScanMode,
   ScanOpts,
   ScanResult,
@@ -68,3 +66,5 @@ export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 export { scanQRProof } from './qr';
 
 export { webScannerShim } from './adapters/web/shims';
+
+export { SdkEvents } from './types/events';

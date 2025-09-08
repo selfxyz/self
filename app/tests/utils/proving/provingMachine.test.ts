@@ -4,7 +4,7 @@
 
 import { act, renderHook } from '@testing-library/react-native';
 
-import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { SdkEvents, type SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
@@ -16,7 +16,10 @@ jest.mock('@/navigation', () => ({
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => {
+  const actual = jest.requireActual('@selfxyz/mobile-sdk-alpha');
+
   return {
+    ...actual,
     loadSelectedDocument: jest.fn().mockResolvedValue(null),
   };
 });
@@ -30,7 +33,11 @@ describe('provingMachine registration completion', () => {
     const { result: initHook } = renderHook(() =>
       useProvingStore(state => state.init),
     );
-    const selfClient = {} as SelfClient;
+    const emitMock = jest.fn();
+
+    const selfClient = {
+      emit: emitMock,
+    } as unknown as SelfClient;
 
     expect(initHook.current).toBeDefined();
 
@@ -43,5 +50,6 @@ describe('provingMachine registration completion', () => {
     );
 
     expect(provingStoreHook.current).toBe('passport_data_not_found');
+    expect(emitMock).toHaveBeenCalledWith(SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND);
   });
 });

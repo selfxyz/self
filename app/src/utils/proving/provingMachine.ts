@@ -35,6 +35,7 @@ import {
 import {
   hasAnyValidRegisteredDocument,
   loadSelectedDocument,
+  SdkEvents,
   SelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -42,7 +43,6 @@ import {
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { navigationRef } from '@/navigation';
 // will need to be passed in from selfClient
 import {
   clearPassportData,
@@ -243,12 +243,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().circuitType !== 'disclose' &&
         (state.value === 'error' || state.value === 'failure')
       ) {
-        setTimeout(() => {
-          if (navigationRef.isReady()) {
-            get()._handleRegisterErrorOrFailure(selfClient);
-          }
-        }, 3000);
+          get()._handleRegisterErrorOrFailure(selfClient);
       }
+
       if (state.value === 'completed') {
         trackEvent(ProofEvents.PROOF_COMPLETED, {
           circuitType: get().circuitType,
@@ -266,33 +263,29 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           })();
         }
 
-        if (get().circuitType !== 'disclose' && navigationRef.isReady()) {
-          setTimeout(() => {
-            navigationRef.navigate('AccountVerifiedSuccess');
-          }, 3000);
+        if (get().circuitType !== 'disclose') {
+          selfClient.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS);
         }
+
         if (get().circuitType === 'disclose') {
           useSelfAppStore.getState().handleProofResult(true);
         }
       }
+
       if (state.value === 'passport_not_supported') {
-        if (navigationRef.isReady()) {
-          const currentPassportData = get().passportData;
-          (navigationRef as any).navigate('UnsupportedDocument', {
-            passportData: currentPassportData,
-          });
-        }
+        selfClient.emit(SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED, {
+          passportData: get().passportData as PassportData,
+        });
       }
+
       if (state.value === 'account_recovery_choice') {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('AccountRecoveryChoice');
-        }
+        selfClient.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE);
       }
+
       if (state.value === 'passport_data_not_found') {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('DocumentDataNotFound');
-        }
+        selfClient.emit(SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND)  ;
       }
+
       if (state.value === 'failure') {
         if (get().circuitType === 'disclose') {
           const { error_code, reason } = get();
@@ -433,17 +426,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       try {
         const hasValid = await hasAnyValidRegisteredDocument(selfClient);
 
-        if (navigationRef.isReady()) {
-          if (hasValid) {
-            navigationRef.navigate('Home');
-          } else {
-            navigationRef.navigate('Launch');
-          }
-        }
-      } catch {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('Launch');
-        }
+        selfClient.emit(SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE, {
+          hasValidDocument: hasValid,
+        });
+      } catch (error) {
+        selfClient.emit(SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE, {
+          hasValidDocument: false,
+        });
       }
     },
 
