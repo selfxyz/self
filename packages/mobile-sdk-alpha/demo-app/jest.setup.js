@@ -94,7 +94,7 @@ jest.mock('@react-native-picker/picker', () => ({
 
 // Mock ethers
 jest.mock('ethers', () => {
-  const mockRandomBytes = jest.fn().mockImplementation((length) => new Uint8Array(length));
+  const mockRandomBytes = jest.fn().mockImplementation(length => new Uint8Array(length));
   mockRandomBytes.register = jest.fn();
 
   const mockHashFunction = jest.fn().mockImplementation(() => '0x' + 'a'.repeat(64));
