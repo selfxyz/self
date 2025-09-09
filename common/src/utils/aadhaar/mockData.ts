@@ -24,6 +24,8 @@ import {
 
 import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
 import { extractQRDataFields } from './utils.js';
+import { AadhaarField, createSelector } from './constants.js';
+import { formatCountriesList } from '../circuits/formatInputs.js';
 
 // Helper function to compute padded name
 function computePaddedName(name: string): number[] {
@@ -316,11 +318,7 @@ export async function prepareAadhaarRegisterData(qrData: string, secret: string,
     photoEOI: photoEOI,
   };
 
-  return {
-    inputs,
-    nullifier,
-    commitment,
-  };
+  return inputs;
 }
 
 export function prepareAadhaarDiscloseTestData(
@@ -356,7 +354,6 @@ export function prepareAadhaarDiscloseTestData(
     sharedData.extractedFields.yob
   );
 
-  const uppercaseName = computeUppercasePaddedName(sharedData.extractedFields.name);
   const genderAscii = stringToAsciiArray(sharedData.extractedFields.gender)[0];
   const nullifier = nullifierHash(sharedData.extractedFields);
   const packedCommitment = computePackedCommitment(sharedData.extractedFields);
@@ -443,4 +440,138 @@ export function prepareAadhaarDiscloseTestData(
     nullifier,
     commitment,
   };
+}
+
+export function prepareAadhaarDiscloseData(
+  qrData: string,
+  identityTree: LeanIMT,
+  nameAndDob_smt: SMT,
+  nameAndYob_smt: SMT,
+  scope: string,
+  secret: string,
+  user_identifier: string,
+  discloseAttributes: {
+    dateOfBirth?: boolean;
+    name?: boolean;
+    gender?: boolean;
+    idNumber?: boolean;
+    issuingState?: boolean;
+    minimumAge?: number;
+    forbiddenCountriesListPacked?: string[];
+    ofac?: boolean;
+  }
+) {
+  const sharedData = processQRDataSimple(qrData);
+
+  const { currentYear, currentMonth, currentDay } = calculateAge(
+    sharedData.extractedFields.dob,
+    sharedData.extractedFields.mob,
+    sharedData.extractedFields.yob
+  );
+
+  const genderAscii = stringToAsciiArray(sharedData.extractedFields.gender)[0];
+  const nullifier = nullifierHash(sharedData.extractedFields);
+  const packedCommitment = computePackedCommitment(sharedData.extractedFields);
+  const commitment = computeCommitment(
+    BigInt(secret),
+    BigInt(sharedData.qrHash),
+    nullifier,
+    packedCommitment,
+    BigInt(sharedData.photoHash)
+  );
+
+  const paddedName = computePaddedName(sharedData.extractedFields.name);
+
+  const index = findIndexInTree(identityTree, BigInt(commitment));
+  const {
+    siblings,
+    path: merkle_path,
+    leaf_depth,
+  } = generateMerkleProof(identityTree, index, COMMITMENT_TREE_DEPTH);
+
+  const namedob_leaf = getNameDobLeafAadhaar(
+    sharedData.extractedFields.name,
+    sharedData.extractedFields.yob,
+    sharedData.extractedFields.mob,
+    sharedData.extractedFields.dob
+  );
+  const nameyob_leaf = getNameYobLeafAahaar(
+    sharedData.extractedFields.name,
+    sharedData.extractedFields.yob
+  );
+
+  const {
+    root: ofac_name_dob_smt_root,
+    closestleaf: ofac_name_dob_smt_leaf_key,
+    siblings: ofac_name_dob_smt_siblings,
+  } = generateSMTProof(nameAndDob_smt, namedob_leaf);
+
+  const {
+    root: ofac_name_yob_smt_root,
+    closestleaf: ofac_name_yob_smt_leaf_key,
+    siblings: ofac_name_yob_smt_siblings,
+  } = generateSMTProof(nameAndYob_smt, nameyob_leaf);
+
+  const selectorArr: AadhaarField[] = [];
+  if (discloseAttributes.dateOfBirth) {
+    selectorArr.push('YEAR_OF_BIRTH');
+    selectorArr.push('MONTH_OF_BIRTH');
+    selectorArr.push('DAY_OF_BIRTH');
+  }
+  if (discloseAttributes.name) {
+    selectorArr.push('NAME');
+  }
+  if (discloseAttributes.gender) {
+    selectorArr.push('GENDER');
+  }
+  if (discloseAttributes.idNumber) {
+    selectorArr.push('AADHAAR_LAST_4_DIGITS');
+  }
+  if (discloseAttributes.issuingState) {
+    selectorArr.push('STATE');
+  }
+  if (discloseAttributes.ofac) {
+    selectorArr.push('OFAC_NAME_DOB_CHECK');
+    selectorArr.push('OFAC_NAME_YOB_CHECK');
+  }
+
+  const selector = createSelector(selectorArr);
+
+  const inputs = {
+    attestation_id: '3',
+    secret,
+    qrDataHash: BigInt(sharedData.qrHash).toString(),
+    gender: genderAscii.toString(),
+    yob: stringToAsciiArray(sharedData.extractedFields.yob),
+    mob: stringToAsciiArray(sharedData.extractedFields.mob),
+    dob: stringToAsciiArray(sharedData.extractedFields.dob),
+    name: formatInput(paddedName),
+    aadhaar_last_4digits: stringToAsciiArray(sharedData.extractedFields.aadhaarLast4Digits),
+    pincode: stringToAsciiArray(sharedData.extractedFields.pincode),
+    state: stringToAsciiArray(sharedData.extractedFields.state.padEnd(31, '\0')),
+    ph_no_last_4digits: stringToAsciiArray(sharedData.extractedFields.phoneNoLast4Digits),
+    photoHash: formatInput(BigInt(sharedData.photoHash)),
+    merkle_root: formatInput(BigInt(identityTree.root)),
+    leaf_depth: formatInput(leaf_depth),
+    path: formatInput(merkle_path),
+    siblings: formatInput(siblings),
+    ofac_name_dob_smt_leaf_key: formatInput(BigInt(ofac_name_dob_smt_leaf_key)),
+    ofac_name_dob_smt_root: formatInput(BigInt(ofac_name_dob_smt_root)),
+    ofac_name_dob_smt_siblings: formatInput(ofac_name_dob_smt_siblings),
+    ofac_name_yob_smt_leaf_key: formatInput(BigInt(ofac_name_yob_smt_leaf_key)),
+    ofac_name_yob_smt_root: formatInput(BigInt(ofac_name_yob_smt_root)),
+    ofac_name_yob_smt_siblings: formatInput(ofac_name_yob_smt_siblings),
+    selector,
+    minimumAge: formatInput(discloseAttributes.minimumAge ?? 0),
+    currentYear: formatInput(currentYear),
+    currentMonth: formatInput(currentMonth),
+    currentDay: formatInput(currentDay),
+    scope: formatInput(BigInt(scope)),
+    user_identifier: formatInput(BigInt(user_identifier)),
+    forbidden_countries_list: discloseAttributes.forbiddenCountriesListPacked
+      ? formatInput(formatCountriesList(discloseAttributes.forbiddenCountriesListPacked))
+      : formatInput([...Array(120)].map((_) => '0')),
+  };
+
+  return inputs;
 }
