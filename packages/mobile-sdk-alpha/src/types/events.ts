@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { PassportData, Progress } from './public';
+import { DocumentCategory } from '@selfxyz/common/types';
+
+import type { Progress } from './public';
 
 export enum SdkEvents {
   ERROR = 'ERROR',
@@ -23,7 +25,8 @@ export interface SDKEventMap {
     hasValidDocument: boolean;
   };
   [SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED]: {
-    passportData: PassportData;
+    countryCode: string | null;
+    documentCategory: DocumentCategory | null;
   };
   [SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED]: undefined;
 

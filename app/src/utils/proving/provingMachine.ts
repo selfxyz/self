@@ -1096,8 +1096,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     _handlePassportNotSupported: (selfClient: SelfClient) => {
+      const passportData = get().passportData;
+      const countryCode = passportData?.passportMetadata?.countryCode;
+      const documentCategory = passportData?.documentCategory;
+
       selfClient.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, {
-        passportData: get().passportData as PassportData,
+        countryCode: countryCode ?? null,
+        documentCategory: documentCategory ?? null,
       });
     },
 

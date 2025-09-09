@@ -67,6 +67,10 @@ describe('events', () => {
       eContent: [1, 2, 3],
       signedAttr: [1, 2, 3],
       encryptedDigest: [1, 2, 3],
+      passportMetadata: {
+        countryCode: 'test',
+      },
+      documentCategory: 'passport',
     } as PassportData;
 
     const selfClient = {
@@ -81,7 +85,32 @@ describe('events', () => {
     expect(emitMock).toHaveBeenCalledWith(
       SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
       {
-        passportData: mockPassportData,
+        countryCode: 'test',
+        documentCategory: 'passport',
+      },
+    );
+  });
+
+  it('emits PROVING_MACHINE_PASSPORT_NOT_SUPPORTED with no passport data', async () => {
+    const emitMock = jest.fn();
+    const mockPassportData = {
+      passportMetadata: {},
+    } as PassportData;
+
+    const selfClient = {
+      emit: emitMock,
+    } as unknown as SelfClient;
+
+    await act(async () => {
+      useProvingStore.setState({ passportData: mockPassportData });
+      useProvingStore.getState()._handlePassportNotSupported(selfClient);
+    });
+
+    expect(emitMock).toHaveBeenCalledWith(
+      SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
+      {
+        countryCode: null,
+        documentCategory: null,
       },
     );
   });

@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../src';
 import { createListenersMap, createSelfClient, SdkEvents } from '../src/index';
-import { AuthAdapter, PassportData } from '../src/types/public';
+import { AuthAdapter } from '../src/types/public';
 
 describe('createSelfClient', () => {
   // Test eager validation during client creation
@@ -111,7 +111,7 @@ describe('createSelfClient', () => {
       listeners: listeners.map,
     });
 
-    client.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, { passportData: { mrz: 'test' } as PassportData });
+    client.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, { countryCode: 'test', documentCategory: 'passport' });
     client.emit(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED);
     client.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, { hasValidDocument: true });
 
@@ -120,10 +120,10 @@ describe('createSelfClient', () => {
     expect(anotherAccountRecoveryChoiceListener).toHaveBeenCalledTimes(1);
     expect(anotherAccountRecoveryChoiceListener).toHaveBeenCalledWith(undefined);
 
-    expect(passportNotSupportedListener).toHaveBeenCalledWith({ passportData: { mrz: 'test' } });
+    expect(passportNotSupportedListener).toHaveBeenCalledWith({ countryCode: 'test', documentCategory: 'passport' });
     expect(passportNotSupportedListener).toHaveBeenCalledTimes(1);
 
-    client.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, { passportData: { mrz: 'test' } as PassportData });
+    client.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, { countryCode: 'test', documentCategory: 'passport' });
     client.emit(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED);
     client.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, { hasValidDocument: true });
 

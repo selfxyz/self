@@ -62,7 +62,8 @@ const documentScreens = {
       headerShown: false,
     } as NativeStackNavigationOptions,
     initialParams: {
-      passportData: null,
+      countryCode: null,
+      documentCategory: null,
     },
   },
   DocumentNFCMethodSelection: {
