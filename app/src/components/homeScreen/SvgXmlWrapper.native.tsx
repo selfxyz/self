@@ -3,17 +3,16 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { forwardRef } from 'react';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { SvgXml as RNSvgXml } from 'react-native-svg';
 
 type Props = {
   xml: string;
   width?: number;
   height?: number;
-  style?: unknown;
+  style?: StyleProp<ViewStyle>;
 };
 
-export const SvgXml = forwardRef<React.ComponentRef<typeof RNSvgXml>, Props>(
-  (p, ref) => <RNSvgXml ref={ref} {...p} />,
-);
+export const SvgXml = forwardRef<any, Props>((p, _ref) => <RNSvgXml {...p} />);
 SvgXml.displayName = 'SvgXml';
 export default SvgXml;
