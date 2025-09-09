@@ -382,3 +382,29 @@ jest.mock('react-native-localize', () => ({
 jest.mock('./src/utils/notifications/notificationService', () =>
   require('./tests/__setup__/notificationServiceMock.js'),
 );
+
+// Mock React Navigation
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: jest.fn(() => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      canGoBack: jest.fn(() => true),
+      dispatch: jest.fn(),
+    })),
+    createNavigationContainerRef: jest.fn(() => ({
+      current: null,
+      getCurrentRoute: jest.fn(),
+    })),
+    createStaticNavigation: jest.fn(() => ({ displayName: 'MockNavigation' })),
+  };
+});
+
+jest.mock('@react-navigation/native-stack', () => ({
+  createNativeStackNavigator: jest.fn(() => ({
+    displayName: 'MockStackNavigator',
+  })),
+  createNavigatorFactory: jest.fn(),
+}));
