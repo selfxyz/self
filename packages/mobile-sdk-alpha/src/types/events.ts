@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { DocumentCategory } from '@selfxyz/common/types';
+
 import type { Progress } from './public';
 
 export enum SdkEvents {
