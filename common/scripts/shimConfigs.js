@@ -185,6 +185,11 @@ export const shimConfigs = [
     name: 'utils/oids',
   },
   {
+    shimPath: 'utils/ofac',
+    targetPath: '../../esm/src/utils/ofac.js',
+    name: 'utils/ofac',
+  },
+  {
     shimPath: 'utils/passportDg1',
     targetPath: '../../esm/src/utils/passports/dg1.js',
     name: 'utils/passportDg1',

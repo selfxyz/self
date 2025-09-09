@@ -7,6 +7,7 @@ import { isUserRegistered } from '@selfxyz/common/utils/passports/validate';
 import type { PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import {
   getAllDocumentsDirectlyFromKeychain,
@@ -16,7 +17,6 @@ import {
   storePassportData,
   updateDocumentRegistrationState,
 } from '@/providers/passportDataProvider';
-import { useProtocolStore } from '@/stores/protocolStore';
 import analytics from '@/utils/analytics';
 
 const { trackEvent } = analytics();

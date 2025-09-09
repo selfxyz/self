@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { TREE_URL, TREE_URL_STAGING } from '@selfxyz/common/constants';
-import type { OfacTree } from '@selfxyz/common/utils/types';
+import { TREE_URL, TREE_URL_STAGING } from '../constants/constants.js';
+import type { OfacTree } from './types.js';
 
 export type OfacVariant = 'passport' | 'id_card';
 
@@ -16,9 +16,7 @@ const fetchTree = async (url: string): Promise<any> => {
   const responseData = await res.json();
   if (responseData.status !== 'success' || !responseData.data) {
     throw new Error(
-      `Failed to fetch tree from ${url}: ${
-        responseData.message || 'Invalid response format'
-      }`,
+      `Failed to fetch tree from ${url}: ${responseData.message || 'Invalid response format'}`
     );
   }
   return responseData.data;
@@ -27,17 +25,13 @@ const fetchTree = async (url: string): Promise<any> => {
 // Main public helper that retrieves the three OFAC trees depending on the variant (passport vs id_card).
 export const fetchOfacTrees = async (
   environment: 'prod' | 'stg',
-  variant: OfacVariant = 'passport',
+  variant: OfacVariant = 'passport'
 ): Promise<OfacTree> => {
   const baseUrl = environment === 'prod' ? TREE_URL : TREE_URL_STAGING;
 
   const ppNoNatUrl = `${baseUrl}/ofac/passport-no-nationality`;
-  const nameDobUrl = `${baseUrl}/ofac/name-dob${
-    variant === 'id_card' ? '-id' : ''
-  }`;
-  const nameYobUrl = `${baseUrl}/ofac/name-yob${
-    variant === 'id_card' ? '-id' : ''
-  }`;
+  const nameDobUrl = `${baseUrl}/ofac/name-dob${variant === 'id_card' ? '-id' : ''}`;
+  const nameYobUrl = `${baseUrl}/ofac/name-yob${variant === 'id_card' ? '-id' : ''}`;
 
   // For ID cards, we intentionally skip fetching the (large) passport-number-tree.
   if (variant === 'id_card') {

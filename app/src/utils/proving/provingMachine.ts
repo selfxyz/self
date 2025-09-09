@@ -18,6 +18,10 @@ import {
 } from '@selfxyz/common/utils';
 import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
 import {
+  generateTEEInputsDSC,
+  generateTEEInputsRegister,
+} from '@selfxyz/common/utils/circuits/registerInputs';
+import {
   checkDocumentSupported,
   checkIfPassportDscIsInTree,
   isDocumentNullified,
@@ -42,6 +46,7 @@ import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 // will need to be passed in from selfClient
 import {
@@ -49,14 +54,9 @@ import {
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import { useProtocolStore } from '@/stores/protocolStore';
 import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
-import {
-  generateTEEInputsDisclose,
-  generateTEEInputsDSC,
-  generateTEEInputsRegister,
-} from '@/utils/proving/provingInputs';
+import { generateTEEInputsDisclose } from '@/utils/proving/provingInputs';
 
 const { trackEvent } = analytics();
 

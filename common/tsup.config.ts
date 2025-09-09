@@ -52,6 +52,7 @@ const entry = {
   'src/utils/contracts/index': 'src/utils/contracts/index.ts',
   'src/utils/contracts/forbiddenCountries': 'src/utils/contracts/forbiddenCountries.ts',
   'src/utils/csca': 'src/utils/csca.ts',
+  'src/utils/ofac': 'src/utils/ofac.ts',
   // Level 3 Hash Function Exports
   'src/utils/hash/poseidon': 'src/utils/hash/poseidon.ts',
   'src/utils/hash/sha': 'src/utils/hash/sha.ts',
