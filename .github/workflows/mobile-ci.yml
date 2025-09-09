@@ -146,6 +146,17 @@ jobs:
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
           fail-on-cache-miss: false
+      - name: Debug Cache Restoration
+        run: |
+          echo "Cache hit: ${{ steps.built-deps-restore.outputs.cache-hit }}"
+          echo "Cache key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}"
+          echo "Checking if cached files exist:"
+          ls -la packages/mobile-sdk-alpha/dist/ || echo "❌ mobile-sdk-alpha dist not found"
+          ls -la packages/mobile-sdk-alpha/dist/cjs/ || echo "❌ mobile-sdk-alpha dist/cjs not found"
+          ls -la packages/mobile-sdk-alpha/dist/cjs/index.cjs || echo "❌ mobile-sdk-alpha dist/cjs/index.cjs not found"
+          ls -la common/dist/ || echo "❌ common dist not found"
+          ls -la common/dist/cjs/ || echo "❌ common dist/cjs not found"
+          ls -la common/dist/cjs/index.cjs || echo "❌ common dist/cjs/index.cjs not found"
       - name: Build dependencies (cache miss)
         if: steps.built-deps-restore.outputs.cache-hit != 'true'
         run: |
@@ -167,23 +178,39 @@ jobs:
             common/dist
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-      - name: Test
+      - name: Force Build Dependencies If Missing
         run: |
-          # Verify dependencies are built before running tests
-          echo "Verifying dependencies are built..."
-          if [ ! -f "../packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "../common/dist/cjs/index.cjs" ]; then
-            echo "Dependencies not found, building now..."
+          # Force build if required files don't exist, regardless of cache status
+          if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
+            echo "❌ Required dependency files missing, forcing rebuild..."
+            echo "Missing files:"
+            [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] && echo "  - packages/mobile-sdk-alpha/dist/cjs/index.cjs"
+            [ ! -f "common/dist/cjs/index.cjs" ] && echo "  - common/dist/cjs/index.cjs"
             yarn workspace @selfxyz/mobile-app run build:deps
             # Verify build completed successfully
-            if [ ! -f "../packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "../common/dist/cjs/index.cjs" ]; then
-              echo "❌ Build failed - required files still missing"
-              ls -la ../packages/mobile-sdk-alpha/dist/ || echo "mobile-sdk-alpha dist not found"
-              ls -la ../common/dist/ || echo "common dist not found"
+            if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
+              echo "❌ Forced build failed - required files still missing"
+              ls -la packages/mobile-sdk-alpha/ || echo "packages/mobile-sdk-alpha not found"
+              ls -la packages/mobile-sdk-alpha/dist/ || echo "mobile-sdk-alpha dist not found"
+              ls -la common/ || echo "common not found"
+              ls -la common/dist/ || echo "common dist not found"
               exit 1
             fi
+            echo "✅ Forced build completed successfully"
           else
-            echo "✅ Dependencies already built"
+            echo "✅ All required dependency files exist"
           fi
+      - name: Test
+        run: |
+          # Final verification from app directory perspective
+          echo "Final verification before running tests (from app directory)..."
+          if [ ! -f "../packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "../common/dist/cjs/index.cjs" ]; then
+            echo "❌ Dependencies still not found from app directory"
+            ls -la ../packages/mobile-sdk-alpha/dist/ || echo "mobile-sdk-alpha dist not found"
+            ls -la ../common/dist/ || echo "common dist not found"
+            exit 1
+          fi
+          echo "✅ All dependencies verified, running tests..."
           yarn test
         working-directory: ./app
   build-ios:
