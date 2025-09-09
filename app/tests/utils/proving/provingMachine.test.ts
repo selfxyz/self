@@ -81,7 +81,8 @@ describe('events', () => {
     expect(emitMock).toHaveBeenCalledWith(
       SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
       {
-        passportData: mockPassportData,
+        countryCode: mockPassportData.passportMetadata?.countryCode,
+        documentCategory: mockPassportData.documentCategory,
       },
     );
   });

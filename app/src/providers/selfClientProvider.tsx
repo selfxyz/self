@@ -135,7 +135,8 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       ({ passportData }) => {
         if (navigationRef.isReady()) {
           navigationRef.navigate('UnsupportedDocument', {
-            passportData,
+            countryCode: passportData.passportMetadata?.countryCode,
+            documentCategory: passportData.documentCategory,
           } as any);
         }
       },
