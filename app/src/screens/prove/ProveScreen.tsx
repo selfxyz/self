@@ -149,7 +149,7 @@ const ProveScreen: React.FC = () => {
   );
 
   function onVerify() {
-    provingStore.setUserConfirmed();
+    provingStore.setUserConfirmed(selfClient);
     buttonTap();
     trackEvent(ProofEvents.PROOF_VERIFY_CONFIRMATION_ACCEPTED, {
       appName: selectedApp?.appName,
