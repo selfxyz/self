@@ -28,7 +28,6 @@ REGISTER_CIRCUITS=(
     "register_sha256_sha256_sha256_rsapss_65537_32_3072"
     "register_sha256_sha256_sha256_rsapss_65537_32_4096"
     "register_sha256_sha256_sha256_rsapss_65537_64_2048"
-    "register_id_sha512_sha512_sha256_rsapss_65537_32_2048"
     "register_sha384_sha384_sha384_ecdsa_brainpoolP384r1"
     "register_sha384_sha384_sha384_ecdsa_brainpoolP512r1"
     "register_sha384_sha384_sha384_ecdsa_secp384r1"
