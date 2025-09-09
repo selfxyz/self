@@ -114,6 +114,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
+          cache: 'yarn'
 
       - name: Install Yarn
         run: npm i -g yarn
@@ -126,13 +127,6 @@ jobs:
       - name: Print Circom version
         run: circom --version
 
-      - name: Restore circuits cache
-        id: circuits-cache
-        uses: actions/cache/restore@v4
-        with:
-          path: output
-          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
-
       - name: Build cpp circuits
         run: |
           chmod +x circuits/scripts/build/build_cpp.sh && \
@@ -140,13 +134,6 @@ jobs:
           ./circuits/scripts/build/build_cpp.sh register_id &&
           ./circuits/scripts/build/build_cpp.sh disclose &&
           ./circuits/scripts/build/build_cpp.sh dsc
-
-      - name: Save circuits cache
-        if: steps.circuits-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: output
-          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
