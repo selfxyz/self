@@ -67,6 +67,10 @@ describe('events', () => {
       eContent: [1, 2, 3],
       signedAttr: [1, 2, 3],
       encryptedDigest: [1, 2, 3],
+      passportMetadata: {
+        countryCode: 'test',
+      },
+      documentCategory: 'passport',
     } as PassportData;
 
     const selfClient = {
@@ -81,8 +85,8 @@ describe('events', () => {
     expect(emitMock).toHaveBeenCalledWith(
       SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
       {
-        countryCode: mockPassportData.passportMetadata?.countryCode,
-        documentCategory: mockPassportData.documentCategory,
+        countryCode: 'test',
+        documentCategory: 'passport',
       },
     );
   });
