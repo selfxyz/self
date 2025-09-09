@@ -1,0 +1,30 @@
+name: cache-built-deps
+description: Cache built JS artifacts (common + mobile-sdk-alpha)
+inputs:
+  cache-version:
+    description: Cache version string for cache key
+    required: true
+outputs:
+  cache-hit:
+    description: Whether cache was hit during restore
+    value: ${{ steps.restore.outputs.cache-hit }}
+runs:
+  using: composite
+  steps:
+    - id: restore
+      name: Restore Built Dependencies
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          common/dist
+          packages/mobile-sdk-alpha/dist
+        key: built-deps-${{ inputs.cache-version }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+        fail-on-cache-miss: false
+    - name: Save Built Dependencies
+      if: steps.restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          common/dist
+          packages/mobile-sdk-alpha/dist
+        key: built-deps-${{ inputs.cache-version }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}

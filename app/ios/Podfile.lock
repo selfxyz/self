@@ -1474,6 +1474,27 @@ PODS:
     - React-Core
   - react-native-biometrics (3.0.1):
     - React-Core
+  - react-native-blur (4.4.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-cloud-storage (2.3.0):
     - DoubleConversion
     - glog
@@ -2155,6 +2176,7 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-app-auth (from `../../node_modules/react-native-app-auth`)
   - react-native-biometrics (from `../../node_modules/react-native-biometrics`)
+  - "react-native-blur (from `../../node_modules/@react-native-community/blur`)"
   - react-native-cloud-storage (from `../../node_modules/react-native-cloud-storage`)
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
@@ -2319,6 +2341,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-app-auth"
   react-native-biometrics:
     :path: "../../node_modules/react-native-biometrics"
+  react-native-blur:
+    :path: "../../node_modules/@react-native-community/blur"
   react-native-cloud-storage:
     :path: "../../node_modules/react-native-cloud-storage"
   react-native-get-random-values:
@@ -2492,6 +2516,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: c7cafd8f4470cf8a4578ee605daa4c74d3278bf8
   react-native-app-auth: eb42594042a25455119a8c57194b4fd25b9352f4
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
+  react-native-blur: 6334d934a9b5e67718b8f5725c44cc0a12946009
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187

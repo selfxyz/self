@@ -4,4 +4,5 @@
 
 export { DefaultNavBar } from '@/components/NavBar/DefaultNavBar';
 export { HomeNavBar } from '@/components/NavBar/HomeNavBar';
+export { IdDetailsNavBar } from '@/components/NavBar/IdDetailsNavBar';
 export { ProgressNavBar } from '@/components/NavBar/ProgressNavBar';
