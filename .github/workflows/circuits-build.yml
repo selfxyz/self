@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "selfxyz-org", "ubuntu-22-04", "128ram"]
+    runs-on: ["128ram"]
     permissions:
       contents: read
     env:
@@ -110,10 +110,23 @@ jobs:
       - name: Add Circom to PATH
         run: echo "$HOME/.cache/circom" >> "$GITHUB_PATH"
 
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v5
+      - name: Read and sanitize Node.js version
+        shell: bash
+        run: |
+          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
+            echo "❌ .nvmrc is missing or empty"; exit 1;
+          fi
+          VERSION="$(tr -d '\r\n' < .nvmrc)"
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
+            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
+          fi
+          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+      - name: Use Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install Yarn
         run: npm i -g yarn
@@ -126,13 +139,6 @@ jobs:
       - name: Print Circom version
         run: circom --version
 
-      - name: Restore circuits cache
-        id: circuits-cache
-        uses: actions/cache/restore@v4
-        with:
-          path: output
-          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
-
       - name: Build cpp circuits
         run: |
           chmod +x circuits/scripts/build/build_cpp.sh && \
@@ -140,13 +146,6 @@ jobs:
           ./circuits/scripts/build/build_cpp.sh register_id &&
           ./circuits/scripts/build/build_cpp.sh disclose &&
           ./circuits/scripts/build/build_cpp.sh dsc
-
-      - name: Save circuits cache
-        if: steps.circuits-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: output
-          key: circuits-output-v1-${{ hashFiles('circuits/circuits/**', 'circuits/scripts/**', 'circuits/*.{json,yml,yaml}') }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4

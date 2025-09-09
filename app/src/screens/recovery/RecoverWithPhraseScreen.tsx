@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import Description from '@/components/typography/Description';
@@ -21,7 +22,6 @@ import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import { useProtocolStore } from '@/stores/protocolStore';
 import {
   black,
   slate300,

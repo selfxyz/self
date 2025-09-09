@@ -5,6 +5,7 @@
 import { createContext, type PropsWithChildren, useContext, useMemo } from 'react';
 
 import { createSelfClient } from './client';
+import { SdkEvents } from './types/events';
 import type { Adapters, Config, SelfClient } from './types/public';
 
 /**
@@ -29,6 +30,10 @@ export interface SelfClientProviderProps {
    * be replaced with default no-op implementations.
    */
   adapters: Adapters;
+  /**
+   * Map of event listeners.
+   */
+  listeners: Map<SdkEvents, Set<(p: any) => void>>;
 }
 
 export { SelfClientContext };
@@ -40,8 +45,13 @@ export { SelfClientContext };
  * Consumers should ensure that `config` and `adapters` are referentially stable
  * (e.g. wrapped in `useMemo`) to avoid recreating the client on every render.
  */
-export function SelfClientProvider({ config, adapters, children }: PropsWithChildren<SelfClientProviderProps>) {
-  const client = useMemo(() => createSelfClient({ config, adapters }), [config, adapters]);
+export function SelfClientProvider({
+  config,
+  adapters,
+  listeners,
+  children,
+}: PropsWithChildren<SelfClientProviderProps>) {
+  const client = useMemo(() => createSelfClient({ config, adapters, listeners }), [config, adapters, listeners]);
 
   return <SelfClientContext.Provider value={client}>{children}</SelfClientContext.Provider>;
 }

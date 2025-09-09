@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { Suspense, useEffect } from 'react';
-import { Platform, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { Text } from 'tamagui';
 import type { StaticParamList } from '@react-navigation/native';
 import {
   createNavigationContainerRef,
@@ -63,17 +62,6 @@ declare global {
 const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
-const SuspenseFallback = () => {
-  if (Platform.OS === 'web') {
-    return <div>Loading...</div>;
-  }
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Loading...</Text>
-    </View>
-  );
-};
-
 const NavigationWithTracking = () => {
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
@@ -96,9 +84,7 @@ const NavigationWithTracking = () => {
 
   return (
     <GestureHandlerRootView>
-      <Suspense fallback={<SuspenseFallback />}>
-        <Navigation ref={navigationRef} onStateChange={trackScreen} />
-      </Suspense>
+      <Navigation ref={navigationRef} onStateChange={trackScreen} />
     </GestureHandlerRootView>
   );
 };

@@ -4,6 +4,8 @@
 
 import type { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
 
+import { SDKEvent, SDKEventMap } from './events';
+
 export type { PassportValidationCallbacks } from '../validation/document';
 export type { DocumentCatalog, PassportData };
 export interface Config {
@@ -134,13 +136,6 @@ export interface RegistrationStatus {
   reason?: string;
 }
 
-export interface SDKEventMap {
-  progress: Progress;
-  state: string;
-  error: Error;
-}
-export type SDKEvent = keyof SDKEventMap;
-
 export type ScanMode = 'mrz' | 'nfc' | 'qr';
 
 export type ScanOpts =
@@ -202,8 +197,8 @@ export interface SelfClient {
   trackEvent(event: string, payload?: TrackEventParams): void;
   getPrivateKey(): Promise<string | null>;
   hasPrivateKey(): Promise<boolean>;
-  on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe;
-  emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void;
+  on<E extends SDKEvent>(event: E, cb: (payload?: SDKEventMap[E]) => void): Unsubscribe;
+  emit<E extends SDKEvent>(event: E, payload?: SDKEventMap[E]): void;
 
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   loadDocumentById(id: string): Promise<PassportData | null>;

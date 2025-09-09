@@ -4,20 +4,9 @@
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { SelfApp } from '@selfxyz/common/utils';
-import {
-  generateCircuitInputsRegister,
-  generateTEEInputsDiscloseStateless,
-  generateTEEInputsDSC,
-  generateTEEInputsRegister,
-} from '@selfxyz/common/utils/circuits/registerInputs';
+import { generateTEEInputsDiscloseStateless } from '@selfxyz/common/utils/circuits/registerInputs';
+import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
-import { useProtocolStore } from '@/stores/protocolStore';
-
-export {
-  generateCircuitInputsRegister,
-  generateTEEInputsDSC,
-  generateTEEInputsRegister,
-};
 export function generateTEEInputsDisclose(
   secret: string,
   passportData: PassportData,

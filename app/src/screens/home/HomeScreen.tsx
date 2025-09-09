@@ -12,8 +12,8 @@ import {
   usePreventRemove,
 } from '@react-navigation/native';
 
-import { PassportData } from '@selfxyz/common/dist/esm';
-import { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types';
+import { PassportData } from '@selfxyz/common/types';
+import { DocumentCatalog } from '@selfxyz/common/utils/types';
 import { DocumentMetadata, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 

@@ -10,6 +10,7 @@ const entry = {
   index: 'src/index.ts',
   browser: 'src/browser.ts',
   'constants/analytics': 'src/constants/analytics.ts',
+  stores: 'src/stores/index.ts',
 };
 
 export default defineConfig([

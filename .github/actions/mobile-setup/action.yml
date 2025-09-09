@@ -62,7 +62,7 @@ runs:
         yarn set version 4.6.0
 
         echo "📦 Installing JavaScript dependencies with strict lock file..."
-        if ! yarn install --immutable; then
+        if ! yarn install --immutable --inline-builds; then
           echo ""
           echo "❌ ERROR: yarn.lock is out of date!"
           echo ""

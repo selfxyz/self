@@ -320,6 +320,11 @@
       "types": "./dist/esm/src/utils/passports/format.d.ts",
       "import": "./dist/esm/src/utils/passports/format.js",
       "require": "./dist/cjs/src/utils/passports/format.cjs"
+    },
+    "./utils/ofac": {
+      "types": "./dist/esm/src/utils/ofac.d.ts",
+      "import": "./dist/esm/src/utils/ofac.js",
+      "require": "./dist/cjs/src/utils/ofac.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",

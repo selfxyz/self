@@ -8,6 +8,7 @@ import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
+import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
 import type {
   Adapters,
   Config,
@@ -18,15 +19,12 @@ import type {
   RegistrationStatus,
   ScanOpts,
   ScanResult,
-  SDKEvent,
-  SDKEventMap,
   SelfClient,
   Unsubscribe,
   ValidationInput,
   ValidationResult,
 } from './types/public';
 import { TrackEventParams } from './types/public';
-
 /**
  * Optional adapter implementations used when a consumer does not provide their
  * own. These defaults are intentionally minimal no-ops suitable for tests and
@@ -51,6 +49,21 @@ const optionalDefaults: Required<Pick<Adapters, 'storage' | 'clock' | 'logger'>>
 
 const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
 
+export const createListenersMap = (): {
+  map: Map<SDKEvent, Set<(p: any) => void>>;
+  addListener: <E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => any) => void;
+} => {
+  const map = new Map<SDKEvent, Set<(p: any) => void>>();
+
+  const addListener = <E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void) => {
+    const set = map.get(event) ?? new Set();
+    set.add(cb as any);
+    map.set(event, set);
+  };
+
+  return { map, addListener };
+};
+
 /**
  * Creates a fully configured {@link SelfClient} instance.
  *
@@ -58,7 +71,15 @@ const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] 
  * provided configuration with sensible defaults. Missing optional adapters are
  * filled with benign no-op implementations.
  */
-export function createSelfClient({ config, adapters }: { config: Config; adapters: Adapters }): SelfClient {
+export function createSelfClient({
+  config,
+  adapters,
+  listeners,
+}: {
+  config: Config;
+  adapters: Adapters;
+  listeners: Map<SDKEvent, Set<(p: any) => void>>;
+}): SelfClient {
   const cfg = mergeConfig(defaultConfig, config);
 
   for (const name of REQUIRED_ADAPTERS) {
@@ -66,17 +87,17 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
   }
 
   const _adapters = { ...optionalDefaults, ...adapters };
-  const listeners = new Map<SDKEvent, Set<(p: any) => void>>();
+  const _listeners = new Map<SDKEvent, Set<(p: any) => void>>();
 
   function on<E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void): Unsubscribe {
-    const set = listeners.get(event) ?? new Set();
+    const set = _listeners.get(event) ?? new Set();
     set.add(cb as any);
-    listeners.set(event, set);
+    _listeners.set(event, set);
     return () => set.delete(cb as any);
   }
 
   function emit<E extends SDKEvent>(event: E, payload: SDKEventMap[E]): void {
-    const set = listeners.get(event);
+    const set = _listeners.get(event);
     if (!set) return;
     for (const cb of Array.from(set)) {
       try {
@@ -84,6 +105,12 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
       } catch (err) {
         _adapters.logger.log('error', `event-listener error for event '${event}'`, { event, error: err });
       }
+    }
+  }
+
+  for (const [event, set] of listeners ?? []) {
+    for (const cb of Array.from(set)) {
+      on(event, cb);
     }
   }
 
@@ -114,7 +141,7 @@ export function createSelfClient({ config, adapters }: { config: Config; adapter
     if (!adapters.network) throw notImplemented('network');
     if (!adapters.crypto) throw notImplemented('crypto');
     const timeoutMs = opts.timeoutMs ?? cfg.timeouts?.proofMs ?? defaultConfig.timeouts.proofMs;
-    void _adapters.clock.sleep(timeoutMs!, opts.signal).then(() => emit('error', new Error('timeout')));
+    void _adapters.clock.sleep(timeoutMs!, opts.signal).then(() => emit(SdkEvents.ERROR, new Error('timeout')));
     return {
       id: 'stub',
       status: 'pending',

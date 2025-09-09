@@ -28,6 +28,10 @@ const extraNodeModules = {
     sdkAlphaPath,
     'dist/esm/constants/analytics.js',
   ),
+  '@selfxyz/mobile-sdk-alpha/stores': path.resolve(
+    sdkAlphaPath,
+    'dist/esm/stores.js',
+  ),
   // Main exports
   '@selfxyz/common/utils': path.resolve(
     commonPath,
@@ -162,6 +166,10 @@ const extraNodeModules = {
   '@selfxyz/common/utils/csca': path.resolve(
     commonPath,
     'dist/esm/src/utils/csca.js',
+  ),
+  '@selfxyz/common/utils/ofac': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/ofac.js',
   ),
   // Types subpaths
   '@selfxyz/common/types/passport': path.resolve(

@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -24,7 +25,6 @@ import {
   loadPassportDataAndSecret,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import { useProtocolStore } from '@/stores/protocolStore';
 import { useSettingStore } from '@/stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
