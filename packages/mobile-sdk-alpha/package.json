@@ -47,6 +47,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsup && yarn postbuild",
+    "build:deps": "node ../../scripts/build-deps-if-changed.mjs @selfxyz/mobile-sdk-alpha",
     "postbuild": "node ./scripts/postBuild.mjs",
     "demo:android": "yarn workspace demo-app android",
     "demo:ios": "yarn workspace demo-app ios",

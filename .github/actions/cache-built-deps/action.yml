@@ -18,7 +18,7 @@ runs:
         path: |
           common/dist
           packages/mobile-sdk-alpha/dist
-        key: built-deps-${{ inputs.cache-version }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+        key: built-deps-${{ inputs.cache-version }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**', '!common/**/__tests__/**', '!common/**/*.test.*', '!common/**/*.spec.*', '!packages/mobile-sdk-alpha/**/__tests__/**', '!packages/mobile-sdk-alpha/**/*.test.*', '!packages/mobile-sdk-alpha/**/*.spec.*') }}
         fail-on-cache-miss: false
     - name: Save Built Dependencies
       if: steps.restore.outputs.cache-hit != 'true'
@@ -27,4 +27,4 @@ runs:
         path: |
           common/dist
           packages/mobile-sdk-alpha/dist
-        key: built-deps-${{ inputs.cache-version }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+        key: built-deps-${{ inputs.cache-version }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**', '!common/**/__tests__/**', '!common/**/*.test.*', '!common/**/*.spec.*', '!packages/mobile-sdk-alpha/**/__tests__/**', '!packages/mobile-sdk-alpha/**/*.test.*', '!packages/mobile-sdk-alpha/**/*.spec.*') }}

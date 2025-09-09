@@ -10,7 +10,7 @@
     "analyze:tree-shaking:web": "yarn web:build && node ./scripts/analyze-tree-shaking.cjs web",
     "android": "yarn build:deps && react-native run-android",
     "android:ci": "./scripts/mobile-ci-build-android.sh",
-    "build:deps": "yarn workspaces foreach --from @selfxyz/mobile-app --topological --recursive run build",
+    "build:deps": "node ../scripts/build-deps-if-changed.mjs @selfxyz/mobile-app",
     "bump-version:major": "npm version major && yarn sync-versions",
     "bump-version:minor": "npm version minor && yarn sync-versions",
     "bump-version:patch": "npm version patch && yarn sync-versions",

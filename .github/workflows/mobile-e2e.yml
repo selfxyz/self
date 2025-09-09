@@ -241,9 +241,15 @@ jobs:
           echo "📱 Verifying iOS Runtime availability..."
           echo "Available iOS runtimes:"
           xcrun simctl list runtimes | grep iOS
-      - name: Build dependencies (outside main flow)
+      - name: Cache Built Dependencies
+        id: built-deps
+        uses: ./.github/actions/cache-built-deps
+        with:
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Build dependencies (cache miss)
+        if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
-          echo "Building dependencies..."
+          echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
