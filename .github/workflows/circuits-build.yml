@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "selfxyz-org", "ubuntu-22-04", "128ram"]
+    runs-on: ["128ram"]
     permissions:
       contents: read
     env:
