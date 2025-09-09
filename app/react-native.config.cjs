@@ -3,9 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 module.exports = {
-  project: {
-    ios: {},
-    android: {},
+  project: { ios: {}, android: {} },
+  dependencies: {
+    '@selfxyz/mobile-sdk-alpha': { platforms: { android: null } },
   },
-  assets: ['./src/assets/fonts'],
+  assets: ['../src/assets/fonts'],
 };

@@ -10,6 +10,8 @@
     "analyze:tree-shaking:web": "yarn web:build && node ./scripts/analyze-tree-shaking.cjs web",
     "android": "yarn build:deps && react-native run-android",
     "android:ci": "./scripts/mobile-ci-build-android.sh",
+    "android:real-sdk": "yarn build:deps && yarn workspace @selfxyz/mobile-sdk-alpha build && yarn workspace @selfxyz/mobile-sdk-alpha pack --out /tmp/mobile-sdk-alpha.tgz && yarn add @selfxyz/mobile-sdk-alpha@file:/tmp/mobile-sdk-alpha.tgz && cd android && ./gradlew assembleDebug",
+    "android:restore-sdk": "yarn add @selfxyz/mobile-sdk-alpha@workspace:^ && rm -f /tmp/mobile-sdk-alpha.tgz",
     "build:deps": "yarn workspaces foreach --from @selfxyz/mobile-app --topological --recursive run build",
     "bump-version:major": "npm version major && yarn sync-versions",
     "bump-version:minor": "npm version minor && yarn sync-versions",
