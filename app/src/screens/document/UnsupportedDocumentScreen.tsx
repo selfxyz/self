@@ -39,8 +39,8 @@ type CountryFlagsRecord = Record<string, CountryFlagComponent>;
 type UnsupportedDocumentScreenRouteProp = RouteProp<
   {
     UnsupportedDocument: {
-      countryCode: string;
-      documentCategory: DocumentCategory;
+      countryCode: string | null;
+      documentCategory: DocumentCategory | null;
     };
   },
   'UnsupportedDocument'
@@ -127,7 +127,7 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
         countryName,
         countryCode:
           country2AlphaCode !== 'Unknown' ? country2AlphaCode : undefined,
-        documentCategory: route.params?.documentCategory,
+        documentCategory: route.params?.documentCategory ?? '',
       });
     } catch (error) {
       console.error('Failed to open email client:', error);
