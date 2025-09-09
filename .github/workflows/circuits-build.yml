@@ -115,6 +115,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install Yarn
+        run: npm i -g yarn
+
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
         with:
