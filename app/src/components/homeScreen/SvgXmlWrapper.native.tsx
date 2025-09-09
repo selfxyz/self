@@ -3,8 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { forwardRef } from 'react';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { SvgXml: RNSvgXml } = require('react-native-svg');
+import { SvgXml as RNSvgXml } from 'react-native-svg';
 
 type Props = {
   xml: string;
