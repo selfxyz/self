@@ -63,7 +63,7 @@ const documentScreens = {
     } as NativeStackNavigationOptions,
     initialParams: {
       countryCode: null,
-      documentCategory: null
+      documentCategory: null,
     },
   },
   DocumentNFCMethodSelection: {
