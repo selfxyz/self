@@ -111,7 +111,9 @@ jobs:
         run: echo "$HOME/.cache/circom" >> "$GITHUB_PATH"
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
 
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
