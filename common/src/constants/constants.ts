@@ -131,7 +131,7 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number],
 export const MAX_PADDED_SIGNED_ATTR_LEN: Record<(typeof hashAlgos)[number], number> = {
   sha1: 128,
   sha224: 128,
-  sha256: 256,
+  sha256: 128,
   sha384: 256,
   sha512: 256,
 };
