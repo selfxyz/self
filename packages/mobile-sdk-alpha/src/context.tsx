@@ -33,7 +33,7 @@ export interface SelfClientProviderProps {
   /**
    * Map of event listeners.
    */
-  listeners?: Map<SdkEvents, Set<(p: any) => void>>;
+  listeners: Map<SdkEvents, Set<(p: any) => void>>;
 }
 
 export { SelfClientContext };
@@ -45,8 +45,8 @@ export { SelfClientContext };
  * Consumers should ensure that `config` and `adapters` are referentially stable
  * (e.g. wrapped in `useMemo`) to avoid recreating the client on every render.
  */
-export function SelfClientProvider({ config, adapters, children }: PropsWithChildren<SelfClientProviderProps>) {
-  const client = useMemo(() => createSelfClient({ config, adapters }), [config, adapters]);
+export function SelfClientProvider({ config, adapters, listeners, children }: PropsWithChildren<SelfClientProviderProps>) {
+  const client = useMemo(() => createSelfClient({ config, adapters, listeners }), [config, adapters, listeners]);
 
   return <SelfClientContext.Provider value={client}>{children}</SelfClientContext.Provider>;
 }

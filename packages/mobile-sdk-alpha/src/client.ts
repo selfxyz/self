@@ -78,7 +78,7 @@ export function createSelfClient({
 }: {
   config: Config;
   adapters: Adapters;
-  listeners?: Map<SDKEvent, Set<(p: any) => void>>;
+  listeners: Map<SDKEvent, Set<(p: any) => void>>;
 }): SelfClient {
   const cfg = mergeConfig(defaultConfig, config);
 
