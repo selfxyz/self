@@ -53,7 +53,7 @@ describe('provingMachine registration completion', () => {
 
     expect(provingStoreHook.current).toBe('passport_data_not_found');
     expect(emitMock).toHaveBeenCalledWith(
-      SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND,
+      SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND,
     );
   });
 });
@@ -79,7 +79,7 @@ describe('events', () => {
     });
 
     expect(emitMock).toHaveBeenCalledWith(
-      SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED,
+      SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
       {
         passportData: mockPassportData,
       },
@@ -97,7 +97,7 @@ describe('events', () => {
     });
 
     expect(emitMock).toHaveBeenCalledWith(
-      SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE,
+      SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED,
     );
   });
 
@@ -112,7 +112,7 @@ describe('events', () => {
     });
 
     expect(emitMock).toHaveBeenCalledWith(
-      SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS,
+      SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS,
     );
   });
 
@@ -127,7 +127,7 @@ describe('events', () => {
     });
 
     expect(emitMock).toHaveBeenCalledWith(
-      SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND,
+      SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND,
     );
   });
 
@@ -142,7 +142,7 @@ describe('events', () => {
     });
 
     expect(emitMock).toHaveBeenCalledWith(
-      SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE,
+      SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
       {
         hasValidDocument: true,
       },
