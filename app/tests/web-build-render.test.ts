@@ -10,6 +10,7 @@
 import { execSync, spawn } from 'child_process';
 import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
 
+// Comprehensive error serialization safety
 const originalError = global.Error;
 global.Error = class SafeError extends originalError {
   constructor(...args: any[]) {
@@ -20,6 +21,41 @@ global.Error = class SafeError extends originalError {
       writable: false,
       enumerable: false,
     });
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      stack: this.stack,
+    };
+  }
+};
+
+// Override JSON.stringify to handle circular references globally
+const originalStringify = JSON.stringify;
+JSON.stringify = function (value, replacer, space) {
+  try {
+    return originalStringify(value, replacer, space);
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('circular')) {
+      // Handle circular references by creating a safe representation
+      const seen = new WeakSet();
+      return originalStringify(
+        value,
+        function (key, val) {
+          if (val != null && typeof val === 'object') {
+            if (seen.has(val)) {
+              return '[Circular]';
+            }
+            seen.add(val);
+          }
+          return val;
+        },
+        space,
+      );
+    }
+    throw error;
   }
 };
 
