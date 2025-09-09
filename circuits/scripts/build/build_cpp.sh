@@ -35,9 +35,9 @@ REGISTER_CIRCUITS=(
     "register_sha384_sha384_sha384_rsapss_65537_48_2048"
     "register_sha512_sha512_sha256_rsa_65537_4096"
     "register_sha512_sha512_sha512_ecdsa_brainpoolP512r1"
-    "register_sha512_sha512_sha512_ecdsa_secp521r1"
     "register_sha512_sha512_sha512_rsa_65537_4096"
     "register_sha512_sha512_sha512_rsapss_65537_64_2048"
+    "register_sha512_sha512_sha512_ecdsa_secp521r1"
 )
 
 REGISTER_ID_CIRCUITS=(
@@ -129,7 +129,7 @@ for item in "${allowed_circuits[@]}"; do
         continue
     fi
 
-    while [[ ${#pids[@]} -ge 1 ]]; do
+    while [[ ${#pids[@]} -ge 2 ]]; do
         new_pids=()
         for pid in "${pids[@]}"; do
             if kill -0 "$pid" 2>/dev/null; then
