@@ -15,7 +15,7 @@ import { renderHook } from '@testing-library/react';
 describe('SelfClientProvider Context', () => {
   it('provides client through context with MRZ parsing capability', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <SelfClientProvider config={{}} adapters={mockAdapters}>
+      <SelfClientProvider config={{}} adapters={mockAdapters} listeners={new Map()}>
         {children}
       </SelfClientProvider>
     );
@@ -39,7 +39,7 @@ describe('SelfClientProvider Context', () => {
     const config = {};
     const adapters = mockAdapters;
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <SelfClientProvider config={config} adapters={adapters}>
+      <SelfClientProvider config={config} adapters={adapters} listeners={new Map()}>
         {children}
       </SelfClientProvider>
     );

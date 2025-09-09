@@ -11,6 +11,7 @@ import { createSelfClient, defaultConfig, DocumentsAdapter, loadSelectedDocument
 const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAdapter): SelfClient => {
   return createSelfClient({
     config: defaultConfig,
+    listeners: new Map(),
     adapters: {
       auth: {
         getPrivateKey: async () => null,

@@ -49,10 +49,10 @@ const optionalDefaults: Required<Pick<Adapters, 'storage' | 'clock' | 'logger'>>
 
 const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
 
-export function createListenersMap(): {
+export const createListenersMap = (): {
   map: Map<SDKEvent, Set<(p: any) => void>>;
   addListener: <E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => any) => void;
-} {
+} => {
   const map = new Map<SDKEvent, Set<(p: any) => void>>();
 
   const addListener = <E extends SDKEvent>(event: E, cb: (payload: SDKEventMap[E]) => void) => {

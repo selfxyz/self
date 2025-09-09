@@ -6,15 +6,17 @@ import type { ReactNode } from 'react';
 
 import { SelfClientProvider } from '../context';
 import type { Adapters, Config } from '../types/public';
+import { SDKEvent } from '../types/events';
 
 export interface SelfMobileSdkProps {
   config: Config;
   adapters: Adapters;
+  listeners: Map<SDKEvent, Set<(p: any) => void>>;
   children?: ReactNode;
 }
 
-export const SelfMobileSdk = ({ config, adapters, children }: SelfMobileSdkProps) => (
-  <SelfClientProvider config={config} adapters={adapters}>
+export const SelfMobileSdk = ({ config, adapters, listeners, children }: SelfMobileSdkProps) => (
+  <SelfClientProvider config={config} adapters={adapters} listeners={listeners}>
     {children}
   </SelfClientProvider>
 );

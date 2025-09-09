@@ -430,11 +430,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       try {
         const hasValid = await hasAnyValidRegisteredDocument(selfClient);
 
-        selfClient.emit(SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE, {
+        selfClient.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, {
           hasValidDocument: hasValid,
         });
       } catch (error) {
-        selfClient.emit(SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE, {
+        selfClient.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, {
           hasValidDocument: false,
         });
       }
@@ -1096,21 +1096,21 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     _handlePassportNotSupported: (selfClient: SelfClient) => {
-      selfClient.emit(SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED, {
+      selfClient.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, {
         passportData: get().passportData as PassportData,
       });
     },
 
     _handleAccountRecoveryChoice: (selfClient: SelfClient) => {
-      selfClient.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE);
+      selfClient.emit(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED);
     },
 
     _handleAccountVerifiedSuccess: (selfClient: SelfClient) => {
-      selfClient.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS);
+      selfClient.emit(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS);
     },
 
     _handlePassportDataNotFound: (selfClient: SelfClient) => {
-      selfClient.emit(SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND);
+      selfClient.emit(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND);
     },
   };
 });

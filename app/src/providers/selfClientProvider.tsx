@@ -9,12 +9,12 @@ import {
   Adapters,
   createListenersMap,
   reactNativeScannerAdapter,
+  SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
-import { SdkEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
@@ -101,13 +101,13 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const appListeners = useMemo(() => {
     const { map, addListener } = createListenersMap();
 
-    addListener(SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND, () => {
+    addListener(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND, () => {
       if (navigationRef.isReady()) {
         navigationRef.navigate('DocumentDataNotFound');
       }
     });
 
-    addListener(SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS, () => {
+    addListener(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
       setTimeout(() => {
         if (navigationRef.isReady()) {
           navigationRef.navigate('AccountVerifiedSuccess');
@@ -116,7 +116,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(
-      SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE,
+      SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
       async ({ hasValidDocument }) => {
         setTimeout(() => {
           if (navigationRef.isReady()) {
@@ -131,7 +131,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     );
 
     addListener(
-      SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED,
+      SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
       ({ passportData }) => {
         if (navigationRef.isReady()) {
           navigationRef.navigate('UnsupportedDocument', {
@@ -141,7 +141,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       },
     );
 
-    addListener(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE, () => {
+    addListener(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED, () => {
       if (navigationRef.isReady()) {
         navigationRef.navigate('AccountRecoveryChoice');
       }
