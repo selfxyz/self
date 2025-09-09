@@ -160,7 +160,11 @@ jobs:
             packages/mobile-sdk-alpha/dist
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Test
-        run: yarn test
+        run: |
+          # Always ensure dependencies are built before running tests
+          echo "Building dependencies before running tests..."
+          yarn workspace @selfxyz/mobile-app run build:deps
+          yarn test
         working-directory: ./app
   build-ios:
     runs-on: macos-latest-large
