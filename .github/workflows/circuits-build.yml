@@ -110,6 +110,9 @@ jobs:
       - name: Add Circom to PATH
         run: echo "$HOME/.cache/circom" >> "$GITHUB_PATH"
 
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+
       - name: Install dependencies
         uses: ./.github/actions/yarn-install
         with:
