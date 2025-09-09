@@ -11,7 +11,7 @@ export const Circle = React.forwardRef<
   return React.createElement('circle', { ref, ...props });
 });
 
-SvgXml.displayName = 'SvgXml';
+Circle.displayName = 'Circle';
 
 export const Path = React.forwardRef<
   SVGPathElement,
@@ -20,7 +20,7 @@ export const Path = React.forwardRef<
   return React.createElement('path', { ref, ...props });
 });
 
-Svg.displayName = 'Svg';
+Path.displayName = 'Path';
 
 export const Rect = React.forwardRef<
   SVGRectElement,
@@ -29,7 +29,7 @@ export const Rect = React.forwardRef<
   return React.createElement('rect', { ref, ...props });
 });
 
-Path.displayName = 'Path';
+Rect.displayName = 'Rect';
 
 // Re-export other common SVG components that might be used
 export const Svg = React.forwardRef<
@@ -39,7 +39,7 @@ export const Svg = React.forwardRef<
   return React.createElement('svg', { ref, ...props });
 });
 
-Circle.displayName = 'Circle';
+Svg.displayName = 'Svg';
 
 // Mock SvgXml component for web builds
 export const SvgXml = React.forwardRef<
@@ -64,4 +64,4 @@ export const SvgXml = React.forwardRef<
   });
 });
 
-Rect.displayName = 'Rect';
+SvgXml.displayName = 'SvgXml';
