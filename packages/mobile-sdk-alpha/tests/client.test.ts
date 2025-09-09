@@ -47,7 +47,11 @@ describe('createSelfClient', () => {
   });
 
   it('creates client successfully with all required adapters', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth }, listeners: new Map() });
+    const client = createSelfClient({
+      config: {},
+      adapters: { scanner, network, crypto, documents, auth },
+      listeners: new Map(),
+    });
     expect(client).toBeTruthy();
   });
 
@@ -78,7 +82,11 @@ describe('createSelfClient', () => {
     const network = { http: { fetch: vi.fn() }, ws: { connect: vi.fn() } } as any;
     const crypto = { hash: vi.fn(), sign: vi.fn() } as any;
     const scanner = { scan: vi.fn() } as any;
-    const client = createSelfClient({ config: {}, adapters: { network, crypto, scanner, documents, auth }, listeners: new Map() });
+    const client = createSelfClient({
+      config: {},
+      adapters: { network, crypto, scanner, documents, auth },
+      listeners: new Map(),
+    });
     const handle = await client.generateProof({ type: 'register', payload: {} });
     expect(handle.id).toBe('stub');
     expect(handle.status).toBe('pending');
@@ -125,7 +133,11 @@ describe('createSelfClient', () => {
   });
 
   it('parses MRZ via client', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth }, listeners: new Map() });
+    const client = createSelfClient({
+      config: {},
+      adapters: { scanner, network, crypto, documents, auth },
+      listeners: new Map(),
+    });
     const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
     const info = client.extractMRZInfo(sample);
     expect(info.documentNumber).toBe('L898902C3');
@@ -133,7 +145,11 @@ describe('createSelfClient', () => {
   });
 
   it('returns stub registration status', async () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth }, listeners: new Map() });
+    const client = createSelfClient({
+      config: {},
+      adapters: { scanner, network, crypto, documents, auth },
+      listeners: new Map(),
+    });
     await expect(client.registerDocument({} as any)).resolves.toEqual({
       registered: false,
       reason: 'SELF_REG_STATUS_STUB',

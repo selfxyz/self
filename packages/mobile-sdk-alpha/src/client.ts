@@ -62,7 +62,7 @@ export const createListenersMap = (): {
   };
 
   return { map, addListener };
-}
+};
 
 /**
  * Creates a fully configured {@link SelfClient} instance.

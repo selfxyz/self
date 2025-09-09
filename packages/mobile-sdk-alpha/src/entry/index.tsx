@@ -5,8 +5,8 @@
 import type { ReactNode } from 'react';
 
 import { SelfClientProvider } from '../context';
-import type { Adapters, Config } from '../types/public';
 import { SDKEvent } from '../types/events';
+import type { Adapters, Config } from '../types/public';
 
 export interface SelfMobileSdkProps {
   config: Config;

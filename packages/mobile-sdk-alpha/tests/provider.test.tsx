@@ -38,8 +38,10 @@ describe('SelfClientProvider Context', () => {
     const spy = vi.spyOn(clientModule, 'createSelfClient');
     const config = {};
     const adapters = mockAdapters;
+    const listeners = new Map();
+
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <SelfClientProvider config={config} adapters={adapters} listeners={new Map()}>
+      <SelfClientProvider config={config} adapters={adapters} listeners={listeners}>
         {children}
       </SelfClientProvider>
     );
