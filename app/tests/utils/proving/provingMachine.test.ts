@@ -91,6 +91,30 @@ describe('events', () => {
     );
   });
 
+  it('emits PROVING_MACHINE_PASSPORT_NOT_SUPPORTED with no passport data', async () => {
+    const emitMock = jest.fn();
+    const mockPassportData = {
+      passportMetadata: {},
+    } as PassportData;
+
+    const selfClient = {
+      emit: emitMock,
+    } as unknown as SelfClient;
+
+    await act(async () => {
+      useProvingStore.setState({ passportData: mockPassportData });
+      useProvingStore.getState()._handlePassportNotSupported(selfClient);
+    });
+
+    expect(emitMock).toHaveBeenCalledWith(
+      SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
+      {
+        countryCode: null,
+        documentCategory: null,
+      },
+    );
+  });
+
   it('emits PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE', async () => {
     const emitMock = jest.fn();
     const selfClient = {

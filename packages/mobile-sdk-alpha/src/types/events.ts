@@ -25,8 +25,8 @@ export interface SDKEventMap {
     hasValidDocument: boolean;
   };
   [SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED]: {
-    countryCode: string;
-    documentCategory: DocumentCategory;
+    countryCode: string | null;
+    documentCategory: DocumentCategory | null;
   };
   [SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED]: undefined;
 
