@@ -4,18 +4,18 @@
 
 import React, { useCallback, useState } from 'react';
 import { Dimensions, Pressable } from 'react-native';
-import { SvgXml } from 'react-native-svg';
 import { Button, Image, Separator, Text, XStack, YStack } from 'tamagui';
 import { useFocusEffect } from '@react-navigation/native';
 
 import {
   attributeToPosition,
   attributeToPosition_ID,
-  formatMrz,
-  PassportData,
-} from '@selfxyz/common/dist/esm';
-import { pad } from '@selfxyz/common/dist/esm/src/utils/passports/passport';
+} from '@selfxyz/common/constants';
+import { PassportData } from '@selfxyz/common/types';
+import { formatMrz } from '@selfxyz/common/utils';
+import { pad } from '@selfxyz/common/utils/passports/passport';
 
+import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
 import EPassport from '@/images/icons/epassport.svg';
 import LogoGray from '@/images/logo_gray.svg';
 import LogoInversed from '@/images/logo_inversed.svg';

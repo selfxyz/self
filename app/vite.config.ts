@@ -34,6 +34,10 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
       'react-native-svg': 'react-native-svg-web',
       'lottie-react-native': 'lottie-react',
+      '@react-native-community/blur': resolve(
+        __dirname,
+        'src/mocks/react-native-community-blur.ts',
+      ),
       'react-native-safe-area-context': resolve(
         __dirname,
         'src/mocks/react-native-safe-area-context.js',
