@@ -211,7 +211,8 @@ jobs:
             exit 1
           fi
           echo "✅ All dependencies verified, running tests..."
-          yarn test
+          # Run jest directly to avoid the build:deps step since CI already built dependencies
+          jest --passWithNoTests && node --test scripts/tests/*.cjs
         working-directory: ./app
   build-ios:
     runs-on: macos-latest-large
