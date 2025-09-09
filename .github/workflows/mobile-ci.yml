@@ -151,6 +151,14 @@ jobs:
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
+          # Verify build completed successfully
+          if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
+            echo "❌ Build failed - required files missing after build"
+            ls -la packages/mobile-sdk-alpha/dist/ || echo "mobile-sdk-alpha dist not found"
+            ls -la common/dist/ || echo "common dist not found"
+            exit 1
+          fi
+          echo "✅ Build completed successfully"
       - name: Save Built Dependencies
         if: steps.built-deps-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
@@ -161,9 +169,21 @@ jobs:
           key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Test
         run: |
-          # Always ensure dependencies are built before running tests
-          echo "Building dependencies before running tests..."
-          yarn workspace @selfxyz/mobile-app run build:deps
+          # Verify dependencies are built before running tests
+          echo "Verifying dependencies are built..."
+          if [ ! -f "../packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "../common/dist/cjs/index.cjs" ]; then
+            echo "Dependencies not found, building now..."
+            yarn workspace @selfxyz/mobile-app run build:deps
+            # Verify build completed successfully
+            if [ ! -f "../packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "../common/dist/cjs/index.cjs" ]; then
+              echo "❌ Build failed - required files still missing"
+              ls -la ../packages/mobile-sdk-alpha/dist/ || echo "mobile-sdk-alpha dist not found"
+              ls -la ../common/dist/ || echo "common dist not found"
+              exit 1
+            fi
+          else
+            echo "✅ Dependencies already built"
+          fi
           yarn test
         working-directory: ./app
   build-ios:
