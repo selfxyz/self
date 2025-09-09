@@ -4929,14 +4929,14 @@ __metadata:
 
 "@selfxyz/mobile-sdk-alpha@file:../packages/mobile-sdk-alpha::locator=%40selfxyz%2Fmobile-app%40workspace%3Aapp":
   version: 2.6.4
-  resolution: "@selfxyz/mobile-sdk-alpha@file:../packages/mobile-sdk-alpha#../packages/mobile-sdk-alpha::hash=f9ebb9&locator=%40selfxyz%2Fmobile-app%40workspace%3Aapp"
+  resolution: "@selfxyz/mobile-sdk-alpha@file:../packages/mobile-sdk-alpha#../packages/mobile-sdk-alpha::hash=0d0f72&locator=%40selfxyz%2Fmobile-app%40workspace%3Aapp"
   dependencies:
     tslib: "npm:^2.6.2"
   peerDependencies:
     react: ^18.3.1
     react-native: ^0.76.9
     tamagui: ^1.126.0
-  checksum: 10c0/dcd175ac784fa386c728da00d9e7dfbec865b1b090c93061a4e2d8a7fa67c49ccc0d711e21e4ecae7ebe7f95860cf8f5c6eeefe2f4749e9eb876b08735c1fb0d
+  checksum: 10c0/c7f0b72b3a4169f7be2a8528baabf650ce023710456759c2be4a801bae40eee7cdf87001dad13686c9908bf28840f0d4c8c5490a7d8f726fabe1608fa1fd2b17
   languageName: node
   linkType: hard
 
