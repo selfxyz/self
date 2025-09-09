@@ -99,27 +99,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   );
 
   const appListeners = useMemo(() => {
-    const listeners = createListenersMap();
+    const { map, addListener } = createListenersMap();
 
-    listeners.addListener(
-      SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND,
-      () => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('DocumentDataNotFound');
-        }
-      },
-    );
+    addListener(SdkEvents.PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('DocumentDataNotFound');
+      }
+    });
 
-    listeners.addListener(
-      SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS,
-      () => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('AccountVerifiedSuccess');
-        }
-      },
-    );
+    addListener(SdkEvents.PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('AccountVerifiedSuccess');
+      }
+    });
 
-    listeners.addListener(
+    addListener(
       SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE,
       async ({ hasValidDocument }) => {
         setTimeout(() => {
@@ -134,7 +128,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       },
     );
 
-    listeners.addListener(
+    addListener(
       SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED,
       ({ passportData }) => {
         if (navigationRef.isReady()) {
@@ -145,23 +139,20 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       },
     );
 
-    listeners.addListener(
-      SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE,
-      () => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('AccountRecoveryChoice');
-        }
-      },
-    );
+    addListener(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('AccountRecoveryChoice');
+      }
+    });
 
-    return listeners;
+    return map;
   }, []);
 
   return (
     <SDKSelfClientProvider
       config={config}
       adapters={adapters}
-      listeners={appListeners.listeners}
+      listeners={appListeners}
     >
       {children}
     </SDKSelfClientProvider>

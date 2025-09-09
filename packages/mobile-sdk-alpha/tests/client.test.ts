@@ -5,8 +5,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../src';
-import { createSelfClient, SdkEvents } from '../src/index';
-import { AuthAdapter } from '../src/types/public';
+import { createListenersMap, createSelfClient, SdkEvents } from '../src/index';
+import { AuthAdapter, PassportData } from '../src/types/public';
 
 describe('createSelfClient', () => {
   // Test eager validation during client creation
@@ -85,22 +85,41 @@ describe('createSelfClient', () => {
   });
 
   it('emits and unsubscribes events', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth } });
-    const cb = vi.fn();
-    const originalSet = Map.prototype.set;
-    let eventSet: Set<(p: any) => void> | undefined;
-    Map.prototype.set = function (key: any, value: any) {
-      if (key === SdkEvents.PROGRESS) eventSet = value;
-      return originalSet.call(this, key, value);
-    };
-    const unsub = client.on(SdkEvents.PROGRESS, cb);
-    Map.prototype.set = originalSet;
+    const listeners = createListenersMap();
 
-    eventSet?.forEach(fn => fn({ step: 'one' }));
-    expect(cb).toHaveBeenCalledWith({ step: 'one' });
-    unsub();
-    eventSet?.forEach(fn => fn({ step: 'two' }));
-    expect(cb).toHaveBeenCalledTimes(1);
+    const passportNotSupportedListener = vi.fn();
+    const accountRecoveryChoiceListener = vi.fn();
+    const anotherAccountRecoveryChoiceListener = vi.fn();
+
+    listeners.addListener(SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED, passportNotSupportedListener);
+    listeners.addListener(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE, accountRecoveryChoiceListener);
+    listeners.addListener(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE, anotherAccountRecoveryChoiceListener);
+
+    const client = createSelfClient({
+      config: {},
+      adapters: { scanner, network, crypto, documents, auth },
+      listeners: listeners.map,
+    });
+
+    client.emit(SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED, { passportData: { mrz: 'test' } as PassportData });
+    client.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE);
+    client.emit(SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE, { hasValidDocument: true });
+
+    expect(accountRecoveryChoiceListener).toHaveBeenCalledTimes(1);
+    expect(accountRecoveryChoiceListener).toHaveBeenCalledWith(undefined);
+    expect(anotherAccountRecoveryChoiceListener).toHaveBeenCalledTimes(1);
+    expect(anotherAccountRecoveryChoiceListener).toHaveBeenCalledWith(undefined);
+
+    expect(passportNotSupportedListener).toHaveBeenCalledWith({ passportData: { mrz: 'test' } });
+    expect(passportNotSupportedListener).toHaveBeenCalledTimes(1);
+
+    client.emit(SdkEvents.PROVING_MACHINE_PASSPORT_NOT_SUPPORTED, { passportData: { mrz: 'test' } as PassportData });
+    client.emit(SdkEvents.PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE);
+    client.emit(SdkEvents.PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE, { hasValidDocument: true });
+
+    expect(passportNotSupportedListener).toHaveBeenCalledTimes(2);
+    expect(accountRecoveryChoiceListener).toHaveBeenCalledTimes(2);
+    expect(anotherAccountRecoveryChoiceListener).toHaveBeenCalledTimes(2);
   });
 
   it('parses MRZ via client', () => {
