@@ -77,7 +77,6 @@ export { SelfClientContext, SelfClientProvider, useSelfClient } from './context'
 // Components
 export { SelfMobileSdk } from './entry';
 
-// TODO: add to browser
 export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
