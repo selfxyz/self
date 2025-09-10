@@ -754,7 +754,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               },
             );
           if (isRegistered) {
-            reStorePassportDataWithRightCSCA(selfClient,passportData, csca as string);
+            reStorePassportDataWithRightCSCA(
+              selfClient,
+              passportData,
+              csca as string,
+            );
 
             // Mark document as registered since its already onChain
             (async () => {

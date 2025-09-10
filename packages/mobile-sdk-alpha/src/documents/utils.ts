@@ -2,11 +2,32 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import {
+  brutforceSignatureAlgorithmDsc,
+  parseCertificateSimple,
+  PublicKeyDetailsECDSA,
+  PublicKeyDetailsRSA,
+} from '@selfxyz/common';
+import { calculateContentHash, inferDocumentCategory } from '@selfxyz/common/utils';
 import { DocumentMetadata, PassportData } from '@selfxyz/common/utils/types';
 
 import { SelfClient } from '../types/public';
-import { brutforceSignatureAlgorithmDsc, parseCertificateSimple, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '@selfxyz/common';
-import { calculateContentHash, inferDocumentCategory } from '@selfxyz/common/utils';
+
+export async function clearPassportData(selfClient: SelfClient) {
+  const catalog = await selfClient.loadDocumentCatalog();
+
+  // Delete all documents
+  for (const doc of catalog.documents) {
+    try {
+      await selfClient.deleteDocument(doc.id);
+    } catch {
+      console.log(`Document ${doc.id} not found or already cleared`);
+    }
+  }
+
+  // Clear catalog
+  await selfClient.saveDocumentCatalog({ documents: [] });
+}
 
 /**
  * Gets all documents from the document catalog.
@@ -91,22 +112,6 @@ export const loadSelectedDocument = async (
   return { data, metadata };
 };
 
-export async function clearPassportData(selfClient: SelfClient) {
-  const catalog = await selfClient.loadDocumentCatalog();
-
-  // Delete all documents
-  for (const doc of catalog.documents) {
-    try {
-      await selfClient.deleteDocument(doc.id);
-    } catch {
-      console.log(`Document ${doc.id} not found or already cleared`);
-    }
-  }
-
-  // Clear catalog
-  await selfClient.saveDocumentCatalog({ documents: [] });
-}
-
 export async function markCurrentDocumentAsRegistered(selfClient: SelfClient): Promise<void> {
   const catalog = await selfClient.loadDocumentCatalog();
 
@@ -114,27 +119,6 @@ export async function markCurrentDocumentAsRegistered(selfClient: SelfClient): P
     await updateDocumentRegistrationState(selfClient, catalog.selectedDocumentId, true);
   } else {
     console.warn('No selected document to mark as registered');
-  }
-}
-
-export async function updateDocumentRegistrationState(
-  selfClient: SelfClient,
-  documentId: string,
-  isRegistered: boolean,
-): Promise<void> {
-  const catalog = await selfClient.loadDocumentCatalog();
-  const documentIndex = catalog.documents.findIndex(d => d.id === documentId);
-
-  if (documentIndex !== -1) {
-    catalog.documents[documentIndex].isRegistered = isRegistered;
-
-    await selfClient.saveDocumentCatalog(catalog);
-
-    console.log(
-      `Updated registration state for document ${documentId}: ${isRegistered}`,
-    );
-  } else {
-    console.warn(`Document ${documentId} not found in catalog`);
   }
 }
 
@@ -146,45 +130,28 @@ export async function reStorePassportDataWithRightCSCA(
   const cscaInCurrentPassporData = passportData.passportMetadata?.csca;
   if (!(csca === cscaInCurrentPassporData)) {
     const cscaParsed = parseCertificateSimple(csca);
-    const dscCertData = brutforceSignatureAlgorithmDsc(
-      passportData.dsc_parsed!,
-      cscaParsed,
-    );
+    const dscCertData = brutforceSignatureAlgorithmDsc(passportData.dsc_parsed!, cscaParsed);
 
-    if (
-      passportData.passportMetadata &&
-      dscCertData &&
-      cscaParsed.publicKeyDetails
-    ) {
+    if (passportData.passportMetadata && dscCertData && cscaParsed.publicKeyDetails) {
       passportData.passportMetadata.csca = csca;
       passportData.passportMetadata.cscaFound = true;
-      passportData.passportMetadata.cscaHashFunction =
-        dscCertData.hashAlgorithm;
-      passportData.passportMetadata.cscaSignatureAlgorithm =
-        dscCertData.signatureAlgorithm;
+      passportData.passportMetadata.cscaHashFunction = dscCertData.hashAlgorithm;
+      passportData.passportMetadata.cscaSignatureAlgorithm = dscCertData.signatureAlgorithm;
       passportData.passportMetadata.cscaSaltLength = dscCertData.saltLength;
 
       const cscaCurveOrExponent =
-        cscaParsed.signatureAlgorithm === 'rsapss' ||
-        cscaParsed.signatureAlgorithm === 'rsa'
+        cscaParsed.signatureAlgorithm === 'rsapss' || cscaParsed.signatureAlgorithm === 'rsa'
           ? (cscaParsed.publicKeyDetails as PublicKeyDetailsRSA).exponent
           : (cscaParsed.publicKeyDetails as PublicKeyDetailsECDSA).curve;
 
       passportData.passportMetadata.cscaCurveOrExponent = cscaCurveOrExponent;
-      passportData.passportMetadata.cscaSignatureAlgorithmBits = parseInt(
-        cscaParsed.publicKeyDetails.bits,
-        10,
-      );
+      passportData.passportMetadata.cscaSignatureAlgorithmBits = parseInt(cscaParsed.publicKeyDetails.bits, 10);
 
       passportData.csca_parsed = cscaParsed;
 
       await storePassportData(selfClient, passportData);
     }
   }
-}
-
-export async function storePassportData(selfClient: SelfClient, passportData: PassportData) {
-  await storeDocumentWithDeduplication(selfClient, passportData);
 }
 
 export async function storeDocumentWithDeduplication(
@@ -217,9 +184,7 @@ export async function storeDocumentWithDeduplication(
   const metadata: DocumentMetadata = {
     id: contentHash,
     documentType: passportData.documentType,
-    documentCategory:
-      passportData.documentCategory ||
-      inferDocumentCategory(passportData.documentType),
+    documentCategory: passportData.documentCategory || inferDocumentCategory(passportData.documentType),
     data: passportData.mrz || '', // Store MRZ for passports/IDs, relevant data for aadhaar
     mock: passportData.mock || false,
     isRegistered: false,
@@ -231,4 +196,27 @@ export async function storeDocumentWithDeduplication(
   await selfClient.saveDocumentCatalog(catalog);
 
   return contentHash;
+}
+
+export async function storePassportData(selfClient: SelfClient, passportData: PassportData) {
+  await storeDocumentWithDeduplication(selfClient, passportData);
+}
+
+export async function updateDocumentRegistrationState(
+  selfClient: SelfClient,
+  documentId: string,
+  isRegistered: boolean,
+): Promise<void> {
+  const catalog = await selfClient.loadDocumentCatalog();
+  const documentIndex = catalog.documents.findIndex(d => d.id === documentId);
+
+  if (documentIndex !== -1) {
+    catalog.documents[documentIndex].isRegistered = isRegistered;
+
+    await selfClient.saveDocumentCatalog(catalog);
+
+    console.log(`Updated registration state for document ${documentId}: ${isRegistered}`);
+  } else {
+    console.warn(`Document ${documentId} not found in catalog`);
+  }
 }

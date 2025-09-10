@@ -51,8 +51,8 @@ import type {
 import {
   brutforceSignatureAlgorithmDsc,
   calculateContentHash,
-  parseCertificateSimple,
   inferDocumentCategory,
+  parseCertificateSimple,
 } from '@selfxyz/common/utils';
 import type {
   DocumentCatalog,
@@ -294,7 +294,9 @@ export async function clearSpecificPassportData(documentType: string) {
   }
 }
 
-export async function deleteDocumentDirectlyFromKeychain(documentId: string): Promise<void> {
+export async function deleteDocumentDirectlyFromKeychain(
+  documentId: string,
+): Promise<void> {
   await Keychain.resetGenericPassword({ service: `document-${documentId}` });
 }
 
@@ -769,7 +771,10 @@ export async function setSelectedDocument(documentId: string): Promise<void> {
   }
 }
 
-async function storeDocumentDirectlyToKeychain(contentHash: string, passportData: PassportData): Promise<void> {
+async function storeDocumentDirectlyToKeychain(
+  contentHash: string,
+  passportData: PassportData,
+): Promise<void> {
   await Keychain.setGenericPassword(contentHash, JSON.stringify(passportData), {
     service: `document-${contentHash}`,
   });
