@@ -301,6 +301,12 @@ jobs:
           bundle config set --local path 'vendor/bundle'
           bundle install --jobs 4 --retry 3
         working-directory: ./app
+      - name: Configure Git for Private Repository Access
+        run: |
+          echo "Configuring Git for private repository access..."
+          # Configure Git to use the PAT for SSH URLs
+          git config --global url."https://${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
+          echo "✅ Git configured for private repository access"
       - name: Install iOS Dependencies
         run: |
           echo "Installing iOS dependencies..."
