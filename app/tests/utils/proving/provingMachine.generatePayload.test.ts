@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   useProtocolStore,
   useSelfAppStore,
 } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { useProvingStore } from '@/utils/proving/provingMachine';
-
-import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 jest.mock('xstate', () => {
   const actual = jest.requireActual('xstate') as any;
