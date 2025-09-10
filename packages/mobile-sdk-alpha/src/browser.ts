@@ -54,7 +54,7 @@ export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
+export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument, clearPassportData, markCurrentDocumentAsRegistered, reStorePassportDataWithRightCSCA } from './documents/utils';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';

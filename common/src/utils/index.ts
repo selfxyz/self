@@ -41,6 +41,8 @@ export {
   generateCommitment,
   generateNullifier,
   initPassportDataParsing,
+  calculateContentHash,
+  inferDocumentCategory,
 } from './passports/passport.js';
 export { formatMrz } from './passports/format.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
