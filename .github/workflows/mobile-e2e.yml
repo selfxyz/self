@@ -248,10 +248,14 @@ jobs:
           echo "✅ Dependencies built successfully"
       - name: Configure Git for Private Repository Access
         run: |
-          echo "Configuring Git for private repository access..."
-          # Configure Git to use the PAT for SSH URLs
-          git config --global url."https://${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
-          echo "✅ Git configured for private repository access"
+          echo "Configuring Git for private repository access in CI..."
+          # Only configure URL rewriting in CI - developers use SSH keys locally
+          if [ "$CI" = "true" ]; then
+            git config --global url."https://${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
+            echo "✅ Git configured for CI private repository access (HTTPS with PAT)"
+          else
+            echo "✅ Local development detected - using SSH authentication"
+          fi
       - name: Install iOS dependencies
         run: |
           echo "Installing iOS dependencies..."
