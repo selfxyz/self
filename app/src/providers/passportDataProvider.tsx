@@ -124,7 +124,6 @@ export const PassportContext = createContext<IPassportContext>({
   setData: storePassportData,
   getPassportDataAndSecret: () => Promise.resolve(null),
   getSelectedPassportDataAndSecret: () => Promise.resolve(null),
-  clearPassportData: clearPassportData,
   clearSpecificData: clearSpecificPassportData,
   loadDocumentCatalog: safeLoadDocumentCatalog,
   getAllDocuments: () => Promise.resolve({}),
@@ -134,7 +133,6 @@ export const PassportContext = createContext<IPassportContext>({
   getCurrentDocumentType: getCurrentDocumentType,
   clearDocumentCatalogForMigrationTesting:
     clearDocumentCatalogForMigrationTesting,
-  markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
   updateDocumentRegistrationState: updateDocumentRegistrationState,
   checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
   checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
@@ -188,7 +186,6 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       setData: storePassportData,
       getPassportDataAndSecret,
       getSelectedPassportDataAndSecret,
-      clearPassportData: clearPassportData,
       clearSpecificData: clearSpecificPassportData,
       loadDocumentCatalog: safeLoadDocumentCatalog,
       getAllDocuments: () => safeGetAllDocuments(selfClient),
@@ -198,7 +195,6 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       getCurrentDocumentType: getCurrentDocumentType,
       clearDocumentCatalogForMigrationTesting:
         clearDocumentCatalogForMigrationTesting,
-      markCurrentDocumentAsRegistered: markCurrentDocumentAsRegistered,
       updateDocumentRegistrationState: updateDocumentRegistrationState,
       checkIfAnyDocumentsNeedMigration: checkIfAnyDocumentsNeedMigration,
       checkAndUpdateRegistrationStates: checkAndUpdateRegistrationStates,
@@ -265,22 +261,6 @@ export async function clearDocumentCatalogForMigrationTesting() {
   console.log(
     'Document catalog cleared. Legacy storage preserved for migration testing.',
   );
-}
-
-export async function clearPassportData() {
-  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
-
-  // Delete all documents
-  for (const doc of catalog.documents) {
-    try {
-      await Keychain.resetGenericPassword({ service: `document-${doc.id}` });
-    } catch {
-      console.log(`Document ${doc.id} not found or already cleared`);
-    }
-  }
-
-  // Clear catalog
-  await saveDocumentCatalogDirectlyToKeychain({ documents: [] });
 }
 
 export async function clearSpecificPassportData(documentType: string) {
@@ -632,7 +612,6 @@ interface IPassportContext {
     data: { passportData: PassportData; secret: string };
     signature: string;
   } | null>;
-  clearPassportData: () => Promise<void>;
   clearSpecificData: (documentType: string) => Promise<void>;
 
   loadDocumentCatalog: () => Promise<DocumentCatalog>;
@@ -646,22 +625,12 @@ interface IPassportContext {
   migrateFromLegacyStorage: () => Promise<void>;
   getCurrentDocumentType: () => Promise<string | null>;
   clearDocumentCatalogForMigrationTesting: () => Promise<void>;
-  markCurrentDocumentAsRegistered: () => Promise<void>;
   updateDocumentRegistrationState: (
     documentId: string,
     isRegistered: boolean,
   ) => Promise<void>;
   checkIfAnyDocumentsNeedMigration: () => Promise<boolean>;
   checkAndUpdateRegistrationStates: () => Promise<void>;
-}
-
-export async function markCurrentDocumentAsRegistered(): Promise<void> {
-  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
-  if (catalog.selectedDocumentId) {
-    await updateDocumentRegistrationState(catalog.selectedDocumentId, true);
-  } else {
-    console.warn('No selected document to mark as registered');
-  }
 }
 
 export async function migrateFromLegacyStorage(): Promise<void> {
