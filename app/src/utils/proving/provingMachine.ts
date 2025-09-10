@@ -200,7 +200,7 @@ interface ProvingState {
     method: 'openpassport_submit_request';
     id: 2;
     params: {
-      uuid: string;
+      uuid: string | null;
       nonce: number[];
       cipher_text: number[];
       auth_tag: number[];
