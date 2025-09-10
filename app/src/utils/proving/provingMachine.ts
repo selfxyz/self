@@ -47,7 +47,10 @@ import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
+import {
+  useProtocolStore,
+  useSelfAppStore,
+} from '@selfxyz/mobile-sdk-alpha/stores';
 
 // will need to be passed in from selfClient
 import {
@@ -55,7 +58,6 @@ import {
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import { useSelfAppStore } from '@/stores/selfAppStore';
 
 export type ProvingStateType =
   // Initial states
@@ -193,7 +195,17 @@ interface ProvingState {
   postProving: (selfClient: SelfClient) => void;
   setUserConfirmed: (selfClient: SelfClient) => void;
   _closeConnections: (selfClient: SelfClient) => void;
-  _generatePayload: (selfClient: SelfClient) => Promise<unknown>;
+  _generatePayload: (selfClient: SelfClient) => Promise<{
+    jsonrpc: '2.0';
+    method: 'openpassport_submit_request';
+    id: 2;
+    params: {
+      uuid: string;
+      nonce: number[];
+      cipher_text: number[];
+      auth_tag: number[];
+    };
+  }>;
   _handleWebSocketMessage: (
     event: MessageEvent,
     selfClient: SelfClient,
