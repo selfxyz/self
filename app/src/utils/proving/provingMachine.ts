@@ -165,12 +165,20 @@ export const getPostVerificationRoute = () => {
   // return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
 };
 
+type WsHandlers = {
+  message: (event: MessageEvent) => void;
+  open: () => void;
+  error: (error: Event) => void;
+  close: (event: CloseEvent) => void;
+};
+
 interface ProvingState {
   currentState: ProvingStateType;
   attestation: number[] | null;
   serverPublicKey: string | null;
   sharedKey: Buffer | null;
   wsConnection: WebSocket | null;
+  wsHandlers: WsHandlers | null;
   socketConnection: Socket | null;
   uuid: string | null;
   userConfirmed: boolean;
@@ -330,6 +338,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     serverPublicKey: null,
     sharedKey: null,
     wsConnection: null,
+    wsHandlers: null,
     socketConnection: null,
     uuid: null,
     userConfirmed: false,
@@ -877,8 +886,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       return new Promise(resolve => {
         const ws = new WebSocket(wsRpcUrl);
-        set({ wsConnection: ws });
-
+        
         const handleConnectSuccess = () => {
           selfClient.trackEvent(ProofEvents.TEE_CONN_SUCCESS);
           resolve(true);
@@ -888,16 +896,20 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           resolve(false);
         };
 
-        ws.addEventListener('message', event =>
-          get()._handleWebSocketMessage(event, selfClient),
-        );
-        ws.addEventListener('open', () => get()._handleWsOpen(selfClient));
-        ws.addEventListener('error', error =>
-          get()._handleWsError(error, selfClient),
-        );
-        ws.addEventListener('close', event =>
-          get()._handleWsClose(event, selfClient),
-        );
+        // Create stable handler functions
+        const wsHandlers: WsHandlers = {
+          message: (event: MessageEvent) => get()._handleWebSocketMessage(event, selfClient),
+          open: () => get()._handleWsOpen(selfClient),
+          error: (error: Event) => get()._handleWsError(error, selfClient),
+          close: (event: CloseEvent) => get()._handleWsClose(event, selfClient),
+        };
+
+        set({ wsConnection: ws, wsHandlers });
+
+        ws.addEventListener('message', wsHandlers.message);
+        ws.addEventListener('open', wsHandlers.open);
+        ws.addEventListener('error', wsHandlers.error);
+        ws.addEventListener('close', wsHandlers.close);
 
         if (!actor) {
           return;
@@ -1001,19 +1013,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     _closeConnections: (selfClient: SelfClient) => {
-      const ws = get().wsConnection;
-      if (ws) {
+      const { wsConnection: ws, wsHandlers } = get();
+      if (ws && wsHandlers) {
         try {
-          ws.removeEventListener('message', event =>
-            get()._handleWebSocketMessage(event, selfClient),
-          );
-          ws.removeEventListener('open', () => get()._handleWsOpen(selfClient));
-          ws.removeEventListener('error', event =>
-            get()._handleWsError(event, selfClient),
-          );
-          ws.removeEventListener('close', event =>
-            get()._handleWsClose(event, selfClient),
-          );
+          ws.removeEventListener('message', wsHandlers.message);
+          ws.removeEventListener('open', wsHandlers.open);
+          ws.removeEventListener('error', wsHandlers.error);
+          ws.removeEventListener('close', wsHandlers.close);
           ws.close();
         } catch (error) {
           console.error(
@@ -1021,7 +1027,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             error,
           );
         }
-        set({ wsConnection: null });
+        set({ wsConnection: null, wsHandlers: null });
       }
 
       const socket = get().socketConnection;
