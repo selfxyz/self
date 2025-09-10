@@ -246,22 +246,14 @@ jobs:
           echo "Building dependencies..."
           yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
-      - name: Configure Git for Private Repository Access
-        run: |
-          echo "Configuring Git for private repository access in CI..."
-          # Only configure URL rewriting in CI - developers use SSH keys locally
-          if [ "$CI" = "true" ]; then
-            git config --global url."https://${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
-            echo "✅ Git configured for CI private repository access (HTTPS with PAT)"
-          else
-            echo "✅ Local development detected - using SSH authentication"
-          fi
       - name: Install iOS dependencies
         run: |
           echo "Installing iOS dependencies..."
           cd app/ios
           echo "📦 Installing pods via centralized script…"
           BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh || { echo "❌ Pod install failed"; exit 1; }
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."

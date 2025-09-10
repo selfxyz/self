@@ -301,16 +301,6 @@ jobs:
           bundle config set --local path 'vendor/bundle'
           bundle install --jobs 4 --retry 3
         working-directory: ./app
-      - name: Configure Git for Private Repository Access
-        run: |
-          echo "Configuring Git for private repository access in CI..."
-          # Only configure URL rewriting in CI - developers use SSH keys locally
-          if [ "$CI" = "true" ]; then
-            git config --global url."https://${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}@github.com/".insteadOf "git@github.com:"
-            echo "✅ Git configured for CI private repository access (HTTPS with PAT)"
-          else
-            echo "✅ Local development detected - using SSH authentication"
-          fi
       - name: Install iOS Dependencies
         run: |
           echo "Installing iOS dependencies..."
@@ -318,6 +308,8 @@ jobs:
           # Reuse the same guarded flow as local to ensure reproducibility
           bundle exec bash scripts/pod-install-with-cache-fix.sh
         working-directory: ./app
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Resolve iOS workspace
         run: |
           WORKSPACE_OPEN="ios/OpenPassport.xcworkspace"
