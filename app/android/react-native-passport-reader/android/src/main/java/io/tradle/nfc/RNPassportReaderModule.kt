@@ -981,7 +981,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     this.message = message
                     this.level = level
                     this.category = "nfc"
-                    this.data = data.mapValues { it.value?.toString() }
+                    data.forEach { (key, value) -> this.data[key] = value?.toString() ?: "" }
                 }
             )
         }
