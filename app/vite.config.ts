@@ -83,13 +83,9 @@ export default defineConfig({
   ].filter(Boolean),
   define: {
     global: 'globalThis',
-    process: JSON.stringify({
-      env: {},
-      browser: true,
-    }),
   },
   optimizeDeps: {
-    exclude: ['fs', 'path', 'child_process'],
+    exclude: ['fs', 'path', 'child_process', '@zk-email/helpers'],
     esbuildOptions: {
       // Optimize minification
       minifyIdentifiers: true,
