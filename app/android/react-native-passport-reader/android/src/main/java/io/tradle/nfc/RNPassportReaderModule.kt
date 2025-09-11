@@ -959,7 +959,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             scope.setTag("scan_type", if (opts?.getBoolean(PARAM_USE_CAN) == true) "can" else "mrz")
             scope.setTag("stage", stage)
             for ((k, v) in extras) {
-                scope.setExtra(k, v)
+                scope.setExtra(k, v?.toString())
             }
             Sentry.captureMessage(message)
         }

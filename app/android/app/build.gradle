@@ -3,6 +3,8 @@ apply plugin: "com.facebook.react"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.gms.google-services'
+apply from: "../../../node_modules/@sentry/react-native/sentry.gradle"
+
 
 
 /**
