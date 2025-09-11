@@ -6,7 +6,6 @@ export const API_URL = 'https://api.self.xyz';
 
 export const API_URL_STAGING = 'https://api.staging.self.xyz';
 
-
 export const CHAIN_NAME = 'celo';
 
 // possible values because of sha1 constaints: 192,320,384, 448, 576, 640

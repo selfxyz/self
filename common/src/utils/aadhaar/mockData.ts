@@ -11,7 +11,13 @@ import {
   getNameYobLeafAahaar,
 } from '../trees.js';
 import { testQRData } from './assets/dataInput.js';
-import { calculateAge, extractQRDataFields,generateTestData, stringToAsciiArray , testCustomData  } from './utils.js';
+import {
+  calculateAge,
+  extractQRDataFields,
+  generateTestData,
+  stringToAsciiArray,
+  testCustomData,
+} from './utils.js';
 
 import {
   convertBigIntToByteArray,

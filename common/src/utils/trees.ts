@@ -37,11 +37,6 @@ import { SMT } from '@openpassport/zk-kit-smt';
 // SideEffect here
 countries.registerLocale(en);
 
-
-
-
-
-
 //---------------------------
 // AADHAAR
 //---------------------------
@@ -87,9 +82,6 @@ export function buildAadhaarSMT(field: any[], treetype: string): [number, number
 
   return [count, performance.now() - startTime, tree];
 }
-
-
-
 
 // SMT trees for 3 levels of matching :
 // 1. Passport Number and Nationality tree : level 3 (Absolute Match)
@@ -156,16 +148,10 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
   return [count, performance.now() - startTime, tree];
 }
 
-
-
-
 export function formatRoot(root: string): string {
   const rootHex = BigInt(root).toString(16);
   return rootHex.length % 2 === 0 ? '0x' + rootHex : '0x0' + rootHex;
 }
-
-
-
 
 export function generateMerkleProof(imt: LeanIMT, _index: number, maxleaf_depth: number) {
   const { siblings: siblings, index } = imt.generateProof(_index);
@@ -184,9 +170,6 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxleaf_depth:
   }
   return { siblings, path, leaf_depth };
 }
-
-
-
 
 export function generateSMTProof(smt: SMT, leaf: bigint) {
   const { entry, matchingEntry, siblings, root, membership } = smt.createProof(leaf);
@@ -239,9 +222,6 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
   };
 }
 
-
-
-
 export function getCountryLeaf(
   country_by: (bigint | number)[],
   country_to: (bigint | number)[],
@@ -259,9 +239,6 @@ export function getCountryLeaf(
   }
 }
 
-
-
-
 export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: any[][]) {
   const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
   tree.setNodes(_serialized_csca_tree);
@@ -277,17 +254,11 @@ export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: a
   ];
 }
 
-
-
-
 export function getCscaTreeRoot(serialized_csca_tree: any[][]) {
   const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
   tree.setNodes(serialized_csca_tree);
   return tree.root;
 }
-
-
-
 
 export function getDobLeaf(dobMrz: (bigint | number)[], i?: number): bigint {
   if (dobMrz.length !== 6) {
@@ -302,10 +273,6 @@ export function getDobLeaf(dobMrz: (bigint | number)[], i?: number): bigint {
   }
 }
 
-
-
-
-
 export function getDscTreeInclusionProof(
   leaf: string,
   serialized_dsc_tree: string
@@ -319,9 +286,6 @@ export function getDscTreeInclusionProof(
   const { siblings, path, leaf_depth } = generateMerkleProof(tree, index, DSC_TREE_DEPTH);
   return [tree.root, path, siblings, leaf_depth];
 }
-
-
-
 
 /** get leaf for DSC and CSCA Trees */
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
@@ -344,9 +308,6 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
     return poseidon2([csca_hash, tbsBytesArray.length]).toString();
   }
 }
-
-
-
 
 export function getLeafCscaTree(csca_parsed: CertificateData): string {
   return getLeaf(csca_parsed, 'csca');
@@ -560,17 +521,11 @@ function processCountry(country1: string, country2: string, i: number) {
   return leaf;
 }
 
-
-
-
 export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {
   const dscLeaf = getLeaf(dsc_parsed, 'dsc');
   const cscaLeaf = getLeaf(csca_parsed, 'csca');
   return poseidon2([dscLeaf, cscaLeaf]).toString();
 }
-
-
-
 
 export function getLeafDscTreeFromDscCertificateMetadata(
   dscParsed: CertificateData,
@@ -581,15 +536,9 @@ export function getLeafDscTreeFromDscCertificateMetadata(
   return getLeafDscTree(dscParsed, cscaParsed);
 }
 
-
-
-
 export function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): string {
   return getLeafDscTreeFromDscCertificateMetadata(dscParsed, parseDscCertificateData(dscParsed));
 }
-
-
-
 
 export function getNameDobLeaf(
   nameMrz: (bigint | number)[],
@@ -598,9 +547,6 @@ export function getNameDobLeaf(
 ): bigint {
   return generateSmallKey(poseidon2([getDobLeaf(dobMrz), getNameLeaf(nameMrz)]));
 }
-
-
-
 
 export const getNameDobLeafAadhaar = (name: string, year: string, month: string, day: string) => {
   const paddedName = name
@@ -613,9 +559,6 @@ export const getNameDobLeafAadhaar = (name: string, year: string, month: string,
     poseidon5([namePacked[0], namePacked[1], BigInt(year), BigInt(month), BigInt(day)])
   );
 };
-
-
-
 
 export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
   const middleChunks: bigint[] = [];
@@ -651,12 +594,6 @@ export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
     return BigInt(0); // Return 0 on error
   }
 }
-
-
-
-
-
-
 
 export function getNameYobLeaf(
   nameMrz: (bigint | number)[],

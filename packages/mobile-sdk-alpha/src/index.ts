@@ -101,7 +101,6 @@ export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } fr
 export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
 
 // Documents utils
-export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';

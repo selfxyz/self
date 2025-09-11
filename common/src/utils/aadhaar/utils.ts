@@ -25,11 +25,6 @@ export interface ExtractedQRData {
   timestamp: string;
 }
 
-
-
-
-
-
 export const FIELD_POSITIONS = {
   REFERENCE_ID: 2,
   NAME: 3,
@@ -63,11 +58,6 @@ const signNewTestData = (newSignedData: Uint8Array, privKeyPem: string) => {
   }
 };
 
-
-
-
-
-
 export function calculateAge(
   dob: string,
   mob: string,
@@ -94,16 +84,6 @@ export function calculateAge(
     currentDay,
   };
 }
-
-
-
-
-
-
-
-
-
-
 
 export const createCustomV2TestData = ({
   signedData,
@@ -239,16 +219,6 @@ export const createCustomV2TestData = ({
   return newData;
 };
 
-
-
-
-
-
-
-
-
-
-
 export function extractQRDataFields(qrData: string | Uint8Array): ExtractedQRData {
   let qrDataBytes: Uint8Array;
 
@@ -347,16 +317,6 @@ export function extractQRDataFields(qrData: string | Uint8Array): ExtractedQRDat
   };
 }
 
-
-
-
-
-
-
-
-
-
-
 export const generateTestData = ({
   privKeyPem,
   data,
@@ -411,15 +371,6 @@ export const generateTestData = ({
   return newQrData;
 };
 
-
-
-
-
-
-
-
-
-
 export function returnNewDateString(timestamp?: string): string {
   const newDate = timestamp ? new Date(+timestamp) : new Date();
 
@@ -462,11 +413,6 @@ function extractFieldData(
 
   return fieldData;
 }
-
-
-
-
-
 
 // This is the official test data issued by the UIDAI
 // In this script we'll change the signed data to emulate the specs of the Aadhaar QR V2
