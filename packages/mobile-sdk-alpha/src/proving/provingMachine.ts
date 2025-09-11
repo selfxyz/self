@@ -36,24 +36,15 @@ import {
   getPayload,
   getWSDbRelayerUrl,
 } from '@selfxyz/common/utils/proving';
-import {
-  clearPassportData,
-  generateTEEInputsDisclose,
-  hasAnyValidRegisteredDocument,
-  loadSelectedDocument,
-  markCurrentDocumentAsRegistered,
-  reStorePassportDataWithRightCSCA,
-  SdkEvents,
-  SelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
-import {
-  PassportEvents,
-  ProofEvents,
-} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  useProtocolStore,
-  useSelfAppStore,
-} from '@selfxyz/mobile-sdk-alpha/stores';
+
+import { SelfClient } from '../types/public';
+import { PassportEvents, ProofEvents } from '../constants/analytics';
+import { clearPassportData, hasAnyValidRegisteredDocument, loadSelectedDocument, markCurrentDocumentAsRegistered, reStorePassportDataWithRightCSCA } from '../documents/utils';
+import { useProtocolStore, useSelfAppStore } from '../stores';
+
+import { SdkEvents } from '../types/events';
+import { generateTEEInputsDisclose } from '../processing/generate-disclosure-inputs';
+
 
 export type ProvingStateType =
   // Initial states

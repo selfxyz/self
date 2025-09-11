@@ -22,7 +22,7 @@ import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useProvingStore, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
@@ -41,7 +41,6 @@ import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
 import { buttonTap } from '@/utils/haptic';
-import { useProvingStore } from '@/utils/proving/provingMachine';
 
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();

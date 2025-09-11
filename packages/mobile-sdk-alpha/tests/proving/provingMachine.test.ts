@@ -2,42 +2,37 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { act, renderHook } from '@testing-library/react-native';
+/* @vitest-environment jsdom */
+import { describe, expect, it, vi, afterEach } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
 
-import { PassportData } from '@selfxyz/common/types';
-import { SdkEvents, type SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { PassportData } from '@selfxyz/common/types';
+import { SdkEvents, SelfClient, useProvingStore } from '../../src';
 
-import { useProvingStore } from '@/utils/proving/provingMachine';
-
-jest.mock('@/navigation', () => ({
-  navigationRef: {
-    isReady: jest.fn(() => true),
-    navigate: jest.fn(),
-  },
-}));
-
-jest.mock('@selfxyz/mobile-sdk-alpha', () => {
-  const actual = jest.requireActual('@selfxyz/mobile-sdk-alpha');
-
-  return {
-    ...actual,
-    loadSelectedDocument: jest.fn().mockResolvedValue(null),
-    hasAnyValidRegisteredDocument: jest.fn().mockResolvedValue(true),
-  };
-});
+import * as documentsUtils from '../../src/documents/utils';
 
 describe('provingMachine registration completion', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   it('initializes proving machine for confirmed registration - no document found', async () => {
+    const loadSelectedDocumentSpy = vi.spyOn(
+      documentsUtils,
+      'loadSelectedDocument'
+    ).mockResolvedValue(null);
+
+    const hasAnyValidRegisteredDocumentSpy = vi.spyOn(
+      documentsUtils,
+      'hasAnyValidRegisteredDocument',
+    ).mockResolvedValue(true);
+
     const { result: initHook } = renderHook(() =>
       useProvingStore(state => state.init),
     );
-    const emitMock = jest.fn();
+    const emitMock = vi.fn();
     const selfClient = {
-      trackEvent: jest.fn(),
+      trackEvent: vi.fn(),
       emit: emitMock,
     } as unknown as SelfClient;
 
@@ -55,12 +50,28 @@ describe('provingMachine registration completion', () => {
     expect(emitMock).toHaveBeenCalledWith(
       SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND,
     );
+    expect(loadSelectedDocumentSpy).toHaveBeenCalled();
+    expect(hasAnyValidRegisteredDocumentSpy).not.toHaveBeenCalled();
   });
 });
 
 describe('events', () => {
+  vi.spyOn(
+    documentsUtils,
+    'loadSelectedDocument'
+  ).mockResolvedValue(null);
+
+  vi.spyOn(
+    documentsUtils,
+    'hasAnyValidRegisteredDocument',
+  ).mockResolvedValue(true);
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('emits PROVING_MACHINE_PASSPORT_NOT_SUPPORTED', async () => {
-    const emitMock = jest.fn();
+    const emitMock = vi.fn();
     const mockPassportData = {
       mrz: 'mrz',
       dsc: 'dsc',
@@ -92,7 +103,7 @@ describe('events', () => {
   });
 
   it('emits PROVING_MACHINE_PASSPORT_NOT_SUPPORTED with no passport data', async () => {
-    const emitMock = jest.fn();
+    const emitMock = vi.fn();
     const mockPassportData = {
       passportMetadata: {},
     } as PassportData;
@@ -116,7 +127,7 @@ describe('events', () => {
   });
 
   it('emits PROVING_MACHINE_ACCOUNT_RECOVERY_CHOICE', async () => {
-    const emitMock = jest.fn();
+    const emitMock = vi.fn();
     const selfClient = {
       emit: emitMock,
     } as unknown as SelfClient;
@@ -131,7 +142,7 @@ describe('events', () => {
   });
 
   it('emits PROVING_MACHINE_ACCOUNT_VERIFIED_SUCCESS', async () => {
-    const emitMock = jest.fn();
+    const emitMock = vi.fn();
     const selfClient = {
       emit: emitMock,
     } as unknown as SelfClient;
@@ -146,7 +157,7 @@ describe('events', () => {
   });
 
   it('emits PROVING_MACHINE_PASSPORT_DATA_NOT_FOUND', async () => {
-    const emitMock = jest.fn();
+    const emitMock = vi.fn();
     const selfClient = {
       emit: emitMock,
     } as unknown as SelfClient;
@@ -161,7 +172,7 @@ describe('events', () => {
   });
 
   it('emits PROVING_MACHINE_REGISTER_ERROR_OR_FAILURE', async () => {
-    const emitMock = jest.fn();
+    const emitMock = vi.fn();
     const selfClient = {
       emit: emitMock,
     } as unknown as SelfClient;

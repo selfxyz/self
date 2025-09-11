@@ -23,8 +23,7 @@ import { advercase, dinot } from '@/utils/fonts';
 import { loadingScreenProgress } from '@/utils/haptic';
 import { setupNotifications } from '@/utils/notifications/notificationService';
 import { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
-import type { ProvingStateType } from '@/utils/proving/provingMachine';
-import { useProvingStore } from '@/utils/proving/provingMachine';
+import { type ProvingStateType, useProvingStore } from '@selfxyz/mobile-sdk-alpha';
 
 type LoadingScreenProps = StaticScreenProps<Record<string, never>>;
 

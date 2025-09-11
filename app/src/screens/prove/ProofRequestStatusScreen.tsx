@@ -9,7 +9,7 @@ import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useProvingStore, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
@@ -31,7 +31,6 @@ import {
   notificationError,
   notificationSuccess,
 } from '@/utils/haptic';
-import { useProvingStore } from '@/utils/proving/provingMachine';
 
 const SuccessScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();

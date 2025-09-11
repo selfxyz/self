@@ -118,3 +118,5 @@ export { useProtocolStore } from './stores/protocolStore';
 
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
+
+export { useProvingStore, type ProvingStateType } from './proving/provingMachine';

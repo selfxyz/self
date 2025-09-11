@@ -2,17 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { jest } from '@jest/globals';
-
 // Minimal actor stub used to observe send calls and emit state transitions
 
 export const actorMock = {
-  start: jest.fn(),
-  stop: jest.fn(),
-  send: jest.fn(),
-  subscribe: jest.fn((cb: (state: any) => void) => {
+  start: vitest.fn(),
+  stop: vitest.fn(),
+  send: vitest.fn(),
+  subscribe: vitest.fn((cb: (state: any) => void) => {
     (actorMock as any)._callback = cb;
-    return { unsubscribe: jest.fn() };
+    return { unsubscribe: vitest.fn() };
   }),
 };
 
