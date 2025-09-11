@@ -4950,6 +4950,7 @@ __metadata:
     add: "npm:^2.0.6"
     asn1js: "npm:^3.0.6"
     babel-plugin-module-resolver: "npm:^5.0.2"
+    constants-browserify: "npm:^1.0.0"
     country-emoji: "npm:^1.5.6"
     country-iso-3-to-2: "npm:^1.1.1"
     crypto-browserify: "npm:^3.12.1"
@@ -13115,6 +13116,13 @@ __metadata:
   version: 3.4.2
   resolution: "consola@npm:3.4.2"
   checksum: 10c0/7cebe57ecf646ba74b300bcce23bff43034ed6fbec9f7e39c27cee1dc00df8a21cd336b466ad32e304ea70fba04ec9e890c200270de9a526ce021ba8a7e4c11a
+  languageName: node
+  linkType: hard
+
+"constants-browserify@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "constants-browserify@npm:1.0.0"
+  checksum: 10c0/ab49b1d59a433ed77c964d90d19e08b2f77213fb823da4729c0baead55e3c597f8f97ebccfdfc47bd896d43854a117d114c849a6f659d9986420e97da0f83ac5
   languageName: node
   linkType: hard
 

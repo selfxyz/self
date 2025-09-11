@@ -229,7 +229,7 @@ const config = {
         fs: false, // Disable filesystem access
         os: false, // Disable OS-specific modules
         readline: false, // Disable readline module
-        constants: false, // Disable constants module
+        constants: require.resolve('constants-browserify'),
         path: require.resolve('path-browserify'),
       };
 
