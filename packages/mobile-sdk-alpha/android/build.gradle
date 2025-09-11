@@ -96,6 +96,7 @@ android {
         exclude 'META-INF/androidx.exifinterface_exifinterface.version'
         pickFirst '**/libc++_shared.so'
         pickFirst '**/libjsc.so'
+        pickFirst 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
     }
 }
 
@@ -155,4 +156,8 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
 
     implementation 'com.github.mhshams:jnbis:2.0.2'
+
+    // QR Code scanning dependencies
+    implementation 'com.google.zxing:core:3.5.2'
+    implementation 'com.google.zxing:android-core:3.3.0'
 }

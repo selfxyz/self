@@ -67,6 +67,8 @@ export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 // Screen Components
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
+export { QRCodeScannerView } from './components/QRCodeScannerView';
+
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
 export { SdkEvents } from './types/events';

@@ -21,7 +21,7 @@ export const reactNativeScannerAdapter: ScannerAdapter = {
 };
 
 async function scanIOS(opts: ScanOpts): Promise<ScanResult> {
-  const { SelfMRZScannerModule, PassportReader } = NativeModules;
+  const { SelfMRZScannerModule, SelfQRScannerModule, PassportReader } = NativeModules;
 
   switch (opts.mode) {
     case 'mrz':
@@ -119,7 +119,18 @@ async function scanIOS(opts: ScanOpts): Promise<ScanResult> {
       }
 
     case 'qr':
-      throw new Error('QR scanning not implemented yet');
+      if (!SelfQRScannerModule) {
+        throw new Error('SelfQRScannerModule not found, check if its linked correctly');
+      }
+      try {
+        const result = await SelfQRScannerModule.startScanning();
+        return {
+          mode: 'qr',
+          data: result,
+        };
+      } catch (error) {
+        throw new Error(`QR scanning failed: ${error}`);
+      }
 
     default:
       throw new Error(`Unsupported scan mode`);
@@ -127,7 +138,7 @@ async function scanIOS(opts: ScanOpts): Promise<ScanResult> {
 }
 
 async function scanAndroid(opts: ScanOpts): Promise<ScanResult> {
-  const { SelfPassportReader: PassportReader, SelfMRZScannerModule } = NativeModules;
+  const { SelfPassportReader: PassportReader, SelfMRZScannerModule, SelfQRScannerModule } = NativeModules;
   if (opts.mode === 'nfc' && !PassportReader) {
     throw new Error('PassportReader not found, check if its linked correctly');
   }
@@ -209,7 +220,18 @@ async function scanAndroid(opts: ScanOpts): Promise<ScanResult> {
       }
 
     case 'qr':
-      throw new Error('QR scanning not implemented yet');
+      if (!SelfQRScannerModule) {
+        throw new Error('SelfQRScannerModule not found, check if its linked correctly');
+      }
+      try {
+        const result = await SelfQRScannerModule.startScanning();
+        return {
+          mode: 'qr',
+          data: result,
+        };
+      } catch (error) {
+        throw new Error(`QR scanning failed: ${error}`);
+      }
 
     default:
       throw new Error(`Unsupported scan mode`);

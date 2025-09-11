@@ -25,11 +25,15 @@ class RNSelfPassportReaderPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
         return listOf(
           RNSelfPassportReaderModule(reactContext),
-          SelfMRZScannerModule(reactContext)
+          SelfMRZScannerModule(reactContext),
+          SelfQRScannerModule(reactContext)
         )
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-        return listOf(SelfOCRViewManager(reactContext))
+        return listOf(
+            SelfOCRViewManager(reactContext),
+            SelfQRScannerViewManager(reactContext)
+        )
     }
 }

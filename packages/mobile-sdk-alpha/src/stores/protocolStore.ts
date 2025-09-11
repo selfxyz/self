@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 
+import { fetchOfacTrees } from '@selfxyz/common';
 import {
   API_URL,
   API_URL_STAGING,
@@ -20,7 +21,6 @@ import {
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
 } from '@selfxyz/common/constants';
-import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
 import type { DeployedCircuits, OfacTree } from '@selfxyz/common/utils/types';
 
 interface ProtocolState {
