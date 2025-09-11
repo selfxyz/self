@@ -21,6 +21,10 @@ module.exports = {
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/(.*)$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/$1.cjs',
+    // Fix snarkjs resolution for @anon-aadhaar/core
+    '^snarkjs$': '<rootDir>/../node_modules/snarkjs/build/main.cjs',
+    // Fix ffjavascript resolution for snarkjs dependencies
+    '^ffjavascript$': '<rootDir>/../node_modules/ffjavascript/build/main.cjs',
   },
   globals: {
     'ts-jest': {
