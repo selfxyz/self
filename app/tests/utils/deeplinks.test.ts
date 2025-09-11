@@ -13,7 +13,7 @@ jest.mock('@/navigation', () => ({
 }));
 
 const mockSelfAppStore = { useSelfAppStore: { getState: jest.fn() } };
-jest.mock('@/stores/selfAppStore', () => mockSelfAppStore);
+jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => mockSelfAppStore);
 
 const mockUserStore = { default: { getState: jest.fn() } };
 jest.mock('@/stores/userStore', () => ({

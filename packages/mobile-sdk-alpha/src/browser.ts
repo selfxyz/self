@@ -63,6 +63,8 @@ export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
+export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
+
 // Core functions
 export { isPassportDataValid } from './validation/document';
 
@@ -73,5 +75,4 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
 export { scanQRProof } from './qr';
-
 export { webScannerShim } from './adapters/web/shims';

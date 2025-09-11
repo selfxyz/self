@@ -1,7 +1,9 @@
 export type Country3LetterCode = keyof typeof countryCodes;
 export type document_type = 'passport' | 'id_card';
 export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
+export const AADHAAR_ATTESTATION_ID = '3';
 export const API_URL = 'https://api.self.xyz';
+
 export const API_URL_STAGING = 'https://api.staging.self.xyz';
 
 export const CHAIN_NAME = 'celo';
@@ -41,8 +43,6 @@ export const CSCA_TREE_URL_ID_CARD = 'https://tree.self.xyz/csca-id';
 export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
 
 export const CSCA_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/csca-id';
-
-export const AADHAAR_ATTESTATION_ID = '3';
 
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEFAULT_MAJORITY = '18';

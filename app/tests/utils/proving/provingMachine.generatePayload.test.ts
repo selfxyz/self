@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  useProtocolStore,
+  useSelfAppStore,
+} from '@selfxyz/mobile-sdk-alpha/stores';
 
-import { useSelfAppStore } from '@/stores/selfAppStore';
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
 jest.mock('xstate', () => {
@@ -17,32 +20,6 @@ jest.mock('@/utils/analytics', () => () => ({
   trackEvent: jest.fn(),
 }));
 
-// Mock the proving inputs to return predictable data
-jest.mock('@/utils/proving/provingInputs', () => ({
-  generateTEEInputsDisclose: jest.fn(() => ({
-    inputs: { s: 1 },
-    circuitName: 'vc_and_disclose',
-    endpointType: 'https',
-    endpoint: 'https://dis',
-  })),
-}));
-
-// Mock the common register/dsc inputs where provingMachine actually imports from
-jest.mock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-  generateTEEInputsRegister: jest.fn(() => ({
-    inputs: { r: 1 },
-    circuitName: 'reg',
-    endpointType: 'celo',
-    endpoint: 'https://reg',
-  })),
-  generateTEEInputsDSC: jest.fn(() => ({
-    inputs: { d: 1 },
-    circuitName: 'dsc',
-    endpointType: 'celo',
-    endpoint: 'https://dsc',
-  })),
-}));
-
 // Mock the proving utils
 jest.mock('@selfxyz/common/utils/proving', () => {
   const actual = jest.requireActual('@selfxyz/common/utils/proving') as any;
@@ -53,6 +30,52 @@ jest.mock('@selfxyz/common/utils/proving', () => {
       nonce: [0],
       cipher_text: [1],
       auth_tag: [2],
+    })),
+    generateTEEInputsRegister: jest.fn(() => ({
+      inputs: { r: 1 },
+      circuitName: 'reg',
+      endpointType: 'celo',
+      endpoint: 'https://reg',
+    })),
+    generateTEEInputsDSC: jest.fn(() => ({
+      inputs: { d: 1 },
+      circuitName: 'dsc',
+      endpointType: 'celo',
+      endpoint: 'https://dsc',
+    })),
+    generateTEEInputsDisclose: jest.fn(() => ({
+      inputs: { s: 1 },
+      circuitName: 'vc_and_disclose',
+      endpointType: 'https',
+      endpoint: 'https://dis',
+    })),
+  };
+});
+
+// Mock the proving utils
+jest.mock('@selfxyz/common/utils/circuits/registerInputs', () => {
+  const actual = jest.requireActual(
+    '@selfxyz/common/utils/circuits/registerInputs',
+  ) as any;
+  return {
+    ...actual,
+    generateTEEInputsRegister: jest.fn(() => ({
+      inputs: { r: 1 },
+      circuitName: 'reg',
+      endpointType: 'celo',
+      endpoint: 'https://reg',
+    })),
+    generateTEEInputsDSC: jest.fn(() => ({
+      inputs: { d: 1 },
+      circuitName: 'dsc',
+      endpointType: 'celo',
+      endpoint: 'https://dsc',
+    })),
+    generateTEEInputsDiscloseStateless: jest.fn(() => ({
+      inputs: { s: 1 },
+      circuitName: 'vc_and_disclose',
+      endpointType: 'https',
+      endpoint: 'https://dis',
     })),
   };
 });
@@ -89,13 +112,17 @@ const {
   getPayload,
   encryptAES256GCM,
 } = require('@selfxyz/common/utils/proving');
-const { generateTEEInputsDisclose } = require('@/utils/proving/provingInputs');
+
 const {
   generateTEEInputsRegister,
   generateTEEInputsDSC,
+  generateTEEInputsDiscloseStateless,
 } = require('@selfxyz/common/utils/circuits/registerInputs');
 
 describe('_generatePayload', () => {
+  const selfClient: SelfClient = {
+    trackEvent: jest.fn(),
+  } as unknown as SelfClient;
   beforeEach(() => {
     jest.clearAllMocks();
     useProvingStore.setState({
@@ -203,7 +230,9 @@ describe('_generatePayload', () => {
 
   it('register circuit', async () => {
     useProvingStore.setState({ circuitType: 'register' });
-    const payload = await useProvingStore.getState()._generatePayload();
+    const payload = await useProvingStore
+      .getState()
+      ._generatePayload(selfClient);
     expect(generateTEEInputsRegister).toHaveBeenCalled();
     expect(getPayload).toHaveBeenCalled();
     expect(encryptAES256GCM).toHaveBeenCalled();
@@ -218,7 +247,9 @@ describe('_generatePayload', () => {
 
   it('dsc circuit', async () => {
     useProvingStore.setState({ circuitType: 'dsc' });
-    const payload = await useProvingStore.getState()._generatePayload();
+    const payload = await useProvingStore
+      .getState()
+      ._generatePayload(selfClient);
     expect(generateTEEInputsDSC).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('celo');
     expect(payload.params.uuid).toBe('123');
@@ -226,8 +257,10 @@ describe('_generatePayload', () => {
 
   it('disclose circuit', async () => {
     useProvingStore.setState({ circuitType: 'disclose' });
-    const payload = await useProvingStore.getState()._generatePayload();
-    expect(generateTEEInputsDisclose).toHaveBeenCalled();
+    const payload = await useProvingStore
+      .getState()
+      ._generatePayload(selfClient);
+    expect(generateTEEInputsDiscloseStateless).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('https');
     expect(payload.params.uuid).toBe('123');
   });

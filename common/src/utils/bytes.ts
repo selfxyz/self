@@ -1,12 +1,12 @@
 import { MAX_BYTES_IN_FIELD } from '../constants/constants.js';
 
 export function bigIntToChunkedBytes(
-  num: BigInt | bigint,
+  num: bigint | bigint,
   bytesPerChunk: number,
   numChunks: number
 ) {
   const res: string[] = [];
-  const bigintNum: bigint = typeof num == 'bigint' ? num : num.valueOf();
+  const bigintNum: bigint = typeof num == 'bigint' ? num : BigInt(num);
   const msk = (1n << BigInt(bytesPerChunk)) - 1n;
   for (let i = 0; i < numChunks; ++i) {
     res.push(((bigintNum >> BigInt(i * bytesPerChunk)) & msk).toString());

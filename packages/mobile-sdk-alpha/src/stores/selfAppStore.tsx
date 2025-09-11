@@ -17,11 +17,7 @@ interface SelfAppState {
   cleanSelfApp: () => void;
   setSelfApp: (selfApp: SelfApp | null) => void;
   _initSocket: (sessionId: string) => Socket;
-  handleProofResult: (
-    proof_verified: boolean,
-    error_code?: string,
-    reason?: string,
-  ) => void;
+  handleProofResult: (proof_verified: boolean, error_code?: string, reason?: string) => void;
 }
 
 export const useSelfAppStore = create<SelfAppState>((set, get) => ({
@@ -30,9 +26,7 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
   socket: null,
 
   _initSocket: (sessionId: string): Socket => {
-    const connectionUrl = WS_DB_RELAYER.startsWith('https')
-      ? WS_DB_RELAYER.replace(/^https/, 'wss')
-      : WS_DB_RELAYER;
+    const connectionUrl = WS_DB_RELAYER.startsWith('https') ? WS_DB_RELAYER.replace(/^https/, 'wss') : WS_DB_RELAYER;
     const socketUrl = `${connectionUrl}/websocket`;
 
     // Create a new socket connection using the updated URL.
@@ -72,8 +66,7 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
       // Listen for the event only once per connection attempt
       socket.once('self_app', (data: unknown) => {
         try {
-          const appData: SelfApp =
-            typeof data === 'string' ? JSON.parse(data) : (data as SelfApp);
+          const appData: SelfApp = typeof data === 'string' ? JSON.parse(data) : (data as SelfApp);
 
           // Basic validation
           if (!appData || typeof appData !== 'object' || !appData.sessionId) {
@@ -130,18 +123,12 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
     set({ selfApp: null, sessionId: null, socket: null });
   },
 
-  handleProofResult: (
-    proof_verified: boolean,
-    error_code?: string,
-    reason?: string,
-  ) => {
+  handleProofResult: (proof_verified: boolean, error_code?: string, reason?: string) => {
     const socket = get().socket;
     const sessionId = get().sessionId;
 
     if (!socket || !sessionId) {
-      console.error(
-        '[SelfAppStore] Cannot handleProofResult: Socket or SessionId missing.',
-      );
+      console.error('[SelfAppStore] Cannot handleProofResult: Socket or SessionId missing.');
       return;
     }
 

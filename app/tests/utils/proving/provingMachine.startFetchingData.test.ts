@@ -55,6 +55,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
 });
 
 describe('startFetchingData', () => {
+  let mockSelfClient: SelfClient;
   beforeEach(async () => {
     jest.clearAllMocks();
     const {
@@ -71,8 +72,9 @@ describe('startFetchingData', () => {
     unsafe_getPrivateKey.mockResolvedValue('secret');
 
     // Create mock selfClient
-    const mockSelfClient = {
+    mockSelfClient = {
       getPrivateKey: jest.fn().mockResolvedValue('mock-secret'),
+      trackEvent: jest.fn(),
     } as unknown as SelfClient;
 
     useProtocolStore.setState({
@@ -91,7 +93,7 @@ describe('startFetchingData', () => {
   });
 
   it('emits FETCH_ERROR when dsc_parsed is missing', async () => {
-    await useProvingStore.getState().startFetchingData();
+    await useProvingStore.getState().startFetchingData(mockSelfClient);
 
     expect(
       useProtocolStore.getState().passport.fetch_all,

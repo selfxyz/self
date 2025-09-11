@@ -24,6 +24,7 @@ import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '@/components/buttons/HeldPrimaryButtonProveScreen';
@@ -37,7 +38,6 @@ import {
 } from '@/providers/passportDataProvider';
 import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
-import { useSelfAppStore } from '@/stores/selfAppStore';
 import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
 import { buttonTap } from '@/utils/haptic';
@@ -149,7 +149,7 @@ const ProveScreen: React.FC = () => {
   );
 
   function onVerify() {
-    provingStore.setUserConfirmed();
+    provingStore.setUserConfirmed(selfClient);
     buttonTap();
     trackEvent(ProofEvents.PROOF_VERIFY_CONFIRMATION_ACCEPTED, {
       appName: selectedApp?.appName,

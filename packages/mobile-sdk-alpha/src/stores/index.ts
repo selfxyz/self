@@ -3,3 +3,4 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export { useProtocolStore } from './protocolStore';
+export { useSelfAppStore } from './selfAppStore';
