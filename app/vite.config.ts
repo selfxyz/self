@@ -84,7 +84,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
-    exclude: ['fs', 'path', 'child_process'],
+    exclude: ['fs', 'path', 'child_process', '@zk-email/helpers'],
     esbuildOptions: {
       // Optimize minification
       minifyIdentifiers: true,
@@ -102,7 +102,7 @@ export default defineConfig({
     cssMinify: true,
     cssCodeSplit: true,
     rollupOptions: {
-      external: ['fs', 'path', 'child_process'],
+      external: ['fs', 'child_process', '@zk-email/helpers'],
       output: {
         // Optimize chunk size and minification
         compact: true,
