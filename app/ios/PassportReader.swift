@@ -51,6 +51,35 @@ class PassportReader: NSObject {
     private var analytics: SelfAnalytics?
     private var currentSessionId: String?
 
+    private func logNfc(level: SentryLevel, message: String, stage: String, useCANBool: Bool, sessionId: String, extras: [String: Any] = [:]) {
+        let data: [String: Any] = [
+            "session_id": sessionId,
+            "platform": "ios",
+            "scan_type": useCANBool ? "can" : "mrz",
+            "stage": stage
+        ].merging(extras) { (_, new) in new }
+
+        if level == .error {
+            // For errors, capture a message (this will include all previous breadcrumbs)
+            SentrySDK.configureScope { scope in
+                scope.setTag(value: sessionId, key: "session_id")
+                scope.setTag(value: "ios", key: "platform")
+                scope.setTag(value: useCANBool ? "can" : "mrz", key: "scan_type")
+                scope.setTag(value: stage, key: "stage")
+                for (key, value) in extras {
+                    scope.setExtra(value: value, key: key)
+                }
+            }
+            SentrySDK.capture(message: message)
+        } else {
+            // For info/warn, add as breadcrumb only
+            let breadcrumb = Breadcrumb(level: level, category: "nfc")
+            breadcrumb.message = message
+            breadcrumb.data = data.mapValues { "\($0)" }
+            SentrySDK.addBreadcrumb(breadcrumb)
+        }
+    }
+
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
         let analytics = SelfAnalytics(token: token, enableDebugLogs: enableDebugLogs)
@@ -131,13 +160,7 @@ class PassportReader: NSObject {
    let extendedModeBool = extendedMode.boolValue
    let usePacePollingBool = usePacePolling.boolValue
    self.currentSessionId = sessionId
-   SentrySDK.configureScope { scope in
-     scope.setTag(value: sessionId, key: "session_id")
-     scope.setTag(value: "ios", key: "platform")
-     scope.setTag(value: useCANBool ? "can" : "mrz", key: "scan_type")
-     scope.setTag(value: "start", key: "stage")
-   }
-   SentrySDK.capture(message: "scan_start")
+   logNfc(level: .info, message: "scan_start", stage: "start", useCANBool: useCANBool, sessionId: sessionId)
 
     let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
       switch displayMessage {
@@ -327,23 +350,10 @@ class PassportReader: NSObject {
         }
 
         let stringified = String(data: try JSONEncoder().encode(ret), encoding: .utf8)
-        SentrySDK.configureScope { scope in
-          scope.setTag(value: sessionId, key: "session_id")
-          scope.setTag(value: "ios", key: "platform")
-          scope.setTag(value: useCANBool ? "can" : "mrz", key: "scan_type")
-          scope.setTag(value: "complete", key: "stage")
-        }
-        SentrySDK.capture(message: "scan_success")
+        logNfc(level: .info, message: "scan_success", stage: "complete", useCANBool: useCANBool, sessionId: sessionId)
         resolve(stringified)
       } catch {
-        SentrySDK.configureScope { scope in
-          scope.setTag(value: sessionId, key: "session_id")
-          scope.setTag(value: "ios", key: "platform")
-          scope.setTag(value: useCANBool ? "can" : "mrz", key: "scan_type")
-          scope.setTag(value: "error", key: "stage")
-          scope.setExtra(value: error.localizedDescription, key: "error")
-        }
-        SentrySDK.capture(message: "scan_failed")
+        logNfc(level: .error, message: "scan_failed", stage: "error", useCANBool: useCANBool, sessionId: sessionId, extras: ["error": error.localizedDescription])
         reject("E_PASSPORT_READ", error.localizedDescription, error)
       }
     }

@@ -4,6 +4,7 @@
 
 import { SENTRY_DSN } from '@env';
 import {
+  addBreadcrumb,
   captureException as sentryCaptureException,
   captureFeedback as sentryCaptureFeedback,
   captureMessage as sentryCaptureMessage,
@@ -137,28 +138,44 @@ export const logNFCEvent = (
     return;
   }
 
-  const levelMap = {
-    info: 'info',
-    warn: 'warning',
-    error: 'error',
-  } as const;
+  // Prepare data for breadcrumbs and messages
+  const data = {
+    session_id: context.sessionId,
+    platform: context.platform,
+    scan_type: context.scanType,
+    stage: context.stage,
+    user_id: context.userId,
+    ...extra,
+  };
 
-  withScope(scope => {
-    scope.setLevel(levelMap[level] as any);
-    scope.setTag('session_id', context.sessionId);
-    scope.setTag('platform', context.platform);
-    scope.setTag('scan_type', context.scanType);
-    scope.setTag('stage', context.stage);
-    if (context.userId) {
-      scope.setUser({ id: context.userId });
-    }
-    if (extra) {
-      Object.entries(extra).forEach(([key, value]) => {
-        scope.setExtra(key, value as any);
-      });
-    }
-    sentryCaptureMessage(message);
-  });
+  if (level === 'error') {
+    // For errors, capture a message (this will include all previous breadcrumbs)
+    withScope(scope => {
+      scope.setLevel('error');
+      scope.setTag('session_id', context.sessionId);
+      scope.setTag('platform', context.platform);
+      scope.setTag('scan_type', context.scanType);
+      scope.setTag('stage', context.stage);
+      if (context.userId) {
+        scope.setUser({ id: context.userId });
+      }
+      if (extra) {
+        Object.entries(extra).forEach(([key, value]) => {
+          scope.setExtra(key, value);
+        });
+      }
+      sentryCaptureMessage(message);
+    });
+  } else {
+    // For info/warn, add as breadcrumb only
+    addBreadcrumb({
+      message,
+      level: level === 'warn' ? 'warning' : 'info',
+      category: 'nfc',
+      data,
+      timestamp: Date.now() / 1000,
+    });
+  }
 };
 
 export const wrapWithSentry = (App: React.ComponentType) => {

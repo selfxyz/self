@@ -4,13 +4,23 @@
 
 import { SENTRY_DSN } from '@env';
 import {
+  addBreadcrumb,
   captureException as sentryCaptureException,
   captureFeedback as sentryCaptureFeedback,
   captureMessage as sentryCaptureMessage,
   feedbackIntegration,
   init as sentryInit,
   withProfiler,
+  withScope,
 } from '@sentry/react';
+
+export interface NFCScanContext {
+  sessionId: string;
+  userId?: string;
+  platform: 'ios' | 'android';
+  scanType: 'mrz' | 'can';
+  stage: string;
+}
 
 export const captureException = (
   error: Error,
@@ -109,6 +119,56 @@ export const initSentry = () => {
 };
 
 export const isSentryDisabled = !SENTRY_DSN;
+
+export const logNFCEvent = (
+  level: 'info' | 'warn' | 'error',
+  message: string,
+  context: NFCScanContext,
+  extra?: Record<string, unknown>,
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+
+  // Prepare data for breadcrumbs and messages
+  const data = {
+    session_id: context.sessionId,
+    platform: context.platform,
+    scan_type: context.scanType,
+    stage: context.stage,
+    user_id: context.userId,
+    ...extra,
+  };
+
+  if (level === 'error') {
+    // For errors, capture a message (this will include all previous breadcrumbs)
+    withScope(scope => {
+      scope.setLevel('error');
+      scope.setTag('session_id', context.sessionId);
+      scope.setTag('platform', context.platform);
+      scope.setTag('scan_type', context.scanType);
+      scope.setTag('stage', context.stage);
+      if (context.userId) {
+        scope.setUser({ id: context.userId });
+      }
+      if (extra) {
+        Object.entries(extra).forEach(([key, value]) => {
+          scope.setExtra(key, value);
+        });
+      }
+      sentryCaptureMessage(message);
+    });
+  } else {
+    // For info/warn, add as breadcrumb only
+    addBreadcrumb({
+      message,
+      level: level === 'warn' ? 'warning' : 'info',
+      category: 'nfc',
+      data,
+      timestamp: Date.now() / 1000,
+    });
+  }
+};
 
 export const wrapWithSentry = (App: React.ComponentType) => {
   return isSentryDisabled ? App : withProfiler(App);
