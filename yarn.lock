@@ -5038,6 +5038,7 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.8.0"
     jsdom: "npm:^24.0.0"
     prettier: "npm:^3.5.3"
+    socket.io-client: "npm:^4.8.1"
     tslib: "npm:^2.6.2"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
