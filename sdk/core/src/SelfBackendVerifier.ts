@@ -217,20 +217,30 @@ export class SelfBackendVerifier {
       });
     }
 
-    const circuitTimestampYy = [
-      2,
-      0,
-      publicSignals[discloseIndices[attestationId].currentDateIndex],
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 1],
-    ];
-    const circuitTimestampMm = [
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 2],
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 3],
-    ];
-    const circuitTimestampDd = [
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 4],
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 5],
-    ];
+    let circuitTimestampYy: number[];
+    let circuitTimestampMm: number[];
+    let circuitTimestampDd: number[];
+    if (attestationId === 3) {
+      circuitTimestampYy = String(publicSignals[discloseIndices[attestationId].currentDateIndex]).split('').map(Number);
+      circuitTimestampMm = String(publicSignals[discloseIndices[attestationId].currentDateIndex + 1]).split('').map(Number);
+      circuitTimestampDd = String(publicSignals[discloseIndices[attestationId].currentDateIndex + 2]).split('').map(Number);
+    } else {
+      circuitTimestampYy = [
+        2,
+        0,
+        +publicSignals[discloseIndices[attestationId].currentDateIndex],
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 1],
+      ];
+      circuitTimestampMm = [
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 2],
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 3],
+      ];
+      circuitTimestampDd = [
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 4],
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 5],
+      ];
+    }
+
     const circuitTimestamp = new Date(
       Number(circuitTimestampYy.join('')),
       Number(circuitTimestampMm.join('')) - 1,
