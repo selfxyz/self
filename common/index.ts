@@ -93,8 +93,6 @@ export {
   packBytesAndPoseidon,
 } from './src/utils/hash.js';
 
-export { fetchOfacTrees } from './src/utils/ofac.js';
-
 export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
 
 export {
