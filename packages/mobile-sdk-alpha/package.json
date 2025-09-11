@@ -71,7 +71,6 @@
   "dependencies": {
     "@selfxyz/common": "workspace:^",
     "socket.io-client": "^4.8.1",
-    "tslib": "^2.6.2",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
