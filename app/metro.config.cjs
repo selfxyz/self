@@ -17,6 +17,7 @@ const extraNodeModules = {
   buffer: require.resolve('buffer'),
   util: require.resolve('util'),
   assert: require.resolve('assert'),
+  process: require.resolve('process'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
   // Pin React and React Native to monorepo root
   react: path.join(trueMonorepoNodeModules, 'react'),
