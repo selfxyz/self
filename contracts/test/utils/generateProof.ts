@@ -1,12 +1,11 @@
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
-import { ChildNodes, SMT } from "@openpassport/zk-kit-smt";
-import { readFileSync } from "fs";
+import fs from "fs";
 import path from "path";
 import { poseidon2, poseidon3 } from "poseidon-lite";
 import type { CircuitSignals, Groth16Proof, PublicSignals } from "snarkjs";
 import { groth16 } from "snarkjs";
 import { PassportData } from "@selfxyz/common/utils/types";
 import { CircuitArtifacts, DscCircuitProof, RegisterCircuitProof, VcAndDiscloseProof } from "./types.js";
+import { prepareAadhaarDiscloseTestData, prepareAadhaarRegisterTestData } from "@selfxyz/common";
 
 import { BigNumberish } from "ethers";
 import {
@@ -17,6 +16,9 @@ import {
 import { getCircuitNameFromPassportData } from "@selfxyz/common/utils/circuits/circuitsName";
 import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
 import serialized_dsc_tree from "../../../common/pubkeys/serialized_dsc_tree.json";
+import { GenericProofStructStruct } from "../../typechain-types/contracts/IdentityVerificationHubImplV2.js";
+const { LeanIMT, ChildNodes } = require("@openpassport/zk-kit-lean-imt");
+const { SMT } = require("@openpassport/zk-kit-smt");
 
 const registerCircuits: CircuitArtifacts = {
   register_sha256_sha256_sha256_rsa_65537_4096: {
@@ -32,6 +34,15 @@ const registerCircuitsId: CircuitArtifacts = {
     vkey: "../circuits/build/register_id/register_id_sha256_sha256_sha256_rsa_65537_4096/register_id_sha256_sha256_sha256_rsa_65537_4096_vkey.json",
   },
 };
+
+const registerCircuitsAadhaar: CircuitArtifacts = {
+  register_aadhaar: {
+    wasm: "../circuits/build/register/register_aadhaar/register_aadhaar_js/register_aadhaar.wasm",
+    zkey: "../circuits/build/register/register_aadhaar/register_aadhaar_final.zkey",
+    vkey: "../circuits/build/register/register_aadhaar/register_aadhaar_vkey.json",
+  },
+};
+
 const dscCircuits: CircuitArtifacts = {
   dsc_sha256_rsa_65537_4096: {
     wasm: "../circuits/build/dsc/dsc_sha256_rsa_65537_4096/dsc_sha256_rsa_65537_4096_js/dsc_sha256_rsa_65537_4096.wasm",
@@ -54,6 +65,14 @@ const vcAndDiscloseIdCircuits: CircuitArtifacts = {
   },
 };
 
+const vcAndDiscloseCircuitsAadhaar: CircuitArtifacts = {
+  vc_and_disclose_aadhaar: {
+    wasm: "../circuits/build/disclose/vc_and_disclose_aadhaar/vc_and_disclose_aadhaar_js/vc_and_disclose_aadhaar.wasm",
+    zkey: "../circuits/build/disclose/vc_and_disclose_aadhaar/vc_and_disclose_aadhaar_final.zkey",
+    vkey: "../circuits/build/disclose/vc_and_disclose_aadhaar/vc_and_disclose_aadhaar_vkey.json",
+  },
+};
+
 export async function generateRegisterProof(secret: string, passportData: PassportData): Promise<RegisterCircuitProof> {
   // Get the circuit inputs
   const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
@@ -73,7 +92,9 @@ export async function generateRegisterProof(secret: string, passportData: Passpo
   );
 
   // Verify the proof
-  const vKey = JSON.parse(readFileSync(registerCircuits["register_sha256_sha256_sha256_rsa_65537_4096"].vkey, "utf8"));
+  const vKey = JSON.parse(
+    fs.readFileSync(registerCircuits["register_sha256_sha256_sha256_rsa_65537_4096"].vkey, "utf8"),
+  );
   const isValid = await groth16.verify(vKey, registerProof.publicSignals, registerProof.proof);
   if (!isValid) {
     throw new Error("Generated register proof verification failed");
@@ -124,7 +145,7 @@ export async function generateRegisterIdProof(
   );
 
   // Verify the proof
-  const vKey = JSON.parse(readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"));
+  const vKey = JSON.parse(fs.readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"));
   const isValid = await groth16.verify(vKey, registerProof.publicSignals, registerProof.proof);
   if (!isValid) {
     throw new Error("Generated register ID proof verification failed");
@@ -132,6 +153,34 @@ export async function generateRegisterIdProof(
 
   const rawCallData = await groth16.exportSolidityCallData(registerProof.proof, registerProof.publicSignals);
   const fixedProof = parseSolidityCalldata(rawCallData, {} as RegisterCircuitProof);
+
+  return fixedProof;
+}
+
+export async function generateRegisterAadhaarProof(
+  secret: string,
+  //return type of prepareAadhaarTestData
+  inputs: ReturnType<typeof prepareAadhaarRegisterTestData>["inputs"],
+): Promise<GenericProofStructStruct> {
+  const circuitName = "register_aadhaar";
+
+  const circuitArtifacts = registerCircuitsAadhaar;
+  const artifactKey = circuitName;
+
+  const registerProof = await groth16.fullProve(
+    inputs,
+    circuitArtifacts[artifactKey].wasm,
+    circuitArtifacts[artifactKey].zkey,
+  );
+
+  const vKey = JSON.parse(fs.readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"));
+  const isValid = await groth16.verify(vKey, registerProof.publicSignals, registerProof.proof);
+  if (!isValid) {
+    throw new Error("Generated register Aadhaar proof verification failed");
+  }
+
+  const rawCallData = await groth16.exportSolidityCallData(registerProof.proof, registerProof.publicSignals);
+  const fixedProof = parseSolidityCalldata(rawCallData, {} as GenericProofStructStruct);
 
   return fixedProof;
 }
@@ -146,7 +195,7 @@ export async function generateDscProof(passportData: PassportData): Promise<DscC
   );
 
   // Verify the proof
-  const vKey = JSON.parse(readFileSync(dscCircuits["dsc_sha256_rsa_65537_4096"].vkey, "utf8"));
+  const vKey = JSON.parse(fs.readFileSync(dscCircuits["dsc_sha256_rsa_65537_4096"].vkey, "utf8"));
   const isValid = await groth16.verify(vKey, dscProof.publicSignals, dscProof.proof);
   if (!isValid) {
     throw new Error("Generated DSC proof verification failed");
@@ -165,11 +214,11 @@ export async function generateVcAndDiscloseRawProof(
   scope: string,
   selectorDg1: string[] = new Array(93).fill("1"),
   selectorOlderThan: string | number = "1",
-  merkletree: LeanIMT<bigint>,
+  merkletree: typeof LeanIMT,
   majority: string = "20",
-  passportNo_smt?: SMT,
-  nameAndDob_smt?: SMT,
-  nameAndYob_smt?: SMT,
+  passportNo_smt?: typeof SMT,
+  nameAndDob_smt?: typeof SMT,
+  nameAndYob_smt?: typeof SMT,
   selectorOfac: string | number = "1",
   forbiddenCountriesList: string[] = ["AAA"],
   userIdentifier: string = "0000000000000000000000000000000000000000",
@@ -209,7 +258,7 @@ export async function generateVcAndDiscloseRawProof(
   );
 
   // Verify the proof
-  const vKey = JSON.parse(readFileSync(vcAndDiscloseCircuits["vc_and_disclose"].vkey, "utf8"));
+  const vKey = JSON.parse(fs.readFileSync(vcAndDiscloseCircuits["vc_and_disclose"].vkey, "utf8"));
   const isValid = await groth16.verify(vKey, vcAndDiscloseProof.publicSignals, vcAndDiscloseProof.proof);
   if (!isValid) {
     throw new Error("Generated VC and Disclose proof verification failed");
@@ -225,11 +274,11 @@ export async function generateVcAndDiscloseProof(
   scope: string,
   selectorDg1: string[] = new Array(93).fill("1"),
   selectorOlderThan: string | number = "1",
-  merkletree: LeanIMT<bigint>,
+  merkletree: typeof LeanIMT,
   majority: string = "20",
-  passportNo_smt?: SMT,
-  nameAndDob_smt?: SMT,
-  nameAndYob_smt?: SMT,
+  passportNo_smt?: typeof SMT,
+  nameAndDob_smt?: typeof SMT,
+  nameAndYob_smt?: typeof SMT,
   selectorOfac: string | number = "1",
   forbiddenCountriesList: string[] = [
     "AAA",
@@ -305,11 +354,11 @@ export async function generateVcAndDiscloseIdProof(
   scope: string,
   selectorDg1: string[] = new Array(90).fill("1"),
   selectorOlderThan: string | number = "1",
-  merkletree: LeanIMT<bigint>,
+  merkletree: typeof LeanIMT,
   majority: string = "20",
-  passportNo_smt?: SMT,
-  nameAndDob_smt?: SMT,
-  nameAndYob_smt?: SMT,
+  passportNo_smt?: typeof SMT,
+  nameAndDob_smt?: typeof SMT,
+  nameAndYob_smt?: typeof SMT,
   selectorOfac: string | number = "1",
   forbiddenCountriesList: string[] = [
     "AAA",
@@ -393,7 +442,7 @@ export async function generateVcAndDiscloseIdProof(
   );
 
   // Verify the proof
-  const vKey = JSON.parse(readFileSync(vcAndDiscloseIdCircuits["vc_and_disclose_id"].vkey, "utf8"));
+  const vKey = JSON.parse(fs.readFileSync(vcAndDiscloseIdCircuits["vc_and_disclose_id"].vkey, "utf8"));
   const isValid = await groth16.verify(vKey, vcAndDiscloseProof.publicSignals, vcAndDiscloseProof.proof);
   if (!isValid) {
     throw new Error("Generated VC and Disclose ID proof verification failed");
@@ -401,6 +450,32 @@ export async function generateVcAndDiscloseIdProof(
 
   const rawCallData = await groth16.exportSolidityCallData(vcAndDiscloseProof.proof, vcAndDiscloseProof.publicSignals);
   const fixedProof = parseSolidityCalldata(rawCallData, {} as VcAndDiscloseProof);
+
+  return fixedProof;
+}
+
+export async function generateVcAndDiscloseAadhaarProof(
+  inputs: ReturnType<typeof prepareAadhaarDiscloseTestData>["inputs"],
+): Promise<GenericProofStructStruct> {
+  const circuitName = "vc_and_disclose_aadhaar";
+
+  const circuitArtifacts = vcAndDiscloseCircuitsAadhaar;
+  const artifactKey = circuitName;
+
+  const vcAndDiscloseProof = await groth16.fullProve(
+    inputs,
+    circuitArtifacts[artifactKey].wasm,
+    circuitArtifacts[artifactKey].zkey,
+  );
+
+  const vKey = JSON.parse(fs.readFileSync(circuitArtifacts[artifactKey].vkey, "utf8"));
+  const isValid = await groth16.verify(vKey, vcAndDiscloseProof.publicSignals, vcAndDiscloseProof.proof);
+  if (!isValid) {
+    throw new Error("Generated register Aadhaar proof verification failed");
+  }
+
+  const rawCallData = await groth16.exportSolidityCallData(vcAndDiscloseProof.proof, vcAndDiscloseProof.publicSignals);
+  const fixedProof = parseSolidityCalldata(rawCallData, {} as GenericProofStructStruct);
 
   return fixedProof;
 }
@@ -427,11 +502,19 @@ export function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
 }
 
 export function getSMTs() {
-  const passportNo_smt = importSMTFromJsonFile("../common/ofacdata/outputs/passportNoAndNationalitySMT.json") as SMT;
-  const nameAndDob_smt = importSMTFromJsonFile("../common/ofacdata/outputs/nameAndDobSMT.json") as SMT;
-  const nameAndYob_smt = importSMTFromJsonFile("../common/ofacdata/outputs/nameAndYobSMT.json") as SMT;
-  const nameAndDob_id_smt = importSMTFromJsonFile("../common/ofacdata/outputs/nameAndDobSMT_ID.json") as SMT;
-  const nameAndYob_id_smt = importSMTFromJsonFile("../common/ofacdata/outputs/nameAndYobSMT_ID.json") as SMT;
+  const passportNo_smt = importSMTFromJsonFile(
+    "../circuits/tests/consts/ofac/passportNoAndNationalitySMT.json",
+  ) as typeof SMT;
+  const nameAndDob_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndDobSMT.json") as typeof SMT;
+  const nameAndYob_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndYobSMT.json") as typeof SMT;
+  const nameDobAadhar_smt = importSMTFromJsonFile(
+    "../circuits/tests/consts/ofac/nameAndDobAadhaarSMT.json",
+  ) as typeof SMT;
+  const nameYobAadhar_smt = importSMTFromJsonFile(
+    "../circuits/tests/consts/ofac/nameAndYobAadhaarSMT.json",
+  ) as typeof SMT;
+  const nameAndDob_id_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndDobSMT_ID.json") as typeof SMT;
+  const nameAndYob_id_smt = importSMTFromJsonFile("../circuits/tests/consts/ofac/nameAndYobSMT_ID.json") as typeof SMT;
 
   return {
     passportNo_smt,
@@ -439,16 +522,19 @@ export function getSMTs() {
     nameAndYob_smt,
     nameAndDob_id_smt,
     nameAndYob_id_smt,
+    nameDobAadhar_smt,
+    nameYobAadhar_smt,
   };
 }
 
-function importSMTFromJsonFile(filePath?: string): SMT | null {
+function importSMTFromJsonFile(filePath?: string): typeof SMT | null {
   try {
-    const jsonString = readFileSync(path.resolve(process.cwd(), filePath as string), "utf8");
+    const jsonString = fs.readFileSync(path.resolve(process.cwd(), filePath as string), "utf8");
 
     const data = JSON.parse(jsonString);
 
-    const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
+    const hash2 = (childNodes: typeof ChildNodes) =>
+      childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
     const smt = new SMT(hash2, true);
     smt.import(data);
 

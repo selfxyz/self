@@ -504,12 +504,12 @@ contract IdentityVerificationHubImplV1 is IdentityVerificationHubStorageV1, IIde
         }
 
         // verify current date
-        uint[6] memory dateNum;
+        uint256[6] memory dateNum;
         for (uint256 i = 0; i < 6; i++) {
             dateNum[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i];
         }
 
-        uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
+        uint256 currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         if (
             currentTimestamp < _getStartOfDayTimestamp() - 1 days + 1 ||
             currentTimestamp > _getStartOfDayTimestamp() + 1 days - 1

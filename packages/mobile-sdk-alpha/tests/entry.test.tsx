@@ -20,7 +20,7 @@ function Consumer() {
 describe('SelfMobileSdk Entry Component', () => {
   it('provides client to children and enables MRZ parsing', () => {
     render(
-      <SelfMobileSdk config={{}} adapters={mockAdapters}>
+      <SelfMobileSdk config={{}} adapters={mockAdapters} listeners={new Map()}>
         <Consumer />
       </SelfMobileSdk>,
     );
@@ -31,7 +31,7 @@ describe('SelfMobileSdk Entry Component', () => {
   it('renders children correctly', () => {
     const testMessage = 'Test Child Component';
     render(
-      <SelfMobileSdk config={{}} adapters={mockAdapters}>
+      <SelfMobileSdk config={{}} adapters={mockAdapters} listeners={new Map()}>
         <div>{testMessage}</div>
       </SelfMobileSdk>,
     );

@@ -81,11 +81,12 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
 
     function setVerificationConfig(SelfStructs.VerificationConfigV2 memory config) external {
         verificationConfig = config;
-        _identityVerificationHubV2.setVerificationConfigV2(verificationConfig);
+        verificationConfigId = _identityVerificationHubV2.setVerificationConfigV2(verificationConfig);
     }
 
     function setVerificationConfigNoHub(SelfStructs.VerificationConfigV2 memory config) external {
         verificationConfig = config;
+        verificationConfigId = bytes32(uint256(1));
     }
 
     function setConfigId(bytes32 configId) external {

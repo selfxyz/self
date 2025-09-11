@@ -38,6 +38,18 @@ module.exports = {
       typescript: {
         alwaysTryTypes: true,
         project: './tsconfig.json',
+        extensions: [
+          '.ts',
+          '.tsx',
+          '.native.ts',
+          '.native.tsx',
+          '.web.ts',
+          '.web.tsx',
+          '.ios.ts',
+          '.ios.tsx',
+          '.android.ts',
+          '.android.tsx',
+        ],
       },
     },
     'import/ignore': ['react-native'],

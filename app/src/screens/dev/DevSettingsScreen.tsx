@@ -152,7 +152,6 @@ const items = [
   'DocumentCameraTrouble',
   'DocumentNFCTrouble',
 ] satisfies (keyof RootStackParamList)[];
-
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   const [open, setOpen] = useState(false);

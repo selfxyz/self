@@ -55,6 +55,11 @@ export const shimConfigs = [
   // ===== UTILS =====
   { shimPath: 'utils', targetPath: '../esm/src/utils/index.js', name: 'utils' },
   {
+    shimPath: 'utils/aadhaar/constants',
+    targetPath: '../../../esm/src/utils/aadhaar/constants.js',
+    name: 'utils/aadhaar/constants',
+  },
+  {
     shimPath: 'utils/appType',
     targetPath: '../../esm/src/utils/appType.js',
     name: 'utils/appType',
@@ -183,6 +188,11 @@ export const shimConfigs = [
     shimPath: 'utils/oids',
     targetPath: '../../esm/src/utils/certificate_parsing/oids.js',
     name: 'utils/oids',
+  },
+  {
+    shimPath: 'utils/ofac',
+    targetPath: '../../esm/src/utils/ofac.js',
+    name: 'utils/ofac',
   },
   {
     shimPath: 'utils/passportDg1',

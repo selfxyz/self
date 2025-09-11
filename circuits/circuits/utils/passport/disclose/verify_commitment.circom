@@ -36,7 +36,7 @@ template VERIFY_COMMITMENT(nLevels, DG1_LEN) {
         eContent_shaBytes_packed_hash,
         dsc_tree_leaf
     ]);
-    
+
     // Verify commitment inclusion
     signal computedRoot <== BinaryMerkleRoot(nLevels)(commitment, merkletree_size, path, siblings);
     merkle_root === computedRoot;

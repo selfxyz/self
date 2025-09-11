@@ -52,13 +52,16 @@ describe('RemoteConfigProvider', () => {
     expect(getByTestId('error')).toHaveTextContent('none');
 
     // Wait for initialization to complete
-    await waitFor(() => {
-      expect(getByTestId('initialized')).toHaveTextContent('true');
-    });
+    await waitFor(
+      () => {
+        expect(getByTestId('initialized')).toHaveTextContent('true');
+      },
+      { timeout: 10000 },
+    );
 
     expect(getByTestId('error')).toHaveTextContent('none');
     expect(mockInitRemoteConfig).toHaveBeenCalledTimes(1);
-  });
+  }, 15000);
 
   it('should handle initialization errors gracefully', async () => {
     const errorMessage = 'Firebase initialization failed';

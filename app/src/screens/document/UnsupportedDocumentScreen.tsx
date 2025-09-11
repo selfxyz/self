@@ -10,7 +10,7 @@ import { XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 
 import { countryCodes } from '@selfxyz/common/constants';
-import type { PassportData } from '@selfxyz/common/types';
+import type { DocumentCategory } from '@selfxyz/common/types';
 import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
@@ -39,7 +39,8 @@ type CountryFlagsRecord = Record<string, CountryFlagComponent>;
 type UnsupportedDocumentScreenRouteProp = RouteProp<
   {
     UnsupportedDocument: {
-      passportData: PassportData | null;
+      countryCode: string | null;
+      documentCategory: DocumentCategory | null;
     };
   },
   'UnsupportedDocument'
@@ -55,11 +56,10 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
   const selfClient = useSelfClient();
   const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
-  const passportData = route.params?.passportData;
 
   const { countryName, country2AlphaCode, documentTypeText } = useMemo(() => {
     try {
-      const countryCode = passportData?.passportMetadata?.countryCode;
+      const countryCode = route.params?.countryCode;
       if (countryCode) {
         // Handle Germany corner case where country code is "D<<" instead of "DEU"
         let normalizedCountryCode = countryCode;
@@ -74,7 +74,7 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
         const name =
           countryCodes[normalizedCountryCode as keyof typeof countryCodes];
         const docType =
-          passportData?.documentCategory === 'id_card'
+          route.params?.documentCategory === 'id_card'
             ? 'ID Cards'
             : 'Passports';
         return {
@@ -87,13 +87,13 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
       console.error('Error extracting country from passport data:', error);
     }
     const docType =
-      passportData?.documentCategory === 'id_card' ? 'ID Cards' : 'Passports';
+      route.params?.documentCategory === 'id_card' ? 'ID Cards' : 'Passports';
     return {
       countryName: 'Unknown',
       country2AlphaCode: 'Unknown',
       documentTypeText: docType,
     };
-  }, [passportData]);
+  }, [route.params?.documentCategory, route.params?.countryCode]);
 
   // Get country flag component dynamically
   const getCountryFlag = (code: string) => {
@@ -127,7 +127,7 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
         countryName,
         countryCode:
           country2AlphaCode !== 'Unknown' ? country2AlphaCode : undefined,
-        documentCategory: passportData?.documentCategory,
+        documentCategory: route.params?.documentCategory ?? '',
       });
     } catch (error) {
       console.error('Failed to open email client:', error);

@@ -21,8 +21,6 @@ export type {
   ProofRequest,
   RegistrationInput,
   RegistrationStatus,
-  SDKEvent,
-  SDKEventMap,
   ScanMode,
   ScanOpts,
   ScanResult,
@@ -43,9 +41,11 @@ export type { QRProofOptions } from './qr';
 export type { SdkErrorCategory } from './errors';
 
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+export { SdkEvents } from './types/events';
+
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
-export { createSelfClient } from './client';
+export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 

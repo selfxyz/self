@@ -123,10 +123,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             bytes31(0),
             // 32 bytes scope
             _scope,
-            // 32 bytes attestationId
-            attestationId,
-            // proof data (starts after 32 bytes attestationId)
-            proofPayload[32:]
+            proofPayload
         );
 
         // Call hub V2 verification

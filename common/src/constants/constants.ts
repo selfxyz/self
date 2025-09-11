@@ -42,6 +42,9 @@ export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
 
 export const CSCA_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/csca-id';
 
+export const AADHAAR_ATTESTATION_ID = '3';
+
+// we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEFAULT_MAJORITY = '18';
 
 export const DEFAULT_RPC_URL = 'https://mainnet.optimism.io';
@@ -131,7 +134,7 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number],
 export const MAX_PADDED_SIGNED_ATTR_LEN: Record<(typeof hashAlgos)[number], number> = {
   sha1: 128,
   sha224: 128,
-  sha256: 256,
+  sha256: 128,
   sha384: 256,
   sha512: 256,
 };

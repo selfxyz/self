@@ -22,4 +22,4 @@ jobs:
         shell: bash
         run: yarn workspace @selfxyz/common build
       - name: Build web app
-        run: yarn web:build
+        run: yarn workspace @selfxyz/mobile-app web:build

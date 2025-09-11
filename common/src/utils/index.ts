@@ -6,6 +6,7 @@ export type {
 export type { DocumentCategory, PassportData } from './types.js';
 export type { IdDocInput } from './passports/genMockIdDoc.js';
 export type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
+export type { TEEPayload, TEEPayloadBase, TEEPayloadDisclose } from './proving.js';
 export type { UserIdType } from './circuits/uuid.js';
 export type { EndpointType, Mode, SelfApp, SelfAppDisclosureConfig } from './appType.js';
 export { SelfAppBuilder, getUniversalLink } from './appType.js';
@@ -35,7 +36,6 @@ export {
   generateNullifier,
   initPassportDataParsing,
 } from './passports/passport.js';
-export type { TEEPayload, TEEPayloadBase, TEEPayloadDisclose } from './proving.js';
 export { formatMrz } from './passports/format.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
 export {

@@ -17,7 +17,6 @@ struct MRZScanner {
             if let error = error {
                 print("Vision error: \(error)")
             }
-
             guard let observations = request.results as? [VNRecognizedTextObservation] else {
                 print("No text observations found")
                 completion("No text found", [])
@@ -47,7 +46,6 @@ struct MRZScanner {
                         // print("Matched MRZ pattern: \(text)")
                         mrzLines.append(text)
                         boxes.append(obs.boundingBox)
-
                         // Check if we have a complete MRZ
                         if (mrzLines.count == 2 && mrzLines.allSatisfy { $0.count == 44 }) || // TD3 - passport
                            (mrzLines.count == 3 && mrzLines.allSatisfy { $0.count == 30 }) {  // TD1 - ID card

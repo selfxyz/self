@@ -183,6 +183,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
             logoBase64: row.logoBase64,
             userId: row.userId,
             userIdType: row.userIdType,
+            documentId: row.documentId,
           });
         }
 

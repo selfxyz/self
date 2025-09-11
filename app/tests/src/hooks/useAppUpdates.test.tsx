@@ -15,6 +15,14 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
+jest.mock('@/navigation', () => ({
+  navigationRef: {
+    isReady: jest.fn(() => true),
+    navigate: jest.fn(),
+    getCurrentRoute: jest.fn(),
+  },
+}));
+
 jest.mock('react-native-check-version', () => ({
   checkVersion: jest.fn(),
 }));

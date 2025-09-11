@@ -5,7 +5,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../src';
-import { createSelfClient } from '../src/index';
+import { createListenersMap, createSelfClient, SdkEvents } from '../src/index';
 import { AuthAdapter } from '../src/types/public';
 
 describe('createSelfClient', () => {
@@ -47,7 +47,11 @@ describe('createSelfClient', () => {
   });
 
   it('creates client successfully with all required adapters', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth } });
+    const client = createSelfClient({
+      config: {},
+      adapters: { scanner, network, crypto, documents, auth },
+      listeners: new Map(),
+    });
     expect(client).toBeTruthy();
   });
 
@@ -56,6 +60,7 @@ describe('createSelfClient', () => {
     const client = createSelfClient({
       config: {},
       adapters: { scanner: { scan: scanMock }, network, crypto, documents, auth },
+      listeners: new Map(),
     });
     const result = await client.scanDocument({ mode: 'qr' });
     expect(result).toEqual({ mode: 'qr', data: 'self://ok' });
@@ -68,6 +73,7 @@ describe('createSelfClient', () => {
     const client = createSelfClient({
       config: {},
       adapters: { scanner: { scan: scanMock }, network, crypto, documents, auth },
+      listeners: new Map(),
     });
     await expect(client.scanDocument({ mode: 'qr' })).rejects.toBe(err);
   });
@@ -76,7 +82,11 @@ describe('createSelfClient', () => {
     const network = { http: { fetch: vi.fn() }, ws: { connect: vi.fn() } } as any;
     const crypto = { hash: vi.fn(), sign: vi.fn() } as any;
     const scanner = { scan: vi.fn() } as any;
-    const client = createSelfClient({ config: {}, adapters: { network, crypto, scanner, documents, auth } });
+    const client = createSelfClient({
+      config: {},
+      adapters: { network, crypto, scanner, documents, auth },
+      listeners: new Map(),
+    });
     const handle = await client.generateProof({ type: 'register', payload: {} });
     expect(handle.id).toBe('stub');
     expect(handle.status).toBe('pending');
@@ -85,26 +95,49 @@ describe('createSelfClient', () => {
   });
 
   it('emits and unsubscribes events', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth } });
-    const cb = vi.fn();
-    const originalSet = Map.prototype.set;
-    let eventSet: Set<(p: any) => void> | undefined;
-    Map.prototype.set = function (key: any, value: any) {
-      if (key === 'progress') eventSet = value;
-      return originalSet.call(this, key, value);
-    };
-    const unsub = client.on('progress', cb);
-    Map.prototype.set = originalSet;
+    const listeners = createListenersMap();
 
-    eventSet?.forEach(fn => fn({ step: 'one' }));
-    expect(cb).toHaveBeenCalledWith({ step: 'one' });
-    unsub();
-    eventSet?.forEach(fn => fn({ step: 'two' }));
-    expect(cb).toHaveBeenCalledTimes(1);
+    const passportNotSupportedListener = vi.fn();
+    const accountRecoveryChoiceListener = vi.fn();
+    const anotherAccountRecoveryChoiceListener = vi.fn();
+
+    listeners.addListener(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, passportNotSupportedListener);
+    listeners.addListener(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED, accountRecoveryChoiceListener);
+    listeners.addListener(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED, anotherAccountRecoveryChoiceListener);
+
+    const client = createSelfClient({
+      config: {},
+      adapters: { scanner, network, crypto, documents, auth },
+      listeners: listeners.map,
+    });
+
+    client.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, { countryCode: 'test', documentCategory: 'passport' });
+    client.emit(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED);
+    client.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, { hasValidDocument: true });
+
+    expect(accountRecoveryChoiceListener).toHaveBeenCalledTimes(1);
+    expect(accountRecoveryChoiceListener).toHaveBeenCalledWith(undefined);
+    expect(anotherAccountRecoveryChoiceListener).toHaveBeenCalledTimes(1);
+    expect(anotherAccountRecoveryChoiceListener).toHaveBeenCalledWith(undefined);
+
+    expect(passportNotSupportedListener).toHaveBeenCalledWith({ countryCode: 'test', documentCategory: 'passport' });
+    expect(passportNotSupportedListener).toHaveBeenCalledTimes(1);
+
+    client.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, { countryCode: 'test', documentCategory: 'passport' });
+    client.emit(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED);
+    client.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, { hasValidDocument: true });
+
+    expect(passportNotSupportedListener).toHaveBeenCalledTimes(2);
+    expect(accountRecoveryChoiceListener).toHaveBeenCalledTimes(2);
+    expect(anotherAccountRecoveryChoiceListener).toHaveBeenCalledTimes(2);
   });
 
   it('parses MRZ via client', () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth } });
+    const client = createSelfClient({
+      config: {},
+      adapters: { scanner, network, crypto, documents, auth },
+      listeners: new Map(),
+    });
     const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
     const info = client.extractMRZInfo(sample);
     expect(info.documentNumber).toBe('L898902C3');
@@ -112,7 +145,11 @@ describe('createSelfClient', () => {
   });
 
   it('returns stub registration status', async () => {
-    const client = createSelfClient({ config: {}, adapters: { scanner, network, crypto, documents, auth } });
+    const client = createSelfClient({
+      config: {},
+      adapters: { scanner, network, crypto, documents, auth },
+      listeners: new Map(),
+    });
     await expect(client.registerDocument({} as any)).resolves.toEqual({
       registered: false,
       reason: 'SELF_REG_STATUS_STUB',
@@ -131,6 +168,7 @@ describe('createSelfClient', () => {
           analytics: { trackEvent },
           auth: { getPrivateKey: () => Promise.resolve('stubbed-private-key') },
         },
+        listeners: new Map(),
       });
 
       client.trackEvent('test_event');
@@ -146,6 +184,7 @@ describe('createSelfClient', () => {
       const client = createSelfClient({
         config: {},
         adapters: { scanner, network, crypto, documents, auth: { getPrivateKey } },
+        listeners: new Map(),
       });
 
       await expect(client.getPrivateKey()).resolves.toBe('stubbed-private-key');
@@ -155,6 +194,7 @@ describe('createSelfClient', () => {
       const client = createSelfClient({
         config: {},
         adapters: { scanner, network, crypto, documents, auth: { getPrivateKey } },
+        listeners: new Map(),
       });
       await expect(client.hasPrivateKey()).resolves.toBe(true);
     });

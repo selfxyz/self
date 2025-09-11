@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-sdk-alpha",
-  "version": "2.6.4",
+  "version": "0.0.1",
   "description": "Self SDK (alpha) for registering and proving. Adapters-first, RN-first with web shims.",
   "keywords": [
     "self",
@@ -29,6 +29,11 @@
       "react-native": "./dist/esm/constants/index.js",
       "import": "./dist/esm/constants/index.js",
       "require": "./dist/cjs/constants/index.cjs"
+    },
+    "./stores": {
+      "types": "./dist/esm/stores.d.ts",
+      "import": "./dist/esm/stores.js",
+      "require": "./dist/cjs/stores.cjs"
     },
     "./constants/analytics": {
       "types": "./dist/esm/constants/analytics.d.ts",
@@ -87,11 +92,11 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",
-    "@selfxyz/common": "workspace:*",
-    "tslib": "^2.6.2"
+    "@selfxyz/common": "workspace:^",
+    "tslib": "^2.6.2",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "@selfxyz/common": "workspace:^",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",

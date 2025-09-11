@@ -28,12 +28,14 @@ import {
   IRegisterCircuitVerifier,
   IDscCircuitVerifier,
   IVcAndDiscloseCircuitVerifier,
+  IdentityRegistryAadhaarImplV1,
 } from "../../typechain-types";
 
 import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common";
 
 export type PassportProof = IIdentityVerificationHubV1.PassportProofStruct;
 export type RegisterCircuitProof = IRegisterCircuitVerifier.RegisterCircuitProofStruct;
+export type RegisterAadhaarCircuitProof = IRegisterCircuitVerifier.RegisterAadhaarCircuitProofStruct;
 export type DscCircuitProof = IDscCircuitVerifier.DscCircuitProofStruct;
 export type VcAndDiscloseHubProof = IIdentityVerificationHubV1.VcAndDiscloseHubProofStruct;
 export type VcAndDiscloseProof = IVcAndDiscloseCircuitVerifier.VcAndDiscloseProofStruct;
@@ -72,7 +74,11 @@ export interface DeployedActorsV2 {
   registry: IdentityRegistryImplV1;
   registryIdImpl: IdentityRegistryIdCardImplV1;
   registryId: IdentityRegistryIdCardImplV1;
+  registryAadhaarImpl: IdentityRegistryAadhaarImplV1;
+  registryAadhaar: IdentityRegistryAadhaarImplV1;
   vcAndDisclose: VcAndDiscloseVerifier;
+  vcAndDiscloseAadhaar: VcAndDiscloseAadhaarVerifier;
+  aadhaarPubkey: bigint;
   vcAndDiscloseId: VcAndDiscloseIdVerifier;
   register: RegisterVerifier;
   registerId: RegisterVerifierId;

@@ -2,25 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import CreateMockScreen from '@/screens/dev/CreateMockScreen';
+import CreateMockScreenDeepLink from '@/screens/dev/CreateMockScreenDeepLink';
+import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
+import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
+import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
+import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import { black, white } from '@/utils/colors';
-
-const DevFeatureFlagsScreen = lazy(
-  () => import('@/screens/dev/DevFeatureFlagsScreen'),
-);
-const DevHapticFeedbackScreen = lazy(
-  () => import('@/screens/dev/DevHapticFeedbackScreen'),
-);
-const DevPrivateKeyScreen = lazy(
-  () => import('@/screens/dev/DevPrivateKeyScreen'),
-);
-const DevSettingsScreen = lazy(() => import('@/screens/dev/DevSettingsScreen'));
-const CreateMockScreen = lazy(() => import('@/screens/dev/CreateMockScreen'));
-const CreateMockScreenDeepLink = lazy(
-  () => import('@/screens/dev/CreateMockScreenDeepLink'),
-);
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {

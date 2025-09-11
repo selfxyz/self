@@ -25,7 +25,7 @@ jest.mock('@/providers/passportDataProvider', () => ({
 }));
 
 // Mock the protocol store to avoid complex state management
-jest.mock('@/stores/protocolStore', () => ({
+jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => ({
   useProtocolStore: {
     getState: jest.fn(() => ({
       passport: {

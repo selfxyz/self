@@ -61,10 +61,10 @@ contract Verifier_register_id_sha256_sha256_sha256_rsa_65537_4096 {
     uint16 constant pLastMem = 896;
 
     function verifyProof(
-        uint[2] calldata _pA,
-        uint[2][2] calldata _pB,
-        uint[2] calldata _pC,
-        uint[3] calldata _pubSignals
+        uint256[2] calldata _pA,
+        uint256[2][2] calldata _pB,
+        uint256[2] calldata _pC,
+        uint256[3] calldata _pubSignals
     ) public view returns (bool) {
         assembly {
             function checkField(v) {

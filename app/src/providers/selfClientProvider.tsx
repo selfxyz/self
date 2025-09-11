@@ -7,13 +7,16 @@ import { Platform } from 'react-native';
 
 import {
   Adapters,
+  createListenersMap,
   reactNativeScannerAdapter,
+  SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
+import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import analytics from '@/utils/analytics';
@@ -95,8 +98,65 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     [],
   );
 
+  const appListeners = useMemo(() => {
+    const { map, addListener } = createListenersMap();
+
+    addListener(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('DocumentDataNotFound');
+      }
+    });
+
+    addListener(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
+      setTimeout(() => {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('AccountVerifiedSuccess');
+        }
+      }, 3000);
+    });
+
+    addListener(
+      SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
+      async ({ hasValidDocument }) => {
+        setTimeout(() => {
+          if (navigationRef.isReady()) {
+            if (hasValidDocument) {
+              navigationRef.navigate('Home');
+            } else {
+              navigationRef.navigate('Launch');
+            }
+          }
+        }, 3000);
+      },
+    );
+
+    addListener(
+      SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
+      ({ countryCode, documentCategory }) => {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('UnsupportedDocument', {
+            countryCode,
+            documentCategory,
+          } as any);
+        }
+      },
+    );
+
+    addListener(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('AccountRecoveryChoice');
+      }
+    });
+
+    return map;
+  }, []);
+
   return (
-    <SDKSelfClientProvider config={config} adapters={adapters}>
+    <SDKSelfClientProvider
+      config={config}
+      adapters={adapters}
+      listeners={appListeners}
+    >
       {children}
     </SDKSelfClientProvider>
   );

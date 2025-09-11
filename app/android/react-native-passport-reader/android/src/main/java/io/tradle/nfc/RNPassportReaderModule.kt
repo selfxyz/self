@@ -469,7 +469,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 // Select applet after authentication established; handle 0x6982 gracefully
                 try {
                     Log.e("MY_LOGS", "Sending select applet command after auth. paceSucceeded=$paceSucceeded, bacSucceeded=$bacSucceeded")
-                    service.sendSelectApplet(paceSucceeded)
+                    service.sendSelectApplet(true) //we have already checked either paceSucceeded OR bacSucceeded is true. So we should send true to use SecureMessaging
                     logAnalyticsEvent("nfc_select_applet_succeeded", mapOf(
                         "pace_succeeded" to paceSucceeded,
                         "bac_succeeded" to bacSucceeded
