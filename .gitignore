@@ -15,3 +15,4 @@ output/*
 mobile-sdk-alpha-ci.tgz
 **/mobile-sdk-alpha-*.tgz
 /tmp/mobile-sdk-alpha*.tgz
+dataInput.d.ts
