@@ -117,6 +117,11 @@ elif [[ $1 == "register_id" ]]; then
     output="output/register"
     mkdir -p $output
     basepath="./circuits/circuits/register_id/instances"
+elif [[ $1 == "register_aadhaar" ]]; then
+    allowed_circuits=("${REGISTER_AADHAAR_CIRCUITS[@]}")
+    output="output/register_aadhaar"
+    mkdir -p $output
+    basepath="./circuits/circuits/register/instances"
 elif [[ $1 == "dsc" ]]; then
     allowed_circuits=("${DSC_CIRCUITS[@]}")
     output="output/dsc"
