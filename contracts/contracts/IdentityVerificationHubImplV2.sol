@@ -624,6 +624,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Scope 2: Root and date checks
         {
             _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
+            _performOfacCheck(header.attestationId, vcAndDiscloseProof, indices);
             if (header.attestationId == AttestationId.AADHAAR) {
                 _performNumericCurrentDateCheck(vcAndDiscloseProof, indices);
             } else {
@@ -705,11 +706,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             }
         } else if (attestationId == AttestationId.AADHAAR) {
             uint256 timestamp = registerCircuitProof.pubSignals[CircuitConstantsV2.AADHAAR_TIMESTAMP_INDEX];
-            if (timestamp < block.timestamp - 20 minutes) {
+            if (timestamp < (block.timestamp - 20 minutes)) {
                 revert InvalidUidaiTimestamp();
             }
 
-            if (timestamp > block.timestamp + 20 minutes) {
+            if (timestamp > (block.timestamp + 20 minutes)) {
                 revert InvalidUidaiTimestamp();
             }
 
@@ -878,6 +879,46 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         } else if (attestationId == AttestationId.AADHAAR) {
             if (!IIdentityRegistryAadhaarV1($._registries[attestationId]).checkIdentityCommitmentRoot(merkleRoot)) {
                 revert InvalidIdentityCommitmentRoot();
+            }
+        } else {
+            revert InvalidAttestationId();
+        }
+    }
+
+    function _performOfacCheck(
+        bytes32 attestationId,
+        GenericProofStruct memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal view {
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+
+        if (attestationId == AttestationId.E_PASSPORT) {
+            if (
+                !IIdentityRegistryV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.passportNoSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
+            }
+        } else if (attestationId == AttestationId.EU_ID_CARD) {
+            if (
+                !IIdentityRegistryIdCardV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
+            }
+        } else if (attestationId == AttestationId.AADHAAR) {
+            if (
+                !IIdentityRegistryAadhaarV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
             }
         } else {
             revert InvalidAttestationId();
