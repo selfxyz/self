@@ -45,6 +45,15 @@ export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
+export {
+  clearPassportData,
+  getAllDocuments,
+  hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+} from './documents/utils';
+
 export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
@@ -53,8 +62,6 @@ export { defaultConfig } from './config/defaults';
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
-
-export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';
