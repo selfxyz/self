@@ -12,12 +12,12 @@
 
 ### Android
 
-| Requirement                 | Version       | Installation Guide                                                                    |
-| --------------------------- | ------------- | ------------------------------------------------------------------------------------- |
-| Java                        | 17            | [Install Java](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)  |
-| Android Studio (Optional)*  | Latest        | [Install Android Studio](https://developer.android.com/studio)                        |
-| Android SDK                 | Latest        | See instructions for Android below                                                    |
-| Android NDK                 | 27.0.11718014 | See instructions for Android below                                                    |
+| Requirement                 | Version       | Installation Guide                                                                   |
+| --------------------------- | ------------- | ------------------------------------------------------------------------------------ |
+| Java                        | 17            | [Install Java](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html) |
+| Android Studio (Optional)\* | Latest        | [Install Android Studio](https://developer.android.com/studio)                       |
+| Android SDK                 | Latest        | See instructions for Android below                                                   |
+| Android NDK                 | 27.0.11718014 | See instructions for Android below                                                   |
 
 \* To facilitate the installation of the SDK and the NDK, and to pair with development devices with a conventient QR code, you can use Android Studio.
 
@@ -62,38 +62,39 @@ Under **SDK Platforms**, install the platform with the highest API number
 
 Under **SDK Tools**, check the **Show Package Details** checkbox, expand **NDK (Side by side)**, select version **27.0.11718014** and install.
 
-
 #### Using sdkmanager via CLI
 
 Create a directory for the Android SDK. For example `~/android_sdk`. Define the environment variable `ANDROID_HOME` to point that directory.
 
 Install sdkmanager under `ANDROID_HOME` according to the instructions on https://developer.android.com/tools/sdkmanager
 
-
-
 List available SDK platforms
+
 ```bash
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | grep platforms
 ```
 
-In the list of platforms, find the latest version and install it. (Replace *NN* with the latest version number)
+In the list of platforms, find the latest version and install it. (Replace _NN_ with the latest version number)
+
 ```bash
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-NN"
 ```
 
 Install the NDK
+
 ```bash
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.11718014"
 ```
+
 Define the environment variable `ANDROID_NDK_VERSION` to `27.0.11718014` and `ANDROID_NDK` to `$ANDROID_HOME/ndk/27.0.11718014`
 
 Install Platform Tools, needed for the `adb` tool
+
 ```bash
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install platform-tools
 ```
 
 Add `$ANDROID_HOME/platform-tools` to your `$PATH` variable
-
 
 ## Run the app
 
@@ -108,11 +109,13 @@ In Android Studio, use Device Manager to pair with and connect to your phone.
 ##### Using adb
 
 In your phone's developer settings, select **Wireless debugging** > **Pair the device using a pairing code**. Using the displayed information, run
+
 ```
 adb pair PHONE_IP:PAIRING_PORT PAIRING_CODE
 ```
 
 To connect to the device, find the IP number and port (different port than in the pairing step) directly under Wireless debugging, and run
+
 ```
 adb connect PHONE_IP:DEVELOPMENT_PORT
 ```
@@ -126,10 +129,10 @@ sdk.dir=/path/to/your/android/sdk
 ```
 
 or create it with
+
 ```bash
 echo sdk.dir=$ANDROID_HOME > android/local.properties
 ```
-
 
 Launch the React Native server:
 
@@ -160,6 +163,7 @@ pod install
 And run the app in Xcode.
 
 #### Simulator Build
+
 > **Note:** iOS Simulator on Apple Silicon Macs requires Rosetta (x86_64) mode due to simulator architecture compatibility. If you're using a Silicon Mac (M1/M2/M3/M4), you may find that the Rosetta simulator build option is not available by default in Xcode.
 
 To enable it, open Xcode and go to **Product > Destination > Show All Run Destinations**. This will unlock the ability to select the Rosetta build simulator, allowing you to run the app in the iOS Simulator.
@@ -235,6 +239,7 @@ Deployments happen automatically when you merge PRs:
 2. **Merge to `main`** → Deploys to production
 
 To control versions with PR labels:
+
 - `version:major` - Major version bump
 - `version:minor` - Minor version bump
 - `version:patch` - Patch version bump (default for main)
@@ -257,6 +262,7 @@ git push && git push --tags
 ```
 
 The release script will:
+
 - Check for uncommitted changes
 - Bump the version in package.json
 - Update iOS and Android native versions
@@ -310,7 +316,9 @@ bundle exec fastlane ios build_local
 ### Troubleshooting Deployments
 
 #### Version Already Exists
+
 The build system auto-increments build numbers. If you get version conflicts:
+
 ```bash
 # Check current versions
 node scripts/version.cjs status
@@ -321,6 +329,7 @@ node scripts/version.cjs bump-build android
 ```
 
 #### Certificate Issues (iOS)
+
 ```bash
 # Check certificate validity
 bundle exec fastlane ios check_certs
@@ -332,18 +341,22 @@ bundle exec fastlane ios check_certs
 ```
 
 #### Play Store Upload Issues
+
 If automated upload fails, the AAB is saved locally:
+
 - Location: `android/app/build/outputs/bundle/release/app-release.aab`
 - Upload manually via Play Console
 
 ### Build Optimization
 
 The CI/CD pipeline uses extensive caching:
+
 - **iOS builds**: ~15 minutes (with cache)
 - **Android builds**: ~10 minutes (with cache)
 - **First build**: ~25 minutes (no cache)
 
 To speed up local builds:
+
 ```bash
 # Clean only what's necessary
 yarn clean:build  # Clean build artifacts only

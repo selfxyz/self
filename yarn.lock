@@ -23234,6 +23234,7 @@ __metadata:
     husky: "npm:9.1.7"
     knip: "npm:^5.62.0"
     patch-package: "npm:^8.0.0"
+    prettier: "npm:^3.5.3"
     react: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     typescript: "npm:^5.9.2"

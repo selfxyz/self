@@ -886,7 +886,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       return new Promise(resolve => {
         const ws = new WebSocket(wsRpcUrl);
-        
+
         const handleConnectSuccess = () => {
           selfClient.trackEvent(ProofEvents.TEE_CONN_SUCCESS);
           resolve(true);
@@ -898,7 +898,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         // Create stable handler functions
         const wsHandlers: WsHandlers = {
-          message: (event: MessageEvent) => get()._handleWebSocketMessage(event, selfClient),
+          message: (event: MessageEvent) =>
+            get()._handleWebSocketMessage(event, selfClient),
           open: () => get()._handleWsOpen(selfClient),
           error: (error: Event) => get()._handleWsError(error, selfClient),
           close: (event: CloseEvent) => get()._handleWsClose(event, selfClient),
