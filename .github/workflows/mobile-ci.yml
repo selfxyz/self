@@ -308,6 +308,8 @@ jobs:
           # Reuse the same guarded flow as local to ensure reproducibility
           bundle exec bash scripts/pod-install-with-cache-fix.sh
         working-directory: ./app
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Resolve iOS workspace
         run: |
           WORKSPACE_OPEN="ios/OpenPassport.xcworkspace"
