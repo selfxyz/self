@@ -2,30 +2,21 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
-import { Dimensions, Pressable } from 'react-native';
-import { Button, Image, Separator, Text, XStack, YStack } from 'tamagui';
-import { useFocusEffect } from '@react-navigation/native';
+import type { FC } from 'react';
+import { Dimensions } from 'react-native';
+import { Separator, Text, XStack, YStack } from 'tamagui';
 
 import {
   attributeToPosition,
   attributeToPosition_ID,
 } from '@selfxyz/common/constants';
 import { PassportData } from '@selfxyz/common/types';
-import { formatMrz } from '@selfxyz/common/utils';
-import { pad } from '@selfxyz/common/utils/passports/passport';
 
 import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
 import EPassport from '@/images/icons/epassport.svg';
 import LogoGray from '@/images/logo_gray.svg';
-import LogoInversed from '@/images/logo_inversed.svg';
-import { usePassport } from '@/providers/passportDataProvider';
 import {
   black,
-  blue600,
-  green500,
-  red500,
-  slate50,
   slate100,
   slate300,
   slate400,
@@ -53,7 +44,7 @@ interface IdCardLayoutAttributes {
 // each element size should be determined as % of the screen or the parent element
 // the border radius should be adaptative too, as well as the padding
 // this is the v0 of this component so we should only use placholders for now, no need to pass the real passport data as parameters.
-const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
+const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   idDocument,
   selected,
   hidden,
@@ -64,7 +55,7 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
   };
 
   // Get screen dimensions for adaptive sizing
-  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const { width: screenWidth } = Dimensions.get('window');
 
   // Calculate adaptive sizes based on screen dimensions
   // Reduce width slightly to account for horizontal margins (8px each side = 16px total)
@@ -442,7 +433,7 @@ interface IdAttributeProps {
 // the font size should adapt according to the size available to fit perfectly.
 // only svg are allowed.
 // each element size should be determined as % of the screen or the parent element
-const IdAttribute: React.FC<IdAttributeProps> = ({
+const IdAttribute: FC<IdAttributeProps> = ({
   name,
   value,
   maskValue,

@@ -16,7 +16,7 @@ import { NavBar } from '@/components/NavBar/BaseNavBar';
 import ActivityIcon from '@/images/icons/activity.svg';
 import ScanIcon from '@/images/icons/qr_scan.svg';
 import SettingsIcon from '@/images/icons/settings.svg';
-import { black, charcoal, neutral400, slate50, white } from '@/utils/colors';
+import { black, charcoal, slate50 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { buttonTap } from '@/utils/haptic';
 
