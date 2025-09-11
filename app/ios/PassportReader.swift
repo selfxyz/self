@@ -14,6 +14,7 @@ import NFCPassportReader
 #endif
 import Security
 import Mixpanel
+import Sentry
 
 #if !E2E_TESTING
 @available(iOS 13, macOS 10.15, *)
@@ -48,6 +49,7 @@ class PassportReader: NSObject {
     }
 
     private var analytics: SelfAnalytics?
+    private var currentSessionId: String?
 
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
@@ -110,7 +112,7 @@ class PassportReader: NSObject {
     return (sum % 10)
   }
 
-  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:resolve:reject:)
+  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:sessionId:resolve:reject:)
   func scanPassport(
     _ passportNumber: String,
     dateOfBirth: String,
@@ -121,12 +123,21 @@ class PassportReader: NSObject {
     skipCA: NSNumber,
     extendedMode: NSNumber,
     usePacePolling: NSNumber,
+    sessionId: String,
     resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
    let useCANBool = useCan.boolValue
    let skipPACEBool = skipPACE.boolValue
    let skipCABool = skipCA.boolValue
    let extendedModeBool = extendedMode.boolValue
    let usePacePollingBool = usePacePolling.boolValue
+   self.currentSessionId = sessionId
+   SentrySDK.configureScope { scope in
+     scope.setTag(value: sessionId, key: "session_id")
+     scope.setTag(value: "ios", key: "platform")
+     scope.setTag(value: useCANBool ? "can" : "mrz", key: "scan_type")
+     scope.setTag(value: "start", key: "stage")
+   }
+   SentrySDK.capture(message: "scan_start")
 
     let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
       switch displayMessage {
@@ -316,9 +327,23 @@ class PassportReader: NSObject {
         }
 
         let stringified = String(data: try JSONEncoder().encode(ret), encoding: .utf8)
-
+        SentrySDK.configureScope { scope in
+          scope.setTag(value: sessionId, key: "session_id")
+          scope.setTag(value: "ios", key: "platform")
+          scope.setTag(value: useCANBool ? "can" : "mrz", key: "scan_type")
+          scope.setTag(value: "complete", key: "stage")
+        }
+        SentrySDK.capture(message: "scan_success")
         resolve(stringified)
       } catch {
+        SentrySDK.configureScope { scope in
+          scope.setTag(value: sessionId, key: "session_id")
+          scope.setTag(value: "ios", key: "platform")
+          scope.setTag(value: useCANBool ? "can" : "mrz", key: "scan_type")
+          scope.setTag(value: "error", key: "stage")
+          scope.setExtra(value: error.localizedDescription, key: "error")
+        }
+        SentrySDK.capture(message: "scan_failed")
         reject("E_PASSPORT_READ", error.localizedDescription, error)
       }
     }
@@ -462,7 +487,7 @@ class PassportReader: NSObject {
         // No-op for E2E testing
     }
 
-    @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:resolve:reject:)
+    @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:sessionId:resolve:reject:)
     func scanPassport(
         _ passportNumber: String,
         dateOfBirth: String,
@@ -473,6 +498,7 @@ class PassportReader: NSObject {
         skipCA: NSNumber,
         extendedMode: NSNumber,
         usePacePolling: NSNumber,
+        sessionId: String,
         resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         reject("E2E_TESTING", "NFC scanning not available in E2E testing mode", nil)
     }

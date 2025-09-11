@@ -115,6 +115,8 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Callback
+import io.sentry.Sentry
+import io.sentry.SentryLevel
 
 object Messages {
     const val SCANNING = "Scanning....."
@@ -200,10 +202,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
     @ReactMethod
     fun scan(opts: ReadableMap, promise: Promise) {
-        currentSessionId = generateSessionId()
-        
+        currentSessionId = if (opts.hasKey("sessionId")) opts.getString("sessionId") else generateSessionId()
+
         apduLogger.setContext("session_id", currentSessionId!!)
-        
+
         // Log scan start
         logAnalyticsEvent("nfc_scan_started", mapOf(
             "use_can" to (opts.getBoolean(PARAM_USE_CAN) ?: false),
@@ -211,18 +213,22 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             "has_can_number" to (!opts.getString(PARAM_CAN).isNullOrEmpty()),
             "platform" to "android"
         ))
+
+        logNfc(SentryLevel.INFO, "scan_start", "start")
         
         eventMessageEmitter(Messages.SCANNING)
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(reactApplicationContext)
         // val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
         if (mNfcAdapter == null) {
             logAnalyticsError("nfc_not_supported", "NFC chip reading not supported")
+            logNfc(SentryLevel.ERROR, "nfc_not_supported", "check")
             promise.reject("E_NOT_SUPPORTED", "NFC chip reading not supported")
             return
         }
 
         if (!mNfcAdapter.isEnabled) {
             logAnalyticsError("nfc_not_enabled", "NFC chip reading not enabled")
+            logNfc(SentryLevel.ERROR, "nfc_not_enabled", "check")
             promise.reject("E_NOT_ENABLED", "NFC chip reading not enabled")
             return
         }
@@ -943,6 +949,20 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
      */
     private fun generateSessionId(): String {
         return "nfc_${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(8)}"
+    }
+
+    private fun logNfc(level: SentryLevel, message: String, stage: String, extras: Map<String, Any?> = emptyMap()) {
+        Sentry.withScope { scope ->
+            scope.level = level
+            currentSessionId?.let { scope.setTag("session_id", it) }
+            scope.setTag("platform", "android")
+            scope.setTag("scan_type", if (opts?.getBoolean(PARAM_USE_CAN) == true) "can" else "mrz")
+            scope.setTag("stage", stage)
+            for ((k, v) in extras) {
+                scope.setExtra(k, v)
+            }
+            Sentry.captureMessage(message)
+        }
     }
 
     companion object {

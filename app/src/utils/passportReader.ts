@@ -14,6 +14,7 @@ type ScanOptions = {
   skipCA?: boolean;
   extendedMode?: boolean;
   usePacePolling?: boolean;
+  sessionId?: string;
 };
 
 // Platform-specific PassportReader implementation
@@ -55,6 +56,7 @@ if (Platform.OS === 'android') {
           skipCA = false,
           extendedMode = false,
           usePacePolling = true,
+          sessionId = '',
         } = options;
 
         const result = await PassportReader.scanPassport(
@@ -67,6 +69,7 @@ if (Platform.OS === 'android') {
           skipCA,
           extendedMode,
           usePacePolling,
+          sessionId,
         );
         // iOS native returns a JSON string; normalize to object.
         try {

@@ -7,11 +7,54 @@ import {
   captureException as sentryCaptureException,
   captureFeedback as sentryCaptureFeedback,
   captureMessage as sentryCaptureMessage,
+  withScope,
   consoleLoggingIntegration,
   feedbackIntegration,
   init as sentryInit,
   wrap,
 } from '@sentry/react-native';
+
+export interface NFCScanContext {
+  sessionId: string;
+  userId?: string;
+  platform: 'ios' | 'android';
+  scanType: 'mrz' | 'can';
+  stage: string;
+}
+
+export const logNFCEvent = (
+  level: 'info' | 'warn' | 'error',
+  message: string,
+  context: NFCScanContext,
+  extra?: Record<string, unknown>,
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+
+  const levelMap = {
+    info: 'info',
+    warn: 'warning',
+    error: 'error',
+  } as const;
+
+  withScope(scope => {
+    scope.setLevel(levelMap[level] as any);
+    scope.setTag('session_id', context.sessionId);
+    scope.setTag('platform', context.platform);
+    scope.setTag('scan_type', context.scanType);
+    scope.setTag('stage', context.stage);
+    if (context.userId) {
+      scope.setUser({ id: context.userId });
+    }
+    if (extra) {
+      Object.entries(extra).forEach(([key, value]) => {
+        scope.setExtra(key, value as any);
+      });
+    }
+    sentryCaptureMessage(message);
+  });
+};
 
 export const captureException = (
   error: Error,
