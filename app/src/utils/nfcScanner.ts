@@ -4,10 +4,10 @@
 
 import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
-import { logNFCEvent, type NFCScanContext } from '@/Sentry';
 
 import type { PassportData } from '@selfxyz/common/types';
 
+import { logNFCEvent, type NFCScanContext } from '@/Sentry';
 import { configureNfcAnalytics } from '@/utils/analytics';
 import {
   PassportReader,
@@ -67,9 +67,14 @@ export const scan = async (inputs: Inputs) => {
       ? await scanAndroid(inputs, baseContext)
       : await scanIOS(inputs, baseContext);
   } catch (error) {
-    logNFCEvent('error', 'scan_failed', { ...baseContext, stage: 'scan' }, {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    logNFCEvent(
+      'error',
+      'scan_failed',
+      { ...baseContext, stage: 'scan' },
+      {
+        error: error instanceof Error ? error.message : String(error),
+      },
+    );
     throw error;
   }
 };

@@ -14,6 +14,7 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Button, Image, XStack } from 'tamagui';
+import { v4 as uuidv4 } from 'uuid';
 import type { RouteProp } from '@react-navigation/native';
 import {
   useFocusEffect,
@@ -21,8 +22,6 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import { CircleHelp } from '@tamagui/lucide-icons';
-import { v4 as uuidv4 } from 'uuid';
-import { logNFCEvent } from '@/Sentry';
 
 import type { PassportData } from '@selfxyz/common/types';
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
@@ -46,6 +45,7 @@ import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
+import { logNFCEvent } from '@/Sentry';
 import useUserStore from '@/stores/userStore';
 import {
   flushAllAnalytics,
@@ -163,10 +163,15 @@ const DocumentNFCScanScreen: React.FC = () => {
   const openErrorModal = useCallback(
     (message: string) => {
       flushAllAnalytics();
-      logNFCEvent('error', 'nfc_error_modal', {
-        ...baseContext,
-        stage: 'error',
-      }, { message: sanitizeErrorMessage(message) });
+      logNFCEvent(
+        'error',
+        'nfc_error_modal',
+        {
+          ...baseContext,
+          stage: 'error',
+        },
+        { message: sanitizeErrorMessage(message) },
+      );
       showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
@@ -194,13 +199,18 @@ const DocumentNFCScanScreen: React.FC = () => {
         setDialogMessage('NFC is not enabled. Please enable it in settings.');
       }
       setIsNfcSupported(true);
-      logNFCEvent('info', 'nfc_capability', {
-        ...baseContext,
-        stage: 'check',
-      }, {
-        supported: true,
-        enabled: isEnabled,
-      });
+      logNFCEvent(
+        'info',
+        'nfc_capability',
+        {
+          ...baseContext,
+          stage: 'check',
+        },
+        {
+          supported: true,
+          enabled: isEnabled,
+        },
+      );
     } else {
       setDialogMessage(
         "Sorry, your device doesn't seem to have an NFC reader.",
@@ -209,13 +219,18 @@ const DocumentNFCScanScreen: React.FC = () => {
       // near the disabled button when NFC isn't supported
       setIsNfcEnabled(false);
       setIsNfcSupported(false);
-      logNFCEvent('warn', 'nfc_capability', {
-        ...baseContext,
-        stage: 'check',
-      }, {
-        supported: false,
-        enabled: false,
-      });
+      logNFCEvent(
+        'warn',
+        'nfc_capability',
+        {
+          ...baseContext,
+          stage: 'check',
+        },
+        {
+          supported: false,
+          enabled: false,
+        },
+      );
     }
   }, []);
 
@@ -329,10 +344,15 @@ const DocumentNFCScanScreen: React.FC = () => {
         trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
           duration_seconds: parseFloat(scanDurationSeconds),
         });
-        logNFCEvent('info', 'scan_success', {
-          ...baseContext,
-          stage: 'complete',
-        }, { duration_seconds: parseFloat(scanDurationSeconds) });
+        logNFCEvent(
+          'info',
+          'scan_success',
+          {
+            ...baseContext,
+            stage: 'complete',
+          },
+          { duration_seconds: parseFloat(scanDurationSeconds) },
+        );
         let passportData: PassportData | null = null;
         let parsedPassportData: PassportData | null = null;
         try {
@@ -481,16 +501,16 @@ const DocumentNFCScanScreen: React.FC = () => {
     action: 'cancel',
   });
 
-const onCancelPress = async () => {
-  flushAllAnalytics();
-  logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
-  const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
-  if (hasValidDocument) {
-    navigateToHome();
-  } else {
-    navigateToLaunch();
-  }
-};
+  const onCancelPress = async () => {
+    flushAllAnalytics();
+    logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
+    const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
+    if (hasValidDocument) {
+      navigateToHome();
+    } else {
+      navigateToLaunch();
+    }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _cancelScanIfRunning = useCallback(async () => {
