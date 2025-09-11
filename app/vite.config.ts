@@ -6,7 +6,6 @@ import { dirname, resolve } from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgr from 'vite-plugin-svgr';
 import { tamaguiPlugin } from '@tamagui/vite-plugin';
 import react from '@vitejs/plugin-react-swc';
@@ -51,18 +50,10 @@ export default defineConfig({
         __dirname,
         'src/mocks/react-native-passport-reader.ts',
       ),
+      '@/utils/nfcScanner': resolve(__dirname, 'src/mocks/nfcScanner.ts'),
     },
   },
   plugins: [
-    nodePolyfills({
-      include: ['buffer', 'process', 'util'],
-      globals: {
-        Buffer: true,
-        process: true,
-        global: false,
-      },
-      protocolImports: true,
-    }),
     react(),
     svgr({
       include: '**/*.svg',
@@ -94,7 +85,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
-    exclude: ['fs', 'path', 'child_process'],
+    exclude: ['fs', 'path', 'child_process', '@zk-email/helpers'],
     esbuildOptions: {
       // Optimize minification
       minifyIdentifiers: true,
@@ -112,14 +103,7 @@ export default defineConfig({
     cssMinify: true,
     cssCodeSplit: true,
     rollupOptions: {
-      external: [
-        'fs',
-        'path',
-        'child_process',
-        'vite-plugin-node-polyfills/shims/buffer',
-        'vite-plugin-node-polyfills/shims/process',
-        'vite-plugin-node-polyfills/shims/util',
-      ],
+      external: ['fs', 'child_process', '@zk-email/helpers'],
       output: {
         // Optimize chunk size and minification
         compact: true,
