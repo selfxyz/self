@@ -77,16 +77,9 @@ interface IIdentityRegistryAadhaarV1 {
      * @notice Checks if the provided OFAC roots match the stored OFAC roots.
      * @param nameAndDobRoot The name and date of birth OFAC root to verify.
      * @param nameAndYobRoot The name and year of birth OFAC root to verify.
-     * @param nameAndDobReverseRoot The name and date of birth OFAC root to verify.
-     * @param nameAndYobReverseRoot The name and year of birth OFAC root to verify.
      * @return True if all provided roots match the stored values, false otherwise.
      */
-    function checkOfacRoots(
-        uint256 nameAndDobRoot,
-        uint256 nameAndYobRoot,
-        uint256 nameAndDobReverseRoot,
-        uint256 nameAndYobReverseRoot
-    ) external view returns (bool);
+    function checkOfacRoots(uint256 nameAndDobRoot, uint256 nameAndYobRoot) external view returns (bool);
 
     /**
      * @notice Checks if the provided UIDAI pubkey is stored in the registry and also if it's not expired.

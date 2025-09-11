@@ -82,6 +82,8 @@ describe('loadSelectedDocument', () => {
       loadDocumentCatalog: loadDocumentCatalogSpy,
       loadDocumentById: loadDocumentByIdSpy,
       saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
     });
 
     const document = await loadSelectedDocument(client);
@@ -100,6 +102,8 @@ describe('loadSelectedDocument', () => {
       loadDocumentCatalog: loadDocumentCatalogSpy,
       loadDocumentById: loadDocumentByIdSpy,
       saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
     });
 
     const document = await loadSelectedDocument(client);
@@ -121,6 +125,8 @@ describe('loadSelectedDocument', () => {
       loadDocumentCatalog: loadDocumentCatalogSpy,
       loadDocumentById: loadDocumentByIdSpy,
       saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
     });
 
     const document = await loadSelectedDocument(client);
@@ -142,6 +148,8 @@ describe('loadSelectedDocument', () => {
       loadDocumentCatalog: loadDocumentCatalogSpy,
       loadDocumentById: loadDocumentByIdSpy,
       saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
     });
 
     const document = await loadSelectedDocument(client);

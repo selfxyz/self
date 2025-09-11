@@ -231,4 +231,6 @@ const documents: DocumentsAdapter = {
   loadDocumentCatalog: async () => ({ documents: [] }),
   loadDocumentById: async () => null,
   saveDocumentCatalog: async () => {},
+  saveDocument: async () => {},
+  deleteDocument: async () => {},
 };

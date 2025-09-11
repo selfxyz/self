@@ -37,9 +37,12 @@ import {
   getWSDbRelayerUrl,
 } from '@selfxyz/common/utils/proving';
 import {
+  clearPassportData,
   generateTEEInputsDisclose,
   hasAnyValidRegisteredDocument,
   loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
   SdkEvents,
   SelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -51,13 +54,6 @@ import {
   useProtocolStore,
   useSelfAppStore,
 } from '@selfxyz/mobile-sdk-alpha/stores';
-
-// will need to be passed in from selfClient
-import {
-  clearPassportData,
-  markCurrentDocumentAsRegistered,
-  reStorePassportDataWithRightCSCA,
-} from '@/providers/passportDataProvider';
 
 export type ProvingStateType =
   // Initial states
@@ -283,7 +279,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (get().circuitType === 'register') {
           (async () => {
             try {
-              await markCurrentDocumentAsRegistered();
+              await markCurrentDocumentAsRegistered(selfClient);
             } catch (error) {
               //This will be checked and updated when the app launches the next time
               console.error('Error marking document as registered:', error);
@@ -752,7 +748,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             status: isSupported.status,
             details: isSupported.details,
           });
-          await clearPassportData();
+
+          await clearPassportData(selfClient);
+
           actor!.send({ type: 'PASSPORT_NOT_SUPPORTED' });
           return;
         }
@@ -789,12 +787,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               },
             );
           if (isRegistered) {
-            reStorePassportDataWithRightCSCA(passportData, csca as string);
+            await reStorePassportDataWithRightCSCA(
+              selfClient,
+              passportData,
+              csca as string,
+            );
 
             // Mark document as registered since its already onChain
             (async () => {
               try {
-                await markCurrentDocumentAsRegistered();
+                await markCurrentDocumentAsRegistered(selfClient);
               } catch (error) {
                 //it will be checked and marked as registered during next app launch
                 console.error('Error marking document as registered:', error);

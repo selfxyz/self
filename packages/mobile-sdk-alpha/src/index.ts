@@ -77,6 +77,16 @@ export { SelfClientContext, SelfClientProvider, useSelfClient } from './context'
 // Components
 export { SelfMobileSdk } from './entry';
 
+// Documents utils
+export {
+  clearPassportData,
+  getAllDocuments,
+  hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+} from './documents/utils';
+
 export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';

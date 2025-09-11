@@ -50,6 +50,7 @@ export default defineConfig({
         __dirname,
         'src/mocks/react-native-passport-reader.ts',
       ),
+      crypto: 'crypto-browserify',
     },
   },
   plugins: [
@@ -102,7 +103,7 @@ export default defineConfig({
     cssMinify: true,
     cssCodeSplit: true,
     rollupOptions: {
-      external: ['fs', 'child_process', '@zk-email/helpers'],
+      external: ['fs', 'child_process'],
       output: {
         // Optimize chunk size and minification
         compact: true,

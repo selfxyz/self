@@ -61,10 +61,10 @@ contract Verifier_register_sha224_sha224_sha224_ecdsa_brainpoolP224r1 {
     uint16 constant pLastMem = 896;
 
     function verifyProof(
-        uint256[2] calldata _pA,
-        uint256[2][2] calldata _pB,
-        uint256[2] calldata _pC,
-        uint256[3] calldata _pubSignals
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[3] calldata _pubSignals
     ) public view returns (bool) {
         assembly {
             function checkField(v) {
