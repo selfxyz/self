@@ -181,6 +181,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev Ensures that the attestationId in the proof matches the header.
     error AttestationIdMismatch();
 
+    /// @notice Thrown when the ofac roots don't match.
+    /// @dev Ensures that the ofac roots match.
+    error InvalidOfacRoots();
+
     // ====================================================
     // Constructor
     // ====================================================
