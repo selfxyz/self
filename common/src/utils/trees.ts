@@ -2,14 +2,15 @@ import countries from 'i18n-iso-countries';
 // @ts-ignore
 import en from 'i18n-iso-countries/langs/en.json' with { type: 'json' };
 import {
-  poseidon12,
-  poseidon13,
   poseidon2,
   poseidon3,
   poseidon5,
   poseidon6,
   poseidon10,
+  poseidon12,
+  poseidon13,
 } from 'poseidon-lite';
+
 import {
   CSCA_TREE_DEPTH,
   DSC_TREE_DEPTH,
@@ -17,6 +18,7 @@ import {
   max_dsc_bytes,
   OFAC_TREE_LEVELS,
 } from '../constants/constants.js';
+import { packBytes } from './bytes.js';
 import type { CertificateData } from './certificate_parsing/dataStructure.js';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 import { stringToAsciiBigIntArray } from './circuits/uuid.js';
@@ -26,7 +28,6 @@ import {
   DscCertificateMetaData,
   parseDscCertificateData,
 } from './passports/passport_parsing/parseDscCertificateData.js';
-import { packBytes } from './bytes.js';
 
 import { IMT } from '@openpassport/zk-kit-imt';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
@@ -35,6 +36,60 @@ import { SMT } from '@openpassport/zk-kit-smt';
 
 // SideEffect here
 countries.registerLocale(en);
+
+
+
+
+
+
+//---------------------------
+// AADHAAR
+//---------------------------
+export function buildAadhaarSMT(field: any[], treetype: string): [number, number, SMT] {
+  let count = 0;
+  let startTime = performance.now();
+
+  const hash2 = (childNodes: ChildNodes) =>
+    childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
+  const tree = new SMT(hash2, true);
+
+  for (let i = 0; i < field.length; i++) {
+    const entry = field[i];
+
+    if (i !== 0) {
+      console.log('Processing', treetype, 'number', i, 'out of', field.length);
+    }
+
+    let leaf = BigInt(0);
+    let reverse_leaf = BigInt(0);
+    if (treetype == 'name_and_dob') {
+      leaf = processNameAndDobAadhaar(entry, i);
+      reverse_leaf = processNameAndDobAadhaar(entry, i, true);
+    } else if (treetype == 'name_and_yob') {
+      leaf = processNameAndYobAadhaar(entry, i);
+      reverse_leaf = processNameAndYobAadhaar(entry, i, true);
+    }
+
+    if (leaf == BigInt(0) || tree.createProof(leaf).membership) {
+      console.log('This entry already exists in the tree, skipping...');
+      continue;
+    }
+
+    count += 1;
+    tree.add(leaf, BigInt(1));
+    if (reverse_leaf == BigInt(0) || tree.createProof(reverse_leaf).membership) {
+      console.log('This entry already exists in the tree, skipping...');
+      continue;
+    }
+    tree.add(reverse_leaf, BigInt(1));
+    count += 1;
+  }
+
+  return [count, performance.now() - startTime, tree];
+}
+
+
+
 
 // SMT trees for 3 levels of matching :
 // 1. Passport Number and Nationality tree : level 3 (Absolute Match)
@@ -101,10 +156,16 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
   return [count, performance.now() - startTime, tree];
 }
 
+
+
+
 export function formatRoot(root: string): string {
   const rootHex = BigInt(root).toString(16);
   return rootHex.length % 2 === 0 ? '0x' + rootHex : '0x0' + rootHex;
 }
+
+
+
 
 export function generateMerkleProof(imt: LeanIMT, _index: number, maxleaf_depth: number) {
   const { siblings: siblings, index } = imt.generateProof(_index);
@@ -123,6 +184,9 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxleaf_depth:
   }
   return { siblings, path, leaf_depth };
 }
+
+
+
 
 export function generateSMTProof(smt: SMT, leaf: bigint) {
   const { entry, matchingEntry, siblings, root, membership } = smt.createProof(leaf);
@@ -175,6 +239,9 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
   };
 }
 
+
+
+
 export function getCountryLeaf(
   country_by: (bigint | number)[],
   country_to: (bigint | number)[],
@@ -192,6 +259,9 @@ export function getCountryLeaf(
   }
 }
 
+
+
+
 export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: any[][]) {
   const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
   tree.setNodes(_serialized_csca_tree);
@@ -207,11 +277,17 @@ export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: a
   ];
 }
 
+
+
+
 export function getCscaTreeRoot(serialized_csca_tree: any[][]) {
   const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
   tree.setNodes(serialized_csca_tree);
   return tree.root;
 }
+
+
+
 
 export function getDobLeaf(dobMrz: (bigint | number)[], i?: number): bigint {
   if (dobMrz.length !== 6) {
@@ -226,6 +302,10 @@ export function getDobLeaf(dobMrz: (bigint | number)[], i?: number): bigint {
   }
 }
 
+
+
+
+
 export function getDscTreeInclusionProof(
   leaf: string,
   serialized_dsc_tree: string
@@ -239,6 +319,9 @@ export function getDscTreeInclusionProof(
   const { siblings, path, leaf_depth } = generateMerkleProof(tree, index, DSC_TREE_DEPTH);
   return [tree.root, path, siblings, leaf_depth];
 }
+
+
+
 
 /** get leaf for DSC and CSCA Trees */
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
@@ -262,14 +345,11 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   }
 }
 
+
+
+
 export function getLeafCscaTree(csca_parsed: CertificateData): string {
   return getLeaf(csca_parsed, 'csca');
-}
-
-export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {
-  const dscLeaf = getLeaf(dsc_parsed, 'dsc');
-  const cscaLeaf = getLeaf(csca_parsed, 'csca');
-  return poseidon2([dscLeaf, cscaLeaf]).toString();
 }
 
 function processPassportNoAndNationality(
@@ -480,6 +560,18 @@ function processCountry(country1: string, country2: string, i: number) {
   return leaf;
 }
 
+
+
+
+export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {
+  const dscLeaf = getLeaf(dsc_parsed, 'dsc');
+  const cscaLeaf = getLeaf(csca_parsed, 'csca');
+  return poseidon2([dscLeaf, cscaLeaf]).toString();
+}
+
+
+
+
 export function getLeafDscTreeFromDscCertificateMetadata(
   dscParsed: CertificateData,
   dscMetaData: DscCertificateMetaData
@@ -489,9 +581,15 @@ export function getLeafDscTreeFromDscCertificateMetadata(
   return getLeafDscTree(dscParsed, cscaParsed);
 }
 
+
+
+
 export function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): string {
   return getLeafDscTreeFromDscCertificateMetadata(dscParsed, parseDscCertificateData(dscParsed));
 }
+
+
+
 
 export function getNameDobLeaf(
   nameMrz: (bigint | number)[],
@@ -500,6 +598,24 @@ export function getNameDobLeaf(
 ): bigint {
   return generateSmallKey(poseidon2([getDobLeaf(dobMrz), getNameLeaf(nameMrz)]));
 }
+
+
+
+
+export const getNameDobLeafAadhaar = (name: string, year: string, month: string, day: string) => {
+  const paddedName = name
+    .toUpperCase()
+    .padEnd(62, '\0')
+    .split('')
+    .map((char) => char.charCodeAt(0));
+  const namePacked = packBytes(paddedName);
+  return generateSmallKey(
+    poseidon5([namePacked[0], namePacked[1], BigInt(year), BigInt(month), BigInt(day)])
+  );
+};
+
+
+
 
 export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
   const middleChunks: bigint[] = [];
@@ -536,82 +652,18 @@ export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
   }
 }
 
+
+
+
+
+
+
 export function getNameYobLeaf(
   nameMrz: (bigint | number)[],
   yobMrz: (bigint | number)[],
   i?: number
 ): bigint {
   return generateSmallKey(poseidon2([getYearLeaf(yobMrz), getNameLeaf(nameMrz)]));
-}
-
-export function getPassportNumberAndNationalityLeaf(
-  passport: (bigint | number)[],
-  nationality: (bigint | number)[],
-  i?: number
-): bigint {
-  if (passport.length !== 9) {
-    console.log('parsed passport length is not 9:', i, passport);
-    return;
-  }
-  if (nationality.length !== 3) {
-    console.log('parsed nationality length is not 3:', i, nationality);
-    return;
-  }
-  try {
-    const fullHash = poseidon12(passport.concat(nationality));
-    return generateSmallKey(fullHash);
-  } catch (err) {
-    console.log('err : passport', err, i, passport);
-  }
-}
-
-//---------------------------
-
-// AADHAAR
-
-//---------------------------
-
-export function buildAadhaarSMT(field: any[], treetype: string): [number, number, SMT] {
-  let count = 0;
-  let startTime = performance.now();
-
-  const hash2 = (childNodes: ChildNodes) =>
-    childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
-  const tree = new SMT(hash2, true);
-
-  for (let i = 0; i < field.length; i++) {
-    const entry = field[i];
-
-    if (i !== 0) {
-      console.log('Processing', treetype, 'number', i, 'out of', field.length);
-    }
-
-    let leaf = BigInt(0);
-    let reverse_leaf = BigInt(0);
-    if (treetype == 'name_and_dob') {
-      leaf = processNameAndDobAadhaar(entry, i);
-      reverse_leaf = processNameAndDobAadhaar(entry, i, true);
-    } else if (treetype == 'name_and_yob') {
-      leaf = processNameAndYobAadhaar(entry, i);
-      reverse_leaf = processNameAndYobAadhaar(entry, i, true);
-    }
-
-    if (leaf == BigInt(0) || tree.createProof(leaf).membership) {
-      console.log('This entry already exists in the tree, skipping...');
-      continue;
-    }
-
-    count += 1;
-    tree.add(leaf, BigInt(1));
-    if (reverse_leaf == BigInt(0) || tree.createProof(reverse_leaf).membership) {
-      console.log('This entry already exists in the tree, skipping...');
-      continue;
-    }
-    tree.add(reverse_leaf, BigInt(1));
-    count += 1;
-  }
-
-  return [count, performance.now() - startTime, tree];
 }
 
 const processNameAndDobAadhaar = (entry: any, i: number, reverse: boolean = false): bigint => {
@@ -684,18 +736,6 @@ const processDobAadhaar = (year: string, month: string, day: string): bigint[] =
   return [year, month, day].map(BigInt);
 };
 
-export const getNameDobLeafAadhaar = (name: string, year: string, month: string, day: string) => {
-  const paddedName = name
-    .toUpperCase()
-    .padEnd(62, '\0')
-    .split('')
-    .map((char) => char.charCodeAt(0));
-  const namePacked = packBytes(paddedName);
-  return generateSmallKey(
-    poseidon5([namePacked[0], namePacked[1], BigInt(year), BigInt(month), BigInt(day)])
-  );
-};
-
 export const getNameYobLeafAahaar = (name: string, year: string) => {
   const paddedName = name
     .toUpperCase()
@@ -706,3 +746,24 @@ export const getNameYobLeafAahaar = (name: string, year: string) => {
 
   return generateSmallKey(poseidon3([namePacked[0], namePacked[1], BigInt(year)]));
 };
+
+export function getPassportNumberAndNationalityLeaf(
+  passport: (bigint | number)[],
+  nationality: (bigint | number)[],
+  i?: number
+): bigint {
+  if (passport.length !== 9) {
+    console.log('parsed passport length is not 9:', i, passport);
+    return;
+  }
+  if (nationality.length !== 3) {
+    console.log('parsed nationality length is not 3:', i, nationality);
+    return;
+  }
+  try {
+    const fullHash = poseidon12(passport.concat(nationality));
+    return generateSmallKey(fullHash);
+  } catch (err) {
+    console.log('err : passport', err, i, passport);
+  }
+}

@@ -1,7 +1,7 @@
 import { MAX_BYTES_IN_FIELD } from '../constants/constants.js';
 
 export function bigIntToChunkedBytes(
-  num: BigInt | bigint,
+  num: bigint | bigint,
   bytesPerChunk: number,
   numChunks: number
 ) {
