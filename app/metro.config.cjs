@@ -233,7 +233,9 @@ const config = {
         path: require.resolve('path-browserify'),
       };
 
-      if (nodeModuleRedirects.hasOwnProperty(moduleName)) {
+      if (
+        Object.prototype.hasOwnProperty.call(nodeModuleRedirects, moduleName)
+      ) {
         if (nodeModuleRedirects[moduleName] === false) {
           // Return empty module for disabled modules
           return { type: 'empty' };
