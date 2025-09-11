@@ -25,10 +25,6 @@ const QRCodeNativeComponent = Platform.select({
   android: requireNativeComponent<NativeQRCodeScannerViewProps>('SelfQRScannerViewManager'),
 });
 
-if (!QRCodeNativeComponent) {
-  throw new Error('SelfQRScannerView not registered for this platform');
-}
-
 export interface QRCodeScannerViewProps {
   isMounted: boolean;
   onQRData: (error: Error | null, uri?: string) => void;
@@ -64,6 +60,11 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({ onQRData, 
     },
     [onQRData, isMounted],
   );
+
+  if (!QRCodeNativeComponent) {
+    console.error('SelfQRScannerView not registered for this platform');
+    return;
+  }
 
   if (Platform.OS === 'ios') {
     return (
