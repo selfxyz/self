@@ -95,7 +95,6 @@ export {
 
 export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
 
-
 export {
   prepareAadhaarDiscloseTestData,
   prepareAadhaarRegisterData,

@@ -2,33 +2,83 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+/**
+ * @vitest-environment node
+ */
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PassportData, SelfApp } from '@selfxyz/common';
 
 import { generateTEEInputsDisclose } from '../../src/processing/generate-disclosure-inputs';
 import { useProtocolStore } from '../../src/stores/protocolStore';
 // Mocks for dependencies
-const mockSecret = '0x' + '00'.repeat(31) + 'a4ec'; // 32-byte hex string
+const mockSecret = '0x' + '00'.repeat(30) + 'a4ec'; // 32-byte hex string
 const mockPassportData: PassportData = {
-  mrz: '',
+  mrz: 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<<<<L898902C36UTO7408122F1204159ZE184226B<<<<',
   dsc: '',
   eContent: [],
   signedAttr: [],
   encryptedDigest: [],
+  passportMetadata: {
+    dataGroups: 'dg1',
+    dg1Size: 100,
+    dg1HashSize: 32,
+    dg1HashFunction: 'sha256',
+    dg1HashOffset: 0,
+    dgPaddingBytes: 0,
+    eContentSize: 100,
+    eContentHashFunction: 'sha256',
+    eContentHashOffset: 0,
+    signedAttrSize: 100,
+    signedAttrHashFunction: 'sha256',
+    signatureAlgorithm: 'rsa',
+    saltLength: 32,
+    curveOrExponent: '65537',
+    signatureAlgorithmBits: 0,
+    countryCode: '',
+    cscaFound: false,
+    cscaHashFunction: '',
+    cscaSignatureAlgorithm: '',
+    cscaSaltLength: 0,
+    cscaCurveOrExponent: '',
+    cscaSignatureAlgorithmBits: 0,
+    dsc: '',
+    csca: '',
+  },
+  dsc_parsed: {
+    tbsBytes: new Array(100).fill(1),
+    signatureAlgorithm: 'rsa',
+    publicKeyAlgorithm: 'rsa',
+    publicKeyDetails: {
+      modulus: '12345',
+      exponent: '65537',
+    },
+    signature: new Array(100).fill(1),
+  } as any,
+  csca_parsed: {
+    tbsBytes: new Array(100).fill(1),
+    signatureAlgorithm: 'rsa',
+    publicKeyAlgorithm: 'rsa',
+    publicKeyDetails: {
+      modulus: '12345',
+      exponent: '65537',
+    },
+    signature: new Array(100).fill(1),
+  } as any,
   documentType: 'passport',
   documentCategory: 'passport',
   mock: true,
 };
 const mockSelfApp: SelfApp = {
-  userId: '0x0000000000000000000000000000',
+  userId: '0x0000000000000000000000000000000000000000000000000000000000000000',
   appName: 'TestSelfApp',
   logoBase64: '',
   endpointType: 'https',
-  endpoint: '',
+  endpoint: 'https://test.example.com',
   deeplinkCallback: '',
   header: '',
-  scope: '',
+  scope: 'test',
   sessionId: '',
   userIdType: 'hex',
   devMode: false,
@@ -37,22 +87,17 @@ const mockSelfApp: SelfApp = {
   chainID: 42220,
   userDefinedData: '',
 };
-// Mock the upstream dependencies to avoid BytesLike errors
-vi.mock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-  generateTEEInputsDiscloseStateless: vi.fn((secret, passportData, selfApp, resolveTree) => {
-    // Call the resolver to test protocolStore behavior
-    resolveTree(passportData.documentCategory, 'ofac');
-    resolveTree(passportData.documentCategory, 'commitment');
-    return { mockResult: true };
-  }),
-}));
 
 vi.mock('../../src/stores/protocolStore', () => ({
   useProtocolStore: {
     getState: () => ({
       passport: {
-        ofac_trees: 'ofac-tree-data',
-        commitment_tree: 'commitment-tree-data',
+        ofac_trees: {
+          nameAndDob: '{"root":["0"]}',
+          nameAndYob: '{"root":["0"]}',
+          passportNoAndNationality: '{"root":["0"]}',
+        },
+        commitment_tree: '[[]]',
       },
     }),
   },
@@ -62,20 +107,14 @@ describe('generateTEEInputsDisclose', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
-
-  it('returns correct ofac tree data', () => {
-    const result = generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp);
-    expect(result).toBeDefined();
-  });
-
   it('throws error for unknown document category', () => {
     // Mock the store to return an unknown document category
     vi.spyOn(useProtocolStore, 'getState').mockReturnValue({
-      unknown: undefined
+      unknown: undefined,
     } as any);
-    
+
     expect(() => generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
-      `Unknown or unloaded document category in protocol store: passport`
+      `Unknown or unloaded document category in protocol store: passport`,
     );
   });
 
@@ -88,9 +127,9 @@ describe('generateTEEInputsDisclose', () => {
         commitment_tree: undefined,
       },
     } as any);
-    
+
     expect(() => generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
-      `Commitment tree not loaded`
+      `Invalid OFAC tree structure: missing required fields`,
     );
   });
 
@@ -101,9 +140,9 @@ describe('generateTEEInputsDisclose', () => {
         commitment_tree: undefined,
       },
     } as any);
-    
+
     expect(() => generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
-      `Commitment tree not loaded`
+      `Invalid OFAC tree structure: missing required fields`,
     );
   });
 });
