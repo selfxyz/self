@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "IIdentityRegistryV1",
-  "sourceName": "contracts/interfaces/IIdentityRegistryV1.sol",
+  "contractName": "IdentityRegistryAadhaarImplV1",
+  "sourceName": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
   "abi": [
     {
       "inputs": [
@@ -22,9 +22,5 @@
       "stateMutability": "view",
       "type": "function"
     }
-  ],
-  "bytecode": "0x",
-  "deployedBytecode": "0x",
-  "linkReferences": {},
-  "deployedLinkReferences": {}
+  ]
 }

@@ -91,7 +91,6 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         let minY = visibleRect.minY
         let boxY = max(minY, min(maxY - boxHeight, maxY - boxHeight))
         // let boxY = visibleRect.maxY - boxHeight
-
         return CGRect(x: boxX, y: boxY, width: boxWidth, height: boxHeight)
     }
 
@@ -99,13 +98,11 @@ class CameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBuff
         guard let previewLayer = previewLayer else { return .zero }
         let videoRect = previewLayer.layerRectConverted(fromMetadataOutputRect: CGRect(x: 0, y: 0, width: 1, height: 1))
         let greenBox = calculateGreenBoxFrame()
-
         // map greenBox to normalized coordinates within videoRect
         let normX = (greenBox.minX - videoRect.minX) / videoRect.width
         let normY = (greenBox.minY - videoRect.minY) / videoRect.height
         let normWidth = greenBox.width / videoRect.width
         let normHeight = greenBox.height / videoRect.height
-
         // Ensure normalized coordinates are within [0,1] bounds as vision's max ROI is (0,0) to (1,1)
         let clampedX = max(0, min(1, normX))
         let clampedY = max(0, min(1, normY))

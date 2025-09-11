@@ -19,13 +19,11 @@ describe("ID Registration test", function () {
   let deployedActors: DeployedActorsV2;
   let snapshotId: string;
   let attestationIdBytes32: string;
-  let ePassportAttestationIdBytes32: string;
 
   before(async () => {
     // Deploy contracts and setup initial state
     deployedActors = await deploySystemFixturesV2();
     attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
-    ePassportAttestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(PASSPORT_ATTESTATION_ID)), 32);
 
     console.log("🎉 System deployment and initial setup completed!");
   });

@@ -55,6 +55,11 @@ export const shimConfigs = [
   // ===== UTILS =====
   { shimPath: 'utils', targetPath: '../esm/src/utils/index.js', name: 'utils' },
   {
+    shimPath: 'utils/aadhaar/constants',
+    targetPath: '../../../esm/src/utils/aadhaar/constants.js',
+    name: 'utils/aadhaar/constants',
+  },
+  {
     shimPath: 'utils/appType',
     targetPath: '../../esm/src/utils/appType.js',
     name: 'utils/appType',

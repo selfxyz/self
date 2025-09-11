@@ -15,10 +15,10 @@ interface IDscCircuitVerifier {
      * @param pubSignals An array of two unsigned integers representing the public signals associated with the proof.
      */
     struct DscCircuitProof {
-        uint[2] a;
-        uint[2][2] b;
-        uint[2] c;
-        uint[2] pubSignals;
+        uint256[2] a;
+        uint256[2][2] b;
+        uint256[2] c;
+        uint256[2] pubSignals;
     }
 
     /**
@@ -31,9 +31,9 @@ interface IDscCircuitVerifier {
      * @return A boolean value indicating whether the provided proof is valid (true) or not (false).
      */
     function verifyProof(
-        uint[2] calldata pA,
-        uint[2][2] calldata pB,
-        uint[2] calldata pC,
-        uint[2] calldata pubSignals
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[2] calldata pubSignals
     ) external view returns (bool);
 }

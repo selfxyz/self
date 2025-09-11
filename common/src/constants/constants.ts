@@ -42,6 +42,9 @@ export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
 
 export const CSCA_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/csca-id';
 
+export const AADHAAR_ATTESTATION_ID = '3';
+
+// we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEFAULT_MAJORITY = '18';
 
 export const DEFAULT_RPC_URL = 'https://mainnet.optimism.io';

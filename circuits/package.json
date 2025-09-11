@@ -40,6 +40,9 @@
     "format": "prettier --write .",
     "install-circuits": "yarn workspaces focus @selfxyz/circuits",
     "lint": "prettier --check .",
+    "test-qr-extractor": "yarn test-base 'tests/other_circuits/qrdata_extractor.test.ts' --exit",
+    "test-disclose-aadhaar": "yarn test-base 'tests/disclose/vc_and_disclose_aadhaar.test.ts' --exit",
+    "test-register-aadhaar": "yarn test-base 'tests/register/register_aadhaar.test.ts' --exit",
     "nice": "prettier --write .",
     "test": "yarn test-base 'tests/**/*.test.ts' --exit",
     "test-base": "yarn ts-mocha -n import=tsx --max-old-space-size=8192 --paths -p tsconfig.spec.json",
@@ -55,10 +58,10 @@
     "test-register": "yarn test-base --max-old-space-size=40960 'tests/register/register.test.ts' --exit",
     "test-register-id": "yarn test-base --max-old-space-size=40960 'tests/register_id/register_id.test.ts' --exit",
     "test-rsa": "yarn test-base 'tests/utils/rsaPkcs1v1_5.test.ts' --exit",
-    "test-rsa-pss": "yarn test-base 'tests/utils/rsapss.test.ts' --exit",
-    "types": "yarn build --noEmit"
+    "test-rsa-pss": "yarn test-base 'tests/utils/rsapss.test.ts' --exit"
   },
   "dependencies": {
+    "@anon-aadhaar/core": "^2.4.3",
     "@noble/curves": "^1.4.2",
     "@openpassport/zk-email-circuits": "^6.1.2",
     "@openpassport/zk-kit-imt": "^0.0.4",
@@ -70,6 +73,7 @@
     "@zk-email/zk-regex-circom": "^1.2.1",
     "@zk-kit/binary-merkle-root.circom": "https://gitpkg.vercel.app/Vishalkulkarni45/zk-kit.circom/packages/binary-merkle-root?fix/bin-merkle-tree",
     "@zk-kit/circuits": "^1.0.0-beta",
+    "anon-aadhaar-circuits": "https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/circuits?main",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
