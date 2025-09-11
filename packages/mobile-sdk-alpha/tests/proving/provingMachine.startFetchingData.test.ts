@@ -1,9 +1,10 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { actorMock } from "./actorMock";
 import { SelfClient, useProtocolStore, useProvingStore } from '../../src';
-
 import * as documentUtils from '../../src/documents/utils';
+import { actorMock } from './actorMock';
 
 vitest.mock('xstate', () => {
   return {
@@ -53,18 +54,15 @@ describe('startFetchingData', () => {
       passport: { fetch_all: vitest.fn() },
     } as any);
     useProvingStore.setState({
-      // @ts-expect-error
       passportData: { documentCategory: 'passport', mock: false },
       env: 'prod',
-    });
+    } as any);
   });
 
   it('emits FETCH_ERROR when dsc_parsed is missing', async () => {
     await useProvingStore.getState().startFetchingData(mockSelfClient);
 
-    expect(
-      useProtocolStore.getState().passport.fetch_all,
-    ).not.toHaveBeenCalled();
+    expect(useProtocolStore.getState().passport.fetch_all).not.toHaveBeenCalled();
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
   });
 });

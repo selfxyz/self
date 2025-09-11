@@ -67,6 +67,8 @@ export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 // Screen Components
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
+export { type ProvingStateType, useProvingStore } from './proving/provingMachine';
+
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
 export { SdkEvents } from './types/events';
@@ -101,7 +103,6 @@ export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } fr
 export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
 
 // Documents utils
-
 // Core functions
 export { isPassportDataValid } from './validation/document';
 
@@ -118,5 +119,3 @@ export { useProtocolStore } from './stores/protocolStore';
 
 // Error handling
 export { webScannerShim } from './adapters/web/shims';
-
-export { useProvingStore, type ProvingStateType } from './proving/provingMachine';

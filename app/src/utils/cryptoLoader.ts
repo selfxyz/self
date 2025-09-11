@@ -13,7 +13,8 @@ export const loadCryptoUtils = async () => {
 
 export const loadProvingUtils = async () => {
   return Promise.all([
-    import('@/utils/proving/provingMachine'),
+    // TODO: can it be safely removed?
+    // import('@/utils/proving/provingMachine'),
     import('@/utils/proving/validateDocument'),
   ]);
 };

@@ -7,7 +7,7 @@ import {
   getLoadingScreenText,
   getProvingTimeEstimate,
 } from '@/utils/proving/loadingScreenStateText';
-import type { ProvingStateType } from '@/utils/proving/provingMachine';
+import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha';
 
 describe('stateLoadingScreenText', () => {
   // Default metadata for basic tests
