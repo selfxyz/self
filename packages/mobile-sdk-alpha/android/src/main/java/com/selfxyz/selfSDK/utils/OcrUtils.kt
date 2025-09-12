@@ -26,9 +26,15 @@ object OcrUtils {
     private val REGEX_ID_DOCUMENT_NUMBER = "(ID)(?<country>[A-Z<]{3})(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})"
     private val REGEX_ID_DATE_OF_BIRTH = "(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<gender>[FM<]{1})"
 
+    // Belgium TD1 (ID Card) specific pattern
+    private val REGEX_BELGIUM_ID_DOCUMENT_NUMBER = "IDBEL(?<doc9>[A-Z0-9]{9})<(?<doc3>[A-Z0-9]{3})(?<checkDigit>\\d)"
+    private val REGEX_BELGIUM_ID_DATE_OF_BIRTH = "(?<dateOfBirth>[0-9]{6})(?<checkDigitDateOfBirth>[0-9]{1})(?<gender>[FM<]{1})(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})"
+
     private val patternDocumentNumber = Pattern.compile(REGEX_ID_DOCUMENT_NUMBER)
     private val patternDateOfBirth = Pattern.compile(REGEX_ID_DATE_OF_BIRTH)
     private val patternDocumentCode = Pattern.compile(REGEX_ID_DOCUMENT_CODE)
+    private val patternBelgiumDocumentNumber = Pattern.compile(REGEX_BELGIUM_ID_DOCUMENT_NUMBER)
+    private val patternBelgiumDateOfBirth = Pattern.compile(REGEX_BELGIUM_ID_DATE_OF_BIRTH)
 
 
     fun processOcr(
@@ -49,7 +55,6 @@ object OcrUtils {
             temp = temp.replace("\r".toRegex(), "").replace("\n".toRegex(), "").replace("\t".toRegex(), "").replace(" ", "")
             fullRead += "$temp-"
         }
-        // fullRead = fullRead.toUpperCase()
         fullRead = fullRead.uppercase()
         // Log.d(TAG, "Read: $fullRead")
 
@@ -70,40 +75,63 @@ object OcrUtils {
 
             val matcherDocumentNumber = patternDocumentNumber.matcher(fullRead)
             val matcherDateOfBirth = patternDateOfBirth.matcher(fullRead)
-
             val hasDocumentNumber = matcherDocumentNumber.find()
             val hasDateOfBirth = matcherDateOfBirth.find()
+
+            // Belgium specific matchers
+            val matcherBelgiumDocumentNumber = patternBelgiumDocumentNumber.matcher(fullRead)
+            val hasBelgiumDocumentNumber = matcherBelgiumDocumentNumber.find()
 
             val documentNumber = if (hasDocumentNumber) matcherDocumentNumber.group("documentNumber") else null
             val checkDigitDocumentNumber = if (hasDocumentNumber) matcherDocumentNumber.group("checkDigitDocumentNumber")?.toIntOrNull() else null
             val countryCode = if (hasDocumentNumber) matcherDocumentNumber.group("country") else null
             val dateOfBirth = if (hasDateOfBirth) matcherDateOfBirth.group("dateOfBirth") else null
+
+            // Belgium specific values
+            val belgiumCheckDigit = if (hasBelgiumDocumentNumber) matcherBelgiumDocumentNumber.group("checkDigit")?.toIntOrNull() else null
+            val belgiumDateOfBirth = if (hasBelgiumDocumentNumber) {
+                val dateOfBirthMatcher = patternBelgiumDateOfBirth.matcher(fullRead)
+                if (dateOfBirthMatcher.find()) dateOfBirthMatcher.group("dateOfBirth") else null
+            } else null
+
+            // Final values
+            val finalDocumentNumber = if (hasBelgiumDocumentNumber) {
+                val doc9 = matcherBelgiumDocumentNumber.group("doc9")
+                val doc3 = matcherBelgiumDocumentNumber.group("doc3")
+                val checkDigit = matcherBelgiumDocumentNumber.group("checkDigit")
+                cleanBelgiumDocumentNumber(doc9, doc3, checkDigit)
+            } else documentNumber
+            val finalDateOfBirth = if (hasBelgiumDocumentNumber) belgiumDateOfBirth else dateOfBirth
+            val finalCountryCode = if (hasBelgiumDocumentNumber) "BEL" else countryCode
+            val finalCheckDigit = if (hasBelgiumDocumentNumber) belgiumCheckDigit else checkDigitDocumentNumber
+
             val checkDigitDateOfBirth = if (hasDateOfBirth) matcherDateOfBirth.group("checkDigitDateOfBirth")?.toIntOrNull() else null
             val gender = if (hasDateOfBirth) matcherDateOfBirth.group("gender") else null
 
-            val expirationDate: String? = if (!countryCode.isNullOrEmpty()) {
-                val expirationDateRegex = "(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})" + Pattern.quote(countryCode)
+            val expirationDate: String? = if (!finalCountryCode.isNullOrEmpty()) {
+                val expirationDateRegex = "(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})" + Pattern.quote(finalCountryCode)
+                // val expirationDateRegex = "(?<expirationDate>[0-9]{6})(?<checkDigitExpiration>[0-9]{1})UTO"
                 val patternExpirationDate = Pattern.compile(expirationDateRegex)
                 val matcherExpirationDate = patternExpirationDate.matcher(fullRead)
                 if (matcherExpirationDate.find()) matcherExpirationDate.group("expirationDate") else null
             } else null
 
             // Only proceed if all required fields are present and non-empty
-            if (!countryCode.isNullOrEmpty() && !documentNumber.isNullOrEmpty() && !dateOfBirth.isNullOrEmpty() && !expirationDate.isNullOrEmpty() && checkDigitDocumentNumber != null) {
-                val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
-                Log.d(TAG, "cleanDocumentNumber")
+            if (!finalCountryCode.isNullOrEmpty() && !finalDocumentNumber.isNullOrEmpty() && !finalDateOfBirth.isNullOrEmpty() && !expirationDate.isNullOrEmpty() && finalCheckDigit != null) {
+                val cleanDocumentNumber = cleanDocumentNumber(finalDocumentNumber, finalCheckDigit)
+                // Log.d(TAG, "cleanDocumentNumber")
                 if (cleanDocumentNumber != null) {
-                    val mrzInfo = createDummyMrz("ID", countryCode, cleanDocumentNumber, dateOfBirth, expirationDate)
+                    val mrzInfo = createDummyMrz("ID", finalCountryCode, cleanDocumentNumber, finalDateOfBirth, expirationDate)
                     // Log.d(TAG, "MRZ-TD1: $mrzInfo")
                     callback.onMRZRead(mrzInfo, timeRequired)
                     return
                 }
             } else {
-                if (countryCode.isNullOrEmpty()) Log.d(TAG, "Missing or invalid countryCode")
-                if (documentNumber.isNullOrEmpty()) Log.d(TAG, "Missing or invalid documentNumber")
-                if (dateOfBirth.isNullOrEmpty()) Log.d(TAG, "Missing or invalid dateOfBirth")
+                if (finalCountryCode.isNullOrEmpty()) Log.d(TAG, "Missing or invalid finalCountryCode")
+                if (finalDocumentNumber.isNullOrEmpty()) Log.d(TAG, "Missing or invalid finalDocumentNumber")
+                if (finalDateOfBirth.isNullOrEmpty()) Log.d(TAG, "Missing or invalid dateOfBirth")
                 if (expirationDate.isNullOrEmpty()) Log.d(TAG, "Missing or invalid expirationDate")
-                if (checkDigitDocumentNumber == null) Log.d(TAG, "Missing or invalid checkDigitDocumentNumber")
+                if (finalCheckDigit == null) Log.d(TAG, "Missing or invalid finalCheckDigit")
             }
         }
 
@@ -194,6 +222,27 @@ object OcrUtils {
                 return tempDcumentNumber
             }
         }
+        return null
+    }
+
+    private fun cleanBelgiumDocumentNumber(doc9: String, doc3: String, checkDigit: String): String? {
+        // For Belgium TD1 format: IDBEL000001115<7027
+        // doc9 = "000001115" (9 digits)
+        // doc3 = "702" (3 digits after <)
+        // checkDigit = "7" (single check digit)
+
+        var cleanDoc9 = doc9
+        cleanDoc9 = cleanDoc9.substring(3)
+
+        val fullDocumentNumber = cleanDoc9 + doc3
+
+        val checkDigitCalculated = MRZInfo.checkDigit(fullDocumentNumber).toString().toInt()
+        val expectedCheckDigit = checkDigit.toInt()
+
+        if (checkDigitCalculated == expectedCheckDigit) {
+            return fullDocumentNumber
+        }
+
         return null
     }
 
