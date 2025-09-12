@@ -19,6 +19,7 @@ import {
 } from '@selfxyz/common/utils';
 import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
 import {
+  generateTEEInputsDiscloseStateless,
   generateTEEInputsDSC,
   generateTEEInputsRegister,
 } from '@selfxyz/common/utils/circuits/registerInputs';
@@ -40,22 +41,23 @@ import {
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   clearPassportData,
-  generateTEEInputsDisclose,
   hasAnyValidRegisteredDocument,
   loadSelectedDocument,
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
   SdkEvents,
-  useProtocolStore,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
+import {
+  useProtocolStore,
+  useSelfAppStore,
+} from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { logProofEvent, type ProofContext } from '@/Sentry';
-import analytics from '@/utils/analytics';
+// import analytics from '@/utils/analytics';
 import {
   handleStatusCode,
   parseStatusMessage,
@@ -127,10 +129,27 @@ const _generateCircuitInputs = (
       break;
     case 'disclose':
       ({ inputs, circuitName, endpointType, endpoint } =
-        generateTEEInputsDisclose(
+        generateTEEInputsDiscloseStateless(
           secret as string,
           passportData,
           selfApp as SelfApp,
+          (doc: DocumentCategory, tree) => {
+            const docStore =
+              doc === 'passport'
+                ? protocolStore.passport
+                : protocolStore.id_card;
+            switch (tree) {
+              case 'ofac':
+                return docStore.ofac_trees;
+              case 'commitment':
+                if (!docStore.commitment_tree) {
+                  throw new Error('Commitment tree not loaded');
+                }
+                return docStore.commitment_tree;
+              default:
+                throw new Error('Unknown tree type');
+            }
+          },
         ));
       circuitTypeWithDocumentExtension = `disclose`;
       break;
@@ -640,8 +659,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         selfClient.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, {
           hasValidDocument: hasValid,
         });
-      } catch (error) {
-        console.error('Error checking valid documents:', error);
+      } catch {
         selfClient.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, {
           hasValidDocument: false,
         });
@@ -718,7 +736,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             status: data.status,
           });
 
-          const result = handleStatusCode(data, get().circuitType);
+          const result = handleStatusCode(data, get().circuitType as string);
 
           // Handle state updates
           if (result.stateUpdate) {
@@ -736,7 +754,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             } else if (event === 'SOCKETIO_PROOF_SUCCESS') {
               logProofEvent('info', 'TEE processing succeeded', context);
             }
-            selfClient.trackEvent(event as any, eventData);
+            selfClient.trackEvent(
+              event as unknown as keyof typeof ProofEvents,
+              eventData,
+            );
           });
 
           // Handle actor events
@@ -1140,10 +1161,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         });
         throw new Error('PassportData is not available');
       }
-      const document: DocumentCategory = passportData.documentCategory;
+      const document: DocumentCategory = (passportData as PassportData)
+        .documentCategory;
       const circuitType = get().circuitType as 'disclose' | 'register' | 'dsc';
 
-      let circuitName, wsRpcUrl;
+      let circuitName;
       if (circuitType === 'disclose') {
         circuitName = 'disclose';
       } else {
@@ -1153,7 +1175,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         );
       }
 
-      wsRpcUrl = resolveWebSocketUrl(circuitType, passportData, circuitName);
+      const wsRpcUrl = resolveWebSocketUrl(
+        circuitType,
+        passportData as PassportData,
+        circuitName,
+      );
       logProofEvent('info', 'Circuit resolution', baseContext, {
         circuit_name: circuitName,
         ws_url: wsRpcUrl,
@@ -1332,7 +1358,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    _closeConnections: (selfClient: SelfClient) => {
+    _closeConnections: (_selfClient: SelfClient) => {
       const { wsConnection: ws, wsHandlers } = get();
       if (ws && wsHandlers) {
         try {
