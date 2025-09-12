@@ -47,4 +47,28 @@ describe('protocolStore.fetch_ofac_trees', () => {
       nameAndYob: responses['name-yob'],
     });
   });
+
+  it('stores OFAC trees when responses are wrapped payloads', async () => {
+    const responses: Record<string, any> = {
+      'passport-no-nationality': { status: 'success', data: { root: ['pp'] } },
+      'name-dob': { status: 'success', data: { root: ['dob'] } },
+      'name-yob': { status: 'success', data: { root: ['yob'] } },
+    };
+
+    vi.spyOn(global, 'fetch').mockImplementation((url: string) => {
+      const key = url.includes('passport-no-nationality')
+        ? 'passport-no-nationality'
+        : url.includes('name-dob')
+          ? 'name-dob'
+          : 'name-yob';
+      return Promise.resolve({ ok: true, json: async () => responses[key] } as Response);
+    });
+
+    await useProtocolStore.getState().passport.fetch_ofac_trees('prod');
+    expect(useProtocolStore.getState().passport.ofac_trees).toEqual({
+      passportNoAndNationality: responses['passport-no-nationality'].data,
+      nameAndDob: responses['name-dob'].data,
+      nameAndYob: responses['name-yob'].data,
+    });
+  });
 });
