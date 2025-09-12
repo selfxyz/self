@@ -8,7 +8,7 @@ import { generateTEEInputsDiscloseStateless } from '@selfxyz/common/utils/circui
 
 import { useProtocolStore } from '../stores/protocolStore';
 
-export function generateTEEInputsDisclose(secret: string, passportData: PassportData, selfApp: SelfApp) {
+export function generateTeeInputsDisclose(secret: string, passportData: PassportData, selfApp: SelfApp) {
   return generateTEEInputsDiscloseStateless(secret, passportData, selfApp, (document: DocumentCategory, tree) => {
     const protocolStore = useProtocolStore.getState();
     const docStore = (protocolStore as any)[document];

@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha';
 import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

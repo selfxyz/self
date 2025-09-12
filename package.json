@@ -29,6 +29,8 @@
     "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
   },
   "resolutions": {
+    "@selfxyz/mobile-sdk-alpha": "workspace:*",
+    "@selfxyz/common": "workspace:*",
     "@babel/core": "^7.28.3",
     "@babel/runtime": "^7.28.3",
     "@typescript-eslint/eslint-plugin": "^8.39.0",

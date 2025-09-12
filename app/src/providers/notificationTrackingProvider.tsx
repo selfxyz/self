@@ -6,7 +6,7 @@ import type { PropsWithChildren } from 'react';
 import React, { useEffect } from 'react';
 import messaging from '@react-native-firebase/messaging';
 
-import { NotificationEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { NotificationEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import analytics from '@/utils/analytics';
 

@@ -28,7 +28,7 @@ import {
   signatureAlgorithmToStrictSignatureAlgorithm,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';

@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { countryCodes } from '@selfxyz/common/constants';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
-import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';

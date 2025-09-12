@@ -12,7 +12,7 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
-} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+} from '@selfxyz/mobile-sdk-alpha';
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

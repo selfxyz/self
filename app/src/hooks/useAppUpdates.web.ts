@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { AppEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 

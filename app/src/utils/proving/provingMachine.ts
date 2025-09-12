@@ -49,7 +49,7 @@ import {
 import {
   PassportEvents,
   ProofEvents,
-} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   useProtocolStore,
   useSelfAppStore,
@@ -238,7 +238,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     selfClient: SelfClient,
   ) {
     newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
-      console.log(`State transition: ${state.value}`);
+      if (__DEV__) {
+        console.log(`State transition: ${state.value}`);
+      }
       selfClient.trackEvent(ProofEvents.PROVING_STATE_CHANGE, {
         state: state.value,
       });
@@ -1086,25 +1088,36 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             ));
           circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
           break;
-        case 'disclose':
+        case 'disclose': {
+          const docStore = protocolStore[document];
+          if (
+            !docStore.ofac_trees ||
+            !docStore.commitment_tree
+          ) {
+            await docStore.fetch_all(
+              env,
+              (passportData as PassportData).dsc_parsed!
+                .authorityKeyIdentifier,
+            );
+          }
           ({ inputs, circuitName, endpointType, endpoint } =
             generateTEEInputsDiscloseStateless(
               secret as string,
               passportData,
               selfApp as SelfApp,
               (doc: DocumentCategory, tree) => {
-                const docStore =
+                const store =
                   doc === 'passport'
                     ? protocolStore.passport
                     : protocolStore.id_card;
                 switch (tree) {
                   case 'ofac':
-                    return docStore.ofac_trees;
+                    return store.ofac_trees;
                   case 'commitment':
-                    if (!docStore.commitment_tree) {
+                    if (!store.commitment_tree) {
                       throw new Error('Commitment tree not loaded');
                     }
-                    return docStore.commitment_tree;
+                    return store.commitment_tree;
                   default:
                     throw new Error('Unknown tree type');
                 }
@@ -1112,6 +1125,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             ));
           circuitTypeWithDocumentExtension = `disclose`;
           break;
+        }
         default:
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);

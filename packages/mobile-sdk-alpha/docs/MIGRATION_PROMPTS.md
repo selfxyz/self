@@ -25,7 +25,7 @@ yarn build
 
 ### 4. Proof input generation
 
-- Move `generateTEEInputsRegister` and `generateTEEInputsDisclose` from `app/src/utils/proving/provingInputs.ts` into new files under `packages/mobile-sdk-alpha/src/proving/register.ts` and `packages/mobile-sdk-alpha/src/proving/disclose.ts`.
+- Move `generateTEEInputsRegister` and `generateTeeInputsDisclose` from `app/src/utils/proving/provingInputs.ts` into new files under `packages/mobile-sdk-alpha/src/proving/register.ts` and `packages/mobile-sdk-alpha/src/proving/disclose.ts`.
 - Replace `useProtocolStore` with a `getTree(document, kind)` callback so helpers are stateless.
 - Add tests in `packages/mobile-sdk-alpha/tests/proving.{register,disclose}.test.ts`.
 

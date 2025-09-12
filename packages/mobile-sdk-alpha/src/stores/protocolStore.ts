@@ -23,6 +23,14 @@ import {
 import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
 import type { DeployedCircuits, OfacTree } from '@selfxyz/common/utils/types';
 
+const GLOBAL_STORE_KEY = '__SELFXYZ_PROTOCOL_STORE__';
+const globalScope: any =
+  typeof window !== 'undefined'
+    ? window
+    : typeof global !== 'undefined'
+      ? global
+      : {};
+
 interface ProtocolState {
   passport: {
     commitment_tree: any;
@@ -60,7 +68,8 @@ interface ProtocolState {
   };
 }
 
-export const useProtocolStore = create<ProtocolState>((set, get) => ({
+const createProtocolStore = () =>
+  create<ProtocolState>((set, get) => ({
   passport: {
     commitment_tree: null,
     dsc_tree: null,
@@ -319,3 +328,19 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     },
   },
 }));
+
+let useProtocolStore: ReturnType<typeof createProtocolStore>;
+if (globalScope[GLOBAL_STORE_KEY]) {
+  if (__DEV__) {
+    console.warn(
+      'Multiple useProtocolStore instances detected, using global singleton'
+    );
+  }
+  useProtocolStore = globalScope[GLOBAL_STORE_KEY];
+} else {
+  useProtocolStore = createProtocolStore();
+  globalScope[GLOBAL_STORE_KEY] = useProtocolStore;
+  (useProtocolStore as any).__instanceId = Math.random().toString(36);
+}
+
+export { useProtocolStore };

@@ -43,7 +43,7 @@ jest.mock('@selfxyz/common/utils/proving', () => {
       endpointType: 'celo',
       endpoint: 'https://dsc',
     })),
-    generateTEEInputsDisclose: jest.fn(() => ({
+    generateTeeInputsDisclose: jest.fn(() => ({
       inputs: { s: 1 },
       circuitName: 'vc_and_disclose',
       endpointType: 'https',

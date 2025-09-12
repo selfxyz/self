@@ -98,7 +98,8 @@ export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
+export { generateTeeInputsDisclose } from './processing/generate-disclosure-inputs';
+export * from './constants/analytics';
 
 // Documents utils
 

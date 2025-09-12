@@ -14,7 +14,7 @@ import React, {
 import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
 
-import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { AuthEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';

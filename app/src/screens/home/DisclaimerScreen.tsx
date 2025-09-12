@@ -8,7 +8,7 @@ import { StyleSheet } from 'react-native';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
-import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { AppEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import warningAnimation from '@/assets/animations/warning.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
