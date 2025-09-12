@@ -353,7 +353,7 @@ class PassportReader: NSObject {
         logNfc(level: .info, message: "scan_success", stage: "complete", useCANBool: useCANBool, sessionId: sessionId)
         resolve(stringified)
       } catch {
-        logNfc(level: .error, message: "scan_failed", stage: "error", useCANBool: useCANBool, sessionId: sessionId, extras: ["error": error.localizedDescription])
+        logNfc(level: .warning, message: "scan_failed", stage: "error", useCANBool: useCANBool, sessionId: sessionId, extras: ["error": error.localizedDescription])
         reject("E_PASSPORT_READ", error.localizedDescription, error)
       }
     }

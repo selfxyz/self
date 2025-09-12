@@ -222,14 +222,14 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         // val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
         if (mNfcAdapter == null) {
             logAnalyticsError("nfc_not_supported", "NFC chip reading not supported")
-            logNfc(SentryLevel.ERROR, "nfc_not_supported", "check")
+            logNfc(SentryLevel.WARNING, "nfc_not_supported", "check")
             promise.reject("E_NOT_SUPPORTED", "NFC chip reading not supported")
             return
         }
 
         if (!mNfcAdapter.isEnabled) {
             logAnalyticsError("nfc_not_enabled", "NFC chip reading not enabled")
-            logNfc(SentryLevel.ERROR, "nfc_not_enabled", "check")
+            logNfc(SentryLevel.WARNING, "nfc_not_enabled", "check")
             promise.reject("E_NOT_ENABLED", "NFC chip reading not enabled")
             return
         }
