@@ -6,7 +6,7 @@ import forge from 'node-forge';
 import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { v4 } from 'uuid';
-import type { AnyActorRef, StateFrom } from 'xstate';
+import type { AnyActorRef, StateFrom, AnyEventObject } from 'xstate';
 import { createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 import { Platform } from 'react-native';
@@ -61,6 +61,9 @@ import { generateTEEInputsDisclose } from '@/utils/proving/provingInputs';
 import { logProofEvent, type ProofContext } from '@/Sentry';
 
 const { trackEvent } = analytics();
+
+const getPlatform = (): 'ios' | 'android' =>
+  Platform.OS === 'ios' ? 'ios' : 'android';
 
 export type ProvingStateType =
   // Initial states
@@ -224,6 +227,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     selfClient: SelfClient,
   ) {
     let lastTransition = Date.now();
+    let lastEvent: AnyEventObject = { type: 'init' };
+    newActor.on(event => {
+      lastEvent = event;
+    });
     newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
       const now = Date.now();
       const selfApp = useSelfAppStore.getState().selfApp;
@@ -233,10 +240,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: String(state.value),
         stage: 'stateTransition',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       logProofEvent('info', `State transition: ${state.value}`, context, {
-        event: state.event.type,
+        event: lastEvent.type,
         duration_ms: now - lastTransition,
       });
       lastTransition = now;
@@ -364,7 +371,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: '_handleWebSocketMessage',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
 
       try {
@@ -504,7 +511,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: '_startSocketIOStatusListener',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       logProofEvent('info', 'Socket.IO listener started', context, { url });
 
@@ -603,7 +610,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: '_handleWsOpen',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       logProofEvent('info', 'WebSocket open', context);
       set({ uuid: connectionUuid });
@@ -636,7 +643,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: '_handleWsError',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       logProofEvent('error', 'TEE WebSocket error', context, {
         failure: 'PROOF_FAILED_CONNECTION',
@@ -664,7 +671,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: '_handleWsClose',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       logProofEvent('warn', 'TEE WebSocket closed', context, {
         code: event.code,
@@ -765,7 +772,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: 'startFetchingData',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       logProofEvent('info', 'Fetching DSC data started', context);
       try {
@@ -826,7 +833,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: 'validatingDocument',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       logProofEvent('info', 'Validating document started', context);
       try {
@@ -980,7 +987,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: 'initTeeConnection',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       const { passportData } = get();
       if (!passportData) {
@@ -1097,7 +1104,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: get().circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: 'startProving',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
 
       if (get().currentState !== 'ready_to_prove') {
@@ -1241,7 +1248,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: circuitType || null,
         currentState: get().currentState || 'unknown-state',
         stage: '_generatePayload',
-        platform: Platform.OS,
+        platform: getPlatform(),
       };
       logProofEvent('info', 'Payload generation started', context);
       try {
