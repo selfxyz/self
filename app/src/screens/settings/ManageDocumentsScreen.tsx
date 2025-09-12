@@ -283,7 +283,6 @@ const ManageDocumentsScreen: React.FC = () => {
   };
 
   const handleGenerateMock = () => {
-    if (!__DEV__) return;
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_MOCK_SELECTED);
     navigation.navigate('CreateMock');
