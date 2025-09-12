@@ -92,7 +92,7 @@ const scanAndroid = async (
     logNFCEvent('error', 'module_unavailable', {
       ...context,
       stage: 'init',
-    });
+    } as NFCScanContext);
     return Promise.reject(new Error('NFC scanning is currently unavailable.'));
   }
 
@@ -117,7 +117,7 @@ const scanIOS = async (
     logNFCEvent('error', 'module_unavailable', {
       ...context,
       stage: 'init',
-    });
+    } as NFCScanContext);
     return Promise.reject(
       new Error(
         'NFC scanning is currently unavailable. Please ensure the app is properly installed.',
