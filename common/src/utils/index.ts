@@ -41,6 +41,8 @@ export {
   generateCommitment,
   generateNullifier,
   initPassportDataParsing,
+  calculateContentHash,
+  inferDocumentCategory,
 } from './passports/passport.js';
 export { formatMrz } from './passports/format.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
@@ -52,6 +54,7 @@ export {
 export {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
+  generateCircuitInputsRegisterForTests,
   generateCircuitInputsVCandDisclose,
 } from './circuits/generateInputs.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';

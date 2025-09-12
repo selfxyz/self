@@ -1,29 +1,34 @@
-import { calculateAge, generateTestData, testCustomData } from './utils.js';
-import {
-  convertBigIntToByteArray,
-  decompressByteArray,
-  splitToWords,
-  extractPhoto,
-} from '@anon-aadhaar/core';
-import { bufferToHex, Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';
-import { sha256Pad } from '@zk-email/helpers/dist/sha-utils.js';
-import { testQRData } from './assets/dataInput.js';
-import { stringToAsciiArray } from './utils.js';
-import { packBytesAndPoseidon } from '../hash.js';
-import { poseidon5 } from 'poseidon-lite';
 import forge from 'node-forge';
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { SMT } from '@openpassport/zk-kit-smt';
+import { poseidon5 } from 'poseidon-lite';
+
+import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
 import { findIndexInTree, formatInput } from '../circuits/generateInputs.js';
+import { packBytesAndPoseidon } from '../hash.js';
 import {
   generateMerkleProof,
   generateSMTProof,
   getNameDobLeafAadhaar,
   getNameYobLeafAahaar,
 } from '../trees.js';
+import { testQRData } from './assets/dataInput.js';
+import {
+  calculateAge,
+  extractQRDataFields,
+  generateTestData,
+  stringToAsciiArray,
+  testCustomData,
+} from './utils.js';
 
-import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
-import { extractQRDataFields } from './utils.js';
+import {
+  convertBigIntToByteArray,
+  decompressByteArray,
+  extractPhoto,
+  splitToWords,
+} from '@anon-aadhaar/core';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
+import { bufferToHex, Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';
+import { sha256Pad } from '@zk-email/helpers/dist/sha-utils.js';
 
 // Helper function to compute padded name
 function computePaddedName(name: string): number[] {
@@ -163,166 +168,6 @@ function processQRDataSimple(qrData: string) {
   };
 }
 
-export function prepareAadhaarRegisterTestData(
-  privKeyPem: string,
-  pubkeyPem: string,
-  secret: string,
-  name?: string,
-  dateOfBirth?: string,
-  gender?: string,
-  pincode?: string,
-  state?: string,
-  timestamp?: string
-) {
-  const sharedData = processQRData(
-    privKeyPem,
-    name,
-    dateOfBirth,
-    gender,
-    pincode,
-    state,
-    timestamp
-  );
-
-  const delimiterIndices: number[] = [];
-  for (let i = 0; i < sharedData.qrDataPadded.length; i++) {
-    if (sharedData.qrDataPadded[i] === 255) {
-      delimiterIndices.push(i);
-    }
-    if (delimiterIndices.length === 18) {
-      break;
-    }
-  }
-  let photoEOI = 0;
-  for (let i = delimiterIndices[17]; i < sharedData.qrDataPadded.length - 1; i++) {
-    if (sharedData.qrDataPadded[i + 1] === 217 && sharedData.qrDataPadded[i] === 255) {
-      photoEOI = i + 1;
-    }
-  }
-  if (photoEOI === 0) {
-    throw new Error('Photo EOI not found');
-  }
-
-  const signatureBytes = sharedData.decodedData.slice(
-    sharedData.decodedData.length - 256,
-    sharedData.decodedData.length
-  );
-  const signature = BigInt('0x' + bufferToHex(Buffer.from(signatureBytes)).toString());
-
-  const publicKey = forge.pki.publicKeyFromPem(pubkeyPem);
-
-  const modulusHex = publicKey.n.toString(16);
-  const pubKey = BigInt('0x' + modulusHex);
-
-  const nullifier = nullifierHash(sharedData.extractedFields);
-  const packedCommitment = computePackedCommitment(sharedData.extractedFields);
-  const commitment = computeCommitment(
-    BigInt(secret),
-    BigInt(sharedData.qrHash),
-    nullifier,
-    packedCommitment,
-    BigInt(sharedData.photoHash)
-  );
-
-  const inputs = {
-    qrDataPadded: Uint8ArrayToCharArray(sharedData.qrDataPadded),
-    qrDataPaddedLength: sharedData.qrDataPaddedLen,
-    delimiterIndices: delimiterIndices,
-    signature: splitToWords(signature, BigInt(121), BigInt(17)),
-    pubKey: splitToWords(pubKey, BigInt(121), BigInt(17)),
-    secret: secret,
-    photoEOI: photoEOI,
-  };
-
-  return {
-    inputs,
-    nullifier,
-    commitment,
-  };
-}
-
-export async function prepareAadhaarRegisterData(qrData: string, secret: string, certs: string[]) {
-  const sharedData = processQRDataSimple(qrData);
-  const delimiterIndices: number[] = [];
-  for (let i = 0; i < sharedData.qrDataPadded.length; i++) {
-    if (sharedData.qrDataPadded[i] === 255) {
-      delimiterIndices.push(i);
-    }
-    if (delimiterIndices.length === 18) {
-      break;
-    }
-  }
-  let photoEOI = 0;
-  for (let i = delimiterIndices[17]; i < sharedData.qrDataPadded.length - 1; i++) {
-    if (sharedData.qrDataPadded[i + 1] === 217 && sharedData.qrDataPadded[i] === 255) {
-      photoEOI = i + 1;
-    }
-  }
-  if (photoEOI === 0) {
-    throw new Error('Photo EOI not found');
-  }
-
-  const signatureBytes = sharedData.decodedData.slice(
-    sharedData.decodedData.length - 256,
-    sharedData.decodedData.length
-  );
-  const signature = BigInt('0x' + bufferToHex(Buffer.from(signatureBytes)).toString());
-
-  //do promise.all for all certs and pick the one that is valid
-  const certificates = await Promise.all(
-    certs.map(async (cert) => {
-      const certificate = forge.pki.certificateFromPem(cert);
-      const publicKey = certificate.publicKey as forge.pki.rsa.PublicKey;
-
-      try {
-        const md = forge.md.sha256.create();
-        md.update(forge.util.binary.raw.encode(sharedData.signedData));
-
-        const isValid = publicKey.verify(md.digest().getBytes(), signatureBytes);
-        return isValid;
-      } catch (error) {
-        return false;
-      }
-    })
-  );
-
-  //find the valid cert
-  const validCert = certificates.indexOf(true);
-  if (validCert === -1) {
-    throw new Error('No valid certificate found');
-  }
-  const certPem = certs[validCert];
-  const cert = forge.pki.certificateFromPem(certPem);
-  const modulusHex = (cert.publicKey as forge.pki.rsa.PublicKey).n.toString(16);
-  const pubKey = BigInt('0x' + modulusHex);
-
-  const nullifier = nullifierHash(sharedData.extractedFields);
-  const packedCommitment = computePackedCommitment(sharedData.extractedFields);
-  const commitment = computeCommitment(
-    BigInt(secret),
-    BigInt(sharedData.qrHash),
-    nullifier,
-    packedCommitment,
-    BigInt(sharedData.photoHash)
-  );
-
-  const inputs = {
-    qrDataPadded: Uint8ArrayToCharArray(sharedData.qrDataPadded),
-    qrDataPaddedLength: sharedData.qrDataPaddedLen,
-    delimiterIndices: delimiterIndices,
-    signature: splitToWords(signature, BigInt(121), BigInt(17)),
-    pubKey: splitToWords(pubKey, BigInt(121), BigInt(17)),
-    secret: secret,
-    photoEOI: photoEOI,
-  };
-
-  return {
-    inputs,
-    nullifier,
-    commitment,
-  };
-}
-
 export function prepareAadhaarDiscloseTestData(
   privateKeyPem: string,
   merkletree: LeanIMT,
@@ -436,6 +281,166 @@ export function prepareAadhaarDiscloseTestData(
     scope: formatInput(BigInt(scope)),
     user_identifier: formatInput(BigInt(user_identifier)),
     forbidden_countries_list: [...Array(120)].map((x) => '0'),
+  };
+
+  return {
+    inputs,
+    nullifier,
+    commitment,
+  };
+}
+
+export async function prepareAadhaarRegisterData(qrData: string, secret: string, certs: string[]) {
+  const sharedData = processQRDataSimple(qrData);
+  const delimiterIndices: number[] = [];
+  for (let i = 0; i < sharedData.qrDataPadded.length; i++) {
+    if (sharedData.qrDataPadded[i] === 255) {
+      delimiterIndices.push(i);
+    }
+    if (delimiterIndices.length === 18) {
+      break;
+    }
+  }
+  let photoEOI = 0;
+  for (let i = delimiterIndices[17]; i < sharedData.qrDataPadded.length - 1; i++) {
+    if (sharedData.qrDataPadded[i + 1] === 217 && sharedData.qrDataPadded[i] === 255) {
+      photoEOI = i + 1;
+    }
+  }
+  if (photoEOI === 0) {
+    throw new Error('Photo EOI not found');
+  }
+
+  const signatureBytes = sharedData.decodedData.slice(
+    sharedData.decodedData.length - 256,
+    sharedData.decodedData.length
+  );
+  const signature = BigInt('0x' + bufferToHex(Buffer.from(signatureBytes)).toString());
+
+  //do promise.all for all certs and pick the one that is valid
+  const certificates = await Promise.all(
+    certs.map(async (cert) => {
+      const certificate = forge.pki.certificateFromPem(cert);
+      const publicKey = certificate.publicKey as forge.pki.rsa.PublicKey;
+
+      try {
+        const md = forge.md.sha256.create();
+        md.update(forge.util.binary.raw.encode(sharedData.signedData));
+
+        const isValid = publicKey.verify(md.digest().getBytes(), signatureBytes);
+        return isValid;
+      } catch (error) {
+        return false;
+      }
+    })
+  );
+
+  //find the valid cert
+  const validCert = certificates.indexOf(true);
+  if (validCert === -1) {
+    throw new Error('No valid certificate found');
+  }
+  const certPem = certs[validCert];
+  const cert = forge.pki.certificateFromPem(certPem);
+  const modulusHex = (cert.publicKey as forge.pki.rsa.PublicKey).n.toString(16);
+  const pubKey = BigInt('0x' + modulusHex);
+
+  const nullifier = nullifierHash(sharedData.extractedFields);
+  const packedCommitment = computePackedCommitment(sharedData.extractedFields);
+  const commitment = computeCommitment(
+    BigInt(secret),
+    BigInt(sharedData.qrHash),
+    nullifier,
+    packedCommitment,
+    BigInt(sharedData.photoHash)
+  );
+
+  const inputs = {
+    qrDataPadded: Uint8ArrayToCharArray(sharedData.qrDataPadded),
+    qrDataPaddedLength: sharedData.qrDataPaddedLen,
+    delimiterIndices: delimiterIndices,
+    signature: splitToWords(signature, BigInt(121), BigInt(17)),
+    pubKey: splitToWords(pubKey, BigInt(121), BigInt(17)),
+    secret: secret,
+    photoEOI: photoEOI,
+  };
+
+  return {
+    inputs,
+    nullifier,
+    commitment,
+  };
+}
+
+export function prepareAadhaarRegisterTestData(
+  privKeyPem: string,
+  pubkeyPem: string,
+  secret: string,
+  name?: string,
+  dateOfBirth?: string,
+  gender?: string,
+  pincode?: string,
+  state?: string,
+  timestamp?: string
+) {
+  const sharedData = processQRData(
+    privKeyPem,
+    name,
+    dateOfBirth,
+    gender,
+    pincode,
+    state,
+    timestamp
+  );
+
+  const delimiterIndices: number[] = [];
+  for (let i = 0; i < sharedData.qrDataPadded.length; i++) {
+    if (sharedData.qrDataPadded[i] === 255) {
+      delimiterIndices.push(i);
+    }
+    if (delimiterIndices.length === 18) {
+      break;
+    }
+  }
+  let photoEOI = 0;
+  for (let i = delimiterIndices[17]; i < sharedData.qrDataPadded.length - 1; i++) {
+    if (sharedData.qrDataPadded[i + 1] === 217 && sharedData.qrDataPadded[i] === 255) {
+      photoEOI = i + 1;
+    }
+  }
+  if (photoEOI === 0) {
+    throw new Error('Photo EOI not found');
+  }
+
+  const signatureBytes = sharedData.decodedData.slice(
+    sharedData.decodedData.length - 256,
+    sharedData.decodedData.length
+  );
+  const signature = BigInt('0x' + bufferToHex(Buffer.from(signatureBytes)).toString());
+
+  const publicKey = forge.pki.publicKeyFromPem(pubkeyPem);
+
+  const modulusHex = publicKey.n.toString(16);
+  const pubKey = BigInt('0x' + modulusHex);
+
+  const nullifier = nullifierHash(sharedData.extractedFields);
+  const packedCommitment = computePackedCommitment(sharedData.extractedFields);
+  const commitment = computeCommitment(
+    BigInt(secret),
+    BigInt(sharedData.qrHash),
+    nullifier,
+    packedCommitment,
+    BigInt(sharedData.photoHash)
+  );
+
+  const inputs = {
+    qrDataPadded: Uint8ArrayToCharArray(sharedData.qrDataPadded),
+    qrDataPaddedLength: sharedData.qrDataPaddedLen,
+    delimiterIndices: delimiterIndices,
+    signature: splitToWords(signature, BigInt(121), BigInt(17)),
+    pubKey: splitToWords(pubKey, BigInt(121), BigInt(17)),
+    secret: secret,
+    photoEOI: photoEOI,
   };
 
   return {

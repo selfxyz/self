@@ -29,9 +29,10 @@ import { findStartIndex, findStartIndexEC } from '../csca.js';
 import { hash, packBytesAndPoseidon } from '../hash.js';
 import { sha384_512Pad, shaPad } from '../shaPad.js';
 import { getLeafDscTree } from '../trees.js';
-import type { PassportData, SignatureAlgorithm } from '../types.js';
+import type { DocumentCategory, PassportData, SignatureAlgorithm } from '../types.js';
 import { formatMrz } from './format.js';
 import { parsePassportData } from './passport_parsing/parsePassportData.js';
+import { sha256 } from 'js-sha256';
 
 export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
   const derSignature = Buffer.from(signatureBytes).toString('binary');
@@ -305,4 +306,35 @@ export function pad(hashFunction: (typeof hashAlgos)[number]) {
 
 export function padWithZeroes(bytes: number[], length: number) {
   return bytes.concat(new Array(length - bytes.length).fill(0));
+}
+
+export function calculateContentHash(passportData: PassportData): string {
+  if (passportData.eContent) {
+    // eContent is likely a buffer or array, convert to string properly
+    const eContentStr =
+      typeof passportData.eContent === 'string'
+        ? passportData.eContent
+        : JSON.stringify(passportData.eContent);
+
+    return sha256(eContentStr);
+  }
+  // For documents without eContent (like aadhaar), hash core stable fields
+  const stableData = {
+    documentType: passportData.documentType,
+    data: passportData.mrz || '', // Use mrz for passports/IDs, could be other data for aadhaar
+    documentCategory: passportData.documentCategory,
+  };
+
+  return sha256(JSON.stringify(stableData));
+}
+
+export function inferDocumentCategory(documentType: string): DocumentCategory {
+  if (documentType.includes('passport')) {
+    return 'passport' as DocumentCategory;
+  } else if (documentType.includes('id')) {
+    return 'id_card' as DocumentCategory;
+  } else if (documentType.includes('aadhaar')) {
+    return 'aadhaar' as DocumentCategory;
+  }
+  return 'passport' as DocumentCategory; // fallback
 }

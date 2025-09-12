@@ -101,6 +101,28 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     event DscCircuitVerifierUpdated(uint256 typeId, address verifier);
 
+    /**
+     * @notice Emitted when a verification is performed.
+     * @param requestor The contract that initiated the verification request.
+     * @param contractVersion The contract version used for verification output formatting.
+     * @param attestationId The attestation identifier (E_PASSPORT or EU_ID_CARD).
+     * @param destChainId The destination chain ID.
+     * @param configId The configuration ID.
+     * @param userIdentifier The user identifier.
+     * @param output The formatted verification output containing proof results.
+     * @param userDataToPass The user data passed through to the verification result handler.
+     */
+    event DisclosureVerified(
+        address indexed requestor,
+        uint8 indexed contractVersion,
+        bytes32 indexed attestationId,
+        uint256 destChainId,
+        bytes32 configId,
+        uint256 userIdentifier,
+        bytes output,
+        bytes userDataToPass
+    );
+
     // ====================================================
     // Errors
     // ====================================================
@@ -180,6 +202,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @notice Thrown when the attestationId in the proof doesn't match the header.
     /// @dev Ensures that the attestationId in the proof matches the header.
     error AttestationIdMismatch();
+
+    /// @notice Thrown when the ofac roots don't match.
+    /// @dev Ensures that the ofac roots match.
+    error InvalidOfacRoots();
 
     // ====================================================
     // Constructor
@@ -307,14 +333,28 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(baseVerificationInput);
 
         // Perform verification and get output along with user data
-        (bytes memory output, uint256 destChainId, bytes memory userDataToPass) = _executeVerificationFlow(
-            header,
-            proofData,
-            userContextData
-        );
+        (
+            bytes memory output,
+            uint256 destChainId,
+            bytes memory userDataToPass,
+            bytes32 configId,
+            uint256 userIdentifier
+        ) = _executeVerificationFlow(header, proofData, userContextData);
 
         // Use destChainId and userDataToPass returned from _executeVerificationFlow
         _handleVerificationResult(destChainId, output, userDataToPass);
+
+        // Emit verification event for tracking
+        emit DisclosureVerified(
+            msg.sender,
+            header.contractVersion,
+            header.attestationId,
+            destChainId,
+            configId,
+            userIdentifier,
+            output,
+            userDataToPass
+        );
     }
 
     /**
@@ -548,14 +588,19 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         SelfStructs.HubInputHeader memory header,
         bytes memory proofData,
         bytes calldata userContextData
-    ) internal returns (bytes memory output, uint256 destChainId, bytes memory userDataToPass) {
-        bytes32 configId;
-        uint256 userIdentifier;
+    )
+        internal
+        returns (
+            bytes memory output,
+            uint256 destChainId,
+            bytes memory userDataToPass,
+            bytes32 configId,
+            uint256 userIdentifier
+        )
+    {
         bytes calldata remainingData;
         {
-            uint256 _destChainId;
-            (configId, _destChainId, userIdentifier, remainingData) = _decodeUserContextData(userContextData);
-            destChainId = _destChainId;
+            (configId, destChainId, userIdentifier, remainingData) = _decodeUserContextData(userContextData);
         }
 
         {
@@ -624,6 +669,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         // Scope 2: Root and date checks
         {
             _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
+            _performOfacCheck(header.attestationId, vcAndDiscloseProof, indices);
             if (header.attestationId == AttestationId.AADHAAR) {
                 _performNumericCurrentDateCheck(vcAndDiscloseProof, indices);
             } else {
@@ -705,11 +751,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             }
         } else if (attestationId == AttestationId.AADHAAR) {
             uint256 timestamp = registerCircuitProof.pubSignals[CircuitConstantsV2.AADHAAR_TIMESTAMP_INDEX];
-            if (timestamp < block.timestamp - 20 minutes) {
+            if (timestamp < (block.timestamp - 20 minutes)) {
                 revert InvalidUidaiTimestamp();
             }
 
-            if (timestamp > block.timestamp + 20 minutes) {
+            if (timestamp > (block.timestamp + 20 minutes)) {
                 revert InvalidUidaiTimestamp();
             }
 
@@ -878,6 +924,46 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         } else if (attestationId == AttestationId.AADHAAR) {
             if (!IIdentityRegistryAadhaarV1($._registries[attestationId]).checkIdentityCommitmentRoot(merkleRoot)) {
                 revert InvalidIdentityCommitmentRoot();
+            }
+        } else {
+            revert InvalidAttestationId();
+        }
+    }
+
+    function _performOfacCheck(
+        bytes32 attestationId,
+        GenericProofStruct memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal view {
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+
+        if (attestationId == AttestationId.E_PASSPORT) {
+            if (
+                !IIdentityRegistryV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.passportNoSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
+            }
+        } else if (attestationId == AttestationId.EU_ID_CARD) {
+            if (
+                !IIdentityRegistryIdCardV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
+            }
+        } else if (attestationId == AttestationId.AADHAAR) {
+            if (
+                !IIdentityRegistryAadhaarV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
             }
         } else {
             revert InvalidAttestationId();
