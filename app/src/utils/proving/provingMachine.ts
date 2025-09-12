@@ -3,13 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import forge from 'node-forge';
+import { Platform } from 'react-native';
 import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { v4 } from 'uuid';
-import type { AnyActorRef, StateFrom, AnyEventObject } from 'xstate';
+import type { AnyActorRef, AnyEventObject, StateFrom } from 'xstate';
 import { createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
-import { Platform } from 'react-native';
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { EndpointType, SelfApp } from '@selfxyz/common/utils';
@@ -55,10 +55,10 @@ import {
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import { logProofEvent, type ProofContext } from '@/Sentry';
 import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
 import { generateTEEInputsDisclose } from '@/utils/proving/provingInputs';
-import { logProofEvent, type ProofContext } from '@/Sentry';
 
 const { trackEvent } = analytics();
 
@@ -228,7 +228,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
   ) {
     let lastTransition = Date.now();
     let lastEvent: AnyEventObject = { type: 'init' };
-    newActor.on(event => {
+    newActor.on('*', (event: AnyEventObject) => {
       lastEvent = event;
     });
     newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
@@ -474,8 +474,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           actor!.send({ type: 'PROVE_ERROR' });
         }
       }
-      },
-      _handleRegisterErrorOrFailure: async (selfClient: SelfClient) => {
+    },
+    _handleRegisterErrorOrFailure: async (selfClient: SelfClient) => {
       try {
         const hasValid = await hasAnyValidRegisteredDocument(selfClient);
 
@@ -542,9 +542,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             'SocketIO disconnected unexpectedly during proof listening.',
           );
           trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
-          logProofEvent('error', 'Socket.IO disconnected unexpectedly', context, {
-            failure: 'PROOF_FAILED_CONNECTION',
-          });
+          logProofEvent(
+            'error',
+            'Socket.IO disconnected unexpectedly',
+            context,
+            {
+              failure: 'PROOF_FAILED_CONNECTION',
+            },
+          );
           currentActor.send({ type: 'PROVE_ERROR' });
         }
         set({ socketConnection: null });
@@ -909,9 +914,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                   useProtocolStore.getState()[docType].alternative_csca,
               },
             );
-          logProofEvent('info', 'Alternative CSCA registration check', context, {
-            registered: isRegistered,
-          });
+          logProofEvent(
+            'info',
+            'Alternative CSCA registration check',
+            context,
+            {
+              registered: isRegistered,
+            },
+          );
           if (isRegistered) {
             reStorePassportDataWithRightCSCA(passportData, csca as string);
 
@@ -1233,14 +1243,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _generatePayload: async () => {
       const startTime = Date.now();
-      const {
-        circuitType,
-        passportData,
-        secret,
-        uuid,
-        sharedKey,
-        env,
-      } = get();
+      const { circuitType, passportData, secret, uuid, sharedKey, env } = get();
       const selfApp = useSelfAppStore.getState().selfApp;
       const context: ProofContext = {
         sessionId: uuid || get().uuid || 'unknown-session',

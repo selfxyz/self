@@ -22,11 +22,11 @@ interface BaseContext {
   stage: string;
 }
 
-export interface NFCScanContext extends BaseContext {
+export interface NFCScanContext extends BaseContext, Record<string, unknown> {
   scanType: 'mrz' | 'can';
 }
 
-export interface ProofContext extends BaseContext {
+export interface ProofContext extends BaseContext, Record<string, unknown> {
   circuitType: 'register' | 'dsc' | 'disclose' | null;
   currentState: string;
 }
@@ -190,19 +190,19 @@ export const logEvent = (
   }
 };
 
-export const logProofEvent = (
-  level: LogLevel,
-  message: string,
-  context: ProofContext,
-  extra?: Record<string, unknown>,
-) => logEvent(level, 'proof', message, context, extra);
-
 export const logNFCEvent = (
   level: LogLevel,
   message: string,
   context: NFCScanContext,
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'nfc', message, context, extra);
+
+export const logProofEvent = (
+  level: LogLevel,
+  message: string,
+  context: ProofContext,
+  extra?: Record<string, unknown>,
+) => logEvent(level, 'proof', message, context, extra);
 
 export const wrapWithSentry = (App: React.ComponentType) => {
   return isSentryDisabled ? App : wrap(App);
