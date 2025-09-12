@@ -65,6 +65,7 @@ export {
   genMockIdDocAndInitDataParsing,
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
+  generateCircuitInputsRegisterForTests,
   generateCircuitInputsVCandDisclose,
   generateCommitment,
   generateMockDSC,
