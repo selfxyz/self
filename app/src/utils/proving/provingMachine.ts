@@ -18,6 +18,7 @@ import {
 } from '@selfxyz/common/utils';
 import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
 import {
+  generateTEEInputsDiscloseStateless,
   generateTEEInputsDSC,
   generateTEEInputsRegister,
 } from '@selfxyz/common/utils/circuits/registerInputs';
@@ -38,7 +39,6 @@ import {
 } from '@selfxyz/common/utils/proving';
 import {
   clearPassportData,
-  generateTEEInputsDisclose,
   hasAnyValidRegisteredDocument,
   loadSelectedDocument,
   markCurrentDocumentAsRegistered,
@@ -459,7 +459,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         selfClient.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, {
           hasValidDocument: hasValid,
         });
-      } catch (error) {
+      } catch {
         selfClient.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, {
           hasValidDocument: false,
         });
@@ -1015,7 +1015,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    _closeConnections: (selfClient: SelfClient) => {
+    _closeConnections: (_selfClient: SelfClient) => {
       const { wsConnection: ws, wsHandlers } = get();
       if (ws && wsHandlers) {
         try {
@@ -1088,10 +1088,27 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           break;
         case 'disclose':
           ({ inputs, circuitName, endpointType, endpoint } =
-            generateTEEInputsDisclose(
+            generateTEEInputsDiscloseStateless(
               secret as string,
               passportData,
               selfApp as SelfApp,
+              (doc: DocumentCategory, tree) => {
+                const docStore =
+                  doc === 'passport'
+                    ? protocolStore.passport
+                    : protocolStore.id_card;
+                switch (tree) {
+                  case 'ofac':
+                    return docStore.ofac_trees;
+                  case 'commitment':
+                    if (!docStore.commitment_tree) {
+                      throw new Error('Commitment tree not loaded');
+                    }
+                    return docStore.commitment_tree;
+                  default:
+                    throw new Error('Unknown tree type');
+                }
+              },
             ));
           circuitTypeWithDocumentExtension = `disclose`;
           break;

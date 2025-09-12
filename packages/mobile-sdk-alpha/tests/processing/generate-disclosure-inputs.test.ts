@@ -145,4 +145,17 @@ describe('generateTEEInputsDisclose', () => {
       `Invalid OFAC tree structure: missing required fields`,
     );
   });
+
+  it('throws error if OFAC trees not loaded', () => {
+    vi.spyOn(useProtocolStore, 'getState').mockReturnValue({
+      passport: {
+        ofac_trees: null,
+        commitment_tree: '[[]]',
+      },
+    } as any);
+
+    expect(() => generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
+      'OFAC trees not loaded',
+    );
+  });
 });
