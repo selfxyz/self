@@ -233,15 +233,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     });
     newActor.subscribe((state: StateFrom<typeof provingMachine>) => {
       const now = Date.now();
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
-        sessionId: get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
+      const context = createProofContext('stateTransition', {
         currentState: String(state.value),
-        stage: 'stateTransition',
-        platform: getPlatform(),
-      };
+      });
       logProofEvent('info', `State transition: ${state.value}`, context, {
         event: lastEvent.type,
         duration_ms: now - lastTransition,
@@ -364,15 +358,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       const startTime = Date.now();
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
-        sessionId: get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: '_handleWebSocketMessage',
-        platform: getPlatform(),
-      };
+      const context = createProofContext('_handleWebSocketMessage');
 
       try {
         const result = JSON.parse(event.data);
@@ -483,6 +469,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           hasValidDocument: hasValid,
         });
       } catch (error) {
+        console.error('Error checking valid documents:', error);
         selfClient.emit(SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE, {
           hasValidDocument: false,
         });
@@ -504,15 +491,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
       set({ socketConnection: socket });
       trackEvent(ProofEvents.SOCKETIO_CONN_STARTED);
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
-        sessionId: get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: '_startSocketIOStatusListener',
-        platform: getPlatform(),
-      };
+      const context = createProofContext('_startSocketIOStatusListener');
       logProofEvent('info', 'Socket.IO listener started', context, { url });
 
       socket.on('connect', () => {
@@ -608,15 +587,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       trackEvent(ProofEvents.CONNECTION_UUID_GENERATED, {
         connection_uuid: connectionUuid,
       });
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
+      const context = createProofContext('_handleWsOpen', {
         sessionId: connectionUuid,
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: '_handleWsOpen',
-        platform: getPlatform(),
-      };
+      });
       logProofEvent('info', 'WebSocket open', context);
       set({ uuid: connectionUuid });
       const helloBody = {
@@ -641,15 +614,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (!actor) {
         return;
       }
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
-        sessionId: get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: '_handleWsError',
-        platform: getPlatform(),
-      };
+      const context = createProofContext('_handleWsError');
       logProofEvent('error', 'TEE WebSocket error', context, {
         failure: 'PROOF_FAILED_CONNECTION',
         error: error instanceof Error ? error.message : String(error),
@@ -669,15 +634,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (!actor) {
         return;
       }
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
-        sessionId: get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: '_handleWsClose',
-        platform: getPlatform(),
-      };
+      const context = createProofContext('_handleWsClose');
       logProofEvent('warn', 'TEE WebSocket closed', context, {
         code: event.code,
         reason: event.reason,
@@ -770,15 +727,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       _checkActorInitialized(actor);
       trackEvent(ProofEvents.FETCH_DATA_STARTED);
       const startTime = Date.now();
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
-        sessionId: get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: 'startFetchingData',
-        platform: getPlatform(),
-      };
+      const context = createProofContext('startFetchingData');
       logProofEvent('info', 'Fetching DSC data started', context);
       try {
         const { passportData, env } = get();
@@ -831,15 +780,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
       trackEvent(ProofEvents.VALIDATION_STARTED);
       const startTime = Date.now();
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
-        sessionId: get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: 'validatingDocument',
-        platform: getPlatform(),
-      };
+      const context = createProofContext('validatingDocument');
       logProofEvent('info', 'Validating document started', context);
       try {
         const { passportData, secret, circuitType } = get();
@@ -990,15 +931,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     initTeeConnection: async (): Promise<boolean> => {
       const startTime = Date.now();
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const baseContext: ProofContext = {
-        sessionId: get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: 'initTeeConnection',
-        platform: getPlatform(),
-      };
+      const baseContext = createProofContext('initTeeConnection');
       const { passportData } = get();
       if (!passportData) {
         logProofEvent('error', 'Passport data missing', baseContext, {
@@ -1105,17 +1038,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     startProving: async () => {
       _checkActorInitialized(actor);
       const startTime = Date.now();
-      const selfApp = useSelfAppStore.getState().selfApp;
       const { wsConnection, sharedKey, passportData, secret, uuid, fcmToken } =
         get();
-      const context: ProofContext = {
+      const context = createProofContext('startProving', {
         sessionId: uuid || get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
-        circuitType: get().circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: 'startProving',
-        platform: getPlatform(),
-      };
+      });
 
       if (get().currentState !== 'ready_to_prove') {
         logProofEvent('error', 'Not in ready_to_prove state', context, {
@@ -1244,15 +1171,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     _generatePayload: async () => {
       const startTime = Date.now();
       const { circuitType, passportData, secret, uuid, sharedKey, env } = get();
-      const selfApp = useSelfAppStore.getState().selfApp;
-      const context: ProofContext = {
+      const context = createProofContext('_generatePayload', {
         sessionId: uuid || get().uuid || 'unknown-session',
-        userId: selfApp?.userId,
         circuitType: circuitType || null,
-        currentState: get().currentState || 'unknown-state',
-        stage: '_generatePayload',
-        platform: getPlatform(),
-      };
+      });
       logProofEvent('info', 'Payload generation started', context);
       try {
         if (!passportData) {
@@ -1265,6 +1187,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           endpoint,
           circuitTypeWithDocumentExtension;
         const protocolStore = useProtocolStore.getState();
+        const selfApp = useSelfAppStore.getState().selfApp;
 
         if (!env) {
           throw new Error('Environment not set');
@@ -1387,6 +1310,27 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
   };
 });
+
+/**
+ * Creates a ProofContext with sane defaults for logging proof events
+ */
+const createProofContext = (
+  stage: string,
+  overrides: Partial<ProofContext> = {},
+): ProofContext => {
+  const selfApp = useSelfAppStore.getState().selfApp;
+  const provingState = useProvingStore.getState();
+
+  return {
+    sessionId: provingState.uuid || 'unknown-session',
+    userId: selfApp?.userId,
+    circuitType: provingState.circuitType || null,
+    currentState: provingState.currentState || 'unknown-state',
+    stage,
+    platform: getPlatform(),
+    ...overrides,
+  };
+};
 
 function _checkActorInitialized(actor: AnyActorRef | null) {
   if (!actor) {
