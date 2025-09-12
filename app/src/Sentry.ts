@@ -22,6 +22,73 @@ interface BaseContext {
   stage: string;
 }
 
+// Security: Whitelist of allowed tag keys to prevent XSS
+const ALLOWED_TAG_KEYS = new Set([
+  'session_id',
+  'platform',
+  'stage',
+  'circuitType',
+  'currentState',
+  'scanType',
+  'error_code',
+  'proof_step',
+  'scan_result',
+  'verification_status',
+  'document_type',
+]);
+
+// Security: Sanitize tag values to prevent XSS
+const sanitizeTagValue = (value: unknown): string => {
+  if (value == null) return '';
+
+  const stringValue = String(value);
+
+  // Truncate to safe length
+  const MAX_TAG_LENGTH = 200;
+  const truncated =
+    stringValue.length > MAX_TAG_LENGTH
+      ? stringValue.substring(0, MAX_TAG_LENGTH) + '...'
+      : stringValue;
+
+  // Escape HTML characters and remove potentially dangerous characters
+  return (
+    truncated
+      .replace(/[<>&"']/g, char => {
+        switch (char) {
+          case '<':
+            return '&lt;';
+          case '>':
+            return '&gt;';
+          case '&':
+            return '&amp;';
+          case '"':
+            return '&quot;';
+          case "'":
+            return '&#x27;';
+          default:
+            return char;
+        }
+      })
+      // Remove control characters and non-printable characters
+      .replace(/[^\x20-\x7E]/g, '')
+  );
+};
+
+// Security: Sanitize tag key to prevent XSS
+const sanitizeTagKey = (key: string): string | null => {
+  // Only allow whitelisted keys
+  if (!ALLOWED_TAG_KEYS.has(key)) {
+    return null;
+  }
+
+  // Additional validation: alphanumeric and underscores only
+  if (!/^[a-zA-Z0-9_]+$/.test(key)) {
+    return null;
+  }
+
+  return key;
+};
+
 export interface NFCScanContext extends BaseContext, Record<string, unknown> {
   scanType: 'mrz' | 'can';
 }
@@ -167,7 +234,11 @@ export const logEvent = (
       scope.setTag('platform', platform);
       scope.setTag('stage', stage);
       Object.entries(rest).forEach(([key, value]) => {
-        scope.setTag(key, String(value));
+        const sanitizedKey = sanitizeTagKey(key);
+        if (sanitizedKey) {
+          const sanitizedValue = sanitizeTagValue(value);
+          scope.setTag(sanitizedKey, sanitizedValue);
+        }
       });
       if (userId) {
         scope.setUser({ id: userId });

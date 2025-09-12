@@ -60,6 +60,109 @@ import { useSelfAppStore } from '@/stores/selfAppStore';
 import analytics from '@/utils/analytics';
 import { generateTEEInputsDisclose } from '@/utils/proving/provingInputs';
 
+// Helper functions for WebSocket URL resolution
+const getMappingKey = (
+  circuitType: 'disclose' | 'register' | 'dsc',
+  documentCategory: DocumentCategory,
+): string => {
+  if (circuitType === 'disclose') {
+    return documentCategory === 'passport' ? 'DISCLOSE' : 'DISCLOSE_ID';
+  }
+  if (circuitType === 'register') {
+    return documentCategory === 'passport' ? 'REGISTER' : 'REGISTER_ID';
+  }
+  // circuitType === 'dsc'
+  return documentCategory === 'passport' ? 'DSC' : 'DSC_ID';
+};
+
+const resolveWebSocketUrl = (
+  circuitType: 'disclose' | 'register' | 'dsc',
+  passportData: PassportData,
+  circuitName: string,
+): string | undefined => {
+  const { documentCategory } = passportData;
+  const circuitsMapping =
+    useProtocolStore.getState()[documentCategory].circuits_dns_mapping;
+  const mappingKey = getMappingKey(circuitType, documentCategory);
+
+  return circuitsMapping?.[mappingKey]?.[circuitName];
+};
+
+// Helper functions for _generatePayload refactoring
+const _generateCircuitInputs = (
+  circuitType: 'disclose' | 'register' | 'dsc',
+  secret: string | undefined | null,
+  passportData: PassportData,
+  env: 'prod' | 'stg',
+) => {
+  const document: DocumentCategory = passportData.documentCategory;
+  const protocolStore = useProtocolStore.getState();
+  const selfApp = useSelfAppStore.getState().selfApp;
+
+  let inputs,
+    circuitName,
+    endpointType,
+    endpoint,
+    circuitTypeWithDocumentExtension;
+
+  switch (circuitType) {
+    case 'register':
+      ({ inputs, circuitName, endpointType, endpoint } =
+        generateTEEInputsRegister(
+          secret as string,
+          passportData,
+          protocolStore[document].dsc_tree,
+          env,
+        ));
+      circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
+      break;
+    case 'dsc':
+      ({ inputs, circuitName, endpointType, endpoint } = generateTEEInputsDSC(
+        passportData,
+        protocolStore[document].csca_tree as string[][],
+        env,
+      ));
+      circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
+      break;
+    case 'disclose':
+      ({ inputs, circuitName, endpointType, endpoint } =
+        generateTEEInputsDisclose(
+          secret as string,
+          passportData,
+          selfApp as SelfApp,
+        ));
+      circuitTypeWithDocumentExtension = `disclose`;
+      break;
+    default:
+      throw new Error('Invalid circuit type:' + circuitType);
+  }
+
+  return {
+    inputs,
+    circuitName,
+    endpointType,
+    endpoint,
+    circuitTypeWithDocumentExtension,
+  };
+};
+
+const _encryptPayload = (payload: any, sharedKey: Buffer): any => {
+  const forgeKey = forge.util.createBuffer(sharedKey.toString('binary'));
+  return encryptAES256GCM(JSON.stringify(payload), forgeKey);
+};
+
+const _buildSubmitRequest = (uuid: string | null, encryptedPayload: any) => {
+  return {
+    jsonrpc: '2.0',
+    method: 'openpassport_submit_request',
+    id: 2,
+    params: {
+      uuid: uuid,
+      ...encryptedPayload,
+    },
+  };
+};
+
 const { trackEvent } = analytics();
 
 const getPlatform = (): 'ios' | 'android' =>
@@ -941,33 +1044,19 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         throw new Error('PassportData is not available');
       }
       const document: DocumentCategory = passportData.documentCategory;
-      const circuitsMapping =
-        useProtocolStore.getState()[document].circuits_dns_mapping;
+      const circuitType = get().circuitType as 'disclose' | 'register' | 'dsc';
 
       let circuitName, wsRpcUrl;
-      if (get().circuitType === 'disclose') {
+      if (circuitType === 'disclose') {
         circuitName = 'disclose';
-        wsRpcUrl =
-          passportData.documentCategory === 'passport'
-            ? circuitsMapping?.DISCLOSE?.[circuitName]
-            : circuitsMapping?.DISCLOSE_ID?.[circuitName];
       } else {
         circuitName = getCircuitNameFromPassportData(
           passportData,
-          get().circuitType as 'register' | 'dsc',
+          circuitType as 'register' | 'dsc',
         );
-        if (get().circuitType === 'register') {
-          wsRpcUrl =
-            passportData.documentCategory === 'passport'
-              ? circuitsMapping?.REGISTER?.[circuitName]
-              : circuitsMapping?.REGISTER_ID?.[circuitName];
-        } else {
-          wsRpcUrl =
-            passportData.documentCategory === 'passport'
-              ? circuitsMapping?.DSC?.[circuitName]
-              : circuitsMapping?.DSC_ID?.[circuitName];
-        }
       }
+
+      wsRpcUrl = resolveWebSocketUrl(circuitType, passportData, circuitName);
       logProofEvent('info', 'Circuit resolution', baseContext, {
         circuit_name: circuitName,
         ws_url: wsRpcUrl,
@@ -1176,65 +1265,45 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType: circuitType || null,
       });
       logProofEvent('info', 'Payload generation started', context);
+
       try {
         if (!passportData) {
           throw new Error('PassportData is not available');
         }
-        const document: DocumentCategory = passportData.documentCategory;
-        let inputs,
-          circuitName,
-          endpointType,
-          endpoint,
-          circuitTypeWithDocumentExtension;
-        const protocolStore = useProtocolStore.getState();
-        const selfApp = useSelfAppStore.getState().selfApp;
-
         if (!env) {
           throw new Error('Environment not set');
         }
-
-        switch (circuitType) {
-          case 'register':
-            ({ inputs, circuitName, endpointType, endpoint } =
-              generateTEEInputsRegister(
-                secret as string,
-                passportData,
-                protocolStore[document].dsc_tree,
-                env,
-              ));
-            circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
-            break;
-          case 'dsc':
-            ({ inputs, circuitName, endpointType, endpoint } =
-              generateTEEInputsDSC(
-                passportData,
-                protocolStore[document].csca_tree as string[][],
-                env,
-              ));
-            circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
-            break;
-          case 'disclose':
-            ({ inputs, circuitName, endpointType, endpoint } =
-              generateTEEInputsDisclose(
-                secret as string,
-                passportData,
-                selfApp as SelfApp,
-              ));
-            circuitTypeWithDocumentExtension = `disclose`;
-            break;
-          default:
-            console.error('Invalid circuit type:' + circuitType);
-            throw new Error('Invalid circuit type:' + circuitType);
+        if (!sharedKey) {
+          throw new Error('Shared key not available');
         }
+
+        // Generate circuit inputs
+        const {
+          inputs,
+          circuitName,
+          endpointType,
+          endpoint,
+          circuitTypeWithDocumentExtension,
+        } = _generateCircuitInputs(
+          circuitType as 'disclose' | 'register' | 'dsc',
+          secret,
+          passportData,
+          env,
+        );
+
         logProofEvent('info', 'Inputs generated', context, {
           circuit_name: circuitName,
           endpoint_type: endpointType,
         });
+
+        // Build payload
+        const selfApp = useSelfAppStore.getState().selfApp;
         const userDefinedData = getSolidityPackedUserContextData(
           selfApp?.chainID ?? 0,
           selfApp?.userId ?? '',
           selfApp?.userDefinedData ?? '',
         ).slice(2);
+
         const payload = getPayload(
           inputs,
           circuitTypeWithDocumentExtension as
@@ -1248,14 +1317,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfApp?.version,
           userDefinedData,
         );
+
         const payloadSize = JSON.stringify(payload).length;
-        const forgeKey = forge.util.createBuffer(
-          sharedKey?.toString('binary') as string,
-        );
-        const encryptedPayload = encryptAES256GCM(
-          JSON.stringify(payload),
-          forgeKey,
-        );
+
+        // Encrypt payload
+        const encryptedPayload = _encryptPayload(payload, sharedKey);
+
         logProofEvent('info', 'Payload encrypted', context, {
           payload_size: payloadSize,
         });
@@ -1264,18 +1331,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         trackEvent(ProofEvents.PAYLOAD_ENCRYPTED);
 
         set({ endpointType: endpointType as EndpointType });
+
         logProofEvent('info', 'Payload generation completed', context, {
           duration_ms: Date.now() - startTime,
         });
-        return {
-          jsonrpc: '2.0',
-          method: 'openpassport_submit_request',
-          id: 2,
-          params: {
-            uuid: uuid,
-            ...encryptedPayload,
-          },
-        };
+
+        // Build and return submit request
+        return _buildSubmitRequest(uuid!, encryptedPayload);
       } catch (error) {
         logProofEvent('error', 'Payload generation failed', context, {
           failure: 'PROOF_FAILED_PAYLOAD_GEN',
