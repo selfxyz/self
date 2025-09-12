@@ -54,6 +54,7 @@ export {
 export {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
+  generateCircuitInputsRegisterForTests,
   generateCircuitInputsVCandDisclose,
 } from './circuits/generateInputs.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
