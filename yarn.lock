@@ -5039,7 +5039,6 @@ __metadata:
     jsdom: "npm:^24.0.0"
     prettier: "npm:^3.5.3"
     socket.io-client: "npm:^4.8.1"
-    tslib: "npm:^2.6.2"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
     vitest: "npm:^1.6.0"
@@ -23236,8 +23235,6 @@ __metadata:
     knip: "npm:^5.62.0"
     patch-package: "npm:^8.0.0"
     prettier: "npm:^3.5.3"
-    react: "npm:^18.3.1"
-    react-native: "npm:0.76.9"
     typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
@@ -25210,7 +25207,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
+"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.6.3, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
