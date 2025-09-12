@@ -22,6 +22,15 @@ export interface NFCScanContext {
   stage: string;
 }
 
+export interface ProofContext {
+  sessionId: string;
+  userId?: string;
+  circuitType: 'register' | 'dsc' | 'disclose' | null;
+  currentState: string;
+  stage: string;
+  platform: 'ios' | 'android';
+}
+
 export const captureException = (
   error: Error,
   context?: Record<string, unknown>,
@@ -119,6 +128,55 @@ export const initSentry = () => {
 };
 
 export const isSentryDisabled = !SENTRY_DSN;
+
+export const logProofEvent = (
+  level: 'info' | 'warn' | 'error',
+  message: string,
+  context: ProofContext,
+  extra?: Record<string, unknown>,
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+
+  const data = {
+    session_id: context.sessionId,
+    user_id: context.userId,
+    circuit_type: context.circuitType,
+    current_state: context.currentState,
+    stage: context.stage,
+    platform: context.platform,
+    ...extra,
+  };
+
+  if (level === 'error') {
+    withScope(scope => {
+      scope.setLevel('error');
+      scope.setTag('session_id', context.sessionId);
+      scope.setTag('circuit_type', String(context.circuitType));
+      scope.setTag('current_state', context.currentState);
+      scope.setTag('stage', context.stage);
+      scope.setTag('platform', context.platform);
+      if (context.userId) {
+        scope.setUser({ id: context.userId });
+      }
+      if (extra) {
+        Object.entries(extra).forEach(([key, value]) => {
+          scope.setExtra(key, value);
+        });
+      }
+      sentryCaptureMessage(message);
+    });
+  } else {
+    addBreadcrumb({
+      message,
+      level: level === 'warn' ? 'warning' : 'info',
+      category: 'proof',
+      data,
+      timestamp: Date.now() / 1000,
+    });
+  }
+};
 
 export const logNFCEvent = (
   level: 'info' | 'warn' | 'error',
