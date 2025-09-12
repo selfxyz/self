@@ -5058,6 +5058,8 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.8.0"
     jsdom: "npm:^24.0.0"
     prettier: "npm:^3.5.3"
+    react-dom: "npm:^18.3.1"
+    react-native: "npm:^0.81.1"
     socket.io-client: "npm:^4.8.1"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
@@ -23262,6 +23264,8 @@ __metadata:
     knip: "npm:^5.62.0"
     patch-package: "npm:^8.0.0"
     prettier: "npm:^3.5.3"
+    react: "npm:^18.3.1"
+    react-native: "npm:0.76.9"
     typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
