@@ -10,6 +10,10 @@ export const actorMock = {
   start: jest.fn(),
   stop: jest.fn(),
   send: jest.fn(),
+  on: jest.fn((eventType: string, handler: (event: any) => void) => {
+    (actorMock as any)._eventHandler = handler;
+    return { unsubscribe: jest.fn() };
+  }),
   subscribe: jest.fn((cb: (state: any) => void) => {
     (actorMock as any)._callback = cb;
     return { unsubscribe: jest.fn() };
