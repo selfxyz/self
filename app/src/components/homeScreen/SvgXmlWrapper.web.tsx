@@ -3,14 +3,19 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import DOMPurify from 'dompurify';
-import React, { createElement, forwardRef } from 'react';
+import {
+  createElement,
+  type CSSProperties,
+  forwardRef,
+  type HTMLAttributes,
+} from 'react';
 
 type Props = {
   xml: string;
   width?: number;
   height?: number;
-  style?: React.CSSProperties;
-} & React.HTMLAttributes<HTMLDivElement>;
+  style?: CSSProperties;
+} & HTMLAttributes<HTMLDivElement>;
 
 export const SvgXml = forwardRef<HTMLDivElement, Props>(
   ({ xml, width, height, style, ...props }, ref) => {

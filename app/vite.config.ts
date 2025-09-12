@@ -51,6 +51,7 @@ export default defineConfig({
         'src/mocks/react-native-passport-reader.ts',
       ),
       '@/utils/nfcScanner': resolve(__dirname, 'src/mocks/nfcScanner.ts'),
+      crypto: 'crypto-browserify',
     },
   },
   plugins: [
@@ -166,7 +167,6 @@ export default defineConfig({
           ],
           'screens-prove-utils': [
             './src/utils/proving/index.ts',
-            './src/utils/proving/provingInputs.ts',
             './src/utils/proving/loadingScreenStateText.ts',
           ],
 

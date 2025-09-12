@@ -4,9 +4,8 @@
 
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Text, View, XStack } from 'tamagui';
+import { Button, Text, View } from 'tamagui';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
-import { ChevronLeft } from '@tamagui/lucide-icons';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import { black, charcoal, slate50 } from '@/utils/colors';

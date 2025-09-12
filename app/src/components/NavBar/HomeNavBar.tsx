@@ -10,13 +10,13 @@ import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { Clipboard as ClipboardIcon } from '@tamagui/lucide-icons';
 
 import type { SelfApp } from '@selfxyz/common/utils/appType';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import ActivityIcon from '@/images/icons/activity.svg';
 import ScanIcon from '@/images/icons/qr_scan.svg';
 import SettingsIcon from '@/images/icons/settings.svg';
-import { useSelfAppStore } from '@/stores/selfAppStore';
-import { black, charcoal, neutral400, slate50, white } from '@/utils/colors';
+import { black, charcoal, slate50 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { buttonTap } from '@/utils/haptic';
 

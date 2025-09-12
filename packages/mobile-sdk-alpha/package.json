@@ -68,14 +68,14 @@
   "scripts": {
     "build": "rm -rf dist && tsup && yarn postbuild",
     "postbuild": "node ./scripts/postBuild.mjs",
-    "demo:android": "yarn workspace mobile-sdk-demo android",
     "demo:build": "node ./scripts/build-demo.mjs",
     "demo:clean": "yarn workspace mobile-sdk-demo clean",
-    "demo:ios": "yarn workspace mobile-sdk-demo ios",
-    "demo:start": "yarn build && yarn demo:clean && yarn workspace mobile-sdk-demo start --reset-cache",
-    "demo:test": "yarn workspace mobile-sdk-demo test",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
+    "demo:android": "yarn workspace demo-app android",
+    "demo:ios": "yarn workspace demo-app ios",
+    "demo:start": "yarn workspace demo-app start && yarn demo:clean && yarn workspace demo-app start --reset-cache",
+    "demo:test": "yarn workspace demo-app test",
     "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -93,7 +93,7 @@
   "dependencies": {
     "@babel/runtime": "^7.28.3",
     "@selfxyz/common": "workspace:^",
-    "tslib": "^2.6.2",
+    "socket.io-client": "^4.8.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

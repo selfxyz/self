@@ -36,8 +36,8 @@ describe('provingMachine registration completion', () => {
       useProvingStore(state => state.init),
     );
     const emitMock = jest.fn();
-
     const selfClient = {
+      trackEvent: jest.fn(),
       emit: emitMock,
     } as unknown as SelfClient;
 

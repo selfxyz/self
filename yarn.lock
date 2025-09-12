@@ -4857,7 +4857,7 @@ __metadata:
     poseidon-lite: "npm:^0.3.0"
     poseidon-solidity: "npm:^0.0.5"
     prettier: "npm:3.5.3"
-    prettier-plugin-solidity: "npm:^2.0.0"
+    prettier-plugin-solidity: "npm:^2.1.0"
     snarkjs: "npm:^0.7.4"
     solidity-coverage: "npm:^0.8.14"
     ts-node: "npm:^10.9.2"
@@ -5058,9 +5058,7 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.8.0"
     jsdom: "npm:^24.0.0"
     prettier: "npm:^3.5.3"
-    react-dom: "npm:^18.3.1"
-    react-native: "npm:^0.81.1"
-    tslib: "npm:^2.6.2"
+    socket.io-client: "npm:^4.8.1"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
     vitest: "npm:^1.6.0"
@@ -21527,7 +21525,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-plugin-solidity@npm:^2.0.0":
+"prettier-plugin-solidity@npm:^2.1.0":
   version: 2.1.0
   resolution: "prettier-plugin-solidity@npm:2.1.0"
   dependencies:
@@ -23263,8 +23261,7 @@ __metadata:
     js-sha1: "npm:^0.7.0"
     knip: "npm:^5.62.0"
     patch-package: "npm:^8.0.0"
-    react: "npm:^18.3.1"
-    react-native: "npm:0.76.9"
+    prettier: "npm:^3.5.3"
     typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
@@ -25237,7 +25234,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.6.2, tslib@npm:^2.6.3, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
+"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.6.3, tslib@npm:^2.8.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
