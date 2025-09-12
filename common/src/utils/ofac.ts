@@ -14,20 +14,12 @@ const fetchTree = async (url: string): Promise<any> => {
     throw new Error(`HTTP error fetching ${url}! status: ${res.status}`);
   }
   const responseData = await res.json();
-  // Accept either wrapped { status: 'success', data: ... } or raw payloads
-  if (responseData && typeof responseData === 'object') {
-    if ('status' in responseData || 'data' in responseData) {
-      if (responseData.status !== 'success' || !responseData.data) {
-        throw new Error(
-          `Failed to fetch tree from ${url}: ${responseData.message || 'Invalid response format'}`
-        );
-      }
-      return responseData.data;
-    }
-    // Raw tree payload (already the tree)
-    return responseData;
+  if (responseData.status !== 'success' || !responseData.data) {
+    throw new Error(
+      `Failed to fetch tree from ${url}: ${responseData.message || 'Invalid response format'}`
+    );
   }
-  throw new Error(`Failed to fetch tree from ${url}: Unexpected response type`);
+  return responseData.data;
 };
 
 // Main public helper that retrieves the three OFAC trees depending on the variant (passport vs id_card).

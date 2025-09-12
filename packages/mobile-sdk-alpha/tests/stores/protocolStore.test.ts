@@ -31,7 +31,8 @@ describe('protocolStore.fetch_ofac_trees', () => {
       'name-yob': { root: ['yob'] },
     };
 
-    vi.spyOn(global, 'fetch').mockImplementation((url: string) => {
+    vi.spyOn(global, 'fetch').mockImplementation((input: string | Request | URL, _init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString();
       const key = url.includes('passport-no-nationality')
         ? 'passport-no-nationality'
         : url.includes('name-dob')
@@ -55,7 +56,8 @@ describe('protocolStore.fetch_ofac_trees', () => {
       'name-yob': { status: 'success', data: { root: ['yob'] } },
     };
 
-    vi.spyOn(global, 'fetch').mockImplementation((url: string) => {
+    vi.spyOn(global, 'fetch').mockImplementation((input: string | Request | URL, _init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString();
       const key = url.includes('passport-no-nationality')
         ? 'passport-no-nationality'
         : url.includes('name-dob')
