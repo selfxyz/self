@@ -56,6 +56,10 @@ import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { logProofEvent, type ProofContext } from '@/Sentry';
 import analytics from '@/utils/analytics';
+import {
+  handleStatusCode,
+  parseStatusMessage,
+} from '@/utils/proving/statusHandlers';
 
 // Helper functions for WebSocket URL resolution
 const getMappingKey = (
@@ -704,41 +708,59 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
 
       socket.on('status', (message: unknown) => {
-        const data =
-          typeof message === 'string' ? JSON.parse(message) : message;
-        selfClient.trackEvent(ProofEvents.SOCKETIO_STATUS_RECEIVED, {
-          status: data.status,
-        });
-        logProofEvent('info', 'Status message received', context, {
-          status: data.status,
-        });
-        if (data.status === 3 || data.status === 5) {
-          console.error(
-            'Proof generation/verification failed (status 3 or 5).',
-          );
-          console.error(data);
-          set({ error_code: data.error_code, reason: data.reason });
-          selfClient.trackEvent(ProofEvents.SOCKETIO_PROOF_FAILURE, {
-            error_code: data.error_code,
-            reason: data.reason,
+        try {
+          const data = parseStatusMessage(message);
+
+          selfClient.trackEvent(ProofEvents.SOCKETIO_STATUS_RECEIVED, {
+            status: data.status,
           });
-          logProofEvent('error', 'TEE processing failed', context, {
-            failure: 'PROOF_FAILED_TEE_PROCESSING',
-            error_code: data.error_code,
-            reason: data.reason,
+          logProofEvent('info', 'Status message received', context, {
+            status: data.status,
           });
-          actor!.send({ type: 'PROVE_FAILURE' });
-          socket?.disconnect();
-          set({ socketConnection: null });
-        } else if (data.status === 4) {
-          socket?.disconnect();
-          set({ socketConnection: null });
-          if (get().circuitType === 'register') {
-            selfClient.trackEvent(ProofEvents.REGISTER_COMPLETED);
+
+          const result = handleStatusCode(data, get().circuitType);
+
+          // Handle state updates
+          if (result.stateUpdate) {
+            set(result.stateUpdate);
           }
-          selfClient.trackEvent(ProofEvents.SOCKETIO_PROOF_SUCCESS);
-          logProofEvent('info', 'TEE processing succeeded', context);
-          actor!.send({ type: 'PROVE_SUCCESS' });
+
+          // Handle analytics
+          result.analytics?.forEach(({ event, data: eventData }) => {
+            if (event === 'SOCKETIO_PROOF_FAILURE') {
+              logProofEvent('error', 'TEE processing failed', context, {
+                failure: 'PROOF_FAILED_TEE_PROCESSING',
+                error_code: eventData?.error_code,
+                reason: eventData?.reason,
+              });
+            } else if (event === 'SOCKETIO_PROOF_SUCCESS') {
+              logProofEvent('info', 'TEE processing succeeded', context);
+            }
+            selfClient.trackEvent(event as any, eventData);
+          });
+
+          // Handle actor events
+          if (result.actorEvent) {
+            if (result.actorEvent.type === 'PROVE_FAILURE') {
+              console.error(
+                'Proof generation/verification failed (status 3 or 5).',
+              );
+              console.error(data);
+            }
+            actor!.send(result.actorEvent);
+          }
+
+          // Handle disconnection
+          if (result.shouldDisconnect) {
+            socket?.disconnect();
+          }
+        } catch (error) {
+          console.error('Error handling status message:', error);
+          logProofEvent('error', 'Status message parsing failed', context, {
+            failure: 'PROOF_FAILED_MESSAGE_PARSING',
+            error: error instanceof Error ? error.message : String(error),
+          });
+          actor!.send({ type: 'PROVE_ERROR' });
         }
       });
     },
