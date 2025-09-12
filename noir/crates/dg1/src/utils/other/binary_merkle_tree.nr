@@ -1,4 +1,4 @@
-\pub fn binary_merkle_root<let MAX_DEPTH: u32>(
+pub fn binary_merkle_root<let MAX_DEPTH: u32>(
     leaf: Field,
     depth: u32,
     indices: [u1; MAX_DEPTH],
