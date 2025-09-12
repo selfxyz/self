@@ -1,26 +1,22 @@
-pub fn binary_merkle_root<let N: u32>(
+\pub fn binary_merkle_root<let MAX_DEPTH: u32>(
     leaf: Field,
     depth: u32,
-    indices: [u1; N],
-    siblings: [Field; N],
+    indices: [u1; MAX_DEPTH],
+    siblings: [Field; MAX_DEPTH],
 ) -> Field {
     // Compute the node after applying exactly `depth` hashing steps.
     // The loop runs over N with a selector to avoid data-dependent control flow.
     let mut current = leaf;
 
-    for i in 0..N {
-        let is_active = if i < depth { 1 } else { 0 };
-
-        let child_nodes = if indices[i] == 0 {
-            [current, siblings[i]]
-        } else {
-            [siblings[i], current]
-        };
-
-        let next_node = std::hash::poseidon::bn254::hash_2(child_nodes);
-
-        // If this level is active (i < depth), advance; otherwise keep current.
-        current = is_active * next_node + (1 - is_active) * current;
+    for i in 0..MAX_DEPTH {
+        if i < depth {
+            let child_nodes = if indices[i] == 0 {
+                [current, siblings[i]]
+            } else {
+                [siblings[i], current]
+            };
+            current = std::hash::poseidon::bn254::hash_2(child_nodes);
+        }
     }
 
     current
@@ -29,18 +25,18 @@ pub fn binary_merkle_root<let N: u32>(
 mod tests {
     use super::binary_merkle_root;
 
-    unconstrained fn get_merkle_path<let N: u32>(
+    unconstrained fn get_merkle_path<let MAX_DEPTH: u32>(
         leaves: [Field],
         leaf_index: u32,
-    ) -> (Field, u32, [u1; N], [Field; N]) {
-        let mut indices: [u1; N] = [0; N];
-        let mut siblings: [Field; N] = [0; N];
+    ) -> (Field, u32, [u1; MAX_DEPTH], [Field; MAX_DEPTH]) {
+        let mut indices: [u1; MAX_DEPTH] = [0; MAX_DEPTH];
+        let mut siblings: [Field; MAX_DEPTH] = [0; MAX_DEPTH];
 
         let mut nodes = leaves;
         let mut index = leaf_index;
         let mut depth: u32 = 0;
 
-        for d in 0..N {
+        for d in 0..MAX_DEPTH {
             // next level size: pair up nodes; if odd, last pair duplicates last node
             let mut next_level: [Field] = [];
             let mut i = 0;
@@ -103,4 +99,46 @@ mod tests {
         assert(computed_root == root);
     }
 
+    #[test]
+    unconstrained fn test_should_fail_if_depth_greater_than_max_levels() {
+        let mut leaves: [Field] = [];
+
+        for i in 1..17 { // 16 leaves => tree depth 4
+            leaves = leaves.push_back(Field::from(i));
+        }
+
+        // Build correct path with depth 4
+        let (root, depth, full_indices, full_siblings) = get_merkle_path::<4>(leaves, 6);
+
+        // Truncate proof arrays to MAX_DEPTH = 3, but keep the true depth = 4
+        let mut indices3: [u1; 3] = [0; 3];
+        let mut siblings3: [Field; 3] = [0; 3];
+        for i in 0..3 {
+            indices3[i] = full_indices[i];
+            siblings3[i] = full_siblings[i];
+        }
+
+        let computed_root = binary_merkle_root::<3>(leaves[6], depth, indices3, siblings3);
+
+        assert(computed_root != root);
+    }
+
+    #[test]
+    unconstrained fn test_should_fail_if_indices_or_siblings_modified() {
+        let mut leaves: [Field] = [];
+
+        for i in 1..17 { // 16 leaves
+            leaves = leaves.push_back(Field::from(i));
+        }
+
+        let (root, depth, mut indices, mut siblings) = get_merkle_path::<134>(leaves, 7);
+
+        // flip one index bit and tweak a sibling
+        indices[0] = if indices[0] == 0 { 1 } else { 0 };
+        siblings[0] = siblings[0] + 1;
+
+        let computed_root = binary_merkle_root(leaves[7], depth, indices, siblings);
+
+        assert(computed_root != root);
+    }
 }
