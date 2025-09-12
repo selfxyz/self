@@ -24,14 +24,17 @@ describe('fetchOfacTrees', () => {
       'name-yob': { root: ['yob'] },
     };
 
-    vi.spyOn(global, 'fetch').mockImplementation((url: string) => {
-      const key = url.includes('passport-no-nationality')
-        ? 'passport-no-nationality'
-        : url.includes('name-dob')
-          ? 'name-dob'
-          : 'name-yob';
-      return Promise.resolve({ ok: true, json: async () => responses[key] } as Response);
-    });
+    vi.spyOn(global, 'fetch').mockImplementation(
+      (input: string | Request | URL, _init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        const key = url.includes('passport-no-nationality')
+          ? 'passport-no-nationality'
+          : url.includes('name-dob')
+            ? 'name-dob'
+            : 'name-yob';
+        return Promise.resolve({ ok: true, json: async () => responses[key] } as Response);
+      }
+    );
 
     const trees = await fetchOfacTrees('prod', 'passport');
     expect(trees).toEqual({
@@ -48,14 +51,17 @@ describe('fetchOfacTrees', () => {
       'name-yob': { status: 'success', data: { root: ['yob'] } },
     };
 
-    vi.spyOn(global, 'fetch').mockImplementation((url: string) => {
-      const key = url.includes('passport-no-nationality')
-        ? 'passport-no-nationality'
-        : url.includes('name-dob')
-          ? 'name-dob'
-          : 'name-yob';
-      return Promise.resolve({ ok: true, json: async () => responses[key] } as Response);
-    });
+    vi.spyOn(global, 'fetch').mockImplementation(
+      (input: string | Request | URL, _init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input.toString();
+        const key = url.includes('passport-no-nationality')
+          ? 'passport-no-nationality'
+          : url.includes('name-dob')
+            ? 'name-dob'
+            : 'name-yob';
+        return Promise.resolve({ ok: true, json: async () => responses[key] } as Response);
+      }
+    );
 
     const trees = await fetchOfacTrees('prod', 'passport');
     expect(trees).toEqual({
