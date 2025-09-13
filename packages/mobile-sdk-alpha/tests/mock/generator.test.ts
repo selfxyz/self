@@ -9,9 +9,6 @@ import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } fr
 // Mock the external dependencies
 vi.mock('@selfxyz/common/utils', () => ({
   getSKIPEM: vi.fn(),
-}));
-
-vi.mock('@selfxyz/common/utils', () => ({
   generateMockDSC: vi.fn(),
   genMockIdDoc: vi.fn(),
   initPassportDataParsing: vi.fn(),

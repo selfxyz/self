@@ -6,7 +6,10 @@ export default function transform(file: FileInfo, api: API) {
 
   root
     .find(j.ImportDeclaration, {
-      source: { value: '@selfxyz/mobile-sdk-alpha/src/processing/generate-disclosure-inputs' },
+      source: {
+        value:
+          '@selfxyz/mobile-sdk-alpha/src/processing/generate-disclosure-inputs',
+      },
     })
     .forEach(path => {
       path.value.source.value = '@selfxyz/mobile-sdk-alpha';
