@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import DOMPurify from 'dompurify';
+import { DOMPurify } from 'dompurify';
 import {
   createElement,
   type CSSProperties,

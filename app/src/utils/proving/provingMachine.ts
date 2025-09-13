@@ -1154,8 +1154,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         });
         throw new Error('PassportData is not available');
       }
-      const document: DocumentCategory = (passportData as PassportData)
-        .documentCategory;
       const circuitType = get().circuitType as 'disclose' | 'register' | 'dsc';
 
       let circuitName;
