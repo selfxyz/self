@@ -191,8 +191,6 @@ circuits/tests/**/test_cases.ts
 
 # iOS
 *.xcworkspace/
-*.xcodeproj/
-*.pbxproj
 app/ios/App Thinning Size Report.txt
 
 # Android
