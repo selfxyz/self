@@ -65,7 +65,11 @@ export {
   generateCircuitInputsRegisterForTests,
   generateCircuitInputsVCandDisclose,
 } from './circuits/generateInputs.js';
-export { generateTEEInputsDSC, generateTEEInputsRegister, generateTeeInputsDiscloseStateless } from './circuits/registerInputs.js';
+export {
+  generateTEEInputsDSC,
+  generateTEEInputsRegister,
+  generateTeeInputsDiscloseStateless,
+} from './circuits/registerInputs.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
 export { getPublicKey, verifyAttestation } from './attest.js';
 export { getSKIPEM } from './csca.js';
