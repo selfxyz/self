@@ -115,10 +115,13 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Callback
+import io.sentry.Breadcrumb
+import io.sentry.Sentry
+import io.sentry.SentryLevel
 
 object Messages {
     const val SCANNING = "Scanning....."
-    const val STOP_MOVING = "Stop moving....." 
+    const val STOP_MOVING = "Stop moving....."
     const val AUTH = "Auth....."
     const val COMPARING = "Comparing....."
     const val COMPLETED = "Scanning completed"
@@ -159,7 +162,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     private var opts: ReadableMap? = null
     private val apduLogger = APDULogger()
     private var currentSessionId: String? = null
-    
+
     data class Data(val id: String, val digest: String, val signature: String, val publicKey: String)
 
     data class PassportData(
@@ -171,7 +174,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     interface DataCallback {
       fun onDataReceived(data: String)
     }
-      
+
     init {
       instance = this
       reactContext.addLifecycleEventListener(this)
@@ -200,10 +203,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
     @ReactMethod
     fun scan(opts: ReadableMap, promise: Promise) {
-        currentSessionId = generateSessionId()
-        
+        currentSessionId = if (opts.hasKey("sessionId")) opts.getString("sessionId") else generateSessionId()
+
         apduLogger.setContext("session_id", currentSessionId!!)
-        
+
         // Log scan start
         logAnalyticsEvent("nfc_scan_started", mapOf(
             "use_can" to (opts.getBoolean(PARAM_USE_CAN) ?: false),
@@ -211,18 +214,22 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             "has_can_number" to (!opts.getString(PARAM_CAN).isNullOrEmpty()),
             "platform" to "android"
         ))
-        
+
+        logNfc(SentryLevel.INFO, "scan_start", "start")
+
         eventMessageEmitter(Messages.SCANNING)
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(reactApplicationContext)
         // val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
         if (mNfcAdapter == null) {
             logAnalyticsError("nfc_not_supported", "NFC chip reading not supported")
+            logNfc(SentryLevel.WARNING, "nfc_not_supported", "check")
             promise.reject("E_NOT_SUPPORTED", "NFC chip reading not supported")
             return
         }
 
         if (!mNfcAdapter.isEnabled) {
             logAnalyticsError("nfc_not_enabled", "NFC chip reading not enabled")
+            logNfc(SentryLevel.WARNING, "nfc_not_enabled", "check")
             promise.reject("E_NOT_ENABLED", "NFC chip reading not enabled")
             return
         }
@@ -290,7 +297,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         }
     }
 
-    
+
     private fun toBase64(bitmap: Bitmap, quality: Int): String {
       val byteArrayOutputStream = ByteArrayOutputStream()
       bitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream)
@@ -348,9 +355,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     false,
                 )
                 Log.e("MY_LOGS", "service gotten")
-                
+
                 service.addAPDUListener(apduLogger)
-                
+
                 service.open()
                 Log.e("MY_LOGS", "service opened")
                 logAnalyticsEvent("nfc_passport_service_opened")
@@ -368,7 +375,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                             eventMessageEmitter(Messages.PACE_STARTED)
                             apduLogger.setContext("operation", "pace_authentication")
                             apduLogger.setContext("auth_key_type", authKey.javaClass.simpleName)
-                            
+
                             // Determine proper PACE key: use CAN key if provided; otherwise derive PACE MRZ key from BAC
                             val paceKeyToUse: PACEKeySpec? = when (authKey) {
                                 is PACEKeySpec -> authKey
@@ -410,10 +417,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     val maxAttempts = 3
 
                     eventMessageEmitter(Messages.BAC_STARTED)
-                    
+
                     apduLogger.setContext("operation", "bac_authentication")
                     apduLogger.setContext("auth_key_type", authKey.javaClass.simpleName)
-                    
+
                     while (!bacSucceeded && attempts < maxAttempts) {
                         try {
                             attempts++
@@ -486,11 +493,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
 
                 logAnalyticsEvent("nfc_reading_data_groups")
-                
+
                 apduLogger.setContext("operation", "reading_data_groups")
                 apduLogger.setContext("pace_succeeded", paceSucceeded)
                 apduLogger.setContext("bac_succeeded", bacSucceeded)
-                
+
                 eventMessageEmitter(Messages.READING_DG1)
                 logAnalyticsEvent("nfc_reading_dg1_started")
                 val dg1In = service.getInputStream(PassportService.EF_DG1)
@@ -570,7 +577,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         private fun doChipAuth(service: PassportService) {
             try {
                 apduLogger.setContext("operation", "chip_authentication")
-                
+
                 logAnalyticsEvent("nfc_reading_dg14_started")
                 eventMessageEmitter(Messages.READING_DG14)
                 val dg14In = service.getInputStream(PassportService.EF_DG14)
@@ -602,19 +609,19 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             try {
                 apduLogger.setContext("operation", "passive_authentication")
                 apduLogger.setContext("chip_auth_succeeded", chipAuthSucceeded)
-                
+
                 logAnalyticsEvent("nfc_passive_auth_started")
                 Log.d(TAG, "Starting passive authentication...")
                 val digest = MessageDigest.getInstance(sodFile.digestAlgorithm)
                 Log.d(TAG, "Using digest algorithm: ${sodFile.digestAlgorithm}")
 
-                
+
                 val dataHashes = sodFile.dataGroupHashes
-                
+
                 val dg14Hash = if (chipAuthSucceeded) digest.digest(dg14Encoded) else ByteArray(0)
                 val dg1Hash = digest.digest(dg1File.encoded)
                 val dg2Hash = digest.digest(dg2File.encoded)
-                
+
                 // val gson = Gson()
                 // Log.d(TAG, "dataHashes " + gson.toJson(dataHashes))
                 // val hexMap = sodFile.dataGroupHashes.mapValues { (_, value) ->
@@ -741,7 +748,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 }
 
             apduLogger.clearContext()
-            
+
             resetState()
                 return
             }
@@ -757,12 +764,12 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
             // val signedDataField = SODFile::class.java.getDeclaredField("signedData")
             // signedDataField.isAccessible = true
-            
+
           //   val signedData = signedDataField.get(sodFile) as SignedData
-            
+
             val eContentAsn1InputStream = ASN1InputStream(sodFile.eContent.inputStream())
           //   val eContentDecomposed: ASN1Primitive = eContentAsn1InputStream.readObject()
-  
+
             val passport = Arguments.createMap()
             passport.putString("mrz", mrzInfo.toString())
             passport.putString("signatureAlgorithm", sodFile.docSigningCertificate.sigAlgName) // this one is new
@@ -772,7 +779,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             val certificateBytes = certificate.encoded
             val certificateBase64 = Base64.encodeToString(certificateBytes, Base64.DEFAULT)
             Log.d(TAG, "certificateBase64: ${certificateBase64}")
-            
+
 
             passport.putString("documentSigningCertificate", certificateBase64)
 
@@ -781,10 +788,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 passport.putString("modulus", publicKey.modulus.toString())
             } else if (publicKey is ECPublicKey) {
               // Handle the elliptic curve public key case
-              
+
               // val w = publicKey.getW()
               // passport.putString("publicKeyW", w.toString())
-              
+
               // val ecParams = publicKey.getParams()
               // passport.putInt("cofactor", ecParams.getCofactor())
               // passport.putString("curve", ecParams.getCurve().toString())
@@ -793,7 +800,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
               // if (ecParams is ECNamedCurveSpec) {
               //     passport.putString("curveName", ecParams.getName())
               // }
-  
+
             //   Old one, probably wrong:
             //     passport.putString("curveName", (publicKey.parameters as ECNamedCurveSpec).name)
             //     passport.putString("curveName", (publicKey.parameters.algorithm)) or maybe this
@@ -831,15 +838,15 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             // passport.putString("getDocSigningCertificate", gson.toJson(sodFile.getDocSigningCertificate))
             // passport.putString("getIssuerX500Principal", gson.toJson(sodFile.getIssuerX500Principal))
             // passport.putString("getSerialNumber", gson.toJson(sodFile.getSerialNumber))
-  
-  
-            // Another way to get signing time is to get into signedData.signerInfos, then search for the ICO identifier 1.2.840.113549.1.9.5 
+
+
+            // Another way to get signing time is to get into signedData.signerInfos, then search for the ICO identifier 1.2.840.113549.1.9.5
             // passport.putString("signerInfos", gson.toJson(signedData.signerInfos))
-            
+
             //   Log.d(TAG, "signedData.digestAlgorithms: ${gson.toJson(signedData.digestAlgorithms)}")
             //   Log.d(TAG, "signedData.signerInfos: ${gson.toJson(signedData.signerInfos)}")
             //   Log.d(TAG, "signedData.certificates: ${gson.toJson(signedData.certificates)}")
-            
+
             // var quality = 100
             // val base64 = bitmap?.let { toBase64(it, quality) }
             // val photo = Arguments.createMap()
@@ -848,13 +855,13 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             // photo.putInt("height", bitmap?.height ?: 0)
             // passport.putMap("photo", photo)
             // passport.putString("dg2File", gson.toJson(dg2File))
-            
+
             eventMessageEmitter(Messages.COMPLETED)
             scanPromise?.resolve(passport)
             eventMessageEmitter(Messages.RESET)
-            
+
             apduLogger.clearContext()
-            
+
             resetState()
         }
     }
@@ -890,10 +897,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             if (params.isNotEmpty()) {
                 logData.put("data", JSONObject(Gson().toJson(params)))
             }
-            
+
             // Send to React Native via logEvent emission using the same working approach
             emitLogEvent(logData.toString())
-            
+
             // Also log to Android logs for debugging
             Log.d(TAG, "Analytics event: $eventName with params: $params")
         } catch (e: Exception) {
@@ -911,9 +918,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 put("event", eventName)
                 put("error_description", message)
             })
-            
+
             emitLogEvent(logData.toString())
-            
+
             Log.e(TAG, "Analytics error: $eventName - $message")
         } catch (e: Exception) {
             Log.e(TAG, "Error logging analytics error", e)
@@ -934,15 +941,50 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
     fun reset() {
         logAnalyticsEvent("nfc_scan_reset")
         apduLogger.clearContext()
-        
+
         resetState()
     }
-    
+
     /**
      * Generate a unique session ID for tracking passport reading sessions
      */
     private fun generateSessionId(): String {
         return "nfc_${System.currentTimeMillis()}_${UUID.randomUUID().toString().take(8)}"
+    }
+
+    private fun logNfc(level: SentryLevel, message: String, stage: String, extras: Map<String, Any?> = emptyMap()) {
+        val data = mutableMapOf<String, Any?>().apply {
+            currentSessionId?.let { put("session_id", it) }
+            put("platform", "android")
+            put("scan_type", if (opts?.getBoolean(PARAM_USE_CAN) == true) "can" else "mrz")
+            put("stage", stage)
+            putAll(extras)
+        }
+
+        if (level == SentryLevel.ERROR) {
+            // For errors, capture a message (this will include all previous breadcrumbs)
+            Sentry.withScope { scope ->
+                scope.level = level
+                currentSessionId?.let { scope.setTag("session_id", it) }
+                scope.setTag("platform", "android")
+                scope.setTag("scan_type", if (opts?.getBoolean(PARAM_USE_CAN) == true) "can" else "mrz")
+                scope.setTag("stage", stage)
+                for ((k, v) in extras) {
+                    scope.setExtra(k, v?.toString())
+                }
+                Sentry.captureMessage(message)
+            }
+        } else {
+            // For info/warn, add as breadcrumb only
+            Sentry.addBreadcrumb(
+                Breadcrumb().apply {
+                    this.message = message
+                    this.level = level
+                    this.category = "nfc"
+                    data.forEach { (key, value) -> this.data[key] = value?.toString() ?: "" }
+                }
+            )
+        }
     }
 
     companion object {
