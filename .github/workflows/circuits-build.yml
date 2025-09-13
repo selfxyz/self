@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build:
-    if: github.ref != 'refs/heads/staging'
+    if: false
     runs-on: ["128ram"]
     permissions:
       contents: read
