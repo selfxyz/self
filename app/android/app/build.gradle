@@ -3,8 +3,6 @@ apply plugin: "com.facebook.react"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.gms.google-services'
-apply from: "../../../node_modules/@sentry/react-native/sentry.gradle"
-
 
 
 /**
@@ -123,7 +121,7 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 98
+        versionCode 99
         versionName "2.6.5"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
