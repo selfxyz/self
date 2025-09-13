@@ -12,7 +12,6 @@ module.exports = {
   dependency: {
     platforms: {
       ios: {
-        sourceDir: iosSourceDir,
         podspecPath: path.join(packageRoot, 'mobile-sdk-alpha.podspec'),
       },
       android: null,
