@@ -16,7 +16,6 @@ concurrency:
 
 jobs:
   build:
-    if: false
     runs-on: ["128ram"]
     permissions:
       contents: read
