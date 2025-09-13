@@ -13,9 +13,9 @@ import { countryCodes } from '@selfxyz/common/constants';
 import type { DocumentCategory } from '@selfxyz/common/types';
 import {
   hasAnyValidRegisteredDocument,
+  PassportEvents,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';

@@ -4750,7 +4750,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/common@workspace:^, @selfxyz/common@workspace:common":
+"@selfxyz/common@workspace:*, @selfxyz/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
@@ -5020,7 +5020,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/mobile-sdk-alpha@workspace:^, @selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha":
+"@selfxyz/mobile-sdk-alpha@workspace:*, @selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha":
   version: 0.0.0-use.local
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:

@@ -7,8 +7,7 @@ import { Linking } from 'react-native';
 import { checkVersion } from 'react-native-check-version';
 import { useNavigation } from '@react-navigation/native';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { AppEvents } from '@selfxyz/mobile-sdk-alpha';
+import { AppEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 

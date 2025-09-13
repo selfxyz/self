@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { hash } from '@selfxyz/common/utils';
-import { formatMrz } from '@selfxyz/common/utils';
 import type { PassportData } from '@selfxyz/common/types';
+import { formatMrz, hash } from '@selfxyz/common/utils';
 
 /**
  * Checks if two numeric arrays contain the same values in the same order.

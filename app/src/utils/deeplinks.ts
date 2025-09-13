@@ -5,7 +5,7 @@
 import { parseUrl } from 'query-string';
 import { Linking, Platform } from 'react-native';
 
-import { countries } from '@selfxyz/common/constants/countries';
+import { countries } from '@selfxyz/common';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 

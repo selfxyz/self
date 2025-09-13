@@ -8,10 +8,10 @@ import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
+  useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import successAnimation from '@/assets/animations/loading/success.json';

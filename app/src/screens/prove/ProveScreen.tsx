@@ -22,8 +22,7 @@ import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils';
 import { formatEndpoint } from '@selfxyz/common/utils';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';

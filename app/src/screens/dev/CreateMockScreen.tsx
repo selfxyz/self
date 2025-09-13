@@ -25,10 +25,10 @@ import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { countryCodes } from '@selfxyz/common/constants';
 import {
   generateMockDocument,
+  MockDataEvents,
   signatureAlgorithmToStrictSignatureAlgorithm,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';

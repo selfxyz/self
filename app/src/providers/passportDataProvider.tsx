@@ -45,6 +45,11 @@ import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
 import type {
+  DocumentCatalog,
+  DocumentMetadata,
+  PassportData,
+} from '@selfxyz/common/types';
+import type {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from '@selfxyz/common/utils';
@@ -54,11 +59,6 @@ import {
   inferDocumentCategory,
   parseCertificateSimple,
 } from '@selfxyz/common/utils';
-import type {
-  DocumentCatalog,
-  DocumentMetadata,
-  PassportData,
-} from '@selfxyz/common/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 

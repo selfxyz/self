@@ -8,8 +8,7 @@ import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 import { useFocusEffect } from '@react-navigation/native';
 
 import type { PassportMetadata } from '@selfxyz/common/types';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { Caption } from '@/components/typography/Caption';
 import { usePassport } from '@/providers/passportDataProvider';

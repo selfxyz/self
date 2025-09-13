@@ -14,7 +14,7 @@ const originalFetch = global.fetch;
 
 describe('protocolStore.fetch_ofac_trees', () => {
   beforeEach(() => {
-    useProtocolStore.setState(state => ({
+    useProtocolStore.setState((state: any) => ({
       passport: { ...state.passport, ofac_trees: null },
     }));
   });

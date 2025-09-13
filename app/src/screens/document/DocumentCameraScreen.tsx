@@ -11,9 +11,9 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
   formatDateToYYMMDD,
   hasAnyValidRegisteredDocument,
+  PassportEvents,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';

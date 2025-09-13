@@ -10,8 +10,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { BackupEvents } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';

@@ -20,6 +20,14 @@ export { bigIntToString, formatEndpoint, hashEndpointWithScope, stringToBigInt }
 export { brutforceSignatureAlgorithmDsc } from './passports/passport_parsing/brutForceDscSignature.js';
 export { buildSMT, getLeafCscaTree, getLeafDscTree } from './trees.js';
 export {
+  calculateContentHash,
+  findStartPubKeyIndex,
+  generateCommitment,
+  generateNullifier,
+  inferDocumentCategory,
+  initPassportDataParsing,
+} from './passports/passport.js';
+export {
   calculateUserIdentifierHash,
   customHasher,
   flexiblePoseidon,
@@ -28,7 +36,6 @@ export {
   hash,
   packBytesAndPoseidon,
 } from './hash.js';
-export { getPublicKey, verifyAttestation } from './attest.js';
 export {
   clientKey,
   clientPublicKeyHex,
@@ -38,13 +45,13 @@ export {
   getWSDbRelayerUrl,
 } from './proving.js';
 export {
-  findStartPubKeyIndex,
-  generateCommitment,
-  generateNullifier,
-  initPassportDataParsing,
-  calculateContentHash,
-  inferDocumentCategory,
-} from './passports/passport.js';
+  checkDocumentSupported,
+  checkIfPassportDscIsInTree,
+  isDocumentNullified,
+  isUserRegistered,
+  isUserRegisteredWithAlternativeCSCA,
+} from './passports/validate.js';
+export { fetchOfacTrees } from './ofac.js';
 export { formatMrz } from './passports/format.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
 export {
@@ -58,13 +65,10 @@ export {
   generateCircuitInputsRegisterForTests,
   generateCircuitInputsVCandDisclose,
 } from './circuits/generateInputs.js';
-export { generateTeeInputsDiscloseStateless } from './circuits/registerInputs.js';
+export { generateTEEInputsDSC, generateTEEInputsRegister, generateTeeInputsDiscloseStateless } from './circuits/registerInputs.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
+export { getPublicKey, verifyAttestation } from './attest.js';
 export { getSKIPEM } from './csca.js';
 export { initElliptic } from './certificate_parsing/elliptic.js';
 export { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 export { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData.js';
-export {
-  isUserRegistered,
-  isUserRegisteredWithAlternativeCSCA,
-} from './passports/validate.js';

@@ -12,10 +12,12 @@ import {
   usePreventRemove,
 } from '@react-navigation/native';
 
-import { PassportData } from '@selfxyz/common/types';
-import { DocumentCatalog } from '@selfxyz/common/types';
-import { DocumentMetadata, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentCatalog, PassportData } from '@selfxyz/common/types';
+import {
+  DocumentMetadata,
+  ProofEvents,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { pressedStyle } from '@/components/buttons/pressedStyle';
 import IdCardLayout from '@/components/homeScreen/idCard';

@@ -14,29 +14,24 @@ import { create } from 'zustand';
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { EndpointType, SelfApp } from '@selfxyz/common/utils';
 import {
-  getCircuitNameFromPassportData,
-  getSolidityPackedUserContextData,
-} from '@selfxyz/common/utils';
-import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils';
-import {
-  generateTeeInputsDiscloseStateless,
-  generateTEEInputsDSC,
-  generateTEEInputsRegister,
-} from '@selfxyz/common/utils';
-import {
   checkDocumentSupported,
   checkIfPassportDscIsInTree,
-  isDocumentNullified,
-  isUserRegistered,
-  isUserRegisteredWithAlternativeCSCA,
-} from '@selfxyz/common/utils';
-import {
   clientKey,
   clientPublicKeyHex,
   ec,
   encryptAES256GCM,
+  generateTeeInputsDiscloseStateless,
+  generateTEEInputsDSC,
+  generateTEEInputsRegister,
+  getCircuitNameFromPassportData,
   getPayload,
+  getPublicKey,
+  getSolidityPackedUserContextData,
   getWSDbRelayerUrl,
+  isDocumentNullified,
+  isUserRegistered,
+  isUserRegisteredWithAlternativeCSCA,
+  verifyAttestation,
 } from '@selfxyz/common/utils';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -44,12 +39,10 @@ import {
   hasAnyValidRegisteredDocument,
   loadSelectedDocument,
   markCurrentDocumentAsRegistered,
-  reStorePassportDataWithRightCSCA,
-  SdkEvents,
-} from '@selfxyz/mobile-sdk-alpha';
-import {
   PassportEvents,
   ProofEvents,
+  reStorePassportDataWithRightCSCA,
+  SdkEvents,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
   useProtocolStore,

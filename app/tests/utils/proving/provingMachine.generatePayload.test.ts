@@ -54,9 +54,7 @@ jest.mock('@selfxyz/common/utils', () => {
 
 // Mock the proving utils
 jest.mock('@selfxyz/common/utils', () => {
-  const actual = jest.requireActual(
-    '@selfxyz/common/utils',
-  ) as any;
+  const actual = jest.requireActual('@selfxyz/common/utils') as any;
   return {
     ...actual,
     generateTEEInputsRegister: jest.fn(() => ({
@@ -95,9 +93,7 @@ jest.mock('@selfxyz/common/utils', () => {
 
 // Mock the passport utils to avoid signature processing issues
 jest.mock('@selfxyz/common/utils', () => {
-  const actual = jest.requireActual(
-    '@selfxyz/common/utils',
-  ) as any;
+  const actual = jest.requireActual('@selfxyz/common/utils') as any;
   return {
     ...actual,
     getPassportSignatureInfos: jest.fn(() => ({
@@ -108,10 +104,7 @@ jest.mock('@selfxyz/common/utils', () => {
   };
 });
 
-const {
-  getPayload,
-  encryptAES256GCM,
-} = require('@selfxyz/common/utils');
+const { getPayload, encryptAES256GCM } = require('@selfxyz/common/utils');
 
 const {
   generateTEEInputsRegister,

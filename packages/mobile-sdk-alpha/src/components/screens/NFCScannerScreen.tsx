@@ -5,8 +5,7 @@
 import { useCallback } from 'react';
 import { Button, Text, YStack } from 'tamagui';
 
-import { getSKIPEM } from '@selfxyz/common/utils';
-import { initPassportDataParsing } from '@selfxyz/common/utils';
+import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common/utils';
 
 import { useSelfClient } from '../../context';
 import { MRZInfo, ScanResultNFC } from '../../types/public';

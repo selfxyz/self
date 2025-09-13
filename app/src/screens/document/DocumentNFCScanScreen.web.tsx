@@ -7,9 +7,9 @@ import { Image } from 'tamagui';
 
 import {
   hasAnyValidRegisteredDocument,
+  PassportEvents,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';

@@ -7,8 +7,7 @@ import { YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { BackupEvents } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

@@ -10,12 +10,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 
-import type {
-  DocumentCatalog,
-  DocumentMetadata,
-} from '@selfxyz/common/types';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentCatalog, DocumentMetadata } from '@selfxyz/common/types';
+import { DocumentEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';

@@ -5,8 +5,7 @@
 import type { PassportData } from '@selfxyz/common/types';
 import { isUserRegistered } from '@selfxyz/common/utils';
 import type { PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
-import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
-import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents, isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import {

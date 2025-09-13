@@ -50,6 +50,18 @@ export type { QRProofOptions } from './qr';
 // Error handling
 export type { SdkErrorCategory } from './errors';
 
+export {
+  AppEvents,
+  AuthEvents,
+  BackupEvents,
+  DocumentEvents,
+  MockDataEvents,
+  NotificationEvents,
+  PassportEvents,
+  ProofEvents,
+  SettingsEvents,
+} from './constants/analytics';
+
 // UI Types
 export {
   InitError,
@@ -99,18 +111,6 @@ export { formatDateToYYMMDD, scanMRZ } from './mrz';
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
 export { generateTeeInputsDisclose } from './processing/generate-disclosure-inputs';
-
-export {
-  AppEvents,
-  AuthEvents,
-  BackupEvents,
-  DocumentEvents,
-  MockDataEvents,
-  NotificationEvents,
-  PassportEvents,
-  ProofEvents,
-  SettingsEvents,
-} from './constants/analytics';
 
 // Documents utils
 

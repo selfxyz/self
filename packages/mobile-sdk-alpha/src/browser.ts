@@ -40,7 +40,19 @@ export type { PassportValidationCallbacks } from './validation/document';
 export type { QRProofOptions } from './qr';
 export type { SdkErrorCategory } from './errors';
 
+export {
+  AppEvents,
+  AuthEvents,
+  BackupEvents,
+  DocumentEvents,
+  MockDataEvents,
+  NotificationEvents,
+  PassportEvents,
+  ProofEvents,
+  SettingsEvents,
+} from './constants/analytics';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
@@ -64,18 +76,6 @@ export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
 export { generateTeeInputsDisclose } from './processing/generate-disclosure-inputs';
-
-export {
-  AppEvents,
-  AuthEvents,
-  BackupEvents,
-  DocumentEvents,
-  MockDataEvents,
-  NotificationEvents,
-  PassportEvents,
-  ProofEvents,
-  SettingsEvents,
-} from './constants/analytics';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';
