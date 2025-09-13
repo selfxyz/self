@@ -65,6 +65,7 @@ export {
   genMockIdDocAndInitDataParsing,
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
+  generateCircuitInputsRegisterForTests,
   generateCircuitInputsVCandDisclose,
   generateCommitment,
   generateMockDSC,
@@ -83,6 +84,7 @@ export {
   stringToBigInt,
 } from './src/utils/index.js';
 
+export { createSelector } from './src/utils/aadhaar/constants.js';
 // Hash utilities
 export {
   customHasher,
@@ -91,3 +93,11 @@ export {
   hash,
   packBytesAndPoseidon,
 } from './src/utils/hash.js';
+
+export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
+
+export {
+  prepareAadhaarDiscloseTestData,
+  prepareAadhaarRegisterData,
+  prepareAadhaarRegisterTestData,
+} from './src/utils/aadhaar/mockData.js';

@@ -22,8 +22,6 @@ export type {
   ProofRequest,
   RegistrationInput,
   RegistrationStatus,
-  SDKEvent,
-  SDKEventMap,
   ScanMode,
   ScanOpts,
   ScanResult,
@@ -71,13 +69,25 @@ export { PassportCameraScreen } from './components/screens/PassportCameraScreen'
 
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
+export { SdkEvents } from './types/events';
+
 // Context and Client
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
 // Components
 export { SelfMobileSdk } from './entry';
 
-export { createSelfClient } from './client';
+// Documents utils
+export {
+  clearPassportData,
+  getAllDocuments,
+  hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+} from './documents/utils';
+
+export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 
@@ -88,8 +98,9 @@ export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
+export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
+
 // Documents utils
-export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';
@@ -102,6 +113,8 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
 export { scanQRProof } from './qr';
+
+export { useProtocolStore } from './stores/protocolStore';
 
 // Error handling
 export { webScannerShim } from './adapters/web/shims';

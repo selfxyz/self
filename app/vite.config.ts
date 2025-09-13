@@ -34,6 +34,10 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
       'react-native-svg': 'react-native-svg-web',
       'lottie-react-native': 'lottie-react',
+      '@react-native-community/blur': resolve(
+        __dirname,
+        'src/mocks/react-native-community-blur.ts',
+      ),
       'react-native-safe-area-context': resolve(
         __dirname,
         'src/mocks/react-native-safe-area-context.js',
@@ -46,6 +50,7 @@ export default defineConfig({
         __dirname,
         'src/mocks/react-native-passport-reader.ts',
       ),
+      crypto: 'crypto-browserify',
     },
   },
   plugins: [
@@ -80,7 +85,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
-    exclude: ['fs', 'path', 'child_process'],
+    exclude: ['fs', 'path', 'child_process', '@zk-email/helpers'],
     esbuildOptions: {
       // Optimize minification
       minifyIdentifiers: true,
@@ -98,7 +103,7 @@ export default defineConfig({
     cssMinify: true,
     cssCodeSplit: true,
     rollupOptions: {
-      external: ['fs', 'path', 'child_process'],
+      external: ['fs', 'child_process'],
       output: {
         // Optimize chunk size and minification
         compact: true,
@@ -161,7 +166,6 @@ export default defineConfig({
           ],
           'screens-prove-utils': [
             './src/utils/proving/index.ts',
-            './src/utils/proving/provingInputs.ts',
             './src/utils/proving/loadingScreenStateText.ts',
           ],
 

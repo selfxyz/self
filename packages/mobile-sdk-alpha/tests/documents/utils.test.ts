@@ -11,6 +11,7 @@ import { createSelfClient, defaultConfig, DocumentsAdapter, loadSelectedDocument
 const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAdapter): SelfClient => {
   return createSelfClient({
     config: defaultConfig,
+    listeners: new Map(),
     adapters: {
       auth: {
         getPrivateKey: async () => null,
@@ -81,6 +82,8 @@ describe('loadSelectedDocument', () => {
       loadDocumentCatalog: loadDocumentCatalogSpy,
       loadDocumentById: loadDocumentByIdSpy,
       saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
     });
 
     const document = await loadSelectedDocument(client);
@@ -99,6 +102,8 @@ describe('loadSelectedDocument', () => {
       loadDocumentCatalog: loadDocumentCatalogSpy,
       loadDocumentById: loadDocumentByIdSpy,
       saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
     });
 
     const document = await loadSelectedDocument(client);
@@ -120,6 +125,8 @@ describe('loadSelectedDocument', () => {
       loadDocumentCatalog: loadDocumentCatalogSpy,
       loadDocumentById: loadDocumentByIdSpy,
       saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
     });
 
     const document = await loadSelectedDocument(client);
@@ -141,6 +148,8 @@ describe('loadSelectedDocument', () => {
       loadDocumentCatalog: loadDocumentCatalogSpy,
       loadDocumentById: loadDocumentByIdSpy,
       saveDocumentCatalog: saveDocumentCatalogSpy,
+      saveDocument: vi.fn(),
+      deleteDocument: vi.fn(),
     });
 
     const document = await loadSelectedDocument(client);

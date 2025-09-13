@@ -14,6 +14,7 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Button, Image, XStack } from 'tamagui';
+import { v4 as uuidv4 } from 'uuid';
 import type { RouteProp } from '@react-navigation/native';
 import {
   useFocusEffect,
@@ -44,6 +45,7 @@ import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
+import { logNFCEvent } from '@/Sentry';
 import useUserStore from '@/stores/userStore';
 import {
   flushAllAnalytics,
@@ -104,11 +106,28 @@ const DocumentNFCScanScreen: React.FC = () => {
   const [nfcMessage, setNfcMessage] = useState<string | null>(null);
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scanCancelledRef = useRef(false);
+  const sessionIdRef = useRef(uuidv4());
+
+  const baseContext = {
+    sessionId: sessionIdRef.current,
+    platform: Platform.OS as 'ios' | 'android',
+    scanType: route.params?.useCan ? 'can' : 'mrz',
+  } as const;
 
   const animationRef = useRef<LottieView>(null);
 
   useEffect(() => {
     animationRef.current?.play();
+  }, []);
+
+  useEffect(() => {
+    logNFCEvent('info', 'screen_mount', { ...baseContext, stage: 'mount' });
+    return () => {
+      logNFCEvent('info', 'screen_unmount', {
+        ...baseContext,
+        stage: 'unmount',
+      });
+    };
   }, []);
 
   // Cleanup timeout on component unmount
@@ -144,6 +163,15 @@ const DocumentNFCScanScreen: React.FC = () => {
   const openErrorModal = useCallback(
     (message: string) => {
       flushAllAnalytics();
+      logNFCEvent(
+        'error',
+        'nfc_error_modal',
+        {
+          ...baseContext,
+          stage: 'error',
+        },
+        { message: sanitizeErrorMessage(message) },
+      );
       showModal({
         titleText: 'NFC Scan Error',
         bodyText: message,
@@ -171,6 +199,18 @@ const DocumentNFCScanScreen: React.FC = () => {
         setDialogMessage('NFC is not enabled. Please enable it in settings.');
       }
       setIsNfcSupported(true);
+      logNFCEvent(
+        'info',
+        'nfc_capability',
+        {
+          ...baseContext,
+          stage: 'check',
+        },
+        {
+          supported: true,
+          enabled: isEnabled,
+        },
+      );
     } else {
       setDialogMessage(
         "Sorry, your device doesn't seem to have an NFC reader.",
@@ -179,6 +219,18 @@ const DocumentNFCScanScreen: React.FC = () => {
       // near the disabled button when NFC isn't supported
       setIsNfcEnabled(false);
       setIsNfcSupported(false);
+      logNFCEvent(
+        'warn',
+        'nfc_capability',
+        {
+          ...baseContext,
+          stage: 'check',
+        },
+        {
+          supported: false,
+          enabled: false,
+        },
+      );
     }
   }, []);
 
@@ -200,7 +252,12 @@ const DocumentNFCScanScreen: React.FC = () => {
   const onVerifyPress = useCallback(async () => {
     buttonTap();
     if (isNfcEnabled) {
+      logNFCEvent('info', 'verify_pressed', {
+        ...baseContext,
+        stage: 'ui',
+      });
       setIsNfcSheetOpen(true);
+      logNFCEvent('info', 'sheet_open', { ...baseContext, stage: 'ui' });
       // Add timestamp when scan starts
       scanCancelledRef.current = false;
       const scanStartTime = Date.now();
@@ -213,8 +270,16 @@ const DocumentNFCScanScreen: React.FC = () => {
         trackEvent(PassportEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
+        logNFCEvent('warn', 'scan_timeout', {
+          ...baseContext,
+          stage: 'timeout',
+        });
         openErrorModal('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
+        logNFCEvent('info', 'sheet_close', {
+          ...baseContext,
+          stage: 'ui',
+        });
       }, 30000);
 
       // Mark NFC scanning as active to prevent analytics flush interference
@@ -233,8 +298,16 @@ const DocumentNFCScanScreen: React.FC = () => {
         trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
+        logNFCEvent('warn', 'scan_timeout', {
+          ...baseContext,
+          stage: 'timeout',
+        });
         openErrorModal('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
+        logNFCEvent('info', 'sheet_close', {
+          ...baseContext,
+          stage: 'ui',
+        });
       }, 30000);
 
       try {
@@ -251,6 +324,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           skipCA,
           extendedMode,
           usePacePolling: isPacePolling,
+          sessionId: sessionIdRef.current,
         });
 
         // Check if scan was cancelled by timeout
@@ -270,6 +344,15 @@ const DocumentNFCScanScreen: React.FC = () => {
         trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
           duration_seconds: parseFloat(scanDurationSeconds),
         });
+        logNFCEvent(
+          'info',
+          'scan_success',
+          {
+            ...baseContext,
+            stage: 'complete',
+          },
+          { duration_seconds: parseFloat(scanDurationSeconds) },
+        );
         let passportData: PassportData | null = null;
         let parsedPassportData: PassportData | null = null;
         try {
@@ -388,6 +471,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           scanTimeoutRef.current = null;
         }
         setIsNfcSheetOpen(false);
+        logNFCEvent('info', 'sheet_close', { ...baseContext, stage: 'ui' });
         setNfcScanningActive(false);
       }
     } else if (isNfcSupported) {
@@ -419,6 +503,7 @@ const DocumentNFCScanScreen: React.FC = () => {
 
   const onCancelPress = async () => {
     flushAllAnalytics();
+    logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
     const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
     if (hasValidDocument) {
       navigateToHome();
@@ -435,6 +520,7 @@ const DocumentNFCScanScreen: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
+      logNFCEvent('info', 'screen_focus', { ...baseContext, stage: 'focus' });
       checkNfcSupport();
 
       if (Platform.OS === 'android' && emitter) {
@@ -469,6 +555,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         );
 
         return () => {
+          logNFCEvent('info', 'screen_blur', { ...baseContext, stage: 'blur' });
           subscription.remove();
           // Clear scan timeout when component loses focus
           scanCancelledRef.current = true;
@@ -481,6 +568,7 @@ const DocumentNFCScanScreen: React.FC = () => {
 
       // For iOS or when no emitter, still handle timeout cleanup on blur
       return () => {
+        logNFCEvent('info', 'screen_blur', { ...baseContext, stage: 'blur' });
         scanCancelledRef.current = true;
         if (scanTimeoutRef.current) {
           clearTimeout(scanTimeoutRef.current);

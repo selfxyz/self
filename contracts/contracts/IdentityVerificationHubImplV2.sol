@@ -3,14 +3,18 @@ pragma solidity 0.8.28;
 
 import {ImplRoot} from "./upgradeable/ImplRoot.sol";
 import {SelfStructs} from "./libraries/SelfStructs.sol";
+import {GenericProofStruct} from "./interfaces/IRegisterCircuitVerifier.sol";
 import {CustomVerifier} from "./libraries/CustomVerifier.sol";
 import {GenericFormatter} from "./libraries/GenericFormatter.sol";
 import {AttestationId} from "./constants/AttestationId.sol";
 import {IVcAndDiscloseCircuitVerifier} from "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
+import {IVcAndDiscloseAadhaarCircuitVerifier} from "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {ISelfVerificationRoot} from "./interfaces/ISelfVerificationRoot.sol";
 import {IIdentityRegistryV1} from "./interfaces/IIdentityRegistryV1.sol";
 import {IIdentityRegistryIdCardV1} from "./interfaces/IIdentityRegistryIdCardV1.sol";
+import {IIdentityRegistryAadhaarV1} from "./interfaces/IIdentityRegistryAadhaarV1.sol";
 import {IRegisterCircuitVerifier} from "./interfaces/IRegisterCircuitVerifier.sol";
+import {IAadhaarRegisterCircuitVerifier} from "./interfaces/IRegisterCircuitVerifier.sol";
 import {IDscCircuitVerifier} from "./interfaces/IDscCircuitVerifier.sol";
 import {CircuitConstantsV2} from "./constants/CircuitConstantsV2.sol";
 import {Formatter} from "./libraries/Formatter.sol";
@@ -97,6 +101,28 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     event DscCircuitVerifierUpdated(uint256 typeId, address verifier);
 
+    /**
+     * @notice Emitted when a verification is performed.
+     * @param requestor The contract that initiated the verification request.
+     * @param contractVersion The contract version used for verification output formatting.
+     * @param attestationId The attestation identifier (E_PASSPORT or EU_ID_CARD).
+     * @param destChainId The destination chain ID.
+     * @param configId The configuration ID.
+     * @param userIdentifier The user identifier.
+     * @param output The formatted verification output containing proof results.
+     * @param userDataToPass The user data passed through to the verification result handler.
+     */
+    event DisclosureVerified(
+        address indexed requestor,
+        uint8 indexed contractVersion,
+        bytes32 indexed attestationId,
+        uint256 destChainId,
+        bytes32 configId,
+        uint256 userIdentifier,
+        bytes output,
+        bytes userDataToPass
+    );
+
     // ====================================================
     // Errors
     // ====================================================
@@ -165,6 +191,22 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev Ensures that the verification config is set before performing verification.
     error ConfigNotSet();
 
+    /// @notice Thrown when the pubkey is not valid.
+    /// @dev Ensures that the pubkey is valid.
+    error InvalidPubkey();
+
+    /// @notice Thrown when the timestamp is invalid.
+    /// @dev Ensures that the timestamp is within 20 minutes of the current block timestamp.
+    error InvalidUidaiTimestamp();
+
+    /// @notice Thrown when the attestationId in the proof doesn't match the header.
+    /// @dev Ensures that the attestationId in the proof matches the header.
+    error AttestationIdMismatch();
+
+    /// @notice Thrown when the ofac roots don't match.
+    /// @dev Ensures that the ofac roots match.
+    error InvalidOfacRoots();
+
     // ====================================================
     // Constructor
     // ====================================================
@@ -212,7 +254,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function registerCommitment(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,
-        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
+        GenericProofStruct memory registerCircuitProof
     ) external virtual onlyProxy {
         _verifyRegisterProof(attestationId, registerCircuitVerifierId, registerCircuitProof);
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
@@ -227,6 +269,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
                 attestationId,
                 registerCircuitProof.pubSignals[CircuitConstantsV2.REGISTER_NULLIFIER_INDEX],
                 registerCircuitProof.pubSignals[CircuitConstantsV2.REGISTER_COMMITMENT_INDEX]
+            );
+        } else if (attestationId == AttestationId.AADHAAR) {
+            IIdentityRegistryAadhaarV1($._registries[attestationId]).registerCommitment(
+                registerCircuitProof.pubSignals[CircuitConstantsV2.AADHAAR_NULLIFIER_INDEX],
+                registerCircuitProof.pubSignals[CircuitConstantsV2.AADHAAR_COMMITMENT_INDEX]
             );
         } else {
             revert InvalidAttestationId();
@@ -286,14 +333,28 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         (SelfStructs.HubInputHeader memory header, bytes calldata proofData) = _decodeInput(baseVerificationInput);
 
         // Perform verification and get output along with user data
-        (bytes memory output, uint256 destChainId, bytes memory userDataToPass) = _executeVerificationFlow(
-            header,
-            proofData,
-            userContextData
-        );
+        (
+            bytes memory output,
+            uint256 destChainId,
+            bytes memory userDataToPass,
+            bytes32 configId,
+            uint256 userIdentifier
+        ) = _executeVerificationFlow(header, proofData, userContextData);
 
         // Use destChainId and userDataToPass returned from _executeVerificationFlow
         _handleVerificationResult(destChainId, output, userDataToPass);
+
+        // Emit verification event for tracking
+        emit DisclosureVerified(
+            msg.sender,
+            header.contractVersion,
+            header.attestationId,
+            destChainId,
+            configId,
+            userIdentifier,
+            output,
+            userDataToPass
+        );
     }
 
     /**
@@ -454,11 +515,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function rootTimestamp(bytes32 attestationId, uint256 root) external view virtual onlyProxy returns (uint256) {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         address registryAddress = $._registries[attestationId];
-
         if (attestationId == AttestationId.E_PASSPORT) {
             return IIdentityRegistryV1(registryAddress).rootTimestamps(root);
         } else if (attestationId == AttestationId.EU_ID_CARD) {
             return IIdentityRegistryIdCardV1(registryAddress).rootTimestamps(root);
+        } else if (attestationId == AttestationId.AADHAAR) {
+            return IIdentityRegistryAadhaarV1(registryAddress).rootTimestamps(root);
         } else {
             revert InvalidAttestationId();
         }
@@ -477,6 +539,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             return IIdentityRegistryV1(registryAddress).getIdentityCommitmentMerkleRoot();
         } else if (attestationId == AttestationId.EU_ID_CARD) {
             return IIdentityRegistryIdCardV1(registryAddress).getIdentityCommitmentMerkleRoot();
+        } else if (attestationId == AttestationId.AADHAAR) {
+            return IIdentityRegistryAadhaarV1(registryAddress).getIdentityCommitmentMerkleRoot();
         } else {
             revert InvalidAttestationId();
         }
@@ -524,14 +588,19 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         SelfStructs.HubInputHeader memory header,
         bytes memory proofData,
         bytes calldata userContextData
-    ) internal returns (bytes memory output, uint256 destChainId, bytes memory userDataToPass) {
-        bytes32 configId;
-        uint256 userIdentifier;
+    )
+        internal
+        returns (
+            bytes memory output,
+            uint256 destChainId,
+            bytes memory userDataToPass,
+            bytes32 configId,
+            uint256 userIdentifier
+        )
+    {
         bytes calldata remainingData;
         {
-            uint256 _destChainId;
-            (configId, _destChainId, userIdentifier, remainingData) = _decodeUserContextData(userContextData);
-            destChainId = _destChainId;
+            (configId, destChainId, userIdentifier, remainingData) = _decodeUserContextData(userContextData);
         }
 
         {
@@ -585,26 +654,27 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _basicVerification(
         SelfStructs.HubInputHeader memory header,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        GenericProofStruct memory vcAndDiscloseProof,
         bytes calldata userContextData,
         uint256 userIdentifier
     ) internal returns (bytes memory output) {
         // Scope 1: Basic checks (scope and user identifier)
+        CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
         {
-            CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(
-                header.attestationId
-            );
+            _performAttestationIdCheck(header.attestationId, vcAndDiscloseProof, indices);
             _performScopeCheck(header.scope, vcAndDiscloseProof, indices);
             _performUserIdentifierCheck(userContextData, vcAndDiscloseProof, header.attestationId, indices);
         }
 
         // Scope 2: Root and date checks
         {
-            CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(
-                header.attestationId
-            );
             _performRootCheck(header.attestationId, vcAndDiscloseProof, indices);
-            _performCurrentDateCheck(vcAndDiscloseProof, indices);
+            _performOfacCheck(header.attestationId, vcAndDiscloseProof, indices);
+            if (header.attestationId == AttestationId.AADHAAR) {
+                _performNumericCurrentDateCheck(vcAndDiscloseProof, indices);
+            } else {
+                _performCurrentDateCheck(vcAndDiscloseProof, indices);
+            }
         }
 
         // Scope 3: Groth16 proof verification
@@ -612,9 +682,6 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
         // Scope 4: Create and return output
         {
-            CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(
-                header.attestationId
-            );
             return _createVerificationOutput(header.attestationId, vcAndDiscloseProof, indices, userIdentifier);
         }
     }
@@ -658,7 +725,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _verifyRegisterProof(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,
-        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
+        GenericProofStruct memory registerCircuitProof
     ) internal view {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         address verifier = $._registerCircuitVerifiers[attestationId][registerCircuitVerifierId];
@@ -682,19 +749,63 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             ) {
                 revert InvalidDscCommitmentRoot();
             }
+        } else if (attestationId == AttestationId.AADHAAR) {
+            uint256 timestamp = registerCircuitProof.pubSignals[CircuitConstantsV2.AADHAAR_TIMESTAMP_INDEX];
+            if (timestamp < (block.timestamp - 20 minutes)) {
+                revert InvalidUidaiTimestamp();
+            }
+
+            if (timestamp > (block.timestamp + 20 minutes)) {
+                revert InvalidUidaiTimestamp();
+            }
+
+            if (
+                !IIdentityRegistryAadhaarV1($._registries[attestationId]).checkUidaiPubkey(
+                    registerCircuitProof.pubSignals[CircuitConstantsV2.AADHAAR_UIDAI_PUBKEY_COMMITMENT_INDEX]
+                )
+            ) {
+                revert InvalidPubkey();
+            }
         } else {
             revert InvalidAttestationId();
         }
 
-        if (
-            !IRegisterCircuitVerifier(verifier).verifyProof(
-                registerCircuitProof.a,
-                registerCircuitProof.b,
-                registerCircuitProof.c,
-                registerCircuitProof.pubSignals
-            )
-        ) {
-            revert InvalidRegisterProof();
+        if (attestationId == AttestationId.E_PASSPORT || attestationId == AttestationId.EU_ID_CARD) {
+            require(registerCircuitProof.pubSignals.length == 3, "Invalid pubSignals length");
+            uint256[3] memory pubSignals = [
+                registerCircuitProof.pubSignals[0],
+                registerCircuitProof.pubSignals[1],
+                registerCircuitProof.pubSignals[2]
+            ];
+            if (
+                !IRegisterCircuitVerifier(verifier).verifyProof(
+                    registerCircuitProof.a,
+                    registerCircuitProof.b,
+                    registerCircuitProof.c,
+                    pubSignals
+                )
+            ) {
+                revert InvalidRegisterProof();
+            }
+        } else if (attestationId == AttestationId.AADHAAR) {
+            require(registerCircuitProof.pubSignals.length == 4, "Invalid pubSignals length");
+            uint256[4] memory pubSignals = [
+                registerCircuitProof.pubSignals[0],
+                registerCircuitProof.pubSignals[1],
+                registerCircuitProof.pubSignals[2],
+                registerCircuitProof.pubSignals[3]
+            ];
+
+            if (
+                !IAadhaarRegisterCircuitVerifier(verifier).verifyProof(
+                    registerCircuitProof.a,
+                    registerCircuitProof.b,
+                    registerCircuitProof.c,
+                    pubSignals
+                )
+            ) {
+                revert InvalidRegisterProof();
+            }
         }
     }
 
@@ -757,11 +868,24 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     }
 
     /**
+     * @notice Performs attestationId check
+     */
+    function _performAttestationIdCheck(
+        bytes32 attestationId,
+        GenericProofStruct memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal pure {
+        if (vcAndDiscloseProof.pubSignals[indices.attestationIdIndex] != uint256(attestationId)) {
+            revert AttestationIdMismatch();
+        }
+    }
+
+    /**
      * @notice Performs scope validation
      */
     function _performScopeCheck(
         uint256 headerScope,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        GenericProofStruct memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices
     ) internal view {
         // Get scope from proof using the scope index from indices
@@ -777,7 +901,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _performRootCheck(
         bytes32 attestationId,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        GenericProofStruct memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices
     ) internal view {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
@@ -797,6 +921,50 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             if (!IIdentityRegistryIdCardV1($._registries[attestationId]).checkIdentityCommitmentRoot(merkleRoot)) {
                 revert InvalidIdentityCommitmentRoot();
             }
+        } else if (attestationId == AttestationId.AADHAAR) {
+            if (!IIdentityRegistryAadhaarV1($._registries[attestationId]).checkIdentityCommitmentRoot(merkleRoot)) {
+                revert InvalidIdentityCommitmentRoot();
+            }
+        } else {
+            revert InvalidAttestationId();
+        }
+    }
+
+    function _performOfacCheck(
+        bytes32 attestationId,
+        GenericProofStruct memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal view {
+        IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
+
+        if (attestationId == AttestationId.E_PASSPORT) {
+            if (
+                !IIdentityRegistryV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.passportNoSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
+            }
+        } else if (attestationId == AttestationId.EU_ID_CARD) {
+            if (
+                !IIdentityRegistryIdCardV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
+            }
+        } else if (attestationId == AttestationId.AADHAAR) {
+            if (
+                !IIdentityRegistryAadhaarV1($._registries[attestationId]).checkOfacRoots(
+                    vcAndDiscloseProof.pubSignals[indices.namedobSmtRootIndex],
+                    vcAndDiscloseProof.pubSignals[indices.nameyobSmtRootIndex]
+                )
+            ) {
+                revert InvalidOfacRoots();
+            }
         } else {
             revert InvalidAttestationId();
         }
@@ -806,16 +974,34 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @notice Performs current date validation
      */
     function _performCurrentDateCheck(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        GenericProofStruct memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices
     ) internal view {
-        uint[6] memory dateNum;
+        uint256[6] memory dateNum;
         for (uint256 i = 0; i < 6; i++) {
             dateNum[i] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex + i];
         }
 
-        uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
-        uint startOfDay = _getStartOfDayTimestamp();
+        uint256 currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
+        uint256 startOfDay = _getStartOfDayTimestamp();
+
+        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > startOfDay + 1 days - 1) {
+            revert CurrentDateNotInValidRange();
+        }
+    }
+
+    function _performNumericCurrentDateCheck(
+        GenericProofStruct memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices
+    ) internal view {
+        // date is going to be 2025, 12, 13
+        uint256[3] memory dateNum;
+        dateNum[0] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex];
+        dateNum[1] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex + 1];
+        dateNum[2] = vcAndDiscloseProof.pubSignals[indices.currentDateIndex + 2];
+
+        uint256 currentTimestamp = Formatter.proofDateToUnixTimestampNumeric(dateNum);
+        uint256 startOfDay = _getStartOfDayTimestamp();
 
         if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > startOfDay + 1 days - 1) {
             revert CurrentDateNotInValidRange();
@@ -827,19 +1013,43 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _performGroth16ProofVerification(
         bytes32 attestationId,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof
+        GenericProofStruct memory vcAndDiscloseProof
     ) internal view {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
 
-        if (
-            !IVcAndDiscloseCircuitVerifier($._discloseVerifiers[attestationId]).verifyProof(
-                vcAndDiscloseProof.a,
-                vcAndDiscloseProof.b,
-                vcAndDiscloseProof.c,
-                vcAndDiscloseProof.pubSignals
-            )
-        ) {
-            revert InvalidVcAndDiscloseProof();
+        if (attestationId == AttestationId.E_PASSPORT || attestationId == AttestationId.EU_ID_CARD) {
+            uint256[21] memory pubSignals;
+            for (uint256 i = 0; i < 21; i++) {
+                pubSignals[i] = vcAndDiscloseProof.pubSignals[i];
+            }
+            if (
+                !IVcAndDiscloseCircuitVerifier($._discloseVerifiers[attestationId]).verifyProof(
+                    vcAndDiscloseProof.a,
+                    vcAndDiscloseProof.b,
+                    vcAndDiscloseProof.c,
+                    pubSignals
+                )
+            ) {
+                revert InvalidVcAndDiscloseProof();
+            }
+        } else if (attestationId == AttestationId.AADHAAR) {
+            uint256[19] memory pubSignals;
+            for (uint256 i = 0; i < 19; i++) {
+                pubSignals[i] = vcAndDiscloseProof.pubSignals[i];
+            }
+
+            if (
+                !IVcAndDiscloseAadhaarCircuitVerifier($._discloseVerifiers[attestationId]).verifyProof(
+                    vcAndDiscloseProof.a,
+                    vcAndDiscloseProof.b,
+                    vcAndDiscloseProof.c,
+                    pubSignals
+                )
+            ) {
+                revert InvalidVcAndDiscloseProof();
+            }
+        } else {
+            revert InvalidAttestationId();
         }
     }
 
@@ -916,7 +1126,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _createVerificationOutput(
         bytes32 attestationId,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        GenericProofStruct memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices,
         uint256 userIdentifier
     ) internal pure returns (bytes memory) {
@@ -924,6 +1134,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             return _createPassportOutput(vcAndDiscloseProof, indices, attestationId, userIdentifier);
         } else if (attestationId == AttestationId.EU_ID_CARD) {
             return _createEuIdOutput(vcAndDiscloseProof, indices, attestationId, userIdentifier);
+        } else if (attestationId == AttestationId.AADHAAR) {
+            return _createAadhaarOutput(vcAndDiscloseProof, indices, attestationId, userIdentifier);
         } else {
             revert InvalidAttestationId();
         }
@@ -939,7 +1151,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @return The encoded PassportOutput struct.
      */
     function _createPassportOutput(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        GenericProofStruct memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices,
         bytes32 attestationId,
         uint256 userIdentifier
@@ -976,7 +1188,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @return The encoded EuIdOutput struct.
      */
     function _createEuIdOutput(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        GenericProofStruct memory vcAndDiscloseProof,
         CircuitConstantsV2.DiscloseIndices memory indices,
         bytes32 attestationId,
         uint256 userIdentifier
@@ -1003,16 +1215,34 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         return abi.encode(euIdOutput);
     }
 
+    function _createAadhaarOutput(
+        GenericProofStruct memory vcAndDiscloseProof,
+        CircuitConstantsV2.DiscloseIndices memory indices,
+        bytes32 attestationId,
+        uint256 userIdentifier
+    ) internal pure returns (bytes memory) {
+        SelfStructs.AadhaarOutput memory aadhaarOutput;
+        aadhaarOutput.attestationId = uint256(attestationId);
+        aadhaarOutput.userIdentifier = userIdentifier;
+        aadhaarOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
+
+        uint256[4] memory revealedDataPacked;
+        for (uint256 i = 0; i < 4; i++) {
+            revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
+        }
+        aadhaarOutput.revealedDataPacked = Formatter.fieldElementsToBytesAadhaar(revealedDataPacked);
+
+        return abi.encode(aadhaarOutput);
+    }
+
     /**
      * @notice Decodes VC and Disclose proof from bytes data.
      * @dev Simple wrapper around abi.decode for type safety and clarity.
      * @param data The encoded proof data.
      * @return The decoded VcAndDiscloseProof struct.
      */
-    function _decodeVcAndDiscloseProof(
-        bytes memory data
-    ) internal pure returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory) {
-        return abi.decode(data, (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof));
+    function _decodeVcAndDiscloseProof(bytes memory data) internal pure returns (GenericProofStruct memory) {
+        return abi.decode(data, (GenericProofStruct));
     }
 
     /**
@@ -1026,7 +1256,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     function _performUserIdentifierCheck(
         bytes calldata userContextData,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory vcAndDiscloseProof,
+        GenericProofStruct memory vcAndDiscloseProof,
         bytes32 attestationId,
         CircuitConstantsV2.DiscloseIndices memory indices
     ) internal pure {

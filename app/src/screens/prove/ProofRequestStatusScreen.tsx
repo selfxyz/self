@@ -11,6 +11,7 @@ import { useIsFocused } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import loadingAnimation from '@/assets/animations/loading/misc.json';
 import failAnimation from '@/assets/animations/proof_failed.json';
@@ -24,7 +25,6 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
-import { useSelfAppStore } from '@/stores/selfAppStore';
 import { black, white } from '@/utils/colors';
 import {
   buttonTap,

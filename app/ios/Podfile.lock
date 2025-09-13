@@ -1474,6 +1474,27 @@ PODS:
     - React-Core
   - react-native-biometrics (3.0.1):
     - React-Core
+  - react-native-blur (4.4.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-cloud-storage (2.3.0):
     - DoubleConversion
     - glog
@@ -2120,7 +2141,7 @@ DEPENDENCIES:
   - lottie-react-native (from `../../node_modules/lottie-react-native`)
   - Mixpanel-swift (~> 5.0.0)
   - "mobile-sdk-alpha (from `../../node_modules/@selfxyz/mobile-sdk-alpha`)"
-  - NFCPassportReader (from `https://github.com/seshanthS/NFCPassportReader`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)
+  - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)"
   - QKMRZScanner
   - RCT-Folly (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -2155,6 +2176,7 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-app-auth (from `../../node_modules/react-native-app-auth`)
   - react-native-biometrics (from `../../node_modules/react-native-biometrics`)
+  - "react-native-blur (from `../../node_modules/@react-native-community/blur`)"
   - react-native-cloud-storage (from `../../node_modules/react-native-cloud-storage`)
   - react-native-get-random-values (from `../../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../../node_modules/@react-native-community/netinfo`)"
@@ -2256,7 +2278,7 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@selfxyz/mobile-sdk-alpha"
   NFCPassportReader:
     :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
-    :git: https://github.com/seshanthS/NFCPassportReader
+    :git: "git@github.com:selfxyz/NFCPassportReader.git"
   RCT-Folly:
     :podspec: "../../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -2319,6 +2341,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native-app-auth"
   react-native-biometrics:
     :path: "../../node_modules/react-native-biometrics"
+  react-native-blur:
+    :path: "../../node_modules/@react-native-community/blur"
   react-native-cloud-storage:
     :path: "../../node_modules/react-native-cloud-storage"
   react-native-get-random-values:
@@ -2423,7 +2447,7 @@ EXTERNAL SOURCES:
 CHECKOUT OPTIONS:
   NFCPassportReader:
     :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
-    :git: https://github.com/seshanthS/NFCPassportReader
+    :git: "git@github.com:selfxyz/NFCPassportReader.git"
   SwiftQRScanner:
     :commit: c71ff91297640a944de4bca61434155c3f9b0979
     :git: https://github.com/vinodiOS/SwiftQRScanner
@@ -2492,6 +2516,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: c7cafd8f4470cf8a4578ee605daa4c74d3278bf8
   react-native-app-auth: eb42594042a25455119a8c57194b4fd25b9352f4
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
+  react-native-blur: 6334d934a9b5e67718b8f5725c44cc0a12946009
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
@@ -2546,6 +2571,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: 689d73721f4e26763b36862088e444204655ce82
+PODFILE CHECKSUM: 11b5d4e7ed4c53b5020678593b6ec1015cbd3f47
 
 COCOAPODS: 1.16.2

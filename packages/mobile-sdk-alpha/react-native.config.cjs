@@ -2,29 +2,20 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+const path = require('path');
+const fs = require('fs');
+
+const packageRoot = fs.realpathSync(__dirname);
+const iosSourceDir = fs.realpathSync(path.join(packageRoot, 'ios'));
+
 module.exports = {
-  dependencies: {
-    '@selfxyz/mobile-sdk-alpha': {
-      platforms: {
-        ios: {
-          sourceDir: './ios',
-          podspecPath: './mobile-sdk-alpha.podspec',
-        },
-        android: {
-          sourceDir: './android',
-          manifestPath: 'src/main/AndroidManifest.xml',
-          packageImportPath: 'import com.selfxyz.selfSDK.RNSelfPassportReaderPackage;',
-          packageInstance: 'new RNSelfPassportReaderPackage()',
-        },
+  dependency: {
+    platforms: {
+      ios: {
+        sourceDir: iosSourceDir,
+        podspecPath: path.join(packageRoot, 'mobile-sdk-alpha.podspec'),
       },
-    },
-  },
-  project: {
-    ios: {
-      sourceDir: './ios',
-    },
-    android: {
-      sourceDir: './android',
+      android: null,
     },
   },
 };

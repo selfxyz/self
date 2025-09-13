@@ -12,6 +12,8 @@ export const blue700 = '#1D4ED8';
 // OLD
 export const borderColor = '#343434';
 
+export const charcoal = '#485469';
+
 export const cyan300 = '#67E8F9';
 
 export const emerald500 = '#10B981';
@@ -28,7 +30,7 @@ export const separatorColor = '#E0E0E0';
 
 export const sky500 = '#0EA5E9';
 
-export const slate100 = '#F1F5F9';
+export const slate100 = '#F8FAFC';
 
 export const slate200 = '#E2E8F0';
 

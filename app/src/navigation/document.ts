@@ -2,30 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-const DocumentCameraScreen = lazy(
-  () => import('@/screens/document/DocumentCameraScreen'),
-);
-const DocumentCameraTroubleScreen = lazy(
-  () => import('@/screens/document/DocumentCameraTroubleScreen'),
-);
-const DocumentNFCScanScreen = lazy(
-  () => import('@/screens/document/DocumentNFCScanScreen'),
-);
-const DocumentNFCTroubleScreen = lazy(
-  () => import('@/screens/document/DocumentNFCTroubleScreen'),
-);
-const DocumentOnboardingScreen = lazy(
-  () => import('@/screens/document/DocumentOnboardingScreen'),
-);
-const UnsupportedDocumentScreen = lazy(
-  () => import('@/screens/document/UnsupportedDocumentScreen'),
-);
-const DocumentNFCMethodSelectionScreen = lazy(
-  () => import('@/screens/document/DocumentNFCMethodSelectionScreen'),
-);
+import DocumentCameraScreen from '@/screens/document/DocumentCameraScreen';
+import DocumentCameraTroubleScreen from '@/screens/document/DocumentCameraTroubleScreen';
+import DocumentNFCMethodSelectionScreen from '@/screens/document/DocumentNFCMethodSelectionScreen';
+import DocumentNFCScanScreen from '@/screens/document/DocumentNFCScanScreen';
+import DocumentNFCTroubleScreen from '@/screens/document/DocumentNFCTroubleScreen';
+import DocumentOnboardingScreen from '@/screens/document/DocumentOnboardingScreen';
+import UnsupportedDocumentScreen from '@/screens/document/UnsupportedDocumentScreen';
 
 const documentScreens = {
   DocumentCamera: {
@@ -77,7 +62,8 @@ const documentScreens = {
       headerShown: false,
     } as NativeStackNavigationOptions,
     initialParams: {
-      passportData: null,
+      countryCode: null,
+      documentCategory: null,
     },
   },
   DocumentNFCMethodSelection: {

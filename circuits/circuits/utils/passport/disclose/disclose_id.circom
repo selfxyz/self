@@ -4,6 +4,7 @@ include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "../date/isOlderThan.circom";
 include "../ofac/ofac_name_dob_id.circom";
 include "../ofac/ofac_name_yob_id.circom";
+include "../../aadhaar/disclose/country_not_in_list.circom";
 
 /// @notice Disclosure circuit — used after user registration
 /// @param MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH Maximum number of countries present in the forbidden countries list
@@ -90,5 +91,10 @@ template DISCLOSE_ID(
     signal output revealedData_packed[4] <== PackBytes(94)(revealedData);
 
     var chunkLength = computeIntChunkLength(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3);
-    signal output forbidden_countries_list_packed[chunkLength] <== ProveCountryIsNotInList_ID(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH)(dg1, forbidden_countries_list);
+    component proveCountryIsNotInList = CountryNotInList(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH);
+    proveCountryIsNotInList.country[0] <== dg1[7];
+    proveCountryIsNotInList.country[1] <== dg1[8];
+    proveCountryIsNotInList.country[2] <== dg1[9];
+    proveCountryIsNotInList.forbidden_countries_list <== forbidden_countries_list;
+    signal output forbidden_countries_list_packed[chunkLength] <== proveCountryIsNotInList.forbidden_countries_list_packed;
 }

@@ -60,13 +60,13 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       if (permissionGranted) {
         const token = await getFCMToken();
         if (token) {
-          setFcmToken(token);
+          setFcmToken(token, selfClient);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
         }
       }
 
       // Mark as user confirmed - proving will start automatically when ready
-      setUserConfirmed();
+      setUserConfirmed(selfClient);
 
       // Navigate to loading screen
       navigate();

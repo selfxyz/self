@@ -9,7 +9,7 @@ import { badCheckDigitsMRZ, expectedMRZResult, invalidMRZ, mockAdapters, sampleM
 
 describe('createSelfClient API', () => {
   it('creates a client instance with expected methods', () => {
-    const client = createSelfClient({ config: {}, adapters: mockAdapters });
+    const client = createSelfClient({ config: {}, adapters: mockAdapters, listeners: new Map() });
 
     expect(typeof client.extractMRZInfo).toBe('function');
     expect(typeof client.registerDocument).toBe('function');
@@ -17,7 +17,7 @@ describe('createSelfClient API', () => {
   });
 
   it('parses MRZ data correctly', () => {
-    const client = createSelfClient({ config: {}, adapters: mockAdapters });
+    const client = createSelfClient({ config: {}, adapters: mockAdapters, listeners: new Map() });
     const info = client.extractMRZInfo(sampleMRZ);
 
     expect(info.documentNumber).toBe(expectedMRZResult.documentNumber);
@@ -28,6 +28,7 @@ describe('createSelfClient API', () => {
     const clientWithAllAdapters = createSelfClient({
       config: {},
       adapters: mockAdapters,
+      listeners: new Map(),
     });
 
     expect(clientWithAllAdapters).toBeDefined();
@@ -35,12 +36,12 @@ describe('createSelfClient API', () => {
   });
 
   it('throws MrzParseError for malformed MRZ input', () => {
-    const client = createSelfClient({ config: {}, adapters: mockAdapters });
+    const client = createSelfClient({ config: {}, adapters: mockAdapters, listeners: new Map() });
     expect(() => client.extractMRZInfo(invalidMRZ)).toThrowError(MrzParseError);
   });
 
   it('flags invalid check digits', () => {
-    const client = createSelfClient({ config: {}, adapters: mockAdapters });
+    const client = createSelfClient({ config: {}, adapters: mockAdapters, listeners: new Map() });
     const info = client.extractMRZInfo(badCheckDigitsMRZ);
     expect(info.validation?.overall).toBe(false);
   });

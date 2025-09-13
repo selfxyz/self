@@ -18,8 +18,10 @@ interface UserState {
   deepLinkNationality?: IdDocInput['nationality'];
   deepLinkBirthDate?: string;
   deepLinkGender?: string;
+  idDetailsDocumentId?: string;
   update: (patch: Partial<UserState>) => void;
   deleteMrzFields: () => void;
+  setIdDetailsDocumentId: (documentId: string) => void;
   setDeepLinkUserDetails: (details: {
     name?: string;
     surname?: string;
@@ -41,6 +43,7 @@ const useUserStore = create<UserState>((set, _get) => ({
   deepLinkNationality: undefined,
   deepLinkBirthDate: undefined,
   deepLinkGender: undefined,
+  idDetailsDocumentId: undefined,
 
   update: patch => {
     set(state => ({ ...state, ...patch }));
@@ -63,6 +66,9 @@ const useUserStore = create<UserState>((set, _get) => ({
       deepLinkBirthDate: details.birthDate,
       deepLinkGender: details.gender,
     }),
+
+  setIdDetailsDocumentId: (documentId: string) =>
+    set({ idDetailsDocumentId: documentId }),
 
   clearDeepLinkUserDetails: () =>
     set({

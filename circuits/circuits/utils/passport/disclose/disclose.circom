@@ -2,6 +2,7 @@ pragma circom 2.1.9;
 
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "../date/isOlderThan.circom";
+include "../../aadhaar/disclose/country_not_in_list.circom";
 
 /// @notice Disclosure circuit — used after user registration
 /// @param MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH Maximum number of countries present in the forbidden countries list
@@ -44,9 +45,9 @@ template DISCLOSE(
     signal input ofac_nameyob_smt_leaf_key;
     signal input ofac_nameyob_smt_root;
     signal input ofac_nameyob_smt_siblings[nameyobTreeLevels];
-    
+
     signal input selector_ofac;
-    
+
     // assert selectors are 0 or 1
     for (var i = 0; i < 88; i++) {
         selector_dg1[i] * (selector_dg1[i] - 1) === 0;
@@ -70,7 +71,7 @@ template DISCLOSE(
     for (var i = 0; i < 88; i++) {
         revealedData[i] <== dg1[5+i] * selector_dg1[i];
     }
-    
+
     revealedData[88] <== older_than_verified[0] * selector_older_than;
     revealedData[89] <== older_than_verified[1] * selector_older_than;
 
@@ -94,12 +95,17 @@ template DISCLOSE(
         ofac_nameyob_smt_root,
         ofac_nameyob_smt_siblings
     );
-    
+
     revealedData[90] <== ofacCheckResultPassportNo * selector_ofac;
     revealedData[91] <== ofacCheckResultNameDob * selector_ofac;
     revealedData[92] <== ofacCheckResultNameYob * selector_ofac;
     signal output revealedData_packed[3] <== PackBytes(93)(revealedData);
 
     var chunkLength = computeIntChunkLength(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3);
-    signal output forbidden_countries_list_packed[chunkLength] <== ProveCountryIsNotInList(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH)(dg1, forbidden_countries_list);
+    component proveCountryIsNotInList = CountryNotInList(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH);
+    proveCountryIsNotInList.country[0] <== dg1[7];
+    proveCountryIsNotInList.country[1] <== dg1[8];
+    proveCountryIsNotInList.country[2] <== dg1[9];
+    proveCountryIsNotInList.forbidden_countries_list <== forbidden_countries_list;
+    signal output forbidden_countries_list_packed[chunkLength] <== proveCountryIsNotInList.forbidden_countries_list_packed;
 }

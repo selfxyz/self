@@ -2,29 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import AccountRecoveryChoiceScreen from '@/screens/recovery/AccountRecoveryChoiceScreen';
+import AccountRecoveryScreen from '@/screens/recovery/AccountRecoveryScreen';
+import AccountVerifiedSuccessScreen from '@/screens/recovery/AccountVerifiedSuccessScreen';
+import DocumentDataNotFound from '@/screens/recovery/DocumentDataNotFoundScreen';
+import RecoverWithPhraseScreen from '@/screens/recovery/RecoverWithPhraseScreen';
+import SaveRecoveryPhraseScreen from '@/screens/recovery/SaveRecoveryPhraseScreen';
 import { black, slate300 } from '@/utils/colors';
-
-const AccountRecoveryChoiceScreen = lazy(
-  () => import('@/screens/recovery/AccountRecoveryChoiceScreen'),
-);
-const AccountRecoveryScreen = lazy(
-  () => import('@/screens/recovery/AccountRecoveryScreen'),
-);
-const AccountVerifiedSuccessScreen = lazy(
-  () => import('@/screens/recovery/AccountVerifiedSuccessScreen'),
-);
-const DocumentDataNotFound = lazy(
-  () => import('@/screens/recovery/DocumentDataNotFoundScreen'),
-);
-const RecoverWithPhraseScreen = lazy(
-  () => import('@/screens/recovery/RecoverWithPhraseScreen'),
-);
-const SaveRecoveryPhraseScreen = lazy(
-  () => import('@/screens/recovery/SaveRecoveryPhraseScreen'),
-);
 
 const recoveryScreens = {
   AccountRecovery: {

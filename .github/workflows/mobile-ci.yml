@@ -69,28 +69,16 @@ jobs:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-      - name: Restore Built Dependencies
-        id: built-deps-restore
-        uses: actions/cache/restore@v4
+      - name: Cache Built Dependencies
+        id: built-deps
+        uses: ./.github/actions/cache-built-deps
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-          fail-on-cache-miss: false
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (cache miss)
-        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
-      - name: Save Built Dependencies
-        if: steps.built-deps-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Run linter
         run: yarn lint
         working-directory: ./app
@@ -137,30 +125,70 @@ jobs:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-      - name: Restore Built Dependencies
-        id: built-deps-restore
-        uses: actions/cache/restore@v4
+      - name: Cache Built Dependencies
+        id: built-deps
+        uses: ./.github/actions/cache-built-deps
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-          fail-on-cache-miss: false
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
+      - name: Debug Cache Restoration
+        run: |
+          echo "Cache hit: ${{ steps.built-deps.outputs.cache-hit }}"
+          echo "Cache key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}"
+          echo "Checking if cached files exist:"
+          ls -la packages/mobile-sdk-alpha/dist/ || echo "❌ mobile-sdk-alpha dist not found"
+          ls -la packages/mobile-sdk-alpha/dist/cjs/ || echo "❌ mobile-sdk-alpha dist/cjs not found"
+          ls -la packages/mobile-sdk-alpha/dist/cjs/index.cjs || echo "❌ mobile-sdk-alpha dist/cjs/index.cjs not found"
+          ls -la common/dist/ || echo "❌ common dist not found"
+          ls -la common/dist/cjs/ || echo "❌ common dist/cjs not found"
+          ls -la common/dist/cjs/index.cjs || echo "❌ common dist/cjs/index.cjs not found"
       - name: Build dependencies (cache miss)
-        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
-      - name: Save Built Dependencies
-        if: steps.built-deps-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
+          # Verify build completed successfully
+          if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
+            echo "❌ Build failed - required files missing after build"
+            ls -la packages/mobile-sdk-alpha/dist/ || echo "mobile-sdk-alpha dist not found"
+            ls -la common/dist/ || echo "common dist not found"
+            exit 1
+          fi
+          echo "✅ Build completed successfully"
+      - name: Force Build Dependencies If Missing
+        run: |
+          # Force build if required files don't exist, regardless of cache status
+          if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
+            echo "❌ Required dependency files missing, forcing rebuild..."
+            echo "Missing files:"
+            [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] && echo "  - packages/mobile-sdk-alpha/dist/cjs/index.cjs"
+            [ ! -f "common/dist/cjs/index.cjs" ] && echo "  - common/dist/cjs/index.cjs"
+            yarn workspace @selfxyz/mobile-app run build:deps
+            # Verify build completed successfully
+            if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
+              echo "❌ Forced build failed - required files still missing"
+              ls -la packages/mobile-sdk-alpha/ || echo "packages/mobile-sdk-alpha not found"
+              ls -la packages/mobile-sdk-alpha/dist/ || echo "mobile-sdk-alpha dist not found"
+              ls -la common/ || echo "common not found"
+              ls -la common/dist/ || echo "common dist not found"
+              exit 1
+            fi
+            echo "✅ Forced build completed successfully"
+          else
+            echo "✅ All required dependency files exist"
+          fi
       - name: Test
-        run: yarn test
+        run: |
+          # Final verification from app directory perspective
+          echo "Final verification before running tests (from app directory)..."
+          if [ ! -f "../packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "../common/dist/cjs/index.cjs" ]; then
+            echo "❌ Dependencies still not found from app directory"
+            ls -la ../packages/mobile-sdk-alpha/dist/ || echo "mobile-sdk-alpha dist not found"
+            ls -la ../common/dist/ || echo "common dist not found"
+            exit 1
+          fi
+          echo "✅ All dependencies verified, running tests..."
+          # Run jest through yarn to avoid the build:deps step since CI already built dependencies
+          yarn jest --passWithNoTests && node --test scripts/tests/*.cjs
         working-directory: ./app
   build-ios:
     runs-on: macos-latest-large
@@ -257,28 +285,16 @@ jobs:
             ${{ runner.os }}-xcode-index-${{ env.XCODE_VERSION }}-
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
-      - name: Restore Built Dependencies
-        id: built-deps-restore
-        uses: actions/cache/restore@v4
+      - name: Cache Built Dependencies
+        id: built-deps
+        uses: ./.github/actions/cache-built-deps
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-          fail-on-cache-miss: false
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (cache miss)
-        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
-      - name: Save Built Dependencies
-        if: steps.built-deps-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Install Ruby Dependencies
         run: |
           echo "Installing Ruby dependencies..."
@@ -292,6 +308,8 @@ jobs:
           # Reuse the same guarded flow as local to ensure reproducibility
           bundle exec bash scripts/pod-install-with-cache-fix.sh
         working-directory: ./app
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Resolve iOS workspace
         run: |
           WORKSPACE_OPEN="ios/OpenPassport.xcworkspace"
@@ -416,28 +434,16 @@ jobs:
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
-      - name: Restore Built Dependencies
-        id: built-deps-restore
-        uses: actions/cache/restore@v4
+      - name: Cache Built Dependencies
+        id: built-deps
+        uses: ./.github/actions/cache-built-deps
         with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
-          fail-on-cache-miss: false
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (cache miss)
-        if: steps.built-deps-restore.outputs.cache-hit != 'true'
+        if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
-      - name: Save Built Dependencies
-        if: steps.built-deps-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            common/dist
-            packages/mobile-sdk-alpha/dist
-          key: built-deps-${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
       - name: Build Android (with AAPT2 symlink fix)
         run: yarn android:ci
         working-directory: ./app

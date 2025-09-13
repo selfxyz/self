@@ -51,6 +51,21 @@ library SelfStructs {
         uint256[4] forbiddenCountriesListPacked;
     }
 
+    /**
+     * @dev Output structure for Aadhaar verification results
+     * @param attestationId Unique identifier for the attestation
+     * @param revealedDataPacked Packed binary data of revealed information
+     * @param userIdentifier Unique identifier for the user
+     * @param nullifier Cryptographic nullifier to prevent double-spending
+     */
+    struct AadhaarOutput {
+        uint256 attestationId;
+        bytes revealedDataPacked;
+        uint256 userIdentifier;
+        uint256 nullifier;
+        uint256[4] forbiddenCountriesListPacked;
+    }
+
     /// @dev OFAC verification mode: Passport number only
     uint256 constant passportNoOfac = 0;
     /// @dev OFAC verification mode: Name and date of birth

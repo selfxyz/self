@@ -32,7 +32,25 @@ target "Self" do
   use_frameworks!
   # Skip NFCPassportReader for e2e testing to avoid build issues
   unless ENV["E2E_TESTING"] == "1"
-    pod "NFCPassportReader", git: "https://github.com/seshanthS/NFCPassportReader", commit: "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
+    # Check if we're running in a selfxyz repo or an external fork
+    is_selfxyz_repo = ENV["GITHUB_REPOSITORY"]&.start_with?("selfxyz/") || ENV["GITHUB_REPOSITORY"].nil?
+
+    if !is_selfxyz_repo
+      # External fork - use public NFCPassportReader repository (placeholder)
+      # TODO: Replace with actual public NFCPassportReader repository URL
+      nfc_repo_url = "https://github.com/PLACEHOLDER/NFCPassportReader.git"
+      puts "📦 Using public NFCPassportReader for external fork (#{ENV["GITHUB_REPOSITORY"]})"
+    elsif ENV["GITHUB_ACTIONS"] == "true" && ENV["SELFXYZ_INTERNAL_REPO_PAT"]
+      # Running in selfxyz GitHub Actions with PAT available - use private repo with token
+      nfc_repo_url = "https://#{ENV["SELFXYZ_INTERNAL_REPO_PAT"]}@github.com/selfxyz/NFCPassportReader.git"
+      puts "📦 Using private NFCPassportReader with PAT (selfxyz GitHub Actions)"
+    else
+      # Local development in selfxyz repo - use SSH to private repo
+      nfc_repo_url = "git@github.com:selfxyz/NFCPassportReader.git"
+      puts "📦 Using SSH for private NFCPassportReader (local selfxyz development)"
+    end
+
+    pod "NFCPassportReader", git: nfc_repo_url, commit: "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
   end
 
   pod "QKMRZScanner"

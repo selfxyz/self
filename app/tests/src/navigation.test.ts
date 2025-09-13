@@ -28,6 +28,7 @@ describe('navigation', () => {
       'DocumentNFCTrouble',
       'DocumentOnboarding',
       'Home',
+      'IdDetails',
       'Launch',
       'Loading',
       'ManageDocuments',

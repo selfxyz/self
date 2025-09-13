@@ -15,4 +15,5 @@ library AttestationId {
      */
     bytes32 constant E_PASSPORT = bytes32(uint256(1));
     bytes32 constant EU_ID_CARD = bytes32(uint256(2));
+    bytes32 constant AADHAAR = bytes32(uint256(3));
 }
