@@ -20,8 +20,26 @@ import {
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
 } from '@selfxyz/common/constants';
-import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
-import type { DeployedCircuits, OfacTree } from '@selfxyz/common/utils/types';
+import { fetchOfacTrees } from '@selfxyz/common/utils';
+import type { DeployedCircuits, OfacTree } from '@selfxyz/common/types';
+
+const GLOBAL_STORE_KEY = '__SELFXYZ_PROTOCOL_STORE__';
+const globalScope: any =
+  typeof globalThis !== 'undefined'
+    ? globalThis
+    : typeof window !== 'undefined'
+    ? window
+    : typeof global !== 'undefined'
+    ? global
+    : {};
+
+let useProtocolStore: ReturnType<typeof create<ProtocolState>>;
+
+if (globalScope[GLOBAL_STORE_KEY]) {
+  console.warn('Multiple useProtocolStore instances detected, using global singleton');
+  useProtocolStore = globalScope[GLOBAL_STORE_KEY];
+} else {
+  useProtocolStore = create<ProtocolState>((set, get) => ({
 
 interface ProtocolState {
   passport: {
@@ -319,3 +337,8 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     },
   },
 }));
+  globalScope[GLOBAL_STORE_KEY] = useProtocolStore;
+  (useProtocolStore as any).__instanceId = Math.random().toString(36);
+}
+
+export { useProtocolStore };

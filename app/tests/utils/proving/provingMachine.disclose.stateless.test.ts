@@ -17,8 +17,8 @@ jest.mock('xstate', () => {
 });
 
 // Mock proving utils for payload building
-jest.mock('@selfxyz/common/utils/proving', () => {
-  const actual = jest.requireActual('@selfxyz/common/utils/proving') as any;
+jest.mock('@selfxyz/common/utils', () => {
+  const actual = jest.requireActual('@selfxyz/common/utils') as any;
   return {
     ...actual,
     getPayload: jest.fn(() => ({ mocked: true })),
@@ -78,8 +78,8 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: 'https://dis',
       };
     });
-    jest.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-      generateTEEInputsDiscloseStateless: genMock,
+    jest.doMock('@selfxyz/common/utils', () => ({
+      generateTeeInputsDiscloseStateless: genMock,
       generateTEEInputsRegister: jest.fn(),
       generateTEEInputsDSC: jest.fn(),
     }));
@@ -187,8 +187,8 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: '',
       };
     });
-    jest.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-      generateTEEInputsDiscloseStateless: genMock,
+    jest.doMock('@selfxyz/common/utils', () => ({
+      generateTeeInputsDiscloseStateless: genMock,
       generateTEEInputsRegister: jest.fn(),
       generateTEEInputsDSC: jest.fn(),
     }));
@@ -272,8 +272,8 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: '',
       };
     });
-    jest.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-      generateTEEInputsDiscloseStateless: genMock,
+    jest.doMock('@selfxyz/common/utils', () => ({
+      generateTeeInputsDiscloseStateless: genMock,
       generateTEEInputsRegister: jest.fn(),
       generateTEEInputsDSC: jest.fn(),
     }));

@@ -67,6 +67,30 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     // Add prettier rule to show prettier errors as ESLint errors
     'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['@selfxyz/mobile-sdk-alpha/*/**'],
+            message:
+              'Use @selfxyz/mobile-sdk-alpha or @selfxyz/mobile-sdk-alpha/stores only',
+          },
+          {
+            group: ['@selfxyz/common/*/**'],
+            message:
+              'Use @selfxyz/common, @selfxyz/common/types, or @selfxyz/common/utils only',
+          },
+        ],
+        paths: [
+          {
+            name: '@selfxyz/mobile-sdk-alpha/src/**',
+            message:
+              'Use @selfxyz/mobile-sdk-alpha or @selfxyz/mobile-sdk-alpha/stores only',
+          },
+        ],
+      },
+    ],
   },
   overrides: [
     {

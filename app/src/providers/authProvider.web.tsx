@@ -16,7 +16,7 @@ import React, {
   useState,
 } from 'react';
 
-import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { AuthEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import type { Mnemonic } from '@/types/mnemonic';
 import analytics from '@/utils/analytics';

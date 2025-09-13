@@ -176,6 +176,30 @@ module.exports = {
     // Override rules conflicting with TypeScript union formatting
 
     '@typescript-eslint/indent': 'off',
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['@selfxyz/mobile-sdk-alpha/*/**'],
+            message:
+              'Use @selfxyz/mobile-sdk-alpha or @selfxyz/mobile-sdk-alpha/stores only',
+          },
+          {
+            group: ['@selfxyz/common/*/**'],
+            message:
+              'Use @selfxyz/common, @selfxyz/common/types, or @selfxyz/common/utils only',
+          },
+        ],
+        paths: [
+          {
+            name: '@selfxyz/mobile-sdk-alpha/src/**',
+            message:
+              'Use @selfxyz/mobile-sdk-alpha or @selfxyz/mobile-sdk-alpha/stores only',
+          },
+        ],
+      },
+    ],
   },
   overrides: [
     {

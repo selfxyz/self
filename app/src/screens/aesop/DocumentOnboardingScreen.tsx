@@ -11,7 +11,7 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

@@ -5,7 +5,7 @@
 import React from 'react';
 import { View, YStack } from 'tamagui';
 
-import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';

@@ -24,13 +24,13 @@ import {
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
+import { getSKIPEM } from '@selfxyz/common/utils';
+import { initPassportDataParsing } from '@selfxyz/common/utils';
 import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

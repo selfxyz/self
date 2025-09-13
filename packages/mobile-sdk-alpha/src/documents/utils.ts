@@ -9,7 +9,7 @@ import {
   PublicKeyDetailsRSA,
 } from '@selfxyz/common';
 import { calculateContentHash, inferDocumentCategory } from '@selfxyz/common/utils';
-import { DocumentMetadata, PassportData } from '@selfxyz/common/utils/types';
+import { DocumentMetadata, PassportData } from '@selfxyz/common/types';
 
 import { SelfClient } from '../types/public';
 

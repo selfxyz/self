@@ -14,7 +14,7 @@ import { useProvingStore } from '@/utils/proving/provingMachine';
 
 // Mock only external dependencies, not our business logic
 jest.mock('socket.io-client');
-jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   ProofEvents: {
     SOCKETIO_CONN_STARTED: 'SOCKETIO_CONN_STARTED',
     SOCKETIO_SUBSCRIBED: 'SOCKETIO_SUBSCRIBED',
@@ -29,7 +29,7 @@ jest.mock('@/Sentry', () => ({
   logProofEvent: jest.fn(),
   createProofContext: jest.fn(() => ({})),
 }));
-jest.mock('@selfxyz/common/utils/proving', () => ({
+jest.mock('@selfxyz/common/utils', () => ({
   getWSDbRelayerUrl: jest.fn(() => 'ws://test-url'),
   getPayload: jest.fn(),
   encryptAES256GCM: jest.fn(),
@@ -50,7 +50,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   clearPassportData: jest.fn(),
   markCurrentDocumentAsRegistered: jest.fn(),
   reStorePassportDataWithRightCSCA: jest.fn(),
-  generateTEEInputsDisclose: jest.fn(),
+  generateTeeInputsDisclose: jest.fn(),
   useProtocolStore: {
     getState: jest.fn(() => ({
       isUserLoggedIn: true,
@@ -67,17 +67,17 @@ jest.mock('@selfxyz/common/utils', () => ({
   getSolidityPackedUserContextData: jest.fn(() => '0x123'),
 }));
 
-jest.mock('@selfxyz/common/utils/attest', () => ({
+jest.mock('@selfxyz/common/utils', () => ({
   getPublicKey: jest.fn(),
   verifyAttestation: jest.fn(),
 }));
 
-jest.mock('@selfxyz/common/utils/circuits/registerInputs', () => ({
+jest.mock('@selfxyz/common/utils', () => ({
   generateTEEInputsDSC: jest.fn(),
   generateTEEInputsRegister: jest.fn(),
 }));
 
-jest.mock('@selfxyz/common/utils/passports/validate', () => ({
+jest.mock('@selfxyz/common/utils', () => ({
   checkDocumentSupported: jest.fn(() => Promise.resolve(true)),
   checkIfPassportDscIsInTree: jest.fn(() => Promise.resolve(true)),
   isDocumentNullified: jest.fn(() => Promise.resolve(false)),

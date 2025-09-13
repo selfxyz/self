@@ -21,8 +21,8 @@ jest.mock('@/utils/analytics', () => () => ({
 }));
 
 // Mock the proving utils
-jest.mock('@selfxyz/common/utils/proving', () => {
-  const actual = jest.requireActual('@selfxyz/common/utils/proving') as any;
+jest.mock('@selfxyz/common/utils', () => {
+  const actual = jest.requireActual('@selfxyz/common/utils') as any;
   return {
     ...actual,
     getPayload: jest.fn(() => ({ mocked: true })),
@@ -43,7 +43,7 @@ jest.mock('@selfxyz/common/utils/proving', () => {
       endpointType: 'celo',
       endpoint: 'https://dsc',
     })),
-    generateTEEInputsDisclose: jest.fn(() => ({
+    generateTeeInputsDisclose: jest.fn(() => ({
       inputs: { s: 1 },
       circuitName: 'vc_and_disclose',
       endpointType: 'https',
@@ -53,9 +53,9 @@ jest.mock('@selfxyz/common/utils/proving', () => {
 });
 
 // Mock the proving utils
-jest.mock('@selfxyz/common/utils/circuits/registerInputs', () => {
+jest.mock('@selfxyz/common/utils', () => {
   const actual = jest.requireActual(
-    '@selfxyz/common/utils/circuits/registerInputs',
+    '@selfxyz/common/utils',
   ) as any;
   return {
     ...actual,
@@ -71,7 +71,7 @@ jest.mock('@selfxyz/common/utils/circuits/registerInputs', () => {
       endpointType: 'celo',
       endpoint: 'https://dsc',
     })),
-    generateTEEInputsDiscloseStateless: jest.fn(() => ({
+    generateTeeInputsDiscloseStateless: jest.fn(() => ({
       inputs: { s: 1 },
       circuitName: 'vc_and_disclose',
       endpointType: 'https',
@@ -81,8 +81,8 @@ jest.mock('@selfxyz/common/utils/circuits/registerInputs', () => {
 });
 
 // Mock the tree utils to avoid CSCA tree issues
-jest.mock('@selfxyz/common/utils/trees', () => {
-  const actual = jest.requireActual('@selfxyz/common/utils/trees') as any;
+jest.mock('@selfxyz/common/utils', () => {
+  const actual = jest.requireActual('@selfxyz/common/utils') as any;
   return {
     ...actual,
     getCscaTreeInclusionProof: jest.fn(() => [
@@ -94,9 +94,9 @@ jest.mock('@selfxyz/common/utils/trees', () => {
 });
 
 // Mock the passport utils to avoid signature processing issues
-jest.mock('@selfxyz/common/utils/passports/passport', () => {
+jest.mock('@selfxyz/common/utils', () => {
   const actual = jest.requireActual(
-    '@selfxyz/common/utils/passports/passport',
+    '@selfxyz/common/utils',
   ) as any;
   return {
     ...actual,
@@ -111,13 +111,13 @@ jest.mock('@selfxyz/common/utils/passports/passport', () => {
 const {
   getPayload,
   encryptAES256GCM,
-} = require('@selfxyz/common/utils/proving');
+} = require('@selfxyz/common/utils');
 
 const {
   generateTEEInputsRegister,
   generateTEEInputsDSC,
-  generateTEEInputsDiscloseStateless,
-} = require('@selfxyz/common/utils/circuits/registerInputs');
+  generateTeeInputsDiscloseStateless,
+} = require('@selfxyz/common/utils');
 
 describe('_generatePayload', () => {
   const selfClient: SelfClient = {
@@ -260,7 +260,7 @@ describe('_generatePayload', () => {
     const payload = await useProvingStore
       .getState()
       ._generatePayload(selfClient);
-    expect(generateTEEInputsDiscloseStateless).toHaveBeenCalled();
+    expect(generateTeeInputsDiscloseStateless).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('https');
     expect(payload.params.uuid).toBe('123');
   });

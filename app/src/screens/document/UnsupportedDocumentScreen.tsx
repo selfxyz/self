@@ -15,7 +15,7 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';

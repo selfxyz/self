@@ -17,19 +17,19 @@ import {
   getCircuitNameFromPassportData,
   getSolidityPackedUserContextData,
 } from '@selfxyz/common/utils';
-import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
+import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils';
 import {
-  generateTEEInputsDiscloseStateless,
+  generateTeeInputsDiscloseStateless,
   generateTEEInputsDSC,
   generateTEEInputsRegister,
-} from '@selfxyz/common/utils/circuits/registerInputs';
+} from '@selfxyz/common/utils';
 import {
   checkDocumentSupported,
   checkIfPassportDscIsInTree,
   isDocumentNullified,
   isUserRegistered,
   isUserRegisteredWithAlternativeCSCA,
-} from '@selfxyz/common/utils/passports/validate';
+} from '@selfxyz/common/utils';
 import {
   clientKey,
   clientPublicKeyHex,
@@ -37,7 +37,7 @@ import {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from '@selfxyz/common/utils/proving';
+} from '@selfxyz/common/utils';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   clearPassportData,
@@ -50,7 +50,7 @@ import {
 import {
   PassportEvents,
   ProofEvents,
-} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   useProtocolStore,
   useSelfAppStore,
@@ -129,7 +129,7 @@ const _generateCircuitInputs = (
       break;
     case 'disclose':
       ({ inputs, circuitName, endpointType, endpoint } =
-        generateTEEInputsDiscloseStateless(
+        generateTeeInputsDiscloseStateless(
           secret as string,
           passportData,
           selfApp as SelfApp,

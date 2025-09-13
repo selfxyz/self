@@ -4,12 +4,12 @@
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { SelfApp } from '@selfxyz/common/utils';
-import { generateTEEInputsDiscloseStateless } from '@selfxyz/common/utils/circuits/registerInputs';
+import { generateTeeInputsDiscloseStateless } from '@selfxyz/common/utils';
 
 import { useProtocolStore } from '../stores/protocolStore';
 
-export function generateTEEInputsDisclose(secret: string, passportData: PassportData, selfApp: SelfApp) {
-  return generateTEEInputsDiscloseStateless(secret, passportData, selfApp, (document: DocumentCategory, tree) => {
+export function generateTeeInputsDisclose(secret: string, passportData: PassportData, selfApp: SelfApp) {
+  return generateTeeInputsDiscloseStateless(secret, passportData, selfApp, (document: DocumentCategory, tree) => {
     const protocolStore = useProtocolStore.getState();
     const docStore = (protocolStore as any)[document];
     if (!docStore) {

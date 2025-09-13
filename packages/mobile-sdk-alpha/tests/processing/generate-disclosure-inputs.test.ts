@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PassportData, SelfApp } from '@selfxyz/common';
 
-import { generateTEEInputsDisclose } from '../../src/processing/generate-disclosure-inputs';
+import { generateTeeInputsDisclose } from '../../src/processing/generate-disclosure-inputs';
 import { useProtocolStore } from '../../src/stores/protocolStore';
 // Mocks for dependencies
 const mockSecret = '0x' + '00'.repeat(30) + 'a4ec'; // 32-byte hex string
@@ -103,7 +103,7 @@ vi.mock('../../src/stores/protocolStore', () => ({
   },
 }));
 
-describe('generateTEEInputsDisclose', () => {
+describe('generateTeeInputsDisclose', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -113,7 +113,7 @@ describe('generateTEEInputsDisclose', () => {
       unknown: undefined,
     } as any);
 
-    expect(() => generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
+    expect(() => generateTeeInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
       `Unknown or unloaded document category in protocol store: passport`,
     );
   });
@@ -128,7 +128,7 @@ describe('generateTEEInputsDisclose', () => {
       },
     } as any);
 
-    expect(() => generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
+    expect(() => generateTeeInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
       `Invalid OFAC tree structure: missing required fields`,
     );
   });
@@ -141,7 +141,7 @@ describe('generateTEEInputsDisclose', () => {
       },
     } as any);
 
-    expect(() => generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
+    expect(() => generateTeeInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
       `Invalid OFAC tree structure: missing required fields`,
     );
   });
@@ -154,7 +154,7 @@ describe('generateTEEInputsDisclose', () => {
       },
     } as any);
 
-    expect(() => generateTEEInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
+    expect(() => generateTeeInputsDisclose(mockSecret, mockPassportData, mockSelfApp)).toThrowError(
       'OFAC trees not loaded',
     );
   });

@@ -11,7 +11,7 @@ export {
   encryptAES256GCM,
   getPayload,
   getWSDbRelayerUrl,
-} from '@selfxyz/common/utils/proving';
+} from '@selfxyz/common/utils';
 
 // From loadingScreenStateText - used in loading screen
 export { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';

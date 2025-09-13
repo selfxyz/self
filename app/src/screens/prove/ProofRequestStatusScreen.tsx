@@ -10,7 +10,7 @@ import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import loadingAnimation from '@/assets/animations/loading/misc.json';

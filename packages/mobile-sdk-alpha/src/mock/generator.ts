@@ -3,8 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { IdDocInput } from '@selfxyz/common/utils';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { generateMockDSC, genMockIdDoc, initPassportDataParsing } from '@selfxyz/common/utils/passports';
+import { getSKIPEM } from '@selfxyz/common/utils';
+import { generateMockDSC, genMockIdDoc, initPassportDataParsing } from '@selfxyz/common/utils';
 
 export interface GenerateMockDocumentOptions {
   age: number;

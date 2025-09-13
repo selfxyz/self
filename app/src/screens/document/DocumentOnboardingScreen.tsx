@@ -8,7 +8,7 @@ import { StyleSheet } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useNavigation } from '@react-navigation/native';
 
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

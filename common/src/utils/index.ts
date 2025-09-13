@@ -28,6 +28,7 @@ export {
   hash,
   packBytesAndPoseidon,
 } from './hash.js';
+export { getPublicKey, verifyAttestation } from './attest.js';
 export {
   clientKey,
   clientPublicKeyHex,
@@ -57,8 +58,13 @@ export {
   generateCircuitInputsRegisterForTests,
   generateCircuitInputsVCandDisclose,
 } from './circuits/generateInputs.js';
+export { generateTeeInputsDiscloseStateless } from './circuits/registerInputs.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
 export { getSKIPEM } from './csca.js';
 export { initElliptic } from './certificate_parsing/elliptic.js';
 export { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 export { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData.js';
+export {
+  isUserRegistered,
+  isUserRegisteredWithAlternativeCSCA,
+} from './passports/validate.js';

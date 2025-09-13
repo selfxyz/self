@@ -36,7 +36,7 @@ export function generateTEEInputsDSC(
   return { inputs, circuitName, endpointType, endpoint };
 }
 
-export function generateTEEInputsDiscloseStateless(
+export function generateTeeInputsDiscloseStateless(
   secret: string,
   passportData: PassportData,
   selfApp: SelfApp,

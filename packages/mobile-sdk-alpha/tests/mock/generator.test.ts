@@ -7,11 +7,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '../../src/mock/generator';
 
 // Mock the external dependencies
-vi.mock('@selfxyz/common/utils/csca', () => ({
+vi.mock('@selfxyz/common/utils', () => ({
   getSKIPEM: vi.fn(),
 }));
 
-vi.mock('@selfxyz/common/utils/passports', () => ({
+vi.mock('@selfxyz/common/utils', () => ({
   generateMockDSC: vi.fn(),
   genMockIdDoc: vi.fn(),
   initPassportDataParsing: vi.fn(),
@@ -81,8 +81,8 @@ describe('generateMockDocument', () => {
     vi.clearAllMocks();
 
     // Import the mocked functions
-    const csca = await import('@selfxyz/common/utils/csca');
-    const passports = await import('@selfxyz/common/utils/passports');
+    const csca = await import('@selfxyz/common/utils');
+    const passports = await import('@selfxyz/common/utils');
     getSKIPEM = csca.getSKIPEM;
     generateMockDSC = passports.generateMockDSC;
     genMockIdDoc = passports.genMockIdDoc;
@@ -403,8 +403,8 @@ describe('generateMockDocument integration', () => {
     vi.clearAllMocks();
 
     // Import the mocked functions
-    const csca = await import('@selfxyz/common/utils/csca');
-    const passports = await import('@selfxyz/common/utils/passports');
+    const csca = await import('@selfxyz/common/utils');
+    const passports = await import('@selfxyz/common/utils');
     getSKIPEM = csca.getSKIPEM;
     generateMockDSC = passports.generateMockDSC;
     genMockIdDoc = passports.genMockIdDoc;

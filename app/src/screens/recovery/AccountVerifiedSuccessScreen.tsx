@@ -7,7 +7,7 @@ import React from 'react';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
-import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

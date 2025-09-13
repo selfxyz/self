@@ -5,7 +5,7 @@
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { SettingsEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { SettingsEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import { useModal } from '@/hooks/useModal';
 import { useNetInfo } from '@/hooks/useNetInfo';

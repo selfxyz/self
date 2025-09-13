@@ -13,7 +13,7 @@ import {
 } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';

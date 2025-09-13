@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
+import { DocumentCatalog, PassportData } from '@selfxyz/common/types';
 
 import { createSelfClient, defaultConfig, DocumentsAdapter, loadSelectedDocument, SelfClient } from '../../src';
 

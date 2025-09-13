@@ -58,7 +58,7 @@ import type {
   DocumentCatalog,
   DocumentMetadata,
   PassportData,
-} from '@selfxyz/common/utils/types';
+} from '@selfxyz/common/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 

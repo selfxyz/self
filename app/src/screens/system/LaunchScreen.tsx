@@ -8,7 +8,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
 
-import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { AppEvents } from '@selfxyz/mobile-sdk-alpha';
 
 import AbstractButton from '@/components/buttons/AbstractButton';
 import { BodyText } from '@/components/typography/BodyText';
