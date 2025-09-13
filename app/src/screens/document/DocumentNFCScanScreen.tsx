@@ -10,6 +10,7 @@ import {
   NativeModules,
   Platform,
   StyleSheet,
+  View,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
@@ -627,19 +628,21 @@ const DocumentNFCScanScreen: React.FC = () => {
           <>
             <TextsContainer>
               <GestureDetector gesture={devModeTap}>
-                <XStack
-                  justifyContent="space-between"
-                  alignItems="center"
-                  gap="$1.5"
-                >
-                  <Title>Verify your ID</Title>
-                  <Button
-                    unstyled
-                    onPress={goToNFCTrouble}
-                    icon={<CircleHelp size={28} color={slate500} />}
-                    aria-label="Help"
-                  />
-                </XStack>
+                <View collapsable={false}>
+                  <XStack
+                    justifyContent="space-between"
+                    alignItems="center"
+                    gap="$1.5"
+                  >
+                    <Title>Verify your ID</Title>
+                    <Button
+                      unstyled
+                      onPress={goToNFCTrouble}
+                      icon={<CircleHelp size={28} color={slate500} />}
+                      aria-label="Help"
+                    />
+                  </XStack>
+                </View>
               </GestureDetector>
               {isNfcEnabled ? (
                 <>

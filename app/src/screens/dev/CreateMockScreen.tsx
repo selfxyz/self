@@ -5,7 +5,7 @@
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -223,7 +223,9 @@ const CreateMockScreen: React.FC = () => {
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         <GestureDetector gesture={devModeTap}>
-          <HeroBanner />
+          <View collapsable={false}>
+            <HeroBanner />
+          </View>
         </GestureDetector>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
           <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>

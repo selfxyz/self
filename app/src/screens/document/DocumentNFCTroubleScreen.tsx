@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
+import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { YStack } from 'tamagui';
 
@@ -93,9 +94,11 @@ const DocumentNFCTroubleScreen: React.FC = () => {
         gap={20}
       >
         <GestureDetector gesture={devModeTap}>
-          <Caption size="large" color={slate500}>
-            Here are some tips to help you successfully scan the RFID chip:
-          </Caption>
+          <View collapsable={false}>
+            <Caption size="large" color={slate500}>
+              Here are some tips to help you successfully scan the RFID chip:
+            </Caption>
+          </View>
         </GestureDetector>
         <Tips items={tips} />
         <Caption size="large" color={slate500}>
