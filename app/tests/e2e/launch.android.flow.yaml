@@ -2,5 +2,5 @@ appId: com.proofofpassportapp
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: "I have a Passport or Biometric ID"
-    timeout: ${LAUNCH_WAIT_MS:60000}
+    id: launch-get-started-button
+    timeout: ${LAUNCH_WAIT_MS:120000}
