@@ -28,11 +28,10 @@ on:
 
 jobs:
   e2e-android:
-    if: false # Temporarily disable Android E2E until emulator disk issue resolved
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
-    timeout-minutes: 45
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -85,14 +84,35 @@ jobs:
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
-      - name: Cache Gradle packages
-        uses: ./.github/actions/cache-gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Install NDK
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: AVD cache
+        id: avd-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.ANDROID_API_LEVEL }}
+      - name: Create AVD snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.ANDROID_API_LEVEL }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: echo "Generated AVD snapshot for caching."
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -102,8 +122,10 @@ jobs:
         run: |
           echo "Building Android APK..."
           chmod +x app/android/gradlew
-          (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
+          (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
+      - name: Clean Gradle cache
+        run: rm -rf ~/.gradle/caches/*
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -111,7 +133,10 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
+          ram-size: 2048M
+          cores: 2
+          disk-size: 4096M
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           disable-animations: true
           script: |
             echo "Installing app on emulator..."
@@ -133,6 +158,14 @@ jobs:
           name: maestro-results-android
           path: app/maestro-results.xml
           if-no-files-found: warn
+      - name: Terminate crashpad_handler
+        if: always()
+        run: |
+          pkill -f -SIGTERM crashpad_handler || true
+          sleep 5
+          if pgrep -f crashpad_handler > /dev/null; then
+            pkill -f -SIGKILL crashpad_handler || true
+          fi
 
   e2e-ios:
     timeout-minutes: 45
