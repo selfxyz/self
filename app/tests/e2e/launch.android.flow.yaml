@@ -4,9 +4,9 @@ appId: com.proofofpassportapp
     clearState: true
     stopApp: true
     permissions:
-      - android.permission.POST_NOTIFICATIONS
-      - android.permission.CAMERA
-      - android.permission.RECORD_AUDIO
+      android.permission.POST_NOTIFICATIONS: allow
+      android.permission.CAMERA: allow
+      android.permission.RECORD_AUDIO: allow
 - waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
