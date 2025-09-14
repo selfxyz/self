@@ -90,6 +90,10 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+      - name: Free disk space
+        run: |
+          sudo rm -rf "$ANDROID_HOME/system-images" "$ANDROID_HOME/ndk" || true
+          rm -rf ~/.gradle/caches/* ~/.android/avd/* ~/.android/adb* || true
       - name: Install Android packages
         run: |
           sdkmanager "platform-tools" \
@@ -131,7 +135,7 @@ jobs:
         run: |
           echo "Building Android APK..."
           chmod +x app/android/gradlew
-          (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache) || { echo "❌ Android build failed"; exit 1; }
+            (cd app/android && ./gradlew assembleDebug --quiet --parallel) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
       - name: Clean Android/Gradle caches
         run: rm -rf ~/.gradle/caches/* ~/.android/adb*
