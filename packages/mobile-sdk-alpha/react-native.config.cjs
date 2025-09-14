@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 
 const packageRoot = fs.realpathSync(__dirname);
-const iosSourceDir = fs.realpathSync(path.join(packageRoot, 'ios'));
+const _iosSourceDir = fs.realpathSync(path.join(packageRoot, 'ios'));
 
 module.exports = {
   dependency: {
