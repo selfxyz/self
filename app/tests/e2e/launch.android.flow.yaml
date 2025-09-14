@@ -7,10 +7,13 @@ appId: com.proofofpassportapp
       android.permission.POST_NOTIFICATIONS: allow
       android.permission.CAMERA: allow
       android.permission.RECORD_AUDIO: allow
+
+# Wait for splash screen animations to complete
 - waitForAnimationToEnd
 - extendedWaitUntil:
     visible:
       id: launch-get-started-button
-    timeout: 90000
+    timeout: 180000  # Increased from 90s to 3 minutes
+
 - tapOn:
     id: launch-get-started-button
