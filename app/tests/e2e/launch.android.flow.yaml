@@ -1,18 +1,17 @@
 appId: com.proofofpassportapp
-name: Launch
-onFlowStart:
-  - launchApp:
-      clearState: true
-      stopApp: true
-      permissions:
-        - android.permission.POST_NOTIFICATIONS
-        - android.permission.CAMERA
-        - android.permission.RECORD_AUDIO
-steps:
-  - waitForAnimationToEnd
-  - waitFor:
-      visible:
-        id: launch-get-started-button
-      timeout: 90000
-  - tapOn:
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+    permissions:
+      - android.permission.POST_NOTIFICATIONS
+      - android.permission.CAMERA
+      - android.permission.RECORD_AUDIO
+- waitForAnimationToEnd
+- extendedWaitUntil:
+    visible:
       id: launch-get-started-button
+    timeout: 90000
+- tapOn:
+    id: launch-get-started-button
+
