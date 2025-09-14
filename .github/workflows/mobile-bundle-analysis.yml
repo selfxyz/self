@@ -17,7 +17,7 @@ on:
 
 jobs:
   analyze-android:
-    runs-on: macos-14
+    runs-on: macos-latest-large
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
@@ -80,7 +80,7 @@ jobs:
         working-directory: ./app
 
   analyze-ios:
-    runs-on: macos-14
+    runs-on: macos-latest-large
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version

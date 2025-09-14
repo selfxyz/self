@@ -36,6 +36,7 @@ concurrency:
 jobs:
   build-deps:
     runs-on: macos-latest-large
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
@@ -92,6 +93,7 @@ jobs:
   test:
     runs-on: macos-latest-large
     needs: build-deps
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version
@@ -193,6 +195,7 @@ jobs:
   build-ios:
     runs-on: macos-latest-large
     needs: build-deps
+    timeout-minutes: 60
     env:
       # iOS project configuration - hardcoded for CI stability
       IOS_PROJECT_NAME: "Self"
@@ -381,6 +384,7 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     needs: build-deps
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Read and sanitize Node.js version

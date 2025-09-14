@@ -14,8 +14,7 @@
     "bump-version:major": "npm version major && yarn sync-versions",
     "bump-version:minor": "npm version minor && yarn sync-versions",
     "bump-version:patch": "npm version patch && yarn sync-versions",
-    "clean": "yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:android && yarn clean:xcode && yarn clean:pod-cache && yarn clean:node",
-    "clean:android": "rm -rf android/app/build android/build",
+    "clean": "yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:xcode && yarn clean:pod-cache && yarn clean:node",
     "clean:build": "rm -rf ios/build android/app/build android/build",
     "clean:ios": "rm -rf ios/Pods ios/Podfile.lock Gemfile.lock",
     "clean:node": "rm -rf ../node_modules app/node_modules",
@@ -31,7 +30,6 @@
     "imports:fix": "node ./scripts/alias-imports.cjs",
     "install-app": "yarn install-app:setup && yarn clean:xcode-env-local",
     "install-app:mobile-deploy": "yarn install && yarn build:deps && yarn clean:xcode-env-local",
-    "install-app:mobile-deploy:ios": "yarn install-app:setup && yarn clean:xcode-env-local",
     "install-app:setup": "yarn install && yarn build:deps && cd ios && bundle install && scripts/pod-install-with-cache-fix.sh && cd ..",
     "ios": "yarn build:deps && react-native run-ios --scheme OpenPassport",
     "ios:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose ios internal_test",
@@ -51,6 +49,7 @@
     "release:patch": "./scripts/release.sh patch",
     "setup": "yarn clean:build && yarn install && yarn build:deps && cd ios && bundle install && bundle exec pod install --repo-update && cd .. && yarn clean:xcode-env-local",
     "start": "watchman watch-del-all && react-native start",
+    "start:clean": "watchman watch-del-all && cd android && ./gradlew clean && cd .. && react-native start --reset-cache",
     "sync-versions": "bundle exec fastlane ios sync_version && bundle exec fastlane android sync_version",
     "tag:release": "node scripts/tag.cjs release",
     "tag:remove": "node scripts/tag.cjs remove",
@@ -200,5 +199,11 @@
   "packageManager": "yarn@4.6.0",
   "engines": {
     "node": ">=22 <23"
+  },
+  "resolutions": {
+    "punycode": "npm:punycode.js@^2.3.1"
+  },
+  "overrides": {
+    "punycode": "npm:punycode.js@^2.3.1"
   }
 }
