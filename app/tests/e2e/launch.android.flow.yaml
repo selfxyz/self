@@ -13,7 +13,7 @@ appId: com.proofofpassportapp
 - extendedWaitUntil:
     visible:
       id: launch-get-started-button
-    timeout: 180000  # Increased from 90s to 3 minutes
+    timeout: 180000 # Increased from 90s to 3 minutes
 
 - tapOn:
     id: launch-get-started-button
