@@ -137,8 +137,8 @@ jobs:
           chmod +x app/android/gradlew
             (cd app/android && ./gradlew assembleDebug --quiet --parallel) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
-      - name: Clean Android/Gradle caches
-        run: rm -rf ~/.gradle/caches/* ~/.android/adb*
+      - name: Clean Android caches
+        run: rm -rf ~/.android/adb*
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -146,7 +146,7 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          ram-size: 2048M
+          ram-size: 3072M
           cores: 2
           disk-size: 4096M
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -partition-size 4096
@@ -157,18 +157,31 @@ jobs:
             adb install -r app/android/app/build/outputs/apk/debug/app-debug.apk || { echo "❌ App installation failed"; exit 1; }
             echo "✅ App installed successfully"
 
-            echo "⏰ Giving the emulator a moment to settle..."
-            sleep 5
+            echo "⏰ Warming up app process..."
+            adb shell pm list packages | grep com.proofofpassportapp || { echo "app not installed"; exit 1; }
+            adb shell monkey -p com.proofofpassportapp -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+            sleep 3
+
+            echo "🧹 Clearing logcat..."
+            adb logcat -c || true
 
             echo "🎭 Running Maestro tests..."
-            export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
+            export MAESTRO_DRIVER_STARTUP_TIMEOUT=240000
+            set +e
             maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
+            TEST_EXIT=$?
+            adb logcat -d > app/maestro-logcat.txt || true
+            maestro hierarchy --app com.proofofpassportapp > app/maestro-hierarchy.txt || true
+            exit $TEST_EXIT
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: maestro-results-android
-          path: app/maestro-results.xml
+          name: maestro-artifacts-android
+          path: |
+            app/maestro-results.xml
+            app/maestro-logcat.txt
+            app/maestro-hierarchy.txt
           if-no-files-found: warn
       - name: Terminate crashpad_handler
         if: always()
