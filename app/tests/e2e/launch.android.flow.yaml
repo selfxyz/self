@@ -14,4 +14,3 @@ appId: com.proofofpassportapp
     timeout: 90000
 - tapOn:
     id: launch-get-started-button
-
