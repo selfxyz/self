@@ -90,6 +90,13 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+          packages: |
+            tools
+            platform-tools
+            platforms;android-${{ env.ANDROID_API_LEVEL }}
+            build-tools;35.0.0
+            emulator
+            system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -110,6 +117,8 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
+          arch: x86_64
+          target: google_apis
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: echo "Generated AVD snapshot for caching."
@@ -124,8 +133,8 @@ jobs:
           chmod +x app/android/gradlew
           (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
-      - name: Clean Gradle cache
-        run: rm -rf ~/.gradle/caches/*
+      - name: Clean Android/Gradle caches
+        run: rm -rf ~/.gradle/caches/* ~/.android/adb*
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -136,7 +145,7 @@ jobs:
           ram-size: 2048M
           cores: 2
           disk-size: 4096M
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -partition-size 4096
           disable-animations: true
           script: |
             echo "Installing app on emulator..."
