@@ -16,9 +16,9 @@ type VcAndDiscloseProof struct {
 
 // VerificationConfig represents the configuration for verification
 type VerificationConfig struct {
-	MinimumAge        int                        `json:"minimumAge,omitempty"`
+	MinimumAge        int                         `json:"minimumAge,omitempty"`
 	ExcludedCountries []common.Country3LetterCode `json:"excludedCountries,omitempty"`
-	Ofac              bool                       `json:"ofac,omitempty"`
+	Ofac              bool                        `json:"ofac,omitempty"`
 }
 
 // IsValidDetails contains the validation results
