@@ -158,59 +158,173 @@ jobs:
           (cd android && ./gradlew assembleRelease --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
           echo " Android build succeeded"
 
-      # Run E2E tests on Android emulator
-      - name: Install and Test on Android
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
-          arch: x86_64
-          target: google_apis
-          force-avd-creation: false
-          emulator-boot-timeout: 900
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
-          disable-animations: true
-          script: |
-            echo "Installing app on emulator..."
-            APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
-            [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
-            adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
-            echo " App installed successfully"
+      # Manual emulator setup for better debugging and control
+      - name: Create Android Virtual Device
+        run: |
+          echo "Creating AVD with manual setup..."
+          echo "Available system images:"
+          sdkmanager --list | grep "system-images;android-${{ env.ANDROID_API_LEVEL }}" | head -5
 
-            echo " Warming up app process..."
-            adb shell pm list packages | grep com.proofofpassportapp || { echo "app not installed"; exit 1; }
-            adb shell monkey -p com.proofofpassportapp -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
-            sleep 3
+          # Create AVD manually with explicit configuration
+          echo "no" | avdmanager create avd \
+            --force \
+            --name ci_emulator \
+            --abi google_apis/x86_64 \
+            --package "system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64"
 
-            echo " Clearing logcat..."
-            adb logcat -c || true
+          echo "AVD created successfully"
+          avdmanager list avd
 
-            #  Retry mechanism for flaky tests
-            echo " Running Maestro tests with retry logic..."
-            export MAESTRO_DRIVER_STARTUP_TIMEOUT=240000
+      - name: Start Android Emulator
+        run: |
+          echo "Starting emulator with optimized settings..."
+          echo "Available emulator binaries:"
+          ls -la $ANDROID_HOME/emulator/
 
-            for attempt in 1 2 3; do
-              echo "Test attempt $attempt of 3..."
-              set +e
-              maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
-              TEST_EXIT=$?
-              set -e
+          # Start emulator in background with optimized settings for CI
+          nohup $ANDROID_HOME/emulator/emulator \
+            -avd ci_emulator \
+            -no-window \
+            -gpu swiftshader_indirect \
+            -noaudio \
+            -no-boot-anim \
+            -camera-back none \
+            -camera-front none \
+            -memory 6144 \
+            -cores 2 \
+            -accel on \
+            -no-snapshot-save \
+            -partition-size 4096 \
+            -verbose \
+            > emulator.log 2>&1 &
 
-              if [ $TEST_EXIT -eq 0 ]; then
-                echo " Tests passed on attempt $attempt"
-                break
-              elif [ $attempt -eq 3 ]; then
-                echo "❌ Tests failed after 3 attempts"
-              else
-                echo " Attempt $attempt failed, retrying..."
-                sleep 10
-              fi
-            done
+          echo "Emulator started in background, PID: $!"
+          echo "Emulator log location: $(pwd)/emulator.log"
 
-            adb logcat -d > app/maestro-logcat.txt || true
-            maestro hierarchy --app com.proofofpassportapp > app/maestro-hierarchy.txt || true
-            exit $TEST_EXIT
+      - name: Wait for Emulator Boot
+        run: |
+          echo "Waiting for emulator to boot..."
+          boot_timeout=900  # 15 minutes
+          boot_counter=0
+
+          # Wait for device to be detected
+          echo "Waiting for device detection..."
+          while [ $boot_counter -lt $boot_timeout ]; do
+            if adb devices | grep -q "emulator-"; then
+              echo "Device detected after ${boot_counter}s"
+              break
+            fi
+            if [ $((boot_counter % 30)) -eq 0 ]; then
+              echo "Still waiting for device... (${boot_counter}s elapsed)"
+              echo "Current devices:"
+              adb devices
+              echo "Emulator log tail:"
+              tail -10 emulator.log || echo "No emulator log yet"
+            fi
+            sleep 2
+            boot_counter=$((boot_counter + 2))
+          done
+
+          if [ $boot_counter -ge $boot_timeout ]; then
+            echo "❌ Device detection timeout after ${boot_timeout}s"
+            echo "Final emulator log:"
+            cat emulator.log || echo "No emulator log available"
+            exit 1
+          fi
+
+          # Wait for boot completion
+          echo "Device detected, waiting for boot completion..."
+          adb wait-for-device
+
+          boot_counter=0
+          while [ $boot_counter -lt $boot_timeout ]; do
+            boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || echo "")
+            if [ "$boot_completed" = "1" ]; then
+              echo "Boot completed after ${boot_counter}s"
+              break
+            fi
+            if [ $((boot_counter % 30)) -eq 0 ]; then
+              echo "Still waiting for boot completion... (${boot_counter}s elapsed)"
+              echo "Boot status: '$boot_completed'"
+            fi
+            sleep 2
+            boot_counter=$((boot_counter + 2))
+          done
+
+          if [ $boot_counter -ge $boot_timeout ]; then
+            echo "❌ Boot completion timeout after ${boot_timeout}s"
+            echo "Final boot status: '$boot_completed'"
+            echo "Final emulator log:"
+            tail -50 emulator.log || echo "No emulator log available"
+            exit 1
+          fi
+
+          # Final readiness check
+          echo "Performing final readiness check..."
+          adb shell input keyevent 82  # Menu key to wake up
+          sleep 2
+
+          echo "✅ Emulator ready!"
+          echo "Final device status:"
+          adb devices
+          echo "System properties:"
+          adb shell getprop | grep -E "(boot|sys|init)" | head -10
+
+      - name: Install and Test App on Emulator
+        run: |
+          echo "Installing app on emulator..."
+          APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
+          [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+          adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
+          echo "✅ App installed successfully"
+
+          echo "Warming up app process..."
+          adb shell pm list packages | grep com.proofofpassportapp || { echo "app not installed"; exit 1; }
+          adb shell monkey -p com.proofofpassportapp -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+          sleep 3
+
+          echo "Clearing logcat..."
+          adb logcat -c || true
+
+          echo "Running Maestro tests with retry logic..."
+          export MAESTRO_DRIVER_STARTUP_TIMEOUT=240000
+
+          for attempt in 1 2 3; do
+            echo "Test attempt $attempt of 3..."
+            set +e
+            maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
+            TEST_EXIT=$?
+            set -e
+
+            if [ $TEST_EXIT -eq 0 ]; then
+              echo "✅ Tests passed on attempt $attempt"
+              break
+            elif [ $attempt -eq 3 ]; then
+              echo "❌ Tests failed after 3 attempts"
+            else
+              echo "⚠️ Attempt $attempt failed, retrying..."
+              sleep 10
+            fi
+          done
+
+          # Collect debug information
+          adb logcat -d > app/maestro-logcat.txt || true
+          maestro hierarchy --app com.proofofpassportapp > app/maestro-hierarchy.txt || true
+
+          # Save emulator log for debugging
+          cp emulator.log app/emulator.log || true
+
+          exit $TEST_EXIT
         env:
           E2E_BUILD: "true"
+
+      - name: Cleanup Emulator
+        if: always()
+        run: |
+          echo "Cleaning up emulator..."
+          adb emu kill || true
+          pkill -f "emulator" || true
+          sleep 5
 
       - name: Upload test results
         if: always()
@@ -221,6 +335,7 @@ jobs:
             app/maestro-results.xml
             app/maestro-logcat.txt
             app/maestro-hierarchy.txt
+            app/emulator.log
           if-no-files-found: warn
       - name: Terminate crashpad_handler
         if: always()
