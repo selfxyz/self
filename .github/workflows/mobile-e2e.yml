@@ -143,19 +143,7 @@ jobs:
             ~/.android/adb*
           key: avd-${{ env.ANDROID_API_LEVEL }}
 
-          # Better emulator stability
-      - name: Create AVD snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ env.ANDROID_API_LEVEL }}
-          arch: x86_64
-          target: google_apis
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -memory 3072 -cores 2 -accel on
-          script: echo "Generated AVD snapshot for caching."
-
-      #  Use cached dependencies (only build if cache miss)
+      # Use cached dependencies (only build if cache miss)
       - name: Build dependencies (cache miss only)
         if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
@@ -173,7 +161,7 @@ jobs:
           (cd android && ./gradlew assembleDebug --quiet --parallel) || { echo "❌ Android build failed"; exit 1; }
           echo " Android build succeeded"
 
-      #  Better emulator configuration and retry logic
+      # Run E2E tests on Android emulator
       - name: Install and Test on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -181,10 +169,9 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          ram-size: 3072M
-          cores: 2
-          disk-size: 4096M
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -partition-size 4096 -memory 3072 -cores 2 -accel on
+          ram-size: 2048M
+          heap-size: 512M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
           disable-animations: true
           script: |
             echo "Installing app on emulator..."
