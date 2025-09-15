@@ -161,26 +161,106 @@ jobs:
       # Manual emulator setup for better debugging and control
       - name: Create Android Virtual Device
         run: |
-          echo "Creating AVD with manual setup..."
-          echo "Available system images:"
-          sdkmanager --list | grep "system-images;android-${{ env.ANDROID_API_LEVEL }}" | head -5
+          echo "=== Creating AVD with manual setup ==="
 
-          # Create AVD manually with explicit configuration
+          echo "Android SDK locations:"
+          echo "ANDROID_HOME: $ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+          echo "HOME: $HOME"
+          ls -la $HOME/.android/ || echo "No .android directory yet"
+
+          echo "Available system images:"
+          sdkmanager --list | grep "system-images;android-${{ env.ANDROID_API_LEVEL }}" | head -10
+
+          echo "Checking if required system image is installed:"
+          SYSTEM_IMAGE="system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64"
+          echo "Looking for: $SYSTEM_IMAGE"
+
+          if ! sdkmanager --list | grep -q "^$SYSTEM_IMAGE"; then
+            echo "System image not found in installed packages. Installing..."
+            sdkmanager "$SYSTEM_IMAGE" || { echo "❌ Failed to install system image"; exit 1; }
+          else
+            echo "✅ System image already installed"
+          fi
+
+          echo "Ensuring SDK licenses are accepted..."
+          yes | sdkmanager --licenses || echo "License acceptance completed (some may have been already accepted)"
+
+          echo "Creating AVD directory structure..."
+          mkdir -p "$HOME/.android/avd" || { echo "❌ Failed to create AVD directory"; exit 1; }
+
+          echo "Attempting to create AVD..."
+          set -x  # Enable command tracing
+
+          # Method 1: Standard creation with input
           echo "no" | avdmanager create avd \
             --force \
             --name ci_emulator \
             --abi google_apis/x86_64 \
-            --package "system-images;android-${{ env.ANDROID_API_LEVEL }};google_apis;x86_64"
+            --package "$SYSTEM_IMAGE" || {
+              echo "❌ Method 1 failed, trying method 2..."
 
-          echo "AVD created successfully"
+              # Method 2: Creation with device specification
+              avdmanager create avd \
+                --force \
+                --name ci_emulator \
+                --abi google_apis/x86_64 \
+                --package "$SYSTEM_IMAGE" \
+                --device "pixel" < /dev/null || {
+                echo "❌ Method 2 failed, trying method 3..."
+
+                # Method 3: Accept all prompts automatically
+                yes '' | timeout 30 avdmanager create avd \
+                  --force \
+                  --name ci_emulator \
+                  --abi google_apis/x86_64 \
+                  --package "$SYSTEM_IMAGE" || {
+                  echo "❌ All AVD creation methods failed"
+                  echo "Detailed debugging:"
+                  echo "Java version:"
+                  java -version
+                  echo "Available packages:"
+                  sdkmanager --list | grep -E "(system-images|platforms)" | head -20
+                  echo "SDK manager licenses:"
+                  sdkmanager --licenses
+                  exit 1
+                }
+              }
+            }
+          set +x  # Disable command tracing
+
+          echo "Verifying AVD creation..."
+          if avdmanager list avd | grep -q "ci_emulator"; then
+            echo "✅ AVD created successfully"
+          else
+            echo "❌ AVD creation verification failed"
+            echo "Available AVDs:"
+            avdmanager list avd
+            echo "AVD directory contents:"
+            ls -la "$HOME/.android/avd/" || echo "AVD directory not found"
+            exit 1
+          fi
+
+          echo "Final AVD list:"
           avdmanager list avd
 
       - name: Start Android Emulator
         run: |
-          echo "Starting emulator with optimized settings..."
+          echo "=== Starting emulator with optimized settings ==="
+
+          echo "Verifying AVD exists before starting..."
+          if ! avdmanager list avd | grep -q "ci_emulator"; then
+            echo "❌ AVD 'ci_emulator' not found!"
+            echo "Available AVDs:"
+            avdmanager list avd
+            exit 1
+          fi
+          echo "✅ AVD 'ci_emulator' confirmed to exist"
+
           echo "Available emulator binaries:"
           ls -la $ANDROID_HOME/emulator/
 
+          echo "Starting emulator in background..."
           # Start emulator in background with optimized settings for CI
           nohup $ANDROID_HOME/emulator/emulator \
             -avd ci_emulator \
@@ -190,7 +270,7 @@ jobs:
             -no-boot-anim \
             -camera-back none \
             -camera-front none \
-            -memory 6144 \
+            -memory 4096 \
             -cores 2 \
             -accel on \
             -no-snapshot-save \
@@ -198,8 +278,14 @@ jobs:
             -verbose \
             > emulator.log 2>&1 &
 
-          echo "Emulator started in background, PID: $!"
+          EMULATOR_PID=$!
+          echo "✅ Emulator started in background, PID: $EMULATOR_PID"
           echo "Emulator log location: $(pwd)/emulator.log"
+
+          # Give emulator a moment to start writing to log
+          sleep 5
+          echo "Initial emulator log:"
+          head -20 emulator.log || echo "No log output yet"
 
       - name: Wait for Emulator Boot
         run: |
@@ -308,13 +394,13 @@ jobs:
           done
 
           # Collect debug information
-          adb logcat -d > app/maestro-logcat.txt || true
-          maestro hierarchy --app com.proofofpassportapp > app/maestro-hierarchy.txt || true
+            adb logcat -d > app/maestro-logcat.txt || true
+            maestro hierarchy --app com.proofofpassportapp > app/maestro-hierarchy.txt || true
 
           # Save emulator log for debugging
           cp emulator.log app/emulator.log || true
 
-          exit $TEST_EXIT
+            exit $TEST_EXIT
         env:
           E2E_BUILD: "true"
 
@@ -535,8 +621,8 @@ jobs:
             echo "Creating reliable CI simulator..."
             SIMULATOR_ID=$(xcrun simctl create "CI-iPhone" "iPhone 15" 2>/dev/null || xcrun simctl create "CI-iPhone-SE" "iPhone SE (3rd generation)")
             if [ -z "$SIMULATOR_ID" ]; then
-              echo "❌ Failed to create simulator"
-              exit 1
+                echo "❌ Failed to create simulator"
+                exit 1
             fi
             SIMULATOR_NAME="CI-iPhone"
           fi
@@ -551,7 +637,7 @@ jobs:
             sleep 5
             xcrun simctl boot "$SIMULATOR_ID" || {
               echo "❌ Failed to boot simulator after retry"
-              exit 1
+            exit 1
             }
           }
 
