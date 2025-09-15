@@ -92,9 +92,6 @@ jobs:
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
         # Cache Gradle Dependencies
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
@@ -158,7 +155,7 @@ jobs:
         run: |
           echo "Building Android APK..."
           chmod +x android/gradlew
-          (cd android && ./gradlew assembleDebug --quiet --parallel) || { echo "❌ Android build failed"; exit 1; }
+          (cd android && ./gradlew assembleRelease --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
           echo " Android build succeeded"
 
       # Run E2E tests on Android emulator
@@ -169,14 +166,14 @@ jobs:
           arch: x86_64
           target: google_apis
           force-avd-creation: false
-          ram-size: 2048M
-          heap-size: 512M
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          emulator-boot-timeout: 900
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
           disable-animations: true
           script: |
             echo "Installing app on emulator..."
-            test -f app/android/app/build/outputs/apk/debug/app-debug.apk || { echo "❌ APK not found at app/android/app/build/outputs/apk/debug/app-debug.apk"; exit 1; }
-            adb install -r app/android/app/build/outputs/apk/debug/app-debug.apk || { echo "❌ App installation failed"; exit 1; }
+            APK_PATH="app/android/app/build/outputs/apk/release/app-release.apk"
+            [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+            adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
             echo " App installed successfully"
 
             echo " Warming up app process..."
@@ -212,6 +209,8 @@ jobs:
             adb logcat -d > app/maestro-logcat.txt || true
             maestro hierarchy --app com.proofofpassportapp > app/maestro-hierarchy.txt || true
             exit $TEST_EXIT
+        env:
+          E2E_BUILD: "true"
 
       - name: Upload test results
         if: always()
