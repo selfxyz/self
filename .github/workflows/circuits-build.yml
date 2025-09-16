@@ -16,7 +16,7 @@ on:
         type: string
         default: ''
       circuit-name:
-        description: 'Single circuit to build by name (e.g., register_sha256_sha224_sha224_ecdsa_secp224r1). Cannot be used with circuit-type.'
+        description: 'Circuit names to build (comma-separated: register_sha256_sha224_sha224_ecdsa_secp224r1, dsc_sha256_rsa_65537_4096). Cannot be used with circuit-type.'
         required: false
         type: string
         default: ''
@@ -173,9 +173,16 @@ jobs:
 
           # Check what type of build to perform
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-name }}" != "" ]]; then
-            # Build single circuit by name
-            echo "Building single circuit: ${{ inputs.circuit-name }}"
-            ./circuits/scripts/build/build_single_circuit.sh "${{ inputs.circuit-name }}"
+            # Build circuits by name
+            INPUT_CIRCUITS="${{ inputs.circuit-name }}"
+            INPUT_CIRCUITS=$(echo "$INPUT_CIRCUITS" | tr -d ' ')
+            IFS=',' read -ra CIRCUITS_ARRAY <<< "$INPUT_CIRCUITS"
+
+            echo "Building selected circuits: ${{ inputs.circuit-name }}"
+            for circuit_name in "${CIRCUITS_ARRAY[@]}"; do
+              echo "Building circuit: $circuit_name"
+              ./circuits/scripts/build/build_single_circuit.sh "$circuit_name"
+            done
 
           elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-type }}" != "" ]]; then
             # Build circuits by type
