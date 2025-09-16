@@ -13,9 +13,7 @@ let QRScanner: QRScannerBridge | null = null;
 if (Platform.OS === 'ios') {
   QRScanner = NativeModules.QRScannerBridge || null;
 } else if (Platform.OS === 'android') {
-  // Android implementation would go here if needed
-  // For now, we'll focus on iOS
-  QRScanner = null;
+  QRScanner = NativeModules.QRCodeScanner || null;
 } else {
   console.warn('QRScanner: Unsupported platform');
   QRScanner = null;
