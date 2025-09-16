@@ -7,9 +7,9 @@ import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { navigationRef } from '@/navigation';
-import { useSelfAppStore } from '@/stores/selfAppStore';
 import useUserStore from '@/stores/userStore';
 
 // Validation patterns for each expected parameter

@@ -77,6 +77,16 @@ export { SelfClientContext, SelfClientProvider, useSelfClient } from './context'
 // Components
 export { SelfMobileSdk } from './entry';
 
+// Documents utils
+export {
+  clearPassportData,
+  getAllDocuments,
+  hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+} from './documents/utils';
+
 export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
@@ -88,8 +98,9 @@ export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
+export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
+
 // Documents utils
-export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';

@@ -1,31 +1,30 @@
-import { calculateAge, generateTestData, testCustomData } from './utils.js';
-import {
-  convertBigIntToByteArray,
-  decompressByteArray,
-  splitToWords,
-  extractPhoto,
-} from '@anon-aadhaar/core';
-import { bufferToHex, Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';
-import { sha256Pad } from '@zk-email/helpers/dist/sha-utils.js';
-import { testQRData } from './assets/dataInput.js';
-import { stringToAsciiArray } from './utils.js';
-import { packBytesAndPoseidon } from '../hash.js';
-import { poseidon5 } from 'poseidon-lite';
 import forge from 'node-forge';
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { SMT } from '@openpassport/zk-kit-smt';
+import { poseidon5 } from 'poseidon-lite';
+import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
 import { findIndexInTree, formatInput } from '../circuits/generateInputs.js';
+import { packBytesAndPoseidon } from '../hash.js';
 import {
   generateMerkleProof,
   generateSMTProof,
   getNameDobLeafAadhaar,
   getNameYobLeafAahaar,
 } from '../trees.js';
-
-import { COMMITMENT_TREE_DEPTH } from '../../constants/constants.js';
+import { testQRData } from './assets/dataInput.js';
+import {
+  calculateAge,
+  generateTestData,
+  stringToAsciiArray,
+  testCustomData,
+} from './utils.js';
 import { extractQRDataFields } from './utils.js';
 import { AadhaarField, createSelector } from './constants.js';
 import { formatCountriesList } from '../circuits/formatInputs.js';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
+import { convertBigIntToByteArray, decompressByteArray, extractPhoto, splitToWords } from '@anon-aadhaar/core';
+import { sha256Pad } from '@zk-email/helpers/dist/sha-utils.js';
+import { bufferToHex, Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';
+
 
 // Helper function to compute padded name
 function computePaddedName(name: string): number[] {

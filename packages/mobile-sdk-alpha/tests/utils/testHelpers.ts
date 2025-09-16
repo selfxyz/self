@@ -57,6 +57,8 @@ export const mockDocuments: DocumentsAdapter = {
   loadDocumentCatalog: async () => ({ documents: [] }),
   loadDocumentById: async () => null,
   saveDocumentCatalog: () => Promise.resolve(),
+  saveDocument: () => Promise.resolve(),
+  deleteDocument: () => Promise.resolve(),
 };
 
 const mockAuth = {

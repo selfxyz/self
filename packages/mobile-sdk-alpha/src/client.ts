@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCatalog } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
 
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
@@ -197,6 +197,12 @@ export function createSelfClient({
     },
     saveDocumentCatalog: async (catalog: DocumentCatalog) => {
       return _adapters.documents.saveDocumentCatalog(catalog);
+    },
+    deleteDocument: async (id: string) => {
+      return _adapters.documents.deleteDocument(id);
+    },
+    saveDocument: async (id: string, passportData: PassportData) => {
+      return _adapters.documents.saveDocument(id, passportData);
     },
   };
 }

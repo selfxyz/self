@@ -29,7 +29,7 @@ export function calculateUserIdentifierHash(
   destChainID: number,
   userID: string,
   userDefinedData: string
-): BigInt {
+): bigint {
   const solidityPackedUserContextData = getSolidityPackedUserContextData(
     destChainID,
     userID,
@@ -133,7 +133,8 @@ export function getSolidityPackedUserContextData(
     ['bytes32', 'bytes32', 'bytes'],
     [
       ethers.zeroPadValue(ethers.toBeHex(destChainID), 32),
-      ethers.zeroPadValue('0x' + userIdHex, 32),
+
+      ethers.zeroPadValue(userIdHex.startsWith('0x') ? userIdHex : '0x' + userIdHex, 32),
       ethers.toUtf8Bytes(userDefinedData),
     ]
   );

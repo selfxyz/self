@@ -144,6 +144,7 @@ jobs:
           chmod +x circuits/scripts/build/build_cpp.sh && \
           ./circuits/scripts/build/build_cpp.sh register &&
           ./circuits/scripts/build/build_cpp.sh register_id &&
+          ./circuits/scripts/build/build_cpp.sh register_aadhaar &&
           ./circuits/scripts/build/build_cpp.sh disclose &&
           ./circuits/scripts/build/build_cpp.sh dsc
 

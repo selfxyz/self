@@ -14,6 +14,7 @@ import {
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -26,7 +27,6 @@ import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import QRScan from '@/images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { useSelfAppStore } from '@/stores/selfAppStore';
 import { black, slate800, white } from '@/utils/colors';
 import { parseAndValidateUrlParams } from '@/utils/deeplinks';
 

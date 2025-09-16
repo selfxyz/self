@@ -220,6 +220,36 @@ const config = {
     ],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
+
+    // Custom resolver to handle Node.js modules elegantly
+    resolveRequest: (context, moduleName, platform) => {
+      // Handle problematic Node.js modules that don't work in React Native
+      const nodeModuleRedirects = {
+        crypto: require.resolve('crypto-browserify'),
+        fs: false, // Disable filesystem access
+        os: false, // Disable OS-specific modules
+        readline: false, // Disable readline module
+        constants: require.resolve('constants-browserify'),
+        path: require.resolve('path-browserify'),
+      };
+
+      if (
+        Object.prototype.hasOwnProperty.call(nodeModuleRedirects, moduleName)
+      ) {
+        if (nodeModuleRedirects[moduleName] === false) {
+          // Return empty module for disabled modules
+          return { type: 'empty' };
+        }
+        // Redirect to polyfill
+        return {
+          type: 'sourceFile',
+          filePath: nodeModuleRedirects[moduleName],
+        };
+      }
+
+      // Fall back to default Metro resolver for all other modules
+      return context.resolveRequest(context, moduleName, platform);
+    },
   },
   watchFolders,
 };

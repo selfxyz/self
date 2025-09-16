@@ -52,8 +52,8 @@
     "demo:ios": "yarn workspace demo-app ios",
     "demo:start": "yarn workspace demo-app start",
     "demo:test": "yarn workspace demo-app test",
-    "fmt": "prettier --check .",
-    "fmt:fix": "prettier --write .",
+    "fmt": "yarn prettier --check .",
+    "fmt:fix": "yarn prettier --write .",
     "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@selfxyz/common": "workspace:^",
-    "tslib": "^2.6.2",
+    "socket.io-client": "^4.8.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

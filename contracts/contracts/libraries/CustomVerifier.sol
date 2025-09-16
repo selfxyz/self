@@ -4,7 +4,6 @@ pragma solidity 0.8.28;
 import {CircuitAttributeHandlerV2} from "./CircuitAttributeHandlerV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
 import {SelfStructs} from "./SelfStructs.sol";
-import {Formatter} from "./Formatter.sol";
 import {GenericFormatter} from "./GenericFormatter.sol";
 
 library CustomVerifier {

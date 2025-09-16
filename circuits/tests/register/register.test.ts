@@ -8,7 +8,7 @@ import serialized_dsc_tree from '@selfxyz/common/pubkeys/serialized_dsc_tree.jso
 import { PASSPORT_ATTESTATION_ID } from '@selfxyz/common/constants/constants';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
-import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/generateInputs';
+import { generateCircuitInputsRegisterForTests } from '@selfxyz/common/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '@selfxyz/common/utils/passports/genMockPassportData';
 import { generateCommitment, generateNullifier } from '@selfxyz/common/utils/passports/passport';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
@@ -48,7 +48,7 @@ testSuite.forEach(
 
       const secret = poseidon6('SECRET'.split('').map((x) => BigInt(x.charCodeAt(0)))).toString();
 
-      const inputs = generateCircuitInputsRegister(
+      const inputs = generateCircuitInputsRegisterForTests(
         secret,
         passportData,
         serialized_dsc_tree as string
