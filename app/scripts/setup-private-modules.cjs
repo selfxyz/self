@@ -18,17 +18,18 @@ const BRANCH = 'main';
 
 // Environment detection
 const isCI = process.env.CI === 'true';
-const githubToken = process.env.GITHUB_TOKEN;
+const repoToken = process.env.SELFXYZ_INTERNAL_REPO_PAT;
 const isDryRun = process.env.DRY_RUN === 'true';
 
 function log(message, type = 'info') {
-  const prefix = {
-    info: '🔧',
-    success: '✅',
-    warning: '⚠️',
-    error: '❌',
-    cleanup: '🗑️'
-  }[type] || '📝';
+  const prefix =
+    {
+      info: '🔧',
+      success: '✅',
+      warning: '⚠️',
+      error: '❌',
+      cleanup: '🗑️',
+    }[type] || '📝';
 
   console.log(`${prefix} ${message}`);
 }
@@ -38,7 +39,7 @@ function runCommand(command, options = {}) {
     stdio: isDryRun ? 'pipe' : 'inherit',
     cwd: ANDROID_DIR,
     encoding: 'utf8',
-    ...options
+    ...options,
   };
 
   try {
@@ -66,7 +67,7 @@ function removeExistingModule() {
         recursive: true,
         force: true,
         maxRetries: 3,
-        retryDelay: 1000
+        retryDelay: 1000,
       });
     }
 
@@ -79,13 +80,18 @@ function clonePrivateRepo() {
 
   let cloneUrl;
 
-  if (isCI && githubToken) {
+  if (isCI && repoToken) {
     // CI environment with Personal Access Token
-    log('CI detected: Using GITHUB_TOKEN for clone', 'info');
-    cloneUrl = `https://${githubToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for clone', 'info');
+    cloneUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else if (isCI) {
-    log('CI environment detected but GITHUB_TOKEN not available', 'error');
-    throw new Error('CI requires GITHUB_TOKEN environment variable');
+    log(
+      'CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available',
+      'error',
+    );
+    throw new Error(
+      'CI requires SELFXYZ_INTERNAL_REPO_PAT environment variable',
+    );
   } else {
     // Local development with SSH
     log('Local development: Using SSH for clone', 'info');
@@ -99,9 +105,15 @@ function clonePrivateRepo() {
     log(`Successfully cloned ${REPO_NAME}`, 'success');
   } catch (error) {
     if (isCI) {
-      log('Clone failed in CI environment. Check GITHUB_TOKEN permissions.', 'error');
+      log(
+        'Clone failed in CI environment. Check SELFXYZ_INTERNAL_REPO_PAT permissions.',
+        'error',
+      );
     } else {
-      log('Clone failed. Ensure you have SSH access to the repository.', 'error');
+      log(
+        'Clone failed. Ensure you have SSH access to the repository.',
+        'error',
+      );
     }
     throw error;
   }
@@ -110,7 +122,7 @@ function clonePrivateRepo() {
 function validateSetup() {
   const expectedFiles = [
     'app/build.gradle',
-    'app/src/main/AndroidManifest.xml'
+    'app/src/main/AndroidManifest.xml',
   ];
 
   for (const file of expectedFiles) {
@@ -158,5 +170,5 @@ if (require.main === module) {
 module.exports = {
   setupAndroidPassportReader,
   removeExistingModule,
-  PRIVATE_MODULE_PATH
+  PRIVATE_MODULE_PATH,
 };

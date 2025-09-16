@@ -231,6 +231,8 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
 
       - name: Verify iOS Secrets
         if: inputs.platform != 'android'
@@ -774,6 +776,8 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
 
       # android specific steps
 
