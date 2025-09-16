@@ -9,8 +9,9 @@ import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
 import { SDKEvent, SDKEventMap } from './types/events';
-import type { Adapters, Config, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
+import type { Adapters, Config, ScanOpts, ScanResult, SelfClient, Unsubscribe, ValidationInput, ValidationResult } from './types/public';
 import { TrackEventParams } from './types/public';
+import { isPassportDataValid } from './validation/document';
 /**
  * Optional adapter implementations used when a consumer does not provide their
  * own. These defaults are intentionally minimal no-ops suitable for tests and
@@ -102,7 +103,7 @@ export function createSelfClient({
       setTimeout(() => controller.abort(), cfg.timeouts.scanMs);
       return _adapters.scanner.scan({ ...opts, signal: controller.signal });
     }
-    
+
     return _adapters.scanner.scan(opts);
   }
 
@@ -131,8 +132,33 @@ export function createSelfClient({
     }
   }
 
+  async function validateDocument(input: ValidationInput): Promise<ValidationResult> {
+    try {
+      const { scan } = input;
+      
+      if (scan.mode !== 'nfc') {
+        return { ok: false, reason: 'Only NFC scan results can be validated' };
+      }
+      
+      const isValid = isPassportDataValid(scan.passportData);
+      
+      if (isValid) {
+        return { ok: true };
+      } else {
+        return { ok: false, reason: 'Document validation failed' };
+      }
+    } catch (error) {
+      _adapters.logger.log('error', 'Document validation error', { error });
+      return { 
+        ok: false, 
+        reason: error instanceof Error ? error.message : 'Unknown validation error' 
+      };
+    }
+  }
+
   return {
     scanDocument,
+    validateDocument,
     trackEvent,
     getPrivateKey,
     hasPrivateKey,

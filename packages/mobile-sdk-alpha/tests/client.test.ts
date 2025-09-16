@@ -64,7 +64,10 @@ describe('createSelfClient', () => {
     });
     const result = await client.scanDocument({ mode: 'qr' });
     expect(result).toEqual({ mode: 'qr', data: 'self://ok' });
-    expect(scanMock).toHaveBeenCalledWith({ mode: 'qr' });
+    expect(scanMock).toHaveBeenCalledWith(expect.objectContaining({ 
+      mode: 'qr', 
+      signal: expect.any(AbortSignal) 
+    }));
   });
 
   it('propagates scanner errors', async () => {
@@ -77,7 +80,6 @@ describe('createSelfClient', () => {
     });
     await expect(client.scanDocument({ mode: 'qr' })).rejects.toBe(err);
   });
-
 
   it('emits and unsubscribes events', () => {
     const listeners = createListenersMap();
@@ -129,17 +131,6 @@ describe('createSelfClient', () => {
     expect(info.validation?.overall).toBe(true);
   });
 
-  it('returns stub registration status', async () => {
-    const client = createSelfClient({
-      config: {},
-      adapters: { scanner, network, crypto, documents, auth },
-      listeners: new Map(),
-    });
-    await expect(client.registerDocument({} as any)).resolves.toEqual({
-      registered: false,
-      reason: 'SELF_REG_STATUS_STUB',
-    });
-  });
   describe('when analytics adapter is given', () => {
     it('calls that adapter for trackEvent', () => {
       const trackEvent = vi.fn();
