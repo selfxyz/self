@@ -62,6 +62,9 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
+      - name: Build workspace dependencies
+        run: yarn build
+
       - name: Run workspace type checking
         run: yarn types
 
@@ -87,6 +90,9 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+
+      - name: Build workspace dependencies
+        run: yarn build
 
       - name: Run workspace linting
         run: yarn lint
@@ -153,6 +159,9 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+
+      - name: Build workspace dependencies
+        run: yarn build
 
       - name: Run workspace tests
         run: yarn test
