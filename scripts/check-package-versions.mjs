@@ -311,7 +311,10 @@ if (engineNodeVersions && engineNodeVersions.size > 0) {
       .filter(v => {
         const versionStr = String(v);
         // Skip dynamic versions like ${{ env.NODE_VERSION }} - these are set from .nvmrc
-        if (versionStr.includes('${{') || versionStr.includes('env.NODE_VERSION')) {
+        if (
+          versionStr.includes('${{') ||
+          versionStr.includes('env.NODE_VERSION')
+        ) {
           return false;
         }
         return !versionStr.includes(expectedNodeVersion);
@@ -472,7 +475,10 @@ if (totalIssues === 0) {
 
     for (const category of categories) {
       const mismatchedInCategory = category.packages.filter(pkg => {
-        if (criticalPackages.includes(pkg) || intentionallyDifferentPackages.includes(pkg)) {
+        if (
+          criticalPackages.includes(pkg) ||
+          intentionallyDifferentPackages.includes(pkg)
+        ) {
           return false; // Skip already reported packages
         }
         const versions = depVersions.get(pkg);
@@ -499,21 +505,28 @@ const criticalIssues = [
 ].filter(Boolean).length;
 
 if (criticalIssues > 0) {
-  console.log(`\n🚨 FAILING CI: Found ${criticalIssues} critical issue(s) that must be fixed.`);
+  console.log(
+    `\n🚨 FAILING CI: Found ${criticalIssues} critical issue(s) that must be fixed.`,
+  );
   process.exit(1);
 } else if (hasOtherIssues || hasIntentionalDifferences) {
   let message = '⚠️  CI PASSING: ';
   const parts = [];
   if (hasOtherIssues) parts.push('non-critical version mismatches');
-  if (hasIntentionalDifferences) parts.push('intentional technical differences');
+  if (hasIntentionalDifferences)
+    parts.push('intentional technical differences');
   message += `Found ${parts.join(' and ')}.`;
 
   console.log(`\n${message}`);
   if (hasOtherIssues) {
-    console.log('Non-critical mismatches should be addressed but do not block development.');
+    console.log(
+      'Non-critical mismatches should be addressed but do not block development.',
+    );
   }
   if (hasIntentionalDifferences) {
-    console.log('Intentional differences are acceptable for technical requirements.');
+    console.log(
+      'Intentional differences are acceptable for technical requirements.',
+    );
   }
   process.exit(0);
 } else {
