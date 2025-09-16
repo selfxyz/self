@@ -26,8 +26,6 @@ export type {
   StorageAdapter,
   TrackEventParams,
   Unsubscribe,
-  ValidationInput,
-  ValidationResult,
   WsAdapter,
   WsConn,
 } from './types/public';

@@ -24,8 +24,6 @@ export type {
   SelfClient,
   StorageAdapter,
   Unsubscribe,
-  ValidationInput,
-  ValidationResult,
   WsAdapter,
   WsConn,
 } from './types/public';

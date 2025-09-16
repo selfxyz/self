@@ -64,10 +64,12 @@ describe('createSelfClient', () => {
     });
     const result = await client.scanDocument({ mode: 'qr' });
     expect(result).toEqual({ mode: 'qr', data: 'self://ok' });
-    expect(scanMock).toHaveBeenCalledWith(expect.objectContaining({ 
-      mode: 'qr', 
-      signal: expect.any(AbortSignal) 
-    }));
+    expect(scanMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'qr',
+        signal: expect.any(AbortSignal),
+      }),
+    );
   });
 
   it('propagates scanner errors', async () => {

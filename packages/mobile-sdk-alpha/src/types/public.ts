@@ -182,13 +182,6 @@ export interface StorageAdapter {
   set(key: string, value: string): Promise<void>;
   remove(key: string): Promise<void>;
 }
-export interface ValidationInput {
-  scan: ScanResult;
-}
-export interface ValidationResult {
-  ok: boolean;
-  reason?: string;
-}
 export interface WsAdapter {
   connect(url: string, opts?: { signal?: AbortSignal; headers?: Record<string, string> }): WsConn;
 }
