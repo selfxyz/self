@@ -64,8 +64,8 @@
     "@anon-aadhaar/core": "^2.4.3",
     "@noble/curves": "^1.4.2",
     "@openpassport/zk-email-circuits": "^6.1.2",
-    "@openpassport/zk-kit-imt": "^0.0.4",
-    "@openpassport/zk-kit-lean-imt": "^0.0.4",
+    "@openpassport/zk-kit-imt": "^0.0.5",
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
     "@selfxyz/common": "workspace:^",
     "@zk-email/circuits": "^6.3.2",
@@ -90,9 +90,9 @@
     "js-sha256": "^0.10.1",
     "jsrsasign": "^11.1.0",
     "modpow": "^1.0.0",
-    "node-forge": "https://github.com/remicolin/forge",
-    "poseidon-lite": "^0.2.0",
-    "snarkjs": "^0.7.1"
+    "node-forge": "github:remicolin/forge#17a11a632dd0e50343b3b8393245a2696f78afbb",
+    "poseidon-lite": "^0.3.0",
+    "snarkjs": "^0.7.5"
   },
   "devDependencies": {
     "@types/chai": "4.3.11",

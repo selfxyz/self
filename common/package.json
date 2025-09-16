@@ -685,7 +685,7 @@
     "node-forge": "github:remicolin/forge#17a11a632dd0e50343b3b8393245a2696f78afbb",
     "path": "^0.12.7",
     "pkijs": "^3.2.4",
-    "poseidon-lite": "^0.2.0",
+    "poseidon-lite": "^0.3.0",
     "snarkjs": "^0.7.5",
     "typescript-parser": "^2.6.1",
     "uuid": "^11.1.0"

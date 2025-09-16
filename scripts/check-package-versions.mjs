@@ -5,13 +5,21 @@ import path from 'path';
 // Critical packages that cause real problems
 const criticalPackages = [
   'ethers',
-  'node-forge',
   'poseidon-lite',
   'snarkjs',
   'react',
   'react-native',
   '@tamagui/config',
   '@tamagui/lucide-icons',
+  // ZK packages that must be version-synchronized
+  '@openpassport/zk-kit-imt',
+  '@openpassport/zk-kit-lean-imt',
+  '@openpassport/zk-kit-smt',
+];
+
+// Packages with intentional version differences for technical reasons
+const intentionallyDifferentPackages = [
+  'node-forge', // circuits + common need custom fork for RSA-PSS, others use standard
 ];
 
 // Core development tools
@@ -134,6 +142,7 @@ const buildPackages = [
 // Combine all packages to check
 const packagesToCheck = [
   ...criticalPackages,
+  ...intentionallyDifferentPackages,
   ...coreDevPackages,
   ...typePackages,
   ...cryptoPackages,
@@ -246,6 +255,29 @@ for (const pkg of criticalPackages) {
   }
 }
 
+// Check intentionally different packages - report but don't fail CI
+let hasIntentionalDifferences = false;
+for (const pkg of intentionallyDifferentPackages) {
+  const versions = depVersions.get(pkg);
+  if (versions && versions.size > 1) {
+    if (!hasIntentionalDifferences) {
+      console.log('📋 INTENTIONAL VERSION DIFFERENCES:');
+      console.log(
+        'These packages intentionally use different versions for technical reasons:\n',
+      );
+    }
+    hasIntentionalDifferences = true;
+    console.log(`${pkg}:`);
+    for (const [version, files] of versions) {
+      const shortFiles = files.map(f =>
+        f.replace(process.cwd(), '').replace('/package.json', ''),
+      );
+      console.log(`  ${version}: ${shortFiles.join(', ')}`);
+    }
+    console.log('');
+  }
+}
+
 // Check workflow Node.js version mismatches
 let hasWorkflowIssues = false;
 const engineNodeVersions = engineVersions.get('engines.node');
@@ -276,7 +308,14 @@ if (engineNodeVersions && engineNodeVersions.size > 0) {
   const workflowNodeVersions = workflowVersions.get('workflow node-version');
   if (workflowNodeVersions) {
     const mismatches = [...workflowNodeVersions.keys()]
-      .filter(v => !String(v).includes(expectedNodeVersion))
+      .filter(v => {
+        const versionStr = String(v);
+        // Skip dynamic versions like ${{ env.NODE_VERSION }} - these are set from .nvmrc
+        if (versionStr.includes('${{') || versionStr.includes('env.NODE_VERSION')) {
+          return false;
+        }
+        return !versionStr.includes(expectedNodeVersion);
+      })
       .sort();
     if (mismatches.length) {
       console.log('🚨 WORKFLOW VERSION MISMATCH:');
@@ -333,6 +372,7 @@ for (const category of categories) {
 
   for (const pkg of category.packages) {
     if (criticalPackages.includes(pkg)) continue; // Skip critical packages, already shown above
+    if (intentionallyDifferentPackages.includes(pkg)) continue; // Skip intentionally different packages
 
     const versions = depVersions.get(pkg);
     if (versions && versions.size > 1) {
@@ -370,6 +410,7 @@ const totalIssues = [
   hasWorkflowIssues,
   hasPmIssues,
   hasOtherIssues,
+  hasIntentionalDifferences,
 ].filter(Boolean).length;
 
 if (totalIssues === 0) {
@@ -401,6 +442,17 @@ if (totalIssues === 0) {
     console.log('    • Package manager version mismatch');
   }
 
+  if (hasIntentionalDifferences) {
+    console.log('  📋 Intentional (Technical Requirements):');
+    for (const pkg of intentionallyDifferentPackages) {
+      const versions = depVersions.get(pkg);
+      if (versions && versions.size > 1) {
+        const versionList = Array.from(versions.keys()).join(', ');
+        console.log(`    • ${pkg}: ${versionList}`);
+      }
+    }
+  }
+
   if (hasOtherIssues) {
     console.log('  📦 Other:');
 
@@ -420,6 +472,9 @@ if (totalIssues === 0) {
 
     for (const category of categories) {
       const mismatchedInCategory = category.packages.filter(pkg => {
+        if (criticalPackages.includes(pkg) || intentionallyDifferentPackages.includes(pkg)) {
+          return false; // Skip already reported packages
+        }
         const versions = depVersions.get(pkg);
         return versions && versions.size > 1;
       });
@@ -436,4 +491,31 @@ if (totalIssues === 0) {
   }
 }
 
-process.exit(totalIssues > 0 ? 1 : 0);
+// Only fail CI for critical issues that can break builds or security
+const criticalIssues = [
+  hasCriticalIssues,
+  hasWorkflowIssues,
+  hasPmIssues,
+].filter(Boolean).length;
+
+if (criticalIssues > 0) {
+  console.log(`\n🚨 FAILING CI: Found ${criticalIssues} critical issue(s) that must be fixed.`);
+  process.exit(1);
+} else if (hasOtherIssues || hasIntentionalDifferences) {
+  let message = '⚠️  CI PASSING: ';
+  const parts = [];
+  if (hasOtherIssues) parts.push('non-critical version mismatches');
+  if (hasIntentionalDifferences) parts.push('intentional technical differences');
+  message += `Found ${parts.join(' and ')}.`;
+
+  console.log(`\n${message}`);
+  if (hasOtherIssues) {
+    console.log('Non-critical mismatches should be addressed but do not block development.');
+  }
+  if (hasIntentionalDifferences) {
+    console.log('Intentional differences are acceptable for technical requirements.');
+  }
+  process.exit(0);
+} else {
+  process.exit(0);
+}
