@@ -84,6 +84,13 @@ export {
   stringToBigInt,
 } from './src/utils/index.js';
 
+export {
+  prepareAadhaarRegisterTestData,
+  prepareAadhaarDiscloseTestData,
+  prepareAadhaarRegisterData,
+  prepareAadhaarDiscloseData,
+} from './src/utils/aadhaar/mockData.js';
+export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
 export { createSelector } from './src/utils/aadhaar/constants.js';
 // Hash utilities
 export {
@@ -93,11 +100,3 @@ export {
   hash,
   packBytesAndPoseidon,
 } from './src/utils/hash.js';
-
-export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
-
-export {
-  prepareAadhaarDiscloseTestData,
-  prepareAadhaarRegisterData,
-  prepareAadhaarRegisterTestData,
-} from './src/utils/aadhaar/mockData.js';
