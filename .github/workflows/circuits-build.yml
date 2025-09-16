@@ -159,20 +159,10 @@ jobs:
 
           # Check if this is a manual workflow dispatch with specific circuits
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-type }}" != "" ]]; then
-            # Parse and validate input circuits
-            ALLOWED_CIRCUITS=("register" "register_id" "register_aadhaar" "disclose" "dsc")
+            # Parse input circuits
             INPUT_CIRCUITS="${{ inputs.circuit-type }}"
             INPUT_CIRCUITS=$(echo "$INPUT_CIRCUITS" | tr -d ' ')
             IFS=',' read -ra CIRCUITS_ARRAY <<< "$INPUT_CIRCUITS"
-
-            # Validate each circuit
-            for circuit in "${CIRCUITS_ARRAY[@]}"; do
-              if [[ ! " ${ALLOWED_CIRCUITS[*]} " =~ " ${circuit} " ]]; then
-                echo "❌ Error: Invalid circuit '$circuit'"
-                echo "✅ Allowed circuits: ${ALLOWED_CIRCUITS[*]}"
-                exit 1
-              fi
-            done
 
             # Build selected circuits
             echo "Building selected circuits: ${{ inputs.circuit-type }}"
