@@ -152,12 +152,7 @@ class QrCodeDetectorProcessor {
             val timeRequired = System.currentTimeMillis() - start
             println(result)
             if (result != null) {
-                if (URLUtil.isValidUrl(result.text)) {
-                    println("QR Code detected: " + result.text)
-                    listener.onSuccess(result.text!!, null, timeRequired, null)
-                } else {
-                    listener.onFailure(Exception("Invalid URL"), timeRequired)
-                }
+                listener.onSuccess(result.text!!, null, timeRequired, null)
             }
             else {
                 listener.onCompletedFrame(timeRequired)
