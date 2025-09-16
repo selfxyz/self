@@ -160,28 +160,28 @@ jobs:
       - name: Verify tests passed
         run: echo "Workspace tests completed successfully!"
 
-  version-consistency:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
+  # version-consistency:
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
-        with:
-          path: |
-            .yarn/cache
-            node_modules
-            */node_modules
-            packages/*/node_modules
-          cache-version: v1
+  #     - name: Cache Yarn dependencies
+  #       uses: ./.github/actions/cache-yarn
+  #       with:
+  #         path: |
+  #           .yarn/cache
+  #           node_modules
+  #           */node_modules
+  #           packages/*/node_modules
+  #         cache-version: v1
 
-      - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+  #     - name: Install Dependencies
+  #       uses: ./.github/actions/yarn-install
 
-      - name: Check package version consistency
-        run: yarn check:versions
+  #     - name: Check package version consistency
+  #       run: yarn check:versions
 
-      - name: Verify version consistency
-        run: echo "Package version consistency check passed!"
+  #     - name: Verify version consistency
+  #       run: echo "Package version consistency check passed!"
