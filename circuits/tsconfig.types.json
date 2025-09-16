@@ -3,13 +3,9 @@
   "compilerOptions": {
     "declaration": true,
     "emitDeclarationOnly": true,
-    "declarationMap": false,
-    "outDir": "./dist/esm",
-    "declarationDir": "./dist/esm",
-    "composite": true,
-    "noEmit": false,
-    "rootDir": "."
+    "outDir": "./dist/types",
+    "skipLibCheck": true
   },
-  "include": ["src/**/*", "tests/**/*", "tests/**/*.json"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests"]
 }
