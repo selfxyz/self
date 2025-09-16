@@ -15,6 +15,11 @@ on:
         required: false
         type: string
         default: ''
+      circuit-name:
+        description: 'Single circuit to build by name (e.g., register_sha256_sha224_sha224_ecdsa_secp224r1). Cannot be used with circuit-type.'
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: circuits-build-${{ github.workflow }}-${{ github.ref }}
@@ -146,7 +151,7 @@ jobs:
         run: circom --version
 
       - name: Download previous artifacts
-        if: github.event_name == 'workflow_dispatch' && inputs.circuit-type != ''
+        if: github.event_name == 'workflow_dispatch' && (inputs.circuit-type != '' || inputs.circuit-name != '')
         uses: actions/download-artifact@v4
         with:
           name: circuits
@@ -156,21 +161,36 @@ jobs:
       - name: Build cpp circuits
         run: |
           chmod +x circuits/scripts/build/build_cpp.sh
+          chmod +x circuits/scripts/build/build_single_circuit.sh
 
-          # Check if this is a manual workflow dispatch with specific circuits
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-type }}" != "" ]]; then
-            # Parse input circuits
+          # Validate inputs - only one should be provided
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ inputs.circuit-type }}" != "" && "${{ inputs.circuit-name }}" != "" ]]; then
+              echo " Error: Cannot provide both circuit-type and circuit-name. Use only one."
+              exit 1
+            fi
+          fi
+
+          # Check what type of build to perform
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-name }}" != "" ]]; then
+            # Build single circuit by name
+            echo "Building single circuit: ${{ inputs.circuit-name }}"
+            ./circuits/scripts/build/build_single_circuit.sh "${{ inputs.circuit-name }}"
+
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-type }}" != "" ]]; then
+            # Build circuits by type
             INPUT_CIRCUITS="${{ inputs.circuit-type }}"
             INPUT_CIRCUITS=$(echo "$INPUT_CIRCUITS" | tr -d ' ')
             IFS=',' read -ra CIRCUITS_ARRAY <<< "$INPUT_CIRCUITS"
 
-            # Build selected circuits
             echo "Building selected circuits: ${{ inputs.circuit-type }}"
             for circuit in "${CIRCUITS_ARRAY[@]}"; do
               echo "Building circuit: $circuit"
               ./circuits/scripts/build/build_cpp.sh "$circuit"
             done
+
           else
+            # Build all circuits (default behavior)
             echo "Building all circuits (default behavior)"
             ./circuits/scripts/build/build_cpp.sh register
             ./circuits/scripts/build/build_cpp.sh register_id
