@@ -9,6 +9,12 @@ on:
       - "circuits/circuits/**"
       - ".github/workflows/artifacts.yml"
   workflow_dispatch:
+    inputs:
+      circuit-type:
+        description: 'Circuits to build (comma-separated: register, register_id, register_aadhaar, disclose, dsc). Leave empty to build all.'
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: circuits-build-${{ github.workflow }}-${{ github.ref }}
@@ -139,14 +145,49 @@ jobs:
       - name: Print Circom version
         run: circom --version
 
+      - name: Download previous artifacts
+        if: github.event_name == 'workflow_dispatch' && inputs.circuit-type != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: circuits
+          path: output/
+        continue-on-error: true
+
       - name: Build cpp circuits
         run: |
-          chmod +x circuits/scripts/build/build_cpp.sh && \
-          ./circuits/scripts/build/build_cpp.sh register &&
-          ./circuits/scripts/build/build_cpp.sh register_id &&
-          ./circuits/scripts/build/build_cpp.sh register_aadhaar &&
-          ./circuits/scripts/build/build_cpp.sh disclose &&
-          ./circuits/scripts/build/build_cpp.sh dsc
+          chmod +x circuits/scripts/build/build_cpp.sh
+
+          # Check if this is a manual workflow dispatch with specific circuits
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-type }}" != "" ]]; then
+            # Parse and validate input circuits
+            ALLOWED_CIRCUITS=("register" "register_id" "register_aadhaar" "disclose" "dsc")
+            INPUT_CIRCUITS="${{ inputs.circuit-type }}"
+            INPUT_CIRCUITS=$(echo "$INPUT_CIRCUITS" | tr -d ' ')
+            IFS=',' read -ra CIRCUITS_ARRAY <<< "$INPUT_CIRCUITS"
+
+            # Validate each circuit
+            for circuit in "${CIRCUITS_ARRAY[@]}"; do
+              if [[ ! " ${ALLOWED_CIRCUITS[*]} " =~ " ${circuit} " ]]; then
+                echo "❌ Error: Invalid circuit '$circuit'"
+                echo "✅ Allowed circuits: ${ALLOWED_CIRCUITS[*]}"
+                exit 1
+              fi
+            done
+
+            # Build selected circuits
+            echo "Building selected circuits: ${{ inputs.circuit-type }}"
+            for circuit in "${CIRCUITS_ARRAY[@]}"; do
+              echo "Building circuit: $circuit"
+              ./circuits/scripts/build/build_cpp.sh "$circuit"
+            done
+          else
+            echo "Building all circuits (default behavior)"
+            ./circuits/scripts/build/build_cpp.sh register
+            ./circuits/scripts/build/build_cpp.sh register_id
+            ./circuits/scripts/build/build_cpp.sh register_aadhaar
+            ./circuits/scripts/build/build_cpp.sh disclose
+            ./circuits/scripts/build/build_cpp.sh dsc
+          fi
 
       - name: Upload Artifact
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
