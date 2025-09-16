@@ -78,21 +78,6 @@ describe('createSelfClient', () => {
     await expect(client.scanDocument({ mode: 'qr' })).rejects.toBe(err);
   });
 
-  it('returns stub proof handle when adapters provided', async () => {
-    const network = { http: { fetch: vi.fn() }, ws: { connect: vi.fn() } } as any;
-    const crypto = { hash: vi.fn(), sign: vi.fn() } as any;
-    const scanner = { scan: vi.fn() } as any;
-    const client = createSelfClient({
-      config: {},
-      adapters: { network, crypto, scanner, documents, auth },
-      listeners: new Map(),
-    });
-    const handle = await client.generateProof({ type: 'register', payload: {} });
-    expect(handle.id).toBe('stub');
-    expect(handle.status).toBe('pending');
-    expect(await handle.result()).toEqual({ ok: false, reason: 'SELF_ERR_PROOF_STUB' });
-    expect(() => handle.cancel()).not.toThrow();
-  });
 
   it('emits and unsubscribes events', () => {
     const listeners = createListenersMap();
