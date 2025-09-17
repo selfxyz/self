@@ -8,34 +8,15 @@ import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
-import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
-import type {
-  Adapters,
-  Config,
-  Progress,
-  ProofHandle,
-  ProofRequest,
-  RegistrationInput,
-  RegistrationStatus,
-  ScanOpts,
-  ScanResult,
-  SelfClient,
-  Unsubscribe,
-  ValidationInput,
-  ValidationResult,
-} from './types/public';
+import { SDKEvent, SDKEventMap } from './types/events';
+import type { Adapters, Config, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
 import { TrackEventParams } from './types/public';
 /**
  * Optional adapter implementations used when a consumer does not provide their
  * own. These defaults are intentionally minimal no-ops suitable for tests and
  * non-production environments.
  */
-const optionalDefaults: Required<Pick<Adapters, 'storage' | 'clock' | 'logger'>> = {
-  storage: {
-    get: async () => null,
-    set: async () => {},
-    remove: async () => {},
-  },
+const optionalDefaults: Required<Pick<Adapters, 'clock' | 'logger'>> = {
   clock: {
     now: () => Date.now(),
     sleep: async (ms: number) => {
@@ -115,39 +96,14 @@ export function createSelfClient({
   }
 
   async function scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult> {
+    // Apply scanner timeout from config if no signal provided
+    if (!opts.signal && cfg.timeouts.scanMs) {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), cfg.timeouts.scanMs);
+      return _adapters.scanner.scan({ ...opts, signal: controller.signal });
+    }
+
     return _adapters.scanner.scan(opts);
-  }
-
-  async function validateDocument(_input: ValidationInput): Promise<ValidationResult> {
-    return { ok: false, reason: 'SELF_ERR_VALIDATION_STUB' };
-  }
-
-  async function checkRegistration(_input: RegistrationInput): Promise<RegistrationStatus> {
-    return { registered: false, reason: 'SELF_REG_STATUS_STUB' };
-  }
-
-  async function registerDocument(_input: RegistrationInput): Promise<RegistrationStatus> {
-    return { registered: false, reason: 'SELF_REG_STATUS_STUB' };
-  }
-
-  async function generateProof(
-    _req: ProofRequest,
-    opts: {
-      signal?: AbortSignal;
-      onProgress?: (p: Progress) => void;
-      timeoutMs?: number;
-    } = {},
-  ): Promise<ProofHandle> {
-    if (!adapters.network) throw notImplemented('network');
-    if (!adapters.crypto) throw notImplemented('crypto');
-    const timeoutMs = opts.timeoutMs ?? cfg.timeouts?.proofMs ?? defaultConfig.timeouts.proofMs;
-    void _adapters.clock.sleep(timeoutMs!, opts.signal).then(() => emit(SdkEvents.ERROR, new Error('timeout')));
-    return {
-      id: 'stub',
-      status: 'pending',
-      result: async () => ({ ok: false, reason: 'SELF_ERR_PROOF_STUB' }),
-      cancel: () => {},
-    };
   }
 
   async function trackEvent(event: string, payload?: TrackEventParams): Promise<void> {
@@ -177,13 +133,9 @@ export function createSelfClient({
 
   return {
     scanDocument,
-    validateDocument,
     trackEvent,
     getPrivateKey,
     hasPrivateKey,
-    checkRegistration,
-    registerDocument,
-    generateProof,
     extractMRZInfo: parseMRZInfo,
     on,
     emit,

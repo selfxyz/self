@@ -9,15 +9,10 @@ import { SDKEvent, SDKEventMap } from './events';
 export type { PassportValidationCallbacks } from '../validation/document';
 export type { DocumentCatalog, PassportData };
 export interface Config {
-  endpoints?: { api?: string; teeWs?: string; artifactsCdn?: string };
   timeouts?: {
-    httpMs?: number;
-    wsMs?: number;
     scanMs?: number;
-    proofMs?: number;
   };
   features?: Record<string, boolean>;
-  tlsPinning?: { enabled: boolean; pins?: string[] };
 }
 export interface CryptoAdapter {
   hash(input: Uint8Array, algo?: 'sha256'): Promise<Uint8Array>;
@@ -107,33 +102,13 @@ export interface Adapters {
   documents: DocumentsAdapter;
 }
 
-export interface ProofHandle {
-  id: string;
-  status: 'pending' | 'completed' | 'failed';
-  result: () => Promise<{ ok: boolean; reason?: string }>;
-  cancel: () => void;
-}
 export interface LoggerAdapter {
   log(level: LogLevel, message: string, fields?: Record<string, unknown>): void;
 }
 
-export interface ProofRequest {
-  type: 'register' | 'dsc' | 'disclose';
-  payload: unknown;
-}
 export interface NetworkAdapter {
   http: HttpAdapter;
   ws: WsAdapter;
-}
-
-export interface RegistrationInput {
-  docId?: string;
-  scan: ScanResult;
-}
-
-export interface RegistrationStatus {
-  registered: boolean;
-  reason?: string;
 }
 
 export type ScanMode = 'mrz' | 'nfc' | 'qr';
@@ -186,17 +161,6 @@ export interface DocumentsAdapter {
 
 export interface SelfClient {
   scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
-  validateDocument(input: ValidationInput): Promise<ValidationResult>;
-  checkRegistration(input: RegistrationInput): Promise<RegistrationStatus>;
-  registerDocument(input: RegistrationInput): Promise<RegistrationStatus>;
-  generateProof(
-    req: ProofRequest,
-    opts?: {
-      signal?: AbortSignal;
-      onProgress?: (p: Progress) => void;
-      timeoutMs?: number;
-    },
-  ): Promise<ProofHandle>;
   extractMRZInfo(mrz: string): MRZInfo;
   trackEvent(event: string, payload?: TrackEventParams): void;
   getPrivateKey(): Promise<string | null>;
@@ -217,13 +181,6 @@ export interface StorageAdapter {
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
   remove(key: string): Promise<void>;
-}
-export interface ValidationInput {
-  scan: ScanResult;
-}
-export interface ValidationResult {
-  ok: boolean;
-  reason?: string;
 }
 export interface WsAdapter {
   connect(url: string, opts?: { signal?: AbortSignal; headers?: Record<string, string> }): WsConn;
