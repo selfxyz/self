@@ -11,6 +11,8 @@ PODS:
   - FBLazyVector (0.76.9)
   - Firebase (10.24.0):
     - Firebase/Core (= 10.24.0)
+  - Firebase/Analytics (10.24.0):
+    - Firebase/Core
   - Firebase/Core (10.24.0):
     - Firebase/CoreOnly
     - FirebaseAnalytics (~> 10.24.0)
@@ -1906,6 +1908,10 @@ PODS:
     - Yoga
   - RNDeviceInfo (14.0.4):
     - React-Core
+  - RNFBAnalytics (19.3.0):
+    - Firebase/Analytics (= 10.24.0)
+    - React-Core
+    - RNFBApp
   - RNFBApp (19.3.0):
     - Firebase/CoreOnly (= 10.24.0)
     - React-Core
@@ -2213,6 +2219,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../../node_modules/@react-native-clipboard/clipboard`)"
   - RNDeviceInfo (from `../../node_modules/react-native-device-info`)
+  - "RNFBAnalytics (from `../../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../../node_modules/@react-native-firebase/messaging`)"
   - "RNFBRemoteConfig (from `../../node_modules/@react-native-firebase/remote-config`)"
@@ -2415,6 +2422,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@react-native-clipboard/clipboard"
   RNDeviceInfo:
     :path: "../../node_modules/react-native-device-info"
+  RNFBAnalytics:
+    :path: "../../node_modules/@react-native-firebase/analytics"
   RNFBApp:
     :path: "../../node_modules/@react-native-firebase/app"
   RNFBMessaging:
@@ -2553,6 +2562,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 0003b916f1a69fe2d20b7910e0d08da3d32c7bd6
   RNCClipboard: a4827e134e4774e97fa86f7f986694dd89320f13
   RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
+  RNFBAnalytics: cbfdffc9366ff7ede059ea1b2a63236c85770b38
   RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
   RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
