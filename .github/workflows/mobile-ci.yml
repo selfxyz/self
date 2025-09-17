@@ -70,6 +70,8 @@ jobs:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Cache Built Dependencies
         id: built-deps
         uses: ./.github/actions/cache-built-deps
@@ -127,6 +129,8 @@ jobs:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Cache Built Dependencies
         id: built-deps
         uses: ./.github/actions/cache-built-deps
@@ -288,6 +292,8 @@ jobs:
             ${{ runner.os }}-xcode-index-${{ env.XCODE_VERSION }}-
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Cache Built Dependencies
         id: built-deps
         uses: ./.github/actions/cache-built-deps
@@ -438,6 +444,8 @@ jobs:
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
       - name: Install Mobile Dependencies
         uses: ./.github/actions/yarn-install
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Cache Built Dependencies
         id: built-deps
         uses: ./.github/actions/cache-built-deps

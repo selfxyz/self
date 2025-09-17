@@ -27,8 +27,9 @@ on:
       - ".github/workflows/mobile-e2e.yml"
 
 jobs:
-  e2e-android:
-    if: false # Temporarily disable Android E2E until emulator disk issue resolved
+  android-build-test:
+    # Currently build-only for Android with private repos. E2E steps are preserved but skipped (if: false).
+    # To re-enable full E2E: change `if: false` to `if: true` on Maestro and emulator steps.
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
@@ -66,19 +67,24 @@ jobs:
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - run: yarn install --immutable --silent
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Validate Maestro test file
+        if: false # Skip for build-only test - keep logic for future E2E
         run: |
           [ -f app/tests/e2e/launch.android.flow.yaml ] || { echo "❌ Android E2E test file missing"; exit 1; }
       - name: Cache Maestro
+        if: false # Skip for build-only test - keep logic for future E2E
         id: cache-maestro
         uses: actions/cache@v4
         with:
           path: ~/.maestro
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
-        if: steps.cache-maestro.outputs.cache-hit != 'true'
+        if: false # Skip for build-only test - keep logic for future E2E
         run: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
+        if: false # Skip for build-only test - keep logic for future E2E
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Setup Java environment
         uses: actions/setup-java@v4
@@ -104,7 +110,20 @@ jobs:
           chmod +x app/android/gradlew
           (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
+
+          # Verify APK was created
+          APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
+          if [ -f "$APK_PATH" ]; then
+            echo "✅ APK found at $APK_PATH"
+            ls -lh "$APK_PATH"
+          else
+            echo "❌ APK not found at expected location: $APK_PATH"
+            echo "Contents of build/outputs/apk/debug/:"
+            ls -la app/android/app/build/outputs/apk/debug/ || echo "Directory not found"
+            exit 1
+          fi
       - name: Install and Test on Android
+        if: false # Skip emulator/E2E for build-only test - keep logic for future E2E
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
@@ -127,7 +146,7 @@ jobs:
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
             maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
       - name: Upload test results
-        if: always()
+        if: false # Skip for build-only test - keep logic for future E2E
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
@@ -178,6 +197,8 @@ jobs:
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
       - run: yarn install --immutable --silent
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Validate Maestro test file
         run: |
           [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
