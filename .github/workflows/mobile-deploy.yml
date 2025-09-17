@@ -232,7 +232,7 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
         env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SKIP_PRIVATE_MODULES: true
 
       - name: Verify iOS Secrets
         if: inputs.platform != 'android'
@@ -778,6 +778,7 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          PLATFORM: ${{ inputs.platform }}
 
       # android specific steps
 

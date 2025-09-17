@@ -119,6 +119,8 @@ jobs:
         uses: ./.github/actions/yarn-install
         with:
           working_directory: circuits
+        env:
+          SKIP_PRIVATE_MODULES: true
 
       - name: Run lint
         run: yarn workspace @selfxyz/circuits lint

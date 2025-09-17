@@ -21,6 +21,42 @@ const isCI = process.env.CI === 'true';
 const repoToken = process.env.SELFXYZ_INTERNAL_REPO_PAT;
 const isDryRun = process.env.DRY_RUN === 'true';
 
+// Platform detection for Android-specific modules
+function shouldSetupAndroidModule() {
+  // Skip if explicitly disabled
+  if (process.env.SKIP_PRIVATE_MODULES === 'true') {
+    return false;
+  }
+
+  // In CI, check for platform-specific indicators
+  if (isCI) {
+    const platform = process.env.PLATFORM || process.env.INPUT_PLATFORM;
+    if (platform === 'ios') {
+      log('Detected iOS platform, skipping Android module setup', 'info');
+      return false;
+    }
+    if (platform === 'android') {
+      log(
+        'Detected Android platform, proceeding with Android module setup',
+        'info',
+      );
+      return true;
+    }
+  }
+
+  // For local development, only setup if Android directory exists and we're likely building Android
+  if (fs.existsSync(ANDROID_DIR)) {
+    log('Android directory detected for local development', 'info');
+    return true;
+  }
+
+  log(
+    'No Android build context detected, skipping Android module setup',
+    'warning',
+  );
+  return false;
+}
+
 function log(message, type = 'info') {
   const prefix =
     {
@@ -98,10 +134,18 @@ function clonePrivateRepo() {
     cloneUrl = `git@github.com:${GITHUB_ORG}/${REPO_NAME}.git`;
   }
 
-  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 "${cloneUrl}" android-passport-reader`;
+  // Security: Use quiet mode for credentialed URLs to prevent token exposure
+  const isCredentialedUrl = isCI && repoToken;
+  const quietFlag = isCredentialedUrl ? '--quiet' : '';
+  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" android-passport-reader`;
 
   try {
-    runCommand(cloneCommand);
+    if (isCredentialedUrl) {
+      // Security: Run command silently to avoid token exposure in logs
+      runCommand(cloneCommand, { stdio: 'pipe' });
+    } else {
+      runCommand(cloneCommand);
+    }
     log(`Successfully cloned ${REPO_NAME}`, 'success');
   } catch (error) {
     if (isCI) {
@@ -136,35 +180,59 @@ function validateSetup() {
 }
 
 function setupAndroidPassportReader() {
+  log(`Starting setup of ${REPO_NAME}...`, 'info');
+
+  // Ensure android directory exists
+  if (!fs.existsSync(ANDROID_DIR)) {
+    throw new Error(`Android directory not found: ${ANDROID_DIR}`);
+  }
+
+  // Remove existing module
+  removeExistingModule();
+
+  // Clone the private repository
+  clonePrivateRepo();
+
+  // Security: Remove credential-embedded remote URL after clone
+  if (isCI && repoToken && !isDryRun) {
+    scrubGitRemoteUrl();
+  }
+
+  // Validate the setup
+  if (!isDryRun) {
+    validateSetup();
+  }
+
+  log(`${REPO_NAME} setup complete!`, 'success');
+}
+
+function scrubGitRemoteUrl() {
   try {
-    log(`Starting setup of ${REPO_NAME}...`, 'info');
+    const cleanUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    const scrubCommand = `cd "${PRIVATE_MODULE_PATH}" && git remote set-url origin "${cleanUrl}"`;
 
-    // Ensure android directory exists
-    if (!fs.existsSync(ANDROID_DIR)) {
-      throw new Error(`Android directory not found: ${ANDROID_DIR}`);
-    }
-
-    // Remove existing module
-    removeExistingModule();
-
-    // Clone the private repository
-    clonePrivateRepo();
-
-    // Validate the setup
-    if (!isDryRun) {
-      validateSetup();
-    }
-
-    log(`${REPO_NAME} setup complete!`, 'success');
+    log('Scrubbing credential from git remote URL...', 'info');
+    runCommand(scrubCommand, { stdio: 'pipe' });
+    log('Git remote URL cleaned', 'success');
   } catch (error) {
-    log(`Setup failed: ${error.message}`, 'error');
-    process.exit(1);
+    log(`Warning: Failed to scrub git remote URL: ${error.message}`, 'warning');
+    // Non-fatal error - continue execution
   }
 }
 
 // Script execution
 if (require.main === module) {
-  setupAndroidPassportReader();
+  if (!shouldSetupAndroidModule()) {
+    log('Skipping Android module setup based on platform detection', 'warning');
+    process.exit(0);
+  }
+
+  try {
+    setupAndroidPassportReader();
+  } catch (error) {
+    log(`Setup failed: ${error.message}`, 'error');
+    process.exit(1);
+  }
 }
 
 module.exports = {

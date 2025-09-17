@@ -135,6 +135,8 @@ jobs:
         uses: ./.github/actions/yarn-install
         with:
           working_directory: circuits
+        env:
+          SKIP_PRIVATE_MODULES: true
 
       - name: Print Circom version
         run: circom --version

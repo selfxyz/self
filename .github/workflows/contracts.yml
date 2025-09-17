@@ -39,6 +39,8 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+        env:
+          SKIP_PRIVATE_MODULES: true
       - name: Prettier Check - Code Formatting
         run: yarn prettier:check
         working-directory: ./contracts
