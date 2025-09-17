@@ -87,6 +87,41 @@ cd "$PROJECT_ROOT"
 
 log "Working directory: $(pwd)"
 
+# Clone android-passport-reader if it doesn't exist
+if [[ ! -d "app/android/android-passport-reader" ]]; then
+  log "Cloning android-passport-reader for build..."
+  cd app/android
+
+  # Use different clone methods based on environment
+  if is_ci && [[ -n "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]]; then
+    # CI environment with PAT
+    git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/selfxyz/android-passport-reader.git" || {
+      log "ERROR: Failed to clone android-passport-reader with PAT"
+      exit 1
+    }
+  elif [[ -n "${SSH_AUTH_SOCK:-}" ]] || [[ -f "${HOME}/.ssh/id_rsa" ]] || [[ -f "${HOME}/.ssh/id_ed25519" ]]; then
+    # Local development with SSH
+    git clone "git@github.com:selfxyz/android-passport-reader.git" || {
+      log "ERROR: Failed to clone android-passport-reader with SSH"
+      log "Please ensure you have SSH access to the repository or set SELFXYZ_INTERNAL_REPO_PAT"
+      exit 1
+    }
+  else
+    log "ERROR: No authentication method available for cloning android-passport-reader"
+    log "Please either:"
+    log "  - Set up SSH access (for local development)"
+    log "  - Set SELFXYZ_INTERNAL_REPO_PAT environment variable (for CI)"
+    exit 1
+  fi
+
+  cd ../../
+  log "✅ android-passport-reader cloned successfully"
+elif is_ci; then
+  log "⚠️  android-passport-reader exists in CI - this is unexpected"
+else
+  log "📁 android-passport-reader already exists - preserving existing directory"
+fi
+
 # Build and package the SDK with timeout
 log "Building SDK..."
 if is_ci; then

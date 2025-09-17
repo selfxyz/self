@@ -845,6 +845,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
+      - name: Clone android-passport-reader
+        if: inputs.platform != 'ios'
+        uses: ./.github/actions/clone-android-passport-reader
+        with:
+          working_directory: ${{ env.APP_PATH }}
+          github_token: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+
       - name: Build Dependencies (Android)
         if: inputs.platform != 'ios'
         run: |

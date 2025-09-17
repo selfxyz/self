@@ -1,0 +1,40 @@
+name: Clone android-passport-reader
+description: "Clones the android-passport-reader repository if it does not exist"
+
+inputs:
+  working_directory:
+    description: "Working directory path (where android/ subdirectory is located)"
+    required: false
+    default: "."
+  github_token:
+    description: "GitHub token for private repository access"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Clone android-passport-reader
+      shell: bash
+      run: |
+        cd "${{ inputs.working_directory }}"
+
+        if [ ! -d "android/android-passport-reader" ]; then
+          echo "📦 Cloning android-passport-reader for build..."
+          cd android
+
+          # Clone using the provided token
+          if git clone "https://${{ inputs.github_token }}@github.com/selfxyz/android-passport-reader.git"; then
+            echo "✅ android-passport-reader cloned successfully"
+          else
+            echo "❌ Failed to clone android-passport-reader"
+            echo "Please ensure SELFXYZ_INTERNAL_REPO_PAT is configured correctly"
+            exit 1
+          fi
+        elif [ "$CI" = "true" ]; then
+          echo "⚠️  android-passport-reader exists in CI - this is unexpected"
+          echo "📁 Directory contents:"
+          ls -la android/android-passport-reader/ || true
+        else
+          echo "📁 android-passport-reader already exists - preserving existing directory"
+          echo "ℹ️  Local development environment detected - your changes are safe"
+        fi

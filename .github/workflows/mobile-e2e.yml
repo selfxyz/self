@@ -69,6 +69,11 @@ jobs:
       - run: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Clone android-passport-reader
+        uses: ./.github/actions/clone-android-passport-reader
+        with:
+          working_directory: app
+          github_token: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
