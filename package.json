@@ -12,6 +12,7 @@
     "packages/mobile-sdk-alpha/demo-app"
   ],
   "scripts": {
+    "preinstall": "npx only-allow yarn",
     "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/circuits -i --all run build",
     "check:versions": "node scripts/check-package-versions.mjs",
     "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",

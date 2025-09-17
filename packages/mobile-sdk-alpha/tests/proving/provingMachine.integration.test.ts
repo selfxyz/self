@@ -8,8 +8,8 @@
  */
 
 import { EventEmitter } from 'events';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Socket } from 'socket.io-client';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useProvingStore } from '../../src/proving/provingMachine';
 
@@ -117,6 +117,7 @@ describe('provingMachine Socket.IO Integration', () => {
     trackEvent: vi.fn(),
     emit: vi.fn(),
     getPrivateKey: vi.fn(() => Promise.resolve('mock-private-key')),
+    logProofEvent: vi.fn(),
   } as any;
 
   // Create a real EventEmitter to simulate socket behavior

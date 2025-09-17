@@ -4,6 +4,7 @@
 
 import type { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
 
+import { ProofContext } from '../proving/internal/logging';
 import { SDKEvent, SDKEventMap } from './events';
 
 export type { PassportValidationCallbacks } from '../validation/document';
@@ -84,7 +85,11 @@ export interface MRZValidation {
   overall: boolean;
 }
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export interface NotificationAdapter {
+  registerDeviceToken(sessionId: string, deviceToken?: string, isMockPassport?: boolean): Promise<void>;
+}
+
+export type LogLevel = 'info' | 'warn' | 'error';
 
 export interface Progress {
   step: string;
@@ -100,6 +105,7 @@ export interface Adapters {
   analytics?: AnalyticsAdapter;
   auth: AuthAdapter;
   documents: DocumentsAdapter;
+  notification: NotificationAdapter;
 }
 
 export interface LoggerAdapter {
@@ -167,10 +173,10 @@ export interface SelfClient {
   hasPrivateKey(): Promise<boolean>;
   on<E extends SDKEvent>(event: E, cb: (payload?: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload?: SDKEventMap[E]): void;
-
+  logProofEvent(level: LogLevel, message: string, context: ProofContext, details?: Record<string, any>): void;
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
-
+  registerNotificationsToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void>;
   loadDocumentById(id: string): Promise<PassportData | null>;
   saveDocument(id: string, passportData: PassportData): Promise<void>;
 

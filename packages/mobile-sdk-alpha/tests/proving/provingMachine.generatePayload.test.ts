@@ -102,6 +102,9 @@ vitest.mock('@selfxyz/common/utils/passports/passport', () => {
 describe('_generatePayload', () => {
   const selfClient: SelfClient = {
     trackEvent: vitest.fn(),
+    emit: vitest.fn(),
+    getPrivateKey: vi.fn(() => Promise.resolve('mock-private-key')),
+    logProofEvent: vi.fn(),
   } as unknown as SelfClient;
   beforeEach(() => {
     vitest.clearAllMocks();

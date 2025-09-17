@@ -4,23 +4,20 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { useSelfAppStore } from '../../src/stores';
 import type { SelfClient } from '../../src/types/public';
-import {
-  useProtocolStore,
-  useSelfAppStore,
-} from '../../src/stores';
 
 // Do not import provingMachine here; we'll require it after setting up mocks per test
 
 vi.mock('xstate', async () => {
-  const actual = await vi.importActual('xstate') as any;
+  const actual = (await vi.importActual('xstate')) as any;
   const { actorMock } = await import('./actorMock');
   return { ...actual, createActor: vi.fn(() => actorMock) };
 });
 
 // Mock proving utils for payload building
 vi.mock('@selfxyz/common/utils/proving', async () => {
-  const actual = await vi.importActual('@selfxyz/common/utils/proving') as any;
+  const actual = (await vi.importActual('@selfxyz/common/utils/proving')) as any;
   return {
     ...actual,
     getPayload: vi.fn(() => ({ mocked: true })),
@@ -35,6 +32,7 @@ vi.mock('@selfxyz/common/utils/proving', async () => {
 describe('_generatePayload disclose (stateless resolver)', () => {
   const selfClient: SelfClient = {
     trackEvent: vi.fn(),
+    logProofEvent: vi.fn(),
   } as unknown as SelfClient;
 
   beforeEach(() => {
@@ -87,82 +85,80 @@ describe('_generatePayload disclose (stateless resolver)', () => {
     }));
 
     // Act (reload module after doMock)
-    let store: any;
-    let protocolStore: any;
-    
+
     // Import after mocks are in place
     const mod = await import('../../src/proving/provingMachine');
     const storeModule = await import('../../src/stores');
-    store = mod.useProvingStore;
-    protocolStore = storeModule.useProtocolStore;
+    const store = mod.useProvingStore;
+    const protocolStore = storeModule.useProtocolStore;
 
     // Set protocol store state
     protocolStore.setState({
-        passport: {
-          dsc_tree: 'tree',
-          csca_tree: [[new Uint8Array([1])]],
-          commitment_tree: '[[]]',
-          deployed_circuits: null,
-          circuits_dns_mapping: null,
-          alternative_csca: {},
-          ofac_trees: {
-            passportNoAndNationality: { root: ['pp'] },
-            nameAndDob: { root: ['dob'] },
-            nameAndYob: { root: ['yob'] },
-          },
-          fetch_deployed_circuits: vi.fn(),
-          fetch_circuits_dns_mapping: vi.fn(),
-          fetch_csca_tree: vi.fn(),
-          fetch_dsc_tree: vi.fn(),
-          fetch_identity_tree: vi.fn(),
-          fetch_alternative_csca: vi.fn(),
-          fetch_ofac_trees: vi.fn(),
-          fetch_all: vi.fn(),
+      passport: {
+        dsc_tree: 'tree',
+        csca_tree: [[new Uint8Array([1])]],
+        commitment_tree: '[[]]',
+        deployed_circuits: null,
+        circuits_dns_mapping: null,
+        alternative_csca: {},
+        ofac_trees: {
+          passportNoAndNationality: { root: ['pp'] },
+          nameAndDob: { root: ['dob'] },
+          nameAndYob: { root: ['yob'] },
         },
-        id_card: {
-          commitment_tree: null,
-          dsc_tree: null,
-          csca_tree: null,
-          deployed_circuits: null,
-          circuits_dns_mapping: null,
-          alternative_csca: {},
-          ofac_trees: null,
-          fetch_deployed_circuits: vi.fn(),
-          fetch_circuits_dns_mapping: vi.fn(),
-          fetch_csca_tree: vi.fn(),
-          fetch_dsc_tree: vi.fn(),
-          fetch_identity_tree: vi.fn(),
-          fetch_alternative_csca: vi.fn(),
-          fetch_ofac_trees: vi.fn(),
-          fetch_all: vi.fn(),
-        },
-      } as any);
+        fetch_deployed_circuits: vi.fn(),
+        fetch_circuits_dns_mapping: vi.fn(),
+        fetch_csca_tree: vi.fn(),
+        fetch_dsc_tree: vi.fn(),
+        fetch_identity_tree: vi.fn(),
+        fetch_alternative_csca: vi.fn(),
+        fetch_ofac_trees: vi.fn(),
+        fetch_all: vi.fn(),
+      },
+      id_card: {
+        commitment_tree: null,
+        dsc_tree: null,
+        csca_tree: null,
+        deployed_circuits: null,
+        circuits_dns_mapping: null,
+        alternative_csca: {},
+        ofac_trees: null,
+        fetch_deployed_circuits: vi.fn(),
+        fetch_circuits_dns_mapping: vi.fn(),
+        fetch_csca_tree: vi.fn(),
+        fetch_dsc_tree: vi.fn(),
+        fetch_identity_tree: vi.fn(),
+        fetch_alternative_csca: vi.fn(),
+        fetch_ofac_trees: vi.fn(),
+        fetch_all: vi.fn(),
+      },
+    } as any);
 
-      // Set proving store state inside isolateModules so it affects the isolated store instance
-      store.setState({
-        circuitType: 'disclose',
-        passportData: {
-          documentCategory: 'passport',
-          mock: false,
-          dsc_parsed: { authorityKeyIdentifier: 'abcd' },
-          passportMetadata: {
-            signatureAlgorithm: 'rsa_pss_rsae_sha256',
-            signedAttrHashFunction: 'sha256',
-            issuer: 'X',
-            validFrom: new Date('2020-01-01'),
-            validTo: new Date('2030-01-01'),
-          },
-          mrz: 'P<UTO...MOCKMRZ...',
-          eContent: [],
-          signedAttr: [],
-          encryptedDigest: [],
-        } as any,
-        secret: 'sec',
-        uuid: 'uuid-123',
-        sharedKey: Buffer.alloc(32, 1),
-        env: 'prod',
-      });
-    
+    // Set proving store state inside isolateModules so it affects the isolated store instance
+    store.setState({
+      circuitType: 'disclose',
+      passportData: {
+        documentCategory: 'passport',
+        mock: false,
+        dsc_parsed: { authorityKeyIdentifier: 'abcd' },
+        passportMetadata: {
+          signatureAlgorithm: 'rsa_pss_rsae_sha256',
+          signedAttrHashFunction: 'sha256',
+          issuer: 'X',
+          validFrom: new Date('2020-01-01'),
+          validTo: new Date('2030-01-01'),
+        },
+        mrz: 'P<UTO...MOCKMRZ...',
+        eContent: [],
+        signedAttr: [],
+        encryptedDigest: [],
+      } as any,
+      secret: 'sec',
+      uuid: 'uuid-123',
+      sharedKey: Buffer.alloc(32, 1),
+      env: 'prod',
+    });
+
     const payload = await store.getState()._generatePayload(selfClient);
 
     // Assert
@@ -193,68 +189,63 @@ describe('_generatePayload disclose (stateless resolver)', () => {
       generateTEEInputsDSC: vi.fn(),
     }));
 
-    let store: any;
-    let protocolStore: any;
-    
     const mod = await import('../../src/proving/provingMachine');
     const storeModule = await import('../../src/stores');
-    store = mod.useProvingStore;
-    protocolStore = storeModule.useProtocolStore;
+    const store = mod.useProvingStore;
+    const protocolStore = storeModule.useProtocolStore;
 
     // Set protocol store state - missing commitment tree
     protocolStore.setState({
-        passport: {
-          dsc_tree: 'tree',
-          csca_tree: [[new Uint8Array([1])]],
-          commitment_tree: null,
-          deployed_circuits: null,
-          circuits_dns_mapping: null,
-          alternative_csca: {},
-          ofac_trees: {
-            passportNoAndNationality: { root: ['pp'] },
-            nameAndDob: { root: ['dob'] },
-            nameAndYob: { root: ['yob'] },
-          },
-          fetch_deployed_circuits: vi.fn(),
-          fetch_circuits_dns_mapping: vi.fn(),
-          fetch_csca_tree: vi.fn(),
-          fetch_dsc_tree: vi.fn(),
-          fetch_identity_tree: vi.fn(),
-          fetch_alternative_csca: vi.fn(),
-          fetch_ofac_trees: vi.fn(),
-          fetch_all: vi.fn(),
+      passport: {
+        dsc_tree: 'tree',
+        csca_tree: [[new Uint8Array([1])]],
+        commitment_tree: null,
+        deployed_circuits: null,
+        circuits_dns_mapping: null,
+        alternative_csca: {},
+        ofac_trees: {
+          passportNoAndNationality: { root: ['pp'] },
+          nameAndDob: { root: ['dob'] },
+          nameAndYob: { root: ['yob'] },
         },
-        id_card: {} as any,
-      } as any);
+        fetch_deployed_circuits: vi.fn(),
+        fetch_circuits_dns_mapping: vi.fn(),
+        fetch_csca_tree: vi.fn(),
+        fetch_dsc_tree: vi.fn(),
+        fetch_identity_tree: vi.fn(),
+        fetch_alternative_csca: vi.fn(),
+        fetch_ofac_trees: vi.fn(),
+        fetch_all: vi.fn(),
+      },
+      id_card: {} as any,
+    } as any);
 
-      // Set store state inside isolateModules so it affects the isolated store instance
-      store.setState({
-        circuitType: 'disclose',
-        passportData: {
-          documentCategory: 'passport',
-          mock: false,
-          dsc_parsed: { authorityKeyIdentifier: 'abcd' },
-          passportMetadata: {
-            signatureAlgorithm: 'rsa_pss_rsae_sha256',
-            signedAttrHashFunction: 'sha256',
-            issuer: 'X',
-            validFrom: new Date('2020-01-01'),
-            validTo: new Date('2030-01-01'),
-          },
-          mrz: 'P<UTO...MOCKMRZ...',
-          eContent: [],
-          signedAttr: [],
-          encryptedDigest: [],
-        } as any,
-        secret: 'sec',
-        uuid: 'uuid-123',
-        sharedKey: Buffer.alloc(32, 1),
-        env: 'prod',
-      });
-    
-    await expect(store.getState()._generatePayload(selfClient)).rejects.toThrow(
-      'Commitment tree not loaded',
-    );
+    // Set store state inside isolateModules so it affects the isolated store instance
+    store.setState({
+      circuitType: 'disclose',
+      passportData: {
+        documentCategory: 'passport',
+        mock: false,
+        dsc_parsed: { authorityKeyIdentifier: 'abcd' },
+        passportMetadata: {
+          signatureAlgorithm: 'rsa_pss_rsae_sha256',
+          signedAttrHashFunction: 'sha256',
+          issuer: 'X',
+          validFrom: new Date('2020-01-01'),
+          validTo: new Date('2030-01-01'),
+        },
+        mrz: 'P<UTO...MOCKMRZ...',
+        eContent: [],
+        signedAttr: [],
+        encryptedDigest: [],
+      } as any,
+      secret: 'sec',
+      uuid: 'uuid-123',
+      sharedKey: Buffer.alloc(32, 1),
+      env: 'prod',
+    });
+
+    await expect(store.getState()._generatePayload(selfClient)).rejects.toThrow('Commitment tree not loaded');
   });
 
   it('throws when OFAC trees are missing', async () => {
@@ -276,63 +267,58 @@ describe('_generatePayload disclose (stateless resolver)', () => {
       generateTEEInputsDSC: vi.fn(),
     }));
 
-    let store: any;
-    let protocolStore: any;
-    
     const mod = await import('../../src/proving/provingMachine');
     const storeModule = await import('../../src/stores');
-    store = mod.useProvingStore;
-    protocolStore = storeModule.useProtocolStore;
+    const store = mod.useProvingStore;
+    const protocolStore = storeModule.useProtocolStore;
 
     // Set protocol store state - missing OFAC trees
     protocolStore.setState({
-        passport: {
-          dsc_tree: 'tree',
-          csca_tree: [[new Uint8Array([1])]],
-          commitment_tree: '[[]]',
-          deployed_circuits: null,
-          circuits_dns_mapping: null,
-          alternative_csca: {},
-          ofac_trees: null,
-          fetch_deployed_circuits: vi.fn(),
-          fetch_circuits_dns_mapping: vi.fn(),
-          fetch_csca_tree: vi.fn(),
-          fetch_dsc_tree: vi.fn(),
-          fetch_identity_tree: vi.fn(),
-          fetch_alternative_csca: vi.fn(),
-          fetch_ofac_trees: vi.fn(),
-          fetch_all: vi.fn(),
-        },
-        id_card: {} as any,
-      } as any);
+      passport: {
+        dsc_tree: 'tree',
+        csca_tree: [[new Uint8Array([1])]],
+        commitment_tree: '[[]]',
+        deployed_circuits: null,
+        circuits_dns_mapping: null,
+        alternative_csca: {},
+        ofac_trees: null,
+        fetch_deployed_circuits: vi.fn(),
+        fetch_circuits_dns_mapping: vi.fn(),
+        fetch_csca_tree: vi.fn(),
+        fetch_dsc_tree: vi.fn(),
+        fetch_identity_tree: vi.fn(),
+        fetch_alternative_csca: vi.fn(),
+        fetch_ofac_trees: vi.fn(),
+        fetch_all: vi.fn(),
+      },
+      id_card: {} as any,
+    } as any);
 
-      // Set store state inside isolateModules so it affects the isolated store instance
-      store.setState({
-        circuitType: 'disclose',
-        passportData: {
-          documentCategory: 'passport',
-          mock: false,
-          dsc_parsed: { authorityKeyIdentifier: 'abcd' },
-          passportMetadata: {
-            signatureAlgorithm: 'rsa_pss_rsae_sha256',
-            signedAttrHashFunction: 'sha256',
-            issuer: 'X',
-            validFrom: new Date('2020-01-01'),
-            validTo: new Date('2030-01-01'),
-          },
-          mrz: 'P<UTO...MOCKMRZ...',
-          eContent: [],
-          signedAttr: [],
-          encryptedDigest: [],
-        } as any,
-        secret: 'sec',
-        uuid: 'uuid-123',
-        sharedKey: Buffer.alloc(32, 1),
-        env: 'prod',
-      });
-    
-    await expect(store.getState()._generatePayload(selfClient)).rejects.toThrow(
-      'OFAC trees not loaded',
-    );
+    // Set store state inside isolateModules so it affects the isolated store instance
+    store.setState({
+      circuitType: 'disclose',
+      passportData: {
+        documentCategory: 'passport',
+        mock: false,
+        dsc_parsed: { authorityKeyIdentifier: 'abcd' },
+        passportMetadata: {
+          signatureAlgorithm: 'rsa_pss_rsae_sha256',
+          signedAttrHashFunction: 'sha256',
+          issuer: 'X',
+          validFrom: new Date('2020-01-01'),
+          validTo: new Date('2030-01-01'),
+        },
+        mrz: 'P<UTO...MOCKMRZ...',
+        eContent: [],
+        signedAttr: [],
+        encryptedDigest: [],
+      } as any,
+      secret: 'sec',
+      uuid: 'uuid-123',
+      sharedKey: Buffer.alloc(32, 1),
+      env: 'prod',
+    });
+
+    await expect(store.getState()._generatePayload(selfClient)).rejects.toThrow('OFAC trees not loaded');
   });
 });

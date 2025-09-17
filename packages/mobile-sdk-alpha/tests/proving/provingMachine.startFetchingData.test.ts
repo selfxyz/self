@@ -43,6 +43,7 @@ describe('startFetchingData', () => {
     mockSelfClient = {
       getPrivateKey: vitest.fn().mockResolvedValue('secret'), // or mock-secret?
       trackEvent: vitest.fn(),
+      logProofEvent: vitest.fn(),
     } as unknown as SelfClient;
 
     useProtocolStore.setState({
