@@ -14,7 +14,7 @@ import { create } from 'zustand';
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { EndpointType, SelfApp } from '@selfxyz/common/utils';
 import { getCircuitNameFromPassportData, getSolidityPackedUserContextData } from '@selfxyz/common/utils';
-import { getPublicKey, verifyAttestation } from '@selfxyz/common/utils/attest';
+import { checkPCR0Mapping, validatePKIToken } from '@selfxyz/common/utils/attest';
 import {
   generateTEEInputsDiscloseStateless,
   generateTEEInputsDSC,
@@ -489,9 +489,23 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
           const attestationData = result.result.attestation;
           set({ attestation: attestationData });
+          const attestationToken = Buffer.from(attestationData).toString('utf-8');
 
-          const serverPubkey = getPublicKey(attestationData);
-          const verified = await verifyAttestation(attestationData);
+          const { userPubkey, serverPubkey, imageHash, verified } = validatePKIToken(attestationToken, __DEV__);
+
+          const pcr0Mapping = await checkPCR0Mapping(imageHash);
+
+          if (!__DEV__ && !pcr0Mapping) {
+            console.error('PCR0 mapping not found');
+            actor!.send({ type: 'CONNECT_ERROR' });
+            return;
+          }
+
+          if (clientPublicKeyHex !== userPubkey.toString('hex')) {
+            console.error('User public key does not match');
+            actor!.send({ type: 'CONNECT_ERROR' });
+            return;
+          }
 
           if (!verified) {
             selfClient.logProofEvent('error', 'Attestation verification failed', context, {
@@ -506,11 +520,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient?.trackEvent(ProofEvents.ATTESTATION_VERIFIED);
           selfClient.logProofEvent('info', 'Attestation verified', context);
 
-          const serverKey = ec.keyFromPublic(serverPubkey as string, 'hex');
+          const serverKey = ec.keyFromPublic(serverPubkey, 'hex');
           const derivedKey = clientKey.derive(serverKey.getPublic());
 
           set({
-            serverPublicKey: serverPubkey,
+            serverPublicKey: serverKey.getPublic(true, 'hex'),
             sharedKey: Buffer.from(derivedKey.toArray('be', 32)),
           });
           selfClient?.trackEvent(ProofEvents.SHARED_KEY_DERIVED);
@@ -731,7 +745,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         method: 'openpassport_hello',
         id: 1,
         params: {
-          user_pubkey: [4, ...Array.from(Buffer.from(clientPublicKeyHex, 'hex'))],
+          user_pubkey: [...Array.from(Buffer.from(clientPublicKeyHex, 'hex'))],
           uuid: connectionUuid,
         },
       };

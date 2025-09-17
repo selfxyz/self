@@ -27,7 +27,7 @@ const CELO_MAINNET_RPC_URL = 'https://forno.celo.org';
 const CELO_TESTNET_RPC_URL = 'https://alfajores-forno.celo-testnet.org';
 
 const IDENTITY_VERIFICATION_HUB_ADDRESS = '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF';
-const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x68c931C9a534D37aa78094877F46fE46a49F1A51';
+const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74';
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -217,20 +217,40 @@ export class SelfBackendVerifier {
       });
     }
 
-    const circuitTimestampYy = [
-      2,
-      0,
-      publicSignals[discloseIndices[attestationId].currentDateIndex],
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 1],
-    ];
-    const circuitTimestampMm = [
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 2],
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 3],
-    ];
-    const circuitTimestampDd = [
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 4],
-      publicSignals[discloseIndices[attestationId].currentDateIndex + 5],
-    ];
+    let circuitTimestampYy: number[];
+    let circuitTimestampMm: number[];
+    let circuitTimestampDd: number[];
+    if (attestationId === 3) {
+      circuitTimestampYy = String(publicSignals[discloseIndices[attestationId].currentDateIndex])
+        .split('')
+        .map(Number);
+      circuitTimestampMm = String(
+        publicSignals[discloseIndices[attestationId].currentDateIndex + 1]
+      )
+        .split('')
+        .map(Number);
+      circuitTimestampDd = String(
+        publicSignals[discloseIndices[attestationId].currentDateIndex + 2]
+      )
+        .split('')
+        .map(Number);
+    } else {
+      circuitTimestampYy = [
+        2,
+        0,
+        +publicSignals[discloseIndices[attestationId].currentDateIndex],
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 1],
+      ];
+      circuitTimestampMm = [
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 2],
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 3],
+      ];
+      circuitTimestampDd = [
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 4],
+        +publicSignals[discloseIndices[attestationId].currentDateIndex + 5],
+      ];
+    }
+
     const circuitTimestamp = new Date(
       Number(circuitTimestampYy.join('')),
       Number(circuitTimestampMm.join('')) - 1,
