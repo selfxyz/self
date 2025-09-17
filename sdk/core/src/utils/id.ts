@@ -50,22 +50,27 @@ export const formatRevealedDataPacked = (
     nationality = 'IND';
   } else {
     nationality = revealedDataPackedString
-    .subarray(
-      revealedDataIndices[attestationId].nationalityStart,
-      revealedDataIndices[attestationId].nationalityEnd + 1
-    )
-    .toString('utf-8');
+      .subarray(
+        revealedDataIndices[attestationId].nationalityStart,
+        revealedDataIndices[attestationId].nationalityEnd + 1
+      )
+      .toString('utf-8');
   }
   let dateOfBirth: string;
   if (attestationId === 3) {
-    dateOfBirth = new Array(revealedDataPackedString.subarray(
-      revealedDataIndices[attestationId].dateOfBirthStart,
-      revealedDataIndices[attestationId].dateOfBirthEnd + 1
-    )).map(Number).map(String).join('');
+    dateOfBirth = new Array(
+      revealedDataPackedString.subarray(
+        revealedDataIndices[attestationId].dateOfBirthStart,
+        revealedDataIndices[attestationId].dateOfBirthEnd + 1
+      )
+    )
+      .map(Number)
+      .map(String)
+      .join('');
   } else {
-  dateOfBirth = revealedDataPackedString
-    .subarray(
-      revealedDataIndices[attestationId].dateOfBirthStart,
+    dateOfBirth = revealedDataPackedString
+      .subarray(
+        revealedDataIndices[attestationId].dateOfBirthStart,
         revealedDataIndices[attestationId].dateOfBirthEnd + 1
       )
       .toString('utf-8');
@@ -89,27 +94,36 @@ export const formatRevealedDataPacked = (
   }
   let olderThan: string;
   if (attestationId === 3) {
-    olderThan = revealedDataPackedString.subarray(
-      revealedDataIndices[attestationId].olderThanStart,
-      revealedDataIndices[attestationId].olderThanEnd + 1
-    ).toString('utf-8');
-  } else {
-    olderThan =
-      revealedDataPackedString.subarray(
+    olderThan = revealedDataPackedString
+      .subarray(
         revealedDataIndices[attestationId].olderThanStart,
         revealedDataIndices[attestationId].olderThanEnd + 1
-      )[0].toString().padStart(2, '0');
+      )
+      .toString('utf-8');
+  } else {
+    olderThan = revealedDataPackedString
+      .subarray(
+        revealedDataIndices[attestationId].olderThanStart,
+        revealedDataIndices[attestationId].olderThanEnd + 1
+      )[0]
+      .toString()
+      .padStart(2, '0');
   }
-  console.log('ofac', revealedDataPackedString.subarray(
-    revealedDataIndices[attestationId].ofacStart,
-    revealedDataIndices[attestationId].ofacEnd + 1
-  ));
+  console.log(
+    'ofac',
+    revealedDataPackedString.subarray(
+      revealedDataIndices[attestationId].ofacStart,
+      revealedDataIndices[attestationId].ofacEnd + 1
+    )
+  );
   const ofac = Array.from(
     revealedDataPackedString.subarray(
       revealedDataIndices[attestationId].ofacStart,
       revealedDataIndices[attestationId].ofacEnd + 1
     )
-  ).map(Boolean).map((x) => !x);
+  )
+    .map(Boolean)
+    .map((x) => !x);
 
   if (ofac.length < 3) {
     ofac.unshift(false);

@@ -27,7 +27,7 @@ export const discloseIndices = {
     userIdentifierIndex: 20,
     passportNoSmtRootIndex: 99,
   },
-   3: {
+  3: {
     revealedDataPackedIndex: 2,
     forbiddenCountriesListPackedIndex: 6,
     nullifierIndex: 0,
@@ -39,7 +39,7 @@ export const discloseIndices = {
     scopeIndex: 17,
     userIdentifierIndex: 18,
     passportNoSmtRootIndex: 99,
-   }
+  },
 } as const;
 
 type RevealedDataFields =

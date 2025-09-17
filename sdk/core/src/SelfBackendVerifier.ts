@@ -221,9 +221,19 @@ export class SelfBackendVerifier {
     let circuitTimestampMm: number[];
     let circuitTimestampDd: number[];
     if (attestationId === 3) {
-      circuitTimestampYy = String(publicSignals[discloseIndices[attestationId].currentDateIndex]).split('').map(Number);
-      circuitTimestampMm = String(publicSignals[discloseIndices[attestationId].currentDateIndex + 1]).split('').map(Number);
-      circuitTimestampDd = String(publicSignals[discloseIndices[attestationId].currentDateIndex + 2]).split('').map(Number);
+      circuitTimestampYy = String(publicSignals[discloseIndices[attestationId].currentDateIndex])
+        .split('')
+        .map(Number);
+      circuitTimestampMm = String(
+        publicSignals[discloseIndices[attestationId].currentDateIndex + 1]
+      )
+        .split('')
+        .map(Number);
+      circuitTimestampDd = String(
+        publicSignals[discloseIndices[attestationId].currentDateIndex + 2]
+      )
+        .split('')
+        .map(Number);
     } else {
       circuitTimestampYy = [
         2,

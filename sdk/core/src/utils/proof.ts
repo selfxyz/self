@@ -27,7 +27,7 @@ export function getRevealedDataPublicSignalsLength(attestationId: AttestationId)
 export const bytesCount: Record<AttestationId, number[]> = {
   1: [31, 31, 31],
   2: [31, 31, 31, 1],
-  3: [31, 31, 31, 26]
+  3: [31, 31, 31, 26],
 };
 
 /**
