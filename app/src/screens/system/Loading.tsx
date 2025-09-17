@@ -11,10 +11,6 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 
 import type { PassportData } from '@selfxyz/common/types';
-import {
-  type ProvingStateType,
-  useProvingStore,
-} from '@selfxyz/mobile-sdk-alpha';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
@@ -27,6 +23,8 @@ import { advercase, dinot } from '@/utils/fonts';
 import { loadingScreenProgress } from '@/utils/haptic';
 import { setupNotifications } from '@/utils/notifications/notificationService';
 import { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
+import type { ProvingStateType } from '@/utils/proving/provingMachine';
+import { useProvingStore } from '@/utils/proving/provingMachine';
 
 type LoadingScreenProps = StaticScreenProps<Record<string, never>>;
 

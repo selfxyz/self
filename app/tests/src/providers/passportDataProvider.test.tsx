@@ -23,8 +23,6 @@ const mockKeychain = {
   resetGenericPassword: jest.fn(),
 };
 
-const listeners = new Map();
-
 jest.mock('react-native-keychain', () => mockKeychain);
 
 // Mock the auth provider
@@ -134,11 +132,7 @@ describe('PassportDataProvider', () => {
 
   it('should provide context values to children', () => {
     const { getByTestId } = render(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <TestComponent />
         </PassportProvider>
@@ -152,11 +146,7 @@ describe('PassportDataProvider', () => {
 
   it('should provide all required context functions', () => {
     const { getByTestId } = render(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <TestComponent />
         </PassportProvider>
@@ -177,11 +167,7 @@ describe('PassportDataProvider', () => {
 
   it('should support multiple consumers accessing the same context', () => {
     const { getByTestId } = render(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <MultipleConsumersTest />
         </PassportProvider>
@@ -200,11 +186,7 @@ describe('PassportDataProvider', () => {
 
   it('should handle context updates and trigger re-renders', async () => {
     const { getByTestId } = render(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <ContextUpdateTest />
         </PassportProvider>
@@ -229,11 +211,7 @@ describe('PassportDataProvider', () => {
 
   it('should handle errors gracefully in context consumers', () => {
     const { getByTestId } = render(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <ErrorBoundaryTest />
         </PassportProvider>
@@ -247,11 +225,7 @@ describe('PassportDataProvider', () => {
   it('should render without children gracefully', () => {
     expect(() => {
       render(
-        <SelfClientProvider
-          config={{}}
-          adapters={mockAdapters}
-          listeners={new Map()}
-        >
+        <SelfClientProvider config={{}} adapters={mockAdapters}>
           <PassportProvider />
         </SelfClientProvider>,
       );
@@ -260,11 +234,7 @@ describe('PassportDataProvider', () => {
 
   it('should provide consistent context values across re-renders', () => {
     const { getByTestId, rerender } = render(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <TestComponent />
         </PassportProvider>
@@ -276,11 +246,7 @@ describe('PassportDataProvider', () => {
 
     // Re-render the component
     rerender(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <TestComponent />
         </PassportProvider>
@@ -294,11 +260,7 @@ describe('PassportDataProvider', () => {
 
   it('should maintain context stability across provider re-renders', () => {
     const { getByTestId, rerender } = render(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <TestComponent />
         </PassportProvider>
@@ -310,11 +272,7 @@ describe('PassportDataProvider', () => {
 
     // Re-render with different props
     rerender(
-      <SelfClientProvider
-        config={{}}
-        adapters={mockAdapters}
-        listeners={listeners}
-      >
+      <SelfClientProvider config={{}} adapters={mockAdapters}>
         <PassportProvider>
           <TestComponent />
         </PassportProvider>

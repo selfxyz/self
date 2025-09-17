@@ -31,7 +31,10 @@ export interface StatusMessage {
 /**
  * Determine actions to take based on status code
  */
-export function handleStatusCode(data: StatusMessage, circuitType: string): StatusHandlerResult {
+export function handleStatusCode(
+  data: StatusMessage,
+  circuitType: string,
+): StatusHandlerResult {
   const result: StatusHandlerResult = {
     shouldDisconnect: false,
     analytics: [],

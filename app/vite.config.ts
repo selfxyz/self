@@ -158,6 +158,9 @@ export default defineConfig({
 
           // Proving - split into even smaller chunks
           'screens-prove-core': ['./src/navigation/prove.ts'],
+          'screens-prove-machine-core': [
+            './src/utils/proving/provingMachine.ts',
+          ],
           'screens-prove-validation-core': [
             './src/utils/proving/validateDocument.ts',
           ],

@@ -2,43 +2,48 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { SelfClient, useProtocolStore, useProvingStore } from '../../src';
-import { useSelfAppStore } from '../../src/stores';
-import { actorMock } from './actorMock';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  useProtocolStore,
+  useSelfAppStore,
+} from '@selfxyz/mobile-sdk-alpha/stores';
 
-vitest.mock('xstate', async importOriginal => {
-  const actual = await importOriginal();
+import { useProvingStore } from '@/utils/proving/provingMachine';
 
-  return {
-    ...(actual as any),
-    createActor: vi.fn(() => actorMock),
-  };
+jest.mock('xstate', () => {
+  const actual = jest.requireActual('xstate') as any;
+  const { actorMock } = require('./actorMock');
+  return { ...actual, createActor: jest.fn(() => actorMock) };
 });
 
+jest.mock('@/utils/analytics', () => () => ({
+  trackEvent: jest.fn(),
+}));
+
 // Mock the proving utils
-vitest.mock('@selfxyz/common/utils/proving', async () => {
-  const actual = await vitest.importActual('@selfxyz/common/utils/proving');
+jest.mock('@selfxyz/common/utils/proving', () => {
+  const actual = jest.requireActual('@selfxyz/common/utils/proving') as any;
   return {
     ...actual,
-    getPayload: vitest.fn(() => ({ mocked: true })),
-    encryptAES256GCM: vitest.fn(() => ({
+    getPayload: jest.fn(() => ({ mocked: true })),
+    encryptAES256GCM: jest.fn(() => ({
       nonce: [0],
       cipher_text: [1],
       auth_tag: [2],
     })),
-    generateTEEInputsRegister: vitest.fn(() => ({
+    generateTEEInputsRegister: jest.fn(() => ({
       inputs: { r: 1 },
       circuitName: 'reg',
       endpointType: 'celo',
       endpoint: 'https://reg',
     })),
-    generateTEEInputsDSC: vitest.fn(() => ({
+    generateTEEInputsDSC: jest.fn(() => ({
       inputs: { d: 1 },
       circuitName: 'dsc',
       endpointType: 'celo',
       endpoint: 'https://dsc',
     })),
-    generateTEEInputsDisclose: vitest.fn(() => ({
+    generateTEEInputsDisclose: jest.fn(() => ({
       inputs: { s: 1 },
       circuitName: 'vc_and_disclose',
       endpointType: 'https',
@@ -48,23 +53,25 @@ vitest.mock('@selfxyz/common/utils/proving', async () => {
 });
 
 // Mock the proving utils
-vitest.mock('@selfxyz/common/utils/circuits/registerInputs', async () => {
-  const actual = (await vitest.importActual('@selfxyz/common/utils/circuits/registerInputs')) as any;
+jest.mock('@selfxyz/common/utils/circuits/registerInputs', () => {
+  const actual = jest.requireActual(
+    '@selfxyz/common/utils/circuits/registerInputs',
+  ) as any;
   return {
     ...actual,
-    generateTEEInputsRegister: vitest.fn(() => ({
+    generateTEEInputsRegister: jest.fn(() => ({
       inputs: { r: 1 },
       circuitName: 'reg',
       endpointType: 'celo',
       endpoint: 'https://reg',
     })),
-    generateTEEInputsDSC: vitest.fn(() => ({
+    generateTEEInputsDSC: jest.fn(() => ({
       inputs: { d: 1 },
       circuitName: 'dsc',
       endpointType: 'celo',
       endpoint: 'https://dsc',
     })),
-    generateTEEInputsDiscloseStateless: vitest.fn(() => ({
+    generateTEEInputsDiscloseStateless: jest.fn(() => ({
       inputs: { s: 1 },
       circuitName: 'vc_and_disclose',
       endpointType: 'https',
@@ -74,11 +81,11 @@ vitest.mock('@selfxyz/common/utils/circuits/registerInputs', async () => {
 });
 
 // Mock the tree utils to avoid CSCA tree issues
-vitest.mock('@selfxyz/common/utils/trees', async () => {
-  const actual = (await vitest.importActual('@selfxyz/common/utils/trees')) as any;
+jest.mock('@selfxyz/common/utils/trees', () => {
+  const actual = jest.requireActual('@selfxyz/common/utils/trees') as any;
   return {
     ...actual,
-    getCscaTreeInclusionProof: vitest.fn(() => [
+    getCscaTreeInclusionProof: jest.fn(() => [
       '123', // root as string (BigInt toString)
       ['0', '1', '0'], // path indices as strings
       ['10', '20', '30'], // siblings as strings
@@ -87,11 +94,13 @@ vitest.mock('@selfxyz/common/utils/trees', async () => {
 });
 
 // Mock the passport utils to avoid signature processing issues
-vitest.mock('@selfxyz/common/utils/passports/passport', async () => {
-  const actual = (await vitest.importActual('@selfxyz/common/utils/passports/passport')) as any;
+jest.mock('@selfxyz/common/utils/passports/passport', () => {
+  const actual = jest.requireActual(
+    '@selfxyz/common/utils/passports/passport',
+  ) as any;
   return {
     ...actual,
-    getPassportSignatureInfos: vitest.fn(() => ({
+    getPassportSignatureInfos: jest.fn(() => ({
       pubKey: [1, 2, 3, 4],
       signature: [5, 6, 7, 8],
       signatureAlgorithmFullName: 'rsa_pss_rsae_sha256_65537_2048',
@@ -99,15 +108,23 @@ vitest.mock('@selfxyz/common/utils/passports/passport', async () => {
   };
 });
 
+const {
+  getPayload,
+  encryptAES256GCM,
+} = require('@selfxyz/common/utils/proving');
+
+const {
+  generateTEEInputsRegister,
+  generateTEEInputsDSC,
+  generateTEEInputsDiscloseStateless,
+} = require('@selfxyz/common/utils/circuits/registerInputs');
+
 describe('_generatePayload', () => {
   const selfClient: SelfClient = {
-    trackEvent: vitest.fn(),
-    emit: vitest.fn(),
-    getPrivateKey: vi.fn(() => Promise.resolve('mock-private-key')),
-    logProofEvent: vi.fn(),
+    trackEvent: jest.fn(),
   } as unknown as SelfClient;
   beforeEach(() => {
-    vitest.clearAllMocks();
+    jest.clearAllMocks();
     useProvingStore.setState({
       circuitType: 'register',
       passportData: {
@@ -125,9 +142,7 @@ describe('_generatePayload', () => {
           signature: new Uint8Array([9, 10, 11, 12]),
           signatureAlgorithm: 'sha256WithRSAEncryption',
           publicKeyDetails: {
-            // @ts-expect-error just moving the tests for now
             bits: 2048,
-            // @ts-expect-error just moving the tests for now
             exponent: 65537,
             modulus:
               'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
@@ -136,7 +151,6 @@ describe('_generatePayload', () => {
         csca_parsed: {
           tbsBytes: [13, 14, 15, 16],
           hashAlgorithm: 'sha256',
-          // @ts-expect-error just moving the tests for now
           serialNumber: '456',
           issuer: 'Test CSCA Issuer',
           subject: 'Test CSCA Subject',
@@ -146,13 +160,11 @@ describe('_generatePayload', () => {
           signature: new Uint8Array([21, 22, 23, 24]),
           signatureAlgorithm: 'sha256WithRSAEncryption',
         },
-        // @ts-expect-error just moving the tests for now
         dsc: new Uint8Array([25, 26, 27, 28]),
         csca: new Uint8Array([29, 30, 31, 32]),
         passportMetadata: {
           signatureAlgorithm: 'rsa_pss_rsae_sha256',
           signedAttrHashFunction: 'sha256',
-          // @ts-expect-error just moving the tests for now
           issuer: 'Test Country',
           validFrom: new Date('2020-01-01'),
           validTo: new Date('2030-01-01'),
@@ -190,13 +202,13 @@ describe('_generatePayload', () => {
         deployed_circuits: null,
         circuits_dns_mapping: null,
         alternative_csca: {},
-        fetch_deployed_circuits: vitest.fn(),
-        fetch_circuits_dns_mapping: vitest.fn(),
-        fetch_csca_tree: vitest.fn(),
-        fetch_dsc_tree: vitest.fn(),
-        fetch_identity_tree: vitest.fn(),
-        fetch_alternative_csca: vitest.fn(),
-        fetch_all: vitest.fn(),
+        fetch_deployed_circuits: jest.fn(),
+        fetch_circuits_dns_mapping: jest.fn(),
+        fetch_csca_tree: jest.fn(),
+        fetch_dsc_tree: jest.fn(),
+        fetch_identity_tree: jest.fn(),
+        fetch_alternative_csca: jest.fn(),
+        fetch_all: jest.fn(),
       },
       id_card: {
         commitment_tree: null,
@@ -205,20 +217,25 @@ describe('_generatePayload', () => {
         deployed_circuits: null,
         circuits_dns_mapping: null,
         alternative_csca: {},
-        fetch_deployed_circuits: vitest.fn(),
-        fetch_circuits_dns_mapping: vitest.fn(),
-        fetch_csca_tree: vitest.fn(),
-        fetch_dsc_tree: vitest.fn(),
-        fetch_identity_tree: vitest.fn(),
-        fetch_alternative_csca: vitest.fn(),
-        fetch_all: vitest.fn(),
+        fetch_deployed_circuits: jest.fn(),
+        fetch_circuits_dns_mapping: jest.fn(),
+        fetch_csca_tree: jest.fn(),
+        fetch_dsc_tree: jest.fn(),
+        fetch_identity_tree: jest.fn(),
+        fetch_alternative_csca: jest.fn(),
+        fetch_all: jest.fn(),
       },
     } as any);
   });
 
   it('register circuit', async () => {
     useProvingStore.setState({ circuitType: 'register' });
-    const payload = await useProvingStore.getState()._generatePayload(selfClient);
+    const payload = await useProvingStore
+      .getState()
+      ._generatePayload(selfClient);
+    expect(generateTEEInputsRegister).toHaveBeenCalled();
+    expect(getPayload).toHaveBeenCalled();
+    expect(encryptAES256GCM).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('celo');
     expect(payload.params).toEqual({
       uuid: '123',
@@ -230,14 +247,20 @@ describe('_generatePayload', () => {
 
   it('dsc circuit', async () => {
     useProvingStore.setState({ circuitType: 'dsc' });
-    const payload = await useProvingStore.getState()._generatePayload(selfClient);
+    const payload = await useProvingStore
+      .getState()
+      ._generatePayload(selfClient);
+    expect(generateTEEInputsDSC).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('celo');
     expect(payload.params.uuid).toBe('123');
   });
 
   it('disclose circuit', async () => {
     useProvingStore.setState({ circuitType: 'disclose' });
-    const payload = await useProvingStore.getState()._generatePayload(selfClient);
+    const payload = await useProvingStore
+      .getState()
+      ._generatePayload(selfClient);
+    expect(generateTEEInputsDiscloseStateless).toHaveBeenCalled();
     expect(useProvingStore.getState().endpointType).toBe('https');
     expect(payload.params.uuid).toBe('123');
   });

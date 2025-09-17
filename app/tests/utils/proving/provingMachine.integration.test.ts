@@ -9,13 +9,12 @@
 
 import { EventEmitter } from 'events';
 import type { Socket } from 'socket.io-client';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useProvingStore } from '../../src/proving/provingMachine';
+import { useProvingStore } from '@/utils/proving/provingMachine';
 
 // Mock only external dependencies, not our business logic
-vi.mock('socket.io-client');
-vi.mock('../../src/constants/analytics', () => ({
+jest.mock('socket.io-client');
+jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   ProofEvents: {
     SOCKETIO_CONN_STARTED: 'SOCKETIO_CONN_STARTED',
     SOCKETIO_SUBSCRIBED: 'SOCKETIO_SUBSCRIBED',
@@ -26,106 +25,94 @@ vi.mock('../../src/constants/analytics', () => ({
   },
   PassportEvents: {},
 }));
-
-vi.mock('../../src/proving/internal/logging', () => ({
-  logProofEvent: vi.fn(),
-  createProofContext: vi.fn(() => ({})),
+jest.mock('@/Sentry', () => ({
+  logProofEvent: jest.fn(),
+  createProofContext: jest.fn(() => ({})),
 }));
-vi.mock('@selfxyz/common/utils/proving', () => ({
-  getWSDbRelayerUrl: vi.fn(() => 'ws://test-url'),
-  getPayload: vi.fn(),
-  encryptAES256GCM: vi.fn(),
+jest.mock('@selfxyz/common/utils/proving', () => ({
+  getWSDbRelayerUrl: jest.fn(() => 'ws://test-url'),
+  getPayload: jest.fn(),
+  encryptAES256GCM: jest.fn(),
   clientKey: {},
   clientPublicKeyHex: 'test-key',
   ec: {},
 }));
 
 // Mock mobile-sdk-alpha dependencies
-vi.mock('../../src/documents/utils', () => ({
-  loadSelectedDocument: vi.fn(() =>
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  loadSelectedDocument: jest.fn(() =>
     Promise.resolve({
       data: { mockData: true },
       version: '1.0.0',
     }),
   ),
-  hasAnyValidRegisteredDocument: vi.fn(() => Promise.resolve(true)),
-  clearPassportData: vi.fn(),
-  markCurrentDocumentAsRegistered: vi.fn(),
-  reStorePassportDataWithRightCSCA: vi.fn(),
-}));
-
-vi.mock('../../src/stores', () => ({
+  hasAnyValidRegisteredDocument: jest.fn(() => Promise.resolve(true)),
+  clearPassportData: jest.fn(),
+  markCurrentDocumentAsRegistered: jest.fn(),
+  reStorePassportDataWithRightCSCA: jest.fn(),
+  generateTEEInputsDisclose: jest.fn(),
   useProtocolStore: {
-    getState: vi.fn(() => ({
+    getState: jest.fn(() => ({
       isUserLoggedIn: true,
     })),
   },
-  useSelfAppStore: {
-    getState: vi.fn(() => ({
-      selfApp: {},
-    })),
-  },
-}));
-
-vi.mock('../../src/types/events', () => ({
   SdkEvents: {
     PASSPORT_DATA_NOT_FOUND: 'PASSPORT_DATA_NOT_FOUND',
   },
 }));
 
 // Mock common utils dependencies
-vi.mock('@selfxyz/common/utils', () => ({
-  getCircuitNameFromPassportData: vi.fn(() => 'register'),
-  getSolidityPackedUserContextData: vi.fn(() => '0x123'),
+jest.mock('@selfxyz/common/utils', () => ({
+  getCircuitNameFromPassportData: jest.fn(() => 'register'),
+  getSolidityPackedUserContextData: jest.fn(() => '0x123'),
 }));
 
-vi.mock('@selfxyz/common/utils/attest', () => ({
-  getPublicKey: vi.fn(),
-  verifyAttestation: vi.fn(),
+jest.mock('@selfxyz/common/utils/attest', () => ({
+  getPublicKey: jest.fn(),
+  verifyAttestation: jest.fn(),
 }));
 
-vi.mock('@selfxyz/common/utils/circuits/registerInputs', () => ({
-  generateTEEInputsDSC: vi.fn(),
-  generateTEEInputsRegister: vi.fn(),
+jest.mock('@selfxyz/common/utils/circuits/registerInputs', () => ({
+  generateTEEInputsDSC: jest.fn(),
+  generateTEEInputsRegister: jest.fn(),
 }));
 
-vi.mock('@selfxyz/common/utils/passports/validate', () => ({
-  checkDocumentSupported: vi.fn(() => Promise.resolve(true)),
-  checkIfPassportDscIsInTree: vi.fn(() => Promise.resolve(true)),
-  isDocumentNullified: vi.fn(() => Promise.resolve(false)),
-  isUserRegistered: vi.fn(() => Promise.resolve(false)),
-  isUserRegisteredWithAlternativeCSCA: vi.fn(() => Promise.resolve(false)),
+jest.mock('@selfxyz/common/utils/passports/validate', () => ({
+  checkDocumentSupported: jest.fn(() => Promise.resolve(true)),
+  checkIfPassportDscIsInTree: jest.fn(() => Promise.resolve(true)),
+  isDocumentNullified: jest.fn(() => Promise.resolve(false)),
+  isUserRegistered: jest.fn(() => Promise.resolve(false)),
+  isUserRegisteredWithAlternativeCSCA: jest.fn(() => Promise.resolve(false)),
 }));
 
 // Mock the actor system
 const mockActor = {
-  send: vi.fn(),
-  getSnapshot: vi.fn(() => ({ value: 'ready_to_prove' })),
-  stop: vi.fn(),
-  on: vi.fn(),
-  subscribe: vi.fn(() => vi.fn()), // Return unsubscribe function
-  start: vi.fn(),
+  send: jest.fn(),
+  getSnapshot: jest.fn(() => ({ value: 'ready_to_prove' })),
+  stop: jest.fn(),
+  on: jest.fn(),
+  subscribe: jest.fn(() => jest.fn()), // Return unsubscribe function
+  start: jest.fn(),
 };
 
-vi.mock('xstate', () => ({
-  createActor: vi.fn(() => mockActor),
-  createMachine: vi.fn(() => ({})),
+jest.mock('xstate', () => ({
+  createActor: jest.fn(() => mockActor),
+  createMachine: jest.fn(() => ({})),
 }));
 
 describe('provingMachine Socket.IO Integration', () => {
   const mockSelfClient = {
-    trackEvent: vi.fn(),
-    emit: vi.fn(),
-    getPrivateKey: vi.fn(() => Promise.resolve('mock-private-key')),
-    logProofEvent: vi.fn(),
+    trackEvent: jest.fn(),
+    emit: jest.fn(),
+    getPrivateKey: jest.fn(() => Promise.resolve('mock-private-key')),
   } as any;
 
   // Create a real EventEmitter to simulate socket behavior
   let mockSocket: EventEmitter & Partial<Socket>;
-  let socketIoMock: any;
+  let socketIoMock: jest.MockedFunction<any>;
 
   beforeEach(async () => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
 
     // Reset store to clean state
     useProvingStore.setState({
@@ -138,12 +125,12 @@ describe('provingMachine Socket.IO Integration', () => {
     // Create mock socket with real EventEmitter behavior
     mockSocket = new EventEmitter() as EventEmitter & Partial<Socket>;
     // Spy on emit so EventEmitter listeners still fire
-    vi.spyOn(mockSocket as any, 'emit');
-    mockSocket.disconnect = vi.fn();
+    jest.spyOn(mockSocket as any, 'emit');
+    mockSocket.disconnect = jest.fn();
 
     // Mock socket.io constructor
-    const socketIo = await import('socket.io-client');
-    socketIoMock = vi.mocked(socketIo.default || socketIo);
+    const socketIo = require('socket.io-client');
+    socketIoMock = socketIo.default || socketIo;
     socketIoMock.mockReturnValue(mockSocket);
 
     // Initialize the actor properly by calling init
@@ -170,7 +157,7 @@ describe('provingMachine Socket.IO Integration', () => {
       await new Promise(resolve => setImmediate(resolve));
 
       // Clear mocks to isolate socket event testing from init events
-      vi.clearAllMocks();
+      jest.clearAllMocks();
 
       // Act: Trigger real status event by emitting to the EventEmitter
       // This simulates a status message from the server
@@ -208,7 +195,7 @@ describe('provingMachine Socket.IO Integration', () => {
 
       // Clear previous calls from init before asserting
       mockActor.send.mockClear();
-      (mockSelfClient.trackEvent as any).mockClear();
+      (mockSelfClient.trackEvent as jest.Mock).mockClear();
 
       (mockSocket as any).emit('status', { status: 4 });
 
@@ -237,7 +224,7 @@ describe('provingMachine Socket.IO Integration', () => {
 
       // Clear previous calls from init before asserting
       mockActor.send.mockClear();
-      (mockSelfClient.trackEvent as any).mockClear();
+      (mockSelfClient.trackEvent as jest.Mock).mockClear();
 
       (mockSocket as any).emit('status', { status: 4 });
 
@@ -271,7 +258,7 @@ describe('provingMachine Socket.IO Integration', () => {
 
       // Clear init emissions before asserting
       mockActor.send.mockClear();
-      (mockSelfClient.trackEvent as any).mockClear();
+      (mockSelfClient.trackEvent as jest.Mock).mockClear();
 
       (mockSocket as any).emit('status', { status: 1 });
 

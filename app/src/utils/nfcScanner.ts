@@ -6,9 +6,8 @@ import { Buffer } from 'buffer';
 import { Platform } from 'react-native';
 
 import type { PassportData } from '@selfxyz/common/types';
-import type { NFCScanContext } from '@selfxyz/mobile-sdk-alpha';
 
-import { logNFCEvent } from '@/Sentry';
+import { logNFCEvent, type NFCScanContext } from '@/Sentry';
 import { configureNfcAnalytics } from '@/utils/analytics';
 import {
   PassportReader,

@@ -7,9 +7,11 @@
  * These test real business logic without mocking
  */
 
-import { describe, expect, it } from 'vitest';
-
-import { handleStatusCode, parseStatusMessage, type StatusMessage } from '../../../src/proving/internal/statusHandlers';
+import {
+  handleStatusCode,
+  parseStatusMessage,
+  type StatusMessage,
+} from '@/utils/proving/statusHandlers';
 
 describe('parseStatusMessage', () => {
   it('parses valid JSON string', () => {
@@ -32,13 +34,17 @@ describe('parseStatusMessage', () => {
   it('throws error for invalid JSON string', () => {
     const input = '{"invalid": json}';
 
-    expect(() => parseStatusMessage(input)).toThrow('Invalid JSON message received');
+    expect(() => parseStatusMessage(input)).toThrow(
+      'Invalid JSON message received',
+    );
   });
 
   it('throws error for non-object, non-string input', () => {
     expect(() => parseStatusMessage(123)).toThrow('Invalid message format');
     expect(() => parseStatusMessage(null)).toThrow('Invalid message format');
-    expect(() => parseStatusMessage(undefined)).toThrow('Invalid message format');
+    expect(() => parseStatusMessage(undefined)).toThrow(
+      'Invalid message format',
+    );
   });
 });
 

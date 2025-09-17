@@ -34,9 +34,7 @@ export type { PassportValidationCallbacks } from './validation/document';
 export type { QRProofOptions } from './qr';
 export type { SdkErrorCategory } from './errors';
 
-export { type ProvingStateType, useProvingStore } from './proving/provingMachine';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
-
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
@@ -69,6 +67,6 @@ export { mergeConfig } from './config/merge';
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
-export { scanQRProof } from './qr';
 
+export { scanQRProof } from './qr';
 export { webScannerShim } from './adapters/web/shims';

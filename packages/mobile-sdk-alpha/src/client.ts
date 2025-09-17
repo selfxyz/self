@@ -8,9 +8,8 @@ import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
-import { ProofContext } from './proving/internal/logging';
-import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
-import type { Adapters, Config, LogLevel, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
+import { SDKEvent, SDKEventMap } from './types/events';
+import type { Adapters, Config, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
 import { TrackEventParams } from './types/public';
 /**
  * Optional adapter implementations used when a consumer does not provide their
@@ -25,11 +24,11 @@ const optionalDefaults: Required<Pick<Adapters, 'clock' | 'logger'>> = {
     },
   },
   logger: {
-    log: (...args) => console.log(...args),
+    log: () => {},
   },
 };
 
-const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents', 'notification'] as const;
+const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
 
 export const createListenersMap = (): {
   map: Map<SDKEvent, Set<(p: any) => void>>;
@@ -113,19 +112,13 @@ export function createSelfClient({
     }
     return adapters.analytics.trackEvent(event, payload);
   }
+
   /**
    * Retrieves the private key via the auth adapter.
    * With great power comes great responsibility
    */
   async function getPrivateKey(): Promise<string | null> {
     return adapters.auth.getPrivateKey();
-  }
-
-  async function registerNotificationsToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void> {
-    if (!_adapters.notification) {
-      throw notImplemented('notification');
-    }
-    return _adapters.notification.registerDeviceToken(sessionId, deviceToken, isMock);
   }
 
   async function hasPrivateKey(): Promise<boolean> {
@@ -146,10 +139,7 @@ export function createSelfClient({
     extractMRZInfo: parseMRZInfo,
     on,
     emit,
-    logProofEvent: (level: LogLevel, message: string, context: ProofContext, details?: Record<string, any>) => {
-      emit(SdkEvents.PROOF_EVENT, { context, event: message, details, level });
-    },
-    registerNotificationsToken,
+
     // TODO: inline for now
     loadDocumentCatalog: async () => {
       return _adapters.documents.loadDocumentCatalog();

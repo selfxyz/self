@@ -8,7 +8,7 @@ import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import { useProvingStore, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
@@ -28,6 +28,7 @@ import {
   getFCMToken,
   requestNotificationPermission,
 } from '@/utils/notifications/notificationService';
+import { useProvingStore } from '@/utils/proving/provingMachine';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
