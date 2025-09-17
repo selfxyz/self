@@ -5060,7 +5060,7 @@ __metadata:
     zustand: "npm:^4.5.2"
   peerDependencies:
     react: ^18.3.1
-    react-native: ^0.76.9
+    react-native: 0.76.9
     tamagui: ^1.126.0
   languageName: unknown
   linkType: soft
