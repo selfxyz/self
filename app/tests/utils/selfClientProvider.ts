@@ -62,4 +62,7 @@ export const mockAdapters = {
   network: mockNetwork,
   crypto: mockCrypto,
   documents: mockDocuments,
+  notification: {
+    registerDeviceToken: async () => Promise.resolve(),
+  },
 };
