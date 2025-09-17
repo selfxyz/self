@@ -119,7 +119,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     () => ({
       sessionId: sessionIdRef.current,
       platform: Platform.OS as 'ios' | 'android',
-      scanType: route.params?.useCan ? 'can' : 'mrz',
+      scanType: (route.params?.useCan ? 'can' : 'mrz') as 'mrz' | 'can',
     }),
     [route.params?.useCan],
   );
