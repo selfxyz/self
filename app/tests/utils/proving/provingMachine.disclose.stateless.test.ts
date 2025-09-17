@@ -3,10 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
-import {
-  useProtocolStore,
-  useSelfAppStore,
-} from '@selfxyz/mobile-sdk-alpha/stores';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 // Do not import provingMachine here; we'll require it after setting up mocks per test
 
