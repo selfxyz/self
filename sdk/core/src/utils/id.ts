@@ -109,13 +109,6 @@ export const formatRevealedDataPacked = (
       .toString()
       .padStart(2, '0');
   }
-  console.log(
-    'ofac',
-    revealedDataPackedString.subarray(
-      revealedDataIndices[attestationId].ofacStart,
-      revealedDataIndices[attestationId].ofacEnd + 1
-    )
-  );
   const ofac = Array.from(
     revealedDataPackedString.subarray(
       revealedDataIndices[attestationId].ofacStart,
