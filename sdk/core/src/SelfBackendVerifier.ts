@@ -268,7 +268,9 @@ export class SelfBackendVerifier {
     }
 
     //check if timestamp is 1 day in the past
-    const circuitTimestampEOD = new Date(circuitTimestamp.getTime() + 23 * 60 * 60 * 1e3 + 59 * 60 * 1e3 + 59 * 1e3);
+    const circuitTimestampEOD = new Date(
+      circuitTimestamp.getTime() + 23 * 60 * 60 * 1e3 + 59 * 60 * 1e3 + 59 * 1e3
+    );
     const oneDayAgo = new Date(currentTimestamp.getTime() - 24 * 60 * 60 * 1000);
     if (circuitTimestampEOD < oneDayAgo) {
       issues.push({
