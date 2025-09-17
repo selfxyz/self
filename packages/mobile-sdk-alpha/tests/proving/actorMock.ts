@@ -10,7 +10,21 @@ export const actorMock = {
   send: vitest.fn(),
   subscribe: vitest.fn((cb: (state: any) => void) => {
     (actorMock as any)._callback = cb;
-    return { unsubscribe: vitest.fn() };
+    return {
+      unsubscribe: vitest.fn(() => {
+        // Properly clean up callback to prevent memory leak
+        (actorMock as any)._callback = null;
+      }),
+    };
+  }),
+  on: vitest.fn((eventType: string, handler: (event: any) => void) => {
+    (actorMock as any)._eventHandler = handler;
+    return {
+      unsubscribe: vitest.fn(() => {
+        // Properly clean up event handler to prevent memory leak
+        (actorMock as any)._eventHandler = null;
+      }),
+    };
   }),
 };
 
