@@ -10,7 +10,7 @@ import {
 import { discloseIndices } from './utils/constants.js';
 import { formatRevealedDataPacked } from './utils/id.js';
 import { AttestationId, VcAndDiscloseProof, VerificationConfig } from './types/types.js';
-import { Country3LetterCode } from '@selfxyz/common/constants';
+import { Country3LetterCode } from '@selfxyz/common/constants/countries';
 import { calculateUserIdentifierHash } from './utils/hash.js';
 import { castToUserIdentifier, UserIdType } from '@selfxyz/common/utils/circuits/uuid';
 import {
@@ -24,7 +24,7 @@ import { unpackForbiddenCountriesList } from './utils/utils.js';
 import { BigNumberish } from 'ethers';
 
 const CELO_MAINNET_RPC_URL = 'https://forno.celo.org';
-const CELO_TESTNET_RPC_URL = 'https://alfajores-forno.celo-testnet.org';
+const CELO_TESTNET_RPC_URL = 'https://forno.celo-sepolia.celo-testnet.org';
 
 const IDENTITY_VERIFICATION_HUB_ADDRESS = '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF';
 const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74';
@@ -268,8 +268,9 @@ export class SelfBackendVerifier {
     }
 
     //check if timestamp is 1 day in the past
+    const circuitTimestampEOD = new Date(circuitTimestamp.getTime() + 23 * 60 * 60 * 1e3 + 59 * 60 * 1e3 + 59 * 1e3);
     const oneDayAgo = new Date(currentTimestamp.getTime() - 24 * 60 * 60 * 1000);
-    if (circuitTimestamp < oneDayAgo) {
+    if (circuitTimestampEOD < oneDayAgo) {
       issues.push({
         type: ConfigMismatch.InvalidTimestamp,
         message: 'Circuit timestamp is too old',

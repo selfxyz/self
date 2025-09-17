@@ -18,7 +18,7 @@ import (
 
 const (
 	CELO_MAINNET_RPC_URL = "https://forno.celo.org"
-	CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org"
+	CELO_TESTNET_RPC_URL = "https://forno.celo-sepolia.celo-testnet.org"
 
 	IDENTITY_VERIFICATION_HUB_ADDRESS         = "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF"
 	IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74"
