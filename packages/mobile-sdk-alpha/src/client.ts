@@ -29,7 +29,7 @@ const optionalDefaults: Required<Pick<Adapters, 'clock' | 'logger'>> = {
   },
 };
 
-const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
+const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents', 'notification'] as const;
 
 export const createListenersMap = (): {
   map: Map<SDKEvent, Set<(p: any) => void>>;

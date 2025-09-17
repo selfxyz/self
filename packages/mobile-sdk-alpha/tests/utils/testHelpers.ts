@@ -4,7 +4,7 @@
 
 /* eslint-disable sort-exports/sort-exports */
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../../src';
-import { NotificationAdapter } from '../../src/types/public';
+import type { NotificationAdapter } from '../../src/types/public';
 
 // Shared test data
 export const sampleMRZ = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;

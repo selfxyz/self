@@ -16,8 +16,8 @@ vitest.mock('xstate', async importOriginal => {
 });
 
 // Mock the proving utils
-vitest.mock('@selfxyz/common/utils/proving', () => {
-  const actual = vitest.importActual('@selfxyz/common/utils/proving') as any;
+vitest.mock('@selfxyz/common/utils/proving', async () => {
+  const actual = await vitest.importActual('@selfxyz/common/utils/proving');
   return {
     ...actual,
     getPayload: vitest.fn(() => ({ mocked: true })),
@@ -48,8 +48,8 @@ vitest.mock('@selfxyz/common/utils/proving', () => {
 });
 
 // Mock the proving utils
-vitest.mock('@selfxyz/common/utils/circuits/registerInputs', () => {
-  const actual = vitest.importActual('@selfxyz/common/utils/circuits/registerInputs') as any;
+vitest.mock('@selfxyz/common/utils/circuits/registerInputs', async () => {
+  const actual = (await vitest.importActual('@selfxyz/common/utils/circuits/registerInputs')) as any;
   return {
     ...actual,
     generateTEEInputsRegister: vitest.fn(() => ({
@@ -74,8 +74,8 @@ vitest.mock('@selfxyz/common/utils/circuits/registerInputs', () => {
 });
 
 // Mock the tree utils to avoid CSCA tree issues
-vitest.mock('@selfxyz/common/utils/trees', () => {
-  const actual = vitest.importActual('@selfxyz/common/utils/trees') as any;
+vitest.mock('@selfxyz/common/utils/trees', async () => {
+  const actual = (await vitest.importActual('@selfxyz/common/utils/trees')) as any;
   return {
     ...actual,
     getCscaTreeInclusionProof: vitest.fn(() => [
@@ -87,8 +87,8 @@ vitest.mock('@selfxyz/common/utils/trees', () => {
 });
 
 // Mock the passport utils to avoid signature processing issues
-vitest.mock('@selfxyz/common/utils/passports/passport', () => {
-  const actual = vitest.importActual('@selfxyz/common/utils/passports/passport') as any;
+vitest.mock('@selfxyz/common/utils/passports/passport', async () => {
+  const actual = (await vitest.importActual('@selfxyz/common/utils/passports/passport')) as any;
   return {
     ...actual,
     getPassportSignatureInfos: vitest.fn(() => ({
