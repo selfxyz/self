@@ -7,11 +7,13 @@
  * These test real business logic without mocking
  */
 
+import { describe, expect, it } from 'vitest';
+
 import {
   handleStatusCode,
   parseStatusMessage,
   type StatusMessage,
-} from '@/utils/proving/statusHandlers';
+} from '../../../src/proving/internal/statusHandlers';
 
 describe('parseStatusMessage', () => {
   it('parses valid JSON string', () => {

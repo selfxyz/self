@@ -4,23 +4,25 @@
 
 // Minimal actor stub used to observe send calls and emit state transitions
 
+import { vi } from 'vitest';
+
 export const actorMock = {
-  start: vitest.fn(),
-  stop: vitest.fn(),
-  send: vitest.fn(),
-  subscribe: vitest.fn((cb: (state: any) => void) => {
+  start: vi.fn(),
+  stop: vi.fn(),
+  send: vi.fn(),
+  subscribe: vi.fn((cb: (state: any) => void) => {
     (actorMock as any)._callback = cb;
     return {
-      unsubscribe: vitest.fn(() => {
+      unsubscribe: vi.fn(() => {
         // Properly clean up callback to prevent memory leak
         (actorMock as any)._callback = null;
       }),
     };
   }),
-  on: vitest.fn((eventType: string, handler: (event: any) => void) => {
+  on: vi.fn((eventType: string, handler: (event: any) => void) => {
     (actorMock as any)._eventHandler = handler;
     return {
-      unsubscribe: vitest.fn(() => {
+      unsubscribe: vi.fn(() => {
         // Properly clean up event handler to prevent memory leak
         (actorMock as any)._eventHandler = null;
       }),

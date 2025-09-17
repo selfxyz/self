@@ -24,7 +24,7 @@ const optionalDefaults: Required<Pick<Adapters, 'clock' | 'logger'>> = {
     },
   },
   logger: {
-    log: () => {},
+    log: (...args) => console.log(...args),
   },
 };
 

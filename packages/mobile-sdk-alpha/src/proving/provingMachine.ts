@@ -47,9 +47,8 @@ import {
 import { useProtocolStore, useSelfAppStore } from '../stores';
 import { SdkEvents } from '../types/events';
 import type { SelfClient } from '../types/public';
-
-import { logProofEvent, type ProofContext } from '@/Sentry';
-import { handleStatusCode, parseStatusMessage } from '@/utils/proving/statusHandlers';
+import { createProofContext, logProofEvent, type ProofContext } from './internal/logging';
+import { handleStatusCode, parseStatusMessage } from './internal/statusHandlers';
 
 // Helper functions for WebSocket URL resolution
 const getMappingKey = (circuitType: 'disclose' | 'register' | 'dsc', documentCategory: DocumentCategory): string => {

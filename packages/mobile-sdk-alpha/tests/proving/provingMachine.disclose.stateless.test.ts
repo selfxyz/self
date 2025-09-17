@@ -2,27 +2,29 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import type { SelfClient } from '../../src/types/public';
 import {
   useProtocolStore,
   useSelfAppStore,
-} from '@selfxyz/mobile-sdk-alpha/stores';
+} from '../../src/stores';
 
 // Do not import provingMachine here; we'll require it after setting up mocks per test
 
-jest.mock('xstate', () => {
-  const actual = jest.requireActual('xstate') as any;
-  const { actorMock } = require('./actorMock');
-  return { ...actual, createActor: jest.fn(() => actorMock) };
+vi.mock('xstate', async () => {
+  const actual = await vi.importActual('xstate') as any;
+  const { actorMock } = await import('./actorMock');
+  return { ...actual, createActor: vi.fn(() => actorMock) };
 });
 
 // Mock proving utils for payload building
-jest.mock('@selfxyz/common/utils/proving', () => {
-  const actual = jest.requireActual('@selfxyz/common/utils/proving') as any;
+vi.mock('@selfxyz/common/utils/proving', async () => {
+  const actual = await vi.importActual('@selfxyz/common/utils/proving') as any;
   return {
     ...actual,
-    getPayload: jest.fn(() => ({ mocked: true })),
-    encryptAES256GCM: jest.fn(() => ({
+    getPayload: vi.fn(() => ({ mocked: true })),
+    encryptAES256GCM: vi.fn(() => ({
       nonce: [0],
       cipher_text: [1],
       auth_tag: [2],
@@ -32,12 +34,12 @@ jest.mock('@selfxyz/common/utils/proving', () => {
 
 describe('_generatePayload disclose (stateless resolver)', () => {
   const selfClient: SelfClient = {
-    trackEvent: jest.fn(),
+    trackEvent: vi.fn(),
   } as unknown as SelfClient;
 
   beforeEach(() => {
-    jest.resetModules();
-    jest.clearAllMocks();
+    vi.resetModules();
+    vi.clearAllMocks();
 
     useSelfAppStore.setState({
       selfApp: {
@@ -62,7 +64,7 @@ describe('_generatePayload disclose (stateless resolver)', () => {
 
   it('uses resolver to fetch ofac and commitment trees', async () => {
     // Mock the stateless generator to assert resolver behavior
-    const genMock = jest.fn((secret, passportData, selfApp, getTree) => {
+    const genMock = vi.fn((secret, passportData, selfApp, getTree) => {
       const ofac = getTree('passport', 'ofac');
       const commit = getTree('passport', 'commitment');
       expect(ofac).toEqual({
@@ -78,26 +80,24 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: 'https://dis',
       };
     });
-    jest.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
+    vi.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
       generateTEEInputsDiscloseStateless: genMock,
-      generateTEEInputsRegister: jest.fn(),
-      generateTEEInputsDSC: jest.fn(),
+      generateTEEInputsRegister: vi.fn(),
+      generateTEEInputsDSC: vi.fn(),
     }));
 
     // Act (reload module after doMock)
     let store: any;
     let protocolStore: any;
-    jest.isolateModules(() => {
-      // require after mocks are in place
-      const mod = require('@/utils/proving/provingMachine');
-      const {
-        useProtocolStore: isolatedProtocolStore,
-      } = require('@selfxyz/mobile-sdk-alpha/stores');
-      store = mod.useProvingStore;
-      protocolStore = isolatedProtocolStore;
+    
+    // Import after mocks are in place
+    const mod = await import('../../src/proving/provingMachine');
+    const storeModule = await import('../../src/stores');
+    store = mod.useProvingStore;
+    protocolStore = storeModule.useProtocolStore;
 
-      // Set protocol store state inside isolateModules
-      protocolStore.setState({
+    // Set protocol store state
+    protocolStore.setState({
         passport: {
           dsc_tree: 'tree',
           csca_tree: [[new Uint8Array([1])]],
@@ -110,14 +110,14 @@ describe('_generatePayload disclose (stateless resolver)', () => {
             nameAndDob: { root: ['dob'] },
             nameAndYob: { root: ['yob'] },
           },
-          fetch_deployed_circuits: jest.fn(),
-          fetch_circuits_dns_mapping: jest.fn(),
-          fetch_csca_tree: jest.fn(),
-          fetch_dsc_tree: jest.fn(),
-          fetch_identity_tree: jest.fn(),
-          fetch_alternative_csca: jest.fn(),
-          fetch_ofac_trees: jest.fn(),
-          fetch_all: jest.fn(),
+          fetch_deployed_circuits: vi.fn(),
+          fetch_circuits_dns_mapping: vi.fn(),
+          fetch_csca_tree: vi.fn(),
+          fetch_dsc_tree: vi.fn(),
+          fetch_identity_tree: vi.fn(),
+          fetch_alternative_csca: vi.fn(),
+          fetch_ofac_trees: vi.fn(),
+          fetch_all: vi.fn(),
         },
         id_card: {
           commitment_tree: null,
@@ -127,14 +127,14 @@ describe('_generatePayload disclose (stateless resolver)', () => {
           circuits_dns_mapping: null,
           alternative_csca: {},
           ofac_trees: null,
-          fetch_deployed_circuits: jest.fn(),
-          fetch_circuits_dns_mapping: jest.fn(),
-          fetch_csca_tree: jest.fn(),
-          fetch_dsc_tree: jest.fn(),
-          fetch_identity_tree: jest.fn(),
-          fetch_alternative_csca: jest.fn(),
-          fetch_ofac_trees: jest.fn(),
-          fetch_all: jest.fn(),
+          fetch_deployed_circuits: vi.fn(),
+          fetch_circuits_dns_mapping: vi.fn(),
+          fetch_csca_tree: vi.fn(),
+          fetch_dsc_tree: vi.fn(),
+          fetch_identity_tree: vi.fn(),
+          fetch_alternative_csca: vi.fn(),
+          fetch_ofac_trees: vi.fn(),
+          fetch_all: vi.fn(),
         },
       } as any);
 
@@ -162,7 +162,7 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         sharedKey: Buffer.alloc(32, 1),
         env: 'prod',
       });
-    });
+    
     const payload = await store.getState()._generatePayload(selfClient);
 
     // Assert
@@ -177,7 +177,7 @@ describe('_generatePayload disclose (stateless resolver)', () => {
   });
 
   it('throws when commitment tree is missing', async () => {
-    const genMock = jest.fn((secret, passportData, selfApp, getTree) => {
+    const genMock = vi.fn((secret, passportData, selfApp, getTree) => {
       // This should throw inside resolver when requesting commitment
       getTree('passport', 'commitment');
       return {
@@ -187,24 +187,22 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: '',
       };
     });
-    jest.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
+    vi.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
       generateTEEInputsDiscloseStateless: genMock,
-      generateTEEInputsRegister: jest.fn(),
-      generateTEEInputsDSC: jest.fn(),
+      generateTEEInputsRegister: vi.fn(),
+      generateTEEInputsDSC: vi.fn(),
     }));
 
     let store: any;
     let protocolStore: any;
-    jest.isolateModules(() => {
-      const mod = require('@/utils/proving/provingMachine');
-      const {
-        useProtocolStore: isolatedProtocolStore,
-      } = require('@selfxyz/mobile-sdk-alpha/stores');
-      store = mod.useProvingStore;
-      protocolStore = isolatedProtocolStore;
+    
+    const mod = await import('../../src/proving/provingMachine');
+    const storeModule = await import('../../src/stores');
+    store = mod.useProvingStore;
+    protocolStore = storeModule.useProtocolStore;
 
-      // Set protocol store state inside isolateModules - missing commitment tree
-      protocolStore.setState({
+    // Set protocol store state - missing commitment tree
+    protocolStore.setState({
         passport: {
           dsc_tree: 'tree',
           csca_tree: [[new Uint8Array([1])]],
@@ -217,14 +215,14 @@ describe('_generatePayload disclose (stateless resolver)', () => {
             nameAndDob: { root: ['dob'] },
             nameAndYob: { root: ['yob'] },
           },
-          fetch_deployed_circuits: jest.fn(),
-          fetch_circuits_dns_mapping: jest.fn(),
-          fetch_csca_tree: jest.fn(),
-          fetch_dsc_tree: jest.fn(),
-          fetch_identity_tree: jest.fn(),
-          fetch_alternative_csca: jest.fn(),
-          fetch_ofac_trees: jest.fn(),
-          fetch_all: jest.fn(),
+          fetch_deployed_circuits: vi.fn(),
+          fetch_circuits_dns_mapping: vi.fn(),
+          fetch_csca_tree: vi.fn(),
+          fetch_dsc_tree: vi.fn(),
+          fetch_identity_tree: vi.fn(),
+          fetch_alternative_csca: vi.fn(),
+          fetch_ofac_trees: vi.fn(),
+          fetch_all: vi.fn(),
         },
         id_card: {} as any,
       } as any);
@@ -253,14 +251,14 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         sharedKey: Buffer.alloc(32, 1),
         env: 'prod',
       });
-    });
+    
     await expect(store.getState()._generatePayload(selfClient)).rejects.toThrow(
       'Commitment tree not loaded',
     );
   });
 
   it('throws when OFAC trees are missing', async () => {
-    const genMock = jest.fn((secret, passportData, selfApp, getTree) => {
+    const genMock = vi.fn((secret, passportData, selfApp, getTree) => {
       const ofac = getTree('passport', 'ofac');
       if (!ofac) {
         throw new Error('OFAC trees not loaded');
@@ -272,24 +270,22 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         endpoint: '',
       };
     });
-    jest.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
+    vi.doMock('@selfxyz/common/utils/circuits/registerInputs', () => ({
       generateTEEInputsDiscloseStateless: genMock,
-      generateTEEInputsRegister: jest.fn(),
-      generateTEEInputsDSC: jest.fn(),
+      generateTEEInputsRegister: vi.fn(),
+      generateTEEInputsDSC: vi.fn(),
     }));
 
     let store: any;
     let protocolStore: any;
-    jest.isolateModules(() => {
-      const mod = require('@/utils/proving/provingMachine');
-      const {
-        useProtocolStore: isolatedProtocolStore,
-      } = require('@selfxyz/mobile-sdk-alpha/stores');
-      store = mod.useProvingStore;
-      protocolStore = isolatedProtocolStore;
+    
+    const mod = await import('../../src/proving/provingMachine');
+    const storeModule = await import('../../src/stores');
+    store = mod.useProvingStore;
+    protocolStore = storeModule.useProtocolStore;
 
-      // Set protocol store state inside isolateModules - missing OFAC trees
-      protocolStore.setState({
+    // Set protocol store state - missing OFAC trees
+    protocolStore.setState({
         passport: {
           dsc_tree: 'tree',
           csca_tree: [[new Uint8Array([1])]],
@@ -298,14 +294,14 @@ describe('_generatePayload disclose (stateless resolver)', () => {
           circuits_dns_mapping: null,
           alternative_csca: {},
           ofac_trees: null,
-          fetch_deployed_circuits: jest.fn(),
-          fetch_circuits_dns_mapping: jest.fn(),
-          fetch_csca_tree: jest.fn(),
-          fetch_dsc_tree: jest.fn(),
-          fetch_identity_tree: jest.fn(),
-          fetch_alternative_csca: jest.fn(),
-          fetch_ofac_trees: jest.fn(),
-          fetch_all: jest.fn(),
+          fetch_deployed_circuits: vi.fn(),
+          fetch_circuits_dns_mapping: vi.fn(),
+          fetch_csca_tree: vi.fn(),
+          fetch_dsc_tree: vi.fn(),
+          fetch_identity_tree: vi.fn(),
+          fetch_alternative_csca: vi.fn(),
+          fetch_ofac_trees: vi.fn(),
+          fetch_all: vi.fn(),
         },
         id_card: {} as any,
       } as any);
@@ -334,7 +330,7 @@ describe('_generatePayload disclose (stateless resolver)', () => {
         sharedKey: Buffer.alloc(32, 1),
         env: 'prod',
       });
-    });
+    
     await expect(store.getState()._generatePayload(selfClient)).rejects.toThrow(
       'OFAC trees not loaded',
     );
