@@ -44,6 +44,7 @@ import type { PropsWithChildren } from 'react';
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
+import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/';
 import type {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
@@ -55,6 +56,7 @@ import {
   parseCertificateSimple,
 } from '@selfxyz/common/utils';
 import type {
+  AadhaarDocumentData,
   DocumentCatalog,
   DocumentMetadata,
   PassportData,
@@ -742,7 +744,7 @@ export async function setSelectedDocument(documentId: string): Promise<void> {
 
 async function storeDocumentDirectlyToKeychain(
   contentHash: string,
-  passportData: PassportData,
+  passportData: PassportData | AadhaarDocumentData,
 ): Promise<void> {
   await Keychain.setGenericPassword(contentHash, JSON.stringify(passportData), {
     service: `document-${contentHash}`,
@@ -750,7 +752,7 @@ async function storeDocumentDirectlyToKeychain(
 }
 
 export async function storeDocumentWithDeduplication(
-  passportData: PassportData,
+  passportData: PassportData | AadhaarDocumentData,
 ): Promise<string> {
   const contentHash = calculateContentHash(passportData);
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();
@@ -781,7 +783,9 @@ export async function storeDocumentWithDeduplication(
     documentCategory:
       passportData.documentCategory ||
       inferDocumentCategory(passportData.documentType),
-    data: passportData.mrz || '', // Store MRZ for passports/IDs, relevant data for aadhaar
+    data: isMRZDocument(passportData)
+      ? passportData.mrz
+      : passportData.qrData || '', // Store MRZ for passports/IDs, relevant data for aadhaar
     mock: passportData.mock || false,
     isRegistered: false,
   };
@@ -793,7 +797,9 @@ export async function storeDocumentWithDeduplication(
   return contentHash;
 }
 
-export async function storePassportData(passportData: PassportData) {
+export async function storePassportData(
+  passportData: PassportData | AadhaarDocumentData,
+) {
   await storeDocumentWithDeduplication(passportData);
 }
 

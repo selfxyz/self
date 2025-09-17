@@ -1,5 +1,25 @@
+import type { ExtractedQRData } from './aadhaar/utils.js';
 import type { CertificateData } from './certificate_parsing/dataStructure.js';
 import type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
+
+// Base interface for common fields
+interface BasePassportData {
+  documentType: DocumentType;
+  documentCategory: DocumentCategory;
+  mock: boolean;
+  dsc_parsed?: CertificateData;
+  csca_parsed?: CertificateData;
+}
+
+// Aadhaar document data
+export interface AadhaarDocumentData extends BasePassportData {
+  documentCategory: 'aadhaar';
+  qrData: string;
+  extractedFields: ExtractedQRData; // All parsed Aadhaar fields
+  signature: number[];
+  publicKey: string;
+  photoHash?: string;
+}
 
 export type DeployedCircuits = {
   REGISTER: string[];
@@ -13,7 +33,7 @@ export interface DocumentCatalog {
   selectedDocumentId?: string; // This is now a contentHash
 }
 
-export type DocumentCategory = 'passport' | 'id_card';
+export type DocumentCategory = 'passport' | 'id_card' | 'aadhaar';
 
 export interface DocumentMetadata {
   id: string; // contentHash as ID for deduplication
@@ -24,15 +44,18 @@ export interface DocumentMetadata {
   isRegistered?: boolean; // whether the document is registered onChain
 }
 
-export type DocumentType = 'passport' | 'id_card' | 'mock_passport' | 'mock_id_card';
 
-export type OfacTree = {
-  passportNoAndNationality: any;
-  nameAndDob: any;
-  nameAndYob: any;
-};
+export type DocumentType =
+  | 'passport'
+  | 'id_card'
+  | 'aadhaar'
+  | 'mock_passport'
+  | 'mock_id_card'
+  | 'mock_aadhaar';
 
-export type PassportData = {
+// Define the signature algorithm in "algorithm_hashfunction_domainPapameter_keyLength"
+export interface MRZPassportData extends BasePassportData {
+  documentCategory: 'passport' | 'id_card';
   mrz: string;
   dg1Hash?: number[];
   dg2Hash?: number[];
@@ -42,12 +65,16 @@ export type PassportData = {
   signedAttr: number[];
   encryptedDigest: number[];
   passportMetadata?: PassportMetadata;
-  dsc_parsed?: CertificateData;
-  csca_parsed?: CertificateData;
-  documentType: DocumentType;
-  documentCategory: DocumentCategory;
-  mock: boolean;
+}
+
+export type OfacTree = {
+  passportNoAndNationality: any;
+  nameAndDob: any;
+  nameAndYob: any;
 };
+// export type PassportData = AadhaarDocumentData | MRZPassportData;
+export type PassportData = MRZPassportData;
+
 
 export type Proof = {
   proof: {
@@ -119,6 +146,7 @@ export enum AttestationIdHex {
   invalid = '0x0000000000000000000000000000000000000000000000000000000000000000',
   passport = '0x0000000000000000000000000000000000000000000000000000000000000001',
   id_card = '0x0000000000000000000000000000000000000000000000000000000000000002',
+  aadhaar = '0x0000000000000000000000000000000000000000000000000000000000000003',
 }
 
 export function castCSCAProof(proof: any): Proof {
@@ -130,4 +158,14 @@ export function castCSCAProof(proof: any): Proof {
     },
     pub_signals: proof.pub_signals,
   };
+}
+
+export function isAadhaarDocument(passportData: PassportData | AadhaarDocumentData): passportData is AadhaarDocumentData {
+  return passportData.documentCategory === 'aadhaar';
+}
+
+export function isMRZDocument(passportData: PassportData | AadhaarDocumentData): passportData is MRZPassportData {
+  return (
+    passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card'
+  );
 }

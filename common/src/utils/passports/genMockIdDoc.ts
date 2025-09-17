@@ -7,6 +7,8 @@ import forge from 'node-forge';
 import type { hashAlgosTypes } from '../../constants/constants.js';
 import { API_URL_STAGING } from '../../constants/constants.js';
 import { countries } from '../../constants/countries.js';
+import { convertByteArrayToBigInt, processQRData } from '../aadhaar/mockData.js';
+import { extractQRDataFields } from '../aadhaar/utils.js';
 import { getCurveForElliptic } from '../certificate_parsing/curves.js';
 import type {
   PublicKeyDetailsECDSA,
@@ -14,14 +16,19 @@ import type {
 } from '../certificate_parsing/dataStructure.js';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple.js';
 import { getHashLen, hash } from '../hash.js';
-import type { DocumentType, PassportData, SignatureAlgorithm } from '../types.js';
+import type {
+  AadhaarDocumentData,
+  DocumentType,
+  PassportData,
+  SignatureAlgorithm,
+} from '../types.js';
 import { genDG1 } from './dg1.js';
 import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
 import { getMockDSC } from './getMockDSC.js';
 import { initPassportDataParsing } from './passport.js';
 
 export interface IdDocInput {
-  idType: 'mock_passport' | 'mock_id_card';
+  idType: 'mock_passport' | 'mock_id_card' | 'mock_aadhaar';
   dgHashAlgo?: hashAlgosTypes;
   eContentHashAlgo?: hashAlgosTypes;
   signatureType?: SignatureAlgorithm;
@@ -32,6 +39,9 @@ export interface IdDocInput {
   lastName?: string;
   firstName?: string;
   sex?: 'M' | 'F';
+  // Aadhaar-specific fields
+  pincode?: string; // - not disclosing this so not getting it in CreateMockScreen
+  state?: string;
 }
 
 const defaultIdDocInput: IdDocInput = {
@@ -46,16 +56,110 @@ const defaultIdDocInput: IdDocInput = {
   lastName: 'DOE',
   firstName: 'JOHN',
   sex: 'M',
+  // Aadhaar defaults
+  pincode: '110051',
+  state: 'Delhi',
 };
+
+// Hardcoded Aadhaar test certificates. TODO Move it to correct place.
+const AADHAAR_MOCK_PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC//2Yjq4TpEm1t
+5Fm4MM/+8MhGPd9vTAZpo04L7HYFbe4YdFmXZBLXH6KbLrbK3uhMuq9dmotJiDtx
+Wjch5f5iHwqLLUKsSHJl4Mr2eFZj77TTLkxTEUYEISpRm9JSIHYRg7kcFPbR+CrE
+uAe9s3/qLDAD85gqDCiosj6bCovMLayHQYglqN2pbYNp8ZIFaVj1gdkoQg8wCK5O
+D3jy5CJnvJirNuiWrvdRLZ48o01L7b/2B/iuBWtoBtOaCTPWZutBIcKB6oNUKBbY
+zwG40NxWpQtAeY6NW0CC/apqUEZVPLdYijjsLGBUohHTtLCXB/C1KDNh0sNTfMU8
+bkctLqvXAgMBAAECggEAD3zqgBS6F1RRhOyUR9VfZskepsfr9ve/ieFodNhhpuUS
+Y8efyIrqmCiPPr+npp+q4DGsRTunyJbXdx8YO0EcSOcIvAE6xr7ekS68JxWLBoT6
+MpG8CqfMkAQeFh1trte7UbgtN3SbeoTV6/uNqE7LRUuRbgHGM+VTzFP6OxomyW5/
+BGHmhlU5j5r4gdNrztwpnfLFZvZt+4yR99kWIoYbFAvgq6sgRGflo45dHGG80TUd
+o3vir1IeNAY5vkeJ9owCxUJW4JxJKarjlBibqRUprEgnjKr2ovxirjUOzOClmVEJ
+tgyx4doY/F9cE8jD4JfcC7xxC79j90odfEED+5IBKQKBgQD2nCwPxr9YxMiQLQii
+Z4E7x96nHdTvqXKSTPGWX2Zv6Sur9qL1Wyz30tt3COB7+b9UwtpTozDxxlVn+u4U
+SnDdVWMrUpDi03dRvsLWhTDC8btN6WnYqGmHKSjst+yHytPo39cqQVZ4TY8Gqfg0
+3/Pqb5hpxkJ2RRxVt3gDvgnOPwKBgQDHTuSxZbpQ956z8t6BA4tDYkFC9BFQpb/F
+pSrw2w8PMZH4QckbjFj59ME2u/WLyuJ+U8GjR4YTk8ZXQ5niSrPDC5Pa6s3Ano44
+8h5FgrMeAbxZ0HuANHRS1YWba8k4tbeunAdj08nIviMJEuhMcjzbqgf5rFrrGzR5
+Jb86eznsaQKBgBzMLeUFu3B9QkJ7z8dPOOsnMtvnAuedrPBipc9+gnLNErl5CpyG
+MiEacWBcHAK+LlaSjnY3105Ub8K9rbGW48kk4Hi9ooeqVAOquAve78vD+LBncmHH
+gNM0vj+uVqOgztAh23lmuddAj1Qi4wYhpNUahPzNFxPCjEWCMDSXq4N3AoGAcqR1
+tXi/WA1m8zkzNWCVfXgJ8/ox74K3sXdVIN/QZLvtq7Ajfr4W/AgGD3bEQdm8uE9z
+JXlhrOcmglF3NYwkpH+HV7gSC8boJedW9EK+xvbWoY7jSxZhBridNo4kW4NjGYPU
+WF6dRePggTqn9jkLuoquNbYnQe8PGtRUj84LvmkCgYEA5iu39qcCBd+JuPDmxOJx
+Ah3QcOFI4i7WW9oi7+68aCqee9K7d659hyYWpewYcDXzvSLYvXJJcU9vkVuW8DLK
+lQzKVNh2/5SaAN/EysYBpFQVbNZ5dA74WrjxnPsNmwRc6yv/o8I/LfgWOB9yB3fI
+avCtlYniKHPvSCA/gS2h4fk=
+-----END PRIVATE KEY-----
+`;
+
+// TODO: Move it to correct place.
+const AADHAAR_MOCK_PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv/9mI6uE6RJtbeRZuDDP
+/vDIRj3fb0wGaaNOC+x2BW3uGHRZl2QS1x+imy62yt7oTLqvXZqLSYg7cVo3IeX+
+Yh8Kiy1CrEhyZeDK9nhWY++00y5MUxFGBCEqUZvSUiB2EYO5HBT20fgqxLgHvbN/
+6iwwA/OYKgwoqLI+mwqLzC2sh0GIJajdqW2DafGSBWlY9YHZKEIPMAiuTg948uQi
+Z7yYqzbolq73US2ePKNNS+2/9gf4rgVraAbTmgkz1mbrQSHCgeqDVCgW2M8BuNDc
+VqULQHmOjVtAgv2qalBGVTy3WIo47CxgVKIR07SwlwfwtSgzYdLDU3zFPG5HLS6r
+1wIDAQAB
+-----END PUBLIC KEY-----
+`;
+
+// Generate mock Aadhaar document
+function genMockAadhaarDoc(input: IdDocInput): AadhaarDocumentData {
+  const name = input.firstName
+    ? `${input.firstName} ${input.lastName || ''}`.trim()
+    : 'Sumit Kumar';
+  const gender = input.sex === 'F' ? 'F' : 'M';
+  const pincode = input.pincode ?? '110051';
+  const state = input.state ?? 'Delhi';
+  const dateOfBirth = input.birthDate ?? '010190';
+
+  // Generate Aadhaar QR data using processQRData
+  const qrData = processQRData(
+    AADHAAR_MOCK_PRIVATE_KEY_PEM,
+    name,
+    dateOfBirth,
+    gender,
+    pincode,
+    state,
+    new Date().getTime().toString()
+  );
+
+  // Convert QR data to string format
+  const qrDataString = convertByteArrayToBigInt(qrData.qrDataBytes).toString();
+
+  // Extract signature from the decoded data
+  const signatureBytes = qrData.decodedData.slice(
+    qrData.decodedData.length - 256,
+    qrData.decodedData.length
+  );
+  const signature = Array.from(signatureBytes);
+
+  return {
+    documentType: input.idType as DocumentType,
+    documentCategory: 'aadhaar',
+    mock: true,
+    qrData: qrDataString,
+    extractedFields: qrData.extractedFields,
+    signature,
+    publicKey: AADHAAR_MOCK_PUBLIC_KEY_PEM,
+    photoHash: qrData.photoHash.toString(),
+  };
+}
 
 export function genMockIdDoc(
   userInput: Partial<IdDocInput> = {},
   mockDSC?: { dsc: string; privateKeyPem: string }
-): PassportData {
+): PassportData | AadhaarDocumentData {
   const mergedInput: IdDocInput = {
     ...defaultIdDocInput,
     ...userInput,
   };
+
+  if (mergedInput.idType === 'mock_aadhaar') {
+    return genMockAadhaarDoc(mergedInput);
+  }
+
   let privateKeyPem: string, dsc: string;
   if (mockDSC) {
     dsc = mockDSC.dsc;
@@ -91,7 +195,7 @@ export function genMockIdDoc(
 
 export function genMockIdDocAndInitDataParsing(userInput: Partial<IdDocInput> = {}) {
   return initPassportDataParsing({
-    ...genMockIdDoc(userInput),
+    ...genMockIdDoc(userInput) as PassportData,
   });
 }
 

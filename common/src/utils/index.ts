@@ -1,9 +1,9 @@
+export type { AadhaarDocumentData, DocumentCategory, PassportData } from './types.js';
 export type {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from './certificate_parsing/dataStructure.js';
-export type { DocumentCategory, PassportData } from './types.js';
 export type { IdDocInput } from './passports/genMockIdDoc.js';
 export type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 export type { TEEPayload, TEEPayloadBase, TEEPayloadDisclose } from './proving.js';
@@ -19,6 +19,15 @@ export {
 export { bigIntToString, formatEndpoint, hashEndpointWithScope, stringToBigInt } from './scope.js';
 export { brutforceSignatureAlgorithmDsc } from './passports/passport_parsing/brutForceDscSignature.js';
 export { buildSMT, getLeafCscaTree, getLeafDscTree } from './trees.js';
+export {
+  calculateContentHash,
+  findStartPubKeyIndex,
+  generateCommitment,
+  generateNullifier,
+  inferDocumentCategory,
+  initPassportDataParsing,
+} from './passports/passport.js';
+export { isAadhaarDocument, isMRZDocument } from './types.js';
 export {
   calculateUserIdentifierHash,
   customHasher,
@@ -36,14 +45,6 @@ export {
   getPayload,
   getWSDbRelayerUrl,
 } from './proving.js';
-export {
-  findStartPubKeyIndex,
-  generateCommitment,
-  generateNullifier,
-  initPassportDataParsing,
-  calculateContentHash,
-  inferDocumentCategory,
-} from './passports/passport.js';
 export { formatMrz } from './passports/format.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
 export {

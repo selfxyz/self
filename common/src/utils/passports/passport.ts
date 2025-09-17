@@ -1,3 +1,4 @@
+import { sha256 } from 'js-sha256';
 import forge from 'node-forge';
 import { poseidon5 } from 'poseidon-lite';
 
@@ -14,6 +15,7 @@ import {
   n_dsc_4096,
   n_dsc_ecdsa,
 } from '../../constants/constants.js';
+import { nullifierHash } from '../aadhaar/mockData.js';
 import { bytesToBigDecimal, hexToDecimal, splitToWords } from '../bytes.js';
 import type {
   CertificateData,
@@ -30,9 +32,29 @@ import { hash, packBytesAndPoseidon } from '../hash.js';
 import { sha384_512Pad, shaPad } from '../shaPad.js';
 import { getLeafDscTree } from '../trees.js';
 import type { DocumentCategory, PassportData, SignatureAlgorithm } from '../types.js';
+import { AadhaarDocumentData,isAadhaarDocument, isMRZDocument } from '../types.js';
 import { formatMrz } from './format.js';
 import { parsePassportData } from './passport_parsing/parsePassportData.js';
-import { sha256 } from 'js-sha256';
+
+export function calculateContentHash(passportData: PassportData | AadhaarDocumentData): string {
+  if (isMRZDocument(passportData) && passportData.eContent) {
+    // eContent is likely a buffer or array, convert to string properly
+    const eContentStr =
+      typeof passportData.eContent === 'string'
+        ? passportData.eContent
+        : JSON.stringify(passportData.eContent);
+
+    return sha256(eContentStr);
+  }
+
+  // For MRZ documents without eContent, hash core stable fields
+  const stableData = {
+    documentType: passportData.documentType,
+    data: isMRZDocument(passportData) ? passportData.mrz : passportData.qrData || '',
+    documentCategory: passportData.documentCategory,
+  };
+  return sha256(JSON.stringify(stableData));
+}
 
 export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
   const derSignature = Buffer.from(signatureBytes).toString('binary');
@@ -152,6 +174,11 @@ export function generateCommitment(
 }
 
 function getPassportSignature(passportData: PassportData, n: number, k: number): any {
+
+  // if (isAadhaarDocument(passportData)) {
+  //   return splitToWords(BigInt(bytesToBigDecimal(passportData.signature)), n, k);
+  // }
+
   const { signatureAlgorithm } = passportData.dsc_parsed;
   if (signatureAlgorithm === 'ecdsa') {
     const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
@@ -164,6 +191,11 @@ function getPassportSignature(passportData: PassportData, n: number, k: number):
 }
 
 export function generateNullifier(passportData: PassportData) {
+
+  // if (isAadhaarDocument(passportData)) {
+  //   return nullifierHash(passportData.extractedFields);
+  // }
+
   const signedAttr_shaBytes = hash(
     passportData.passportMetadata.signedAttrHashFunction,
     Array.from(passportData.signedAttr),
@@ -285,6 +317,18 @@ export function getSignatureAlgorithmFullName(
   }
 }
 
+
+export function inferDocumentCategory(documentType: string): DocumentCategory {
+  if (documentType.includes('passport')) {
+    return 'passport' as DocumentCategory;
+  } else if (documentType.includes('id')) {
+    return 'id_card' as DocumentCategory;
+  } else if (documentType.includes('aadhaar')) {
+    return 'aadhaar' as DocumentCategory;
+  }
+  return 'passport' as DocumentCategory; // fallback
+}
+
 /// @dev will bruteforce passport and dsc signature
 export function initPassportDataParsing(passportData: PassportData, skiPem: any = null) {
   const passportMetadata = parsePassportData(passportData, skiPem);
@@ -306,35 +350,4 @@ export function pad(hashFunction: (typeof hashAlgos)[number]) {
 
 export function padWithZeroes(bytes: number[], length: number) {
   return bytes.concat(new Array(length - bytes.length).fill(0));
-}
-
-export function calculateContentHash(passportData: PassportData): string {
-  if (passportData.eContent) {
-    // eContent is likely a buffer or array, convert to string properly
-    const eContentStr =
-      typeof passportData.eContent === 'string'
-        ? passportData.eContent
-        : JSON.stringify(passportData.eContent);
-
-    return sha256(eContentStr);
-  }
-  // For documents without eContent (like aadhaar), hash core stable fields
-  const stableData = {
-    documentType: passportData.documentType,
-    data: passportData.mrz || '', // Use mrz for passports/IDs, could be other data for aadhaar
-    documentCategory: passportData.documentCategory,
-  };
-
-  return sha256(JSON.stringify(stableData));
-}
-
-export function inferDocumentCategory(documentType: string): DocumentCategory {
-  if (documentType.includes('passport')) {
-    return 'passport' as DocumentCategory;
-  } else if (documentType.includes('id')) {
-    return 'id_card' as DocumentCategory;
-  } else if (documentType.includes('aadhaar')) {
-    return 'aadhaar' as DocumentCategory;
-  }
-  return 'passport' as DocumentCategory; // fallback
 }
