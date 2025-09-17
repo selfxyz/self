@@ -180,6 +180,7 @@ var RevealedDataIndices = map[AttestationId]RevealedDataIndicesEntry{
 var AllIds = map[AttestationId]bool{
 	Passport: true,
 	EUCard:   true,
+	Aadhaar:  true,
 }
 
 // BytesCount maps attestation IDs to their respective byte counts
