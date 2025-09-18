@@ -3,7 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Linking,
   NativeEventEmitter,
@@ -109,11 +115,14 @@ const DocumentNFCScanScreen: React.FC = () => {
   const scanCancelledRef = useRef(false);
   const sessionIdRef = useRef(uuidv4());
 
-  const baseContext = {
-    sessionId: sessionIdRef.current,
-    platform: Platform.OS as 'ios' | 'android',
-    scanType: route.params?.useCan ? 'can' : 'mrz',
-  } as const;
+  const baseContext = useMemo(
+    () => ({
+      sessionId: sessionIdRef.current,
+      platform: Platform.OS as 'ios' | 'android',
+      scanType: (route.params?.useCan ? 'can' : 'mrz') as 'mrz' | 'can',
+    }),
+    [route.params?.useCan],
+  );
 
   const animationRef = useRef<LottieView>(null);
 
@@ -129,7 +138,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         stage: 'unmount',
       });
     };
-  }, []);
+  }, [baseContext]);
 
   // Cleanup timeout on component unmount
   useEffect(() => {
@@ -188,7 +197,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         onModalDismiss: () => {},
       });
     },
-    [showModal, goToNFCTrouble],
+    [baseContext, showModal, goToNFCTrouble],
   );
 
   const checkNfcSupport = useCallback(async () => {
@@ -233,7 +242,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         },
       );
     }
-  }, []);
+  }, [baseContext]);
 
   const usePacePolling = (): boolean => {
     const { usePacePolling: usePacePollingParam } = route.params ?? {};
@@ -483,6 +492,7 @@ const DocumentNFCScanScreen: React.FC = () => {
       }
     }
   }, [
+    baseContext,
     isNfcEnabled,
     isNfcSupported,
     route.params,
@@ -576,7 +586,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           scanTimeoutRef.current = null;
         }
       };
-    }, [checkNfcSupport]),
+    }, [baseContext, checkNfcSupport]),
   );
 
   return (

@@ -2,47 +2,44 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import React, { createElement, forwardRef } from 'react';
 
-export const Circle = React.forwardRef<
+export const Circle = forwardRef<
   SVGCircleElement,
   React.SVGProps<SVGCircleElement>
 >((props, ref) => {
-  return React.createElement('circle', { ref, ...props });
+  return createElement('circle', { ref, ...props });
 });
 
 Circle.displayName = 'Circle';
 
-export const Path = React.forwardRef<
-  SVGPathElement,
-  React.SVGProps<SVGPathElement>
->((props, ref) => {
-  return React.createElement('path', { ref, ...props });
-});
+export const Path = forwardRef<SVGPathElement, React.SVGProps<SVGPathElement>>(
+  (props, ref) => {
+    return createElement('path', { ref, ...props });
+  },
+);
 
 Path.displayName = 'Path';
 
-export const Rect = React.forwardRef<
-  SVGRectElement,
-  React.SVGProps<SVGRectElement>
->((props, ref) => {
-  return React.createElement('rect', { ref, ...props });
-});
+export const Rect = forwardRef<SVGRectElement, React.SVGProps<SVGRectElement>>(
+  (props, ref) => {
+    return createElement('rect', { ref, ...props });
+  },
+);
 
 Rect.displayName = 'Rect';
 
 // Re-export other common SVG components that might be used
-export const Svg = React.forwardRef<
-  SVGSVGElement,
-  React.SVGProps<SVGSVGElement>
->((props, ref) => {
-  return React.createElement('svg', { ref, ...props });
-});
+export const Svg = forwardRef<SVGSVGElement, React.SVGProps<SVGSVGElement>>(
+  (props, ref) => {
+    return createElement('svg', { ref, ...props });
+  },
+);
 
 Svg.displayName = 'Svg';
 
 // Mock SvgXml component for web builds
-export const SvgXml = React.forwardRef<
+export const SvgXml = forwardRef<
   HTMLDivElement,
   {
     xml: string;
@@ -51,7 +48,7 @@ export const SvgXml = React.forwardRef<
     style?: React.CSSProperties;
   }
 >(({ xml, width, height, style, ...props }, ref) => {
-  return React.createElement('div', {
+  return createElement('div', {
     ref,
     style: {
       width: width || 'auto',
