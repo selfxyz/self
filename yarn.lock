@@ -4013,6 +4013,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-firebase/analytics@npm:^19.0.1":
+  version: 19.3.0
+  resolution: "@react-native-firebase/analytics@npm:19.3.0"
+  peerDependencies:
+    "@react-native-firebase/app": 19.3.0
+  checksum: 10c0/be618ab91d892148e02cd4ca9f093cf1d41ebad90622b9c9c6bf673f2eb779776ae9d46259105b8b229ad5db29c5468dfb32731290f1b00bc7b2a1b225a701c6
+  languageName: node
+  linkType: hard
+
 "@react-native-firebase/app@npm:^19.0.1":
   version: 19.3.0
   resolution: "@react-native-firebase/app@npm:19.3.0"
@@ -4079,7 +4088,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/babel-preset@npm:0.76.9":
+"@react-native/babel-preset@npm:0.76.9, @react-native/babel-preset@npm:^0.76.9":
   version: 0.76.9
   resolution: "@react-native/babel-preset@npm:0.76.9"
   dependencies:
@@ -4203,7 +4212,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/eslint-config@npm:0.76.9":
+"@react-native/eslint-config@npm:^0.76.9":
   version: 0.76.9
   resolution: "@react-native/eslint-config@npm:0.76.9"
   dependencies:
@@ -4233,7 +4242,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/gradle-plugin@npm:0.76.9":
+"@react-native/gradle-plugin@npm:0.76.9, @react-native/gradle-plugin@npm:^0.76.9":
   version: 0.76.9
   resolution: "@react-native/gradle-plugin@npm:0.76.9"
   checksum: 10c0/784fa4293f1e73d7861a8b6842ebce6ce4ab3be256c44011168e1524d1839535bfd39a65b1d9d6c014283421f1d02f87274ad9b6a86ec9827690f1cfc857df75
@@ -4261,7 +4270,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/metro-config@npm:0.76.9":
+"@react-native/metro-config@npm:0.76.9, @react-native/metro-config@npm:^0.76.9":
   version: 0.76.9
   resolution: "@react-native/metro-config@npm:0.76.9"
   dependencies:
@@ -4294,7 +4303,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/typescript-config@npm:0.76.9":
+"@react-native/typescript-config@npm:^0.76.9":
   version: 0.76.9
   resolution: "@react-native/typescript-config@npm:0.76.9"
   checksum: 10c0/51c72cf14410d1fc474ec3d6ecd3f3ca4da5df0cc26e7b1d60066b8fb759e20ac0b4840eacfedc871e4dfa1ceec649e9200f4a47ebe0614fa7dec16d7f4a7080
@@ -4838,6 +4847,7 @@ __metadata:
     "@types/circomlibjs": "npm:^0.1.6"
     "@types/jest": "npm:^29.5.14"
     "@types/mocha": "npm:^10.0.6"
+    "@types/node": "npm:^22.0.0"
     "@types/snarkjs": "npm:^0.7.7"
     "@zk-kit/imt": "npm:^2.0.0-beta.4"
     "@zk-kit/imt.sol": "npm:^2.0.0-beta.12"
@@ -4896,6 +4906,7 @@ __metadata:
     typechain: "npm:^8.3.2"
     typescript: "npm:^5.9.2"
     uuid: "npm:^11.1.0"
+    webpack: "npm:^5.95.0"
   languageName: unknown
   linkType: soft
 
@@ -4917,14 +4928,15 @@ __metadata:
     "@react-native-community/blur": "npm:^4.4.1"
     "@react-native-community/cli": "npm:^16.0.3"
     "@react-native-community/netinfo": "npm:^11.4.1"
+    "@react-native-firebase/analytics": "npm:^19.0.1"
     "@react-native-firebase/app": "npm:^19.0.1"
     "@react-native-firebase/messaging": "npm:^19.0.1"
     "@react-native-firebase/remote-config": "npm:^19.0.1"
-    "@react-native/babel-preset": "npm:0.76.9"
-    "@react-native/eslint-config": "npm:0.76.9"
-    "@react-native/gradle-plugin": "npm:0.76.9"
-    "@react-native/metro-config": "npm:0.76.9"
-    "@react-native/typescript-config": "npm:0.76.9"
+    "@react-native/babel-preset": "npm:^0.76.9"
+    "@react-native/eslint-config": "npm:^0.76.9"
+    "@react-native/gradle-plugin": "npm:^0.76.9"
+    "@react-native/metro-config": "npm:^0.76.9"
+    "@react-native/typescript-config": "npm:^0.76.9"
     "@react-navigation/native": "npm:^7.0.14"
     "@react-navigation/native-stack": "npm:^7.2.0"
     "@robinbobin/react-native-google-drive-api-wrapper": "npm:^2.2.3"
@@ -4934,6 +4946,7 @@ __metadata:
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:7.0.1"
+    "@stablelib/cbor": "npm:^2.0.1"
     "@tamagui/animations-css": "npm:^1.129.3"
     "@tamagui/animations-react-native": "npm:^1.129.3"
     "@tamagui/config": "npm:1.126.14"
@@ -4948,6 +4961,7 @@ __metadata:
     "@types/dompurify": "npm:^3.2.0"
     "@types/elliptic": "npm:^6"
     "@types/jest": "npm:^29.5.14"
+    "@types/node": "npm:^22.0.0"
     "@types/node-forge": "npm:^1.3.14"
     "@types/path-browserify": "npm:^1"
     "@types/react": "npm:^18.3.4"
@@ -4982,6 +4996,7 @@ __metadata:
     ethers: "npm:^6.11.0"
     expo-modules-core: "npm:^2.2.1"
     hash.js: "npm:^1.1.7"
+    hermes-eslint: "npm:^0.15.0"
     i18n-iso-countries: "npm:^7.14.0"
     jest: "npm:^29.6.3"
     js-sha1: "npm:^0.7.0"
@@ -4994,9 +5009,10 @@ __metadata:
     pkijs: "npm:^3.2.5"
     poseidon-lite: "npm:^0.2.0"
     prettier: "npm:^3.5.3"
+    prop-types: "npm:^15.8.1"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
-    react-native: "npm:0.76.9"
+    react-native: "npm:^0.76.9"
     react-native-app-auth: "npm:^8.0.3"
     react-native-biometrics: "npm:^3.0.1"
     react-native-check-version: "npm:^1.3.0"
@@ -5057,6 +5073,7 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.8.0"
     jsdom: "npm:^24.0.0"
     prettier: "npm:^3.5.3"
+    react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:^0.81.1"
     socket.io-client: "npm:^4.8.1"
@@ -5110,6 +5127,7 @@ __metadata:
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.9.2"
     uuid: "npm:^11.1.0"
+    webpack: "npm:^5.95.0"
   peerDependencies:
     lottie-react: ^2.4.0
     react: ^18.3.1
@@ -16876,6 +16894,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hermes-eslint@npm:^0.15.0":
+  version: 0.15.1
+  resolution: "hermes-eslint@npm:0.15.1"
+  dependencies:
+    esrecurse: "npm:^4.3.0"
+    hermes-estree: "npm:0.15.1"
+    hermes-parser: "npm:0.15.1"
+  checksum: 10c0/2849b541d5384cfd864d8250921d93f91bf3b996e88c4973c9dd27f535a2711e12a154d2944af929a4199d1b461a599db9450bb425d3ee70576e6e015eb79c53
+  languageName: node
+  linkType: hard
+
+"hermes-estree@npm:0.15.1":
+  version: 0.15.1
+  resolution: "hermes-estree@npm:0.15.1"
+  checksum: 10c0/c265d176b5fee0a6038f4711e0fbb68148a555fc1d8554eb6b67c8eb058a5013d3c6a62bde0fa25e1d221af4a08dcbc4d184bc8ab0dfb92c489fa6fc3896d68e
+  languageName: node
+  linkType: hard
+
 "hermes-estree@npm:0.23.1":
   version: 0.23.1
   resolution: "hermes-estree@npm:0.23.1"
@@ -16887,6 +16923,15 @@ __metadata:
   version: 0.25.1
   resolution: "hermes-estree@npm:0.25.1"
   checksum: 10c0/48be3b2fa37a0cbc77a112a89096fa212f25d06de92781b163d67853d210a8a5c3784fac23d7d48335058f7ed283115c87b4332c2a2abaaccc76d0ead1a282ac
+  languageName: node
+  linkType: hard
+
+"hermes-parser@npm:0.15.1":
+  version: 0.15.1
+  resolution: "hermes-parser@npm:0.15.1"
+  dependencies:
+    hermes-estree: "npm:0.15.1"
+  checksum: 10c0/7c29b94430b71fe99d4ea018fb43499dcbfa9079d94ac5b4b51cff55d3a05ca85a6779b50758b1730df1bb7181f18c1e4d96c4e729f842cb9bd3c1829e3746d5
   languageName: node
   linkType: hard
 
@@ -22278,7 +22323,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native@npm:0.76.9":
+"react-native@npm:^0.76.9":
   version: 0.76.9
   resolution: "react-native@npm:0.76.9"
   dependencies:
@@ -23214,12 +23259,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "self-workspace-root@workspace:."
   dependencies:
+    "@babel/runtime": "npm:^7.28.3"
     "@types/node": "npm:^22.18.3"
     gitleaks: "npm:1.0.0"
     husky: "npm:9.1.7"
+    js-sha1: "npm:^0.7.0"
     knip: "npm:^5.63.1"
     patch-package: "npm:^8.0.0"
     prettier: "npm:^3.6.2"
+    react: "npm:^18.3.1"
+    react-native: "npm:^0.76.9"
     typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft
@@ -26328,7 +26377,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.98.0":
+"webpack@npm:^5.95.0, webpack@npm:^5.98.0":
   version: 5.101.3
   resolution: "webpack@npm:5.101.3"
   dependencies:

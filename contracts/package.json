@@ -109,6 +109,7 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/jest": "^29.5.14",
     "@types/mocha": "^10.0.6",
+    "@types/node": "^22.0.0",
     "@types/snarkjs": "^0.7.7",
     "chai": "^4.4.1",
     "dotenv-cli": "^7.4.2",
