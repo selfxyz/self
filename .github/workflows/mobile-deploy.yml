@@ -223,8 +223,20 @@ jobs:
 
           echo "✅ Lock files exist"
 
-      - name: Install Mobile Dependencies
-        if: inputs.platform != 'android'
+      - name: Install Mobile Dependencies (main repo)
+        if: inputs.platform != 'android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SKIP_PRIVATE_MODULES: false
+
+      - name: Install Mobile Dependencies (forked PRs - no secrets)
+        if: inputs.platform != 'android' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
@@ -851,6 +863,7 @@ jobs:
         with:
           working_directory: ${{ env.APP_PATH }}
           github_token: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          skip_private_modules: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT == '' && 'true' || 'false' }}
 
       - name: Build Dependencies (Android)
         if: inputs.platform != 'ios'
