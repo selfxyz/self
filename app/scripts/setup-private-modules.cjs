@@ -135,7 +135,7 @@ function clonePrivateRepo() {
       'This is expected for forked PRs or environments without access to private modules',
       'info',
     );
-    return; // Skip gracefully instead of throwing error
+    return false; // Return false to indicate clone was skipped
   } else {
     // Local development with SSH
     log('Local development: Using SSH for clone', 'info');
@@ -155,6 +155,7 @@ function clonePrivateRepo() {
       runCommand(cloneCommand);
     }
     log(`Successfully cloned ${REPO_NAME}`, 'success');
+    return true; // Return true to indicate successful clone
   } catch (error) {
     if (isCI) {
       log(
@@ -199,7 +200,13 @@ function setupAndroidPassportReader() {
   removeExistingModule();
 
   // Clone the private repository
-  clonePrivateRepo();
+  const cloneSuccessful = clonePrivateRepo();
+
+  // If clone was skipped (e.g., in forked PRs), exit gracefully
+  if (cloneSuccessful === false) {
+    log(`${REPO_NAME} setup skipped - private module not available`, 'warning');
+    return;
+  }
 
   // Security: Remove credential-embedded remote URL after clone
   if (isCI && repoToken && !isDryRun) {
