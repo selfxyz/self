@@ -5034,7 +5034,7 @@ __metadata:
     eslint-plugin-import: "npm:^2.31.0"
     eslint-plugin-prettier: "npm:^5.5.4"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
-    eslint-plugin-sort-exports: "npm:^0.8.0"
+    eslint-plugin-sort-exports: "npm:^0.9.1"
     jsdom: "npm:^24.0.0"
     prettier: "npm:^3.5.3"
     socket.io-client: "npm:^4.8.1"
@@ -14988,15 +14988,6 @@ __metadata:
   peerDependencies:
     eslint: ">=5.0.0"
   checksum: 10c0/0ad1907ad9ddbadd1db655db0a9d0b77076e274b793a77b982c8525d808d868e6ecfce24f3a411e8a1fa551077387f9ebb38c00956073970ebd7ee6a029ce2b3
-  languageName: node
-  linkType: hard
-
-"eslint-plugin-sort-exports@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "eslint-plugin-sort-exports@npm:0.8.0"
-  peerDependencies:
-    eslint: ">=5.0.0"
-  checksum: 10c0/599b3b34389030cfadfdfb93c915497412b47191af2cc722edb887991657aabd4ffce683bebe8db8312d92426bbc8bb1456ead3d4e0d29cb7ae0ba40359f10b4
   languageName: node
   linkType: hard
 
