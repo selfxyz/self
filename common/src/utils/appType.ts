@@ -29,7 +29,7 @@ export interface SelfApp {
   devMode: boolean;
   disclosures: SelfAppDisclosureConfig;
   version: number;
-  chainID: 42220 | 44787;
+  chainID: 42220 | 11142220;
   userDefinedData: string;
 }
 
@@ -112,7 +112,7 @@ export class SelfAppBuilder {
       logoBase64: '',
       deeplinkCallback: '',
       disclosures: {},
-      chainID: config.endpointType === 'staging_celo' ? 44787 : 42220,
+      chainID: config.endpointType === 'staging_celo' ? 11142220 : 42220,
       version: config.version ?? 2,
       userDefinedData: '',
       ...config,

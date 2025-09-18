@@ -17,6 +17,7 @@ jobs:
       core_changed: ${{ steps.check-version.outputs.core_changed }}
       qrcode_changed: ${{ steps.check-version.outputs.qrcode_changed }}
       common_changed: ${{ steps.check-version.outputs.common_changed }}
+      contracts_changed: ${{ steps.check-version.outputs.contracts_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,6 +41,10 @@ jobs:
 
           if git diff HEAD^ HEAD -- common/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "common_changed=true" >> $GITHUB_OUTPUT
+          fi
+
+          if git diff HEAD^ HEAD -- contracts/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "contracts_changed=true" >> $GITHUB_OUTPUT
           fi
 
   publish-core:
@@ -121,6 +126,32 @@ jobs:
 
       - name: Publish to npm
         working-directory: common
+        run: |
+          yarn config set npmScopes.selfxyz.npmAuthToken ${{ secrets.NPM_TOKEN }}
+          yarn config set npmPublishAccess public
+          yarn npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  publish-contracts:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.contracts_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          registry-url: "https://registry.npmjs.org"
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build package
+        run: |
+          yarn workspace @selfxyz/contracts build
+      - name: Publish to npm
+        working-directory: contracts
         run: |
           yarn config set npmScopes.selfxyz.npmAuthToken ${{ secrets.NPM_TOKEN }}
           yarn config set npmPublishAccess public
