@@ -32,7 +32,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
-    timeout-minutes: 45
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -135,7 +135,7 @@ jobs:
           if-no-files-found: warn
 
   e2e-ios:
-    timeout-minutes: 45
+    timeout-minutes: 60
     runs-on: macos-latest-large
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}

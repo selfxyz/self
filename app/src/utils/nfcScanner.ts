@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 
 import type { PassportData } from '@selfxyz/common/types';
 
+import { logNFCEvent, type NFCScanContext } from '@/Sentry';
 import { configureNfcAnalytics } from '@/utils/analytics';
 import {
   PassportReader,
@@ -39,6 +40,8 @@ interface Inputs {
   skipCA?: boolean;
   extendedMode?: boolean;
   usePacePolling?: boolean;
+  sessionId: string;
+  userId?: string;
 }
 
 export const parseScanResponse = (response: unknown) => {
@@ -50,18 +53,46 @@ export const parseScanResponse = (response: unknown) => {
 export const scan = async (inputs: Inputs) => {
   await configureNfcAnalytics();
 
-  return Platform.OS === 'android'
-    ? await scanAndroid(inputs)
-    : await scanIOS(inputs);
+  const baseContext = {
+    sessionId: inputs.sessionId,
+    userId: inputs.userId,
+    platform: Platform.OS as 'ios' | 'android',
+    scanType: inputs.useCan ? 'can' : 'mrz',
+  } as const;
+
+  logNFCEvent('info', 'scan_start', { ...baseContext, stage: 'start' });
+
+  try {
+    return Platform.OS === 'android'
+      ? await scanAndroid(inputs, baseContext)
+      : await scanIOS(inputs, baseContext);
+  } catch (error) {
+    logNFCEvent(
+      'error',
+      'scan_failed',
+      { ...baseContext, stage: 'scan' },
+      {
+        error: error instanceof Error ? error.message : String(error),
+      },
+    );
+    throw error;
+  }
 };
 
-const scanAndroid = async (inputs: Inputs) => {
+const scanAndroid = async (
+  inputs: Inputs,
+  context: Omit<NFCScanContext, 'stage'>,
+) => {
   reset();
 
   if (!scanDocument) {
     console.warn(
       'Android passport scanner is not available - native module failed to load',
     );
+    logNFCEvent('error', 'module_unavailable', {
+      ...context,
+      stage: 'init',
+    } as NFCScanContext);
     return Promise.reject(new Error('NFC scanning is currently unavailable.'));
   }
 
@@ -71,14 +102,22 @@ const scanAndroid = async (inputs: Inputs) => {
     dateOfExpiry: inputs.dateOfExpiry,
     canNumber: inputs.canNumber ?? '',
     useCan: inputs.useCan ?? false,
+    sessionId: inputs.sessionId,
   });
 };
 
-const scanIOS = async (inputs: Inputs) => {
+const scanIOS = async (
+  inputs: Inputs,
+  context: Omit<NFCScanContext, 'stage'>,
+) => {
   if (!PassportReader?.scanPassport) {
     console.warn(
       'iOS passport scanner is not available - native module failed to load',
     );
+    logNFCEvent('error', 'module_unavailable', {
+      ...context,
+      stage: 'init',
+    } as NFCScanContext);
     return Promise.reject(
       new Error(
         'NFC scanning is currently unavailable. Please ensure the app is properly installed.',
@@ -97,6 +136,7 @@ const scanIOS = async (inputs: Inputs) => {
       inputs.skipCA ?? false,
       inputs.extendedMode ?? false,
       inputs.usePacePolling ?? false,
+      inputs.sessionId,
     ),
   );
 };
@@ -113,15 +153,15 @@ const handleResponseIOS = (response: unknown) => {
   const signedAttributes = parsed?.signedAttributes;
   const mrz = parsed?.passportMRZ;
   const signatureBase64 = parsed?.signatureBase64;
-  const _dataGroupsPresent = parsed?.dataGroupsPresent;
-  const _placeOfBirth = parsed?.placeOfBirth;
-  const _activeAuthenticationPassed = parsed?.activeAuthenticationPassed;
-  const _isPACESupported = parsed?.isPACESupported;
-  const _isChipAuthenticationSupported = parsed?.isChipAuthenticationSupported;
-  const _residenceAddress = parsed?.residenceAddress;
-  const passportPhoto = parsed?.passportPhoto;
-  const _encapsulatedContentDigestAlgorithm =
-    parsed?.encapsulatedContentDigestAlgorithm;
+  // const _dataGroupsPresent = parsed?.dataGroupsPresent;
+  // const _placeOfBirth = parsed?.placeOfBirth;
+  // const _activeAuthenticationPassed = parsed?.activeAuthenticationPassed;
+  // const _isPACESupported = parsed?.isPACESupported;
+  // const _isChipAuthenticationSupported = parsed?.isChipAuthenticationSupported;
+  // const _residenceAddress = parsed?.residenceAddress;
+  // const passportPhoto = parsed?.passportPhoto;
+  // const _encapsulatedContentDigestAlgorithm =
+  //   parsed?.encapsulatedContentDigestAlgorithm;
   const documentSigningCertificate = parsed?.documentSigningCertificate;
   const pem = JSON.parse(documentSigningCertificate).PEM.replace(/\n/g, '');
   const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
@@ -163,12 +203,12 @@ const handleResponseAndroid = (response: AndroidScanResponse): PassportData => {
     mrz,
     eContent,
     encryptedDigest,
-    _photo,
-    _digestAlgorithm,
-    _signerInfoDigestAlgorithm,
-    _digestEncryptionAlgorithm,
-    _LDSVersion,
-    _unicodeVersion,
+    // _photo,
+    // _digestAlgorithm,
+    // _signerInfoDigestAlgorithm,
+    // _digestEncryptionAlgorithm,
+    // _LDSVersion,
+    // _unicodeVersion,
     encapContent,
     documentSigningCertificate,
     dataGroupHashes,

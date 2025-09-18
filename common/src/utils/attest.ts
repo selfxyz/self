@@ -1,20 +1,107 @@
-import { fromBER } from 'asn1js';
-import { Buffer } from 'buffer';
-import { ec as ellipticEc } from 'elliptic';
 import { ethers } from 'ethers';
-import { sha384 } from 'js-sha512';
-import { Certificate } from 'pkijs';
+import forge from 'node-forge';
+import { PCR0_MANAGER_ADDRESS, RPC_URL } from 'src/constants/constants.js';
 
-import { PCR0_MANAGER_ADDRESS, RPC_URL } from '../constants/constants.js';
-import cose, { AWS_ROOT_PEM } from './cose.js';
+const GCP_ROOT_CERT = `
+-----BEGIN CERTIFICATE-----
+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
+uyT5CnJulxSC5CT1
+-----END CERTIFICATE-----
+`;
 
-import { X509Certificate } from '@peculiar/x509';
-import { decode } from '@stablelib/cbor';
+const PCR0ManagerABI = ['function isPCR0Set(bytes calldata pcr0) external view returns (bool)'];
 
-/**
- * @notice An array specifying the required fields for a valid attestation.
- */
-const requiredFields = ['module_id', 'digest', 'timestamp', 'pcrs', 'certificate', 'cabundle'];
+function base64UrlDecodeToBytes(input: string): string {
+  const base64 = input.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+  return forge.util.decode64(padded);
+}
+
+function base64UrlDecodeToString(input: string): string {
+  const base64 = input.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+  return forge.util.decodeUtf8(forge.util.decode64(padded));
+}
+
+type PKICertificates = {
+  leaf: forge.pki.Certificate;
+  intermediate: forge.pki.Certificate;
+  root: forge.pki.Certificate;
+};
+
+function extractCertificates(x5c: string[]): PKICertificates {
+  const decode = (b64: string) =>
+    forge.pki.certificateFromAsn1(forge.asn1.fromDer(forge.util.decode64(b64)));
+
+  return {
+    leaf: decode(x5c[0]),
+    intermediate: decode(x5c[1]),
+    root: decode(x5c[2]),
+  };
+}
+
+function compareCertificates(cert1: forge.pki.Certificate, cert2: forge.pki.Certificate): boolean {
+  const hash1 = forge.md.sha256
+    .create()
+    .update(forge.asn1.toDer(forge.pki.certificateToAsn1(cert1)).getBytes())
+    .digest()
+    .toHex();
+  const hash2 = forge.md.sha256
+    .create()
+    .update(forge.asn1.toDer(forge.pki.certificateToAsn1(cert2)).getBytes())
+    .digest()
+    .toHex();
+  return hash1 === hash2;
+}
+
+function verifyCertificateChain({ leaf, intermediate, root }: PKICertificates) {
+  const caStore = forge.pki.createCaStore([intermediate, root]);
+
+  forge.pki.verifyCertificateChain(caStore, [leaf], (vfd, depth, chain) => {
+    if (!vfd) {
+      throw new Error(`Certificate verification failed at depth ${depth}`);
+    }
+    return true;
+  });
+
+  [leaf, intermediate, root].forEach((cert) => {
+    const now = new Date();
+    if (now < cert.validity.notBefore || now > cert.validity.notAfter) {
+      throw new Error('Certificate is not within validity period');
+    }
+  });
+}
 
 /**
  * @notice Queries the PCR0Manager contract to verify that the PCR0 value extracted from the attestation
@@ -22,20 +109,17 @@ const requiredFields = ['module_id', 'digest', 'timestamp', 'pcrs', 'certificate
  * @param attestation An array of numbers representing the COSE_Sign1 encoded attestation document.
  * @return A promise that resolves to true if the PCR0 value is set in the contract, or false otherwise.
  */
-export async function checkPCR0Mapping(attestation: Array<number>): Promise<boolean> {
-  // Obtain the PCR0 image hash from the attestation
-  const imageHashHex = getImageHash(attestation);
-  console.log('imageHash', imageHashHex);
+export async function checkPCR0Mapping(imageHashHex: string): Promise<boolean> {
   // The getImageHash function returns a hex string (without the "0x" prefix)
-  // For a SHA384 hash, we expect 96 hex characters (48 bytes)
-  if (imageHashHex.length !== 96) {
+  // For a SHA384 hash, we expect 64 hex characters (32 bytes)
+  if (imageHashHex.length !== 64) {
     throw new Error(
-      `Invalid PCR0 hash length: expected 96 hex characters, got ${imageHashHex.length}`
+      `Invalid PCR0 hash length: expected 64 hex characters, got ${imageHashHex.length}`
     );
   }
 
   // Convert the PCR0 hash from hex to a byte array, ensuring proper "0x" prefix
-  const pcr0Bytes = ethers.getBytes(`0x${imageHashHex}`);
+  const pcr0Bytes = ethers.getBytes(`0x${imageHashHex.padStart(96, '0')}`);
   if (pcr0Bytes.length !== 48) {
     throw new Error(`Invalid PCR0 bytes length: expected 48, got ${pcr0Bytes.length}`);
   }
@@ -54,353 +138,65 @@ export async function checkPCR0Mapping(attestation: Array<number>): Promise<bool
   }
 }
 
-// Add a helper function to validate and format PCR0 values
-export function formatPCR0Value(pcr0: string): Uint8Array {
-  // Remove "0x" prefix if present
-  const cleanHex = pcr0.startsWith('0x') ? pcr0.slice(2) : pcr0;
+export function validatePKIToken(
+  attestationToken: string,
+  dev: boolean = true
+): {
+  userPubkey: Buffer;
+  serverPubkey: Buffer;
+  imageHash: string;
+  verified: boolean;
+} {
+  // Decode JWT header
+  const [encodedHeader, encodedPayload, encodedSignature] = attestationToken.split('.');
+  const header = JSON.parse(forge.util.decodeUtf8(forge.util.decode64(encodedHeader)));
+  if (header.alg !== 'RS256') throw new Error(`Invalid alg: ${header.alg}`);
 
-  // Validate hex string length (96 characters for 48 bytes)
-  if (cleanHex.length !== 96) {
-    throw new Error(`Invalid PCR0 length: expected 96 hex characters, got ${cleanHex.length}`);
+  const x5c = header.x5c;
+  if (!x5c || x5c.length !== 3) throw new Error('x5c header must contain exactly 3 certificates');
+  const certificates = extractCertificates(x5c);
+  const storedRootCert = forge.pki.certificateFromPem(GCP_ROOT_CERT);
+  // Compare root certificate fingerprint
+  if (!compareCertificates(storedRootCert, certificates.root)) {
+    throw new Error('Root certificate does not match expected root');
   }
-
-  // Validate hex string format
-  if (!/^[0-9a-fA-F]+$/.test(cleanHex)) {
-    throw new Error('Invalid hex string: contains non-hex characters');
-  }
-
-  // Convert to bytes
-  return ethers.getBytes(`0x${cleanHex}`);
-}
-
-/**
- * @notice Extracts the public key from a TEE attestation document.
- * @param attestation An array of numbers representing the COSE_Sign1 encoded attestation document.
- * @return The public key as a string.
- */
-export function getPublicKey(attestation: Array<number>) {
-  const coseSign1 = decode(Buffer.from(attestation));
-  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] = coseSign1;
-  const attestationDoc = decode(payload) as AttestationDoc;
-  return attestationDoc.public_key;
-}
-
-/**
- * @notice Utility function to check if a number is within (start, end] range.
- * @param start The start of the range (exclusive).
- * @param end The end of the range (inclusive).
- * @param value The number to check.
- * @return True if value is within the range; otherwise, false.
- */
-export const numberInRange = (start: number, end: number, value: number): boolean => {
-  return value > start && value <= end;
-};
-
-/**
- * @notice Converts a DER-encoded certificate to PEM format.
- * @param der A Buffer containing the DER-encoded certificate.
- * @return The PEM-formatted certificate string.
- * @throws Error if the conversion fails.
- */
-function derToPem(der: Buffer): string {
+  verifyCertificateChain(certificates);
+  // Verify JWT signature
+  const pemPublicKey = forge.pki.publicKeyToPem(certificates.leaf.publicKey);
   try {
-    const base64 = Buffer.from(der).toString('base64');
-    return (
-      '-----BEGIN CERTIFICATE-----\n' +
-      base64.match(/.{1,64}/g)!.join('\n') +
-      '\n-----END CERTIFICATE-----'
-    );
-  } catch (error) {
-    console.error('DER to PEM conversion error:', error);
-    throw error;
-  }
-}
+    const signingInput = `${encodedHeader}.${encodedPayload}`;
 
-/**
- * @notice Extracts the image hash (PCR0) from the attestation document.
- * @param attestation An array of numbers representing the COSE_Sign1 encoded attestation document.
- * @return The image hash (PCR0) as a hexadecimal string.
- * @throws Error if the COSE_Sign1 format is invalid or PCR0 is missing/incorrect.
- * @see https://docs.aws.amazon.com/enclaves/latest/user/set-up-attestation.html
- */
-function getImageHash(attestation: Array<number>) {
-  const coseSign1 = decode(Buffer.from(attestation));
+    // Decode signature (base64url → binary)
+    const signatureBytes = base64UrlDecodeToBytes(encodedSignature); // string of binary bytes
 
-  if (!Array.isArray(coseSign1) || coseSign1.length !== 4) {
-    throw new Error('Invalid COSE_Sign1 format');
-  }
-  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] = coseSign1;
-  const attestationDoc = decode(payload);
-  if (!attestationDoc.pcrs) {
-    throw new Error('Missing required field: pcrs');
-  }
-  const pcr0 = attestationDoc.pcrs[0];
-  if (!pcr0) {
-    throw new Error('PCR0 (image hash) is missing in the attestation document');
-  }
-  if (pcr0.length !== 48) {
-    // SHA384 produces a 48-byte hash
-    throw new Error(`Invalid PCR0 length - expected 48 bytes, got ${pcr0.length} bytes`);
-  }
-  return Buffer.from(pcr0).toString('hex');
-}
+    // Verify RS256 signature
+    const md = forge.md.sha256.create();
+    md.update(signingInput, 'utf8');
+    const rsaPublicKey = certificates.leaf.publicKey as forge.pki.rsa.PublicKey; // cast to RSA type
+    const verified = rsaPublicKey.verify(md.digest().bytes(), signatureBytes);
+    if (!verified) throw new Error('Signature verification failed');
 
-type AttestationDoc = {
-  module_id: string;
-  digest: string;
-  timestamp: number;
-  pcrs: { [key: number]: Buffer };
-  certificate: Buffer;
-  cabundle: Array<Buffer>;
-  public_key: string | null;
-  user_data: string | null;
-  nonce: string | null;
-};
-
-/**
- * @notice Extracts the public key from a PEM formatted certificate.
- * @param pem A string containing the PEM formatted certificate.
- * @return An object with the x and y coordinates of the public key and the curve used.
- * @see https://docs.aws.amazon.com/enclaves/latest/user/set-up-attestation.html for p384 usage
- * @dev This function parses the certificate using getCertificateFromPem(), then uses the elliptic library
- *      on the "p384" curve to derive the public key's x and y coordinates. This public key is then returned,
- *      ensuring it is padded correctly.
- */
-function getPublicKeyFromPem(pem: string) {
-  const cert = getCertificateFromPem(pem);
-  const curve = 'p384';
-  const publicKeyBuffer = cert.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
-  const ec = new ellipticEc(curve);
-  const key = ec.keyFromPublic(publicKeyBuffer);
-  const x_point = key.getPublic().getX().toString('hex');
-  const y_point = key.getPublic().getY().toString('hex');
-
-  const x = x_point.length % 2 === 0 ? x_point : '0' + x_point;
-  const y = y_point.length % 2 === 0 ? y_point : '0' + y_point;
-  return { x, y, curve };
-}
-
-/**
- * @notice Converts a PEM formatted certificate to a PKI.js Certificate object.
- * @param pemContent A string containing the PEM formatted certificate including header/footer markers.
- * @return A Certificate object parsed from the PEM content.
- * @dev The function strips the PEM header/footer and line breaks, decodes the base64 content into binary,
- *      creates an ArrayBuffer, and then parses the ASN.1 structure using fromBER. Throws an error if parsing fails.
- */
-function getCertificateFromPem(pemContent: string): Certificate {
-  const pemFormatted = pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g, '');
-  const binary = Buffer.from(pemFormatted, 'base64');
-  const arrayBuffer = new ArrayBuffer(binary.length);
-  const view = new Uint8Array(arrayBuffer);
-  for (let i = 0; i < binary.length; i++) {
-    view[i] = binary[i];
-  }
-
-  const asn1Data = fromBER(arrayBuffer);
-  if (asn1Data.offset === -1) {
-    throw new Error(`ASN.1 parsing error: ${asn1Data.result.error}`);
-  }
-
-  return new Certificate({ schema: asn1Data.result });
-}
-
-function verifyCertificateSignature(child: string, parent: string): boolean {
-  const certBuffer_csca = Buffer.from(
-    parent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64'
-  );
-  const asn1Data_csca = fromBER(certBuffer_csca);
-  const cert_csca = new Certificate({ schema: asn1Data_csca.result });
-  const publicKeyInfo_csca = cert_csca.subjectPublicKeyInfo;
-  const publicKeyBuffer_csca = publicKeyInfo_csca.subjectPublicKey.valueBlock.valueHexView;
-  const curve = 'p384';
-  const ec_csca = new ellipticEc(curve);
-  const key_csca = ec_csca.keyFromPublic(publicKeyBuffer_csca);
-
-  const tbsHash = getTBSHash(child);
-
-  const certBuffer_dsc = Buffer.from(
-    child.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64'
-  );
-  const asn1Data_dsc = fromBER(certBuffer_dsc);
-  const cert_dsc = new Certificate({ schema: asn1Data_dsc.result });
-  const signatureValue = cert_dsc.signatureValue.valueBlock.valueHexView;
-  const signature_crypto = Buffer.from(signatureValue).toString('hex');
-  return key_csca.verify(tbsHash, signature_crypto);
-}
-
-function getTBSHash(pem: string): string {
-  const certBuffer = Buffer.from(
-    pem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64'
-  );
-  const asn1Data_cert = fromBER(certBuffer);
-  const cert = new Certificate({ schema: asn1Data_cert.result });
-  const tbsAsn1 = cert.encodeTBS();
-  const tbsDer = tbsAsn1.toBER(false);
-  const tbsBytes = Buffer.from(tbsDer);
-  const tbsBytesArray = Array.from(tbsBytes);
-  const msgHash = sha384(tbsBytesArray);
-  return msgHash as string;
-}
-
-// Minimal ABI containing only the view function we need.
-const PCR0ManagerABI = ['function isPCR0Set(bytes calldata pcr0) external view returns (bool)'];
-
-/**
- * @notice Verifies a TEE attestation document encoded as a COSE_Sign1 structure.
- * @param attestation An array of numbers representing the COSE_Sign1 encoded attestation document.
- * @return A promise that resolves to true if the attestation is verified successfully.
- * @throws Error if the attestation document is improperly formatted or missing required fields.
- */
-export const verifyAttestation = async (attestation: Array<number>) => {
-  const coseSign1 = await decode(Buffer.from(attestation));
-
-  if (!Array.isArray(coseSign1) || coseSign1.length !== 4) {
-    throw new Error('Invalid COSE_Sign1 format');
-  }
-
-  const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] = coseSign1;
-
-  const attestationDoc = (await decode(payload)) as AttestationDoc;
-
-  for (const field of requiredFields) {
-    //@ts-ignore
-    if (!attestationDoc[field]) {
-      throw new Error(`Missing required field: ${field}`);
-    }
-  }
-
-  if (!(attestationDoc.module_id.length > 0)) {
-    throw new Error('Invalid module_id');
-  }
-  if (!(attestationDoc.digest === 'SHA384')) {
-    throw new Error('Invalid digest');
-  }
-
-  if (!(attestationDoc.timestamp > 0)) {
-    throw new Error('Invalid timestamp');
-  }
-
-  // for each key, value in pcrs
-  for (const [key, value] of Object.entries(attestationDoc.pcrs)) {
-    if (parseInt(key, 10) < 0 || parseInt(key, 10) >= 32) {
-      throw new Error('Invalid pcr index');
-    }
-
-    if (![32, 48, 64].includes(value.length)) {
-      throw new Error('Invalid pcr value length at: ' + key);
-    }
-  }
-
-  if (!(attestationDoc.cabundle.length > 0)) {
-    throw new Error('Invalid cabundle');
-  }
-
-  for (let i = 0; i < attestationDoc.cabundle.length; i++) {
-    if (!numberInRange(0, 1024, attestationDoc.cabundle[i].length)) {
-      throw new Error('Invalid cabundle');
-    }
-  }
-
-  if (attestationDoc.public_key) {
-    if (!numberInRange(0, 1024, attestationDoc.public_key.length)) {
-      throw new Error('Invalid public_key');
-    }
-  }
-
-  if (attestationDoc.user_data) {
-    if (!numberInRange(-1, 512, attestationDoc.user_data.length)) {
-      throw new Error('Invalid user_data');
-    }
-  }
-
-  if (attestationDoc.nonce) {
-    if (!numberInRange(-1, 512, attestationDoc.nonce.length)) {
-      throw new Error('Invalid nonce');
-    }
-  }
-
-  const certChain = attestationDoc.cabundle.map((cert: Buffer) => derToPem(cert));
-
-  const cert = derToPem(attestationDoc.certificate);
-  const isPCR0Set = await checkPCR0Mapping(attestation);
-  console.log('isPCR0Set', isPCR0Set);
-  //@ts-ignore
-  if (!isPCR0Set && !__DEV__) {
-    throw new Error('Invalid image hash');
-  }
-  //@ts-ignore
-  if (__DEV__ && !isPCR0Set) {
-    console.warn('\x1b[31m%s\x1b[0m', '⚠️  WARNING: PCR0 CHECK SKIPPED ⚠️');
-  }
-  console.log('TEE image hash verified');
-
-  if (!(await verifyCertChain(AWS_ROOT_PEM, [...certChain, cert]))) {
-    throw new Error('Invalid certificate chain');
-  }
-
-  const { x, y, curve } = getPublicKeyFromPem(cert);
-
-  const verifier = {
-    key: {
-      x,
-      y,
-      curve,
-    },
-  };
-  console.log('verifier', verifier);
-  await cose.sign.verify(Buffer.from(attestation), verifier, {
-    defaultType: 18,
-  });
-  return true;
-};
-
-/**
- * @notice Verifies a certificate chain against a provided trusted root certificate.
- * @param rootPem The trusted root certificate in PEM format.
- * @param certChainStr An array of certificates in PEM format, ordered from leaf to root.
- * @return True if the certificate chain is valid, false otherwise.
- */
-export const verifyCertChain = async (
-  rootPem: string,
-  certChainStr: string[]
-): Promise<boolean> => {
-  try {
-    // Parse all certificates
-    const certChain = certChainStr.map((cert) => new X509Certificate(cert));
-
-    // Verify the chain from leaf to root
-    // certChain[0] is the root, we use the hardcoded rootPem
-    for (let i = 1; i < certChain.length; i++) {
-      const currentCert = certChain[i];
-      // Verify certificate validity period
-      const now = new Date();
-      if (now < currentCert.notBefore || now > currentCert.notAfter) {
-        console.error('Certificate is not within its validity period');
-        return false;
-      }
-
-      // Verify signature
-      try {
-        const isValid = verifyCertificateSignature(
-          certChainStr[i],
-          i === 1 ? rootPem : certChainStr[i - 1]
-        );
-        if (!isValid) {
-          console.error(`Certificate at index ${i} has invalid signature`);
-          return false;
-        }
-      } catch (e) {
-        console.error(`Error verifying signature at index ${i}:`, e);
-        return false;
+    const payloadStr = base64UrlDecodeToString(encodedPayload);
+    const payload = JSON.parse(payloadStr);
+    if (!dev) {
+      if (payload.dbgstat !== 'disabled-since-boot') {
+        throw new Error('Debug mode is enabled');
       }
     }
-    console.log('Certificate chain verified');
-    return true;
-  } catch (error) {
-    console.error('Certificate chain verification error:', error);
-    return false;
+    return {
+      verified: true,
+      userPubkey: Buffer.from(payload.eat_nonce[0], 'base64'),
+      serverPubkey: Buffer.from(payload.eat_nonce[1], 'base64'),
+      //slice the sha256: prefix
+      imageHash: payload.submods.container.image_digest.slice(7),
+    };
+  } catch (err) {
+    console.error('TEE JWT signature verification failed:', err);
+    return {
+      verified: false,
+      userPubkey: Buffer.from([]),
+      serverPubkey: Buffer.from([]),
+      imageHash: '',
+    };
   }
-};
+}

@@ -40,9 +40,7 @@ type RegisterProofType = `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`
 type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
 type DiscloseProofType = `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
 
-export const clientPublicKeyHex =
-  clientKey.getPublic().getX().toString('hex').padStart(64, '0') +
-  clientKey.getPublic().getY().toString('hex').padStart(64, '0');
+export const clientPublicKeyHex = clientKey.getPublic(true, 'hex');
 
 export function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBuffer) {
   const iv = forge.random.getBytesSync(12);

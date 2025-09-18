@@ -1,7 +1,7 @@
 import { SelfBackendVerifier } from './src/SelfBackendVerifier.js';
-import { countryCodes } from '@selfxyz/common/constants';
+import { countryCodes } from '@selfxyz/common/constants/constants';
 import { getUniversalLink } from '@selfxyz/common/utils/appType';
-import { countries } from '@selfxyz/common/constants';
+import { countries } from '@selfxyz/common/constants/countries';
 import type { AttestationId, VerificationResult, VerificationConfig } from 'src/types/types.js';
 import type { IConfigStorage } from 'src/store/interface.js';
 import { DefaultConfigStore } from 'src/store/DefaultConfigStore.js';

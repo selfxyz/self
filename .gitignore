@@ -11,6 +11,7 @@ output/*
 *.tsbuildinfo
 .yarnrc.yml
 .giga/tasks/*
+package-lock.json
 
 # CI-generated tarballs (don't commit these!)
 mobile-sdk-alpha-ci.tgz

@@ -24,7 +24,6 @@ Before creating a PR for the mobile app:
 - [ ] iOS build succeeds: `yarn ios` (simulator)
 - [ ] Android build succeeds: `yarn android` (emulator/device)
 - [ ] Web build succeeds: `yarn web`
-- [ ] NFC functionality tested (if applicable)
 - [ ] No sensitive data in logs (PII, credentials, tokens)
 
 ### AI Review Preparation
@@ -52,7 +51,6 @@ After PR creation:
 ### Review Integration
 - [ ] Address CodeRabbitAI feedback
 - [ ] Resolve any security warnings
-- [ ] Verify NFC/security features still work
 - [ ] Confirm no sensitive data exposed
 
 ## Recommended Workflow

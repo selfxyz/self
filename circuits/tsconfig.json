@@ -13,7 +13,7 @@
     "baseUrl": ".",
     "composite": false
   },
-  "include": ["tests/**/*", "tests/**/*.json", "src/**/*"],
+  "include": ["tests/**/*", "tests/**/*.json", "src/**/*", "../common/src/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {

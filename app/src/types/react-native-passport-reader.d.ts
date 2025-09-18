@@ -10,6 +10,7 @@ declare module 'react-native-passport-reader' {
     canNumber: string;
     useCan: boolean;
     quality?: number;
+    sessionId?: string;
   }
 
   interface PassportReader {
@@ -27,6 +28,7 @@ declare module 'react-native-passport-reader' {
       skipCA: boolean,
       extendedMode: boolean,
       usePacePolling: boolean,
+      sessionId: string,
     ): Promise<{
       mrz: string;
       eContent: string;

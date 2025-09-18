@@ -14,6 +14,7 @@ import NFCPassportReader
 #endif
 import Security
 import Mixpanel
+import Sentry
 
 #if !E2E_TESTING
 @available(iOS 13, macOS 10.15, *)
@@ -48,6 +49,36 @@ class PassportReader: NSObject {
     }
 
     private var analytics: SelfAnalytics?
+    private var currentSessionId: String?
+
+    private func logNfc(level: SentryLevel, message: String, stage: String, useCANBool: Bool, sessionId: String, extras: [String: Any] = [:]) {
+        let data: [String: Any] = [
+            "session_id": sessionId,
+            "platform": "ios",
+            "scan_type": useCANBool ? "can" : "mrz",
+            "stage": stage
+        ].merging(extras) { (_, new) in new }
+
+        if level == .error {
+            // For errors, capture a message (this will include all previous breadcrumbs)
+            SentrySDK.configureScope { scope in
+                scope.setTag(value: sessionId, key: "session_id")
+                scope.setTag(value: "ios", key: "platform")
+                scope.setTag(value: useCANBool ? "can" : "mrz", key: "scan_type")
+                scope.setTag(value: stage, key: "stage")
+                for (key, value) in extras {
+                    scope.setExtra(value: value, key: key)
+                }
+            }
+            SentrySDK.capture(message: message)
+        } else {
+            // For info/warn, add as breadcrumb only
+            let breadcrumb = Breadcrumb(level: level, category: "nfc")
+            breadcrumb.message = message
+            breadcrumb.data = data.mapValues { "\($0)" }
+            SentrySDK.addBreadcrumb(breadcrumb)
+        }
+    }
 
     @objc(configure:enableDebugLogs:)
     func configure(token: String, enableDebugLogs: Bool) {
@@ -110,7 +141,7 @@ class PassportReader: NSObject {
     return (sum % 10)
   }
 
-  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:resolve:reject:)
+  @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:sessionId:resolve:reject:)
   func scanPassport(
     _ passportNumber: String,
     dateOfBirth: String,
@@ -121,12 +152,15 @@ class PassportReader: NSObject {
     skipCA: NSNumber,
     extendedMode: NSNumber,
     usePacePolling: NSNumber,
+    sessionId: String,
     resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
    let useCANBool = useCan.boolValue
    let skipPACEBool = skipPACE.boolValue
    let skipCABool = skipCA.boolValue
    let extendedModeBool = extendedMode.boolValue
    let usePacePollingBool = usePacePolling.boolValue
+   self.currentSessionId = sessionId
+   logNfc(level: .info, message: "scan_start", stage: "start", useCANBool: useCANBool, sessionId: sessionId)
 
     let customMessageHandler : (NFCViewDisplayMessage)->String? = { (displayMessage) in
       switch displayMessage {
@@ -316,9 +350,10 @@ class PassportReader: NSObject {
         }
 
         let stringified = String(data: try JSONEncoder().encode(ret), encoding: .utf8)
-
+        logNfc(level: .info, message: "scan_success", stage: "complete", useCANBool: useCANBool, sessionId: sessionId)
         resolve(stringified)
       } catch {
+        logNfc(level: .warning, message: "scan_failed", stage: "error", useCANBool: useCANBool, sessionId: sessionId, extras: ["error": error.localizedDescription])
         reject("E_PASSPORT_READ", error.localizedDescription, error)
       }
     }
@@ -462,7 +497,7 @@ class PassportReader: NSObject {
         // No-op for E2E testing
     }
 
-    @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:resolve:reject:)
+    @objc(scanPassport:dateOfBirth:dateOfExpiry:canNumber:useCan:skipPACE:skipCA:extendedMode:usePacePolling:sessionId:resolve:reject:)
     func scanPassport(
         _ passportNumber: String,
         dateOfBirth: String,
@@ -473,6 +508,7 @@ class PassportReader: NSObject {
         skipCA: NSNumber,
         extendedMode: NSNumber,
         usePacePolling: NSNumber,
+        sessionId: String,
         resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         reject("E2E_TESTING", "NFC scanning not available in E2E testing mode", nil)
     }

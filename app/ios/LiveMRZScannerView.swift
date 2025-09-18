@@ -80,6 +80,112 @@ struct LiveMRZScannerView: View {
         ]
     }
 
+    private func correctBelgiumDocumentNumber(result: String) -> String? {
+        // Belgium TD1 format: IDBEL000001115<7027
+        let line1RegexPattern = "IDBEL(?<doc9>[A-Z0-9]{9})<(?<doc3>[A-Z0-9<]{3})(?<checkDigit>\\d)"
+        guard let line1Regex = try? NSRegularExpression(pattern: line1RegexPattern) else { return nil }
+        let line1Matcher = line1Regex.firstMatch(in: result, options: [], range: NSRange(location: 0, length: result.count))
+
+        if let line1Matcher = line1Matcher {
+            let doc9Range = line1Matcher.range(withName: "doc9")
+            let doc3Range = line1Matcher.range(withName: "doc3")
+            let checkDigitRange = line1Matcher.range(withName: "checkDigit")
+
+            let doc9 = (result as NSString).substring(with: doc9Range)
+            let doc3 = (result as NSString).substring(with: doc3Range)
+            let checkDigit = (result as NSString).substring(with: checkDigitRange)
+
+            if let cleanedDoc = cleanBelgiumDocumentNumber(doc9: doc9, doc3: doc3, checkDigit: checkDigit) {
+                let correctedMRZLine = "IDBEL\(cleanedDoc)\(checkDigit)"
+                return correctedMRZLine
+            }
+        }
+        return nil
+    }
+
+    private func cleanBelgiumDocumentNumber(doc9: String, doc3: String, checkDigit: String) -> String? {
+        // For Belgium TD1 format: IDBEL000001115<7027
+        // doc9 = "000001115" (9 digits)
+        // doc3 = "702" (3 digits after <)
+        // checkDigit = "7" (single check digit)
+
+        var cleanDoc9 = doc9
+        // Strip first 3 characters
+        let startIndex = cleanDoc9.index(cleanDoc9.startIndex, offsetBy: 3)
+        cleanDoc9 = String(cleanDoc9[startIndex...])
+
+        let fullDocumentNumber = cleanDoc9 + doc3
+
+
+        return fullDocumentNumber
+    }
+
+    private func isValidMRZResult(_ result: QKMRZResult) -> Bool {
+        return result.isDocumentNumberValid && result.isExpiryDateValid && result.isBirthdateValid
+    }
+
+    private func handleValidMRZResult(_ result: QKMRZResult) {
+        parsedMRZ = result
+        scanComplete = true
+        onScanComplete?(result)
+        onScanResultAsDict?(mapVisionResultToDictionary(result))
+    }
+
+    private func processBelgiumDocument(result: String, parser: QKMRZParser) -> QKMRZResult? {
+        print("[LiveMRZScannerView] Processing Belgium document")
+
+        guard let correctedBelgiumLine = correctBelgiumDocumentNumber(result: result) else {
+            print("[LiveMRZScannerView] Failed to correct Belgium document number")
+            return nil
+        }
+
+        // print("[LiveMRZScannerView] Belgium corrected line: \(correctedBelgiumLine)")
+
+        // Split MRZ into lines and replace the first line
+        let lines = result.components(separatedBy: "\n")
+        guard lines.count >= 3 else {
+            print("[LiveMRZScannerView] Invalid MRZ format - not enough lines")
+            return nil
+        }
+
+        let originalFirstLine = lines[0]
+        // print("[LiveMRZScannerView] Original first line: \(originalFirstLine)")
+
+        // Pad the corrected line to 30 characters (TD1 format)
+        let paddedCorrectedLine = correctedBelgiumLine.padding(toLength: 30, withPad: "<", startingAt: 0)
+        // print("[LiveMRZScannerView] Padded corrected line: \(paddedCorrectedLine)")
+
+        // Reconstruct the MRZ with the corrected first line
+        var correctedLines = lines
+        correctedLines[0] = paddedCorrectedLine
+        let correctedMRZString = correctedLines.joined(separator: "\n")
+        // print("[LiveMRZScannerView] Corrected MRZ string: \(correctedMRZString)")
+
+        guard let belgiumMRZResult = parser.parse(mrzString: correctedMRZString) else {
+            print("[LiveMRZScannerView] Belgium MRZ result is not valid")
+            return nil
+        }
+
+        // print("[LiveMRZScannerView] Belgium MRZ result: \(belgiumMRZResult)")
+
+        // Try the corrected MRZ first
+        if isValidMRZResult(belgiumMRZResult) {
+            return belgiumMRZResult
+        }
+
+        // If document number is still invalid, try single character correction
+        if !belgiumMRZResult.isDocumentNumberValid {
+            if let correctedResult = singleCorrectDocumentNumberInMRZ(result: correctedMRZString, docNumber: belgiumMRZResult.documentNumber, parser: parser) {
+                // print("[LiveMRZScannerView] Single correction successful: \(correctedResult)")
+                if isValidMRZResult(correctedResult) {
+                    return correctedResult
+                }
+            }
+        }
+
+        return nil
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
                 CameraView(
@@ -91,20 +197,31 @@ struct LiveMRZScannerView: View {
                             // print("[LiveMRZScannerView] result: \(result)")
                             let parser = QKMRZParser(ocrCorrection: false)
                             if let mrzResult = parser.parse(mrzString: result) {
-                                let doc = mrzResult;
-                                if doc.allCheckDigitsValid == true && !scanComplete {
-                                    parsedMRZ = mrzResult
-                                    scanComplete = true
-                                    onScanComplete?(mrzResult)
-                                    onScanResultAsDict?(mapVisionResultToDictionary(mrzResult))
-                                } else if doc.isDocumentNumberValid == false && !scanComplete {
+                                let doc = mrzResult
+                                // print("[LiveMRZScannerView] doc: \(doc)")
+
+                                guard !scanComplete else { return }
+
+                                // Check if already valid
+                                if doc.allCheckDigitsValid {
+                                    handleValidMRZResult(mrzResult)
+                                    return
+                                }
+
+                                // Handle Belgium documents (only if not already valid)
+                                if doc.countryCode == "BEL" {
+                                    if let belgiumResult = processBelgiumDocument(result: result, parser: parser) {
+                                        handleValidMRZResult(belgiumResult)
+                                    }
+                                    return
+                                }
+
+                                // Handle other documents with invalid document numbers
+                                if !doc.isDocumentNumberValid {
                                     if let correctedResult = singleCorrectDocumentNumberInMRZ(result: result, docNumber: doc.documentNumber, parser: parser) {
-                                        let correctedDoc = correctedResult
-                                        if correctedDoc.allCheckDigitsValid == true {
-                                            parsedMRZ = correctedResult
-                                            scanComplete = true
-                                            onScanComplete?(correctedResult)
-                                            onScanResultAsDict?(mapVisionResultToDictionary(correctedResult))
+                                        // print("[LiveMRZScannerView] correctedDoc: \(correctedResult)")
+                                        if correctedResult.allCheckDigitsValid {
+                                            handleValidMRZResult(correctedResult)
                                         }
                                     }
                                 }
