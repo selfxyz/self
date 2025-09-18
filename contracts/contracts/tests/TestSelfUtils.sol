@@ -5,11 +5,9 @@ import "../libraries/SelfUtils.sol";
 import "../libraries/CountryCode.sol";
 
 contract TestSelfUtils {
-    function testPackForbiddenCountriesList(string[] memory forbiddenCountries)
-        external
-        pure
-        returns (uint256[4] memory)
-    {
+    function testPackForbiddenCountriesList(
+        string[] memory forbiddenCountries
+    ) external pure returns (uint256[4] memory) {
         return SelfUtils.packForbiddenCountriesList(forbiddenCountries);
     }
 

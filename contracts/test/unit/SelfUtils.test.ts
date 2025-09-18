@@ -19,7 +19,7 @@ describe("SelfUtils", function () {
       const tsResult = packForbiddenCountriesList(input);
 
       // Convert TypeScript result to the same format as contract result
-      const expectedResults = tsResult.map(hex => BigInt(hex));
+      const expectedResults = tsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(contractResult[i]).to.equal(expectedResults[i]);
@@ -31,7 +31,7 @@ describe("SelfUtils", function () {
       const contractResult = await testSelfUtils.testPackForbiddenCountriesList(input);
       const tsResult = packForbiddenCountriesList(input);
 
-      const expectedResults = tsResult.map(hex => BigInt(hex));
+      const expectedResults = tsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(contractResult[i]).to.equal(expectedResults[i]);
@@ -43,7 +43,7 @@ describe("SelfUtils", function () {
       const contractResult = await testSelfUtils.testPackForbiddenCountriesList(input);
       const tsResult = packForbiddenCountriesList(input);
 
-      const expectedResults = tsResult.map(hex => BigInt(hex));
+      const expectedResults = tsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(contractResult[i]).to.equal(expectedResults[i]);
@@ -53,14 +53,19 @@ describe("SelfUtils", function () {
     it("should match contract and TypeScript implementation for maximum capacity", async function () {
       // Create array that fills multiple chunks
       const countries = [];
-      for (let i = 0; i < 41; i++) { // 41 * 3 = 123 bytes, needs 4 chunks (31 bytes each)
-        countries.push(String.fromCharCode(65 + (i % 26)) + String.fromCharCode(65 + ((i + 1) % 26)) + String.fromCharCode(65 + ((i + 2) % 26)));
+      for (let i = 0; i < 41; i++) {
+        // 41 * 3 = 123 bytes, needs 4 chunks (31 bytes each)
+        countries.push(
+          String.fromCharCode(65 + (i % 26)) +
+            String.fromCharCode(65 + ((i + 1) % 26)) +
+            String.fromCharCode(65 + ((i + 2) % 26)),
+        );
       }
 
       const contractResult = await testSelfUtils.testPackForbiddenCountriesList(countries);
       const tsResult = packForbiddenCountriesList(countries);
 
-      const expectedResults = tsResult.map(hex => BigInt(hex));
+      const expectedResults = tsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(contractResult[i]).to.equal(expectedResults[i]);
@@ -72,7 +77,7 @@ describe("SelfUtils", function () {
       const contractResult = await testSelfUtils.testPackForbiddenCountriesList(input);
       const tsResult = packForbiddenCountriesList(input);
 
-      const expectedResults = tsResult.map(hex => BigInt(hex));
+      const expectedResults = tsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(contractResult[i]).to.equal(expectedResults[i]);
@@ -84,8 +89,9 @@ describe("SelfUtils", function () {
 
       // Both implementations should reject this
       expect(() => packForbiddenCountriesList(input)).to.throw("Invalid country code");
-      await expect(testSelfUtils.testPackForbiddenCountriesList(input))
-        .to.be.revertedWith("Invalid country code: must be exactly 3 characters long");
+      await expect(testSelfUtils.testPackForbiddenCountriesList(input)).to.be.revertedWith(
+        "Invalid country code: must be exactly 3 characters long",
+      );
     });
 
     it("should reject country codes that are too long", async function () {
@@ -93,8 +99,9 @@ describe("SelfUtils", function () {
 
       // Both implementations should reject this
       expect(() => packForbiddenCountriesList(input)).to.throw("Invalid country code");
-      await expect(testSelfUtils.testPackForbiddenCountriesList(input))
-        .to.be.revertedWith("Invalid country code: must be exactly 3 characters long");
+      await expect(testSelfUtils.testPackForbiddenCountriesList(input)).to.be.revertedWith(
+        "Invalid country code: must be exactly 3 characters long",
+      );
     });
 
     it("should reject empty country codes", async function () {
@@ -102,8 +109,9 @@ describe("SelfUtils", function () {
 
       // Both implementations should reject this
       expect(() => packForbiddenCountriesList(input)).to.throw("Invalid country code");
-      await expect(testSelfUtils.testPackForbiddenCountriesList(input))
-        .to.be.revertedWith("Invalid country code: must be exactly 3 characters long");
+      await expect(testSelfUtils.testPackForbiddenCountriesList(input)).to.be.revertedWith(
+        "Invalid country code: must be exactly 3 characters long",
+      );
     });
 
     it("should handle mixed valid and invalid codes consistently", async function () {
@@ -111,8 +119,9 @@ describe("SelfUtils", function () {
 
       // Both implementations should reject this
       expect(() => packForbiddenCountriesList(input)).to.throw("Invalid country code");
-      await expect(testSelfUtils.testPackForbiddenCountriesList(input))
-        .to.be.revertedWith("Invalid country code: must be exactly 3 characters long");
+      await expect(testSelfUtils.testPackForbiddenCountriesList(input)).to.be.revertedWith(
+        "Invalid country code: must be exactly 3 characters long",
+      );
     });
 
     it("should handle special characters in country codes", async function () {
@@ -120,7 +129,7 @@ describe("SelfUtils", function () {
       const contractResult = await testSelfUtils.testPackForbiddenCountriesList(input);
       const tsResult = packForbiddenCountriesList(input);
 
-      const expectedResults = tsResult.map(hex => BigInt(hex));
+      const expectedResults = tsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(contractResult[i]).to.equal(expectedResults[i]);
@@ -159,7 +168,7 @@ describe("SelfUtils", function () {
       const contractResult = await testSelfUtils.testPackForbiddenCountriesList(forbiddenCountries);
       const tsResult = packForbiddenCountriesList(forbiddenCountries);
 
-      const expectedResults = tsResult.map(hex => BigInt(hex));
+      const expectedResults = tsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(contractResult[i]).to.equal(expectedResults[i]);
@@ -176,7 +185,7 @@ describe("SelfUtils", function () {
       // Create equivalent array in TypeScript for comparison
       const forbiddenCountries = ["CHN", "RUS", "IRN", "PRK", "CUB", "SYR", "AFG", "SOM"];
       const tsResult = packForbiddenCountriesList(forbiddenCountries);
-      const expectedResults = tsResult.map(hex => BigInt(hex));
+      const expectedResults = tsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(contractResult[i]).to.equal(expectedResults[i]);
@@ -188,7 +197,7 @@ describe("SelfUtils", function () {
       const highRiskResult = await testSelfUtils.testPackHighRiskCountries();
       const highRiskCountries = ["AFG", "SOM", "SDN", "YEM"];
       const highRiskTsResult = packForbiddenCountriesList(highRiskCountries);
-      const highRiskExpected = highRiskTsResult.map(hex => BigInt(hex));
+      const highRiskExpected = highRiskTsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(highRiskResult[i]).to.equal(highRiskExpected[i]);
@@ -198,7 +207,7 @@ describe("SelfUtils", function () {
       const euResult = await testSelfUtils.testPackEUCountries();
       const euCountries = ["DEU", "FRA", "ITA", "ESP", "NLD"];
       const euTsResult = packForbiddenCountriesList(euCountries);
-      const euExpected = euTsResult.map(hex => BigInt(hex));
+      const euExpected = euTsResult.map((hex) => BigInt(hex));
 
       for (let i = 0; i < 4; i++) {
         expect(euResult[i]).to.equal(euExpected[i]);

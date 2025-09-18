@@ -14,11 +14,9 @@ library SelfUtils {
      * @param forbiddenCountries Array of 3-character country codes
      * @return output Array of 4 uint256 values containing packed country data
      */
-    function packForbiddenCountriesList(string[] memory forbiddenCountries)
-        internal
-        pure
-        returns (uint256[4] memory output)
-    {
+    function packForbiddenCountriesList(
+        string[] memory forbiddenCountries
+    ) internal pure returns (uint256[4] memory output) {
         uint256 MAX_BYTES_IN_FIELD = 31;
         uint256 REQUIRED_CHUNKS = 4;
 
@@ -82,11 +80,9 @@ library SelfUtils {
      *         - Packed forbidden countries list for efficient circuit processing
      *         - Replicated OFAC settings across all verification levels
      */
-    function formatVerificationConfigV2(UnformattedVerificationConfigV2 memory unformattedVerificationConfigV2)
-        internal
-        pure
-        returns (SelfStructs.VerificationConfigV2 memory verificationConfigV2)
-    {
+    function formatVerificationConfigV2(
+        UnformattedVerificationConfigV2 memory unformattedVerificationConfigV2
+    ) internal pure returns (SelfStructs.VerificationConfigV2 memory verificationConfigV2) {
         bool[3] memory ofacArray;
         ofacArray[0] = unformattedVerificationConfigV2.ofacEnabled;
         ofacArray[1] = unformattedVerificationConfigV2.ofacEnabled;
@@ -96,7 +92,9 @@ library SelfUtils {
             olderThanEnabled: unformattedVerificationConfigV2.olderThan > 0,
             olderThan: unformattedVerificationConfigV2.olderThan,
             forbiddenCountriesEnabled: unformattedVerificationConfigV2.forbiddenCountries.length > 0,
-            forbiddenCountriesListPacked: packForbiddenCountriesList(unformattedVerificationConfigV2.forbiddenCountries),
+            forbiddenCountriesListPacked: packForbiddenCountriesList(
+                unformattedVerificationConfigV2.forbiddenCountries
+            ),
             ofacEnabled: ofacArray
         });
     }
