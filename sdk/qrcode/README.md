@@ -15,8 +15,7 @@ yarn add @selfxyz/qrcode
 ### 1. Import the SelfQRcodeWrapper component
 
 ```tsx
-import SelfQRcodeWrapper, { SelfApp } from '@selfxyz/qrcode';
-import { SelfAppBuilder } from '@selfxyz/common';
+import SelfQRcodeWrapper, { SelfApp, SelfAppBuilder } from '@selfxyz/qrcode';
 import { v4 as uuidv4 } from 'uuid';
 ```
 
@@ -122,8 +121,7 @@ Here's a complete example of how to implement the Self QR code in a React applic
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import SelfQRcodeWrapper, { SelfApp } from '@selfxyz/qrcode';
-import { SelfAppBuilder } from '@selfxyz/common';
+import SelfQRcodeWrapper, { SelfApp, SelfAppBuilder } from '@selfxyz/qrcode';
 import { v4 as uuidv4 } from 'uuid';
 
 function VerificationPage() {
