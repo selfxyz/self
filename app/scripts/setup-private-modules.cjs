@@ -98,7 +98,10 @@ function runCommand(command, options = {}) {
 
 function sanitizeCommandForLogging(command) {
   // Replace any https://token@github.com patterns with https://[REDACTED]@github.com
-  return command.replace(/https:\/\/[^@]+@github\.com/g, 'https://[REDACTED]@github.com');
+  return command.replace(
+    /https:\/\/[^@]+@github\.com/g,
+    'https://[REDACTED]@github.com',
+  );
 }
 
 function removeExistingModule() {
