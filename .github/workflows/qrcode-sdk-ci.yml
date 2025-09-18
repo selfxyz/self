@@ -106,30 +106,30 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Cache Yarn dependencies
-        id: yarn-cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            .yarn/cache
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
+      # - name: Cache Yarn dependencies
+      #   id: yarn-cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       .yarn/cache
+      #       node_modules
+      #       sdk/qrcode/node_modules
+      #       common/node_modules
+      #     key: ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-${{ hashFiles('yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-yarn-
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
-      # - name: Restore build artifacts
-      #   uses: actions/cache/restore@v4
-      #   with:
-      #     path: |
-      #       common/dist
-      #       sdk/qrcode/dist
-      #     key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
-      #     fail-on-cache-miss: true
+      - name: Restore build artifacts
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            common/dist
+            sdk/qrcode/dist
+          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
+          fail-on-cache-miss: true
 
       - name: Run linter
         run: yarn workspace @selfxyz/qrcode lint:imports:check
