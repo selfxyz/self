@@ -4,9 +4,9 @@ env:
   # Build environment versions
   # Node version is read from .nvmrc during workflow execution
   # Cache versioning - increment these to bust caches when needed
-  GH_CACHE_VERSION: v2 # Global cache version
-  GH_YARN_CACHE_VERSION: v2 # Yarn-specific cache version
-  GH_SDK_CACHE_VERSION: v2 # SDK build cache version
+  GH_CACHE_VERSION: v1 # Global cache version
+  GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
+  GH_SDK_CACHE_VERSION: v1 # SDK build cache version
 
 on:
   pull_request:
