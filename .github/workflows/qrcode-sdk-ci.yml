@@ -6,7 +6,7 @@ env:
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
   GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
-  GH_SDK_CACHE_VERSION: v2 # SDK build cache version
+  GH_SDK_CACHE_VERSION: v1 # SDK build cache version
 
 on:
   pull_request:
@@ -122,14 +122,14 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
 
-      - name: Restore build artifacts
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            common/dist
-            sdk/qrcode/dist
-          key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
-          fail-on-cache-miss: true
+      # - name: Restore build artifacts
+      #   uses: actions/cache/restore@v4
+      #   with:
+      #     path: |
+      #       common/dist
+      #       sdk/qrcode/dist
+      #     key: qrcode-sdk-build-${{ env.GH_SDK_CACHE_VERSION }}-${{ github.sha }}
+      #     fail-on-cache-miss: true
 
       - name: Run linter
         run: yarn workspace @selfxyz/qrcode lint:imports:check
