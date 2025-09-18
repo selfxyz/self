@@ -12,8 +12,9 @@
     "packages/mobile-sdk-alpha/demo-app"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/circuits -i --all run build",
+    "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
     "check:versions": "node scripts/check-package-versions.mjs",
+    "reinstall-app": "rm -rf node_modules app/node_modules && yarn install && yarn workspace @selfxyz/mobile-app run install-app",
     "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "yarn prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "echo 'format markdown' && yarn prettier --parser markdown --write *.md  && echo 'format yaml' && yarn prettier --parser yaml --write .*.{yml,yaml} --single-quote false && yarn prettier --write scripts/**/*.{js,mjs,ts} && yarn prettier --parser json --write scripts/**/*.json",

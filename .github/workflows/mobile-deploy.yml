@@ -223,8 +223,19 @@ jobs:
 
           echo "✅ Lock files exist"
 
-      - name: Install Mobile Dependencies
-        if: inputs.platform != 'android'
+      - name: Install Mobile Dependencies (main repo)
+        if: inputs.platform != 'android' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false)
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+
+      - name: Install Mobile Dependencies (forked PRs - no secrets)
+        if: inputs.platform != 'android' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
@@ -774,6 +785,9 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          PLATFORM: ${{ inputs.platform }}
 
       # android specific steps
 
@@ -839,6 +853,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+      - name: Clone android-passport-reader
+        if: inputs.platform != 'ios'
+        uses: ./.github/actions/clone-android-passport-reader
+        with:
+          working_directory: ${{ env.APP_PATH }}
+          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
 
       - name: Build Dependencies (Android)
         if: inputs.platform != 'ios'
