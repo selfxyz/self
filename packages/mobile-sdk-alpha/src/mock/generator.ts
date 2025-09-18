@@ -26,7 +26,7 @@ const formatDateToDDMMYYYY = (date: Date): string => {
     '-' +
     date.toISOString().slice(5, 7) +
     '-' +
-    date.toISOString().slice(2, 4)
+    date.toISOString().slice(0, 4)
   ).toString();
 };
 

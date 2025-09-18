@@ -119,20 +119,16 @@ mESQ
 
 // Generate mock Aadhaar document
 function genMockAadhaarDoc(input: IdDocInput): AadhaarData {
-  console.log('input', input.firstName, input.lastName);
-  let name = input.firstName
+  const name = input.firstName
     ? `${input.firstName} ${input.lastName || ''}`.trim()
     : generateRandomName();
-    console.log('name', name);
 
-  name = name.trim().padEnd(62, '\0');
-  console.log('name-padded', name);
   const gender = input.sex === 'F' ? 'F' : 'M';
   const pincode = input.pincode ?? '110051';
   const state = input.state ?? 'Delhi';
   const dateOfBirth = input.birthDate ?? '01-01-1990';
-
-  console.log('name', name, 'gender', gender, 'pincode', pincode, 'state', state, 'dateOfBirth', dateOfBirth);
+  console.log('genMockAadhaarDoc', input);
+  console.log('dateOfBirth', dateOfBirth);
 
   // Generate Aadhaar QR data using processQRData
   const qrData = processQRData(
@@ -173,14 +169,15 @@ export function genMockIdDoc(
   userInput: Partial<IdDocInput> = {},
   mockDSC?: { dsc: string; privateKeyPem: string }
 ): PassportData | AadhaarData {
+
+  if (userInput.idType === 'mock_aadhaar') {
+    return genMockAadhaarDoc(userInput as IdDocInput);
+  }
+
   const mergedInput: IdDocInput = {
     ...defaultIdDocInput,
     ...userInput,
   };
-
-  if (mergedInput.idType === 'mock_aadhaar') {
-    return genMockAadhaarDoc(mergedInput);
-  }
 
   mergedInput.lastName = mergedInput.lastName ?? 'DOE';
   mergedInput.firstName = mergedInput.firstName ?? 'JOHN';

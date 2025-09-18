@@ -256,17 +256,37 @@ export async function isDocumentNullified(passportData: IDDocument) {
 }
 
 export async function isUserRegistered(
-  passportData: PassportData,
+  documentData: PassportData | AadhaarData,
   secret: string,
   getCommitmentTree: (docCategory: DocumentCategory) => string
 ) {
-  if (!passportData) {
+  if (!documentData) {
     return false;
   }
-  const attestationId =
-    passportData.documentCategory === 'passport' ? PASSPORT_ATTESTATION_ID : ID_CARD_ATTESTATION_ID;
-  const commitment = generateCommitment(secret, attestationId, passportData);
-  const document: DocumentCategory = passportData.documentCategory;
+
+  const document: DocumentCategory = documentData.documentCategory;
+  let commitment: string;
+
+  if (document === 'aadhaar') {
+    const aadhaarData = documentData as AadhaarData;
+    const nullifier = nullifierHash(aadhaarData.extractedFields);
+    const packedCommitment = computePackedCommitment(aadhaarData.extractedFields);
+    const { qrHash } = processQRDataSimple(aadhaarData.qrData);
+
+    commitment = computeCommitment(
+      BigInt(secret),
+      BigInt(qrHash),
+      nullifier,
+      packedCommitment,
+      BigInt(aadhaarData.photoHash || '0')
+    ).toString();
+
+    console.log('commitment', commitment);
+  } else {
+    const attestationId = document === 'passport' ? PASSPORT_ATTESTATION_ID : ID_CARD_ATTESTATION_ID;
+    commitment = generateCommitment(secret, attestationId, documentData as PassportData);
+  }
+
   const serializedTree = getCommitmentTree(document);
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   const index = tree.indexOf(BigInt(commitment));
