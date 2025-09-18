@@ -30,13 +30,10 @@ runs:
           echo "📦 Cloning android-passport-reader for build..."
           cd android
 
-          # Clone using provided PAT without embedding it in the remote URL
-          if GIT_TERMINAL_PROMPT=0 \
-             git -c protocol.version=2 \
-                 -c http.extraHeader="AUTHORIZATION: bearer ${{ inputs.selfxyz_internal_pat }}" \
-                 clone --depth 1 https://github.com/selfxyz/android-passport-reader.git; then
+          # Clone using PAT (embed temporarily, then scrub)
+          if git clone --depth 1 --quiet "https://${{ inputs.selfxyz_internal_pat }}@github.com/selfxyz/android-passport-reader.git"; then
             echo "✅ android-passport-reader cloned successfully"
-            # Scrub remote to a token-free URL
+            # Immediately scrub the credential from remote URL for security
             git -C android-passport-reader remote set-url origin https://github.com/selfxyz/android-passport-reader.git || true
           else
             echo "❌ Failed to clone android-passport-reader"

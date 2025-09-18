@@ -109,6 +109,11 @@ jobs:
           echo "Building dependencies..."
           yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
+      - name: Clone android-passport-reader
+        uses: ./.github/actions/clone-android-passport-reader
+        with:
+          working_directory: app
+          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Build Android APK
         run: |
           echo "Building Android APK..."
