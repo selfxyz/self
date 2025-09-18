@@ -82,7 +82,6 @@
     "@react-native-clipboard/clipboard": "1.16.3",
     "@react-native-community/blur": "^4.4.1",
     "@react-native-community/netinfo": "^11.4.1",
-    "@react-native-firebase/analytics": "^19.0.1",
     "@react-native-firebase/app": "^19.0.1",
     "@react-native-firebase/messaging": "^19.0.1",
     "@react-native-firebase/remote-config": "^19.0.1",

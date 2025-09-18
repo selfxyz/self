@@ -4013,15 +4013,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-firebase/analytics@npm:^19.0.1":
-  version: 19.3.0
-  resolution: "@react-native-firebase/analytics@npm:19.3.0"
-  peerDependencies:
-    "@react-native-firebase/app": 19.3.0
-  checksum: 10c0/be618ab91d892148e02cd4ca9f093cf1d41ebad90622b9c9c6bf673f2eb779776ae9d46259105b8b229ad5db29c5468dfb32731290f1b00bc7b2a1b225a701c6
-  languageName: node
-  linkType: hard
-
 "@react-native-firebase/app@npm:^19.0.1":
   version: 19.3.0
   resolution: "@react-native-firebase/app@npm:19.3.0"
@@ -4915,7 +4906,6 @@ __metadata:
     "@react-native-community/blur": "npm:^4.4.1"
     "@react-native-community/cli": "npm:^16.0.3"
     "@react-native-community/netinfo": "npm:^11.4.1"
-    "@react-native-firebase/analytics": "npm:^19.0.1"
     "@react-native-firebase/app": "npm:^19.0.1"
     "@react-native-firebase/messaging": "npm:^19.0.1"
     "@react-native-firebase/remote-config": "npm:^19.0.1"
