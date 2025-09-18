@@ -629,9 +629,11 @@ func (s *BackendVerifier) validateTimestamp(
 		})
 	}
 
-	// Check if timestamp is more than 1 day in the past
+	// Check if timestamp is more than 1 day in the past (using end-of-day logic)
+	// Add 23 hours + 59 minutes + 59 seconds to circuit timestamp (matching TypeScript logic)
+	circuitTimestampEOD := circuitTimestamp.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 	oneDayAgo := currentTimestamp.Add(-24 * time.Hour)
-	if circuitTimestamp.Before(oneDayAgo) {
+	if circuitTimestampEOD.Before(oneDayAgo) {
 		*issues = append(*issues, ConfigIssue{
 			Type:    InvalidTimestamp,
 			Message: "Circuit timestamp is too old",
