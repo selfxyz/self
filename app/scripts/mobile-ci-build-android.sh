@@ -179,12 +179,14 @@ log "✅ Package files backed up successfully"
 # Install SDK from tarball in app with timeout
 log "Installing SDK as real files..."
 if is_ci; then
-  SKIP_PRIVATE_MODULES=true timeout 180 yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH" || {
+  # Temporarily unset PAT to skip private modules during SDK installation
+  env -u SELFXYZ_INTERNAL_REPO_PAT timeout 180 yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH" || {
     log "SDK installation timed out after 3 minutes"
     exit 1
   }
 else
-  SKIP_PRIVATE_MODULES=true yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH"
+  # Temporarily unset PAT to skip private modules during SDK installation
+  env -u SELFXYZ_INTERNAL_REPO_PAT yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH"
 fi
 
 # Verify installation (check both local and hoisted locations)

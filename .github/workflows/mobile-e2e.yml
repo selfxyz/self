@@ -71,12 +71,9 @@ jobs:
         run: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
-          SKIP_PRIVATE_MODULES: false
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
         run: yarn install --immutable --silent
-        env:
-          SKIP_PRIVATE_MODULES: true
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
@@ -130,8 +127,8 @@ jobs:
           echo "📱 APK size: $APK_SIZE bytes"
 
           # Verify android-passport-reader was properly integrated (skip for forks)
-          if [ "${SKIP_PRIVATE_MODULES:-}" = "true" ]; then
-            echo "🔕 SKIP_PRIVATE_MODULES=true — skipping private module verification"
+          if [ -z "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]; then
+            echo "🔕 No PAT available — skipping private module verification"
           elif [ -d "app/android/android-passport-reader" ]; then
             echo "✅ android-passport-reader directory exists"
             echo "📁 android-passport-reader contents:"
@@ -222,12 +219,9 @@ jobs:
         run: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
-          SKIP_PRIVATE_MODULES: false
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
         run: yarn install --immutable --silent
-        env:
-          SKIP_PRIVATE_MODULES: true
       - name: Validate Maestro test file
         run: |
           [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }

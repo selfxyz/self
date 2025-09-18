@@ -23,11 +23,6 @@ const isDryRun = process.env.DRY_RUN === 'true';
 
 // Platform detection for Android-specific modules
 function shouldSetupAndroidModule() {
-  // Skip if explicitly disabled
-  if (process.env.SKIP_PRIVATE_MODULES === 'true') {
-    return false;
-  }
-
   // In CI, check for platform-specific indicators
   if (isCI) {
     const platform = process.env.PLATFORM || process.env.INPUT_PLATFORM;

@@ -6,13 +6,9 @@ inputs:
     description: "Working directory path (where android/ subdirectory is located)"
     required: false
     default: "."
-  github_token:
-    description: "GitHub token for private repository access"
-    required: true
-  skip_private_modules:
-    description: "Skip private module cloning (for forks without access)"
+  selfxyz_internal_pat:
+    description: "SELFXYZ internal repository PAT for private repository access"
     required: false
-    default: "false"
 
 runs:
   using: "composite"
@@ -21,9 +17,9 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        # Check if we should skip private module cloning (for forks)
-        if [ "${{ inputs.skip_private_modules }}" = "true" ]; then
-          echo "🔒 Skipping private module cloning (fork detected or no access token)"
+        # Check if PAT is available for private module cloning
+        if [ -z "${{ inputs.selfxyz_internal_pat }}" ]; then
+          echo "🔒 Skipping private module cloning (no PAT provided)"
           echo "ℹ️  This is expected for forked PRs - build will continue without private modules"
           exit 0
         fi
@@ -34,17 +30,17 @@ runs:
           echo "📦 Cloning android-passport-reader for build..."
           cd android
 
-          # Clone using provided token without embedding it in the remote URL
+          # Clone using provided PAT without embedding it in the remote URL
           if GIT_TERMINAL_PROMPT=0 \
              git -c protocol.version=2 \
-                 -c http.extraHeader="AUTHORIZATION: bearer ${{ inputs.github_token }}" \
+                 -c http.extraHeader="AUTHORIZATION: bearer ${{ inputs.selfxyz_internal_pat }}" \
                  clone --depth 1 https://github.com/selfxyz/android-passport-reader.git; then
             echo "✅ android-passport-reader cloned successfully"
             # Scrub remote to a token-free URL
             git -C android-passport-reader remote set-url origin https://github.com/selfxyz/android-passport-reader.git || true
           else
             echo "❌ Failed to clone android-passport-reader"
-            echo "Please ensure a valid github_token (fine-grained, read-only) is provided to this action"
+            echo "Please ensure a valid SELFXYZ internal PAT is provided to this action"
             exit 1
           fi
         elif [ "$CI" = "true" ]; then

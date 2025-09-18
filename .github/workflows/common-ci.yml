@@ -19,8 +19,6 @@ jobs:
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
       - name: Build dependencies
         run: yarn workspace @selfxyz/mobile-app run build:deps
       - name: Cache build artifacts
@@ -47,8 +45,6 @@ jobs:
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
       - name: Run linter
         run: yarn workspace @selfxyz/common lint
 
@@ -69,8 +65,6 @@ jobs:
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
       - name: Restore build artifacts
         id: restore-build-deps
         uses: actions/cache/restore@v4
@@ -105,8 +99,6 @@ jobs:
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
       - name: Restore build artifacts
         id: restore-build-deps
         uses: actions/cache/restore@v4

@@ -32,8 +32,6 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
 
       - name: Run workspace build
         run: yarn build
@@ -63,8 +61,6 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
 
       - name: Build workspace dependencies
         run: yarn build
@@ -94,8 +90,6 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
 
       - name: Build workspace dependencies
         run: yarn build
@@ -126,8 +120,6 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
 
       - name: Check code formatting (dry run)
         run: |
@@ -169,8 +161,6 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
 
       - name: Build workspace dependencies
         run: yarn build

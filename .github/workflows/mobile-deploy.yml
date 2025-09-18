@@ -233,7 +233,6 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
-          SKIP_PRIVATE_MODULES: false
 
       - name: Install Mobile Dependencies (forked PRs - no secrets)
         if: inputs.platform != 'android' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true
@@ -243,8 +242,6 @@ jobs:
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
-        env:
-          SKIP_PRIVATE_MODULES: true
 
       - name: Verify iOS Secrets
         if: inputs.platform != 'android'
@@ -862,8 +859,7 @@ jobs:
         uses: ./.github/actions/clone-android-passport-reader
         with:
           working_directory: ${{ env.APP_PATH }}
-          github_token: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
-          skip_private_modules: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT == '' && 'true' || 'false' }}
+          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
 
       - name: Build Dependencies (Android)
         if: inputs.platform != 'ios'

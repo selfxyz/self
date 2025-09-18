@@ -446,7 +446,6 @@ jobs:
         uses: ./.github/actions/yarn-install
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
-          SKIP_PRIVATE_MODULES: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT == '' && 'true' || 'false' }}
       - name: Cache Built Dependencies
         id: built-deps
         uses: ./.github/actions/cache-built-deps

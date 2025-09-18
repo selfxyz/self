@@ -18,8 +18,6 @@ jobs:
           node-version-file: .nvmrc
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-        env:
-          SKIP_PRIVATE_MODULES: true
       - name: Run demo app tests
         run: |
           yarn workspace demo-app test
