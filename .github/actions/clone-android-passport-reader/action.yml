@@ -9,6 +9,10 @@ inputs:
   github_token:
     description: "GitHub token for private repository access"
     required: true
+  skip_private_modules:
+    description: "Skip private module cloning (for forks without access)"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -16,6 +20,13 @@ runs:
     - name: Clone android-passport-reader
       shell: bash
       run: |
+        # Check if we should skip private module cloning (for forks)
+        if [ "${{ inputs.skip_private_modules }}" = "true" ]; then
+          echo "🔒 Skipping private module cloning (fork detected or no access token)"
+          echo "ℹ️  This is expected for forked PRs - build will continue without private modules"
+          exit 0
+        fi
+
         cd "${{ inputs.working_directory }}"
 
         if [ ! -d "android/android-passport-reader" ]; then

@@ -66,9 +66,17 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
-      - run: yarn install --immutable --silent
+      - name: Install deps (internal PRs and protected branches)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        run: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SKIP_PRIVATE_MODULES: false
+      - name: Install deps (forked PRs - no secrets)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+        run: yarn install --immutable --silent
+        env:
+          SKIP_PRIVATE_MODULES: true
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
@@ -99,11 +107,6 @@ jobs:
           accept-android-sdk-licenses: true
       - name: Install NDK
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
-      - name: Clone android-passport-reader
-        uses: ./.github/actions/clone-android-passport-reader
-        with:
-          working_directory: app
-          github_token: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -212,9 +215,17 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
-      - run: yarn install --immutable --silent
+      - name: Install deps (internal PRs and protected branches)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        run: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SKIP_PRIVATE_MODULES: false
+      - name: Install deps (forked PRs - no secrets)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+        run: yarn install --immutable --silent
+        env:
+          SKIP_PRIVATE_MODULES: true
       - name: Validate Maestro test file
         run: |
           [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }

@@ -78,19 +78,27 @@ function runCommand(command, options = {}) {
     ...options,
   };
 
+  // Sanitize command for logging to prevent credential exposure
+  const sanitizedCommand = sanitizeCommandForLogging(command);
+
   try {
     if (isDryRun) {
-      log(`[DRY RUN] Would run: ${command}`, 'info');
+      log(`[DRY RUN] Would run: ${sanitizedCommand}`, 'info');
       return '';
     }
 
-    log(`Running: ${command}`, 'info');
+    log(`Running: ${sanitizedCommand}`, 'info');
     return execSync(command, defaultOptions);
   } catch (error) {
-    log(`Failed to run: ${command}`, 'error');
+    log(`Failed to run: ${sanitizedCommand}`, 'error');
     log(`Error: ${error.message}`, 'error');
     throw error;
   }
+}
+
+function sanitizeCommandForLogging(command) {
+  // Replace any https://token@github.com patterns with https://[REDACTED]@github.com
+  return command.replace(/https:\/\/[^@]+@github\.com/g, 'https://[REDACTED]@github.com');
 }
 
 function removeExistingModule() {
