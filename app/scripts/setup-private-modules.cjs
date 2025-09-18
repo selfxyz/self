@@ -131,7 +131,10 @@ function clonePrivateRepo() {
       'CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available - skipping private module setup',
       'info',
     );
-    log('This is expected for forked PRs or environments without access to private modules', 'info');
+    log(
+      'This is expected for forked PRs or environments without access to private modules',
+      'info',
+    );
     return; // Skip gracefully instead of throwing error
   } else {
     // Local development with SSH
