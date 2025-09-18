@@ -128,12 +128,11 @@ function clonePrivateRepo() {
     cloneUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else if (isCI) {
     log(
-      'CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available',
-      'error',
+      'CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available - skipping private module setup',
+      'info',
     );
-    throw new Error(
-      'CI requires SELFXYZ_INTERNAL_REPO_PAT environment variable',
-    );
+    log('This is expected for forked PRs or environments without access to private modules', 'info');
+    return; // Skip gracefully instead of throwing error
   } else {
     // Local development with SSH
     log('Local development: Using SSH for clone', 'info');

@@ -29,3 +29,5 @@ runs:
     - name: Install dependencies
       shell: bash
       run: yarn install --immutable
+      env:
+        SELFXYZ_INTERNAL_REPO_PAT: ${{ env.SELFXYZ_INTERNAL_REPO_PAT }}
