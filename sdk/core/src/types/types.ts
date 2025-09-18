@@ -1,4 +1,4 @@
-import { Country3LetterCode } from '@selfxyz/common/constants';
+import { Country3LetterCode } from '@selfxyz/common/constants/countries';
 import type { BigNumberish } from 'ethers';
 import { discloseIndices } from 'src/utils/constants.js';
 

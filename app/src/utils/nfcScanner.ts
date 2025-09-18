@@ -153,15 +153,15 @@ const handleResponseIOS = (response: unknown) => {
   const signedAttributes = parsed?.signedAttributes;
   const mrz = parsed?.passportMRZ;
   const signatureBase64 = parsed?.signatureBase64;
-  const _dataGroupsPresent = parsed?.dataGroupsPresent;
-  const _placeOfBirth = parsed?.placeOfBirth;
-  const _activeAuthenticationPassed = parsed?.activeAuthenticationPassed;
-  const _isPACESupported = parsed?.isPACESupported;
-  const _isChipAuthenticationSupported = parsed?.isChipAuthenticationSupported;
-  const _residenceAddress = parsed?.residenceAddress;
-  const passportPhoto = parsed?.passportPhoto;
-  const _encapsulatedContentDigestAlgorithm =
-    parsed?.encapsulatedContentDigestAlgorithm;
+  // const _dataGroupsPresent = parsed?.dataGroupsPresent;
+  // const _placeOfBirth = parsed?.placeOfBirth;
+  // const _activeAuthenticationPassed = parsed?.activeAuthenticationPassed;
+  // const _isPACESupported = parsed?.isPACESupported;
+  // const _isChipAuthenticationSupported = parsed?.isChipAuthenticationSupported;
+  // const _residenceAddress = parsed?.residenceAddress;
+  // const passportPhoto = parsed?.passportPhoto;
+  // const _encapsulatedContentDigestAlgorithm =
+  //   parsed?.encapsulatedContentDigestAlgorithm;
   const documentSigningCertificate = parsed?.documentSigningCertificate;
   const pem = JSON.parse(documentSigningCertificate).PEM.replace(/\n/g, '');
   const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
@@ -203,12 +203,12 @@ const handleResponseAndroid = (response: AndroidScanResponse): PassportData => {
     mrz,
     eContent,
     encryptedDigest,
-    _photo,
-    _digestAlgorithm,
-    _signerInfoDigestAlgorithm,
-    _digestEncryptionAlgorithm,
-    _LDSVersion,
-    _unicodeVersion,
+    // _photo,
+    // _digestAlgorithm,
+    // _signerInfoDigestAlgorithm,
+    // _digestEncryptionAlgorithm,
+    // _LDSVersion,
+    // _unicodeVersion,
     encapContent,
     documentSigningCertificate,
     dataGroupHashes,

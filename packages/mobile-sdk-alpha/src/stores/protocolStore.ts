@@ -112,7 +112,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       }
     },
     fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {
-      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping`;
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping-gcp`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -223,7 +223,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       }
     },
     fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {
-      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping`;
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping-gcp`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
