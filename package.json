@@ -36,6 +36,7 @@
     "@tamagui/toast": "1.126.14",
     "@types/node": "^22.18.3",
     "@types/react": "^18.3.4",
+    "punycode": "npm:punycode.js@^2.3.1",
     "react": "^18.3.1",
     "react-native": "0.76.9"
   },
