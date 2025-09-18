@@ -7,6 +7,5 @@ import type { WebAppInfo } from './utils/websocket.js';
 export type { SelfApp };
 export type { WebAppInfo };
 
-
 export { SelfQRcode, SelfQRcodeWrapper };
 export { countries };
