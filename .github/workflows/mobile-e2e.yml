@@ -129,8 +129,10 @@ jobs:
           APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
           echo "📱 APK size: $APK_SIZE bytes"
 
-          # Verify android-passport-reader was properly integrated
-          if [ -d "app/android/android-passport-reader" ]; then
+          # Verify android-passport-reader was properly integrated (skip for forks)
+          if [ "${SKIP_PRIVATE_MODULES:-}" = "true" ]; then
+            echo "🔕 SKIP_PRIVATE_MODULES=true — skipping private module verification"
+          elif [ -d "app/android/android-passport-reader" ]; then
             echo "✅ android-passport-reader directory exists"
             echo "📁 android-passport-reader contents:"
             ls -la app/android/android-passport-reader/ | head -10

@@ -20,6 +20,7 @@ runs:
     - name: Clone android-passport-reader
       shell: bash
       run: |
+        set -euo pipefail
         # Check if we should skip private module cloning (for forks)
         if [ "${{ inputs.skip_private_modules }}" = "true" ]; then
           echo "🔒 Skipping private module cloning (fork detected or no access token)"
@@ -33,12 +34,17 @@ runs:
           echo "📦 Cloning android-passport-reader for build..."
           cd android
 
-          # Clone using the provided token
-          if git clone "https://${{ inputs.github_token }}@github.com/selfxyz/android-passport-reader.git"; then
+          # Clone using provided token without embedding it in the remote URL
+          if GIT_TERMINAL_PROMPT=0 \
+             git -c protocol.version=2 \
+                 -c http.extraHeader="AUTHORIZATION: bearer ${{ inputs.github_token }}" \
+                 clone --depth 1 https://github.com/selfxyz/android-passport-reader.git; then
             echo "✅ android-passport-reader cloned successfully"
+            # Scrub remote to a token-free URL
+            git -C android-passport-reader remote set-url origin https://github.com/selfxyz/android-passport-reader.git || true
           else
             echo "❌ Failed to clone android-passport-reader"
-            echo "Please ensure SELFXYZ_INTERNAL_REPO_PAT is configured correctly"
+            echo "Please ensure a valid github_token (fine-grained, read-only) is provided to this action"
             exit 1
           fi
         elif [ "$CI" = "true" ]; then
