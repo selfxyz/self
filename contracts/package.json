@@ -109,6 +109,7 @@
     "@types/circomlibjs": "^0.1.6",
     "@types/jest": "^29.5.14",
     "@types/mocha": "^10.0.6",
+    "@types/node": "^22.18.3",
     "@types/snarkjs": "^0.7.7",
     "chai": "^4.4.1",
     "dotenv-cli": "^7.4.2",
@@ -120,6 +121,7 @@
     "prettier": "3.5.3",
     "prettier-plugin-solidity": "^2.1.0",
     "solidity-coverage": "^0.8.14",
+    "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typechain": "^8.3.2",
     "typescript": "^5.9.2"
