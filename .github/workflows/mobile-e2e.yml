@@ -69,11 +69,6 @@ jobs:
       - run: yarn install --immutable --silent
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
-      - name: Clone android-passport-reader
-        uses: ./.github/actions/clone-android-passport-reader
-        with:
-          working_directory: app
-          github_token: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Validate Maestro test file
         if: false # Skip for build-only test - keep logic for future E2E
         run: |
@@ -104,6 +99,11 @@ jobs:
           accept-android-sdk-licenses: true
       - name: Install NDK
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+      - name: Clone android-passport-reader
+        uses: ./.github/actions/clone-android-passport-reader
+        with:
+          working_directory: app
+          github_token: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -115,18 +115,29 @@ jobs:
           chmod +x app/android/gradlew
           (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
-
-          # Verify APK was created
+      - name: Verify APK and android-passport-reader integration
+        run: |
+          echo "🔍 Verifying build artifacts..."
           APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
-          if [ -f "$APK_PATH" ]; then
-            echo "✅ APK found at $APK_PATH"
-            ls -lh "$APK_PATH"
+          [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+          echo "✅ APK found at $APK_PATH"
+
+          # Check APK size
+          APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
+          echo "📱 APK size: $APK_SIZE bytes"
+
+          # Verify android-passport-reader was properly integrated
+          if [ -d "app/android/android-passport-reader" ]; then
+            echo "✅ android-passport-reader directory exists"
+            echo "📁 android-passport-reader contents:"
+            ls -la app/android/android-passport-reader/ | head -10
           else
-            echo "❌ APK not found at expected location: $APK_PATH"
-            echo "Contents of build/outputs/apk/debug/:"
-            ls -la app/android/app/build/outputs/apk/debug/ || echo "Directory not found"
+            echo "❌ android-passport-reader directory not found"
             exit 1
           fi
+
+          echo "🎉 Build verification completed successfully!"
+          echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
       - name: Install and Test on Android
         if: false # Skip emulator/E2E for build-only test - keep logic for future E2E
         uses: reactivecircus/android-emulator-runner@v2

@@ -446,6 +446,11 @@ jobs:
         uses: ./.github/actions/yarn-install
         env:
           SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Clone android-passport-reader
+        uses: ./.github/actions/clone-android-passport-reader
+        with:
+          working_directory: app
+          github_token: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Cache Built Dependencies
         id: built-deps
         uses: ./.github/actions/cache-built-deps

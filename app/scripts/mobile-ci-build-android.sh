@@ -87,14 +87,15 @@ cd "$PROJECT_ROOT"
 
 log "Working directory: $(pwd)"
 
-# Clone android-passport-reader if it doesn't exist
+# Clone android-passport-reader if it doesn't exist (for local development)
+# Note: In CI, this is usually handled by GitHub action, but we keep this as fallback
 if [[ ! -d "app/android/android-passport-reader" ]]; then
   log "Cloning android-passport-reader for build..."
   cd app/android
 
   # Use different clone methods based on environment
   if is_ci && [[ -n "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]]; then
-    # CI environment with PAT
+    # CI environment with PAT (fallback if action didn't run)
     git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/selfxyz/android-passport-reader.git" || {
       log "ERROR: Failed to clone android-passport-reader with PAT"
       exit 1
@@ -117,7 +118,7 @@ if [[ ! -d "app/android/android-passport-reader" ]]; then
   cd ../../
   log "✅ android-passport-reader cloned successfully"
 elif is_ci; then
-  log "⚠️  android-passport-reader exists in CI - this is unexpected"
+  log "📁 android-passport-reader exists (likely cloned by GitHub action)"
 else
   log "📁 android-passport-reader already exists - preserving existing directory"
 fi
