@@ -135,6 +135,12 @@ jobs:
     needs: setup
     if: (inputs.platform == 'ios' || inputs.platform == 'both' || github.event_name == 'push' || github.event_name == 'pull_request')
     steps:
+      - name: Set Node.js version from setup job
+        run: |
+          echo "NODE_VERSION=${{ needs.setup.outputs.node-version }}" >> $GITHUB_ENV
+          echo "NODE_VERSION_SANITIZED=${{ needs.setup.outputs.node-version-sanitized }}" >> $GITHUB_ENV
+          echo "📦 Node.js version: ${{ needs.setup.outputs.node-version }}"
+
       - name: Mobile deployment status
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
@@ -630,6 +636,12 @@ jobs:
     needs: setup
     if: (inputs.platform == 'android' || inputs.platform == 'both' || (github.event_name == 'push' || github.event_name == 'pull_request'))
     steps:
+      - name: Set Node.js version from setup job
+        run: |
+          echo "NODE_VERSION=${{ needs.setup.outputs.node-version }}" >> $GITHUB_ENV
+          echo "NODE_VERSION_SANITIZED=${{ needs.setup.outputs.node-version-sanitized }}" >> $GITHUB_ENV
+          echo "📦 Node.js version: ${{ needs.setup.outputs.node-version }}"
+
       - name: Mobile deployment status
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with Android build"
@@ -993,7 +1005,7 @@ jobs:
   # This avoids race conditions when both iOS and Android run in parallel
   update-version:
     runs-on: ubuntu-latest
-    needs: [build-ios, build-android]
+    needs: [build-ios, build-android, setup]
     if: |
       always() &&
       inputs.test_mode != true &&
@@ -1001,24 +1013,17 @@ jobs:
     env:
       APP_PATH: ${{ github.workspace }}/app
     steps:
+      - name: Set Node.js version from setup job
+        run: |
+          echo "NODE_VERSION=${{ needs.setup.outputs.node-version }}" >> $GITHUB_ENV
+          echo "NODE_VERSION_SANITIZED=${{ needs.setup.outputs.node-version-sanitized }}" >> $GITHUB_ENV
+          echo "📦 Node.js version: ${{ needs.setup.outputs.node-version }}"
+
       - uses: actions/checkout@v4
         with:
           token: ${{ github.token }}
           fetch-depth: 0
           ref: staging
-      - name: Read and sanitize Node.js version
-        shell: bash
-        run: |
-          if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
-            echo "❌ .nvmrc is missing or empty"; exit 1;
-          fi
-          VERSION="$(tr -d '\r\n' < .nvmrc)"
-          VERSION="${VERSION#v}"
-          if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
-            echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
-          fi
-          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
-          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
 
       - uses: actions/setup-node@v4
         with:
