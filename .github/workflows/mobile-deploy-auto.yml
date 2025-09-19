@@ -1,6 +1,24 @@
 name: Mobile Auto Deploy
 
+env:
+  # Helper expressions for cleaner conditions
+  IS_PUSH_EVENT: ${{ github.event_name == 'push' }}
+  IS_PR_EVENT: ${{ github.event_name == 'pull_request' }}
+  IS_PR_MERGED: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged == true }}
+  HAS_NO_DEPLOY_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'no-deploy') }}
+  IS_MAIN_BRANCH: ${{ github.ref_name == 'main' || github.base_ref == 'main' }}
+  IS_STAGING_BRANCH: ${{ github.ref_name == 'staging' || github.base_ref == 'dev' }}
+
 on:
+  push:
+    branches:
+      - staging
+      - main
+    paths:
+      - "app/**"
+      - "!app/**/*.md"
+      - "!app/docs/**"
+      - "packages/mobile-sdk-alpha/**"
   pull_request:
     types: [closed]
     branches: [main, dev]
@@ -20,7 +38,7 @@ permissions:
 
 jobs:
   check-and-deploy:
-    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'no-deploy')
+    if: env.IS_PUSH_EVENT || (env.IS_PR_MERGED && !env.HAS_NO_DEPLOY_LABEL)
     runs-on: ubuntu-latest
     outputs:
       should_deploy: ${{ steps.check.outputs.should_deploy }}
@@ -34,6 +52,32 @@ jobs:
         run: |
           echo "🔍 Checking deployment conditions..."
 
+          # Handle push events
+          if [[ "${{ env.IS_PUSH_EVENT }}" == "true" ]]; then
+            echo "📱 Push event detected"
+
+            # Determine deployment track based on branch
+            if [[ "${{ env.IS_MAIN_BRANCH }}" == "true" ]]; then
+              echo "deployment_track=production" >> $GITHUB_OUTPUT
+              echo "🚀 Deployment track: production"
+              echo "version_bump=patch" >> $GITHUB_OUTPUT
+              echo "📈 Version bump: patch"
+            elif [[ "${{ env.IS_STAGING_BRANCH }}" == "true" ]]; then
+              echo "deployment_track=internal" >> $GITHUB_OUTPUT
+              echo "🧪 Deployment track: internal testing"
+              echo "version_bump=build" >> $GITHUB_OUTPUT
+              echo "📈 Version bump: build only"
+            fi
+
+            # Always deploy both platforms for push events
+            echo 'platforms=["ios", "android"]' >> $GITHUB_OUTPUT
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Handle pull request events (existing logic)
+          echo "📱 Pull request event detected"
+
           # Skip if PR has skip-deploy in title or body
           if [[ "${{ github.event.pull_request.title }}" =~ \[skip-deploy\] ]] ||
              [[ "${{ github.event.pull_request.body }}" =~ \[skip-deploy\] ]]; then
@@ -43,10 +87,10 @@ jobs:
           fi
 
           # Determine deployment track based on target branch
-          if [[ "${{ github.base_ref }}" == "main" ]]; then
+          if [[ "${{ env.IS_MAIN_BRANCH }}" == "true" ]]; then
             echo "deployment_track=production" >> $GITHUB_OUTPUT
             echo "🚀 Deployment track: production"
-          elif [[ "${{ github.base_ref }}" == "dev" ]]; then
+          elif [[ "${{ env.IS_STAGING_BRANCH }}" == "true" ]]; then
             echo "deployment_track=internal" >> $GITHUB_OUTPUT
             echo "🧪 Deployment track: internal testing"
           fi
@@ -75,11 +119,17 @@ jobs:
         if: steps.check.outputs.should_deploy == 'true'
         run: |
           echo "📱 Auto-deployment triggered!"
-          echo "Branch: ${{ github.base_ref }}"
+          if [[ "${{ env.IS_PUSH_EVENT }}" == "true" ]]; then
+            echo "Event: Push to ${{ github.ref_name }}"
+            echo "Commit: ${{ github.sha }}"
+            echo "Author: ${{ github.actor }}"
+          else
+            echo "Event: PR merge to ${{ github.base_ref }}"
+            echo "PR: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            echo "Merged by: ${{ github.event.pull_request.merged_by.login }}"
+          fi
           echo "Track: ${{ steps.check.outputs.deployment_track }}"
           echo "Version bump: ${{ steps.check.outputs.version_bump }}"
-          echo "PR: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
-          echo "Merged by: ${{ github.event.pull_request.merged_by.login }}"
 
   deploy-ios:
     needs: check-and-deploy

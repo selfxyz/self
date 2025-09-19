@@ -27,12 +27,25 @@ env:
   IOS_PROV_PROFILE_PROJ_PATH: /ios/certs/profile.mobileprovision
   IOS_PROV_PROFILE_DIRECTORY: "~/Library/MobileDevice/Provisioning\ Profiles/"
 
+  # Helper expressions for cleaner conditions
+  IS_AUTO_TRIGGER: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+  CHECKOUT_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || 'staging' }}
+
 permissions:
   contents: write
   pull-requests: write
   id-token: write
 
 on:
+  push:
+    branches:
+      - staging
+      - main
+  pull_request:
+    types: [closed]
+    branches:
+      - staging
+      - main
   workflow_dispatch:
     inputs:
       platform:
@@ -95,22 +108,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-ios:
-    runs-on: macos-latest-large
-    if: (inputs.platform == 'ios' || inputs.platform == 'both')
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      node-version: ${{ steps.node-version.outputs.version }}
+      node-version-sanitized: ${{ steps.node-version.outputs.version-sanitized }}
     steps:
-      - name: Mobile deployment status
-        run: |
-          echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
-          echo "📱 Platform: ${{ inputs.platform }}"
-          echo "🎯 Track: ${{ inputs.deployment_track }}"
-          echo "📦 Version bump: ${{ inputs.version_bump }}"
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: staging
+          ref: ${{ env.CHECKOUT_REF }}
+
       - name: Read and sanitize Node.js version
+        id: node-version
         shell: bash
         run: |
           if [ ! -f .nvmrc ] || [ -z "$(cat .nvmrc)" ]; then
@@ -121,8 +131,25 @@ jobs:
           if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){0,2}$ ]]; then
             echo "Invalid .nvmrc content: '$VERSION'"; exit 1;
           fi
-          echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
-          echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version-sanitized=${VERSION//\//-}" >> "$GITHUB_OUTPUT"
+
+  build-ios:
+    runs-on: macos-latest-large
+    needs: setup
+    if: (inputs.platform == 'ios' || inputs.platform == 'both' || env.IS_AUTO_TRIGGER)
+    steps:
+      - name: Mobile deployment status
+        run: |
+          echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
+          echo "📱 Platform: ${{ inputs.platform || 'both' }}"
+          echo "🎯 Track: ${{ inputs.deployment_track || 'internal' }}"
+          echo "📦 Version bump: ${{ inputs.version_bump || 'build' }}"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ env.CHECKOUT_REF }}
 
       - name: Verify branch and commit (iOS)
         if: inputs.platform != 'android'
@@ -604,20 +631,20 @@ jobs:
 
   build-android:
     runs-on: ubuntu-latest
-    if: (inputs.platform == 'android' || inputs.platform == 'both')
+    if: (inputs.platform == 'android' || inputs.platform == 'both' || (github.event_name == 'push' || github.event_name == 'pull_request'))
     steps:
       - name: Mobile deployment status
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with Android build"
-          echo "📱 Platform: ${{ inputs.platform }}"
-          echo "🎯 Track: ${{ inputs.deployment_track }}"
-          echo "📦 Version bump: ${{ inputs.version_bump }}"
+          echo "📱 Platform: ${{ inputs.platform || 'both' }}"
+          echo "🎯 Track: ${{ inputs.deployment_track || 'internal' }}"
+          echo "📦 Version bump: ${{ inputs.version_bump || 'build' }}"
 
       - uses: actions/checkout@v4
         if: inputs.platform != 'ios'
         with:
           fetch-depth: 0
-          ref: staging
+          ref: ${{ env.CHECKOUT_REF }}
       - uses: "google-github-actions/auth@v2"
         with:
           project_id: "plucky-tempo-454713-r0"
