@@ -21,7 +21,10 @@ import { genDG1 } from './dg1.js';
 import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
 import { getMockDSC } from './getMockDSC.js';
 import { initPassportDataParsing } from './passport.js';
-import { AADHAAR_MOCK_PRIVATE_KEY_PEM, AADHAAR_MOCK_PUBLIC_KEY_PEM } from 'src/mock_certificates/aadhaar/mockAadhaarCert.js';
+import {
+  AADHAAR_MOCK_PRIVATE_KEY_PEM,
+  AADHAAR_MOCK_PUBLIC_KEY_PEM,
+} from '../../mock_certificates/aadhaar/mockAadhaarCert.js';
 
 export interface IdDocInput {
   idType: 'mock_passport' | 'mock_id_card' | 'mock_aadhaar';
@@ -56,7 +59,6 @@ const defaultIdDocInput: IdDocInput = {
   pincode: '110051',
   state: 'Delhi',
 };
-
 
 // Generate mock Aadhaar document
 function genMockAadhaarDoc(input: IdDocInput): AadhaarData {

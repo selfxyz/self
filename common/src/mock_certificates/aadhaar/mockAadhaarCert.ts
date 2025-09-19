@@ -1,7 +1,6 @@
 // Hardcoded Aadhaar test certificates for development purposes only
 // This file contains mock private keys that should NEVER be used in production
 
-
 export const AADHAAR_MOCK_PRIVATE_KEY_PEM = `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC//2Yjq4TpEm1t
 5Fm4MM/+8MhGPd9vTAZpo04L7HYFbe4YdFmXZBLXH6KbLrbK3uhMuq9dmotJiDtx
