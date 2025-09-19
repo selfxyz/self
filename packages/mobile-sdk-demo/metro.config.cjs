@@ -25,12 +25,15 @@ const config = {
   ],
 
   resolver: {
+    // Prevent Haste module naming collisions from duplicate package.json files
+    blockList: [
+      // Ignore built package.json files to prevent Haste collisions
+      /.*\/dist\/package\.json$/,
+      /.*\/build\/package\.json$/,
+    ],
     // Let workspace packages resolve naturally to their built exports (override where needed)
     alias: {
-      '@selfxyz/mobile-sdk-alpha': path.resolve(
-        workspaceRoot,
-        'packages/mobile-sdk-alpha/src',
-      ),
+      '@selfxyz/mobile-sdk-alpha': path.resolve(workspaceRoot, 'packages/mobile-sdk-alpha/src'),
     },
     // Enable workspace-aware resolution
     enableGlobalPackages: true,
@@ -38,10 +41,7 @@ const config = {
     // Prefer React Native-specific exports when available to avoid Node-only deps
     unstable_conditionNames: ['require', 'react-native'],
     unstable_enableSymlinks: true,
-    nodeModulesPaths: [
-      path.resolve(projectRoot, 'node_modules'),
-      path.resolve(workspaceRoot, 'node_modules'),
-    ],
+    nodeModulesPaths: [path.resolve(projectRoot, 'node_modules'), path.resolve(workspaceRoot, 'node_modules')],
     extraNodeModules: {
       '@babel/runtime': path.resolve(__dirname, '../../node_modules/@babel/runtime'),
       // Pin React and React Native to monorepo root
@@ -49,6 +49,10 @@ const config = {
       'react-native': path.resolve(__dirname, '../../node_modules/react-native'),
       // Add workspace packages for proper resolution
       '@selfxyz/common': path.resolve(workspaceRoot, 'common'),
+      // Fix snarkjs resolution for @anon-aadhaar/core
+      snarkjs: path.resolve(__dirname, '../../node_modules/snarkjs/build/main.cjs'),
+      // Fix ffjavascript resolution for snarkjs dependencies
+      ffjavascript: path.resolve(__dirname, '../../node_modules/ffjavascript/build/main.cjs'),
       // Crypto polyfills - use custom polyfill with @noble/hashes
       crypto: path.resolve(__dirname, 'crypto-polyfill.js'),
       stream: require.resolve('stream-browserify'),
@@ -64,13 +68,11 @@ const config = {
         fs: false, // Disable filesystem access
         os: false, // Disable OS-specific modules
         readline: false, // Disable readline (pulls in events)
-        constants: require.resolve('constants-browserify'),
-        path: require.resolve('path-browserify'),
+        constants: path.resolve(__dirname, 'constants-polyfill.js'),
+        'web-worker': false, // Disable web workers (not supported in React Native)
       };
 
-      if (
-        Object.prototype.hasOwnProperty.call(nodeModuleRedirects, moduleName)
-      ) {
+      if (Object.prototype.hasOwnProperty.call(nodeModuleRedirects, moduleName)) {
         if (nodeModuleRedirects[moduleName] === false) {
           // Return empty module for disabled modules
           return { type: 'empty' };
@@ -82,21 +84,8 @@ const config = {
         };
       }
 
-      if (moduleName === '@selfxyz/common' || moduleName.startsWith('@selfxyz/common/')) {
-        const subpath = moduleName.replace('@selfxyz/common', '');
-        // Map to common/src with sensible defaults
-        let candidate = path.resolve(workspaceRoot, 'common/src' + subpath);
-        // If it's the package root, target src/index
-        if (candidate.endsWith('common/src')) {
-          candidate = path.join(candidate, 'index');
-        }
-        // Prefer TypeScript source over compiled JS
-        if (candidate.endsWith('.js')) {
-          candidate = candidate.replace(/\.js$/, '.ts');
-        }
-        // Let Metro resolve extensions and index files
-        return context.resolveRequest(context, candidate, platform);
-      }
+      // Let @selfxyz/common resolve through its package.json exports
+      // Remove custom resolution to let Metro handle it naturally
       return context.resolveRequest(context, moduleName, platform);
     },
   },

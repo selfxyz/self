@@ -20286,6 +20286,7 @@ __metadata:
     assert: "npm:^2.1.0"
     babel-jest: "npm:^29.6.3"
     buffer: "npm:^6.0.3"
+    constants-browserify: "npm:^1.0.0"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-import: "npm:^2.32.0"
