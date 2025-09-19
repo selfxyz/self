@@ -66,6 +66,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
             return useProtocolStore.getState()[docCategory].commitment_tree;
           },
           getAltCSCA(docCategory) {
+            if (passportData.documentCategory === 'aadhaar') {
+              return useProtocolStore.getState().aadhaar.public_keys;
+            }
             return useProtocolStore.getState()[docCategory].alternative_csca;
           },
         },

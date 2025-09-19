@@ -45,6 +45,7 @@ export {
   getPayload,
   getWSDbRelayerUrl,
 } from './proving.js';
+export { extractQRDataFields, getAadharRegistrationWindow } from './aadhaar/utils.js';
 export { formatMrz } from './passports/format.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
 export {

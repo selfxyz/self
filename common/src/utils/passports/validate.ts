@@ -185,7 +185,7 @@ export function generateCommitmentInAppAadhaar(
 ) {
   const nullifier = nullifierHash(passportData.extractedFields);
   const packedCommitment = computePackedCommitment(passportData.extractedFields);
-  const { qrHash } = processQRDataSimple(passportData.qrData);
+  const { qrHash, photoHash } = processQRDataSimple(passportData.qrData);
 
   const publicKey_list: string[] = [];
   const commitment_list: string[] = [];
@@ -204,7 +204,7 @@ export function generateCommitmentInAppAadhaar(
         BigInt(qrHash),
         nullifier,
         packedCommitment,
-        BigInt(passportData.photoHash || '0')
+        photoHash,
       ).toString();
 
       publicKey_list.push(publicKeyValue);
@@ -227,6 +227,8 @@ export async function isDocumentNullified(passportData: IDDocument) {
   const attestationId =
     passportData.documentCategory === 'passport'
       ? AttestationIdHex.passport
+      : passportData.documentCategory === 'aadhaar'
+        ? AttestationIdHex.aadhaar
       : AttestationIdHex.id_card;
   console.log('checking for nullifier', nullifierHex, attestationId);
   const baseUrl = passportData.mock === false ? API_URL : API_URL_STAGING;
@@ -271,14 +273,14 @@ export async function isUserRegistered(
     const aadhaarData = documentData as AadhaarData;
     const nullifier = nullifierHash(aadhaarData.extractedFields);
     const packedCommitment = computePackedCommitment(aadhaarData.extractedFields);
-    const { qrHash } = processQRDataSimple(aadhaarData.qrData);
+    const { qrHash, photoHash } = processQRDataSimple(aadhaarData.qrData);
 
     commitment = computeCommitment(
       BigInt(secret),
       BigInt(qrHash),
       nullifier,
       packedCommitment,
-      BigInt(aadhaarData.photoHash || '0')
+      photoHash,
     ).toString();
 
     console.log('commitment', commitment);
