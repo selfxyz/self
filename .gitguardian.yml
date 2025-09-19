@@ -22,6 +22,7 @@ ignore:
   - "**/mock/**/*.crt"
   - "**/mock/**/*.pem"
   - "common/src/utils/passports/genMockIdDoc.ts"
+  - "common/src/mock_certificates/aadhaar/mockAadhaarCert.ts"
 
   # Demo app test data
   - "**/demo-app/**/mock/**"
@@ -32,6 +33,7 @@ exclusion_globs:
   # Mock certificates for testing (these are intentionally committed test data)
   - "common/src/mock_certificates/**"
   - "common/src/constants/mockCertificates.ts"
+  - "common/src/mock_certificates/aadhaar/mockAadhaarCert.ts"
   - "**/test-data/**"
   - "**/mock-data/**"
 
