@@ -11,8 +11,6 @@ export const AadhaarEvents = {
   PERMISSION_MODAL_DISMISSED: 'Aadhaar: Permission Modal Dismissed',
   PERMISSION_SETTINGS_OPENED: 'Aadhaar: Permission Settings Opened',
   PROCESSING_STARTED: 'Aadhaar: Processing Started',
-  PROCESSING_FAILED: 'Aadhaar: Processing Failed',
-  VALIDATION_FAILED: 'Aadhaar: Validation Failed',
   // Error-specific events
   QR_CODE_EXPIRED: 'Aadhaar: QR Code Expired',
   QR_CODE_INVALID_FORMAT: 'Aadhaar: QR Code Invalid Format',
@@ -34,7 +32,6 @@ export const AadhaarEvents = {
   UPLOAD_BUTTON_ENABLED: 'Aadhaar: Upload Button Enabled',
   // Error recovery events
   ERROR_SCREEN_NAVIGATED: 'Aadhaar: Error Screen Navigated',
-  RETRY_ATTEMPTED: 'Aadhaar: Retry Attempted',
   RETRY_BUTTON_PRESSED: 'Aadhaar: Retry Button Pressed',
   HELP_BUTTON_PRESSED: 'Aadhaar: Help Button Pressed',
   // Success screen events
