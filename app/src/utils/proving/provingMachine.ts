@@ -1538,9 +1538,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     _handlePassportNotSupported: (selfClient: SelfClient) => {
       const passportData = get().passportData;
 
-      const countryCode = passportData?.documentCategory !== 'aadhaar'
-        ? (passportData as PassportData)?.passportMetadata?.countryCode
-        : 'IND';
+      const countryCode =
+        passportData?.documentCategory !== 'aadhaar'
+          ? (passportData as PassportData)?.passportMetadata?.countryCode
+          : 'IND';
       const documentCategory = passportData?.documentCategory;
 
       selfClient.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, {

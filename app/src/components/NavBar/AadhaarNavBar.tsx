@@ -4,12 +4,12 @@
 
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Text, XStack, YStack } from 'tamagui';
+import { Button, XStack, YStack } from 'tamagui';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { ChevronLeft, HelpCircle } from '@tamagui/lucide-icons';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
-import { black, slate100, slate200, slate300, white } from '@/utils/colors';
+import { black, slate100, slate300 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
@@ -82,7 +82,7 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
               justifyContent="center"
               alignItems="center"
             >
-              <HelpCircle size={20} color={black} />
+              <HelpCircle size={20} color={black} opacity={0} />
             </Button>
           }
         />

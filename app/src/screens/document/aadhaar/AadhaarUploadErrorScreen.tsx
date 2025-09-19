@@ -4,13 +4,12 @@
 
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import { BodyText } from '@/components/typography/BodyText';
-import { Title } from '@/components/typography/Title';
 import WarningIcon from '@/images/warning.svg';
 import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
 import { black, slate100, slate200, slate500, white } from '@/utils/colors';
@@ -36,13 +35,15 @@ const AadhaarUploadErrorScreen: React.FC = () => {
     if (errorType === 'expired') {
       return {
         title: 'QR Code Has Expired',
-        description: 'You uploaded a valid Aadhaar QR code, but unfortunately it has expired. Please generate a new QR code from the mAadhaar app and try again.',
+        description:
+          'You uploaded a valid Aadhaar QR code, but unfortunately it has expired. Please generate a new QR code from the mAadhaar app and try again.',
       };
     }
 
     return {
       title: 'There was a problem reading the code',
-      description: 'Please ensure the QR code is clear and well-lit, then try again. For best results, take a screenshot of the QR code instead of photographing it.',
+      description:
+        'Please ensure the QR code is clear and well-lit, then try again. For best results, take a screenshot of the QR code instead of photographing it.',
     };
   };
 

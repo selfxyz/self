@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Linking } from 'react-native';
 import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
@@ -13,7 +13,7 @@ import {
 } from '@selfxyz/common/utils';
 import type { AadhaarData } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { BodyText } from '@/components/typography/BodyText';
@@ -42,14 +42,21 @@ const AadhaarUploadScreen: React.FC = () => {
     secondaryButtonText: 'Cancel',
     onButtonPress: () => {
       console.log('Opening device settings for photo library access');
+      trackEvent(AadhaarEvents.PERMISSION_SETTINGS_OPENED);
       Linking.openSettings();
     },
     onModalDismiss: () => {
       console.log('Permission modal dismissed');
+      trackEvent(AadhaarEvents.PERMISSION_MODAL_DISMISSED);
     },
   });
 
   console.log('AadhaarUploadScreen: Permission modal initialized');
+
+  // Track screen entry
+  useEffect(() => {
+    trackEvent(AadhaarEvents.UPLOAD_SCREEN_OPENED);
+  }, [trackEvent]);
 
   const validateAAdhaarTimestamp = useCallback(async (timestamp: string) => {
     //timestamp is in YYYY-MM-DD HH:MM format
@@ -125,27 +132,25 @@ const AadhaarUploadScreen: React.FC = () => {
 
         console.log('Aadhaar data stored successfully');
 
-        trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
-          scan_type: 'aadhaar_upload',
-        });
+        trackEvent(AadhaarEvents.QR_UPLOAD_SUCCESS);
 
         navigation.navigate('AadhaarUploadSuccess');
       } catch (error) {
         console.error('Error processing Aadhaar QR code:', error);
-        trackEvent(ProofEvents.QR_SCAN_FAILED, {
-          reason: 'aadhaar_processing_error',
+        trackEvent(AadhaarEvents.PROCESSING_FAILED, {
           error: error instanceof Error ? error.message : 'Unknown error',
         });
 
         // Check if it's a QR code expiration error
-        const errorType = error instanceof Error && error.message === 'QRCODE_EXPIRED'
-          ? 'expired'
-          : 'general';
+        const errorType =
+          error instanceof Error && error.message === 'QRCODE_EXPIRED'
+            ? 'expired'
+            : 'general';
 
         (navigation.navigate as any)('AadhaarUploadError', { errorType });
       }
     },
-    [navigation, trackEvent],
+    [navigation, trackEvent, validateAAdhaarTimestamp],
   );
 
   const onPhotoLibraryPress = useCallback(async () => {
@@ -155,15 +160,12 @@ const AadhaarUploadScreen: React.FC = () => {
 
     try {
       setIsProcessing(true);
-      trackEvent(ProofEvents.QR_SCAN_REQUESTED, {
-        from: 'aadhaar_photo_library',
-      });
+      trackEvent(AadhaarEvents.PROCESSING_STARTED);
 
       const qrCodeData = await scanQRCodeFromPhotoLibrary();
       await processAadhaarQRCode(qrCodeData);
     } catch (error) {
-      trackEvent(ProofEvents.QR_SCAN_FAILED, {
-        reason: 'aadhaar_photo_library_error',
+      trackEvent(AadhaarEvents.QR_UPLOAD_FAILED, {
         error:
           error instanceof Error
             ? error.message
@@ -187,6 +189,7 @@ const AadhaarUploadScreen: React.FC = () => {
         console.log(
           'Exact match: Showing permission modal for photo library access',
         );
+        trackEvent(AadhaarEvents.PERMISSION_MODAL_OPENED);
         showPermissionModal();
         return;
       }
@@ -201,6 +204,7 @@ const AadhaarUploadScreen: React.FC = () => {
         console.log(
           'Pattern match: Detected permission-related error, showing modal',
         );
+        trackEvent(AadhaarEvents.PERMISSION_MODAL_OPENED);
         showPermissionModal();
         return;
       }
@@ -215,34 +219,34 @@ const AadhaarUploadScreen: React.FC = () => {
         console.log(
           'QR code scanning/processing error, navigating to error screen',
         );
-        (navigation.navigate as any)('AadhaarUploadError', { errorType: 'general' });
+        (navigation.navigate as any)('AadhaarUploadError', {
+          errorType: 'general',
+        });
         return;
       }
 
       // Handle any other errors by showing error screen
       console.log('Unknown error, navigating to error screen');
-      (navigation.navigate as any)('AadhaarUploadError', { errorType: 'general' });
+      (navigation.navigate as any)('AadhaarUploadError', {
+        errorType: 'general',
+      });
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, trackEvent, processAadhaarQRCode]);
-
-  const onCameraScanPress = useCallback(() => {
-    if (isProcessing) {
-      return;
-    }
-
-    // TODO: Implement camera-based QR scanning for Aadhaar
-    // This could navigate to a camera screen or open a modal
-    console.log('Open Aadhaar QR camera scanner');
-
-    trackEvent(ProofEvents.QR_SCAN_REQUESTED, {
-      from: 'aadhaar_camera',
-    });
-  }, [isProcessing, trackEvent]);
+  }, [
+    isProcessing,
+    trackEvent,
+    processAadhaarQRCode,
+    navigation,
+    showPermissionModal,
+  ]);
 
   return (
-    <YStack flex={1} backgroundColor={slate100}>
+    <YStack
+      flex={1}
+      backgroundColor={slate100}
+      paddingBottom={bottom + extraYPadding + 50}
+    >
       <YStack flex={1} paddingHorizontal={20} paddingTop={20}>
         <YStack
           flex={1}
@@ -283,21 +287,18 @@ const AadhaarUploadScreen: React.FC = () => {
         </BodyText>
       </YStack>
 
-      <YStack
-        paddingHorizontal={25}
-        backgroundColor={white}
-        paddingBottom={bottom + extraYPadding + 35}
-        paddingTop={25}
-      >
+      <YStack paddingHorizontal={25} backgroundColor={white} paddingTop={25}>
         <XStack gap="$3" alignItems="stretch">
           <YStack flex={1}>
             <PrimaryButton
               disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
+              trackEvent={AadhaarEvents.QR_UPLOAD_REQUESTED}
               onPress={onPhotoLibraryPress}
             >
               {isProcessing ? 'Processing...' : 'Upload QR code'}
             </PrimaryButton>
           </YStack>
+          {/* TODO: Implement camera-based QR scanning for Aadhaar */}
           {/* <Button
             aspectRatio={1}
             backgroundColor={slate200}

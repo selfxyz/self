@@ -3,24 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { XStack, YStack } from 'tamagui';
+import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { BodyText } from '@/components/typography/BodyText';
-import { Title } from '@/components/typography/Title';
 import BlueCheckIcon from '@/images/blue_check.svg';
 import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
-import {
-  black,
-  slate50,
-  slate100,
-  slate200,
-  slate300,
-  slate400,
-  slate500,
-  white,
-} from '@/utils/colors';
+import { black, slate100, slate200, slate500, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 
 const AadhaarUploadedSuccessScreen: React.FC = () => {

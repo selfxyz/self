@@ -2,9 +2,24 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+export const AadhaarEvents = {
+  UPLOAD_SCREEN_OPENED: 'Aadhaar: Upload Screen Opened',
+  QR_UPLOAD_REQUESTED: 'Aadhaar: QR Upload Requested',
+  QR_UPLOAD_SUCCESS: 'Aadhaar: QR Upload Success',
+  QR_UPLOAD_FAILED: 'Aadhaar: QR Upload Failed',
+  PERMISSION_MODAL_OPENED: 'Aadhaar: Permission Modal Opened',
+  PERMISSION_MODAL_DISMISSED: 'Aadhaar: Permission Modal Dismissed',
+  PERMISSION_SETTINGS_OPENED: 'Aadhaar: Permission Settings Opened',
+  PROCESSING_STARTED: 'Aadhaar: Processing Started',
+  PROCESSING_FAILED: 'Aadhaar: Processing Failed',
+  VALIDATION_FAILED: 'Aadhaar: Validation Failed',
+};
+
 export const AppEvents = {
   DISMISS_PRIVACY_DISCLAIMER: 'App: Dismiss Privacy Disclaimer',
   GET_STARTED: 'App: Get Started',
+  GET_STARTED_BIOMETRIC: 'App: Get Started - Biometric ID',
+  GET_STARTED_AADHAAR: 'App: Get Started - Aadhaar',
   SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
   UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
   UPDATE_MODAL_OPENED: 'App: Update Modal Opened',

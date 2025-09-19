@@ -44,7 +44,7 @@ import type { PropsWithChildren } from 'react';
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/';
+import { isMRZDocument } from '@selfxyz/common/';
 import type {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
