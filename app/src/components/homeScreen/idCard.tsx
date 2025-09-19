@@ -18,8 +18,8 @@ import {
 } from '@selfxyz/common/constants';
 
 import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
-import EPassport from '@/images/icons/epassport.svg';
 import AadhaarIcon from '@/images/icons/aadhaar.svg';
+import EPassport from '@/images/icons/epassport.svg';
 import LogoGray from '@/images/logo_gray.svg';
 import {
   black,
@@ -30,7 +30,6 @@ import {
   white,
 } from '@/utils/colors';
 import { dinot, plexMono } from '@/utils/fonts';
-
 
 // Import the logo SVG as a string
 const logoSvg = `<svg width="47" height="46" viewBox="0 0 47 46" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -474,7 +473,6 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
             </YStack>
           </XStack>
         )}
-
       </YStack>
     </YStack>
   );
