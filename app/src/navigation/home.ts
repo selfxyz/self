@@ -75,6 +75,9 @@ const homeScreens = {
       header: AadhaarNavBar,
       headerBackVisible: false,
     } as NativeStackNavigationOptions,
+    initialParams: {
+      errorType: 'general',
+    },
   },
 };
 

@@ -137,7 +137,12 @@ const AadhaarUploadScreen: React.FC = () => {
           error: error instanceof Error ? error.message : 'Unknown error',
         });
 
-        navigation.navigate('AadhaarUploadError');
+        // Check if it's a QR code expiration error
+        const errorType = error instanceof Error && error.message === 'QRCODE_EXPIRED'
+          ? 'expired'
+          : 'general';
+
+        (navigation.navigate as any)('AadhaarUploadError', { errorType });
       }
     },
     [navigation, trackEvent],
@@ -210,13 +215,13 @@ const AadhaarUploadScreen: React.FC = () => {
         console.log(
           'QR code scanning/processing error, navigating to error screen',
         );
-        navigation.navigate('AadhaarUploadError');
+        (navigation.navigate as any)('AadhaarUploadError', { errorType: 'general' });
         return;
       }
 
       // Handle any other errors by showing error screen
       console.log('Unknown error, navigating to error screen');
-      navigation.navigate('AadhaarUploadError');
+      (navigation.navigate as any)('AadhaarUploadError', { errorType: 'general' });
     } finally {
       setIsProcessing(false);
     }

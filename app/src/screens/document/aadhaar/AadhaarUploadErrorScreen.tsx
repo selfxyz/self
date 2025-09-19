@@ -4,7 +4,8 @@
 
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -15,9 +16,37 @@ import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
 import { black, slate100, slate200, slate500, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 
+type AadhaarUploadErrorRouteParams = {
+  errorType?: 'general' | 'expired';
+};
+
+type AadhaarUploadErrorRoute = RouteProp<
+  Record<string, AadhaarUploadErrorRouteParams>,
+  string
+>;
+
 const AadhaarUploadErrorScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
   const navigation = useNavigation();
+  const route = useRoute<AadhaarUploadErrorRoute>();
+  const errorType = route.params?.errorType || 'general';
+
+  // Define error messages based on error type
+  const getErrorMessages = () => {
+    if (errorType === 'expired') {
+      return {
+        title: 'QR Code Has Expired',
+        description: 'You uploaded a valid Aadhaar QR code, but unfortunately it has expired. Please generate a new QR code from the mAadhaar app and try again.',
+      };
+    }
+
+    return {
+      title: 'There was a problem reading the code',
+      description: 'Please ensure the QR code is clear and well-lit, then try again. For best results, take a screenshot of the QR code instead of photographing it.',
+    };
+  };
+
+  const { title, description } = getErrorMessages();
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
@@ -41,7 +70,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
         borderBlockColor={slate200}
       >
         <BodyText fontSize={19} textAlign="center" color={black}>
-          There was a problem reading the code
+          {title}
         </BodyText>
         <BodyText
           marginTop={6}
@@ -49,8 +78,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
           textAlign="center"
           color={slate500}
         >
-          Make sure the QR code is clear and try again. Or the QR code might
-          have expired.
+          {description}
         </BodyText>
       </YStack>
 
