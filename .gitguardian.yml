@@ -7,6 +7,7 @@ ignore:
   - "**/mock_certificates/**/*.crt"
   - "**/mock_certificates/**/*.pem"
   - "**/constants/mockCertificates.ts"
+  - "common/src/mock_certificates/**"
 
   # Test data files
   - "**/test/**/*.key"
@@ -20,6 +21,7 @@ ignore:
   - "**/mock/**/*.key"
   - "**/mock/**/*.crt"
   - "**/mock/**/*.pem"
+  - "common/src/utils/passports/genMockIdDoc.ts"
 
   # Demo app test data
   - "**/demo-app/**/mock/**"

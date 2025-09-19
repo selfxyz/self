@@ -13,6 +13,32 @@ export const AadhaarEvents = {
   PROCESSING_STARTED: 'Aadhaar: Processing Started',
   PROCESSING_FAILED: 'Aadhaar: Processing Failed',
   VALIDATION_FAILED: 'Aadhaar: Validation Failed',
+  // Error-specific events
+  QR_CODE_EXPIRED: 'Aadhaar: QR Code Expired',
+  QR_CODE_INVALID_FORMAT: 'Aadhaar: QR Code Invalid Format',
+  QR_CODE_MISSING_FIELDS: 'Aadhaar: QR Code Missing Required Fields',
+  QR_CODE_PARSE_FAILED: 'Aadhaar: QR Code Parse Failed',
+  PHOTO_LIBRARY_UNAVAILABLE: 'Aadhaar: Photo Library Unavailable',
+  USER_CANCELLED_SELECTION: 'Aadhaar: User Cancelled Photo Selection',
+  // Validation events
+  TIMESTAMP_VALIDATION_STARTED: 'Aadhaar: Timestamp Validation Started',
+  TIMESTAMP_VALIDATION_FAILED: 'Aadhaar: Timestamp Validation Failed',
+  TIMESTAMP_VALIDATION_SUCCESS: 'Aadhaar: Timestamp Validation Success',
+  // Data processing events
+  QR_DATA_EXTRACTION_STARTED: 'Aadhaar: QR Data Extraction Started',
+  QR_DATA_EXTRACTION_SUCCESS: 'Aadhaar: QR Data Extraction Success',
+  DATA_STORAGE_STARTED: 'Aadhaar: Data Storage Started',
+  DATA_STORAGE_SUCCESS: 'Aadhaar: Data Storage Success',
+  // Screen interaction events
+  UPLOAD_BUTTON_DISABLED: 'Aadhaar: Upload Button Disabled',
+  UPLOAD_BUTTON_ENABLED: 'Aadhaar: Upload Button Enabled',
+  // Error recovery events
+  ERROR_SCREEN_NAVIGATED: 'Aadhaar: Error Screen Navigated',
+  RETRY_ATTEMPTED: 'Aadhaar: Retry Attempted',
+  RETRY_BUTTON_PRESSED: 'Aadhaar: Retry Button Pressed',
+  HELP_BUTTON_PRESSED: 'Aadhaar: Help Button Pressed',
+  // Success screen events
+  CONTINUE_TO_REGISTRATION_PRESSED: 'Aadhaar: Continue to Registration Pressed',
 };
 
 export const AppEvents = {

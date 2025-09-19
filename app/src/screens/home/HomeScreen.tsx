@@ -13,7 +13,7 @@ import {
 } from '@react-navigation/native';
 
 import { PassportData } from '@selfxyz/common/types';
-import { DocumentCatalog } from '@selfxyz/common/utils/types';
+import { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import { DocumentMetadata, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -37,7 +37,7 @@ const HomeScreen: React.FC = () => {
     documents: [],
   });
   const [allDocuments, setAllDocuments] = useState<
-    Record<string, { data: PassportData; metadata: DocumentMetadata }>
+    Record<string, { data: IDDocument; metadata: DocumentMetadata }>
   >({});
   const [loading, setLoading] = useState(true);
 

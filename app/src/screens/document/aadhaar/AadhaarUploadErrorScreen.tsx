@@ -7,6 +7,9 @@ import { XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import { BodyText } from '@/components/typography/BodyText';
@@ -28,6 +31,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute<AadhaarUploadErrorRoute>();
+  const { trackEvent } = useSelfClient();
   const errorType = route.params?.errorType || 'general';
 
   // Define error messages based on error type
@@ -93,6 +97,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
           <YStack flex={1}>
             <PrimaryButton
               onPress={() => {
+                trackEvent(AadhaarEvents.RETRY_BUTTON_PRESSED, { errorType });
                 // Navigate back to upload screen to try again
                 navigation.goBack();
               }}
@@ -101,7 +106,14 @@ const AadhaarUploadErrorScreen: React.FC = () => {
             </PrimaryButton>
           </YStack>
           <YStack flex={1}>
-            <SecondaryButton onPress={() => {}}>Need Help?</SecondaryButton>
+            <SecondaryButton
+              onPress={() => {
+                trackEvent(AadhaarEvents.HELP_BUTTON_PRESSED, { errorType });
+                // TODO: Implement help functionality
+              }}
+            >
+              Need Help?
+            </SecondaryButton>
           </YStack>
         </XStack>
       </YStack>

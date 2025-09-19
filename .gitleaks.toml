@@ -24,6 +24,7 @@ paths = [
     '''common/src/mock_certificates/.*''',
     '''common/dist/.*/mock_certificates/.*''',
     '''common/src/constants/mockCertificates.ts''',
+    '''common/src/utils/passports/genMockIdDoc.ts''',
     '''Database.refactorlog''',
     '''vendor''',
     '''.*tamagui-components\.config\.cjs$''',

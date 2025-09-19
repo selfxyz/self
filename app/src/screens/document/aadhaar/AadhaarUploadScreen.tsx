@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Linking } from 'react-native';
 import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   extractQRDataFields,
@@ -20,6 +21,7 @@ import { BodyText } from '@/components/typography/BodyText';
 import { useModal } from '@/hooks/useModal';
 import AadhaarImage from '@/images/512w.png';
 import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
+import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';
 import { slate100, slate200, slate400, slate500, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
@@ -30,7 +32,8 @@ import {
 
 const AadhaarUploadScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { trackEvent } = useSelfClient();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -41,65 +44,83 @@ const AadhaarUploadScreen: React.FC = () => {
     buttonText: 'Open Settings',
     secondaryButtonText: 'Cancel',
     onButtonPress: () => {
-      console.log('Opening device settings for photo library access');
       trackEvent(AadhaarEvents.PERMISSION_SETTINGS_OPENED);
       Linking.openSettings();
     },
     onModalDismiss: () => {
-      console.log('Permission modal dismissed');
       trackEvent(AadhaarEvents.PERMISSION_MODAL_DISMISSED);
     },
   });
 
-  console.log('AadhaarUploadScreen: Permission modal initialized');
-
   // Track screen entry
   useEffect(() => {
     trackEvent(AadhaarEvents.UPLOAD_SCREEN_OPENED);
+
+    // Track button state based on photo library availability
+    if (isQRScannerPhotoLibraryAvailable()) {
+      trackEvent(AadhaarEvents.UPLOAD_BUTTON_ENABLED);
+    } else {
+      trackEvent(AadhaarEvents.UPLOAD_BUTTON_DISABLED);
+      trackEvent(AadhaarEvents.PHOTO_LIBRARY_UNAVAILABLE);
+    }
   }, [trackEvent]);
 
-  const validateAAdhaarTimestamp = useCallback(async (timestamp: string) => {
-    //timestamp is in YYYY-MM-DD HH:MM format
-    const currentTimestamp = new Date().getTime();
-    const timestampDate = new Date(timestamp);
-    const timestampTimestamp = timestampDate.getTime();
-    const diff = currentTimestamp - timestampTimestamp;
-    const diffMinutes = diff / (1000 * 60);
+  const validateAAdhaarTimestamp = useCallback(
+    async (timestamp: string) => {
+      //timestamp is in YYYY-MM-DD HH:MM format
+      trackEvent(AadhaarEvents.TIMESTAMP_VALIDATION_STARTED);
 
-    const allowedWindow = await getAadharRegistrationWindow();
-    return diffMinutes <= allowedWindow;
-  }, []);
+      const currentTimestamp = new Date().getTime();
+      const timestampDate = new Date(timestamp);
+      const timestampTimestamp = timestampDate.getTime();
+      const diff = currentTimestamp - timestampTimestamp;
+      const diffMinutes = diff / (1000 * 60);
+
+      const allowedWindow = await getAadharRegistrationWindow();
+      const isValid = diffMinutes <= allowedWindow;
+
+      if (isValid) {
+        trackEvent(AadhaarEvents.TIMESTAMP_VALIDATION_SUCCESS);
+      } else {
+        trackEvent(AadhaarEvents.TIMESTAMP_VALIDATION_FAILED);
+      }
+
+      return isValid;
+    },
+    [trackEvent],
+  );
 
   const processAadhaarQRCode = useCallback(
     async (qrCodeData: string) => {
       try {
-        console.log('Processing Aadhaar QR code:', qrCodeData);
-
         if (
           !qrCodeData ||
           typeof qrCodeData !== 'string' ||
           qrCodeData.length < 100
         ) {
+          trackEvent(AadhaarEvents.QR_CODE_INVALID_FORMAT);
           throw new Error('Invalid QR code format - too short or not a string');
         }
 
         if (!/^\d+$/.test(qrCodeData)) {
+          trackEvent(AadhaarEvents.QR_CODE_INVALID_FORMAT);
           throw new Error('Invalid QR code format - not a numeric string');
         }
 
-        console.log('Parsing Aadhaar QR data...');
         if (qrCodeData.length < 100) {
+          trackEvent(AadhaarEvents.QR_CODE_INVALID_FORMAT);
           throw new Error(
             'QR code too short - likely not a valid Aadhaar QR code',
           );
         }
 
+        trackEvent(AadhaarEvents.QR_DATA_EXTRACTION_STARTED);
         let extractedFields;
         try {
           extractedFields = extractQRDataFields(qrCodeData);
-          console.log('Extracted Aadhaar fields:', extractedFields);
-        } catch (error) {
-          console.error('Error extracting fields:', error);
+          trackEvent(AadhaarEvents.QR_DATA_EXTRACTION_SUCCESS);
+        } catch {
+          trackEvent(AadhaarEvents.QR_CODE_PARSE_FAILED);
           throw new Error('Failed to parse Aadhaar QR code - invalid format');
         }
 
@@ -108,10 +129,12 @@ const AadhaarUploadScreen: React.FC = () => {
           !extractedFields.dob ||
           !extractedFields.gender
         ) {
+          trackEvent(AadhaarEvents.QR_CODE_MISSING_FIELDS);
           throw new Error('Invalid Aadhaar QR code - missing required fields');
         }
 
         if (!(await validateAAdhaarTimestamp(extractedFields.timestamp))) {
+          trackEvent(AadhaarEvents.QR_CODE_EXPIRED);
           throw new Error('QRCODE_EXPIRED');
         }
 
@@ -126,27 +149,21 @@ const AadhaarUploadScreen: React.FC = () => {
           photoHash: '',
         };
 
-        console.log('Storing Aadhaar data to keychain...');
-
+        trackEvent(AadhaarEvents.DATA_STORAGE_STARTED);
         await storePassportData(aadhaarData);
-
-        console.log('Aadhaar data stored successfully');
+        trackEvent(AadhaarEvents.DATA_STORAGE_SUCCESS);
 
         trackEvent(AadhaarEvents.QR_UPLOAD_SUCCESS);
 
         navigation.navigate('AadhaarUploadSuccess');
       } catch (error) {
-        console.error('Error processing Aadhaar QR code:', error);
-        trackEvent(AadhaarEvents.PROCESSING_FAILED, {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-
         // Check if it's a QR code expiration error
-        const errorType =
+        const errorType: 'expired' | 'general' =
           error instanceof Error && error.message === 'QRCODE_EXPIRED'
             ? 'expired'
             : 'general';
 
+        trackEvent(AadhaarEvents.ERROR_SCREEN_NAVIGATED, { errorType });
         (navigation.navigate as any)('AadhaarUploadError', { errorType });
       }
     },
@@ -172,23 +189,17 @@ const AadhaarUploadScreen: React.FC = () => {
             : error?.toString() || 'Unknown error',
       });
 
-      console.error('Aadhaar photo library QR scan error:', error);
-
       // Don't show error for user cancellation
       if (error instanceof Error && error.message.includes('cancelled')) {
-        console.log('User cancelled photo selection');
+        trackEvent(AadhaarEvents.USER_CANCELLED_SELECTION);
         return;
       }
 
       // Handle permission errors specifically - check for exact message from native code
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      console.log('Error message for matching:', errorMessage);
 
       if (errorMessage.includes('Photo library access is required')) {
-        console.log(
-          'Exact match: Showing permission modal for photo library access',
-        );
         trackEvent(AadhaarEvents.PERMISSION_MODAL_OPENED);
         showPermissionModal();
         return;
@@ -201,9 +212,6 @@ const AadhaarUploadScreen: React.FC = () => {
         errorMessage.includes('Settings') ||
         errorMessage.includes('enable access')
       ) {
-        console.log(
-          'Pattern match: Detected permission-related error, showing modal',
-        );
         trackEvent(AadhaarEvents.PERMISSION_MODAL_OPENED);
         showPermissionModal();
         return;
@@ -216,19 +224,15 @@ const AadhaarUploadScreen: React.FC = () => {
         errorMessage.includes('Failed to process') ||
         errorMessage.includes('Invalid')
       ) {
-        console.log(
-          'QR code scanning/processing error, navigating to error screen',
-        );
         (navigation.navigate as any)('AadhaarUploadError', {
-          errorType: 'general',
+          errorType: 'general' as const,
         });
         return;
       }
 
       // Handle any other errors by showing error screen
-      console.log('Unknown error, navigating to error screen');
       (navigation.navigate as any)('AadhaarUploadError', {
-        errorType: 'general',
+        errorType: 'general' as const,
       });
     } finally {
       setIsProcessing(false);

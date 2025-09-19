@@ -6,6 +6,9 @@ import React from 'react';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { BodyText } from '@/components/typography/BodyText';
 import BlueCheckIcon from '@/images/blue_check.svg';
@@ -16,6 +19,7 @@ import { extraYPadding } from '@/utils/constants';
 const AadhaarUploadedSuccessScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
   const navigation = useNavigation();
+  const { trackEvent } = useSelfClient();
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
@@ -59,7 +63,7 @@ const AadhaarUploadedSuccessScreen: React.FC = () => {
       >
         <PrimaryButton
           onPress={() => {
-            console.log('Continue to Aadhaar registration');
+            trackEvent(AadhaarEvents.CONTINUE_TO_REGISTRATION_PRESSED);
             navigation.navigate('ConfirmBelonging', {});
           }}
         >
