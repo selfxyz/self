@@ -276,6 +276,9 @@ circuits/ptau/
 !**/*.sol
 !**/*.circom
 
+# Exception for specific private module setup script
+!app/scripts/setup-private-modules.cjs
+
 # But exclude generated TypeScript declaration files
 **/*.d.ts
 !**/types/*.d.ts

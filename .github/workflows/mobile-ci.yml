@@ -448,6 +448,11 @@ jobs:
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
+      - name: Clone android-passport-reader
+        uses: ./.github/actions/clone-android-passport-reader
+        with:
+          working_directory: ${{ env.APP_PATH }}
+          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Build Android (with AAPT2 symlink fix)
         run: yarn android:ci
         working-directory: ./app

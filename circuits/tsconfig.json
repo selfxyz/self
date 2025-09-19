@@ -11,7 +11,12 @@
     "outDir": "./dist/esm",
     "declaration": false,
     "baseUrl": ".",
-    "composite": false
+    "composite": false,
+    "paths": {
+      "@selfxyz/common/utils/*": ["../common/src/utils/*"],
+      "@selfxyz/common/constants/*": ["../common/src/constants/*"],
+      "@selfxyz/common": ["../common/index.ts"]
+    }
   },
   "include": ["tests/**/*", "tests/**/*.json", "src/**/*", "../common/src/**/*"],
   "exclude": ["node_modules"],

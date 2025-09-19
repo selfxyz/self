@@ -110,7 +110,6 @@ const hardhatPackages = [
 
 // Testing framework
 const testingPackages = [
-  '@testing-library/react-hooks',
   '@testing-library/react-native',
   '@babel/core',
   '@babel/runtime',
@@ -151,6 +150,9 @@ const depVersions = new Map();
 const pmVersions = new Map();
 const workflowVersions = new Map();
 const engineVersions = new Map();
+
+// Packages that are intentionally different for technical reasons
+const intentionallyDifferentPackages = [];
 
 function record(map, key, version, filePath) {
   if (!version) return;
@@ -325,6 +327,7 @@ if (pm && pm.size > 1) {
 
 // Check for other package mismatches
 let hasOtherIssues = false;
+let hasIntentionalDifferences = intentionallyDifferentPackages.length > 0;
 const categories = [
   { name: 'React Native', packages: reactNativePackages },
   { name: 'Tamagui UI', packages: tamaguiPackages },

@@ -22,7 +22,6 @@ import proveScreens from '@/navigation/prove';
 import recoveryScreens from '@/navigation/recovery';
 import settingsScreens from '@/navigation/settings';
 import systemScreens from '@/navigation/system';
-import type { ProofHistory } from '@/stores/proof-types';
 import analytics from '@/utils/analytics';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
