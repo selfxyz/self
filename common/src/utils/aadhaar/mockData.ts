@@ -31,7 +31,7 @@ import {
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { bufferToHex, Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';
-import  {sha256Pad}  from '@zk-email/helpers/dist/sha-utils.js';
+import { sha256Pad } from '@zk-email/helpers/dist/sha-utils.js';
 
 // Helper function to compute padded name
 function computePaddedName(name: string): number[] {
@@ -49,7 +49,6 @@ function computeUppercasePaddedName(name: string): number[] {
     .map((char) => char.charCodeAt(0));
 }
 
-
 export function convertByteArrayToBigInt(byteArray: Uint8Array | number[]): bigint {
   let result = 0n;
   for (let i = 0; i < byteArray.length; i++) {
@@ -59,7 +58,9 @@ export function convertByteArrayToBigInt(byteArray: Uint8Array | number[]): bigi
 }
 
 // Helper function to compute packed commitment
-export function computePackedCommitment(extractedFields: ReturnType<typeof extractQRDataFields>): bigint {
+export function computePackedCommitment(
+  extractedFields: ReturnType<typeof extractQRDataFields>
+): bigint {
   const packedCommitmentArgs = [
     3,
     ...stringToAsciiArray(extractedFields.pincode),

@@ -45,7 +45,6 @@ export interface DocumentMetadata {
   isRegistered?: boolean; // whether the document is registered onChain
 }
 
-
 export type DocumentType =
   | 'passport'
   | 'id_card'
@@ -54,9 +53,7 @@ export type DocumentType =
   | 'mock_id_card'
   | 'mock_aadhaar';
 
-
 export type IDDocument = AadhaarData | PassportData;
-
 
 export type OfacTree = {
   passportNoAndNationality: any;
@@ -77,7 +74,6 @@ export interface PassportData extends BaseIDData {
   encryptedDigest: number[];
   passportMetadata?: PassportMetadata;
 }
-
 
 export type Proof = {
   proof: {
@@ -163,11 +159,15 @@ export function castCSCAProof(proof: any): Proof {
   };
 }
 
-export function isAadhaarDocument(passportData: PassportData | AadhaarData): passportData is AadhaarData {
+export function isAadhaarDocument(
+  passportData: PassportData | AadhaarData
+): passportData is AadhaarData {
   return passportData.documentCategory === 'aadhaar';
 }
 
-export function isMRZDocument(passportData: PassportData | AadhaarData): passportData is PassportData {
+export function isMRZDocument(
+  passportData: PassportData | AadhaarData
+): passportData is PassportData {
   return (
     passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card'
   );

@@ -32,7 +32,7 @@ import { hash, packBytesAndPoseidon } from '../hash.js';
 import { sha384_512Pad, shaPad } from '../shaPad.js';
 import { getLeafDscTree } from '../trees.js';
 import type { DocumentCategory, IDDocument, PassportData, SignatureAlgorithm } from '../types.js';
-import { AadhaarData,isAadhaarDocument, isMRZDocument } from '../types.js';
+import { AadhaarData, isAadhaarDocument, isMRZDocument } from '../types.js';
 import { formatMrz } from './format.js';
 import { parsePassportData } from './passport_parsing/parsePassportData.js';
 
@@ -174,7 +174,6 @@ export function generateCommitment(
 }
 
 function getPassportSignature(passportData: PassportData, n: number, k: number): any {
-
   // if (isAadhaarDocument(passportData)) {
   //   return splitToWords(BigInt(bytesToBigDecimal(passportData.signature)), n, k);
   // }
@@ -191,7 +190,6 @@ function getPassportSignature(passportData: PassportData, n: number, k: number):
 }
 
 export function generateNullifier(passportData: IDDocument) {
-
   if (isAadhaarDocument(passportData)) {
     return nullifierHash(passportData.extractedFields);
   }
@@ -316,7 +314,6 @@ export function getSignatureAlgorithmFullName(
     return `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${publicKeyDetails.bits}`;
   }
 }
-
 
 export function inferDocumentCategory(documentType: string): DocumentCategory {
   if (documentType.includes('passport')) {

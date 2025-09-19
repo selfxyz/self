@@ -16,12 +16,7 @@ import type {
 } from '../certificate_parsing/dataStructure.js';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple.js';
 import { getHashLen, hash } from '../hash.js';
-import type {
-  AadhaarData,
-  DocumentType,
-  PassportData,
-  SignatureAlgorithm,
-} from '../types.js';
+import type { AadhaarData, DocumentType, PassportData, SignatureAlgorithm } from '../types.js';
 import { genDG1 } from './dg1.js';
 import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
 import { getMockDSC } from './getMockDSC.js';
@@ -170,7 +165,6 @@ export function genMockIdDoc(
   userInput: Partial<IdDocInput> = {},
   mockDSC?: { dsc: string; privateKeyPem: string }
 ): PassportData | AadhaarData {
-
   if (userInput.idType === 'mock_aadhaar') {
     return genMockAadhaarDoc(userInput as IdDocInput);
   }
@@ -218,7 +212,7 @@ export function genMockIdDoc(
 
 export function genMockIdDocAndInitDataParsing(userInput: Partial<IdDocInput> = {}) {
   return initPassportDataParsing({
-    ...genMockIdDoc(userInput) as PassportData,
+    ...(genMockIdDoc(userInput) as PassportData),
   });
 }
 
@@ -247,7 +241,9 @@ function generateRandomName(): string {
   // Generate random letter combinations for first and last name
   const generateRandomLetters = (length: number): string => {
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    return Array.from({ length }, () => letters[Math.floor(Math.random() * letters.length)]).join('');
+    return Array.from({ length }, () => letters[Math.floor(Math.random() * letters.length)]).join(
+      ''
+    );
   };
 
   const firstName = generateRandomLetters(4 + Math.floor(Math.random() * 4)); // 4-7 letters

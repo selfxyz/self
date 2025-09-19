@@ -16,7 +16,12 @@ import { packBytesAndPoseidon } from '../../utils/hash/poseidon.js';
 import { hash } from '../../utils/hash/sha.js';
 import { formatMrz } from '../../utils/passports/format.js';
 import { getLeafDscTree } from '../../utils/trees.js';
-import { computeCommitment, computePackedCommitment, nullifierHash, processQRDataSimple } from '../aadhaar/mockData.js';
+import {
+  computeCommitment,
+  computePackedCommitment,
+  nullifierHash,
+  processQRDataSimple,
+} from '../aadhaar/mockData.js';
 import {
   AadhaarData,
   AttestationIdHex,
@@ -40,13 +45,16 @@ function validateRegistrationCircuit(
   passportData: IDDocument,
   deployedCircuits: DeployedCircuits
 ): { isValid: boolean; circuitName: string | null } {
-  let circuitNameRegister = getCircuitNameFromPassportData(passportData as PassportData, 'register');
-
-  const isValid = circuitNameRegister && (
-    deployedCircuits.REGISTER.includes(circuitNameRegister) ||
-    deployedCircuits.REGISTER_ID.includes(circuitNameRegister) ||
-    deployedCircuits.REGISTER_AADHAAR.includes(circuitNameRegister)
+  let circuitNameRegister = getCircuitNameFromPassportData(
+    passportData as PassportData,
+    'register'
   );
+
+  const isValid =
+    circuitNameRegister &&
+    (deployedCircuits.REGISTER.includes(circuitNameRegister) ||
+      deployedCircuits.REGISTER_ID.includes(circuitNameRegister) ||
+      deployedCircuits.REGISTER_AADHAAR.includes(circuitNameRegister));
   return { isValid: !!isValid, circuitName: circuitNameRegister };
 }
 
@@ -55,10 +63,10 @@ function validateDscCircuit(
   deployedCircuits: DeployedCircuits
 ): { isValid: boolean; circuitName: string | null } {
   const circuitNameDsc = getCircuitNameFromPassportData(passportData, 'dsc');
-  const isValid = circuitNameDsc && (
-    deployedCircuits.DSC.includes(circuitNameDsc) ||
-    deployedCircuits.DSC_ID.includes(circuitNameDsc)
-  );
+  const isValid =
+    circuitNameDsc &&
+    (deployedCircuits.DSC.includes(circuitNameDsc) ||
+      deployedCircuits.DSC_ID.includes(circuitNameDsc));
   return { isValid: !!isValid, circuitName: circuitNameDsc };
 }
 
@@ -94,7 +102,8 @@ export async function checkDocumentSupported(
     return { status: 'csca_not_found', details: passportData.dsc };
   }
 
-  const { isValid: isRegisterValid, circuitName: registerCircuitName } = validateRegistrationCircuit(passportData, deployedCircuits);
+  const { isValid: isRegisterValid, circuitName: registerCircuitName } =
+    validateRegistrationCircuit(passportData, deployedCircuits);
   if (!isRegisterValid) {
     return {
       status: 'registration_circuit_not_supported',
@@ -102,7 +111,10 @@ export async function checkDocumentSupported(
     };
   }
 
-  const { isValid: isDscValid, circuitName: dscCircuitName } = validateDscCircuit(passportData as PassportData, deployedCircuits);
+  const { isValid: isDscValid, circuitName: dscCircuitName } = validateDscCircuit(
+    passportData as PassportData,
+    deployedCircuits
+  );
   if (!isDscValid) {
     console.warn('DSC circuit not supported:', dscCircuitName);
     return { status: 'dsc_circuit_not_supported', details: dscCircuitName };
@@ -192,19 +204,18 @@ export function generateCommitmentInAppAadhaar(
 
   // For Aadhaar, we can also use the document's own public key
   const allPublicKeys = {
-    'document_public_key': passportData.publicKey,
-    ...alternativePublicKeys
+    document_public_key: passportData.publicKey,
+    ...alternativePublicKeys,
   };
 
   for (const [keyName, publicKeyValue] of Object.entries(allPublicKeys)) {
     try {
-
       const commitment = computeCommitment(
         BigInt(secret),
         BigInt(qrHash),
         nullifier,
         packedCommitment,
-        photoHash,
+        photoHash
       ).toString();
 
       publicKey_list.push(publicKeyValue);
@@ -229,7 +240,7 @@ export async function isDocumentNullified(passportData: IDDocument) {
       ? AttestationIdHex.passport
       : passportData.documentCategory === 'aadhaar'
         ? AttestationIdHex.aadhaar
-      : AttestationIdHex.id_card;
+        : AttestationIdHex.id_card;
   console.log('checking for nullifier', nullifierHex, attestationId);
   const baseUrl = passportData.mock === false ? API_URL : API_URL_STAGING;
   const controller = new AbortController();
@@ -280,12 +291,13 @@ export async function isUserRegistered(
       BigInt(qrHash),
       nullifier,
       packedCommitment,
-      photoHash,
+      photoHash
     ).toString();
 
     console.log('commitment', commitment);
   } else {
-    const attestationId = document === 'passport' ? PASSPORT_ATTESTATION_ID : ID_CARD_ATTESTATION_ID;
+    const attestationId =
+      document === 'passport' ? PASSPORT_ATTESTATION_ID : ID_CARD_ATTESTATION_ID;
     commitment = generateCommitment(secret, attestationId, documentData as PassportData);
   }
 
@@ -350,9 +362,10 @@ export async function isUserRegisteredWithAlternativeCSCA(
   }
 
   if (commitment_list.length === 0) {
-    const errorMsg = document === 'aadhaar'
-      ? 'No valid public keys could be processed for Aadhaar'
-      : 'No valid CSCA certificates could be parsed from alternativeCSCA';
+    const errorMsg =
+      document === 'aadhaar'
+        ? 'No valid public keys could be processed for Aadhaar'
+        : 'No valid CSCA certificates could be parsed from alternativeCSCA';
     console.error(errorMsg);
     return { isRegistered: false, csca: null };
   }
@@ -368,9 +381,10 @@ export async function isUserRegisteredWithAlternativeCSCA(
     }
   }
 
-  const warnMsg = document === 'aadhaar'
-    ? `None of the following public keys correspond to the commitment for Aadhaar: ${csca_list}`
-    : `None of the following CSCA correspond to the commitment: ${csca_list}`;
+  const warnMsg =
+    document === 'aadhaar'
+      ? `None of the following public keys correspond to the commitment for Aadhaar: ${csca_list}`
+      : `None of the following CSCA correspond to the commitment: ${csca_list}`;
   console.warn(warnMsg);
   return { isRegistered: false, csca: null };
 }

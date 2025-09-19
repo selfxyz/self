@@ -193,11 +193,9 @@ export const createCustomV2TestData = ({
   }
 
   if (!aadhaarLast4Digits) {
-
     for (let i = 2; i < 6; i++) {
       modifiedSignedData[i] = Math.floor(Math.random() * 10) + 48;
     }
-
   }
 
   if (name) {
@@ -306,22 +304,10 @@ export function extractQRDataFields(qrData: string | Uint8Array): ExtractedQRDat
     signedData[11],
     signedData[12],
   ]);
-  const timestampMonth = asciiArrayToString([
-    signedData[13],
-    signedData[14],
-  ]);
-  const timestampDay = asciiArrayToString([
-    signedData[15],
-    signedData[16],
-  ]);
-  const timestampHour = asciiArrayToString([
-    signedData[17],
-    signedData[18],
-  ]);
-  const timestampMinute = asciiArrayToString([
-    signedData[19],
-    signedData[20],
-  ]);
+  const timestampMonth = asciiArrayToString([signedData[13], signedData[14]]);
+  const timestampDay = asciiArrayToString([signedData[15], signedData[16]]);
+  const timestampHour = asciiArrayToString([signedData[17], signedData[18]]);
+  const timestampMinute = asciiArrayToString([signedData[19], signedData[20]]);
 
   const timestamp = `${timestampYear}-${timestampMonth}-${timestampDay} ${timestampHour}:${timestampMinute}`;
 
@@ -395,13 +381,11 @@ export const generateTestData = ({
 
 export async function getAadharRegistrationWindow() {
   try {
-    const provider = new ethers.JsonRpcProvider(
-      RPC_URL
-    );
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
 
     const identityVerificationHub = new ethers.Contract(
       IDENTITY_VERIFICATION_HUB_ADDRESS,
-      ["function AADHAAR_REGISTRATION_WINDOW() view returns (uint256)"],
+      ['function AADHAAR_REGISTRATION_WINDOW() view returns (uint256)'],
       provider
     );
 

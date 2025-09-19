@@ -49,8 +49,6 @@ export {
   countryCodes,
 } from './src/constants/index.js';
 
-
-
 // Type exports
 export {
   EndpointType,
@@ -87,10 +85,7 @@ export {
   stringToBigInt,
 } from './src/utils/index.js';
 
-
-
 export { createSelector } from './src/utils/aadhaar/constants.js';
-
 
 // Hash utilities
 export {
@@ -101,10 +96,9 @@ export {
   packBytesAndPoseidon,
 } from './src/utils/hash.js';
 
-
 export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
 
-export {isAadhaarDocument, isMRZDocument} from './src/utils/index.js';
+export { isAadhaarDocument, isMRZDocument } from './src/utils/index.js';
 
 export {
   prepareAadhaarDiscloseData,

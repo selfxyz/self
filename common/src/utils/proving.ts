@@ -67,9 +67,12 @@ export function getPayload(
   userDefinedData: string = ''
 ) {
   if (circuitType === 'disclose') {
-    const type = circuitName === 'vc_and_disclose' ? 'disclose' :
-    circuitName === 'vc_and_disclose_aadhaar' ? 'disclose_aadhaar' :
-    'disclose_id';
+    const type =
+      circuitName === 'vc_and_disclose'
+        ? 'disclose'
+        : circuitName === 'vc_and_disclose_aadhaar'
+          ? 'disclose_aadhaar'
+          : 'disclose_id';
     const payload: TEEPayloadDisclose = {
       type,
       endpointType: endpointType,

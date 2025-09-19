@@ -18,7 +18,7 @@ import {
   getCircuitNameFromPassportData,
   hashEndpointWithScope,
 } from '../../utils/index.js';
-import type { AadhaarData,IDDocument,OfacTree  } from '../../utils/types.js';
+import type { AadhaarData, IDDocument, OfacTree } from '../../utils/types.js';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
@@ -91,7 +91,14 @@ export async function generateTEEInputsAadhaarRegister(
   env: 'prod' | 'stg'
 ) {
   const { prepareAadhaarRegisterData } = require('../aadhaar/mockData.js');
-  console.log('publicKeys-aadhaar', publicKeys, 'secret-aadhaar', secret, 'aadhaarData-aadhaar', aadhaarData);
+  console.log(
+    'publicKeys-aadhaar',
+    publicKeys,
+    'secret-aadhaar',
+    secret,
+    'aadhaarData-aadhaar',
+    aadhaarData
+  );
   const inputs = await prepareAadhaarRegisterData(aadhaarData.qrData, secret, publicKeys);
   const circuitName = 'register_aadhaar';
   const endpointType = env === 'stg' ? 'staging_celo' : 'celo';
@@ -160,7 +167,12 @@ export function generateTEEInputsDiscloseStateless(
   ) => T extends 'ofac' ? OfacTree : any
 ) {
   if (passportData.documentCategory === 'aadhaar') {
-    const { inputs, circuitName, endpointType, endpoint } = generateTEEInputsAadhaarDisclose(secret, passportData, selfApp, getTree);
+    const { inputs, circuitName, endpointType, endpoint } = generateTEEInputsAadhaarDisclose(
+      secret,
+      passportData,
+      selfApp,
+      getTree
+    );
     return { inputs, circuitName, endpointType, endpoint };
   }
   const { scope, disclosures, endpoint, userId, userDefinedData, chainID } = selfApp;
@@ -231,9 +243,13 @@ export async function generateTEEInputsRegister(
   dscTree: string | string[],
   env: 'prod' | 'stg'
 ) {
-
   if (passportData.documentCategory === 'aadhaar') {
-    const { inputs, circuitName, endpointType, endpoint } = await generateTEEInputsAadhaarRegister(secret, passportData, dscTree as string[], env);
+    const { inputs, circuitName, endpointType, endpoint } = await generateTEEInputsAadhaarRegister(
+      secret,
+      passportData,
+      dscTree as string[],
+      env
+    );
     console.log('inputs-aadhaar', inputs);
     console.log('circuitName-aadhaar', circuitName);
     console.log('endpointType-aadhaar', endpointType);

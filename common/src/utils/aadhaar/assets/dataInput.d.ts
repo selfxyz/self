@@ -1,3 +1,3 @@
 export declare const testQRData: {
-    testQRData: string;
+  testQRData: string;
 };
