@@ -1,6 +1,8 @@
 import { ethers } from 'ethers';
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import {
+  AadhaarVerifier,
+  AadhaarVerifier__factory,
   IdentityVerificationHubImpl,
   IdentityVerificationHubImpl__factory,
   Registry__factory,
@@ -304,7 +306,7 @@ export class SelfBackendVerifier {
       throw new ConfigMismatchError(issues);
     }
 
-    let verifierContract: Verifier;
+    let verifierContract: Verifier | AadhaarVerifier;
     try {
       const verifierAddress = await this.identityVerificationHubContract.discloseVerifier(
         '0x' + attestationId.toString(16).padStart(64, '0')
@@ -312,7 +314,11 @@ export class SelfBackendVerifier {
       if (verifierAddress === '0x0000000000000000000000000000000000000000') {
         throw new VerifierContractError('Verifier contract not found');
       }
-      verifierContract = Verifier__factory.connect(verifierAddress, this.provider);
+      if (attestationId === 3) {
+        verifierContract = AadhaarVerifier__factory.connect(verifierAddress, this.provider);
+      } else {
+        verifierContract = Verifier__factory.connect(verifierAddress, this.provider);
+      }
     } catch (error) {
       throw new VerifierContractError('Verifier contract not found');
     }
