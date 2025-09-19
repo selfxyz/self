@@ -25,12 +25,18 @@ const config = {
   ],
 
   resolver: {
+    // Use source files directly for better error reporting
+    alias: {
+      '@selfxyz/mobile-sdk-alpha': path.resolve(workspaceRoot, 'packages/mobile-sdk-alpha/src'),
+      '@selfxyz/common': path.resolve(workspaceRoot, 'common/src'),
+    },
     extraNodeModules: {
       '@babel/runtime': path.resolve(__dirname, '../../node_modules/@babel/runtime'),
       // Pin React and React Native to monorepo root
       react: path.resolve(__dirname, '../../node_modules/react'),
       'react-native': path.resolve(__dirname, '../../node_modules/react-native'),
-      // Crypto polyfills
+      // Crypto polyfills - use custom polyfill with @noble/hashes
+      crypto: path.resolve(__dirname, 'crypto-polyfill.js'),
       stream: require.resolve('stream-browserify'),
       buffer: require.resolve('buffer'),
       util: require.resolve('util'),

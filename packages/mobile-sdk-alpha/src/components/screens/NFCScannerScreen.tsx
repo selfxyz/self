@@ -5,7 +5,7 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
+import { getSKIPEM } from '@selfxyz/common';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
 
 import { useSelfClient } from '../../context';
