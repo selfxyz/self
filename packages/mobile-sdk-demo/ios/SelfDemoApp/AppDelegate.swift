@@ -15,7 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let bridge = RCTBridge(
       delegate: self,
       launchOptions: launchOptions
-    )
+    )!
 
     let rootView = RCTRootView(
       bridge: bridge,

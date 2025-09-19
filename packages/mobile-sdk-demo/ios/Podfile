@@ -25,6 +25,9 @@ target "SelfDemoApp" do
     :hermes_enabled => true,
   )
 
+  # Use the custom NFCPassportReader fork
+  pod "NFCPassportReader", :git => "git@github.com:selfxyz/NFCPassportReader.git"
+
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
