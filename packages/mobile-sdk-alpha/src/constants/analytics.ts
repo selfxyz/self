@@ -47,6 +47,7 @@ export const BackupEvents = {
 export const DocumentEvents = {
   ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
   ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
+  ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
   DOCUMENT_DELETED: 'Document: Document Deleted',
   DOCUMENT_SELECTED: 'Document: Document Selected',
   DOCUMENTS_FETCHED: 'Document: Documents Fetched',
