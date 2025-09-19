@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type Screen = 'home' | 'register' | 'generate' | 'prove' | 'camera' | 'nfc' | 'onboarding' | 'qr';
 type GenerateMockCmp = typeof import('./src/GenerateMock').default;

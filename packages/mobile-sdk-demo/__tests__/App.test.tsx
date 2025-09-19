@@ -3,8 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import renderer from 'react-test-renderer';
 import { Text } from 'react-native';
+import renderer from 'react-test-renderer';
+
 import App from '../App';
 
 test('renders menu buttons', () => {

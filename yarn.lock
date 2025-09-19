@@ -9904,7 +9904,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/eslint-plugin@npm:^8.0.0, @typescript-eslint/eslint-plugin@npm:^8.39.0":
+"@typescript-eslint/eslint-plugin@npm:^8.0.0, @typescript-eslint/eslint-plugin@npm:^8.39.0, @typescript-eslint/eslint-plugin@npm:^8.44.0":
   version: 8.44.0
   resolution: "@typescript-eslint/eslint-plugin@npm:8.44.0"
   dependencies:
@@ -9943,7 +9943,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typescript-eslint/parser@npm:^8.0.0, @typescript-eslint/parser@npm:^8.39.0":
+"@typescript-eslint/parser@npm:^8.0.0, @typescript-eslint/parser@npm:^8.39.0, @typescript-eslint/parser@npm:^8.44.0":
   version: 8.44.0
   resolution: "@typescript-eslint/parser@npm:8.44.0"
   dependencies:
@@ -15050,7 +15050,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-import@npm:^2.29.1, eslint-plugin-import@npm:^2.31.0":
+"eslint-plugin-import@npm:^2.29.1, eslint-plugin-import@npm:^2.31.0, eslint-plugin-import@npm:^2.32.0":
   version: 2.32.0
   resolution: "eslint-plugin-import@npm:2.32.0"
   dependencies:
@@ -20281,13 +20281,22 @@ __metadata:
     "@tsconfig/react-native": "npm:^3.0.6"
     "@types/jest": "npm:^29.5.14"
     "@types/react": "npm:^18.3.4"
+    "@typescript-eslint/eslint-plugin": "npm:^8.44.0"
+    "@typescript-eslint/parser": "npm:^8.44.0"
     assert: "npm:^2.1.0"
     babel-jest: "npm:^29.6.3"
     buffer: "npm:^6.0.3"
+    eslint: "npm:^8.57.0"
+    eslint-config-prettier: "npm:^10.1.8"
+    eslint-plugin-import: "npm:^2.32.0"
+    eslint-plugin-prettier: "npm:^5.5.4"
+    eslint-plugin-simple-import-sort: "npm:^12.1.1"
+    eslint-plugin-sort-exports: "npm:^0.9.1"
     ethers: "npm:^6.11.0"
     find-yarn-workspace-root: "npm:^2.0.0"
     jest: "npm:^29.6.3"
     metro-react-native-babel-preset: "npm:0.76.9"
+    prettier: "npm:^3.6.2"
     react: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-get-random-values: "npm:^1.11.0"

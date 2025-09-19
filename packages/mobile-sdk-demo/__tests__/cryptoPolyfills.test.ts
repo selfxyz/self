@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { randomBytes, sha256, sha512, computeHmac, pbkdf2 } from '../src/utils/ethers';
+import { computeHmac, pbkdf2, randomBytes, sha256, sha512 } from '../src/utils/ethers';
 
 describe('Crypto Polyfills', () => {
   describe('randomBytes', () => {

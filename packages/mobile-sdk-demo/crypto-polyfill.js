@@ -9,11 +9,11 @@ const { sha512 } = require('@noble/hashes/sha512');
 
 // Create a crypto polyfill that provides the Node.js crypto API
 const crypto = {
-  createHash: (algorithm) => {
+  createHash: algorithm => {
     const algorithms = {
-      'sha256': sha256,
-      'sha1': sha1,
-      'sha512': sha512,
+      sha256: sha256,
+      sha1: sha1,
+      sha512: sha512,
     };
 
     const hashFunction = algorithms[algorithm.toLowerCase()];
@@ -24,29 +24,29 @@ const crypto = {
     let data = Buffer.alloc(0);
 
     return {
-      update: (inputData) => {
+      update: inputData => {
         // Accumulate data
         data = Buffer.concat([data, Buffer.from(inputData)]);
         return this;
       },
-      digest: (encoding) => {
+      digest: encoding => {
         const hash = hashFunction(data);
         if (encoding === 'hex') {
           return Buffer.from(hash).toString('hex');
         }
         return Buffer.from(hash);
-      }
+      },
     };
   },
 
   // Add other commonly used crypto methods as needed
-  randomBytes: (size) => {
+  randomBytes: size => {
     // For React Native, we can use react-native-get-random-values
     const { getRandomValues } = require('react-native-get-random-values');
     const array = new Uint8Array(size);
     getRandomValues(array);
     return Buffer.from(array);
-  }
+  },
 };
 
 module.exports = crypto;
