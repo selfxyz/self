@@ -7,29 +7,26 @@ import { Linking } from 'react-native';
 import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import {
+  extractQRDataFields,
+  getAadharRegistrationWindow,
+} from '@selfxyz/common/utils';
+import type { AadhaarData } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { extractQRDataFields } from '@selfxyz/common/src/utils/aadhaar/utils';
-import type { AadhaarData } from '@selfxyz/common/utils/types';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { BodyText } from '@/components/typography/BodyText';
 import { useModal } from '@/hooks/useModal';
 import AadhaarImage from '@/images/512w.png';
 import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
-import {
-  slate100,
-  slate200,
-  slate400,
-  slate500,
-  white,
-} from '@/utils/colors';
+import { storePassportData } from '@/providers/passportDataProvider';
+import { slate100, slate200, slate400, slate500, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import {
   isQRScannerPhotoLibraryAvailable,
   scanQRCodeFromPhotoLibrary,
 } from '@/utils/qrScanner';
-import { storePassportData } from '@/providers/passportDataProvider';
 
 const AadhaarUploadScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
@@ -54,12 +51,28 @@ const AadhaarUploadScreen: React.FC = () => {
 
   console.log('AadhaarUploadScreen: Permission modal initialized');
 
+  const validateAAdhaarTimestamp = useCallback(async (timestamp: string) => {
+    //timestamp is in YYYY-MM-DD HH:MM format
+    const currentTimestamp = new Date().getTime();
+    const timestampDate = new Date(timestamp);
+    const timestampTimestamp = timestampDate.getTime();
+    const diff = currentTimestamp - timestampTimestamp;
+    const diffMinutes = diff / (1000 * 60);
+
+    const allowedWindow = await getAadharRegistrationWindow();
+    return diffMinutes <= allowedWindow;
+  }, []);
+
   const processAadhaarQRCode = useCallback(
     async (qrCodeData: string) => {
       try {
         console.log('Processing Aadhaar QR code:', qrCodeData);
 
-        if (!qrCodeData || typeof qrCodeData !== 'string' || qrCodeData.length < 100) {
+        if (
+          !qrCodeData ||
+          typeof qrCodeData !== 'string' ||
+          qrCodeData.length < 100
+        ) {
           throw new Error('Invalid QR code format - too short or not a string');
         }
 
@@ -69,7 +82,9 @@ const AadhaarUploadScreen: React.FC = () => {
 
         console.log('Parsing Aadhaar QR data...');
         if (qrCodeData.length < 100) {
-          throw new Error('QR code too short - likely not a valid Aadhaar QR code');
+          throw new Error(
+            'QR code too short - likely not a valid Aadhaar QR code',
+          );
         }
 
         let extractedFields;
@@ -81,8 +96,16 @@ const AadhaarUploadScreen: React.FC = () => {
           throw new Error('Failed to parse Aadhaar QR code - invalid format');
         }
 
-        if (!extractedFields.name || !extractedFields.dob || !extractedFields.gender) {
+        if (
+          !extractedFields.name ||
+          !extractedFields.dob ||
+          !extractedFields.gender
+        ) {
           throw new Error('Invalid Aadhaar QR code - missing required fields');
+        }
+
+        if (!(await validateAAdhaarTimestamp(extractedFields.timestamp))) {
+          throw new Error('QRCODE_EXPIRED');
         }
 
         const aadhaarData: AadhaarData = {

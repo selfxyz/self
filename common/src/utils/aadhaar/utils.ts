@@ -1,4 +1,7 @@
+import { ethers } from 'ethers';
 import forge from 'node-forge';
+
+import { IDENTITY_VERIFICATION_HUB_ADDRESS, RPC_URL } from '../../constants/constants.js';
 
 import {
   convertBigIntToByteArray,
@@ -389,6 +392,26 @@ export const generateTestData = ({
 
   return newQrData;
 };
+
+export async function getAadharRegistrationWindow() {
+  try {
+    const provider = new ethers.JsonRpcProvider(
+      RPC_URL
+    );
+
+    const identityVerificationHub = new ethers.Contract(
+      IDENTITY_VERIFICATION_HUB_ADDRESS,
+      ["function AADHAAR_REGISTRATION_WINDOW() view returns (uint256)"],
+      provider
+    );
+
+    const aadharRegistrationWindow = await identityVerificationHub.AADHAAR_REGISTRATION_WINDOW();
+    return aadharRegistrationWindow;
+  } catch (error) {
+    console.warn('Failed to get aadhar registration window:', error);
+    return 120;
+  }
+}
 
 export function returnNewDateString(timestamp?: string): string {
   const newDate = timestamp ? new Date(+timestamp) : new Date();
