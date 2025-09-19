@@ -113,7 +113,7 @@
     "prettier": "^3.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-native": "^0.81.1",
+    "react-native": "^0.76.9",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",
     "vitest": "^1.6.0"

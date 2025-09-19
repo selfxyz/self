@@ -5366,7 +5366,7 @@ __metadata:
     typechain: "npm:^8.3.2"
     typescript: "npm:^5.9.2"
     uuid: "npm:^11.1.0"
-    webpack: "npm:^5.0.0"
+    webpack: "npm:^5.95.0"
   languageName: unknown
   linkType: soft
 
@@ -5456,7 +5456,9 @@ __metadata:
     eslint-plugin-sort-exports: "npm:^0.9.1"
     ethers: "npm:^6.11.0"
     expo-modules-core: "npm:^2.2.1"
+    hash.js: "npm:^1.1.7"
     hermes-eslint: "npm:^0.19.1"
+    i18n-iso-countries: "npm:^7.14.0"
     jest: "npm:^29.6.3"
     js-sha1: "npm:^0.7.0"
     js-sha256: "npm:^0.11.1"
@@ -5535,6 +5537,7 @@ __metadata:
     prettier: "npm:^3.5.3"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
+    react-native: "npm:^0.76.9"
     socket.io-client: "npm:^4.8.1"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
@@ -5542,8 +5545,7 @@ __metadata:
     zustand: "npm:^4.5.2"
   peerDependencies:
     react: ^18.3.1
-    react-native: 0.76.9
-    tamagui: ^1.126.0
+    react-native: ^0.76.9
   languageName: unknown
   linkType: soft
 
@@ -5587,7 +5589,7 @@ __metadata:
     tsup: "npm:^8.5.0"
     typescript: "npm:^5.9.2"
     uuid: "npm:^11.1.0"
-    webpack: "npm:^5.0.0"
+    webpack: "npm:^5.95.0"
   peerDependencies:
     lottie-react: ^2.4.0
     react: ^18.3.1
@@ -8912,13 +8914,6 @@ __metadata:
   version: 1.126.14
   resolution: "@tamagui/timer@npm:1.126.14"
   checksum: 10c0/c154f3555cc9e6812d9a1f9f7c5d86d223b8549eb7def690003b86f15b62b09e93848e792aa1a052f73d1f6868e50892585bd55f367e827cf6dfd1d0f52fed61
-  languageName: node
-  linkType: hard
-
-"@tamagui/timer@npm:1.132.23":
-  version: 1.132.23
-  resolution: "@tamagui/timer@npm:1.132.23"
-  checksum: 10c0/575a7209059794b3a220920f399c1dac15b37315e95cbfe171f31d3d98b393cda17ab465ef7ca92ddc4fffa9c7c0deb24718fa5519bb1a3286848702abd2fa06
   languageName: node
   linkType: hard
 
@@ -22156,7 +22151,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.2.0, react-dom@npm:^18.3.1":
+"react-dom@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:
@@ -26601,7 +26596,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.0.0, webpack@npm:^5.98.0":
+"webpack@npm:^5.95.0, webpack@npm:^5.98.0":
   version: 5.101.3
   resolution: "webpack@npm:5.101.3"
   dependencies:
