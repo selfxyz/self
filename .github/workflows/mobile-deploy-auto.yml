@@ -1,14 +1,5 @@
 name: Mobile Auto Deploy
 
-env:
-  # Helper expressions for cleaner conditions
-  IS_PUSH_EVENT: ${{ github.event_name == 'push' }}
-  IS_PR_EVENT: ${{ github.event_name == 'pull_request' }}
-  IS_PR_MERGED: ${{ github.event_name == 'pull_request' && github.event.pull_request.merged == true }}
-  HAS_NO_DEPLOY_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'no-deploy') }}
-  IS_MAIN_BRANCH: ${{ github.ref_name == 'main' || github.base_ref == 'main' }}
-  IS_STAGING_BRANCH: ${{ github.ref_name == 'staging' || github.base_ref == 'dev' }}
-
 on:
   push:
     branches:
@@ -38,7 +29,9 @@ permissions:
 
 jobs:
   check-and-deploy:
-    if: env.IS_PUSH_EVENT || (env.IS_PR_MERGED && !env.HAS_NO_DEPLOY_LABEL)
+    if: |
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'no-deploy'))
     runs-on: ubuntu-latest
     outputs:
       should_deploy: ${{ steps.check.outputs.should_deploy }}
@@ -53,16 +46,16 @@ jobs:
           echo "🔍 Checking deployment conditions..."
 
           # Handle push events
-          if [[ "${{ env.IS_PUSH_EVENT }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "push" ]]; then
             echo "📱 Push event detected"
 
             # Determine deployment track based on branch
-            if [[ "${{ env.IS_MAIN_BRANCH }}" == "true" ]]; then
+            if [[ "${{ github.ref_name }}" == "main" ]]; then
               echo "deployment_track=production" >> $GITHUB_OUTPUT
               echo "🚀 Deployment track: production"
               echo "version_bump=patch" >> $GITHUB_OUTPUT
               echo "📈 Version bump: patch"
-            elif [[ "${{ env.IS_STAGING_BRANCH }}" == "true" ]]; then
+            elif [[ "${{ github.ref_name }}" == "staging" ]]; then
               echo "deployment_track=internal" >> $GITHUB_OUTPUT
               echo "🧪 Deployment track: internal testing"
               echo "version_bump=build" >> $GITHUB_OUTPUT
@@ -87,10 +80,10 @@ jobs:
           fi
 
           # Determine deployment track based on target branch
-          if [[ "${{ env.IS_MAIN_BRANCH }}" == "true" ]]; then
+          if [[ "${{ github.base_ref }}" == "main" ]]; then
             echo "deployment_track=production" >> $GITHUB_OUTPUT
             echo "🚀 Deployment track: production"
-          elif [[ "${{ env.IS_STAGING_BRANCH }}" == "true" ]]; then
+          elif [[ "${{ github.base_ref }}" == "dev" ]]; then
             echo "deployment_track=internal" >> $GITHUB_OUTPUT
             echo "🧪 Deployment track: internal testing"
           fi
@@ -119,7 +112,7 @@ jobs:
         if: steps.check.outputs.should_deploy == 'true'
         run: |
           echo "📱 Auto-deployment triggered!"
-          if [[ "${{ env.IS_PUSH_EVENT }}" == "true" ]]; then
+          if [[ "${{ github.event_name }}" == "push" ]]; then
             echo "Event: Push to ${{ github.ref_name }}"
             echo "Commit: ${{ github.sha }}"
             echo "Author: ${{ github.actor }}"
