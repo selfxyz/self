@@ -49,7 +49,8 @@ const AadhaarUploadErrorScreen: React.FC = () => {
           textAlign="center"
           color={slate500}
         >
-          Make sure the QR code is clear and try again
+          Make sure the QR code is clear and try again. Or the QR code might
+          have expired.
         </BodyText>
       </YStack>
 
