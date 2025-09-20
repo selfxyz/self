@@ -121,8 +121,8 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 99
-        versionName "2.6.5"
+        versionCode 101
+        versionName "2.6.6"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
             cmake {
