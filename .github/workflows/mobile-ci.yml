@@ -4,7 +4,7 @@ env:
   # Node version is read from .nvmrc during workflow execution
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
-  ANDROID_NDK_VERSION: 27.0.11718014
+  ANDROID_NDK_VERSION: 27.0.12077973
   XCODE_VERSION: 16.4
   # Path configuration
   WORKSPACE: ${{ github.workspace }}

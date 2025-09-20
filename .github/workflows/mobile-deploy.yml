@@ -5,7 +5,7 @@ env:
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
   ANDROID_API_LEVEL: 35
-  ANDROID_NDK_VERSION: 27.0.11718014
+  ANDROID_NDK_VERSION: 27.0.12077973
   XCODE_VERSION: 16.4
 
   # Cache versioning - increment these to bust caches when needed

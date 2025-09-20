@@ -18,7 +18,7 @@
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher"
       android:extractNativeLibs="false"
-      tools:replace="android:icon, android:roundIcon, android:name, android:extractNativeLibs"
+        tools:replace="android:icon, android:roundIcon, android:name, android:extractNativeLibs"
       android:theme="@style/AppTheme"
       android:supportsRtl="true"
       android:usesCleartextTraffic="true"
