@@ -105,6 +105,8 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
+    testImplementation 'junit:junit:4.13.2'
+
     // React Native
     implementation 'com.facebook.react:react-native:+'
 

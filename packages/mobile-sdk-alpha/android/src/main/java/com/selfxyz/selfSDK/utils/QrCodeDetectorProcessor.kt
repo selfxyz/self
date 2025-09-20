@@ -19,6 +19,7 @@ package com.selfxyz.selfSDK.utils
 
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.AsyncTask
 import android.webkit.URLUtil
 import com.google.mlkit.vision.common.InputImage
@@ -32,6 +33,7 @@ import com.selfxyz.selfSDK.mlkit.FrameMetadata
 import com.selfxyz.selfSDK.utils.ImageUtil
 import io.fotoapparat.preview.Frame
 import java.nio.ByteBuffer
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
@@ -104,20 +106,52 @@ class QrCodeDetectorProcessor {
             val result = detectInImage(image)
             val timeRequired = System.currentTimeMillis() - start
             println(result)
-            if (result != null) {
-                if (URLUtil.isValidUrl(result.text)) {
-                    listener.onSuccess(result.text!!, metadata, timeRequired, originalBitmap)
-                } else {
-                    listener.onFailure(Exception("Invalid URL"), timeRequired)
-                }
-            }
-            else {
-                listener.onCompletedFrame(timeRequired)
-            }
+            handleDetectionResult(result, metadata, originalBitmap, listener, timeRequired)
             shouldThrottle.set(false)
         }
 
         return true
+    }
+
+    internal fun handleDetectionResult(
+        result: Result?,
+        metadata: FrameMetadata?,
+        originalBitmap: Bitmap? = null,
+        listener: Listener,
+        timeRequired: Long
+    ) {
+        if (result == null) {
+            listener.onCompletedFrame(timeRequired)
+            return
+        }
+
+        val text = result.text
+        if (isRecognizedQrPayload(text)) {
+            listener.onSuccess(text!!, metadata, timeRequired, originalBitmap)
+        } else {
+            listener.onFailure(Exception("Invalid URL"), timeRequired)
+        }
+    }
+
+    private fun isRecognizedQrPayload(text: String?): Boolean {
+        if (text.isNullOrBlank()) {
+            return false
+        }
+
+        val uri = try {
+            Uri.parse(text)
+        } catch (e: Exception) {
+            return false
+        }
+
+        val scheme = uri.scheme?.lowercase(Locale.ROOT) ?: return false
+
+        if (FIRST_PARTY_SCHEME_PREFIXES.any { scheme.startsWith(it) }) {
+            val schemeSpecificPart = uri.schemeSpecificPart?.trim('/')
+            return !schemeSpecificPart.isNullOrBlank()
+        }
+
+        return URLUtil.isValidUrl(text)
     }
 
     private fun detectInImage(bitmap: Bitmap): Result? {
@@ -152,5 +186,6 @@ class QrCodeDetectorProcessor {
 
     companion object {
         private val TAG = QrCodeDetectorProcessor::class.java.simpleName
+        private val FIRST_PARTY_SCHEME_PREFIXES = setOf("self")
     }
 }
