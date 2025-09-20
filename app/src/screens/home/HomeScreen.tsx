@@ -121,7 +121,6 @@ const HomeScreen: React.FC = () => {
               key={metadata.id}
               onPress={() => {
                 selfClient.trackEvent(DocumentEvents.DOCUMENT_SELECTED, {
-                  document_id: metadata.id,
                   document_type: documentData.data.documentType,
                   document_category: documentData.data.documentCategory,
                 });
