@@ -10,6 +10,7 @@ import { Text, YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 
+import { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types';
 import type { PassportData } from '@selfxyz/common/types';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
@@ -45,7 +46,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   >(proveLoadingAnimation);
 
   // Passport data state
-  const [passportData, setPassportData] = useState<PassportData | null>(null);
+  const [passportData, setPassportData] = useState<IDDocument | null>(null);
 
   // Loading text state
   const [loadingText, setLoadingText] = useState<{
@@ -112,32 +113,47 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       return;
     }
 
-    // Update UI if passport data is available
-    if (passportData?.passportMetadata) {
-      // Update loading text based on current state
-      const { actionText, estimatedTime } = getLoadingScreenText(
-        currentState as ProvingStateType,
-        passportData?.passportMetadata,
-      );
-      setLoadingText({ actionText, estimatedTime });
+    let { signatureAlgorithm, curveOrExponent } = {
+      signatureAlgorithm: 'rsa',
+      curveOrExponent: '65537',
+    };
+    switch (passportData?.documentCategory) {
+      case 'passport':
+      case 'id_card':
+        if (passportData?.passportMetadata) {
+          signatureAlgorithm =
+            passportData?.passportMetadata?.cscaSignatureAlgorithm;
+          curveOrExponent = passportData?.passportMetadata?.cscaCurveOrExponent;
+        }
+        break;
+      case 'aadhaar':
+        break; // keep the default values for aadhaar
+    }
 
-      // Update animation based on state
-      switch (currentState) {
-        case 'completed':
-          setAnimationSource(successAnimation);
-          break;
-        case 'error':
-        case 'failure':
-        case 'passport_not_supported':
-          setAnimationSource(failAnimation);
-          break;
-        case 'account_recovery_choice':
-        case 'passport_data_not_found':
-          setAnimationSource(failAnimation);
-          break;
-        default:
-          setAnimationSource(proveLoadingAnimation);
-      }
+    const { actionText, estimatedTime } = getLoadingScreenText(
+      currentState as ProvingStateType,
+      signatureAlgorithm,
+      curveOrExponent,
+    );
+    setLoadingText({ actionText, estimatedTime });
+
+    // Update animation based on state
+    switch (currentState) {
+      case 'completed':
+        // setAnimationSource(successAnimation);
+        break;
+      case 'error':
+      case 'failure':
+      case 'passport_not_supported':
+        setAnimationSource(failAnimation);
+        break;
+      case 'account_recovery_choice':
+      case 'passport_data_not_found':
+        setAnimationSource(failAnimation);
+        break;
+      default:
+        setAnimationSource(proveLoadingAnimation);
+        break;
     }
 
     // Stop haptics if we're in a terminal state
@@ -153,7 +169,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     return () => {
       loadingScreenProgress(false);
     };
-  }, [currentState, isFocused, fcmToken, passportData?.passportMetadata]);
+  }, [currentState, isFocused, fcmToken, passportData]);
 
   // Determine if animation should loop based on terminal states
   const shouldLoopAnimation = !terminalStates.includes(
