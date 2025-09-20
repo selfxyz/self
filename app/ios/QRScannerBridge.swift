@@ -10,6 +10,8 @@
 import Foundation
 import SwiftQRScanner
 import React
+import UIKit
+import CoreImage
 
 @objc(QRScannerBridge)
 class QRScannerBridge: NSObject {
@@ -27,6 +29,21 @@ class QRScannerBridge: NSObject {
         resolve(result)
       }
       rootViewController?.present(qrScannerViewController, animated: true, completion: nil)
+    }
+  }
+
+  @objc
+  func scanQRCodeFromPhotoLibrary(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    DispatchQueue.main.async {
+      let rootViewController = UIApplication.shared.keyWindow?.rootViewController
+      let photoLibraryQRScanner = PhotoLibraryQRScannerViewController()
+      photoLibraryQRScanner.completionHandler = { result in
+        resolve(result)
+      }
+      photoLibraryQRScanner.errorHandler = { error in
+        reject("QR_SCAN_ERROR", error.localizedDescription, error)
+      }
+      rootViewController?.present(photoLibraryQRScanner, animated: true, completion: nil)
     }
   }
 }

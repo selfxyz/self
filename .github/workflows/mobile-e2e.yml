@@ -27,12 +27,13 @@ on:
       - ".github/workflows/mobile-e2e.yml"
 
 jobs:
-  e2e-android:
-    if: false # Temporarily disable Android E2E until emulator disk issue resolved
+  android-build-test:
+    # Currently build-only for Android with private repos. E2E steps are preserved but skipped (if: false).
+    # To re-enable full E2E: change `if: false` to `if: true` on Maestro and emulator steps.
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
-    timeout-minutes: 45
+    timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -65,20 +66,30 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
-      - run: yarn install --immutable --silent
+      - name: Install deps (internal PRs and protected branches)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        run: yarn install --immutable --silent
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Install deps (forked PRs - no secrets)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+        run: yarn install --immutable --silent
       - name: Validate Maestro test file
+        if: false # Skip for build-only test - keep logic for future E2E
         run: |
           [ -f app/tests/e2e/launch.android.flow.yaml ] || { echo "❌ Android E2E test file missing"; exit 1; }
       - name: Cache Maestro
+        if: false # Skip for build-only test - keep logic for future E2E
         id: cache-maestro
         uses: actions/cache@v4
         with:
           path: ~/.maestro
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
       - name: Install Maestro
-        if: steps.cache-maestro.outputs.cache-hit != 'true'
+        if: false # Skip for build-only test - keep logic for future E2E
         run: curl -Ls "https://get.maestro.mobile.dev" | bash
       - name: Add Maestro to path
+        if: false # Skip for build-only test - keep logic for future E2E
         run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Setup Java environment
         uses: actions/setup-java@v4
@@ -98,13 +109,44 @@ jobs:
           echo "Building dependencies..."
           yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
+      - name: Clone android-passport-reader
+        uses: ./.github/actions/clone-android-passport-reader
+        with:
+          working_directory: app
+          selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
       - name: Build Android APK
         run: |
           echo "Building Android APK..."
           chmod +x app/android/gradlew
           (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
+      - name: Verify APK and android-passport-reader integration
+        run: |
+          echo "🔍 Verifying build artifacts..."
+          APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
+          [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+          echo "✅ APK found at $APK_PATH"
+
+          # Check APK size
+          APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
+          echo "📱 APK size: $APK_SIZE bytes"
+
+          # Verify android-passport-reader was properly integrated (skip for forks)
+          if [ -z "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]; then
+            echo "🔕 No PAT available — skipping private module verification"
+          elif [ -d "app/android/android-passport-reader" ]; then
+            echo "✅ android-passport-reader directory exists"
+            echo "📁 android-passport-reader contents:"
+            ls -la app/android/android-passport-reader/ | head -10
+          else
+            echo "❌ android-passport-reader directory not found"
+            exit 1
+          fi
+
+          echo "🎉 Build verification completed successfully!"
+          echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
       - name: Install and Test on Android
+        if: false # Skip emulator/E2E for build-only test - keep logic for future E2E
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
@@ -127,7 +169,7 @@ jobs:
             export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
             maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
       - name: Upload test results
-        if: always()
+        if: false # Skip for build-only test - keep logic for future E2E
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
@@ -135,7 +177,7 @@ jobs:
           if-no-files-found: warn
 
   e2e-ios:
-    timeout-minutes: 45
+    timeout-minutes: 60
     runs-on: macos-latest-large
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}
@@ -177,7 +219,14 @@ jobs:
       - name: Toggle Yarn hardened mode for trusted PRs
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
         run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
-      - run: yarn install --immutable --silent
+      - name: Install deps (internal PRs and protected branches)
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
+        run: yarn install --immutable --silent
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+      - name: Install deps (forked PRs - no secrets)
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
+        run: yarn install --immutable --silent
       - name: Validate Maestro test file
         run: |
           [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }

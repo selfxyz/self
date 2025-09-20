@@ -18,10 +18,10 @@ import (
 
 const (
 	CELO_MAINNET_RPC_URL = "https://forno.celo.org"
-	CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org"
+	CELO_TESTNET_RPC_URL = "https://forno.celo-sepolia.celo-testnet.org"
 
 	IDENTITY_VERIFICATION_HUB_ADDRESS         = "0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF"
-	IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = "0x68c931C9a534D37aa78094877F46fE46a49F1A51"
+	IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74"
 )
 
 // ConfigMismatch represents different types of configuration validation errors
@@ -329,7 +329,7 @@ func (s *BackendVerifier) Verify(
 
 			// Only proceed with validations if no error and config is not empty
 			if configErr == nil && !s.isEmptyVerificationConfig(verificationConfig) {
-				forbiddenCountriesList, genericDiscloseOutput, _ = s.validateWithConfig(verificationConfig, publicSignals, discloseIndices, genericDiscloseOutput, &issues)
+				forbiddenCountriesList, genericDiscloseOutput, _ = s.validateWithConfig(attestationId, verificationConfig, publicSignals, discloseIndices, genericDiscloseOutput, &issues)
 			}
 		}
 	}
@@ -432,8 +432,6 @@ func (s *BackendVerifier) Verify(
 		}
 	}
 
-
-
 	isOfacValid := true
 	if configErr == nil && verificationConfig.Ofac {
 		for _, ofacCheck := range genericDiscloseOutput.Ofac {
@@ -463,6 +461,7 @@ func (s *BackendVerifier) Verify(
 // validateWithConfig performs config-based validations (forbidden countries, minimum age, timestamp, OFAC)
 // Returns the computed values for reuse in return value construction
 func (s *BackendVerifier) validateWithConfig(
+	attestationId AttestationId,
 	verificationConfig VerificationConfig,
 	publicSignals []string,
 	discloseIndices DiscloseIndicesEntry,
@@ -519,7 +518,7 @@ func (s *BackendVerifier) validateWithConfig(
 		}
 	}
 
-	s.validateTimestamp(publicSignals, discloseIndices, issues)
+	s.validateTimestamp(attestationId, publicSignals, discloseIndices, issues)
 
 	if !verificationConfig.Ofac {
 		for i, ofacCheck := range genericDiscloseOutput.Ofac {
@@ -548,6 +547,7 @@ func (s *BackendVerifier) validateWithConfig(
 
 // validateTimestamp checks if the circuit timestamp is within acceptable range (not too old, not in future)
 func (s *BackendVerifier) validateTimestamp(
+	attestationId AttestationId,
 	publicSignals []string,
 	discloseIndices DiscloseIndicesEntry,
 	issues *[]ConfigIssue,
@@ -555,20 +555,64 @@ func (s *BackendVerifier) validateTimestamp(
 	// Extract timestamp components from circuit (YYMMDD format)
 	currentDateIndex := discloseIndices.CurrentDateIndex
 
-	// Build year: "20" + YY digits
-	yy1, _ := strconv.Atoi(publicSignals[currentDateIndex])
-	yy2, _ := strconv.Atoi(publicSignals[currentDateIndex+1])
-	year := 2000 + yy1*10 + yy2
+	var circuitTimestampYy []int
+	var circuitTimestampMm []int
+	var circuitTimestampDd []int
 
-	// Build month: MM digits
-	mm1, _ := strconv.Atoi(publicSignals[currentDateIndex+2])
-	mm2, _ := strconv.Atoi(publicSignals[currentDateIndex+3])
-	month := mm1*10 + mm2
+	if attestationId == Aadhaar {
+		// For Aadhaar: split string digits and convert to numbers
+		yyStr := publicSignals[currentDateIndex]
+		for _, char := range yyStr {
+			if digit, err := strconv.Atoi(string(char)); err == nil {
+				circuitTimestampYy = append(circuitTimestampYy, digit)
+			}
+		}
 
-	// Build day: DD digits
-	dd1, _ := strconv.Atoi(publicSignals[currentDateIndex+4])
-	dd2, _ := strconv.Atoi(publicSignals[currentDateIndex+5])
-	day := dd1*10 + dd2
+		mmStr := publicSignals[currentDateIndex+1]
+		for _, char := range mmStr {
+			if digit, err := strconv.Atoi(string(char)); err == nil {
+				circuitTimestampMm = append(circuitTimestampMm, digit)
+			}
+		}
+
+		ddStr := publicSignals[currentDateIndex+2]
+		for _, char := range ddStr {
+			if digit, err := strconv.Atoi(string(char)); err == nil {
+				circuitTimestampDd = append(circuitTimestampDd, digit)
+			}
+		}
+	} else {
+		// For other attestation types: use individual signals as digits
+		yy1, _ := strconv.Atoi(publicSignals[currentDateIndex])
+		yy2, _ := strconv.Atoi(publicSignals[currentDateIndex+1])
+		circuitTimestampYy = []int{2, 0, yy1, yy2}
+
+		mm1, _ := strconv.Atoi(publicSignals[currentDateIndex+2])
+		mm2, _ := strconv.Atoi(publicSignals[currentDateIndex+3])
+		circuitTimestampMm = []int{mm1, mm2}
+
+		dd1, _ := strconv.Atoi(publicSignals[currentDateIndex+4])
+		dd2, _ := strconv.Atoi(publicSignals[currentDateIndex+5])
+		circuitTimestampDd = []int{dd1, dd2}
+	}
+
+	yearStr := ""
+	for _, digit := range circuitTimestampYy {
+		yearStr += strconv.Itoa(digit)
+	}
+	year, _ := strconv.Atoi(yearStr)
+
+	monthStr := ""
+	for _, digit := range circuitTimestampMm {
+		monthStr += strconv.Itoa(digit)
+	}
+	month, _ := strconv.Atoi(monthStr)
+
+	dayStr := ""
+	for _, digit := range circuitTimestampDd {
+		dayStr += strconv.Itoa(digit)
+	}
+	day, _ := strconv.Atoi(dayStr)
 
 	// Create circuit timestamp
 	// Note: TypeScript subtracts 1 from month because JS Date is 0-indexed (0=Jan)
@@ -585,9 +629,11 @@ func (s *BackendVerifier) validateTimestamp(
 		})
 	}
 
-	// Check if timestamp is more than 1 day in the past
+	// Check if timestamp is more than 1 day in the past (using end-of-day logic)
+	// Add 23 hours + 59 minutes + 59 seconds to circuit timestamp (matching TypeScript logic)
+	circuitTimestampEOD := circuitTimestamp.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 	oneDayAgo := currentTimestamp.Add(-24 * time.Hour)
-	if circuitTimestamp.Before(oneDayAgo) {
+	if circuitTimestampEOD.Before(oneDayAgo) {
 		*issues = append(*issues, ConfigIssue{
 			Type:    InvalidTimestamp,
 			Message: "Circuit timestamp is too old",

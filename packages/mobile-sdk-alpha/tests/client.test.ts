@@ -64,7 +64,12 @@ describe('createSelfClient', () => {
     });
     const result = await client.scanDocument({ mode: 'qr' });
     expect(result).toEqual({ mode: 'qr', data: 'self://ok' });
-    expect(scanMock).toHaveBeenCalledWith({ mode: 'qr' });
+    expect(scanMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'qr',
+        signal: expect.any(AbortSignal),
+      }),
+    );
   });
 
   it('propagates scanner errors', async () => {
@@ -76,22 +81,6 @@ describe('createSelfClient', () => {
       listeners: new Map(),
     });
     await expect(client.scanDocument({ mode: 'qr' })).rejects.toBe(err);
-  });
-
-  it('returns stub proof handle when adapters provided', async () => {
-    const network = { http: { fetch: vi.fn() }, ws: { connect: vi.fn() } } as any;
-    const crypto = { hash: vi.fn(), sign: vi.fn() } as any;
-    const scanner = { scan: vi.fn() } as any;
-    const client = createSelfClient({
-      config: {},
-      adapters: { network, crypto, scanner, documents, auth },
-      listeners: new Map(),
-    });
-    const handle = await client.generateProof({ type: 'register', payload: {} });
-    expect(handle.id).toBe('stub');
-    expect(handle.status).toBe('pending');
-    expect(await handle.result()).toEqual({ ok: false, reason: 'SELF_ERR_PROOF_STUB' });
-    expect(() => handle.cancel()).not.toThrow();
   });
 
   it('emits and unsubscribes events', () => {
@@ -144,17 +133,6 @@ describe('createSelfClient', () => {
     expect(info.validation?.overall).toBe(true);
   });
 
-  it('returns stub registration status', async () => {
-    const client = createSelfClient({
-      config: {},
-      adapters: { scanner, network, crypto, documents, auth },
-      listeners: new Map(),
-    });
-    await expect(client.registerDocument({} as any)).resolves.toEqual({
-      registered: false,
-      reason: 'SELF_REG_STATUS_STUB',
-    });
-  });
   describe('when analytics adapter is given', () => {
     it('calls that adapter for trackEvent', () => {
       const trackEvent = vi.fn();

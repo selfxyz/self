@@ -1,0 +1,50 @@
+name: Clone android-passport-reader
+description: "Clones the android-passport-reader repository if it does not exist"
+
+inputs:
+  working_directory:
+    description: "Working directory path (where android/ subdirectory is located)"
+    required: false
+    default: "."
+  selfxyz_internal_pat:
+    description: "SELFXYZ internal repository PAT for private repository access"
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Clone android-passport-reader
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Check if PAT is available for private module cloning
+        if [ -z "${{ inputs.selfxyz_internal_pat }}" ]; then
+          echo "🔒 Skipping private module cloning (no PAT provided)"
+          echo "ℹ️  This is expected for forked PRs - build will continue without private modules"
+          exit 0
+        fi
+
+        cd "${{ inputs.working_directory }}"
+
+        if [ ! -d "android/android-passport-reader" ]; then
+          echo "📦 Cloning android-passport-reader for build..."
+          cd android
+
+          # Clone using PAT (embed temporarily, then scrub)
+          if git clone --depth 1 --quiet "https://${{ inputs.selfxyz_internal_pat }}@github.com/selfxyz/android-passport-reader.git"; then
+            echo "✅ android-passport-reader cloned successfully"
+            # Immediately scrub the credential from remote URL for security
+            git -C android-passport-reader remote set-url origin https://github.com/selfxyz/android-passport-reader.git || true
+          else
+            echo "❌ Failed to clone android-passport-reader"
+            echo "Please ensure a valid SELFXYZ internal PAT is provided to this action"
+            exit 1
+          fi
+        elif [ "$CI" = "true" ]; then
+          echo "⚠️  android-passport-reader exists in CI - this is unexpected"
+          echo "📁 Directory contents:"
+          ls -la android/android-passport-reader/ || true
+        else
+          echo "📁 android-passport-reader already exists - preserving existing directory"
+          echo "ℹ️  Local development environment detected - your changes are safe"
+        fi

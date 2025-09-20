@@ -114,6 +114,10 @@ const PassportDataSelector = () => {
         return 'ID Card';
       case 'mock_id_card':
         return 'Mock ID Card';
+      case 'aadhaar':
+        return 'Aadhaar';
+      case 'mock_aadhaar':
+        return 'Mock Aadhaar';
       default:
         return documentType;
     }
@@ -288,6 +292,12 @@ const ManageDocumentsScreen: React.FC = () => {
     navigation.navigate('CreateMock');
   };
 
+  const handleAddAadhaar = () => {
+    impactLight();
+    trackEvent(DocumentEvents.ADD_NEW_AADHAAR_SELECTED);
+    navigation.navigate('AadhaarUpload');
+  };
+
   return (
     <YStack
       flex={1}
@@ -314,6 +324,9 @@ const ManageDocumentsScreen: React.FC = () => {
           <ButtonsContainer>
             <PrimaryButton onPress={handleScanDocument}>
               Scan New ID Document
+            </PrimaryButton>
+            <PrimaryButton onPress={handleAddAadhaar}>
+              Add Aadhaar
             </PrimaryButton>
             <SecondaryButton onPress={handleGenerateMock}>
               Generate Mock Document

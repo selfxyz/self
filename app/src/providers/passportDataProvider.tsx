@@ -44,6 +44,7 @@ import type { PropsWithChildren } from 'react';
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
+import { isMRZDocument } from '@selfxyz/common';
 import type {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
@@ -55,8 +56,10 @@ import {
   parseCertificateSimple,
 } from '@selfxyz/common/utils';
 import type {
+  AadhaarData,
   DocumentCatalog,
   DocumentMetadata,
+  IDDocument,
   PassportData,
 } from '@selfxyz/common/utils/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -387,10 +390,10 @@ export async function initializeNativeModules(
 
 // TODO: is this used?
 async function loadAllPassportData(selfClient: SelfClient): Promise<{
-  [service: string]: PassportData;
+  [service: string]: IDDocument;
 }> {
   const allDocs = await getAllDocuments(selfClient);
-  const result: { [service: string]: PassportData } = {};
+  const result: { [service: string]: IDDocument } = {};
 
   // Convert to legacy format for backward compatibility
   Object.values(allDocs).forEach(({ data, metadata }) => {
@@ -601,7 +604,7 @@ interface IPassportContext {
     data: PassportData;
   } | null>;
   // TODO: is this even used?
-  getAllData: () => Promise<{ [service: string]: PassportData }>;
+  getAllData: () => Promise<{ [service: string]: IDDocument }>;
   getAvailableTypes: () => Promise<string[]>;
   setData: (data: PassportData) => Promise<void>;
   getPassportDataAndSecret: () => Promise<{
@@ -616,7 +619,7 @@ interface IPassportContext {
 
   loadDocumentCatalog: () => Promise<DocumentCatalog>;
   getAllDocuments: () => Promise<{
-    [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
+    [documentId: string]: { data: IDDocument; metadata: DocumentMetadata };
   }>;
 
   setSelectedDocument: (documentId: string) => Promise<void>;
@@ -742,7 +745,7 @@ export async function setSelectedDocument(documentId: string): Promise<void> {
 
 async function storeDocumentDirectlyToKeychain(
   contentHash: string,
-  passportData: PassportData,
+  passportData: PassportData | AadhaarData,
 ): Promise<void> {
   await Keychain.setGenericPassword(contentHash, JSON.stringify(passportData), {
     service: `document-${contentHash}`,
@@ -750,7 +753,7 @@ async function storeDocumentDirectlyToKeychain(
 }
 
 export async function storeDocumentWithDeduplication(
-  passportData: PassportData,
+  passportData: PassportData | AadhaarData,
 ): Promise<string> {
   const contentHash = calculateContentHash(passportData);
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();
@@ -780,8 +783,12 @@ export async function storeDocumentWithDeduplication(
     documentType: passportData.documentType,
     documentCategory:
       passportData.documentCategory ||
-      inferDocumentCategory(passportData.documentType),
-    data: passportData.mrz || '', // Store MRZ for passports/IDs, relevant data for aadhaar
+      inferDocumentCategory(
+        (passportData as PassportData | AadhaarData).documentType,
+      ),
+    data: isMRZDocument(passportData)
+      ? (passportData as PassportData).mrz
+      : (passportData as AadhaarData).qrData || '', // Store MRZ for passports/IDs, relevant data for aadhaar
     mock: passportData.mock || false,
     isRegistered: false,
   };
@@ -793,7 +800,9 @@ export async function storeDocumentWithDeduplication(
   return contentHash;
 }
 
-export async function storePassportData(passportData: PassportData) {
+export async function storePassportData(
+  passportData: PassportData | AadhaarData,
+) {
   await storeDocumentWithDeduplication(passportData);
 }
 

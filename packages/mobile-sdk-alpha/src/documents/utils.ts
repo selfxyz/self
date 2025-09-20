@@ -3,13 +3,15 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import {
+  AadhaarData,
   brutforceSignatureAlgorithmDsc,
+  isMRZDocument,
   parseCertificateSimple,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from '@selfxyz/common';
 import { calculateContentHash, inferDocumentCategory } from '@selfxyz/common/utils';
-import { DocumentMetadata, PassportData } from '@selfxyz/common/utils/types';
+import { DocumentMetadata, IDDocument } from '@selfxyz/common/utils/types';
 
 import { SelfClient } from '../types/public';
 
@@ -38,11 +40,11 @@ export async function clearPassportData(selfClient: SelfClient) {
 export const getAllDocuments = async (
   selfClient: SelfClient,
 ): Promise<{
-  [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
+  [documentId: string]: { data: IDDocument; metadata: DocumentMetadata };
 }> => {
   const catalog = await selfClient.loadDocumentCatalog();
   const allDocs: {
-    [documentId: string]: { data: PassportData; metadata: DocumentMetadata };
+    [documentId: string]: { data: IDDocument; metadata: DocumentMetadata };
   } = {};
 
   for (const metadata of catalog.documents) {
@@ -77,7 +79,7 @@ export const hasAnyValidRegisteredDocument = async (client: SelfClient): Promise
 export const loadSelectedDocument = async (
   selfClient: SelfClient,
 ): Promise<{
-  data: PassportData;
+  data: IDDocument;
   metadata: DocumentMetadata;
 } | null> => {
   const catalog = await selfClient.loadDocumentCatalog();
@@ -122,11 +124,10 @@ export async function markCurrentDocumentAsRegistered(selfClient: SelfClient): P
   }
 }
 
-export async function reStorePassportDataWithRightCSCA(
-  selfClient: SelfClient,
-  passportData: PassportData,
-  csca: string,
-) {
+export async function reStorePassportDataWithRightCSCA(selfClient: SelfClient, passportData: IDDocument, csca: string) {
+  if (passportData.documentCategory === 'aadhaar') {
+    return;
+  }
   const cscaInCurrentPassporData = passportData.passportMetadata?.csca;
   if (!(csca === cscaInCurrentPassporData)) {
     const cscaParsed = parseCertificateSimple(csca);
@@ -156,7 +157,7 @@ export async function reStorePassportDataWithRightCSCA(
 
 export async function storeDocumentWithDeduplication(
   selfClient: SelfClient,
-  passportData: PassportData,
+  passportData: IDDocument,
 ): Promise<string> {
   const contentHash = calculateContentHash(passportData);
   const catalog = await selfClient.loadDocumentCatalog();
@@ -181,11 +182,12 @@ export async function storeDocumentWithDeduplication(
   await selfClient.saveDocument(contentHash, passportData);
 
   // Add to catalog
+  const docType = passportData.documentType;
   const metadata: DocumentMetadata = {
     id: contentHash,
-    documentType: passportData.documentType,
-    documentCategory: passportData.documentCategory || inferDocumentCategory(passportData.documentType),
-    data: passportData.mrz || '', // Store MRZ for passports/IDs, relevant data for aadhaar
+    documentType: docType,
+    documentCategory: passportData.documentCategory || inferDocumentCategory(docType),
+    data: isMRZDocument(passportData) ? passportData.mrz : (passportData as AadhaarData).qrData || '',
     mock: passportData.mock || false,
     isRegistered: false,
   };
@@ -198,7 +200,7 @@ export async function storeDocumentWithDeduplication(
   return contentHash;
 }
 
-export async function storePassportData(selfClient: SelfClient, passportData: PassportData) {
+export async function storePassportData(selfClient: SelfClient, passportData: IDDocument) {
   await storeDocumentWithDeduplication(selfClient, passportData);
 }
 

@@ -2047,7 +2047,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (7.0.0-beta.1):
+  - RNSentry (7.0.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2068,7 +2068,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.52.1)
+    - Sentry/HybridSDK (= 8.53.2)
     - Yoga
   - RNSVG (15.12.1):
     - DoubleConversion
@@ -2116,7 +2116,7 @@ PODS:
   - segment-analytics-react-native (2.21.2):
     - React-Core
     - sovran-react-native
-  - Sentry/HybridSDK (8.52.1)
+  - Sentry/HybridSDK (8.53.2)
   - SocketRocket (0.7.1)
   - sovran-react-native (1.1.3):
     - React-Core
@@ -2130,6 +2130,7 @@ DEPENDENCIES:
   - fast_float (from `../../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../../node_modules/react-native/Libraries/FBLazyVector`)
   - Firebase
+  - FirebaseAnalytics
   - FirebaseCore
   - FirebaseCoreInternal
   - FirebaseMessaging
@@ -2561,16 +2562,16 @@ SPEC CHECKSUMS:
   RNLocalize: a2c93da4b4afae4630d4b3be79320c11c4342d1f
   RNReactNativeHapticFeedback: e526ac4a7ca9fb23c7843ea4fd7d823166054c73
   RNScreens: 806e1449a8ec63c2a4e4cf8a63cc80203ccda9b8
-  RNSentry: d240d406990e08d9b1fa967aaac67b7cb61b32e2
+  RNSentry: 6ad982be2c8e32dab912afb4132b6a0d88484ea0
   RNSVG: 0c1fc3e7b147949dc15644845e9124947ac8c9bb
   segment-analytics-react-native: bad4c2c7b63818bd493caa2b5759fca59e4ae9a7
-  Sentry: 2cbbe3592f30050c60e916c63c7f5a2fa584005e
+  Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: 1259c7a8cbaccf7b4c3ddf8ee36ca11be9dee407
 
-PODFILE CHECKSUM: 11b5d4e7ed4c53b5020678593b6ec1015cbd3f47
+PODFILE CHECKSUM: 8a63cefda7649b1efdae9ada9addff179eae4375
 
 COCOAPODS: 1.16.2

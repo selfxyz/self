@@ -191,8 +191,6 @@ circuits/tests/**/test_cases.ts
 
 # iOS
 *.xcworkspace/
-*.xcodeproj/
-*.pbxproj
 app/ios/App Thinning Size Report.txt
 
 # Android
@@ -277,6 +275,9 @@ circuits/ptau/
 !**/*.jsx
 !**/*.sol
 !**/*.circom
+
+# Exception for specific private module setup script
+!app/scripts/setup-private-modules.cjs
 
 # But exclude generated TypeScript declaration files
 **/*.d.ts

@@ -18,10 +18,6 @@ export type {
   MRZValidation,
   NetworkAdapter,
   Progress,
-  ProofHandle,
-  ProofRequest,
-  RegistrationInput,
-  RegistrationStatus,
   ScanMode,
   ScanOpts,
   ScanResult,
@@ -30,8 +26,6 @@ export type {
   StorageAdapter,
   TrackEventParams,
   Unsubscribe,
-  ValidationInput,
-  ValidationResult,
   WsAdapter,
   WsConn,
 } from './types/public';
@@ -114,7 +108,7 @@ export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
 export { scanQRProof } from './qr';
 
-export { useProtocolStore } from './stores/protocolStore';
+export { useProtocolStore, useSelfAppStore } from './stores';
 
 // Error handling
 export { webScannerShim } from './adapters/web/shims';

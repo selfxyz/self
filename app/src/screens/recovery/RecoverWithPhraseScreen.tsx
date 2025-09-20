@@ -71,6 +71,9 @@ const RecoverWithPhraseScreen: React.FC = () => {
           return useProtocolStore.getState()[docCategory].commitment_tree;
         },
         getAltCSCA(docCategory) {
+          if (docCategory === 'aadhaar') {
+            return useProtocolStore.getState()[docCategory].public_keys;
+          }
           return useProtocolStore.getState()[docCategory].alternative_csca;
         },
       },

@@ -25,7 +25,7 @@ export const sendCountrySupportNotification = async ({
   countryCode,
   documentCategory,
   subject = `Country Support Request: ${countryName}`,
-  recipient = 'team@self.xyz',
+  recipient = 'support@self.xyz',
 }: SendCountrySupportNotificationOptions): Promise<void> => {
   const deviceInfo = [
     ['device', `${Platform.OS}@${Platform.Version}`],
@@ -82,7 +82,7 @@ export const sendFeedbackEmail = async ({
   message,
   origin,
   subject = 'SELF App Feedback',
-  recipient = 'team@self.xyz',
+  recipient = 'support@self.xyz',
 }: SendFeedbackEmailOptions): Promise<void> => {
   const deviceInfo = [
     ['device', `${Platform.OS}@${Platform.Version}`],

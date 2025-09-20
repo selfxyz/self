@@ -20,6 +20,8 @@ const entry = {
   'src/constants/sampleDataHashes': 'src/constants/sampleDataHashes.ts',
   // Granular utils exports
   'src/utils/aadhaar/constants': 'src/utils/aadhaar/constants.ts',
+  'src/utils/aadhaar/utils': 'src/utils/aadhaar/utils.ts',
+  'src/utils/aadhaar/mockData': 'src/utils/aadhaar/mockData.ts',
   'src/utils/attest': 'src/utils/attest.ts',
   'src/utils/hash': 'src/utils/hash.ts',
   'src/utils/bytes': 'src/utils/bytes.ts',

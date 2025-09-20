@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/common",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Constants and utils for self sdks",
   "license": "MIT",
   "author": "@Selfxyz Team",
@@ -692,7 +692,7 @@
   },
   "devDependencies": {
     "@types/js-sha1": "^0.6.3",
-    "@types/node": "^22.0.0",
+    "@types/node": "^22.18.3",
     "@types/node-forge": "^1.3.10",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",

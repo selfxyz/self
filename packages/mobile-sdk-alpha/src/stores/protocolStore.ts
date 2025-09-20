@@ -19,6 +19,8 @@ import {
   IDENTITY_TREE_URL_ID_CARD,
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
+  TREE_URL,
+  TREE_URL_STAGING,
 } from '@selfxyz/common/constants';
 import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
 import type { DeployedCircuits, OfacTree } from '@selfxyz/common/utils/types';
@@ -56,6 +58,19 @@ interface ProtocolState {
     fetch_identity_tree: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_alternative_csca: (environment: 'prod' | 'stg', ski: string) => Promise<void>;
     fetch_all: (environment: 'prod' | 'stg', ski: string) => Promise<void>;
+    fetch_ofac_trees: (environment: 'prod' | 'stg') => Promise<void>;
+  };
+  aadhaar: {
+    commitment_tree: any;
+    public_keys: string[] | null;
+    deployed_circuits: DeployedCircuits | null;
+    circuits_dns_mapping: any;
+    ofac_trees: OfacTree | null;
+    fetch_deployed_circuits: (environment: 'prod' | 'stg') => Promise<void>;
+    fetch_circuits_dns_mapping: (environment: 'prod' | 'stg') => Promise<void>;
+    fetch_public_keys: (environment: 'prod' | 'stg') => Promise<void>;
+    fetch_identity_tree: (environment: 'prod' | 'stg') => Promise<void>;
+    fetch_all: (environment: 'prod' | 'stg') => Promise<void>;
     fetch_ofac_trees: (environment: 'prod' | 'stg') => Promise<void>;
   };
 }
@@ -112,7 +127,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       }
     },
     fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {
-      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping`;
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping-gcp`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -223,7 +238,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       }
     },
     fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {
-      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping`;
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping-gcp`;
       try {
         const response = await fetch(url);
         if (!response.ok) {
@@ -315,6 +330,113 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       } catch (error) {
         console.error('Failed fetching OFAC trees:', error);
         set({ id_card: { ...get().id_card, ofac_trees: null } });
+      }
+    },
+  },
+  aadhaar: {
+    commitment_tree: null,
+    public_keys: null,
+    deployed_circuits: null,
+    circuits_dns_mapping: null,
+    ofac_trees: null,
+    fetch_all: async (environment: 'prod' | 'stg') => {
+      try {
+        await Promise.all([
+          get().aadhaar.fetch_deployed_circuits(environment),
+          get().aadhaar.fetch_circuits_dns_mapping(environment),
+          get().aadhaar.fetch_public_keys(environment),
+          get().aadhaar.fetch_identity_tree(environment),
+          get().aadhaar.fetch_ofac_trees(environment),
+        ]);
+      } catch (error) {
+        console.error(`Failed fetching Aadhaar data for ${environment}:`, error);
+        throw error; // Re-throw to let proving machine handle it
+      }
+    },
+    fetch_deployed_circuits: async (environment: 'prod' | 'stg') => {
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/deployed-circuits`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
+      }
+      const responseText = await response.text();
+      const data = JSON.parse(responseText);
+      set({ aadhaar: { ...get().aadhaar, deployed_circuits: data.data } });
+    },
+    fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping-gcp`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
+      }
+      const responseText = await response.text();
+      const data = JSON.parse(responseText);
+      set({
+        aadhaar: { ...get().aadhaar, circuits_dns_mapping: data.data },
+      });
+    },
+    fetch_public_keys: async (environment: 'prod' | 'stg') => {
+      const url = environment === 'prod' ? `${TREE_URL}/aadhaar-pubkeys` : `${TREE_URL_STAGING}/aadhaar-pubkeys`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
+      }
+      const responseText = await response.text();
+      const data = JSON.parse(responseText);
+      set({ aadhaar: { ...get().aadhaar, public_keys: data.data } });
+    },
+    fetch_identity_tree: async (environment: 'prod' | 'stg') => {
+      const url = `${environment === 'prod' ? TREE_URL : TREE_URL_STAGING}/identity-aadhaar`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
+        }
+        const responseText = await response.text();
+        const data = JSON.parse(responseText);
+        set({ aadhaar: { ...get().aadhaar, commitment_tree: data.data } });
+      } catch (error) {
+        console.error(`Failed fetching Aadhaar identity tree from ${url}:`, error);
+      }
+    },
+    fetch_ofac_trees: async (environment: 'prod' | 'stg') => {
+      const baseUrl = environment === 'prod' ? TREE_URL : TREE_URL_STAGING;
+      const nameDobUrl = `${baseUrl}/ofac/name-dob-aadhaar`;
+      const nameYobUrl = `${baseUrl}/ofac/name-yob-aadhaar`;
+
+      try {
+        const fetchTree = async (url: string): Promise<any> => {
+          const res = await fetch(url);
+          if (!res.ok) {
+            throw new Error(`HTTP error fetching ${url}! status: ${res.status}`);
+          }
+          const responseData = await res.json();
+
+          if (responseData && typeof responseData === 'object' && 'status' in responseData) {
+            if (responseData.status !== 'success' || !responseData.data) {
+              throw new Error(`Failed to fetch tree from ${url}: ${responseData.message || 'Invalid response format'}`);
+            }
+            return responseData.data;
+          }
+
+          return responseData;
+        };
+
+        const [nameDobData, nameYobData] = await Promise.all([fetchTree(nameDobUrl), fetchTree(nameYobUrl)]);
+
+        set({
+          aadhaar: {
+            ...get().aadhaar,
+            ofac_trees: {
+              passportNoAndNationality: null,
+              nameAndDob: nameDobData,
+              nameAndYob: nameYobData,
+            },
+          },
+        });
+      } catch (error) {
+        console.error('Failed fetching Aadhaar OFAC trees:', error);
+        set({ aadhaar: { ...get().aadhaar, ofac_trees: null } });
       }
     },
   },
