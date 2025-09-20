@@ -124,6 +124,7 @@ function ParameterSection({
 
 const items = [
   'DevSettings',
+  'AadhaarUpload',
   'DevFeatureFlags',
   'DevHapticFeedback',
   'DevPrivateKey',

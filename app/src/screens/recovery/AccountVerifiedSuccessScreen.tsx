@@ -45,7 +45,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
         >
           <Title size="large">ID Verified</Title>
           <Description>
-            Your passport information is now protected by Self ID. Just scan a
+            Your document's information is now protected by Self ID. Just scan a
             participating partner's QR code to prove your identity.
           </Description>
         </YStack>

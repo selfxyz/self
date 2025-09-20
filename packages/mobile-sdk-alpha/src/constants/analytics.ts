@@ -2,9 +2,47 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+export const AadhaarEvents = {
+  UPLOAD_SCREEN_OPENED: 'Aadhaar: Upload Screen Opened',
+  QR_UPLOAD_REQUESTED: 'Aadhaar: QR Upload Requested',
+  QR_UPLOAD_SUCCESS: 'Aadhaar: QR Upload Success',
+  QR_UPLOAD_FAILED: 'Aadhaar: QR Upload Failed',
+  PERMISSION_MODAL_OPENED: 'Aadhaar: Permission Modal Opened',
+  PERMISSION_MODAL_DISMISSED: 'Aadhaar: Permission Modal Dismissed',
+  PERMISSION_SETTINGS_OPENED: 'Aadhaar: Permission Settings Opened',
+  PROCESSING_STARTED: 'Aadhaar: Processing Started',
+  // Error-specific events
+  QR_CODE_EXPIRED: 'Aadhaar: QR Code Expired',
+  QR_CODE_INVALID_FORMAT: 'Aadhaar: QR Code Invalid Format',
+  QR_CODE_MISSING_FIELDS: 'Aadhaar: QR Code Missing Required Fields',
+  QR_CODE_PARSE_FAILED: 'Aadhaar: QR Code Parse Failed',
+  PHOTO_LIBRARY_UNAVAILABLE: 'Aadhaar: Photo Library Unavailable',
+  USER_CANCELLED_SELECTION: 'Aadhaar: User Cancelled Photo Selection',
+  // Validation events
+  TIMESTAMP_VALIDATION_STARTED: 'Aadhaar: Timestamp Validation Started',
+  TIMESTAMP_VALIDATION_FAILED: 'Aadhaar: Timestamp Validation Failed',
+  TIMESTAMP_VALIDATION_SUCCESS: 'Aadhaar: Timestamp Validation Success',
+  // Data processing events
+  QR_DATA_EXTRACTION_STARTED: 'Aadhaar: QR Data Extraction Started',
+  QR_DATA_EXTRACTION_SUCCESS: 'Aadhaar: QR Data Extraction Success',
+  DATA_STORAGE_STARTED: 'Aadhaar: Data Storage Started',
+  DATA_STORAGE_SUCCESS: 'Aadhaar: Data Storage Success',
+  // Screen interaction events
+  UPLOAD_BUTTON_DISABLED: 'Aadhaar: Upload Button Disabled',
+  UPLOAD_BUTTON_ENABLED: 'Aadhaar: Upload Button Enabled',
+  // Error recovery events
+  ERROR_SCREEN_NAVIGATED: 'Aadhaar: Error Screen Navigated',
+  RETRY_BUTTON_PRESSED: 'Aadhaar: Retry Button Pressed',
+  HELP_BUTTON_PRESSED: 'Aadhaar: Help Button Pressed',
+  // Success screen events
+  CONTINUE_TO_REGISTRATION_PRESSED: 'Aadhaar: Continue to Registration Pressed',
+};
+
 export const AppEvents = {
   DISMISS_PRIVACY_DISCLAIMER: 'App: Dismiss Privacy Disclaimer',
   GET_STARTED: 'App: Get Started',
+  GET_STARTED_BIOMETRIC: 'App: Get Started - Biometric ID',
+  GET_STARTED_AADHAAR: 'App: Get Started - Aadhaar',
   SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
   UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
   UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
@@ -47,6 +85,7 @@ export const BackupEvents = {
 export const DocumentEvents = {
   ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
   ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
+  ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
   DOCUMENT_DELETED: 'Document: Document Deleted',
   DOCUMENT_SELECTED: 'Document: Document Selected',
   DOCUMENTS_FETCHED: 'Document: Documents Fetched',

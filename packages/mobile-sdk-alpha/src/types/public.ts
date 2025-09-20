@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCatalog, PassportData } from '@selfxyz/common/types';
+import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common/utils/types';
 
 import { SDKEvent, SDKEventMap } from './events';
 
@@ -153,8 +153,8 @@ export interface DocumentsAdapter {
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
 
-  loadDocumentById(id: string): Promise<PassportData | null>;
-  saveDocument(id: string, passportData: PassportData): Promise<void>;
+  loadDocumentById(id: string): Promise<IDDocument | null>;
+  saveDocument(id: string, passportData: IDDocument): Promise<void>;
 
   deleteDocument(id: string): Promise<void>;
 }
@@ -171,8 +171,8 @@ export interface SelfClient {
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
 
-  loadDocumentById(id: string): Promise<PassportData | null>;
-  saveDocument(id: string, passportData: PassportData): Promise<void>;
+  loadDocumentById(id: string): Promise<IDDocument | null>;
+  saveDocument(id: string, passportData: IDDocument): Promise<void>;
 
   deleteDocument(id: string): Promise<void>;
 }

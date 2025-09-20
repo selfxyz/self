@@ -457,10 +457,10 @@ func FormatRevealedDataPacked(attestationID AttestationId, publicSignals PublicS
 	// Extract minimum age (olderThan)
 	var minimumAge string
 	if attestationID == Aadhaar {
-		minimumAge = string(revealedDataPackedBytes[revealedDataIndices.OlderThanStart : revealedDataIndices.OlderThanEnd+1])
-	} else {
 		firstByte := revealedDataPackedBytes[revealedDataIndices.OlderThanStart]
 		minimumAge = fmt.Sprintf("%02d", int(firstByte))
+	} else {
+		minimumAge = string(revealedDataPackedBytes[revealedDataIndices.OlderThanStart : revealedDataIndices.OlderThanEnd+1])
 	}
 
 	// Extract OFAC data and convert to boolean array

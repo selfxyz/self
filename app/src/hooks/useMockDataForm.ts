@@ -12,7 +12,7 @@ export const useMockDataForm = () => {
     'sha256 rsa 65537 2048',
   );
   const [selectedDocumentType, setSelectedDocumentType] = useState<
-    'mock_passport' | 'mock_id_card'
+    'mock_passport' | 'mock_id_card' | 'mock_aadhaar'
   >('mock_passport');
   const [isInOfacList, setIsInOfacList] = useState(true);
 
@@ -34,7 +34,7 @@ export const useMockDataForm = () => {
   };
 
   const handleDocumentTypeSelect = (
-    documentType: 'mock_passport' | 'mock_id_card',
+    documentType: 'mock_passport' | 'mock_id_card' | 'mock_aadhaar',
   ) => {
     setSelectedDocumentType(documentType);
   };

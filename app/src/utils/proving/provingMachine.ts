@@ -41,6 +41,7 @@ import {
   getPayload,
   getWSDbRelayerUrl,
 } from '@selfxyz/common/utils/proving';
+import type { IDDocument } from '@selfxyz/common/utils/types';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   clearPassportData,
@@ -72,10 +73,20 @@ const getMappingKey = (
   documentCategory: DocumentCategory,
 ): string => {
   if (circuitType === 'disclose') {
-    return documentCategory === 'passport' ? 'DISCLOSE' : 'DISCLOSE_ID';
+    if (documentCategory === 'passport') return 'DISCLOSE';
+    if (documentCategory === 'id_card') return 'DISCLOSE_ID';
+    if (documentCategory === 'aadhaar') return 'DISCLOSE_AADHAAR';
+    throw new Error(
+      `Unsupported document category for disclose: ${documentCategory}`,
+    );
   }
   if (circuitType === 'register') {
-    return documentCategory === 'passport' ? 'REGISTER' : 'REGISTER_ID';
+    if (documentCategory === 'passport') return 'REGISTER';
+    if (documentCategory === 'id_card') return 'REGISTER_ID';
+    if (documentCategory === 'aadhaar') return 'REGISTER_AADHAAR';
+    throw new Error(
+      `Unsupported document category for register: ${documentCategory}`,
+    );
   }
   // circuitType === 'dsc'
   return documentCategory === 'passport' ? 'DSC' : 'DSC_ID';
@@ -95,10 +106,10 @@ const resolveWebSocketUrl = (
 };
 
 // Helper functions for _generatePayload refactoring
-const _generateCircuitInputs = (
+const _generateCircuitInputs = async (
   circuitType: 'disclose' | 'register' | 'dsc',
   secret: string | undefined | null,
-  passportData: PassportData,
+  passportData: IDDocument,
   env: 'prod' | 'stg',
 ) => {
   const document: DocumentCategory = passportData.documentCategory;
@@ -114,17 +125,19 @@ const _generateCircuitInputs = (
   switch (circuitType) {
     case 'register':
       ({ inputs, circuitName, endpointType, endpoint } =
-        generateTEEInputsRegister(
+        await generateTEEInputsRegister(
           secret as string,
           passportData,
-          protocolStore[document].dsc_tree,
+          document === 'aadhaar'
+            ? protocolStore[document].public_keys
+            : protocolStore[document].dsc_tree,
           env,
         ));
       circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
       break;
     case 'dsc':
       ({ inputs, circuitName, endpointType, endpoint } = generateTEEInputsDSC(
-        passportData,
+        passportData as PassportData,
         protocolStore[document].csca_tree as string[][],
         env,
       ));
@@ -140,7 +153,9 @@ const _generateCircuitInputs = (
             const docStore =
               doc === 'passport'
                 ? protocolStore.passport
-                : protocolStore.id_card;
+                : doc === 'aadhaar'
+                  ? protocolStore.aadhaar
+                  : protocolStore.id_card;
             switch (tree) {
               case 'ofac':
                 return docStore.ofac_trees;
@@ -335,7 +350,7 @@ interface ProvingState {
   socketConnection: Socket | null;
   uuid: string | null;
   userConfirmed: boolean;
-  passportData: PassportData | null;
+  passportData: IDDocument | null;
   secret: string | null;
   circuitType: provingMachineCircuitType | null;
   error_code: string | null;
@@ -959,34 +974,49 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
       const startTime = Date.now();
       const context = createProofContext('startFetchingData');
+
+      // passport and id card
       logProofEvent('info', 'Fetching DSC data started', context);
       try {
         const { passportData, env } = get();
         if (!passportData) {
           throw new Error('PassportData is not available');
         }
-        if (!passportData?.dsc_parsed) {
-          logProofEvent('error', 'Missing parsed DSC', context, {
-            failure: 'PROOF_FAILED_DATA_FETCH',
-            duration_ms: Date.now() - startTime,
-          });
-          console.error('Missing parsed DSC in passport data');
-          selfClient.trackEvent(ProofEvents.FETCH_DATA_FAILED, {
-            message: 'Missing parsed DSC in passport data',
-          });
-          actor!.send({ type: 'FETCH_ERROR' });
-          return;
-        }
         const document: DocumentCategory = passportData.documentCategory;
-        logProofEvent('info', 'Protocol store fetch', context, {
-          step: 'protocol_store_fetch',
-          document,
-        });
-        await useProtocolStore
-          .getState()
-          [
-            document
-          ].fetch_all(env!, (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier);
+        console.log('document', document);
+        switch (passportData.documentCategory) {
+          case 'passport':
+          case 'id_card':
+            if (!passportData?.dsc_parsed) {
+              logProofEvent('error', 'Missing parsed DSC', context, {
+                failure: 'PROOF_FAILED_DATA_FETCH',
+                duration_ms: Date.now() - startTime,
+              });
+              console.error('Missing parsed DSC in passport data');
+              selfClient.trackEvent(ProofEvents.FETCH_DATA_FAILED, {
+                message: 'Missing parsed DSC in passport data',
+              });
+              actor!.send({ type: 'FETCH_ERROR' });
+              return;
+            }
+            logProofEvent('info', 'Protocol store fetch', context, {
+              step: 'protocol_store_fetch',
+              document,
+            });
+            await useProtocolStore
+              .getState()
+              [
+                document
+              ].fetch_all(env!, (passportData as PassportData).dsc_parsed!.authorityKeyIdentifier);
+            break;
+          case 'aadhaar':
+            logProofEvent('info', 'Protocol store fetch', context, {
+              step: 'protocol_store_fetch',
+              document,
+            });
+            await useProtocolStore.getState()[document].fetch_all(env!);
+            break;
+        }
         logProofEvent('info', 'Data fetch succeeded', context, {
           duration_ms: Date.now() - startTime,
         });
@@ -1084,8 +1114,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               secret as string,
               {
                 getCommitmentTree,
-                getAltCSCA: docType =>
-                  useProtocolStore.getState()[docType].alternative_csca,
+                getAltCSCA: (docType: DocumentCategory) =>
+                  docType === 'aadhaar'
+                    ? useProtocolStore.getState().aadhaar.public_keys
+                    : useProtocolStore.getState()[docType].alternative_csca,
               },
             );
           logProofEvent(
@@ -1135,16 +1167,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             return;
           }
           const document: DocumentCategory = passportData.documentCategory;
-          const isDscRegistered = await checkIfPassportDscIsInTree(
-            passportData,
-            useProtocolStore.getState()[document].dsc_tree,
-          );
-          logProofEvent('info', 'DSC tree check', context, {
-            dsc_registered: isDscRegistered,
-          });
-          if (isDscRegistered) {
-            selfClient.trackEvent(ProofEvents.DSC_IN_TREE);
-            set({ circuitType: 'register' });
+          if (document === 'passport' || document === 'id_card') {
+            const isDscRegistered = await checkIfPassportDscIsInTree(
+              passportData,
+              useProtocolStore.getState()[document].dsc_tree,
+            );
+            logProofEvent('info', 'DSC tree check', context, {
+              dsc_registered: isDscRegistered,
+            });
+            if (isDscRegistered) {
+              selfClient.trackEvent(ProofEvents.DSC_IN_TREE);
+              set({ circuitType: 'register' });
+            }
           }
           logProofEvent('info', 'Validation succeeded', context, {
             duration_ms: Date.now() - startTime,
@@ -1183,7 +1217,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       let circuitName;
       if (circuitType === 'disclose') {
-        circuitName = 'disclose';
+        circuitName =
+          passportData.documentCategory === 'aadhaar'
+            ? 'disclose_aadhaar'
+            : 'disclose';
       } else {
         circuitName = getCircuitNameFromPassportData(
           passportData,
@@ -1196,6 +1233,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         passportData as PassportData,
         circuitName,
       );
+
       logProofEvent('info', 'Circuit resolution', baseContext, {
         circuit_name: circuitName,
         ws_url: wsRpcUrl,
@@ -1433,7 +1471,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           endpointType,
           endpoint,
           circuitTypeWithDocumentExtension,
-        } = _generateCircuitInputs(
+        } = await _generateCircuitInputs(
           circuitType as 'disclose' | 'register' | 'dsc',
           secret,
           passportData,
@@ -1499,7 +1537,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _handlePassportNotSupported: (selfClient: SelfClient) => {
       const passportData = get().passportData;
-      const countryCode = passportData?.passportMetadata?.countryCode;
+
+      const countryCode =
+        passportData?.documentCategory !== 'aadhaar'
+          ? (passportData as PassportData)?.passportMetadata?.countryCode
+          : 'IND';
       const documentCategory = passportData?.documentCategory;
 
       selfClient.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, {

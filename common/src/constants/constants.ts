@@ -97,6 +97,11 @@ export const IDENTITY_TREE_URL_STAGING = 'https://tree.staging.self.xyz/identity
 
 export const IDENTITY_TREE_URL_STAGING_ID_CARD = 'https://tree.staging.self.xyz/identity-id';
 
+export const IDENTITY_VERIFICATION_HUB_ADDRESS = '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF';
+
+export const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING =
+  '0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74';
+
 export const ID_CARD_ATTESTATION_ID = '2';
 
 export const MAX_BYTES_IN_FIELD = 31;

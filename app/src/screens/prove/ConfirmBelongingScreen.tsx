@@ -8,7 +8,7 @@ import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
@@ -46,7 +46,22 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const isReadyToProve = currentState === 'ready_to_prove';
   useEffect(() => {
     notificationSuccess();
-    init(selfClient, 'dsc');
+
+    const initializeProving = async () => {
+      try {
+        const selectedDocument = await loadSelectedDocument(selfClient);
+        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+          init(selfClient, 'register');
+        } else {
+          init(selfClient, 'dsc');
+        }
+      } catch (error) {
+        console.error('Error loading selected document:', error);
+        init(selfClient, 'dsc');
+      }
+    };
+
+    initializeProving();
   }, [init, selfClient]);
 
   const onOkPress = async () => {
@@ -109,10 +124,10 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
         >
           <Title textAlign="center">Confirm your identity</Title>
           <Description textAlign="center" paddingBottom={20}>
-            By continuing, you certify that this passport belongs to you and is
-            not stolen or forged. Once registered with Self, this document will
-            be permanently linked to your identity and can't be linked to
-            another one.
+            By continuing, you certify that this passport, biometric ID or
+            Aadhaar card belongs to you and is not stolen or forged. Once
+            registered with Self, this document will be permanently linked to
+            your identity and can't be linked to another one.
           </Description>
           <PrimaryButton
             trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}

@@ -9,7 +9,7 @@ import { BlurView } from '@react-native-community/blur';
 import { useNavigation } from '@react-navigation/native';
 
 import { PassportData } from '@selfxyz/common/types';
-import { DocumentCatalog } from '@selfxyz/common/utils/types';
+import { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 
 import IdCardLayout from '@/components/homeScreen/idCard';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -29,7 +29,7 @@ const IdDetailsScreen: React.FC = () => {
   const documentId = idDetailsDocumentId;
   const { getAllDocuments, loadDocumentCatalog, setSelectedDocument } =
     usePassport();
-  const [document, setDocument] = useState<PassportData | null>(null);
+  const [document, setDocument] = useState<IDDocument | null>(null);
   const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
     documents: [],
   });

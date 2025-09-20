@@ -4,6 +4,9 @@
 
 import type { IdDocInput } from '@selfxyz/common';
 import { generateMockDSC, genMockIdDoc, getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
+import type { IdDocInput, PassportData } from '@selfxyz/common/utils';
+import { getSKIPEM } from '@selfxyz/common/utils/csca';
+import { generateMockDSC, genMockIdDoc, initPassportDataParsing } from '@selfxyz/common/utils/passports';
 
 export interface GenerateMockDocumentOptions {
   age: number;
@@ -11,17 +14,28 @@ export interface GenerateMockDocumentOptions {
   isInOfacList: boolean;
   selectedAlgorithm: string;
   selectedCountry: string;
-  selectedDocumentType: 'mock_passport' | 'mock_id_card';
+  selectedDocumentType: 'mock_passport' | 'mock_id_card' | 'mock_aadhaar';
 }
 
 const formatDateToYYMMDD = (date: Date): string => {
   return (date.toISOString().slice(2, 4) + date.toISOString().slice(5, 7) + date.toISOString().slice(8, 10)).toString();
 };
 
-const getBirthDateFromAge = (age: number): string => {
+// for aadhar
+const formatDateToDDMMYYYY = (date: Date): string => {
+  return (
+    date.toISOString().slice(8, 10) +
+    '-' +
+    date.toISOString().slice(5, 7) +
+    '-' +
+    date.toISOString().slice(0, 4)
+  ).toString();
+};
+
+const getBirthDateFromAge = (age: number, format: 'YYMMDD' | 'DDMMYYYY' = 'YYMMDD'): string => {
   const date = new Date();
   date.setFullYear(date.getFullYear() - age);
-  return formatDateToYYMMDD(date);
+  return format === 'YYMMDD' ? formatDateToYYMMDD(date) : formatDateToDDMMYYYY(date);
 };
 
 const getExpiryDateFromYears = (years: number): string => {
@@ -58,6 +72,23 @@ export async function generateMockDocument({
     passportNumber: randomPassportNumber,
   };
 
+  if (selectedDocumentType === 'mock_aadhaar') {
+    idDocInput.birthDate = getBirthDateFromAge(age, 'DDMMYYYY');
+
+    if (isInOfacList) {
+      idDocInput.lastName = 'HENAO MONTOYA';
+      idDocInput.firstName = 'ARCANGEL DE JESUS';
+      idDocInput.birthDate = '07-10-1954';
+    }
+
+    const result = genMockIdDoc(idDocInput);
+    if ('qrData' in result) {
+      console.log('Generated Aadhaar qrData:', result.qrData);
+      console.log('Generated Aadhaar extractedFields:', result.extractedFields);
+    }
+    return result;
+  }
+
   let dobForGeneration: string;
   if (isInOfacList) {
     dobForGeneration = '541007';
@@ -77,7 +108,7 @@ export async function generateMockDocument({
     rawMockData = genMockIdDoc(idDocInput);
   }
   const skiPem = await getSKIPEM('staging');
-  return initPassportDataParsing(rawMockData, skiPem);
+  return initPassportDataParsing(rawMockData as PassportData, skiPem);
 }
 
 export const signatureAlgorithmToStrictSignatureAlgorithm = {

@@ -21,6 +21,8 @@ public class QRCodeScannerPackage implements ReactPackage {
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+        return List.of(
+                new QRCodeScannerModule(reactContext)
+        );
     }
 }

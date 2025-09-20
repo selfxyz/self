@@ -1,4 +1,7 @@
+import { ethers } from 'ethers';
 import forge from 'node-forge';
+
+import { IDENTITY_VERIFICATION_HUB_ADDRESS, RPC_URL } from '../../constants/constants.js';
 
 import {
   convertBigIntToByteArray,
@@ -94,6 +97,7 @@ export const createCustomV2TestData = ({
   photo,
   name,
   timestamp,
+  aadhaarLast4Digits,
 }: {
   signedData: Uint8Array;
   dob?: string;
@@ -103,6 +107,7 @@ export const createCustomV2TestData = ({
   photo?: boolean;
   name?: string;
   timestamp?: string;
+  aadhaarLast4Digits?: string;
 }) => {
   const allDataParsed: number[][] = [];
   const delimiterIndices: number[] = [];
@@ -122,6 +127,18 @@ export const createCustomV2TestData = ({
       break;
     }
   }
+
+  console.log('createCustomV2TestData', {
+    signedData,
+    dob,
+    pincode,
+    gender,
+    state,
+    photo,
+    name,
+    timestamp,
+    aadhaarLast4Digits,
+  });
 
   // Set new timestamp to the time of the signature
   const newDateString = returnNewDateString(timestamp);
@@ -173,6 +190,12 @@ export const createCustomV2TestData = ({
       delimiterIndices[IdFields.State - 1] + 1,
       delimiterIndices[IdFields.State - 1] + allDataParsed[IdFields.State].length
     );
+  }
+
+  if (!aadhaarLast4Digits) {
+    for (let i = 2; i < 6; i++) {
+      modifiedSignedData[i] = Math.floor(Math.random() * 10) + 48;
+    }
   }
 
   if (name) {
@@ -275,31 +298,16 @@ export function extractQRDataFields(qrData: string | Uint8Array): ExtractedQRDat
   const phoneData = extractFieldData(signedData, delimiterIndices, FIELD_POSITIONS.PHONE_NO);
   const phoneNoLast4Digits = asciiArrayToString(phoneData.slice(phoneData.length - 4));
 
-  // Extract timestamp (from position after first delimiter)
-  // Timestamp format: YYYYMMDDHHMM (similar to circom implementation)
-  const timestampStartIndex = delimiterIndices[0] + 1;
   const timestampYear = asciiArrayToString([
-    signedData[timestampStartIndex + 8],
-    signedData[timestampStartIndex + 9],
-    signedData[timestampStartIndex + 10],
-    signedData[timestampStartIndex + 11],
+    signedData[9],
+    signedData[10],
+    signedData[11],
+    signedData[12],
   ]);
-  const timestampMonth = asciiArrayToString([
-    signedData[timestampStartIndex + 12],
-    signedData[timestampStartIndex + 13],
-  ]);
-  const timestampDay = asciiArrayToString([
-    signedData[timestampStartIndex + 14],
-    signedData[timestampStartIndex + 15],
-  ]);
-  const timestampHour = asciiArrayToString([
-    signedData[timestampStartIndex + 16],
-    signedData[timestampStartIndex + 17],
-  ]);
-  const timestampMinute = asciiArrayToString([
-    signedData[timestampStartIndex + 18],
-    signedData[timestampStartIndex + 19],
-  ]);
+  const timestampMonth = asciiArrayToString([signedData[13], signedData[14]]);
+  const timestampDay = asciiArrayToString([signedData[15], signedData[16]]);
+  const timestampHour = asciiArrayToString([signedData[17], signedData[18]]);
+  const timestampMinute = asciiArrayToString([signedData[19], signedData[20]]);
 
   const timestamp = `${timestampYear}-${timestampMonth}-${timestampDay} ${timestampHour}:${timestampMinute}`;
 
@@ -370,6 +378,24 @@ export const generateTestData = ({
 
   return newQrData;
 };
+
+export async function getAadharRegistrationWindow() {
+  try {
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
+
+    const identityVerificationHub = new ethers.Contract(
+      IDENTITY_VERIFICATION_HUB_ADDRESS,
+      ['function AADHAAR_REGISTRATION_WINDOW() view returns (uint256)'],
+      provider
+    );
+
+    const aadharRegistrationWindow = await identityVerificationHub.AADHAAR_REGISTRATION_WINDOW();
+    return aadharRegistrationWindow;
+  } catch (error) {
+    console.warn('Failed to get aadhar registration window:', error);
+    return 120;
+  }
+}
 
 export function returnNewDateString(timestamp?: string): string {
   const newDate = timestamp ? new Date(+timestamp) : new Date();

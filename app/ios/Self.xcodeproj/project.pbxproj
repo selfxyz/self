@@ -18,6 +18,7 @@
 		165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */; };
 		165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */; };
 		165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */; };
+		1668A53F2E70A55E0005A522 /* PhotoLibraryQRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1668A53E2E70A55E0005A522 /* PhotoLibraryQRScannerViewController.swift */; };
 		1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */; };
 		1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */; };
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
@@ -57,6 +58,7 @@
 		165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = "<group>"; };
 		165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = "<group>"; };
 		165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = "<group>"; };
+		1668A53E2E70A55E0005A522 /* PhotoLibraryQRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryQRScannerViewController.swift; sourceTree = "<group>"; };
 		1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = "<group>"; };
 		1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
 		1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 		13B07FAE1A68108700A75B9A /* OpenPassport */ = {
 			isa = PBXGroup;
 			children = (
+				1668A53E2E70A55E0005A522 /* PhotoLibraryQRScannerViewController.swift */,
 				BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */,
 				BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */,
 				BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */,
@@ -405,6 +408,7 @@
 				1648EB782CC9564D003BEA7D /* LottieView.swift in Sources */,
 				164FD9672D569A640067E63B /* QRCodeScannerViewManager.swift in Sources */,
 				165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */,
+				1668A53F2E70A55E0005A522 /* PhotoLibraryQRScannerViewController.swift in Sources */,
 				BF6F0D552E38ED81008EA85C /* SelfAnalytics.swift in Sources */,
 				BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */,
 				164FD9692D569C1F0067E63B /* QRCodeScannerViewManager.m in Sources */,
@@ -785,10 +789,7 @@
 					"-DFOLLY_MOBILE=1",
 					"-DFOLLY_USE_LIBCPP=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -878,10 +879,7 @@
 					"-DFOLLY_MOBILE=1",
 					"-DFOLLY_USE_LIBCPP=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
