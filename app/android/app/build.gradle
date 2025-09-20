@@ -136,6 +136,7 @@ android {
             cmake {
                 cppFlags += "-fexceptions -frtti -std=c++11"
                 arguments += "-DANDROID_STL=c++_shared"
+                arguments += "-Wl,-z,max-page-size=16384"
             }
             ndk {
                 if (System.env.E2E_BUILD == "true") {
