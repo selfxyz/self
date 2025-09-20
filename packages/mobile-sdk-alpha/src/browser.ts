@@ -17,10 +17,6 @@ export type {
   MRZValidation,
   NetworkAdapter,
   Progress,
-  ProofHandle,
-  ProofRequest,
-  RegistrationInput,
-  RegistrationStatus,
   ScanMode,
   ScanOpts,
   ScanResult,
@@ -28,8 +24,6 @@ export type {
   SelfClient,
   StorageAdapter,
   Unsubscribe,
-  ValidationInput,
-  ValidationResult,
   WsAdapter,
   WsConn,
 } from './types/public';
@@ -45,6 +39,15 @@ export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
+export {
+  clearPassportData,
+  getAllDocuments,
+  hasAnyValidRegisteredDocument,
+  loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+} from './documents/utils';
+
 export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
@@ -54,7 +57,7 @@ export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-export { getAllDocuments, hasAnyValidRegisteredDocument, loadSelectedDocument } from './documents/utils';
+export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
 
 // Core functions
 export { isPassportDataValid } from './validation/document';
@@ -66,5 +69,4 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
 export { scanQRProof } from './qr';
-
 export { webScannerShim } from './adapters/web/shims';

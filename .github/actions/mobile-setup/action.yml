@@ -78,12 +78,12 @@ runs:
         fi
 
         # Run mobile-specific installation
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          yarn install-app:mobile-deploy:ios
-        else
-          yarn install-app:mobile-deploy
-        fi
+        yarn install-app:mobile-deploy
 
+    - name: Install Ruby dependencies
+      shell: bash
+      run: |
+        cd ${{ inputs.app_path }}
         # Install Ruby gems with bundler (respecting cache)
         echo "📦 Installing Ruby gems with strict lock file..."
         if ! bundle install --jobs 4 --retry 3; then

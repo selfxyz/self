@@ -138,6 +138,7 @@ describe('scan', () => {
     dateOfExpiry: '251031',
     canNumber: '123456',
     useCan: false,
+    sessionId: 'test-session',
   };
 
   beforeEach(() => {
@@ -172,6 +173,7 @@ describe('scan', () => {
         false, // skipCA
         false, // extendedMode
         false, // usePacePolling
+        'test-session',
       );
     });
 
@@ -187,6 +189,7 @@ describe('scan', () => {
         passportNumber: 'L898902C3',
         dateOfBirth: '640812',
         dateOfExpiry: '251031',
+        sessionId: 'test-session',
       };
 
       await scan(minimalInputs);
@@ -201,6 +204,7 @@ describe('scan', () => {
         false, // skipCA default
         false, // extendedMode default
         false, // usePacePolling default
+        'test-session',
       );
     });
 
@@ -233,6 +237,7 @@ describe('scan', () => {
         true, // skipCA
         true, // extendedMode
         true, // usePacePolling
+        'test-session',
       );
     });
   });

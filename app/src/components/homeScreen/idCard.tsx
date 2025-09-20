@@ -2,30 +2,27 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
-import { Dimensions, Pressable } from 'react-native';
-import { Button, Image, Separator, Text, XStack, YStack } from 'tamagui';
-import { useFocusEffect } from '@react-navigation/native';
+import type { FC } from 'react';
+import { Dimensions } from 'react-native';
+import { Separator, Text, XStack, YStack } from 'tamagui';
 
+import {
+  AadhaarData,
+  isAadhaarDocument,
+  isMRZDocument,
+  PassportData,
+} from '@selfxyz/common';
 import {
   attributeToPosition,
   attributeToPosition_ID,
 } from '@selfxyz/common/constants';
-import { PassportData } from '@selfxyz/common/types';
-import { formatMrz } from '@selfxyz/common/utils';
-import { pad } from '@selfxyz/common/utils/passports/passport';
 
 import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
+import AadhaarIcon from '@/images/icons/aadhaar.svg';
 import EPassport from '@/images/icons/epassport.svg';
 import LogoGray from '@/images/logo_gray.svg';
-import LogoInversed from '@/images/logo_inversed.svg';
-import { usePassport } from '@/providers/passportDataProvider';
 import {
   black,
-  blue600,
-  green500,
-  red500,
-  slate50,
   slate100,
   slate300,
   slate400,
@@ -42,7 +39,7 @@ const logoSvg = `<svg width="47" height="46" viewBox="0 0 47 46" fill="none" xml
 </svg>`;
 
 interface IdCardLayoutAttributes {
-  idDocument: PassportData;
+  idDocument: PassportData | AadhaarData | null;
   selected: boolean;
   hidden: boolean;
 }
@@ -53,18 +50,23 @@ interface IdCardLayoutAttributes {
 // each element size should be determined as % of the screen or the parent element
 // the border radius should be adaptative too, as well as the padding
 // this is the v0 of this component so we should only use placholders for now, no need to pass the real passport data as parameters.
-const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
+const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   idDocument,
   selected,
   hidden,
 }) => {
+  // Early return if document is null
+  if (!idDocument) {
+    return null;
+  }
+
   // Function to mask MRZ characters except '<' and spaces
   const maskMrzValue = (text: string): string => {
     return text.replace(/./g, 'X');
   };
 
   // Get screen dimensions for adaptive sizing
-  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const { width: screenWidth } = Dimensions.get('window');
 
   // Calculate adaptive sizes based on screen dimensions
   // Reduce width slightly to account for horizontal margins (8px each side = 16px total)
@@ -116,10 +118,17 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
         {/* Header Section */}
         <XStack>
           <XStack alignItems="center">
-            <EPassport
-              width={fontSize.large * 3}
-              height={fontSize.large * 3 * 0.617}
-            />
+            {idDocument.documentCategory === 'aadhaar' ? (
+              <AadhaarIcon
+                width={fontSize.large * 3}
+                height={fontSize.large * 3 * 0.617}
+              />
+            ) : (
+              <EPassport
+                width={fontSize.large * 3}
+                height={fontSize.large * 3 * 0.617}
+              />
+            )}
             <YStack marginLeft={imageSize.width - fontSize.large * 3}>
               <Text
                 fontWeight="bold"
@@ -129,7 +138,9 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
               >
                 {idDocument.documentCategory === 'passport'
                   ? 'Passport'
-                  : 'ID Card'}
+                  : idDocument.documentCategory === 'aadhaar'
+                    ? 'Aadhaar'
+                    : 'ID Card'}
               </Text>
               <Text
                 fontSize={fontSize.small}
@@ -139,7 +150,9 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
                 Verified{' '}
                 {idDocument.documentCategory === 'passport'
                   ? 'Biometric Passport'
-                  : ' Biometric ID Card'}
+                  : idDocument.documentCategory === 'aadhaar'
+                    ? 'Aadhaar Document'
+                    : 'Biometric ID Card'}
               </Text>
             </YStack>
           </XStack>
@@ -212,12 +225,16 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
                     value={
                       idDocument.documentCategory === 'passport'
                         ? 'PASSPORT'
-                        : 'ID CARD'
+                        : idDocument.documentCategory === 'aadhaar'
+                          ? 'AADHAAR'
+                          : 'ID CARD'
                     }
                     maskValue={
                       idDocument.documentCategory === 'passport'
                         ? 'PASSPORT'
-                        : 'ID CARD'
+                        : idDocument.documentCategory === 'aadhaar'
+                          ? 'AADHAAR'
+                          : 'ID CARD'
                     }
                     hidden={hidden}
                   />
@@ -233,68 +250,81 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
                 <YStack flex={1}>
                   <IdAttribute
                     name="DOC NO."
-                    value={
-                      getPassportAttributes(
-                        idDocument.mrz,
-                        idDocument.documentCategory,
-                      ).passNoSlice
-                    }
+                    value={getDocumentAttributes(idDocument).passNoSlice}
                     maskValue="XX-XXXXXXX"
                     hidden={hidden}
                   />
                 </YStack>
               </XStack>
               <XStack flex={1} gap={padding * 0.3}>
-                <YStack flex={1}>
-                  <IdAttribute
-                    name="SURNAME"
-                    value={getNameAndSurname(
-                      getPassportAttributes(
-                        idDocument.mrz,
-                        idDocument.documentCategory,
-                      ).nameSlice,
-                    ).surname.join(' ')}
-                    maskValue="XXXXXXXX"
-                    hidden={hidden}
-                  />
-                </YStack>
-                <YStack flex={1}>
-                  <IdAttribute
-                    name="NAME"
-                    value={getNameAndSurname(
-                      getPassportAttributes(
-                        idDocument.mrz,
-                        idDocument.documentCategory,
-                      ).nameSlice,
-                    ).names.join(' ')}
-                    maskValue="XXXXX"
-                    hidden={hidden}
-                  />
-                </YStack>
-                <YStack flex={1}>
-                  <IdAttribute
-                    name="SEX"
-                    value={
-                      getPassportAttributes(
-                        idDocument.mrz,
-                        idDocument.documentCategory,
-                      ).sexSlice
-                    }
-                    maskValue="X"
-                    hidden={hidden}
-                  />
-                </YStack>
+                {idDocument.documentCategory === 'aadhaar' ? (
+                  // Aadhaar: Combined name field spanning two columns
+                  <>
+                    <YStack flex={2}>
+                      <IdAttribute
+                        name="NAME"
+                        value={(() => {
+                          const nameData = getNameAndSurname(
+                            getDocumentAttributes(idDocument).nameSlice,
+                          );
+                          const fullName = [
+                            ...nameData.surname,
+                            ...nameData.names,
+                          ].join(' ');
+                          return fullName;
+                        })()}
+                        maskValue="XXXXXXXXXXXXX"
+                        hidden={hidden}
+                      />
+                    </YStack>
+                    <YStack flex={1}>
+                      <IdAttribute
+                        name="SEX"
+                        value={getDocumentAttributes(idDocument).sexSlice}
+                        maskValue="X"
+                        hidden={hidden}
+                      />
+                    </YStack>
+                  </>
+                ) : (
+                  // Other documents: Separate surname and name fields
+                  <>
+                    <YStack flex={1}>
+                      <IdAttribute
+                        name="SURNAME"
+                        value={getNameAndSurname(
+                          getDocumentAttributes(idDocument).nameSlice,
+                        ).surname.join(' ')}
+                        maskValue="XXXXXXXX"
+                        hidden={hidden}
+                      />
+                    </YStack>
+                    <YStack flex={1}>
+                      <IdAttribute
+                        name="NAME"
+                        value={getNameAndSurname(
+                          getDocumentAttributes(idDocument).nameSlice,
+                        ).names.join(' ')}
+                        maskValue="XXXXX"
+                        hidden={hidden}
+                      />
+                    </YStack>
+                    <YStack flex={1}>
+                      <IdAttribute
+                        name="SEX"
+                        value={getDocumentAttributes(idDocument).sexSlice}
+                        maskValue="X"
+                        hidden={hidden}
+                      />
+                    </YStack>
+                  </>
+                )}
               </XStack>
               <XStack flex={1} gap={padding * 0.3}>
                 <YStack flex={1}>
                   <IdAttribute
                     name="NATIONALITY"
-                    value={
-                      getPassportAttributes(
-                        idDocument.mrz,
-                        idDocument.documentCategory,
-                      ).nationalitySlice
-                    }
+                    value={getDocumentAttributes(idDocument).nationalitySlice}
                     maskValue="XXX"
                     hidden={hidden}
                   />
@@ -303,10 +333,7 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
                   <IdAttribute
                     name="DOB"
                     value={formatDateFromYYMMDD(
-                      getPassportAttributes(
-                        idDocument.mrz,
-                        idDocument.documentCategory,
-                      ).dobSlice,
+                      getDocumentAttributes(idDocument).dobSlice,
                     )}
                     maskValue="XX/XX/XXXX"
                     hidden={hidden}
@@ -316,10 +343,7 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
                   <IdAttribute
                     name="EXPIRY DATE"
                     value={formatDateFromYYMMDD(
-                      getPassportAttributes(
-                        idDocument.mrz,
-                        idDocument.documentCategory,
-                      ).expiryDateSlice,
+                      getDocumentAttributes(idDocument).expiryDateSlice,
                       true,
                     )}
                     maskValue="XX/XX/XXXX"
@@ -331,12 +355,7 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
                 <YStack flex={1}>
                   <IdAttribute
                     name="AUTHORITY"
-                    value={
-                      getPassportAttributes(
-                        idDocument.mrz,
-                        idDocument.documentCategory,
-                      ).issuingStateSlice
-                    }
+                    value={getDocumentAttributes(idDocument).issuingStateSlice}
                     maskValue="XXX"
                     hidden={hidden}
                   />
@@ -348,8 +367,8 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
           </XStack>
         )}
 
-        {/* Footer Section - MRZ */}
-        {selected && (
+        {/* Footer Section - MRZ or QR Data */}
+        {selected && isMRZDocument(idDocument) && idDocument.mrz && (
           <XStack
             alignItems="center"
             backgroundColor={slate100}
@@ -425,6 +444,35 @@ const IdCardLayout: React.FC<IdCardLayoutAttributes> = ({
             </YStack>
           </XStack>
         )}
+
+        {/* Footer Section - Empty placeholder for Aadhaar (no MRZ) */}
+        {selected && isAadhaarDocument(idDocument) && (
+          <XStack
+            alignItems="center"
+            backgroundColor={slate100}
+            borderRadius={borderRadius / 3}
+            paddingHorizontal={padding / 2}
+            paddingVertical={padding / 4}
+            minHeight={fontSize.xsmall * 2.5} // Maintain consistent height
+          >
+            {/* Fixed-width spacer to align content with the attributes block */}
+            <XStack width={contentLeftOffset} alignItems="center">
+              <LogoGray width={fontSize.large} height={fontSize.large} />
+            </XStack>
+
+            <YStack marginLeft={-padding / 2} justifyContent="center">
+              <Text
+                fontSize={fontSize.xsmall}
+                letterSpacing={fontSize.xsmall * 0.1}
+                fontFamily={plexMono}
+                color={slate400}
+                opacity={0.5}
+              >
+                {/* Empty placeholder - no MRZ for Aadhaar */}
+              </Text>
+            </YStack>
+          </XStack>
+        )}
       </YStack>
     </YStack>
   );
@@ -442,7 +490,7 @@ interface IdAttributeProps {
 // the font size should adapt according to the size available to fit perfectly.
 // only svg are allowed.
 // each element size should be determined as % of the screen or the parent element
-const IdAttribute: React.FC<IdAttributeProps> = ({
+const IdAttribute: FC<IdAttributeProps> = ({
   name,
   value,
   maskValue,
@@ -474,6 +522,65 @@ const IdAttribute: React.FC<IdAttributeProps> = ({
 };
 
 export default IdCardLayout;
+
+// Helper functions to safely extract document data
+function getDocumentAttributes(document: PassportData | AadhaarData) {
+  if (isAadhaarDocument(document)) {
+    return getAadhaarAttributes(document);
+  } else if (isMRZDocument(document)) {
+    return getPassportAttributes(document.mrz, document.documentCategory);
+  } else {
+    // Fallback for unknown document types
+    return {
+      nameSlice: '',
+      dobSlice: '',
+      yobSlice: '',
+      issuingStateSlice: '',
+      nationalitySlice: '',
+      passNoSlice: '',
+      sexSlice: '',
+      expiryDateSlice: '',
+      isPassportType: false,
+    };
+  }
+}
+
+function getAadhaarAttributes(document: AadhaarData) {
+  const extractedFields = document.extractedFields;
+  // For Aadhaar, we format the name to work with the existing getNameAndSurname function
+  // We'll put the full name in the "surname" position and leave names empty
+  const fullName = extractedFields?.name || '';
+  const nameSliceFormatted = fullName ? `${fullName}<<` : ''; // Format like MRZ
+
+  // Format DOB to YYMMDD for consistency with passport format
+  let dobFormatted = '';
+  if (extractedFields?.dob && extractedFields?.mob && extractedFields?.yob) {
+    const year =
+      extractedFields.yob.length === 4
+        ? extractedFields.yob.slice(-2)
+        : extractedFields.yob;
+    const month = extractedFields.mob.padStart(2, '0');
+    const day = extractedFields.dob.padStart(2, '0');
+    dobFormatted = `${year}${month}${day}`;
+  }
+
+  return {
+    nameSlice: nameSliceFormatted,
+    dobSlice: dobFormatted,
+    yobSlice: extractedFields?.yob || '',
+    issuingStateSlice: extractedFields?.state || '',
+    nationalitySlice: 'IND', // Aadhaar is always Indian
+    passNoSlice: extractedFields?.aadhaarLast4Digits || '',
+    sexSlice:
+      extractedFields?.gender === 'M'
+        ? 'M'
+        : extractedFields?.gender === 'F'
+          ? 'F'
+          : extractedFields?.gender || '',
+    expiryDateSlice: '', // Aadhaar doesn't expire
+    isPassportType: false,
+  };
+}
 
 function getPassportAttributes(mrz: string, documentCategory: string) {
   const isPassportType = documentCategory === 'passport';

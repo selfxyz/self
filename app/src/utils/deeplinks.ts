@@ -7,9 +7,9 @@ import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { navigationRef } from '@/navigation';
-import { useSelfAppStore } from '@/stores/selfAppStore';
 import useUserStore from '@/stores/userStore';
 
 // Validation patterns for each expected parameter
@@ -105,10 +105,7 @@ export const handleUrl = (uri: string) => {
       useSelfAppStore.getState().setSelfApp(selfAppJson);
       useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
 
-      // Reset navigation stack with correct parent -> ProveScreen
-      navigationRef.reset(
-        createDeeplinkNavigationState('ProveScreen', correctParentScreen),
-      );
+      navigationRef.navigate('Prove' as never);
 
       return;
     } catch (error) {
@@ -123,10 +120,7 @@ export const handleUrl = (uri: string) => {
     useSelfAppStore.getState().cleanSelfApp();
     useSelfAppStore.getState().startAppListener(sessionId);
 
-    // Reset navigation stack with correct parent -> ProveScreen
-    navigationRef.reset(
-      createDeeplinkNavigationState('ProveScreen', correctParentScreen),
-    );
+    navigationRef.navigate('Prove' as never);
   } else if (mock_passport) {
     try {
       const data = JSON.parse(mock_passport);

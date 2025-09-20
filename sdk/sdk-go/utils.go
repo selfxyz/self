@@ -16,6 +16,7 @@ import (
 const (
 	Passport AttestationId = 1
 	EUCard   AttestationId = 2
+	Aadhaar  AttestationId = 3
 )
 
 // DiscloseIndicesEntry defines the indices for different data fields in the public signals
@@ -59,6 +60,19 @@ var DiscloseIndices = map[AttestationId]DiscloseIndicesEntry{
 		NameyobSmtRootIndex:               18,
 		ScopeIndex:                        19,
 		UserIdentifierIndex:               20,
+		PassportNoSmtRootIndex:            99,
+	},
+	Aadhaar: {
+		RevealedDataPackedIndex:           2,
+		ForbiddenCountriesListPackedIndex: 6,
+		NullifierIndex:                    0,
+		AttestationIdIndex:                10,
+		MerkleRootIndex:                   16,
+		CurrentDateIndex:                  11,
+		NamedobSmtRootIndex:               14,
+		NameyobSmtRootIndex:               15,
+		ScopeIndex:                        17,
+		UserIdentifierIndex:               18,
 		PassportNoSmtRootIndex:            99,
 	},
 }
@@ -140,18 +154,40 @@ var RevealedDataIndices = map[AttestationId]RevealedDataIndicesEntry{
 		OfacStart:         92,
 		OfacEnd:           93,
 	},
+	Aadhaar: {
+		IssuingStateStart: 81,
+		IssuingStateEnd:   111,
+		NameStart:         9,
+		NameEnd:           70,
+		IdNumberStart:     71,
+		IdNumberEnd:       74,
+		NationalityStart:  999,
+		NationalityEnd:    999,
+		DateOfBirthStart:  1,
+		DateOfBirthEnd:    8,
+		GenderStart:       0,
+		GenderEnd:         0,
+		ExpiryDateStart:   999,
+		ExpiryDateEnd:     999,
+		OlderThanStart:    118,
+		OlderThanEnd:      118,
+		OfacStart:         116,
+		OfacEnd:           117,
+	},
 }
 
 // AllIds contains all valid attestation IDs
 var AllIds = map[AttestationId]bool{
 	Passport: true,
 	EUCard:   true,
+	Aadhaar:  true,
 }
 
 // BytesCount maps attestation IDs to their respective byte counts
 var BytesCount = map[AttestationId][]int{
 	Passport: {31, 31, 31},
 	EUCard:   {31, 31, 31, 1},
+	Aadhaar:  {31, 31, 31, 26},
 }
 
 // trimU0000 filters out null characters (\u0000) from a slice of strings
@@ -280,6 +316,8 @@ func GetRevealedDataPublicSignalsLength(attestationId AttestationId) (int, error
 		return int(93 / 31), nil
 	case EUCard:
 		return int(math.Ceil(94.0 / 31.0)), nil
+	case Aadhaar:
+		return int(math.Ceil(119.0 / 31.0)), nil
 	default:
 		return 0, fmt.Errorf("invalid attestation ID: %d", attestationId)
 	}
@@ -372,7 +410,7 @@ func FormatRevealedDataPacked(attestationID AttestationId, publicSignals PublicS
 
 	// Extract forbidden countries list packed
 	fcStartIndex := discloseIndices.ForbiddenCountriesListPackedIndex
-	forbiddenCountriesListPacked := publicSignals[fcStartIndex : fcStartIndex+3]
+	forbiddenCountriesListPacked := publicSignals[fcStartIndex : fcStartIndex+4]
 
 	// Extract issuing state
 	issuingState := string(revealedDataPackedBytes[revealedDataIndices.IssuingStateStart : revealedDataIndices.IssuingStateEnd+1])
@@ -385,33 +423,63 @@ func FormatRevealedDataPacked(attestationID AttestationId, publicSignals PublicS
 	idNumber := string(revealedDataPackedBytes[revealedDataIndices.IdNumberStart : revealedDataIndices.IdNumberEnd+1])
 
 	// Extract nationality
-	nationality := string(revealedDataPackedBytes[revealedDataIndices.NationalityStart : revealedDataIndices.NationalityEnd+1])
+	nationality := ""
+	if attestationID == Aadhaar {
+		nationality = "IND"
+	} else {
+		nationality = string(revealedDataPackedBytes[revealedDataIndices.NationalityStart : revealedDataIndices.NationalityEnd+1])
+	}
 
 	// Extract date of birth
-	dateOfBirth := string(revealedDataPackedBytes[revealedDataIndices.DateOfBirthStart : revealedDataIndices.DateOfBirthEnd+1])
+	var dateOfBirth string
+	if attestationID == Aadhaar {
+		dobBytes := revealedDataPackedBytes[revealedDataIndices.DateOfBirthStart : revealedDataIndices.DateOfBirthEnd+1]
+		var dobStrings []string
+		for _, b := range dobBytes {
+			dobStrings = append(dobStrings, fmt.Sprintf("%d", int(b)))
+		}
+		dateOfBirth = strings.Join(dobStrings, "")
+	} else {
+		dateOfBirth = string(revealedDataPackedBytes[revealedDataIndices.DateOfBirthStart : revealedDataIndices.DateOfBirthEnd+1])
+	}
 
 	// Extract gender
 	gender := string(revealedDataPackedBytes[revealedDataIndices.GenderStart : revealedDataIndices.GenderEnd+1])
 
 	// Extract expiry date
-	expiryDate := string(revealedDataPackedBytes[revealedDataIndices.ExpiryDateStart : revealedDataIndices.ExpiryDateEnd+1])
+	var expiryDate string
+	if attestationID == Aadhaar {
+		expiryDate = "UNAVAILABLE"
+	} else {
+		expiryDate = string(revealedDataPackedBytes[revealedDataIndices.ExpiryDateStart : revealedDataIndices.ExpiryDateEnd+1])
+	}
 
 	// Extract minimum age (olderThan)
-	minimumAge := string(revealedDataPackedBytes[revealedDataIndices.OlderThanStart : revealedDataIndices.OlderThanEnd+1])
+	var minimumAge string
+	if attestationID == Aadhaar {
+		firstByte := revealedDataPackedBytes[revealedDataIndices.OlderThanStart]
+		minimumAge = fmt.Sprintf("%02d", int(firstByte))
+	} else {
+		minimumAge = string(revealedDataPackedBytes[revealedDataIndices.OlderThanStart : revealedDataIndices.OlderThanEnd+1])
+	}
 
 	// Extract OFAC data and convert to boolean array
 	ofacBytes := revealedDataPackedBytes[revealedDataIndices.OfacStart : revealedDataIndices.OfacEnd+1]
 	ofac := make([]bool, len(ofacBytes))
 	for i, b := range ofacBytes {
-		ofac[i] = b != 0
+		ofac[i] = !(b != 0)
+	}
+
+	if len(ofac) < 3 {
+		ofac = append([]bool{false}, ofac...)
 	}
 
 	// Return the structured output
 	return GenericDiscloseOutput{
 		Nullifier:                    nullifier,
 		ForbiddenCountriesListPacked: forbiddenCountriesListPacked,
-		IssuingState:                 issuingState,
-		Name:                         name,
+		IssuingState:                 removeNullBytes(issuingState),
+		Name:                         removeNullBytes(name),
 		IdNumber:                     idNumber,
 		Nationality:                  nationality,
 		DateOfBirth:                  dateOfBirth,
@@ -420,6 +488,11 @@ func FormatRevealedDataPacked(attestationID AttestationId, publicSignals PublicS
 		MinimumAge:                   minimumAge,
 		Ofac:                         ofac,
 	}, nil
+}
+
+// removeNullBytes removes null bytes (\x00) from a string
+func removeNullBytes(str string) string {
+	return strings.ReplaceAll(str, "\x00", "")
 }
 
 // cleanName cleans the name string equivalent to the TypeScript regex operations

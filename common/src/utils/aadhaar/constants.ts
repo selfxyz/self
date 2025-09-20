@@ -1,3 +1,4 @@
+/* eslint-disable sort-exports/sort-exports */
 export const MAX_FIELD_BYTE_SIZE = 31;
 export const NAME_MAX_LENGTH = 2 * MAX_FIELD_BYTE_SIZE; // 62 bytes
 export const TOTAL_REVEAL_DATA_LENGTH = 119;

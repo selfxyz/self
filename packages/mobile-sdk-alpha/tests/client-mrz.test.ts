@@ -12,8 +12,6 @@ describe('createSelfClient API', () => {
     const client = createSelfClient({ config: {}, adapters: mockAdapters, listeners: new Map() });
 
     expect(typeof client.extractMRZInfo).toBe('function');
-    expect(typeof client.registerDocument).toBe('function');
-    expect(typeof client.validateDocument).toBe('function');
   });
 
   it('parses MRZ data correctly', () => {

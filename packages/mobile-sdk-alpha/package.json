@@ -52,8 +52,8 @@
     "demo:ios": "yarn workspace demo-app ios",
     "demo:start": "yarn workspace demo-app start",
     "demo:test": "yarn workspace demo-app test",
-    "fmt": "prettier --check .",
-    "fmt:fix": "prettier --write .",
+    "fmt": "yarn prettier --check .",
+    "fmt:fix": "yarn prettier --write .",
     "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@selfxyz/common": "workspace:^",
-    "tslib": "^2.6.2",
+    "socket.io-client": "^4.8.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
@@ -84,16 +84,18 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "eslint-plugin-sort-exports": "^0.8.0",
+    "eslint-plugin-sort-exports": "^0.9.1",
     "jsdom": "^24.0.0",
     "prettier": "^3.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",
     "vitest": "^1.6.0"
   },
   "peerDependencies": {
     "react": "^18.3.1",
-    "react-native": "^0.76.9",
+    "react-native": "0.76.9",
     "tamagui": "^1.126.0"
   },
   "packageManager": "yarn@4.6.0",

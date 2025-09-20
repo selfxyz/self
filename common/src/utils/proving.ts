@@ -32,17 +32,15 @@ export const ec = new EC('p256');
 // eslint-disable-next-line -- clientKey is created from ec so must be second
 export const clientKey = ec.genKeyPair();
 
-type RegisterSuffixes = '' | '_id';
+type RegisterSuffixes = '' | '_id' | '_aadhaar';
 type DscSuffixes = '' | '_id';
-type DiscloseSuffixes = '' | '_id';
+type DiscloseSuffixes = '' | '_id' | '_aadhaar';
 type ProofTypes = 'register' | 'dsc' | 'disclose';
 type RegisterProofType = `${Extract<ProofTypes, 'register'>}${RegisterSuffixes}`;
 type DscProofType = `${Extract<ProofTypes, 'dsc'>}${DscSuffixes}`;
 type DiscloseProofType = `${Extract<ProofTypes, 'disclose'>}${DiscloseSuffixes}`;
 
-export const clientPublicKeyHex =
-  clientKey.getPublic().getX().toString('hex').padStart(64, '0') +
-  clientKey.getPublic().getY().toString('hex').padStart(64, '0');
+export const clientPublicKeyHex = clientKey.getPublic(true, 'hex');
 
 export function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBuffer) {
   const iv = forge.random.getBytesSync(12);
@@ -69,8 +67,14 @@ export function getPayload(
   userDefinedData: string = ''
 ) {
   if (circuitType === 'disclose') {
+    const type =
+      circuitName === 'vc_and_disclose'
+        ? 'disclose'
+        : circuitName === 'vc_and_disclose_aadhaar'
+          ? 'disclose_aadhaar'
+          : 'disclose_id';
     const payload: TEEPayloadDisclose = {
-      type: circuitName === 'vc_and_disclose' ? 'disclose' : 'disclose_id',
+      type,
       endpointType: endpointType,
       endpoint: endpoint,
       onchain: endpointType === 'celo' ? true : false,
@@ -83,8 +87,9 @@ export function getPayload(
     };
     return payload;
   } else {
+    const type = circuitName === 'register_aadhaar' ? 'register_aadhaar' : circuitType;
     const payload: TEEPayload = {
-      type: circuitType as RegisterProofType | DscProofType,
+      type: type as RegisterProofType | DscProofType,
       onchain: true,
       endpointType: endpointType,
       circuit: {

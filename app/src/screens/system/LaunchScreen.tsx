@@ -24,6 +24,7 @@ import { advercase, dinot } from '@/utils/fonts';
 const LaunchScreen: React.FC = () => {
   useConnectionModal();
   const onStartPress = useHapticNavigation('DocumentOnboarding');
+  const onAadhaarPress = useHapticNavigation('AadhaarUpload');
   const createMock = useHapticNavigation('CreateMock');
   const { bottom } = useSafeAreaInsets();
 
@@ -37,7 +38,6 @@ const LaunchScreen: React.FC = () => {
     <YStack
       backgroundColor={black}
       flex={1}
-      justifyContent="space-between"
       alignItems="center"
       paddingHorizontal={20}
       paddingBottom={bottom + extraYPadding}
@@ -53,13 +53,20 @@ const LaunchScreen: React.FC = () => {
           <Text style={styles.title}>Get started</Text>
 
           <BodyText style={styles.description}>
-            Register with Self using your passport or biometric ID to prove your
-            identity across the web without revealing your personal information.
+            Register with Self using your passport, biometric ID or Aadhaar card
+            to prove your identity across the web without revealing your
+            personal information.
           </BodyText>
         </View>
       </View>
 
-      <YStack gap="$3" width="100%" alignItems="center" marginBottom={20}>
+      <YStack
+        gap="$3"
+        width="100%"
+        alignItems="center"
+        marginBottom={20}
+        marginTop={24}
+      >
         <YStack gap="$3" width="100%">
           <AbstractButton
             bgColor={black}
@@ -79,13 +86,22 @@ const LaunchScreen: React.FC = () => {
           </AbstractButton>
 
           <AbstractButton
-            trackEvent={AppEvents.GET_STARTED}
+            trackEvent={AppEvents.GET_STARTED_BIOMETRIC}
             onPress={onStartPress}
             bgColor={white}
             color={black}
             testID="launch-get-started-button"
           >
             I have a Passport or Biometric ID
+          </AbstractButton>
+          <AbstractButton
+            trackEvent={AppEvents.GET_STARTED_AADHAAR}
+            onPress={onAadhaarPress}
+            bgColor={white}
+            color={black}
+            testID="launch-get-started-button"
+          >
+            I have an Aadhaar Card
           </AbstractButton>
         </YStack>
 
@@ -109,15 +125,15 @@ export default LaunchScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 0,
     justifyContent: 'flex-start',
     alignItems: 'center',
     width: '102%',
-    paddingTop: '25%',
+    paddingTop: '30%',
   },
   card: {
     width: '100%',
-    marginTop: '30%',
+    marginTop: '20%',
     borderRadius: 16,
     paddingVertical: 40,
     paddingHorizontal: 20,
@@ -128,7 +144,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 8,
-    marginBottom: 20,
+    marginBottom: 8,
   },
   logoSection: {
     width: 60,

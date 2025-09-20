@@ -5,7 +5,7 @@
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -57,6 +57,7 @@ import { buttonTap, selectionChange } from '@/utils/haptic';
 const documentTypes = {
   mock_passport: 'Passport',
   mock_id_card: 'ID Card',
+  mock_aadhaar: 'Aadhaar',
 };
 
 const MockDocumentTitleCard = () => {
@@ -181,6 +182,10 @@ const CreateMockScreen: React.FC = () => {
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
+
+    // Allow React to update the UI state
+    await new Promise(resolve => setTimeout(resolve, 0));
+
     try {
       const parsedMockData = await generateMockDocument({
         age,
@@ -223,7 +228,9 @@ const CreateMockScreen: React.FC = () => {
     >
       <ScrollView showsVerticalScrollIndicator={false}>
         <GestureDetector gesture={devModeTap}>
-          <HeroBanner />
+          <View collapsable={false}>
+            <HeroBanner />
+          </View>
         </GestureDetector>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
           <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
@@ -235,27 +242,29 @@ const CreateMockScreen: React.FC = () => {
             borderColor={slate200}
             backgroundColor={slate100}
           >
-            <FormSection title="Encryption Preference">
-              <Button
-                onPress={() => {
-                  buttonTap();
-                  setAlgorithmSheetOpen(true);
-                }}
-                paddingVertical="$5"
-                paddingHorizontal="$3"
-                backgroundColor="white"
-                borderColor={slate200}
-                borderWidth={1}
-                borderRadius={5}
-              >
-                <XStack justifyContent="space-between" width="100%">
-                  <Text fontSize="$4" fontFamily={plexMono} color={black}>
-                    {selectedAlgorithm}
-                  </Text>
-                  <ChevronDown size={20} color={slate500} />
-                </XStack>
-              </Button>
-            </FormSection>
+            {selectedDocumentType !== 'mock_aadhaar' && (
+              <FormSection title="Encryption Preference">
+                <Button
+                  onPress={() => {
+                    buttonTap();
+                    setAlgorithmSheetOpen(true);
+                  }}
+                  paddingVertical="$5"
+                  paddingHorizontal="$3"
+                  backgroundColor="white"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  borderRadius={5}
+                >
+                  <XStack justifyContent="space-between" width="100%">
+                    <Text fontSize="$4" fontFamily={plexMono} color={black}>
+                      {selectedAlgorithm}
+                    </Text>
+                    <ChevronDown size={20} color={slate500} />
+                  </XStack>
+                </Button>
+              </FormSection>
+            )}
 
             <FormSection title="Document Type">
               <Button
@@ -288,35 +297,41 @@ const CreateMockScreen: React.FC = () => {
               </Button>
             </FormSection>
 
-            <FormSection title="Nationality">
-              <Button
-                onPress={() => {
-                  buttonTap();
-                  setCountrySheetOpen(true);
-                  trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
-                }}
-                paddingVertical="$5"
-                paddingHorizontal="$3"
-                backgroundColor="white"
-                borderColor={slate200}
-                borderWidth={1}
-                borderRadius={5}
-              >
-                <XStack justifyContent="space-between" width="100%">
-                  <Text
-                    fontSize="$4"
-                    fontFamily={plexMono}
-                    color={black}
-                    textTransform="uppercase"
-                  >
-                    {flag(getCountryISO2(selectedCountry))}
-                    {'   '}
-                    {countryCodes[selectedCountry as keyof typeof countryCodes]}
-                  </Text>
-                  <ChevronDown size={20} color={slate500} />
-                </XStack>
-              </Button>
-            </FormSection>
+            {selectedDocumentType !== 'mock_aadhaar' && (
+              <FormSection title="Nationality">
+                <Button
+                  onPress={() => {
+                    buttonTap();
+                    setCountrySheetOpen(true);
+                    trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
+                  }}
+                  paddingVertical="$5"
+                  paddingHorizontal="$3"
+                  backgroundColor="white"
+                  borderColor={slate200}
+                  borderWidth={1}
+                  borderRadius={5}
+                >
+                  <XStack justifyContent="space-between" width="100%">
+                    <Text
+                      fontSize="$4"
+                      fontFamily={plexMono}
+                      color={black}
+                      textTransform="uppercase"
+                    >
+                      {flag(getCountryISO2(selectedCountry))}
+                      {'   '}
+                      {
+                        countryCodes[
+                          selectedCountry as keyof typeof countryCodes
+                        ]
+                      }
+                    </Text>
+                    <ChevronDown size={20} color={slate500} />
+                  </XStack>
+                </Button>
+              </FormSection>
+            )}
 
             <FormSection title="Age">
               <XStack
@@ -336,7 +351,7 @@ const CreateMockScreen: React.FC = () => {
                     setAge(age - 1);
                     trackEvent(MockDataEvents.DECREASE_AGE);
                   }}
-                  disabled={expiryYears <= 0}
+                  disabled={age <= 1}
                 >
                   <Minus color={slate500} />
                 </Button>
@@ -368,55 +383,57 @@ const CreateMockScreen: React.FC = () => {
               </XStack>
             </FormSection>
 
-            <FormSection title="Document Expires In">
-              <XStack
-                alignItems="center"
-                gap="$2"
-                justifyContent="space-between"
-              >
-                <Button
-                  height="$3.5"
-                  width="$6"
-                  backgroundColor="white"
-                  justifyContent="center"
-                  borderColor={slate200}
-                  borderWidth={1}
-                  onPress={() => {
-                    buttonTap();
-                    setExpiryYears(expiryYears - 1);
-                    trackEvent(MockDataEvents.DECREASE_EXPIRY_YEARS);
-                  }}
-                  disabled={expiryYears <= 0}
+            {selectedDocumentType !== 'mock_aadhaar' && (
+              <FormSection title="Document Expires In">
+                <XStack
+                  alignItems="center"
+                  gap="$2"
+                  justifyContent="space-between"
                 >
-                  <Minus color={slate500} />
-                </Button>
-                <Text
-                  textTransform="uppercase"
-                  textAlign="center"
-                  color={textBlack}
-                  fontWeight="500"
-                  fontSize="$4"
-                  fontFamily={plexMono}
-                >
-                  {expiryYears} years
-                </Text>
-                <Button
-                  height="$3.5"
-                  width="$6"
-                  backgroundColor="white"
-                  justifyContent="center"
-                  borderColor={slate200}
-                  borderWidth={1}
-                  onPress={() => {
-                    buttonTap();
-                    setExpiryYears(expiryYears + 1);
-                    trackEvent(MockDataEvents.INCREASE_EXPIRY_YEARS);
-                  }}
-                >
-                  <Plus color={slate500} />
-                </Button>
-              </XStack>
-            </FormSection>
+                  <Button
+                    height="$3.5"
+                    width="$6"
+                    backgroundColor="white"
+                    justifyContent="center"
+                    borderColor={slate200}
+                    borderWidth={1}
+                    onPress={() => {
+                      buttonTap();
+                      setExpiryYears(expiryYears - 1);
+                      trackEvent(MockDataEvents.DECREASE_EXPIRY_YEARS);
+                    }}
+                    disabled={age <= 0}
+                  >
+                    <Minus color={slate500} />
+                  </Button>
+                  <Text
+                    textTransform="uppercase"
+                    textAlign="center"
+                    color={textBlack}
+                    fontWeight="500"
+                    fontSize="$4"
+                    fontFamily={plexMono}
+                  >
+                    {expiryYears} years
+                  </Text>
+                  <Button
+                    height="$3.5"
+                    width="$6"
+                    backgroundColor="white"
+                    justifyContent="center"
+                    borderColor={slate200}
+                    borderWidth={1}
+                    onPress={() => {
+                      buttonTap();
+                      setExpiryYears(expiryYears + 1);
+                      trackEvent(MockDataEvents.INCREASE_EXPIRY_YEARS);
+                    }}
+                  >
+                    <Plus color={slate500} />
+                  </Button>
+                </XStack>
+              </FormSection>
+            )}
 
             <FormSection title="In OFAC sanction list" endSection={true}>
               <YStack flexDirection="column" gap="$2">
@@ -557,7 +574,10 @@ const CreateMockScreen: React.FC = () => {
                   onPress={() => {
                     buttonTap();
                     handleDocumentTypeSelect(
-                      docType as 'mock_passport' | 'mock_id_card',
+                      docType as
+                        | 'mock_passport'
+                        | 'mock_id_card'
+                        | 'mock_aadhaar',
                     );
                     setDocumentTypeSheetOpen(false);
                     trackEvent(MockDataEvents.SELECT_DOCUMENT_TYPE);

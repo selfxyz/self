@@ -1,5 +1,6 @@
 // Type exports from constants
 export type {
+  AadhaarData,
   CertificateData,
   DocumentCategory,
   IdDocInput,
@@ -65,6 +66,7 @@ export {
   genMockIdDocAndInitDataParsing,
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
+  generateCircuitInputsRegisterForTests,
   generateCircuitInputsVCandDisclose,
   generateCommitment,
   generateMockDSC,
@@ -95,7 +97,10 @@ export {
 
 export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
 
+export { isAadhaarDocument, isMRZDocument } from './src/utils/index.js';
+
 export {
+  prepareAadhaarDiscloseData,
   prepareAadhaarDiscloseTestData,
   prepareAadhaarRegisterData,
   prepareAadhaarRegisterTestData,

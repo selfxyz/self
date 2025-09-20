@@ -9,7 +9,6 @@ import {
   SectionList,
   StyleSheet,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
@@ -64,7 +63,6 @@ export const ProofHistoryList: React.FC<ProofHistoryListProps> = ({
   } = useProofHistoryStore();
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
-  const { bottom } = useSafeAreaInsets();
 
   useEffect(() => {
     initDatabase();

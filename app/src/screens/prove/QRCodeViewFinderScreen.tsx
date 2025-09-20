@@ -14,9 +14,9 @@ import {
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
 import Additional from '@/components/typography/Additional';
@@ -26,7 +26,6 @@ import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import QRScan from '@/images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { useSelfAppStore } from '@/stores/selfAppStore';
 import { black, slate800, white } from '@/utils/colors';
 import { parseAndValidateUrlParams } from '@/utils/deeplinks';
 
@@ -153,13 +152,6 @@ const QRCodeViewFinderScreen: React.FC = () => {
                 </View>
               </XStack>
             </YStack>
-
-            <SecondaryButton
-              trackEvent={ProofEvents.QR_SCAN_CANCELLED}
-              onPress={onCancelPress}
-            >
-              Cancel
-            </SecondaryButton>
           </YStack>
         </ExpandableBottomLayout.BottomSection>
       </ExpandableBottomLayout.Layout>

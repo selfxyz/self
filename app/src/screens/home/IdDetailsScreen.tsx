@@ -3,18 +3,17 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect, useState } from 'react';
-import { ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
 import { BlurView } from '@react-native-community/blur';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 import { PassportData } from '@selfxyz/common/types';
-import { DocumentCatalog } from '@selfxyz/common/utils/types';
+import { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 
 import IdCardLayout from '@/components/homeScreen/idCard';
 import { usePassport } from '@/providers/passportDataProvider';
-import ProofHistoryList from '@/screens/home/ProofHistoryList';
+import { ProofHistoryList } from '@/screens/home/ProofHistoryList';
 import useUserStore from '@/stores/userStore';
 import {
   black,
@@ -30,7 +29,7 @@ const IdDetailsScreen: React.FC = () => {
   const documentId = idDetailsDocumentId;
   const { getAllDocuments, loadDocumentCatalog, setSelectedDocument } =
     usePassport();
-  const [document, setDocument] = useState<PassportData | null>(null);
+  const [document, setDocument] = useState<IDDocument | null>(null);
   const [documentCatalog, setDocumentCatalog] = useState<DocumentCatalog>({
     documents: [],
   });
