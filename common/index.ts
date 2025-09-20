@@ -3,6 +3,7 @@ export type {
   AadhaarData,
   CertificateData,
   DocumentCategory,
+  IDDocument,
   IdDocInput,
   PassportData,
   PassportMetadata,

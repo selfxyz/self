@@ -4549,7 +4549,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/babel-preset@npm:0.76.9, @react-native/babel-preset@npm:^0.76.9":
+"@react-native/babel-preset@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/babel-preset@npm:0.76.9"
   dependencies:
@@ -4673,7 +4673,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/eslint-config@npm:^0.76.9":
+"@react-native/eslint-config@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/eslint-config@npm:0.76.9"
   dependencies:
@@ -4703,7 +4703,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/gradle-plugin@npm:0.76.9, @react-native/gradle-plugin@npm:^0.76.9":
+"@react-native/gradle-plugin@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/gradle-plugin@npm:0.76.9"
   checksum: 10c0/784fa4293f1e73d7861a8b6842ebce6ce4ab3be256c44011168e1524d1839535bfd39a65b1d9d6c014283421f1d02f87274ad9b6a86ec9827690f1cfc857df75
@@ -4731,7 +4731,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/metro-config@npm:0.76.9, @react-native/metro-config@npm:^0.76.9":
+"@react-native/metro-config@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/metro-config@npm:0.76.9"
   dependencies:
@@ -4764,7 +4764,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native/typescript-config@npm:^0.76.9":
+"@react-native/typescript-config@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/typescript-config@npm:0.76.9"
   checksum: 10c0/51c72cf14410d1fc474ec3d6ecd3f3ca4da5df0cc26e7b1d60066b8fb759e20ac0b4840eacfedc871e4dfa1ceec649e9200f4a47ebe0614fa7dec16d7f4a7080
@@ -5393,11 +5393,11 @@ __metadata:
     "@react-native-firebase/app": "npm:^19.0.1"
     "@react-native-firebase/messaging": "npm:^19.0.1"
     "@react-native-firebase/remote-config": "npm:^19.0.1"
-    "@react-native/babel-preset": "npm:^0.76.9"
-    "@react-native/eslint-config": "npm:^0.76.9"
-    "@react-native/gradle-plugin": "npm:^0.76.9"
-    "@react-native/metro-config": "npm:^0.76.9"
-    "@react-native/typescript-config": "npm:^0.76.9"
+    "@react-native/babel-preset": "npm:0.76.9"
+    "@react-native/eslint-config": "npm:0.76.9"
+    "@react-native/gradle-plugin": "npm:0.76.9"
+    "@react-native/metro-config": "npm:0.76.9"
+    "@react-native/typescript-config": "npm:0.76.9"
     "@react-navigation/native": "npm:^7.0.14"
     "@react-navigation/native-stack": "npm:^7.2.0"
     "@robinbobin/react-native-google-drive-api-wrapper": "npm:^2.2.3"
@@ -5473,7 +5473,7 @@ __metadata:
     prop-types: "npm:^15.8.1"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
-    react-native: "npm:^0.76.9"
+    react-native: "npm:0.76.9"
     react-native-app-auth: "npm:^8.0.3"
     react-native-biometrics: "npm:^3.0.1"
     react-native-check-version: "npm:^1.3.0"
@@ -5537,7 +5537,7 @@ __metadata:
     prettier: "npm:^3.5.3"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
-    react-native: "npm:^0.76.9"
+    react-native: "npm:0.76.9"
     socket.io-client: "npm:^4.8.1"
     tsup: "npm:^8.0.1"
     typescript: "npm:^5.9.2"
@@ -5545,7 +5545,7 @@ __metadata:
     zustand: "npm:^4.5.2"
   peerDependencies:
     react: ^18.3.1
-    react-native: ^0.76.9
+    react-native: 0.76.9
   languageName: unknown
   linkType: soft
 
@@ -22542,7 +22542,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native@npm:^0.76.9":
+"react-native@npm:0.76.9":
   version: 0.76.9
   resolution: "react-native@npm:0.76.9"
   dependencies:
@@ -23487,7 +23487,7 @@ __metadata:
     patch-package: "npm:^8.0.0"
     prettier: "npm:^3.6.2"
     react: "npm:^18.3.1"
-    react-native: "npm:^0.76.9"
+    react-native: "npm:0.76.9"
     typescript: "npm:^5.9.2"
   languageName: unknown
   linkType: soft

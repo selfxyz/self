@@ -5,8 +5,10 @@
 import React from 'react';
 import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import type { IDDocument } from '@selfxyz/common';
+
 type Props = {
-  document: Record<string, unknown> | null;
+  document: IDDocument | null;
   onBack: () => void;
 };
 

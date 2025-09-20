@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
-import { countryCodes } from '@selfxyz/common';
+import { countryCodes, type IDDocument } from '@selfxyz/common';
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
 
 import { Picker } from '@react-native-picker/picker';
@@ -22,7 +22,7 @@ const defaultDocumentType = 'mock_passport';
 const defaultOfac = true;
 
 type Props = {
-  onGenerate?: (doc: Record<string, unknown>) => void;
+  onGenerate?: (doc: IDDocument) => void;
   onNavigate: (screen: 'home' | 'register' | 'prove') => void;
   onBack: () => void;
 };
@@ -36,7 +36,7 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
   const [documentType, setDocumentType] = useState<(typeof documentTypeOptions)[number]>(defaultDocumentType);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [result, setResult] = useState<IDDocument | null>(null);
 
   const reset = () => {
     setAge(defaultAge);

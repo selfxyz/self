@@ -5,6 +5,8 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import type { IDDocument } from '@selfxyz/common';
+
 type Screen = 'home' | 'register' | 'generate' | 'prove' | 'camera' | 'nfc' | 'onboarding' | 'qr';
 type GenerateMockCmp = typeof import('./src/GenerateMock').default;
 type RegisterDocumentCmp = typeof import('./src/RegisterDocument').default;
@@ -12,7 +14,7 @@ type ProveQRCodeCmp = typeof import('./src/ProveQRCode').default;
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home');
-  const [mockDocument, setMockDocument] = useState<Record<string, unknown> | null>(null);
+  const [mockDocument, setMockDocument] = useState<IDDocument | null>(null);
 
   const navigate = (next: Screen) => setScreen(next);
 

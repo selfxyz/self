@@ -1,14 +1,14 @@
-export type { AadhaarData, DocumentCategory, PassportData } from './types.js';
+export type { AadhaarData, DocumentCategory, IDDocument, PassportData } from './types.js';
 export type {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from './certificate_parsing/dataStructure.js';
+export type { EndpointType, Mode, SelfApp, SelfAppDisclosureConfig } from './appType.js';
 export type { IdDocInput } from './passports/genMockIdDoc.js';
 export type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 export type { TEEPayload, TEEPayloadBase, TEEPayloadDisclose } from './proving.js';
 export type { UserIdType } from './circuits/uuid.js';
-export type { EndpointType, Mode, SelfApp, SelfAppDisclosureConfig } from './appType.js';
 export { SelfAppBuilder, getUniversalLink } from './appType.js';
 export { bigIntToString, formatEndpoint, hashEndpointWithScope, stringToBigInt } from './scope.js';
 export { brutforceSignatureAlgorithmDsc } from './passports/passport_parsing/brutForceDscSignature.js';
@@ -21,7 +21,6 @@ export {
   inferDocumentCategory,
   initPassportDataParsing,
 } from './passports/passport.js';
-export { isAadhaarDocument, isMRZDocument } from './types.js';
 export {
   calculateUserIdentifierHash,
   customHasher,
@@ -59,6 +58,7 @@ export {
 } from './circuits/registerInputs.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
 export { getSKIPEM } from './csca.js';
+export { isAadhaarDocument, isMRZDocument } from './types.js';
 export { initElliptic } from './certificate_parsing/elliptic.js';
 export { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 export { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData.js';
