@@ -64,10 +64,7 @@ describe('deeplinks', () => {
       expect(setSelfApp).toHaveBeenCalledWith(selfApp);
       expect(startAppListener).toHaveBeenCalledWith('abc');
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.reset).toHaveBeenCalledWith({
-        index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProveScreen' }],
-      });
+      expect(navigationRef.navigate).toHaveBeenCalledWith('Prove');
     });
 
     it('handles sessionId parameter', () => {
@@ -77,10 +74,7 @@ describe('deeplinks', () => {
       expect(cleanSelfApp).toHaveBeenCalled();
       expect(startAppListener).toHaveBeenCalledWith('123');
       const { navigationRef } = require('@/navigation');
-      expect(navigationRef.reset).toHaveBeenCalledWith({
-        index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProveScreen' }],
-      });
+      expect(navigationRef.navigate).toHaveBeenCalledWith('Prove');
     });
 
     it('handles mock_passport parameter', () => {
