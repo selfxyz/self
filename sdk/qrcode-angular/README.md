@@ -33,7 +33,7 @@ It manages session creation, WebSocket connections, and real-time proof state up
 ## 📦 Installation
 
 ```bash
-npm install @selfxyz/qrcode-angular angularx-qrcode ngx-lottie uuid
+npm install @selfxyz/qrcode-angular
 ```
 
 Also ensure you have Angular v15+ with standalone components enabled.
@@ -123,7 +123,7 @@ export class DemoComponent {
 | `userIdType`       | `UserIdType`                                          | Optional | Type of identifier used (`email`, `phone`, etc.).        |
 | `disclosures`      | [`SelfAppDisclosureConfig`](#selfappdisclosureconfig) | ✅        | Defines which fields are requested during verification.  |
 | `version`          | `number`                                              | ✅        | Schema version (e.g., `2`).                              |
-| `userDefinedData`      | `any`                                                 | Optional | Arbitrary developer-defined metadata.                    |
+| `userDefinedData`  | `string`                                                 | Optional | Arbitrary developer-defined metadata.                    |
 
 ---
 
