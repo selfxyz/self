@@ -347,9 +347,19 @@ func (s *BackendVerifier) Verify(
 		return nil, fmt.Errorf("verifier contract not found")
 	}
 
-	verifierContract, err := bindings.NewVerifier(verifierAddress, s.provider)
-	if err != nil {
-		return nil, fmt.Errorf("verifier contract not found")
+	var verifierContract *bindings.Verifier
+	var aadhaarVerifierContract *bindings.AadhaarVerifier
+
+	if attestationId == Aadhaar {
+		aadhaarVerifierContract, err = bindings.NewAadhaarVerifier(verifierAddress, s.provider)
+		if err != nil {
+			return nil, fmt.Errorf("aadhaar verifier contract not found")
+		}
+	} else {
+		verifierContract, err = bindings.NewVerifier(verifierAddress, s.provider)
+		if err != nil {
+			return nil, fmt.Errorf("verifier contract not found")
+		}
 	}
 
 	// Convert string proof fields to *big.Int
@@ -392,29 +402,47 @@ func (s *BackendVerifier) Verify(
 		{b11, b10}, // Swap second pair
 	}
 
-	// Convert the processed string signals to *big.Int for Go contract call
-	var publicSignalsArray [21]*big.Int
+	// Convert proof format: swaps B coordinates [proof.b[0][1], proof.b[0][0]]
+	aFormatted := [2]*big.Int{a0, a1}
+	cFormatted := [2]*big.Int{c0, c1}
+
+	var publicSignalLength int
+	if attestationId == Aadhaar {
+		publicSignalLength = 19
+	} else {
+		publicSignalLength = 21
+	}
+
+	publicSignalsArray := make([]*big.Int, publicSignalLength)
 	for i, signal := range publicSignals {
-		if i >= 21 {
-			break // Contract ABI specifies exactly 21 elements
+		if i >= publicSignalLength {
+			break
 		}
 		signalBigInt := new(big.Int)
-		// Handle both hex (0x...) and decimal strings
 		if strings.HasPrefix(signal, "0x") {
-			signalBigInt.SetString(signal, 0) // Auto-detect base (0x = hex)
+			signalBigInt.SetString(signal, 0)
 		} else {
-			signalBigInt.SetString(signal, 10) // Decimal
+			signalBigInt.SetString(signal, 10)
 		}
 		publicSignalsArray[i] = signalBigInt
 	}
-	// Fill remaining slots with zero if publicSignals has less than 21 elements
-	for i := len(publicSignals); i < 21; i++ {
+
+	for i := len(publicSignals); i < publicSignalLength; i++ {
 		publicSignalsArray[i] = big.NewInt(0)
 	}
 
-	aFormatted := [2]*big.Int{a0, a1}
-	cFormatted := [2]*big.Int{c0, c1}
-	isValid, err := verifierContract.VerifyProof(nil, aFormatted, bFormatted, cFormatted, publicSignalsArray)
+	// Call appropriate verifier based on attestation type
+	var isValid bool
+	if attestationId == Aadhaar {
+		var aadhaarSignals [19]*big.Int
+		copy(aadhaarSignals[:], publicSignalsArray)
+		isValid, err = aadhaarVerifierContract.VerifyProof(nil, aFormatted, bFormatted, cFormatted, aadhaarSignals)
+	} else {
+		var regularSignals [21]*big.Int
+		copy(regularSignals[:], publicSignalsArray)
+		isValid, err = verifierContract.VerifyProof(nil, aFormatted, bFormatted, cFormatted, regularSignals)
+	}
+
 	if err != nil {
 		isProofValid = false
 	} else {
