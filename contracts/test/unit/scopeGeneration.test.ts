@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { TestSelfVerificationRoot } from "../../typechain-types";
-import { poseidon2 } from "poseidon-lite";
+import { stringToBigInt, bigIntToString, hashEndpointWithScope } from "@selfxyz/common/utils/scope";
 
 describe("SelfVerificationRoot - Automatic Scope Generation", () => {
   let testContract: TestSelfVerificationRoot;
@@ -41,17 +41,16 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       // Get the actual scope from the contract
       const actualScope = await testContract.scope();
 
-      // Calculate expected scope using the same logic as frontend
-      const addressAsUint = BigInt(contractAddress);
-      const scopeSeedAsUint = stringToBigInt(scopeSeed);
-      const expectedScope = poseidon2([addressAsUint, scopeSeedAsUint]);
-
-      // Verify they match
-      expect(actualScope.toString()).to.equal(expectedScope.toString());
       console.log(`Contract Address: ${contractAddress}`);
       console.log(`Scope Seed: "${scopeSeed}"`);
       console.log(`Generated Scope: ${actualScope.toString()}`);
+
+      // Calculate expected scope using hashEndpointWithScope (use lowercase to match Solidity)
+      const expectedScope = BigInt(hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed));
       console.log(`Expected Scope: ${expectedScope.toString()}`);
+
+      // Verify they match
+      expect(actualScope.toString()).to.equal(expectedScope.toString());
     });
 
     it("should generate different scopes for different scope seeds", async () => {
@@ -126,12 +125,17 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
 
       // Should equal the generated scope
       const contractAddress = await testContract.getAddress();
-      const addressAsUint = BigInt(contractAddress);
-      const scopeSeedAsUint = stringToBigInt(scopeSeed);
-      const expectedScope = poseidon2([addressAsUint, scopeSeedAsUint]);
+      console.log(`Contract Address: ${contractAddress}`);
+      console.log(`Scope Seed: "${scopeSeed}"`);
+
+      // Debug: Let's trace the frontend logic step by step
+      console.log(`Frontend hashEndpointWithScope result: ${hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed)}`);
+
+      const expectedScope = BigInt(hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed));
+      console.log(`Generated Scope: ${actualScope.toString()}`);
+      console.log(`Expected Scope: ${expectedScope.toString()}`);
 
       expect(actualScope.toString()).to.equal(expectedScope.toString());
-      console.log(`Generated scope: ${actualScope.toString()}`);
     });
 
     it("should handle various scope seed strings correctly", async () => {
@@ -159,9 +163,7 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
 
         // Calculate expected scope
         const contractAddress = await contract.getAddress();
-        const addressAsUint = BigInt(contractAddress);
-        const scopeSeedAsUint = stringToBigInt(scopeSeed);
-        const expectedScope = poseidon2([addressAsUint, scopeSeedAsUint]);
+        const expectedScope = BigInt(hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed));
 
         expect(actualScope.toString()).to.equal(expectedScope.toString());
         console.log(`Scope seed: "${scopeSeed}" -> Scope: ${actualScope.toString()}`);
@@ -184,10 +186,8 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       const contractAddress = await contract.getAddress();
       const actualScope = await contract.scope();
 
-      // Calculate expected scope using frontend logic
-      const addressAsUint = BigInt(contractAddress);
-      const scopeSeedAsUint = stringToBigInt(scopeSeed);
-      const expectedScope = poseidon2([addressAsUint, scopeSeedAsUint]);
+        // Calculate expected scope using hashEndpointWithScope (use lowercase to match Solidity)
+        const expectedScope = BigInt(hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed));
 
       // This is the critical test - Solidity must match frontend exactly
       expect(actualScope.toString()).to.equal(expectedScope.toString());
@@ -195,8 +195,6 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       console.log(`\n=== KNOWN VALUE TEST ===`);
       console.log(`Contract Address: ${contractAddress}`);
       console.log(`Scope Seed: "${scopeSeed}"`);
-      console.log(`Address as BigInt: ${addressAsUint.toString()}`);
-      console.log(`Scope Seed as BigInt: ${scopeSeedAsUint.toString()}`);
       console.log(`Expected Scope: ${expectedScope.toString()}`);
       console.log(`Actual Scope: ${actualScope.toString()}`);
       console.log(`Match: ${actualScope.toString() === expectedScope.toString()}`);
@@ -243,40 +241,3 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
     });
   });
 });
-
-// Helper function to convert string to BigInt (matches frontend logic)
-function stringToBigInt(str: string): bigint {
-  // Validate input contains only ASCII characters
-  if (!/^[\x00-\x7F]*$/.test(str)) {
-    throw new Error('Input must contain only ASCII characters (0-127)');
-  }
-
-  let result = 0n;
-  for (let i = 0; i < str.length; i++) {
-    result = (result << 8n) | BigInt(str.charCodeAt(i));
-  }
-
-  // Check size limit (31 bytes = 248 bits)
-  const MAX_VALUE = (1n << 248n) - 1n;
-  if (result > MAX_VALUE) {
-    throw new Error('Resulting BigInt exceeds maximum size of 31 bytes');
-  }
-
-  return result;
-}
-
-// Helper function to convert BigInt back to string (for round-trip testing)
-function bigIntToString(bigInt: bigint): string {
-  if (bigInt === 0n) return '';
-
-  let result = '';
-  let tempBigInt = bigInt;
-
-  while (tempBigInt > 0n) {
-    const charCode = Number(tempBigInt & 0xffn);
-    result = String.fromCharCode(charCode) + result;
-    tempBigInt = tempBigInt >> 8n;
-  }
-
-  return result;
-}

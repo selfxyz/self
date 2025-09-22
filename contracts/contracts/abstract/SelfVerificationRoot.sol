@@ -55,15 +55,14 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @notice Initializes the SelfVerificationRoot contract
      * @dev Sets up the immutable reference to the hub contract and generates scope automatically
      * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2
-     * @param scopeSeed The scope seed string to be hashed with contract address
+     * @param scopeSeed The scope seed string to be hashed with contract address to generate the scope
      */
     constructor(address identityVerificationHubV2Address, string memory scopeSeed) {
         _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
 
-        // Generate scope using Poseidon (requires both inputs as uint256)
-        uint256 addressAsUint = uint256(uint160(address(this)));
+        uint256 addressHash = _calculateAddressHash(address(this));
         uint256 scopeSeedAsUint = _stringToBigInt(scopeSeed);
-        _scope = PoseidonT3.hash([addressAsUint, scopeSeedAsUint]);
+        _scope = PoseidonT3.hash([addressHash, scopeSeedAsUint]);
     }
 
     /**
@@ -196,4 +195,67 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         }
         return result;
     }
+
+    /**
+     * @notice Calculates hash of contract address using frontend-compatible chunking
+     * @dev Converts address to hex string, splits into 2 chunks (31+11), and hashes with PoseidonT3
+     * @param addr The contract address to hash
+     * @return The hash result equivalent to frontend's endpointHash for addresses
+     */
+    function _calculateAddressHash(address addr) internal pure returns (uint256) {
+        // Convert address to hex string (42 chars: "0x" + 40 hex digits)
+        string memory addressString = _addressToHexString(addr);
+
+        // Split into exactly 2 chunks: 31 + 11 characters
+        // Chunk 1: characters 0-30 (31 chars)
+        // Chunk 2: characters 31-41 (11 chars)
+        uint256 chunk1BigInt = _substringToBigInt(addressString, 0, 31);
+        uint256 chunk2BigInt = _substringToBigInt(addressString, 31, 11);
+
+        return PoseidonT3.hash([chunk1BigInt, chunk2BigInt]);
+    }
+
+    /**
+     * @notice Converts an address to its lowercase hex string representation
+     * @dev Produces a string like "0x1234567890abcdef..." (42 characters total)
+     * @param addr The address to convert
+     * @return The hex string representation of the address
+     */
+    function _addressToHexString(address addr) internal pure returns (string memory) {
+        bytes32 value = bytes32(uint256(uint160(addr)));
+        bytes memory alphabet = "0123456789abcdef";
+        bytes memory str = new bytes(42);
+
+        str[0] = '0';
+        str[1] = 'x';
+        for (uint256 i = 0; i < 20; i++) {
+            str[2 + i * 2] = alphabet[uint8(value[i + 12] >> 4)];
+            str[3 + i * 2] = alphabet[uint8(value[i + 12] & 0x0f)];
+        }
+
+        return string(str);
+    }
+
+    /**
+     * @notice Extracts a substring and converts it directly to BigInt
+     * @param str The source string
+     * @param startIndex Starting index (inclusive)
+     * @param length Length of substring to extract
+     * @return The BigInt value of the substring
+     */
+    function _substringToBigInt(string memory str, uint256 startIndex, uint256 length) internal pure returns (uint256) {
+        bytes memory strBytes = bytes(str);
+        require(startIndex + length <= strBytes.length, "Substring out of bounds");
+        require(length <= 31, "Substring too long for BigInt conversion");
+
+        uint256 result = 0;
+        for (uint256 i = 0; i < length; i++) {
+            uint8 charByte = uint8(strBytes[startIndex + i]);
+            require(charByte <= 127, "Non-ASCII character detected");
+            result = (result << 8) | uint256(charByte);
+        }
+
+        return result;
+    }
+
 }
