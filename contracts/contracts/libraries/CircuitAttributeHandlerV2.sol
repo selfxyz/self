@@ -4,7 +4,6 @@ pragma solidity 0.8.28;
 import {Formatter} from "./Formatter.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
 import {SelfStructs} from "./SelfStructs.sol";
-
 /**
  * @title UnifiedAttributeHandler Library
  * @notice Provides functions for extracting and formatting attributes from both passport and ID card byte arrays.
@@ -90,6 +89,28 @@ library CircuitAttributeHandlerV2 {
                     ofacStart: 92,
                     ofacEnd: 93
                 });
+        } else if (attestationId == AttestationId.AADHAAR) {
+            return
+                FieldPositions({
+                    issuingStateStart: 81,
+                    issuingStateEnd: 111,
+                    nameStart: 9,
+                    nameEnd: 70,
+                    documentNumberStart: 71,
+                    documentNumberEnd: 74,
+                    nationalityStart: 999,
+                    nationalityEnd: 999,
+                    dateOfBirthStart: 1,
+                    dateOfBirthEnd: 8,
+                    genderStart: 0,
+                    genderEnd: 0,
+                    expiryDateStart: 999,
+                    expiryDateEnd: 999,
+                    olderThanStart: 118,
+                    olderThanEnd: 118,
+                    ofacStart: 116,
+                    ofacEnd: 117
+                });
         } else {
             revert("Invalid attestation ID");
         }
@@ -114,6 +135,12 @@ library CircuitAttributeHandlerV2 {
      */
     function getName(bytes32 attestationId, bytes memory charcodes) internal pure returns (string[] memory) {
         FieldPositions memory positions = getFieldPositions(attestationId);
+        if (attestationId == AttestationId.AADHAAR) {
+            string memory fullName = extractStringAttribute(charcodes, positions.nameStart, positions.nameEnd);
+            string[] memory nameParts = new string[](2);
+            nameParts[0] = fullName;
+            return nameParts;
+        }
         return Formatter.formatName(extractStringAttribute(charcodes, positions.nameStart, positions.nameEnd));
     }
 
@@ -153,6 +180,17 @@ library CircuitAttributeHandlerV2 {
             );
     }
 
+    function getDateOfBirthFullYear(
+        bytes32 attestationId,
+        bytes memory charcodes
+    ) internal pure returns (string memory) {
+        FieldPositions memory positions = getFieldPositions(attestationId);
+        return
+            Formatter.formatDateFullYear(
+                extractStringAttribute(charcodes, positions.dateOfBirthStart, positions.dateOfBirthEnd)
+            );
+    }
+
     /**
      * @notice Retrieves the gender from the encoded attribute byte array.
      * @param attestationId The attestation identifier.
@@ -185,8 +223,7 @@ library CircuitAttributeHandlerV2 {
     function getOlderThan(bytes32 attestationId, bytes memory charcodes) internal pure returns (uint256) {
         FieldPositions memory positions = getFieldPositions(attestationId);
         return
-            Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart])) *
-            10 +
+            Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart])) * 10 +
             Formatter.numAsciiToUint(uint8(charcodes[positions.olderThanStart + 1]));
     }
 
@@ -280,6 +317,16 @@ library CircuitAttributeHandlerV2 {
         uint256 olderThan
     ) internal pure returns (bool) {
         return getOlderThan(attestationId, charcodes) >= olderThan;
+    }
+
+    function compareOlderThanNumeric(
+        bytes32 attestationId,
+        bytes memory charcodes,
+        uint256 olderThan
+    ) internal pure returns (bool) {
+        FieldPositions memory positions = getFieldPositions(attestationId);
+        uint256 extractedAge = uint8(charcodes[positions.olderThanStart]);
+        return extractedAge >= olderThan;
     }
 
     /**

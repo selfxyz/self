@@ -68,6 +68,14 @@ Push a new build to Google Play Internal Testing
 
 Push a new build to Google Play Store
 
+### android build_only
+
+```sh
+[bundle exec] fastlane android build_only
+```
+
+Build Android app without uploading
+
 ### android deploy_auto
 
 ```sh

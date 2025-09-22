@@ -15,6 +15,11 @@
 RCT_EXTERN_METHOD(configure:(NSString *)token
                   enableDebugLogs:(BOOL)enableDebugLogs)
 
+RCT_EXTERN_METHOD(trackEvent:(NSString *)name
+                  properties:(NSDictionary *)properties)
+
+RCT_EXTERN_METHOD(flush)
+
 RCT_EXTERN_METHOD(scanPassport:(NSString *)passportNumber
                   dateOfBirth:(NSString *)dateOfBirth
                   dateOfExpiry:(NSString *)dateOfExpiry
@@ -24,6 +29,7 @@ RCT_EXTERN_METHOD(scanPassport:(NSString *)passportNumber
                   skipCA:(NSNumber * _Nonnull)skipCA
                   extendedMode:(NSNumber * _Nonnull)extendedMode
                   usePacePolling:(NSNumber * _Nonnull)usePacePolling
+                  sessionId:(NSString *)sessionId
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 

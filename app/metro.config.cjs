@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('node:path');
@@ -16,9 +18,20 @@ const extraNodeModules = {
   util: require.resolve('util'),
   assert: require.resolve('assert'),
   '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
+  // Pin React and React Native to monorepo root
+  react: path.join(trueMonorepoNodeModules, 'react'),
+  'react-native': path.join(trueMonorepoNodeModules, 'react-native'),
   '@': path.join(__dirname, 'src'),
   '@selfxyz/common': path.resolve(commonPath, 'dist'),
   '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
+  '@selfxyz/mobile-sdk-alpha/constants/analytics': path.resolve(
+    sdkAlphaPath,
+    'dist/esm/constants/analytics.js',
+  ),
+  '@selfxyz/mobile-sdk-alpha/stores': path.resolve(
+    sdkAlphaPath,
+    'dist/esm/stores.js',
+  ),
   // Main exports
   '@selfxyz/common/utils': path.resolve(
     commonPath,
@@ -58,6 +71,10 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/hash.js',
   ),
+  '@selfxyz/common/utils/attest': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/attest.js',
+  ),
   '@selfxyz/common/utils/bytes': path.resolve(
     commonPath,
     'dist/esm/src/utils/bytes.js',
@@ -69,6 +86,10 @@ const extraNodeModules = {
   '@selfxyz/common/utils/scope': path.resolve(
     commonPath,
     'dist/esm/src/utils/scope.js',
+  ),
+  '@selfxyz/common/utils/proving': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/proving.js',
   ),
   '@selfxyz/common/utils/appType': path.resolve(
     commonPath,
@@ -89,6 +110,10 @@ const extraNodeModules = {
   '@selfxyz/common/utils/passportFormat': path.resolve(
     commonPath,
     'dist/esm/src/utils/passports/format.js',
+  ),
+  '@selfxyz/common/utils/passports/validate': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/passports/validate.js',
   ),
   '@selfxyz/common/utils/passportMock': path.resolve(
     commonPath,
@@ -142,6 +167,10 @@ const extraNodeModules = {
     commonPath,
     'dist/esm/src/utils/csca.js',
   ),
+  '@selfxyz/common/utils/ofac': path.resolve(
+    commonPath,
+    'dist/esm/src/utils/ofac.js',
+  ),
   // Types subpaths
   '@selfxyz/common/types/passport': path.resolve(
     commonPath,
@@ -191,6 +220,36 @@ const config = {
     ],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
+
+    // Custom resolver to handle Node.js modules elegantly
+    resolveRequest: (context, moduleName, platform) => {
+      // Handle problematic Node.js modules that don't work in React Native
+      const nodeModuleRedirects = {
+        crypto: require.resolve('crypto-browserify'),
+        fs: false, // Disable filesystem access
+        os: false, // Disable OS-specific modules
+        readline: false, // Disable readline module
+        constants: require.resolve('constants-browserify'),
+        path: require.resolve('path-browserify'),
+      };
+
+      if (
+        Object.prototype.hasOwnProperty.call(nodeModuleRedirects, moduleName)
+      ) {
+        if (nodeModuleRedirects[moduleName] === false) {
+          // Return empty module for disabled modules
+          return { type: 'empty' };
+        }
+        // Redirect to polyfill
+        return {
+          type: 'sourceFile',
+          filePath: nodeModuleRedirects[moduleName],
+        };
+      }
+
+      // Fall back to default Metro resolver for all other modules
+      return context.resolveRequest(context, moduleName, platform);
+    },
   },
   watchFolders,
 };

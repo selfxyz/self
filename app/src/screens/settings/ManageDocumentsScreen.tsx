@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -8,24 +10,24 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Check, Eraser } from '@tamagui/lucide-icons';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import { DocumentEvents } from '@/consts/analytics';
-import type { RootStackParamList } from '@/navigation';
 import type {
   DocumentCatalog,
   DocumentMetadata,
-} from '@/providers/passportDataProvider';
+} from '@selfxyz/common/utils/types';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
+import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import ButtonsContainer from '@/components/ButtonsContainer';
+import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import analytics from '@/utils/analytics';
 import { borderColor, textBlack, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { impactLight } from '@/utils/haptic';
 
-const { trackEvent } = analytics();
-
 const PassportDataSelector = () => {
+  const selfClient = useSelfClient();
   const {
     loadDocumentCatalog,
     getAllDocuments,
@@ -46,14 +48,15 @@ const PassportDataSelector = () => {
     const docs = await getAllDocuments();
     setDocumentCatalog(catalog);
     setAllDocuments(docs);
-    trackEvent(DocumentEvents.DOCUMENTS_FETCHED, {
+    selfClient.trackEvent(DocumentEvents.DOCUMENTS_FETCHED, {
       count: catalog.documents.length,
     });
     if (catalog.documents.length === 0) {
-      trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
+      selfClient.trackEvent(DocumentEvents.NO_DOCUMENTS_FOUND);
     }
     setLoading(false);
   }, [
+    selfClient,
     loadDocumentCatalog,
     getAllDocuments,
     setDocumentCatalog,
@@ -71,13 +74,13 @@ const PassportDataSelector = () => {
     const docs = await getAllDocuments();
     setDocumentCatalog(catalog);
     setAllDocuments(docs);
-    trackEvent(DocumentEvents.DOCUMENT_SELECTED);
+    selfClient.trackEvent(DocumentEvents.DOCUMENT_SELECTED);
   };
 
   const handleDeleteSpecific = async (documentId: string) => {
     setLoading(true);
     await deleteDocument(documentId);
-    trackEvent(DocumentEvents.DOCUMENT_DELETED);
+    selfClient.trackEvent(DocumentEvents.DOCUMENT_DELETED);
     await loadPassportDataInfo();
   };
 
@@ -111,6 +114,10 @@ const PassportDataSelector = () => {
         return 'ID Card';
       case 'mock_id_card':
         return 'Mock ID Card';
+      case 'aadhaar':
+        return 'Aadhaar';
+      case 'mock_aadhaar':
+        return 'Mock Aadhaar';
       default:
         return documentType;
     }
@@ -267,22 +274,28 @@ const ManageDocumentsScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();
+  const { trackEvent } = useSelfClient();
 
   useEffect(() => {
     trackEvent(DocumentEvents.MANAGE_SCREEN_OPENED);
-  }, []);
+  }, [trackEvent]);
 
   const handleScanDocument = () => {
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_SCAN_SELECTED);
-    navigation.navigate('PassportOnboarding');
+    navigation.navigate('DocumentOnboarding');
   };
 
   const handleGenerateMock = () => {
-    if (!__DEV__) return;
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_MOCK_SELECTED);
     navigation.navigate('CreateMock');
+  };
+
+  const handleAddAadhaar = () => {
+    impactLight();
+    trackEvent(DocumentEvents.ADD_NEW_AADHAAR_SELECTED);
+    navigation.navigate('AadhaarUpload');
   };
 
   return (
@@ -312,11 +325,12 @@ const ManageDocumentsScreen: React.FC = () => {
             <PrimaryButton onPress={handleScanDocument}>
               Scan New ID Document
             </PrimaryButton>
-            {__DEV__ && (
-              <SecondaryButton onPress={handleGenerateMock}>
-                Generate Mock Document
-              </SecondaryButton>
-            )}
+            <PrimaryButton onPress={handleAddAadhaar}>
+              Add Aadhaar
+            </PrimaryButton>
+            <SecondaryButton onPress={handleGenerateMock}>
+              Generate Mock Document
+            </SecondaryButton>
           </ButtonsContainer>
         </YStack>
       </YStack>

@@ -1,8 +1,10 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
 import React, { useCallback, useMemo } from 'react';
-import { Linking, Platform, Share } from 'react-native';
+import { Linking, Platform, Share, View as RNView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
@@ -66,7 +68,7 @@ const goToStore = () => {
 const routes =
   Platform.OS !== 'web'
     ? ([
-        [Data, 'View passport info', 'PassportDataInfo'],
+        [Data, 'View document info', 'DocumentDataInfo'],
         [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
         [Cloud, 'Cloud backup', 'CloudBackupSettings'],
         [Feedback, 'Send feedback', 'email_feedback'],
@@ -78,7 +80,7 @@ const routes =
         ],
       ] satisfies [React.FC<SvgProps>, string, RouteOption][])
     : ([
-        [Data, 'View passport info', 'PassportDataInfo'],
+        [Data, 'View document info', 'DocumentDataInfo'],
         [Feedback, 'Send feeback', 'email_feedback'],
         [
           FileText as React.FC<SvgProps>,
@@ -210,70 +212,72 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
   const { bottom } = useSafeAreaInsets();
   return (
     <GestureDetector gesture={devModeTap}>
-      <View backgroundColor={white}>
-        <YStack
-          backgroundColor={black}
-          gap={20}
-          justifyContent="space-between"
-          height={'100%'}
-          paddingHorizontal={20}
-          paddingBottom={bottom + extraYPadding}
-          borderTopLeftRadius={30}
-          borderTopRightRadius={30}
-        >
-          <ScrollView>
-            <YStack
-              alignItems="flex-start"
-              justifyContent="flex-start"
-              width="100%"
-            >
-              {screenRoutes.map(([Icon, menuText, menuRoute]) => (
-                <MenuButton
-                  key={menuRoute}
-                  Icon={Icon}
-                  onPress={onMenuPress(menuRoute)}
-                >
-                  {menuText}
-                </MenuButton>
-              ))}
-            </YStack>
-          </ScrollView>
+      <RNView collapsable={false}>
+        <View backgroundColor={white}>
           <YStack
-            alignItems="center"
+            backgroundColor={black}
             gap={20}
-            justifyContent="center"
-            paddingBottom={50}
+            justifyContent="space-between"
+            height={'100%'}
+            paddingHorizontal={20}
+            paddingBottom={bottom + extraYPadding}
+            borderTopLeftRadius={30}
+            borderTopRightRadius={30}
           >
-            <Button
-              unstyled
-              icon={<Star color={white} height={24} width={21} />}
-              width="100%"
-              padding={20}
-              backgroundColor={slate800}
-              color={white}
-              flexDirection="row"
-              justifyContent="center"
+            <ScrollView>
+              <YStack
+                alignItems="flex-start"
+                justifyContent="flex-start"
+                width="100%"
+              >
+                {screenRoutes.map(([Icon, menuText, menuRoute]) => (
+                  <MenuButton
+                    key={menuRoute}
+                    Icon={Icon}
+                    onPress={onMenuPress(menuRoute)}
+                  >
+                    {menuText}
+                  </MenuButton>
+                ))}
+              </YStack>
+            </ScrollView>
+            <YStack
               alignItems="center"
-              gap={6}
-              borderRadius={4}
-              pressStyle={pressedStyle}
-              onPress={goToStore}
+              gap={20}
+              justifyContent="center"
+              paddingBottom={50}
             >
-              <BodyText color={white}>Leave an app store review</BodyText>
-            </Button>
-            <XStack gap={32}>
-              {social.map(([Icon, href], i) => (
-                <SocialButton key={i} Icon={Icon} href={href} />
-              ))}
-            </XStack>
-            <BodyText color={amber500} fontSize={15}>
-              SELF
-            </BodyText>
-            {/* Dont remove if not viewing on ios */}
-            <View marginBottom={bottom} />
+              <Button
+                unstyled
+                icon={<Star color={white} height={24} width={21} />}
+                width="100%"
+                padding={20}
+                backgroundColor={slate800}
+                color={white}
+                flexDirection="row"
+                justifyContent="center"
+                alignItems="center"
+                gap={6}
+                borderRadius={4}
+                pressStyle={pressedStyle}
+                onPress={goToStore}
+              >
+                <BodyText color={white}>Leave an app store review</BodyText>
+              </Button>
+              <XStack gap={32}>
+                {social.map(([Icon, href], i) => (
+                  <SocialButton key={i} Icon={Icon} href={href} />
+                ))}
+              </XStack>
+              <BodyText color={amber500} fontSize={15}>
+                SELF
+              </BodyText>
+              {/* Dont remove if not viewing on ios */}
+              <View marginBottom={bottom} />
+            </YStack>
           </YStack>
-        </YStack>
-      </View>
+        </View>
+      </RNView>
     </GestureDetector>
   );
 };

@@ -1,7 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import { artifacts, ethers } from "hardhat";
 import hre from "hardhat";
-import fs from "fs";
 import path from "path";
 
 function getHubInitializeData() {

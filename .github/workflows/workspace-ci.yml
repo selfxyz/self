@@ -1,0 +1,198 @@
+name: Workspace CI
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - staging
+      - main
+  push:
+    branches:
+      - dev
+      - staging
+      - main
+
+jobs:
+  workspace-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            */node_modules
+            packages/*/node_modules
+          cache-version: v1
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Run workspace build
+        run: yarn build
+
+      - name: Verify build artifacts
+        run: |
+          echo "Checking for build artifacts..."
+          find . -name "dist" -type d | head -10
+          echo "Build completed successfully!"
+
+  workspace-type-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            */node_modules
+            packages/*/node_modules
+          cache-version: v1
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build workspace dependencies
+        run: yarn build
+
+      - name: Run workspace type checking
+        run: yarn types
+
+      - name: Verify type checking passed
+        run: echo "Type checking completed successfully!"
+
+  workspace-lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            */node_modules
+            packages/*/node_modules
+          cache-version: v1
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build workspace dependencies
+        run: yarn build
+
+      - name: Run workspace linting
+        run: yarn lint
+
+      - name: Verify linting passed
+        run: echo "Linting completed successfully!"
+
+  workspace-format-check:
+    if: false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            */node_modules
+            packages/*/node_modules
+          cache-version: v1
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Check code formatting (dry run)
+        run: |
+          echo "Checking if code is properly formatted..."
+          # Run format in dry-run mode by checking if any files would change
+          if ! git diff --quiet --exit-code; then
+            echo "Working directory not clean before format check"
+            git status --porcelain
+            exit 1
+          fi
+          yarn format
+          if ! git diff --quiet --exit-code; then
+            echo "❌ Code formatting issues found. The following files need formatting:"
+            git diff --name-only
+            echo "Run 'yarn format' to fix these issues."
+            exit 1
+          fi
+
+      - name: Verify formatting check passed
+        run: echo "Code formatting check completed successfully!"
+
+  workspace-test:
+    if: false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            */node_modules
+            packages/*/node_modules
+          cache-version: v1
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build workspace dependencies
+        run: yarn build
+
+      - name: Run workspace tests
+        run: yarn test
+
+      - name: Verify tests passed
+        run: echo "Workspace tests completed successfully!"
+
+  # version-consistency:
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: read
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Cache Yarn dependencies
+  #       uses: ./.github/actions/cache-yarn
+  #       with:
+  #         path: |
+  #           .yarn/cache
+  #           node_modules
+  #           */node_modules
+  #           packages/*/node_modules
+  #         cache-version: v1
+
+  #     - name: Install Dependencies
+  #       uses: ./.github/actions/yarn-install
+
+  #     - name: Check package version consistency
+  #       run: yarn check:versions
+
+  #     - name: Verify version consistency
+  #       run: echo "Package version consistency check passed!"

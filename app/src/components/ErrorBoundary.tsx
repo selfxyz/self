@@ -1,13 +1,13 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { ErrorInfo } from 'react';
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
 import { captureException } from '@/Sentry';
-import analytics from '@/utils/analytics';
-
-const { flush: flushAnalytics } = analytics();
+import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 
 interface Props {
   children: React.ReactNode;
@@ -28,8 +28,12 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Flush analytics before the app crashes
-    flushAnalytics();
+    trackNfcEvent('error_boundary', {
+      message: error.message,
+      stack: info.componentStack,
+    });
+    // Flush all analytics before the app crashes
+    flushAllAnalytics();
     captureException(error, {
       componentStack: info.componentStack,
       errorBoundary: true,

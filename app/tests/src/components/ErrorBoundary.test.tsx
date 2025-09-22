@@ -1,15 +1,18 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
 import { Text } from 'react-native';
 import { render } from '@testing-library/react-native';
 
-const mockFlush = jest.fn();
-const mockAnalytics = jest.fn(() => ({
-  flush: mockFlush,
-}));
+const mockTrackNfcEvent = jest.fn();
+const mockFlushAllAnalytics = jest.fn();
 
-jest.doMock('@/utils/analytics', () => mockAnalytics);
+jest.doMock('@/utils/analytics', () => ({
+  trackNfcEvent: mockTrackNfcEvent,
+  flushAllAnalytics: mockFlushAllAnalytics,
+}));
 jest.mock('@/Sentry', () => ({
   captureException: jest.fn(),
 }));
@@ -79,7 +82,11 @@ describe('ErrorBoundary', () => {
     );
 
     consoleError.mockRestore();
-    expect(mockFlush).toHaveBeenCalled();
+    expect(mockTrackNfcEvent).toHaveBeenCalledWith('error_boundary', {
+      message: 'boom',
+      stack: expect.any(String),
+    });
+    expect(mockFlushAllAnalytics).toHaveBeenCalled();
   });
 
   it('renders children normally when no error occurs', () => {

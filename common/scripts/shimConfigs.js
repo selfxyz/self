@@ -55,6 +55,11 @@ export const shimConfigs = [
   // ===== UTILS =====
   { shimPath: 'utils', targetPath: '../esm/src/utils/index.js', name: 'utils' },
   {
+    shimPath: 'utils/aadhaar/constants',
+    targetPath: '../../../esm/src/utils/aadhaar/constants.js',
+    name: 'utils/aadhaar/constants',
+  },
+  {
     shimPath: 'utils/appType',
     targetPath: '../../esm/src/utils/appType.js',
     name: 'utils/appType',
@@ -142,6 +147,11 @@ export const shimConfigs = [
     name: 'utils/circuits/registerInputs',
   },
   {
+    shimPath: 'utils/attest',
+    targetPath: '../../esm/src/utils/attest.js',
+    name: 'utils/attest',
+  },
+  {
     shimPath: 'utils/contracts',
     targetPath: '../../esm/src/utils/contracts/index.js',
     name: 'utils/contracts',
@@ -180,6 +190,11 @@ export const shimConfigs = [
     name: 'utils/oids',
   },
   {
+    shimPath: 'utils/ofac',
+    targetPath: '../../esm/src/utils/ofac.js',
+    name: 'utils/ofac',
+  },
+  {
     shimPath: 'utils/passportDg1',
     targetPath: '../../esm/src/utils/passports/dg1.js',
     name: 'utils/passportDg1',
@@ -210,6 +225,11 @@ export const shimConfigs = [
     name: 'utils/passports/mockDsc',
   },
   {
+    shimPath: 'utils/passports/validate',
+    targetPath: '../../../esm/src/utils/passports/validate.js',
+    name: 'utils/passports/validate',
+  },
+  {
     shimPath: 'utils/passports/mockGeneration',
     targetPath: '../../../esm/src/utils/passports/mockGeneration.js',
     name: 'utils/passports/mockGeneration',
@@ -220,6 +240,11 @@ export const shimConfigs = [
     name: 'utils/sanctions',
   },
   { shimPath: 'utils/scope', targetPath: '../../esm/src/utils/scope.js', name: 'utils/scope' },
+  {
+    shimPath: 'utils/proving',
+    targetPath: '../../esm/src/utils/proving.js',
+    name: 'utils/proving',
+  },
   { shimPath: 'utils/trees', targetPath: '../../esm/src/utils/trees.js', name: 'utils/trees' },
   {
     shimPath: 'utils/uuid',

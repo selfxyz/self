@@ -114,8 +114,7 @@ library IdCardAttributeHandler {
      */
     function getOlderThan(bytes memory charcodes) internal pure returns (uint256) {
         return
-            Formatter.numAsciiToUint(uint8(charcodes[OLDER_THAN_START])) *
-            10 +
+            Formatter.numAsciiToUint(uint8(charcodes[OLDER_THAN_START])) * 10 +
             Formatter.numAsciiToUint(uint8(charcodes[OLDER_THAN_START + 1]));
     }
 

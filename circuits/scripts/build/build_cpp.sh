@@ -2,15 +2,17 @@
 
 # run from root
 # first argument should register | dsc | disclose
-if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" && $1 != "register_id" ]]; then
-    echo "first argument should be register | dsc | disclose | register_id"
+if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" && $1 != "register_id" && $1 != "register_aadhaar" ]]; then
+    echo "first argument should be register | dsc | disclose | register_id | register_aadhaar"
     exit 1
 fi
 
 REGISTER_CIRCUITS=(
     # passport
+    "register_sha1_sha1_sha1_rsa_64321_4096:true"
     "register_sha1_sha1_sha1_ecdsa_brainpoolP224r1:true"
     "register_sha1_sha1_sha1_ecdsa_secp256r1:true"
+    "register_sha256_sha1_sha1_rsa_65537_4096:true"
     "register_sha1_sha1_sha1_rsa_65537_4096:true"
     "register_sha1_sha256_sha256_rsa_65537_4096:true"
     "register_sha224_sha224_sha224_ecdsa_brainpoolP224r1:true"
@@ -25,16 +27,18 @@ REGISTER_CIRCUITS=(
     "register_sha256_sha256_sha256_rsapss_3_32_2048:true"
     "register_sha256_sha256_sha256_rsapss_65537_32_2048:true"
     "register_sha256_sha256_sha256_rsapss_65537_32_3072:true"
+    "register_sha256_sha256_sha256_rsapss_65537_32_4096:true"
     "register_sha256_sha256_sha256_rsapss_65537_64_2048:true"
     "register_sha384_sha384_sha384_ecdsa_brainpoolP384r1:true"
     "register_sha384_sha384_sha384_ecdsa_brainpoolP512r1:true"
     "register_sha384_sha384_sha384_ecdsa_secp384r1:true"
+    "register_sha512_sha512_sha256_rsapss_65537_32_2048:true"
     "register_sha384_sha384_sha384_rsapss_65537_48_2048:true"
     "register_sha512_sha512_sha256_rsa_65537_4096:true"
     "register_sha512_sha512_sha512_ecdsa_brainpoolP512r1:true"
-    "register_sha512_sha512_sha512_ecdsa_secp521r1:true"
     "register_sha512_sha512_sha512_rsa_65537_4096:true"
     "register_sha512_sha512_sha512_rsapss_65537_64_2048:true"
+    "register_sha512_sha512_sha512_ecdsa_secp521r1:true"
 )
 
 REGISTER_ID_CIRCUITS=(
@@ -67,9 +71,14 @@ REGISTER_ID_CIRCUITS=(
     "register_id_sha512_sha512_sha512_rsapss_65537_64_2048:true"
 )
 
+REGISTER_AADHAAR_CIRCUITS=(
+    "register_aadhaar:true"
+)
+
 DISCLOSE_CIRCUITS=(
     "vc_and_disclose:true"
     "vc_and_disclose_id:true"
+    "vc_and_disclose_aadhaar:true"
 )
 
 DSC_CIRCUITS=(
@@ -82,6 +91,10 @@ DSC_CIRCUITS=(
     "dsc_sha256_ecdsa_secp384r1:true"
     "dsc_sha256_ecdsa_secp521r1:true"
     "dsc_sha256_rsa_65537_4096:true"
+    "dsc_sha256_rsa_56611_4096:true"
+    "dsc_sha256_rsa_107903_4096:true"
+    "dsc_sha256_rsa_122125_4096:true"
+    "dsc_sha256_rsa_130689_4096:true"
     "dsc_sha256_rsapss_3_32_3072:true"
     "dsc_sha256_rsapss_65537_32_3072:true"
     "dsc_sha256_rsapss_65537_32_4096:true"
@@ -104,6 +117,11 @@ elif [[ $1 == "register_id" ]]; then
     output="output/register"
     mkdir -p $output
     basepath="./circuits/circuits/register_id/instances"
+elif [[ $1 == "register_aadhaar" ]]; then
+    allowed_circuits=("${REGISTER_AADHAAR_CIRCUITS[@]}")
+    output="output/register"
+    mkdir -p $output
+    basepath="./circuits/circuits/register/instances"
 elif [[ $1 == "dsc" ]]; then
     allowed_circuits=("${DSC_CIRCUITS[@]}")
     output="output/dsc"

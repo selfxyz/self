@@ -13,7 +13,6 @@ import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
 import { formatCountriesList, reverseBytes, reverseCountryBytes } from "@selfxyz/common/utils/circuits/formatInputs";
 import { getPackedForbiddenCountries } from "@selfxyz/common/utils/sanctions";
 import { countries, Country3LetterCode } from "@selfxyz/common/constants/countries";
-import fs from "fs";
 import path from "path";
 
 describe("VC and Disclose", () => {

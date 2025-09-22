@@ -1,6 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import hre from "hardhat";
-import fs from "fs";
 import path from "path";
 
 module.exports = buildModule("UpdateVerifyAllAddresses", (m) => {

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 /**
  * Safe TextDecoder factory that works across different JavaScript environments.
  * Handles browser, Node.js, and React Native environments gracefully.

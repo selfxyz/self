@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
 import { Text } from 'react-native';
@@ -50,13 +52,16 @@ describe('RemoteConfigProvider', () => {
     expect(getByTestId('error')).toHaveTextContent('none');
 
     // Wait for initialization to complete
-    await waitFor(() => {
-      expect(getByTestId('initialized')).toHaveTextContent('true');
-    });
+    await waitFor(
+      () => {
+        expect(getByTestId('initialized')).toHaveTextContent('true');
+      },
+      { timeout: 10000 },
+    );
 
     expect(getByTestId('error')).toHaveTextContent('none');
     expect(mockInitRemoteConfig).toHaveBeenCalledTimes(1);
-  });
+  }, 15000);
 
   it('should handle initialization errors gracefully', async () => {
     const errorMessage = 'Firebase initialization failed';

@@ -10,16 +10,15 @@ env:
 
 on:
   pull_request:
+    branches:
+      - dev
+      - staging
+      - main
     paths:
       - "sdk/qrcode/**"
       - "common/**"
       - ".github/workflows/qrcode-sdk-ci.yml"
       - ".github/actions/**"
-  push:
-    branches: [main, develop]
-    paths:
-      - "sdk/qrcode/**"
-      - "common/**"
 
 jobs:
   # Build dependencies once and cache for other jobs

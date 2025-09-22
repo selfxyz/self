@@ -1,6 +1,8 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import path from 'path';
+import { dirname, resolve } from 'path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
@@ -9,7 +11,7 @@ import { tamaguiPlugin } from '@tamagui/vite-plugin';
 import react from '@vitejs/plugin-react-swc';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
   root: 'web',
@@ -27,19 +29,28 @@ export default defineConfig({
       '.js',
     ],
     alias: {
-      '@env': path.resolve(__dirname, 'env.ts'),
-      '/src': path.resolve(__dirname, 'src'),
-      '@': path.resolve(__dirname, 'src'),
+      '@env': resolve(__dirname, 'env.ts'),
+      '/src': resolve(__dirname, 'src'),
+      '@': resolve(__dirname, 'src'),
       'react-native-svg': 'react-native-svg-web',
       'lottie-react-native': 'lottie-react',
-      'react-native-safe-area-context': path.resolve(
+      '@react-native-community/blur': resolve(
+        __dirname,
+        'src/mocks/react-native-community-blur.ts',
+      ),
+      'react-native-safe-area-context': resolve(
         __dirname,
         'src/mocks/react-native-safe-area-context.js',
       ),
-      'react-native-gesture-handler': path.resolve(
+      'react-native-gesture-handler': resolve(
         __dirname,
         'src/mocks/react-native-gesture-handler.ts',
       ),
+      'react-native-passport-reader': resolve(
+        __dirname,
+        'src/mocks/react-native-passport-reader.ts',
+      ),
+      crypto: 'crypto-browserify',
     },
   },
   plugins: [
@@ -48,7 +59,7 @@ export default defineConfig({
       include: '**/*.svg',
     }),
     tamaguiPlugin({
-      config: path.resolve(__dirname, 'tamagui.config.ts'),
+      config: resolve(__dirname, 'tamagui.config.ts'),
       components: ['tamagui'],
       enableDynamicEvaluation: true,
       excludeReactNativeWebExports: [
@@ -74,7 +85,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
-    exclude: ['fs', 'path', 'child_process'],
+    exclude: ['fs', 'path', 'child_process', '@zk-email/helpers'],
     esbuildOptions: {
       // Optimize minification
       minifyIdentifiers: true,
@@ -85,14 +96,14 @@ export default defineConfig({
 
   build: {
     emptyOutDir: true,
-    outDir: path.resolve(__dirname, 'web/dist'),
+    outDir: resolve(__dirname, 'web/dist'),
     // Optimize minification settings
     minify: 'esbuild',
     target: 'es2020',
     cssMinify: true,
     cssCodeSplit: true,
     rollupOptions: {
-      external: ['fs', 'path', 'child_process'],
+      external: ['fs', 'child_process'],
       output: {
         // Optimize chunk size and minification
         compact: true,
@@ -142,7 +153,7 @@ export default defineConfig({
           'vendor-state-zustand': ['zustand'],
 
           // Screen-specific chunks - more granular
-          'screens-passport-core': ['./src/navigation/passport.ts'],
+          'screens-document-core': ['./src/navigation/document.ts'],
           'screens-passport-nfc': ['./src/utils/nfcScanner.ts'],
 
           // Proving - split into even smaller chunks
@@ -153,11 +164,8 @@ export default defineConfig({
           'screens-prove-validation-core': [
             './src/utils/proving/validateDocument.ts',
           ],
-          'screens-prove-attest': ['./src/utils/proving/attest.ts'],
           'screens-prove-utils': [
-            './src/utils/proving/provingUtils.ts',
-            './src/utils/proving/provingInputs.ts',
-            './src/utils/proving/cose.ts',
+            './src/utils/proving/index.ts',
             './src/utils/proving/loadingScreenStateText.ts',
           ],
 
@@ -169,7 +177,7 @@ export default defineConfig({
           // Other screens
           'screens-settings': ['./src/navigation/settings.ts'],
           'screens-recovery': ['./src/navigation/recovery.ts'],
-          'screens-dev': ['./src/navigation/dev.ts'],
+          'screens-dev': ['./src/navigation/devTools.ts'],
           'screens-aesop': ['./src/navigation/aesop.ts'],
         },
       },

@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
@@ -6,15 +8,20 @@ import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
+import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  PassportEvents,
+  ProofEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { PassportEvents, ProofEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
-import analytics from '@/utils/analytics';
+import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import { notificationSuccess } from '@/utils/haptic';
 import {
@@ -25,10 +32,10 @@ import { useProvingStore } from '@/utils/proving/provingMachine';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
-const { trackEvent } = analytics();
-
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
-  const navigate = useHapticNavigation('LoadingScreen', {
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
+  const navigate = useHapticNavigation('Loading', {
     params: {},
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);
@@ -37,29 +44,44 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const setFcmToken = useProvingStore(state => state.setFcmToken);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
   const isReadyToProve = currentState === 'ready_to_prove';
-
   useEffect(() => {
     notificationSuccess();
-    init('dsc');
-  }, [init]);
+
+    const initializeProving = async () => {
+      try {
+        const selectedDocument = await loadSelectedDocument(selfClient);
+        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+          init(selfClient, 'register');
+        } else {
+          init(selfClient, 'dsc');
+        }
+      } catch (error) {
+        console.error('Error loading selected document:', error);
+        init(selfClient, 'dsc');
+      }
+    };
+
+    initializeProving();
+  }, [init, selfClient]);
 
   const onOkPress = async () => {
     try {
       setRequestingPermission(true);
       trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
+      trackNfcEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
 
       // Request notification permission
       const permissionGranted = await requestNotificationPermission();
       if (permissionGranted) {
         const token = await getFCMToken();
         if (token) {
-          setFcmToken(token);
+          setFcmToken(token, selfClient);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
         }
       }
 
       // Mark as user confirmed - proving will start automatically when ready
-      setUserConfirmed();
+      setUserConfirmed(selfClient);
 
       // Navigate to loading screen
       navigate();
@@ -69,6 +91,11 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
         error: message,
       });
+      trackNfcEvent(ProofEvents.PROVING_PROCESS_ERROR, {
+        error: message,
+      });
+
+      flushAllAnalytics();
     } finally {
       setRequestingPermission(false);
     }
@@ -97,10 +124,10 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
         >
           <Title textAlign="center">Confirm your identity</Title>
           <Description textAlign="center" paddingBottom={20}>
-            By continuing, you certify that this passport belongs to you and is
-            not stolen or forged. Once registered with Self, this document will
-            be permanently linked to your identity and can't be linked to
-            another one.
+            By continuing, you certify that this passport, biometric ID or
+            Aadhaar card belongs to you and is not stolen or forged. Once
+            registered with Self, this document will be permanently linked to
+            your identity and can't be linked to another one.
           </Description>
           <PrimaryButton
             trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}

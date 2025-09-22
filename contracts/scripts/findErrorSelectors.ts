@@ -1,4 +1,4 @@
-import fs from "fs";
+import { readdirSync, statSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { keccak256 } from "ethers";
 
@@ -17,11 +17,11 @@ function findSolidityFiles(dir: string): string[] {
   const files: string[] = [];
 
   function traverse(currentDir: string) {
-    const items = fs.readdirSync(currentDir);
+    const items = readdirSync(currentDir);
 
     for (const item of items) {
       const fullPath = path.join(currentDir, item);
-      const stat = fs.statSync(fullPath);
+      const stat = statSync(fullPath);
 
       if (stat.isDirectory()) {
         // Skip node_modules, .git, and other common directories
@@ -42,7 +42,7 @@ function findSolidityFiles(dir: string): string[] {
  * Extract custom errors from Solidity file content
  */
 function extractCustomErrors(filePath: string): CustomError[] {
-  const content = fs.readFileSync(filePath, "utf8");
+  const content = readFileSync(filePath, "utf8");
   const lines = content.split("\n");
   const errors: CustomError[] = [];
 
@@ -162,7 +162,7 @@ async function findAllErrorSelectors(targetSelector?: string) {
 
   // Save results to JSON file for future reference
   const outputFile = "error-selectors.json";
-  fs.writeFileSync(outputFile, JSON.stringify(allErrors, null, 2));
+  writeFileSync(outputFile, JSON.stringify(allErrors, null, 2));
   console.log(`\n💾 Results saved to ${outputFile}`);
 
   return allErrors;

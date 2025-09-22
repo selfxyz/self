@@ -48,7 +48,6 @@
 ## Core Workflows
 
 1. Document Verification Flow
-- NFC chip data extraction and validation
 - Zero-knowledge proof generation for privacy
 - Multi-stage attestation verification
 - Cross-chain verification support
@@ -127,25 +126,6 @@ This is a React Native identity verification app with NFC passport reading, zero
 - SQLite operations mocked with `executeSql` method
 - Test utilities in `tests/__setup__/databaseMocks.ts`
 - Mock database instance for testing
-
-## NFC Implementation
-
-### Cross-Platform Architecture
-- iOS: Custom PassportReader Swift module
-- Android: Custom RNPassportReaderModule Kotlin implementation
-- Unified JavaScript interface with platform detection
-
-### Authentication Methods
-- MRZ Key: Derived from passport number, DOB, and expiry date
-- CAN (Card Access Number): 6-digit number for PACE authentication
-- PACE: Password Authenticated Connection Establishment
-- BAC fallback when PACE fails
-
-### Error Handling
-- Multiple BAC attempts with delays
-- Graceful degradation from PACE to BAC
-- Real-time status updates and haptic feedback
-- Comprehensive error boundaries
 
 ## Code Organization
 

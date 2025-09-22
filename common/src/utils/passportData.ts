@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import type { PassportData } from './types.js';
 
 const fs = require('fs');

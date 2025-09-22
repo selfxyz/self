@@ -8,7 +8,7 @@ The app uses `@react-navigation/native` with `createStaticNavigation` for type-s
 ```typescript
 // Navigation setup pattern
 export const navigationScreens = {
-  ...miscScreens,
+  ...systemScreens,
   ...passportScreens,
   ...homeScreens,
   ...proveScreens,

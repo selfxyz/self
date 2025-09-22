@@ -1,6 +1,11 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 import { Button, Text, YStack } from 'tamagui';
 
 import type { PassportCameraProps } from '../../types/ui';
+import { MRZScannerView } from '../MRZScannerView';
 
 // Simple placeholder component - this would be replaced with actual camera UI
 export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => (
@@ -8,16 +13,14 @@ export const PassportCameraScreen = ({ onMRZDetected }: PassportCameraProps) => 
     <Text fontSize="$6" fontWeight="bold">
       Passport Camera
     </Text>
+
+    <MRZScannerView onMRZDetected={onMRZDetected} />
     <Button
       onPress={() =>
         onMRZDetected({
-          passportNumber: 'L898902C3',
+          documentNumber: 'L898902C3',
           dateOfBirth: '740812',
           dateOfExpiry: '120415',
-          surname: 'ERIKSSON',
-          givenNames: 'ANNA MARIA',
-          sex: 'F',
-          nationality: 'UTO',
           issuingCountry: 'UTO',
           documentType: 'P',
           validation: {

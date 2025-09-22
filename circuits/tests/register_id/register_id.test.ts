@@ -3,7 +3,7 @@ import { describe } from 'mocha';
 import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { generateCircuitInputsRegister } from '@selfxyz/common/utils/circuits/generateInputs';
+import { generateCircuitInputsRegisterForTests } from '@selfxyz/common/utils/circuits/generateInputs';
 import { SignatureAlgorithm } from '@selfxyz/common/utils/types';
 import { getCircuitNameFromPassportData } from '@selfxyz/common/utils/circuits/circuitsName';
 import { sigAlgs, fullSigAlgs } from './test_cases.js';
@@ -45,7 +45,7 @@ testSuite.forEach(
       });
       const secret = poseidon6('SECRET'.split('').map((x) => BigInt(x.charCodeAt(0)))).toString();
 
-      const inputs = generateCircuitInputsRegister(
+      const inputs = generateCircuitInputsRegisterForTests(
         secret,
         passportData,
         serialized_dsc_tree as string

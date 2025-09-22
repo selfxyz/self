@@ -1,4 +1,44 @@
-version: 2
-exclusion_globs:
+# GitGuardian configuration for ggshield
+# This file configures which files and secrets to ignore during scanning
+
+# Ignore specific file patterns
+paths-ignore:
+  # Mock certificates for testing (these are intentionally committed test data)
+  - "**/mock_certificates/**/*.key"
+  - "**/mock_certificates/**/*.crt"
+  - "**/mock_certificates/**/*.pem"
+  - "**/constants/mockCertificates.ts"
   - "common/src/mock_certificates/**"
-  - "common/src/constants/mockCertificates.ts"
+  - "common/src/mock_certificates/aadhaar/mockAadhaarCert.ts"
+  - "common/src/utils/passports/genMockIdDoc.ts"
+
+  # Test data files
+  - "**/test/**/*.key"
+  - "**/test/**/*.crt"
+  - "**/test/**/*.pem"
+  - "**/tests/**/*.key"
+  - "**/tests/**/*.crt"
+  - "**/tests/**/*.pem"
+
+  # Mock data files
+  - "**/mock/**/*.key"
+  - "**/mock/**/*.crt"
+  - "**/mock/**/*.pem"
+
+  # Demo app test data
+  - "**/demo-app/**/mock/**"
+  - "**/demo-app/**/test-data/**"
+  - "**/test-data/**"
+  - "**/mock-data/**"
+
+  # Generated test files
+  - "**/generated/**/*.key"
+  - "**/generated/**/*.crt"
+  - "**/generated/**/*.pem"
+
+# Ignore specific secret types for mock files
+secrets-ignore:
+  - "Generic Private Key" # For mock certificate keys
+  - "Generic Certificate" # For mock certificates
+  - "RSA Private Key" # For mock RSA keys
+  - "EC Private Key" # For mock EC keys

@@ -1,6 +1,6 @@
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
-import fs from 'fs';
+import { writeFileSync } from 'fs';
 import path from 'path';
 
 import { countryCodes } from '../constants/constants.js';
@@ -16,7 +16,7 @@ try {
   }));
 
   const outputPath = path.join(__dirname, './countryOptions.json');
-  fs.writeFileSync(outputPath, JSON.stringify(countryOptions, null, 2));
+  writeFileSync(outputPath, JSON.stringify(countryOptions, null, 2));
 
   console.log(`Generated country options at ${outputPath}`);
 } catch (error) {

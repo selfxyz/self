@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
 import React, {
@@ -20,27 +22,30 @@ import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '@/components/buttons/HeldPrimaryButtonProveScreen';
 import Disclosures from '@/components/Disclosures';
 import { BodyText } from '@/components/typography/BodyText';
 import { Caption } from '@/components/typography/Caption';
-import { ProofEvents } from '@/consts/analytics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { setDefaultDocumentTypeIfNeeded } from '@/providers/passportDataProvider';
+import {
+  setDefaultDocumentTypeIfNeeded,
+  usePassport,
+} from '@/providers/passportDataProvider';
 import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
-import { useSelfAppStore } from '@/stores/selfAppStore';
-import analytics from '@/utils/analytics';
 import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
 import { buttonTap } from '@/utils/haptic';
 import { useProvingStore } from '@/utils/proving/provingMachine';
 
-const { trackEvent } = analytics();
-
 const ProveScreen: React.FC = () => {
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
   const { navigate } = useNavigation();
   const isFocused = useIsFocused();
   const selectedApp = useSelfAppStore(state => state.selfApp);
@@ -56,27 +61,34 @@ const ProveScreen: React.FC = () => {
     () => scrollViewContentHeight <= scrollViewHeight,
     [scrollViewContentHeight, scrollViewHeight],
   );
-
   const provingStore = useProvingStore();
   const currentState = useProvingStore(state => state.currentState);
   const isReadyToProve = currentState === 'ready_to_prove';
 
   const { addProofHistory } = useProofHistoryStore();
+  const { loadDocumentCatalog } = usePassport();
 
   useEffect(() => {
-    if (provingStore.uuid && selectedApp) {
-      addProofHistory({
-        appName: selectedApp.appName,
-        sessionId: provingStore.uuid!,
-        userId: selectedApp.userId,
-        userIdType: selectedApp.userIdType,
-        endpointType: selectedApp.endpointType,
-        status: ProofStatus.PENDING,
-        logoBase64: selectedApp.logoBase64,
-        disclosures: JSON.stringify(selectedApp.disclosures),
-      });
-    }
-  }, [addProofHistory, provingStore.uuid, selectedApp]);
+    const addHistory = async () => {
+      if (provingStore.uuid && selectedApp) {
+        const catalog = await loadDocumentCatalog();
+        const selectedDocumentId = catalog.selectedDocumentId;
+
+        addProofHistory({
+          appName: selectedApp.appName,
+          sessionId: provingStore.uuid!,
+          userId: selectedApp.userId,
+          userIdType: selectedApp.userIdType,
+          endpointType: selectedApp.endpointType,
+          status: ProofStatus.PENDING,
+          logoBase64: selectedApp.logoBase64,
+          disclosures: JSON.stringify(selectedApp.disclosures),
+          documentId: selectedDocumentId || '', // Fallback to empty if none selected
+        });
+      }
+    };
+    addHistory();
+  }, [addProofHistory, provingStore.uuid, selectedApp, loadDocumentCatalog]);
 
   useEffect(() => {
     if (isContentShorterThanScrollView) {
@@ -94,10 +106,10 @@ const ProveScreen: React.FC = () => {
     setDefaultDocumentTypeIfNeeded();
 
     if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
-      provingStore.init('disclose');
+      provingStore.init(selfClient, 'disclose');
     }
     selectedAppRef.current = selectedApp;
-  }, [selectedApp, isFocused, provingStore]);
+  }, [selectedApp, isFocused, provingStore, selfClient]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
@@ -137,16 +149,16 @@ const ProveScreen: React.FC = () => {
   );
 
   function onVerify() {
-    provingStore.setUserConfirmed();
+    provingStore.setUserConfirmed(selfClient);
     buttonTap();
-    trackEvent(ProofEvents.PROOF_VERIFICATION_STARTED, {
+    trackEvent(ProofEvents.PROOF_VERIFY_CONFIRMATION_ACCEPTED, {
       appName: selectedApp?.appName,
       sessionId: provingStore.uuid,
       endpointType: selectedApp?.endpointType,
       userIdType: selectedApp?.userIdType,
     });
     setTimeout(() => {
-      navigate('ProofRequestStatusScreen');
+      navigate('ProofRequestStatus');
     }, 100);
   }
 
@@ -175,6 +187,7 @@ const ProveScreen: React.FC = () => {
       isContentShorterThanScrollView,
       selectedApp,
       provingStore.uuid,
+      trackEvent,
     ],
   );
 

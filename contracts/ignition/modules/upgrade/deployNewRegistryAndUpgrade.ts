@@ -1,7 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import { artifacts, ethers } from "hardhat";
 import hre from "hardhat";
-import fs from "fs";
+import { readFileSync } from "fs";
 import path from "path";
 
 function getTestRegistryInitializeData() {
@@ -13,7 +13,7 @@ export default buildModule("DeployNewHubAndUpgrade", (m) => {
   const networkName = hre.network.config.chainId;
 
   const deployedAddressesPath = path.join(__dirname, `../deployments/chain-${networkName}/deployed_addresses.json`);
-  const deployedAddresses = JSON.parse(fs.readFileSync(deployedAddressesPath, "utf8"));
+  const deployedAddresses = JSON.parse(readFileSync(deployedAddressesPath, "utf8"));
 
   const registryProxyAddress = deployedAddresses["DeployRegistryModule#IdentityRegistry"];
   if (!registryProxyAddress) {

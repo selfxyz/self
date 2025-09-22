@@ -1,39 +1,31 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import ConfirmBelongingScreen from '@/screens/prove/ConfirmBelongingScreen';
+import ProofRequestStatusScreen from '@/screens/prove/ProofRequestStatusScreen';
+import ProveScreen from '@/screens/prove/ProveScreen';
+import QRCodeTroubleScreen from '@/screens/prove/QRCodeTroubleScreen';
+import QRCodeViewFinderScreen from '@/screens/prove/QRCodeViewFinderScreen';
 import { black, white } from '@/utils/colors';
 
-const ConfirmBelongingScreen = lazy(
-  () => import('@/screens/prove/ConfirmBelongingScreen'),
-);
-const ProofRequestStatusScreen = lazy(
-  () => import('@/screens/prove/ProofRequestStatusScreen'),
-);
-const ProveScreen = lazy(() => import('@/screens/prove/ProveScreen'));
-const QRCodeTroubleScreen = lazy(
-  () => import('@/screens/prove/QRCodeTroubleScreen'),
-);
-const QRCodeViewFinderScreen = lazy(
-  () => import('@/screens/prove/ViewFinderScreen'),
-);
-
 const proveScreens = {
-  ConfirmBelongingScreen: {
+  ConfirmBelonging: {
     screen: ConfirmBelongingScreen,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
   },
-  ProofRequestStatusScreen: {
+  ProofRequestStatus: {
     screen: ProofRequestStatusScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
-  ProveScreen: {
+  Prove: {
     screen: ProveScreen,
     options: {
       title: 'Request Proof',

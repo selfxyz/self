@@ -1,18 +1,20 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /**
  * @jest-environment node
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 describe('iOS Info.plist Configuration', () => {
-  const plistPath = path.join(__dirname, '../../ios/OpenPassport/Info.plist');
+  const plistPath = join(__dirname, '../../ios/OpenPassport/Info.plist');
   let plistContent: string;
 
   beforeAll(() => {
-    plistContent = fs.readFileSync(plistPath, 'utf8');
+    plistContent = readFileSync(plistPath, 'utf8');
   });
 
   it('contains the proofofpassport URL scheme', () => {

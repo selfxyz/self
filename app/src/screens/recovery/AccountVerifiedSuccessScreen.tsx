@@ -1,15 +1,18 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
 import React from 'react';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { BackupEvents } from '@/consts/analytics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
 import { black, white } from '@/utils/colors';
@@ -42,7 +45,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
         >
           <Title size="large">ID Verified</Title>
           <Description>
-            Your passport information is now protected by Self ID. Just scan a
+            Your document's information is now protected by Self ID. Just scan a
             participating partner's QR code to prove your identity.
           </Description>
         </YStack>

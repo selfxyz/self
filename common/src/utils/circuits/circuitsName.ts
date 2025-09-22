@@ -1,7 +1,7 @@
-import type { PassportData } from '../types.js';
+import type { IDDocument, PassportData } from '../types.js';
 
 export function getCircuitNameFromPassportData(
-  passportData: PassportData,
+  passportData: IDDocument,
   circuitType: 'register' | 'dsc'
 ) {
   if (circuitType === 'register') {
@@ -11,8 +11,12 @@ export function getCircuitNameFromPassportData(
   }
 }
 
-function getDSCircuitNameFromPassportData(passportData: PassportData) {
+function getDSCircuitNameFromPassportData(passportData: IDDocument) {
   console.log('Getting DSC circuit name from passport data...');
+
+  if (passportData.documentCategory === 'aadhaar') {
+    throw new Error('Aadhaar does not have a DSC circuit');
+  }
 
   if (!passportData.passportMetadata) {
     console.error('Passport metadata is missing');
@@ -76,8 +80,12 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
   }
 }
 
-function getRegisterNameFromPassportData(passportData: PassportData) {
+function getRegisterNameFromPassportData(passportData: IDDocument) {
   console.log('Getting register circuit name from passport data...');
+
+  if (passportData.documentCategory === 'aadhaar') {
+    return 'register_aadhaar';
+  }
 
   if (!passportData.passportMetadata) {
     console.error('Passport metadata is missing');

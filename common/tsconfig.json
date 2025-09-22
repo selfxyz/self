@@ -16,12 +16,13 @@
     "composite": true
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.js",
-    "index.ts"
+    "src/**/*",
+    "index.ts",
+    "ofacdata/**/*.json"
   ],
   "exclude": [
     "dist",
-    "node_modules"
+    "node_modules",
+    "src/**/*.test.ts"
   ]
 }

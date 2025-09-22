@@ -1,17 +1,13 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { lazy } from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import DocumentDataInfoScreen from '@/screens/settings/DocumentDataInfoScreen';
+import ManageDocumentsScreen from '@/screens/settings/ManageDocumentsScreen';
+import SettingsScreen from '@/screens/settings/SettingsScreen';
 import { black, white } from '@/utils/colors';
-
-const ManageDocumentsScreen = lazy(
-  () => import('@/screens/settings/ManageDocumentsScreen'),
-);
-const PassportDataInfoScreen = lazy(
-  () => import('@/screens/settings/PassportDataInfoScreen'),
-);
-const SettingsScreen = lazy(() => import('@/screens/settings/SettingsScreen'));
 
 const settingsScreens = {
   ManageDocuments: {
@@ -26,10 +22,10 @@ const settingsScreens = {
       },
     } as NativeStackNavigationOptions,
   },
-  PassportDataInfo: {
-    screen: PassportDataInfoScreen,
+  DocumentDataInfo: {
+    screen: DocumentDataInfoScreen,
     options: {
-      title: 'Passport Data Info',
+      title: 'Document Data Info',
       headerStyle: {
         backgroundColor: white,
       },
@@ -46,7 +42,6 @@ const settingsScreens = {
       headerTitleStyle: {
         color: black,
       },
-      navigationBarColor: black,
     } as NativeStackNavigationOptions,
     config: {
       screens: {},

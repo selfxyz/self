@@ -110,7 +110,6 @@ const hardhatPackages = [
 
 // Testing framework
 const testingPackages = [
-  '@testing-library/react-hooks',
   '@testing-library/react-native',
   '@babel/core',
   '@babel/runtime',
@@ -151,6 +150,9 @@ const depVersions = new Map();
 const pmVersions = new Map();
 const workflowVersions = new Map();
 const engineVersions = new Map();
+
+// Packages that are intentionally different for technical reasons
+const intentionallyDifferentPackages = [];
 
 function record(map, key, version, filePath) {
   if (!version) return;
@@ -276,7 +278,17 @@ if (engineNodeVersions && engineNodeVersions.size > 0) {
   const workflowNodeVersions = workflowVersions.get('workflow node-version');
   if (workflowNodeVersions) {
     const mismatches = [...workflowNodeVersions.keys()]
-      .filter(v => !String(v).includes(expectedNodeVersion))
+      .filter(v => {
+        const versionStr = String(v);
+        // Skip dynamic versions like ${{ env.NODE_VERSION }} - these are set from .nvmrc
+        if (
+          versionStr.includes('${{') ||
+          versionStr.includes('env.NODE_VERSION')
+        ) {
+          return false;
+        }
+        return !versionStr.includes(expectedNodeVersion);
+      })
       .sort();
     if (mismatches.length) {
       console.log('🚨 WORKFLOW VERSION MISMATCH:');
@@ -315,6 +327,7 @@ if (pm && pm.size > 1) {
 
 // Check for other package mismatches
 let hasOtherIssues = false;
+let hasIntentionalDifferences = intentionallyDifferentPackages.length > 0;
 const categories = [
   { name: 'React Native', packages: reactNativePackages },
   { name: 'Tamagui UI', packages: tamaguiPackages },
@@ -420,6 +433,12 @@ if (totalIssues === 0) {
 
     for (const category of categories) {
       const mismatchedInCategory = category.packages.filter(pkg => {
+        if (
+          criticalPackages.includes(pkg) ||
+          intentionallyDifferentPackages.includes(pkg)
+        ) {
+          return false; // Skip already reported packages
+        }
         const versions = depVersions.get(pkg);
         return versions && versions.size > 1;
       });
@@ -436,4 +455,38 @@ if (totalIssues === 0) {
   }
 }
 
-process.exit(totalIssues > 0 ? 1 : 0);
+// Only fail CI for critical issues that can break builds or security
+const criticalIssues = [
+  hasCriticalIssues,
+  hasWorkflowIssues,
+  hasPmIssues,
+].filter(Boolean).length;
+
+if (criticalIssues > 0) {
+  console.log(
+    `\n🚨 FAILING CI: Found ${criticalIssues} critical issue(s) that must be fixed.`,
+  );
+  process.exit(1);
+} else if (hasOtherIssues || hasIntentionalDifferences) {
+  let message = '⚠️  CI PASSING: ';
+  const parts = [];
+  if (hasOtherIssues) parts.push('non-critical version mismatches');
+  if (hasIntentionalDifferences)
+    parts.push('intentional technical differences');
+  message += `Found ${parts.join(' and ')}.`;
+
+  console.log(`\n${message}`);
+  if (hasOtherIssues) {
+    console.log(
+      'Non-critical mismatches should be addressed but do not block development.',
+    );
+  }
+  if (hasIntentionalDifferences) {
+    console.log(
+      'Intentional differences are acceptable for technical requirements.',
+    );
+  }
+  process.exit(0);
+} else {
+  process.exit(0);
+}

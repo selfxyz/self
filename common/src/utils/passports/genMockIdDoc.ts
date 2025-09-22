@@ -7,6 +7,8 @@ import forge from 'node-forge';
 import type { hashAlgosTypes } from '../../constants/constants.js';
 import { API_URL_STAGING } from '../../constants/constants.js';
 import { countries } from '../../constants/countries.js';
+import { convertByteArrayToBigInt, processQRData } from '../aadhaar/mockData.js';
+import { extractQRDataFields } from '../aadhaar/utils.js';
 import { getCurveForElliptic } from '../certificate_parsing/curves.js';
 import type {
   PublicKeyDetailsECDSA,
@@ -14,14 +16,18 @@ import type {
 } from '../certificate_parsing/dataStructure.js';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple.js';
 import { getHashLen, hash } from '../hash.js';
-import type { DocumentType, PassportData, SignatureAlgorithm } from '../types.js';
+import type { AadhaarData, DocumentType, PassportData, SignatureAlgorithm } from '../types.js';
 import { genDG1 } from './dg1.js';
 import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
 import { getMockDSC } from './getMockDSC.js';
 import { initPassportDataParsing } from './passport.js';
+import {
+  AADHAAR_MOCK_PRIVATE_KEY_PEM,
+  AADHAAR_MOCK_PUBLIC_KEY_PEM,
+} from '../../mock_certificates/aadhaar/mockAadhaarCert.js';
 
 export interface IdDocInput {
-  idType: 'mock_passport' | 'mock_id_card';
+  idType: 'mock_passport' | 'mock_id_card' | 'mock_aadhaar';
   dgHashAlgo?: hashAlgosTypes;
   eContentHashAlgo?: hashAlgosTypes;
   signatureType?: SignatureAlgorithm;
@@ -32,6 +38,9 @@ export interface IdDocInput {
   lastName?: string;
   firstName?: string;
   sex?: 'M' | 'F';
+  // Aadhaar-specific fields
+  pincode?: string; // - not disclosing this so not getting it in CreateMockScreen
+  state?: string;
 }
 
 const defaultIdDocInput: IdDocInput = {
@@ -43,19 +52,79 @@ const defaultIdDocInput: IdDocInput = {
   birthDate: '900101',
   expiryDate: '300101',
   passportNumber: '123456789',
-  lastName: 'DOE',
-  firstName: 'JOHN',
+  lastName: undefined,
+  firstName: undefined,
   sex: 'M',
+  // Aadhaar defaults
+  pincode: '110051',
+  state: 'Delhi',
 };
+
+// Generate mock Aadhaar document
+function genMockAadhaarDoc(input: IdDocInput): AadhaarData {
+  const name = input.firstName
+    ? `${input.firstName} ${input.lastName || ''}`.trim()
+    : generateRandomName();
+
+  const gender = input.sex === 'F' ? 'F' : 'M';
+  const pincode = input.pincode ?? '110051';
+  const state = input.state ?? 'Delhi';
+  const dateOfBirth = input.birthDate ?? '01-01-1990';
+  console.log('genMockAadhaarDoc', input);
+  console.log('dateOfBirth', dateOfBirth);
+
+  // Generate Aadhaar QR data using processQRData
+  const qrData = processQRData(
+    AADHAAR_MOCK_PRIVATE_KEY_PEM,
+    name,
+    dateOfBirth,
+    gender,
+    pincode,
+    state,
+    new Date().getTime().toString()
+  );
+
+  // Convert QR data to string format
+  const qrDataString = convertByteArrayToBigInt(qrData.qrDataBytes).toString();
+  console.log('qrDataString', qrDataString);
+
+  // Extract signature from the decoded data
+  const signatureBytes = qrData.decodedData.slice(
+    qrData.decodedData.length - 256,
+    qrData.decodedData.length
+  );
+  const signature = Array.from(signatureBytes);
+
+  console.log('qrData.extractedFields', qrData.extractedFields);
+
+  return {
+    documentType: input.idType as DocumentType,
+    documentCategory: 'aadhaar',
+    mock: true,
+    qrData: qrDataString,
+    extractedFields: qrData.extractedFields,
+    signature,
+    publicKey: AADHAAR_MOCK_PUBLIC_KEY_PEM,
+    photoHash: qrData.photoHash.toString(),
+  };
+}
 
 export function genMockIdDoc(
   userInput: Partial<IdDocInput> = {},
   mockDSC?: { dsc: string; privateKeyPem: string }
-): PassportData {
+): PassportData | AadhaarData {
+  if (userInput.idType === 'mock_aadhaar') {
+    return genMockAadhaarDoc(userInput as IdDocInput);
+  }
+
   const mergedInput: IdDocInput = {
     ...defaultIdDocInput,
     ...userInput,
   };
+
+  mergedInput.lastName = mergedInput.lastName ?? 'DOE';
+  mergedInput.firstName = mergedInput.firstName ?? 'JOHN';
+
   let privateKeyPem: string, dsc: string;
   if (mockDSC) {
     dsc = mockDSC.dsc;
@@ -91,7 +160,7 @@ export function genMockIdDoc(
 
 export function genMockIdDocAndInitDataParsing(userInput: Partial<IdDocInput> = {}) {
   return initPassportDataParsing({
-    ...genMockIdDoc(userInput),
+    ...(genMockIdDoc(userInput) as PassportData),
   });
 }
 
@@ -114,6 +183,21 @@ export async function generateMockDSC(
     throw new Error('Invalid DSC response format from server');
   }
   return { privateKeyPem: data.data.privateKeyPem, dsc: data.data.dsc };
+}
+
+function generateRandomName(): string {
+  // Generate random letter combinations for first and last name
+  const generateRandomLetters = (length: number): string => {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    return Array.from({ length }, () => letters[Math.floor(Math.random() * letters.length)]).join(
+      ''
+    );
+  };
+
+  const firstName = generateRandomLetters(4 + Math.floor(Math.random() * 4)); // 4-7 letters
+  const lastName = generateRandomLetters(5 + Math.floor(Math.random() * 5)); // 5-9 letters
+
+  return `${firstName} ${lastName}`;
 }
 
 function generateRandomBytes(length: number): number[] {

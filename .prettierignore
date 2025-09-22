@@ -1,0 +1,14 @@
+# Root .prettierignore
+**/node_modules/**
+**/.yarn/**
+**/dist/**
+**/build/**
+**/coverage/**
+**/Pods/**
+app/vendor/**
+circuits/build/**
+contracts/artifacts/**
+contracts/cache/**
+contracts/typechain-types/**
+.nvmrc
+.watchmanconfig

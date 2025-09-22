@@ -6,7 +6,13 @@ import type { UserIdType } from './circuits/uuid.js';
 import { validateUserId } from './circuits/uuid.js';
 import { formatEndpoint } from './scope.js';
 
+export interface DeferredLinkingTokenResponse {
+  campaign_id: string;
+  campaign_user_id: string;
+  self_app: string; // SelfApp is serialized as a string
+}
 export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
+
 export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 
 export interface SelfApp {
@@ -23,7 +29,7 @@ export interface SelfApp {
   devMode: boolean;
   disclosures: SelfAppDisclosureConfig;
   version: number;
-  chainID: 42220 | 44787;
+  chainID: 42220 | 11142220;
   userDefinedData: string;
 }
 
@@ -106,7 +112,7 @@ export class SelfAppBuilder {
       logoBase64: '',
       deeplinkCallback: '',
       disclosures: {},
-      chainID: config.endpointType === 'staging_celo' ? 44787 : 42220,
+      chainID: config.endpointType === 'staging_celo' ? 11142220 : 42220,
       version: config.version ?? 2,
       userDefinedData: '',
       ...config,
@@ -120,10 +126,4 @@ export class SelfAppBuilder {
 
 export function getUniversalLink(selfApp: SelfApp): string {
   return `${REDIRECT_URL}?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
-}
-
-export interface DeferredLinkingTokenResponse {
-  campaign_id: string;
-  campaign_user_id: string;
-  self_app: string; // SelfApp is serialized as a string
 }

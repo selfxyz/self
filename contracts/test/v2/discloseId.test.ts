@@ -5,7 +5,7 @@ import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "@selfxyz/common/utils/passports/passport";
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement, getStartOfDayTimestamp } from "../utils/utils";
-import { getPackedForbiddenCountries } from "@selfxyz/common/utils/sanctions";
+import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts";
 import { countries } from "@selfxyz/common/constants/countries";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
@@ -31,6 +31,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
   let pristineBaseVcAndDiscloseProof: any;
   let vcAndDiscloseProof: any;
   let registerSecret: any;
+  ``;
   let imt: any;
   let commitment: any;
   let nullifier: any;
@@ -170,7 +171,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
@@ -207,7 +208,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
@@ -230,6 +231,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
       );
 
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
+
       // Create proofData with less than 32 bytes (invalid)
       const invalidProofData = ethers.toUtf8Bytes("short"); // Only 5 bytes
 
@@ -241,11 +244,13 @@ describe("Self Verification Flow V2 - ID Card", () => {
     it("should fail verification with invalid length of userContextData", async () => {
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
       const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       // Create userContextData with less than 96 bytes (invalid)
       const invalidUserContextData = ethers.toUtf8Bytes("short_data"); // Only 10 bytes
@@ -266,6 +271,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
       );
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
+
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       // Create a separate commitment and register it
       const scopeRegisterSecret = generateRandomFieldElement();
@@ -313,7 +320,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[differentScopeProof.a, differentScopeProof.b, differentScopeProof.c, differentScopeProof.pubSignals]],
       );
 
@@ -334,6 +341,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
@@ -349,7 +357,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
 
       // Use the original valid proof without modification
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
@@ -375,6 +383,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
+
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
       const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
@@ -391,7 +401,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       modifiedVcAndDiscloseProof.pubSignals[10] = "999999999"; // ID card merkle root index is 10
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [
           [
             modifiedVcAndDiscloseProof.a,
@@ -422,6 +432,8 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ],
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
+
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
@@ -454,7 +466,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       }
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
@@ -480,8 +492,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
@@ -514,7 +525,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       }
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
@@ -540,8 +551,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
@@ -566,7 +576,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       // Keep pubSignals unchanged so other validations pass
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[invalidGrothProof.a, invalidGrothProof.b, invalidGrothProof.c, invalidGrothProof.pubSignals]],
       );
 
@@ -592,8 +602,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       };
 
-      await deployedActors.hub.setVerificationConfigV2(verificationConfigV2);
-      const configId = await deployedActors.hub.generateConfigId(verificationConfigV2);
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
       const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
       const user1Address = await deployedActors.user1.getAddress();
@@ -608,7 +617,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999999), 32);
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
@@ -672,7 +681,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[ofacFailingProof.a, ofacFailingProof.b, ofacFailingProof.c, ofacFailingProof.pubSignals]],
       );
 
@@ -736,7 +745,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[forbiddenCountryProof.a, forbiddenCountryProof.b, forbiddenCountryProof.c, forbiddenCountryProof.pubSignals]],
       );
 
@@ -801,7 +810,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[youngerAgeProof.a, youngerAgeProof.b, youngerAgeProof.c, youngerAgeProof.pubSignals]],
       );
 
@@ -866,7 +875,7 @@ describe("Self Verification Flow V2 - ID Card", () => {
       );
 
       const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
-        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[21] pubSignals)"],
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[validProof.a, validProof.b, validProof.c, validProof.pubSignals]],
       );
 

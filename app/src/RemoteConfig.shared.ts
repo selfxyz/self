@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export interface FeatureFlagInfo {
   key: string;
@@ -17,16 +19,18 @@ export interface LocalOverride {
 }
 
 export interface RemoteConfigBackend {
-  getValue(key: string): {
-    asBoolean(): boolean;
-    asNumber(): number;
-    asString(): string;
-    getSource(): string;
-  };
-  getAll(): Record<string, any>;
-  setDefaults(defaults: Record<string, any>): Promise<void> | void;
-  setConfigSettings(settings: any): Promise<void> | void;
+  getValue(key: string): RemoteConfigValue;
+  getAll(): Record<string, RemoteConfigValue>;
+  setDefaults(defaults: Record<string, FeatureFlagValue>): Promise<void> | void;
+  setConfigSettings(settings: Record<string, unknown>): Promise<void> | void;
   fetchAndActivate(): Promise<boolean>;
+}
+
+export interface RemoteConfigValue {
+  asBoolean(): boolean;
+  asNumber(): number;
+  asString(): string;
+  getSource(): string;
 }
 
 export interface StorageBackend {

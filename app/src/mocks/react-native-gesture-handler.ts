@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /*
  * Web-compatible mock for react-native-gesture-handler
@@ -42,7 +44,7 @@ export const Gesture = {
 
 export const GestureDetector: React.FC<{
   children: React.ReactNode;
-  gesture?: any;
+  gesture?: unknown;
 }> = ({ children, gesture: _gesture }) => {
   return createElement('div', {}, children);
 };
@@ -50,7 +52,7 @@ export const GestureDetector: React.FC<{
 // Mock GestureHandlerRootView as a simple wrapper
 export const GestureHandlerRootView: React.FC<{
   children: React.ReactNode;
-  [key: string]: any;
+  [key: string]: unknown;
 }> = ({ children, ...props }) => {
   return createElement('div', props, children);
 };

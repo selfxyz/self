@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
 import type { DocumentCategory, PassportData } from '@selfxyz/common';
 
 import type { MRZInfo } from './public';
@@ -20,19 +24,6 @@ export interface DocumentMetadata {
 export interface DocumentData {
   data: PassportData;
   metadata: DocumentMetadata;
-}
-
-// External adapter interface
-export interface ExternalAdapter {
-  getSecret: () => Promise<string>;
-  getAllDocuments: () => Promise<{
-    [documentId: string]: DocumentData;
-  }>;
-  setDocument: (doc: DocumentData, documentId: string) => Promise<boolean>;
-  onOnboardingSuccess: () => void;
-  onOnboardingFailure: (error: Error) => void;
-  onDisclosureSuccess: () => void;
-  onDisclosureFailure: (error: Error) => void;
 }
 
 // Screen component props

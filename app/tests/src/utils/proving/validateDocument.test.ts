@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PassportData } from '@selfxyz/common/types';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
@@ -23,7 +25,7 @@ jest.mock('@/providers/passportDataProvider', () => ({
 }));
 
 // Mock the protocol store to avoid complex state management
-jest.mock('@/stores/protocolStore', () => ({
+jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => ({
   useProtocolStore: {
     getState: jest.fn(() => ({
       passport: {
@@ -60,6 +62,7 @@ function createTestClient() {
   return createSelfClient({
     config: {},
     adapters: {
+      auth: { getPrivateKey: jest.fn() },
       scanner: { scan: jest.fn() },
       network: {
         http: { fetch: jest.fn() },
@@ -76,6 +79,10 @@ function createTestClient() {
       crypto: {
         hash: jest.fn(),
         sign: jest.fn(),
+      },
+      documents: {
+        loadDocumentCatalog: jest.fn(),
+        loadDocumentById: jest.fn(),
       },
     },
   });
@@ -176,8 +183,9 @@ describe('validateDocument - Real mobile-sdk-alpha Integration (PII-safe)', () =
   it('parses a valid MRZ string', () => {
     const client = createTestClient();
     const info = client.extractMRZInfo(validMrz);
-    expect(info.passportNumber).toBe('L898902C3');
-    expect(info.validation.overall).toBe(true);
+    expect(info.documentNumber).toBe('L898902C3');
+    expect(info.validation).toBeDefined();
+    expect(info.validation?.overall).toBe(true);
   });
 
   it('throws on malformed MRZ input', () => {

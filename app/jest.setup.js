@@ -1,10 +1,22 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /* global jest */
 /** @jest-environment jsdom */
 require('react-native-gesture-handler/jestSetup');
 
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
+// Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
+jest.mock(
+  'react-native/src/private/animated/NativeAnimatedHelper',
+  () => ({}),
+  { virtual: true },
+);
+
+jest.mock('@env', () => ({
+  ENABLE_DEBUG_LOGS: 'false',
+  MIXPANEL_NFC_PROJECT_TOKEN: 'test-token',
+}));
 
 global.FileReader = class {
   constructor() {
@@ -139,7 +151,7 @@ jest.mock('react-native-check-version', () => ({
 
 // Mock @react-native-community/netinfo
 jest.mock('@react-native-community/netinfo', () => ({
-  addEventListener: jest.fn(),
+  addEventListener: jest.fn(() => jest.fn()),
   useNetInfo: jest.fn().mockReturnValue({
     type: 'wifi',
     isConnected: true,
@@ -149,7 +161,9 @@ jest.mock('@react-native-community/netinfo', () => ({
       cellularGeneration: '4g',
     },
   }),
-  fetch: jest.fn(),
+  fetch: jest
+    .fn()
+    .mockResolvedValue({ isConnected: true, isInternetReachable: true }),
 }));
 
 // Mock react-native-nfc-manager
@@ -193,14 +207,60 @@ jest.mock('react-native-nfc-manager', () => ({
 }));
 
 // Mock react-native-passport-reader
-jest.mock('react-native-passport-reader', () => ({
-  default: {
-    initialize: jest.fn(),
-    scanPassport: jest.fn(),
+jest.mock('react-native-passport-reader', () => {
+  const mockScanPassport = jest.fn();
+  // Mock the parameter count for scanPassport (iOS native method takes 9 parameters)
+  Object.defineProperty(mockScanPassport, 'length', { value: 9 });
+
+  const mockPassportReader = {
+    configure: jest.fn(),
+    scanPassport: mockScanPassport,
     readPassport: jest.fn(),
     cancelPassportRead: jest.fn(),
-  },
-}));
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  };
+
+  return {
+    PassportReader: mockPassportReader,
+    default: mockPassportReader,
+    reset: jest.fn(),
+    scan: jest.fn(),
+  };
+});
+
+const { NativeModules } = require('react-native');
+
+NativeModules.PassportReader = {
+  configure: jest.fn(),
+  scanPassport: jest.fn(),
+  trackEvent: jest.fn(),
+  flush: jest.fn(),
+  reset: jest.fn(),
+};
+
+// Mock @/utils/passportReader to properly expose the interface expected by tests
+jest.mock('./src/utils/passportReader', () => {
+  const mockScanPassport = jest.fn();
+  // Mock the parameter count for scanPassport (iOS native method takes 9 parameters)
+  Object.defineProperty(mockScanPassport, 'length', { value: 9 });
+
+  const mockPassportReader = {
+    configure: jest.fn(),
+    scanPassport: mockScanPassport,
+    trackEvent: jest.fn(),
+    flush: jest.fn(),
+    reset: jest.fn(),
+  };
+
+  return {
+    PassportReader: mockPassportReader,
+    reset: jest.fn(),
+    scan: jest.fn(),
+    default: mockPassportReader,
+  };
+});
 
 // Mock @stablelib packages
 jest.mock('@stablelib/cbor', () => ({
@@ -322,3 +382,29 @@ jest.mock('react-native-localize', () => ({
 jest.mock('./src/utils/notifications/notificationService', () =>
   require('./tests/__setup__/notificationServiceMock.js'),
 );
+
+// Mock React Navigation
+jest.mock('@react-navigation/native', () => {
+  const actualNav = jest.requireActual('@react-navigation/native');
+  return {
+    ...actualNav,
+    useNavigation: jest.fn(() => ({
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      canGoBack: jest.fn(() => true),
+      dispatch: jest.fn(),
+    })),
+    createNavigationContainerRef: jest.fn(() => ({
+      current: null,
+      getCurrentRoute: jest.fn(),
+    })),
+    createStaticNavigation: jest.fn(() => ({ displayName: 'MockNavigation' })),
+  };
+});
+
+jest.mock('@react-navigation/native-stack', () => ({
+  createNativeStackNavigator: jest.fn(() => ({
+    displayName: 'MockStackNavigator',
+  })),
+  createNavigatorFactory: jest.fn(),
+}));

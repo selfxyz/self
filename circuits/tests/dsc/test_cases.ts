@@ -1,5 +1,9 @@
 export const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' }, // sha1_rsa_65537_4096
+  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '130689', keyLength: '4096' }, // sha256_rsa_130689_4096
+  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '122125', keyLength: '4096' }, // sha256_rsa_122125_4096
+  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '107903', keyLength: '4096' }, // sha256_rsa_107903_4096
+  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '56611', keyLength: '4096' }, // sha256_rsa_56611_4096
 ];
 
 export const fullSigAlgs = [

@@ -1,19 +1,18 @@
 name: Contracts CI
 on:
-  push:
-    branches:
-      - dev
-      - main
-    paths:
-      - "contracts/**"
-      - "common/**"
   pull_request:
     branches:
       - dev
+      - staging
       - main
     paths:
       - "contracts/**"
       - "common/**"
+
+concurrency:
+  group: contracts-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test_contracts:
     if: github.event.pull_request.draft == false

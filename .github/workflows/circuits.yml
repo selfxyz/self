@@ -1,21 +1,12 @@
 name: Circuits CI
 on:
-  push:
-    branches:
-      - dev
-      - main
-      - openpassportv2
-    paths:
-      - "circuits/**"
-      - "common/**"
   pull_request:
     branches:
       - dev
+      - staging
       - main
-      - openpassportv2
     paths:
       - "circuits/**"
-      - "common/**"
 jobs:
   run_circuit_tests:
     if: github.event.pull_request.draft == false
@@ -114,6 +105,15 @@ jobs:
 
       - name: Print Circom version
         run: circom --version
+
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            circuits/node_modules
+          cache-version: v1
 
       - name: Install Yarn dependencies
         uses: ./.github/actions/yarn-install

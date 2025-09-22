@@ -1,15 +1,21 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
+
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import { Caption } from '@/components/typography/Caption';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
-import { BackupEvents } from '@/consts/analytics';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Keyboard from '@/images/icons/keyboard.svg';
 import RestoreAccountSvg from '@/images/icons/restore_account.svg';
@@ -20,14 +26,11 @@ import {
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import analytics from '@/utils/analytics';
 import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
-import { isUserRegisteredWithAlternativeCSCA } from '@/utils/proving/validateDocument';
-
-const { trackEvent } = analytics();
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
+  const { trackEvent } = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
   const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
@@ -58,6 +61,17 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
         passportData,
         secret,
+        {
+          getCommitmentTree(docCategory) {
+            return useProtocolStore.getState()[docCategory].commitment_tree;
+          },
+          getAltCSCA(docCategory) {
+            if (passportData.documentCategory === 'aadhaar') {
+              return useProtocolStore.getState().aadhaar.public_keys;
+            }
+            return useProtocolStore.getState()[docCategory].alternative_csca;
+          },
+        },
       );
       if (!isRegistered) {
         console.warn(
@@ -83,6 +97,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       throw new Error('Something wrong happened during cloud recovery');
     }
   }, [
+    trackEvent,
     download,
     restoreAccountFromMnemonic,
     cloudBackupEnabled,
@@ -92,7 +107,6 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {
-    trackEvent(BackupEvents.MANUAL_RECOVERY_SELECTED);
     onEnterRecoveryPress();
   }, [onEnterRecoveryPress]);
 

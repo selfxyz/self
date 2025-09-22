@@ -1,4 +1,6 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /// NEW
 export const amber50 = '#FFFBEB';
@@ -9,6 +11,8 @@ export const blue600 = '#2563EB';
 export const blue700 = '#1D4ED8';
 // OLD
 export const borderColor = '#343434';
+
+export const charcoal = '#485469';
 
 export const cyan300 = '#67E8F9';
 
@@ -26,7 +30,7 @@ export const separatorColor = '#E0E0E0';
 
 export const sky500 = '#0EA5E9';
 
-export const slate100 = '#F1F5F9';
+export const slate100 = '#F8FAFC';
 
 export const slate200 = '#E2E8F0';
 

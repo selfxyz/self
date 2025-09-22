@@ -1,5 +1,5 @@
 import * as asn1js from 'asn1js';
-import * as forge from 'node-forge';
+import forge from 'node-forge';
 import { Certificate } from 'pkijs';
 
 import { hashAlgos, saltLengths } from '../../../constants/constants.js';

@@ -1,12 +1,27 @@
-// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { type PropsWithChildren, useMemo } from 'react';
+import { Platform } from 'react-native';
 
 import {
+  Adapters,
+  createListenersMap,
+  reactNativeScannerAdapter,
+  SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
+  type TrackEventParams,
   webScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
+
+import { navigationRef } from '@/navigation';
+import { unsafe_getPrivateKey } from '@/providers/authProvider';
+import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
+import analytics from '@/utils/analytics';
+
+type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
 
 /**
  * Provides a configured Self SDK client instance to all descendants.
@@ -18,9 +33,10 @@ import {
  */
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
-  const adapters = useMemo(
+  const adapters: Adapters = useMemo(
     () => ({
-      scanner: webScannerShim,
+      scanner:
+        Platform.OS === 'web' ? webScannerShim : reactNativeScannerAdapter,
       network: {
         http: {
           fetch: (input: RequestInfo, init?: RequestInit) => fetch(input, init),
@@ -47,12 +63,13 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
           },
         },
       },
+      documents: selfClientDocumentsAdapter,
       crypto: {
         async hash(
           data: Uint8Array,
           algo: 'sha256' = 'sha256',
         ): Promise<Uint8Array> {
-          const subtle = (globalThis as any)?.crypto?.subtle;
+          const subtle = (globalThis as GlobalCrypto)?.crypto?.subtle;
           if (!subtle?.digest) {
             throw new Error(
               'WebCrypto subtle.digest is not available; provide a crypto adapter/polyfill for React Native.',
@@ -69,12 +86,77 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
           );
         },
       },
+      analytics: {
+        trackEvent: (event: string, data?: TrackEventParams) => {
+          analytics().trackEvent(event, data);
+        },
+      },
+      auth: {
+        getPrivateKey: () => unsafe_getPrivateKey(),
+      },
     }),
     [],
   );
 
+  const appListeners = useMemo(() => {
+    const { map, addListener } = createListenersMap();
+
+    addListener(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('DocumentDataNotFound');
+      }
+    });
+
+    addListener(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
+      setTimeout(() => {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('AccountVerifiedSuccess');
+        }
+      }, 3000);
+    });
+
+    addListener(
+      SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
+      async ({ hasValidDocument }) => {
+        setTimeout(() => {
+          if (navigationRef.isReady()) {
+            if (hasValidDocument) {
+              navigationRef.navigate('Home');
+            } else {
+              navigationRef.navigate('Launch');
+            }
+          }
+        }, 3000);
+      },
+    );
+
+    addListener(
+      SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
+      ({ countryCode, documentCategory }) => {
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('UnsupportedDocument', {
+            countryCode,
+            documentCategory,
+          } as any);
+        }
+      },
+    );
+
+    addListener(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('AccountRecoveryChoice');
+      }
+    });
+
+    return map;
+  }, []);
+
   return (
-    <SDKSelfClientProvider config={config} adapters={adapters}>
+    <SDKSelfClientProvider
+      config={config}
+      adapters={adapters}
+      listeners={appListeners}
+    >
       {children}
     </SDKSelfClientProvider>
   );

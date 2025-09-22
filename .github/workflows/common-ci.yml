@@ -9,15 +9,25 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            common/node_modules
+          cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
-      - name: Build @selfxyz/common
-        run: yarn workspace @selfxyz/common build
+      - name: Build dependencies
+        run: yarn workspace @selfxyz/mobile-app run build:deps
       - name: Cache build artifacts
         uses: actions/cache/save@v4
         with:
-          path: common/dist
-          key: common-build-${{ runner.os }}-${{ github.sha }}
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: build-deps-${{ runner.os }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
 
   lint:
     runs-on: ubuntu-latest
@@ -25,6 +35,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            common/node_modules
+          cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Run linter
@@ -37,18 +55,30 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            common/node_modules
+          cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
-        id: restore-common-dist
+        id: restore-build-deps
         uses: actions/cache/restore@v4
         with:
-          path: common/dist
-          key: common-build-${{ runner.os }}-${{ github.sha }}
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: build-deps-${{ runner.os }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
           fail-on-cache-miss: false
       - name: Build @selfxyz/common (fallback on cache miss)
-        if: steps.restore-common-dist.outputs.cache-hit != 'true'
+        if: steps.restore-build-deps.outputs.cache-hit != 'true'
         run: yarn workspace @selfxyz/common build
+      - name: Build @selfxyz/mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Yarn types
         run: yarn types
 
@@ -59,17 +89,29 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            common/node_modules
+          cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
       - name: Restore build artifacts
-        id: restore-common-dist
+        id: restore-build-deps
         uses: actions/cache/restore@v4
         with:
-          path: common/dist
-          key: common-build-${{ runner.os }}-${{ github.sha }}
+          path: |
+            common/dist
+            packages/mobile-sdk-alpha/dist
+          key: build-deps-${{ runner.os }}-${{ hashFiles('common/**/*', 'packages/mobile-sdk-alpha/**/*', '!common/dist/**', '!packages/mobile-sdk-alpha/dist/**') }}
           fail-on-cache-miss: false
       - name: Build @selfxyz/common (fallback on cache miss)
-        if: steps.restore-common-dist.outputs.cache-hit != 'true'
+        if: steps.restore-build-deps.outputs.cache-hit != 'true'
         run: yarn workspace @selfxyz/common build
+      - name: Build @selfxyz/mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Run @selfxyz/common tests
         run: yarn workspace @selfxyz/common test
