@@ -158,3 +158,23 @@ export class DemoComponent {
 
   * Cleans up the WebSocket connection.
 ---
+
+# Mobile usage
+It's scan to use QR codes on mobile. Instead you'll you want to use the **deeplink flow** instead of WebSocket, and you’ll need to import the `getUniversalLink` helper from the library. Pass your configured `selfApp` object into it along with a `deeplinkCallback` URL. The generated link can then be attached to a button or anchor tag, which will open the Self app directly.
+
+Example:
+
+```ts
+import { getUniversalLink } from '@selfxyz/qrcode-angular';
+
+const link = getUniversalLink({
+  ...selfApp,
+  deeplinkCallback: 'https://your-app.com/callback',
+});
+```
+
+```html
+<a [href]="link" target="_blank">Open Self App</a>
+```
+
+---
