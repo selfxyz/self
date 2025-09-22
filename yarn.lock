@@ -12,9 +12,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anon-aadhaar/core@https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/core?1b9efa501cff3cf25dc260b060bf611229e316a4":
-  version: 2.4.3
-  resolution: "@anon-aadhaar/core@https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/core?1b9efa501cff3cf25dc260b060bf611229e316a4"
+"@anon-aadhaar/core@npm:@selfxyz/anon-aadhaar-core@^0.0.1, @selfxyz/anon-aadhaar-core@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@selfxyz/anon-aadhaar-core@npm:0.0.1"
   dependencies:
     "@pcd/pcd-types": "npm:^0.10.0"
     "@pcd/tsconfig": "npm:^0.6.0"
@@ -32,7 +32,7 @@ __metadata:
     uuid: "npm:^9.0.0"
     valid-url: "npm:^1.0.9"
     web-worker: "npm:1.2.0"
-  checksum: 10c0/95dc463285dda54e126d5daf4820ef284e520ea7f3a3f287259378b1e13533a743f7463fedf5536a762344c9bcdb09f637086d9fa148ef5adba4540b6e069880
+  checksum: 10c0/2caec9c6eff7696d0c8e093784eec1bd0ff0f8f4554515acae4acbd0623c382508655dc3d71b67824380d1172ec145a3898c55c5f4db1d8795f8e9fed9bb8148
   languageName: node
   linkType: hard
 
@@ -4700,7 +4700,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/circuits@workspace:circuits"
   dependencies:
-    "@anon-aadhaar/core": "npm:^2.4.3"
+    "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1"
     "@noble/curves": "npm:^1.4.2"
     "@openpassport/zk-email-circuits": "npm:^6.1.2"
     "@openpassport/zk-kit-imt": "npm:^0.0.4"
@@ -4753,11 +4753,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
-    "@anon-aadhaar/core": "https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/core?1b9efa501cff3cf25dc260b060bf611229e316a4"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
     "@peculiar/x509": "npm:^1.12.3"
+    "@selfxyz/anon-aadhaar-core": "npm:^0.0.1"
     "@stablelib/cbor": "npm:^2.0.1"
     "@types/js-sha1": "npm:^0.6.3"
     "@types/node": "npm:^22.18.3"

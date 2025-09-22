@@ -36,7 +36,7 @@
     "test-rsa-pss": "yarn test-base 'tests/utils/rsapss.test.ts' --exit"
   },
   "dependencies": {
-    "@anon-aadhaar/core": "^2.4.3",
+    "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1",
     "@noble/curves": "^1.4.2",
     "@openpassport/zk-email-circuits": "^6.1.2",
     "@openpassport/zk-kit-imt": "^0.0.4",
