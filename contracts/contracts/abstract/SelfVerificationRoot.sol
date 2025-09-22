@@ -5,7 +5,7 @@ import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHub
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {CircuitConstantsV2} from "../constants/CircuitConstantsV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
-import "poseidon-solidity/PoseidonT3.sol";
+import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
 
 /**
  * @title SelfVerificationRoot
