@@ -19,6 +19,10 @@
   "module": "dist/fesm2022/selfxyz-qrcode-angular.mjs",
   "types": "dist/index.d.ts",
   "sideEffects": false,
+  "files": [
+    "dist/**/*",
+    "README.md"
+  ],
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
     "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode-angular --topological-dev --recursive run build",
