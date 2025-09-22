@@ -40,6 +40,30 @@ Also ensure you have Angular v15+ with standalone components enabled.
 
 ---
 
+## 🔧 Setup
+
+You'll need to add the provider to your application's bootstrap configuration:
+
+```ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { App } from './app/app';
+import { provideSelfLottie } from '@selfxyz/qrcode-angular';
+
+bootstrapApplication(App, {
+  ...appConfig,
+  providers: [
+    ...appConfig.providers,
+    provideSelfLottie(),
+  ]
+})
+  .catch((err) => console.error(err));
+```
+
+This provider is required for the Lottie animations used in success/error states.
+
+---
+
 ## ⚡ Usage
 
 ### Import the Component
