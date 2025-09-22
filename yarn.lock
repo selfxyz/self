@@ -12,7 +12,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@anon-aadhaar/core@npm:@selfxyz/anon-aadhaar-core@^0.0.1, @selfxyz/anon-aadhaar-core@npm:^0.0.1":
+"@anon-aadhaar/core@npm:@selfxyz/anon-aadhaar-core@^0.0.1":
   version: 0.0.1
   resolution: "@selfxyz/anon-aadhaar-core@npm:0.0.1"
   dependencies:
@@ -4753,11 +4753,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
+    "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
     "@peculiar/x509": "npm:^1.12.3"
-    "@selfxyz/anon-aadhaar-core": "npm:^0.0.1"
     "@stablelib/cbor": "npm:^2.0.1"
     "@types/js-sha1": "npm:^0.6.3"
     "@types/node": "npm:^22.18.3"
