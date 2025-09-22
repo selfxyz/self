@@ -335,7 +335,11 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   await hubContract.updateDscVerifier(EU_ID_CARD, DscVerifierId.dsc_sha256_rsa_65537_4096, dscVerifier.target);
 
   // Deploy TestSelfVerificationRoot
-  const testRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
+  const testRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
+    libraries: {
+      PoseidonT3: poseidonT3.target,
+    },
+  });
   testSelfVerificationRoot = await testRootFactory.deploy(identityVerificationHubV2.target, "test-scope");
   await testSelfVerificationRoot.waitForDeployment();
 
