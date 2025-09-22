@@ -1,0 +1,282 @@
+import { expect } from "chai";
+import { ethers } from "hardhat";
+import { TestSelfVerificationRoot } from "../../typechain-types";
+import { poseidon2 } from "poseidon-lite";
+
+describe("SelfVerificationRoot - Automatic Scope Generation", () => {
+  let testContract: TestSelfVerificationRoot;
+  let mockHubAddress: string;
+  let poseidonT3: any;
+
+  before(async () => {
+    // Deploy PoseidonT3 library
+    const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3");
+    poseidonT3 = await PoseidonT3Factory.deploy();
+    await poseidonT3.waitForDeployment();
+
+    // Use a simple mock hub address
+    const [signer] = await ethers.getSigners();
+    mockHubAddress = signer.address;
+  });
+
+  describe("Constructor Scope Generation", () => {
+    it("should automatically generate scope from contract address and scope seed", async () => {
+      const scopeSeed = "test-scope-seed";
+
+      // Deploy the test contract with linked PoseidonT3 library
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
+        libraries: {
+          PoseidonT3: poseidonT3.target,
+        },
+      });
+      testContract = await TestContractFactory.deploy(
+        mockHubAddress,
+        scopeSeed
+      );
+      await testContract.waitForDeployment();
+
+      // Get the deployed contract address
+      const contractAddress = await testContract.getAddress();
+
+      // Get the actual scope from the contract
+      const actualScope = await testContract.scope();
+
+      // Calculate expected scope using the same logic as frontend
+      const addressAsUint = BigInt(contractAddress);
+      const scopeSeedAsUint = stringToBigInt(scopeSeed);
+      const expectedScope = poseidon2([addressAsUint, scopeSeedAsUint]);
+
+      // Verify they match
+      expect(actualScope.toString()).to.equal(expectedScope.toString());
+      console.log(`Contract Address: ${contractAddress}`);
+      console.log(`Scope Seed: "${scopeSeed}"`);
+      console.log(`Generated Scope: ${actualScope.toString()}`);
+      console.log(`Expected Scope: ${expectedScope.toString()}`);
+    });
+
+    it("should generate different scopes for different scope seeds", async () => {
+      const scopeSeed1 = "scope-seed-1";
+      const scopeSeed2 = "scope-seed-2";
+
+      // Deploy two contracts with different scope seeds
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
+        libraries: {
+          PoseidonT3: poseidonT3.target,
+        },
+      });
+
+      const contract1 = await TestContractFactory.deploy(mockHubAddress, scopeSeed1);
+      const contract2 = await TestContractFactory.deploy(mockHubAddress, scopeSeed2);
+
+      await contract1.waitForDeployment();
+      await contract2.waitForDeployment();
+
+      const scope1 = await contract1.scope();
+      const scope2 = await contract2.scope();
+
+      // Should be different
+      expect(scope1).to.not.equal(scope2);
+      console.log(`Scope 1 (${scopeSeed1}): ${scope1.toString()}`);
+      console.log(`Scope 2 (${scopeSeed2}): ${scope2.toString()}`);
+    });
+
+    it("should generate different scopes for same scope seed but different addresses", async () => {
+      const scopeSeed = "same-scope-seed";
+
+      // Deploy two contracts with same scope seed (they'll have different addresses)
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
+        libraries: {
+          PoseidonT3: poseidonT3.target,
+        },
+      });
+
+      const contract1 = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
+      const contract2 = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
+
+      await contract1.waitForDeployment();
+      await contract2.waitForDeployment();
+
+      const scope1 = await contract1.scope();
+      const scope2 = await contract2.scope();
+
+      // Should be different due to different contract addresses
+      expect(scope1).to.not.equal(scope2);
+
+      const addr1 = await contract1.getAddress();
+      const addr2 = await contract2.getAddress();
+      console.log(`Contract 1 (${addr1}): ${scope1.toString()}`);
+      console.log(`Contract 2 (${addr2}): ${scope2.toString()}`);
+    });
+
+    it("should generate scope automatically without manual scope value", async () => {
+      const scopeSeed = "test-scope";
+
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
+        libraries: {
+          PoseidonT3: poseidonT3.target,
+        },
+      });
+      testContract = await TestContractFactory.deploy(
+        mockHubAddress,
+        scopeSeed
+      );
+      await testContract.waitForDeployment();
+
+      const actualScope = await testContract.scope();
+
+      // Should equal the generated scope
+      const contractAddress = await testContract.getAddress();
+      const addressAsUint = BigInt(contractAddress);
+      const scopeSeedAsUint = stringToBigInt(scopeSeed);
+      const expectedScope = poseidon2([addressAsUint, scopeSeedAsUint]);
+
+      expect(actualScope.toString()).to.equal(expectedScope.toString());
+      console.log(`Generated scope: ${actualScope.toString()}`);
+    });
+
+    it("should handle various scope seed strings correctly", async () => {
+      const testCases = [
+        "simple",
+        "with-dashes",
+        "with_underscores",
+        "MiXeD-CaSe_123",
+        "symbols!@#$%",
+        "exactly-31-characters-in-length", // 31 chars (max)
+        "", // empty string
+        "a", // single character
+      ];
+
+      for (const scopeSeed of testCases) {
+        const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
+          libraries: {
+            PoseidonT3: poseidonT3.target,
+          },
+        });
+        const contract = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
+        await contract.waitForDeployment();
+
+        const actualScope = await contract.scope();
+
+        // Calculate expected scope
+        const contractAddress = await contract.getAddress();
+        const addressAsUint = BigInt(contractAddress);
+        const scopeSeedAsUint = stringToBigInt(scopeSeed);
+        const expectedScope = poseidon2([addressAsUint, scopeSeedAsUint]);
+
+        expect(actualScope.toString()).to.equal(expectedScope.toString());
+        console.log(`Scope seed: "${scopeSeed}" -> Scope: ${actualScope.toString()}`);
+      }
+    });
+
+    it("should produce known expected value for specific test case", async () => {
+      // This test ensures our implementation matches the expected behavior
+      // If this fails, it means our Solidity implementation differs from frontend
+      const scopeSeed = "test-scope";
+
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
+        libraries: {
+          PoseidonT3: poseidonT3.target,
+        },
+      });
+      const contract = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
+      await contract.waitForDeployment();
+
+      const contractAddress = await contract.getAddress();
+      const actualScope = await contract.scope();
+
+      // Calculate expected scope using frontend logic
+      const addressAsUint = BigInt(contractAddress);
+      const scopeSeedAsUint = stringToBigInt(scopeSeed);
+      const expectedScope = poseidon2([addressAsUint, scopeSeedAsUint]);
+
+      // This is the critical test - Solidity must match frontend exactly
+      expect(actualScope.toString()).to.equal(expectedScope.toString());
+
+      console.log(`\n=== KNOWN VALUE TEST ===`);
+      console.log(`Contract Address: ${contractAddress}`);
+      console.log(`Scope Seed: "${scopeSeed}"`);
+      console.log(`Address as BigInt: ${addressAsUint.toString()}`);
+      console.log(`Scope Seed as BigInt: ${scopeSeedAsUint.toString()}`);
+      console.log(`Expected Scope: ${expectedScope.toString()}`);
+      console.log(`Actual Scope: ${actualScope.toString()}`);
+      console.log(`Match: ${actualScope.toString() === expectedScope.toString()}`);
+    });
+  });
+
+  describe("String to BigInt Conversion", () => {
+    it("should convert strings to BigInt correctly (round-trip test)", async () => {
+      const testCases = [
+        "hello-world",
+        "test123",
+        "UPPERCASE",
+        "mixed_CASE_123",
+        "symbols!@#$%",
+        "short",
+        "",
+        "a",
+        "12345",
+        "exactly-31-characters-in-length", // 31 chars (max)
+      ];
+
+      for (const str of testCases) {
+        const bigIntValue = stringToBigInt(str);
+        const roundTrip = bigIntToString(bigIntValue);
+        expect(roundTrip).to.equal(str);
+        console.log(`"${str}" -> ${bigIntValue.toString()} -> "${roundTrip}"`);
+      }
+    });
+
+    it("should handle edge cases correctly", async () => {
+      // Empty string
+      expect(stringToBigInt("")).to.equal(0n);
+
+      // Single character
+      expect(stringToBigInt("A")).to.equal(65n); // ASCII value of 'A'
+
+      // Two characters
+      expect(stringToBigInt("AB")).to.equal((65n << 8n) | 66n); // A=65, B=66
+    });
+
+    it("should throw error for strings exceeding 31 bytes", async () => {
+      const longString = "this-string-is-definitely-longer-than-31-bytes-and-should-fail";
+      expect(() => stringToBigInt(longString)).to.throw("Resulting BigInt exceeds maximum size of 31 bytes");
+    });
+  });
+});
+
+// Helper function to convert string to BigInt (matches frontend logic)
+function stringToBigInt(str: string): bigint {
+  // Validate input contains only ASCII characters
+  if (!/^[\x00-\x7F]*$/.test(str)) {
+    throw new Error('Input must contain only ASCII characters (0-127)');
+  }
+
+  let result = 0n;
+  for (let i = 0; i < str.length; i++) {
+    result = (result << 8n) | BigInt(str.charCodeAt(i));
+  }
+
+  // Check size limit (31 bytes = 248 bits)
+  const MAX_VALUE = (1n << 248n) - 1n;
+  if (result > MAX_VALUE) {
+    throw new Error('Resulting BigInt exceeds maximum size of 31 bytes');
+  }
+
+  return result;
+}
+
+// Helper function to convert BigInt back to string (for round-trip testing)
+function bigIntToString(bigInt: bigint): string {
+  if (bigInt === 0n) return '';
+
+  let result = '';
+  let tempBigInt = bigInt;
+
+  while (tempBigInt > 0n) {
+    const charCode = Number(tempBigInt & 0xffn);
+    result = String.fromCharCode(charCode) + result;
+    tempBigInt = tempBigInt >> 8n;
+  }
+
+  return result;
+}

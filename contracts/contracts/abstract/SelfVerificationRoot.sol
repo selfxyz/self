@@ -5,6 +5,7 @@ import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHub
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {CircuitConstantsV2} from "../constants/CircuitConstantsV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
+import "poseidon-solidity/PoseidonT3.sol";
 
 /**
  * @title SelfVerificationRoot
@@ -49,19 +50,20 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // Events
     // ====================================================
 
-    /// @notice Emitted when the scope is updated
-    /// @param newScope The new scope value that was set
-    event ScopeUpdated(uint256 indexed newScope);
 
     /**
      * @notice Initializes the SelfVerificationRoot contract
-     * @dev Sets up the immutable reference to the hub contract and initial scope
+     * @dev Sets up the immutable reference to the hub contract and generates scope automatically
      * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2
-     * @param scopeValue The expected proof scope for user registration
+     * @param scopeSeed The scope seed string to be hashed with contract address
      */
-    constructor(address identityVerificationHubV2Address, uint256 scopeValue) {
+    constructor(address identityVerificationHubV2Address, string memory scopeSeed) {
         _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
-        _scope = scopeValue;
+
+        // Generate scope using Poseidon (requires both inputs as uint256)
+        uint256 addressAsUint = uint256(uint160(address(this)));
+        uint256 scopeSeedAsUint = _stringToBigInt(scopeSeed);
+        _scope = PoseidonT3.hash([addressAsUint, scopeSeedAsUint]);
     }
 
     /**
@@ -73,15 +75,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         return _scope;
     }
 
-    /**
-     * @notice Updates the scope value
-     * @dev Protected internal function to change the expected scope for proofs
-     * @param newScope The new scope value to set
-     */
-    function _setScope(uint256 newScope) internal {
-        _scope = newScope;
-        emit ScopeUpdated(newScope);
-    }
 
     /**
      * @notice Verifies a self-proof using the bytes-based interface
@@ -183,5 +176,24 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         bytes memory userData
     ) internal virtual {
         // Default implementation is empty - override in derived contracts to add custom logic
+    }
+
+    /**
+     * @notice Convert string to BigInt using ASCII encoding
+     * @dev Converts each character to its ASCII value and packs them into a uint256
+     * @param str The input string (must be ASCII only, max 31 bytes)
+     * @return The resulting BigInt value
+     */
+    function _stringToBigInt(string memory str) internal pure returns (uint256) {
+        bytes memory strBytes = bytes(str);
+        require(strBytes.length <= 31, "String too long for BigInt conversion");
+
+        uint256 result = 0;
+        for (uint256 i = 0; i < strBytes.length; i++) {
+            // Ensure ASCII only (0-127)
+            require(uint8(strBytes[i]) <= 127, "Non-ASCII character detected");
+            result = (result << 8) | uint256(uint8(strBytes[i]));
+        }
+        return result;
     }
 }
