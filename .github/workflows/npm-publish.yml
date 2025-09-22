@@ -8,6 +8,8 @@ on:
       - "sdk/core/package.json"
       - "sdk/qrcode/package.json"
       - "common/package.json"
+      - "sdk/qrcode-angular/package.json"
+      - "contracts/package.json"
   workflow_dispatch:
 
 jobs:
