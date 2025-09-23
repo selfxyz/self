@@ -119,27 +119,27 @@ class QrCodeDetectorProcessor {
         return true
     }
 
-    private fun detectInImage(bitmap: Bitmap): Result? {
+    private fun detectInImage(bitmap: Bitmap, additionalHints: Map<com.google.zxing.DecodeHintType, Any>? = null): Result? {
         val qRCodeDetectorReader = QRCodeReader()
 
         // Try with original image first
-        var result = tryDetectInBitmap(bitmap, qRCodeDetectorReader)
+        var result = tryDetectInBitmap(bitmap, qRCodeDetectorReader, additionalHints)
         if (result != null) return result
 
         // If original fails, try with scaled up image (better for small QR codes)
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width * 2, bitmap.height * 2, true)
-        result = tryDetectInBitmap(scaledBitmap, qRCodeDetectorReader)
+        result = tryDetectInBitmap(scaledBitmap, qRCodeDetectorReader, additionalHints)
         if (result != null) return result
 
         // If still fails, try with scaled down image (better for very large QR codes)
         val scaledDownBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width / 2, bitmap.height / 2, true)
-        result = tryDetectInBitmap(scaledDownBitmap, qRCodeDetectorReader)
+        result = tryDetectInBitmap(scaledDownBitmap, qRCodeDetectorReader, additionalHints)
         if (result != null) return result
 
         return null
     }
 
-    private fun tryDetectInBitmap(bitmap: Bitmap, qRCodeDetectorReader: QRCodeReader): Result? {
+    private fun tryDetectInBitmap(bitmap: Bitmap, qRCodeDetectorReader: QRCodeReader, additionalHints: Map<com.google.zxing.DecodeHintType, Any>? = null): Result? {
         println("Attempting QR detection on bitmap: ${bitmap.width}x${bitmap.height}, hasAlpha: ${bitmap.hasAlpha()}")
 
         val intArray = IntArray(bitmap.width * bitmap.height)
@@ -167,10 +167,11 @@ class QrCodeDetectorProcessor {
         }
 
         // Try with different hints for better detection
-        val hints = mapOf(
-            com.google.zxing.DecodeHintType.TRY_HARDER to true,
-            com.google.zxing.DecodeHintType.POSSIBLE_FORMATS to listOf(com.google.zxing.BarcodeFormat.QR_CODE)
-        )
+        val hints = buildMap {
+            put(com.google.zxing.DecodeHintType.TRY_HARDER, true)
+            put(com.google.zxing.DecodeHintType.POSSIBLE_FORMATS, listOf(com.google.zxing.BarcodeFormat.QR_CODE))
+            additionalHints?.forEach { (key, value) -> put(key, value) }
+        }
 
         for (binarizer in binarizers) {
             val binaryBitMap = BinaryBitmap(binarizer)
@@ -197,7 +198,11 @@ class QrCodeDetectorProcessor {
     ): Boolean {
         val start = System.currentTimeMillis()
         executor.execute {
-            val result = detectInImage(image)
+            // Added for mAadhar qrcode detection
+            val hints = mapOf(
+                com.google.zxing.DecodeHintType.PURE_BARCODE to false
+            )
+            val result = detectInImage(image, hints)
             val timeRequired = System.currentTimeMillis() - start
             println(result)
             if (result != null) {
