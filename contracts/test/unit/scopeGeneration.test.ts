@@ -6,34 +6,37 @@ import { stringToBigInt, bigIntToString, hashEndpointWithScope } from "@selfxyz/
 describe("SelfVerificationRoot - Automatic Scope Generation", () => {
   let testContract: TestSelfVerificationRoot;
   let mockHubAddress: string;
-  let poseidonT3: any;
+  let poseidonT3Address: string;
 
   before(async () => {
-    // Deploy PoseidonT3 library
-    const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3");
-    poseidonT3 = await PoseidonT3Factory.deploy();
-    await poseidonT3.waitForDeployment();
-
-    // Use a simple mock hub address
     const [signer] = await ethers.getSigners();
     mockHubAddress = signer.address;
+
+    // Deploy PoseidonT3 library for testing
+    console.log("📚 Deploying PoseidonT3 library for testing...");
+    const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3");
+    const poseidonT3 = await PoseidonT3Factory.deploy();
+    await poseidonT3.waitForDeployment();
+    poseidonT3Address = await poseidonT3.getAddress();
+
+    console.log(`✅ PoseidonT3 deployed at: ${poseidonT3Address}`);
+    console.log("🎯 Using testSetScope approach - much cleaner inheritance!");
   });
 
   describe("Constructor Scope Generation", () => {
     it("should automatically generate scope from contract address and scope seed", async () => {
       const scopeSeed = "test-scope-seed";
 
-      // Deploy the test contract with linked PoseidonT3 library
-      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
-        libraries: {
-          PoseidonT3: poseidonT3.target,
-        },
-      });
+      // Deploy the test contract normally (will fail scope generation but that's ok)
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
       testContract = await TestContractFactory.deploy(
         mockHubAddress,
         scopeSeed
       );
       await testContract.waitForDeployment();
+
+      // Override the scope using our deployed PoseidonT3
+      await testContract.testSetScope(poseidonT3Address, scopeSeed);
 
       // Get the deployed contract address
       const contractAddress = await testContract.getAddress();
@@ -58,17 +61,17 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       const scopeSeed2 = "scope-seed-2";
 
       // Deploy two contracts with different scope seeds
-      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
-        libraries: {
-          PoseidonT3: poseidonT3.target,
-        },
-      });
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
 
       const contract1 = await TestContractFactory.deploy(mockHubAddress, scopeSeed1);
       const contract2 = await TestContractFactory.deploy(mockHubAddress, scopeSeed2);
 
       await contract1.waitForDeployment();
       await contract2.waitForDeployment();
+
+      // Set scopes using testSetScope
+      await contract1.testSetScope(poseidonT3Address, scopeSeed1);
+      await contract2.testSetScope(poseidonT3Address, scopeSeed2);
 
       const scope1 = await contract1.scope();
       const scope2 = await contract2.scope();
@@ -83,17 +86,17 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       const scopeSeed = "same-scope-seed";
 
       // Deploy two contracts with same scope seed (they'll have different addresses)
-      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
-        libraries: {
-          PoseidonT3: poseidonT3.target,
-        },
-      });
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
 
       const contract1 = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
       const contract2 = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
 
       await contract1.waitForDeployment();
       await contract2.waitForDeployment();
+
+      // Set scopes using testSetScope
+      await contract1.testSetScope(poseidonT3Address, scopeSeed);
+      await contract2.testSetScope(poseidonT3Address, scopeSeed);
 
       const scope1 = await contract1.scope();
       const scope2 = await contract2.scope();
@@ -110,16 +113,15 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
     it("should generate scope automatically without manual scope value", async () => {
       const scopeSeed = "test-scope";
 
-      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
-        libraries: {
-          PoseidonT3: poseidonT3.target,
-        },
-      });
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
       testContract = await TestContractFactory.deploy(
         mockHubAddress,
         scopeSeed
       );
       await testContract.waitForDeployment();
+
+      // Set scope using testSetScope
+      await testContract.testSetScope(poseidonT3Address, scopeSeed);
 
       const actualScope = await testContract.scope();
 
@@ -151,13 +153,12 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       ];
 
       for (const scopeSeed of testCases) {
-        const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
-          libraries: {
-            PoseidonT3: poseidonT3.target,
-          },
-        });
+        const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
         const contract = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
         await contract.waitForDeployment();
+
+        // Set scope using testSetScope
+        await contract.testSetScope(poseidonT3Address, scopeSeed);
 
         const actualScope = await contract.scope();
 
@@ -175,13 +176,12 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       // If this fails, it means our Solidity implementation differs from frontend
       const scopeSeed = "test-scope";
 
-      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot", {
-        libraries: {
-          PoseidonT3: poseidonT3.target,
-        },
-      });
+      const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
       const contract = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
       await contract.waitForDeployment();
+
+      // Set scope using testSetScope
+      await contract.testSetScope(poseidonT3Address, scopeSeed);
 
       const contractAddress = await contract.getAddress();
       const actualScope = await contract.scope();

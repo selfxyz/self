@@ -25,19 +25,13 @@ export default buildModule("DeployTestSelfVerificationRoot", (m) => {
   console.log("identityVerificationHubV2Address", identityVerificationHubV2Address);
   console.log("scopeSeed", scopeSeed);
 
-  // Deploy PoseidonT3 library
-  const poseidonT3 = m.library("PoseidonT3");
-
-  // Deploy TestSelfVerificationRoot with library linking
+  // Deploy TestSelfVerificationRoot
   const testSelfVerificationRoot = m.contract("TestSelfVerificationRoot", [
     identityVerificationHubV2Address,
     scopeSeed,
-  ], {
-    libraries: { PoseidonT3: poseidonT3 },
-  });
+  ]);
 
   return {
-    poseidonT3,
     testSelfVerificationRoot,
   };
 });

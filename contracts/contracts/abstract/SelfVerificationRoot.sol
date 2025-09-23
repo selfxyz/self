@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {IPoseidonT3} from "../interfaces/IPoseidonT3.sol";
 import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHubV2.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {CircuitConstantsV2} from "../constants/CircuitConstantsV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
-import {PoseidonT3} from "poseidon-solidity/PoseidonT3.sol";
 
 /**
  * @title SelfVerificationRoot
@@ -59,10 +59,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     constructor(address identityVerificationHubV2Address, string memory scopeSeed) {
         _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
-
-        uint256 addressHash = _calculateAddressHash(address(this));
-        uint256 scopeSeedAsUint = _stringToBigInt(scopeSeed);
-        _scope = PoseidonT3.hash([addressHash, scopeSeedAsUint]);
+        _scope = _calculateScope(address(this), scopeSeed, _getPoseidonAddress());
     }
 
     /**
@@ -178,6 +175,68 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     }
 
     /**
+     * @notice Gets the PoseidonT3 library address for the current chain
+     * @dev Returns hardcoded addresses of pre-deployed PoseidonT3 library on current chain
+     * @return The address of the PoseidonT3 library on this chain
+     */
+    function _getPoseidonAddress() internal view returns (address) {
+        uint256 chainId = block.chainid;
+
+        // Celo Mainnet
+        if (chainId == 42220) {
+            return 0xF134707a4C4a3a76b8410fC0294d620A7c341581;
+        }
+
+        // Celo Sepolia
+        if (chainId == 44787) {
+            return 0x0a782f7F9f8Aac6E0bacAF3cD4aA292C3275C6f2;
+        }
+
+        // For local/development networks, return zero address
+        // Test contracts should use testSetPoseidon() to set the correct scope
+        return address(0);
+    }
+
+    /**
+     * @notice Calculates scope from contract address, scope seed, and PoseidonT3 address
+     * @dev Helper function that can be used by both production and test contracts
+     * @param contractAddress The contract address to hash
+     * @param scopeSeed The scope seed string
+     * @param poseidonT3Address The address of the PoseidonT3 library to use
+     * @return The calculated scope value
+     */
+    function _calculateScope(address contractAddress, string memory scopeSeed, address poseidonT3Address) internal view returns (uint256) {
+        // Skip calculation if PoseidonT3 address is zero (local development)
+        if (poseidonT3Address == address(0)) {
+            return 0;
+        }
+
+        uint256 addressHash = _calculateAddressHashWithPoseidon(contractAddress, poseidonT3Address);
+        uint256 scopeSeedAsUint = _stringToBigInt(scopeSeed);
+        return IPoseidonT3(poseidonT3Address).hash([addressHash, scopeSeedAsUint]);
+    }
+
+    /**
+     * @notice Calculates hash of contract address using frontend-compatible chunking with specific PoseidonT3
+     * @dev Converts address to hex string, splits into 2 chunks (31+11), and hashes with provided PoseidonT3
+     * @param addr The contract address to hash
+     * @param poseidonT3Address The address of the PoseidonT3 library to use
+     * @return The hash result equivalent to frontend's endpointHash for addresses
+     */
+    function _calculateAddressHashWithPoseidon(address addr, address poseidonT3Address) internal view returns (uint256) {
+        // Convert address to hex string (42 chars: "0x" + 40 hex digits)
+        string memory addressString = _addressToHexString(addr);
+
+        // Split into exactly 2 chunks: 31 + 11 characters
+        // Chunk 1: characters 0-30 (31 chars)
+        // Chunk 2: characters 31-41 (11 chars)
+        uint256 chunk1BigInt = _substringToBigInt(addressString, 0, 31);
+        uint256 chunk2BigInt = _substringToBigInt(addressString, 31, 11);
+
+        return IPoseidonT3(poseidonT3Address).hash([chunk1BigInt, chunk2BigInt]);
+    }
+
+    /**
      * @notice Convert string to BigInt using ASCII encoding
      * @dev Converts each character to its ASCII value and packs them into a uint256
      * @param str The input string (must be ASCII only, max 31 bytes)
@@ -196,24 +255,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         return result;
     }
 
-    /**
-     * @notice Calculates hash of contract address using frontend-compatible chunking
-     * @dev Converts address to hex string, splits into 2 chunks (31+11), and hashes with PoseidonT3
-     * @param addr The contract address to hash
-     * @return The hash result equivalent to frontend's endpointHash for addresses
-     */
-    function _calculateAddressHash(address addr) internal pure returns (uint256) {
-        // Convert address to hex string (42 chars: "0x" + 40 hex digits)
-        string memory addressString = _addressToHexString(addr);
-
-        // Split into exactly 2 chunks: 31 + 11 characters
-        // Chunk 1: characters 0-30 (31 chars)
-        // Chunk 2: characters 31-41 (11 chars)
-        uint256 chunk1BigInt = _substringToBigInt(addressString, 0, 31);
-        uint256 chunk2BigInt = _substringToBigInt(addressString, 31, 11);
-
-        return PoseidonT3.hash([chunk1BigInt, chunk2BigInt]);
-    }
 
     /**
      * @notice Converts an address to its lowercase hex string representation
