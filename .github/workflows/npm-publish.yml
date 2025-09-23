@@ -8,6 +8,8 @@ on:
       - "sdk/core/package.json"
       - "sdk/qrcode/package.json"
       - "common/package.json"
+      - "sdk/qrcode-angular/package.json"
+      - "contracts/package.json"
   workflow_dispatch:
 
 jobs:
@@ -18,6 +20,7 @@ jobs:
       qrcode_changed: ${{ steps.check-version.outputs.qrcode_changed }}
       common_changed: ${{ steps.check-version.outputs.common_changed }}
       contracts_changed: ${{ steps.check-version.outputs.contracts_changed }}
+      qrcode_angular_changed: ${{ steps.check-version.outputs.qrcode_angular_changed }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,6 +32,8 @@ jobs:
           git diff HEAD^ HEAD --name-only | grep -q "sdk/core/package.json" && echo "core_changed=true" >> $GITHUB_OUTPUT || echo "core_changed=false" >> $GITHUB_OUTPUT
           git diff HEAD^ HEAD --name-only | grep -q "sdk/qrcode/package.json" && echo "qrcode_changed=true" >> $GITHUB_OUTPUT || echo "qrcode_changed=false" >> $GITHUB_OUTPUT
           git diff HEAD^ HEAD --name-only | grep -q "common/package.json" && echo "common_changed=true" >> $GITHUB_OUTPUT || echo "common_changed=false" >> $GITHUB_OUTPUT
+          git diff HEAD^ HEAD --name-only | grep -q "contracts/package.json" && echo "contracts_changed=true" >> $GITHUB_OUTPUT || echo "contracts_changed=false" >> $GITHUB_OUTPUT
+          git diff HEAD^ HEAD --name-only | grep -q "sdk/qrcode-angular/package.json" && echo "qrcode_angular_changed=true" >> $GITHUB_OUTPUT || echo "qrcode_angular_changed=false" >> $GITHUB_OUTPUT
 
           # check if it was dispatched manually as well
           if git diff HEAD^ HEAD -- sdk/core/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -45,6 +50,10 @@ jobs:
 
           if git diff HEAD^ HEAD -- contracts/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "contracts_changed=true" >> $GITHUB_OUTPUT
+          fi
+
+          if git diff HEAD^ HEAD -- sdk/qrcode-angular/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "qrcode_angular_changed=true" >> $GITHUB_OUTPUT
           fi
 
   publish-core:
@@ -152,6 +161,34 @@ jobs:
           yarn workspace @selfxyz/contracts build
       - name: Publish to npm
         working-directory: contracts
+        run: |
+          yarn config set npmScopes.selfxyz.npmAuthToken ${{ secrets.NPM_TOKEN }}
+          yarn config set npmPublishAccess public
+          yarn npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  publish-qrcode-angular:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.qrcode_angular_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Build package
+        run: |
+          yarn workspace @selfxyz/qrcode-angular build:deps
+
+      - name: Publish to npm
+        working-directory: sdk/qrcode-angular
         run: |
           yarn config set npmScopes.selfxyz.npmAuthToken ${{ secrets.NPM_TOKEN }}
           yarn config set npmPublishAccess public

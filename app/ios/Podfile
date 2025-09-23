@@ -26,6 +26,18 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+def using_https_git_auth?
+    begin
+      # backticks run command in shell and capture stdout, 2>&1 captures stderr as well
+      auth_data = `gh auth status 2>&1`
+      auth_data.include?('Logged in to github.com account') &&
+        auth_data.include?('Git operations protocol: https')
+    rescue => e
+      puts 'gh auth status failed, assuming no HTTPS auth -- will try SSH'
+      false
+    end
+  end
+
 target "Self" do
   config = use_native_modules!
 
@@ -44,6 +56,9 @@ target "Self" do
       # Running in selfxyz GitHub Actions with PAT available - use private repo with token
       nfc_repo_url = "https://#{ENV["SELFXYZ_INTERNAL_REPO_PAT"]}@github.com/selfxyz/NFCPassportReader.git"
       puts "📦 Using private NFCPassportReader with PAT (selfxyz GitHub Actions)"
+    elsif using_https_git_auth?
+      # Local development with HTTPS GitHub auth via gh - use HTTPS to private repo
+      nfc_repo_url = "https://github.com/selfxyz/NFCPassportReader.git"
     else
       # Local development in selfxyz repo - use SSH to private repo
       nfc_repo_url = "git@github.com:selfxyz/NFCPassportReader.git"
@@ -148,6 +163,9 @@ target "Self" do
     # update QKCutoutView.swift to hide OCR border
     qkCutoutView = "Pods/QKMRZScanner/QKMRZScanner/QKCutoutView.swift"
     if File.exist?(qkCutoutView)
+      # Ensure the file is writable
+      system("chmod u+w #{qkCutoutView}")
+      
       text = File.read(qkCutoutView)
       # Only modify if the line exists and is not already commented
       if text.include?("addBorderAroundCutout()") && !text.include?("// addBorderAroundCutout()")

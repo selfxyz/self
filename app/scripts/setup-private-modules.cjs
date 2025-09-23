@@ -116,6 +116,22 @@ function removeExistingModule() {
     log(`Removed existing ${REPO_NAME}`, 'success');
   }
 }
+// some of us connect to github via SSH, others via HTTPS with gh auth
+function usingHTTPSGitAuth() {
+  try {
+    const authData = runCommand(`gh auth status`, { stdio: 'pipe' });
+    const authInfo = authData.toString();
+    return (
+      authInfo.includes('Logged in to github.com account') &&
+      authInfo.includes('Git operations protocol: https')
+    );
+  } catch {
+    console.info(
+      'gh auth status failed, assuming no HTTPS auth -- will try SSH',
+    );
+    return false;
+  }
+}
 
 function clonePrivateRepo() {
   log(`Setting up ${REPO_NAME}...`, 'info');
@@ -136,6 +152,8 @@ function clonePrivateRepo() {
       'info',
     );
     return false; // Return false to indicate clone was skipped
+  } else if (usingHTTPSGitAuth()) {
+    cloneUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
   } else {
     // Local development with SSH
     log('Local development: Using SSH for clone', 'info');

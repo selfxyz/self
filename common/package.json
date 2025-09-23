@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/common",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Constants and utils for self sdks",
   "license": "MIT",
   "author": "@Selfxyz Team",
@@ -660,7 +660,7 @@
     "types": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@anon-aadhaar/core": "https://gitpkg.vercel.app/selfxyz/anon-aadhaar/packages/core?1b9efa501cff3cf25dc260b060bf611229e316a4",
+    "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
