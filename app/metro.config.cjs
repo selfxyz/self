@@ -67,6 +67,7 @@ const config = {
       buffer: require.resolve('buffer'),
       util: require.resolve('util'),
       assert: require.resolve('assert'),
+      events: require.resolve('events'),
       // App-specific alias
       '@': path.join(__dirname, 'src'),
     },
@@ -97,6 +98,7 @@ const config = {
         readline: false, // Disable readline module
         constants: require.resolve('constants-browserify'),
         path: require.resolve('path-browserify'),
+        'web-worker': false, // Disable web workers (not available in React Native)
       };
 
       if (
