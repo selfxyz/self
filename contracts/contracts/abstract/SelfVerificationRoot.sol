@@ -177,6 +177,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /**
      * @notice Gets the PoseidonT3 library address for the current chain
      * @dev Returns hardcoded addresses of pre-deployed PoseidonT3 library on current chain
+     * @dev For local development networks, should create a setter function to set the scope manually
      * @return The address of the PoseidonT3 library on this chain
      */
     function _getPoseidonAddress() internal view returns (address) {
@@ -192,14 +193,12 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             return 0x0a782f7F9f8Aac6E0bacAF3cD4aA292C3275C6f2;
         }
 
-        // For local/development networks, return zero address
-        // Test contracts should use testSetPoseidon() to set the correct scope
+        // For local/development networks or other chains, return zero address
         return address(0);
     }
 
     /**
      * @notice Calculates scope from contract address, scope seed, and PoseidonT3 address
-     * @dev Helper function that can be used by both production and test contracts
      * @param contractAddress The contract address to hash
      * @param scopeSeed The scope seed string
      * @param poseidonT3Address The address of the PoseidonT3 library to use

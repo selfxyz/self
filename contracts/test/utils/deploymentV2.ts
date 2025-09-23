@@ -340,7 +340,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   await testSelfVerificationRoot.waitForDeployment();
 
   // Set the scope using the deployed PoseidonT3 library
-  await testSelfVerificationRoot.testSetScope(poseidonT3.target, "test-scope");
+  await testSelfVerificationRoot.testGenerateScope(poseidonT3.target, "test-scope");
 
   return {
     hubImplV2: identityVerificationHubImplV2,

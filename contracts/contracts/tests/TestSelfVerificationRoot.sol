@@ -93,7 +93,7 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
      * @param poseidonT3Address The address of the deployed PoseidonT3 library
      * @param scopeSeed The scope seed string to be hashed with contract address
      */
-    function testSetScope(address poseidonT3Address, string memory scopeSeed) external {
+    function testGenerateScope(address poseidonT3Address, string memory scopeSeed) external {
         _scope = _calculateScope(address(this), scopeSeed, poseidonT3Address);
     }
 

@@ -20,14 +20,13 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
     poseidonT3Address = await poseidonT3.getAddress();
 
     console.log(`✅ PoseidonT3 deployed at: ${poseidonT3Address}`);
-    console.log("🎯 Using testSetScope approach - much cleaner inheritance!");
   });
 
   describe("Constructor Scope Generation", () => {
-    it("should automatically generate scope from contract address and scope seed", async () => {
+    it("should have the scope set correctly, after contract deployment", async () => {
       const scopeSeed = "test-scope-seed";
 
-      // Deploy the test contract normally (will fail scope generation but that's ok)
+      // Deploy the test contract
       const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
       testContract = await TestContractFactory.deploy(
         mockHubAddress,
@@ -35,8 +34,8 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       );
       await testContract.waitForDeployment();
 
-      // Override the scope using our deployed PoseidonT3
-      await testContract.testSetScope(poseidonT3Address, scopeSeed);
+      // Setup the scope manually using testGenerateScope (as this is a local dev network)
+      await testContract.testGenerateScope(poseidonT3Address, scopeSeed);
 
       // Get the deployed contract address
       const contractAddress = await testContract.getAddress();
@@ -69,9 +68,9 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       await contract1.waitForDeployment();
       await contract2.waitForDeployment();
 
-      // Set scopes using testSetScope
-      await contract1.testSetScope(poseidonT3Address, scopeSeed1);
-      await contract2.testSetScope(poseidonT3Address, scopeSeed2);
+      // Set scopes using testGenerateScope
+      await contract1.testGenerateScope(poseidonT3Address, scopeSeed1);
+      await contract2.testGenerateScope(poseidonT3Address, scopeSeed2);
 
       const scope1 = await contract1.scope();
       const scope2 = await contract2.scope();
@@ -94,9 +93,9 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       await contract1.waitForDeployment();
       await contract2.waitForDeployment();
 
-      // Set scopes using testSetScope
-      await contract1.testSetScope(poseidonT3Address, scopeSeed);
-      await contract2.testSetScope(poseidonT3Address, scopeSeed);
+      // Set scopes using testGenerateScope
+      await contract1.testGenerateScope(poseidonT3Address, scopeSeed);
+      await contract2.testGenerateScope(poseidonT3Address, scopeSeed);
 
       const scope1 = await contract1.scope();
       const scope2 = await contract2.scope();
@@ -120,8 +119,8 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       );
       await testContract.waitForDeployment();
 
-      // Set scope using testSetScope
-      await testContract.testSetScope(poseidonT3Address, scopeSeed);
+      // Set scope using testGenerateScope
+      await testContract.testGenerateScope(poseidonT3Address, scopeSeed);
 
       const actualScope = await testContract.scope();
 
@@ -157,8 +156,8 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
         const contract = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
         await contract.waitForDeployment();
 
-        // Set scope using testSetScope
-        await contract.testSetScope(poseidonT3Address, scopeSeed);
+        // Set scope using testGenerateScope
+        await contract.testGenerateScope(poseidonT3Address, scopeSeed);
 
         const actualScope = await contract.scope();
 
@@ -180,8 +179,8 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       const contract = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
       await contract.waitForDeployment();
 
-      // Set scope using testSetScope
-      await contract.testSetScope(poseidonT3Address, scopeSeed);
+      // Set scope using testGenerateScope
+      await contract.testGenerateScope(poseidonT3Address, scopeSeed);
 
       const contractAddress = await contract.getAddress();
       const actualScope = await contract.scope();
