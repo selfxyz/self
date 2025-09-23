@@ -51,10 +51,25 @@ export default defineConfig({
         'src/mocks/react-native-passport-reader.ts',
       ),
       '@/utils/nfcScanner': resolve(__dirname, 'src/mocks/nfcScanner.ts'),
-      crypto: 'crypto-browserify',
+      crypto: resolve(__dirname, 'src/utils/crypto-polyfill.ts'),
+      buffer: 'buffer',
     },
   },
   plugins: [
+    {
+      name: 'fix-buffer-externalization',
+      transform(code, id) {
+        // Fix the mobile-sdk-alpha chunk that references Buffer
+        if (id.includes('mobile-sdk-alpha') && code.includes('from "buffer"')) {
+          // Replace imports from "buffer" with a local Buffer reference
+          const fixedCode = code
+            .replace(/import\s+\{\s*Buffer\s*\}\s+from\s+['"]buffer['"]/g, '')
+            .replace(/^/m, 'const Buffer = globalThis.Buffer;\n');
+          return { code: fixedCode, map: null };
+        }
+        return null;
+      },
+    },
     react(),
     svgr({
       include: '**/*.svg',
@@ -86,6 +101,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
+    include: ['buffer'],
     exclude: ['fs', 'path', 'child_process', '@zk-email/helpers'],
     esbuildOptions: {
       // Optimize minification
@@ -94,7 +110,6 @@ export default defineConfig({
       minifyWhitespace: true,
     },
   },
-
   build: {
     emptyOutDir: true,
     outDir: resolve(__dirname, 'web/dist'),

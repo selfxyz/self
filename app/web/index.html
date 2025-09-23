@@ -12,9 +12,13 @@
       }
     </script>
     <script type="module">
-      import { Buffer } from 'buffer';
+      import { Buffer } from 'https://unpkg.com/buffer@6.0.3/index.js';
       window.Buffer = Buffer;
       globalThis.Buffer = Buffer;
+      // Create a buffer external mapping
+      window.__vite_browser_external = {
+        buffer: { Buffer }
+      };
     </script>
   </head>
   <body>
