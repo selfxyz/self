@@ -92,7 +92,7 @@ const config = {
 
       // Handle problematic Node.js modules that don't work in React Native
       const nodeModuleRedirects = {
-        crypto: require.resolve('crypto-browserify'),
+        crypto: path.resolve(__dirname, 'src/utils/crypto-polyfill.ts'),
         fs: false, // Disable filesystem access
         os: false, // Disable OS-specific modules
         readline: false, // Disable readline module
