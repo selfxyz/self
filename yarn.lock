@@ -6032,15 +6032,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-firebase/analytics@npm:^19.0.1":
-  version: 19.3.0
-  resolution: "@react-native-firebase/analytics@npm:19.3.0"
-  peerDependencies:
-    "@react-native-firebase/app": 19.3.0
-  checksum: 10c0/be618ab91d892148e02cd4ca9f093cf1d41ebad90622b9c9c6bf673f2eb779776ae9d46259105b8b229ad5db29c5468dfb32731290f1b00bc7b2a1b225a701c6
-  languageName: node
-  linkType: hard
-
 "@react-native-firebase/app@npm:^19.0.1":
   version: 19.3.0
   resolution: "@react-native-firebase/app@npm:19.3.0"
@@ -7095,7 +7086,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/common@workspace:*, @selfxyz/common@workspace:^, @selfxyz/common@workspace:common":
+"@selfxyz/common@npm:^0.0.9, @selfxyz/common@workspace:*, @selfxyz/common@workspace:^, @selfxyz/common@workspace:common":
   version: 0.0.0-use.local
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
@@ -7255,7 +7246,6 @@ __metadata:
     "@react-native-community/blur": "npm:^4.4.1"
     "@react-native-community/cli": "npm:^16.0.3"
     "@react-native-community/netinfo": "npm:^11.4.1"
-    "@react-native-firebase/analytics": "npm:^19.0.1"
     "@react-native-firebase/app": "npm:^19.0.1"
     "@react-native-firebase/messaging": "npm:^19.0.1"
     "@react-native-firebase/remote-config": "npm:^19.0.1"
@@ -7270,7 +7260,7 @@ __metadata:
     "@segment/analytics-react-native": "npm:^2.21.2"
     "@segment/sovran-react-native": "npm:^1.1.3"
     "@selfxyz/common": "workspace:^"
-    "@selfxyz/mobile-sdk-alpha": "workspace:^"
+    "@selfxyz/mobile-sdk-alpha": "file:/tmp/mobile-sdk-alpha-ci.tgz"
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:7.0.1"
     "@stablelib/cbor": "npm:^2.0.1"
@@ -7355,7 +7345,7 @@ __metadata:
     react-native-logs: "npm:^5.3.0"
     react-native-nfc-manager: "npm:^3.16.3"
     react-native-passport-reader: "npm:^1.0.3"
-    react-native-reanimated: "npm:3.15.4"
+    react-native-reanimated: "npm:3.16.7"
     react-native-safe-area-context: "npm:^5.6.1"
     react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
@@ -7381,7 +7371,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/mobile-sdk-alpha@workspace:*, @selfxyz/mobile-sdk-alpha@workspace:^, @selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha":
+"@selfxyz/mobile-sdk-alpha@file:/tmp/mobile-sdk-alpha-ci.tgz::locator=%40selfxyz%2Fmobile-app%40workspace%3Aapp":
+  version: 0.0.1
+  resolution: "@selfxyz/mobile-sdk-alpha@file:/tmp/mobile-sdk-alpha-ci.tgz#/tmp/mobile-sdk-alpha-ci.tgz::hash=5ff552&locator=%40selfxyz%2Fmobile-app%40workspace%3Aapp"
+  dependencies:
+    "@babel/runtime": "npm:^7.28.3"
+    "@selfxyz/common": "npm:^0.0.9"
+    socket.io-client: "npm:^4.8.1"
+    zustand: "npm:^4.5.2"
+  peerDependencies:
+    react: ^18.3.1
+    react-native: 0.76.9
+  checksum: 10c0/9202eaab0e9616e672f221049cf9610135c522b32b67b40b3858889c883ea0747326caf9d08b014c3258abeeadfe857b4c33b5716ccb05cb5a503ab72832f7b1
+  languageName: node
+  linkType: hard
+
+"@selfxyz/mobile-sdk-alpha@workspace:*, @selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha":
   version: 0.0.0-use.local
   resolution: "@selfxyz/mobile-sdk-alpha@workspace:packages/mobile-sdk-alpha"
   dependencies:
@@ -26426,9 +26431,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:3.15.4":
-  version: 3.15.4
-  resolution: "react-native-reanimated@npm:3.15.4"
+"react-native-reanimated@npm:3.16.7":
+  version: 3.16.7
+  resolution: "react-native-reanimated@npm:3.16.7"
   dependencies:
     "@babel/plugin-transform-arrow-functions": "npm:^7.0.0-0"
     "@babel/plugin-transform-class-properties": "npm:^7.0.0-0"
@@ -26445,7 +26450,7 @@ __metadata:
     "@babel/core": ^7.0.0-0
     react: "*"
     react-native: "*"
-  checksum: 10c0/542ec85a061481e89b5eedd1c842dfe9d00717eeb37c4e03dfa7abbd166093d84d0ef5375137e5ec21d2936fca37b6e538528810342473b83f031efda1e9bb03
+  checksum: 10c0/007cbec677d036e8d2c0744dfff52282ddfb9a89bb3eee82e7eaebcf731b07505e241af04ac87a38da038a18e380b32ec8a55263d1bb8559274d1c077b0b1d25
   languageName: node
   linkType: hard
 
