@@ -14,11 +14,6 @@ import {
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  cleanSelfApp,
-  setSelfApp,
-  startAppListener,
-} from '@selfxyz/mobile-sdk-alpha/stores';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
@@ -34,7 +29,8 @@ import { black, slate800, white } from '@/utils/colors';
 import { parseAndValidateUrlParams } from '@/utils/deeplinks';
 
 const QRCodeViewFinderScreen: React.FC = () => {
-  const { trackEvent } = useSelfClient();
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
   const { visible: connectionModalVisible } = useConnectionModal();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -75,8 +71,8 @@ const QRCodeViewFinderScreen: React.FC = () => {
             });
             const selfAppJson = JSON.parse(selfApp);
 
-            setSelfApp(selfAppJson);
-            startAppListener(selfAppJson.sessionId);
+            selfClient.getSelfAppState().setSelfApp(selfAppJson);
+            selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
             setTimeout(() => {
               navigateToProve();
@@ -99,8 +95,8 @@ const QRCodeViewFinderScreen: React.FC = () => {
             scan_type: 'sessionId',
           });
 
-          cleanSelfApp();
-          startAppListener(sessionId);
+          selfClient.getSelfAppState().cleanSelfApp();
+          selfClient.getSelfAppState().startAppListener(sessionId);
 
           setTimeout(() => {
             navigateToProve();
@@ -117,7 +113,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
         }
       }
     },
-    [doneScanningQR, navigation, navigateToProve, trackEvent],
+    [doneScanningQR, navigation, navigateToProve, trackEvent, selfClient],
   );
 
   const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;

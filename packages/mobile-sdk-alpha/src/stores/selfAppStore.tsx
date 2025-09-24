@@ -9,7 +9,7 @@ import { create } from 'zustand';
 import { WS_DB_RELAYER } from '@selfxyz/common/constants';
 import type { SelfApp } from '@selfxyz/common/utils/appType';
 
-interface SelfAppState {
+export interface SelfAppState {
   selfApp: SelfApp | null;
   sessionId: string | null;
   socket: Socket | null;

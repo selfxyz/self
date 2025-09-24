@@ -9,12 +9,8 @@ import { SystemBars } from 'react-native-edge-to-edge';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused } from '@react-navigation/native';
 
-import { useProvingStore, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  cleanSelfApp,
-  useCurrentSelfApp,
-} from '@selfxyz/mobile-sdk-alpha/stores';
 
 import loadingAnimation from '@/assets/animations/loading/misc.json';
 import failAnimation from '@/assets/animations/proof_failed.json';
@@ -36,8 +32,10 @@ import {
 } from '@/utils/haptic';
 
 const SuccessScreen: React.FC = () => {
-  const { trackEvent } = useSelfClient();
-  const selfApp = useCurrentSelfApp();
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
+  const { useProvingStore, useSelfAppStore } = selfClient;
+  const selfApp = useSelfAppStore(state => state.selfApp);
   const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
 
@@ -59,7 +57,7 @@ const SuccessScreen: React.FC = () => {
     buttonTap();
     goHome();
     setTimeout(() => {
-      cleanSelfApp();
+      selfClient.getSelfAppState().cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
   }, [goHome]);
 

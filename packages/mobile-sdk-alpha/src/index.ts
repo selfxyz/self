@@ -64,7 +64,7 @@ export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
-export { type ProvingStateType, useProvingStore } from './proving/provingMachine';
+export { type ProvingStateType } from './proving/provingMachine';
 
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 

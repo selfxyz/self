@@ -12,6 +12,8 @@ import { ProofContext } from './proving/internal/logging';
 import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
 import type { Adapters, Config, LogLevel, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
 import { TrackEventParams } from './types/public';
+import { useProvingStore } from './proving/provingMachine';
+import { useSelfAppStore } from './stores/selfAppStore';
 /**
  * Optional adapter implementations used when a consumer does not provide their
  * own. These defaults are intentionally minimal no-ops suitable for tests and
@@ -166,5 +168,17 @@ export function createSelfClient({
     saveDocument: async (id: string, passportData: IDDocument) => {
       return _adapters.documents.saveDocument(id, passportData);
     },
+
+    // for direct, one off access
+    getProvingState: () => {
+      return useProvingStore.getState();
+    },
+    getSelfAppState: () => {
+      return useSelfAppStore.getState();
+    },
+
+    // for reactivity
+    useProvingStore,
+    useSelfAppStore,
   };
 }

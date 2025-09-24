@@ -6,6 +6,9 @@ import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common/
 
 import type { ProofContext } from '../proving/internal/logging';
 import { SDKEvent, SDKEventMap } from './events';
+import { ProvingState } from '../proving/provingMachine';
+import { SelfAppState } from '../stores/selfAppStore';
+import { create } from 'zustand';
 
 export type { PassportValidationCallbacks } from '../validation/document';
 export type { DocumentCatalog, IDDocument, PassportData };
@@ -179,8 +182,13 @@ export interface SelfClient {
   registerNotificationsToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void>;
   loadDocumentById(id: string): Promise<IDDocument | null>;
   saveDocument(id: string, passportData: IDDocument): Promise<void>;
-
   deleteDocument(id: string): Promise<void>;
+
+  getProvingState: () => ProvingState;
+  getSelfAppState: () => SelfAppState;
+
+  useProvingStore: ReturnType<typeof create<ProvingState, []>>;
+  useSelfAppStore: ReturnType<typeof create<SelfAppState, []>>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

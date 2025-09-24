@@ -24,6 +24,7 @@ import settingsScreens from '@/navigation/settings';
 import systemScreens from '@/navigation/system';
 import analytics from '@/utils/analytics';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 export const navigationScreens = {
   ...systemScreens,
@@ -62,6 +63,7 @@ const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {
+  const selfClient = useSelfClient();
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
     if (currentRoute) {
@@ -74,7 +76,7 @@ const NavigationWithTracking = () => {
 
   // Setup universal link handling at the navigation level
   useEffect(() => {
-    const cleanup = setupUniversalLinkListenerInNavigation();
+    const cleanup = setupUniversalLinkListenerInNavigation(selfClient);
 
     return () => {
       cleanup();
