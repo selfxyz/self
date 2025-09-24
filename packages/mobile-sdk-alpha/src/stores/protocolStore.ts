@@ -21,7 +21,7 @@ import {
   IDENTITY_TREE_URL_STAGING_ID_CARD,
   TREE_URL,
   TREE_URL_STAGING,
-} from '@selfxyz/common';
+} from '@selfxyz/common/constants';
 import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
 import type { DeployedCircuits, OfacTree } from '@selfxyz/common/utils/types';
 
