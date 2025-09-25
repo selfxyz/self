@@ -44,7 +44,14 @@ const config = {
     blockList: [
       // Ignore built package.json files to prevent Haste collisions
       /.*\/dist\/package\.json$/,
+      /.*\/dist\/esm\/package\.json$/,
+      /.*\/dist\/cjs\/package\.json$/,
       /.*\/build\/package\.json$/,
+      // Prevent duplicate React/React Native from nested workspace deps
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react(/.+)?'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/.+)?'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/.+)?'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/.+)?'),
     ],
     // Enable automatic workspace package resolution
     enableGlobalPackages: true,
@@ -68,6 +75,13 @@ const config = {
       util: require.resolve('util'),
       assert: require.resolve('assert'),
       events: require.resolve('events'),
+      // Ensure a single React/React Native instance across workspaces
+      react: path.resolve(workspaceRoot, 'node_modules/react'),
+      'react-dom': path.resolve(workspaceRoot, 'node_modules/react-dom'),
+      'react-native': path.resolve(workspaceRoot, 'node_modules/react-native'),
+      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
+      'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
+      scheduler: require.resolve('scheduler'),
       // App-specific alias
       '@': path.join(__dirname, 'src'),
     },
@@ -81,6 +95,16 @@ const config = {
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
     resolveRequest: (context, moduleName, platform) => {
+      // Force SDK to use built ESM to avoid duplicate React and source transpilation issues
+      if (moduleName === '@selfxyz/mobile-sdk-alpha') {
+        return {
+          type: 'sourceFile',
+          filePath: path.resolve(
+            workspaceRoot,
+            'packages/mobile-sdk-alpha/dist/esm/index.js',
+          ),
+        };
+      }
       // For relative imports in common source files that end with .js
       if (
         context.originModulePath?.includes('/common/src/') &&
