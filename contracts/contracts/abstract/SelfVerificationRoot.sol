@@ -191,7 +191,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         }
 
         // Celo Sepolia
-        if (chainId == 44787) {
+        if (chainId == 11142220) {
             return 0x0a782f7F9f8Aac6E0bacAF3cD4aA292C3275C6f2;
         }
 
@@ -236,6 +236,4 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
         return IPoseidonT3(poseidonT3Address).hash([chunk1BigInt, chunk2BigInt]);
     }
-
-
 }
