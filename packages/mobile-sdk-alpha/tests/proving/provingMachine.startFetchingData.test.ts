@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { SelfClient, useProvingStore } from '../../src';
+import { SelfClient } from '../../src';
 import { ProofEvents } from '../../src/constants/analytics';
 import * as documentUtils from '../../src/documents/utils';
+import { useProvingStore } from '../../src/proving/provingMachine';
+import { useProtocolStore } from '../../src/stores/protocolStore';
+import { useSelfAppStore } from '../../src/stores/selfAppStore';
 import { actorMock } from './actorMock';
 
 vitest.mock('xstate', () => {
@@ -53,6 +56,9 @@ describe('startFetchingData', () => {
       getPrivateKey: vitest.fn().mockResolvedValue('secret'), // or mock-secret?
       trackEvent: vitest.fn(),
       logProofEvent: vitest.fn(),
+      getSelfAppState: () => useSelfAppStore.getState(),
+      getProvingState: () => useProvingStore.getState(),
+      getProtocolState: () => useProtocolStore.getState(),
     } as unknown as SelfClient;
 
     await useProvingStore.getState().init(mockSelfClient, 'register');
