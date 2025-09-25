@@ -24,6 +24,7 @@ import {
 } from '@selfxyz/common/constants';
 import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
 import type { DeployedCircuits, DocumentCategory, Environment, OfacTree } from '@selfxyz/common/utils/types';
+
 import type { SelfClient } from '../types/public';
 
 export interface ProtocolState {
@@ -74,6 +75,29 @@ export interface ProtocolState {
     fetch_all: (environment: Environment) => Promise<void>;
     fetch_ofac_trees: (environment: Environment) => Promise<void>;
   };
+}
+
+export async function fetchAllTreesAndCircuits(
+  selfClient: SelfClient,
+  docCategory: DocumentCategory,
+  environment: Environment,
+  authorityKeyIdentifier: string,
+) {
+  await selfClient.getProtocolState()[docCategory].fetch_all(environment, authorityKeyIdentifier);
+}
+
+export function getAltCSCAPublicKeys(selfClient: SelfClient, docCategory: DocumentCategory) {
+  if (docCategory === 'aadhaar') {
+    return selfClient.getProtocolState()[docCategory].public_keys;
+  }
+
+  return selfClient.getProtocolState()[docCategory].alternative_csca;
+}
+
+export function getCommitmentTree(selfClient: SelfClient, documentCategory: DocumentCategory) {
+  const protocolStore = selfClient.getProtocolState();
+
+  return protocolStore[documentCategory].commitment_tree;
 }
 
 export const useProtocolStore = create<ProtocolState>((set, get) => ({
@@ -442,26 +466,3 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     },
   },
 }));
-
-export async function fetchAllTreesAndCircuits(
-  selfClient: SelfClient,
-  docCategory: DocumentCategory,
-  environment: Environment,
-  authorityKeyIdentifier: string,
-) {
-  await selfClient.getProtocolState()[docCategory].fetch_all(environment, authorityKeyIdentifier);
-}
-
-export function getAltCSCAPublicKeys(selfClient: SelfClient, docCategory: DocumentCategory) {
-  if (docCategory === 'aadhaar') {
-    return selfClient.getProtocolState()[docCategory].public_keys;
-  }
-
-  return selfClient.getProtocolState()[docCategory].alternative_csca;
-}
-
-export function getCommitmentTree(selfClient: SelfClient, documentCategory: DocumentCategory) {
-  const protocolStore = selfClient.getProtocolState();
-
-  return protocolStore[documentCategory].commitment_tree;
-}

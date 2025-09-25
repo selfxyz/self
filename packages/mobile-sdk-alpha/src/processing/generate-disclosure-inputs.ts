@@ -5,6 +5,7 @@
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { SelfApp } from '@selfxyz/common/utils';
 import { generateTEEInputsDiscloseStateless } from '@selfxyz/common/utils/circuits/registerInputs';
+
 import { useSelfClient } from '../context';
 
 // TODO is this used? couldn't find any usages

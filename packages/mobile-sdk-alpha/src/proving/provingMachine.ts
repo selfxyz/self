@@ -45,11 +45,11 @@ import {
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '../documents/utils';
+import { fetchAllTreesAndCircuits, getCommitmentTree } from '../stores';
 import { SdkEvents } from '../types/events';
 import type { SelfClient } from '../types/public';
 import type { ProofContext } from './internal/logging';
 import { handleStatusCode, parseStatusMessage } from './internal/statusHandlers';
-import { fetchAllTreesAndCircuits, getCommitmentTree } from '../stores';
 
 // Helper functions for WebSocket URL resolution
 const getMappingKey = (circuitType: 'disclose' | 'register' | 'dsc', documentCategory: DocumentCategory): string => {
@@ -198,29 +198,60 @@ const _buildSubmitRequest = (uuid: string | null, encryptedPayload: EncryptedPay
 
 const getPlatform = (): 'ios' | 'android' => (Platform.OS === 'ios' ? 'ios' : 'android');
 
-export type ProvingStateType =
-  // Initial states
-  | 'idle'
-  | undefined
-  // Data preparation states
-  | 'fetching_data'
-  | 'validating_document'
-  // Connection states
-  | 'init_tee_connexion'
-  | 'listening_for_status'
-  // Proving states
-  | 'ready_to_prove'
-  | 'proving'
-  | 'post_proving'
-  // Success state
-  | 'completed'
-  // Error states
-  | 'error'
-  | 'failure'
-  // Special case states
-  | 'passport_not_supported'
-  | 'account_recovery_choice'
-  | 'passport_data_not_found';
+export interface ProvingState {
+  currentState: ProvingStateType;
+  attestation: number[] | null;
+  serverPublicKey: string | null;
+  sharedKey: Buffer | null;
+  wsConnection: WebSocket | null;
+  wsHandlers: WsHandlers | null;
+  socketConnection: Socket | null;
+  uuid: string | null;
+  userConfirmed: boolean;
+  passportData: IDDocument | null;
+  secret: string | null;
+  circuitType: provingMachineCircuitType | null;
+  error_code: string | null;
+  reason: string | null;
+  endpointType: EndpointType | null;
+  fcmToken: string | null;
+  env: 'prod' | 'stg' | null;
+  setFcmToken: (token: string, selfClient: SelfClient) => void;
+  init: (
+    selfClient: SelfClient,
+    circuitType: 'dsc' | 'disclose' | 'register',
+    userConfirmed?: boolean,
+  ) => Promise<void>;
+  startFetchingData: (selfClient: SelfClient) => Promise<void>;
+  validatingDocument: (selfClient: SelfClient) => Promise<void>;
+  initTeeConnection: (selfClient: SelfClient) => Promise<boolean>;
+  startProving: (selfClient: SelfClient) => Promise<void>;
+  postProving: (selfClient: SelfClient) => void;
+  setUserConfirmed: (selfClient: SelfClient) => void;
+  _closeConnections: (selfClient: SelfClient) => void;
+  _generatePayload: (selfClient: SelfClient) => Promise<{
+    jsonrpc: '2.0';
+    method: 'openpassport_submit_request';
+    id: 2;
+    params: {
+      uuid: string | null;
+      nonce: number[];
+      cipher_text: number[];
+      auth_tag: number[];
+    };
+  }>;
+  _handleWebSocketMessage: (event: MessageEvent, selfClient: SelfClient) => Promise<void>;
+  _handleRegisterErrorOrFailure: (selfClient: SelfClient) => void;
+  _startSocketIOStatusListener: (receivedUuid: string, endpointType: EndpointType, selfClient: SelfClient) => void;
+  _handleWsOpen: (selfClient: SelfClient) => void;
+  _handleWsError: (error: Event, selfClient: SelfClient) => void;
+  _handleWsClose: (event: CloseEvent, selfClient: SelfClient) => void;
+
+  _handlePassportNotSupported: (selfClient: SelfClient) => void;
+  _handleAccountRecoveryChoice: (selfClient: SelfClient) => void;
+  _handleAccountVerifiedSuccess: (selfClient: SelfClient) => void;
+  _handlePassportDataNotFound: (selfClient: SelfClient) => void;
+}
 
 const provingMachine = createMachine({
   id: 'proving',
@@ -295,14 +326,31 @@ const provingMachine = createMachine({
   },
 });
 
-export type provingMachineCircuitType = 'register' | 'dsc' | 'disclose';
+export type ProvingStateType =
+  // Initial states
+  | 'idle'
+  | undefined
+  // Data preparation states
+  | 'fetching_data'
+  | 'validating_document'
+  // Connection states
+  | 'init_tee_connexion'
+  | 'listening_for_status'
+  // Proving states
+  | 'ready_to_prove'
+  | 'proving'
+  | 'post_proving'
+  // Success state
+  | 'completed'
+  // Error states
+  | 'error'
+  | 'failure'
+  // Special case states
+  | 'passport_not_supported'
+  | 'account_recovery_choice'
+  | 'passport_data_not_found';
 
-export const getPostVerificationRoute = () => {
-  return 'AccountVerifiedSuccess';
-  // disable for now
-  // const { cloudBackupEnabled } = useSettingStore.getState();
-  // return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
-};
+export type provingMachineCircuitType = 'register' | 'dsc' | 'disclose';
 
 type WsHandlers = {
   message: (event: MessageEvent) => void;
@@ -311,60 +359,12 @@ type WsHandlers = {
   close: (event: CloseEvent) => void;
 };
 
-export interface ProvingState {
-  currentState: ProvingStateType;
-  attestation: number[] | null;
-  serverPublicKey: string | null;
-  sharedKey: Buffer | null;
-  wsConnection: WebSocket | null;
-  wsHandlers: WsHandlers | null;
-  socketConnection: Socket | null;
-  uuid: string | null;
-  userConfirmed: boolean;
-  passportData: IDDocument | null;
-  secret: string | null;
-  circuitType: provingMachineCircuitType | null;
-  error_code: string | null;
-  reason: string | null;
-  endpointType: EndpointType | null;
-  fcmToken: string | null;
-  env: 'prod' | 'stg' | null;
-  setFcmToken: (token: string, selfClient: SelfClient) => void;
-  init: (
-    selfClient: SelfClient,
-    circuitType: 'dsc' | 'disclose' | 'register',
-    userConfirmed?: boolean,
-  ) => Promise<void>;
-  startFetchingData: (selfClient: SelfClient) => Promise<void>;
-  validatingDocument: (selfClient: SelfClient) => Promise<void>;
-  initTeeConnection: (selfClient: SelfClient) => Promise<boolean>;
-  startProving: (selfClient: SelfClient) => Promise<void>;
-  postProving: (selfClient: SelfClient) => void;
-  setUserConfirmed: (selfClient: SelfClient) => void;
-  _closeConnections: (selfClient: SelfClient) => void;
-  _generatePayload: (selfClient: SelfClient) => Promise<{
-    jsonrpc: '2.0';
-    method: 'openpassport_submit_request';
-    id: 2;
-    params: {
-      uuid: string | null;
-      nonce: number[];
-      cipher_text: number[];
-      auth_tag: number[];
-    };
-  }>;
-  _handleWebSocketMessage: (event: MessageEvent, selfClient: SelfClient) => Promise<void>;
-  _handleRegisterErrorOrFailure: (selfClient: SelfClient) => void;
-  _startSocketIOStatusListener: (receivedUuid: string, endpointType: EndpointType, selfClient: SelfClient) => void;
-  _handleWsOpen: (selfClient: SelfClient) => void;
-  _handleWsError: (error: Event, selfClient: SelfClient) => void;
-  _handleWsClose: (event: CloseEvent, selfClient: SelfClient) => void;
-
-  _handlePassportNotSupported: (selfClient: SelfClient) => void;
-  _handleAccountRecoveryChoice: (selfClient: SelfClient) => void;
-  _handleAccountVerifiedSuccess: (selfClient: SelfClient) => void;
-  _handlePassportDataNotFound: (selfClient: SelfClient) => void;
-}
+export const getPostVerificationRoute = () => {
+  return 'AccountVerifiedSuccess';
+  // disable for now
+  // const { cloudBackupEnabled } = useSettingStore.getState();
+  // return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
+};
 
 export const useProvingStore = create<ProvingState>((set, get) => {
   let actor: AnyActorRef | null = null;
@@ -993,7 +993,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         /// disclosure
         if (circuitType === 'disclose') {
-          const isRegisteredWithLocalCSCA = await isUserRegistered(passportData, secret as string, (documentCategory: DocumentCategory) => getCommitmentTree(selfClient, documentCategory));
+          const isRegisteredWithLocalCSCA = await isUserRegistered(
+            passportData,
+            secret as string,
+            (documentCategory: DocumentCategory) => getCommitmentTree(selfClient, documentCategory),
+          );
           selfClient.logProofEvent('info', 'Local CSCA registration check', context, {
             registered: isRegisteredWithLocalCSCA,
           });
@@ -1351,7 +1355,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         // Generate circuit inputs
         const { inputs, circuitName, endpointType, endpoint, circuitTypeWithDocumentExtension } =
-          await _generateCircuitInputs(selfClient, circuitType as 'disclose' | 'register' | 'dsc', secret, passportData, env, selfClient.getSelfAppState().selfApp);
+          await _generateCircuitInputs(
+            selfClient,
+            circuitType as 'disclose' | 'register' | 'dsc',
+            secret,
+            passportData,
+            env,
+            selfClient.getSelfAppState().selfApp,
+          );
 
         selfClient.logProofEvent('info', 'Inputs generated', context, {
           circuit_name: circuitName,
@@ -1441,7 +1452,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 const createProofContext = (
   selfClient: SelfClient,
   stage: string,
-  overrides: Partial<ProofContext> = {}
+  overrides: Partial<ProofContext> = {},
 ): ProofContext => {
   const selfApp = selfClient.getSelfAppState().selfApp;
   const provingState = selfClient.getProvingState();
