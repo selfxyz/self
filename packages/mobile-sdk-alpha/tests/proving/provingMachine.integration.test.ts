@@ -54,19 +54,6 @@ vi.mock('../../src/documents/utils', () => ({
   reStorePassportDataWithRightCSCA: vi.fn(),
 }));
 
-vi.mock('../../src/stores', () => ({
-  useProtocolStore: {
-    getState: vi.fn(() => ({
-      isUserLoggedIn: true,
-    })),
-  },
-  useSelfAppStore: {
-    getState: vi.fn(() => ({
-      selfApp: {},
-    })),
-  },
-}));
-
 vi.mock('../../src/types/events', () => ({
   SdkEvents: {
     PASSPORT_DATA_NOT_FOUND: 'PASSPORT_DATA_NOT_FOUND',
@@ -118,6 +105,13 @@ describe('provingMachine Socket.IO Integration', () => {
     emit: vi.fn(),
     getPrivateKey: vi.fn(() => Promise.resolve('mock-private-key')),
     logProofEvent: vi.fn(),
+    getSelfAppState: () => ({
+      selfApp: {},
+    }),
+    getProtocolState: () => ({
+      isUserLoggedIn: true,
+    }),
+    getProvingState: () => useProvingStore.getState(),
   } as any;
 
   // Create a real EventEmitter to simulate socket behavior
