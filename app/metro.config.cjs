@@ -114,7 +114,69 @@ const config = {
         return context.resolveRequest(context, tsModuleName, platform);
       }
 
-      // Handle problematic Node.js modules that don't work in React Native
+      // Handle problematic package exports and Node.js modules
+
+      // Fix @tamagui/config v2-native export resolution
+      if (moduleName === '@tamagui/config/v2-native') {
+        try {
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve('@tamagui/config/dist/esm/v2-native.js'),
+          };
+        } catch {
+          // Fallback to main export if specific file doesn't exist
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve('@tamagui/config'),
+          };
+        }
+      }
+
+      // Fix @noble/hashes/crypto.js export resolution
+      if (moduleName.endsWith('@noble/hashes/crypto.js')) {
+        try {
+          // Try to resolve the actual crypto.js file
+          const packagePath = moduleName.replace('/crypto.js', '');
+          const basePath = require.resolve(packagePath);
+          const cryptoPath = path.join(path.dirname(basePath), 'crypto.js');
+          return {
+            type: 'sourceFile',
+            filePath: cryptoPath,
+          };
+        } catch {
+          // Fallback to main package if crypto.js doesn't exist
+          const packagePath = moduleName.replace('/crypto.js', '');
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve(packagePath),
+          };
+        }
+      }
+
+      // Fix snarkjs and ffjavascript platform exports for Android
+      if (platform === 'android') {
+        const platformProblematicPackages = [
+          'snarkjs',
+          'ffjavascript',
+          'snarkjs/node_modules/ffjavascript',
+          'snarkjs/node_modules/r1csfile/node_modules/ffjavascript',
+        ];
+
+        for (const pkg of platformProblematicPackages) {
+          if (moduleName.includes(pkg) && !moduleName.includes('/')) {
+            try {
+              return {
+                type: 'sourceFile',
+                filePath: require.resolve(pkg),
+              };
+            } catch {
+              // If package can't be resolved, continue to next check
+              continue;
+            }
+          }
+        }
+      }
+
       const nodeModuleRedirects = {
         crypto: path.resolve(__dirname, 'src/utils/crypto-polyfill.ts'),
         fs: false, // Disable filesystem access
