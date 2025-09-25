@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Linking } from 'react-native';
+
+import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 jest.mock('@/navigation', () => ({
   navigationRef: {
@@ -52,12 +53,15 @@ describe('deeplinks', () => {
       const mockSetSelfApp = jest.fn();
       const mockStartAppListener = jest.fn();
 
-      handleUrl({
-        getSelfAppState: () => ({
-          setSelfApp: mockSetSelfApp,
-          startAppListener: mockStartAppListener,
-        }),
-      } as unknown as SelfClient, url);
+      handleUrl(
+        {
+          getSelfAppState: () => ({
+            setSelfApp: mockSetSelfApp,
+            startAppListener: mockStartAppListener,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
 
       expect(mockSetSelfApp).toHaveBeenCalledWith(selfApp);
       expect(mockStartAppListener).toHaveBeenCalledWith('abc');
@@ -71,13 +75,16 @@ describe('deeplinks', () => {
       const mockCleanSelfApp = jest.fn();
       const mockStartAppListener = jest.fn();
 
-      handleUrl({
-        getSelfAppState: () => ({
-          setSelfApp: jest.fn(),
-          startAppListener: mockStartAppListener,
-          cleanSelfApp: mockCleanSelfApp,
-        }),
-      } as unknown as SelfClient, url);
+      handleUrl(
+        {
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: mockStartAppListener,
+            cleanSelfApp: mockCleanSelfApp,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
 
       expect(mockCleanSelfApp).toHaveBeenCalledWith();
       expect(mockStartAppListener).toHaveBeenCalledWith('123');
