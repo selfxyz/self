@@ -6,6 +6,8 @@ import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHub
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {CircuitConstantsV2} from "../constants/CircuitConstantsV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
+import {SelfUtils} from "../libraries/SelfUtils.sol";
+import {Formatter} from "../libraries/Formatter.sol";
 
 /**
  * @title SelfVerificationRoot
@@ -211,7 +213,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         }
 
         uint256 addressHash = _calculateAddressHashWithPoseidon(contractAddress, poseidonT3Address);
-        uint256 scopeSeedAsUint = _stringToBigInt(scopeSeed);
+        uint256 scopeSeedAsUint = SelfUtils.stringToBigInt(scopeSeed);
         return IPoseidonT3(poseidonT3Address).hash([addressHash, scopeSeedAsUint]);
     }
 
@@ -224,78 +226,16 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     function _calculateAddressHashWithPoseidon(address addr, address poseidonT3Address) internal view returns (uint256) {
         // Convert address to hex string (42 chars: "0x" + 40 hex digits)
-        string memory addressString = _addressToHexString(addr);
+        string memory addressString = SelfUtils.addressToHexString(addr);
 
         // Split into exactly 2 chunks: 31 + 11 characters
         // Chunk 1: characters 0-30 (31 chars)
         // Chunk 2: characters 31-41 (11 chars)
-        uint256 chunk1BigInt = _substringToBigInt(addressString, 0, 31);
-        uint256 chunk2BigInt = _substringToBigInt(addressString, 31, 11);
+        uint256 chunk1BigInt = SelfUtils.stringToBigInt(Formatter.substring(addressString, 0, 31));
+        uint256 chunk2BigInt = SelfUtils.stringToBigInt(Formatter.substring(addressString, 31, 42));
 
         return IPoseidonT3(poseidonT3Address).hash([chunk1BigInt, chunk2BigInt]);
     }
 
-    /**
-     * @notice Convert string to BigInt using ASCII encoding
-     * @dev Converts each character to its ASCII value and packs them into a uint256
-     * @param str The input string (must be ASCII only, max 31 bytes)
-     * @return The resulting BigInt value
-     */
-    function _stringToBigInt(string memory str) internal pure returns (uint256) {
-        bytes memory strBytes = bytes(str);
-        require(strBytes.length <= 31, "String too long for BigInt conversion");
-
-        uint256 result = 0;
-        for (uint256 i = 0; i < strBytes.length; i++) {
-            // Ensure ASCII only (0-127)
-            require(uint8(strBytes[i]) <= 127, "Non-ASCII character detected");
-            result = (result << 8) | uint256(uint8(strBytes[i]));
-        }
-        return result;
-    }
-
-
-    /**
-     * @notice Converts an address to its lowercase hex string representation
-     * @dev Produces a string like "0x1234567890abcdef..." (42 characters total)
-     * @param addr The address to convert
-     * @return The hex string representation of the address
-     */
-    function _addressToHexString(address addr) internal pure returns (string memory) {
-        bytes32 value = bytes32(uint256(uint160(addr)));
-        bytes memory alphabet = "0123456789abcdef";
-        bytes memory str = new bytes(42);
-
-        str[0] = '0';
-        str[1] = 'x';
-        for (uint256 i = 0; i < 20; i++) {
-            str[2 + i * 2] = alphabet[uint8(value[i + 12] >> 4)];
-            str[3 + i * 2] = alphabet[uint8(value[i + 12] & 0x0f)];
-        }
-
-        return string(str);
-    }
-
-    /**
-     * @notice Extracts a substring and converts it directly to BigInt
-     * @param str The source string
-     * @param startIndex Starting index (inclusive)
-     * @param length Length of substring to extract
-     * @return The BigInt value of the substring
-     */
-    function _substringToBigInt(string memory str, uint256 startIndex, uint256 length) internal pure returns (uint256) {
-        bytes memory strBytes = bytes(str);
-        require(startIndex + length <= strBytes.length, "Substring out of bounds");
-        require(length <= 31, "Substring too long for BigInt conversion");
-
-        uint256 result = 0;
-        for (uint256 i = 0; i < length; i++) {
-            uint8 charByte = uint8(strBytes[startIndex + i]);
-            require(charByte <= 127, "Non-ASCII character detected");
-            result = (result << 8) | uint256(charByte);
-        }
-
-        return result;
-    }
 
 }
