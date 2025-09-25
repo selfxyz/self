@@ -19,7 +19,7 @@ export const IdDetailsNavBar = (props: NativeStackHeaderProps) => {
   return (
     <NavBar.Container
       backgroundColor={slate50}
-      barStyle={'light'}
+      barStyle={'dark'}
       justifyContent="space-between"
       paddingTop={Math.max(insets.top, 15) + extraYPadding}
     >
