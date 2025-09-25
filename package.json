@@ -52,6 +52,7 @@
     "react-native": "0.76.9"
   },
   "devDependencies": {
+    "@react-native-community/cli-server-api": "^16.0.3",
     "@types/node": "^22.18.3",
     "gitleaks": "1.0.0",
     "husky": "9.1.7",

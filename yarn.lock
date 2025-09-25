@@ -5952,7 +5952,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/cli-server-api@npm:16.0.3":
+"@react-native-community/cli-server-api@npm:16.0.3, @react-native-community/cli-server-api@npm:^16.0.3":
   version: 16.0.3
   resolution: "@react-native-community/cli-server-api@npm:16.0.3"
   dependencies:
@@ -27775,6 +27775,7 @@ __metadata:
   resolution: "self-workspace-root@workspace:."
   dependencies:
     "@babel/runtime": "npm:^7.28.3"
+    "@react-native-community/cli-server-api": "npm:^16.0.3"
     "@types/node": "npm:^22.18.3"
     gitleaks: "npm:1.0.0"
     husky: "npm:9.1.7"
