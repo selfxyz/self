@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11
 
-package com.selfxyz.mrzqrscanner;
+package com.proofofpassportapp;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
@@ -13,8 +13,8 @@ public class MRZQRScannerPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return List.of(
-                new com.selfxyz.mrzqrscanner.ui.PassportOCRViewManager(reactContext),
-                new com.selfxyz.mrzqrscanner.ui.QRCodeScannerViewManager(reactContext)
+                new com.proofofpassportapp.ui.PassportOCRViewManager(reactContext),
+                new com.proofofpassportapp.ui.QRCodeScannerViewManager(reactContext)
         );
     }
 

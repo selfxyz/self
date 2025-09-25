@@ -11,14 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package com.selfxyz.mrzqrscanner.mlkit
+package com.proofofpassportapp.mlkit
 
 import android.graphics.Bitmap
 import android.media.Image
 
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
-import com.selfxyz.mrzqrscanner.utils.ImageUtil
+import com.proofofpassportapp.utils.ImageUtil
 import io.fotoapparat.preview.Frame
 
 

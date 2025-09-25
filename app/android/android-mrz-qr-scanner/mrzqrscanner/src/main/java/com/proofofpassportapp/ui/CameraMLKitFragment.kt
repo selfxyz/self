@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.selfxyz.mrzqrscanner.ui
+package com.proofofpassportapp.ui
 
 import android.Manifest
 import android.app.AlertDialog
@@ -38,15 +38,15 @@ import com.google.mlkit.vision.text.Text
 
 import org.jmrtd.lds.icao.MRZInfo
 
-import com.selfxyz.mrzqrscanner.R
-import com.selfxyz.mrzqrscanner.databinding.FragmentCameraMrzBinding
-import com.selfxyz.mrzqrscanner.mlkit.FrameMetadata
-import com.selfxyz.mrzqrscanner.mlkit.GraphicOverlay
-import com.selfxyz.mrzqrscanner.mlkit.OcrMrzDetectorProcessor
-import com.selfxyz.mrzqrscanner.mlkit.VisionProcessorBase
-import com.selfxyz.mrzqrscanner.fragments.CameraFragment
-import com.selfxyz.mrzqrscanner.utils.MRZUtil
-import com.selfxyz.mrzqrscanner.utils.OcrUtils
+import com.proofofpassportapp.R
+import com.proofofpassportapp.databinding.FragmentCameraMrzBinding
+import com.proofofpassportapp.mlkit.FrameMetadata
+import com.proofofpassportapp.mlkit.GraphicOverlay
+import com.proofofpassportapp.mlkit.OcrMrzDetectorProcessor
+import com.proofofpassportapp.mlkit.VisionProcessorBase
+import com.proofofpassportapp.fragments.CameraFragment
+import com.proofofpassportapp.utils.MRZUtil
+import com.proofofpassportapp.utils.OcrUtils
 import io.fotoapparat.preview.Frame
 import io.fotoapparat.view.CameraView
 import io.reactivex.Single

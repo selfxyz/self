@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.selfxyz.mrzqrscanner">
+    package="com.proofofpassportapp.mrzqrscanner">
 
     <application>
         <activity
-            android:name=".PhotoPickerActivity"
+            android:name="com.proofofpassportapp.PhotoPickerActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Translucent" />
     </application>

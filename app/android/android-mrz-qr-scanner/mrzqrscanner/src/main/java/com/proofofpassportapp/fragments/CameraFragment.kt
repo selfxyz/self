@@ -1,4 +1,4 @@
-package com.selfxyz.mrzqrscanner.fragments
+package com.proofofpassportapp.fragments
 
 import android.Manifest
 import android.app.AlertDialog

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.selfxyz.mrzqrscanner.ui
+package com.proofofpassportapp.ui
 
 
 import android.Manifest
@@ -32,12 +32,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.selfxyz.mrzqrscanner.utils.QrCodeDetectorProcessor
-import com.selfxyz.mrzqrscanner.R
-import com.selfxyz.mrzqrscanner.databinding.FragmentCameraMrzBinding
-import com.selfxyz.mrzqrscanner.mlkit.FrameMetadata
-import com.selfxyz.mrzqrscanner.fragments.CameraFragment
-import com.selfxyz.mrzqrscanner.utils.MRZUtil
+import com.proofofpassportapp.utils.QrCodeDetectorProcessor
+import com.proofofpassportapp.R
+import com.proofofpassportapp.databinding.FragmentCameraMrzBinding
+import com.proofofpassportapp.mlkit.FrameMetadata
+import com.proofofpassportapp.fragments.CameraFragment
+import com.proofofpassportapp.utils.MRZUtil
 import io.fotoapparat.preview.Frame
 import io.fotoapparat.view.CameraView
 import io.reactivex.Single
