@@ -9,6 +9,7 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
+import type { DocumentCategory } from '@selfxyz/common';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -36,6 +37,7 @@ import {
 
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation = useNavigation();
+  const selfClient = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
   const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
@@ -70,10 +72,12 @@ const RecoverWithPhraseScreen: React.FC = () => {
       passportData,
       secret as string,
       {
-        getCommitmentTree,
-        getAltCSCA(docCategory) {
-          return getAltCSCAPublicKeys(docCategory);
-        },
+        getCommitmentTree: (docCategory: DocumentCategory) =>
+          getCommitmentTree(selfClient, docCategory),
+        // TODO: seems there's a type mismatch here
+        // @ts-ignore-next-line
+        getAltCSCA: (docCategory: DocumentCategory) =>
+          getAltCSCAPublicKeys(selfClient, docCategory),
       },
     );
     if (!isRegistered) {
@@ -89,7 +93,13 @@ const RecoverWithPhraseScreen: React.FC = () => {
     setRestoring(false);
     trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
     navigation.navigate('AccountVerifiedSuccess');
-  }, [mnemonic, navigation, restoreAccountFromMnemonic, trackEvent]);
+  }, [
+    mnemonic,
+    navigation,
+    restoreAccountFromMnemonic,
+    trackEvent,
+    selfClient,
+  ]);
 
   return (
     <YStack

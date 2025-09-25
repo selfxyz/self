@@ -19,39 +19,6 @@ export interface SelfAppState {
   _initSocket: (sessionId: string) => Socket;
   handleProofResult: (proof_verified: boolean, error_code?: string, reason?: string) => void;
 }
-export const cleanSelfApp = () => {
-  const appStore = useSelfAppStore.getState();
-
-  appStore.cleanSelfApp();
-};
-/*
-  Hook to access the current SelfApp data in react components
-*/
-export function useCurrentSelfApp(): SelfApp | null {
-  return useSelfAppStore(state => state.selfApp);
-}
-/*
-  use this function to get the current SelfApp data outside of react components or in callbacks
-*/
-export const getSelfApp = (): SelfApp | null => {
-  const appStore = useSelfAppStore.getState();
-
-  return appStore.selfApp;
-};
-
-export const setSelfApp = (selfApp: SelfApp | null) => {
-  const appStore = useSelfAppStore.getState();
-
-  appStore.setSelfApp(selfApp);
-};
-
-export const startAppListener = (sessionId: string) => {
-  const appStore = useSelfAppStore.getState();
-
-  appStore.startAppListener(sessionId);
-};
-
-console.debug('creating selfAppStore');
 
 /*
   Never export outside of the mobile sdk. It can cause multiple instances of the store to be created.

@@ -45,15 +45,11 @@ import {
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
 } from '../documents/utils';
-import { fetchAllTreesAndCircuits, getCommitmentTree, useProtocolStore } from '../stores/protocolStore';
-// TODO: here for simplicity we allow for the direct import of the selfAppStore, we just
-// don't expose it in the public API
-
 import { SdkEvents } from '../types/events';
 import type { SelfClient } from '../types/public';
 import type { ProofContext } from './internal/logging';
 import { handleStatusCode, parseStatusMessage } from './internal/statusHandlers';
-import { SelfAppState } from '../stores/selfAppStore';
+import { fetchAllTreesAndCircuits, getCommitmentTree } from '../stores';
 
 // Helper functions for WebSocket URL resolution
 const getMappingKey = (circuitType: 'disclose' | 'register' | 'dsc', documentCategory: DocumentCategory): string => {
@@ -74,12 +70,13 @@ const getMappingKey = (circuitType: 'disclose' | 'register' | 'dsc', documentCat
 };
 
 const resolveWebSocketUrl = (
+  selfClient: SelfClient,
   circuitType: 'disclose' | 'register' | 'dsc',
   passportData: PassportData,
   circuitName: string,
 ): string | undefined => {
   const { documentCategory } = passportData;
-  const circuitsMapping = useProtocolStore.getState()[documentCategory].circuits_dns_mapping;
+  const circuitsMapping = selfClient.getProtocolState()[documentCategory].circuits_dns_mapping;
   const mappingKey = getMappingKey(circuitType, documentCategory);
 
   return circuitsMapping?.[mappingKey]?.[circuitName];
@@ -87,6 +84,7 @@ const resolveWebSocketUrl = (
 
 // Helper functions for _generatePayload refactoring
 const _generateCircuitInputs = async (
+  selfClient: SelfClient,
   circuitType: 'disclose' | 'register' | 'dsc',
   secret: string | undefined | null,
   passportData: IDDocument,
@@ -94,7 +92,7 @@ const _generateCircuitInputs = async (
   selfApp: SelfApp | null,
 ) => {
   const document: DocumentCategory = passportData.documentCategory;
-  const protocolStore = useProtocolStore.getState();
+  const protocolStore = selfClient.getProtocolState();
 
   // (Removed the early selfApp guard—only the disclosure path now enforces selfApp below)
 
@@ -926,14 +924,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               step: 'protocol_store_fetch',
               document,
             });
-            await fetchAllTreesAndCircuits(document,env!, passportData.dsc_parsed!.authorityKeyIdentifier);
+            await fetchAllTreesAndCircuits(selfClient, document, env!, passportData.dsc_parsed!.authorityKeyIdentifier);
             break;
           case 'aadhaar':
             selfClient.logProofEvent('info', 'Protocol store fetch', context, {
               step: 'protocol_store_fetch',
               document,
             });
-            await useProtocolStore.getState()[document as 'aadhaar'].fetch_all(env!);
+            await selfClient.getProtocolState()[document as 'aadhaar'].fetch_all(env!);
             break;
         }
         selfClient.logProofEvent('info', 'Data fetch succeeded', context, {
@@ -969,7 +967,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
         const isSupported = await checkDocumentSupported(passportData, {
           getDeployedCircuits: (documentCategory: DocumentCategory) =>
-            useProtocolStore.getState()[documentCategory].deployed_circuits!,
+            selfClient.getProtocolState()[documentCategory].deployed_circuits!,
         });
         selfClient.logProofEvent('info', 'Document support check', context, {
           supported: isSupported.status === 'passport_supported',
@@ -995,7 +993,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         /// disclosure
         if (circuitType === 'disclose') {
-          const isRegisteredWithLocalCSCA = await isUserRegistered(passportData, secret as string, getCommitmentTree);
+          const isRegisteredWithLocalCSCA = await isUserRegistered(passportData, secret as string, (documentCategory: DocumentCategory) => getCommitmentTree(selfClient, documentCategory));
           selfClient.logProofEvent('info', 'Local CSCA registration check', context, {
             registered: isRegisteredWithLocalCSCA,
           });
@@ -1019,7 +1017,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         /// registration
         else {
           const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
-            getCommitmentTree,
+            getCommitmentTree: (documentCategory: DocumentCategory) => getCommitmentTree(selfClient, documentCategory),
             getAltCSCA: <D extends DocumentCategory>(
               docType: D,
             ): D extends 'aadhaar' ? string[] | null : Record<string, string> => {
@@ -1028,10 +1026,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                 case 'id_card': {
                   // fixes typing issue for .alternative_csca
                   const idDocType = docType as 'passport' | 'id_card'; // any is fine because the type is checked in the switch
-                  return useProtocolStore.getState()[idDocType].alternative_csca as any;
+                  return selfClient.getProtocolState()[idDocType].alternative_csca as any;
                 }
                 case 'aadhaar':
-                  return useProtocolStore.getState().aadhaar.public_keys as D extends 'aadhaar'
+                  return selfClient.getProtocolState().aadhaar.public_keys as D extends 'aadhaar'
                     ? string[] | null
                     : never;
                 default:
@@ -1080,7 +1078,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           if (document === 'passport' || document === 'id_card') {
             const isDscRegistered = await checkIfPassportDscIsInTree(
               passportData,
-              useProtocolStore.getState()[document].dsc_tree,
+              selfClient.getProtocolState()[document].dsc_tree,
             );
             selfClient.logProofEvent('info', 'DSC tree check', context, {
               dsc_registered: isDscRegistered,
@@ -1130,7 +1128,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitName = getCircuitNameFromPassportData(passportData, circuitType as 'register' | 'dsc');
       }
 
-      const wsRpcUrl = resolveWebSocketUrl(circuitType, passportData as PassportData, circuitName);
+      const wsRpcUrl = resolveWebSocketUrl(selfClient, circuitType, passportData as PassportData, circuitName);
       selfClient.logProofEvent('info', 'Circuit resolution', baseContext, {
         circuit_name: circuitName,
         ws_url: wsRpcUrl,
@@ -1353,7 +1351,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         // Generate circuit inputs
         const { inputs, circuitName, endpointType, endpoint, circuitTypeWithDocumentExtension } =
-          await _generateCircuitInputs(circuitType as 'disclose' | 'register' | 'dsc', secret, passportData, env, selfClient.getSelfAppState().selfApp);
+          await _generateCircuitInputs(selfClient, circuitType as 'disclose' | 'register' | 'dsc', secret, passportData, env, selfClient.getSelfAppState().selfApp);
 
         selfClient.logProofEvent('info', 'Inputs generated', context, {
           circuit_name: circuitName,

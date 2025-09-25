@@ -8,10 +8,7 @@ import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import {
-  loadSelectedDocument,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
@@ -36,13 +33,12 @@ type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const selfClient = useSelfClient();
-  const { useProvingStore } = selfClient;
-  const { trackEvent } = selfClient;
+  const { useProvingStore, trackEvent } = selfClient;
   const navigate = useHapticNavigation('Loading', {
     params: {},
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);
-  const currentState = useProvingStore(state => state.currentState)
+  const currentState = useProvingStore(state => state.currentState);
   const init = useProvingStore(state => state.init);
   const setFcmToken = useProvingStore(state => state.setFcmToken);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);

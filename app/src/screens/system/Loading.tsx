@@ -13,7 +13,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { IDDocument } from '@selfxyz/common/utils/types';
 import {
   type ProvingStateType,
-  useProvingStore,
+  useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
@@ -40,6 +40,7 @@ const terminalStates: ProvingStateType[] = [
 ];
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
+  const { useProvingStore } = useSelfClient();
   // Animation states
   const [animationSource, setAnimationSource] = useState<
     LottieView['props']['source']

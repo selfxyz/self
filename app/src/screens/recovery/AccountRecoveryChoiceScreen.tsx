@@ -6,6 +6,7 @@ import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import type { DocumentCategory } from '@selfxyz/common';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -33,6 +34,7 @@ import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
+  const selfClient = useSelfClient();
   const { trackEvent } = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
   const [restoring, setRestoring] = useState(false);
@@ -65,9 +67,12 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         passportData,
         secret,
         {
-          getCommitmentTree,
-          getAltCSCA(docCategory) {
-            return getAltCSCAPublicKeys(docCategory);
+          getCommitmentTree: (docCategory: DocumentCategory) =>
+            getCommitmentTree(selfClient, docCategory),
+          // TODO: seems there's a type mismatch here
+          // @ts-ignore-next-line
+          getAltCSCA: (docCategory: DocumentCategory) => {
+            return getAltCSCAPublicKeys(selfClient, docCategory);
           },
         },
       );
@@ -102,6 +107,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     onRestoreFromCloudNext,
     navigation,
     toggleCloudBackupEnabled,
+    selfClient,
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {

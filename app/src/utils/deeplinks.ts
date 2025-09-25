@@ -7,10 +7,10 @@ import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
+import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {
@@ -211,7 +211,9 @@ export const setDeeplinkParentScreen = (screen: string) => {
   correctParentScreen = screen;
 };
 
-export const setupUniversalLinkListenerInNavigation = (selfClient: SelfClient) => {
+export const setupUniversalLinkListenerInNavigation = (
+  selfClient: SelfClient,
+) => {
   // Get the initial URL and store it for splash screen handling
   Linking.getInitialURL().then(url => {
     if (url) {

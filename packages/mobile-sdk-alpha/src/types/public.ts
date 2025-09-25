@@ -9,6 +9,7 @@ import { SDKEvent, SDKEventMap } from './events';
 import { ProvingState } from '../proving/provingMachine';
 import { SelfAppState } from '../stores/selfAppStore';
 import { create } from 'zustand';
+import { ProtocolState } from '../stores/protocolStore';
 
 export type { PassportValidationCallbacks } from '../validation/document';
 export type { DocumentCatalog, IDDocument, PassportData };
@@ -186,9 +187,11 @@ export interface SelfClient {
 
   getProvingState: () => ProvingState;
   getSelfAppState: () => SelfAppState;
+  getProtocolState: () => ProtocolState;
 
   useProvingStore: ReturnType<typeof create<ProvingState, []>>;
   useSelfAppStore: ReturnType<typeof create<SelfAppState, []>>;
+  useProtocolStore: ReturnType<typeof create<ProtocolState, []>>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

@@ -14,6 +14,7 @@ import type { Adapters, Config, LogLevel, ScanOpts, ScanResult, SelfClient, Unsu
 import { TrackEventParams } from './types/public';
 import { useProvingStore } from './proving/provingMachine';
 import { useSelfAppStore } from './stores/selfAppStore';
+import { useProtocolStore } from './stores/protocolStore';
 /**
  * Optional adapter implementations used when a consumer does not provide their
  * own. These defaults are intentionally minimal no-ops suitable for tests and
@@ -176,9 +177,13 @@ export function createSelfClient({
     getSelfAppState: () => {
       return useSelfAppStore.getState();
     },
+    getProtocolState: () => {
+      return useProtocolStore.getState();
+    },
 
-    // for reactivity
+    // for reactivity (if needed)
     useProvingStore,
     useSelfAppStore,
+    useProtocolStore,
   };
 }

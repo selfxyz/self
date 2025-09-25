@@ -24,8 +24,9 @@ import {
 } from '@selfxyz/common/constants';
 import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
 import type { DeployedCircuits, DocumentCategory, Environment, OfacTree } from '@selfxyz/common/utils/types';
+import type { SelfClient } from '../types/public';
 
-interface ProtocolState {
+export interface ProtocolState {
   passport: {
     commitment_tree: any;
     dsc_tree: any;
@@ -74,8 +75,7 @@ interface ProtocolState {
     fetch_ofac_trees: (environment: Environment) => Promise<void>;
   };
 }
-// we log this so its obvious if we have multiple instances of the store
-console.debug('creating protocolStore');
+
 export const useProtocolStore = create<ProtocolState>((set, get) => ({
   passport: {
     commitment_tree: null,
@@ -442,22 +442,26 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     },
   },
 }));
+
 export async function fetchAllTreesAndCircuits(
+  selfClient: SelfClient,
   docCategory: DocumentCategory,
   environment: Environment,
   authorityKeyIdentifier: string,
 ) {
-  await useProtocolStore.getState()[docCategory].fetch_all(environment, authorityKeyIdentifier);
+  await selfClient.getProtocolState()[docCategory].fetch_all(environment, authorityKeyIdentifier);
 }
 
-export function getAltCSCAPublicKeys(docCategory: DocumentCategory) {
+export function getAltCSCAPublicKeys(selfClient: SelfClient, docCategory: DocumentCategory) {
   if (docCategory === 'aadhaar') {
-    return useProtocolStore.getState()[docCategory].public_keys;
+    return selfClient.getProtocolState()[docCategory].public_keys;
   }
-  return useProtocolStore.getState()[docCategory].alternative_csca;
+
+  return selfClient.getProtocolState()[docCategory].alternative_csca;
 }
 
-export function getCommitmentTree(documentCategory: DocumentCategory) {
-  const protocolStore = useProtocolStore.getState();
+export function getCommitmentTree(selfClient: SelfClient, documentCategory: DocumentCategory) {
+  const protocolStore = selfClient.getProtocolState();
+
   return protocolStore[documentCategory].commitment_tree;
 }

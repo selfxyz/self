@@ -12,6 +12,8 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
 import { getAesopScreens } from '@/navigation/aesop';
@@ -24,7 +26,6 @@ import settingsScreens from '@/navigation/settings';
 import systemScreens from '@/navigation/system';
 import analytics from '@/utils/analytics';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 export const navigationScreens = {
   ...systemScreens,

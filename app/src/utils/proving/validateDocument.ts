@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { PassportData } from '@selfxyz/common/types';
+import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import { isUserRegistered } from '@selfxyz/common/utils/passports/validate';
-import type { PassportValidationCallbacks } from '@selfxyz/mobile-sdk-alpha';
+import type {
+  PassportValidationCallbacks,
+  SelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { isPassportDataValid } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
@@ -27,7 +30,9 @@ const { trackEvent } = analytics();
 /**
  * This function checks and updates registration states for all documents and updates the `isRegistered`.
  */
-export async function checkAndUpdateRegistrationStates(): Promise<void> {
+export async function checkAndUpdateRegistrationStates(
+  selfClient: SelfClient,
+): Promise<void> {
   const allDocuments = await getAllDocumentsDirectlyFromKeychain();
 
   for (const documentId of Object.keys(allDocuments)) {
@@ -119,6 +124,7 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
         continue;
       }
       await fetchAllTreesAndCircuits(
+        selfClient,
         documentCategory,
         environment,
         authorityKeyIdentifier,
@@ -135,7 +141,8 @@ export async function checkAndUpdateRegistrationStates(): Promise<void> {
       const isRegistered = await isUserRegistered(
         migratedPassportData,
         secret,
-        getCommitmentTree,
+        (docCategory: DocumentCategory) =>
+          getCommitmentTree(selfClient, docCategory),
       );
 
       // Update the registration state in the document metadata

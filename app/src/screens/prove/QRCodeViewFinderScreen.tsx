@@ -72,7 +72,9 @@ const QRCodeViewFinderScreen: React.FC = () => {
             const selfAppJson = JSON.parse(selfApp);
 
             selfClient.getSelfAppState().setSelfApp(selfAppJson);
-            selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
+            selfClient
+              .getSelfAppState()
+              .startAppListener(selfAppJson.sessionId);
 
             setTimeout(() => {
               navigateToProve();

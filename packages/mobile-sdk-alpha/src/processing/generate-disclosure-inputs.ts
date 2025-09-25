@@ -5,12 +5,15 @@
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { SelfApp } from '@selfxyz/common/utils';
 import { generateTEEInputsDiscloseStateless } from '@selfxyz/common/utils/circuits/registerInputs';
+import { useSelfClient } from '../context';
 
-import { useProtocolStore } from '../stores/protocolStore';
-
+// TODO is this used? couldn't find any usages
 export function generateTEEInputsDisclose(secret: string, passportData: PassportData, selfApp: SelfApp) {
   return generateTEEInputsDiscloseStateless(secret, passportData, selfApp, (document: DocumentCategory, tree) => {
-    const protocolStore = useProtocolStore.getState();
+    // TODO: if this is used then this probably needs to be refactored
+    // as it might be using context-aware function without a context
+    const selfClient = useSelfClient();
+    const protocolStore = selfClient.getProtocolState();
     const docStore = (protocolStore as any)[document];
     if (!docStore) {
       throw new Error(`Unknown or unloaded document category in protocol store: ${document}`);
