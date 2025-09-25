@@ -29,6 +29,7 @@ const config = {
     workspaceRoot, // Watch entire workspace root for changes
     path.resolve(workspaceRoot, 'common'),
     path.resolve(workspaceRoot, 'packages/mobile-sdk-alpha'),
+    path.resolve(projectRoot, 'node_modules'), // Watch app's node_modules for custom resolved modules
   ],
 
   transformer: {
@@ -47,19 +48,28 @@ const config = {
       /.*\/dist\/esm\/package\.json$/,
       /.*\/dist\/cjs\/package\.json$/,
       /.*\/build\/package\.json$/,
-      // Prevent duplicate React/React Native from ANY workspace deps - this is critical!
-      new RegExp('app/node_modules/react(/.+)?'),
-      new RegExp('app/node_modules/react-dom(/.+)?'),
-      new RegExp('app/node_modules/react-native(/.+)?'),
-      new RegExp('app/node_modules/scheduler(/.+)?'),
-      new RegExp('packages/mobile-sdk-alpha/node_modules/react(/.+)?'),
-      new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/.+)?'),
-      new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/.+)?'),
-      new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/.+)?'),
-      new RegExp('packages/mobile-sdk-demo/node_modules/react(/.+)?'),
-      new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/.+)?'),
-      new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/.+)?'),
-      new RegExp('packages/mobile-sdk-demo/node_modules/scheduler(/.+)?'),
+      // Prevent duplicate React/React Native - block workspace root versions and use app's versions
+      // Use precise regex patterns to avoid blocking packages like react-native-get-random-values
+      new RegExp(
+        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react(/|$)`,
+      ),
+      new RegExp(
+        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-dom(/|$)`,
+      ),
+      new RegExp(
+        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-native(/|$)`,
+      ),
+      new RegExp(
+        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/scheduler(/|$)`,
+      ),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/scheduler(/|$)'),
     ],
     // Enable automatic workspace package resolution
     enableGlobalPackages: true,
@@ -70,10 +80,10 @@ const config = {
     // Enable native symlink support (optional, for compatibility)
     unstable_enableSymlinks: true,
 
-    // Define search order for node modules - prioritize workspace root to prevent duplicates
+    // Define search order for node modules - prioritize app's modules for React consistency
     nodeModulesPaths: [
-      path.resolve(workspaceRoot, 'node_modules'), // Workspace root node_modules FIRST
-      path.resolve(projectRoot, 'node_modules'), // App's own node_modules SECOND
+      path.resolve(projectRoot, 'node_modules'), // App's own node_modules FIRST
+      path.resolve(workspaceRoot, 'node_modules'), // Workspace root node_modules SECOND
     ],
 
     // Essential polyfills for React Native
@@ -83,15 +93,6 @@ const config = {
       util: require.resolve('util'),
       assert: require.resolve('assert'),
       events: require.resolve('events'),
-      // Ensure a single React/React Native instance across workspaces (use workspace root)
-      react: path.resolve(workspaceRoot, 'node_modules/react'),
-      'react-dom': path.resolve(workspaceRoot, 'node_modules/react-dom'),
-      'react-native': path.resolve(workspaceRoot, 'node_modules/react-native'),
-      'react/jsx-runtime': path.resolve(workspaceRoot, 'node_modules/react/jsx-runtime'),
-      'react/jsx-dev-runtime': path.resolve(workspaceRoot, 'node_modules/react/jsx-dev-runtime'),
-      scheduler: path.resolve(workspaceRoot, 'node_modules/scheduler'),
-      // Critical crypto polyfill - resolve from app's node_modules
-      'react-native-get-random-values': path.resolve(projectRoot, 'node_modules/react-native-get-random-values'),
       // App-specific alias
       '@': path.join(__dirname, 'src'),
     },
@@ -105,35 +106,21 @@ const config = {
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
     resolveRequest: (context, moduleName, platform) => {
-      // Handle react-native-get-random-values explicitly
-      if (moduleName === 'react-native-get-random-values') {
-        try {
-          return {
-            type: 'sourceFile',
-            filePath: path.resolve(projectRoot, 'node_modules/react-native-get-random-values/index.js'),
-          };
-        } catch (error) {
-          console.warn('Failed to resolve react-native-get-random-values:', error);
-          // Fall back to default resolution
-          return context.resolveRequest(context, moduleName, platform);
-        }
-      }
-
-      // Handle React and React-related modules explicitly to force workspace resolution
-      const reactModules = {
-        'react': path.resolve(workspaceRoot, 'node_modules/react/index.js'),
-        'react-dom': path.resolve(workspaceRoot, 'node_modules/react-dom/index.js'),
-        'react-native': path.resolve(workspaceRoot, 'node_modules/react-native/index.js'),
-        'react/jsx-runtime': path.resolve(workspaceRoot, 'node_modules/react/jsx-runtime.js'),
-        'react/jsx-dev-runtime': path.resolve(workspaceRoot, 'node_modules/react/jsx-dev-runtime.js'),
-        'scheduler': path.resolve(workspaceRoot, 'node_modules/scheduler/index.js'),
+      // Handle React Native gesture handler that needs app-level resolution
+      const appLevelModules = {
+        'react-native-gesture-handler':
+          'react-native-gesture-handler/lib/commonjs/index.js',
       };
 
-      if (reactModules[moduleName]) {
+      if (appLevelModules[moduleName]) {
         try {
           return {
             type: 'sourceFile',
-            filePath: reactModules[moduleName],
+            filePath: path.resolve(
+              projectRoot,
+              'node_modules',
+              appLevelModules[moduleName],
+            ),
           };
         } catch (error) {
           console.warn(`Failed to resolve ${moduleName}:`, error);
@@ -141,6 +128,8 @@ const config = {
           return context.resolveRequest(context, moduleName, platform);
         }
       }
+
+      // React modules now resolve naturally through nodeModulesPaths (app's node_modules first)
 
       // Force SDK to use built ESM to avoid duplicate React and source transpilation issues
       if (moduleName === '@selfxyz/mobile-sdk-alpha') {
@@ -202,20 +191,26 @@ const config = {
 
       // Fix snarkjs and ffjavascript platform exports for Android
       if (platform === 'android') {
-        const platformProblematicPackages = [
-          'snarkjs',
-          'ffjavascript',
-          'snarkjs/node_modules/ffjavascript',
-          'snarkjs/node_modules/r1csfile/node_modules/ffjavascript',
-        ];
+        const platformProblematicPackages = ['snarkjs', 'ffjavascript'];
 
         for (const pkg of platformProblematicPackages) {
-          if (moduleName.includes(pkg) && !moduleName.includes('/')) {
+          // Handle both direct imports and nested imports
+          if (moduleName === pkg || moduleName.startsWith(`${pkg}/`)) {
             try {
-              return {
-                type: 'sourceFile',
-                filePath: require.resolve(pkg),
-              };
+              // For nested imports, try to resolve the specific subpath
+              if (moduleName.includes('/')) {
+                const resolved = require.resolve(moduleName);
+                return {
+                  type: 'sourceFile',
+                  filePath: resolved,
+                };
+              } else {
+                // For main package imports
+                return {
+                  type: 'sourceFile',
+                  filePath: require.resolve(pkg),
+                };
+              }
             } catch {
               // If package can't be resolved, continue to next check
               continue;
@@ -253,7 +248,10 @@ const config = {
         return context.resolveRequest(context, moduleName, platform);
       } catch (error) {
         // If default resolution fails, log and re-throw
-        console.warn(`Metro resolver failed for module "${moduleName}":`, error.message);
+        console.warn(
+          `Metro resolver failed for module "${moduleName}":`,
+          error.message,
+        );
         throw error;
       }
     },
