@@ -37,9 +37,6 @@ const QRCodeViewFinderScreen: React.FC = () => {
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const navigateToProve = useHapticNavigation('Prove');
   const navigateToHome = useHapticNavigation('Home');
-  const onCancelPress = useCallback(() => {
-    navigateToHome();
-  }, [navigateToHome]);
 
   // This resets to the default state when we navigate back to this screen
   useFocusEffect(

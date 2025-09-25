@@ -83,13 +83,15 @@ const config = {
       util: require.resolve('util'),
       assert: require.resolve('assert'),
       events: require.resolve('events'),
-      // Ensure a single React/React Native instance across workspaces
+      // Ensure a single React/React Native instance across workspaces (use workspace root)
       react: path.resolve(workspaceRoot, 'node_modules/react'),
       'react-dom': path.resolve(workspaceRoot, 'node_modules/react-dom'),
       'react-native': path.resolve(workspaceRoot, 'node_modules/react-native'),
-      'react/jsx-runtime': require.resolve('react/jsx-runtime'),
-      'react/jsx-dev-runtime': require.resolve('react/jsx-dev-runtime'),
-      scheduler: require.resolve('scheduler'),
+      'react/jsx-runtime': path.resolve(workspaceRoot, 'node_modules/react/jsx-runtime'),
+      'react/jsx-dev-runtime': path.resolve(workspaceRoot, 'node_modules/react/jsx-dev-runtime'),
+      scheduler: path.resolve(workspaceRoot, 'node_modules/scheduler'),
+      // Critical crypto polyfill - resolve from app's node_modules
+      'react-native-get-random-values': path.resolve(projectRoot, 'node_modules/react-native-get-random-values'),
       // App-specific alias
       '@': path.join(__dirname, 'src'),
     },
@@ -103,6 +105,43 @@ const config = {
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
     resolveRequest: (context, moduleName, platform) => {
+      // Handle react-native-get-random-values explicitly
+      if (moduleName === 'react-native-get-random-values') {
+        try {
+          return {
+            type: 'sourceFile',
+            filePath: path.resolve(projectRoot, 'node_modules/react-native-get-random-values/index.js'),
+          };
+        } catch (error) {
+          console.warn('Failed to resolve react-native-get-random-values:', error);
+          // Fall back to default resolution
+          return context.resolveRequest(context, moduleName, platform);
+        }
+      }
+
+      // Handle React and React-related modules explicitly to force workspace resolution
+      const reactModules = {
+        'react': path.resolve(workspaceRoot, 'node_modules/react/index.js'),
+        'react-dom': path.resolve(workspaceRoot, 'node_modules/react-dom/index.js'),
+        'react-native': path.resolve(workspaceRoot, 'node_modules/react-native/index.js'),
+        'react/jsx-runtime': path.resolve(workspaceRoot, 'node_modules/react/jsx-runtime.js'),
+        'react/jsx-dev-runtime': path.resolve(workspaceRoot, 'node_modules/react/jsx-dev-runtime.js'),
+        'scheduler': path.resolve(workspaceRoot, 'node_modules/scheduler/index.js'),
+      };
+
+      if (reactModules[moduleName]) {
+        try {
+          return {
+            type: 'sourceFile',
+            filePath: reactModules[moduleName],
+          };
+        } catch (error) {
+          console.warn(`Failed to resolve ${moduleName}:`, error);
+          // Fall back to default resolution
+          return context.resolveRequest(context, moduleName, platform);
+        }
+      }
+
       // Force SDK to use built ESM to avoid duplicate React and source transpilation issues
       if (moduleName === '@selfxyz/mobile-sdk-alpha') {
         return {
@@ -210,7 +249,13 @@ const config = {
       }
 
       // Fall back to default Metro resolver for all other modules
-      return context.resolveRequest(context, moduleName, platform);
+      try {
+        return context.resolveRequest(context, moduleName, platform);
+      } catch (error) {
+        // If default resolution fails, log and re-throw
+        console.warn(`Metro resolver failed for module "${moduleName}":`, error.message);
+        throw error;
+      }
     },
   },
 };
