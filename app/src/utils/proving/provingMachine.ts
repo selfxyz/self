@@ -1067,7 +1067,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             isSupported.status,
             isSupported.details,
           );
-          selfClient.trackEvent(PassportEvents.UNSUPPORTED_PASSPORT, {
+          selfClient.trackEvent(PassportEvents.COMING_SOON, {
             status: isSupported.status,
             details: isSupported.details,
           });

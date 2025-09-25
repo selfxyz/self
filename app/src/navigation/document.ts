@@ -4,13 +4,15 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import ComingSoonScreen from '@/screens/document/ComingSoonScreen';
+import CountryPickerScreen from '@/screens/document/CountryPickerScreen';
 import DocumentCameraScreen from '@/screens/document/DocumentCameraScreen';
 import DocumentCameraTroubleScreen from '@/screens/document/DocumentCameraTroubleScreen';
 import DocumentNFCMethodSelectionScreen from '@/screens/document/DocumentNFCMethodSelectionScreen';
 import DocumentNFCScanScreen from '@/screens/document/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/document/DocumentNFCTroubleScreen';
 import DocumentOnboardingScreen from '@/screens/document/DocumentOnboardingScreen';
-import UnsupportedDocumentScreen from '@/screens/document/UnsupportedDocumentScreen';
+import IDPickerScreen from '@/screens/document/IDPickerScreen';
 
 const documentScreens = {
   DocumentCamera: {
@@ -56,8 +58,8 @@ const documentScreens = {
       headerShown: false,
     } as NativeStackNavigationOptions,
   },
-  UnsupportedDocument: {
-    screen: UnsupportedDocumentScreen,
+  ComingSoon: {
+    screen: ComingSoonScreen,
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
@@ -72,6 +74,22 @@ const documentScreens = {
       headerShown: false,
       animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
+  },
+  CountryPicker: {
+    screen: CountryPickerScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+  },
+  IDPicker: {
+    screen: IDPickerScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+    initialParams: {
+      countryCode: '',
+      documentTypes: [],
+    },
   },
 };
 

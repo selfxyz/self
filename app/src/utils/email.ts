@@ -41,11 +41,15 @@ export const sendCountrySupportNotification = async ({
     ['documentCategory', documentCategory || 'Unknown'],
     ['tz', getTimeZone()],
     ['ts', new Date().toISOString()],
-    ['origin', 'unsupported_passport_screen'],
+    ['origin', 'coming_soon_screen'],
   ] as [string, string][];
 
   const documentTypeText =
-    documentCategory === 'id_card' ? 'ID cards' : 'passports';
+    documentCategory === 'id_card'
+      ? 'ID cards'
+      : documentCategory === 'passport'
+        ? 'passports'
+        : 'documents';
 
   const body = `Hi SELF Team,
 

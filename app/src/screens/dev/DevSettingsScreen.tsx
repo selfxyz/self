@@ -124,6 +124,7 @@ function ParameterSection({
 
 const items = [
   'DevSettings',
+  'CountryPicker',
   'AadhaarUpload',
   'DevFeatureFlags',
   'DevHapticFeedback',
@@ -149,7 +150,7 @@ const items = [
   'RecoverWithPhrase',
   'ShowRecoveryPhrase',
   'CloudBackupSettings',
-  'UnsupportedDocument',
+  'ComingSoon',
   'DocumentCameraTrouble',
   'DocumentNFCTrouble',
 ] satisfies (keyof RootStackParamList)[];

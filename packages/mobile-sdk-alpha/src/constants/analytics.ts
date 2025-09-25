@@ -127,8 +127,8 @@ export const PassportEvents = {
   CAMERA_SCREEN_CLOSED: 'Passport: Camera View Closed',
   CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
   DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
-  DISMISS_UNSUPPORTED_PASSPORT: 'Passport: Dismiss Unsupported Passport',
-  NOTIFY_UNSUPPORTED_PASSPORT: 'Passport: Notify Unsupported Passport',
+  DISMISS_COMING_SOON: 'Passport: Dismiss Unsupported Passport',
+  NOTIFY_COMING_SOON: 'Passport: Notify Unsupported Passport',
   NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
   NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
   NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',
@@ -138,7 +138,7 @@ export const PassportEvents = {
   PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
   PASSPORT_PARSED: 'Passport: Passport Parsed',
   START_PASSPORT_NFC: 'Passport: Start Passport NFC',
-  UNSUPPORTED_PASSPORT: 'Passport: Passport Not Supported',
+  COMING_SOON: 'Passport: Passport Not Supported',
 };
 
 export const ProofEvents = {

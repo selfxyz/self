@@ -48,7 +48,7 @@ describe('navigation', () => {
       'Settings',
       'ShowRecoveryPhrase',
       'Splash',
-      'UnsupportedDocument',
+      'ComingSoon',
     ]);
   });
 

@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useEffect, useMemo } from 'react';
-import { View } from 'react-native';
-import * as CountryFlags from 'react-native-svg-circle-country-flags';
 import { XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 
@@ -19,6 +16,7 @@ import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import { RoundFlag } from '@/components/flag/RoundFlag';
 import { BodyText } from '@/components/typography/BodyText';
 import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
@@ -30,87 +28,65 @@ import { notificationError } from '@/utils/haptic';
 
 const { flush: flushAnalytics } = analytics();
 
-type CountryFlagComponent = React.ComponentType<{
-  width: number;
-  height: number;
-}>;
-type CountryFlagsRecord = Record<string, CountryFlagComponent>;
-
-type UnsupportedDocumentScreenRouteProp = RouteProp<
+type ComingSoonScreenRouteProp = RouteProp<
   {
-    UnsupportedDocument: {
-      countryCode: string | null;
-      documentCategory: DocumentCategory | null;
+    ComingSoon: {
+      countryCode: string;
+      documentCategory?: DocumentCategory;
     };
   },
-  'UnsupportedDocument'
+  'ComingSoon'
 >;
 
-interface UnsupportedDocumentScreenProps {
-  route: UnsupportedDocumentScreenRouteProp;
+interface ComingSoonScreenProps {
+  route: ComingSoonScreenRouteProp;
 }
 
-const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
-  route,
-}) => {
+const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
   const selfClient = useSelfClient();
   const navigateToLaunch = useHapticNavigation('Launch');
   const navigateToHome = useHapticNavigation('Home');
 
-  const { countryName, country2AlphaCode, documentTypeText } = useMemo(() => {
+  const { countryName, countryCode, documentTypeText } = useMemo(() => {
     try {
-      const countryCode = route.params?.countryCode;
-      if (countryCode) {
+      const routeCountryCode = route.params?.countryCode;
+      if (routeCountryCode) {
         // Handle Germany corner case where country code is "D<<" instead of "DEU"
-        let normalizedCountryCode = countryCode;
-        if (countryCode === 'D<<') {
-          normalizedCountryCode = 'DEU';
-        }
-
-        const iso2 = getCountryISO2(normalizedCountryCode);
-        const extractedCode = iso2
-          ? iso2.charAt(0).toUpperCase() + iso2.charAt(1).toLowerCase()
-          : 'Unknown';
+        const normalizedCountryCode =
+          routeCountryCode === 'D<<' ? 'DEU' : routeCountryCode;
         const name =
           countryCodes[normalizedCountryCode as keyof typeof countryCodes];
-        const docType =
-          route.params?.documentCategory === 'id_card'
-            ? 'ID Cards'
-            : 'Passports';
+
+        let docType = '';
+        if (route.params?.documentCategory === 'id_card') {
+          docType = 'ID Cards';
+        } else if (route.params?.documentCategory === 'passport') {
+          docType = 'Passports';
+        }
+
         return {
           countryName: name,
-          country2AlphaCode: extractedCode,
+          countryCode: normalizedCountryCode,
           documentTypeText: docType,
         };
       }
     } catch (error) {
       console.error('Error extracting country from passport data:', error);
     }
-    const docType =
-      route.params?.documentCategory === 'id_card' ? 'ID Cards' : 'Passports';
+
+    let docType = '';
+    if (route.params?.documentCategory === 'id_card') {
+      docType = 'ID Cards';
+    } else if (route.params?.documentCategory === 'passport') {
+      docType = 'Passports';
+    }
+
     return {
       countryName: 'Unknown',
-      country2AlphaCode: 'Unknown',
+      countryCode: 'Unknown',
       documentTypeText: docType,
     };
   }, [route.params?.documentCategory, route.params?.countryCode]);
-
-  // Get country flag component dynamically
-  const getCountryFlag = (code: string) => {
-    try {
-      const FlagComponent = (CountryFlags as unknown as CountryFlagsRecord)[
-        code.toUpperCase()
-      ];
-      if (FlagComponent) {
-        return FlagComponent;
-      }
-    } catch (error) {
-      console.error('Error getting country flag:', error);
-      return null;
-    }
-  };
-
-  const CountryFlagComponent = getCountryFlag(country2AlphaCode);
 
   const onDismiss = async () => {
     const hasValidDocument = await hasAnyValidRegisteredDocument(selfClient);
@@ -125,9 +101,8 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
     try {
       await sendCountrySupportNotification({
         countryName,
-        countryCode:
-          country2AlphaCode !== 'Unknown' ? country2AlphaCode : undefined,
-        documentCategory: route.params?.documentCategory ?? '',
+        countryCode: countryCode !== 'Unknown' ? countryCode : '',
+        documentCategory: route.params?.documentCategory,
       });
     } catch (error) {
       console.error('Failed to open email client:', error);
@@ -155,10 +130,8 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
             marginBottom={20}
             gap={12}
           >
-            {CountryFlagComponent && (
-              <View style={{ alignItems: 'center' }}>
-                <CountryFlagComponent width={60} height={60} />
-              </View>
+            {countryCode !== 'Unknown' && (
+              <RoundFlag countryCode={countryCode} size={60} />
             )}
           </XStack>
           <Title
@@ -176,8 +149,9 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
             marginBottom={10}
             paddingHorizontal={10}
           >
-            We're working to roll out support for {documentTypeText} in{' '}
-            {countryName}.
+            {documentTypeText
+              ? `We're working to roll out support for ${documentTypeText} in ${countryName}.`
+              : `We're working to roll out support in ${countryName}.`}
           </BodyText>
           <BodyText
             fontSize={17}
@@ -198,12 +172,12 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
       >
         <PrimaryButton
           onPress={onNotifyMe}
-          trackEvent={PassportEvents.NOTIFY_UNSUPPORTED_PASSPORT}
+          trackEvent={PassportEvents.NOTIFY_COMING_SOON}
         >
           Sign up for updates
         </PrimaryButton>
         <SecondaryButton
-          trackEvent={PassportEvents.DISMISS_UNSUPPORTED_PASSPORT}
+          trackEvent={PassportEvents.DISMISS_COMING_SOON}
           onPress={onDismiss}
         >
           Dismiss
@@ -213,4 +187,4 @@ const UnsupportedDocumentScreen: React.FC<UnsupportedDocumentScreenProps> = ({
   );
 };
 
-export default UnsupportedDocumentScreen;
+export default ComingSoonScreen;
