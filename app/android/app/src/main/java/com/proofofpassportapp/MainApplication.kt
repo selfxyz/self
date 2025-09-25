@@ -15,7 +15,7 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
-import com.proofofpassportapp.MRZQRScannerPackage
+import com.selfxyz.mrzqrscanner.MRZQRScannerPackage
 
 class MainApplication : Application(), ReactApplication {
 

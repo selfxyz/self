@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-package com.proofofpassportapp.utils
+package com.selfxyz.mrzqrscanner.utils
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -13,7 +13,7 @@ import android.graphics.YuvImage
 import android.media.Image
 import android.util.Log
 import androidx.annotation.Nullable
-import com.proofofpassportapp.mlkit.FrameMetadata
+import com.selfxyz.mrzqrscanner.mlkit.FrameMetadata
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream

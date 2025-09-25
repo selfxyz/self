@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-package com.proofofpassportapp;
+package com.selfxyz.mrzqrscanner;
 
 import android.Manifest;
 import android.app.Activity;
@@ -23,9 +23,9 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.proofofpassportapp.PhotoPickerActivity;
-import com.proofofpassportapp.mlkit.FrameMetadata;
-import com.proofofpassportapp.utils.QrCodeDetectorProcessor;
+import com.selfxyz.mrzqrscanner.PhotoPickerActivity;
+import com.selfxyz.mrzqrscanner.mlkit.FrameMetadata;
+import com.selfxyz.mrzqrscanner.utils.QrCodeDetectorProcessor;
 import java.io.InputStream;
 
 public class MRZQRScannerModule extends ReactContextBaseJavaModule implements LifecycleEventListener {

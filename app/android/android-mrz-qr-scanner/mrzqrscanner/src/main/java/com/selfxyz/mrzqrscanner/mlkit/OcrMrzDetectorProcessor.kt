@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.proofofpassportapp.mlkit
+package com.selfxyz.mrzqrscanner.mlkit
 
 import android.util.Log
 

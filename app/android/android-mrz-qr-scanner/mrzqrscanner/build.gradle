@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.proofofpassportapp.mrzqrscanner'
+    namespace 'com.selfxyz.mrzqrscanner'
     compileSdk 34
 
     defaultConfig {

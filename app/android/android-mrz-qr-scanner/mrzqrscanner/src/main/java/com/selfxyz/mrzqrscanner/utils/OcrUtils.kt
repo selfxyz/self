@@ -1,4 +1,4 @@
-package com.proofofpassportapp.utils
+package com.selfxyz.mrzqrscanner.utils
 
 import android.util.Log
 import com.google.mlkit.vision.text.Text
