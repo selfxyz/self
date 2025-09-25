@@ -15,5 +15,3 @@ export {
 
 // From loadingScreenStateText - used in loading screen
 export { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
-
-export { useProvingStore } from '@selfxyz/mobile-sdk-alpha';
