@@ -7,10 +7,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { PassportData } from '@selfxyz/common/types';
 
-import { SdkEvents, SelfClient, useProvingStore } from '../../src';
+import { SdkEvents, SelfClient } from '../../src';
 import * as documentsUtils from '../../src/documents/utils';
 
 import { act, renderHook } from '@testing-library/react';
+import { useProvingStore } from '../../src/proving/provingMachine';
 
 describe('provingMachine registration completion', () => {
   afterEach(() => {
@@ -29,6 +30,8 @@ describe('provingMachine registration completion', () => {
     const selfClient = {
       trackEvent: vi.fn(),
       emit: emitMock,
+      getSelfAppState: () => ({}),
+      getProvingState: () => ({}),
     } as unknown as SelfClient;
 
     expect(initHook.current).toBeDefined();
