@@ -142,7 +142,6 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         emit MerkleRootUpdated(newMerkleRoot);
     }
 
-
     /**
      * @notice Opens the registration phase for users.
      * @dev Only callable by the contract owner.

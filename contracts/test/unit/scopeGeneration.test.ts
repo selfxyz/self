@@ -28,10 +28,7 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
 
       // Deploy the test contract
       const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
-      testContract = await TestContractFactory.deploy(
-        mockHubAddress,
-        scopeSeed
-      );
+      testContract = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
       await testContract.waitForDeployment();
 
       // Setup the scope manually using testGenerateScope (as this is a local dev network)
@@ -113,10 +110,7 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       const scopeSeed = "test-scope";
 
       const TestContractFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
-      testContract = await TestContractFactory.deploy(
-        mockHubAddress,
-        scopeSeed
-      );
+      testContract = await TestContractFactory.deploy(mockHubAddress, scopeSeed);
       await testContract.waitForDeployment();
 
       // Set scope using testGenerateScope
@@ -130,7 +124,9 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       console.log(`Scope Seed: "${scopeSeed}"`);
 
       // Debug: Let's trace the frontend logic step by step
-      console.log(`Frontend hashEndpointWithScope result: ${hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed)}`);
+      console.log(
+        `Frontend hashEndpointWithScope result: ${hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed)}`,
+      );
 
       const expectedScope = BigInt(hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed));
       console.log(`Generated Scope: ${actualScope.toString()}`);
@@ -185,8 +181,8 @@ describe("SelfVerificationRoot - Automatic Scope Generation", () => {
       const contractAddress = await contract.getAddress();
       const actualScope = await contract.scope();
 
-        // Calculate expected scope using hashEndpointWithScope (use lowercase to match Solidity)
-        const expectedScope = BigInt(hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed));
+      // Calculate expected scope using hashEndpointWithScope (use lowercase to match Solidity)
+      const expectedScope = BigInt(hashEndpointWithScope(contractAddress.toLowerCase(), scopeSeed));
 
       // This is the critical test - Solidity must match frontend exactly
       expect(actualScope.toString()).to.equal(expectedScope.toString());

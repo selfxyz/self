@@ -72,7 +72,6 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
         lastUserData = "";
     }
 
-
     function setVerificationConfig(SelfStructs.VerificationConfigV2 memory config) external {
         verificationConfig = config;
         verificationConfigId = _identityVerificationHubV2.setVerificationConfigV2(verificationConfig);

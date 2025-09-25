@@ -52,7 +52,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // Events
     // ====================================================
 
-
     /**
      * @notice Initializes the SelfVerificationRoot contract
      * @dev Sets up the immutable reference to the hub contract and generates scope automatically
@@ -72,7 +71,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     function scope() public view returns (uint256) {
         return _scope;
     }
-
 
     /**
      * @notice Verifies a self-proof using the bytes-based interface
@@ -206,7 +204,11 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param poseidonT3Address The address of the PoseidonT3 library to use
      * @return The calculated scope value
      */
-    function _calculateScope(address contractAddress, string memory scopeSeed, address poseidonT3Address) internal view returns (uint256) {
+    function _calculateScope(
+        address contractAddress,
+        string memory scopeSeed,
+        address poseidonT3Address
+    ) internal view returns (uint256) {
         // Skip calculation if PoseidonT3 address is zero (local development)
         if (poseidonT3Address == address(0)) {
             return 0;
@@ -224,7 +226,10 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param poseidonT3Address The address of the PoseidonT3 library to use
      * @return The hash result equivalent to frontend's endpointHash for addresses
      */
-    function _calculateAddressHashWithPoseidon(address addr, address poseidonT3Address) internal view returns (uint256) {
+    function _calculateAddressHashWithPoseidon(
+        address addr,
+        address poseidonT3Address
+    ) internal view returns (uint256) {
         // Convert address to hex string (42 chars: "0x" + 40 hex digits)
         string memory addressString = SelfUtils.addressToHexString(addr);
 

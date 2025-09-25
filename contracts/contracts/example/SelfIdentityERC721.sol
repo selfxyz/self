@@ -73,7 +73,6 @@ contract SelfIdentityERC721 is SelfVerificationRoot, ERC721, Ownable {
     // External/Public Functions
     // ====================================================
 
-
     /**
      * @notice Get identity attributes for a specific token ID
      * @param tokenId The token ID to query
