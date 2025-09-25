@@ -9,9 +9,9 @@ import type { PassportData } from '@selfxyz/common/types';
 
 import { SdkEvents, SelfClient } from '../../src';
 import * as documentsUtils from '../../src/documents/utils';
+import { useProvingStore } from '../../src/proving/provingMachine';
 
 import { act, renderHook } from '@testing-library/react';
-import { useProvingStore } from '../../src/proving/provingMachine';
 
 describe('provingMachine registration completion', () => {
   afterEach(() => {
