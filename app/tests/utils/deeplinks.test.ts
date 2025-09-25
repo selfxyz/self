@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Linking } from 'react-native';
 
 jest.mock('@/navigation', () => ({
@@ -12,16 +13,6 @@ jest.mock('@/navigation', () => ({
   },
 }));
 
-const mockSetSelfApp = jest.fn();
-const mockStartAppListener = jest.fn();
-const mockCleanSelfApp = jest.fn();
-
-jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => ({
-  setSelfApp: mockSetSelfApp,
-  startAppListener: mockStartAppListener,
-  cleanSelfApp: mockCleanSelfApp,
-}));
-
 const mockUserStore = { default: { getState: jest.fn() } };
 jest.mock('@/stores/userStore', () => ({
   __esModule: true,
@@ -30,7 +21,7 @@ jest.mock('@/stores/userStore', () => ({
 
 let setDeepLinkUserDetails: jest.Mock;
 
-let handleUrl: (url: string) => void;
+let handleUrl: (selfClient: SelfClient, url: string) => void;
 let parseAndValidateUrlParams: (uri: string) => any;
 let setupUniversalLinkListenerInNavigation: () => () => void;
 
@@ -57,20 +48,40 @@ describe('deeplinks', () => {
     it('handles selfApp parameter', () => {
       const selfApp = { sessionId: 'abc' };
       const url = `scheme://open?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
-      handleUrl(url);
+
+      const mockSetSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+
+      handleUrl({
+        getSelfAppState: () => ({
+          setSelfApp: mockSetSelfApp,
+          startAppListener: mockStartAppListener,
+        }),
+      } as unknown as SelfClient, url);
 
       expect(mockSetSelfApp).toHaveBeenCalledWith(selfApp);
       expect(mockStartAppListener).toHaveBeenCalledWith('abc');
+
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).toHaveBeenCalledWith('Prove');
     });
 
     it('handles sessionId parameter', () => {
       const url = 'scheme://open?sessionId=123';
-      handleUrl(url);
+      const mockCleanSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+
+      handleUrl({
+        getSelfAppState: () => ({
+          setSelfApp: jest.fn(),
+          startAppListener: mockStartAppListener,
+          cleanSelfApp: mockCleanSelfApp,
+        }),
+      } as unknown as SelfClient, url);
 
       expect(mockCleanSelfApp).toHaveBeenCalledWith();
       expect(mockStartAppListener).toHaveBeenCalledWith('123');
+
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).toHaveBeenCalledWith('Prove');
     });
@@ -78,7 +89,7 @@ describe('deeplinks', () => {
     it('handles mock_passport parameter', () => {
       const mockData = { name: 'John', surname: 'Doe' };
       const url = `scheme://open?mock_passport=${encodeURIComponent(JSON.stringify(mockData))}`;
-      handleUrl(url);
+      handleUrl({} as SelfClient, url);
 
       expect(setDeepLinkUserDetails).toHaveBeenCalledWith({
         name: 'John',
@@ -100,7 +111,7 @@ describe('deeplinks', () => {
         .mockImplementation(() => {});
 
       const url = 'scheme://open?selfApp=%7Binvalid';
-      handleUrl(url);
+      handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
@@ -124,7 +135,7 @@ describe('deeplinks', () => {
         .mockImplementation(() => {});
 
       const url = 'scheme://open?sessionId=abc<script>alert("xss")</script>';
-      handleUrl(url);
+      handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
@@ -145,7 +156,7 @@ describe('deeplinks', () => {
         .mockImplementation(() => {});
 
       const url = 'scheme://open?sessionId=%ZZ'; // Invalid URL encoding
-      handleUrl(url);
+      handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
