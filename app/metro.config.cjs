@@ -47,11 +47,19 @@ const config = {
       /.*\/dist\/esm\/package\.json$/,
       /.*\/dist\/cjs\/package\.json$/,
       /.*\/build\/package\.json$/,
-      // Prevent duplicate React/React Native from nested workspace deps
+      // Prevent duplicate React/React Native from ANY workspace deps - this is critical!
+      new RegExp('app/node_modules/react(/.+)?'),
+      new RegExp('app/node_modules/react-dom(/.+)?'),
+      new RegExp('app/node_modules/react-native(/.+)?'),
+      new RegExp('app/node_modules/scheduler(/.+)?'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/.+)?'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/.+)?'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/.+)?'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/.+)?'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react(/.+)?'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/.+)?'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/.+)?'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/scheduler(/.+)?'),
     ],
     // Enable automatic workspace package resolution
     enableGlobalPackages: true,
@@ -62,10 +70,10 @@ const config = {
     // Enable native symlink support (optional, for compatibility)
     unstable_enableSymlinks: true,
 
-    // Define search order for node modules
+    // Define search order for node modules - prioritize workspace root to prevent duplicates
     nodeModulesPaths: [
-      path.resolve(projectRoot, 'node_modules'), // App's own node_modules
-      path.resolve(workspaceRoot, 'node_modules'), // Workspace root node_modules
+      path.resolve(workspaceRoot, 'node_modules'), // Workspace root node_modules FIRST
+      path.resolve(projectRoot, 'node_modules'), // App's own node_modules SECOND
     ],
 
     // Essential polyfills for React Native
