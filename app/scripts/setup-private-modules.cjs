@@ -10,10 +10,12 @@ const path = require('path');
 const SCRIPT_DIR = __dirname;
 const APP_DIR = path.dirname(SCRIPT_DIR);
 const ANDROID_DIR = path.join(APP_DIR, 'android');
-const PRIVATE_MODULE_PATH = path.join(ANDROID_DIR, 'android-passport-reader');
+const REPO_NAME = 'android-passport-nfc-reader';
+const LEGACY_REPO_NAME = 'android-passport-reader';
+const PRIVATE_MODULE_PATH = path.join(ANDROID_DIR, REPO_NAME);
+const LEGACY_MODULE_PATH = path.join(ANDROID_DIR, LEGACY_REPO_NAME);
 
 const GITHUB_ORG = 'selfxyz';
-const REPO_NAME = 'android-passport-reader';
 const BRANCH = 'main';
 
 // Environment detection
@@ -99,6 +101,41 @@ function sanitizeCommandForLogging(command) {
   );
 }
 
+function migrateLegacyModuleDirectory() {
+  if (!fs.existsSync(LEGACY_MODULE_PATH)) {
+    return;
+  }
+
+  if (fs.existsSync(PRIVATE_MODULE_PATH)) {
+    log(
+      `Removing legacy ${LEGACY_REPO_NAME} directory to avoid conflicts with ${REPO_NAME}`,
+      'warning',
+    );
+
+    if (!isDryRun) {
+      fs.rmSync(LEGACY_MODULE_PATH, {
+        recursive: true,
+        force: true,
+        maxRetries: 3,
+        retryDelay: 1000,
+      });
+    }
+
+    return;
+  }
+
+  log(
+    `Renaming legacy directory ${LEGACY_REPO_NAME} to ${REPO_NAME} for compatibility`,
+    'info',
+  );
+
+  if (!isDryRun) {
+    fs.renameSync(LEGACY_MODULE_PATH, PRIVATE_MODULE_PATH);
+  }
+
+  log('Legacy module directory renamed', 'success');
+}
+
 function removeExistingModule() {
   if (fs.existsSync(PRIVATE_MODULE_PATH)) {
     log(`Removing existing ${REPO_NAME}...`, 'cleanup');
@@ -133,16 +170,13 @@ function usingHTTPSGitAuth() {
   }
 }
 
-function clonePrivateRepo() {
-  log(`Setting up ${REPO_NAME}...`, 'info');
-
-  let cloneUrl;
-
+function resolveCloneStrategy() {
   if (isCI && repoToken) {
-    // CI environment with Personal Access Token
     log('CI detected: Using SELFXYZ_INTERNAL_REPO_PAT for clone', 'info');
-    cloneUrl = `https://${repoToken}@github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
-  } else if (isCI) {
+    return 'ci-token';
+  }
+
+  if (isCI) {
     log(
       'CI environment detected but SELFXYZ_INTERNAL_REPO_PAT not available - skipping private module setup',
       'info',
@@ -151,43 +185,102 @@ function clonePrivateRepo() {
       'This is expected for forked PRs or environments without access to private modules',
       'info',
     );
-    return false; // Return false to indicate clone was skipped
-  } else if (usingHTTPSGitAuth()) {
-    cloneUrl = `https://github.com/${GITHUB_ORG}/${REPO_NAME}.git`;
+    return null;
+  }
+
+  if (usingHTTPSGitAuth()) {
+    log('Using authenticated HTTPS for clone', 'info');
+    return 'https';
+  }
+
+  log('Local development: Using SSH for clone', 'info');
+  return 'ssh';
+}
+
+function buildCloneUrl(cloneStrategy, repoName) {
+  switch (cloneStrategy) {
+    case 'ci-token':
+      return {
+        url: `https://${repoToken}@github.com/${GITHUB_ORG}/${repoName}.git`,
+        credentialed: true,
+      };
+    case 'https':
+      return {
+        url: `https://github.com/${GITHUB_ORG}/${repoName}.git`,
+        credentialed: false,
+      };
+    default:
+      return {
+        url: `git@github.com:${GITHUB_ORG}/${repoName}.git`,
+        credentialed: false,
+      };
+  }
+}
+
+function clonePrivateRepo(cloneStrategy) {
+  log(`Setting up ${REPO_NAME}...`, 'info');
+
+  const repoCandidates = [REPO_NAME, LEGACY_REPO_NAME];
+  let lastError;
+
+  for (const candidateRepoName of repoCandidates) {
+    if (candidateRepoName === LEGACY_REPO_NAME) {
+      log(
+        `Attempting fallback clone using legacy repository name ${LEGACY_REPO_NAME}...`,
+        'warning',
+      );
+    }
+
+    const { url: cloneUrl, credentialed } = buildCloneUrl(
+      cloneStrategy,
+      candidateRepoName,
+    );
+    const quietFlag = credentialed ? '--quiet' : '';
+    const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" ${REPO_NAME}`;
+
+    try {
+      if (credentialed) {
+        // Security: Run command silently to avoid token exposure in logs
+        runCommand(cloneCommand, { stdio: 'pipe' });
+      } else {
+        runCommand(cloneCommand);
+      }
+
+      if (candidateRepoName === LEGACY_REPO_NAME) {
+        log(
+          `Legacy repository cloned. Remote will be updated to ${REPO_NAME}.`,
+          'warning',
+        );
+      }
+
+      log(`Successfully cloned ${REPO_NAME}`, 'success');
+      return true;
+    } catch (error) {
+      lastError = error;
+
+      log(`Clone attempt for ${candidateRepoName} failed`, 'warning');
+
+      if (!isDryRun && fs.existsSync(PRIVATE_MODULE_PATH)) {
+        fs.rmSync(PRIVATE_MODULE_PATH, {
+          recursive: true,
+          force: true,
+          maxRetries: 3,
+          retryDelay: 1000,
+        });
+      }
+    }
+  }
+
+  if (isCI) {
+    log(
+      'Clone failed in CI environment. Check SELFXYZ_INTERNAL_REPO_PAT permissions.',
+      'error',
+    );
   } else {
-    // Local development with SSH
-    log('Local development: Using SSH for clone', 'info');
-    cloneUrl = `git@github.com:${GITHUB_ORG}/${REPO_NAME}.git`;
+    log('Clone failed. Ensure you have SSH access to the repository.', 'error');
   }
 
-  // Security: Use quiet mode for credentialed URLs to prevent token exposure
-  const isCredentialedUrl = isCI && repoToken;
-  const quietFlag = isCredentialedUrl ? '--quiet' : '';
-  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" android-passport-reader`;
-
-  try {
-    if (isCredentialedUrl) {
-      // Security: Run command silently to avoid token exposure in logs
-      runCommand(cloneCommand, { stdio: 'pipe' });
-    } else {
-      runCommand(cloneCommand);
-    }
-    log(`Successfully cloned ${REPO_NAME}`, 'success');
-    return true; // Return true to indicate successful clone
-  } catch (error) {
-    if (isCI) {
-      log(
-        'Clone failed in CI environment. Check SELFXYZ_INTERNAL_REPO_PAT permissions.',
-        'error',
-      );
-    } else {
-      log(
-        'Clone failed. Ensure you have SSH access to the repository.',
-        'error',
-      );
-    }
-    throw error;
-  }
+  throw lastError;
 }
 
 function validateSetup() {
@@ -214,20 +307,20 @@ function setupAndroidPassportReader() {
     throw new Error(`Android directory not found: ${ANDROID_DIR}`);
   }
 
-  // Remove existing module
-  removeExistingModule();
-
-  // Clone the private repository
-  const cloneSuccessful = clonePrivateRepo();
-
-  // If clone was skipped (e.g., in forked PRs), exit gracefully
-  if (cloneSuccessful === false) {
+  const cloneStrategy = resolveCloneStrategy();
+  if (!cloneStrategy) {
     log(`${REPO_NAME} setup skipped - private module not available`, 'warning');
     return;
   }
 
+  migrateLegacyModuleDirectory();
+  removeExistingModule();
+
+  // Clone the private repository
+  clonePrivateRepo(cloneStrategy);
+
   // Security: Remove credential-embedded remote URL after clone
-  if (isCI && repoToken && !isDryRun) {
+  if (cloneStrategy === 'ci-token' && repoToken && !isDryRun) {
     scrubGitRemoteUrl();
   }
 

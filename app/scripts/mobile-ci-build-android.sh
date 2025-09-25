@@ -25,6 +25,12 @@ log() {
   fi
 }
 
+readonly ANDROID_PRIVATE_MODULE_DIR="app/android/android-passport-nfc-reader"
+readonly LEGACY_ANDROID_PRIVATE_MODULE_DIR="app/android/android-passport-reader"
+readonly ANDROID_PRIVATE_REPO_ORG="selfxyz"
+readonly ANDROID_PRIVATE_REPO_SLUG="android-passport-nfc-reader"
+readonly LEGACY_ANDROID_PRIVATE_REPO_SLUG="android-passport-reader"
+
 # Error handling with cleanup
 handle_error() {
   local exit_code=$?
@@ -87,40 +93,78 @@ cd "$PROJECT_ROOT"
 
 log "Working directory: $(pwd)"
 
-# Clone android-passport-reader if it doesn't exist (for local development)
+# Clone android-passport-nfc-reader if it doesn't exist (for local development)
 # Note: In CI, this is usually handled by GitHub action, but we keep this as fallback
-if [[ ! -d "app/android/android-passport-reader" ]]; then
-  log "Cloning android-passport-reader for build..."
+if [[ -d "$LEGACY_ANDROID_PRIVATE_MODULE_DIR" ]]; then
+  if [[ -d "$ANDROID_PRIVATE_MODULE_DIR" ]]; then
+    log "Removing legacy android-passport-reader directory to avoid conflicts..."
+    rm -rf "$LEGACY_ANDROID_PRIVATE_MODULE_DIR"
+  else
+    log "Renaming legacy android-passport-reader directory to android-passport-nfc-reader..."
+    mv "$LEGACY_ANDROID_PRIVATE_MODULE_DIR" "$ANDROID_PRIVATE_MODULE_DIR"
+  fi
+fi
+
+if [[ ! -d "$ANDROID_PRIVATE_MODULE_DIR" ]]; then
+  log "Cloning android-passport-nfc-reader for build..."
   cd app/android
 
   # Use different clone methods based on environment
   if is_ci && [[ -n "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]]; then
     # CI environment with PAT (fallback if action didn't run)
-    git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/selfxyz/android-passport-reader.git" || {
-      log "ERROR: Failed to clone android-passport-reader with PAT"
+    clone_success=0
+    for repo_slug in "$ANDROID_PRIVATE_REPO_SLUG" "$LEGACY_ANDROID_PRIVATE_REPO_SLUG"; do
+      git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/${ANDROID_PRIVATE_REPO_ORG}/${repo_slug}.git" "$ANDROID_PRIVATE_REPO_SLUG" && {
+        clone_success=1
+        if [[ "$repo_slug" == "$LEGACY_ANDROID_PRIVATE_REPO_SLUG" ]]; then
+          log "Cloned legacy android-passport-reader repository with PAT; remote will be updated automatically."
+        fi
+        break
+      }
+
+      log "WARNING: Failed to clone ${repo_slug} with PAT"
+      rm -rf "$ANDROID_PRIVATE_REPO_SLUG"
+    done
+
+    if [[ $clone_success -ne 1 ]]; then
+      log "ERROR: Failed to clone android-passport-nfc-reader with PAT"
       exit 1
-    }
+    fi
   elif [[ -n "${SSH_AUTH_SOCK:-}" ]] || [[ -f "${HOME}/.ssh/id_rsa" ]] || [[ -f "${HOME}/.ssh/id_ed25519" ]]; then
     # Local development with SSH
-    git clone "git@github.com:selfxyz/android-passport-reader.git" || {
-      log "ERROR: Failed to clone android-passport-reader with SSH"
+    clone_success=0
+    for repo_slug in "$ANDROID_PRIVATE_REPO_SLUG" "$LEGACY_ANDROID_PRIVATE_REPO_SLUG"; do
+      git clone "git@github.com:${ANDROID_PRIVATE_REPO_ORG}/${repo_slug}.git" "$ANDROID_PRIVATE_REPO_SLUG" && {
+        clone_success=1
+        if [[ "$repo_slug" == "$LEGACY_ANDROID_PRIVATE_REPO_SLUG" ]]; then
+          log "Cloned legacy android-passport-reader repository via SSH; remote will be updated automatically."
+        fi
+        break
+      }
+
+      log "WARNING: Failed to clone ${repo_slug} with SSH"
+      rm -rf "$ANDROID_PRIVATE_REPO_SLUG"
+    done
+
+    if [[ $clone_success -ne 1 ]]; then
+      log "ERROR: Failed to clone android-passport-nfc-reader with SSH"
       log "Please ensure you have SSH access to the repository or set SELFXYZ_INTERNAL_REPO_PAT"
       exit 1
-    }
+    fi
   else
-    log "ERROR: No authentication method available for cloning android-passport-reader"
+    log "ERROR: No authentication method available for cloning android-passport-nfc-reader"
     log "Please either:"
     log "  - Set up SSH access (for local development)"
     log "  - Set SELFXYZ_INTERNAL_REPO_PAT environment variable (for CI)"
     exit 1
   fi
 
-  cd ../../
-  log "✅ android-passport-reader cloned successfully"
+  cd ../..
+  log "✅ android-passport-nfc-reader cloned successfully"
 elif is_ci; then
-  log "📁 android-passport-reader exists (likely cloned by GitHub action)"
+  log "📁 android-passport-nfc-reader exists (likely cloned by GitHub action)"
 else
-  log "📁 android-passport-reader already exists - preserving existing directory"
+  log "📁 android-passport-nfc-reader already exists - preserving existing directory"
 fi
 
 # Build and package the SDK with timeout
