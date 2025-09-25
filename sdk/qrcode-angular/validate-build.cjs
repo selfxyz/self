@@ -23,7 +23,7 @@ const requiredFiles = [
   'esm2022/selfxyz-qrcode-angular.mjs',
   'lib/components/self-qrcode/self-qrcode.component.d.ts',
   'lib/components/led/led.component.d.ts',
-  'lib/services/websocket.service.d.ts'
+  'lib/services/websocket.service.d.ts',
 ];
 
 console.log('📁 Checking build artifacts...');
@@ -45,10 +45,20 @@ if (missingFiles.length > 0) {
 
 // Test 2: Package.json validation
 console.log('\n📦 Validating package.json...');
-const requiredFields = ['name', 'version', 'main', 'module', 'types', 'exports', 'peerDependencies'];
+const requiredFields = [
+  'name',
+  'version',
+  'main',
+  'module',
+  'types',
+  'exports',
+  'peerDependencies',
+];
 for (const field of requiredFields) {
   if (packageJson[field]) {
-    console.log(`  ✅ ${field}: ${typeof packageJson[field] === 'object' ? 'configured' : packageJson[field]}`);
+    console.log(
+      `  ✅ ${field}: ${typeof packageJson[field] === 'object' ? 'configured' : packageJson[field]}`
+    );
   } else {
     console.log(`  ❌ ${field}: missing`);
     process.exit(1);
@@ -86,7 +96,7 @@ console.log('\n🔧 Validating TypeScript definitions...');
 const indexDts = fs.readFileSync(path.join(distPath, 'index.d.ts'), 'utf8');
 const publicApiDts = fs.readFileSync(path.join(distPath, 'public-api.d.ts'), 'utf8');
 
-if (indexDts.includes('export * from \'./public-api\'')) {
+if (indexDts.includes("export * from './public-api'")) {
   console.log('  ✅ Index.d.ts exports public API');
 } else {
   console.log('  ❌ Index.d.ts missing public API export');
@@ -98,7 +108,7 @@ const requiredExports = [
   'SelfQRcodeWrapperComponent',
   'LedComponent',
   'WebSocketService',
-  'SelfQRcodeAngularModule'
+  'SelfQRcodeAngularModule',
 ];
 
 let missingExports = [];
@@ -126,7 +136,7 @@ const requiredImports = [
   'angularx-qrcode',
   'rxjs',
   'socket.io-client',
-  '@selfxyz/common'
+  '@selfxyz/common',
 ];
 
 for (const importName of requiredImports) {
@@ -145,7 +155,7 @@ const expectedPeerDeps = {
   '@angular/core': '^18.0.0',
   '@angular/common': '^18.0.0',
   '@selfxyz/common': 'workspace:^',
-  'rxjs': '^7.8.0'
+  rxjs: '^7.8.0',
 };
 
 for (const [dep, version] of Object.entries(expectedPeerDeps)) {
@@ -164,5 +174,7 @@ console.log(`  📁 Output: ${distPath}`);
 console.log(`  📊 Bundle size: ${bundleSizeKB.toFixed(2)}KB`);
 console.log(`  🔧 TypeScript: Full definitions included`);
 console.log(`  🚀 Exports: Properly configured`);
-console.log(`  🔗 Dependencies: ${Object.keys(packageJson.dependencies || {}).length} runtime, ${Object.keys(peerDeps).length} peer`);
+console.log(
+  `  🔗 Dependencies: ${Object.keys(packageJson.dependencies || {}).length} runtime, ${Object.keys(peerDeps).length} peer`
+);
 console.log('\n✅ Angular SDK is ready for distribution!');

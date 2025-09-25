@@ -1,12 +1,12 @@
-import { v4 } from "uuid";
+import { v4 } from 'uuid';
 
 export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
 export type UserIdType = 'hex' | 'uuid';
 
 export type Country3LetterCode = (typeof countries)[keyof typeof countries];
 
-export const WS_DB_RELAYER = "wss://websocket.self.xyz";
-export const REDIRECT_URL = "https://redirect.self.xyz";
+export const WS_DB_RELAYER = 'wss://websocket.self.xyz';
+export const REDIRECT_URL = 'https://redirect.self.xyz';
 
 export const countries = {
   AFGHANISTAN: 'AFG',
@@ -264,8 +264,6 @@ export const countries = {
   INTERPOL: 'XPO',
   SMOM: 'XOM',
 } as const;
-
-
 
 export interface SelfAppDisclosureConfig {
   issuing_state?: boolean;
@@ -568,7 +566,6 @@ export function validateUserId(userId: string, type: UserIdType): boolean {
       return false;
   }
 }
-
 
 export class SelfAppBuilder {
   private config: SelfApp;

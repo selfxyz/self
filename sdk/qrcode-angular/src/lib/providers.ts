@@ -9,7 +9,7 @@ export function playerFactory() {
 export function provideSelfLottie() {
   return makeEnvironmentProviders([
     provideLottieOptions({
-      player: playerFactory
-    })
+      player: playerFactory,
+    }),
   ]);
 }
