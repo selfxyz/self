@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-package com.proofofpassportapp;
+package com.selfxyz.mrzqrscanner;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,20 +15,20 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import com.blikoon.qrcodescanner.QrCodeActivity;
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.BaseActivityEventListener;
+import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.LifecycleEventListener;
-import com.blikoon.qrcodescanner.QrCodeActivity;
-import android.Manifest;
-import com.proofofpassportapp.utils.QrCodeDetectorProcessor;
-import example.jllarraz.com.passportreader.mlkit.FrameMetadata;
+import com.selfxyz.mrzqrscanner.PhotoPickerActivity;
+import com.selfxyz.mrzqrscanner.mlkit.FrameMetadata;
+import com.selfxyz.mrzqrscanner.utils.QrCodeDetectorProcessor;
 import java.io.InputStream;
 
-public class QRCodeScannerModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class MRZQRScannerModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
     private static final int REQUEST_CODE_QR_SCAN = 101;
     private static final int REQUEST_CODE_PHOTO_PICK = 102;
@@ -76,7 +77,7 @@ public class QRCodeScannerModule extends ReactContextBaseJavaModule implements L
         }
     };
 
-    public QRCodeScannerModule(ReactApplicationContext reactContext) {
+    public MRZQRScannerModule(ReactApplicationContext reactContext) {
         super(reactContext);
         reactContext.addActivityEventListener(activityEventListener);
         reactContext.addLifecycleEventListener(this);

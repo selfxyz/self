@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 
-package com.proofofpassportapp.ui
-
+package com.selfxyz.mrzqrscanner.ui
 
 import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -32,12 +33,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.proofofpassportapp.utils.QrCodeDetectorProcessor
-import example.jllarraz.com.passportreader.R
-import example.jllarraz.com.passportreader.databinding.FragmentCameraMrzBinding
-import example.jllarraz.com.passportreader.mlkit.FrameMetadata
-import example.jllarraz.com.passportreader.ui.fragments.CameraFragment
-import example.jllarraz.com.passportreader.utils.MRZUtil
+import com.google.mlkit.vision.text.Text
+
+
+import org.jmrtd.lds.icao.MRZInfo
+
+import com.selfxyz.mrzqrscanner.R
+import com.selfxyz.mrzqrscanner.databinding.FragmentCameraMrzBinding
+import com.selfxyz.mrzqrscanner.mlkit.FrameMetadata
+import com.selfxyz.mrzqrscanner.mlkit.GraphicOverlay
+import com.selfxyz.mrzqrscanner.mlkit.OcrMrzDetectorProcessor
+import com.selfxyz.mrzqrscanner.mlkit.VisionProcessorBase
+import com.selfxyz.mrzqrscanner.fragments.CameraFragment
+import com.selfxyz.mrzqrscanner.utils.MRZUtil
+import com.selfxyz.mrzqrscanner.utils.OcrUtils
 import io.fotoapparat.preview.Frame
 import io.fotoapparat.view.CameraView
 import io.reactivex.Single
@@ -45,10 +54,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 
+class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFragment() {
 
-class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() {
-    private var callback: QRCodeScannerCallback? = callback
-    private var frameProcessor: QrCodeDetectorProcessor? = null
+//    private lateinit var customView: CustomView
+
+    ////////////////////////////////////////
+
+    private var cameraMLKitCallback: CameraMLKitCallback? = cameraMLKitCallback
+    private var frameProcessor: OcrMrzDetectorProcessor? = null
     private val mHandler = Handler(Looper.getMainLooper())
     var disposable = CompositeDisposable()
 
@@ -69,7 +82,7 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
 
     override fun onResume() {
         MRZUtil.cleanStorage()
-        frameProcessor = qrProcessor
+        frameProcessor = textProcessor
         super.onResume()
     }
 
@@ -83,17 +96,28 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     }
 
     override fun onDestroyView() {
-        if (!disposable.isDisposed) {
+        if (!disposable.isDisposed()) {
             disposable.dispose();
         }
         super.onDestroyView()
+//        customView.onDestroy()
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+//        val activity = activity
+//        if (activity is CameraMLKitCallback) {
+//            cameraMLKitCallback = activity
+//        }
     }
 
     override fun onDetach() {
-        callback = null
+        cameraMLKitCallback = null
         super.onDetach()
 
     }
+
+
 
     ////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -115,13 +139,15 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
                                     frameProcessor?.process(
                                         frame = frame,
                                         rotation = rotation,
+                                        graphicOverlay = null,
                                         true,
-                                        listener = qrListener
+                                        listener = ocrListener
                                     )
                                 }).subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe({ _ ->
+                                    .subscribe({ success ->
                                         //Don't do anything
+
                                     },{error->
                                         isDecoding = false
                                         Toast.makeText(requireContext(), "Error: "+error, Toast.LENGTH_SHORT).show()
@@ -166,22 +192,71 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     }
 
 
-    val qrListener = object : QrCodeDetectorProcessor.Listener {
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //       Instantiate the text processor to perform OCR
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////
+
+    //OCR listener
+    val ocrListener = object : VisionProcessorBase.Listener<com.google.mlkit.vision.text.Text> {
         override fun onSuccess(
-            results: String,
+            results: Text,
             frameMetadata: FrameMetadata?,
             timeRequired: Long,
-            bitmap: Bitmap?
+            bitmap: Bitmap?,
+            graphicOverlay: GraphicOverlay?
         ) {
-            isDecoding = false
             if (!isAdded) {
+                return
+            }
+            OcrUtils.processOcr(
+                results = results,
+                timeRequired = timeRequired,
+                callback = mrzListener
+            )
+        }
+
+        override fun onCanceled(timeRequired: Long) {
+            if (!isAdded) {
+                return
+            }
+        }
+
+        override fun onFailure(
+            e: Exception,
+            timeRequired: Long
+        ) {
+            if (!isAdded) {
+                return
+            }
+            mrzListener.onFailure(e, timeRequired)
+        }
+
+        override fun onCompleted(timeRequired: Long) {
+            if (!isAdded) {
+                return
+            }
+
+        }
+
+    }
+
+    //MRZ Listener
+    var mrzListener = object : OcrUtils.MRZCallback {
+        override fun onMRZRead(mrzInfo: MRZInfo, timeRequired: Long) {
+            isDecoding = false
+            if(!isAdded){
                 return
             }
             mHandler.post {
                 try {
+
+//                    binding?.statusViewTop?.text = getString(R.string.status_bar_ocr, mrzInfo.documentNumber, mrzInfo.dateOfBirth, mrzInfo.dateOfExpiry)
+//                    binding?.statusViewBottom?.text = getString(R.string.status_bar_success, timeRequired)
                     binding?.statusViewBottom?.setTextColor(resources.getColor(R.color.status_text))
-                    callback.onQRData(results)
-                    frameProcessor?.stop()
+                    cameraMLKitCallback.onPassportRead(mrzInfo)
 
                 } catch (e: IllegalStateException) {
                     //The fragment is destroyed
@@ -189,38 +264,39 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
             }
         }
 
-//        override fun onCanceled(timeRequired: Long) {
-//            isDecoding = false
-//            if (!isAdded) {
-//                return
-//            }
-//        }
-
-        override fun onFailure(
-            e: Exception,
-            timeRequired: Long
-        ) {
+        override fun onMRZReadFailure(timeRequired: Long) {
             isDecoding = false
-            if (!isAdded) {
+            if(!isAdded){
+                return
+            }
+            mHandler.post {
+                try {
+//                    binding?.statusViewBottom?.text = getString(R.string.status_bar_failure, timeRequired)
+//                    binding?.statusViewBottom?.setTextColor(Color.RED)
+                    binding?.statusViewTop?.text = ""
+                } catch (e: IllegalStateException) {
+                    //The fragment is destroyed
+                }
+            }
+        }
+
+        override fun onFailure(e: Exception, timeRequired: Long) {
+            isDecoding = false
+            if(!isAdded){
                 return
             }
             e.printStackTrace()
             mHandler.post {
-                callback.onError(e)
+                cameraMLKitCallback.onError(e)
             }
         }
-
-        override fun onCompletedFrame(timeRequired: Long) {
-            isDecoding = false
-            if (!isAdded) {
-                return
-            }
-        }
-
     }
 
-    protected val qrProcessor: QrCodeDetectorProcessor
-        get() = QrCodeDetectorProcessor()
+
+
+
+    protected val textProcessor: OcrMrzDetectorProcessor
+        get() = OcrMrzDetectorProcessor()
 
 
 
@@ -325,8 +401,8 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     //
     ////////////////////////////////////////////////////////////////////////////////////////
 
-    interface QRCodeScannerCallback {
-        fun onQRData(data: String)
+    interface CameraMLKitCallback {
+        fun onPassportRead(mrzInfo: MRZInfo)
         fun onError(e: Exception)
     }
 
@@ -335,10 +411,10 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
         /**
          * Tag for the [Log].
          */
-        private val TAG = QrCodeScannerFragment::class.java.simpleName
+        private val TAG = CameraMLKitFragment::class.java.simpleName
 
         private val REQUEST_CAMERA_PERMISSION = 1
-        private val FRAGMENT_DIALOG = "QRCodeScannerFragment"
+        private val FRAGMENT_DIALOG = "CameraMLKitFragment"
     }
 
 

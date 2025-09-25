@@ -1,0 +1,14 @@
+// Standalone build configuration for the android-mrz-qr-scanner module.
+// When included from the main Android project this file is not used,
+// but it allows building the library in isolation if needed.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.11.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24"
+    }
+}

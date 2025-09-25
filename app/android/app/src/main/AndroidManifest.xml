@@ -83,11 +83,6 @@
         android:resource="@color/notification_color"
         tools:replace="android:resource" />
 
-      <activity
-        android:name=".PhotoPickerActivity"
-        android:theme="@style/Theme.AppCompat.Translucent"
-        android:exported="false" />
-
       <service android:name="com.google.android.gms.metadata.ModuleDependencies"
         android:enabled="false"
         android:exported="false"
