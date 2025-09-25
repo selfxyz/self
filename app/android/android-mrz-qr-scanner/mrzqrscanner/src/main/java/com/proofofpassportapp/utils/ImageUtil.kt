@@ -22,7 +22,7 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import org.jmrtd.jj2000.JJ2000Decoder
 import org.jmrtd.lds.ImageInfo.WSQ_MIME_TYPE
-import org.jnbis.api.Jnbis
+import org.jnbis.internal.WsqDecoder
 
 object ImageUtil {
 
@@ -99,14 +99,22 @@ object ImageUtil {
             }
 
             WSQ_MIME_TYPE.equals(mimeType, ignoreCase = true) -> {
-                val wsqBitmap = Jnbis.wsq().decode(decodingStream.readBytes())
+                val wsqDecoder = WsqDecoder()
+                val wsqBitmap = wsqDecoder.decode(decodingStream.readBytes())
                 val byteData = wsqBitmap.pixels
                 val intData = IntArray(byteData.size)
-                for (j in byteData.indices) {
-                    val value = byteData[j].toInt() and 0xFF
-                    intData[j] = -0x1000000 or (value shl 16) or (value shl 8) or value
+                for (index in byteData.indices) {
+                    val value = byteData[index].toInt() and 0xFF
+                    intData[index] = -0x1000000 or (value shl 16) or (value shl 8) or value
                 }
-                Bitmap.createBitmap(intData, 0, wsqBitmap.width, wsqBitmap.width, wsqBitmap.height, Bitmap.Config.ARGB_8888)
+                Bitmap.createBitmap(
+                    intData,
+                    0,
+                    wsqBitmap.width,
+                    wsqBitmap.width,
+                    wsqBitmap.height,
+                    Bitmap.Config.ARGB_8888
+                )
             }
 
             else -> BitmapFactory.decodeStream(decodingStream)
