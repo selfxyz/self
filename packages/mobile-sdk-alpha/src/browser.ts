@@ -34,7 +34,7 @@ export type { PassportValidationCallbacks } from './validation/document';
 export type { QRProofOptions } from './qr';
 export type { SdkErrorCategory } from './errors';
 
-export { type ProvingStateType, useProvingStore } from './proving/provingMachine';
+export { type ProvingStateType } from './proving/provingMachine';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 
 export { SdkEvents } from './types/events';
