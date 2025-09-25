@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { SelfClient, useProvingStore } from '../../src';
+import { SelfClient } from '../../src';
+import { useProvingStore } from '../../src/proving/provingMachine';
 import { useProtocolStore } from '../../src/stores/protocolStore';
 import { useSelfAppStore } from '../../src/stores/selfAppStore';
 import { actorMock } from './actorMock';
@@ -106,6 +107,9 @@ describe('_generatePayload', () => {
     emit: vitest.fn(),
     getPrivateKey: vi.fn(() => Promise.resolve('mock-private-key')),
     logProofEvent: vi.fn(),
+    getSelfAppState: () => useSelfAppStore.getState(),
+    getProvingState: () => useProvingStore.getState(),
+    getProtocolState: () => useProtocolStore.getState(),
   } as unknown as SelfClient;
   beforeEach(() => {
     vitest.clearAllMocks();
