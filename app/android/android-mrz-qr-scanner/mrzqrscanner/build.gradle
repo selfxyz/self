@@ -1,13 +1,15 @@
-apply plugin: 'com.android.library'
-apply plugin: 'org.jetbrains.kotlin.android'
-apply plugin: 'kotlin-android'
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    namespace 'com.selfxyz.mrzqrscanner'
+    compileSdk 34
 
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdk 24
+        targetSdk 34
         consumerProguardFiles 'proguard-rules.pro'
     }
 
@@ -24,8 +26,6 @@ android {
         jvmTarget = '17'
     }
 
-    namespace 'com.selfxyz.mrzqrscanner'
-
     packagingOptions {
         resources {
             excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
@@ -34,15 +34,17 @@ android {
 }
 
 dependencies {
+    implementation 'com.facebook.react:react-android:0.76.9'
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
     implementation 'com.google.zxing:core:3.5.2'
     implementation 'com.google.zxing:android-core:3.3.0'
-    implementation "com.github.fotoapparat:fotoapparat:2.7.0"
+    implementation 'com.github.fotoapparat:fotoapparat:2.7.0'
     implementation 'org.jmrtd:jmrtd:0.7.35'
+    implementation 'org.jnbis:jnbis:2.0.4'
+    implementation 'org.jj2000:jj2000:5.2'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.kotlinVersion}"
 }

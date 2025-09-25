@@ -9,4 +9,4 @@ includeBuild('../../node_modules/@react-native/gradle-plugin')
 include ':react-native-passport-reader'
 project(':react-native-passport-reader').projectDir = new File(rootProject.projectDir, './react-native-passport-reader/android')
 include ':mrzqrscanner'
-project(':mrzqrscanner').projectDir = new File(rootProject.projectDir, './android-mrz-qr-scanner/app')
+project(':mrzqrscanner').projectDir = new File(rootProject.projectDir, './android-mrz-qr-scanner/mrzqrscanner')
