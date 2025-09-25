@@ -4,6 +4,9 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { useProvingStore } from '../../src/proving/provingMachine';
+import { useProtocolStore } from '../../src/stores/protocolStore';
+import { useSelfAppStore } from '../../src/stores/selfAppStore';
 import type { SelfClient } from '../../src/types/public';
 
 vi.mock('../../src/stores/selfAppStore', () => ({
@@ -56,6 +59,9 @@ describe('_generatePayload disclose (stateless resolver)', () => {
   const selfClient: SelfClient = {
     trackEvent: vi.fn(),
     logProofEvent: vi.fn(),
+    getProvingState: () => useProvingStore.getState(),
+    getSelfAppState: () => useSelfAppStore.getState(),
+    getProtocolState: () => useProtocolStore.getState(),
   } as unknown as SelfClient;
 
   beforeEach(() => {
@@ -91,51 +97,57 @@ describe('_generatePayload disclose (stateless resolver)', () => {
 
     // Import after mocks are in place
     const mod = await import('../../src/proving/provingMachine');
-    const storeModule = await import('../../src/stores/protocolStore');
     const store = mod.useProvingStore;
-    const protocolStore = storeModule.useProtocolStore;
+
+    const selfClient = {
+      trackEvent: vi.fn(),
+      logProofEvent: vi.fn(),
+      getProvingState: () => useProvingStore.getState(),
+      getSelfAppState: () => useSelfAppStore.getState(),
+      getProtocolState: () => ({
+        passport: {
+          dsc_tree: 'tree',
+          csca_tree: [[new Uint8Array([1])]],
+          commitment_tree: '[[]]',
+          deployed_circuits: null,
+          circuits_dns_mapping: null,
+          alternative_csca: {},
+          ofac_trees: {
+            passportNoAndNationality: { root: ['pp'] },
+            nameAndDob: { root: ['dob'] },
+            nameAndYob: { root: ['yob'] },
+          },
+          fetch_deployed_circuits: vi.fn(),
+          fetch_circuits_dns_mapping: vi.fn(),
+          fetch_csca_tree: vi.fn(),
+          fetch_dsc_tree: vi.fn(),
+          fetch_identity_tree: vi.fn(),
+          fetch_alternative_csca: vi.fn(),
+          fetch_ofac_trees: vi.fn(),
+          fetch_all: vi.fn(),
+        },
+        id_card: {
+          commitment_tree: null,
+          dsc_tree: null,
+          csca_tree: null,
+          deployed_circuits: null,
+          circuits_dns_mapping: null,
+          alternative_csca: {},
+          ofac_trees: null,
+          fetch_deployed_circuits: vi.fn(),
+          fetch_circuits_dns_mapping: vi.fn(),
+          fetch_csca_tree: vi.fn(),
+          fetch_dsc_tree: vi.fn(),
+          fetch_identity_tree: vi.fn(),
+          fetch_alternative_csca: vi.fn(),
+          fetch_ofac_trees: vi.fn(),
+          fetch_all: vi.fn(),
+        },
+      }),
+    } as unknown as SelfClient;
 
     // Set protocol store state
-    protocolStore.setState({
-      passport: {
-        dsc_tree: 'tree',
-        csca_tree: [[new Uint8Array([1])]],
-        commitment_tree: '[[]]',
-        deployed_circuits: null,
-        circuits_dns_mapping: null,
-        alternative_csca: {},
-        ofac_trees: {
-          passportNoAndNationality: { root: ['pp'] },
-          nameAndDob: { root: ['dob'] },
-          nameAndYob: { root: ['yob'] },
-        },
-        fetch_deployed_circuits: vi.fn(),
-        fetch_circuits_dns_mapping: vi.fn(),
-        fetch_csca_tree: vi.fn(),
-        fetch_dsc_tree: vi.fn(),
-        fetch_identity_tree: vi.fn(),
-        fetch_alternative_csca: vi.fn(),
-        fetch_ofac_trees: vi.fn(),
-        fetch_all: vi.fn(),
-      },
-      id_card: {
-        commitment_tree: null,
-        dsc_tree: null,
-        csca_tree: null,
-        deployed_circuits: null,
-        circuits_dns_mapping: null,
-        alternative_csca: {},
-        ofac_trees: null,
-        fetch_deployed_circuits: vi.fn(),
-        fetch_circuits_dns_mapping: vi.fn(),
-        fetch_csca_tree: vi.fn(),
-        fetch_dsc_tree: vi.fn(),
-        fetch_identity_tree: vi.fn(),
-        fetch_alternative_csca: vi.fn(),
-        fetch_ofac_trees: vi.fn(),
-        fetch_all: vi.fn(),
-      },
-    } as any);
+    // useProtocolStore.setState( as any);
 
     // Set proving store state inside isolateModules so it affects the isolated store instance
     store.setState({
