@@ -97,7 +97,7 @@ jest.mock('ethers', () => {
   const mockRandomBytes = jest.fn(len => new Uint8Array(len));
   const mockHash = jest.fn(() => '0x' + 'a'.repeat(64));
   const mockSha512 = jest.fn(() => '0x' + 'a'.repeat(128));
-  
+
   const E = {
     Wallet: jest.fn().mockImplementation(() => ({
       address: '0x1234567890123456789012345678901234567890',
@@ -114,7 +114,7 @@ jest.mock('ethers', () => {
     ripemd160: mockHash,
     scrypt: mockHash,
   };
-  
+
   E.ethers = E; // support `import { ethers } from 'ethers'`
   return E;
 });
