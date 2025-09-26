@@ -11,11 +11,23 @@ module.exports = {
     ecmaFeatures: { jsx: true },
   },
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'plugin:prettier/recommended'],
-  plugins: ['prettier'],
-  ignorePatterns: ['dist/', 'node_modules/', 'android/', 'ios/', '*.cjs', '*.js'],
+  plugins: ['prettier', 'simple-import-sort'],
+  ignorePatterns: ['dist/', 'node_modules/', 'android/', 'ios/'],
   env: {
     node: true,
     es6: true,
+    jest: true,
+  },
+  globals: {
+    globalThis: 'readonly',
+  },
+  settings: {
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: ['packages/*/tsconfig.json', 'tsconfig.json'],
+      },
+    },
   },
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',

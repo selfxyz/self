@@ -37,6 +37,7 @@
     "react-native": "0.76.9",
     "react-native-get-random-values": "^1.11.0",
     "stream-browserify": "^3.0.0",
+    "tamagui": "1.126.14",
     "util": "^0.12.5"
   },
   "devDependencies": {
@@ -51,6 +52,7 @@
     "babel-jest": "^29.6.3",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-simple-import-sort": "^12.1.1",

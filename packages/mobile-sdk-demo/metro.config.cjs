@@ -59,6 +59,7 @@ const config = {
       buffer: require.resolve('buffer'),
       util: require.resolve('util'),
       assert: require.resolve('assert'),
+      constants: require.resolve('constants-browserify'),
     },
     // Prefer source files for @selfxyz/common so stack traces reference real filenames
     resolveRequest: (context, moduleName, platform) => {
@@ -68,7 +69,6 @@ const config = {
         fs: false, // Disable filesystem access
         os: false, // Disable OS-specific modules
         readline: false, // Disable readline (pulls in events)
-        constants: require.resolve('constants-browserify'),
         'web-worker': false, // Disable web workers (not supported in React Native)
       };
 

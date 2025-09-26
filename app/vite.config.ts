@@ -61,10 +61,11 @@ export default defineConfig({
       transform(code, id) {
         // Fix the mobile-sdk-alpha chunk that references Buffer
         if (id.includes('mobile-sdk-alpha') && code.includes('from "buffer"')) {
-          // Replace imports from "buffer" with a local Buffer reference
-          const fixedCode = code
-            .replace(/import\s+\{\s*Buffer\s*\}\s+from\s+['"]buffer['"]/g, '')
-            .replace(/^/m, 'const Buffer = globalThis.Buffer;\n');
+          // Keep the import so the polyfill is bundled, and set global assignment
+          const fixedCode = code.replace(
+            /import\s+\{\s*Buffer\s*\}\s+from\s+['"]buffer['"]/g,
+            "import { Buffer } from 'buffer';\nif (typeof globalThis.Buffer === 'undefined') { globalThis.Buffer = Buffer; }",
+          );
           return { code: fixedCode, map: null };
         }
         return null;

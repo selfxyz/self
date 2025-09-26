@@ -74,7 +74,9 @@ const RecoverWithPhraseScreen: React.FC = () => {
           if (docCategory === 'aadhaar') {
             const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
             // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-            return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};
+            return publicKeys
+              ? Object.fromEntries(publicKeys.map(key => [key, key]))
+              : {};
           }
           return useProtocolStore.getState()[docCategory].alternative_csca;
         },

@@ -12,10 +12,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     window = UIWindow(frame: UIScreen.main.bounds)
 
-    let bridge = RCTBridge(
+    guard let bridge = RCTBridge(
       delegate: self,
       launchOptions: launchOptions
-    )!
+    ) else {
+      assertionFailure("Failed to initialize RCTBridge")
+      return false
+    }
 
     let rootView = RCTRootView(
       bridge: bridge,

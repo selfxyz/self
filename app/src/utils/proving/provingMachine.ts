@@ -137,7 +137,9 @@ const _generateCircuitInputs = async (
       break;
     case 'dsc':
       if (document === 'aadhaar') {
-        throw new Error('DSC circuit type is not supported for Aadhaar documents');
+        throw new Error(
+          'DSC circuit type is not supported for Aadhaar documents',
+        );
       }
       ({ inputs, circuitName, endpointType, endpoint } = generateTEEInputsDSC(
         passportData as PassportData,
@@ -1119,9 +1121,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                 getCommitmentTree,
                 getAltCSCA: (docType: DocumentCategory) => {
                   if (docType === 'aadhaar') {
-                    const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+                    const publicKeys =
+                      useProtocolStore.getState().aadhaar.public_keys;
                     // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-                    return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};
+                    return publicKeys
+                      ? Object.fromEntries(publicKeys.map(key => [key, key]))
+                      : {};
                   }
                   return useProtocolStore.getState()[docType].alternative_csca;
                 },

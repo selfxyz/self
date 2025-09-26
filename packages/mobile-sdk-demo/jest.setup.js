@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-/* global jest */
 /** @jest-environment jsdom */
 
 // Mock the native bridge configuration FIRST
@@ -70,9 +69,7 @@ NativeModules.UIManager = {
   createView: jest.fn(),
   updateView: jest.fn(),
   removeRootView: jest.fn(),
-  removeSubviewsFromContainerWithID: jest.fn(),
   addRootView: jest.fn(),
-  removeRootView: jest.fn(),
   updateRootView: jest.fn(),
 };
 

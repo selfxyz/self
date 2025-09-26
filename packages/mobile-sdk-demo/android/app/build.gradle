@@ -42,11 +42,6 @@ android {
     buildFeatures {
         buildConfig true
     }
-
-    packagingOptions {
-        pickFirst '**/libhermes.so'
-        pickFirst '**/libhermes_executor.so'
-    }
 }
 
 dependencies {

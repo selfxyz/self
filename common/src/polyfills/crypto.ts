@@ -78,25 +78,27 @@ function createHmac(algorithm: string, key: string | Uint8Array) {
   }
 
   const keyBytes = typeof key === 'string' ? new TextEncoder().encode(key) : key;
+  const hmacState = hmac.create(hashFn, keyBytes);
+  let cachedResult: Uint8Array | null = null;
 
   return {
     update(data: string | Uint8Array) {
       const dataBytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-      this._result = hmac(hashFn, keyBytes, dataBytes);
+      hmacState.update(dataBytes);
+      cachedResult = null; // Clear cache when new data is added
       return this;
     },
     digest(encoding?: string) {
-      if (!this._result) {
-        throw new Error('Cannot digest without update');
+      if (!cachedResult) {
+        cachedResult = hmacState.digest();
       }
       if (encoding === 'hex') {
-        return Array.from(this._result)
+        return Array.from(cachedResult)
           .map((b: number) => b.toString(16).padStart(2, '0'))
           .join('');
       }
-      return this._result;
+      return cachedResult;
     },
-    _result: null as Uint8Array | null,
   };
 }
 

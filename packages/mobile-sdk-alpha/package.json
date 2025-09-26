@@ -87,7 +87,6 @@
     "@babel/runtime": "^7.28.3",
     "@selfxyz/common": "workspace:^",
     "socket.io-client": "^4.8.1",
-    "tamagui": "1.126.14",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
@@ -95,7 +94,6 @@
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
-    "@types/react-native-web": "^0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^8.57.0",
@@ -112,13 +110,20 @@
     "react-dom": "^18.3.1",
     "react-native": "0.76.9",
     "react-native-web": "^0.21.1",
+    "tamagui": "1.126.14",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",
     "vitest": "^1.6.0"
   },
   "peerDependencies": {
     "react": "^18.3.1",
-    "react-native": "0.76.9"
+    "react-native": "0.76.9",
+    "tamagui": "1.126.x"
+  },
+  "peerDependenciesMeta": {
+    "tamagui": {
+      "optional": false
+    }
   },
   "packageManager": "yarn@4.6.0",
   "publishConfig": {
