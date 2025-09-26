@@ -129,7 +129,7 @@ class PassportReader: NSObject {
 
       do {
         let password: String
-        var passwordType: PACEPasswordType
+        var passwordType:PACEPasswordType
         if useCANBool {
           if canNumber.count != 6 {
             reject("E_PASSPORT_READ", "CAN number must be 6 digits", nil)
@@ -151,6 +151,7 @@ class PassportReader: NSObject {
           skipCA: skipCABool,
           skipPACE: skipPACEBool,
           useExtendedMode: extendedModeBool,
+          usePacePolling: usePacePollingBool,
           customDisplayMessage: customMessageHandler
         )
 
@@ -336,6 +337,15 @@ func serializePublicKey(_ publicKey: SecKey) -> String? {
     return publicKeyData.base64EncodedString()
 }
 
+  func serializeSignature(from sod: SOD) -> String? {
+    do {
+      let signature = try sod.getSignature()
+      return signature.base64EncodedString()
+    } catch {
+      //print("Error extracting signature: \(error)")
+      return nil
+    }
+  }
 
   func serializeX509Wrapper(_ certificate: X509Wrapper?) -> String? {
     guard let certificate = certificate else { return nil }
@@ -445,19 +455,6 @@ class PassportReader: NSObject {
     @objc
     static func requiresMainQueueSetup() -> Bool {
         return true
-    }
-
-}
-#endif
-
-#if !E2E_TESTING
-func serializeSignature(from sod: SOD) -> String? {
-    do {
-        let signature = try sod.getSignature()
-        return signature.base64EncodedString()
-    } catch {
-        //print("Error extracting signature: \(error)")
-        return nil
     }
 }
 #endif
