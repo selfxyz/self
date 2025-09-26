@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback } from 'react';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View } from 'tamagui';
 
 import { getSKIPEM } from '@selfxyz/common/utils/csca';
 import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core';

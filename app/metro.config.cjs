@@ -98,7 +98,7 @@ const config = {
     },
 
     // Support package exports with conditions
-    unstable_conditionNames: ['require', 'react-native'],
+    unstable_conditionNames: ['react-native', 'import', 'require'],
 
     // SVG support
     assetExts: assetExts.filter(ext => ext !== 'svg'),
@@ -116,11 +116,9 @@ const config = {
         try {
           return {
             type: 'sourceFile',
-            filePath: path.resolve(
-              projectRoot,
-              'node_modules',
-              appLevelModules[moduleName],
-            ),
+            filePath: require.resolve(appLevelModules[moduleName], {
+              paths: [projectRoot],
+            }),
           };
         } catch (error) {
           console.warn(`Failed to resolve ${moduleName}:`, error);

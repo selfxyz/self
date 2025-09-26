@@ -8,11 +8,13 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2021,
     sourceType: 'module',
-    ecmaFeatures: { jsx: false },
+    ecmaFeatures: { jsx: true },
   },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
     'plugin:import/recommended',
     'plugin:import/typescript',
     'plugin:prettier/recommended',
@@ -20,6 +22,9 @@ module.exports = {
   plugins: ['simple-import-sort', 'import', 'sort-exports'],
   ignorePatterns: ['dist/', 'node_modules/'],
   settings: {
+    react: {
+      version: 'detect',
+    },
     'import/resolver': {
       typescript: {
         alwaysTryTypes: true,
@@ -67,6 +72,8 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     // Add prettier rule to show prettier errors as ESLint errors
     'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
+    // Disable prop-types for TypeScript files since we use TypeScript types
+    'react/prop-types': 'off',
   },
   overrides: [
     {
