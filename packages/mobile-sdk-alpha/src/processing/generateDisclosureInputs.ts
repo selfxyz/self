@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCategory, PassportData } from '@selfxyz/common/types/passport';
-import type { SelfApp } from '@selfxyz/common/utils/appType';
-import { generateTEEInputsDiscloseStateless } from '@selfxyz/common/utils/circuits/registerInputs';
+import type { DocumentCategory, PassportData, SelfApp } from '@selfxyz/common';
+import { generateTEEInputsDiscloseStateless } from '@selfxyz/common';
 
 import { useProtocolStore } from '../stores/protocolStore';
 

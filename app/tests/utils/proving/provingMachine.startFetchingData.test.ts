@@ -65,7 +65,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => {
           Object.assign(mockProtocolStoreState, updates),
         ),
         getState: jest.fn(() => mockProtocolStoreState),
-        subscribe: jest.fn(),
+        subscribe: jest.fn(() => jest.fn()),
       },
     ),
     useSelfAppStore: Object.assign(
@@ -76,7 +76,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => {
           Object.assign(mockSelfAppStoreState, updates),
         ),
         getState: jest.fn(() => mockSelfAppStoreState),
-        subscribe: jest.fn(),
+        subscribe: jest.fn(() => jest.fn()),
       },
     ),
   };

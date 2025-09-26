@@ -1,4 +1,13 @@
-export type { AadhaarData, DocumentCategory, IDDocument, PassportData } from './types.js';
+export type {
+  AadhaarData,
+  DeployedCircuits,
+  DocumentCatalog,
+  DocumentCategory,
+  DocumentMetadata,
+  IDDocument,
+  OfacTree,
+  PassportData,
+} from './types.js';
 export type {
   CertificateData,
   PublicKeyDetailsECDSA,
@@ -40,6 +49,7 @@ export {
 } from './proving.js';
 export { extractQRDataFields, getAadharRegistrationWindow } from './aadhaar/utils.js';
 export { formatMrz } from './passports/format.js';
+export { fetchOfacTrees } from './ofac.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
 export {
   genMockIdDoc,
@@ -55,10 +65,11 @@ export {
 export {
   generateTEEInputsAadhaarDisclose,
   generateTEEInputsAadhaarRegister,
+  generateTEEInputsDiscloseStateless,
 } from './circuits/registerInputs.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
 export { getSKIPEM } from './csca.js';
-export { isAadhaarDocument, isMRZDocument } from './types.js';
 export { initElliptic } from './certificate_parsing/elliptic.js';
+export { isAadhaarDocument, isMRZDocument } from './types.js';
 export { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 export { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData.js';

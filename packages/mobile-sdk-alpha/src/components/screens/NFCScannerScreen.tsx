@@ -6,8 +6,7 @@ import { useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { View } from 'tamagui';
 
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { initPassportDataParsing } from '@selfxyz/common/utils/passports/core';
+import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 import { useSelfClient } from '../../context';
 import { MRZInfo, ScanResultNFC } from '../../types/public';
