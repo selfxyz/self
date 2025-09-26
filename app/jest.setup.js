@@ -218,14 +218,14 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
   return {
     // Mock ONLY the UI components that cause React Native issues
     NFCScannerScreen: jest.fn(() => null),
-    QRCodeScreen: jest.fn(() => null), 
+    QRCodeScreen: jest.fn(() => null),
     MRZScannerView: jest.fn(() => null),
     SelfClientProvider: jest.fn(({ children }) => children),
-    
+
     // Mock client creation but with realistic behavior
     useSelfClient: jest.fn(() => mockSelfClientInstance),
     createSelfClient: jest.fn(() => mockSelfClientInstance),
-    
+
     // PRESERVE all real business logic by importing actual implementations
     // Note: We'd need to import these individually to avoid the UI component chain
     isPassportDataValid: jest.fn((data, callbacks) => {
@@ -239,11 +239,11 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
       }
       return data.valid !== false;
     }),
-    
+
     // Preserve real event constants
     SdkEvents: {
       DOCUMENT_SELECTED: 'DOCUMENT_SELECTED',
-      DOCUMENT_LOADED: 'DOCUMENT_LOADED', 
+      DOCUMENT_LOADED: 'DOCUMENT_LOADED',
       REGISTRATION_COMPLETED: 'REGISTRATION_COMPLETED',
       PROVING_PASSPORT_DATA_NOT_FOUND: 'PROVING_PASSPORT_DATA_NOT_FOUND',
       PROVING_PASSPORT_NOT_SUPPORTED: 'PROVING_PASSPORT_NOT_SUPPORTED',
@@ -251,7 +251,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
       PROVING_ACCOUNT_VERIFIED_SUCCESS: 'PROVING_ACCOUNT_VERIFIED_SUCCESS',
       PROVING_REGISTER_ERROR_OR_FAILURE: 'PROVING_REGISTER_ERROR_OR_FAILURE',
     },
-    
+
     // Preserve utilities
     createListenersMap: jest.fn(() => ({
       map: new Map(),
@@ -267,7 +267,7 @@ jest.mock('tamagui', () => ({
   Text: 'Text',
   Button: 'Button',
   Stack: 'Stack',
-  XStack: 'XStack', 
+  XStack: 'XStack',
   YStack: 'YStack',
   ScrollView: 'ScrollView',
   Card: 'Card',
