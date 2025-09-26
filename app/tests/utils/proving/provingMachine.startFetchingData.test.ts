@@ -61,19 +61,23 @@ jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => {
       jest.fn(() => mockProtocolStoreState),
       {
         // Add Zustand store methods with state management
-        setState: jest.fn((updates) => Object.assign(mockProtocolStoreState, updates)),
+        setState: jest.fn(updates =>
+          Object.assign(mockProtocolStoreState, updates),
+        ),
         getState: jest.fn(() => mockProtocolStoreState),
         subscribe: jest.fn(),
-      }
+      },
     ),
     useSelfAppStore: Object.assign(
       jest.fn(() => mockSelfAppStoreState),
       {
         // Add Zustand store methods with state management
-        setState: jest.fn((updates) => Object.assign(mockSelfAppStoreState, updates)),
+        setState: jest.fn(updates =>
+          Object.assign(mockSelfAppStoreState, updates),
+        ),
         getState: jest.fn(() => mockSelfAppStoreState),
         subscribe: jest.fn(),
-      }
+      },
     ),
   };
 });

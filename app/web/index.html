@@ -12,10 +12,11 @@
       }
     </script>
     <script type="module">
-      import { Buffer } from 'https://unpkg.com/buffer@6.0.3/index.js';
+      // Import Buffer from the bundled dependency (safer than CDN)
+      import { Buffer } from 'buffer';
       window.Buffer = Buffer;
       globalThis.Buffer = Buffer;
-      // Create a buffer external mapping
+      // Create a buffer external mapping for modules that expect it
       window.__vite_browser_external = {
         buffer: { Buffer },
       };

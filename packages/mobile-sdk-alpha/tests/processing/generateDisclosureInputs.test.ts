@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PassportData, SelfApp } from '@selfxyz/common';
 
-import { generateTEEInputsDisclose } from '../../src/processing/generate-disclosure-inputs';
+import { generateTEEInputsDisclose } from '../../src/processing/generateDisclosureInputs';
 import { useProtocolStore } from '../../src/stores/protocolStore';
 // Mocks for dependencies
 const mockSecret = '0x' + '00'.repeat(30) + 'a4ec'; // 32-byte hex string
