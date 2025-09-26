@@ -50,7 +50,7 @@ function createHash(algorithm: string) {
       const result = hasher.digest();
       if (encoding === 'hex') {
         return Array.from(result)
-          .map(b => b.toString(16).padStart(2, '0'))
+          .map((b: number) => b.toString(16).padStart(2, '0'))
           .join('');
       }
       return result;
@@ -77,13 +77,11 @@ function createHmac(algorithm: string, key: string | Uint8Array) {
       throw new Error(`Unsupported HMAC algorithm: ${algorithm}`);
   }
 
-  const keyBytes =
-    typeof key === 'string' ? new TextEncoder().encode(key) : key;
+  const keyBytes = typeof key === 'string' ? new TextEncoder().encode(key) : key;
 
   return {
     update(data: string | Uint8Array) {
-      const dataBytes =
-        typeof data === 'string' ? new TextEncoder().encode(data) : data;
+      const dataBytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
       this._result = hmac(hashFn, keyBytes, dataBytes);
       return this;
     },
@@ -93,7 +91,7 @@ function createHmac(algorithm: string, key: string | Uint8Array) {
       }
       if (encoding === 'hex') {
         return Array.from(this._result)
-          .map(b => b.toString(16).padStart(2, '0'))
+          .map((b: number) => b.toString(16).padStart(2, '0'))
           .join('');
       }
       return this._result;
@@ -114,14 +112,11 @@ function pbkdf2Sync(
   salt: string | Uint8Array,
   iterations: number,
   keylen: number,
-  digest: string,
+  digest: string
 ): Uint8Array {
   const passwordBytes =
-    typeof password === 'string'
-      ? new TextEncoder().encode(password)
-      : password;
-  const saltBytes =
-    typeof salt === 'string' ? new TextEncoder().encode(salt) : salt;
+    typeof password === 'string' ? new TextEncoder().encode(password) : password;
+  const saltBytes = typeof salt === 'string' ? new TextEncoder().encode(salt) : salt;
 
   let hashFn: any;
   switch (digest.toLowerCase()) {

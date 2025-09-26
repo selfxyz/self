@@ -132,6 +132,18 @@ jest.mock('@selfxyz/common', () => ({
     firstName: 'John',
     lastName: 'Doe',
   }),
+  cryptoPolyfill: {
+    createHash: jest.fn().mockReturnValue({
+      update: jest.fn().mockReturnThis(),
+      digest: jest.fn().mockReturnValue('mocked-hash'),
+    }),
+    createHmac: jest.fn().mockReturnValue({
+      update: jest.fn().mockReturnThis(),
+      digest: jest.fn().mockReturnValue('mocked-hmac'),
+    }),
+    randomBytes: jest.fn().mockImplementation(size => new Uint8Array(size)),
+    pbkdf2Sync: jest.fn().mockImplementation(() => new Uint8Array(32)),
+  },
 }));
 
 // Mock @selfxyz/mobile-sdk-alpha

@@ -218,7 +218,7 @@ const config = {
       }
 
       const nodeModuleRedirects = {
-        crypto: path.resolve(__dirname, 'src/utils/crypto-polyfill.ts'),
+        crypto: path.resolve(__dirname, '../common/src/polyfills/crypto.ts'),
         fs: false, // Disable filesystem access
         os: false, // Disable OS-specific modules
         readline: false, // Disable readline module

@@ -7091,6 +7091,7 @@ __metadata:
   resolution: "@selfxyz/common@workspace:common"
   dependencies:
     "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1"
+    "@noble/hashes": "npm:^1.5.0"
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
@@ -23778,6 +23779,7 @@ __metadata:
     assert: "npm:^2.1.0"
     babel-jest: "npm:^29.6.3"
     buffer: "npm:^6.0.3"
+    constants-browserify: "npm:^1.0.0"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^10.1.8"
     eslint-plugin-import: "npm:^2.32.0"

@@ -54,7 +54,7 @@ const config = {
       // Fix ffjavascript resolution for snarkjs dependencies
       ffjavascript: path.resolve(__dirname, '../../node_modules/ffjavascript/build/main.cjs'),
       // Crypto polyfills - use custom polyfill with @noble/hashes
-      crypto: path.resolve(__dirname, 'crypto-polyfill.js'),
+      crypto: path.resolve(__dirname, 'src/polyfills/cryptoPolyfill.js'),
       stream: require.resolve('stream-browserify'),
       buffer: require.resolve('buffer'),
       util: require.resolve('util'),
@@ -64,11 +64,11 @@ const config = {
     resolveRequest: (context, moduleName, platform) => {
       // Handle problematic Node.js modules that don't work in React Native
       const nodeModuleRedirects = {
-        crypto: path.resolve(__dirname, 'crypto-polyfill.js'),
+        crypto: path.resolve(__dirname, 'src/polyfills/cryptoPolyfill.js'),
         fs: false, // Disable filesystem access
         os: false, // Disable OS-specific modules
         readline: false, // Disable readline (pulls in events)
-        constants: path.resolve(__dirname, 'constants-polyfill.js'),
+        constants: require.resolve('constants-browserify'),
         'web-worker': false, // Disable web workers (not supported in React Native)
       };
 

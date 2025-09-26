@@ -10,7 +10,7 @@ import { Text, YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 
-import { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types';
+import { IDDocument } from '@selfxyz/common/utils/types';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';

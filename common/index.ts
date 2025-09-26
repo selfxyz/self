@@ -86,6 +86,15 @@ export {
   stringToBigInt,
 } from './src/utils/index.js';
 
+// Crypto polyfill for cross-platform compatibility
+export {
+  createHash,
+  createHmac,
+  default as cryptoPolyfill,
+  pbkdf2Sync,
+  randomBytes,
+} from './src/polyfills/crypto.js';
+
 export { createSelector } from './src/utils/aadhaar/constants.js';
 
 // Hash utilities

@@ -51,7 +51,7 @@ export default defineConfig({
         'src/mocks/react-native-passport-reader.ts',
       ),
       '@/utils/nfcScanner': resolve(__dirname, 'src/mocks/nfcScanner.ts'),
-      crypto: resolve(__dirname, 'src/utils/crypto-polyfill.ts'),
+      crypto: resolve(__dirname, '../common/src/polyfills/crypto.ts'),
       buffer: 'buffer',
     },
   },

@@ -6,11 +6,11 @@ import type { FC } from 'react';
 import { Dimensions } from 'react-native';
 import { Separator, Text, XStack, YStack } from 'tamagui';
 
+import type { AadhaarData } from '@selfxyz/common';
 import {
   attributeToPosition,
   attributeToPosition_ID,
 } from '@selfxyz/common/constants';
-import type { AadhaarData } from '@selfxyz/common/types/certificates';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 
