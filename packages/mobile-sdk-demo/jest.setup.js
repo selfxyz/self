@@ -94,29 +94,33 @@ jest.mock('@react-native-picker/picker', () => ({
 
 // Mock ethers
 jest.mock('ethers', () => {
-  const mockRandomBytes = jest.fn(len => new Uint8Array(len));
-  const mockHash = jest.fn(() => '0x' + 'a'.repeat(64));
-  const mockSha512 = jest.fn(() => '0x' + 'a'.repeat(128));
+  const mockRandomBytes = jest.fn().mockImplementation(length => new Uint8Array(length));
+  mockRandomBytes.register = jest.fn();
 
-  const E = {
-    Wallet: jest.fn().mockImplementation(() => ({
-      address: '0x1234567890123456789012345678901234567890',
-      signMessage: jest.fn().mockResolvedValue('0xsignature'),
-    })),
-    JsonRpcProvider: jest.fn().mockImplementation(() => ({
-      getNetwork: jest.fn().mockResolvedValue({ chainId: 1 }),
-    })),
-    randomBytes: mockRandomBytes,
-    computeHmac: mockHash,
-    pbkdf2: mockHash,
-    sha256: mockHash,
-    sha512: mockSha512,
-    ripemd160: mockHash,
-    scrypt: mockHash,
+  const mockHashFunction = jest.fn().mockImplementation(() => '0x' + 'a'.repeat(64));
+  mockHashFunction.register = jest.fn();
+
+  const mockSha512Function = jest.fn().mockImplementation(() => '0x' + 'a'.repeat(128));
+  mockSha512Function.register = jest.fn();
+
+  return {
+    ethers: {
+      Wallet: jest.fn().mockImplementation(() => ({
+        address: '0x1234567890123456789012345678901234567890',
+        signMessage: jest.fn().mockResolvedValue('0xsignature'),
+      })),
+      JsonRpcProvider: jest.fn().mockImplementation(() => ({
+        getNetwork: jest.fn().mockResolvedValue({ chainId: 1 }),
+      })),
+      randomBytes: mockRandomBytes,
+      computeHmac: mockHashFunction,
+      pbkdf2: mockHashFunction,
+      sha256: mockHashFunction,
+      sha512: mockSha512Function,
+      ripemd160: mockHashFunction,
+      scrypt: mockHashFunction,
+    },
   };
-
-  E.ethers = E; // support `import { ethers } from 'ethers'`
-  return E;
 });
 
 // Mock @selfxyz/common

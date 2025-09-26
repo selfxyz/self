@@ -182,26 +182,68 @@ jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter', () => {
   };
 });
 
-// Note: @selfxyz/mobile-sdk-alpha is NOT mocked to allow testing real package methods
-// This is intentional for the mobile-sdk-alpha migration testing
+// Mock problematic mobile-sdk-alpha components that use React Native StyleSheet
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  NFCScannerScreen: jest.fn(() => null),
+  SelfClientProvider: jest.fn(({ children }) => children),
+  useSelfClient: jest.fn(() => {
+    // Create a consistent mock instance for memoization testing
+    if (!global.mockSelfClientInstance) {
+      global.mockSelfClientInstance = {
+        // Mock selfClient object with common methods
+        connect: jest.fn(),
+        disconnect: jest.fn(),
+        isConnected: false,
+        extractMRZInfo: jest.fn(mrzString => {
+          // Mock extractMRZInfo with realistic behavior
+          if (!mrzString || typeof mrzString !== 'string') {
+            throw new Error('Invalid MRZ string provided');
+          }
 
-// SURGICAL SDK MOCK: Only mock UI components, preserve ALL business logic
-// This approach respects the testing philosophy while handling React Native limitations
-jest.mock('@selfxyz/mobile-sdk-alpha', () => {
-  // Mock implementation that preserves real business logic
-  const mockSelfClientInstance = {
+          // Valid MRZ example from the test
+          if (mrzString.includes('L898902C3')) {
+            return {
+              documentNumber: 'L898902C3',
+              validation: {
+                overall: true,
+              },
+              // Add other expected MRZ fields
+              firstName: 'ANNA',
+              lastName: 'ERIKSSON',
+              nationality: 'UTO',
+              dateOfBirth: '740812',
+              sex: 'F',
+              expirationDate: '120415',
+            };
+          }
+
+          // For malformed/invalid MRZ strings, throw an error
+          throw new Error('Invalid MRZ format');
+        }),
+        trackEvent: jest.fn(),
+      };
+    }
+    return global.mockSelfClientInstance;
+  }),
+  createSelfClient: jest.fn(() => ({
+    // Mock createSelfClient return value
     connect: jest.fn(),
     disconnect: jest.fn(),
     isConnected: false,
     extractMRZInfo: jest.fn(mrzString => {
-      // Import and use the REAL extractMRZInfo logic (not mocked)
+      // Mock extractMRZInfo with realistic behavior
       if (!mrzString || typeof mrzString !== 'string') {
         throw new Error('Invalid MRZ string provided');
       }
+
+      // Valid MRZ example from the test
       if (mrzString.includes('L898902C3')) {
         return {
           documentNumber: 'L898902C3',
-          validation: { overall: true },
+          validation: {
+            overall: true,
+          },
+          // Add other expected MRZ fields
           firstName: 'ANNA',
           lastName: 'ERIKSSON',
           nationality: 'UTO',
@@ -210,81 +252,39 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
           expirationDate: '120415',
         };
       }
+
+      // For malformed/invalid MRZ strings, throw an error
       throw new Error('Invalid MRZ format');
     }),
     trackEvent: jest.fn(),
-  };
-
-  return {
-    // Mock ONLY the UI components that cause React Native issues
-    NFCScannerScreen: jest.fn(() => null),
-    QRCodeScreen: jest.fn(() => null),
-    MRZScannerView: jest.fn(() => null),
-    SelfClientProvider: jest.fn(({ children }) => children),
-
-    // Mock client creation but with realistic behavior
-    useSelfClient: jest.fn(() => mockSelfClientInstance),
-    createSelfClient: jest.fn(() => mockSelfClientInstance),
-
-    // PRESERVE all real business logic by importing actual implementations
-    // Note: We'd need to import these individually to avoid the UI component chain
-    isPassportDataValid: jest.fn((data, callbacks) => {
-      // This should eventually use the real implementation
-      // For now, realistic mock behavior
-      if (!data || !data.passportMetadata) {
-        if (callbacks?.onPassportMetadataNull) {
-          callbacks.onPassportMetadataNull();
-        }
-        return false;
+  })),
+  createListenersMap: jest.fn(() => ({
+    // Mock createListenersMap return value
+    map: new Map(),
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
+  })),
+  isPassportDataValid: jest.fn((data, callbacks) => {
+    // Mock validation function with realistic behavior
+    if (!data || !data.passportMetadata) {
+      // Call appropriate callbacks for missing data
+      if (callbacks?.onPassportMetadataNull) {
+        callbacks.onPassportMetadataNull();
       }
-      return data.valid !== false;
-    }),
-
-    // Preserve real event constants
-    SdkEvents: {
-      DOCUMENT_SELECTED: 'DOCUMENT_SELECTED',
-      DOCUMENT_LOADED: 'DOCUMENT_LOADED',
-      REGISTRATION_COMPLETED: 'REGISTRATION_COMPLETED',
-      PROVING_PASSPORT_DATA_NOT_FOUND: 'PROVING_PASSPORT_DATA_NOT_FOUND',
-      PROVING_PASSPORT_NOT_SUPPORTED: 'PROVING_PASSPORT_NOT_SUPPORTED',
-      PROVING_ACCOUNT_RECOVERY_REQUIRED: 'PROVING_ACCOUNT_RECOVERY_REQUIRED',
-      PROVING_ACCOUNT_VERIFIED_SUCCESS: 'PROVING_ACCOUNT_VERIFIED_SUCCESS',
-      PROVING_REGISTER_ERROR_OR_FAILURE: 'PROVING_REGISTER_ERROR_OR_FAILURE',
-    },
-
-    // Preserve utilities
-    createListenersMap: jest.fn(() => ({
-      map: new Map(),
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-    })),
-  };
-});
-
-// Mock Tamagui components that cause NativeEventEmitter issues in Jest
-jest.mock('tamagui', () => ({
-  View: 'View',
-  Text: 'Text',
-  Button: 'Button',
-  Stack: 'Stack',
-  XStack: 'XStack',
-  YStack: 'YStack',
-  ScrollView: 'ScrollView',
-  Card: 'Card',
-  Input: 'Input',
-  Label: 'Label',
-  Separator: 'Separator',
-  Sheet: 'Sheet',
-  Dialog: 'Dialog',
-  AlertDialog: 'AlertDialog',
-  Popover: 'Popover',
-  Tooltip: 'Tooltip',
-  createTamagui: jest.fn(() => ({})),
-  TamaguiProvider: ({ children }) => children,
-  Theme: ({ children }) => children,
-  styled: jest.fn(() => () => null),
-  useTheme: jest.fn(() => ({})),
-  getTokens: jest.fn(() => ({})),
+      return false;
+    }
+    // Return true for valid data, false for invalid
+    return data.valid !== false;
+  }),
+  SdkEvents: {
+    // Mock SDK events object
+    PROVING_PASSPORT_DATA_NOT_FOUND: 'PROVING_PASSPORT_DATA_NOT_FOUND',
+    PROVING_STARTED: 'PROVING_STARTED',
+    PROVING_COMPLETED: 'PROVING_COMPLETED',
+    PROVING_FAILED: 'PROVING_FAILED',
+    // Add other events as needed
+  },
+  // Add other components and hooks as needed
 }));
 
 // Mock Sentry to prevent NativeModule.getConstants errors
