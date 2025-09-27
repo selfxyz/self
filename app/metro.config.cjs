@@ -182,7 +182,10 @@ const config = {
             };
           } else {
             // For other imports like 'sha256', 'hmac', etc., try the main directory
-            const subpathFile = path.join(path.dirname(basePath), `${subpath}.js`);
+            const subpathFile = path.join(
+              path.dirname(basePath),
+              `${subpath}.js`,
+            );
             return {
               type: 'sourceFile',
               filePath: subpathFile,
@@ -200,7 +203,11 @@ const config = {
       // Fix snarkjs and ffjavascript platform exports for Android
       if (platform === 'android') {
         // Handle snarkjs and its nested dependencies that have platform export issues
-        if (moduleName.includes('/snarkjs') && (moduleName.endsWith('/snarkjs') || moduleName.includes('/snarkjs/node_modules'))) {
+        if (
+          moduleName.includes('/snarkjs') &&
+          (moduleName.endsWith('/snarkjs') ||
+            moduleName.includes('/snarkjs/node_modules'))
+        ) {
           try {
             // Try to resolve the main package file
             const packagePath = moduleName.split('/node_modules/').pop();
@@ -223,7 +230,10 @@ const config = {
         }
 
         // Handle ffjavascript from any nested location
-        if (moduleName.includes('/ffjavascript') && moduleName.endsWith('/ffjavascript')) {
+        if (
+          moduleName.includes('/ffjavascript') &&
+          moduleName.endsWith('/ffjavascript')
+        ) {
           try {
             // Try to resolve ffjavascript from the specific nested location first
             const resolved = require.resolve(moduleName);
