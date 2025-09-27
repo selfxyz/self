@@ -139,7 +139,7 @@ function pbkdf2Sync(
   iterations: number,
   keylen: number,
   digest: string
-): Uint8Array {
+): Uint8Array | Buffer {
   const passwordBytes =
     typeof password === 'string' ? new TextEncoder().encode(password) : password;
   const saltBytes = typeof salt === 'string' ? new TextEncoder().encode(salt) : salt;
@@ -159,10 +159,11 @@ function pbkdf2Sync(
       throw new Error(`Unsupported PBKDF2 digest: ${digest}`);
   }
 
-  return noblePbkdf2(hashFn, passwordBytes, saltBytes, {
+  const derivedKey = noblePbkdf2(hashFn, passwordBytes, saltBytes, {
     c: iterations,
     dkLen: keylen,
   });
+  return typeof Buffer !== 'undefined' ? Buffer.from(derivedKey) : derivedKey;
 }
 
 // Export crypto-like interface
