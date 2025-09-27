@@ -6,15 +6,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '../../src/mock/generator';
 
-// Mock the exact subpath modules used by src/mock/generator.ts
-vi.mock('@selfxyz/common/utils/csca', () => ({
-  getSKIPEM: vi.fn(),
-}));
-vi.mock('@selfxyz/common/utils/passports/genMockIdDoc', () => ({
+// Mock the @selfxyz/common module to match the actual import path used in generator.ts
+vi.mock('@selfxyz/common', () => ({
   generateMockDSC: vi.fn(),
   genMockIdDoc: vi.fn(),
-}));
-vi.mock('@selfxyz/common/utils/passports/core', () => ({
+  getSKIPEM: vi.fn(),
   initPassportDataParsing: vi.fn(),
 }));
 
@@ -81,10 +77,8 @@ describe('generateMockDocument', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    // Import the mocked functions from the same subpaths used by the implementation
-    ({ getSKIPEM } = await import('@selfxyz/common/utils/csca'));
-    ({ generateMockDSC, genMockIdDoc } = await import('@selfxyz/common/utils/passports/genMockIdDoc'));
-    ({ initPassportDataParsing } = await import('@selfxyz/common/utils/passports/core'));
+    // Import the mocked functions from the same path used by the implementation
+    ({ getSKIPEM, generateMockDSC, genMockIdDoc, initPassportDataParsing } = await import('@selfxyz/common'));
 
     // Setup default mocks with proper types
     vi.mocked(getSKIPEM).mockResolvedValue({ 'mock-key': 'mock-ski-pem' });
@@ -400,10 +394,8 @@ describe('generateMockDocument integration', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    // Import the mocked functions from the same subpaths used by the implementation
-    ({ getSKIPEM } = await import('@selfxyz/common/utils/csca'));
-    ({ generateMockDSC, genMockIdDoc } = await import('@selfxyz/common/utils/passports/genMockIdDoc'));
-    ({ initPassportDataParsing } = await import('@selfxyz/common/utils/passports/core'));
+    // Import the mocked functions from the same path used by the implementation
+    ({ getSKIPEM, generateMockDSC, genMockIdDoc, initPassportDataParsing } = await import('@selfxyz/common'));
 
     // Setup default mocks with proper types
     vi.mocked(getSKIPEM).mockResolvedValue({ 'mock-key': 'mock-ski-pem' });
