@@ -11,15 +11,15 @@
     "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
     "build": "tsc -p tsconfig.json --noEmit --pretty false",
     "clean": "rm -rf ios/build android/app/build android/build && cd android && ./gradlew clean && cd ..",
-    "preios": "yarn prebuild",
-    "ios": "react-native run-ios",
-    "start": "react-native start",
-    "test": "jest",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
+    "preios": "yarn prebuild",
+    "ios": "react-native run-ios",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "nice": "yarn lint:fix && yarn fmt:fix"
+    "nice": "yarn lint:fix && yarn fmt:fix",
+    "start": "react-native start",
+    "test": "jest"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",

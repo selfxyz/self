@@ -245,7 +245,7 @@ const config = {
       const optionalPeerDependencies = [
         'react-native-reanimated',
         '@react-native-masked-view/masked-view',
-        '@react-native-firebase/analytics'
+        '@react-native-firebase/analytics',
       ];
 
       if (optionalPeerDependencies.includes(moduleName)) {
