@@ -7,7 +7,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
+    "skipDefaultLibCheck": false,
     "paths": {
       "@env": ["./env.ts"],
       "@selfxyz/mobile-sdk-alpha": [
@@ -17,7 +17,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "declarations.d.ts"],
+  "include": ["src/**/*"],
   "exclude": [
     "*.config.cjs",
     "*.config.js",

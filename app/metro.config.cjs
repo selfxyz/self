@@ -241,10 +241,27 @@ const config = {
         };
       }
 
+      // Handle optional peer dependencies by returning empty modules
+      const optionalPeerDependencies = [
+        'react-native-reanimated',
+        '@react-native-masked-view/masked-view',
+        '@react-native-firebase/analytics'
+      ];
+
+      if (optionalPeerDependencies.includes(moduleName)) {
+        // Return empty module for optional peer dependencies
+        return { type: 'empty' };
+      }
+
       // Fall back to default Metro resolver for all other modules
       try {
         return context.resolveRequest(context, moduleName, platform);
       } catch (error) {
+        // Check if this is one of our expected optional dependencies
+        if (optionalPeerDependencies.some(dep => moduleName.includes(dep))) {
+          return { type: 'empty' };
+        }
+
         // If default resolution fails, log and re-throw
         console.warn(
           `Metro resolver failed for module "${moduleName}":`,

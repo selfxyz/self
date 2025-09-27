@@ -2,12 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-declare global {
-  /**
-   * React Native development mode flag
-   * Set to true when running in development mode, false in production
-   */
-  const __DEV__: boolean;
-}
+// This file is for global type declarations
+// __DEV__ is already provided by React Native types, so we don't redeclare it
 
 export {};
