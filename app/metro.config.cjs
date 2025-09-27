@@ -166,51 +166,96 @@ const config = {
         }
       }
 
-      // Fix @noble/hashes/crypto.js export resolution
-      if (moduleName.endsWith('@noble/hashes/crypto.js')) {
+      // Fix @noble/hashes subpath export resolution
+      if (moduleName.startsWith('@noble/hashes/')) {
         try {
-          // Try to resolve the actual crypto.js file
-          const packagePath = moduleName.replace('/crypto.js', '');
-          const basePath = require.resolve(packagePath);
-          const cryptoPath = path.join(path.dirname(basePath), 'crypto.js');
-          return {
-            type: 'sourceFile',
-            filePath: cryptoPath,
-          };
+          // Extract the subpath (e.g., 'crypto.js', 'sha256', 'hmac')
+          const subpath = moduleName.replace('@noble/hashes/', '');
+          const basePath = require.resolve('@noble/hashes');
+
+          // For .js files, look in the package directory
+          if (subpath.endsWith('.js')) {
+            const subpathFile = path.join(path.dirname(basePath), subpath);
+            return {
+              type: 'sourceFile',
+              filePath: subpathFile,
+            };
+          } else {
+            // For other imports like 'sha256', 'hmac', etc., try the main directory
+            const subpathFile = path.join(path.dirname(basePath), `${subpath}.js`);
+            return {
+              type: 'sourceFile',
+              filePath: subpathFile,
+            };
+          }
         } catch {
-          // Fallback to main package if crypto.js doesn't exist
-          const packagePath = moduleName.replace('/crypto.js', '');
+          // Fallback to main package if subpath doesn't exist
           return {
             type: 'sourceFile',
-            filePath: require.resolve(packagePath),
+            filePath: require.resolve('@noble/hashes'),
           };
         }
       }
 
       // Fix snarkjs and ffjavascript platform exports for Android
       if (platform === 'android') {
-        const platformProblematicPackages = ['snarkjs', 'ffjavascript'];
+        // Handle snarkjs and its nested dependencies that have platform export issues
+        if (moduleName.includes('/snarkjs') && (moduleName.endsWith('/snarkjs') || moduleName.includes('/snarkjs/node_modules'))) {
+          try {
+            // Try to resolve the main package file
+            const packagePath = moduleName.split('/node_modules/').pop();
+            const resolved = require.resolve(packagePath || 'snarkjs');
+            return {
+              type: 'sourceFile',
+              filePath: resolved,
+            };
+          } catch {
+            // Fallback to basic snarkjs resolution
+            try {
+              return {
+                type: 'sourceFile',
+                filePath: require.resolve('snarkjs'),
+              };
+            } catch {
+              // Continue to next check
+            }
+          }
+        }
 
+        // Handle ffjavascript from any nested location
+        if (moduleName.includes('/ffjavascript') && moduleName.endsWith('/ffjavascript')) {
+          try {
+            // Try to resolve ffjavascript from the specific nested location first
+            const resolved = require.resolve(moduleName);
+            return {
+              type: 'sourceFile',
+              filePath: resolved,
+            };
+          } catch {
+            // Fallback to resolving ffjavascript from the closest available location
+            try {
+              const resolved = require.resolve('ffjavascript');
+              return {
+                type: 'sourceFile',
+                filePath: resolved,
+              };
+            } catch {
+              // Continue to next check
+            }
+          }
+        }
+
+        // Handle direct package imports for known problematic packages
+        const platformProblematicPackages = ['snarkjs', 'ffjavascript'];
         for (const pkg of platformProblematicPackages) {
-          // Handle both direct imports and nested imports
           if (moduleName === pkg || moduleName.startsWith(`${pkg}/`)) {
             try {
-              // For nested imports, try to resolve the specific subpath
-              if (moduleName.includes('/')) {
-                const resolved = require.resolve(moduleName);
-                return {
-                  type: 'sourceFile',
-                  filePath: resolved,
-                };
-              } else {
-                // For main package imports
-                return {
-                  type: 'sourceFile',
-                  filePath: require.resolve(pkg),
-                };
-              }
+              return {
+                type: 'sourceFile',
+                filePath: require.resolve(pkg),
+              };
             } catch {
-              // If package can't be resolved, continue to next check
+              // Continue to next check
               continue;
             }
           }

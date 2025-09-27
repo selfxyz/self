@@ -53,6 +53,9 @@ export default defineConfig({
       '@/utils/nfcScanner': resolve(__dirname, 'src/mocks/nfcScanner.ts'),
       crypto: resolve(__dirname, '../common/src/polyfills/crypto.ts'),
       buffer: 'buffer',
+
+      // Fix @noble/hashes subpath exports for web builds
+      '@noble/hashes/crypto.js': '@noble/hashes/crypto',
     },
   },
   plugins: [
