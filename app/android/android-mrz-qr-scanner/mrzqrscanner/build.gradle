@@ -46,4 +46,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
+
+    // Add jj2000 dependency to fix JJ2000Decoder imports (excluded from main app build)
+    implementation 'edu.ucar:jj2000:5.2'
 }
