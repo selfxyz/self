@@ -3,6 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 declare module '*.png' {
-  const content: any;
-  export default content;
+  import type { ImageSourcePropType } from 'react-native';
+
+  const pngContent: ImageSourcePropType;
+  export default pngContent;
 }

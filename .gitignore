@@ -10,6 +10,7 @@ showcase
 output/*
 *.tsbuildinfo
 .yarnrc.yml
+.giga/tasks/*
 package-lock.json
 
 # CI-generated tarballs (don't commit these!)

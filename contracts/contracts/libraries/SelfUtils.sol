@@ -98,4 +98,44 @@ library SelfUtils {
             ofacEnabled: ofacArray
         });
     }
+
+    /**
+     * @notice Convert string to BigInt using ASCII encoding
+     * @dev Converts each character to its ASCII value and packs them into a uint256
+     * @param str The input string (must be ASCII only, max 31 bytes)
+     * @return The resulting BigInt value
+     */
+    function stringToBigInt(string memory str) internal pure returns (uint256) {
+        bytes memory strBytes = bytes(str);
+        require(strBytes.length <= 31, "String too long for BigInt conversion");
+
+        uint256 result = 0;
+        for (uint256 i = 0; i < strBytes.length; i++) {
+            // Ensure ASCII only (0-127)
+            require(uint8(strBytes[i]) <= 127, "Non-ASCII character detected");
+            result = (result << 8) | uint256(uint8(strBytes[i]));
+        }
+        return result;
+    }
+
+    /**
+     * @notice Converts an address to its lowercase hex string representation
+     * @dev Produces a string like "0x1234567890abcdef..." (42 characters total)
+     * @param addr The address to convert
+     * @return The hex string representation of the address
+     */
+    function addressToHexString(address addr) internal pure returns (string memory) {
+        bytes32 value = bytes32(uint256(uint160(addr)));
+        bytes memory alphabet = "0123456789abcdef";
+        bytes memory str = new bytes(42);
+
+        str[0] = "0";
+        str[1] = "x";
+        for (uint256 i = 0; i < 20; i++) {
+            str[2 + i * 2] = alphabet[uint8(value[i + 12] >> 4)];
+            str[3 + i * 2] = alphabet[uint8(value[i + 12] & 0x0f)];
+        }
+
+        return string(str);
+    }
 }

@@ -56,11 +56,9 @@ export {
   sdkError,
 } from './errors';
 
+// Screen Components (React Native-based)
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
-
-// Screen Components
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
-
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
 export { SdkEvents } from './types/events';
@@ -92,10 +90,9 @@ export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
+export { generateTEEInputsDisclose } from './processing/generateDisclosureInputs';
 
 // Documents utils
-
 // Core functions
 export { isPassportDataValid } from './validation/document';
 

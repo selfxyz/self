@@ -16,15 +16,21 @@ jest.mock('@/navigation', () => ({
   },
 }));
 
-jest.mock('@selfxyz/mobile-sdk-alpha', () => {
-  const actual = jest.requireActual('@selfxyz/mobile-sdk-alpha');
-
-  return {
-    ...actual,
-    loadSelectedDocument: jest.fn().mockResolvedValue(null),
-    hasAnyValidRegisteredDocument: jest.fn().mockResolvedValue(true),
-  };
-});
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  // Mock only the exports needed by this test
+  SdkEvents: {
+    DOCUMENT_SELECTED: 'DOCUMENT_SELECTED',
+    DOCUMENT_LOADED: 'DOCUMENT_LOADED',
+    REGISTRATION_COMPLETED: 'REGISTRATION_COMPLETED',
+    PROVING_PASSPORT_DATA_NOT_FOUND: 'PROVING_PASSPORT_DATA_NOT_FOUND',
+    PROVING_PASSPORT_NOT_SUPPORTED: 'PROVING_PASSPORT_NOT_SUPPORTED',
+    PROVING_ACCOUNT_RECOVERY_REQUIRED: 'PROVING_ACCOUNT_RECOVERY_REQUIRED',
+    PROVING_ACCOUNT_VERIFIED_SUCCESS: 'PROVING_ACCOUNT_VERIFIED_SUCCESS',
+    PROVING_REGISTER_ERROR_OR_FAILURE: 'PROVING_REGISTER_ERROR_OR_FAILURE',
+  },
+  loadSelectedDocument: jest.fn().mockResolvedValue(null),
+  hasAnyValidRegisteredDocument: jest.fn().mockResolvedValue(true),
+}));
 
 describe('provingMachine registration completion', () => {
   beforeEach(() => {

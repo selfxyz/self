@@ -50,10 +50,30 @@ export default defineConfig({
         __dirname,
         'src/mocks/react-native-passport-reader.ts',
       ),
-      crypto: 'crypto-browserify',
+      '@/utils/nfcScanner': resolve(__dirname, 'src/mocks/nfcScanner.ts'),
+      crypto: resolve(__dirname, '../common/src/polyfills/crypto.ts'),
+      buffer: 'buffer',
+
+      // Fix @noble/hashes subpath exports for web builds
+      '@noble/hashes/crypto.js': '@noble/hashes/crypto',
     },
   },
   plugins: [
+    {
+      name: 'fix-buffer-externalization',
+      transform(code, id) {
+        // Fix the mobile-sdk-alpha chunk that references Buffer
+        if (id.includes('mobile-sdk-alpha') && code.includes('from "buffer"')) {
+          // Keep the import so the polyfill is bundled, and set global assignment
+          const fixedCode = code.replace(
+            /import\s+\{\s*Buffer\s*\}\s+from\s+['"]buffer['"]/g,
+            "import { Buffer } from 'buffer';\nif (typeof globalThis.Buffer === 'undefined') { globalThis.Buffer = Buffer; }",
+          );
+          return { code: fixedCode, map: null };
+        }
+        return null;
+      },
+    },
     react(),
     svgr({
       include: '**/*.svg',
@@ -85,6 +105,7 @@ export default defineConfig({
     global: 'globalThis',
   },
   optimizeDeps: {
+    include: ['buffer'],
     exclude: ['fs', 'path', 'child_process', '@zk-email/helpers'],
     esbuildOptions: {
       // Optimize minification
@@ -93,7 +114,6 @@ export default defineConfig({
       minifyWhitespace: true,
     },
   },
-
   build: {
     emptyOutDir: true,
     outDir: resolve(__dirname, 'web/dist'),
@@ -103,7 +123,7 @@ export default defineConfig({
     cssMinify: true,
     cssCodeSplit: true,
     rollupOptions: {
-      external: ['fs', 'child_process'],
+      external: ['fs', 'child_process', '@zk-email/helpers'],
       output: {
         // Optimize chunk size and minification
         compact: true,

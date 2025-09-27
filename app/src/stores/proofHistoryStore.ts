@@ -8,8 +8,8 @@ import { create } from 'zustand';
 import { WS_DB_RELAYER } from '@selfxyz/common/constants';
 
 import { database } from '@/stores/database';
-import type { ProofHistory } from '@/stores/proof-types';
-import { ProofStatus } from '@/stores/proof-types';
+import type { ProofHistory } from '@/stores/proofTypes';
+import { ProofStatus } from '@/stores/proofTypes';
 
 interface ProofHistoryState {
   proofHistory: ProofHistory[];

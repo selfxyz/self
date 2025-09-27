@@ -27,16 +27,16 @@ if linkage != nil
 end
 
 def using_https_git_auth?
-    begin
-      # backticks run command in shell and capture stdout, 2>&1 captures stderr as well
-      auth_data = `gh auth status 2>&1`
-      auth_data.include?('Logged in to github.com account') &&
-        auth_data.include?('Git operations protocol: https')
-    rescue => e
-      puts 'gh auth status failed, assuming no HTTPS auth -- will try SSH'
-      false
-    end
+  begin
+    # backticks run command in shell and capture stdout, 2>&1 captures stderr as well
+    auth_data = `gh auth status 2>&1`
+    auth_data.include?("Logged in to github.com account") &&
+      auth_data.include?("Git operations protocol: https")
+  rescue => e
+    puts "gh auth status failed, assuming no HTTPS auth -- will try SSH"
+    false
   end
+end
 
 target "Self" do
   config = use_native_modules!
@@ -72,7 +72,7 @@ target "Self" do
   pod "lottie-ios"
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
   pod "Mixpanel-swift", "~> 5.0.0"
-  pod "RNReactNativeHapticFeedback", :path => "../../node_modules/react-native-haptic-feedback", :modular_headers => true
+  # RNReactNativeHapticFeedback is handled by autolinking
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -85,7 +85,6 @@ target "Self" do
   pod "Firebase", :modular_headers => true
   pod "FirebaseCore", :modular_headers => true
   pod "FirebaseCoreInternal", :modular_headers => true
-  pod "FirebaseAnalytics", :modular_headers => true
   pod "GoogleUtilities", :modular_headers => true
   pod "FirebaseMessaging"
 
@@ -165,7 +164,7 @@ target "Self" do
     if File.exist?(qkCutoutView)
       # Ensure the file is writable
       system("chmod u+w #{qkCutoutView}")
-      
+
       text = File.read(qkCutoutView)
       # Only modify if the line exists and is not already commented
       if text.include?("addBorderAroundCutout()") && !text.include?("// addBorderAroundCutout()")
