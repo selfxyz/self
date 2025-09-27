@@ -37,8 +37,13 @@ function createHash(algorithm: string) {
       throw new Error(`Unsupported hash algorithm: ${algorithm}`);
   }
 
+  let finalized = false;
+
   return {
     update(data: string | Uint8Array) {
+      if (finalized) {
+        throw new Error('Cannot update after calling digest(). Hash instance has been finalized.');
+      }
       if (typeof data === 'string') {
         hasher.update(new TextEncoder().encode(data));
       } else {
@@ -46,14 +51,19 @@ function createHash(algorithm: string) {
       }
       return this;
     },
-    digest(encoding?: string) {
+    digest(encoding?: BufferEncoding) {
+      if (finalized) {
+        throw new Error('Digest already called. Hash instance has been finalized.');
+      }
+      finalized = true;
       const result = hasher.digest();
+
       if (encoding === 'hex') {
         return Array.from(result)
           .map((b: number) => b.toString(16).padStart(2, '0'))
           .join('');
       }
-      return result;
+      return typeof Buffer !== 'undefined' ? Buffer.from(result) : result;
     },
   };
 }
@@ -79,34 +89,48 @@ function createHmac(algorithm: string, key: string | Uint8Array) {
 
   const keyBytes = typeof key === 'string' ? new TextEncoder().encode(key) : key;
   const hmacState = hmac.create(hashFn, keyBytes);
-  let cachedResult: Uint8Array | null = null;
+  let finalized = false;
 
   return {
     update(data: string | Uint8Array) {
+      if (finalized) {
+        throw new Error('Cannot update after calling digest(). Hash instance has been finalized.');
+      }
       const dataBytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
       hmacState.update(dataBytes);
-      cachedResult = null; // Clear cache when new data is added
       return this;
     },
-    digest(encoding?: string) {
-      if (!cachedResult) {
-        cachedResult = hmacState.digest();
+    digest(encoding?: BufferEncoding) {
+      if (finalized) {
+        throw new Error('Digest already called. Hash instance has been finalized.');
       }
+      finalized = true;
+      const result = hmacState.digest();
+
       if (encoding === 'hex') {
-        return Array.from(cachedResult)
+        return Array.from(result)
           .map((b: number) => b.toString(16).padStart(2, '0'))
           .join('');
       }
-      return cachedResult;
+      return typeof Buffer !== 'undefined' ? Buffer.from(result) : result;
     },
   };
 }
 
-function randomBytes(size: number): Uint8Array {
-  if (typeof globalThis.crypto?.getRandomValues !== 'function') {
+function randomBytes(size: number): Uint8Array | Buffer {
+  if (!Number.isInteger(size) || size <= 0) {
+    throw new Error('randomBytes size must be a positive integer');
+  }
+  const cryptoObj = globalThis.crypto;
+  if (typeof cryptoObj?.getRandomValues !== 'function') {
     throw new Error('globalThis.crypto.getRandomValues is not available');
   }
-  return globalThis.crypto.getRandomValues(new Uint8Array(size));
+  const out = new Uint8Array(size);
+  const MAX = 65536; // WebCrypto limit per call
+  for (let offset = 0; offset < size; offset += MAX) {
+    cryptoObj.getRandomValues(out.subarray(offset, Math.min(offset + MAX, size)));
+  }
+  return typeof Buffer !== 'undefined' ? Buffer.from(out) : out;
 }
 
 function pbkdf2Sync(

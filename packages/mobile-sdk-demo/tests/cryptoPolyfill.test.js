@@ -9,7 +9,8 @@
  * 3. Buffer polyfill missing
  */
 
-// Mock globalThis.crypto before importing
+// Preserve and mock globalThis.crypto before importing
+const originalCrypto = global.crypto;
 global.crypto = global.crypto || {};
 global.crypto.getRandomValues =
   global.crypto.getRandomValues ||
@@ -37,6 +38,8 @@ describe('Crypto Polyfill Functional Bugs', () => {
   afterEach(() => {
     // Restore Buffer if we removed it
     global.Buffer = originalBuffer;
+    // Restore crypto
+    global.crypto = originalCrypto;
   });
 
   describe('Method Chaining Bug', () => {

@@ -59,24 +59,28 @@ describe('HMAC Streaming', () => {
     hmacMultiple.update(chunk2);
     const multipleResult = hmacMultiple.digest();
 
-    expect(singleResult).toEqual(expected);
-    expect(multipleResult).toEqual(expected);
-    expect(singleResult).toEqual(multipleResult);
+    // Convert to Uint8Array for comparison (handles both Buffer and Uint8Array cases)
+    const singleArray = new Uint8Array(singleResult);
+    const multipleArray = new Uint8Array(multipleResult);
+
+    expect(singleArray).toEqual(expected);
+    expect(multipleArray).toEqual(expected);
+    expect(singleArray).toEqual(multipleArray);
   });
 
-  it('should allow multiple digest calls on the same instance', () => {
+  it('should throw on subsequent digest calls (Node.js parity)', () => {
     const hmacInstance = createHmac('sha256', key);
     hmacInstance.update(fullMessage);
 
     const digest1 = hmacInstance.digest('hex');
-    const digest2 = hmacInstance.digest('hex');
-    const digest3 = hmacInstance.digest(); // binary format
+    expect(typeof digest1).toBe('string');
+    expect(digest1.length).toBe(64); // SHA256 hex is 64 chars
 
-    expect(digest1).toBe(digest2);
-    expect(
-      Array.from(digest3 as Uint8Array)
-        .map((b: number) => b.toString(16).padStart(2, '0'))
-        .join('')
-    ).toBe(digest1);
+    // Subsequent digest calls should throw
+    expect(() => hmacInstance.digest('hex')).toThrow();
+    expect(() => hmacInstance.digest()).toThrow();
+
+    // Updates should also throw after finalization
+    expect(() => hmacInstance.update('more data')).toThrow();
   });
 });
