@@ -58,29 +58,20 @@ contract SelfIdentityERC721 is SelfVerificationRoot, ERC721, Ownable {
     /**
      * @notice Constructor for the SelfIdentityERC721 V2 contract
      * @param identityVerificationHubAddress The address of the Identity Verification Hub V2
-     * @param scopeValue The expected proof scope for user registration
+     * @param scopeSeed The scope seed string to be hashed with contract address
      * @param name The name of the NFT collection
      * @param symbol The symbol of the NFT collection
      */
     constructor(
         address identityVerificationHubAddress,
-        uint256 scopeValue,
+        string memory scopeSeed,
         string memory name,
         string memory symbol
-    ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue) ERC721(name, symbol) Ownable(_msgSender()) {}
+    ) SelfVerificationRoot(identityVerificationHubAddress, scopeSeed) ERC721(name, symbol) Ownable(_msgSender()) {}
 
     // ====================================================
     // External/Public Functions
     // ====================================================
-
-    /**
-     * @notice Updates the scope used for verification
-     * @dev Only callable by the contract owner
-     * @param newScope The new scope to set
-     */
-    function setScope(uint256 newScope) external onlyOwner {
-        _setScope(newScope);
-    }
 
     /**
      * @notice Get identity attributes for a specific token ID
