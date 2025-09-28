@@ -5,31 +5,43 @@
 import React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 
-import SafeAreaScrollView from './components/SafeAreaScrollView';
+import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+
+import SafeAreaScrollView from '../components/SafeAreaScrollView';
 
 type Props = {
+  document: IDDocument | null;
   onBack: () => void;
 };
 
-export default function QRCodeViewFinder({ onBack }: Props) {
+export default function ProveQRCode({ document, onBack }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>QR Code View Finder</Text>
-      <Text style={styles.subtitle}>QR Code Scanning</Text>
+      <Text style={styles.title}>Prove QR Code</Text>
+      <Text style={styles.subtitle}>QR Code Proof Generation</Text>
 
       <View style={styles.content}>
         <Text style={styles.description}>
-          This screen would handle QR code scanning for proof verification and partner connections.
+          This screen would handle QR code generation for proof verification and partner sharing.
         </Text>
 
         <View style={styles.features}>
           <Text style={styles.featureTitle}>Features (Not Implemented):</Text>
-          <Text style={styles.feature}>• QR code camera scanning</Text>
+          <Text style={styles.feature}>• QR code generation for proofs</Text>
+          <Text style={styles.feature}>• Selective attribute disclosure</Text>
           <Text style={styles.feature}>• Proof verification requests</Text>
-          <Text style={styles.feature}>• Partner app connections</Text>
-          <Text style={styles.feature}>• Session management</Text>
-          <Text style={styles.feature}>• Real-time QR detection feedback</Text>
+          <Text style={styles.feature}>• Partner app integration</Text>
+          <Text style={styles.feature}>• Session management and security</Text>
         </View>
+
+        {document && (
+          <View style={styles.documentSection}>
+            <Text style={styles.documentTitle}>Mock Document Data:</Text>
+            <Text style={styles.documentData} selectable>
+              {JSON.stringify(document, null, 2)}
+            </Text>
+          </View>
+        )}
       </View>
 
       <Button title="Back to Menu" onPress={onBack} />
@@ -80,5 +92,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 8,
     color: '#333',
+  },
+  documentSection: {
+    backgroundColor: '#f0f8ff',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 24,
+  },
+  documentTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  documentData: {
+    fontSize: 12,
+    fontFamily: 'monospace',
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
 });

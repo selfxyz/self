@@ -5,33 +5,33 @@
 import React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 
-import type { IDDocument } from '@selfxyz/common';
+import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 
-import SafeAreaScrollView from './components/SafeAreaScrollView';
+import SafeAreaScrollView from '../components/SafeAreaScrollView';
 
 type Props = {
   document: IDDocument | null;
   onBack: () => void;
 };
 
-export default function ProveQRCode({ document, onBack }: Props) {
+export default function RegisterDocument({ document, onBack }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Prove QR Code</Text>
-      <Text style={styles.subtitle}>QR Code Proof Generation</Text>
+      <Text style={styles.title}>Register Document</Text>
+      <Text style={styles.subtitle}>Document Registration Flow</Text>
 
       <View style={styles.content}>
         <Text style={styles.description}>
-          This screen would handle QR code generation for proof verification and partner sharing.
+          This screen would handle document registration with the Self network for identity verification.
         </Text>
 
         <View style={styles.features}>
           <Text style={styles.featureTitle}>Features (Not Implemented):</Text>
-          <Text style={styles.feature}>• QR code generation for proofs</Text>
-          <Text style={styles.feature}>• Selective attribute disclosure</Text>
-          <Text style={styles.feature}>• Proof verification requests</Text>
-          <Text style={styles.feature}>• Partner app integration</Text>
-          <Text style={styles.feature}>• Session management and security</Text>
+          <Text style={styles.feature}>• Document validation and verification</Text>
+          <Text style={styles.feature}>• Zero-knowledge proof generation</Text>
+          <Text style={styles.feature}>• Blockchain registration</Text>
+          <Text style={styles.feature}>• OFAC compliance checks</Text>
+          <Text style={styles.feature}>• Identity attestation</Text>
         </View>
 
         {document && (

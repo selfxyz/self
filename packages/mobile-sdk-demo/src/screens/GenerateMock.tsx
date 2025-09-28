@@ -5,11 +5,12 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
-import { countryCodes, type IDDocument } from '@selfxyz/common';
+import { countryCodes } from '@selfxyz/common';
+import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
 
 import { Picker } from '@react-native-picker/picker';
-import SafeAreaScrollView from './components/SafeAreaScrollView';
+import SafeAreaScrollView from '../components/SafeAreaScrollView';
 
 const algorithmOptions = Object.keys(signatureAlgorithmToStrictSignatureAlgorithm);
 const documentTypeOptions = ['mock_passport', 'mock_id_card'] as const;

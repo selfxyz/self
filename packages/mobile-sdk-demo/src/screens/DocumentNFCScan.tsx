@@ -5,7 +5,7 @@
 import React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 
-import SafeAreaScrollView from './components/SafeAreaScrollView';
+import SafeAreaScrollView from '../components/SafeAreaScrollView';
 
 type Props = {
   onBack: () => void;

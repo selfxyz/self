@@ -5,30 +5,29 @@
 import React from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 
-import SafeAreaScrollView from './components/SafeAreaScrollView';
+import SafeAreaScrollView from '../components/SafeAreaScrollView';
 
 type Props = {
   onBack: () => void;
 };
 
-export default function DocumentOnboarding({ onBack }: Props) {
+export default function DocumentCamera({ onBack }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Document Onboarding</Text>
-      <Text style={styles.subtitle}>Camera Setup & Instructions</Text>
+      <Text style={styles.title}>Document Camera</Text>
+      <Text style={styles.subtitle}>Passport/ID Scanning</Text>
 
       <View style={styles.content}>
         <Text style={styles.description}>
-          This screen would provide onboarding instructions and camera setup for document scanning.
+          This screen would handle camera-based document scanning for passports and ID cards.
         </Text>
 
         <View style={styles.features}>
           <Text style={styles.featureTitle}>Features (Not Implemented):</Text>
-          <Text style={styles.feature}>• Camera permission requests</Text>
-          <Text style={styles.feature}>• Document positioning guidance</Text>
-          <Text style={styles.feature}>• Animation and visual instructions</Text>
-          <Text style={styles.feature}>• Privacy and security information</Text>
-          <Text style={styles.feature}>• Step-by-step scanning tutorial</Text>
+          <Text style={styles.feature}>• Camera integration for document scanning</Text>
+          <Text style={styles.feature}>• MRZ (Machine Readable Zone) detection</Text>
+          <Text style={styles.feature}>• Document validation and parsing</Text>
+          <Text style={styles.feature}>• Real-time feedback and guidance</Text>
         </View>
       </View>
 

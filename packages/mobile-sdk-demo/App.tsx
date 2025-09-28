@@ -5,54 +5,41 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import type { IDDocument } from '@selfxyz/common';
+import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 
 import SafeAreaScrollView from './src/components/SafeAreaScrollView';
-
-type Screen = 'home' | 'register' | 'generate' | 'prove' | 'camera' | 'nfc' | 'onboarding' | 'qr';
-type GenerateMockCmp = typeof import('./src/GenerateMock').default;
-type RegisterDocumentCmp = typeof import('./src/RegisterDocument').default;
-type ProveQRCodeCmp = typeof import('./src/ProveQRCode').default;
+import {
+  orderedSectionEntries,
+  screenMap,
+  type ScreenContext,
+  type ScreenRoute,
+} from './src/screens';
 
 function App() {
-  const [screen, setScreen] = useState<Screen>('home');
+  const [screen, setScreen] = useState<ScreenRoute>('home');
   const [mockDocument, setMockDocument] = useState<IDDocument | null>(null);
 
-  const navigate = (next: Screen) => setScreen(next);
+  const navigate = (next: ScreenRoute) => setScreen(next);
 
-  if (screen === 'generate') {
-    const GenerateMock = require('./src/GenerateMock').default as GenerateMockCmp;
-    return <GenerateMock onGenerate={setMockDocument} onNavigate={navigate} onBack={() => navigate('home')} />;
-  }
+  const screenContext: ScreenContext = {
+    navigate,
+    goHome: () => setScreen('home'),
+    mockDocument,
+    setMockDocument,
+  };
 
-  if (screen === 'register') {
-    const RegisterDocument = require('./src/RegisterDocument').default as RegisterDocumentCmp;
-    return <RegisterDocument document={mockDocument} onBack={() => navigate('home')} />;
-  }
+  if (screen !== 'home') {
+    const descriptor = screenMap[screen];
 
-  if (screen === 'prove') {
-    const ProveQRCode = require('./src/ProveQRCode').default as ProveQRCodeCmp;
-    return <ProveQRCode document={mockDocument} onBack={() => navigate('home')} />;
-  }
+    if (!descriptor) {
+      setScreen('home');
+      return null;
+    }
 
-  if (screen === 'camera') {
-    const DocumentCamera = require('./src/DocumentCamera').default;
-    return <DocumentCamera onBack={() => navigate('home')} />;
-  }
+    const ScreenComponent = descriptor.load();
+    const props = descriptor.getProps?.(screenContext) ?? {};
 
-  if (screen === 'nfc') {
-    const DocumentNFCScan = require('./src/DocumentNFCScan').default;
-    return <DocumentNFCScan onBack={() => navigate('home')} />;
-  }
-
-  if (screen === 'onboarding') {
-    const DocumentOnboarding = require('./src/DocumentOnboarding').default;
-    return <DocumentOnboarding onBack={() => navigate('home')} />;
-  }
-
-  if (screen === 'qr') {
-    const QRCodeViewFinder = require('./src/QRCodeViewFinder').default;
-    return <QRCodeViewFinder onBack={() => navigate('home')} />;
+    return <ScreenComponent {...props} />;
   }
 
   const MenuButton = ({
@@ -107,44 +94,30 @@ function App() {
         <Text style={styles.subtitle}>Mobile SDK Alpha - Available Screens</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>🎯 Core Features</Text>
-        <MenuButton title="✅ Generate Mock Data" onPress={() => navigate('generate')} isWorking={true} />
-        <MenuButton
-          title="⏳ Register Document"
-          onPress={() => navigate('register')}
-          isWorking={Boolean(mockDocument)}
-          disabled={!mockDocument}
-          subtitle={
-            mockDocument
-              ? 'View the mock document registration flow'
-              : 'Generate mock data to unlock this demo'
-          }
-        />
-        <MenuButton
-          title="⏳ Prove QR Code"
-          onPress={() => navigate('prove')}
-          isWorking={Boolean(mockDocument)}
-          disabled={!mockDocument}
-          subtitle={
-            mockDocument
-              ? 'Walk through the proof sharing experience'
-              : 'Create mock data to try this screen'
-          }
-        />
-      </View>
+      {orderedSectionEntries.map(({ title, items }) => (
+        <View key={title} style={styles.section}>
+          <Text style={styles.sectionTitle}>{title}</Text>
+          {items.map((descriptor) => {
+            const status = descriptor.getStatus?.(screenContext) ?? descriptor.status;
+            const disabled = descriptor.isDisabled?.(screenContext) ?? false;
+            const subtitleValue =
+              typeof descriptor.subtitle === 'function'
+                ? descriptor.subtitle(screenContext)
+                : descriptor.subtitle;
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📷 Document Scanning</Text>
-        <MenuButton title="⏳ Document Camera" onPress={() => navigate('camera')} />
-        <MenuButton title="⏳ Document NFC Scan" onPress={() => navigate('nfc')} />
-        <MenuButton title="⏳ Document Onboarding" onPress={() => navigate('onboarding')} />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📱 QR Code Features</Text>
-        <MenuButton title="⏳ QR Code View Finder" onPress={() => navigate('qr')} />
-      </View>
+            return (
+              <MenuButton
+                key={descriptor.id}
+                title={descriptor.title}
+                subtitle={subtitleValue}
+                onPress={() => navigate(descriptor.id)}
+                isWorking={status === 'working'}
+                disabled={disabled}
+              />
+            );
+          })}
+        </View>
+      ))}
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>✅ Working | ⏳ Placeholder (Not Implemented)</Text>

@@ -150,6 +150,16 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
     generateProof: jest.fn().mockResolvedValue('mock-proof'),
     registerDocument: jest.fn().mockResolvedValue('mock-registration'),
   },
+  signatureAlgorithmToStrictSignatureAlgorithm: {
+    'sha256 rsa 65537 2048': 'sha256 rsa 65537 2048',
+  },
+  generateMockDocument: jest.fn().mockResolvedValue({
+    id: 'mock-id',
+    issuer: 'Self',
+    credentialType: 'mock_passport',
+    issuedAt: new Date().toISOString(),
+    expiresAt: new Date().toISOString(),
+  }),
 }));
 
 // Mock console methods to avoid test output clutter
