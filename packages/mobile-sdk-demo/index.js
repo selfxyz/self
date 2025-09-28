@@ -12,13 +12,21 @@ import 'react-native-get-random-values';
 
 import { Buffer } from 'buffer';
 import { AppRegistry } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import App from './App';
 import { name as appName } from './app.json';
+import { SelfClientProvider } from './src/selfClient/Provider';
 
 import './src/utils/ethers';
 
 // Set global Buffer before any other imports
 global.Buffer = Buffer;
 
-AppRegistry.registerComponent(appName, () => App);
+AppRegistry.registerComponent(appName, () => () => (
+  <SafeAreaProvider>
+    <SelfClientProvider>
+      <App />
+    </SelfClientProvider>
+  </SafeAreaProvider>
+));

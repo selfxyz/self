@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import type { IDDocument } from '@selfxyz/common';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/common';
+
+import { useSelfClient } from './src/selfClient/Provider';
 
 type Screen = 'home' | 'register' | 'generate' | 'prove' | 'camera' | 'nfc' | 'onboarding' | 'qr';
 type GenerateMockCmp = typeof import('./src/GenerateMock').default;
@@ -13,24 +15,98 @@ type RegisterDocumentCmp = typeof import('./src/RegisterDocument').default;
 type ProveQRCodeCmp = typeof import('./src/ProveQRCode').default;
 
 function App() {
+  const selfClient = useSelfClient();
   const [screen, setScreen] = useState<Screen>('home');
-  const [mockDocument, setMockDocument] = useState<IDDocument | null>(null);
+  const [catalog, setCatalog] = useState<DocumentCatalog>({ documents: [] });
+  const [selectedDocument, setSelectedDocument] = useState<IDDocument | null>(null);
+  const [refreshToken, setRefreshToken] = useState(0);
 
-  const navigate = (next: Screen) => setScreen(next);
+  const triggerCatalogRefresh = useCallback(() => {
+    setRefreshToken(previous => previous + 1);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void (async () => {
+      const nextCatalog = await selfClient.loadDocumentCatalog();
+      if (cancelled) {
+        return;
+      }
+
+      setCatalog(nextCatalog);
+
+      const selectedId = nextCatalog.selectedDocumentId ?? nextCatalog.documents[0]?.id;
+      if (selectedId) {
+        const data = await selfClient.loadDocumentById(selectedId);
+        if (!cancelled) {
+          setSelectedDocument(data);
+        }
+      } else if (!cancelled) {
+        setSelectedDocument(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshToken, selfClient]);
+
+  const hasDocuments = catalog.documents.length > 0;
+
+  const screenDescriptors = useMemo(
+    () => [
+      { label: 'Generate Mock Data', screen: 'generate' as const, status: '✅', enabled: true },
+      {
+        label: 'Register Document',
+        screen: 'register' as const,
+        status: hasDocuments ? '✅' : '⏳',
+        enabled: hasDocuments,
+      },
+      {
+        label: 'Prove QR Code',
+        screen: 'prove' as const,
+        status: hasDocuments ? '✅' : '⏳',
+        enabled: hasDocuments,
+      },
+    ],
+    [hasDocuments],
+  );
+
+  const navigate = useCallback(
+    (next: Screen) => {
+      if (!hasDocuments && (next === 'register' || next === 'prove')) {
+        return;
+      }
+      setScreen(next);
+    },
+    [hasDocuments],
+  );
+
+  const handleBackToMenu = useCallback(() => {
+    setScreen('home');
+    triggerCatalogRefresh();
+  }, [triggerCatalogRefresh]);
 
   if (screen === 'generate') {
     const GenerateMock = require('./src/GenerateMock').default as GenerateMockCmp;
-    return <GenerateMock onGenerate={setMockDocument} onNavigate={navigate} onBack={() => navigate('home')} />;
+    return (
+      <GenerateMock
+        onPersist={triggerCatalogRefresh}
+        onNavigate={navigate}
+        onBack={handleBackToMenu}
+      />
+    );
   }
 
   if (screen === 'register') {
     const RegisterDocument = require('./src/RegisterDocument').default as RegisterDocumentCmp;
-    return <RegisterDocument document={mockDocument} onBack={() => navigate('home')} />;
+    return <RegisterDocument document={selectedDocument} onBack={handleBackToMenu} />;
   }
 
   if (screen === 'prove') {
     const ProveQRCode = require('./src/ProveQRCode').default as ProveQRCodeCmp;
-    return <ProveQRCode document={mockDocument} onBack={() => navigate('home')} />;
+    return <ProveQRCode document={selectedDocument} onBack={handleBackToMenu} />;
   }
 
   if (screen === 'camera') {
@@ -57,15 +133,25 @@ function App() {
     title,
     onPress,
     isWorking = false,
+    disabled = false,
   }: {
     title: string;
     onPress: () => void;
     isWorking?: boolean;
+    disabled?: boolean;
   }) => (
     <TouchableOpacity
-      style={[styles.menuButton, isWorking ? styles.workingButton : styles.placeholderButton]}
-      onPress={onPress}
-      activeOpacity={0.7}
+      style={[
+        styles.menuButton,
+        isWorking ? styles.workingButton : styles.placeholderButton,
+        disabled ? styles.disabledButton : null,
+      ]}
+      onPress={() => {
+        if (!disabled) {
+          onPress();
+        }
+      }}
+      activeOpacity={disabled ? 1 : 0.7}
     >
       <Text style={[styles.menuButtonText, isWorking ? styles.workingButtonText : styles.placeholderButtonText]}>
         {title}
@@ -82,13 +168,15 @@ function App() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>🎯 Core Features</Text>
-        <MenuButton title="✅ Generate Mock Data" onPress={() => navigate('generate')} isWorking={true} />
-        <MenuButton
-          title="⏳ Register Document"
-          onPress={() => navigate('register')}
-          isWorking={Boolean(mockDocument)}
-        />
-        <MenuButton title="⏳ Prove QR Code" onPress={() => navigate('prove')} isWorking={Boolean(mockDocument)} />
+        {screenDescriptors.map(descriptor => (
+          <MenuButton
+            key={descriptor.screen}
+            title={`${descriptor.status} ${descriptor.label}`}
+            onPress={() => navigate(descriptor.screen)}
+            isWorking={descriptor.status === '✅'}
+            disabled={!descriptor.enabled}
+          />
+        ))}
       </View>
 
       <View style={styles.section}>
@@ -166,6 +254,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#e1e5e9',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   menuButtonText: {
     fontSize: 16,

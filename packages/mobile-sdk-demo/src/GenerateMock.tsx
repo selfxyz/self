@@ -5,10 +5,19 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
-import { countryCodes, type IDDocument } from '@selfxyz/common';
+import {
+  calculateContentHash,
+  countryCodes,
+  inferDocumentCategory,
+  isMRZDocument,
+  type DocumentMetadata,
+  type IDDocument,
+} from '@selfxyz/common';
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
 
 import { Picker } from '@react-native-picker/picker';
+
+import { useSelfClient } from './selfClient/Provider';
 
 const algorithmOptions = Object.keys(signatureAlgorithmToStrictSignatureAlgorithm);
 const documentTypeOptions = ['mock_passport', 'mock_id_card'] as const;
@@ -22,12 +31,13 @@ const defaultDocumentType = 'mock_passport';
 const defaultOfac = true;
 
 type Props = {
-  onGenerate?: (doc: IDDocument) => void;
+  onPersist?: () => void;
   onNavigate: (screen: 'home' | 'register' | 'prove') => void;
   onBack: () => void;
 };
 
-export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) {
+export default function GenerateMock({ onPersist, onNavigate, onBack }: Props) {
+  const selfClient = useSelfClient();
   const [age, setAge] = useState(defaultAge);
   const [expiryYears, setExpiryYears] = useState(defaultExpiryYears);
   const [isInOfacList, setIsInOfacList] = useState(defaultOfac);
@@ -37,6 +47,8 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<IDDocument | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [savedDocumentId, setSavedDocumentId] = useState<string | null>(null);
 
   const reset = () => {
     setAge(defaultAge);
@@ -47,12 +59,16 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
     setDocumentType(defaultDocumentType as (typeof documentTypeOptions)[number]);
     setResult(null);
     setError(null);
+    setSummary(null);
+    setSavedDocumentId(null);
   };
 
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
     setResult(null);
+    setSummary(null);
+    setSavedDocumentId(null);
     try {
       const ageNum = Number(age);
       const expiryNum = Number(expiryYears);
@@ -71,7 +87,33 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
         selectedDocumentType: documentType,
       });
       setResult(doc);
-      onGenerate?.(doc);
+
+      const contentHash = calculateContentHash(doc);
+      await selfClient.saveDocument(contentHash, doc);
+
+      const catalog = await selfClient.loadDocumentCatalog();
+      const metadata: DocumentMetadata = {
+        id: contentHash,
+        documentType: doc.documentType,
+        documentCategory: doc.documentCategory ?? inferDocumentCategory(doc.documentType),
+        data: isMRZDocument(doc) ? doc.mrz : 'qrData' in doc ? doc.qrData ?? '' : '',
+        mock: Boolean(doc.mock),
+        isRegistered: catalog.documents.find(existing => existing.id === contentHash)?.isRegistered ?? false,
+      };
+
+      const existingIndex = catalog.documents.findIndex(existing => existing.id === contentHash);
+      if (existingIndex >= 0) {
+        catalog.documents.splice(existingIndex, 1, metadata);
+      } else {
+        catalog.documents.push(metadata);
+      }
+
+      catalog.selectedDocumentId = contentHash;
+      await selfClient.saveDocumentCatalog(catalog);
+
+      setSummary(`Saved ${catalog.documents.length} document${catalog.documents.length === 1 ? '' : 's'} to catalog.`);
+      setSavedDocumentId(contentHash);
+      onPersist?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -117,6 +159,12 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
       </View>
       {loading && <ActivityIndicator style={styles.spinner} />}
       {error && <Text style={styles.error}>{error}</Text>}
+      {summary && <Text style={styles.success}>{summary}</Text>}
+      {savedDocumentId && (
+        <Text selectable style={styles.catalogEntry}>
+          Catalog entry ID: {savedDocumentId}
+        </Text>
+      )}
       {result ? (
         <>
           <Text selectable style={styles.result}>
@@ -159,5 +207,7 @@ const styles = StyleSheet.create({
   },
   spinner: { marginVertical: 16 },
   error: { color: 'red', marginTop: 16 },
+  success: { color: 'green', marginTop: 16 },
+  catalogEntry: { marginTop: 8, fontFamily: 'monospace' },
   result: { marginTop: 16, fontFamily: 'monospace' },
 });
