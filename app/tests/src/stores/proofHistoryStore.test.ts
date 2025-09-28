@@ -6,8 +6,8 @@ import { io } from 'socket.io-client';
 import { act } from '@testing-library/react-native';
 
 import { database } from '@/stores/database';
-import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import { ProofStatus } from '@/stores/proofTypes';
 
 // Mock socket.io-client
 jest.mock('socket.io-client', () => ({

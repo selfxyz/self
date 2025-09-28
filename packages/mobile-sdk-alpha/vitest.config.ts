@@ -9,12 +9,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
-    exclude: ['demo-app/**'],
-  },
-  resolve: {
-    alias: {
-      // Mock React Native modules for testing
-      'react-native': 'react-native-web',
-    },
+    include: ['tests/**/*.test.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
+    exclude: ['node_modules/**'],
   },
 });

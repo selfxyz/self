@@ -23,8 +23,8 @@ import { typography } from '@/components/typography/styles';
 import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import { ProofStatus } from '@/stores/proofTypes';
 import { black, white } from '@/utils/colors';
 import {
   buttonTap,

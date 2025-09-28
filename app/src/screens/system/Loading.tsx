@@ -10,12 +10,10 @@ import { Text, YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 
-import { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types';
-import type { PassportData } from '@selfxyz/common/types';
+import { IDDocument } from '@selfxyz/common/utils/types';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
-import successAnimation from '@/assets/animations/loading/success.json';
 import CloseWarningIcon from '@/images/icons/close-warning.svg';
 import { loadPassportDataAndSecret } from '@/providers/passportDataProvider';
 import { black, slate400, white, zinc500, zinc900 } from '@/utils/colors';

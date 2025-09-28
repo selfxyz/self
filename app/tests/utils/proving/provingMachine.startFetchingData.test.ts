@@ -39,18 +39,46 @@ jest.mock('@/providers/authProvider', () => ({
 
 // app/tests/utils/proving/provingMachine.startFetchingData.test.ts
 
-jest.mock('@selfxyz/mobile-sdk-alpha', () => {
-  const actual = jest.requireActual('@selfxyz/mobile-sdk-alpha');
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  __esModule: true,
+  // Mock only the specific functions needed by this test
+  loadSelectedDocument: jest.fn().mockResolvedValue({
+    data: {
+      documentCategory: 'passport',
+      mock: false,
+      dsc_parsed: { authorityKeyIdentifier: 'key' },
+    },
+  }),
+}));
+
+// Mock the stores import separately with state management
+jest.mock('@selfxyz/mobile-sdk-alpha/stores', () => {
+  const mockProtocolStoreState = {};
+  const mockSelfAppStoreState = { selfApp: {}, handleProofResult: jest.fn() };
+
   return {
-    __esModule: true,
-    ...actual,
-    loadSelectedDocument: jest.fn().mockResolvedValue({
-      data: {
-        documentCategory: 'passport',
-        mock: false,
-        dsc_parsed: { authorityKeyIdentifier: 'key' },
+    useProtocolStore: Object.assign(
+      jest.fn(() => mockProtocolStoreState),
+      {
+        // Add Zustand store methods with state management
+        setState: jest.fn(updates =>
+          Object.assign(mockProtocolStoreState, updates),
+        ),
+        getState: jest.fn(() => mockProtocolStoreState),
+        subscribe: jest.fn(() => jest.fn()),
       },
-    }),
+    ),
+    useSelfAppStore: Object.assign(
+      jest.fn(() => mockSelfAppStoreState),
+      {
+        // Add Zustand store methods with state management
+        setState: jest.fn(updates =>
+          Object.assign(mockSelfAppStoreState, updates),
+        ),
+        getState: jest.fn(() => mockSelfAppStoreState),
+        subscribe: jest.fn(() => jest.fn()),
+      },
+    ),
   };
 });
 

@@ -1,21 +1,24 @@
-export type { AadhaarData, DocumentCategory, PassportData } from './types.js';
+export type {
+  AadhaarData,
+  DeployedCircuits,
+  DocumentCatalog,
+  DocumentCategory,
+  DocumentMetadata,
+  IDDocument,
+  OfacTree,
+  PassportData,
+} from './types.js';
 export type {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from './certificate_parsing/dataStructure.js';
+export type { EndpointType, Mode, SelfApp, SelfAppDisclosureConfig } from './appType.js';
 export type { IdDocInput } from './passports/genMockIdDoc.js';
 export type { PassportMetadata } from './passports/passport_parsing/parsePassportData.js';
 export type { TEEPayload, TEEPayloadBase, TEEPayloadDisclose } from './proving.js';
 export type { UserIdType } from './circuits/uuid.js';
-export {
-  EndpointType,
-  Mode,
-  SelfApp,
-  SelfAppBuilder,
-  SelfAppDisclosureConfig,
-  getUniversalLink,
-} from './appType.js';
+export { SelfAppBuilder, getUniversalLink } from './appType.js';
 export { bigIntToString, formatEndpoint, hashEndpointWithScope, stringToBigInt } from './scope.js';
 export { brutforceSignatureAlgorithmDsc } from './passports/passport_parsing/brutForceDscSignature.js';
 export { buildSMT, getLeafCscaTree, getLeafDscTree } from './trees.js';
@@ -27,7 +30,6 @@ export {
   inferDocumentCategory,
   initPassportDataParsing,
 } from './passports/passport.js';
-export { isAadhaarDocument, isMRZDocument } from './types.js';
 export {
   calculateUserIdentifierHash,
   customHasher,
@@ -47,6 +49,7 @@ export {
 } from './proving.js';
 export { extractQRDataFields, getAadharRegistrationWindow } from './aadhaar/utils.js';
 export { formatMrz } from './passports/format.js';
+export { fetchOfacTrees } from './ofac.js';
 export { genAndInitMockPassportData } from './passports/genMockPassportData.js';
 export {
   genMockIdDoc,
@@ -62,9 +65,11 @@ export {
 export {
   generateTEEInputsAadhaarDisclose,
   generateTEEInputsAadhaarRegister,
+  generateTEEInputsDiscloseStateless,
 } from './circuits/registerInputs.js';
 export { getCircuitNameFromPassportData } from './circuits/circuitsName.js';
 export { getSKIPEM } from './csca.js';
 export { initElliptic } from './certificate_parsing/elliptic.js';
+export { isAadhaarDocument, isMRZDocument } from './types.js';
 export { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple.js';
 export { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData.js';

@@ -136,6 +136,11 @@ const _generateCircuitInputs = async (
       circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
       break;
     case 'dsc':
+      if (document === 'aadhaar') {
+        throw new Error(
+          'DSC circuit type is not supported for Aadhaar documents',
+        );
+      }
       ({ inputs, circuitName, endpointType, endpoint } = generateTEEInputsDSC(
         passportData as PassportData,
         protocolStore[document].csca_tree as string[][],
@@ -1014,7 +1019,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               step: 'protocol_store_fetch',
               document,
             });
-            await useProtocolStore.getState()[document].fetch_all(env!);
+            await useProtocolStore.getState().aadhaar.fetch_all(env!);
             break;
         }
         logProofEvent('info', 'Data fetch succeeded', context, {
@@ -1114,10 +1119,17 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               secret as string,
               {
                 getCommitmentTree,
-                getAltCSCA: (docType: DocumentCategory) =>
-                  docType === 'aadhaar'
-                    ? useProtocolStore.getState().aadhaar.public_keys
-                    : useProtocolStore.getState()[docType].alternative_csca,
+                getAltCSCA: (docType: DocumentCategory) => {
+                  if (docType === 'aadhaar') {
+                    const publicKeys =
+                      useProtocolStore.getState().aadhaar.public_keys;
+                    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+                    return publicKeys
+                      ? Object.fromEntries(publicKeys.map(key => [key, key]))
+                      : {};
+                  }
+                  return useProtocolStore.getState()[docType].alternative_csca;
+                },
               },
             );
           logProofEvent(

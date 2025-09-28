@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 
+import type { DeployedCircuits, OfacTree } from '@selfxyz/common';
 import {
   API_URL,
   API_URL_STAGING,
@@ -15,15 +16,14 @@ import {
   DSC_TREE_URL_ID_CARD,
   DSC_TREE_URL_STAGING,
   DSC_TREE_URL_STAGING_ID_CARD,
+  fetchOfacTrees,
   IDENTITY_TREE_URL,
   IDENTITY_TREE_URL_ID_CARD,
   IDENTITY_TREE_URL_STAGING,
   IDENTITY_TREE_URL_STAGING_ID_CARD,
   TREE_URL,
   TREE_URL_STAGING,
-} from '@selfxyz/common/constants';
-import { fetchOfacTrees } from '@selfxyz/common/utils/ofac';
-import type { DeployedCircuits, OfacTree } from '@selfxyz/common/utils/types';
+} from '@selfxyz/common';
 
 interface ProtocolState {
   passport: {

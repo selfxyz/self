@@ -9,7 +9,6 @@ import type { ViewProps } from 'tamagui';
 import { Button, Text } from 'tamagui';
 
 import { pressedStyle } from '@/components/buttons/pressedStyle';
-import { shouldShowAesopRedesign } from '@/hooks/useAesopRedesign';
 import analytics from '@/utils/analytics';
 import { dinot } from '@/utils/fonts';
 
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexGrow: 0,
     flexShrink: 0,
-    width: shouldShowAesopRedesign() ? '48%' : '100%',
+    width: '100%',
     display: 'flex',
     alignItems: 'center',
     rowGap: 12,
