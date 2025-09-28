@@ -9,7 +9,7 @@ export interface StandardCurve {
 }
 
 export function getCurveForElliptic(curveName: string): string {
-  const curves = {
+  const curves: Record<string, string> = {
     secp224r1: 'p224',
     secp256r1: 'p256',
     secp384r1: 'p384',

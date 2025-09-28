@@ -107,7 +107,7 @@ jobs:
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Clone android-passport-reader
         uses: ./.github/actions/clone-android-passport-reader
@@ -293,7 +293,7 @@ jobs:
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
         run: |

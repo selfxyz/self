@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/contracts",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -19,7 +19,8 @@
     "contracts/interfaces/IRegisterCircuitVerifier.sol",
     "contracts/interfaces/IDscCircuitVerifier.sol",
     "contracts/libraries/SelfUtils.sol",
-    "contracts/libraries/CountryCode.sol"
+    "contracts/libraries/CountryCode.sol",
+    "contracts/interfaces/IPoseidonT3.sol"
   ],
   "scripts": {
     "build": "yarn hardhat clean && yarn hardhat compile",

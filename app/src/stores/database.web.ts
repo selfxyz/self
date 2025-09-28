@@ -2,12 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type {
-  ProofDB,
-  ProofDBResult,
-  ProofHistory,
-} from '@/stores/proof-types';
-import { ProofStatus } from '@/stores/proof-types';
+import type { ProofDB, ProofDBResult, ProofHistory } from '@/stores/proofTypes';
+import { ProofStatus } from '@/stores/proofTypes';
 
 export const DB_NAME = 'proof_history_db';
 const STORE_NAME = 'proof_history';

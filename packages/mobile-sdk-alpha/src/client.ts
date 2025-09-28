@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, PassportData } from '@selfxyz/common';
 
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';

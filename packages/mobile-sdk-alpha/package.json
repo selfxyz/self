@@ -14,15 +14,21 @@
   "exports": {
     ".": {
       "types": "./dist/esm/index.d.ts",
+      "react-native": "./dist/esm/index.js",
       "browser": "./dist/esm/browser.js",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.cjs",
-      "default": "./dist/esm/index.js"
+      "require": "./dist/cjs/index.cjs"
     },
     "./browser": {
       "types": "./dist/esm/browser.d.ts",
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
+    },
+    "./constants": {
+      "types": "./dist/esm/constants/index.d.ts",
+      "react-native": "./dist/esm/constants/index.js",
+      "import": "./dist/esm/constants/index.js",
+      "require": "./dist/cjs/constants/index.cjs"
     },
     "./stores": {
       "types": "./dist/esm/stores.d.ts",
@@ -31,12 +37,26 @@
     },
     "./constants/analytics": {
       "types": "./dist/esm/constants/analytics.d.ts",
+      "react-native": "./dist/esm/constants/analytics.js",
       "import": "./dist/esm/constants/analytics.js",
       "require": "./dist/cjs/constants/analytics.cjs"
+    },
+    "./components": {
+      "types": "./dist/esm/components/index.d.ts",
+      "react-native": "./dist/esm/components/index.js",
+      "import": "./dist/esm/components/index.js",
+      "require": "./dist/cjs/components/index.cjs"
+    },
+    "./hooks": {
+      "types": "./dist/esm/hooks/index.d.ts",
+      "react-native": "./dist/esm/hooks/index.js",
+      "import": "./dist/esm/hooks/index.js",
+      "require": "./dist/cjs/hooks/index.cjs"
     }
   },
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.js",
+  "react-native": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "files": [
     "dist",
@@ -48,12 +68,8 @@
   "scripts": {
     "build": "rm -rf dist && tsup && yarn postbuild",
     "postbuild": "node ./scripts/postBuild.mjs",
-    "demo:android": "yarn workspace demo-app android",
-    "demo:ios": "yarn workspace demo-app ios",
-    "demo:start": "yarn workspace demo-app start",
-    "demo:test": "yarn workspace demo-app test",
-    "fmt": "yarn prettier --check .",
-    "fmt:fix": "yarn prettier --write .",
+    "fmt": "prettier --check .",
+    "fmt:fix": "prettier --write .",
     "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -62,20 +78,22 @@
     "report:exports": "node ./scripts/report-exports.mjs",
     "test": "vitest run",
     "test:build": "yarn build && yarn test && yarn types && yarn lint",
-    "test:demo": "yarn workspace demo-app test",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
     "validate:pkg": "node ./scripts/verify-conditions.mjs"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.3",
     "@selfxyz/common": "workspace:^",
     "socket.io-client": "^4.8.1",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@tamagui/types": "1.126.14",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^8.57.0",
@@ -83,12 +101,16 @@
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
     "jsdom": "^24.0.0",
     "prettier": "^3.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-native": "0.76.9",
+    "react-native-web": "^0.21.1",
+    "tamagui": "1.126.14",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",
     "vitest": "^1.6.0"
@@ -96,7 +118,12 @@
   "peerDependencies": {
     "react": "^18.3.1",
     "react-native": "0.76.9",
-    "tamagui": "^1.126.0"
+    "tamagui": "1.126.x"
+  },
+  "peerDependenciesMeta": {
+    "tamagui": {
+      "optional": false
+    }
   },
   "packageManager": "yarn@4.6.0",
   "publishConfig": {

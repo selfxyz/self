@@ -1,11 +1,6 @@
 {
   "name": "@selfxyz/qrcode-angular",
   "version": "1.0.3",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/selfxyz/self"
-  },
-  "license": "MIT",
   "description": "Angular QR code wrapper SDK for Self passport verification",
   "keywords": [
     "angular",
@@ -15,10 +10,15 @@
     "verification",
     "identity"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfxyz/self"
+  },
+  "license": "MIT",
+  "sideEffects": false,
   "main": "dist/fesm2022/selfxyz-qrcode-angular.mjs",
   "module": "dist/fesm2022/selfxyz-qrcode-angular.mjs",
   "types": "dist/index.d.ts",
-  "sideEffects": false,
   "files": [
     "dist/**/*",
     "README.md"
@@ -27,13 +27,13 @@
     "build": "ng-packagr -p ng-package.json",
     "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode-angular --topological-dev --recursive run build",
     "build:watch": "ng-packagr -p ng-package.json --watch",
-    "test": "ng test",
+    "format": "prettier --write .",
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
-    "format": "prettier --write .",
     "nice": "yarn format && yarn lint",
     "prepublishOnly": "yarn build",
-    "publish": "yarn npm publish --access public"
+    "publish": "yarn npm publish --access public",
+    "test": "ng test"
   },
   "dependencies": {
     "angularx-qrcode": "^20.0.0",

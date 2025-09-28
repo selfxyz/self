@@ -73,7 +73,7 @@
     "tsup": "^8.5.0",
     "typechain": "^8.3.2",
     "typescript": "^5.9.2",
-    "webpack": "^5.0.0"
+    "webpack": "^5.95.0"
   },
   "engines": {
     "node": ">=22 <23"

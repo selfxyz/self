@@ -4,205 +4,34 @@
 
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('node:path');
+const findYarnWorkspaceRoot = require('find-yarn-workspace-root');
 
 const defaultConfig = getDefaultConfig(__dirname);
 const { assetExts, sourceExts } = defaultConfig.resolver;
 
-const monorepoRoot = path.resolve(__dirname, '../');
-const commonPath = path.join(__dirname, '/../common');
-const sdkAlphaPath = path.join(__dirname, '/../packages/mobile-sdk-alpha');
-const trueMonorepoNodeModules = path.resolve(__dirname, '../node_modules');
-const extraNodeModules = {
-  stream: require.resolve('stream-browserify'),
-  buffer: require.resolve('buffer'),
-  util: require.resolve('util'),
-  assert: require.resolve('assert'),
-  '@babel/runtime': path.join(trueMonorepoNodeModules, '@babel/runtime'),
-  // Pin React and React Native to monorepo root
-  react: path.join(trueMonorepoNodeModules, 'react'),
-  'react-native': path.join(trueMonorepoNodeModules, 'react-native'),
-  '@': path.join(__dirname, 'src'),
-  '@selfxyz/common': path.resolve(commonPath, 'dist'),
-  '@selfxyz/mobile-sdk-alpha': path.resolve(sdkAlphaPath, 'dist'),
-  '@selfxyz/mobile-sdk-alpha/constants/analytics': path.resolve(
-    sdkAlphaPath,
-    'dist/esm/constants/analytics.js',
-  ),
-  '@selfxyz/mobile-sdk-alpha/stores': path.resolve(
-    sdkAlphaPath,
-    'dist/esm/stores.js',
-  ),
-  // Main exports
-  '@selfxyz/common/utils': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/index.js',
-  ),
-  '@selfxyz/common/types': path.resolve(
-    commonPath,
-    'dist/esm/src/types/index.js',
-  ),
-  '@selfxyz/common/constants': path.resolve(
-    commonPath,
-    'dist/esm/src/constants/index.js',
-  ),
-  // Constants subpaths
-  '@selfxyz/common/constants/countries': path.resolve(
-    commonPath,
-    'dist/esm/src/constants/countries.js',
-  ),
-  '@selfxyz/common/constants/vkey': path.resolve(
-    commonPath,
-    'dist/esm/src/constants/vkey.js',
-  ),
-  '@selfxyz/common/constants/skiPem': path.resolve(
-    commonPath,
-    'dist/esm/src/constants/skiPem.js',
-  ),
-  '@selfxyz/common/constants/mockCerts': path.resolve(
-    commonPath,
-    'dist/esm/src/constants/mockCertificates.js',
-  ),
-  '@selfxyz/common/constants/hashes': path.resolve(
-    commonPath,
-    'dist/esm/src/constants/sampleDataHashes.js',
-  ),
-  // Utils subpaths
-  '@selfxyz/common/utils/hash': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/hash.js',
-  ),
-  '@selfxyz/common/utils/attest': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/attest.js',
-  ),
-  '@selfxyz/common/utils/bytes': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/bytes.js',
-  ),
-  '@selfxyz/common/utils/trees': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/trees.js',
-  ),
-  '@selfxyz/common/utils/scope': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/scope.js',
-  ),
-  '@selfxyz/common/utils/proving': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/proving.js',
-  ),
-  '@selfxyz/common/utils/appType': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/appType.js',
-  ),
-  '@selfxyz/common/utils/date': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/date.js',
-  ),
-  '@selfxyz/common/utils/arrays': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/arrays.js',
-  ),
-  '@selfxyz/common/utils/passports': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/passports/index.js',
-  ),
-  '@selfxyz/common/utils/passportFormat': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/passports/format.js',
-  ),
-  '@selfxyz/common/utils/passports/validate': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/passports/validate.js',
-  ),
-  '@selfxyz/common/utils/passportMock': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/passports/mock.js',
-  ),
-  '@selfxyz/common/utils/passportDg1': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/passports/dg1.js',
-  ),
-  '@selfxyz/common/utils/certificates': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/certificate_parsing/index.js',
-  ),
-  '@selfxyz/common/utils/elliptic': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/certificate_parsing/elliptic.js',
-  ),
-  '@selfxyz/common/utils/curves': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/certificate_parsing/curves.js',
-  ),
-  '@selfxyz/common/utils/oids': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/certificate_parsing/oids.js',
-  ),
-  '@selfxyz/common/utils/circuits': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/circuits/index.js',
-  ),
-  '@selfxyz/common/utils/circuitNames': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/circuits/circuitsName.js',
-  ),
-  '@selfxyz/common/utils/circuitFormat': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/circuits/formatOutputs.js',
-  ),
-  '@selfxyz/common/utils/uuid': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/circuits/uuid.js',
-  ),
-  '@selfxyz/common/utils/contracts': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/contracts/index.js',
-  ),
-  '@selfxyz/common/utils/sanctions': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/contracts/forbiddenCountries.js',
-  ),
-  '@selfxyz/common/utils/csca': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/csca.js',
-  ),
-  '@selfxyz/common/utils/ofac': path.resolve(
-    commonPath,
-    'dist/esm/src/utils/ofac.js',
-  ),
-  // Types subpaths
-  '@selfxyz/common/types/passport': path.resolve(
-    commonPath,
-    'dist/esm/src/types/passport.js',
-  ),
-  '@selfxyz/common/types/app': path.resolve(
-    commonPath,
-    'dist/esm/src/types/app.js',
-  ),
-  '@selfxyz/common/types/certificates': path.resolve(
-    commonPath,
-    'dist/esm/src/types/certificates.js',
-  ),
-  '@selfxyz/common/types/circuits': path.resolve(
-    commonPath,
-    'dist/esm/src/types/circuits.js',
-  ),
-};
-const watchFolders = [
-  path.resolve(commonPath),
-  trueMonorepoNodeModules,
-  path.join(__dirname, 'src'),
-  path.resolve(sdkAlphaPath),
-];
+const projectRoot = __dirname;
+const workspaceRoot =
+  findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '..');
 
 /**
- * Metro configuration
- * https://facebook.github.io/metro/docs/configuration
+ * Modern Metro configuration using native workspace capabilities
+ * Eliminates need for manual symlink management through:
+ * - enableGlobalPackages: Automatic workspace package discovery
+ * - unstable_enablePackageExports: Native subpath import support
+ * - unstable_enableSymlinks: Optional symlink resolution
  *
  * @type {import('metro-config').MetroConfig}
  */
 const config = {
+  projectRoot,
+
+  watchFolders: [
+    workspaceRoot, // Watch entire workspace root for changes
+    path.resolve(workspaceRoot, 'common'),
+    path.resolve(workspaceRoot, 'packages/mobile-sdk-alpha'),
+    path.resolve(projectRoot, 'node_modules'), // Watch app's node_modules for custom resolved modules
+  ],
+
   transformer: {
     babelTransformerPath: require.resolve(
       'react-native-svg-transformer/react-native',
@@ -210,27 +39,247 @@ const config = {
     disableImportExportTransform: true,
     inlineRequires: true,
   },
+
   resolver: {
-    extraNodeModules,
-    nodeModulesPaths: [
-      path.resolve(__dirname, 'node_modules'), // App's own node_modules
-      path.resolve(monorepoRoot, 'node_modules'), // Monorepo root node_modules
-      trueMonorepoNodeModules,
-      // Add paths to other package workspaces if needed
+    // Prevent Haste module naming collisions from duplicate package.json files
+    blockList: [
+      // Ignore built package.json files to prevent Haste collisions
+      /.*\/dist\/package\.json$/,
+      /.*\/dist\/esm\/package\.json$/,
+      /.*\/dist\/cjs\/package\.json$/,
+      /.*\/build\/package\.json$/,
+      // Prevent duplicate React/React Native - block workspace root versions and use app's versions
+      // Use precise regex patterns to avoid blocking packages like react-native-get-random-values
+      new RegExp(
+        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react(/|$)`,
+      ),
+      new RegExp(
+        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-dom(/|$)`,
+      ),
+      new RegExp(
+        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-native(/|$)`,
+      ),
+      new RegExp(
+        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/scheduler(/|$)`,
+      ),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),
+      new RegExp('packages/mobile-sdk-alpha/node_modules/scheduler(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/|$)'),
+      new RegExp('packages/mobile-sdk-demo/node_modules/scheduler(/|$)'),
     ],
+    // Enable automatic workspace package resolution
+    enableGlobalPackages: true,
+
+    // Handle subpath exports (@selfxyz/common/constants)
+    unstable_enablePackageExports: true,
+
+    // Enable native symlink support (optional, for compatibility)
+    unstable_enableSymlinks: true,
+
+    // Define search order for node modules - prioritize app's modules for React consistency
+    nodeModulesPaths: [
+      path.resolve(projectRoot, 'node_modules'), // App's own node_modules FIRST
+      path.resolve(workspaceRoot, 'node_modules'), // Workspace root node_modules SECOND
+    ],
+
+    // Essential polyfills for React Native
+    extraNodeModules: {
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer'),
+      util: require.resolve('util'),
+      assert: require.resolve('assert'),
+      events: require.resolve('events'),
+      // App-specific alias
+      '@': path.join(__dirname, 'src'),
+    },
+
+    // Support package exports with conditions
+    unstable_conditionNames: ['react-native', 'import', 'require'],
+
+    // SVG support
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg'],
 
-    // Custom resolver to handle Node.js modules elegantly
+    // Custom resolver to handle both .js imports in TypeScript and Node.js modules
     resolveRequest: (context, moduleName, platform) => {
-      // Handle problematic Node.js modules that don't work in React Native
+      // Handle React Native gesture handler that needs app-level resolution
+      const appLevelModules = {
+        'react-native-gesture-handler':
+          'react-native-gesture-handler/lib/commonjs/index.js',
+      };
+
+      if (appLevelModules[moduleName]) {
+        try {
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve(appLevelModules[moduleName], {
+              paths: [projectRoot],
+            }),
+          };
+        } catch (error) {
+          console.warn(`Failed to resolve ${moduleName}:`, error);
+          // Fall back to default resolution
+          return context.resolveRequest(context, moduleName, platform);
+        }
+      }
+
+      // React modules now resolve naturally through nodeModulesPaths (app's node_modules first)
+
+      // Force SDK to use built ESM to avoid duplicate React and source transpilation issues
+      if (moduleName === '@selfxyz/mobile-sdk-alpha') {
+        return {
+          type: 'sourceFile',
+          filePath: path.resolve(
+            workspaceRoot,
+            'packages/mobile-sdk-alpha/dist/esm/index.js',
+          ),
+        };
+      }
+      // For relative imports in common source files that end with .js
+      if (
+        context.originModulePath?.includes('/common/src/') &&
+        moduleName.endsWith('.js')
+      ) {
+        const tsModuleName = moduleName.replace(/\.js$/, '.ts');
+        return context.resolveRequest(context, tsModuleName, platform);
+      }
+
+      // Handle problematic package exports and Node.js modules
+
+      // Fix @tamagui/config v2-native export resolution
+      if (moduleName === '@tamagui/config/v2-native') {
+        try {
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve('@tamagui/config/dist/esm/v2-native.js'),
+          };
+        } catch {
+          // Fallback to main export if specific file doesn't exist
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve('@tamagui/config'),
+          };
+        }
+      }
+
+      // Fix @noble/hashes subpath export resolution
+      if (moduleName.startsWith('@noble/hashes/')) {
+        try {
+          // Extract the subpath (e.g., 'crypto.js', 'sha256', 'hmac')
+          const subpath = moduleName.replace('@noble/hashes/', '');
+          const basePath = require.resolve('@noble/hashes');
+
+          // For .js files, look in the package directory
+          if (subpath.endsWith('.js')) {
+            const subpathFile = path.join(path.dirname(basePath), subpath);
+            return {
+              type: 'sourceFile',
+              filePath: subpathFile,
+            };
+          } else {
+            // For other imports like 'sha256', 'hmac', etc., try the main directory
+            const subpathFile = path.join(
+              path.dirname(basePath),
+              `${subpath}.js`,
+            );
+            return {
+              type: 'sourceFile',
+              filePath: subpathFile,
+            };
+          }
+        } catch {
+          // Fallback to main package if subpath doesn't exist
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve('@noble/hashes'),
+          };
+        }
+      }
+
+      // Fix snarkjs and ffjavascript platform exports for Android
+      if (platform === 'android') {
+        // Handle snarkjs and its nested dependencies that have platform export issues
+        if (
+          moduleName.includes('/snarkjs') &&
+          (moduleName.endsWith('/snarkjs') ||
+            moduleName.includes('/snarkjs/node_modules'))
+        ) {
+          try {
+            // Try to resolve the main package file
+            const packagePath = moduleName.split('/node_modules/').pop();
+            const resolved = require.resolve(packagePath || 'snarkjs');
+            return {
+              type: 'sourceFile',
+              filePath: resolved,
+            };
+          } catch {
+            // Fallback to basic snarkjs resolution
+            try {
+              return {
+                type: 'sourceFile',
+                filePath: require.resolve('snarkjs'),
+              };
+            } catch {
+              // Continue to next check
+            }
+          }
+        }
+
+        // Handle ffjavascript from any nested location
+        if (
+          moduleName.includes('/ffjavascript') &&
+          moduleName.endsWith('/ffjavascript')
+        ) {
+          try {
+            // Try to resolve ffjavascript from the specific nested location first
+            const resolved = require.resolve(moduleName);
+            return {
+              type: 'sourceFile',
+              filePath: resolved,
+            };
+          } catch {
+            // Fallback to resolving ffjavascript from the closest available location
+            try {
+              const resolved = require.resolve('ffjavascript');
+              return {
+                type: 'sourceFile',
+                filePath: resolved,
+              };
+            } catch {
+              // Continue to next check
+            }
+          }
+        }
+
+        // Handle direct package imports for known problematic packages
+        const platformProblematicPackages = ['snarkjs', 'ffjavascript'];
+        for (const pkg of platformProblematicPackages) {
+          if (moduleName === pkg || moduleName.startsWith(`${pkg}/`)) {
+            try {
+              return {
+                type: 'sourceFile',
+                filePath: require.resolve(pkg),
+              };
+            } catch {
+              // Continue to next check
+              continue;
+            }
+          }
+        }
+      }
+
       const nodeModuleRedirects = {
-        crypto: require.resolve('crypto-browserify'),
+        crypto: path.resolve(__dirname, '../common/src/polyfills/crypto.ts'),
         fs: false, // Disable filesystem access
         os: false, // Disable OS-specific modules
         readline: false, // Disable readline module
         constants: require.resolve('constants-browserify'),
         path: require.resolve('path-browserify'),
+        'web-worker': false, // Disable web workers (not available in React Native)
       };
 
       if (
@@ -247,11 +296,36 @@ const config = {
         };
       }
 
+      // Handle optional peer dependencies by returning empty modules
+      const optionalPeerDependencies = [
+        'react-native-reanimated',
+        '@react-native-masked-view/masked-view',
+        '@react-native-firebase/analytics',
+      ];
+
+      if (optionalPeerDependencies.includes(moduleName)) {
+        // Return empty module for optional peer dependencies
+        return { type: 'empty' };
+      }
+
       // Fall back to default Metro resolver for all other modules
-      return context.resolveRequest(context, moduleName, platform);
+      try {
+        return context.resolveRequest(context, moduleName, platform);
+      } catch (error) {
+        // Check if this is one of our expected optional dependencies
+        if (optionalPeerDependencies.some(dep => moduleName.includes(dep))) {
+          return { type: 'empty' };
+        }
+
+        // If default resolution fails, log and re-throw
+        console.warn(
+          `Metro resolver failed for module "${moduleName}":`,
+          error.message,
+        );
+        throw error;
+      }
     },
   },
-  watchFolders,
 };
 
 module.exports = mergeConfig(defaultConfig, config);

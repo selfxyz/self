@@ -36,8 +36,8 @@ import {
   setDefaultDocumentTypeIfNeeded,
   usePassport,
 } from '@/providers/passportDataProvider';
-import { ProofStatus } from '@/stores/proof-types';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
+import { ProofStatus } from '@/stores/proofTypes';
 import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
 import { buttonTap } from '@/utils/haptic';

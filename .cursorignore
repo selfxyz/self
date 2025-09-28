@@ -244,7 +244,6 @@ app/src/assets/animations/*.json
 app/src/assets/fonts/
 
 # Yarn configuration
-.yarnrc.yml
 **/.yarn/
 
 # Certificate generation config
