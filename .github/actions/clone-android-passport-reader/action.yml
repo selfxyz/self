@@ -1,5 +1,5 @@
-name: Clone android-passport-reader
-description: "Clones the android-passport-reader repository if it does not exist"
+name: Clone android-passport-nfc-reader
+description: "Clones the android-passport-nfc-reader repository if it does not exist"
 
 inputs:
   working_directory:
@@ -13,7 +13,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Clone android-passport-reader
+    - name: Clone android-passport-nfc-reader
       shell: bash
       run: |
         set -euo pipefail
@@ -26,25 +26,25 @@ runs:
 
         cd "${{ inputs.working_directory }}"
 
-        if [ ! -d "android/android-passport-reader" ]; then
-          echo "📦 Cloning android-passport-reader for build..."
+        if [ ! -d "android/android-passport-nfc-reader" ]; then
+          echo "📦 Cloning android-passport-nfc-reader for build..."
           cd android
 
           # Clone using PAT (embed temporarily, then scrub)
-          if git clone --depth 1 --quiet "https://${{ inputs.selfxyz_internal_pat }}@github.com/selfxyz/android-passport-reader.git"; then
-            echo "✅ android-passport-reader cloned successfully"
+          if git clone --depth 1 --quiet "https://${{ inputs.selfxyz_internal_pat }}@github.com/selfxyz/android-passport-nfc-reader.git"; then
+            echo "✅ android-passport-nfc-reader cloned successfully"
             # Immediately scrub the credential from remote URL for security
-            git -C android-passport-reader remote set-url origin https://github.com/selfxyz/android-passport-reader.git || true
+            git -C android-passport-nfc-reader remote set-url origin https://github.com/selfxyz/android-passport-nfc-reader.git || true
           else
-            echo "❌ Failed to clone android-passport-reader"
+            echo "❌ Failed to clone android-passport-nfc-reader"
             echo "Please ensure a valid SELFXYZ internal PAT is provided to this action"
             exit 1
           fi
         elif [ "$CI" = "true" ]; then
-          echo "⚠️  android-passport-reader exists in CI - this is unexpected"
+          echo "⚠️  android-passport-nfc-reader exists in CI - this is unexpected"
           echo "📁 Directory contents:"
-          ls -la android/android-passport-reader/ || true
+          ls -la android/android-passport-nfc-reader/ || true
         else
-          echo "📁 android-passport-reader already exists - preserving existing directory"
+          echo "📁 android-passport-nfc-reader already exists - preserving existing directory"
           echo "ℹ️  Local development environment detected - your changes are safe"
         fi

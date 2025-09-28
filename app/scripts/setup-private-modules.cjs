@@ -10,10 +10,13 @@ const path = require('path');
 const SCRIPT_DIR = __dirname;
 const APP_DIR = path.dirname(SCRIPT_DIR);
 const ANDROID_DIR = path.join(APP_DIR, 'android');
-const PRIVATE_MODULE_PATH = path.join(ANDROID_DIR, 'android-passport-reader');
+const PRIVATE_MODULE_PATH = path.join(
+  ANDROID_DIR,
+  'android-passport-nfc-reader',
+);
 
 const GITHUB_ORG = 'selfxyz';
-const REPO_NAME = 'android-passport-reader';
+const REPO_NAME = 'android-passport-nfc-reader';
 const BRANCH = 'main';
 
 // Environment detection
@@ -163,7 +166,7 @@ function clonePrivateRepo() {
   // Security: Use quiet mode for credentialed URLs to prevent token exposure
   const isCredentialedUrl = isCI && repoToken;
   const quietFlag = isCredentialedUrl ? '--quiet' : '';
-  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" android-passport-reader`;
+  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" android-passport-nfc-reader`;
 
   try {
     if (isCredentialedUrl) {
