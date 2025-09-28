@@ -3,9 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
 
 import type { IDDocument } from '@selfxyz/common';
+
+import SafeAreaScrollView from './components/SafeAreaScrollView';
 
 type Props = {
   document: IDDocument | null;
@@ -14,7 +16,7 @@ type Props = {
 
 export default function RegisterDocument({ document, onBack }: Props) {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Register Document</Text>
       <Text style={styles.subtitle}>Document Registration Flow</Text>
 
@@ -43,7 +45,7 @@ export default function RegisterDocument({ document, onBack }: Props) {
       </View>
 
       <Button title="Back to Menu" onPress={onBack} />
-    </ScrollView>
+    </SafeAreaScrollView>
   );
 }
 

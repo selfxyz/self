@@ -3,12 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
-import { ActivityIndicator, Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Button, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { countryCodes, type IDDocument } from '@selfxyz/common';
 import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
 
 import { Picker } from '@react-native-picker/picker';
+import SafeAreaScrollView from './components/SafeAreaScrollView';
 
 const algorithmOptions = Object.keys(signatureAlgorithmToStrictSignatureAlgorithm);
 const documentTypeOptions = ['mock_passport', 'mock_id_card'] as const;
@@ -80,7 +81,7 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaScrollView contentContainerStyle={styles.container}>
       <Button title="Back" onPress={onBack} />
       <Text style={styles.label}>Age</Text>
       <TextInput style={styles.input} keyboardType="numeric" value={age} onChangeText={setAge} />
@@ -128,7 +129,7 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
           </View>
         </>
       ) : null}
-    </ScrollView>
+    </SafeAreaScrollView>
   );
 }
 

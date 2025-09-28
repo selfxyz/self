@@ -3,9 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { IDDocument } from '@selfxyz/common';
+
+import SafeAreaScrollView from './src/components/SafeAreaScrollView';
 
 type Screen = 'home' | 'register' | 'generate' | 'prove' | 'camera' | 'nfc' | 'onboarding' | 'qr';
 type GenerateMockCmp = typeof import('./src/GenerateMock').default;
@@ -55,26 +57,51 @@ function App() {
 
   const MenuButton = ({
     title,
+    subtitle,
     onPress,
     isWorking = false,
+    disabled = false,
   }: {
     title: string;
+    subtitle?: string;
     onPress: () => void;
     isWorking?: boolean;
+    disabled?: boolean;
   }) => (
     <TouchableOpacity
-      style={[styles.menuButton, isWorking ? styles.workingButton : styles.placeholderButton]}
+      style={[
+        styles.menuButton,
+        isWorking ? styles.workingButton : styles.placeholderButton,
+        disabled && styles.disabledButton,
+      ]}
       onPress={onPress}
       activeOpacity={0.7}
+      disabled={disabled}
     >
-      <Text style={[styles.menuButtonText, isWorking ? styles.workingButtonText : styles.placeholderButtonText]}>
+      <Text
+        style={[
+          styles.menuButtonText,
+          isWorking ? styles.workingButtonText : styles.placeholderButtonText,
+          disabled && styles.disabledButtonText,
+        ]}
+      >
         {title}
       </Text>
+      {subtitle ? (
+        <Text
+          style={[
+            styles.menuButtonSubtitle,
+            disabled ? styles.disabledSubtitleText : styles.placeholderButtonSubtitle,
+          ]}
+        >
+          {subtitle}
+        </Text>
+      ) : null}
     </TouchableOpacity>
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#f8f9fa">
       <View style={styles.header}>
         <Text style={styles.title}>Self Demo App</Text>
         <Text style={styles.subtitle}>Mobile SDK Alpha - Available Screens</Text>
@@ -87,8 +114,24 @@ function App() {
           title="⏳ Register Document"
           onPress={() => navigate('register')}
           isWorking={Boolean(mockDocument)}
+          disabled={!mockDocument}
+          subtitle={
+            mockDocument
+              ? 'View the mock document registration flow'
+              : 'Generate mock data to unlock this demo'
+          }
         />
-        <MenuButton title="⏳ Prove QR Code" onPress={() => navigate('prove')} isWorking={Boolean(mockDocument)} />
+        <MenuButton
+          title="⏳ Prove QR Code"
+          onPress={() => navigate('prove')}
+          isWorking={Boolean(mockDocument)}
+          disabled={!mockDocument}
+          subtitle={
+            mockDocument
+              ? 'Walk through the proof sharing experience'
+              : 'Create mock data to try this screen'
+          }
+        />
       </View>
 
       <View style={styles.section}>
@@ -107,7 +150,7 @@ function App() {
         <Text style={styles.footerText}>✅ Working | ⏳ Placeholder (Not Implemented)</Text>
         <Text style={styles.footerSubtext}>Tap any screen to explore the demo interface</Text>
       </View>
-    </ScrollView>
+    </SafeAreaScrollView>
   );
 }
 
@@ -172,11 +215,29 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
+  menuButtonSubtitle: {
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: 'center',
+  },
   workingButtonText: {
     color: '#fff',
   },
   placeholderButtonText: {
     color: '#666',
+  },
+  placeholderButtonSubtitle: {
+    color: '#666',
+  },
+  disabledButton: {
+    backgroundColor: '#f2f4f6',
+    borderColor: '#d0d7de',
+  },
+  disabledButtonText: {
+    color: '#9aa1a9',
+  },
+  disabledSubtitleText: {
+    color: '#b0b7bf',
   },
   footer: {
     marginTop: 20,

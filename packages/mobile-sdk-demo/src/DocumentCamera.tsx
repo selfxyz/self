@@ -3,7 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
+
+import SafeAreaScrollView from './components/SafeAreaScrollView';
 
 type Props = {
   onBack: () => void;
@@ -11,7 +13,7 @@ type Props = {
 
 export default function DocumentCamera({ onBack }: Props) {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Document Camera</Text>
       <Text style={styles.subtitle}>Passport/ID Scanning</Text>
 
@@ -30,7 +32,7 @@ export default function DocumentCamera({ onBack }: Props) {
       </View>
 
       <Button title="Back to Menu" onPress={onBack} />
-    </ScrollView>
+    </SafeAreaScrollView>
   );
 }
 
