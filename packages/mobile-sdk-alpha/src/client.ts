@@ -11,7 +11,17 @@ import { useProvingStore } from './proving/provingMachine';
 import { useProtocolStore } from './stores/protocolStore';
 import { useSelfAppStore } from './stores/selfAppStore';
 import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
-import type { Adapters, Config, DocumentCatalog, IDDocument, LogLevel, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
+import type {
+  Adapters,
+  Config,
+  DocumentCatalog,
+  IDDocument,
+  LogLevel,
+  ScanOpts,
+  ScanResult,
+  SelfClient,
+  Unsubscribe,
+} from './types/public';
 import { TrackEventParams } from './types/public';
 /**
  * Optional adapter implementations used when a consumer does not provide their

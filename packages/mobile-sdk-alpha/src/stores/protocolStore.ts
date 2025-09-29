@@ -24,9 +24,9 @@ import {
   TREE_URL,
   TREE_URL_STAGING,
 } from '@selfxyz/common';
+import { Environment } from '@selfxyz/common/utils/types';
 
 import type { SelfClient } from '../types/public';
-import { Environment } from '@selfxyz/common/utils/types';
 
 export interface ProtocolState {
   passport: {

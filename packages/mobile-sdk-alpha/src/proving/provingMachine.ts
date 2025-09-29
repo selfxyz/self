@@ -109,9 +109,7 @@ const _generateCircuitInputs = async (
       break;
     case 'dsc':
       if (document === 'aadhaar') {
-        throw new Error(
-          'DSC circuit type is not supported for Aadhaar documents',
-        );
+        throw new Error('DSC circuit type is not supported for Aadhaar documents');
       }
       ({ inputs, circuitName, endpointType, endpoint } = generateTEEInputsDSC(
         passportData as PassportData,
@@ -1022,33 +1020,20 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         /// registration
         else {
-          const { isRegistered, csca } =
-            await isUserRegisteredWithAlternativeCSCA(
-              passportData,
-              secret as string,
-              {
-                getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
-                getAltCSCA: (docType: DocumentCategory) => {
-                  if (docType === 'aadhaar') {
-                    const publicKeys =
-                      selfClient.getProtocolState().aadhaar.public_keys;
-                    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-                    return publicKeys
-                      ? Object.fromEntries(publicKeys.map(key => [key, key]))
-                      : {};
-                  }
-                  return selfClient.getProtocolState()[docType].alternative_csca;
-                },
-              },
-            );
-          selfClient.logProofEvent(
-            'info',
-            'Alternative CSCA registration check',
-            context,
-            {
-              registered: isRegistered,
-            }
-          );
+          const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
+            getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
+            getAltCSCA: (docType: DocumentCategory) => {
+              if (docType === 'aadhaar') {
+                const publicKeys = selfClient.getProtocolState().aadhaar.public_keys;
+                // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+                return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};
+              }
+              return selfClient.getProtocolState()[docType].alternative_csca;
+            },
+          });
+          selfClient.logProofEvent('info', 'Alternative CSCA registration check', context, {
+            registered: isRegistered,
+          });
           if (isRegistered) {
             await reStorePassportDataWithRightCSCA(selfClient, passportData, csca as string);
 
