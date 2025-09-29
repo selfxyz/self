@@ -80,7 +80,6 @@ const RecoverWithPhraseScreen: React.FC = () => {
               : {};
           }
 
-          // TODO: seems like this is actually fine?
           return useProtocolStore.getState()[docCategory].alternative_csca;
         },
       },
