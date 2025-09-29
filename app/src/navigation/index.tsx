@@ -14,7 +14,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
-import { getAesopScreens } from '@/navigation/aesop';
 import devScreens from '@/navigation/devTools';
 import documentScreens from '@/navigation/document';
 import homeScreens from '@/navigation/home';
@@ -33,8 +32,6 @@ export const navigationScreens = {
   ...settingsScreens,
   ...recoveryScreens,
   ...devScreens, // allow in production for testing
-  // add last to override other screens
-  ...getAesopScreens(),
 };
 const AppNavigation = createNativeStackNavigator({
   id: undefined,

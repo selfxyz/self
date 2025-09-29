@@ -20,4 +20,4 @@ mobile-sdk-alpha-ci.tgz
 dataInput.d.ts
 
 # Private Android modules (cloned at build time)
-app/android/android-passport-reader/
+app/android/android-passport-nfc-reader/

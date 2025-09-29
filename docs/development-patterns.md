@@ -15,8 +15,6 @@ export const navigationScreens = {
   ...settingsScreens,
   ...recoveryScreens,
   ...devScreens,
-  // Feature screens added last to override others
-  ...getAesopScreens(),
 };
 
 // Platform-specific initial routes

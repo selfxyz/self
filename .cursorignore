@@ -130,7 +130,7 @@ contracts/test/utils/smt.json
 circuits/circuits/utils/crypto/ec/powers/
 
 # Test data files
-app/android/android-passport-reader/app/src/main/assets/tessdata/
+app/android/android-passport-nfc-reader/app/src/main/assets/tessdata/
 
 # ========================================
 # Development & Testing
@@ -197,7 +197,7 @@ app/ios/App Thinning Size Report.txt
 *.iml
 .gradle/
 local.properties
-app/android/android-passport-reader/examples/
+app/android/android-passport-nfc-reader/examples/
 
 # React Native config
 app/react-native.config.cjs
