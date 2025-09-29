@@ -97,10 +97,7 @@ export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-// Documents utils
 // Core functions
-export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
-
 export { isPassportDataValid } from './validation/document';
 
 // Document validation
