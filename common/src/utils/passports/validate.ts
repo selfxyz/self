@@ -316,9 +316,7 @@ export async function isUserRegisteredWithAlternativeCSCA(
     getAltCSCA,
   }: {
     getCommitmentTree: (docCategory: DocumentCategory) => string;
-    getAltCSCA: <D extends DocumentCategory>(
-      docCategory: D
-    ) => D extends 'aadhaar' ? AadhaarPublicKeys : AlternativeCSCA;
+    getAltCSCA: (docCategory: DocumentCategory) => AlternativeCSCA;
   }
 ): Promise<{ isRegistered: boolean; csca: string | null }> {
   if (!passportData) {
