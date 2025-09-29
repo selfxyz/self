@@ -259,7 +259,7 @@ const AadhaarUploadScreen: React.FC = () => {
           paddingVertical={20}
         >
           <Image
-            source={AadhaarImage}
+            source={AadhaarImage as any}
             width="100%"
             height="100%"
             objectFit="contain"

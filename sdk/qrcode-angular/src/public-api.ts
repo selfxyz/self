@@ -20,6 +20,7 @@ export { provideSelfLottie } from './lib/providers';
 // Re-export types from common
 export {
   type SelfAppDisclosureConfig,
+  getUniversalLink,
   countryCodes,
   SelfAppBuilder,
   type Country3LetterCode,

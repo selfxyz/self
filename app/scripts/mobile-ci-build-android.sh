@@ -87,28 +87,28 @@ cd "$PROJECT_ROOT"
 
 log "Working directory: $(pwd)"
 
-# Clone android-passport-reader if it doesn't exist (for local development)
+# Clone android-passport-nfc-reader if it doesn't exist (for local development)
 # Note: In CI, this is usually handled by GitHub action, but we keep this as fallback
-if [[ ! -d "app/android/android-passport-reader" ]]; then
-  log "Cloning android-passport-reader for build..."
+if [[ ! -d "app/android/android-passport-nfc-reader" ]]; then
+  log "Cloning android-passport-nfc-reader for build..."
   cd app/android
 
   # Use different clone methods based on environment
   if is_ci && [[ -n "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]]; then
     # CI environment with PAT (fallback if action didn't run)
-    git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/selfxyz/android-passport-reader.git" || {
-      log "ERROR: Failed to clone android-passport-reader with PAT"
+    git clone "https://${SELFXYZ_INTERNAL_REPO_PAT}@github.com/selfxyz/android-passport-nfc-reader.git" || {
+      log "ERROR: Failed to clone android-passport-nfc-reader with PAT"
       exit 1
     }
   elif [[ -n "${SSH_AUTH_SOCK:-}" ]] || [[ -f "${HOME}/.ssh/id_rsa" ]] || [[ -f "${HOME}/.ssh/id_ed25519" ]]; then
     # Local development with SSH
-    git clone "git@github.com:selfxyz/android-passport-reader.git" || {
-      log "ERROR: Failed to clone android-passport-reader with SSH"
+    git clone "git@github.com:selfxyz/android-passport-nfc-reader.git" || {
+      log "ERROR: Failed to clone android-passport-nfc-reader with SSH"
       log "Please ensure you have SSH access to the repository or set SELFXYZ_INTERNAL_REPO_PAT"
       exit 1
     }
   else
-    log "ERROR: No authentication method available for cloning android-passport-reader"
+    log "ERROR: No authentication method available for cloning android-passport-nfc-reader"
     log "Please either:"
     log "  - Set up SSH access (for local development)"
     log "  - Set SELFXYZ_INTERNAL_REPO_PAT environment variable (for CI)"
@@ -116,11 +116,11 @@ if [[ ! -d "app/android/android-passport-reader" ]]; then
   fi
 
   cd ../../
-  log "✅ android-passport-reader cloned successfully"
+  log "✅ android-passport-nfc-reader cloned successfully"
 elif is_ci; then
-  log "📁 android-passport-reader exists (likely cloned by GitHub action)"
+  log "📁 android-passport-nfc-reader exists (likely cloned by GitHub action)"
 else
-  log "📁 android-passport-reader already exists - preserving existing directory"
+  log "📁 android-passport-nfc-reader already exists - preserving existing directory"
 fi
 
 # Build and package the SDK with timeout

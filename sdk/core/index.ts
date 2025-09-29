@@ -3,6 +3,7 @@ import { countryCodes } from '@selfxyz/common/constants/constants';
 import { getUniversalLink } from '@selfxyz/common/utils/appType';
 import { countries } from '@selfxyz/common/constants/countries';
 import type { AttestationId, VerificationResult, VerificationConfig } from 'src/types/types.js';
+import { ATTESTATION_ID } from 'src/utils/constants.js';
 import type { IConfigStorage } from 'src/store/interface.js';
 import { DefaultConfigStore } from 'src/store/DefaultConfigStore.js';
 import { AllIds } from 'src/utils/constants.js';
@@ -17,6 +18,7 @@ import {
 
 export {
   SelfBackendVerifier,
+  ATTESTATION_ID,
   countryCodes,
   getUniversalLink,
   countries,

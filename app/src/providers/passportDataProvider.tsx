@@ -44,17 +44,16 @@ import type { PropsWithChildren } from 'react';
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { isMRZDocument } from '@selfxyz/common';
 import type {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-} from '@selfxyz/common/utils';
+} from '@selfxyz/common/types/certificates';
 import {
   brutforceSignatureAlgorithmDsc,
   calculateContentHash,
   inferDocumentCategory,
-  parseCertificateSimple,
 } from '@selfxyz/common/utils';
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import type {
   AadhaarData,
   DocumentCatalog,
@@ -62,6 +61,7 @@ import type {
   IDDocument,
   PassportData,
 } from '@selfxyz/common/utils/types';
+import { isMRZDocument } from '@selfxyz/common/utils/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 

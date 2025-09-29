@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
-
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
@@ -13,7 +11,7 @@ import { useProvingStore } from './proving/provingMachine';
 import { useProtocolStore } from './stores/protocolStore';
 import { useSelfAppStore } from './stores/selfAppStore';
 import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
-import type { Adapters, Config, LogLevel, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
+import type { Adapters, Config, DocumentCatalog, IDDocument, LogLevel, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
 import { TrackEventParams } from './types/public';
 /**
  * Optional adapter implementations used when a consumer does not provide their

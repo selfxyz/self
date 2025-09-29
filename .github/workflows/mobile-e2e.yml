@@ -107,10 +107,10 @@ jobs:
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
-      - name: Clone android-passport-reader
-        uses: ./.github/actions/clone-android-passport-reader
+      - name: Clone android-passport-nfc-reader
+        uses: ./.github/actions/clone-android-passport-nfc-reader
         with:
           working_directory: app
           selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
@@ -120,7 +120,7 @@ jobs:
           chmod +x app/android/gradlew
           (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
-      - name: Verify APK and android-passport-reader integration
+      - name: Verify APK and android-passport-nfc-reader integration
         run: |
           echo "🔍 Verifying build artifacts..."
           APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
@@ -131,15 +131,15 @@ jobs:
           APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
           echo "📱 APK size: $APK_SIZE bytes"
 
-          # Verify android-passport-reader was properly integrated (skip for forks)
+          # Verify android-passport-nfc-reader was properly integrated (skip for forks)
           if [ -z "${SELFXYZ_INTERNAL_REPO_PAT:-}" ]; then
             echo "🔕 No PAT available — skipping private module verification"
-          elif [ -d "app/android/android-passport-reader" ]; then
-            echo "✅ android-passport-reader directory exists"
-            echo "📁 android-passport-reader contents:"
-            ls -la app/android/android-passport-reader/ | head -10
+          elif [ -d "app/android/android-passport-nfc-reader" ]; then
+            echo "✅ android-passport-nfc-reader directory exists"
+            echo "📁 android-passport-nfc-reader contents:"
+            ls -la app/android/android-passport-nfc-reader/ | head -10
           else
-            echo "❌ android-passport-reader directory not found"
+            echo "❌ android-passport-nfc-reader directory not found"
             exit 1
           fi
 
@@ -293,7 +293,7 @@ jobs:
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
         run: |

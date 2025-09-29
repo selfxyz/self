@@ -3,10 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useCallback } from 'react';
-import { Button, Text, YStack } from 'tamagui';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View } from 'tamagui';
 
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
+import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 import { useSelfClient } from '../../context';
 import { MRZInfo, ScanResultNFC } from '../../types/public';
@@ -40,11 +40,38 @@ export const NFCScannerScreen = ({ onSuccess, onFailure, mrzData }: ScreenProps 
   );
 
   return (
-    <YStack space="$4" padding="$4">
-      <Text fontSize="$6" fontWeight="bold">
-        NFC Scanner
-      </Text>
-      <Button onPress={() => onNFCScan({})}>Simulate NFC Scan</Button>
-    </YStack>
+    <View style={styles.container}>
+      <Text style={styles.title}>NFC Scanner</Text>
+      <TouchableOpacity style={styles.button} onPress={() => onNFCScan({})}>
+        <Text style={styles.buttonText}>Simulate NFC Scan</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});

@@ -628,9 +628,7 @@ const DocumentNFCScanScreen: React.FC = () => {
               width="$8"
               alignSelf="center"
               borderRadius={1000}
-              source={{
-                uri: NFC_IMAGE,
-              }}
+              source={NFC_IMAGE}
               margin={20}
             />
           </>

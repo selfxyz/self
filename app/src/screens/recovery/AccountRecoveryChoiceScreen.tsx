@@ -6,14 +6,9 @@ import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
-import type { DocumentCategory } from '@selfxyz/common';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  getAltCSCAPublicKeys,
-  getCommitmentTree,
-} from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -35,6 +30,7 @@ import { black, slate500, slate600, white } from '@/utils/colors';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
   const selfClient = useSelfClient();
+  const { useProtocolStore } = selfClient;
   const { trackEvent } = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
   const [restoring, setRestoring] = useState(false);
@@ -67,12 +63,21 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         passportData,
         secret,
         {
-          getCommitmentTree: (docCategory: DocumentCategory) =>
-            getCommitmentTree(selfClient, docCategory),
-          // TODO: seems there's a type mismatch here
-          // @ts-ignore-next-line
-          getAltCSCA: (docCategory: DocumentCategory) => {
-            return getAltCSCAPublicKeys(selfClient, docCategory);
+          getCommitmentTree(docCategory) {
+            return useProtocolStore.getState()[docCategory].commitment_tree;
+          },
+          getAltCSCA(docCategory) {
+            if (docCategory === 'aadhaar') {
+              const publicKeys =
+                useProtocolStore.getState().aadhaar.public_keys;
+              // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+              return publicKeys
+                ? Object.fromEntries(publicKeys.map(key => [key, key]))
+                : {};
+            }
+
+            // TODO: seems like this is actually fine?
+            return useProtocolStore.getState()[docCategory].alternative_csca;
           },
         },
       );

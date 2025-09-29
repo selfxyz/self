@@ -6,8 +6,8 @@ import type { Socket } from 'socket.io-client';
 import socketIo from 'socket.io-client';
 import { create } from 'zustand';
 
-import { WS_DB_RELAYER } from '@selfxyz/common/constants';
-import type { SelfApp } from '@selfxyz/common/utils/appType';
+import type { SelfApp } from '@selfxyz/common';
+import { WS_DB_RELAYER } from '@selfxyz/common';
 
 export interface SelfAppState {
   selfApp: SelfApp | null;

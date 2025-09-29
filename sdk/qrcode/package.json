@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -110,7 +110,7 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",
-    "webpack": "^5.0.0"
+    "webpack": "^5.95.0"
   },
   "peerDependencies": {
     "lottie-react": "^2.4.0",

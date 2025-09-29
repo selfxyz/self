@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 
-import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common';
 
 import type { ProofContext } from '../proving/internal/logging';
 import { ProvingState } from '../proving/provingMachine';

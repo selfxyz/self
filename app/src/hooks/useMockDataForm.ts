@@ -14,12 +14,12 @@ export const useMockDataForm = () => {
   const [selectedDocumentType, setSelectedDocumentType] = useState<
     'mock_passport' | 'mock_id_card' | 'mock_aadhaar'
   >('mock_passport');
-  const [isInOfacList, setIsInOfacList] = useState(true);
+  const [isInOfacList, setIsInOfacList] = useState(false);
 
   const resetFormValues = () => {
     setAge(21);
     setExpiryYears(5);
-    setIsInOfacList(true);
+    setIsInOfacList(false);
     setSelectedDocumentType('mock_passport');
     setSelectedAlgorithm('sha256 rsa 65537 2048');
     setSelectedCountry('USA');

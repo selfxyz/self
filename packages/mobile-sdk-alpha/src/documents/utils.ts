@@ -2,16 +2,20 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import {
+import type {
   AadhaarData,
-  brutforceSignatureAlgorithmDsc,
-  isMRZDocument,
-  parseCertificateSimple,
+  DocumentMetadata,
+  IDDocument,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
 } from '@selfxyz/common';
-import { calculateContentHash, inferDocumentCategory } from '@selfxyz/common/utils';
-import { DocumentMetadata, IDDocument } from '@selfxyz/common/utils/types';
+import {
+  brutforceSignatureAlgorithmDsc,
+  calculateContentHash,
+  inferDocumentCategory,
+  isMRZDocument,
+  parseCertificateSimple,
+} from '@selfxyz/common';
 
 import { SelfClient } from '../types/public';
 

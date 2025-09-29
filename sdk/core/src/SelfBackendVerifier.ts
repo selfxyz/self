@@ -281,27 +281,6 @@ export class SelfBackendVerifier {
       });
     }
 
-    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[0]) {
-      issues.push({
-        type: ConfigMismatch.InvalidOfac,
-        message: 'Passport number OFAC check is not allowed',
-      });
-    }
-
-    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[1]) {
-      issues.push({
-        type: ConfigMismatch.InvalidOfac,
-        message: 'Name and DOB OFAC check is not allowed',
-      });
-    }
-
-    if (!verificationConfig.ofac && genericDiscloseOutput.ofac[2]) {
-      issues.push({
-        type: ConfigMismatch.InvalidOfac,
-        message: 'Name and YOB OFAC check is not allowed',
-      });
-    }
-
     if (issues.length > 0) {
       throw new ConfigMismatchError(issues);
     }
@@ -338,6 +317,8 @@ export class SelfBackendVerifier {
       isValid = false;
     }
 
+    const cumulativeOfac = genericDiscloseOutput.ofac.reduce((acc, curr) => acc || curr, false);
+
     return {
       attestationId,
       isValidDetails: {
@@ -347,11 +328,7 @@ export class SelfBackendVerifier {
             ? verificationConfig.minimumAge <= Number.parseInt(genericDiscloseOutput.minimumAge, 10)
             : true,
         isOfacValid:
-          verificationConfig.ofac !== undefined && verificationConfig.ofac
-            ? genericDiscloseOutput.ofac.every((enabled: boolean, index: number) =>
-                enabled ? genericDiscloseOutput.ofac[index] : true
-              )
-            : true,
+          verificationConfig.ofac !== undefined && verificationConfig.ofac ? cumulativeOfac : true,
       },
       forbiddenCountriesList,
       discloseOutput: genericDiscloseOutput,

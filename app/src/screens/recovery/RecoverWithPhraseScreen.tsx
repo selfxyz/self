@@ -9,14 +9,9 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 
-import type { DocumentCategory } from '@selfxyz/common';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  getAltCSCAPublicKeys,
-  getCommitmentTree,
-} from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import Description from '@/components/typography/Description';
@@ -38,6 +33,7 @@ import {
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation = useNavigation();
   const selfClient = useSelfClient();
+  const { useProtocolStore } = selfClient;
   const { restoreAccountFromMnemonic } = useAuth();
   const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
@@ -72,12 +68,21 @@ const RecoverWithPhraseScreen: React.FC = () => {
       passportData,
       secret as string,
       {
-        getCommitmentTree: (docCategory: DocumentCategory) =>
-          getCommitmentTree(selfClient, docCategory),
-        // TODO: seems there's a type mismatch here
-        // @ts-ignore-next-line
-        getAltCSCA: (docCategory: DocumentCategory) =>
-          getAltCSCAPublicKeys(selfClient, docCategory),
+        getCommitmentTree(docCategory) {
+          return useProtocolStore.getState()[docCategory].commitment_tree;
+        },
+        getAltCSCA(docCategory) {
+          if (docCategory === 'aadhaar') {
+            const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+            // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+            return publicKeys
+              ? Object.fromEntries(publicKeys.map(key => [key, key]))
+              : {};
+          }
+
+          // TODO: seems like this is actually fine?
+          return useProtocolStore.getState()[docCategory].alternative_csca;
+        },
       },
     );
     if (!isRegistered) {
