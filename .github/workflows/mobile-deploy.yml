@@ -177,11 +177,8 @@ jobs:
         uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/ios/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-
+          lock-file: app/Gemfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
 
       - name: Cache CocoaPods
         id: pods-cache
@@ -451,6 +448,8 @@ jobs:
 
       - name: Build Dependencies (iOS)
         if: inputs.platform != 'android'
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
@@ -727,11 +726,8 @@ jobs:
         uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/ios/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-
+          lock-file: app/Gemfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
 
       - name: Cache Gradle dependencies
         id: gradle-cache
