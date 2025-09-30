@@ -448,8 +448,6 @@ jobs:
 
       - name: Build Dependencies (iOS)
         if: inputs.platform != 'android'
-        env:
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
@@ -476,6 +474,7 @@ jobs:
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
           NODE_OPTIONS: "--max-old-space-size=8192"
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
