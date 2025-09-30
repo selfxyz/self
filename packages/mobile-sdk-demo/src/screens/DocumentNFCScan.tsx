@@ -15,11 +15,7 @@ type Props = {
 export default function DocumentNFCScan({ onBack }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader
-        title="Document NFC Scan"
-        subtitle="Read encrypted data from NFC-enabled documents"
-        onBack={onBack}
-      />
+      <StandardHeader title="Document NFC Scan" onBack={onBack} />
 
       <View style={styles.content}>
         <Text style={styles.description}>

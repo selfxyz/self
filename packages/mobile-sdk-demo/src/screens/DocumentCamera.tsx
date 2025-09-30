@@ -15,7 +15,7 @@ type Props = {
 export default function DocumentCamera({ onBack }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="Document Camera" subtitle="Passport/ID Scanning" onBack={onBack} />
+      <StandardHeader title="Document Camera" onBack={onBack} />
 
       <View style={styles.content}>
         <Text style={styles.description}>

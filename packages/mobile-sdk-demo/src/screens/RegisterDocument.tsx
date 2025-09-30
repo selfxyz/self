@@ -3,11 +3,12 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
+import StandardHeader from '../components/StandardHeader';
 
 type Props = {
   document: IDDocument | null;
@@ -16,9 +17,8 @@ type Props = {
 
 export default function RegisterDocument({ document, onBack }: Props) {
   return (
-    <SafeAreaScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Register Document</Text>
-      <Text style={styles.subtitle}>Document Registration Flow</Text>
+    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
+      <StandardHeader title="Register Document" subtitle="Document Registration Flow" onBack={onBack} />
 
       <View style={styles.content}>
         <Text style={styles.description}>
@@ -43,8 +43,6 @@ export default function RegisterDocument({ document, onBack }: Props) {
           </View>
         )}
       </View>
-
-      <Button title="Back to Menu" onPress={onBack} />
     </SafeAreaScrollView>
   );
 }
@@ -52,20 +50,9 @@ export default function RegisterDocument({ document, onBack }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    backgroundColor: '#fafbfc',
   },
   content: {
     flex: 1,

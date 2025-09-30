@@ -14,27 +14,56 @@ type Props = {
 
 export default function DocumentsList({ onBack }: Props) {
   const mockDocuments = [
-    { id: '1', type: 'Passport', country: '🇺🇸 United States', status: 'Verified', date: '2024-03-15' },
-    { id: '2', type: 'EU ID Card', country: '🇩🇪 Germany', status: 'Pending', date: '2024-03-18' },
-    { id: '3', type: 'Passport', country: '🇨🇦 Canada', status: 'Verified', date: '2024-03-20' },
+    {
+      id: 'abc123def456',
+      documentType: 'mock_passport',
+      documentCategory: 'PASSPORT',
+      nationality: 'USA',
+      isRegistered: true,
+      mock: true,
+      createdAt: '2024-03-20T14:30:00Z',
+      name: 'JANE DOE',
+      birthDate: '1990-05-15',
+      documentNumber: 'N1234567890',
+    },
   ];
 
-  const DocumentCard = ({ document }: { document: (typeof mockDocuments)[0] }) => (
-    <View style={styles.documentCard}>
-      <View style={styles.documentHeader}>
-        <Text style={styles.documentType}>{document.type}</Text>
-        <View style={[styles.statusBadge, document.status === 'Verified' ? styles.verified : styles.pending]}>
-          <Text style={styles.statusText}>{document.status}</Text>
+  const DocumentCard = ({ document }: { document: (typeof mockDocuments)[0] }) => {
+    const getDocumentTypeDisplay = () => {
+      if (document.mock) {
+        return `Mock ${document.documentCategory.charAt(0) + document.documentCategory.slice(1).toLowerCase()}`;
+      }
+      return document.documentCategory.charAt(0) + document.documentCategory.slice(1).toLowerCase();
+    };
+
+    const formatDate = (dateString: string) => {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    };
+
+    return (
+      <View style={styles.documentCard}>
+        <View style={styles.documentHeader}>
+          <Text style={styles.documentType}>{getDocumentTypeDisplay()}</Text>
+          <View style={[styles.statusBadge, document.isRegistered ? styles.verified : styles.pending]}>
+            <Text style={styles.statusText}>{document.isRegistered ? 'Registered' : 'Pending'}</Text>
+          </View>
         </View>
+        <Text style={styles.documentCountry}>
+          {document.nationality} • {document.name}
+        </Text>
+        <Text style={styles.documentNumber}>Document: {document.documentNumber}</Text>
+        <Text style={styles.documentDate}>Created: {formatDate(document.createdAt)}</Text>
       </View>
-      <Text style={styles.documentCountry}>{document.country}</Text>
-      <Text style={styles.documentDate}>Registered: {document.date}</Text>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="📄 My Documents" subtitle="Your registered identity documents" onBack={onBack} />
+      <StandardHeader title="My Documents" subtitle="Your registered identity documents" onBack={onBack} />
 
       <View style={styles.content}>
         {mockDocuments.map(document => (
@@ -42,8 +71,10 @@ export default function DocumentsList({ onBack }: Props) {
         ))}
 
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>✨ This is a demo interface</Text>
-          <Text style={styles.emptySubtext}>In a real app, this would show your actual registered documents</Text>
+          <Text style={styles.emptyText}>✨ Demo Document Registry</Text>
+          <Text style={styles.emptySubtext}>
+            This shows your mock passport that was generated and registered through the demo flow
+          </Text>
         </View>
       </View>
     </SafeAreaScrollView>
@@ -103,6 +134,11 @@ const styles = StyleSheet.create({
   documentCountry: {
     fontSize: 16,
     color: '#666',
+    marginBottom: 4,
+  },
+  documentNumber: {
+    fontSize: 14,
+    color: '#777',
     marginBottom: 4,
   },
   documentDate: {

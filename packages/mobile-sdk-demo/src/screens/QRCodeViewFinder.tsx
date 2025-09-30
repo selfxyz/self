@@ -15,11 +15,7 @@ type Props = {
 export default function QRCodeViewFinder({ onBack }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader
-        title="QR Code View Finder"
-        subtitle="Scan QR codes to receive or share verification proofs"
-        onBack={onBack}
-      />
+      <StandardHeader title="QR Code View Finder" onBack={onBack} />
 
       <View style={styles.content}>
         <Text style={styles.description}>

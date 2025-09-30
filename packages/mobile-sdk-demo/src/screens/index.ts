@@ -117,7 +117,7 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '📋 Your Data',
     status: 'placeholder',
     subtitle: 'Track your verification and proof activities',
-    load: () => require('./ActivityHistory').default,
+    load: () => require('./ProofHistory').default,
     getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
   },
 ];

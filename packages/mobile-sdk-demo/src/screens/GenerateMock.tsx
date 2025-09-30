@@ -84,11 +84,7 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
 
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader
-        title="✅ Generate Mock Data"
-        subtitle="Create sample passport data for testing other features"
-        onBack={onBack}
-      />
+      <StandardHeader title="Generate Mock Data" onBack={onBack} />
       <Text style={styles.label}>Age</Text>
       <TextInput style={styles.input} keyboardType="numeric" value={age} onChangeText={setAge} />
       <Text style={styles.label}>Expiry Years</Text>
