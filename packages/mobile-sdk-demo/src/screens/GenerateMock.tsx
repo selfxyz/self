@@ -11,6 +11,7 @@ import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } fr
 
 import { Picker } from '@react-native-picker/picker';
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
+import StandardHeader from '../components/StandardHeader';
 
 const algorithmOptions = Object.keys(signatureAlgorithmToStrictSignatureAlgorithm);
 const documentTypeOptions = ['mock_passport', 'mock_id_card'] as const;
@@ -82,8 +83,12 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
   };
 
   return (
-    <SafeAreaScrollView contentContainerStyle={styles.container}>
-      <Button title="Back" onPress={onBack} />
+    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
+      <StandardHeader
+        title="✅ Generate Mock Data"
+        subtitle="Create sample passport data for testing other features"
+        onBack={onBack}
+      />
       <Text style={styles.label}>Age</Text>
       <TextInput style={styles.input} keyboardType="numeric" value={age} onChangeText={setAge} />
       <Text style={styles.label}>Expiry Years</Text>
@@ -135,7 +140,12 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16 },
+  container: {
+    flexGrow: 1,
+    backgroundColor: '#fafbfc',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
   label: { marginVertical: 8, fontWeight: 'bold' },
   input: {
     borderWidth: 1,

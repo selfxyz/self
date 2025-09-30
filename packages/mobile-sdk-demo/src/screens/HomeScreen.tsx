@@ -6,7 +6,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
-import { orderedSectionEntries, screenMap, type ScreenContext } from './index';
+import { orderedSectionEntries, type ScreenContext } from './index';
 
 type Props = {
   screenContext: ScreenContext;
@@ -49,7 +49,14 @@ export default function HomeScreen({ screenContext }: Props) {
       </Text>
       {subtitle ? (
         <Text
-          style={[styles.menuButtonSubtitle, disabled ? styles.disabledSubtitleText : styles.placeholderButtonSubtitle]}
+          style={[
+            styles.menuButtonSubtitle,
+            disabled
+              ? styles.disabledSubtitleText
+              : isWorking
+                ? styles.workingButtonSubtitle
+                : styles.placeholderButtonSubtitle,
+          ]}
         >
           {subtitle}
         </Text>
@@ -58,10 +65,9 @@ export default function HomeScreen({ screenContext }: Props) {
   );
 
   return (
-    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#f8f9fa">
+    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
       <View style={styles.header}>
         <Text style={styles.title}>Self Demo App</Text>
-        <Text style={styles.subtitle}>Mobile SDK Alpha - Available Screens</Text>
       </View>
 
       {orderedSectionEntries.map(({ title, items }) => (
@@ -93,86 +99,108 @@ export default function HomeScreen({ screenContext }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#f8f9fa',
-    padding: 20,
+    backgroundColor: '#fafbfc',
+    paddingHorizontal: 24,
+    paddingVertical: 20,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
     paddingTop: 20,
+    paddingBottom: 40,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 34,
+    fontWeight: '700',
     textAlign: 'center',
-    color: '#1a1a1a',
-    marginBottom: 8,
+    color: '#0d1117',
+    marginBottom: 0,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 17,
+    color: '#656d76',
     textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  tagline: {
+    fontSize: 15,
+    color: '#8b949e',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    lineHeight: 22,
   },
   section: {
     marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#333',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 24,
+    color: '#656d76',
     textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
   },
   menuButton: {
     width: '100%',
     paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginBottom: 12,
-    shadowColor: '#000',
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: '#1f2328',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
   },
   workingButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#d1d9e0',
   },
   placeholderButton: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: '#e1e5e9',
+    borderColor: '#d1d9e0',
   },
   menuButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '600',
     textAlign: 'center',
+    letterSpacing: -0.2,
   },
   menuButtonSubtitle: {
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 6,
     textAlign: 'center',
+    lineHeight: 18,
+    opacity: 0.9,
   },
   workingButtonText: {
-    color: '#fff',
+    color: '#0d1117',
   },
   placeholderButtonText: {
-    color: '#666',
+    color: '#0d1117',
   },
   placeholderButtonSubtitle: {
-    color: '#666',
+    color: '#656d76',
+  },
+  workingButtonSubtitle: {
+    color: '#656d76',
   },
   disabledButton: {
-    backgroundColor: '#f2f4f6',
-    borderColor: '#d0d7de',
+    backgroundColor: '#f6f8fa',
+    borderColor: '#d1d9e0',
+    opacity: 0.7,
   },
   disabledButtonText: {
-    color: '#9aa1a9',
+    color: '#8b949e',
   },
   disabledSubtitleText: {
-    color: '#b0b7bf',
+    color: '#656d76',
   },
 });

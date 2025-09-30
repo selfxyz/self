@@ -6,7 +6,7 @@ import type { ComponentType } from 'react';
 
 import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 
-export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'qr';
+export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'qr' | 'documents' | 'activity';
 
 export type ScreenContext = {
   navigate: (next: ScreenRoute) => void;
@@ -34,8 +34,9 @@ export type ScreenRoute = 'home' | ScreenId;
 export const screenDescriptors: ScreenDescriptor[] = [
   {
     id: 'generate',
-    title: '✅ Generate Mock Data',
-    sectionTitle: '🎯 Core Features',
+    title: 'Generate Mock Document',
+    subtitle: 'Create sample passport data for testing',
+    sectionTitle: '⭐ Core Features',
     status: 'working',
     load: () => require('./GenerateMock').default,
     getProps: ({ setMockDocument, navigate }) => ({
@@ -46,8 +47,8 @@ export const screenDescriptors: ScreenDescriptor[] = [
   },
   {
     id: 'register',
-    title: '⏳ Register Document',
-    sectionTitle: '🎯 Core Features',
+    title: 'Register Document',
+    sectionTitle: '⭐ Core Features',
     status: 'placeholder',
     subtitle: ({ mockDocument }) =>
       mockDocument ? 'View the mock document registration flow' : 'Generate mock data to unlock this demo',
@@ -61,8 +62,8 @@ export const screenDescriptors: ScreenDescriptor[] = [
   },
   {
     id: 'prove',
-    title: '⏳ Prove QR Code',
-    sectionTitle: '🎯 Core Features',
+    title: 'Prove QR Code',
+    sectionTitle: '⭐ Core Features',
     status: 'placeholder',
     subtitle: ({ mockDocument }) =>
       mockDocument ? 'Walk through the proof sharing experience' : 'Create mock data to try this screen',
@@ -76,26 +77,47 @@ export const screenDescriptors: ScreenDescriptor[] = [
   },
   {
     id: 'camera',
-    title: '⏳ Document Camera',
-    sectionTitle: '📷 Document Scanning',
+    title: 'Document MRZ',
+    subtitle: 'Scan passport or ID card using your device camera',
+    sectionTitle: '📸 Scanning',
     status: 'placeholder',
     load: () => require('./DocumentCamera').default,
     getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
   },
   {
     id: 'nfc',
-    title: '⏳ Document NFC Scan',
-    sectionTitle: '📷 Document Scanning',
+    title: 'Document NFC',
+    subtitle: 'Read encrypted data from NFC-enabled documents',
+    sectionTitle: '📸 Scanning',
     status: 'placeholder',
     load: () => require('./DocumentNFCScan').default,
     getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
   },
   {
     id: 'qr',
-    title: '⏳ QR Code View Finder',
-    sectionTitle: '📱 QR Code Features',
+    title: 'QR Code Proof',
+    subtitle: 'Scan QR codes to receive or share verification proofs',
+    sectionTitle: '📸 Scanning',
     status: 'placeholder',
     load: () => require('./QRCodeViewFinder').default,
+    getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
+  },
+  {
+    id: 'documents',
+    title: 'Document List',
+    sectionTitle: '📋 Your Data',
+    status: 'placeholder',
+    subtitle: 'View all registered identity documents',
+    load: () => require('./DocumentsList').default,
+    getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
+  },
+  {
+    id: 'activity',
+    title: 'Proof History',
+    sectionTitle: '📋 Your Data',
+    status: 'placeholder',
+    subtitle: 'Track your verification and proof activities',
+    load: () => require('./ActivityHistory').default,
     getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
   },
 ];
