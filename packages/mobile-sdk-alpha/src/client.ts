@@ -118,11 +118,11 @@ export function createSelfClient({
     return _adapters.scanner.scan(opts);
   }
 
-  async function trackEvent(event: string, payload?: TrackEventParams): Promise<void> {
-    if (!adapters.analytics) {
+  function trackEvent(event: string, payload?: TrackEventParams): void {
+    if (!_adapters.analytics) {
       return;
     }
-    return adapters.analytics.trackEvent(event, payload);
+    _adapters.analytics.trackEvent(event, payload);
   }
   /**
    * Retrieves the private key via the auth adapter.

@@ -3,7 +3,7 @@ name: Mobile Auto Deploy
 on:
   pull_request:
     types: [closed]
-    branches: [main, dev]
+    branches: [staging]
     paths:
       - "app/**"
       - "!app/**/*.md"
@@ -46,7 +46,7 @@ jobs:
           if [[ "${{ github.base_ref }}" == "main" ]]; then
             echo "deployment_track=production" >> $GITHUB_OUTPUT
             echo "🚀 Deployment track: production"
-          elif [[ "${{ github.base_ref }}" == "dev" ]]; then
+          elif [[ "${{ github.base_ref }}" == "staging" ]]; then
             echo "deployment_track=internal" >> $GITHUB_OUTPUT
             echo "🧪 Deployment track: internal testing"
           fi

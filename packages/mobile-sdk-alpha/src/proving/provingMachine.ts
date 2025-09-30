@@ -484,7 +484,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     secret: null,
     circuitType: null,
     env: null,
-    selfApp: null,
     error_code: null,
     reason: null,
     endpointType: null,
