@@ -61,21 +61,6 @@ export const screenDescriptors: ScreenDescriptor[] = [
     }),
   },
   {
-    id: 'prove',
-    title: 'Prove QR Code',
-    sectionTitle: '⭐ Core Features',
-    status: 'placeholder',
-    subtitle: ({ mockDocument }) =>
-      mockDocument ? 'Walk through the proof sharing experience' : 'Create mock data to try this screen',
-    getStatus: ({ mockDocument }) => (mockDocument ? 'working' : 'placeholder'),
-    isDisabled: ({ mockDocument }) => !mockDocument,
-    load: () => require('./ProveQRCode').default,
-    getProps: ({ mockDocument, navigate }) => ({
-      document: mockDocument,
-      onBack: () => navigate('home'),
-    }),
-  },
-  {
     id: 'camera',
     title: 'Document MRZ',
     subtitle: 'Scan passport or ID card using your device camera',
