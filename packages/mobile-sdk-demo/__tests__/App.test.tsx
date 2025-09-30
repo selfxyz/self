@@ -45,7 +45,7 @@ test('navigates to a screen using the registry loader', () => {
 
   const buttons = rendered.root.findAllByType(TouchableOpacity);
   const cameraButton = buttons.find(button =>
-    button.findAllByType(Text).some(node => node.props.children === '⏳ Document Camera')
+    button.findAllByType(Text).some(node => node.props.children === '⏳ Document Camera'),
   );
 
   expect(cameraButton).toBeDefined();

@@ -25,7 +25,8 @@ class SelfMRZScannerModule: NSObject, RCTBridgeModule {
 
   @objc func startScanning(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
       DispatchQueue.main.async {
-          guard let rootViewController = UIApplication.shared.keyWindow?.rootViewController else {
+          guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                let rootViewController = windowScene.windows.first?.rootViewController else {
               reject("error", "Unable to find root view controller", nil)
               return
           }

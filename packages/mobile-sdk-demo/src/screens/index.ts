@@ -6,14 +6,7 @@ import type { ComponentType } from 'react';
 
 import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 
-export type ScreenId =
-  | 'generate'
-  | 'register'
-  | 'prove'
-  | 'camera'
-  | 'nfc'
-  | 'onboarding'
-  | 'qr';
+export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'qr';
 
 export type ScreenContext = {
   navigate: (next: ScreenRoute) => void;
@@ -57,9 +50,7 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '🎯 Core Features',
     status: 'placeholder',
     subtitle: ({ mockDocument }) =>
-      mockDocument
-        ? 'View the mock document registration flow'
-        : 'Generate mock data to unlock this demo',
+      mockDocument ? 'View the mock document registration flow' : 'Generate mock data to unlock this demo',
     getStatus: ({ mockDocument }) => (mockDocument ? 'working' : 'placeholder'),
     isDisabled: ({ mockDocument }) => !mockDocument,
     load: () => require('./RegisterDocument').default,
@@ -74,9 +65,7 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '🎯 Core Features',
     status: 'placeholder',
     subtitle: ({ mockDocument }) =>
-      mockDocument
-        ? 'Walk through the proof sharing experience'
-        : 'Create mock data to try this screen',
+      mockDocument ? 'Walk through the proof sharing experience' : 'Create mock data to try this screen',
     getStatus: ({ mockDocument }) => (mockDocument ? 'working' : 'placeholder'),
     isDisabled: ({ mockDocument }) => !mockDocument,
     load: () => require('./ProveQRCode').default,
@@ -102,14 +91,6 @@ export const screenDescriptors: ScreenDescriptor[] = [
     getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
   },
   {
-    id: 'onboarding',
-    title: '⏳ Document Onboarding',
-    sectionTitle: '📷 Document Scanning',
-    status: 'placeholder',
-    load: () => require('./DocumentOnboarding').default,
-    getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
-  },
-  {
     id: 'qr',
     title: '⏳ QR Code View Finder',
     sectionTitle: '📱 QR Code Features',
@@ -127,16 +108,17 @@ export const screenMap = screenDescriptors.reduce<Record<ScreenId, ScreenDescrip
   {} as Record<ScreenId, ScreenDescriptor>,
 );
 
-export const orderedSectionEntries = screenDescriptors.reduce<
-  Array<{ title: string; items: ScreenDescriptor[] }>
->((sections, descriptor) => {
-  const existingSection = sections.find((section) => section.title === descriptor.sectionTitle);
+export const orderedSectionEntries = screenDescriptors.reduce<Array<{ title: string; items: ScreenDescriptor[] }>>(
+  (sections, descriptor) => {
+    const existingSection = sections.find(section => section.title === descriptor.sectionTitle);
 
-  if (existingSection) {
-    existingSection.items.push(descriptor);
+    if (existingSection) {
+      existingSection.items.push(descriptor);
+      return sections;
+    }
+
+    sections.push({ title: descriptor.sectionTitle, items: [descriptor] });
     return sections;
-  }
-
-  sections.push({ title: descriptor.sectionTitle, items: [descriptor] });
-  return sections;
-}, []);
+  },
+  [],
+);
