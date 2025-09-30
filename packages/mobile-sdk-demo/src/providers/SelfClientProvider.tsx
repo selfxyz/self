@@ -7,7 +7,7 @@ import type { PropsWithChildren } from 'react';
 import React, { useMemo } from 'react';
 
 import {
-  SelfMobileSdk,
+  SelfClientProvider as SdkSelfClientProvider,
   createListenersMap,
   type Adapters,
   type TrackEventParams,
@@ -85,9 +85,9 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
   }, []);
 
   return (
-    <SelfMobileSdk config={config} adapters={adapters} listeners={listeners}>
+    <SdkSelfClientProvider config={config} adapters={adapters} listeners={listeners}>
       {children}
-    </SelfMobileSdk>
+    </SdkSelfClientProvider>
   );
 }
 
