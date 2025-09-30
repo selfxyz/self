@@ -23789,7 +23789,7 @@ __metadata:
     react: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-get-random-values: "npm:^1.11.0"
-    react-native-safe-area-context: "npm:^4.10.5"
+    react-native-safe-area-context: "npm:^5.6.1"
     react-test-renderer: "npm:^18.3.1"
     stream-browserify: "npm:^3.0.0"
     tamagui: "npm:1.126.14"
@@ -26408,16 +26408,6 @@ __metadata:
   version: 1.0.3
   resolution: "react-native-passport-reader@npm:1.0.3"
   checksum: 10c0/bfb7454d4859d40c10a28faacb279e135faec215b29ee7965592651ed205dd298ae5282aba9c403c729d0c8a78cadab46b7d8825c6782e29248f1cadf0a1e794
-  languageName: node
-  linkType: hard
-
-"react-native-safe-area-context@npm:^4.10.5":
-  version: 4.14.1
-  resolution: "react-native-safe-area-context@npm:4.14.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/c34c6fe9002a89c80ddb206fc68db99f1e432e19c7cf5aaa93b430584051b7e7caf889093224029437dc5b66fe434b09e9950d755aa40b58e1e3a1f976c2fec1
   languageName: node
   linkType: hard
 
