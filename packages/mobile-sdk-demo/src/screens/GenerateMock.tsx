@@ -5,9 +5,13 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
-import { countryCodes } from '@selfxyz/common';
-import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
-import { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from '@selfxyz/mobile-sdk-alpha';
+import { calculateContentHash, countryCodes, inferDocumentCategory, isMRZDocument } from '@selfxyz/common';
+import type { DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import {
+  generateMockDocument,
+  signatureAlgorithmToStrictSignatureAlgorithm,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { Picker } from '@react-native-picker/picker';
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
@@ -25,12 +29,13 @@ const defaultDocumentType = 'mock_passport';
 const defaultOfac = true;
 
 type Props = {
-  onGenerate?: (doc: IDDocument) => void;
+  onDocumentStored?: () => Promise<void> | void;
   onNavigate: (screen: 'home' | 'register' | 'prove') => void;
   onBack: () => void;
 };
 
-export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) {
+export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: Props) {
+  const selfClient = useSelfClient();
   const [age, setAge] = useState(defaultAge);
   const [expiryYears, setExpiryYears] = useState(defaultExpiryYears);
   const [isInOfacList, setIsInOfacList] = useState(defaultOfac);
@@ -73,8 +78,28 @@ export default function GenerateMock({ onGenerate, onNavigate, onBack }: Props) 
         selectedCountry: country,
         selectedDocumentType: documentType,
       });
+      const documentId = calculateContentHash(doc);
+      const catalog = await selfClient.loadDocumentCatalog();
+      const existing = catalog.documents.find(entry => entry.id === documentId);
+
+      await selfClient.saveDocument(documentId, doc);
+
+      if (!existing) {
+        const metadata: DocumentMetadata = {
+          id: documentId,
+          documentType: doc.documentType,
+          documentCategory: doc.documentCategory || inferDocumentCategory(doc.documentType),
+          data: isMRZDocument(doc) ? doc.mrz : 'qrData' in doc ? doc.qrData : '',
+          mock: doc.mock ?? false,
+          isRegistered: false,
+        };
+        catalog.documents.push(metadata);
+      }
+
+      catalog.selectedDocumentId = documentId;
+      await selfClient.saveDocumentCatalog(catalog);
+      await onDocumentStored?.();
       setResult(doc);
-      onGenerate?.(doc);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
