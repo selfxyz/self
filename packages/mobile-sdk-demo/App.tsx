@@ -4,10 +4,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 
-import type {
-  DocumentCatalog,
-  DocumentMetadata,
-} from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, DocumentMetadata } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 

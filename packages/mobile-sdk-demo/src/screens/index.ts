@@ -4,11 +4,7 @@
 
 import type { ComponentType } from 'react';
 
-import type {
-  DocumentCatalog,
-  DocumentMetadata,
-  IDDocument,
-} from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 
 export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'qr' | 'documents' | 'activity';
 
@@ -56,9 +52,7 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '⭐ Core Features',
     status: 'placeholder',
     subtitle: ({ selectedDocument }) =>
-      selectedDocument
-        ? 'View the most recently generated mock document'
-        : 'Generate mock data to unlock this demo',
+      selectedDocument ? 'View the most recently generated mock document' : 'Generate mock data to unlock this demo',
     getStatus: ({ selectedDocument }) => (selectedDocument ? 'working' : 'placeholder'),
     isDisabled: ({ selectedDocument }) => !selectedDocument,
     load: () => require('./RegisterDocument').default,

@@ -102,7 +102,8 @@ export default function DocumentsList({ onBack, catalog }: Props) {
         <View style={styles.emptyState}>
           <Text style={styles.emptyText}>No documents yet</Text>
           <Text style={styles.emptySubtext}>
-            Generate a mock document to see it appear here. The demo document store keeps everything locally on your device.
+            Generate a mock document to see it appear here. The demo document store keeps everything locally on your
+            device.
           </Text>
         </View>
       );

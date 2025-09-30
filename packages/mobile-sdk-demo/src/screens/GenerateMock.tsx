@@ -87,10 +87,11 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       if (!existing) {
         const metadata: DocumentMetadata = {
           id: documentId,
-          documentType: doc.documentType,
-          documentCategory: doc.documentCategory || inferDocumentCategory(doc.documentType),
-          data: isMRZDocument(doc) ? doc.mrz : 'qrData' in doc ? doc.qrData : '',
-          mock: doc.mock ?? false,
+          documentType: (doc as IDDocument).documentType,
+          documentCategory:
+            (doc as IDDocument).documentCategory || inferDocumentCategory((doc as IDDocument).documentType),
+          data: isMRZDocument(doc) ? (doc as any).mrz : 'qrData' in doc ? (doc as any).qrData : '',
+          mock: (doc as IDDocument).mock ?? false,
           isRegistered: false,
         };
         catalog.documents.push(metadata);

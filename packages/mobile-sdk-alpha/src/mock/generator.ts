@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { IdDocInput, PassportData } from '@selfxyz/common';
+import type { AadhaarData, IdDocInput, PassportData } from '@selfxyz/common';
 import { generateMockDSC, genMockIdDoc, getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 export interface GenerateMockDocumentOptions {
@@ -48,7 +48,7 @@ export async function generateMockDocument({
   selectedAlgorithm,
   selectedCountry,
   selectedDocumentType,
-}: GenerateMockDocumentOptions) {
+}: GenerateMockDocumentOptions): Promise<PassportData | AadhaarData> {
   const randomPassportNumber = Math.random()
     .toString(36)
     .substring(2, 11)
