@@ -893,6 +893,7 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+          GOOGLE_SIGNIN_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_ANDROID_CLIENT_ID }}
           NODE_OPTIONS: "--max-old-space-size=6144"
         run: |
           cd ${{ env.APP_PATH }}
