@@ -79,14 +79,75 @@ NativeModules.KeyboardObserver = {
 };
 
 // Mock react-native-get-random-values
-jest.mock('react-native-get-random-values', () => ({
-  polyfillGlobal: jest.fn(),
-}));
+jest.mock(
+  'react-native-get-random-values',
+  () => ({
+    polyfillGlobal: jest.fn(),
+  }),
+  { virtual: true },
+);
 
 // Mock @react-native-picker/picker
-jest.mock('@react-native-picker/picker', () => ({
-  Picker: 'Picker',
-  PickerIOS: 'PickerIOS',
+jest.mock(
+  '@react-native-picker/picker',
+  () => ({
+    Picker: 'Picker',
+    PickerIOS: 'PickerIOS',
+  }),
+  { virtual: true },
+);
+
+// Mock zk-kit dependencies that rely on native ESM builds
+jest.mock(
+  '@openpassport/zk-kit-utils/dist/index.browser.js',
+  () => ({
+    buildPoseidon: jest.fn(() => Promise.resolve({})),
+  }),
+  { virtual: true },
+);
+
+const createTreeMock = () => ({
+  insert: jest.fn(),
+  createProof: jest.fn(() => ({ siblings: [], pathIndices: [] })),
+  root: jest.fn(() => '0x0'),
+  update: jest.fn(),
+});
+
+jest.mock(
+  '@openpassport/zk-kit-imt',
+  () => ({
+    IMT: jest.fn(() => createTreeMock()),
+  }),
+  { virtual: true },
+);
+
+jest.mock(
+  '@openpassport/zk-kit-lean-imt',
+  () => ({
+    LeanIMT: jest.fn(() => createTreeMock()),
+  }),
+  { virtual: true },
+);
+
+jest.mock(
+  '@openpassport/zk-kit-smt',
+  () => ({
+    SMT: jest.fn(() => createTreeMock()),
+  }),
+  { virtual: true },
+);
+
+jest.mock(
+  '@anon-aadhaar/core',
+  () => ({
+    replaceBytesBetween: jest.fn(),
+    returnFullId: jest.fn(),
+  }),
+  { virtual: true },
+);
+
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => '00000000-0000-0000-0000-000000000000'),
 }));
 
 // Mock ethers
@@ -144,23 +205,24 @@ jest.mock('@selfxyz/common', () => ({
 }));
 
 // Mock @selfxyz/mobile-sdk-alpha
-jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
-  SelfSDK: {
-    initialize: jest.fn().mockResolvedValue(undefined),
-    generateProof: jest.fn().mockResolvedValue('mock-proof'),
-    registerDocument: jest.fn().mockResolvedValue('mock-registration'),
-  },
-  signatureAlgorithmToStrictSignatureAlgorithm: {
-    'sha256 rsa 65537 2048': 'sha256 rsa 65537 2048',
-  },
-  generateMockDocument: jest.fn().mockResolvedValue({
-    id: 'mock-id',
-    issuer: 'Self',
-    credentialType: 'mock_passport',
-    issuedAt: new Date().toISOString(),
-    expiresAt: new Date().toISOString(),
-  }),
-}));
+jest.mock('@selfxyz/mobile-sdk-alpha', () => {
+  const actual = jest.requireActual('@selfxyz/mobile-sdk-alpha');
+
+  return {
+    ...actual,
+    signatureAlgorithmToStrictSignatureAlgorithm: {
+      ...actual.signatureAlgorithmToStrictSignatureAlgorithm,
+      'sha256 rsa 65537 2048': ['sha256', 'sha256', 'rsa_sha256_65537_2048'],
+    },
+    generateMockDocument: jest.fn().mockResolvedValue({
+      id: 'mock-id',
+      issuer: 'Self',
+      credentialType: 'mock_passport',
+      issuedAt: '2024-01-01T00:00:00.000Z',
+      expiresAt: '2034-01-01T00:00:00.000Z',
+    }),
+  };
+});
 
 // Mock console methods to avoid test output clutter
 global.console = {
