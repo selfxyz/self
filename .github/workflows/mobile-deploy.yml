@@ -481,6 +481,9 @@ jobs:
       - name: Build and upload to App Store Connect/TestFlight
         if: inputs.platform != 'android' && !env.ACT
         env:
+          GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
+          GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
+          GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
           IOS_CONNECT_API_KEY_BASE64: ${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}
           IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
@@ -493,20 +496,13 @@ jobs:
           IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
           IOS_PROV_PROFILE_PATH: ${{ env.IOS_PROV_PROFILE_PATH }}
           IOS_SIGNING_CERTIFICATE: ${{ secrets.IOS_SIGNING_CERTIFICATE }}
-          IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
+          IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           NODE_OPTIONS: "--max-old-space-size=8192"
-          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
-          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-          SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
-          ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
-          GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
-          GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
-          GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         timeout-minutes: 90
         run: |
           cd ${{ env.APP_PATH }}
@@ -893,20 +889,19 @@ jobs:
       - name: Build AAB with Fastlane
         if: inputs.platform != 'ios'
         env:
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
           GOOGLE_SIGNIN_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_ANDROID_CLIENT_ID }}
-          NODE_OPTIONS: "--max-old-space-size=6144"
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
-          ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
+          GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
           GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
           GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
-          GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
+          NODE_OPTIONS: "--max-old-space-size=6144"
+          SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -927,11 +922,7 @@ jobs:
             --verbose
 
       - name: Upload to Google Play Store using WIF
-        if: inputs.platform != 'ios' && (inputs.test_mode != true)
-        env:
-          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-          SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
+        if: inputs.platform != 'ios' && inputs.test_mode != true
         run: |
           cd ${{ env.APP_PATH }}
 

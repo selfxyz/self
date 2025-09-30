@@ -82,21 +82,6 @@ platform :ios do
     if result[:should_upload]
       Fastlane::Helpers.update_deployment_timestamp("ios")
     end
-
-    # Notify Slack about the new build
-    if ENV["SLACK_CHANNEL_ID"] && !test_mode
-      deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Workflow" : "Local Deploy"
-      Fastlane::Helpers.upload_file_to_slack(
-        file_path: result[:ipa_path],
-        channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "🍎 iOS v#{package_version} (Build #{result[:build_number]}) deployed to TestFlight via #{deploy_source}",
-        title: "#{APP_NAME}-#{package_version}-#{result[:build_number]}.ipa",
-      )
-    elsif test_mode
-      UI.important("🧪 TEST MODE: Skipping Slack notification")
-    else
-      UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
-    end
   end
 
   desc "Deploy iOS app with automatic version management"
@@ -157,19 +142,6 @@ platform :ios do
     # Update deployment info
     if result[:should_upload] && !test_mode
       Fastlane::Helpers.update_deployment_timestamp("ios")
-    end
-
-    # Slack notification
-    if ENV["SLACK_CHANNEL_ID"] && !test_mode
-      deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Actions (Auto)" : "Local Deploy"
-      track_emoji = deployment_track == "production" ? "🚀" : "🧪"
-
-      Fastlane::Helpers.upload_file_to_slack(
-        file_path: result[:ipa_path],
-        channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "#{track_emoji} iOS v#{package_version} (Build #{result[:build_number]}) deployed to #{deployment_track} via #{deploy_source}",
-        title: "#{APP_NAME}-#{package_version}-#{result[:build_number]}.ipa",
-      )
     end
   end
 
@@ -476,24 +448,6 @@ platform :android do
     # Update deployment timestamp in version.json
     if should_upload
       Fastlane::Helpers.update_deployment_timestamp("android")
-    end
-
-    # Notify Slack about the new build
-    if ENV["SLACK_CHANNEL_ID"] && !test_mode
-      deploy_source = Fastlane::Helpers.is_ci_environment? ? "GitHub Actions (Auto)" : "Local Deploy"
-      deployment_track = options[:deployment_track] || options[:track]
-      track_emoji = deployment_track == "production" ? "🚀" : "🧪"
-
-      Fastlane::Helpers.upload_file_to_slack(
-        file_path: android_aab_path,
-        channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "#{track_emoji} Android v#{package_version} (Build #{version_code}) deployed to #{deployment_track || target_platform} via #{deploy_source}",
-        title: "#{APP_NAME}-#{package_version}-#{version_code}.aab",
-      )
-    elsif test_mode
-      UI.important("🧪 TEST MODE: Skipping Slack notification")
-    else
-      UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
     end
   end
 end
