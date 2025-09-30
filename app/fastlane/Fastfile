@@ -253,7 +253,9 @@ platform :ios do
     cocoapods(
       podfile: "ios/Podfile",
       clean_install: true,
-      deployment: true,
+      # setting to false for now because of NFCPassportReader locally we use ssh to install but the
+      # workflow uses https so the Podfile.lock is different
+      deployment: false,
     )
 
     ipa_path = build_app({
