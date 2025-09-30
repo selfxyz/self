@@ -481,6 +481,7 @@ jobs:
       - name: Build and upload to App Store Connect/TestFlight
         if: inputs.platform != 'android' && !env.ACT
         env:
+          ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
           GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
           GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
           GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
@@ -895,6 +896,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+          ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
           GOOGLE_SIGNIN_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_ANDROID_CLIENT_ID }}
           GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
           GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
