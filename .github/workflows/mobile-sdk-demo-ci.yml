@@ -3,6 +3,7 @@ name: Mobile SDK Demo CI
 on:
   pull_request:
     paths:
+      - "packages/mobile-sdk-alpha/**"
       - "packages/mobile-sdk-demo/**"
       - ".github/workflows/mobile-sdk-demo-ci.yml"
       - ".github/actions/**"
