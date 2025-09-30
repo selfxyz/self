@@ -501,6 +501,12 @@ jobs:
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
+          ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
+          GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
+          GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
+          GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
         timeout-minutes: 90
         run: |
           cd ${{ env.APP_PATH }}
@@ -895,6 +901,12 @@ jobs:
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
           GOOGLE_SIGNIN_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_ANDROID_CLIENT_ID }}
           NODE_OPTIONS: "--max-old-space-size=6144"
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
+          ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
+          GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
+          GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
+          GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
         run: |
           cd ${{ env.APP_PATH }}
 
