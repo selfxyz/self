@@ -17,6 +17,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   check-and-deploy:
@@ -90,6 +91,7 @@ jobs:
       deployment_track: ${{ needs.check-and-deploy.outputs.deployment_track }}
       version_bump: ${{ needs.check-and-deploy.outputs.version_bump }}
       auto_deploy: true
+      test_mode: true
     secrets: inherit
 
   deploy-android:
@@ -101,6 +103,7 @@ jobs:
       deployment_track: ${{ needs.check-and-deploy.outputs.deployment_track }}
       version_bump: ${{ needs.check-and-deploy.outputs.version_bump }}
       auto_deploy: true
+      test_mode: true
     secrets: inherit
 
   notify-skip:
