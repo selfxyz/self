@@ -21,7 +21,10 @@ permissions:
 
 jobs:
   check-and-deploy:
-    if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'no-deploy')
+    # WORKFLOW DISABLED
+    # Maybe it's my understanding, but it doesn't work as expected. disabled for now.
+    if: false
+    # if: github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'no-deploy')
     runs-on: ubuntu-latest
     outputs:
       should_deploy: ${{ steps.check.outputs.should_deploy }}

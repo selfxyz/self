@@ -1,4 +1,8 @@
 name: Mobile Deploy
+# Runs on:
+# 1. Manual trigger (workflow_dispatch) with configurable options
+# 2. When PRs are merged to staging (auto-deploy to internal track)
+# 3. DISABLED: When called by other workflows (workflow_call)
 
 env:
   # Build environment versions
@@ -68,6 +72,16 @@ on:
           - minor
           - major
 
+  pull_request:
+    types: [closed]
+    branches: [staging]
+    paths:
+      - "app/**"
+      - "!app/**/*.md"
+      - "!app/docs/**"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/mobile-deploy.yml"
+
   workflow_call:
     inputs:
       platform:
@@ -97,14 +111,23 @@ concurrency:
 jobs:
   build-ios:
     runs-on: macos-latest-large
-    if: (inputs.platform == 'ios' || inputs.platform == 'both')
+    if: |
+      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (
+        (inputs.platform == 'ios' || inputs.platform == 'both') ||
+        (github.event_name == 'pull_request')
+      )
     steps:
       - name: Mobile deployment status
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
-          echo "📱 Platform: ${{ inputs.platform }}"
-          echo "🎯 Track: ${{ inputs.deployment_track }}"
-          echo "📦 Version bump: ${{ inputs.version_bump }}"
+          echo "📱 Platform: ${{ inputs.platform || 'both' }}"
+          echo "🎯 Track: ${{ inputs.deployment_track || 'internal' }}"
+          echo "📦 Version bump: ${{ inputs.version_bump || 'build' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "🔀 Triggered by PR merge: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            echo "👤 Merged by: ${{ github.event.pull_request.merged_by.login }}"
+          fi
 
       - uses: actions/checkout@v4
         with:
@@ -564,18 +587,6 @@ jobs:
         with:
           app_path: ${{ env.APP_PATH }}
 
-      - name: Open PR for iOS build number bump
-        if: ${{ !env.ACT && success() }}
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: "chore: bump iOS build for ${{ env.VERSION }}"
-          body: "Automated bump of iOS build number by CI"
-          commit-message: "chore: incrementing ios build number for version ${{ env.VERSION }} [github action]"
-          branch: ci/bump-ios-build-${{ github.run_id }}
-          base: staging
-          add-paths: |
-            app/version.json
-
       - name: Monitor cache usage
         if: always()
         run: |
@@ -602,14 +613,23 @@ jobs:
 
   build-android:
     runs-on: ubuntu-latest
-    if: (inputs.platform == 'android' || inputs.platform == 'both')
+    if: |
+      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (
+        (inputs.platform == 'android' || inputs.platform == 'both') ||
+        (github.event_name == 'pull_request')
+      )
     steps:
       - name: Mobile deployment status
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with Android build"
-          echo "📱 Platform: ${{ inputs.platform }}"
-          echo "🎯 Track: ${{ inputs.deployment_track }}"
-          echo "📦 Version bump: ${{ inputs.version_bump }}"
+          echo "📱 Platform: ${{ inputs.platform || 'both' }}"
+          echo "🎯 Track: ${{ inputs.deployment_track || 'internal' }}"
+          echo "📦 Version bump: ${{ inputs.version_bump || 'build' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "🔀 Triggered by PR merge: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            echo "👤 Merged by: ${{ github.event.pull_request.merged_by.login }}"
+          fi
 
       - uses: actions/checkout@v4
         if: inputs.platform != 'ios'
@@ -894,7 +914,7 @@ jobs:
             --verbose
 
       - name: Upload to Google Play Store using WIF
-        if: inputs.platform != 'ios' && inputs.test_mode != true
+        if: inputs.platform != 'ios' && (inputs.test_mode != true)
         env:
           SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
@@ -918,18 +938,6 @@ jobs:
         uses: ./.github/actions/get-version
         with:
           app_path: ${{ env.APP_PATH }}
-
-      - name: Open PR for Android build number bump
-        if: ${{ !env.ACT && success() }}
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: "chore: bump Android build for ${{ env.VERSION }}"
-          body: "Automated bump of Android build number by CI"
-          commit-message: "chore: incrementing android build version for version ${{ env.VERSION }} [github action]"
-          branch: ci/bump-android-build-${{ github.run_id }}
-          base: staging
-          add-paths: |
-            app/version.json
 
       - name: Monitor cache usage
         if: always()
@@ -967,7 +975,7 @@ jobs:
     needs: [build-ios, build-android]
     if: |
       always() &&
-      inputs.test_mode != true &&
+      (inputs.test_mode != true || github.event_name == 'pull_request') &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
       APP_PATH: ${{ github.workspace }}/app
@@ -1031,7 +1039,7 @@ jobs:
             Includes updates to `app/version.json`, `app/package.json`, and `yarn.lock`.
           commit-message: "chore: update version files after deployment [skip ci]"
           branch: ci/update-version-${{ github.run_id }}
-          base: staging
+          base: dev
           add-paths: |
             app/version.json
             app/package.json
@@ -1044,7 +1052,7 @@ jobs:
       always() &&
       needs.update-version.result == 'success' &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
-      inputs.deployment_track == 'production'
+      (inputs.deployment_track == 'production')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
