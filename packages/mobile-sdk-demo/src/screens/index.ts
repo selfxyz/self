@@ -4,15 +4,20 @@
 
 import type { ComponentType } from 'react';
 
-import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type {
+  DocumentCatalog,
+  DocumentMetadata,
+  IDDocument,
+} from '@selfxyz/common/dist/esm/src/utils/types.js';
 
 export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'qr' | 'documents' | 'activity';
 
 export type ScreenContext = {
   navigate: (next: ScreenRoute) => void;
   goHome: () => void;
-  mockDocument: IDDocument | null;
-  setMockDocument: (document: IDDocument | null) => void;
+  documentCatalog: DocumentCatalog;
+  selectedDocument: { data: IDDocument; metadata: DocumentMetadata } | null;
+  refreshDocuments: () => Promise<void>;
 };
 
 export type ScreenStatus = 'working' | 'placeholder';
@@ -39,8 +44,8 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '⭐ Core Features',
     status: 'working',
     load: () => require('./GenerateMock').default,
-    getProps: ({ setMockDocument, navigate }) => ({
-      onGenerate: setMockDocument,
+    getProps: ({ refreshDocuments, navigate }) => ({
+      onDocumentStored: refreshDocuments,
       onNavigate: navigate,
       onBack: () => navigate('home'),
     }),
@@ -50,13 +55,15 @@ export const screenDescriptors: ScreenDescriptor[] = [
     title: 'Register Document',
     sectionTitle: '⭐ Core Features',
     status: 'placeholder',
-    subtitle: ({ mockDocument }) =>
-      mockDocument ? 'View the mock document registration flow' : 'Generate mock data to unlock this demo',
-    getStatus: ({ mockDocument }) => (mockDocument ? 'working' : 'placeholder'),
-    isDisabled: ({ mockDocument }) => !mockDocument,
+    subtitle: ({ selectedDocument }) =>
+      selectedDocument
+        ? 'View the most recently generated mock document'
+        : 'Generate mock data to unlock this demo',
+    getStatus: ({ selectedDocument }) => (selectedDocument ? 'working' : 'placeholder'),
+    isDisabled: ({ selectedDocument }) => !selectedDocument,
     load: () => require('./RegisterDocument').default,
-    getProps: ({ mockDocument, navigate }) => ({
-      document: mockDocument,
+    getProps: ({ selectedDocument, navigate }) => ({
+      document: selectedDocument?.data ?? null,
       onBack: () => navigate('home'),
     }),
   },
@@ -91,10 +98,22 @@ export const screenDescriptors: ScreenDescriptor[] = [
     id: 'documents',
     title: 'Document List',
     sectionTitle: '📋 Your Data',
-    status: 'placeholder',
-    subtitle: 'View all registered identity documents',
+    status: 'working',
+    subtitle: ({ documentCatalog }) => {
+      const count = documentCatalog.documents.length;
+      if (count === 0) {
+        return 'No documents stored yet';
+      }
+      if (count === 1) {
+        return '1 document in your demo vault';
+      }
+      return `${count} documents in your demo vault`;
+    },
     load: () => require('./DocumentsList').default,
-    getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
+    getProps: ({ navigate, documentCatalog }) => ({
+      onBack: () => navigate('home'),
+      catalog: documentCatalog,
+    }),
   },
   {
     id: 'activity',
