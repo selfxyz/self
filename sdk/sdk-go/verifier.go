@@ -469,8 +469,7 @@ func (s *BackendVerifier) Verify(
 		}
 	}
 
-	// OFAC validation: if config requires OFAC, then cumulative OFAC must be true
-	isOfacValid := true
+	isOfacValid := false
 	if configErr == nil && verificationConfig.Ofac {
 		isOfacValid = cumulativeOfac
 	}
