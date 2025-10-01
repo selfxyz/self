@@ -8,52 +8,44 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 type Props = {
   title: string;
-  subtitle?: string;
   onBack: () => void;
 };
 
-export default function StandardHeader({ title, subtitle, onBack }: Props) {
+export default function StandardHeader({ title, onBack }: Props) {
   return (
     <View style={styles.header}>
       <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <Icon name="chevron-back" size={24} color="#0550ae" />
+        <Icon name="chevron-back" size={20} color="#0550ae" />
         <Text style={styles.backButtonText}>Back</Text>
       </TouchableOpacity>
       <Text style={styles.title}>{title}</Text>
-      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   header: {
-    marginBottom: 32,
+    marginBottom: 16,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    marginLeft: -16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+    marginLeft: -12,
   },
   backButtonText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#0550ae',
     fontWeight: '500',
     marginLeft: 4,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#0d1117',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#656d76',
     textAlign: 'center',
   },
 });

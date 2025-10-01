@@ -5,6 +5,7 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Button, Platform, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
+import { faker } from '@faker-js/faker';
 import { calculateContentHash, countryCodes, inferDocumentCategory, isMRZDocument } from '@selfxyz/common';
 import type { DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import {
@@ -27,7 +28,7 @@ const defaultExpiryYears = '5';
 const defaultAlgorithm = 'sha256 rsa 65537 2048';
 const defaultCountry = 'USA';
 const defaultDocumentType = 'mock_passport';
-const defaultOfac = true;
+const defaultOfac = false;
 
 type Props = {
   onDocumentStored?: () => Promise<void> | void;
@@ -37,15 +38,20 @@ type Props = {
 
 export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: Props) {
   const selfClient = useSelfClient();
+
+  const getRandomFirstName = () => faker.person.firstName().toUpperCase();
+  const getRandomLastName = () => faker.person.lastName().toUpperCase();
+
   const [age, setAge] = useState(defaultAge);
   const [expiryYears, setExpiryYears] = useState(defaultExpiryYears);
   const [isInOfacList, setIsInOfacList] = useState(defaultOfac);
   const [algorithm, setAlgorithm] = useState(defaultAlgorithm);
   const [country, setCountry] = useState(defaultCountry);
   const [documentType, setDocumentType] = useState<(typeof documentTypeOptions)[number]>(defaultDocumentType);
+  const [firstName, setFirstName] = useState(() => getRandomFirstName());
+  const [lastName, setLastName] = useState(() => getRandomLastName());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<IDDocument | null>(null);
 
   const reset = () => {
     setAge(defaultAge);
@@ -54,14 +60,14 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
     setAlgorithm(defaultAlgorithm);
     setCountry(defaultCountry);
     setDocumentType(defaultDocumentType as (typeof documentTypeOptions)[number]);
-    setResult(null);
+    setFirstName(getRandomFirstName());
+    setLastName(getRandomLastName());
     setError(null);
   };
 
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
-    setResult(null);
     try {
       const ageNum = Number(age);
       const expiryNum = Number(expiryYears);
@@ -71,6 +77,10 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       if (!Number.isFinite(expiryNum) || expiryNum < 0 || expiryNum > 30) {
         throw new Error('Expiry years must be a number between 0 and 30');
       }
+      const firstNameValue = firstName?.trim() || undefined;
+      const lastNameValue = lastName?.trim() || undefined;
+      console.log('Form values:', { firstName, lastName });
+      console.log('Trimmed values:', { firstName: firstNameValue, lastName: lastNameValue });
       const doc = await generateMockDocument({
         age: ageNum,
         expiryYears: expiryNum,
@@ -78,6 +88,8 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
         selectedAlgorithm: algorithm,
         selectedCountry: country,
         selectedDocumentType: documentType,
+        firstName: firstNameValue,
+        lastName: lastNameValue,
       });
       const documentId = calculateContentHash(doc);
       const catalog = await selfClient.loadDocumentCatalog();
@@ -101,7 +113,8 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       catalog.selectedDocumentId = documentId;
       await selfClient.saveDocumentCatalog(catalog);
       await onDocumentStored?.();
-      setResult(doc);
+      // Auto-navigate to register screen after successful generation
+      onNavigate('register');
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -119,6 +132,26 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Expiry Years</Text>
         <TextInput style={styles.input} keyboardType="numeric" value={expiryYears} onChangeText={setExpiryYears} />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>First Name</Text>
+        <TextInput
+          style={styles.input}
+          value={firstName}
+          onChangeText={setFirstName}
+          placeholder="First Name"
+          placeholderTextColor="#999"
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Last Name</Text>
+        <TextInput
+          style={styles.input}
+          value={lastName}
+          onChangeText={setLastName}
+          placeholder="Last Name"
+          placeholderTextColor="#999"
+        />
       </View>
       <View style={styles.switchRow}>
         <Text style={styles.label}>OFAC Listed</Text>
@@ -204,17 +237,6 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       </View>
       {loading && <ActivityIndicator style={styles.spinner} size="large" color="#0000ff" />}
       {error && <Text style={styles.error}>{error}</Text>}
-      {result ? (
-        <>
-          <Text selectable style={styles.result}>
-            {JSON.stringify(result, null, 2)}
-          </Text>
-          <View style={styles.navRow}>
-            <Button title="Register Document" onPress={() => onNavigate('register')} />
-            <Button title="Prove QR Code" onPress={() => onNavigate('prove')} />
-          </View>
-        </>
-      ) : null}
     </SafeAreaScrollView>
   );
 }
@@ -223,41 +245,41 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: '#fafbfc',
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: 10,
   },
   label: {
-    marginBottom: 8,
+    marginBottom: 4,
     fontWeight: '600',
     color: '#333',
-    fontSize: 16,
+    fontSize: 14,
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
     color: '#000',
     backgroundColor: '#fff',
-    fontSize: 16,
+    fontSize: 14,
   },
   switchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginVertical: 8,
-    paddingHorizontal: 8,
+    marginVertical: 6,
+    paddingHorizontal: 4,
   },
   pickerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 8,
+    borderRadius: 6,
     backgroundColor: '#fff',
   },
   picker: {
@@ -265,45 +287,32 @@ const styles = StyleSheet.create({
     color: '#000',
     ...Platform.select({
       ios: {
-        height: 50,
+        height: 40,
       },
       android: {
-        height: 50,
+        height: 40,
       },
     }),
   },
   pickerIcon: {
     position: 'absolute',
-    right: 16,
-    top: 14,
+    right: 12,
+    top: 10,
     ...Platform.select({
       ios: {
-        top: 15,
+        top: 10,
       },
     }),
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginVertical: 16,
+    marginVertical: 12,
   },
   buttonWrapper: {
     flex: 1,
-    marginHorizontal: 8,
+    marginHorizontal: 6,
   },
-  navRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 24,
-  },
-  spinner: { marginVertical: 24 },
-  error: { color: 'red', marginTop: 20, textAlign: 'center', fontSize: 16 },
-  result: {
-    marginTop: 20,
-    fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace',
-    backgroundColor: '#f0f0f0',
-    padding: 16,
-    borderRadius: 8,
-    color: '#333',
-  },
+  spinner: { marginVertical: 16 },
+  error: { color: 'red', marginTop: 12, textAlign: 'center', fontSize: 14 },
 });

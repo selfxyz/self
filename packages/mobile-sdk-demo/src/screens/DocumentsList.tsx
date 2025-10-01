@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -45,38 +45,79 @@ export default function DocumentsList({ onBack, catalog }: Props) {
   const [documents, setDocuments] = useState<DocumentEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const loadDocuments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const allDocuments = await getAllDocuments(selfClient);
+      setDocuments(Object.values(allDocuments));
+    } catch (err) {
+      setDocuments([]);
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
 
     const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const allDocuments = await getAllDocuments(selfClient);
-        if (!active) {
-          return;
-        }
-        setDocuments(Object.values(allDocuments));
-      } catch (err) {
-        if (!active) {
-          return;
-        }
-        setDocuments([]);
-        setError(err instanceof Error ? err.message : String(err));
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
+      await loadDocuments();
     };
 
-    load();
+    if (active) {
+      load();
+    }
 
     return () => {
       active = false;
     };
   }, [selfClient, catalog]);
+
+  const handleDelete = async (documentId: string, documentType: string) => {
+    Alert.alert('Delete Document', `Are you sure you want to delete this ${humanizeDocumentType(documentType)}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          setDeleting(documentId);
+          try {
+            // Delete the document
+            await selfClient.deleteDocument(documentId);
+
+            // Update the catalog
+            const currentCatalog = await selfClient.loadDocumentCatalog();
+            const updatedDocuments = currentCatalog.documents.filter(doc => doc.id !== documentId);
+
+            // Clear selectedDocumentId if it's the one being deleted
+            const updatedCatalog = {
+              ...currentCatalog,
+              documents: updatedDocuments,
+              selectedDocumentId:
+                currentCatalog.selectedDocumentId === documentId
+                  ? updatedDocuments.length > 0
+                    ? updatedDocuments[0].id
+                    : undefined
+                  : currentCatalog.selectedDocumentId,
+            };
+
+            await selfClient.saveDocumentCatalog(updatedCatalog);
+
+            // Reload the documents list
+            await loadDocuments();
+          } catch (err) {
+            Alert.alert('Error', `Failed to delete document: ${err instanceof Error ? err.message : String(err)}`);
+          } finally {
+            setDeleting(null);
+          }
+        },
+      },
+    ]);
+  };
 
   const content = useMemo(() => {
     if (loading) {
@@ -114,13 +155,27 @@ export default function DocumentsList({ onBack, catalog }: Props) {
       const badgeStyle = metadata.isRegistered ? styles.verified : styles.pending;
       const preview = formatDataPreview(metadata);
       const documentId = `${metadata.id.slice(0, 8)}…${metadata.id.slice(-6)}`;
+      const isDeleting = deleting === metadata.id;
 
       return (
         <View key={metadata.id} style={styles.documentCard}>
           <View style={styles.documentHeader}>
             <Text style={styles.documentType}>{humanizeDocumentType(metadata.documentType)}</Text>
-            <View style={[styles.statusBadge, badgeStyle]}>
-              <Text style={styles.statusText}>{statusLabel}</Text>
+            <View style={styles.headerRight}>
+              <View style={[styles.statusBadge, badgeStyle]}>
+                <Text style={styles.statusText}>{statusLabel}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDelete(metadata.id, metadata.documentType)}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator size="small" color="#dc3545" />
+                ) : (
+                  <Text style={styles.deleteText}>Delete</Text>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
           <Text style={styles.documentMeta}>{(metadata.documentCategory ?? 'unknown').toUpperCase()}</Text>
@@ -133,11 +188,11 @@ export default function DocumentsList({ onBack, catalog }: Props) {
         </View>
       );
     });
-  }, [documents, error, loading]);
+  }, [documents, error, loading, deleting]);
 
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="My Documents" subtitle="Documents stored in this demo app" onBack={onBack} />
+      <StandardHeader title="My Documents" onBack={onBack} />
 
       <View style={styles.content}>{content}</View>
     </SafeAreaScrollView>
@@ -170,18 +225,35 @@ const styles = StyleSheet.create({
   documentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   documentType: {
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
+    flex: 1,
+  },
+  headerRight: {
+    alignItems: 'flex-end',
+    gap: 4,
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
+  },
+  deleteButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    minHeight: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteText: {
+    fontSize: 11,
+    color: '#dc3545',
+    fontWeight: '500',
   },
   verified: {
     backgroundColor: '#d4edda',

@@ -12,6 +12,8 @@ export interface GenerateMockDocumentOptions {
   selectedAlgorithm: string;
   selectedCountry: string;
   selectedDocumentType: 'mock_passport' | 'mock_id_card' | 'mock_aadhaar';
+  firstName?: string;
+  lastName?: string;
 }
 
 const formatDateToYYMMDD = (date: Date): string => {
@@ -48,7 +50,10 @@ export async function generateMockDocument({
   selectedAlgorithm,
   selectedCountry,
   selectedDocumentType,
+  firstName,
+  lastName,
 }: GenerateMockDocumentOptions): Promise<PassportData | AadhaarData> {
+  console.log('generateMockDocument received names:', { firstName, lastName, isInOfacList });
   const randomPassportNumber = Math.random()
     .toString(36)
     .substring(2, 11)
@@ -73,9 +78,12 @@ export async function generateMockDocument({
     idDocInput.birthDate = getBirthDateFromAge(age, 'DDMMYYYY');
 
     if (isInOfacList) {
-      idDocInput.lastName = 'HENAO MONTOYA';
-      idDocInput.firstName = 'ARCANGEL DE JESUS';
+      idDocInput.lastName = lastName || 'HENAO MONTOYA';
+      idDocInput.firstName = firstName || 'ARCANGEL DE JESUS';
       idDocInput.birthDate = '07-10-1954';
+    } else {
+      if (firstName) idDocInput.firstName = firstName;
+      if (lastName) idDocInput.lastName = lastName;
     }
 
     const result = genMockIdDoc(idDocInput);
@@ -89,10 +97,12 @@ export async function generateMockDocument({
   let dobForGeneration: string;
   if (isInOfacList) {
     dobForGeneration = '541007';
-    idDocInput.lastName = 'HENAO MONTOYA';
-    idDocInput.firstName = 'ARCANGEL DE JESUS';
+    idDocInput.lastName = lastName || 'HENAO MONTOYA';
+    idDocInput.firstName = firstName || 'ARCANGEL DE JESUS';
   } else {
     dobForGeneration = getBirthDateFromAge(age);
+    if (firstName) idDocInput.firstName = firstName;
+    if (lastName) idDocInput.lastName = lastName;
   }
   idDocInput.birthDate = dobForGeneration;
 

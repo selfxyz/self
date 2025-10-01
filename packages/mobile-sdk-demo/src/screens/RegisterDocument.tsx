@@ -18,7 +18,7 @@ type Props = {
 export default function RegisterDocument({ document, onBack }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="Register Document" subtitle="Document Registration Flow" onBack={onBack} />
+      <StandardHeader title="Register Document" onBack={onBack} />
 
       <View style={styles.content}>
         {document && (

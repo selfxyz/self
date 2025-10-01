@@ -82,18 +82,9 @@ export const screenDescriptors: ScreenDescriptor[] = [
   {
     id: 'documents',
     title: 'Document List',
+    subtitle: 'View and manage stored documents',
     sectionTitle: '📋 Your Data',
     status: 'working',
-    subtitle: ({ documentCatalog }) => {
-      const count = documentCatalog.documents.length;
-      if (count === 0) {
-        return 'No documents stored yet';
-      }
-      if (count === 1) {
-        return '1 document in your demo vault';
-      }
-      return `${count} documents in your demo vault`;
-    },
     load: () => require('./DocumentsList').default,
     getProps: ({ navigate, documentCatalog }) => ({
       onBack: () => navigate('home'),
