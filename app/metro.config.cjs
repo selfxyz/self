@@ -113,6 +113,32 @@ const config = {
           'react-native-gesture-handler/lib/commonjs/index.js',
       };
 
+      // Custom resolver to handle Node.js modules and dynamic flow imports
+      if (moduleName.startsWith('@selfxyz/mobile-sdk-alpha/')) {
+        const subPath = moduleName.replace('@selfxyz/mobile-sdk-alpha/', '');
+
+        // Check if it's a flow import (onboarding/* or disclosing/*)
+        if (
+          subPath.startsWith('onboarding/') ||
+          subPath.startsWith('disclosing/')
+        ) {
+          const flowPath = path.resolve(
+            sdkAlphaPath,
+            'dist/esm/flows',
+            `${subPath}.js`,
+          );
+
+          // Check if the file exists
+          const fs = require('fs');
+          if (fs.existsSync(flowPath)) {
+            return {
+              type: 'sourceFile',
+              filePath: flowPath,
+            };
+          }
+        }
+      }
+
       if (appLevelModules[moduleName]) {
         try {
           return {

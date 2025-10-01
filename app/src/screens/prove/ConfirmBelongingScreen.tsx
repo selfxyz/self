@@ -8,14 +8,15 @@ import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import {
-  usePrepareDocumentProof,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  getPreRegistrationDescription,
+  usePrepareDocumentProof,
+} from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-ownership';
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -109,10 +110,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
         >
           <Title textAlign="center">Confirm your identity</Title>
           <Description textAlign="center" paddingBottom={20}>
-            By continuing, you certify that this passport, biometric ID or
-            Aadhaar card belongs to you and is not stolen or forged. Once
-            registered with Self, this document will be permanently linked to
-            your identity and can't be linked to another one.
+            {getPreRegistrationDescription()}
           </Description>
           <PrimaryButton
             trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}
