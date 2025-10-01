@@ -6,6 +6,7 @@ import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import { Spinner, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
 import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -13,6 +14,7 @@ import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { RoundFlag } from '@/components/flag/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
 import { BodyText } from '@/components/typography/BodyText';
+import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate500 } from '@/utils/colors';
 import { advercase } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
@@ -59,7 +61,8 @@ CountryItem.displayName = 'CountryItem';
 const CountryPickerScreen: React.FC = () => {
   const [countryData, setCountryData] = useState<CountryData>({});
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation<any>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
 
   const onPressCountry = useCallback(
@@ -146,7 +149,10 @@ const CountryPickerScreen: React.FC = () => {
   );
 
   const getItemLayout = useCallback(
-    (data: any, index: number) => ({
+    (
+      _data: ReadonlyArray<CountryListItem> | null | undefined,
+      index: number,
+    ) => ({
       length: ITEM_HEIGHT,
       offset: ITEM_HEIGHT * index,
       index,

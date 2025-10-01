@@ -4,7 +4,9 @@
 
 import React from 'react';
 import { View, XStack, YStack } from 'tamagui';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
@@ -16,20 +18,13 @@ import EPassportLogoRounded from '@/images/icons/epassport_rounded.svg';
 import PlusIcon from '@/images/icons/plus.svg';
 import SelfLogo from '@/images/logo.svg';
 import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
+import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate300, slate400, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
 
-type DocumentStackParamList = {
-  IDPicker: {
-    countryCode: string;
-    documentTypes: string[];
-    countryName: string;
-  };
-};
-
-type IDPickerScreenRouteProp = RouteProp<DocumentStackParamList, 'IDPicker'>;
+type IDPickerScreenRouteProp = RouteProp<RootStackParamList, 'IDPicker'>;
 
 const getDocumentName = (docType: string): string => {
   switch (docType) {
@@ -85,10 +80,11 @@ const getDocumentLogo = (docType: string): React.ReactNode => {
 
 const IDPickerScreen: React.FC = () => {
   const route = useRoute<IDPickerScreenRouteProp>();
-  const { countryCode, documentTypes } = route.params;
+  const { countryCode = '', documentTypes = [] } = route.params || {};
   const bottom = useSafeAreaInsets().bottom;
   const selfClient = useSelfClient();
-  const navigation = useNavigation<any>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const onSelectDocumentType = (docType: string) => {
     buttonTap();
@@ -109,10 +105,10 @@ const IDPickerScreen: React.FC = () => {
         navigation.navigate('DocumentOnboarding');
         break;
       case 'a':
-        navigation.navigate('AadhaarOnboarding');
+        navigation.navigate('AadhaarUpload', { countryCode } as never);
         break;
       default:
-        navigation.navigate('ComingSoon', { countryCode });
+        navigation.navigate('ComingSoon', { countryCode } as never);
         break;
     }
 
@@ -169,7 +165,7 @@ const IDPickerScreen: React.FC = () => {
           </BodyText>
         </YStack>
         <YStack gap="$3">
-          {documentTypes.map(docType => (
+          {documentTypes.map((docType: string) => (
             <XStack
               key={docType}
               backgroundColor={white}
