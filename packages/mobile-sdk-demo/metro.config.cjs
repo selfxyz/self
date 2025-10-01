@@ -86,25 +86,64 @@ const config = {
       // Fix @noble/hashes subpath export resolution
       if (moduleName.startsWith('@noble/hashes/')) {
         try {
-          // Extract the subpath (e.g., 'crypto.js', 'sha256', 'hmac')
-          const subpath = moduleName.replace('@noble/hashes/', '');
-          const basePath = require.resolve('@noble/hashes');
+          // Extract the subpath (e.g., 'crypto.js', 'sha256', 'hmac', 'lib/sha256.js')
+          let subpath = moduleName.replace('@noble/hashes/', '');
 
-          // For .js files, look in the package directory
-          if (subpath.endsWith('.js')) {
-            const subpathFile = path.join(path.dirname(basePath), subpath);
-            return {
-              type: 'sourceFile',
-              filePath: subpathFile,
-            };
-          } else {
-            // For other imports like 'sha256', 'hmac', etc., try the main directory
-            const subpathFile = path.join(path.dirname(basePath), `${subpath}.js`);
-            return {
-              type: 'sourceFile',
-              filePath: subpathFile,
-            };
+          // Find the package root directory
+          const basePath = require.resolve('@noble/hashes');
+          let packageRoot = path.dirname(basePath);
+
+          // Traverse up to find package.json to get the real package root
+          while (packageRoot !== path.dirname(packageRoot)) {
+            const packageJsonPath = path.join(packageRoot, 'package.json');
+            const fs = require('fs');
+            if (fs.existsSync(packageJsonPath)) {
+              try {
+                const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+                if (packageJson.name === '@noble/hashes') {
+                  break;
+                }
+              } catch {
+                // Continue searching
+              }
+            }
+            packageRoot = path.dirname(packageRoot);
           }
+
+          // Normalize the subpath - try multiple locations
+          const candidatePaths = [];
+
+          if (subpath.endsWith('.js')) {
+            // Try the path as-is
+            candidatePaths.push(path.join(packageRoot, subpath));
+            // If subpath contains 'lib/', also try without 'lib/'
+            if (subpath.startsWith('lib/')) {
+              candidatePaths.push(path.join(packageRoot, subpath.replace('lib/', '')));
+            }
+          } else {
+            // For imports without .js extension
+            candidatePaths.push(path.join(packageRoot, `${subpath}.js`));
+            candidatePaths.push(path.join(packageRoot, subpath, 'index.js'));
+            // Also try in lib directory
+            candidatePaths.push(path.join(packageRoot, 'lib', `${subpath}.js`));
+          }
+
+          // Find the first existing file
+          const fs = require('fs');
+          for (const candidatePath of candidatePaths) {
+            if (fs.existsSync(candidatePath)) {
+              return {
+                type: 'sourceFile',
+                filePath: candidatePath,
+              };
+            }
+          }
+
+          // Fallback to main package if no candidate exists
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve('@noble/hashes'),
+          };
         } catch {
           // Fallback to main package if subpath doesn't exist
           return {

@@ -23831,6 +23831,7 @@ __metadata:
     "@selfxyz/common": "workspace:*"
     "@selfxyz/mobile-sdk-alpha": "workspace:*"
     "@tsconfig/react-native": "npm:^3.0.6"
+    "@types/node": "npm:^22.18.3"
     "@types/react": "npm:^18.3.4"
     "@types/react-native-vector-icons": "npm:^6.4.18"
     "@typescript-eslint/eslint-plugin": "npm:^8.44.0"

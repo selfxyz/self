@@ -94,7 +94,12 @@ function createHmac(algorithm: string, key: string | Uint8Array) {
       throw new Error(`Unsupported HMAC algorithm: ${algorithm}`);
   }
 
-  const keyBytes = typeof key === 'string' ? new TextEncoder().encode(key) : key;
+  const keyBytes =
+    typeof key === 'string'
+      ? new TextEncoder().encode(key)
+      : ArrayBuffer.isView(key) && !(key instanceof Uint8Array && key.constructor === Uint8Array)
+        ? new Uint8Array(key.buffer, key.byteOffset, key.byteLength)
+        : key;
   const hmacState = hmac.create(hashFn, keyBytes);
   let finalized = false;
 

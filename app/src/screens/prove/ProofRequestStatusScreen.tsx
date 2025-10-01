@@ -96,8 +96,7 @@ const SuccessScreen: React.FC = () => {
             }
           } catch {
             console.warn(
-              'Invalid deep link URL provided:',
-              selfApp.deeplinkCallback,
+              'Invalid deep link URL provided (URL sanitized for security)',
             );
           }
         }

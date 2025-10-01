@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { createHash } from '../src/polyfills/crypto';
+
 import { sha256 } from '@noble/hashes/sha256';
 
 describe('Hash Finalization', () => {

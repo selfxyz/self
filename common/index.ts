@@ -18,11 +18,13 @@ export type {
   UserIdType,
 } from './src/utils/index.js';
 
-// Additional type exports
-export type { Environment } from './src/utils/types.js';
 
 // Constants exports
 export type { Country3LetterCode } from './src/constants/index.js';
+
+
+// Additional type exports
+export type { Environment } from './src/utils/types.js';
 
 // Utils exports
 export {
@@ -73,6 +75,7 @@ export {
   genAndInitMockPassportData,
   genMockIdDoc,
   genMockIdDocAndInitDataParsing,
+  fetchOfacTrees,
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsRegisterForTests,
@@ -80,12 +83,11 @@ export {
   generateCommitment,
   generateMockDSC,
   generateNullifier,
+  generateTEEInputsDiscloseStateless,
   getCircuitNameFromPassportData,
   getLeafCscaTree,
   getLeafDscTree,
-  fetchOfacTrees,
   getSKIPEM,
-  generateTEEInputsDiscloseStateless,
   getSolidityPackedUserContextData,
   getUniversalLink,
   hashEndpointWithScope,
