@@ -63,14 +63,13 @@ export {
 } from './errors';
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
+export { type ProvingStateType } from './proving/provingMachine';
 
 // Context and Client
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 export { SdkEvents } from './types/events';
-
 // Components
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
-
 // Documents utils
 export { SelfMobileSdk } from './entry';
 

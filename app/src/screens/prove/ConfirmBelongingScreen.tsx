@@ -16,7 +16,7 @@ import {
 import {
   getPreRegistrationDescription,
   usePrepareDocumentProof,
-} from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-ownership';
+} from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
