@@ -18,10 +18,8 @@ export type {
   UserIdType,
 } from './src/utils/index.js';
 
-
 // Constants exports
 export type { Country3LetterCode } from './src/constants/index.js';
-
 
 // Additional type exports
 export type { Environment } from './src/utils/types.js';

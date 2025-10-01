@@ -49,7 +49,6 @@ function computeUppercasePaddedName(name: string): number[] {
     .map((char) => char.charCodeAt(0));
 }
 
-
 // Helper function to compute final commitment
 export function computeCommitment(
   secret: bigint,
@@ -60,8 +59,6 @@ export function computeCommitment(
 ): bigint {
   return poseidon5([secret, qrHash, nullifier, packedCommitment, photoHash]);
 }
-
-
 
 // Helper function to compute packed commitment
 export function computePackedCommitment(
@@ -76,7 +73,6 @@ export function computePackedCommitment(
   ];
   return BigInt(packBytesAndPoseidon(packedCommitmentArgs));
 }
-
 
 export function convertByteArrayToBigInt(byteArray: Uint8Array | number[]): bigint {
   let result = 0n;
