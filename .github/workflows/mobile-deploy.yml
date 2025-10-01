@@ -1036,20 +1036,46 @@ jobs:
             echo "ℹ️ Version already up to date or no version field in version.json"
           fi
 
-      - name: Open PR to update version files
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: "chore: update version files after deployment"
-          body: |
-            Automated update of version files after successful deployment.
-            Includes updates to `app/version.json`, `app/package.json`, and `yarn.lock`.
-          commit-message: "chore: update version files after deployment [skip ci]"
-          branch: ci/update-version-${{ github.run_id }}
-          base: dev
-          add-paths: |
-            app/version.json
-            app/package.json
-            yarn.lock
+      - name: Create PR with version files
+        run: |
+          set -e
+
+          BRANCH_NAME="ci/update-version-${{ github.run_id }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if there are any changes to commit
+          git add app/version.json app/package.json yarn.lock
+          if [[ -z $(git status -s) ]]; then
+            echo "No version file changes to commit. Skipping PR creation."
+            exit 0
+          fi
+
+          # Commit the changes on a temporary local branch
+          git checkout -b temp-for-version-commit
+          git commit -m "chore: update version files after deployment [skip ci]"
+
+          # Create a new branch from dev
+          git fetch origin dev
+          git checkout -b ${BRANCH_NAME} origin/dev
+
+          # Cherry-pick the commit with the version changes
+          git cherry-pick temp-for-version-commit
+
+          # Clean up temporary branch
+          git branch -D temp-for-version-commit
+
+          # Push the new branch and create the PR
+          git push --set-upstream origin ${BRANCH_NAME}
+
+          gh pr create \
+            --base dev \
+            --head ${BRANCH_NAME} \
+            --title "chore: update version files after deployment" \
+            --body "Automated update of version files after successful deployment."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Create git tags after successful deployment
   create-release-tags:
