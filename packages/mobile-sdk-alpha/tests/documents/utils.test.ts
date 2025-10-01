@@ -4,7 +4,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog } from '@selfxyz/common/types';
+import type { PassportData } from '@selfxyz/common/types/passport';
 
 import { createSelfClient, defaultConfig, DocumentsAdapter, loadSelectedDocument, SelfClient } from '../../src';
 
@@ -13,6 +14,9 @@ const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAda
     config: defaultConfig,
     listeners: new Map(),
     adapters: {
+      notification: {
+        registerDeviceToken: async () => Promise.resolve(),
+      },
       auth: {
         getPrivateKey: async () => null,
       },

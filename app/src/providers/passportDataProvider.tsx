@@ -44,17 +44,16 @@ import type { PropsWithChildren } from 'react';
 import React, { createContext, useCallback, useContext, useMemo } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { isMRZDocument } from '@selfxyz/common';
 import type {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-} from '@selfxyz/common/utils';
+} from '@selfxyz/common/types/certificates';
 import {
   brutforceSignatureAlgorithmDsc,
   calculateContentHash,
   inferDocumentCategory,
-  parseCertificateSimple,
 } from '@selfxyz/common/utils';
+import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import type {
   AadhaarData,
   DocumentCatalog,
@@ -62,6 +61,7 @@ import type {
   IDDocument,
   PassportData,
 } from '@selfxyz/common/utils/types';
+import { isMRZDocument } from '@selfxyz/common/utils/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
@@ -220,11 +220,13 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   );
 };
 
-export async function checkAndUpdateRegistrationStates(): Promise<void> {
+export async function checkAndUpdateRegistrationStates(
+  selfClient: SelfClient,
+): Promise<void> {
   // Lazy import to avoid circular dependency
   const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
     await import('@/utils/proving/validateDocument');
-  return validateDocCheckAndUpdate();
+  return validateDocCheckAndUpdate(selfClient);
 }
 
 export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
@@ -633,7 +635,7 @@ interface IPassportContext {
     isRegistered: boolean,
   ) => Promise<void>;
   checkIfAnyDocumentsNeedMigration: () => Promise<boolean>;
-  checkAndUpdateRegistrationStates: () => Promise<void>;
+  checkAndUpdateRegistrationStates: (selfClient: SelfClient) => Promise<void>;
 }
 
 export async function migrateFromLegacyStorage(): Promise<void> {

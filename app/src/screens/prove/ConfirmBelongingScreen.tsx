@@ -28,13 +28,12 @@ import {
   getFCMToken,
   requestNotificationPermission,
 } from '@/utils/notifications/notificationService';
-import { useProvingStore } from '@/utils/proving/provingMachine';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
+  const { useProvingStore, trackEvent } = selfClient;
   const navigate = useHapticNavigation('Loading', {
     params: {},
   });

@@ -19,12 +19,27 @@ export default defineConfig([
     format: ['esm'],
     dts: true,
     sourcemap: true,
-    splitting: false,
+    splitting: true,
     clean: true,
     outDir: 'dist/esm',
     tsconfig: './tsconfig.json',
     target: 'es2020',
-    external: ['react', 'react-native', '@selfxyz/common'],
+    external: [
+      'react',
+      'react-native',
+      '@selfxyz/common',
+      // Common crypto dependencies (already in main app)
+      'elliptic',
+      'js-sha256',
+      'js-sha1',
+      'js-sha512',
+      'node-forge',
+      'ethers',
+      // React Native dependencies
+      '@react-native-async-storage/async-storage',
+      'react-native-keychain',
+      'react-native-sqlite-storage',
+    ],
     esbuildOptions(options) {
       options.supported = {
         ...options.supported,
@@ -48,12 +63,27 @@ export default defineConfig([
     format: ['cjs'],
     dts: false,
     sourcemap: true,
-    splitting: false,
+    splitting: true,
     clean: false,
     outDir: 'dist/cjs',
     tsconfig: './tsconfig.cjs.json',
     target: 'es2020',
-    external: ['react', 'react-native', '@selfxyz/common'],
+    external: [
+      'react',
+      'react-native',
+      '@selfxyz/common',
+      // Common crypto dependencies (already in main app)
+      'elliptic',
+      'js-sha256',
+      'js-sha1',
+      'js-sha512',
+      'node-forge',
+      'ethers',
+      // React Native dependencies
+      '@react-native-async-storage/async-storage',
+      'react-native-keychain',
+      'react-native-sqlite-storage',
+    ],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
     esbuildOptions(options) {
       options.supported = {

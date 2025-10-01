@@ -5,7 +5,7 @@
 // Only export what's actually used elsewhere to enable proper tree shaking
 
 // From provingMachine - used in screens and tests
-export type { ProvingStateType } from '@/utils/proving/provingMachine';
+export type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha';
 // From provingUtils - used in tests (keeping these for testing purposes)
 export {
   encryptAES256GCM,
@@ -15,5 +15,3 @@ export {
 
 // From loadingScreenStateText - used in loading screen
 export { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
-
-export { useProvingStore } from '@/utils/proving/provingMachine';

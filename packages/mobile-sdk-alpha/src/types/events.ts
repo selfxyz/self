@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { DocumentCategory } from '@selfxyz/common/types';
+import { DocumentCategory } from '@selfxyz/common';
 
-import type { Progress } from './public';
+import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
+import type { LogLevel, Progress } from './public';
 
 export enum SdkEvents {
   /**
@@ -83,6 +84,22 @@ export enum SdkEvents {
    * The event includes the selected document type, country code, and document name.
    */
   DOCUMENT_TYPE_SELECTED = 'DOCUMENT_TYPE_SELECTED',
+  /**
+   * Emitted for various proof-related events during the proving process.
+   *
+   * **Recommended:** Log these events for monitoring and debugging purposes.
+   * Use the `context` and `details` to gain insights into the proving process and
+   * identify any issues that may arise.
+   */
+  PROOF_EVENT = 'PROOF_EVENT',
+  /**
+   * Emitted for NFC-related events during document scanning.
+   *
+   * **Recommended:** Log these events for monitoring and debugging purposes.
+   * Use the `context` and `details` to gain insights into the NFC scanning process and
+   * identify any issues that may arise.
+   */
+  NFC_EVENT = 'NFC_EVENT',
 }
 
 export interface SDKEventMap {
@@ -110,6 +127,18 @@ export interface SDKEventMap {
 
   [SdkEvents.PROGRESS]: Progress;
   [SdkEvents.ERROR]: Error;
+  [SdkEvents.PROOF_EVENT]: {
+    level: LogLevel;
+    context: ProofContext;
+    event: string;
+    details?: Record<string, unknown>;
+  };
+  [SdkEvents.NFC_EVENT]: {
+    level: LogLevel;
+    context: NFCScanContext;
+    event: string;
+    details?: Record<string, unknown>;
+  };
 }
 
 export type SDKEvent = keyof SDKEventMap;

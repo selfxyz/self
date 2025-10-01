@@ -76,6 +76,9 @@ function createTestClient() {
           })),
         },
       },
+      notification: {
+        registerDeviceToken: async () => Promise.resolve(),
+      },
       crypto: {
         hash: jest.fn(),
         sign: jest.fn(),

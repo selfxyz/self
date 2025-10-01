@@ -19,6 +19,7 @@ import {
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
+import { logNFCEvent, logProofEvent } from '@/Sentry';
 import analytics from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
@@ -94,6 +95,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       auth: {
         getPrivateKey: () => unsafe_getPrivateKey(),
       },
+      notification: {
+        registerDeviceToken: async (sessionId, deviceToken, isMock) => {
+          // Forward to our app-level function which handles staging vs production
+          // and also fetches the token if not provided
+          const { registerDeviceToken: registerFirebaseDeviceToken } =
+            await import('@/utils/notifications/notificationService');
+          return registerFirebaseDeviceToken(sessionId, deviceToken, isMock);
+        },
+      },
     }),
     [],
   );
@@ -146,6 +156,16 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       if (navigationRef.isReady()) {
         navigationRef.navigate('AccountRecoveryChoice');
       }
+    });
+
+    addListener(SdkEvents.PROOF_EVENT, ({ level, context, event, details }) => {
+      // Log proof events for monitoring/debugging
+      logProofEvent(level, event, context, details);
+    });
+
+    addListener(SdkEvents.NFC_EVENT, ({ level, context, event, details }) => {
+      // Log nfc events for monitoring/debugging
+      logNFCEvent(level, event, context, details);
     });
 
     return map;

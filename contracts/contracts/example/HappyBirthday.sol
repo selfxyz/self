@@ -69,14 +69,14 @@ contract SelfHappyBirthday is SelfVerificationRoot, Ownable {
     /**
      * @notice Initializes the HappyBirthday V2 contract
      * @param identityVerificationHubAddress The address of the Identity Verification Hub V2
-     * @param scopeValue The expected proof scope for user registration
+     * @param scopeSeed The scope seed string to be hashed with contract address
      * @param token The USDC token address
      */
     constructor(
         address identityVerificationHubAddress,
-        uint256 scopeValue,
+        string memory scopeSeed,
         address token
-    ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue) Ownable(_msgSender()) {
+    ) SelfVerificationRoot(identityVerificationHubAddress, scopeSeed) Ownable(_msgSender()) {
         usdc = IERC20(token);
     }
 

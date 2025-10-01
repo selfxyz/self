@@ -18,7 +18,7 @@ import {
   getCircuitNameFromPassportData,
   hashEndpointWithScope,
 } from '../../utils/index.js';
-import type { AadhaarData, IDDocument, OfacTree } from '../../utils/types.js';
+import type { AadhaarData, Environment, IDDocument, OfacTree } from '../../utils/types.js';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
@@ -88,7 +88,7 @@ export async function generateTEEInputsAadhaarRegister(
   secret: string,
   aadhaarData: AadhaarData,
   publicKeys: string[],
-  env: 'prod' | 'stg'
+  env: Environment
 ) {
   const { prepareAadhaarRegisterData } = require('../aadhaar/mockData.js');
   console.log(

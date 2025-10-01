@@ -6,16 +6,13 @@ import type { FC } from 'react';
 import { Dimensions } from 'react-native';
 import { Separator, Text, XStack, YStack } from 'tamagui';
 
-import {
-  AadhaarData,
-  isAadhaarDocument,
-  isMRZDocument,
-  PassportData,
-} from '@selfxyz/common';
+import type { AadhaarData } from '@selfxyz/common';
 import {
   attributeToPosition,
   attributeToPosition_ID,
 } from '@selfxyz/common/constants';
+import type { PassportData } from '@selfxyz/common/types/passport';
+import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 
 import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
 import AadhaarIcon from '@/images/icons/aadhaar.svg';

@@ -1,19 +1,23 @@
 {
   "name": "self-workspace-root",
-  "workspaces": [
-    "app",
-    "circuits",
-    "common",
-    "contracts",
-    "packages/*",
-    "prover/tests",
-    "sdk/*",
-    "scripts/tests",
-    "packages/mobile-sdk-alpha/demo-app"
-  ],
+  "workspaces": {
+    "packages": [
+      "app",
+      "circuits",
+      "common",
+      "contracts",
+      "packages/*",
+      "prover/tests",
+      "scripts/tests",
+      "sdk/*"
+    ]
+  },
   "scripts": {
-    "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run build",
+    "build": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/circuits --exclude mobile-sdk-demo -i --all run build",
+    "build:demo": "yarn workspace mobile-sdk-demo build",
+    "build:mobile-sdk": "yarn workspace @selfxyz/mobile-sdk-alpha build",
     "check:versions": "node scripts/check-package-versions.mjs",
+    "demo:mobile": "yarn build:mobile-sdk && yarn build:demo && yarn workspace mobile-sdk-demo start",
     "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root run format",
     "format:github": "yarn prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "echo 'format markdown' && yarn prettier --parser markdown --write *.md  && echo 'format yaml' && yarn prettier --parser yaml --write .*.{yml,yaml} --single-quote false && yarn prettier --write scripts/**/*.{js,mjs,ts} && yarn prettier --parser json --write scripts/**/*.json",
@@ -23,11 +27,11 @@
     "lint:headers": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --check",
     "lint:headers:fix": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --fix",
     "prepare": "husky",
-    "reinstall-app": "rm -rf node_modules app/node_modules && yarn install && yarn workspace @selfxyz/mobile-app run install-app",
+    "reinstall-app": "yarn install && (cd app && yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:xcode && yarn clean:pod-cache && yarn clean:android-deps && rm -rf app/node_modules) && yarn install && yarn workspace @selfxyz/mobile-app run install-app",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
     "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
-    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts -i --all run types "
+    "types": "yarn workspaces foreach --topological-dev --parallel --exclude @selfxyz/contracts --exclude @selfxyz/common --exclude @selfxyz/mobile-app -i --all run types"
   },
   "resolutions": {
     "@babel/core": "^7.28.4",
@@ -38,9 +42,17 @@
     "@types/react": "^18.3.4",
     "punycode": "npm:punycode.js@^2.3.1",
     "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-native": "0.76.9"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.28.3",
+    "js-sha1": "^0.7.0",
+    "react": "^18.3.1",
     "react-native": "0.76.9"
   },
   "devDependencies": {
+    "@react-native-community/cli-server-api": "^16.0.3",
     "@types/node": "^22.18.3",
     "gitleaks": "1.0.0",
     "husky": "9.1.7",

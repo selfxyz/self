@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { IdDocInput, PassportData } from '@selfxyz/common/utils';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { generateMockDSC, genMockIdDoc, initPassportDataParsing } from '@selfxyz/common/utils/passports';
+import type { IdDocInput, PassportData } from '@selfxyz/common';
+import { generateMockDSC, genMockIdDoc, getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 export interface GenerateMockDocumentOptions {
   age: number;

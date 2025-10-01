@@ -4,6 +4,7 @@ pragma solidity 0.8.28;
 import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {SelfStructs} from "../libraries/SelfStructs.sol";
+import {IPoseidonT3} from "../interfaces/IPoseidonT3.sol";
 
 /**
  * @title TestSelfVerificationRoot
@@ -24,12 +25,12 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
     /**
      * @notice Constructor for the test contract
      * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2
-     * @param scopeValue The expected proof scope for user registration
+     * @param scopeSeed The scope seed string (unused, for signature compatibility)
      */
     constructor(
         address identityVerificationHubV2Address,
-        uint256 scopeValue
-    ) SelfVerificationRoot(identityVerificationHubV2Address, scopeValue) {}
+        string memory scopeSeed
+    ) SelfVerificationRoot(identityVerificationHubV2Address, scopeSeed) {}
 
     /**
      * @notice Implementation of customVerificationHook for testing
@@ -71,14 +72,6 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
         lastUserData = "";
     }
 
-    /**
-     * @notice Expose the internal _setScope function for testing
-     * @param newScope The new scope value to set
-     */
-    function setScope(uint256 newScope) external {
-        _setScope(newScope);
-    }
-
     function setVerificationConfig(SelfStructs.VerificationConfigV2 memory config) external {
         verificationConfig = config;
         verificationConfigId = _identityVerificationHubV2.setVerificationConfigV2(verificationConfig);
@@ -91,6 +84,16 @@ contract TestSelfVerificationRoot is SelfVerificationRoot {
 
     function setConfigId(bytes32 configId) external {
         verificationConfigId = configId;
+    }
+
+    /**
+     * @notice Override scope for testing with a specific PoseidonT3 address
+     * @dev This function allows tests to recalculate scope using a deployed PoseidonT3 library
+     * @param poseidonT3Address The address of the deployed PoseidonT3 library
+     * @param scopeSeed The scope seed string to be hashed with contract address
+     */
+    function testGenerateScope(address poseidonT3Address, string memory scopeSeed) external {
+        _scope = _calculateScope(address(this), scopeSeed, poseidonT3Address);
     }
 
     function getConfigId(

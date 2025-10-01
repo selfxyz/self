@@ -4,7 +4,7 @@ import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common/constants";
 import { genAndInitMockPassportData } from "@selfxyz/common/utils/passports/genMockPassportData";
 import { getCscaTreeRoot } from "@selfxyz/common/utils/trees";
 import { PassportData } from "@selfxyz/common/utils/types";
-import serialized_csca_tree from "./pubkeys/serialized_csca_tree.json";
+import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
 import {
   DeployedActors,
   DscVerifier,

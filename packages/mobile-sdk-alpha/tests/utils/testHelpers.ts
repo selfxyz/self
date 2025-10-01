@@ -4,6 +4,7 @@
 
 /* eslint-disable sort-exports/sort-exports */
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../../src';
+import type { NotificationAdapter } from '../../src/types/public';
 
 // Shared test data
 export const sampleMRZ = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
@@ -65,12 +66,17 @@ const mockAuth = {
   getPrivateKey: async () => 'stubbed-private-key',
 };
 
+const mockNotification: NotificationAdapter = {
+  registerDeviceToken: async () => Promise.resolve(),
+};
+
 export const mockAdapters = {
   scanner: mockScanner,
   network: mockNetwork,
   crypto: mockCrypto,
   documents: mockDocuments,
   auth: mockAuth,
+  notification: mockNotification,
 };
 
 // Shared test expectations

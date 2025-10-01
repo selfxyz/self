@@ -12,9 +12,10 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
-import { getAesopScreens } from '@/navigation/aesop';
 import devScreens from '@/navigation/devTools';
 import documentScreens from '@/navigation/document';
 import homeScreens from '@/navigation/home';
@@ -33,8 +34,6 @@ export const navigationScreens = {
   ...settingsScreens,
   ...recoveryScreens,
   ...devScreens, // allow in production for testing
-  // add last to override other screens
-  ...getAesopScreens(),
 };
 const AppNavigation = createNativeStackNavigator({
   id: undefined,
@@ -62,6 +61,7 @@ const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {
+  const selfClient = useSelfClient();
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
     if (currentRoute) {
@@ -74,7 +74,7 @@ const NavigationWithTracking = () => {
 
   // Setup universal link handling at the navigation level
   useEffect(() => {
-    const cleanup = setupUniversalLinkListenerInNavigation();
+    const cleanup = setupUniversalLinkListenerInNavigation(selfClient);
 
     return () => {
       cleanup();

@@ -139,6 +139,7 @@ export async function checkIfPassportDscIsInTree(
 }
 
 type AlternativeCSCA = Record<string, string>;
+type AadhaarPublicKeys = null | Array<string>;
 
 export function generateCommitmentInApp(
   secret: string,
