@@ -153,7 +153,6 @@ export function createSelfClient({
     logProofEvent: (level: LogLevel, message: string, context: ProofContext, details?: Record<string, any>) => {
       emit(SdkEvents.PROOF_EVENT, { context, event: message, details, level });
     },
-    registerNotificationsToken,
     // TODO: inline for now
     loadDocumentCatalog: async () => {
       return _adapters.documents.loadDocumentCatalog();
