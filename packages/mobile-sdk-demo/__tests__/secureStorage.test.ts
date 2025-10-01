@@ -94,7 +94,9 @@ describe('secureStorage', () => {
       expect(secret1).not.toBe(secret2);
 
       // Restore mock
-      mockRandomValues.mockImplementation(originalGetRandomValues);
+      if (originalGetRandomValues) {
+        mockRandomValues.mockImplementation(originalGetRandomValues);
+      }
     });
   });
 

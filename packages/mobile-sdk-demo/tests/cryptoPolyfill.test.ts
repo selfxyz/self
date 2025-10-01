@@ -106,7 +106,7 @@ describe('Crypto Polyfill Functional Bugs', () => {
       // Mock the require to simulate the actual package behavior
       vi.doMock('react-native-get-random-values', () => {
         // This package doesn't export getRandomValues - it just polyfills globalThis.crypto
-        global.crypto = global.crypto || ({} as Crypto);
+        global.crypto = global.crypto || ({} as typeof crypto);
         global.crypto.getRandomValues = vi.fn((array: Uint8Array) => {
           for (let i = 0; i < array.length; i++) {
             array[i] = i % 256;
@@ -134,7 +134,7 @@ describe('Crypto Polyfill Functional Bugs', () => {
 
       vi.doMock('react-native-get-random-values', () => {
         // Side effect: install polyfill
-        global.crypto = global.crypto || ({} as Crypto);
+        global.crypto = global.crypto || ({} as typeof crypto);
         global.crypto.getRandomValues = mockGetRandomValues as any;
         return {}; // No exports
       });
@@ -242,7 +242,7 @@ describe('Crypto Polyfill Functional Bugs', () => {
 
       // Set up proper environment
       global.Buffer = require('buffer').Buffer;
-      global.crypto = global.crypto || ({} as Crypto);
+      global.crypto = global.crypto || ({} as typeof crypto);
       global.crypto.getRandomValues = vi.fn((array: Uint8Array) => {
         for (let i = 0; i < array.length; i++) {
           array[i] = i % 256;

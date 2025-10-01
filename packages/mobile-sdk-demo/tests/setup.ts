@@ -127,8 +127,8 @@ vi.mock('react-native-get-random-values', () => ({
 }));
 
 // Mock window.matchMedia
-if (typeof window !== 'undefined') {
-  Object.defineProperty(window, 'matchMedia', {
+if (typeof (globalThis as any).window !== 'undefined') {
+  Object.defineProperty((globalThis as any).window, 'matchMedia', {
     writable: true,
     value: vi.fn().mockImplementation(query => ({
       matches: false,
