@@ -24,7 +24,7 @@ import {
   TREE_URL,
   TREE_URL_STAGING,
 } from '@selfxyz/common';
-import { Environment } from '@selfxyz/common/utils/types';
+import type { Environment } from '@selfxyz/common';
 
 import type { SelfClient } from '../types/public';
 
