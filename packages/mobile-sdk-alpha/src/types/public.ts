@@ -90,10 +90,6 @@ export interface MRZValidation {
   overall: boolean;
 }
 
-export interface NotificationAdapter {
-  registerDeviceToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void>;
-}
-
 export type LogLevel = 'info' | 'warn' | 'error';
 
 export interface Progress {
@@ -110,7 +106,6 @@ export interface Adapters {
   analytics?: AnalyticsAdapter;
   auth: AuthAdapter;
   documents: DocumentsAdapter;
-  notification: NotificationAdapter;
 }
 
 export interface LoggerAdapter {
@@ -181,7 +176,6 @@ export interface SelfClient {
   logProofEvent(level: LogLevel, message: string, context: ProofContext, details?: Record<string, any>): void;
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
-  registerNotificationsToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void>;
   loadDocumentById(id: string): Promise<IDDocument | null>;
   saveDocument(id: string, passportData: IDDocument): Promise<void>;
   deleteDocument(id: string): Promise<void>;

@@ -14,9 +14,6 @@ const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAda
     config: defaultConfig,
     listeners: new Map(),
     adapters: {
-      notification: {
-        registerDeviceToken: async () => Promise.resolve(),
-      },
       auth: {
         getPrivateKey: async () => null,
       },

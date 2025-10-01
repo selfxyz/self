@@ -132,13 +132,6 @@ export function createSelfClient({
     return adapters.auth.getPrivateKey();
   }
 
-  async function registerNotificationsToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void> {
-    if (!_adapters.notification) {
-      throw notImplemented('notification');
-    }
-    return _adapters.notification.registerDeviceToken(sessionId, deviceToken, isMock);
-  }
-
   async function hasPrivateKey(): Promise<boolean> {
     if (!adapters.auth) return false;
     try {

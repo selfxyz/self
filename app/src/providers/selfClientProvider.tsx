@@ -96,15 +96,6 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       auth: {
         getPrivateKey: () => unsafe_getPrivateKey(),
       },
-      notification: {
-        registerDeviceToken: async (sessionId, deviceToken, isMock) => {
-          // Forward to our app-level function which handles staging vs production
-          // and also fetches the token if not provided
-          const { registerDeviceToken: registerFirebaseDeviceToken } =
-            await import('@/utils/notifications/notificationService');
-          return registerFirebaseDeviceToken(sessionId, deviceToken, isMock);
-        },
-      },
     }),
     [],
   );
