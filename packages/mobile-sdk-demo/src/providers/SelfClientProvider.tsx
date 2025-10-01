@@ -75,6 +75,11 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
           return null;
         },
       },
+      notification: {
+        async registerDeviceToken(): Promise<void> {
+          // No-op notification adapter for the demo application
+        },
+      },
     }),
     [],
   );
