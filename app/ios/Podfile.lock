@@ -1520,7 +1520,7 @@ PODS:
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-nfc-manager (3.17.1):
+  - react-native-nfc-manager (3.16.3):
     - React-Core
   - react-native-safe-area-context (5.6.1):
     - DoubleConversion
@@ -1904,7 +1904,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNDeviceInfo (14.1.1):
+  - RNDeviceInfo (14.0.4):
     - React-Core
   - RNFBApp (19.3.0):
     - Firebase/CoreOnly (= 10.24.0)
@@ -2113,7 +2113,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - segment-analytics-react-native (2.21.3):
+  - segment-analytics-react-native (2.21.2):
     - React-Core
     - sovran-react-native
   - Sentry/HybridSDK (8.53.2)
@@ -2520,7 +2520,7 @@ SPEC CHECKSUMS:
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-nfc-manager: e5e91b4e9af0551755cdb6eaec55a8ff820ccdc6
+  react-native-nfc-manager: 66a00e5ddab9704efebe19d605b1b8afb0bb1bd7
   react-native-safe-area-context: 90a89cb349c7f8168a707e6452288c2f665b9fd1
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   React-nativeconfig: 415626a63057638759bcc75e0a96e2e07771a479
@@ -2552,7 +2552,7 @@ SPEC CHECKSUMS:
   ReactCommon: b2eb96a61b826ff327a773a74357b302cf6da678
   RNCAsyncStorage: 0003b916f1a69fe2d20b7910e0d08da3d32c7bd6
   RNCClipboard: a4827e134e4774e97fa86f7f986694dd89320f13
-  RNDeviceInfo: bcce8752b5043a623fe3c26789679b473f705d3c
+  RNDeviceInfo: d863506092aef7e7af3a1c350c913d867d795047
   RNFBApp: 4097f75673f8b42a7cd1ba17e6ea85a94b45e4d1
   RNFBMessaging: 92325b0d5619ac90ef023a23cfd16fd3b91d0a88
   RNFBRemoteConfig: a569bacaa410acfcaba769370e53a787f80fd13b
@@ -2563,7 +2563,7 @@ SPEC CHECKSUMS:
   RNScreens: 806e1449a8ec63c2a4e4cf8a63cc80203ccda9b8
   RNSentry: 6ad982be2c8e32dab912afb4132b6a0d88484ea0
   RNSVG: 0c1fc3e7b147949dc15644845e9124947ac8c9bb
-  segment-analytics-react-native: a0c29c75ede1989118b50cac96b9495ea5c91a1d
+  segment-analytics-react-native: bad4c2c7b63818bd493caa2b5759fca59e4ae9a7
   Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594
