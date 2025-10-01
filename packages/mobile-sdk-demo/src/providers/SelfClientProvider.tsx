@@ -15,7 +15,7 @@ import {
   webScannerShim,
 } from '@selfxyz/mobile-sdk-alpha';
 
-import { inMemoryDocumentsAdapter } from '../utils/documentStore';
+import { persistentDocumentsAdapter } from '../utils/documentStore';
 
 const createFetch = () => {
   const fetchImpl = globalThis.fetch;
@@ -56,7 +56,7 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
         },
         ws: createWsAdapter(),
       },
-      documents: inMemoryDocumentsAdapter,
+      documents: persistentDocumentsAdapter,
       crypto: {
         async hash(data: Uint8Array): Promise<Uint8Array> {
           return hash(data);

@@ -23781,6 +23781,7 @@ __metadata:
     "@babel/core": "npm:^7.28.3"
     "@babel/runtime": "npm:^7.28.3"
     "@noble/hashes": "npm:^1.5.0"
+    "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@react-native-community/cli": "npm:^16.0.3"
     "@react-native-picker/picker": "npm:^2.11.1"
     "@react-native/gradle-plugin": "npm:0.76.9"
