@@ -16,6 +16,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { persistentDocumentsAdapter } from '../utils/documentStore';
+import { getOrCreateSecret } from '../utils/secureStorage';
 
 const createFetch = () => {
   const fetchImpl = globalThis.fetch;
@@ -72,7 +73,12 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
       },
       auth: {
         async getPrivateKey(): Promise<string | null> {
-          return null;
+          try {
+            return await getOrCreateSecret();
+          } catch (error) {
+            console.error('Failed to get/create secret:', error);
+            return null;
+          }
         },
       },
       notification: {

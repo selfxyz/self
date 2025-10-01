@@ -77,8 +77,8 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       if (!Number.isFinite(expiryNum) || expiryNum < 0 || expiryNum > 30) {
         throw new Error('Expiry years must be a number between 0 and 30');
       }
-      const firstNameValue = firstName?.trim() || undefined;
-      const lastNameValue = lastName?.trim() || undefined;
+      const firstNameValue = firstName?.trim() || getRandomFirstName();
+      const lastNameValue = lastName?.trim() || getRandomLastName();
       const doc = await generateMockDocument({
         age: ageNum,
         expiryYears: expiryNum,

@@ -23821,6 +23821,7 @@ __metadata:
     react: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-get-random-values: "npm:^1.11.0"
+    react-native-keychain: "npm:^10.0.0"
     react-native-safe-area-context: "npm:^5.6.1"
     react-native-svg: "npm:^15.13.0"
     react-native-svg-transformer: "npm:^1.5.1"

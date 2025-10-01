@@ -72,6 +72,7 @@ export async function generateMockDocument({
     signatureType: signatureTypeForGeneration as IdDocInput['signatureType'],
     expiryDate: getExpiryDateFromYears(expiryYears),
     passportNumber: randomPassportNumber,
+    sex: 'M', // Default value
   };
 
   if (selectedDocumentType === 'mock_aadhaar') {

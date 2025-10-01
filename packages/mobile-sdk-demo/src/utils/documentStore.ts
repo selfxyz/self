@@ -5,7 +5,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { DocumentsAdapter } from '@selfxyz/mobile-sdk-alpha';
-import type { DocumentCatalog, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 const CATALOG_KEY = '@self_demo:document_catalog';
 const DOCUMENT_KEY_PREFIX = '@self_demo:document:';
@@ -45,7 +46,21 @@ export const persistentDocumentsAdapter: DocumentsAdapter = {
     try {
       const documentJson = await AsyncStorage.getItem(getDocumentKey(id));
       if (documentJson) {
-        return JSON.parse(documentJson) as IDDocument;
+        const doc = JSON.parse(documentJson) as IDDocument;
+
+        // Re-parse passport/ID card data to restore dsc_parsed, csca_parsed, and passportMetadata
+        // These contain BigInt values that get corrupted during JSON serialization
+        if (doc.documentCategory === 'passport' || doc.documentCategory === 'id_card') {
+          const passportDoc = doc as PassportData;
+          // Only re-parse if not already parsed or if parsed data is corrupted
+          if (!passportDoc.dsc_parsed || !passportDoc.passportMetadata) {
+            const env = passportDoc.mock ? 'staging' : 'production';
+            const skiPem = await getSKIPEM(env);
+            return initPassportDataParsing(passportDoc, skiPem);
+          }
+        }
+
+        return doc;
       }
       return null;
     } catch (error) {
@@ -100,7 +115,23 @@ export const inMemoryDocumentsAdapter: DocumentsAdapter = {
   },
   async loadDocumentById(id: string): Promise<IDDocument | null> {
     const document = documentStore.get(id);
-    return document ? cloneDocument(document) : null;
+    if (!document) return null;
+
+    const doc = cloneDocument(document);
+
+    // Re-parse passport/ID card data to restore dsc_parsed, csca_parsed, and passportMetadata
+    // These contain BigInt values that get corrupted during JSON serialization
+    if (doc.documentCategory === 'passport' || doc.documentCategory === 'id_card') {
+      const passportDoc = doc as PassportData;
+      // Only re-parse if not already parsed or if parsed data is corrupted
+      if (!passportDoc.dsc_parsed || !passportDoc.passportMetadata) {
+        const env = passportDoc.mock ? 'staging' : 'production';
+        const skiPem = await getSKIPEM(env);
+        return initPassportDataParsing(passportDoc, skiPem);
+      }
+    }
+
+    return doc;
   },
   async saveDocument(id: string, passportData: IDDocument): Promise<void> {
     documentStore.set(id, cloneDocument(passportData));
