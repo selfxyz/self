@@ -128,9 +128,18 @@ const config = {
             candidatePaths.push(path.join(packageRoot, 'lib', `${subpath}.js`));
           }
 
-          // Find the first existing file
+          // Guard against path traversal: normalize and ensure within packageRoot
           const fs = require('fs');
-          for (const candidatePath of candidatePaths) {
+          const normalizedCandidates = candidatePaths
+            .map(p => path.resolve(p))
+            .filter(p => {
+              const relative = path.relative(packageRoot, p);
+              // keep only files strictly inside packageRoot
+              return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative);
+            });
+
+          // Find the first existing file among safe candidates
+          for (const candidatePath of normalizedCandidates) {
             if (fs.existsSync(candidatePath)) {
               return {
                 type: 'sourceFile',
