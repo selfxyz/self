@@ -87,7 +87,7 @@ const LaunchScreen: React.FC = () => {
         backgroundColor={zinc800}
       >
         <AbstractButton
-          trackEvent={AppEvents.GET_STARTED_AADHAAR}
+          trackEvent={AppEvents.GET_STARTED}
           onPress={onPress}
           bgColor={white}
           color={black}

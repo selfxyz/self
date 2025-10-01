@@ -65,11 +65,15 @@ const CountryPickerScreen: React.FC = () => {
   const onPressCountry = useCallback(
     (countryCode: string) => {
       buttonTap();
-      console.log('Selected country code:', countryCode);
-      console.log('Current countryData:', countryData);
-      console.log('Available country codes:', Object.keys(countryData));
+      if (__DEV__) {
+        console.log('Selected country code:', countryCode);
+        console.log('Current countryData:', countryData);
+        console.log('Available country codes:', Object.keys(countryData));
+      }
       const documentTypes = countryData[countryCode];
-      console.log('documentTypes for', countryCode, ':', documentTypes);
+      if (__DEV__) {
+        console.log('documentTypes for', countryCode, ':', documentTypes);
+      }
 
       if (documentTypes && documentTypes.length > 0) {
         const countryName =
@@ -98,7 +102,9 @@ const CountryPickerScreen: React.FC = () => {
 
         if (result.status === 'success') {
           setCountryData(result.data);
-          console.log('Set country data:', result.data);
+          if (__DEV__) {
+            console.log('Set country data:', result.data);
+          }
         } else {
           console.error('API returned non-success status:', result.status);
         }

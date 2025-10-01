@@ -117,9 +117,11 @@ const IDPickerScreen: React.FC = () => {
     }
 
     // TODO: Navigate to the next screen based on document type
-    console.log(
-      `Selected document type: ${docType} for country: ${countryCode}`,
-    );
+    if (__DEV__) {
+      console.log(
+        `Selected document type: ${docType} for country: ${countryCode}`,
+      );
+    }
   };
 
   return (

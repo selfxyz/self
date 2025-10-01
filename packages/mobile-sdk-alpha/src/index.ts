@@ -45,9 +45,12 @@ export type { PassportValidationCallbacks } from './validation/document';
 
 export type { QRProofOptions } from './qr';
 
+export type { SDKEvent, SDKEventMap } from './types/events';
+
 // Error handling
 export type { SdkErrorCategory } from './errors';
 
+// Screen Components (React Native-based)
 export {
   InitError,
   LivenessError,
@@ -58,13 +61,11 @@ export {
   notImplemented,
   sdkError,
 } from './errors';
-
-// Screen Components (React Native-based)
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
-export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
 // Context and Client
+export { QRCodeScreen } from './components/screens/QRCodeScreen';
 export { SdkEvents } from './types/events';
 
 // Components
