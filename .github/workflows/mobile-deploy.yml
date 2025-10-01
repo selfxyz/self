@@ -925,17 +925,22 @@ jobs:
 
       - name: Upload to Google Play Store using WIF
         if: inputs.platform != 'ios' && inputs.test_mode != true
-        run: |
-          cd ${{ env.APP_PATH }}
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: |
+            cd ${{ env.APP_PATH }}
 
-          # Determine deployment track
-          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+            # Determine deployment track
+            DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
 
-          echo "🚀 Uploading to Google Play Store using Workload Identity Federation..."
-          python scripts/upload_to_play_store.py \
-            --aab "android/app/build/outputs/bundle/release/app-release.aab" \
-            --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
-            --track "$DEPLOYMENT_TRACK"
+            echo "🚀 Uploading to Google Play Store using Workload Identity Federation..."
+            python scripts/upload_to_play_store.py \
+              --aab "android/app/build/outputs/bundle/release/app-release.aab" \
+              --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
+              --track "$DEPLOYMENT_TRACK"
 
       # Version updates moved to separate job to avoid race conditions
 
@@ -990,7 +995,7 @@ jobs:
         with:
           token: ${{ github.token }}
           fetch-depth: 0
-          ref: staging
+          ref: dev
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
