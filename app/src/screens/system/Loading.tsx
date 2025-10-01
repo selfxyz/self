@@ -15,11 +15,12 @@ import {
   type ProvingStateType,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { useSettingStore } from '@/stores/settingStore';
+
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
 import CloseWarningIcon from '@/images/icons/close-warning.svg';
 import { loadPassportDataAndSecret } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
 import { black, slate400, white, zinc500, zinc900 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { advercase, dinot } from '@/utils/fonts';
