@@ -14,7 +14,9 @@ describe('navigation', () => {
       'AccountRecoveryChoice',
       'AccountVerifiedSuccess',
       'CloudBackupSettings',
+      'ComingSoon',
       'ConfirmBelonging',
+      'CountryPicker',
       'CreateMock',
       'DeferredLinkingInfo',
       'DevFeatureFlags',
@@ -31,6 +33,7 @@ describe('navigation', () => {
       'DocumentNFCTrouble',
       'DocumentOnboarding',
       'Home',
+      'IDPicker',
       'IdDetails',
       'Launch',
       'Loading',
@@ -48,7 +51,6 @@ describe('navigation', () => {
       'Settings',
       'ShowRecoveryPhrase',
       'Splash',
-      'ComingSoon',
     ]);
   });
 });
