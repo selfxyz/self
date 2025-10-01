@@ -166,21 +166,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
         if (fcmToken) {
           try {
-            adapters.analytics?.trackEvent('DEVICE_TOKEN_REG_STARTED');
+            analytics().trackEvent('DEVICE_TOKEN_REG_STARTED');
             logProofEvent('info', 'Device token registration started', context);
 
             const { registerDeviceToken: registerFirebaseDeviceToken } =
               await import('@/utils/notifications/notificationService');
             await registerFirebaseDeviceToken(uuid, fcmToken, isMock);
 
-            adapters.analytics?.trackEvent('DEVICE_TOKEN_REG_SUCCESS');
+            analytics().trackEvent('DEVICE_TOKEN_REG_SUCCESS');
             logProofEvent('info', 'Device token registration success', context);
           } catch (error) {
             logProofEvent('warn', 'Device token registration failed', context, {
               error: error instanceof Error ? error.message : String(error),
             });
             console.error('Error registering device token:', error);
-            adapters.analytics?.trackEvent('DEVICE_TOKEN_REG_FAILED', {
+            analytics().trackEvent('DEVICE_TOKEN_REG_FAILED', {
               message: error instanceof Error ? error.message : String(error),
             });
           }
