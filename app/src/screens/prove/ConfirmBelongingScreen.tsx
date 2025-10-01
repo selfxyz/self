@@ -21,6 +21,7 @@ import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
+import { useSettingStore } from '@/stores/settingStore';
 import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import { notificationSuccess } from '@/utils/haptic';
@@ -40,8 +41,8 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const [_requestingPermission, setRequestingPermission] = useState(false);
   const currentState = useProvingStore(state => state.currentState);
   const init = useProvingStore(state => state.init);
-  const setFcmToken = useProvingStore(state => state.setFcmToken);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
+  const setFcmToken = useSettingStore(state => state.setFcmToken);
   const isReadyToProve = currentState === 'ready_to_prove';
   useEffect(() => {
     notificationSuccess();
@@ -74,7 +75,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       if (permissionGranted) {
         const token = await getFCMToken();
         if (token) {
-          setFcmToken(token, selfClient);
+          setFcmToken(token);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
         }
       }

@@ -20,6 +20,8 @@ interface PersistedSettingsState {
   isDevMode: boolean;
   setDevModeOn: () => void;
   setDevModeOff: () => void;
+  fcmToken: string | null;
+  setFcmToken: (token: string | null) => void;
 }
 
 interface NonPersistedSettingsState {
@@ -68,6 +70,9 @@ export const useSettingStore = create<SettingsState>()(
       isDevMode: false,
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
+
+      fcmToken: null,
+      setFcmToken: (token: string | null) => set({ fcmToken: token }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

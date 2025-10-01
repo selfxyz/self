@@ -68,6 +68,14 @@ export enum SdkEvents {
    * and guide them through the recovery process to regain access.
    */
   PROVING_ACCOUNT_RECOVERY_REQUIRED = 'PROVING_ACCOUNT_RECOVERY_REQUIRED',
+
+  /**
+   * Emitted when the proving generation process begins.
+   *
+   * **Recommended:** Use this to handle notification token registration and other setup tasks
+   * that need to occur when proof generation starts.
+   */
+  PROVING_BEGIN_GENERATION = 'PROVING_BEGIN_GENERATION',
   /**
    * Emitted for various proof-related events during the proving process.
    *
@@ -97,6 +105,11 @@ export interface SDKEventMap {
     documentCategory: DocumentCategory | null;
   };
   [SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED]: undefined;
+  [SdkEvents.PROVING_BEGIN_GENERATION]: {
+    uuid: string;
+    isMock: boolean;
+    context: ProofContext;
+  };
 
   [SdkEvents.PROGRESS]: Progress;
   [SdkEvents.ERROR]: Error;
