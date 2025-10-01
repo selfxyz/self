@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { createContext, type PropsWithChildren, useContext, useMemo } from 'react';
+import { createContext, type PropsWithChildren, useContext, useEffect, useMemo } from 'react';
 
 import { createSelfClient } from './client';
 import { SdkEvents } from './types/events';
 import type { Adapters, Config, SelfClient } from './types/public';
+import { loadSelectedDocument } from './documents/utils';
 
 /**
  * React context holding a {@link SelfClient} instance.
@@ -65,4 +66,33 @@ export function useSelfClient(): SelfClient {
   const client = useContext(SelfClientContext);
   if (!client) throw new Error('useSelfClient must be used within a SelfClientProvider');
   return client;
+}
+
+export function usePrepareDocumentProof() {
+  const selfClient = useSelfClient();
+  const { useProvingStore } = selfClient;
+  const currentState = useProvingStore(state => state.currentState);
+  const init = useProvingStore(state => state.init);
+  const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
+  const isReadyToProve = currentState === 'ready_to_prove';
+
+  useEffect(() => {
+    const initializeProving = async () => {
+      try {
+        const selectedDocument = await loadSelectedDocument(selfClient);
+        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+          init(selfClient, 'register');
+        } else {
+          init(selfClient, 'dsc');
+        }
+      } catch (error) {
+        console.error('Error loading selected document:', error);
+        init(selfClient, 'dsc');
+      }
+    };
+
+    initializeProving();
+  }, [init, selfClient]);
+
+  return { setUserConfirmed, isReadyToProve };
 }

@@ -68,7 +68,12 @@ export { QRCodeScreen } from './components/screens/QRCodeScreen';
 export { SdkEvents } from './types/events';
 
 // Components
-export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+export {
+  SelfClientContext,
+  SelfClientProvider,
+  useSelfClient,
+  usePrepareDocumentProof
+} from './context';
 
 // Documents utils
 export { SelfMobileSdk } from './entry';
