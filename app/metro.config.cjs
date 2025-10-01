@@ -113,9 +113,9 @@ const config = {
         'react-native-gesture-handler':
           'react-native-gesture-handler/lib/commonjs/index.js',
       };
-       const sdkAlphaPath = path.resolve(
+      const sdkAlphaPath = path.resolve(
         workspaceRoot,
-        'packages/mobile-sdk-alpha'
+        'packages/mobile-sdk-alpha',
       );
 
       // Custom resolver to handle Node.js modules and dynamic flow imports
