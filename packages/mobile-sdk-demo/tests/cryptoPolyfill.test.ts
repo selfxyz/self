@@ -123,31 +123,6 @@ describe('Crypto Polyfill Functional Bugs', () => {
       expect(result.length).toBe(16);
     });
 
-    it.skip('should use globalThis.crypto.getRandomValues after polyfill import', async () => {
-      // Mock proper polyfill behavior
-      const mockGetRandomValues = vi.fn((array: Uint8Array) => {
-        for (let i = 0; i < array.length; i++) {
-          array[i] = Math.floor(Math.random() * 256);
-        }
-        return array;
-      });
-
-      vi.doMock('react-native-get-random-values', () => {
-        // Side effect: install polyfill
-        global.crypto = global.crypto || ({} as typeof crypto);
-        global.crypto.getRandomValues = mockGetRandomValues as any;
-        return {}; // No exports
-      });
-
-      // Should work after proper implementation
-      crypto = await import('../src/polyfills/cryptoPolyfill.js');
-      const result = crypto.randomBytes(16);
-
-      expect(result).toBeInstanceOf(Buffer);
-      expect(result.length).toBe(16);
-      expect(mockGetRandomValues).toHaveBeenCalled();
-    });
-
     it('should throw helpful error when crypto.getRandomValues is not available', async () => {
       // Clear module cache and remove crypto polyfill
       vi.resetModules();

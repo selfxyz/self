@@ -105,16 +105,36 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
   },
 }));
 
-// Mock react-native-keychain
+// Mock react-native-keychain with in-memory storage
+const keychainStore: Record<string, { username: string; password: string }> = {};
+
+const mockSetGenericPassword = vi.fn((username: string, password: string, options?: { service?: string }) => {
+  const key = options?.service || 'default';
+  keychainStore[key] = { username, password };
+  return Promise.resolve(true);
+});
+
+const mockGetGenericPassword = vi.fn((options?: { service?: string }) => {
+  const key = options?.service || 'default';
+  const credentials = keychainStore[key];
+  return Promise.resolve(credentials || false);
+});
+
+const mockResetGenericPassword = vi.fn((options?: { service?: string }) => {
+  const key = options?.service || 'default';
+  delete keychainStore[key];
+  return Promise.resolve(true);
+});
+
 vi.mock('react-native-keychain', () => ({
   default: {
-    setGenericPassword: vi.fn(() => Promise.resolve(true)),
-    getGenericPassword: vi.fn(() => Promise.resolve(false)),
-    resetGenericPassword: vi.fn(() => Promise.resolve(true)),
+    setGenericPassword: mockSetGenericPassword,
+    getGenericPassword: mockGetGenericPassword,
+    resetGenericPassword: mockResetGenericPassword,
   },
-  setGenericPassword: vi.fn(() => Promise.resolve(true)),
-  getGenericPassword: vi.fn(() => Promise.resolve(false)),
-  resetGenericPassword: vi.fn(() => Promise.resolve(true)),
+  setGenericPassword: mockSetGenericPassword,
+  getGenericPassword: mockGetGenericPassword,
+  resetGenericPassword: mockResetGenericPassword,
   SECURITY_LEVEL: {
     SECURE_SOFTWARE: 'SECURE_SOFTWARE',
     SECURE_HARDWARE: 'SECURE_HARDWARE',

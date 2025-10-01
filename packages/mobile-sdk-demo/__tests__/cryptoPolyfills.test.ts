@@ -179,27 +179,5 @@ describe('Crypto Polyfills', () => {
       expect(bytes).toBeInstanceOf(Uint8Array);
       expect(bytes.length).toBe(16);
     });
-
-    it.skip('should have ethers.sha256 registered', () => {
-      const { ethers } = require('ethers');
-      expect(typeof ethers.sha256).toBe('function');
-
-      // Use Uint8Array for better compatibility with our polyfill
-      const data = new Uint8Array([1, 2, 3, 4]);
-      const hash = ethers.sha256(data);
-      expect(typeof hash).toBe('string');
-      expect(hash).toMatch(/^0x[a-f0-9]{64}$/); // 32 bytes = 64 hex chars
-    });
-
-    it.skip('should have ethers.sha512 registered', () => {
-      const { ethers } = require('ethers');
-      expect(typeof ethers.sha512).toBe('function');
-
-      // Use Uint8Array for better compatibility with our polyfill
-      const data = new Uint8Array([1, 2, 3, 4]);
-      const hash = ethers.sha512(data);
-      expect(typeof hash).toBe('string');
-      expect(hash).toMatch(/^0x[a-f0-9]{128}$/); // 64 bytes = 128 hex chars
-    });
   });
 });

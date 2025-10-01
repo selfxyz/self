@@ -13,29 +13,6 @@ import {
   isValidSecret,
 } from '../src/utils/secureStorage';
 
-// Mock localStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value;
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-})();
-
-Object.defineProperty(global, 'localStorage', {
-  value: localStorageMock,
-  writable: true,
-});
-
 // Mock crypto.getRandomValues
 const mockRandomValues = vi.fn((array: Uint8Array) => {
   // Fill with deterministic values for testing
@@ -53,14 +30,16 @@ Object.defineProperty(global, 'crypto', {
 });
 
 describe('secureStorage', () => {
-  beforeEach(() => {
-    localStorageMock.clear();
+  beforeEach(async () => {
     mockRandomValues.mockClear();
     vi.clearAllMocks();
+    // Clear any existing secrets from previous tests
+    await clearSecret();
   });
 
-  afterEach(() => {
-    localStorageMock.clear();
+  afterEach(async () => {
+    // Clean up after each test
+    await clearSecret();
   });
 
   describe('generateSecret', () => {
@@ -140,51 +119,11 @@ describe('secureStorage', () => {
       expect(await hasSecret()).toBe(true);
     });
 
-    it('should store metadata when creating a new secret', async () => {
-      await getOrCreateSecret();
-
-      const metadata = await getSecretMetadata();
-      expect(metadata).not.toBeNull();
-      expect(metadata?.version).toBe('1.0');
-      expect(metadata?.createdAt).toBeDefined();
-      expect(metadata?.lastAccessed).toBeDefined();
-    });
-
     it('should return the same secret on subsequent calls', async () => {
       const secret1 = await getOrCreateSecret();
       const secret2 = await getOrCreateSecret();
 
       expect(secret1).toBe(secret2);
-    });
-
-    it('should update lastAccessed time when retrieving existing secret', async () => {
-      await getOrCreateSecret();
-
-      const metadata1 = await getSecretMetadata();
-      const lastAccessed1 = metadata1?.lastAccessed;
-
-      // Wait a bit to ensure different timestamp
-      await new Promise(resolve => setTimeout(resolve, 10));
-
-      await getOrCreateSecret();
-
-      const metadata2 = await getSecretMetadata();
-      const lastAccessed2 = metadata2?.lastAccessed;
-
-      expect(lastAccessed2).not.toBe(lastAccessed1);
-      expect(new Date(lastAccessed2!).getTime()).toBeGreaterThan(new Date(lastAccessed1!).getTime());
-    });
-
-    it('should handle localStorage errors gracefully', async () => {
-      // Mock localStorage to throw an error
-      const spy = vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
-        throw new Error('localStorage error');
-      });
-
-      await expect(getOrCreateSecret()).rejects.toThrow('localStorage error');
-
-      // Restore mock after test
-      spy.mockRestore();
     });
   });
 
@@ -212,35 +151,22 @@ describe('secureStorage', () => {
       expect(await getSecretMetadata()).toBeNull();
     });
 
-    it('should return metadata after creating secret', async () => {
+    it('should return null on native platforms (metadata not supported)', async () => {
       await getOrCreateSecret();
 
+      // Native implementation doesn't store metadata
       const metadata = await getSecretMetadata();
-      expect(metadata).not.toBeNull();
-      expect(metadata?.version).toBe('1.0');
-    });
-
-    it('should handle corrupted metadata gracefully', async () => {
-      localStorage.setItem('self-demo-secret-version', 'invalid json');
-      expect(await getSecretMetadata()).toBeNull();
+      expect(metadata).toBeNull();
     });
   });
 
   describe('clearSecret', () => {
-    it('should remove secret from localStorage', async () => {
+    it('should remove secret from storage', async () => {
       await getOrCreateSecret();
       expect(await hasSecret()).toBe(true);
 
       await clearSecret();
       expect(await hasSecret()).toBe(false);
-    });
-
-    it('should remove metadata from localStorage', async () => {
-      await getOrCreateSecret();
-      expect(await getSecretMetadata()).not.toBeNull();
-
-      await clearSecret();
-      expect(await getSecretMetadata()).toBeNull();
     });
 
     it('should not throw if called when no secret exists', async () => {
@@ -249,16 +175,6 @@ describe('secureStorage', () => {
   });
 
   describe('security considerations', () => {
-    it('should log warning when creating secret', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      await getOrCreateSecret();
-
-      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('INSECURE localStorage - DEMO ONLY'));
-
-      consoleWarnSpy.mockRestore();
-    });
-
     it('should use exactly 32 bytes (256 bits) for security', () => {
       generateSecret();
 
@@ -295,14 +211,11 @@ describe('secureStorage', () => {
       expect(secret3).not.toBe(secret1);
     });
 
-    it('should maintain consistency across page reloads (simulated)', async () => {
-      // First "session"
+    it('should maintain consistency across storage retrievals', async () => {
+      // First call - create secret
       const secret1 = await getOrCreateSecret();
 
-      // Simulate page reload by clearing memory but not localStorage
-      // (localStorage persists, our module state doesn't)
-
-      // Second "session" - should retrieve same secret
+      // Second call - should retrieve same secret from storage
       const secret2 = await getOrCreateSecret();
       expect(secret2).toBe(secret1);
     });
