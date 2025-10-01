@@ -55,7 +55,7 @@ export { createListenersMap, createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
-export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 // Core functions

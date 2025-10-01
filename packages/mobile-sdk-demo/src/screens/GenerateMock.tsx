@@ -79,8 +79,6 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       }
       const firstNameValue = firstName?.trim() || undefined;
       const lastNameValue = lastName?.trim() || undefined;
-      console.log('Form values:', { firstName, lastName });
-      console.log('Trimmed values:', { firstName: firstNameValue, lastName: lastNameValue });
       const doc = await generateMockDocument({
         age: ageNum,
         expiryYears: expiryNum,

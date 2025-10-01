@@ -12,7 +12,7 @@ import type { ScanResult } from '../types/public';
 export type MRZScanOptions = Record<string, never>;
 
 // Re-export processing functions
-export { extractMRZInfo, formatDateToYYMMDD } from '../processing/mrz';
+export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from '../processing/mrz';
 
 /**
  * Scan MRZ (Machine Readable Zone) on a passport or ID card.

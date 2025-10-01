@@ -49,15 +49,12 @@ export const screenDescriptors: ScreenDescriptor[] = [
   {
     id: 'register',
     title: 'Register Document',
+    subtitle: 'Register your document on-chain',
     sectionTitle: '⭐ Mock Documents',
-    status: 'placeholder',
-    subtitle: ({ selectedDocument }) =>
-      selectedDocument ? 'View the most recently generated mock document' : 'Generate mock data to unlock this demo',
-    getStatus: ({ selectedDocument }) => (selectedDocument ? 'working' : 'placeholder'),
-    isDisabled: ({ selectedDocument }) => !selectedDocument,
+    status: 'working',
     load: () => require('./RegisterDocument').default,
-    getProps: ({ selectedDocument, navigate }) => ({
-      document: selectedDocument?.data ?? null,
+    getProps: ({ navigate, documentCatalog }) => ({
+      catalog: documentCatalog,
       onBack: () => navigate('home'),
     }),
   },
