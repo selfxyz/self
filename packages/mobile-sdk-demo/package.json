@@ -21,7 +21,8 @@
     "nice": "yarn lint:fix && yarn format",
     "reinstall": "yarn clean && yarn install && yarn prebuild && cd ios && pod install && cd ..",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "types": "tsc --noEmit"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",
