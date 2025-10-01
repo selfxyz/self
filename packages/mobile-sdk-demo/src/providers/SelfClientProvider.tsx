@@ -62,8 +62,8 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
         async hash(data: Uint8Array): Promise<Uint8Array> {
           return hash(data);
         },
-        async sign(_data: Uint8Array, keyRef: string): Promise<Uint8Array> {
-          throw new Error(`Signing is not supported in the demo client (keyRef: ${keyRef}).`);
+        async sign(_data: Uint8Array, _keyRef: string): Promise<Uint8Array> {
+          throw new Error('Signing is not supported in the demo client.');
         },
       },
       analytics: {

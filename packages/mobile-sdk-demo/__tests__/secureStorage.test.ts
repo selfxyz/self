@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import {
   clearSecret,
   generateSecret,
@@ -35,7 +37,7 @@ Object.defineProperty(global, 'localStorage', {
 });
 
 // Mock crypto.getRandomValues
-const mockRandomValues = jest.fn((array: Uint8Array) => {
+const mockRandomValues = vi.fn((array: Uint8Array) => {
   // Fill with deterministic values for testing
   for (let i = 0; i < array.length; i++) {
     array[i] = i % 256;
@@ -54,7 +56,7 @@ describe('secureStorage', () => {
   beforeEach(() => {
     localStorageMock.clear();
     mockRandomValues.mockClear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -127,19 +129,19 @@ describe('secureStorage', () => {
 
   describe('getOrCreateSecret', () => {
     it('should create a new secret if none exists', async () => {
-      expect(hasSecret()).toBe(false);
+      expect(await hasSecret()).toBe(false);
 
       const secret = await getOrCreateSecret();
 
       expect(secret).toHaveLength(64);
       expect(isValidSecret(secret)).toBe(true);
-      expect(hasSecret()).toBe(true);
+      expect(await hasSecret()).toBe(true);
     });
 
     it('should store metadata when creating a new secret', async () => {
       await getOrCreateSecret();
 
-      const metadata = getSecretMetadata();
+      const metadata = await getSecretMetadata();
       expect(metadata).not.toBeNull();
       expect(metadata?.version).toBe('1.0');
       expect(metadata?.createdAt).toBeDefined();
@@ -156,7 +158,7 @@ describe('secureStorage', () => {
     it('should update lastAccessed time when retrieving existing secret', async () => {
       await getOrCreateSecret();
 
-      const metadata1 = getSecretMetadata();
+      const metadata1 = await getSecretMetadata();
       const lastAccessed1 = metadata1?.lastAccessed;
 
       // Wait a bit to ensure different timestamp
@@ -164,7 +166,7 @@ describe('secureStorage', () => {
 
       await getOrCreateSecret();
 
-      const metadata2 = getSecretMetadata();
+      const metadata2 = await getSecretMetadata();
       const lastAccessed2 = metadata2?.lastAccessed;
 
       expect(lastAccessed2).not.toBe(lastAccessed1);
@@ -173,7 +175,7 @@ describe('secureStorage', () => {
 
     it('should handle localStorage errors gracefully', async () => {
       // Mock localStorage to throw an error
-      const spy = jest.spyOn(localStorage, 'getItem').mockImplementation(() => {
+      const spy = vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
         throw new Error('localStorage error');
       });
 
@@ -185,68 +187,68 @@ describe('secureStorage', () => {
   });
 
   describe('hasSecret', () => {
-    it('should return false when no secret exists', () => {
-      expect(hasSecret()).toBe(false);
+    it('should return false when no secret exists', async () => {
+      expect(await hasSecret()).toBe(false);
     });
 
     it('should return true when secret exists', async () => {
       await getOrCreateSecret();
-      expect(hasSecret()).toBe(true);
+      expect(await hasSecret()).toBe(true);
     });
 
     it('should return false after clearing secret', async () => {
       await getOrCreateSecret();
-      expect(hasSecret()).toBe(true);
+      expect(await hasSecret()).toBe(true);
 
-      clearSecret();
-      expect(hasSecret()).toBe(false);
+      await clearSecret();
+      expect(await hasSecret()).toBe(false);
     });
   });
 
   describe('getSecretMetadata', () => {
-    it('should return null when no metadata exists', () => {
-      expect(getSecretMetadata()).toBeNull();
+    it('should return null when no metadata exists', async () => {
+      expect(await getSecretMetadata()).toBeNull();
     });
 
     it('should return metadata after creating secret', async () => {
       await getOrCreateSecret();
 
-      const metadata = getSecretMetadata();
+      const metadata = await getSecretMetadata();
       expect(metadata).not.toBeNull();
       expect(metadata?.version).toBe('1.0');
     });
 
-    it('should handle corrupted metadata gracefully', () => {
+    it('should handle corrupted metadata gracefully', async () => {
       localStorage.setItem('self-demo-secret-version', 'invalid json');
-      expect(getSecretMetadata()).toBeNull();
+      expect(await getSecretMetadata()).toBeNull();
     });
   });
 
   describe('clearSecret', () => {
     it('should remove secret from localStorage', async () => {
       await getOrCreateSecret();
-      expect(hasSecret()).toBe(true);
+      expect(await hasSecret()).toBe(true);
 
-      clearSecret();
-      expect(hasSecret()).toBe(false);
+      await clearSecret();
+      expect(await hasSecret()).toBe(false);
     });
 
     it('should remove metadata from localStorage', async () => {
       await getOrCreateSecret();
-      expect(getSecretMetadata()).not.toBeNull();
+      expect(await getSecretMetadata()).not.toBeNull();
 
-      clearSecret();
-      expect(getSecretMetadata()).toBeNull();
+      await clearSecret();
+      expect(await getSecretMetadata()).toBeNull();
     });
 
-    it('should not throw if called when no secret exists', () => {
-      expect(() => clearSecret()).not.toThrow();
+    it('should not throw if called when no secret exists', async () => {
+      await expect(clearSecret()).resolves.not.toThrow();
     });
   });
 
   describe('security considerations', () => {
     it('should log warning when creating secret', async () => {
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       await getOrCreateSecret();
 
@@ -275,8 +277,8 @@ describe('secureStorage', () => {
       expect(secret2).toBe(secret1);
 
       // Clear
-      clearSecret();
-      expect(hasSecret()).toBe(false);
+      await clearSecret();
+      expect(await hasSecret()).toBe(false);
 
       // Create new (should be different since we use different values)
       mockRandomValues.mockImplementation((array: Uint8Array) => {

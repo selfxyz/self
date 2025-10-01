@@ -10,6 +10,8 @@
  * BigInt values remain intact and don't get corrupted.
  */
 
+import { describe, expect, it } from 'vitest';
+
 import type { PassportData } from '@selfxyz/common/dist/esm/src/utils/types.js';
 
 describe('documentStore - BigInt serialization (simplified)', () => {

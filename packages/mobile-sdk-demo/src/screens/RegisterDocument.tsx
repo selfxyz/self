@@ -238,7 +238,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
 
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="Register Document" onBack={onBack} />
+      <StandardHeader title="Register Document [WiP]" onBack={onBack} />
 
       <View style={styles.content}>
         <View style={styles.pickerContainer}>
