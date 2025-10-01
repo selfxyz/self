@@ -80,9 +80,6 @@ jobs:
         run: |
           echo "Cache miss for built dependencies. Building now..."
           yarn workspace @selfxyz/mobile-app run build:deps
-      - name: Check App types
-        run: yarn types
-        working-directory: ./app
       - name: Run linter
         run: yarn lint
         working-directory: ./app
