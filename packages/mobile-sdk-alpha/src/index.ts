@@ -30,6 +30,9 @@ export type {
   WsConn,
 } from './types/public';
 
+// LogEvent Types
+export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
+
 // MRZ module
 export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
 
@@ -41,10 +44,10 @@ export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
 
 export type { QRProofOptions } from './qr';
+
 // Error handling
 export type { SdkErrorCategory } from './errors';
 
-// UI Types
 export {
   InitError,
   LivenessError,
@@ -61,15 +64,15 @@ export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 
+// Context and Client
 export { SdkEvents } from './types/events';
 
-// Context and Client
+// Components
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
-// Components
+// Documents utils
 export { SelfMobileSdk } from './entry';
 
-// Documents utils
 export {
   clearPassportData,
   getAllDocuments,
@@ -81,31 +84,25 @@ export {
 
 export { createListenersMap, createSelfClient } from './client';
 
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { defaultConfig } from './config/defaults';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo } from './mrz';
 
 export { formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-export { generateTEEInputsDisclose } from './processing/generateDisclosureInputs';
-
-// Documents utils
 // Core functions
 export { isPassportDataValid } from './validation/document';
 
+// Document validation
 export { mergeConfig } from './config/merge';
 
-// Document validation
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
 export { scanQRProof } from './qr';
 
-export { useProtocolStore, useSelfAppStore } from './stores';
-
-// Error handling
 export { webScannerShim } from './adapters/web/shims';

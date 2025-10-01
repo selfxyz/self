@@ -11,7 +11,6 @@ import { useIsFocused } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import loadingAnimation from '@/assets/animations/loading/misc.json';
 import failAnimation from '@/assets/animations/proof_failed.json';
@@ -31,11 +30,12 @@ import {
   notificationError,
   notificationSuccess,
 } from '@/utils/haptic';
-import { useProvingStore } from '@/utils/proving/provingMachine';
 
 const SuccessScreen: React.FC = () => {
-  const { trackEvent } = useSelfClient();
-  const { selfApp, cleanSelfApp } = useSelfAppStore();
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
+  const { useProvingStore, useSelfAppStore } = selfClient;
+  const selfApp = useSelfAppStore(state => state.selfApp);
   const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
 
@@ -57,9 +57,9 @@ const SuccessScreen: React.FC = () => {
     buttonTap();
     goHome();
     setTimeout(() => {
-      cleanSelfApp();
+      selfClient.getSelfAppState().cleanSelfApp();
     }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
-  }, [goHome, cleanSelfApp]);
+  }, [goHome, selfClient]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);

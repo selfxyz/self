@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 
-import type { DeployedCircuits, OfacTree } from '@selfxyz/common';
+import type { DeployedCircuits, DocumentCategory, OfacTree } from '@selfxyz/common';
 import {
   API_URL,
   API_URL_STAGING,
@@ -24,8 +24,11 @@ import {
   TREE_URL,
   TREE_URL_STAGING,
 } from '@selfxyz/common';
+import { Environment } from '@selfxyz/common/utils/types';
 
-interface ProtocolState {
+import type { SelfClient } from '../types/public';
+
+export interface ProtocolState {
   passport: {
     commitment_tree: any;
     dsc_tree: any;
@@ -34,14 +37,14 @@ interface ProtocolState {
     circuits_dns_mapping: any;
     alternative_csca: Record<string, string>;
     ofac_trees: OfacTree | null;
-    fetch_deployed_circuits: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_circuits_dns_mapping: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_csca_tree: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_dsc_tree: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_identity_tree: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_alternative_csca: (environment: 'prod' | 'stg', ski: string) => Promise<void>;
-    fetch_all: (environment: 'prod' | 'stg', ski: string) => Promise<void>;
-    fetch_ofac_trees: (environment: 'prod' | 'stg') => Promise<void>;
+    fetch_deployed_circuits: (environment: Environment) => Promise<void>;
+    fetch_circuits_dns_mapping: (environment: Environment) => Promise<void>;
+    fetch_csca_tree: (environment: Environment) => Promise<void>;
+    fetch_dsc_tree: (environment: Environment) => Promise<void>;
+    fetch_identity_tree: (environment: Environment) => Promise<void>;
+    fetch_alternative_csca: (environment: Environment, ski: string) => Promise<void>;
+    fetch_all: (environment: Environment, ski: string) => Promise<void>;
+    fetch_ofac_trees: (environment: Environment) => Promise<void>;
   };
   id_card: {
     commitment_tree: any;
@@ -51,14 +54,14 @@ interface ProtocolState {
     circuits_dns_mapping: any;
     alternative_csca: Record<string, string>;
     ofac_trees: OfacTree | null;
-    fetch_deployed_circuits: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_circuits_dns_mapping: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_csca_tree: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_dsc_tree: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_identity_tree: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_alternative_csca: (environment: 'prod' | 'stg', ski: string) => Promise<void>;
-    fetch_all: (environment: 'prod' | 'stg', ski: string) => Promise<void>;
-    fetch_ofac_trees: (environment: 'prod' | 'stg') => Promise<void>;
+    fetch_deployed_circuits: (environment: Environment) => Promise<void>;
+    fetch_circuits_dns_mapping: (environment: Environment) => Promise<void>;
+    fetch_csca_tree: (environment: Environment) => Promise<void>;
+    fetch_dsc_tree: (environment: Environment) => Promise<void>;
+    fetch_identity_tree: (environment: Environment) => Promise<void>;
+    fetch_alternative_csca: (environment: Environment, ski: string) => Promise<void>;
+    fetch_all: (environment: Environment, ski: string) => Promise<void>;
+    fetch_ofac_trees: (environment: Environment) => Promise<void>;
   };
   aadhaar: {
     commitment_tree: any;
@@ -66,13 +69,36 @@ interface ProtocolState {
     deployed_circuits: DeployedCircuits | null;
     circuits_dns_mapping: any;
     ofac_trees: OfacTree | null;
-    fetch_deployed_circuits: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_circuits_dns_mapping: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_public_keys: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_identity_tree: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_all: (environment: 'prod' | 'stg') => Promise<void>;
-    fetch_ofac_trees: (environment: 'prod' | 'stg') => Promise<void>;
+    fetch_deployed_circuits: (environment: Environment) => Promise<void>;
+    fetch_circuits_dns_mapping: (environment: Environment) => Promise<void>;
+    fetch_public_keys: (environment: Environment) => Promise<void>;
+    fetch_identity_tree: (environment: Environment) => Promise<void>;
+    fetch_all: (environment: Environment) => Promise<void>;
+    fetch_ofac_trees: (environment: Environment) => Promise<void>;
   };
+}
+
+export async function fetchAllTreesAndCircuits(
+  selfClient: SelfClient,
+  docCategory: DocumentCategory,
+  environment: Environment,
+  authorityKeyIdentifier: string,
+) {
+  await selfClient.getProtocolState()[docCategory].fetch_all(environment, authorityKeyIdentifier);
+}
+
+export function getAltCSCAPublicKeys(selfClient: SelfClient, docCategory: DocumentCategory) {
+  if (docCategory === 'aadhaar') {
+    return selfClient.getProtocolState()[docCategory].public_keys;
+  }
+
+  return selfClient.getProtocolState()[docCategory].alternative_csca;
+}
+
+export function getCommitmentTree(selfClient: SelfClient, documentCategory: DocumentCategory) {
+  const protocolStore = selfClient.getProtocolState();
+
+  return protocolStore[documentCategory].commitment_tree;
 }
 
 export const useProtocolStore = create<ProtocolState>((set, get) => ({
@@ -84,7 +110,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     circuits_dns_mapping: null,
     alternative_csca: {},
     ofac_trees: null,
-    fetch_all: async (environment: 'prod' | 'stg', ski: string) => {
+    fetch_all: async (environment: Environment, ski: string) => {
       await Promise.all([
         get().passport.fetch_deployed_circuits(environment),
         get().passport.fetch_circuits_dns_mapping(environment),

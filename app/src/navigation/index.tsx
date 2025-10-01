@@ -12,6 +12,8 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
 import devScreens from '@/navigation/devTools';
@@ -59,6 +61,7 @@ const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {
+  const selfClient = useSelfClient();
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
     if (currentRoute) {
@@ -71,7 +74,7 @@ const NavigationWithTracking = () => {
 
   // Setup universal link handling at the navigation level
   useEffect(() => {
-    const cleanup = setupUniversalLinkListenerInNavigation();
+    const cleanup = setupUniversalLinkListenerInNavigation(selfClient);
 
     return () => {
       cleanup();

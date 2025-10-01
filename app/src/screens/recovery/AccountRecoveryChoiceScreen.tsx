@@ -9,7 +9,6 @@ import { useNavigation } from '@react-navigation/native';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -30,6 +29,8 @@ import { STORAGE_NAME, useBackupMnemonic } from '@/utils/cloudBackup';
 import { black, slate500, slate600, white } from '@/utils/colors';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
+  const selfClient = useSelfClient();
+  const { useProtocolStore } = selfClient;
   const { trackEvent } = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
   const [restoring, setRestoring] = useState(false);
@@ -74,6 +75,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
                 ? Object.fromEntries(publicKeys.map(key => [key, key]))
                 : {};
             }
+
             return useProtocolStore.getState()[docCategory].alternative_csca;
           },
         },
@@ -109,6 +111,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     onRestoreFromCloudNext,
     navigation,
     toggleCloudBackupEnabled,
+    selfClient,
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {

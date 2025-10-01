@@ -10,7 +10,7 @@ import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { Clipboard as ClipboardIcon } from '@tamagui/lucide-icons';
 
 import type { SelfApp } from '@selfxyz/common/utils/appType';
-import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
 import ActivityIcon from '@/images/icons/activity.svg';
@@ -21,6 +21,7 @@ import { extraYPadding } from '@/utils/constants';
 import { buttonTap } from '@/utils/haptic';
 
 export const HomeNavBar = (props: NativeStackHeaderProps) => {
+  const selfClient = useSelfClient();
   const insets = useSafeAreaInsets();
   const handleConsumeToken = async () => {
     const content = await Clipboard.getString();
@@ -47,8 +48,8 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
         }
         const selfApp: SelfApp = JSON.parse(result.data.self_app);
         console.log('Consume token selfApp:', selfApp);
-        useSelfAppStore.getState().setSelfApp(selfApp);
-        useSelfAppStore.getState().startAppListener(selfApp.sessionId);
+        selfClient.getSelfAppState().setSelfApp(selfApp);
+        selfClient.getSelfAppState().startAppListener(selfApp.sessionId);
         try {
           Clipboard.setString('');
         } catch {}

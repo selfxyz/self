@@ -53,6 +53,8 @@ export type DocumentType =
   | 'mock_id_card'
   | 'mock_aadhaar';
 
+export type Environment = 'prod' | 'stg';
+
 export type IDDocument = AadhaarData | PassportData;
 
 export type OfacTree = {

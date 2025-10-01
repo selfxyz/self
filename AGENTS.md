@@ -1,5 +1,13 @@
 # AGENTS Instructions
 
+## Package Management
+
+**Package Manager:** Yarn
+
+**Commands to use:** yarn install, yarn add, yarn remove
+
+**Note:** Do not use npm or pnpm.
+
 This repository is a Yarn v4 monorepo with several workspaces:
 
 - `app` – mobile app (@selfxyz/mobile-app)

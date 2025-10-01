@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-app",
-  "version": "2.6.7",
+  "version": "2.6.8",
   "private": true,
   "type": "module",
   "scripts": {

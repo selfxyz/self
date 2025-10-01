@@ -220,11 +220,13 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   );
 };
 
-export async function checkAndUpdateRegistrationStates(): Promise<void> {
+export async function checkAndUpdateRegistrationStates(
+  selfClient: SelfClient,
+): Promise<void> {
   // Lazy import to avoid circular dependency
   const { checkAndUpdateRegistrationStates: validateDocCheckAndUpdate } =
     await import('@/utils/proving/validateDocument');
-  return validateDocCheckAndUpdate();
+  return validateDocCheckAndUpdate(selfClient);
 }
 
 export async function checkIfAnyDocumentsNeedMigration(): Promise<boolean> {
@@ -633,7 +635,7 @@ interface IPassportContext {
     isRegistered: boolean,
   ) => Promise<void>;
   checkIfAnyDocumentsNeedMigration: () => Promise<boolean>;
-  checkAndUpdateRegistrationStates: () => Promise<void>;
+  checkAndUpdateRegistrationStates: (selfClient: SelfClient) => Promise<void>;
 }
 
 export async function migrateFromLegacyStorage(): Promise<void> {

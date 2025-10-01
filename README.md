@@ -2,7 +2,7 @@
 
 Monorepo for Self.
 
-Self is an identity wallet that lets users generate privacy-preserving proofs from government-issued IDs such as passports and ID cards.
+Self is an identity wallet that lets users generate privacy-preserving proofs from government-issued IDs such as passports, ID cards, and Aadhaar cards.
 By scanning the NFC chip in their ID document, users can prove their validity while only revealing specific attributes such as age, nationality or simply humanity.
 Under the hood, Self uses zk-SNARKs to make sure personal data is redacted, but the document is verified.
 
@@ -14,16 +14,19 @@ Use cases unlocked include:
 - **Wallet recovery**: Safeguard assets using IDs as recovery sources
 - **Compliance**: Check a user is not part of a sanctioned entity list
 
-Currently, Self supports electronic passports and biometric ID cards following the ICAO standards. Support for new identity documents is on the way!
+Currently, Self supports electronic passports, biometric ID cards following the ICAO standards, and Aadhaar cards. Support for new identity documents is on the way!
 
 [Checkout the docs](https://docs.self.xyz/) to add Self to your project.
 
 ## FAQ
 
-#### Is my passport supported?
+#### Is my document supported?
 
-Biometric passports have the [biometric passport logo](https://en.wikipedia.org/wiki/Biometric_passport) on their front cover.
-Checkout our [coverage map here](http://map.self.xyz/).
+**Passports:** Biometric passports have the [biometric passport logo](https://en.wikipedia.org/wiki/Biometric_passport) on their front cover.
+
+**Aadhaar:** Indian [Aadhaar](https://en.wikipedia.org/wiki/Aadhaar) cards are supported for privacy-preserving identity verification.
+
+**Coverage:** Checkout our [coverage map here](http://map.self.xyz/) to see supported documents and countries.
 
 #### What can I request/prove with Self?
 
@@ -54,7 +57,7 @@ The International Civil Aviation Organization (ICAO) is a specialized agency of 
 ## Project Ideas
 
 - Combine Self with other identification mechanisms as in [Vitalik's pluralistic identity regime](https://vitalik.eth.limo/general/2025/06/28/zkid.html).
-- Help adding support for other identity documents to Self, such as [Aadhaar](https://github.com/anon-aadhaar), [Japan's my number cards](https://github.com/MynaWallet/monorepo) or [Taiwan DID](https://github.com/tw-did/tw-did/).
+- Help adding support for other identity documents to Self, such as [Japan's my number cards](https://github.com/MynaWallet/monorepo) or [Taiwan DID](https://github.com/tw-did/tw-did/).
 - Build a social network/anonymous message board for people from one specific country.
 - Create a sybil-resistance tool to protect social networks against spambots.
 - Build an airdrop farming protection tool.

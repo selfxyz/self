@@ -34,7 +34,9 @@ export type { PassportValidationCallbacks } from './validation/document';
 export type { QRProofOptions } from './qr';
 export type { SdkErrorCategory } from './errors';
 
+export { type ProvingStateType } from './proving/provingMachine';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
+
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
@@ -56,9 +58,6 @@ export { defaultConfig } from './config/defaults';
 export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
-
-export { generateTEEInputsDisclose } from './processing/generateDisclosureInputs';
-
 // Core functions
 export { isPassportDataValid } from './validation/document';
 
@@ -67,6 +66,6 @@ export { mergeConfig } from './config/merge';
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
-
 export { scanQRProof } from './qr';
+
 export { webScannerShim } from './adapters/web/shims';

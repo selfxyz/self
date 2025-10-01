@@ -24,6 +24,7 @@ on:
       - main
     paths:
       - "app/**"
+      - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-e2e.yml"
 
 jobs:

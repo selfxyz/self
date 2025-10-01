@@ -68,7 +68,7 @@ const SplashScreen: React.FC = ({}) => {
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           if (needsMigration) {
-            await checkAndUpdateRegistrationStates();
+            await checkAndUpdateRegistrationStates(selfClient);
           }
 
           const hasValid = await hasAnyValidRegisteredDocument(selfClient);
@@ -105,7 +105,7 @@ const SplashScreen: React.FC = ({}) => {
     if (isAnimationFinished) {
       if (queuedDeepLink) {
         requestAnimationFrame(() => {
-          handleUrl(queuedDeepLink);
+          handleUrl(selfClient, queuedDeepLink);
         });
       } else if (nextScreen) {
         requestAnimationFrame(() => {

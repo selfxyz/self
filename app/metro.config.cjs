@@ -93,6 +93,7 @@ const config = {
       util: require.resolve('util'),
       assert: require.resolve('assert'),
       events: require.resolve('events'),
+      process: require.resolve('process'),
       // App-specific alias
       '@': path.join(__dirname, 'src'),
     },

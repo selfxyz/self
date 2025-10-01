@@ -9,7 +9,7 @@ import { create } from 'zustand';
 import type { SelfApp } from '@selfxyz/common';
 import { WS_DB_RELAYER } from '@selfxyz/common';
 
-interface SelfAppState {
+export interface SelfAppState {
   selfApp: SelfApp | null;
   sessionId: string | null;
   socket: Socket | null;
@@ -20,6 +20,10 @@ interface SelfAppState {
   handleProofResult: (proof_verified: boolean, error_code?: string, reason?: string) => void;
 }
 
+/*
+  Never export outside of the mobile sdk. It can cause multiple instances of the store to be created.
+  Use the functions above to interact with the store.
+*/
 export const useSelfAppStore = create<SelfAppState>((set, get) => ({
   selfApp: null,
   sessionId: null,

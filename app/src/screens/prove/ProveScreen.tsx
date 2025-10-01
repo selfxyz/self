@@ -24,7 +24,6 @@ import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';
 import { HeldPrimaryButtonProveScreen } from '@/components/buttons/HeldPrimaryButtonProveScreen';
@@ -41,13 +40,13 @@ import { ProofStatus } from '@/stores/proofTypes';
 import { black, slate300, white } from '@/utils/colors';
 import { formatUserId } from '@/utils/formatUserId';
 import { buttonTap } from '@/utils/haptic';
-import { useProvingStore } from '@/utils/proving/provingMachine';
 
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
   const { navigate } = useNavigation();
   const isFocused = useIsFocused();
+  const { useProvingStore, useSelfAppStore } = selfClient;
   const selectedApp = useSelfAppStore(state => state.selfApp);
   const selectedAppRef = useRef<typeof selectedApp>(null);
 
