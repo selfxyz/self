@@ -37,7 +37,7 @@ export const screenDescriptors: ScreenDescriptor[] = [
     id: 'generate',
     title: 'Generate Mock Document',
     subtitle: 'Create sample passport data for testing',
-    sectionTitle: '⭐ Core Features',
+    sectionTitle: '⭐ Mock Documents',
     status: 'working',
     load: () => require('./GenerateMock').default,
     getProps: ({ refreshDocuments, navigate }) => ({
@@ -49,7 +49,7 @@ export const screenDescriptors: ScreenDescriptor[] = [
   {
     id: 'register',
     title: 'Register Document',
-    sectionTitle: '⭐ Core Features',
+    sectionTitle: '⭐ Mock Documents',
     status: 'placeholder',
     subtitle: ({ selectedDocument }) =>
       selectedDocument ? 'View the most recently generated mock document' : 'Generate mock data to unlock this demo',
