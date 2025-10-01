@@ -3,12 +3,15 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import { usePrepareDocumentProof, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  usePrepareDocumentProof,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
@@ -24,6 +27,7 @@ import { styles } from '@/screens/prove/ProofRequestStatusScreen';
 import { useSettingStore } from '@/stores/settingStore';
 import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
+import { notificationSuccess } from '@/utils/haptic';
 import {
   getFCMToken,
   requestNotificationPermission,
@@ -40,6 +44,10 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const [_requestingPermission, setRequestingPermission] = useState(false);
   const { setUserConfirmed, isReadyToProve } = usePrepareDocumentProof();
   const setFcmToken = useSettingStore(state => state.setFcmToken);
+
+  useEffect(() => {
+    notificationSuccess();
+  }, []);
 
   const onOkPress = async () => {
     try {

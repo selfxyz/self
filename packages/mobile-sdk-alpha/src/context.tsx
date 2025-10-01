@@ -5,9 +5,9 @@
 import { createContext, type PropsWithChildren, useContext, useEffect, useMemo } from 'react';
 
 import { createSelfClient } from './client';
+import { loadSelectedDocument } from './documents/utils';
 import { SdkEvents } from './types/events';
 import type { Adapters, Config, SelfClient } from './types/public';
-import { loadSelectedDocument } from './documents/utils';
 
 /**
  * React context holding a {@link SelfClient} instance.
@@ -57,17 +57,6 @@ export function SelfClientProvider({
   return <SelfClientContext.Provider value={client}>{children}</SelfClientContext.Provider>;
 }
 
-/**
- * Retrieves the current {@link SelfClient} from context.
- *
- * @throws If used outside of a {@link SelfClientProvider}.
- */
-export function useSelfClient(): SelfClient {
-  const client = useContext(SelfClientContext);
-  if (!client) throw new Error('useSelfClient must be used within a SelfClientProvider');
-  return client;
-}
-
 export function usePrepareDocumentProof() {
   const selfClient = useSelfClient();
   const { useProvingStore } = selfClient;
@@ -95,4 +84,15 @@ export function usePrepareDocumentProof() {
   }, [init, selfClient]);
 
   return { setUserConfirmed, isReadyToProve };
+}
+
+/**
+ * Retrieves the current {@link SelfClient} from context.
+ *
+ * @throws If used outside of a {@link SelfClientProvider}.
+ */
+export function useSelfClient(): SelfClient {
+  const client = useContext(SelfClientContext);
+  if (!client) throw new Error('useSelfClient must be used within a SelfClientProvider');
+  return client;
 }
