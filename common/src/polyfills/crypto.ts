@@ -49,9 +49,11 @@ function createHash(algorithm: string) {
       } else {
         // Convert Buffer to pure Uint8Array if needed
         // Buffer is a subclass of Uint8Array but noble/hashes expects pure Uint8Array
-        const bytes = ArrayBuffer.isView(data) && !(data instanceof Uint8Array && data.constructor === Uint8Array)
-          ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
-          : data;
+        const bytes =
+          ArrayBuffer.isView(data) &&
+          !(data instanceof Uint8Array && data.constructor === Uint8Array)
+            ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+            : data;
         hasher.update(bytes);
       }
       return this;
@@ -107,9 +109,11 @@ function createHmac(algorithm: string, key: string | Uint8Array) {
       } else {
         // Convert Buffer to pure Uint8Array if needed
         // Buffer is a subclass of Uint8Array but noble/hashes expects pure Uint8Array
-        dataBytes = ArrayBuffer.isView(data) && !(data instanceof Uint8Array && data.constructor === Uint8Array)
-          ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
-          : data;
+        dataBytes =
+          ArrayBuffer.isView(data) &&
+          !(data instanceof Uint8Array && data.constructor === Uint8Array)
+            ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+            : data;
       }
       hmacState.update(dataBytes);
       return this;
