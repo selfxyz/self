@@ -123,7 +123,7 @@ export default function DocumentsList({ onBack, catalog }: Props) {
               <Text style={styles.statusText}>{statusLabel}</Text>
             </View>
           </View>
-          <Text style={styles.documentMeta}>{metadata.documentCategory.toUpperCase()}</Text>
+          <Text style={styles.documentMeta}>{(metadata.documentCategory ?? 'unknown').toUpperCase()}</Text>
           <Text style={styles.documentMeta}>{metadata.mock ? 'Mock data' : 'Live data'}</Text>
           <Text style={styles.documentPreview} selectable>
             {preview}
