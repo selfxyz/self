@@ -328,7 +328,8 @@ export class SelfBackendVerifier {
             ? verificationConfig.minimumAge <= Number.parseInt(genericDiscloseOutput.minimumAge, 10)
             : true,
         isOfacValid:
-          verificationConfig.ofac !== undefined && verificationConfig.ofac ? cumulativeOfac : true,
+          //isOfacValid is true when a person is in OFAC list
+          verificationConfig.ofac !== undefined && verificationConfig.ofac ? cumulativeOfac : false,
       },
       forbiddenCountriesList,
       discloseOutput: genericDiscloseOutput,

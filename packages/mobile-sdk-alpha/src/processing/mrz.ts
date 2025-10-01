@@ -239,6 +239,87 @@ export function extractMRZInfo(mrzString: string): MRZInfo {
 }
 
 /**
+ * Extract name from MRZ string
+ * Supports TD3 (passport) and TD1 (ID card) formats
+ *
+ * @param mrzString - The MRZ data as a string
+ * @returns Object with firstName and lastName, or null if parsing fails
+ *
+ * @example
+ * ```ts
+ * const name = extractNameFromMRZ("P<USADOE<<JOHN<<<<<<<<<<<<<<<<<<<<<<<<<");
+ * // Returns: { firstName: "JOHN", lastName: "DOE" }
+ * ```
+ */
+export function extractNameFromMRZ(mrzString: string): { firstName: string; lastName: string } | null {
+  if (!mrzString || typeof mrzString !== 'string') {
+    return null;
+  }
+
+  let lines = mrzString
+    .trim()
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  // Handle single-line MRZ strings (common for stored data)
+  // TD3 format: 88 or 90 characters total (2 lines of 44 or 45 chars each)
+  if (lines.length === 1) {
+    const mrzLength = lines[0].length;
+    if (mrzLength === 88 || mrzLength === 90) {
+      const lineLength = mrzLength === 88 ? 44 : 45;
+      lines = [lines[0].slice(0, lineLength), lines[0].slice(lineLength)];
+    }
+  }
+
+  if (lines.length === 0) {
+    return null;
+  }
+
+  // TD3 format (passport): Name is in line 1 after country code
+  // Format: P<COUNTRY<<LASTNAME<<FIRSTNAME<<<<<<<<<<
+  // TD3 typically has 2 lines, first line is usually 44 chars but we'll be lenient
+  if (lines.length === 2) {
+    const line1 = lines[0];
+    const nameMatch = line1.match(/^P<[A-Z]{3}(.+)$/);
+
+    if (nameMatch) {
+      const namePart = nameMatch[1];
+      // Split by << to separate last name and first name
+      const parts = namePart.split('<<').filter(Boolean);
+
+      if (parts.length >= 2) {
+        const lastName = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+        const firstName = parts[1].replace(/<+$/, '').replace(/</g, ' ').trim();
+        return { firstName, lastName };
+      } else if (parts.length === 1) {
+        const name = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+        return { firstName: '', lastName: name };
+      }
+    }
+  }
+
+  // TD1 format (ID card): Name is in line 3
+  // Format: LASTNAME<<FIRSTNAME<<<<<<<<<<
+  // TD1 typically has 3 lines, each 30 chars but we'll be lenient
+  if (lines.length === 3) {
+    const line3 = lines[2];
+    const parts = line3.split('<<').filter(Boolean);
+
+    if (parts.length >= 2) {
+      const lastName = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+      const firstName = parts[1].replace(/<+$/, '').replace(/</g, ' ').trim();
+      return { firstName, lastName };
+    } else if (parts.length === 1) {
+      const name = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+      return { firstName: '', lastName: name };
+    }
+  }
+
+  return null;
+}
+
+/**
  * Format ISO date string (YYYY-MM-DD) to YYMMDD format
  * Handles timezone variations and validates input
  */

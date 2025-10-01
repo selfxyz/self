@@ -232,9 +232,19 @@ fi
 # Restore original package files
 log "Restoring original package files..."
 if [[ -f "package.json.backup" ]] && [[ -f "../yarn.lock.backup" ]]; then
-  mv package.json.backup package.json
-  mv ../yarn.lock.backup ../yarn.lock
-  log "✅ Package files restored successfully"
+  if mv package.json.backup package.json && mv ../yarn.lock.backup ../yarn.lock; then
+    log "✅ Package files restored successfully"
+
+    # Verify restoration by checking yarn.lock doesn't contain tarball references
+    if grep -q "file:/tmp/mobile-sdk-alpha-ci.tgz" ../yarn.lock 2>/dev/null; then
+      log "WARNING: yarn.lock still contains tarball references after restoration"
+      log "This may cause 'yarn.lock is out of date' errors in CI"
+    fi
+  else
+    log "ERROR: Failed to restore package files"
+    log "This may cause 'yarn.lock is out of date' errors in CI"
+    exit 1
+  fi
 else
   log "WARNING: Backup files not found - package.json may still reference tarball"
   log "Please run 'yarn add @selfxyz/mobile-sdk-alpha@workspace:^' manually"

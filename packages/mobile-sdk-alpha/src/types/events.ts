@@ -84,6 +84,14 @@ export enum SdkEvents {
    * The event includes the selected document type, country code, and document name.
    */
   DOCUMENT_TYPE_SELECTED = 'DOCUMENT_TYPE_SELECTED',
+
+  /**
+   * Emitted when the proving generation process begins.
+   *
+   * **Recommended:** Use this to handle notification token registration and other setup tasks
+   * that need to occur when proof generation starts.
+   */
+  PROVING_BEGIN_GENERATION = 'PROVING_BEGIN_GENERATION',
   /**
    * Emitted for various proof-related events during the proving process.
    *
@@ -123,6 +131,11 @@ export interface SDKEventMap {
     documentName: string;
     countryCode: string;
     countryName: string;
+  };
+  [SdkEvents.PROVING_BEGIN_GENERATION]: {
+    uuid: string;
+    isMock: boolean;
+    context: ProofContext;
   };
 
   [SdkEvents.PROGRESS]: Progress;

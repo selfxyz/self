@@ -214,9 +214,7 @@ export interface ProvingState {
   error_code: string | null;
   reason: string | null;
   endpointType: EndpointType | null;
-  fcmToken: string | null;
   env: 'prod' | 'stg' | null;
-  setFcmToken: (token: string, selfClient: SelfClient) => void;
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
@@ -487,11 +485,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
-    fcmToken: null,
-    setFcmToken: (token: string, selfClient: SelfClient) => {
-      set({ fcmToken: token });
-      selfClient.trackEvent(ProofEvents.FCM_TOKEN_STORED);
-    },
     _handleWebSocketMessage: async (event: MessageEvent, selfClient: SelfClient) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -1201,7 +1194,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     startProving: async (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       const startTime = Date.now();
-      const { wsConnection, sharedKey, passportData, secret, uuid, fcmToken } = get();
+      const { wsConnection, sharedKey, passportData, secret, uuid } = get();
       const context = createProofContext(selfClient, 'startProving', {
         sessionId: uuid || get().uuid || 'unknown-session',
       });
@@ -1223,24 +1216,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       try {
-        if (fcmToken) {
-          try {
-            const isMockPassport = passportData?.mock;
-            selfClient.trackEvent(ProofEvents.DEVICE_TOKEN_REG_STARTED);
-            selfClient.logProofEvent('info', 'Device token registration started', context);
-            await selfClient.registerNotificationsToken(uuid, fcmToken, isMockPassport);
-            selfClient.trackEvent(ProofEvents.DEVICE_TOKEN_REG_SUCCESS);
-            selfClient.logProofEvent('info', 'Device token registration success', context);
-          } catch (error) {
-            selfClient.logProofEvent('warn', 'Device token registration failed', context, {
-              error: error instanceof Error ? error.message : String(error),
-            });
-            console.error('Error registering device token:', error);
-            selfClient.trackEvent(ProofEvents.DEVICE_TOKEN_REG_FAILED, {
-              message: error instanceof Error ? error.message : String(error),
-            });
-          }
-        }
+        // Emit event for FCM token registration
+        selfClient.emit(SdkEvents.PROVING_BEGIN_GENERATION, {
+          uuid,
+          isMock: passportData?.mock ?? false,
+          context,
+        });
 
         selfClient.trackEvent(ProofEvents.PAYLOAD_GEN_STARTED);
         selfClient.logProofEvent('info', 'Payload generation started', context);

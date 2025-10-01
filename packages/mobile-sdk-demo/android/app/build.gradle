@@ -44,6 +44,8 @@ android {
     }
 }
 
+apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
+
 dependencies {
     implementation("com.facebook.react:react-android:0.76.9")
     implementation("com.facebook.react:hermes-android:0.76.9")

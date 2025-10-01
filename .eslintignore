@@ -1,0 +1,15 @@
+node_modules
+dist
+build
+coverage
+ios/build
+android/build
+android/app/build
+app/vendor
+circuits/build
+contracts/artifacts
+contracts/cache
+contracts/typechain-types
+**/*.js
+**/*.cjs
+**/*.mjs

@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 
-import type { DeployedCircuits, DocumentCategory, OfacTree } from '@selfxyz/common';
+import type { DeployedCircuits, DocumentCategory, Environment, OfacTree } from '@selfxyz/common';
 import {
   API_URL,
   API_URL_STAGING,
@@ -24,7 +24,6 @@ import {
   TREE_URL,
   TREE_URL_STAGING,
 } from '@selfxyz/common';
-import { Environment } from '@selfxyz/common/utils/types';
 
 import type { SelfClient } from '../types/public';
 

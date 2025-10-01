@@ -47,7 +47,14 @@ function createHash(algorithm: string) {
       if (typeof data === 'string') {
         hasher.update(new TextEncoder().encode(data));
       } else {
-        hasher.update(data);
+        // Convert Buffer to pure Uint8Array if needed
+        // Buffer is a subclass of Uint8Array but noble/hashes expects pure Uint8Array
+        const bytes =
+          ArrayBuffer.isView(data) &&
+          !(data instanceof Uint8Array && data.constructor === Uint8Array)
+            ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+            : data;
+        hasher.update(bytes);
       }
       return this;
     },
@@ -96,7 +103,18 @@ function createHmac(algorithm: string, key: string | Uint8Array) {
       if (finalized) {
         throw new Error('Cannot update after calling digest(). Hash instance has been finalized.');
       }
-      const dataBytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
+      let dataBytes: Uint8Array;
+      if (typeof data === 'string') {
+        dataBytes = new TextEncoder().encode(data);
+      } else {
+        // Convert Buffer to pure Uint8Array if needed
+        // Buffer is a subclass of Uint8Array but noble/hashes expects pure Uint8Array
+        dataBytes =
+          ArrayBuffer.isView(data) &&
+          !(data instanceof Uint8Array && data.constructor === Uint8Array)
+            ? new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+            : data;
+      }
       hmacState.update(dataBytes);
       return this;
     },

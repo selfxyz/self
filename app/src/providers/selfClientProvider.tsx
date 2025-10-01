@@ -20,6 +20,7 @@ import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import { logNFCEvent, logProofEvent } from '@/Sentry';
+import { useSettingStore } from '@/stores/settingStore';
 import analytics from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
@@ -95,15 +96,6 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       auth: {
         getPrivateKey: () => unsafe_getPrivateKey(),
       },
-      notification: {
-        registerDeviceToken: async (sessionId, deviceToken, isMock) => {
-          // Forward to our app-level function which handles staging vs production
-          // and also fetches the token if not provided
-          const { registerDeviceToken: registerFirebaseDeviceToken } =
-            await import('@/utils/notifications/notificationService');
-          return registerFirebaseDeviceToken(sessionId, deviceToken, isMock);
-        },
-      },
     }),
     [],
   );
@@ -157,6 +149,35 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         navigationRef.navigate('AccountRecoveryChoice');
       }
     });
+
+    addListener(
+      SdkEvents.PROVING_BEGIN_GENERATION,
+      async ({ uuid, isMock, context }) => {
+        const { fcmToken } = useSettingStore.getState();
+
+        if (fcmToken) {
+          try {
+            analytics().trackEvent('DEVICE_TOKEN_REG_STARTED');
+            logProofEvent('info', 'Device token registration started', context);
+
+            const { registerDeviceToken: registerFirebaseDeviceToken } =
+              await import('@/utils/notifications/notificationService');
+            await registerFirebaseDeviceToken(uuid, fcmToken, isMock);
+
+            analytics().trackEvent('DEVICE_TOKEN_REG_SUCCESS');
+            logProofEvent('info', 'Device token registration success', context);
+          } catch (error) {
+            logProofEvent('warn', 'Device token registration failed', context, {
+              error: error instanceof Error ? error.message : String(error),
+            });
+            console.error('Error registering device token:', error);
+            analytics().trackEvent('DEVICE_TOKEN_REG_FAILED', {
+              message: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
+      },
+    );
 
     addListener(SdkEvents.PROOF_EVENT, ({ level, context, event, details }) => {
       // Log proof events for monitoring/debugging

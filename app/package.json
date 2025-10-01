@@ -145,7 +145,7 @@
     "react-native-safe-area-context": "^5.6.1",
     "react-native-screens": "4.15.3",
     "react-native-sqlite-storage": "^6.0.1",
-    "react-native-svg": "^15.12.1",
+    "react-native-svg": "15.12.1",
     "react-native-svg-circle-country-flags": "^0.2.2",
     "react-native-svg-web": "^1.0.9",
     "react-native-web": "^0.19.0",

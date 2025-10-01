@@ -3,7 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+
+import SafeAreaScrollView from '../components/SafeAreaScrollView';
+import StandardHeader from '../components/StandardHeader';
 
 type Props = {
   onBack: () => void;
@@ -11,9 +14,8 @@ type Props = {
 
 export default function QRCodeViewFinder({ onBack }: Props) {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>QR Code View Finder</Text>
-      <Text style={styles.subtitle}>QR Code Scanning</Text>
+    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
+      <StandardHeader title="QR Code View Finder" onBack={onBack} />
 
       <View style={styles.content}>
         <Text style={styles.description}>
@@ -29,29 +31,16 @@ export default function QRCodeViewFinder({ onBack }: Props) {
           <Text style={styles.feature}>• Real-time QR detection feedback</Text>
         </View>
       </View>
-
-      <Button title="Back to Menu" onPress={onBack} />
-    </ScrollView>
+    </SafeAreaScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    backgroundColor: '#fafbfc',
   },
   content: {
     flex: 1,

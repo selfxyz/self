@@ -40,7 +40,7 @@ export { type ProvingStateType } from './proving/provingMachine';
 export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { SdkEvents } from './types/events';
 
-export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+export { SelfClientContext, SelfClientProvider, usePrepareDocumentProof, useSelfClient } from './context';
 
 export {
   clearPassportData,
@@ -56,7 +56,7 @@ export { createListenersMap, createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
-export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 // Core functions

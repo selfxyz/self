@@ -8,7 +8,10 @@ import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  usePrepareDocumentProof,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
@@ -21,6 +24,7 @@ import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
+import { useSettingStore } from '@/stores/settingStore';
 import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import { notificationSuccess } from '@/utils/haptic';
@@ -33,35 +37,17 @@ type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const selfClient = useSelfClient();
-  const { useProvingStore, trackEvent } = selfClient;
+  const { trackEvent } = selfClient;
   const navigate = useHapticNavigation('Loading', {
     params: {},
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);
-  const currentState = useProvingStore(state => state.currentState);
-  const init = useProvingStore(state => state.init);
-  const setFcmToken = useProvingStore(state => state.setFcmToken);
-  const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
-  const isReadyToProve = currentState === 'ready_to_prove';
+  const { setUserConfirmed, isReadyToProve } = usePrepareDocumentProof();
+  const setFcmToken = useSettingStore(state => state.setFcmToken);
+
   useEffect(() => {
     notificationSuccess();
-
-    const initializeProving = async () => {
-      try {
-        const selectedDocument = await loadSelectedDocument(selfClient);
-        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
-          init(selfClient, 'register');
-        } else {
-          init(selfClient, 'dsc');
-        }
-      } catch (error) {
-        console.error('Error loading selected document:', error);
-        init(selfClient, 'dsc');
-      }
-    };
-
-    initializeProving();
-  }, [init, selfClient]);
+  }, []);
 
   const onOkPress = async () => {
     try {
@@ -74,7 +60,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       if (permissionGranted) {
         const token = await getFCMToken();
         if (token) {
-          setFcmToken(token, selfClient);
+          setFcmToken(token);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
         }
       }

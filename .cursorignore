@@ -199,9 +199,6 @@ app/ios/App Thinning Size Report.txt
 local.properties
 app/android/android-passport-nfc-reader/examples/
 
-# React Native config
-app/react-native.config.cjs
-
 # ========================================
 # Miscellaneous
 # ========================================
