@@ -7,6 +7,7 @@ const path = require('node:path');
 const findYarnWorkspaceRoot = require('find-yarn-workspace-root');
 
 const defaultConfig = getDefaultConfig(__dirname);
+const { assetExts, sourceExts } = defaultConfig.resolver;
 
 const projectRoot = __dirname;
 const workspaceRoot = findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '../..');
@@ -27,6 +28,7 @@ const config = {
   ],
 
   transformer: {
+    babelTransformerPath: require.resolve('react-native-svg-transformer'),
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: false,
@@ -65,6 +67,8 @@ const config = {
     unstable_conditionNames: ['react-native', 'import', 'require'],
     unstable_enableSymlinks: true,
     nodeModulesPaths: [path.resolve(projectRoot, 'node_modules'), path.resolve(workspaceRoot, 'node_modules')],
+    assetExts: assetExts.filter(ext => ext !== 'svg'),
+    sourceExts: [...sourceExts, 'svg'],
     extraNodeModules: {
       // Add workspace packages for proper resolution
       '@selfxyz/common': path.resolve(workspaceRoot, 'common'),

@@ -6,7 +6,7 @@ import type { ComponentType } from 'react';
 
 import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 
-export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'qr' | 'documents' | 'activity';
+export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'documents';
 
 export type ScreenContext = {
   navigate: (next: ScreenRoute) => void;
@@ -80,15 +80,6 @@ export const screenDescriptors: ScreenDescriptor[] = [
     getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
   },
   {
-    id: 'qr',
-    title: 'QR Code Proof',
-    subtitle: 'Scan QR codes to receive or share verification proofs',
-    sectionTitle: '📸 Scanning',
-    status: 'placeholder',
-    load: () => require('./QRCodeViewFinder').default,
-    getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
-  },
-  {
     id: 'documents',
     title: 'Document List',
     sectionTitle: '📋 Your Data',
@@ -108,15 +99,6 @@ export const screenDescriptors: ScreenDescriptor[] = [
       onBack: () => navigate('home'),
       catalog: documentCatalog,
     }),
-  },
-  {
-    id: 'activity',
-    title: 'Proof History',
-    sectionTitle: '📋 Your Data',
-    status: 'placeholder',
-    subtitle: 'Track your verification and proof activities',
-    load: () => require('./ProofHistory').default,
-    getProps: ({ navigate }) => ({ onBack: () => navigate('home') }),
   },
 ];
 

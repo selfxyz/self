@@ -5,6 +5,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
+import Logo from '../assets/images/logo.svg';
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
 import { orderedSectionEntries, type ScreenContext } from './index';
 
@@ -67,6 +68,7 @@ export default function HomeScreen({ screenContext }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
       <View style={styles.header}>
+        <Logo width={40} height={40} style={styles.logo} />
         <Text style={styles.title}>Self Demo App</Text>
       </View>
 
@@ -104,9 +106,14 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   header: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     paddingTop: 20,
     paddingBottom: 40,
+  },
+  logo: {
+    marginRight: 12,
   },
   title: {
     fontSize: 34,
