@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
@@ -17,7 +17,6 @@ import { privacyUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import IDCardPlaceholder from '@/images/icons/id_card_placeholder.svg';
-import Logo from '@/images/logo.svg';
 import {
   black,
   red500,
@@ -25,7 +24,6 @@ import {
   slate400,
   white,
   zinc800,
-  zinc900,
 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 

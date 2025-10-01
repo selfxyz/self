@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import { Spinner, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
@@ -29,7 +29,7 @@ interface CountryListItem {
 const ITEM_HEIGHT = 65;
 const FLAG_SIZE = 32;
 
-const CountryItem = React.memo<{
+const CountryItem = memo<{
   countryCode: string;
   onSelect: (code: string) => void;
 }>(({ countryCode, onSelect }) => {

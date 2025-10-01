@@ -113,7 +113,7 @@ const SplashScreen: React.FC = ({}) => {
         });
       }
     }
-  }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation]);
+  }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation, selfClient]);
 
   return (
     <LottieView

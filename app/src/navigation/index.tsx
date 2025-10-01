@@ -79,7 +79,7 @@ const NavigationWithTracking = () => {
     return () => {
       cleanup();
     };
-  }, []);
+  }, [selfClient]);
 
   return (
     <GestureHandlerRootView>

@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { HelpCircle } from '@tamagui/lucide-icons';
 
 import { NavBar } from '@/components/NavBar/BaseNavBar';
-import { blue600, slate100, white } from '@/utils/colors';
+import { slate100 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 
 export const DocumentFlowNavBar = ({

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
+import LottieView, { type LottieViewProps } from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
@@ -48,7 +48,8 @@ const SuccessScreen: React.FC = () => {
 
   const isFocused = useIsFocused();
 
-  const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
+  const [animationSource, setAnimationSource] =
+    useState<LottieViewProps['source']>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);

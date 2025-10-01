@@ -111,7 +111,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
     onRestoreFromCloudNext,
     navigation,
     toggleCloudBackupEnabled,
-    selfClient,
+    useProtocolStore,
   ]);
 
   const handleManualRecoveryPress = useCallback(() => {
