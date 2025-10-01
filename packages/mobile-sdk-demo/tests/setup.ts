@@ -36,8 +36,8 @@ if (typeof global !== 'undefined') {
 // Mock React Native modules
 vi.mock('react-native', () => ({
   Platform: {
-    OS: 'web',
-    select: (obj: any) => obj.web || obj.default,
+    OS: 'ios',
+    select: (obj: Record<string, any>) => (Object.prototype.hasOwnProperty.call(obj, 'ios') ? obj.ios : obj.default),
   },
   NativeModules: {
     PlatformConstants: {

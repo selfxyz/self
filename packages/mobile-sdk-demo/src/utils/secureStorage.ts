@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Platform } from 'react-native';
+import 'react-native-get-random-values';
 import * as Keychain from 'react-native-keychain';
 
 /**

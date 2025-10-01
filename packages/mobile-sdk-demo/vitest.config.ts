@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const repoRoot = resolve(__dirname, '../..');
 
 export default defineConfig({
   test: {
@@ -20,8 +25,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@selfxyz/common': '/Volumes/files/Projects/selfxyz/selfapp/common/dist/cjs/index.cjs',
-      '@selfxyz/mobile-sdk-alpha': '/Volumes/files/Projects/selfxyz/selfapp/packages/mobile-sdk-alpha/src/index.ts',
+      '@selfxyz/common': resolve(repoRoot, 'common/dist/cjs/index.cjs'),
+      '@selfxyz/mobile-sdk-alpha': resolve(repoRoot, 'packages/mobile-sdk-alpha/src/index.ts'),
     },
   },
 });
