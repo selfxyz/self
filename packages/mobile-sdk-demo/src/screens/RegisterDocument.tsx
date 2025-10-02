@@ -132,6 +132,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
             onPress: () => {
               if (mounted.current) {
                 setSelectedDocumentId('');
+                actions.reset();
               }
             },
           },

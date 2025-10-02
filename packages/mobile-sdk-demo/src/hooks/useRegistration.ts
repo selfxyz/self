@@ -158,6 +158,8 @@ export function useRegistration() {
         setLogs([]);
         setShowLogs(false);
         onCompleteRef.current = null;
+        // Reset the SDK's proving store state to prevent stale 'completed' state
+        useProvingStore.setState({ currentState: 'idle' });
       },
     },
   } as const;
