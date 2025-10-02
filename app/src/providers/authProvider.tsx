@@ -155,13 +155,10 @@ async function loadOrCreateMnemonic(
   // Get adaptive security configuration
   const { setOptions, getOptions } = keychainOptions;
 
-  console.log('loadOrCreateMnemonic-getOptions', getOptions, setOptions);
-
   const storedMnemonic = await Keychain.getGenericPassword({
     ...getOptions,
     service: SERVICE_NAME,
   });
-  console.log('loadOrCreateMnemonic-storedMnemonic', storedMnemonic);
   if (storedMnemonic) {
     try {
       JSON.parse(storedMnemonic.password);
@@ -335,7 +332,6 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
       useSettingStore.getState();
 
     if (hasCompletedKeychainMigration) {
-      console.log('Keychain migration already completed, skipping');
       return false;
     }
 
