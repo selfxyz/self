@@ -32,11 +32,12 @@ export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
 export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
 export type { QRProofOptions } from './qr';
+export type { SDKEvent, SDKEventMap } from './types/events';
+
 export type { SdkErrorCategory } from './errors';
-
 export { type ProvingStateType } from './proving/provingMachine';
-export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 
+export { SCANNER_ERROR_CODES, notImplemented, sdkError } from './errors';
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
@@ -55,7 +56,7 @@ export { createListenersMap, createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
-export { extractMRZInfo, formatDateToYYMMDD, scanMRZ } from './mrz';
+export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 // Core functions

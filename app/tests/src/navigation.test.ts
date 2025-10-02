@@ -14,11 +14,14 @@ describe('navigation', () => {
       'AccountRecoveryChoice',
       'AccountVerifiedSuccess',
       'CloudBackupSettings',
+      'ComingSoon',
       'ConfirmBelonging',
+      'CountryPicker',
       'CreateMock',
       'DeferredLinkingInfo',
       'DevFeatureFlags',
       'DevHapticFeedback',
+      'DevLoadingScreen',
       'DevPrivateKey',
       'DevSettings',
       'Disclaimer',
@@ -31,6 +34,7 @@ describe('navigation', () => {
       'DocumentNFCTrouble',
       'DocumentOnboarding',
       'Home',
+      'IDPicker',
       'IdDetails',
       'Launch',
       'Loading',
@@ -48,7 +52,6 @@ describe('navigation', () => {
       'Settings',
       'ShowRecoveryPhrase',
       'Splash',
-      'UnsupportedDocument',
     ]);
   });
 });

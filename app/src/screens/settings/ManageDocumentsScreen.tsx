@@ -280,22 +280,16 @@ const ManageDocumentsScreen: React.FC = () => {
     trackEvent(DocumentEvents.MANAGE_SCREEN_OPENED);
   }, [trackEvent]);
 
-  const handleScanDocument = () => {
+  const handleAddDocument = () => {
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_SCAN_SELECTED);
-    navigation.navigate('DocumentOnboarding');
+    navigation.navigate('CountryPicker');
   };
 
   const handleGenerateMock = () => {
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_MOCK_SELECTED);
     navigation.navigate('CreateMock');
-  };
-
-  const handleAddAadhaar = () => {
-    impactLight();
-    trackEvent(DocumentEvents.ADD_NEW_AADHAAR_SELECTED);
-    navigation.navigate('AadhaarUpload');
   };
 
   return (
@@ -322,11 +316,8 @@ const ManageDocumentsScreen: React.FC = () => {
           </Text>
 
           <ButtonsContainer>
-            <PrimaryButton onPress={handleScanDocument}>
-              Scan New ID Document
-            </PrimaryButton>
-            <PrimaryButton onPress={handleAddAadhaar}>
-              Add Aadhaar
+            <PrimaryButton onPress={handleAddDocument}>
+              Add New Document
             </PrimaryButton>
             <SecondaryButton onPress={handleGenerateMock}>
               Generate Mock Document

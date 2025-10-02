@@ -49,12 +49,15 @@ function computeUppercasePaddedName(name: string): number[] {
     .map((char) => char.charCodeAt(0));
 }
 
-export function convertByteArrayToBigInt(byteArray: Uint8Array | number[]): bigint {
-  let result = 0n;
-  for (let i = 0; i < byteArray.length; i++) {
-    result = result * 256n + BigInt(byteArray[i]);
-  }
-  return result;
+// Helper function to compute final commitment
+export function computeCommitment(
+  secret: bigint,
+  qrHash: bigint,
+  nullifier: bigint,
+  packedCommitment: bigint,
+  photoHash: bigint
+): bigint {
+  return poseidon5([secret, qrHash, nullifier, packedCommitment, photoHash]);
 }
 
 // Helper function to compute packed commitment
@@ -71,15 +74,12 @@ export function computePackedCommitment(
   return BigInt(packBytesAndPoseidon(packedCommitmentArgs));
 }
 
-// Helper function to compute final commitment
-export function computeCommitment(
-  secret: bigint,
-  qrHash: bigint,
-  nullifier: bigint,
-  packedCommitment: bigint,
-  photoHash: bigint
-): bigint {
-  return poseidon5([secret, qrHash, nullifier, packedCommitment, photoHash]);
+export function convertByteArrayToBigInt(byteArray: Uint8Array | number[]): bigint {
+  let result = 0n;
+  for (let i = 0; i < byteArray.length; i++) {
+    result = result * 256n + BigInt(byteArray[i]);
+  }
+  return result;
 }
 
 interface SharedQRData {
@@ -106,43 +106,6 @@ export function nullifierHash(extractedFields: ReturnType<typeof extractQRDataFi
     ...stringToAsciiArray(extractedFields.aadhaarLast4Digits),
   ];
   return BigInt(packBytesAndPoseidon(personalInfoHashArgs));
-}
-
-export function processQRDataSimple(qrData: string) {
-  const qrDataBytes = convertBigIntToByteArray(BigInt(qrData));
-  const decodedData = decompressByteArray(qrDataBytes);
-  const signedData = decodedData.slice(0, decodedData.length - 256);
-  const [qrDataPaddedNumber, qrDataPaddedLen] = shaPad(signedData, 512 * 3);
-  const qrDataPadded = new Uint8Array(qrDataPaddedNumber);
-  let photoEOI = 0;
-  for (let i = 0; i < qrDataPadded.length - 1; i++) {
-    if (qrDataPadded[i + 1] === 217 && qrDataPadded[i] === 255) {
-      photoEOI = i + 1;
-    }
-  }
-  if (photoEOI === 0) {
-    throw new Error('Photo EOI not found');
-  }
-
-  // Extract actual fields from QR data instead of using hardcoded values
-  const extractedFields = extractQRDataFields(qrDataBytes);
-
-  const qrHash = packBytesAndPoseidon(Array.from(qrDataPadded));
-  const photo = extractPhoto(Array.from(qrDataPadded), photoEOI + 1);
-
-  const photoHash = packBytesAndPoseidon(photo.bytes.map(Number));
-
-  return {
-    qrDataBytes,
-    decodedData,
-    signedData,
-    qrDataPadded,
-    qrDataPaddedLen,
-    extractedFields,
-    qrHash: BigInt(qrHash),
-    photo,
-    photoHash: BigInt(photoHash),
-  };
 }
 
 export function prepareAadhaarDiscloseData(
@@ -592,4 +555,41 @@ export function processQRData(
   }
 
   return processQRDataSimple(QRData);
+}
+
+export function processQRDataSimple(qrData: string) {
+  const qrDataBytes = convertBigIntToByteArray(BigInt(qrData));
+  const decodedData = decompressByteArray(qrDataBytes);
+  const signedData = decodedData.slice(0, decodedData.length - 256);
+  const [qrDataPaddedNumber, qrDataPaddedLen] = shaPad(signedData, 512 * 3);
+  const qrDataPadded = new Uint8Array(qrDataPaddedNumber);
+  let photoEOI = 0;
+  for (let i = 0; i < qrDataPadded.length - 1; i++) {
+    if (qrDataPadded[i + 1] === 217 && qrDataPadded[i] === 255) {
+      photoEOI = i + 1;
+    }
+  }
+  if (photoEOI === 0) {
+    throw new Error('Photo EOI not found');
+  }
+
+  // Extract actual fields from QR data instead of using hardcoded values
+  const extractedFields = extractQRDataFields(qrDataBytes);
+
+  const qrHash = packBytesAndPoseidon(Array.from(qrDataPadded));
+  const photo = extractPhoto(Array.from(qrDataPadded), photoEOI + 1);
+
+  const photoHash = packBytesAndPoseidon(photo.bytes.map(Number));
+
+  return {
+    qrDataBytes,
+    decodedData,
+    signedData,
+    qrDataPadded,
+    qrDataPaddedLen,
+    extractedFields,
+    qrHash: BigInt(qrHash),
+    photo,
+    photoHash: BigInt(photoHash),
+  };
 }

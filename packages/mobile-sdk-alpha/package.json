@@ -24,6 +24,16 @@
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
     },
+    "./onboarding/*": {
+      "types": "./dist/esm/flows/onboarding/*.d.ts",
+      "import": "./dist/esm/flows/onboarding/*.js",
+      "require": "./dist/cjs/flows/onboarding/*.cjs"
+    },
+    "./disclosing/*": {
+      "types": "./dist/esm/flows/disclosing/*.d.ts",
+      "import": "./dist/esm/flows/disclosing/*.js",
+      "require": "./dist/cjs/flows/disclosing/*.cjs"
+    },
     "./constants": {
       "types": "./dist/esm/constants/index.d.ts",
       "react-native": "./dist/esm/constants/index.js",

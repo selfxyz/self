@@ -42,7 +42,7 @@ const NativeMRZScannerView = requireNativeComponent<SelfMRZScannerViewProps>(
   })!,
 );
 
-interface MRZScannerViewProps {
+export interface MRZScannerViewProps {
   style?: ViewStyle;
   height?: DimensionValue;
   width?: DimensionValue;

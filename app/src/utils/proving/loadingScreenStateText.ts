@@ -2,60 +2,92 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha';
+import {
+  provingMachineCircuitType,
+  ProvingStateType,
+} from '@selfxyz/mobile-sdk-alpha';
 
 interface LoadingScreenText {
   actionText: string;
+  actionSubText: string;
   estimatedTime: string;
+  statusBarProgress: number;
 }
 
 export function getLoadingScreenText(
   state: ProvingStateType,
   signatureAlgorithm: string,
   curveOrExponent: string,
-  type: 'dsc' | 'register' = 'register',
+  type: provingMachineCircuitType,
 ): LoadingScreenText {
+  // Helper function to calculate progress with type offset
+  const getStatusBarProgress = (baseProgress: number): number => {
+    return baseProgress + (type === 'register' ? 3 : 0);
+  };
+
   switch (state) {
     // Initial states
     case 'idle':
       return {
-        actionText: 'Initializing...',
-        estimatedTime: '1 - 5 SECONDS',
+        actionText: 'Initializing',
+        actionSubText: 'Retrieving ID data from the keychain',
+        estimatedTime: '3 - 15 SECONDS',
+        statusBarProgress: getStatusBarProgress(0),
+      };
+
+    case 'parsing_id_document':
+      return {
+        actionText: 'Initializing',
+        actionSubText: 'Parsing ID data',
+        estimatedTime: '3 - 15 SECONDS',
+        statusBarProgress: getStatusBarProgress(0),
       };
 
     // Data preparation states
     case 'fetching_data':
       return {
-        actionText: 'Reading current state of the registry',
-        estimatedTime: '5 - 10 SECONDS',
+        actionText: 'Reading registry',
+        actionSubText: 'Reading current state of the registry',
+        estimatedTime: '2 - 5 SECONDS',
+        statusBarProgress: getStatusBarProgress(1),
       };
+
     case 'validating_document':
       return {
-        actionText: 'Validating passport',
-        estimatedTime: '5 - 10 SECONDS',
+        actionText: 'Validating ID',
+        actionSubText: 'Validating ID data locally',
+        estimatedTime: '2 - 5 SECONDS',
+        statusBarProgress: getStatusBarProgress(1),
       };
 
     // Connection states
     case 'init_tee_connexion':
       return {
-        actionText: 'Establishing secure connection',
-        estimatedTime: '5 - 10 SECONDS',
+        actionText: 'Securing connection',
+        actionSubText: 'Establishing secure connection to the registry',
+        estimatedTime: '2 - 5 SECONDS',
+        statusBarProgress: getStatusBarProgress(2),
       };
     case 'listening_for_status':
       return {
-        actionText: 'Waiting for verification',
-        estimatedTime: '10 - 30 SECONDS',
+        actionText: 'Securing connection',
+        actionSubText: 'Establishing secure connection to the registry',
+        estimatedTime: '2 - 5 SECONDS',
+        statusBarProgress: getStatusBarProgress(2),
       };
-
     // Proving states
     case 'ready_to_prove':
       return {
-        actionText: 'Ready to verify',
-        estimatedTime: '1 - 3 SECONDS',
+        actionText: 'Securing connection',
+        actionSubText: 'Establishing secure connection to the registry',
+        estimatedTime: '2 - 5 SECONDS',
+        statusBarProgress: getStatusBarProgress(2),
       };
     case 'proving':
       return {
-        actionText: 'Generating ZK proof',
+        actionText: 'Proving',
+        actionSubText: 'Generating the ZK proof',
+        statusBarProgress: getStatusBarProgress(2),
         estimatedTime:
           signatureAlgorithm && curveOrExponent
             ? getProvingTimeEstimate(signatureAlgorithm, curveOrExponent, type)
@@ -63,15 +95,19 @@ export function getLoadingScreenText(
       };
     case 'post_proving':
       return {
-        actionText: 'Finalizing verification',
-        estimatedTime: '5 - 10 SECONDS',
+        actionText: 'Verifying',
+        actionSubText: 'Waiting for verification of the ZK proof',
+        statusBarProgress: getStatusBarProgress(2),
+        estimatedTime: '1 - 2 SECONDS',
       };
 
     // Success state
     case 'completed':
       return {
         actionText: 'Verified',
-        estimatedTime: '1 - 3 SECONDS',
+        actionSubText: 'Verification completed',
+        statusBarProgress: getStatusBarProgress(3),
+        estimatedTime: '0 - 1 SECONDS',
       };
 
     // Error states
@@ -79,30 +115,40 @@ export function getLoadingScreenText(
     case 'failure':
       return {
         actionText: 'Verification failed',
-        estimatedTime: '1 - 3 SECONDS',
+        actionSubText: 'Verification failed',
+        statusBarProgress: getStatusBarProgress(0),
+        estimatedTime: '0 - 1 SECONDS',
       };
 
     // Special case states
     case 'passport_not_supported':
       return {
         actionText: 'Unsupported passport',
+        actionSubText: 'Unsupported passport',
         estimatedTime: '1 - 3 SECONDS',
+        statusBarProgress: getStatusBarProgress(0),
       };
     case 'account_recovery_choice':
       return {
         actionText: 'Account recovery needed',
+        actionSubText: 'Account recovery needed',
+        statusBarProgress: getStatusBarProgress(0),
         estimatedTime: '1 - 3 SECONDS',
       };
     case 'passport_data_not_found':
       return {
         actionText: 'Passport data not found',
+        actionSubText: 'Passport data not found',
+        statusBarProgress: getStatusBarProgress(0),
         estimatedTime: '1 - 3 SECONDS',
       };
 
     default:
       return {
-        actionText: 'Verifying',
-        estimatedTime: '10 - 30 SECONDS',
+        actionText: '',
+        actionSubText: '',
+        statusBarProgress: getStatusBarProgress(0),
+        estimatedTime: 'SECONDS',
       };
   }
 }
@@ -110,7 +156,7 @@ export function getLoadingScreenText(
 export function getProvingTimeEstimate(
   signatureAlgorithm: string,
   curveOrExponent: string,
-  type: 'dsc' | 'register',
+  type: provingMachineCircuitType,
 ): string {
   if (!signatureAlgorithm || !curveOrExponent) return '30 - 90 SECONDS';
 

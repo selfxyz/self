@@ -4,7 +4,6 @@
 
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
@@ -13,6 +12,10 @@ import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  getPreRegistrationDescription,
+  usePrepareDocumentProof,
+} from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -21,6 +24,7 @@ import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
+import { useSettingStore } from '@/stores/settingStore';
 import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
 import { notificationSuccess } from '@/utils/haptic';
@@ -33,12 +37,12 @@ type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const selfClient = useSelfClient();
-  const { useProvingStore, trackEvent } = selfClient;
   const [documentMetadata, setDocumentMetadata] = useState<{
     documentCategory?: string;
     signatureAlgorithm?: string;
     curveOrExponent?: string;
   }>({});
+  const { trackEvent } = selfClient;
   const navigate = useHapticNavigation('Loading', {
     params: {
       documentCategory: documentMetadata.documentCategory as any,
@@ -47,11 +51,8 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
     },
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);
-  const currentState = useProvingStore(state => state.currentState);
-  const init = useProvingStore(state => state.init);
-  const setFcmToken = useProvingStore(state => state.setFcmToken);
-  const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
-  const isReadyToProve = currentState === 'ready_to_prove';
+  const setFcmToken = useSettingStore(state => state.setFcmToken);
+
   useEffect(() => {
     notificationSuccess();
 
@@ -59,14 +60,12 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       try {
         const selectedDocument = await loadSelectedDocument(selfClient);
         if (selectedDocument?.data?.documentCategory === 'aadhaar') {
-          init(selfClient, 'register');
           setDocumentMetadata({
             documentCategory: 'aadhaar',
             signatureAlgorithm: 'rsa',
             curveOrExponent: '65537',
           });
         } else {
-          init(selfClient, 'dsc');
 
           const passportData = selectedDocument?.data;
           setDocumentMetadata({
@@ -79,7 +78,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
         }
       } catch (error) {
         console.error('Error loading selected document:', error);
-        init(selfClient, 'dsc');
         // setting defaults on error
         setDocumentMetadata({
           documentCategory: 'passport',
@@ -90,7 +88,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
     };
 
     initializeProving();
-  }, [init, selfClient]);
+  }, [selfClient]);
 
   const onOkPress = async () => {
     try {
@@ -103,18 +101,14 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       if (permissionGranted) {
         const token = await getFCMToken();
         if (token) {
-          setFcmToken(token, selfClient);
+          setFcmToken(token);
           trackEvent(ProofEvents.FCM_TOKEN_STORED);
         }
       }
 
-      // Mark as user confirmed - proving will start automatically when ready
-      setUserConfirmed(selfClient);
-
-      // Navigate to loading screen
       navigate();
     } catch (error: unknown) {
-      console.error('Error initializing proving process:', error);
+      console.error('Error navigating:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
       trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
         error: message,
@@ -124,8 +118,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       });
 
       flushAllAnalytics();
-    } finally {
-      setRequestingPermission(false);
     }
   };
 
@@ -152,24 +144,13 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
         >
           <Title textAlign="center">Confirm your identity</Title>
           <Description textAlign="center" paddingBottom={20}>
-            By continuing, you certify that this passport, biometric ID or
-            Aadhaar card belongs to you and is not stolen or forged. Once
-            registered with Self, this document will be permanently linked to
-            your identity and can't be linked to another one.
+            {getPreRegistrationDescription()}
           </Description>
           <PrimaryButton
             trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}
             onPress={onOkPress}
-            disabled={!isReadyToProve}
           >
-            {isReadyToProve ? (
-              'Confirm'
-            ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-                <Description color={black}>Preparing verification</Description>
-              </View>
-            )}
+            Confirm
           </PrimaryButton>
         </ExpandableBottomLayout.BottomSection>
       </ExpandableBottomLayout.Layout>

@@ -36,6 +36,7 @@
   "resolutions": {
     "@babel/core": "^7.28.4",
     "@babel/runtime": "^7.28.4",
+    "@swc/core": "1.7.36",
     "@tamagui/animations-react-native": "1.126.14",
     "@tamagui/toast": "1.126.14",
     "@types/node": "^22.18.3",

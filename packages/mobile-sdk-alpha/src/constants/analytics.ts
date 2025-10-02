@@ -3,46 +3,40 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export const AadhaarEvents = {
-  UPLOAD_SCREEN_OPENED: 'Aadhaar: Upload Screen Opened',
-  QR_UPLOAD_REQUESTED: 'Aadhaar: QR Upload Requested',
-  QR_UPLOAD_SUCCESS: 'Aadhaar: QR Upload Success',
-  QR_UPLOAD_FAILED: 'Aadhaar: QR Upload Failed',
-  PERMISSION_MODAL_OPENED: 'Aadhaar: Permission Modal Opened',
+  CONTINUE_TO_REGISTRATION_PRESSED: 'Aadhaar: Continue to Registration Pressed',
+  DATA_STORAGE_STARTED: 'Aadhaar: Data Storage Started',
+  DATA_STORAGE_SUCCESS: 'Aadhaar: Data Storage Success',
+  ERROR_SCREEN_NAVIGATED: 'Aadhaar: Error Screen Navigated',
+  HELP_BUTTON_PRESSED: 'Aadhaar: Help Button Pressed',
   PERMISSION_MODAL_DISMISSED: 'Aadhaar: Permission Modal Dismissed',
+  PERMISSION_MODAL_OPENED: 'Aadhaar: Permission Modal Opened',
   PERMISSION_SETTINGS_OPENED: 'Aadhaar: Permission Settings Opened',
+  PHOTO_LIBRARY_UNAVAILABLE: 'Aadhaar: Photo Library Unavailable',
   PROCESSING_STARTED: 'Aadhaar: Processing Started',
-  // Error-specific events
   QR_CODE_EXPIRED: 'Aadhaar: QR Code Expired',
   QR_CODE_INVALID_FORMAT: 'Aadhaar: QR Code Invalid Format',
   QR_CODE_MISSING_FIELDS: 'Aadhaar: QR Code Missing Required Fields',
   QR_CODE_PARSE_FAILED: 'Aadhaar: QR Code Parse Failed',
-  PHOTO_LIBRARY_UNAVAILABLE: 'Aadhaar: Photo Library Unavailable',
-  USER_CANCELLED_SELECTION: 'Aadhaar: User Cancelled Photo Selection',
-  // Validation events
-  TIMESTAMP_VALIDATION_STARTED: 'Aadhaar: Timestamp Validation Started',
-  TIMESTAMP_VALIDATION_FAILED: 'Aadhaar: Timestamp Validation Failed',
-  TIMESTAMP_VALIDATION_SUCCESS: 'Aadhaar: Timestamp Validation Success',
-  // Data processing events
   QR_DATA_EXTRACTION_STARTED: 'Aadhaar: QR Data Extraction Started',
   QR_DATA_EXTRACTION_SUCCESS: 'Aadhaar: QR Data Extraction Success',
-  DATA_STORAGE_STARTED: 'Aadhaar: Data Storage Started',
-  DATA_STORAGE_SUCCESS: 'Aadhaar: Data Storage Success',
-  // Screen interaction events
+  QR_UPLOAD_FAILED: 'Aadhaar: QR Upload Failed',
+  QR_UPLOAD_REQUESTED: 'Aadhaar: QR Upload Requested',
+  QR_UPLOAD_SUCCESS: 'Aadhaar: QR Upload Success',
+  RETRY_BUTTON_PRESSED: 'Aadhaar: Retry Button Pressed',
+  TIMESTAMP_VALIDATION_FAILED: 'Aadhaar: Timestamp Validation Failed',
+  TIMESTAMP_VALIDATION_STARTED: 'Aadhaar: Timestamp Validation Started',
+  TIMESTAMP_VALIDATION_SUCCESS: 'Aadhaar: Timestamp Validation Success',
   UPLOAD_BUTTON_DISABLED: 'Aadhaar: Upload Button Disabled',
   UPLOAD_BUTTON_ENABLED: 'Aadhaar: Upload Button Enabled',
-  // Error recovery events
-  ERROR_SCREEN_NAVIGATED: 'Aadhaar: Error Screen Navigated',
-  RETRY_BUTTON_PRESSED: 'Aadhaar: Retry Button Pressed',
-  HELP_BUTTON_PRESSED: 'Aadhaar: Help Button Pressed',
-  // Success screen events
-  CONTINUE_TO_REGISTRATION_PRESSED: 'Aadhaar: Continue to Registration Pressed',
+  UPLOAD_SCREEN_OPENED: 'Aadhaar: Upload Screen Opened',
+  USER_CANCELLED_SELECTION: 'Aadhaar: User Cancelled Photo Selection',
 };
 
 export const AppEvents = {
   DISMISS_PRIVACY_DISCLAIMER: 'App: Dismiss Privacy Disclaimer',
   GET_STARTED: 'App: Get Started',
-  GET_STARTED_BIOMETRIC: 'App: Get Started - Biometric ID',
   GET_STARTED_AADHAAR: 'App: Get Started - Aadhaar',
+  GET_STARTED_BIOMETRIC: 'App: Get Started - Biometric ID',
   SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
   UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
   UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
@@ -83,18 +77,18 @@ export const BackupEvents = {
 };
 
 export const DocumentEvents = {
+  ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
   ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
   ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
-  ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
   DOCUMENT_DELETED: 'Document: Document Deleted',
   DOCUMENT_SELECTED: 'Document: Document Selected',
+  DOCUMENT_VALIDATED: 'Document: Document Validated',
   DOCUMENTS_FETCHED: 'Document: Documents Fetched',
   MANAGE_SCREEN_OPENED: 'Document: Manage Documents Screen Opened',
   NO_DOCUMENTS_FOUND: 'Document: No Documents Found',
   PASSPORT_INFO_OPENED: 'Document: Passport Info Screen Opened',
   PASSPORT_METADATA_LOADED: 'Document: Passport Metadata Loaded',
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
-  DOCUMENT_VALIDATED: 'Document: Document Validated',
 };
 
 export const MockDataEvents = {
@@ -126,19 +120,19 @@ export const PassportEvents = {
   CAMERA_SCAN_SUCCESS: 'Passport: Camera Scan Success',
   CAMERA_SCREEN_CLOSED: 'Passport: Camera View Closed',
   CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
+  COMING_SOON: 'Passport: Passport Not Supported',
   DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
-  DISMISS_UNSUPPORTED_PASSPORT: 'Passport: Dismiss Unsupported Passport',
-  NOTIFY_UNSUPPORTED_PASSPORT: 'Passport: Notify Unsupported Passport',
+  DISMISS_COMING_SOON: 'Passport: Dismiss Unsupported Passport',
   NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
   NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
   NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',
+  NOTIFY_COMING_SOON: 'Passport: Notify Unsupported Passport',
   OPEN_NFC_SETTINGS: 'Passport: Open NFC Settings',
   OWNERSHIP_CONFIRMED: 'Passport: Passport Ownership Confirmed',
   PASSPORT_DATA_NOT_FOUND: 'Passport: Passport Data Not Found',
   PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
   PASSPORT_PARSED: 'Passport: Passport Parsed',
   START_PASSPORT_NFC: 'Passport: Start Passport NFC',
-  UNSUPPORTED_PASSPORT: 'Passport: Passport Not Supported',
 };
 
 export const ProofEvents = {
@@ -147,6 +141,7 @@ export const ProofEvents = {
   ATTESTATION_VERIFIED: 'Proof: Attestation Verified',
   CLEANUP_COMPLETED: 'Proof: Connections Cleanup Completed',
   CLEANUP_STARTED: 'Proof: Connections Cleanup Started',
+  CONNECTION_UUID_GENERATED: 'Proof: Connection UUID Generated',
   DEVICE_TOKEN_REG_FAILED: 'Proof: Device Token Registration Failed',
   DEVICE_TOKEN_REG_STARTED: 'Proof: Device Token Registration Started',
   DEVICE_TOKEN_REG_SUCCESS: 'Proof: Device Token Registration Succeeded',
@@ -157,6 +152,7 @@ export const ProofEvents = {
   FETCH_DATA_STARTED: 'Proof: Fetch Data Started',
   FETCH_DATA_SUCCESS: 'Proof: Fetch Data Succeeded',
   LOAD_SECRET_FAILED: 'Proof: Load Secret Failed',
+  PARSE_ID_DOCUMENT_STARTED: 'Proof: Parse ID Document Started',
   NOTIFICATION_PERMISSION_REQUESTED: 'Proof: Notification Permission Requested',
   PASSPORT_NULLIFIER_ONCHAIN: 'Proof: Passport Nullifier Onchain',
   PAYLOAD_ENCRYPTED: 'Proof: Payload Encrypted',
@@ -170,11 +166,11 @@ export const ProofEvents = {
   PROOF_DISCLOSURES_SCROLLED: 'Proof: Proof Disclosures Scrolled',
   PROOF_FAILED: 'Proof: Proof Failed',
   PROOF_RESULT_ACKNOWLEDGED: 'Proof: Proof Result Acknowledged',
-  PROVING_PROCESS_STARTED: 'Proof: Proving Process Started',
-  PROOF_VERIFY_LONG_PRESS: 'Proof: Verify Button Long Pressed',
   PROOF_VERIFY_CONFIRMATION_ACCEPTED: 'Proof: Verify Confirmation Accepted',
+  PROOF_VERIFY_LONG_PRESS: 'Proof: Verify Button Long Pressed',
   PROVING_INIT: 'Proof: Proving Machine Init',
   PROVING_PROCESS_ERROR: 'Proof: Proving Process Error',
+  PROVING_PROCESS_STARTED: 'Proof: Proving Process Started',
   PROVING_STATE_CHANGE: 'Proof: Proving State Change',
   QR_SCAN_CANCELLED: 'Proof: QR Scan Cancelled',
   QR_SCAN_FAILED: 'Proof: QR Scan Failed',
@@ -200,7 +196,6 @@ export const ProofEvents = {
   VALIDATION_SUCCESS: 'Proof: Validation Succeeded',
   WS_HELLO_ACK: 'Proof: WS Hello Acknowledged',
   WS_HELLO_SENT: 'Proof: WS Hello Sent',
-  CONNECTION_UUID_GENERATED: 'Proof: Connection UUID Generated',
 };
 
 export const SettingsEvents = {

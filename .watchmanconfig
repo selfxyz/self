@@ -1,2 +1,12 @@
 {
+  "ignore_dirs": [
+    ".git",
+    ".hg",
+    "node_modules",
+    "ios/build",
+    "android/build",
+    "android/app/build",
+    "dist",
+    "build"
+  ]
 }

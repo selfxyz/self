@@ -8,6 +8,7 @@ import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common'
 
 import type { ProofContext } from '../proving/internal/logging';
 import { ProvingState } from '../proving/provingMachine';
+import { MRZState } from '../stores/mrzStore';
 import { ProtocolState } from '../stores/protocolStore';
 import { SelfAppState } from '../stores/selfAppStore';
 import { SDKEvent, SDKEventMap } from './events';
@@ -90,10 +91,6 @@ export interface MRZValidation {
   overall: boolean;
 }
 
-export interface NotificationAdapter {
-  registerDeviceToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void>;
-}
-
 export type LogLevel = 'info' | 'warn' | 'error';
 
 export interface Progress {
@@ -110,7 +107,6 @@ export interface Adapters {
   analytics?: AnalyticsAdapter;
   auth: AuthAdapter;
   documents: DocumentsAdapter;
-  notification: NotificationAdapter;
 }
 
 export interface LoggerAdapter {
@@ -181,7 +177,6 @@ export interface SelfClient {
   logProofEvent(level: LogLevel, message: string, context: ProofContext, details?: Record<string, any>): void;
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
-  registerNotificationsToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void>;
   loadDocumentById(id: string): Promise<IDDocument | null>;
   saveDocument(id: string, passportData: IDDocument): Promise<void>;
   deleteDocument(id: string): Promise<void>;
@@ -189,10 +184,12 @@ export interface SelfClient {
   getProvingState: () => ProvingState;
   getSelfAppState: () => SelfAppState;
   getProtocolState: () => ProtocolState;
+  getMRZState: () => MRZState;
 
   useProvingStore: ReturnType<typeof create<ProvingState, []>>;
   useSelfAppStore: ReturnType<typeof create<SelfAppState, []>>;
   useProtocolStore: ReturnType<typeof create<ProtocolState, []>>;
+  useMRZStore: ReturnType<typeof create<MRZState, []>>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

@@ -102,7 +102,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
     navigation,
     restoreAccountFromMnemonic,
     trackEvent,
-    selfClient,
+    useProtocolStore,
   ]);
 
   return (

@@ -8,6 +8,7 @@ import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
 import { ProofContext } from './proving/internal/logging';
 import { useProvingStore } from './proving/provingMachine';
+import { useMRZStore } from './stores/mrzStore';
 import { useProtocolStore } from './stores/protocolStore';
 import { useSelfAppStore } from './stores/selfAppStore';
 import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
@@ -40,7 +41,7 @@ const optionalDefaults: Required<Pick<Adapters, 'clock' | 'logger'>> = {
   },
 };
 
-const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents', 'notification'] as const;
+const REQUIRED_ADAPTERS = ['auth', 'scanner', 'network', 'crypto', 'documents'] as const;
 
 export const createListenersMap = (): {
   map: Map<SDKEvent, Set<(p: any) => void>>;
@@ -132,13 +133,6 @@ export function createSelfClient({
     return adapters.auth.getPrivateKey();
   }
 
-  async function registerNotificationsToken(sessionId: string, deviceToken?: string, isMock?: boolean): Promise<void> {
-    if (!_adapters.notification) {
-      throw notImplemented('notification');
-    }
-    return _adapters.notification.registerDeviceToken(sessionId, deviceToken, isMock);
-  }
-
   async function hasPrivateKey(): Promise<boolean> {
     if (!adapters.auth) return false;
     try {
@@ -160,7 +154,6 @@ export function createSelfClient({
     logProofEvent: (level: LogLevel, message: string, context: ProofContext, details?: Record<string, any>) => {
       emit(SdkEvents.PROOF_EVENT, { context, event: message, details, level });
     },
-    registerNotificationsToken,
     // TODO: inline for now
     loadDocumentCatalog: async () => {
       return _adapters.documents.loadDocumentCatalog();
@@ -188,10 +181,14 @@ export function createSelfClient({
     getProtocolState: () => {
       return useProtocolStore.getState();
     },
+    getMRZState: () => {
+      return useMRZStore.getState();
+    },
 
     // for reactivity (if needed)
     useProvingStore,
     useSelfAppStore,
     useProtocolStore,
+    useMRZStore,
   };
 }

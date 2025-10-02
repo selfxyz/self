@@ -34,11 +34,15 @@ function pbkdf2(
 }
 
 function sha256(data: Uint8Array): Uint8Array {
-  return nobleSha256.create().update(data).digest();
+  const result = nobleSha256.create().update(data).digest();
+  // Ensure we return a pure Uint8Array, not a Buffer or other subclass
+  return result instanceof Uint8Array && result.constructor === Uint8Array ? result : new Uint8Array(result);
 }
 
 function sha512(data: Uint8Array): Uint8Array {
-  return nobleSha512.create().update(data).digest();
+  const result = nobleSha512.create().update(data).digest();
+  // Ensure we return a pure Uint8Array, not a Buffer or other subclass
+  return result instanceof Uint8Array && result.constructor === Uint8Array ? result : new Uint8Array(result);
 }
 
 ethers.randomBytes.register(randomBytes);

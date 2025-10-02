@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 
-import type { DeployedCircuits, DocumentCategory, OfacTree } from '@selfxyz/common';
+import type { DeployedCircuits, DocumentCategory, Environment, OfacTree } from '@selfxyz/common';
 import {
   API_URL,
   API_URL_STAGING,
@@ -24,9 +24,35 @@ import {
   TREE_URL,
   TREE_URL_STAGING,
 } from '@selfxyz/common';
-import { Environment } from '@selfxyz/common/utils/types';
 
 import type { SelfClient } from '../types/public';
+
+/**
+ * Fetch with timeout helper
+ * @param url - URL to fetch
+ * @param options - Fetch options
+ * @param timeoutMs - Timeout in milliseconds (default: 30000)
+ * @returns Promise<Response>
+ */
+async function fetchWithTimeout(url: string, options?: RequestInit, timeoutMs: number = 30000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timeout after ${timeoutMs}ms`);
+    }
+    throw error;
+  }
+}
 
 export interface ProtocolState {
   passport: {
@@ -122,7 +148,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
       ]);
     },
     fetch_alternative_csca: async (environment: 'prod' | 'stg', ski: string) => {
-      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`; // TODO: remove false once we have the endpoint in production
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`;
       try {
         const response = await fetch(url, {
           method: 'GET',
@@ -141,7 +167,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     fetch_deployed_circuits: async (environment: 'prod' | 'stg') => {
       const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/deployed-circuits`;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -150,12 +176,13 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         set({ passport: { ...get().passport, deployed_circuits: data.data } });
       } catch (error) {
         console.error(`Failed fetching deployed circuits from ${url}:`, error);
+        set({ passport: { ...get().passport, deployed_circuits: null } });
       }
     },
     fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {
       const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping-gcp`;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -166,12 +193,13 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         });
       } catch (error) {
         console.error(`Failed fetching circuit DNS mapping from ${url}:`, error);
+        set({ passport: { ...get().passport, circuits_dns_mapping: null } });
       }
     },
     fetch_csca_tree: async (environment: 'prod' | 'stg') => {
       const url = environment === 'prod' ? CSCA_TREE_URL : CSCA_TREE_URL_STAGING;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -193,7 +221,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     fetch_dsc_tree: async (environment: 'prod' | 'stg') => {
       const url = environment === 'prod' ? DSC_TREE_URL : DSC_TREE_URL_STAGING;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -202,13 +230,13 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         set({ passport: { ...get().passport, dsc_tree: data.data } });
       } catch (error) {
         console.error(`Failed fetching DSC tree from ${url}:`, error);
-        // Optionally handle error state
+        set({ passport: { ...get().passport, dsc_tree: null } });
       }
     },
     fetch_identity_tree: async (environment: 'prod' | 'stg') => {
       const url = environment === 'prod' ? IDENTITY_TREE_URL : IDENTITY_TREE_URL_STAGING;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -217,6 +245,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         set({ passport: { ...get().passport, commitment_tree: data.data } });
       } catch (error) {
         console.error(`Failed fetching identity tree from ${url}:`, error);
+        set({ passport: { ...get().passport, commitment_tree: null } });
       }
     },
     fetch_ofac_trees: async (environment: 'prod' | 'stg') => {
@@ -251,7 +280,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     fetch_deployed_circuits: async (environment: 'prod' | 'stg') => {
       const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/deployed-circuits`;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -260,13 +289,13 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         set({ id_card: { ...get().id_card, deployed_circuits: data.data } });
       } catch (error) {
         console.error(`Failed fetching deployed circuits from ${url}:`, error);
-        // Optionally handle error state
+        set({ id_card: { ...get().id_card, deployed_circuits: null } });
       }
     },
     fetch_circuits_dns_mapping: async (environment: 'prod' | 'stg') => {
       const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/circuit-dns-mapping-gcp`;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -277,13 +306,13 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         });
       } catch (error) {
         console.error(`Failed fetching circuit DNS mapping from ${url}:`, error);
-        // Optionally handle error state
+        set({ id_card: { ...get().id_card, circuits_dns_mapping: null } });
       }
     },
     fetch_csca_tree: async (environment: 'prod' | 'stg') => {
       const url = environment === 'prod' ? CSCA_TREE_URL_ID_CARD : CSCA_TREE_URL_STAGING_ID_CARD;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -305,7 +334,7 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
     fetch_dsc_tree: async (environment: 'prod' | 'stg') => {
       const url = environment === 'prod' ? DSC_TREE_URL_ID_CARD : DSC_TREE_URL_STAGING_ID_CARD;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -314,13 +343,13 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         set({ id_card: { ...get().id_card, dsc_tree: data.data } });
       } catch (error) {
         console.error(`Failed fetching DSC tree from ${url}:`, error);
-        // Optionally handle error state
+        set({ id_card: { ...get().id_card, dsc_tree: null } });
       }
     },
     fetch_identity_tree: async (environment: 'prod' | 'stg') => {
       const url = environment === 'prod' ? IDENTITY_TREE_URL_ID_CARD : IDENTITY_TREE_URL_STAGING_ID_CARD;
       try {
-        const response = await fetch(url);
+        const response = await fetchWithTimeout(url);
         if (!response.ok) {
           throw new Error(`HTTP error fetching ${url}! status: ${response.status}`);
         }
@@ -329,13 +358,13 @@ export const useProtocolStore = create<ProtocolState>((set, get) => ({
         set({ id_card: { ...get().id_card, commitment_tree: data.data } });
       } catch (error) {
         console.error(`Failed fetching identity tree from ${url}:`, error);
-        // Optionally handle error state
+        set({ id_card: { ...get().id_card, commitment_tree: null } });
       }
     },
     fetch_alternative_csca: async (environment: 'prod' | 'stg', ski: string) => {
-      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`; // TODO: remove false once we have the endpoint in production
+      const url = `${environment === 'prod' ? API_URL : API_URL_STAGING}/ski-pems/${ski.toLowerCase()}`;
       try {
-        const response = await fetch(url, {
+        const response = await fetchWithTimeout(url, {
           method: 'GET',
         });
         if (!response.ok) {

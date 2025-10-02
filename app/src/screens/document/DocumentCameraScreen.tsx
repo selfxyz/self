@@ -25,7 +25,6 @@ import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import useUserStore from '@/stores/userStore';
 import analytics from '@/utils/analytics';
 import { black, slate400, slate800, white } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
@@ -35,9 +34,10 @@ const { trackEvent } = analytics();
 
 const DocumentCameraScreen: React.FC = () => {
   const client = useSelfClient();
+  const { useMRZStore } = client;
+  const { setMRZForNFC } = useMRZStore();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const store = useUserStore();
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
@@ -102,7 +102,7 @@ const DocumentCameraScreen: React.FC = () => {
         return;
       }
 
-      store.update({
+      setMRZForNFC({
         passportNumber: documentNumber,
         dateOfBirth: formattedDateOfBirth,
         dateOfExpiry: formattedDateOfExpiry,
@@ -116,7 +116,7 @@ const DocumentCameraScreen: React.FC = () => {
 
       navigation.navigate('DocumentNFCScan');
     },
-    [store, navigation],
+    [setMRZForNFC, navigation],
   );
   const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',

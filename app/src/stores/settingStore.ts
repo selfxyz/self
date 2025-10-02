@@ -22,6 +22,8 @@ interface PersistedSettingsState {
   setDevModeOff: () => void;
   hasCompletedKeychainMigration: boolean;
   setKeychainMigrationCompleted: () => void;
+  fcmToken: string | null;
+  setFcmToken: (token: string | null) => void;
 }
 
 interface NonPersistedSettingsState {
@@ -74,6 +76,8 @@ export const useSettingStore = create<SettingsState>()(
       hasCompletedKeychainMigration: false,
       setKeychainMigrationCompleted: () =>
         set({ hasCompletedKeychainMigration: true }),
+      fcmToken: null,
+      setFcmToken: (token: string | null) => set({ fcmToken: token }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

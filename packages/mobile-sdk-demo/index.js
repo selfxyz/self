@@ -10,8 +10,10 @@
 // eslint-disable-next-line simple-import-sort/imports
 import 'react-native-get-random-values';
 
+import React from 'react';
 import { Buffer } from 'buffer';
 import { AppRegistry } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import App from './App';
 import { name as appName } from './app.json';
@@ -21,4 +23,10 @@ import './src/utils/ethers';
 // Set global Buffer before any other imports
 global.Buffer = Buffer;
 
-AppRegistry.registerComponent(appName, () => App);
+const Root = () => (
+  <SafeAreaProvider>
+    <App />
+  </SafeAreaProvider>
+);
+
+AppRegistry.registerComponent(appName, () => Root);

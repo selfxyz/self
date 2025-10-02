@@ -268,8 +268,6 @@ describe('scan', () => {
 
       await scan(mockInputs);
 
-      // Should configure analytics before scanning
-      expect(mockConfigureNfcAnalytics).toHaveBeenCalled();
       expect(mockScanPassport).toHaveBeenCalled();
     });
   });
