@@ -19,6 +19,7 @@ export interface DocumentMetadata {
   encryptedBlobRef?: string; // opaque pointer; no plaintext PII
   mock: boolean;
   isRegistered?: boolean;
+  registeredAt?: number; // timestamp (epoch ms) when document was registered
 }
 
 export interface DocumentData {

@@ -263,10 +263,16 @@ export function extractNameFromMRZ(mrzString: string): { firstName: string; last
     .filter(Boolean);
 
   // Handle single-line MRZ strings (common for stored data)
-  // TD3 format: 88 or 90 characters total (2 lines of 44 or 45 chars each)
   if (lines.length === 1) {
     const mrzLength = lines[0].length;
-    if (mrzLength === 88 || mrzLength === 90) {
+
+    // TD1 format (ID card): 90 characters = 3 lines × 30 chars
+    // Detect TD1 by checking if it starts with 'I' (ID card) or 'A' (type A) or 'C' (type C)
+    if (mrzLength === 90 && /^[IAC][<A-Z]/.test(lines[0])) {
+      lines = [lines[0].slice(0, 30), lines[0].slice(30, 60), lines[0].slice(60, 90)];
+    }
+    // TD3 format (passport): 88 chars (2×44) or 90 chars (2×45)
+    else if (mrzLength === 88 || mrzLength === 90) {
       const lineLength = mrzLength === 88 ? 44 : 45;
       lines = [lines[0].slice(0, lineLength), lines[0].slice(lineLength)];
     }
@@ -281,7 +287,7 @@ export function extractNameFromMRZ(mrzString: string): { firstName: string; last
   // TD3 typically has 2 lines, first line is usually 44 chars but we'll be lenient
   if (lines.length === 2) {
     const line1 = lines[0];
-    const nameMatch = line1.match(/^P<[A-Z]{3}(.+)$/);
+    const nameMatch = line1.match(/^[IPO]<[A-Z]{3}(.+)$/);
 
     if (nameMatch) {
       const namePart = nameMatch[1];

@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
-import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { extractNameFromDocument, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
 import StandardHeader from '../components/StandardHeader';
@@ -46,13 +46,34 @@ export default function DocumentsList({ onBack, catalog }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [documentNames, setDocumentNames] = useState<Record<string, { firstName: string; lastName: string }>>({});
 
   const loadDocuments = async () => {
     setLoading(true);
     setError(null);
     try {
       const allDocuments = await getAllDocuments(selfClient);
-      setDocuments(Object.values(allDocuments));
+      // Show all documents (both registered and unregistered)
+      // Sort by: registered first (newest first), then unregistered (newest first)
+      const sorted = Object.values(allDocuments).sort((a, b) => {
+        // Registered documents first
+        if (a.metadata.isRegistered && !b.metadata.isRegistered) return -1;
+        if (!a.metadata.isRegistered && b.metadata.isRegistered) return 1;
+
+        // Within registered documents, sort by registeredAt (newest first)
+        if (a.metadata.isRegistered && b.metadata.isRegistered) {
+          const aTime = a.metadata.registeredAt ?? 0;
+          const bTime = b.metadata.registeredAt ?? 0;
+          return bTime - aTime; // Newest first
+        }
+
+        // For unregistered documents, sort by document type, then by ID
+        const typeCompare = a.metadata.documentType.localeCompare(b.metadata.documentType);
+        if (typeCompare !== 0) return typeCompare;
+
+        return a.metadata.id.localeCompare(b.metadata.id);
+      });
+      setDocuments(sorted);
     } catch (err) {
       setDocuments([]);
       setError(err instanceof Error ? err.message : String(err));
@@ -76,6 +97,24 @@ export default function DocumentsList({ onBack, catalog }: Props) {
       active = false;
     };
   }, [selfClient, catalog]);
+
+  // Load names for all documents
+  useEffect(() => {
+    const loadDocumentNames = async () => {
+      const names: Record<string, { firstName: string; lastName: string }> = {};
+      for (const doc of documents) {
+        const name = await extractNameFromDocument(selfClient, doc.metadata.id);
+        if (name) {
+          names[doc.metadata.id] = name;
+        }
+      }
+      setDocumentNames(names);
+    };
+
+    if (documents.length > 0) {
+      loadDocumentNames();
+    }
+  }, [documents, selfClient]);
 
   const handleDelete = async (documentId: string, documentType: string) => {
     Alert.alert('Delete Document', `Are you sure you want to delete this ${humanizeDocumentType(documentType)}?`, [
@@ -141,10 +180,9 @@ export default function DocumentsList({ onBack, catalog }: Props) {
     if (documents.length === 0) {
       return (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No documents yet</Text>
+          <Text style={styles.emptyText}>No documents</Text>
           <Text style={styles.emptySubtext}>
-            Generate a mock document to see it appear here. The demo document store keeps everything locally on your
-            device.
+            Generate a mock document or scan a real document to see it appear here.
           </Text>
         </View>
       );
@@ -156,11 +194,16 @@ export default function DocumentsList({ onBack, catalog }: Props) {
       const preview = formatDataPreview(metadata);
       const documentId = `${metadata.id.slice(0, 8)}…${metadata.id.slice(-6)}`;
       const isDeleting = deleting === metadata.id;
+      const nameData = documentNames[metadata.id];
+      const fullName = nameData ? `${nameData.firstName} ${nameData.lastName}`.trim() : null;
 
       return (
         <View key={metadata.id} style={styles.documentCard}>
           <View style={styles.documentHeader}>
-            <Text style={styles.documentType}>{humanizeDocumentType(metadata.documentType)}</Text>
+            <View style={styles.documentTitleContainer}>
+              <Text style={styles.documentType}>{humanizeDocumentType(metadata.documentType)}</Text>
+              {fullName && <Text style={styles.documentName}>{fullName}</Text>}
+            </View>
             <View style={styles.headerRight}>
               <View style={[styles.statusBadge, badgeStyle]}>
                 <Text style={styles.statusText}>{statusLabel}</Text>
@@ -178,7 +221,6 @@ export default function DocumentsList({ onBack, catalog }: Props) {
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.documentMeta}>{(metadata.documentCategory ?? 'unknown').toUpperCase()}</Text>
           <Text style={styles.documentMeta}>{metadata.mock ? 'Mock data' : 'Live data'}</Text>
           <Text style={styles.documentPreview} selectable>
             {preview}
@@ -188,11 +230,11 @@ export default function DocumentsList({ onBack, catalog }: Props) {
         </View>
       );
     });
-  }, [documents, error, loading, deleting]);
+  }, [documents, error, loading, deleting, documentNames]);
 
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="My Documents" onBack={onBack} />
+      <StandardHeader title="Documents" onBack={onBack} />
 
       <View style={styles.content}>{content}</View>
     </SafeAreaScrollView>
@@ -228,11 +270,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 8,
   },
+  documentTitleContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
   documentType: {
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
-    flex: 1,
+  },
+  documentName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#0550ae',
+    marginTop: 2,
   },
   headerRight: {
     alignItems: 'flex-end',

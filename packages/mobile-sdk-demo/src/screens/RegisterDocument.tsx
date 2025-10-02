@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
-import { extractNameFromMRZ, getAllDocuments, SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { extractNameFromDocument, getAllDocuments, SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { Picker } from '@react-native-picker/picker';
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
@@ -41,6 +41,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [detailedLogs, setDetailedLogs] = useState<string[]>([]);
   const [showLogs, setShowLogs] = useState(false);
+  const [documentNames, setDocumentNames] = useState<Record<string, { firstName: string; lastName: string }>>({});
 
   // Add log entry
   const addLog = useCallback((message: string, level: 'info' | 'warn' | 'error' = 'info') => {
@@ -70,6 +71,24 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
       setSelectedDocumentId(catalog.selectedDocumentId);
     }
   }, [catalog.selectedDocumentId, selectedDocumentId]);
+
+  // Load names for all documents in the catalog
+  useEffect(() => {
+    const loadDocumentNames = async () => {
+      const names: Record<string, { firstName: string; lastName: string }> = {};
+      for (const doc of catalog.documents || []) {
+        if (!doc.isRegistered) {
+          const name = await extractNameFromDocument(selfClient, doc.id);
+          if (name) {
+            names[doc.id] = name;
+          }
+        }
+      }
+      setDocumentNames(names);
+    };
+
+    loadDocumentNames();
+  }, [catalog.documents, selfClient]);
 
   useEffect(() => {
     const loadSelectedDocument = async () => {
@@ -238,36 +257,38 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
 
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="Register Document [WiP]" onBack={onBack} />
+      <StandardHeader title="Register Document" onBack={onBack} />
 
       <View style={styles.content}>
-        <View style={styles.pickerContainer}>
-          <Text style={styles.label}>Select Document</Text>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              selectedValue={selectedDocumentId}
-              onValueChange={(itemValue: string) => setSelectedDocumentId(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}
-              enabled={!registering}
-            >
-              <Picker.Item label="Select a document..." value="" style={styles.pickerItem} />
-              {availableDocuments.map(doc => {
-                const nameData = extractNameFromMRZ(doc.data || '');
-                const docType = humanizeDocumentType(doc.documentType);
-                const docId = doc.id.slice(0, 8);
+        {availableDocuments.length > 0 && (
+          <View style={styles.pickerContainer}>
+            <Text style={styles.label}>Select Document</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={selectedDocumentId}
+                onValueChange={(itemValue: string) => setSelectedDocumentId(itemValue)}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+                enabled={!registering}
+              >
+                <Picker.Item label="Select a document..." value="" style={styles.pickerItem} />
+                {availableDocuments.map(doc => {
+                  const nameData = documentNames[doc.id];
+                  const docType = humanizeDocumentType(doc.documentType);
+                  const docId = doc.id.slice(0, 8);
 
-                let label = `${docType} - ${docId}...`;
-                if (nameData) {
-                  const fullName = `${nameData.firstName} ${nameData.lastName}`.trim();
-                  label = fullName ? `${fullName} - ${docType} - ${docId}...` : label;
-                }
+                  let label = `${docType} - ${docId}...`;
+                  if (nameData) {
+                    const fullName = `${nameData.firstName} ${nameData.lastName}`.trim();
+                    label = fullName ? `${fullName} - ${docType} - ${docId}...` : label;
+                  }
 
-                return <Picker.Item key={doc.id} label={label} value={doc.id} style={styles.pickerItem} />;
-              })}
-            </Picker>
+                  return <Picker.Item key={doc.id} label={label} value={doc.id} style={styles.pickerItem} />;
+                })}
+              </Picker>
+            </View>
           </View>
-        </View>
+        )}
 
         {loading && (
           <View style={styles.loadingContainer}>
@@ -301,7 +322,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
           </View>
         )}
 
-        {selectedDocument && !loading && (
+        {selectedDocument && !loading && availableDocuments.length > 0 && (
           <>
             <View style={styles.documentSection}>
               <Text style={styles.documentTitle}>Document Data:</Text>
@@ -328,7 +349,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
           </View>
         )}
 
-        {!selectedDocumentId && availableDocuments.length === 0 && (
+        {availableDocuments.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>
               No unregistered documents available. Generate a mock document to get started.

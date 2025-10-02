@@ -68,6 +68,9 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
+    // Force React to render the loading state before starting async work
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const startTime = Date.now();
     try {
       const ageNum = Number(age);
       const expiryNum = Number(expiryYears);
@@ -111,6 +114,13 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       catalog.selectedDocumentId = documentId;
       await selfClient.saveDocumentCatalog(catalog);
       await onDocumentStored?.();
+
+      // Ensure minimum loading display time (500ms) for better UX
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 500) {
+        await new Promise(resolve => setTimeout(resolve, 500 - elapsed));
+      }
+
       // Auto-navigate to register screen after successful generation
       onNavigate('register');
     } catch (e) {
@@ -233,7 +243,12 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
           />
         </View>
       </View>
-      {loading && <ActivityIndicator style={styles.spinner} size="large" color="#0000ff" />}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0550ae" />
+          <Text style={styles.loadingText}>Generating document...</Text>
+        </View>
+      )}
       {error && <Text style={styles.error}>{error}</Text>}
     </SafeAreaScrollView>
   );
@@ -311,6 +326,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 6,
   },
-  spinner: { marginVertical: 16 },
+  loadingContainer: {
+    marginVertical: 20,
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#0550ae',
+    fontWeight: '500',
+  },
   error: { color: 'red', marginTop: 12, textAlign: 'center', fontSize: 14 },
 });
