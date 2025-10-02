@@ -591,7 +591,7 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Open PR for iOS build number bump
-        if: ${{ !env.ACT && github.event_name != 'pull_request' && success() }}
+        if: ${{ !env.ACT && (github.event_name != 'pull_request' || github.event.pull_request.merged == true) && success() }}
         uses: peter-evans/create-pull-request@v6
         with:
           title: "chore: bump iOS build for ${{ env.VERSION }}"
@@ -959,7 +959,7 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Open PR for Android build number bump
-        if: ${{ !env.ACT && github.event_name != 'pull_request' && success() }}
+        if: ${{ !env.ACT && (github.event_name != 'pull_request' || github.event.pull_request.merged == true) && success() }}
         uses: peter-evans/create-pull-request@v6
         with:
           title: "chore: bump Android build for ${{ env.VERSION }}"
