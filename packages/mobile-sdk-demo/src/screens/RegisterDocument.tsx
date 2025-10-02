@@ -3,7 +3,17 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Button,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+} from 'react-native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { extractNameFromDocument, getAllDocuments, SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -34,7 +44,10 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
   const init = useProvingStore(state => state.init);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
 
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string>(catalog.selectedDocumentId || '');
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string>(
+    catalog.selectedDocumentId ||
+      ([...(catalog.documents || [])].filter(doc => !doc.isRegistered).reverse()[0]?.id ?? ''),
+  );
   const [selectedDocument, setSelectedDocument] = useState<IDDocument | null>(null);
   const [loading, setLoading] = useState(false);
   const [registering, setRegistering] = useState(false);
@@ -67,10 +80,21 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
 
   // Update selected document when catalog changes (e.g., after generating a new mock)
   useEffect(() => {
-    if (catalog.selectedDocumentId && catalog.selectedDocumentId !== selectedDocumentId) {
+    // Initialize from catalog only if no local selection yet
+    if (!selectedDocumentId && catalog.selectedDocumentId) {
       setSelectedDocumentId(catalog.selectedDocumentId);
     }
   }, [catalog.selectedDocumentId, selectedDocumentId]);
+
+  // Auto-select first available unregistered document (newest first) when nothing is selected
+  useEffect(() => {
+    if (!selectedDocumentId) {
+      const nextDocId = [...(catalog.documents || [])].filter(doc => !doc.isRegistered).reverse()[0]?.id;
+      if (nextDocId) {
+        setSelectedDocumentId(nextDocId);
+      }
+    }
+  }, [catalog.documents, selectedDocumentId]);
 
   // Load names for all documents in the catalog
   useEffect(() => {
@@ -176,7 +200,16 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
 
         // Refresh catalog and show success
         setTimeout(async () => {
-          await refreshCatalog();
+          const updatedCatalog = await refreshCatalog();
+          let nextDocId = '';
+          try {
+            if (updatedCatalog && Array.isArray(updatedCatalog.documents)) {
+              const unregistered = [...updatedCatalog.documents].filter(doc => !doc.isRegistered).reverse();
+              nextDocId = unregistered[0]?.id ?? '';
+            }
+          } catch {
+            addLog('Could not determine next available document', 'warn');
+          }
           Alert.alert(
             'Success! 🎉',
             `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
@@ -186,8 +219,8 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
                 onPress: () => {
                   setStatusMessage('');
                   setDetailedLogs([]);
-                  // Reset selected document
-                  setSelectedDocumentId('');
+                  // Select next available document or none
+                  setSelectedDocumentId(nextDocId);
                 },
               },
             ],
@@ -254,9 +287,15 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
 
   // Filter to only unregistered documents and sort newest first
   const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+  const firstAvailableDocId = availableDocuments[0]?.id || '';
+  const selectedIdForPicker = selectedDocumentId || firstAvailableDocId || '';
 
   return (
-    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
+    <SafeAreaScrollView
+      contentContainerStyle={styles.container}
+      backgroundColor="#fafbfc"
+      keyboardShouldPersistTaps="handled"
+    >
       <StandardHeader title="Register Document" onBack={onBack} />
 
       <View style={styles.content}>
@@ -265,13 +304,17 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
             <Text style={styles.label}>Select Document</Text>
             <View style={styles.pickerWrapper}>
               <Picker
-                selectedValue={selectedDocumentId}
+                selectedValue={selectedIdForPicker}
                 onValueChange={(itemValue: string) => setSelectedDocumentId(itemValue)}
                 style={styles.picker}
                 itemStyle={styles.pickerItem}
                 enabled={!registering}
+                mode="dialog"
+                dropdownIconColor="#333"
               >
-                <Picker.Item label="Select a document..." value="" style={styles.pickerItem} />
+                {!firstAvailableDocId && (
+                  <Picker.Item label="Select a document..." value="" style={styles.pickerItem} />
+                )}
                 {availableDocuments.map(doc => {
                   const nameData = documentNames[doc.id];
                   const docType = humanizeDocumentType(doc.documentType);
@@ -385,7 +428,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
-    overflow: 'hidden',
+    overflow: Platform.OS === 'ios' ? 'hidden' : 'visible',
   },
   picker: {
     height: 50,
