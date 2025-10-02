@@ -7378,9 +7378,9 @@ __metadata:
     react-native-keychain: "npm:^10.0.0"
     react-native-localize: "npm:^3.5.2"
     react-native-logs: "npm:^5.3.0"
-    react-native-nfc-manager: "npm:^3.16.3"
-    react-native-passport-reader: "npm:^1.0.3"
-    react-native-safe-area-context: "npm:^5.6.1"
+    react-native-nfc-manager: "npm:3.16.3"
+    react-native-passport-reader: "npm:1.0.3"
+    react-native-safe-area-context: "npm:5.6.1"
     react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:15.12.1"
@@ -26461,26 +26461,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nfc-manager@npm:^3.16.3":
-  version: 3.17.1
-  resolution: "react-native-nfc-manager@npm:3.17.1"
+"react-native-nfc-manager@npm:3.16.3":
+  version: 3.16.3
+  resolution: "react-native-nfc-manager@npm:3.16.3"
   peerDependencies:
-    "@expo/config-plugins": "*"
+    "@expo/config-plugins": 9 || 10
   peerDependenciesMeta:
     "@expo/config-plugins":
       optional: true
-  checksum: 10c0/528cf5248834751e150a5d5a5bb0c6b9b5b74a742f8fcb069c4c200441d47170f09ef0eef0d22362527819709bd844724cd21d033a75d40e040c0d8d3d107889
+  checksum: 10c0/11f86b564cbd9b2cc8d8f54b069d2985b2eb491cf815136583641c8d10fcf19fc3c49b2c467de40a5324ba24daf83aed587b32bb04975e795ede0a76bd718e74
   languageName: node
   linkType: hard
 
-"react-native-passport-reader@npm:^1.0.3":
+"react-native-passport-reader@npm:1.0.3":
   version: 1.0.3
   resolution: "react-native-passport-reader@npm:1.0.3"
   checksum: 10c0/bfb7454d4859d40c10a28faacb279e135faec215b29ee7965592651ed205dd298ae5282aba9c403c729d0c8a78cadab46b7d8825c6782e29248f1cadf0a1e794
   languageName: node
   linkType: hard
 
-"react-native-safe-area-context@npm:^5.6.1":
+"react-native-safe-area-context@npm:5.6.1, react-native-safe-area-context@npm:^5.6.1":
   version: 5.6.1
   resolution: "react-native-safe-area-context@npm:5.6.1"
   peerDependencies:
