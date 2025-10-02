@@ -252,8 +252,15 @@ jobs:
           yarn workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
+        env:
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          GIT_TERMINAL_PROMPT: 0
         run: |
           echo "Installing iOS dependencies..."
+          if [ -n "${SELFXYZ_INTERNAL_REPO_PAT}" ]; then
+            echo "🔑 Using SELFXYZ_INTERNAL_REPO_PAT for private pod access"
+            echo "::add-mask::${SELFXYZ_INTERNAL_REPO_PAT}"
+          fi
           cd packages/mobile-sdk-demo/ios
           pod install
       - name: Setup iOS Simulator
