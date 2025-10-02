@@ -3,14 +3,15 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /* @vitest-environment jsdom */
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { renderHook } from '@testing-library/react';
 import { Platform } from 'react-native';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PassportEvents } from '../../../src/constants/analytics';
 import { useReadMRZ } from '../../../src/flows/onboarding/read-mrz';
 import { SdkEvents } from '../../../src/types/events';
 import { MRZInfo } from '../../../src/types/public';
+
+import { renderHook } from '@testing-library/react';
 
 // React Native is already mocked in setup.ts
 
@@ -96,12 +97,9 @@ describe('useReadMRZ', () => {
     });
 
     // Verify success analytics event was tracked
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(
-      PassportEvents.CAMERA_SCAN_SUCCESS,
-      {
-        duration_seconds: expect.any(Number),
-      }
-    );
+    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(PassportEvents.CAMERA_SCAN_SUCCESS, {
+      duration_seconds: expect.any(Number),
+    });
 
     // Verify success event was emitted
     expect(mockSelfClient.emit).toHaveBeenCalledWith(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS);
@@ -143,12 +141,9 @@ describe('useReadMRZ', () => {
     });
 
     // Verify success analytics event was tracked
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(
-      PassportEvents.CAMERA_SCAN_SUCCESS,
-      {
-        duration_seconds: expect.any(Number),
-      }
-    );
+    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(PassportEvents.CAMERA_SCAN_SUCCESS, {
+      duration_seconds: expect.any(Number),
+    });
 
     // Verify success event was emitted
     expect(mockSelfClient.emit).toHaveBeenCalledWith(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS);
@@ -244,12 +239,9 @@ describe('useReadMRZ', () => {
     onPassportRead(null, mockMRZInfo);
 
     // Verify the duration was calculated and passed to analytics
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(
-      PassportEvents.CAMERA_SCAN_SUCCESS,
-      {
-        duration_seconds: expect.any(Number),
-      }
-    );
+    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(PassportEvents.CAMERA_SCAN_SUCCESS, {
+      duration_seconds: expect.any(Number),
+    });
 
     // The duration should be approximately 2.5 seconds (2500ms / 1000)
     const trackEventCall = mockSelfClient.trackEvent.mock.calls[0];
