@@ -37,7 +37,7 @@ const initialState = {
   Never export outside of the mobile sdk. It can cause multiple instances of the store to be created.
   Use the functions above to interact with the store.
 */
-export const useMRZStore = create<MRZState>((set, get) => ({
+export const useMRZStore = create<MRZState>(set => ({
   ...initialState,
 
   setMRZForNFC: data => {
