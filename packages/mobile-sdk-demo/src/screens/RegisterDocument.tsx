@@ -118,34 +118,28 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
     loadSelectedDocument();
   }, [selectedDocumentId, selfClient]);
 
-  // Monitor completion and show dialog
+  // One-shot completion handler to avoid repeated alerts
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    if (!registering && regState.statusMessage.startsWith('🎉')) {
-      timeoutId = setTimeout(async () => {
-        if (mounted.current && !registering && regState.statusMessage.startsWith('🎉')) {
-          await refreshCatalog();
-          Alert.alert(
-            'Success! 🎉',
-            `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  if (mounted.current) {
-                    setSelectedDocumentId('');
-                  }
-                },
-              },
-            ],
-          );
-        }
-      }, 1000);
-    }
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [registering, regState.statusMessage, selectedDocument, refreshCatalog]);
+    actions.setOnComplete(async () => {
+      if (!mounted.current) return;
+      await refreshCatalog();
+      Alert.alert(
+        'Success! 🎉',
+        `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              if (mounted.current) {
+                setSelectedDocumentId('');
+              }
+            },
+          },
+        ],
+      );
+    });
+    return () => actions.setOnComplete(null);
+  }, [actions, selectedDocument, refreshCatalog]);
 
   const handleRegister = async () => {
     if (!selectedDocument || !selectedDocumentId) return;
