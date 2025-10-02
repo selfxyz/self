@@ -103,6 +103,9 @@ jobs:
       - name: Build dependencies
         run: |
           echo "Building dependencies..."
+          echo "📦 Building @selfxyz/common to refresh shared types..."
+          yarn workspace @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
+          echo "✅ @selfxyz/common build succeeded"
           yarn workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Build Android APK
@@ -243,6 +246,9 @@ jobs:
       - name: Build dependencies
         run: |
           echo "Building dependencies..."
+          echo "📦 Building @selfxyz/common to refresh shared types..."
+          yarn workspace @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
+          echo "✅ @selfxyz/common build succeeded"
           yarn workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
