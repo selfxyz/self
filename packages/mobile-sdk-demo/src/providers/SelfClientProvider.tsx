@@ -35,18 +35,13 @@ const createWsAdapter = () => {
   if (!WebSocketImpl) {
     return {
       connect: () => {
-        throw new Error(
-          'WebSocket is not available in this environment. Provide a WebSocket implementation.',
-        );
+        throw new Error('WebSocket is not available in this environment. Provide a WebSocket implementation.');
       },
     };
   }
 
   return {
-    connect: (
-      url: string,
-      opts?: { signal?: AbortSignal; headers?: Record<string, string> },
-    ): WsConn => {
+    connect: (url: string, opts?: { signal?: AbortSignal; headers?: Record<string, string> }): WsConn => {
       const socket = new WebSocketImpl(url);
 
       if (opts?.signal) {
@@ -59,16 +54,23 @@ const createWsAdapter = () => {
         }
       }
 
-      const attach = <K extends 'message' | 'error' | 'close'>(
-        event: K,
-        handler: (payload?: any) => void,
-      ) => {
+      const attach = (event: 'message' | 'error' | 'close', handler: (payload?: any) => void) => {
         if (typeof socket.addEventListener === 'function') {
-          socket.addEventListener(event, handler as any);
+          if (event === 'message') {
+            (socket.addEventListener as any)('message', handler as any);
+          } else if (event === 'error') {
+            (socket.addEventListener as any)('error', handler as any);
+          } else {
+            (socket.addEventListener as any)('close', handler as any);
+          }
         } else {
-          const prop = `on${event}` as 'onmessage' | 'onerror' | 'onclose';
-          // @ts-expect-error - React Native WebSocket has onmessage/onerror/onclose fields.
-          socket[prop] = handler;
+          if (event === 'message') {
+            (socket as any).onmessage = handler;
+          } else if (event === 'error') {
+            (socket as any).onerror = handler;
+          } else {
+            (socket as any).onclose = handler;
+          }
         }
       };
 
@@ -124,7 +126,9 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
       auth: {
         async getPrivateKey(): Promise<string | null> {
           try {
-            return await getOrCreateSecret();
+            const secret = await getOrCreateSecret();
+            // Ensure the secret is 0x-prefixed for components expecting hex strings
+            return secret.startsWith('0x') ? secret : `0x${secret}`;
           } catch (error) {
             console.error('Failed to get/create secret:', error);
             return null;
