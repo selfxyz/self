@@ -29,19 +29,69 @@ const createFetch = () => {
   return (input: RequestInfo | URL, init?: RequestInit) => fetchImpl(input, init);
 };
 
-const createWsAdapter = () => ({
-  connect: (_url: string): WsConn => {
+const createWsAdapter = () => {
+  const WebSocketImpl = globalThis.WebSocket;
+
+  if (!WebSocketImpl) {
     return {
-      send: () => {
-        throw new Error('WebSocket send is not implemented in the demo environment.');
+      connect: () => {
+        throw new Error(
+          'WebSocket is not available in this environment. Provide a WebSocket implementation.',
+        );
       },
-      close: () => {},
-      onMessage: () => {},
-      onError: () => {},
-      onClose: () => {},
     };
-  },
-});
+  }
+
+  return {
+    connect: (
+      url: string,
+      opts?: { signal?: AbortSignal; headers?: Record<string, string> },
+    ): WsConn => {
+      const socket = new WebSocketImpl(url);
+
+      if (opts?.signal) {
+        const abortHandler = () => {
+          socket.close();
+        };
+
+        if (typeof opts.signal.addEventListener === 'function') {
+          opts.signal.addEventListener('abort', abortHandler, { once: true });
+        }
+      }
+
+      const attach = <K extends 'message' | 'error' | 'close'>(
+        event: K,
+        handler: (payload?: any) => void,
+      ) => {
+        if (typeof socket.addEventListener === 'function') {
+          socket.addEventListener(event, handler as any);
+        } else {
+          const prop = `on${event}` as 'onmessage' | 'onerror' | 'onclose';
+          // @ts-expect-error - React Native WebSocket has onmessage/onerror/onclose fields.
+          socket[prop] = handler;
+        }
+      };
+
+      return {
+        send: (data: string | ArrayBufferView | ArrayBuffer) => socket.send(data),
+        close: () => socket.close(),
+        onMessage: cb => {
+          attach('message', event => {
+            // React Native emits { data }, whereas browsers emit MessageEvent.
+            const payload = (event as { data?: unknown }).data ?? event;
+            cb(payload);
+          });
+        },
+        onError: cb => {
+          attach('error', error => cb(error));
+        },
+        onClose: cb => {
+          attach('close', () => cb());
+        },
+      };
+    },
+  };
+};
 
 const hash = (data: Uint8Array): Uint8Array => sha256(data);
 
