@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
@@ -28,6 +28,13 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
   const currentState = useProvingStore(state => state.currentState);
   // circuitType managed inside useRegistration
   const { state: regState, actions } = useRegistration();
+
+  const mounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const [selectedDocumentId, setSelectedDocumentId] = useState<string>(catalog.selectedDocumentId || '');
   const [selectedDocument, setSelectedDocument] = useState<IDDocument | null>(null);
@@ -82,23 +89,37 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
 
   // Monitor completion and errors for dialogs
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
     if (!registering && regState.statusMessage.startsWith('🎉')) {
-      setTimeout(async () => {
-        await refreshCatalog();
-        Alert.alert(
-          'Success! 🎉',
-          `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                setSelectedDocumentId('');
+      timeoutId = setTimeout(async () => {
+        // Guard against updates after unmount or during a new registration attempt
+        if (mounted.current && !registering && regState.statusMessage.startsWith('🎉')) {
+          await refreshCatalog();
+          Alert.alert(
+            'Success! 🎉',
+            `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  if (mounted.current) {
+                    setSelectedDocumentId('');
+                  }
+                },
               },
-            },
-          ],
-        );
+            ],
+          );
+        }
       }, 1000);
     }
+
+    // Cleanup the timeout if the component unmounts or dependencies change
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [registering, regState.statusMessage, selectedDocument, refreshCatalog]);
 
   const handleRegister = async () => {
