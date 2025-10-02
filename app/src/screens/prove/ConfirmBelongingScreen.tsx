@@ -4,7 +4,6 @@
 
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
@@ -43,7 +42,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
     params: {},
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);
-  const { setUserConfirmed, isReadyToProve } = usePrepareDocumentProof();
   const setFcmToken = useSettingStore(state => state.setFcmToken);
 
   useEffect(() => {
@@ -66,13 +64,9 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
         }
       }
 
-      // Mark as user confirmed - proving will start automatically when ready
-      setUserConfirmed(selfClient);
-
-      // Navigate to loading screen
       navigate();
     } catch (error: unknown) {
-      console.error('Error initializing proving process:', error);
+      console.error('Error navigating:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
       trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
         error: message,
@@ -82,8 +76,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
       });
 
       flushAllAnalytics();
-    } finally {
-      setRequestingPermission(false);
     }
   };
 
@@ -115,16 +107,8 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
           <PrimaryButton
             trackEvent={PassportEvents.OWNERSHIP_CONFIRMED}
             onPress={onOkPress}
-            disabled={!isReadyToProve}
           >
-            {isReadyToProve ? (
-              'Confirm'
-            ) : (
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-                <Description color={black}>Preparing verification</Description>
-              </View>
-            )}
+            Confirm
           </PrimaryButton>
         </ExpandableBottomLayout.BottomSection>
       </ExpandableBottomLayout.Layout>

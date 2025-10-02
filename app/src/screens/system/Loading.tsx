@@ -8,16 +8,15 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import { IDDocument } from '@selfxyz/common/utils/types';
-import {
-  type ProvingStateType,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
+import LoadingUI from '@/components/loading/LoadingUI';
 import CloseWarningIcon from '@/images/icons/close-warning.svg';
 import { loadPassportDataAndSecret } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
@@ -42,6 +41,9 @@ const terminalStates: ProvingStateType[] = [
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const { useProvingStore } = useSelfClient();
+  // Track if we're initializing to show clean state
+  const [isInitializing, setIsInitializing] = useState(false);
+
   // Animation states
   const [animationSource, setAnimationSource] = useState<
     LottieView['props']['source']
@@ -53,21 +55,55 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   // Loading text state
   const [loadingText, setLoadingText] = useState<{
     actionText: string;
+    actionSubText: string;
     estimatedTime: string;
+    statusBarProgress: number;
   }>({
     actionText: '',
+    actionSubText: '',
     estimatedTime: '',
+    statusBarProgress: 0,
   });
 
-  // Get current state from proving machine, default to 'idle' if undefined
+  // Get proving store and self client
+  const selfClient = useSelfClient();
   const currentState = useProvingStore(state => state.currentState) ?? 'idle';
   const fcmToken = useSettingStore(state => state.fcmToken);
+  const init = useProvingStore(state => state.init);
+  const circuitType = useProvingStore(state => state.circuitType);
   const isFocused = useIsFocused();
   const { bottom } = useSafeAreaInsets();
 
   // States where it's safe to close the app
   const safeToCloseStates = ['proving', 'post_proving', 'completed'];
   const canCloseApp = safeToCloseStates.includes(currentState);
+
+  // Initialize proving process
+  useEffect(() => {
+    if (!isFocused) return;
+
+    setIsInitializing(true);
+
+    // Always initialize when screen becomes focused, regardless of current state
+    // This ensures proper reset between proving sessions
+    const initializeProving = async () => {
+      try {
+        const selectedDocument = await loadSelectedDocument(selfClient);
+        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+          await init(selfClient, 'register', true);
+        } else {
+          await init(selfClient, 'dsc', true);
+        }
+      } catch (error) {
+        console.error('Error loading selected document:', error);
+        await init(selfClient, 'dsc', true);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializeProving();
+  }, [isFocused, init, selfClient]);
 
   // Initialize notifications and load passport data
   useEffect(() => {
@@ -107,14 +143,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFocused]); // Only depend on isFocused
 
-  // Handle UI updates and haptic feedback based on state changes
+  // Handle UI updates based on state changes
   useEffect(() => {
-    // Stop haptics if screen is not focused
-    if (!isFocused) {
-      loadingScreenProgress(false);
-      return;
-    }
-
     let { signatureAlgorithm, curveOrExponent } = {
       signatureAlgorithm: 'rsa',
       curveOrExponent: '65537',
@@ -132,15 +162,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
         break; // keep the default values for aadhaar
     }
 
-    const { actionText, estimatedTime } = getLoadingScreenText(
-      currentState as ProvingStateType,
-      signatureAlgorithm,
-      curveOrExponent,
-    );
-    setLoadingText({ actionText, estimatedTime });
+    // Use clean initial state if we're initializing, otherwise use current state
+    const displayState = isInitializing ? 'idle' : currentState;
+    const displayCircuitType = isInitializing ? 'dsc' : circuitType || 'dsc';
 
-    // Update animation based on state
-    switch (currentState) {
+    const { actionText, actionSubText, estimatedTime, statusBarProgress } =
+      getLoadingScreenText(
+        displayState as ProvingStateType,
+        signatureAlgorithm,
+        curveOrExponent,
+        displayCircuitType,
+      );
+    setLoadingText({
+      actionText,
+      actionSubText,
+      estimatedTime,
+      statusBarProgress,
+    });
+
+    // Update animation based on state (use clean state if initializing)
+    const animationState = isInitializing ? 'idle' : currentState;
+    switch (animationState) {
       case 'completed':
         // setAnimationSource(successAnimation);
         break;
@@ -157,21 +199,20 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
         setAnimationSource(proveLoadingAnimation);
         break;
     }
+  }, [currentState, fcmToken, passportData, isInitializing]);
 
-    // Stop haptics if we're in a terminal state
-    if (terminalStates.includes(currentState as ProvingStateType)) {
-      loadingScreenProgress(false);
-      return;
-    }
+  // Handle haptic feedback using useFocusEffect for immediate response
+  useFocusEffect(
+    React.useCallback(() => {
+      // Start haptic feedback as soon as the screen is focused
+      loadingScreenProgress(true);
 
-    // Start haptic feedback for non-terminal states
-    loadingScreenProgress(true);
-
-    // Cleanup on unmount or state change
-    return () => {
-      loadingScreenProgress(false);
-    };
-  }, [currentState, isFocused, fcmToken, passportData]);
+      // Cleanup function to stop haptics when the screen is unfocused
+      return () => {
+        loadingScreenProgress(false);
+      };
+    }, []),
+  );
 
   // Determine if animation should loop based on terminal states
   const shouldLoopAnimation = !terminalStates.includes(
@@ -179,47 +220,15 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   );
 
   return (
-    <YStack
-      backgroundColor={black}
-      gap={20}
-      justifyContent="space-between"
-      flex={1}
-      paddingHorizontal={20}
-      paddingBottom={bottom + extraYPadding}
-    >
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <View style={styles.animationAndTitleGroup}>
-            <LottieView
-              autoPlay
-              loop={shouldLoopAnimation}
-              source={animationSource}
-              style={styles.animation}
-              resizeMode="cover"
-              renderMode="HARDWARE"
-            />
-            <Text style={styles.title}>{loadingText.actionText}</Text>
-          </View>
-          <View style={styles.estimatedTimeSection}>
-            <View style={styles.estimatedTimeBorder} />
-            <View style={styles.estimatedTimeRow}>
-              <Text style={styles.estimatedTimeLabel}>ESTIMATED TIME:</Text>
-              <Text style={styles.estimatedTimeValue}>
-                {loadingText.estimatedTime}
-              </Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.warningSection}>
-          <CloseWarningIcon color={zinc500} height={40} />
-          <Text style={styles.warningText}>
-            {canCloseApp
-              ? 'You can now safely close the app'
-              : 'Closing the app will cancel this process'}
-          </Text>
-        </View>
-      </View>
-    </YStack>
+    <LoadingUI
+      animationSource={animationSource}
+      shouldLoopAnimation={shouldLoopAnimation}
+      actionText={loadingText.actionText}
+      actionSubText={loadingText.actionSubText}
+      estimatedTime={loadingText.estimatedTime}
+      canCloseApp={canCloseApp}
+      statusBarProgress={loadingText.statusBarProgress}
+    />
   );
 };
 

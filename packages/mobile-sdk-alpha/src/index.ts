@@ -67,6 +67,7 @@ export { type ProvingStateType } from './proving/provingMachine';
 
 // Context and Client
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
+
 export { SdkEvents } from './types/events';
 // Components
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
@@ -98,6 +99,8 @@ export { isPassportDataValid } from './validation/document';
 export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
+
+export { provingMachineCircuitType } from './proving/provingMachine';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
