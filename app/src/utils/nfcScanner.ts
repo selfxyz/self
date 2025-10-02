@@ -52,8 +52,6 @@ export const parseScanResponse = (response: unknown) => {
 };
 
 export const scan = async (inputs: Inputs) => {
-  await configureNfcAnalytics();
-
   const baseContext = {
     sessionId: inputs.sessionId,
     userId: inputs.userId,

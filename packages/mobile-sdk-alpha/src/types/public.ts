@@ -8,6 +8,7 @@ import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common'
 
 import type { ProofContext } from '../proving/internal/logging';
 import { ProvingState } from '../proving/provingMachine';
+import { MRZState } from '../stores/mrzStore';
 import { ProtocolState } from '../stores/protocolStore';
 import { SelfAppState } from '../stores/selfAppStore';
 import { SDKEvent, SDKEventMap } from './events';
@@ -183,10 +184,12 @@ export interface SelfClient {
   getProvingState: () => ProvingState;
   getSelfAppState: () => SelfAppState;
   getProtocolState: () => ProtocolState;
+  getMRZState: () => MRZState;
 
   useProvingStore: ReturnType<typeof create<ProvingState, []>>;
   useSelfAppStore: ReturnType<typeof create<SelfAppState, []>>;
   useProtocolStore: ReturnType<typeof create<ProtocolState, []>>;
+  useMRZStore: ReturnType<typeof create<MRZState, []>>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

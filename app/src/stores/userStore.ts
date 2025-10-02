@@ -3,16 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { create } from 'zustand';
-import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 
 import type { IdDocInput } from '@selfxyz/common/utils';
 
 interface UserState {
-  documentType: string;
-  countryCode: string;
-  passportNumber: string;
-  dateOfBirth: string;
-  dateOfExpiry: string;
   deepLinkName?: string;
   deepLinkSurname?: string;
   deepLinkNationality?: IdDocInput['nationality'];
@@ -20,7 +14,6 @@ interface UserState {
   deepLinkGender?: string;
   idDetailsDocumentId?: string;
   update: (patch: Partial<UserState>) => void;
-  deleteMrzFields: () => void;
   setIdDetailsDocumentId: (documentId: string) => void;
   setDeepLinkUserDetails: (details: {
     name?: string;
@@ -33,11 +26,6 @@ interface UserState {
 }
 
 const useUserStore = create<UserState>((set, _get) => ({
-  passportNumber: DEFAULT_PNUMBER ?? '',
-  documentType: '',
-  countryCode: '',
-  dateOfBirth: DEFAULT_DOB ?? '',
-  dateOfExpiry: DEFAULT_DOE ?? '',
   deepLinkName: undefined,
   deepLinkSurname: undefined,
   deepLinkNationality: undefined,
@@ -48,15 +36,6 @@ const useUserStore = create<UserState>((set, _get) => ({
   update: patch => {
     set(state => ({ ...state, ...patch }));
   },
-
-  deleteMrzFields: () =>
-    set({
-      documentType: '',
-      passportNumber: '',
-      countryCode: '',
-      dateOfBirth: '',
-      dateOfExpiry: '',
-    }),
 
   setDeepLinkUserDetails: details =>
     set({

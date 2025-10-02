@@ -8,6 +8,7 @@ import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
 import { ProofContext } from './proving/internal/logging';
 import { useProvingStore } from './proving/provingMachine';
+import { useMRZStore } from './stores/mrzStore';
 import { useProtocolStore } from './stores/protocolStore';
 import { useSelfAppStore } from './stores/selfAppStore';
 import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
@@ -180,10 +181,14 @@ export function createSelfClient({
     getProtocolState: () => {
       return useProtocolStore.getState();
     },
+    getMRZState: () => {
+      return useMRZStore.getState();
+    },
 
     // for reactivity (if needed)
     useProvingStore,
     useSelfAppStore,
     useProtocolStore,
+    useMRZStore,
   };
 }

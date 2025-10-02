@@ -53,8 +53,8 @@ import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import { logNFCEvent } from '@/Sentry';
-import useUserStore from '@/stores/userStore';
 import {
+  configureNfcAnalytics,
   flushAllAnalytics,
   setNfcScanningActive,
   trackNfcEvent,
@@ -92,7 +92,7 @@ type DocumentNFCScanRoute = RouteProp<
 
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
+  const { trackEvent, useMRZStore } = selfClient;
 
   const navigation = useNavigation();
   const route = useRoute<DocumentNFCScanRoute>();
@@ -104,7 +104,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     dateOfExpiry,
     documentType,
     countryCode,
-  } = useUserStore();
+  } = useMRZStore();
 
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
@@ -324,6 +324,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         const { canNumber, useCan, skipPACE, skipCA, extendedMode } =
           route.params ?? {};
 
+        await configureNfcAnalytics();
         const scanResponse = await scan({
           passportNumber,
           dateOfBirth,
