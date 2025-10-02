@@ -97,14 +97,7 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
 
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
-  const {
-    passportNumber,
-    dateOfBirth,
-    dateOfExpiry,
-    documentType,
-    countryCode,
-    setMRZForNFC,
-  } = useMRZStore();
+  const { update, passportNumber, dateOfBirth, dateOfExpiry } = useMRZStore();
 
   const handleSelect = (key: string) => {
     setSelectedMethod(key);
@@ -112,33 +105,15 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
   };
 
   const onPassportNumberChange = (text: string) => {
-    setMRZForNFC({
-      passportNumber: text,
-      dateOfBirth,
-      dateOfExpiry,
-      documentType,
-      countryCode,
-    });
+    update({ passportNumber: text });
   };
 
   const onDateOfBirthChange = (text: string) => {
-    setMRZForNFC({
-      passportNumber,
-      dateOfBirth: text,
-      dateOfExpiry,
-      documentType,
-      countryCode,
-    });
+    update({ dateOfBirth: text });
   };
 
   const onDateOfExpiryChange = (text: string) => {
-    setMRZForNFC({
-      passportNumber,
-      dateOfBirth,
-      dateOfExpiry: text,
-      documentType,
-      countryCode,
-    });
+    update({ dateOfExpiry: text });
   };
 
   const handleProceed = () => {
