@@ -189,6 +189,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       logNFCEvent(level, event, context, details);
     });
 
+    addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('DocumentNFCScan');
+      }
+    });
+
     return map;
   }, []);
 

@@ -108,6 +108,14 @@ export enum SdkEvents {
    * identify any issues that may arise.
    */
   NFC_EVENT = 'NFC_EVENT',
+
+  /**
+   * Emitted when document camera scan is successful and ready for NFC scanning.
+   *
+   * **Required:** Navigate to the DocumentNFCScan screen to continue the verification process.
+   * **Recommended:** This event is triggered after successful MRZ data extraction and validation.
+   */
+  DOCUMENT_MRZ_READ_SUCCESS = 'DOCUMENT_MRZ_READ_SUCCESS',
 }
 
 export interface SDKEventMap {
@@ -152,6 +160,7 @@ export interface SDKEventMap {
     event: string;
     details?: Record<string, unknown>;
   };
+  [SdkEvents.DOCUMENT_MRZ_READ_SUCCESS]: undefined;
 }
 
 export type SDKEvent = keyof SDKEventMap;
