@@ -195,6 +195,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       }
     });
 
+    addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('DocumentCameraTrouble');
+      }
+    });
+
     return map;
   }, []);
 

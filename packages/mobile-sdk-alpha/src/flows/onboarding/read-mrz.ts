@@ -70,7 +70,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
             duration_seconds: parseFloat(scanDurationSeconds),
           });
 
-          // navigation.navigate('DocumentCameraTrouble');
+          selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
           return;
         }
 
