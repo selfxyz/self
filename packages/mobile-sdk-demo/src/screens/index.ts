@@ -53,9 +53,10 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '⭐ Mock Documents',
     status: 'working',
     load: () => require('./RegisterDocument').default,
-    getProps: ({ navigate, documentCatalog }) => ({
+    getProps: ({ navigate, documentCatalog, refreshDocuments }) => ({
       catalog: documentCatalog,
       onBack: () => navigate('home'),
+      onSuccess: refreshDocuments,
     }),
   },
   {
