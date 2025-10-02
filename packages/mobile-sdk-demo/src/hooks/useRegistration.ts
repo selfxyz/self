@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -22,6 +22,7 @@ export function useRegistration() {
   const circuitType = useProvingStore(state => state.circuitType);
   const init = useProvingStore(state => state.init);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
+  const autoConfirmTimer = useRef<NodeJS.Timeout>();
 
   const [registering, setRegistering] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -62,9 +63,12 @@ export function useRegistration() {
       case 'ready_to_prove':
         setStatusMessage('⚡ Ready to generate proof...');
         addLog('TEE connection established, auto-confirming proof generation');
-        setTimeout(() => {
-          setUserConfirmed(selfClient);
-          addLog('User confirmation sent, starting proof generation');
+        autoConfirmTimer.current = setTimeout(() => {
+          // Guard against race conditions: only confirm if we're still in the ready state.
+          if (useProvingStore.getState().currentState === 'ready_to_prove') {
+            setUserConfirmed(selfClient);
+            addLog('User confirmation sent, starting proof generation');
+          }
         }, 500);
         break;
       case 'proving':
@@ -92,7 +96,13 @@ export function useRegistration() {
         setRegistering(false);
         break;
     }
-  }, [currentState, circuitType, registering, selfClient, setUserConfirmed, addLog]);
+
+    return () => {
+      if (autoConfirmTimer.current) {
+        clearTimeout(autoConfirmTimer.current);
+      }
+    };
+  }, [currentState, circuitType, registering, selfClient, setUserConfirmed, addLog, useProvingStore]);
 
   const start = useCallback(
     (documentId: string, document: IDDocument) => {
