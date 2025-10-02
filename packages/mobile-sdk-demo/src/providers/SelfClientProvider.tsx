@@ -44,8 +44,10 @@ const createWsAdapter = () => {
     connect: (url: string, opts?: { signal?: AbortSignal; headers?: Record<string, string> }): WsConn => {
       const socket = new WebSocketImpl(url);
 
+      let abortHandler: (() => void) | null = null;
+
       if (opts?.signal) {
-        const abortHandler = () => {
+        abortHandler = () => {
           socket.close();
         };
 
@@ -55,6 +57,17 @@ const createWsAdapter = () => {
       }
 
       const attach = (event: 'message' | 'error' | 'close', handler: (payload?: any) => void) => {
+        // Clean up abort listener when socket closes
+        if (event === 'close' && abortHandler && opts?.signal) {
+          const originalHandler = handler;
+          handler = (payload?: any) => {
+            if (typeof opts.signal!.removeEventListener === 'function') {
+              opts.signal!.removeEventListener('abort', abortHandler!);
+            }
+            originalHandler(payload);
+          };
+        }
+
         if (typeof socket.addEventListener === 'function') {
           if (event === 'message') {
             (socket.addEventListener as any)('message', handler as any);

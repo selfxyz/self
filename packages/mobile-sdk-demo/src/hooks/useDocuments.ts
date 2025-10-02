@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import type { DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { updateAfterDelete } from '../lib/catalog';
@@ -69,20 +69,32 @@ export function useDocuments() {
   const clearAllDocuments = useCallback(async () => {
     setClearing(true);
     setError(null);
+    let originalCatalog: DocumentCatalog | null = null;
     try {
-      const allDocs = await getAllDocuments(selfClient);
-      const docIds = Object.keys(allDocs);
+      // Read and persist the existing catalog.
+      originalCatalog = await selfClient.loadDocumentCatalog();
+      const docIds = originalCatalog.documents.map(d => d.id);
 
-      for (const docId of docIds) {
-        await selfClient.deleteDocument(docId);
-      }
-
+      // Write an empty catalog to atomically remove references.
       const emptyCatalog = {
         documents: [],
         selectedDocumentId: undefined,
       };
-
       await selfClient.saveDocumentCatalog(emptyCatalog);
+
+      try {
+        // Then perform deletions of document ids from storage.
+        for (const docId of docIds) {
+          await selfClient.deleteDocument(docId);
+        }
+      } catch (deletionError) {
+        // If any deletion fails, restore the previous catalog and re-throw.
+        if (originalCatalog) {
+          await selfClient.saveDocumentCatalog(originalCatalog);
+        }
+        throw deletionError; // Re-throw to be caught by the outer catch block.
+      }
+
       await refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

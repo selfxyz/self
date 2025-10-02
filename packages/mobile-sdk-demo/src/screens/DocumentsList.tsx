@@ -33,20 +33,33 @@ export default function DocumentsList({ onBack, catalog }: Props) {
 
   // Load names for all documents
   useEffect(() => {
+    let cancelled = false;
+
     const loadDocumentNames = async () => {
       const names: Record<string, { firstName: string; lastName: string }> = {};
-      for (const doc of documents) {
-        const name = await extractNameFromDocument(selfClient, doc.metadata.id);
-        if (name) {
-          names[doc.metadata.id] = name;
-        }
+      await Promise.all(
+        documents.map(async doc => {
+          const name = await extractNameFromDocument(selfClient, doc.metadata.id);
+          if (name) {
+            names[doc.metadata.id] = name;
+          }
+        }),
+      );
+      if (!cancelled) {
+        setDocumentNames(names);
       }
-      setDocumentNames(names);
     };
 
-    if (documents.length > 0) {
-      loadDocumentNames();
+    if (documents.length === 0) {
+      setDocumentNames({});
+      return;
     }
+
+    loadDocumentNames();
+
+    return () => {
+      cancelled = true;
+    };
   }, [documents, selfClient]);
 
   const handleClearAll = () => {

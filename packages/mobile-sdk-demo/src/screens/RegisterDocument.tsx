@@ -80,20 +80,29 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
 
   // Load names for all documents in the catalog
   useEffect(() => {
+    let cancelled = false;
+
     const loadDocumentNames = async () => {
       const names: Record<string, { firstName: string; lastName: string }> = {};
-      for (const doc of catalog.documents || []) {
-        if (!doc.isRegistered) {
+      await Promise.all(
+        (catalog.documents || []).map(async doc => {
+          if (doc.isRegistered) return;
           const name = await extractNameFromDocument(selfClient, doc.id);
           if (name) {
             names[doc.id] = name;
           }
-        }
+        }),
+      );
+      if (!cancelled) {
+        setDocumentNames(names);
       }
-      setDocumentNames(names);
     };
 
     loadDocumentNames();
+
+    return () => {
+      cancelled = true;
+    };
   }, [catalog.documents, selfClient]);
 
   useEffect(() => {
