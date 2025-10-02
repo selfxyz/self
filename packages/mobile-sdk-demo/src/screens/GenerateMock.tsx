@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
-import { ActivityIndicator, Button, Platform, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Button, Platform, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { faker } from '@faker-js/faker';
 import { calculateContentHash, inferDocumentCategory, isMRZDocument } from '@selfxyz/common';
@@ -116,8 +116,12 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
         await new Promise(resolve => setTimeout(resolve, 500 - elapsed));
       }
 
-      // Auto-navigate to register screen after successful generation
-      onNavigate('register');
+      // Auto-navigate to register screen only if it's the first document
+      if (catalog.documents.length === 1) {
+        onNavigate('register');
+      } else {
+        Alert.alert('Success', 'Mock document generated successfully.');
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

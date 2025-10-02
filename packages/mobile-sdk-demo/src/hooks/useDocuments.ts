@@ -79,7 +79,7 @@ export function useDocuments() {
 
       const emptyCatalog = {
         documents: [],
-        selectedDocumentId: null,
+        selectedDocumentId: undefined,
       };
 
       await selfClient.saveDocumentCatalog(emptyCatalog);
