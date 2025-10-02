@@ -23,7 +23,7 @@ type Props = {
 
 export default function DocumentsList({ onBack, catalog }: Props) {
   const selfClient = useSelfClient();
-  const { documents, loading, error, deleting, deleteDocument, refresh } = useDocuments();
+  const { documents, loading, error, deleting, deleteDocument, refresh, clearing, clearAllDocuments } = useDocuments();
   const [documentNames, setDocumentNames] = useState<Record<string, { firstName: string; lastName: string }>>({});
 
   // Refresh when catalog selection changes (e.g., after generation or external updates)
@@ -48,6 +48,23 @@ export default function DocumentsList({ onBack, catalog }: Props) {
       loadDocumentNames();
     }
   }, [documents, selfClient]);
+
+  const handleClearAll = () => {
+    Alert.alert('Clear All Documents', 'Are you sure you want to delete all documents? This action cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear All',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await clearAllDocuments();
+          } catch (err) {
+            Alert.alert('Error', `Failed to clear documents: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        },
+      },
+    ]);
+  };
 
   const handleDelete = async (documentId: string, documentType: string) => {
     Alert.alert('Delete Document', `Are you sure you want to delete this ${humanizeDocumentType(documentType)}?`, [
@@ -140,8 +157,22 @@ export default function DocumentsList({ onBack, catalog }: Props) {
     });
   }, [documents, error, loading, deleting, documentNames]);
 
+  const clearButton = (
+    <TouchableOpacity
+      style={[styles.clearButton, (clearing || documents.length === 0) && styles.disabledButton]}
+      onPress={handleClearAll}
+      disabled={clearing || documents.length === 0}
+    >
+      {clearing ? (
+        <ActivityIndicator size="small" color="#dc3545" />
+      ) : (
+        <Text style={styles.clearButtonText}>Clear All</Text>
+      )}
+    </TouchableOpacity>
+  );
+
   return (
-    <ScreenLayout title="My Documents" onBack={onBack}>
+    <ScreenLayout title="My Documents" onBack={onBack} rightAction={clearButton}>
       {content}
     </ScreenLayout>
   );
@@ -153,6 +184,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafbfc',
     paddingHorizontal: 24,
     paddingVertical: 20,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+  },
+  clearButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#ffeef0',
+    borderWidth: 1,
+    borderColor: '#dc3545',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 30,
+    minWidth: 80,
+    alignSelf: 'flex-end',
+  },
+  clearButtonText: {
+    color: '#dc3545',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  disabledButton: {
+    backgroundColor: '#f8f9fa',
+    borderColor: '#e1e5e9',
   },
   content: {
     flex: 1,

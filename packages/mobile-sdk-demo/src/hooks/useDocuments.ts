@@ -20,6 +20,7 @@ export function useDocuments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -65,5 +66,30 @@ export function useDocuments() {
     [selfClient, refresh],
   );
 
-  return { documents, loading, error, deleting, refresh, deleteDocument } as const;
+  const clearAllDocuments = useCallback(async () => {
+    setClearing(true);
+    setError(null);
+    try {
+      const allDocs = await getAllDocuments(selfClient);
+      const docIds = Object.keys(allDocs);
+
+      for (const docId of docIds) {
+        await selfClient.deleteDocument(docId);
+      }
+
+      const emptyCatalog = {
+        documents: [],
+        selectedDocumentId: null,
+      };
+
+      await selfClient.saveDocumentCatalog(emptyCatalog);
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setClearing(false);
+    }
+  }, [selfClient, refresh]);
+
+  return { documents, loading, error, deleting, clearing, refresh, deleteDocument, clearAllDocuments } as const;
 }

@@ -13,12 +13,13 @@ type Props = {
   onBack: () => void;
   children: React.ReactNode;
   contentStyle?: ViewStyle;
+  rightAction?: React.ReactNode;
 };
 
-export default function ScreenLayout({ title, onBack, children, contentStyle }: Props) {
+export default function ScreenLayout({ title, onBack, children, contentStyle, rightAction }: Props) {
   return (
     <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title={title} onBack={onBack} />
+      <StandardHeader title={title} onBack={onBack} rightAction={rightAction} />
       <View style={[styles.content, contentStyle]}>{children}</View>
     </SafeAreaScrollView>
   );
