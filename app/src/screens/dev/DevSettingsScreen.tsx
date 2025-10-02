@@ -125,6 +125,7 @@ function ParameterSection({
 const items = [
   'DevSettings',
   'CountryPicker',
+  'DevLoadingScreen',
   'AadhaarUpload',
   'DevFeatureFlags',
   'DevHapticFeedback',

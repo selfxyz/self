@@ -114,7 +114,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         if (navigationRef.isReady()) {
           navigationRef.navigate('AccountVerifiedSuccess');
         }
-      }, 3000);
+      }, 1000);
     });
 
     addListener(

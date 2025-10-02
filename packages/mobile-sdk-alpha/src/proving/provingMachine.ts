@@ -13,7 +13,12 @@ import { create } from 'zustand';
 
 import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
 import type { EndpointType, SelfApp } from '@selfxyz/common/utils';
-import { getCircuitNameFromPassportData, getSolidityPackedUserContextData } from '@selfxyz/common/utils';
+import {
+  getCircuitNameFromPassportData,
+  getSKIPEM,
+  getSolidityPackedUserContextData,
+  initPassportDataParsing,
+} from '@selfxyz/common/utils';
 import { checkPCR0Mapping, validatePKIToken } from '@selfxyz/common/utils/attest';
 import {
   generateTEEInputsDiscloseStateless,
@@ -44,6 +49,7 @@ import {
   loadSelectedDocument,
   markCurrentDocumentAsRegistered,
   reStorePassportDataWithRightCSCA,
+  storePassportData,
 } from '../documents/utils';
 import { fetchAllTreesAndCircuits, getCommitmentTree } from '../stores';
 import { SdkEvents } from '../types/events';
@@ -220,6 +226,7 @@ export interface ProvingState {
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
   ) => Promise<void>;
+  parseIDDocument: (selfClient: SelfClient) => Promise<void>;
   startFetchingData: (selfClient: SelfClient) => Promise<void>;
   validatingDocument: (selfClient: SelfClient) => Promise<void>;
   initTeeConnection: (selfClient: SelfClient) => Promise<boolean>;
@@ -257,9 +264,16 @@ const provingMachine = createMachine({
   states: {
     idle: {
       on: {
+        PARSE_ID_DOCUMENT: 'parsing_id_document',
         FETCH_DATA: 'fetching_data',
         ERROR: 'error',
         PASSPORT_DATA_NOT_FOUND: 'passport_data_not_found',
+      },
+    },
+    parsing_id_document: {
+      on: {
+        PARSE_SUCCESS: 'fetching_data',
+        PARSE_ERROR: 'error',
       },
     },
     fetching_data: {
@@ -329,6 +343,7 @@ export type ProvingStateType =
   | 'idle'
   | undefined
   // Data preparation states
+  | 'parsing_id_document'
   | 'fetching_data'
   | 'validating_document'
   // Connection states
@@ -393,6 +408,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
       set({ currentState: state.value as ProvingStateType });
 
+      if (state.value === 'parsing_id_document') {
+        get().parseIDDocument(selfClient);
+      }
       if (state.value === 'fetching_data') {
         get().startFetchingData(selfClient);
       }
@@ -860,6 +878,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         selfClient.trackEvent(PassportEvents.PASSPORT_DATA_NOT_FOUND, {
           stage: 'init',
         });
+        console.error('No document found for proving in init');
         actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
         return;
       }
@@ -879,8 +898,103 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       set({ passportData, secret, env });
       set({ circuitType });
-      actor.send({ type: 'FETCH_DATA' });
-      selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
+      if (passportData.documentCategory === 'aadhaar') {
+        actor.send({ type: 'FETCH_DATA' });
+        selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
+      } else {
+        // Skip parsing for disclosure if passport is already parsed
+        // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
+        const isParsed = passportData.passportMetadata !== undefined;
+        if (circuitType === 'disclose' && isParsed) {
+          actor.send({ type: 'FETCH_DATA' });
+          selfClient.trackEvent(ProofEvents.FETCH_DATA_STARTED);
+        } else {
+          actor.send({ type: 'PARSE_ID_DOCUMENT' });
+          selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
+        }
+      }
+    },
+
+    parseIDDocument: async (selfClient: SelfClient) => {
+      _checkActorInitialized(actor);
+      const startTime = Date.now();
+      const context = createProofContext(selfClient, 'parseIDDocument');
+      selfClient.logProofEvent('info', 'Parsing ID document started', context);
+
+      try {
+        const { passportData, env } = get();
+        if (!passportData) {
+          throw new Error('PassportData is not available');
+        }
+
+        selfClient.logProofEvent('info', 'ID document parsing process started', context);
+
+        // Parse ID document logic (copied from parseIDDocument.ts but without try-catch wrapper)
+        const skiPem = await getSKIPEM(env === 'stg' ? 'staging' : 'production');
+        const parsedPassportData = initPassportDataParsing(passportData as PassportData, skiPem);
+        if (!parsedPassportData) {
+          throw new Error('Failed to parse passport data');
+        }
+
+        const passportMetadata = parsedPassportData.passportMetadata!;
+        let dscObject;
+        try {
+          dscObject = { dsc: passportMetadata.dsc };
+        } catch (error) {
+          console.error('Failed to parse dsc:', error);
+          dscObject = {};
+        }
+
+        selfClient.trackEvent(PassportEvents.PASSPORT_PARSED, {
+          success: true,
+          data_groups: passportMetadata.dataGroups,
+          dg1_size: passportMetadata.dg1Size,
+          dg1_hash_size: passportMetadata.dg1HashSize,
+          dg1_hash_function: passportMetadata.dg1HashFunction,
+          dg1_hash_offset: passportMetadata.dg1HashOffset,
+          dg_padding_bytes: passportMetadata.dgPaddingBytes,
+          e_content_size: passportMetadata.eContentSize,
+          e_content_hash_function: passportMetadata.eContentHashFunction,
+          e_content_hash_offset: passportMetadata.eContentHashOffset,
+          signed_attr_size: passportMetadata.signedAttrSize,
+          signed_attr_hash_function: passportMetadata.signedAttrHashFunction,
+          signature_algorithm: passportMetadata.signatureAlgorithm,
+          salt_length: passportMetadata.saltLength,
+          curve_or_exponent: passportMetadata.curveOrExponent,
+          signature_algorithm_bits: passportMetadata.signatureAlgorithmBits,
+          country_code: passportMetadata.countryCode,
+          csca_found: passportMetadata.cscaFound,
+          csca_hash_function: passportMetadata.cscaHashFunction,
+          csca_signature_algorithm: passportMetadata.cscaSignatureAlgorithm,
+          csca_salt_length: passportMetadata.cscaSaltLength,
+          csca_curve_or_exponent: passportMetadata.cscaCurveOrExponent,
+          csca_signature_algorithm_bits: passportMetadata.cscaSignatureAlgorithmBits,
+          dsc: dscObject,
+          dsc_aki: (passportData as PassportData).dsc_parsed?.authorityKeyIdentifier,
+          dsc_ski: (passportData as PassportData).dsc_parsed?.subjectKeyIdentifier,
+        });
+        console.log('passport data parsed successfully, storing in keychain');
+        await storePassportData(selfClient, parsedPassportData);
+        console.log('passport data stored in keychain');
+
+        set({ passportData: parsedPassportData });
+        selfClient.logProofEvent('info', 'ID document parsing succeeded', context, {
+          duration_ms: Date.now() - startTime,
+        });
+        actor!.send({ type: 'PARSE_SUCCESS' });
+      } catch (error) {
+        selfClient.logProofEvent('error', 'ID document parsing failed', context, {
+          failure: 'PROOF_FAILED_PARSING',
+          error: error instanceof Error ? error.message : String(error),
+          duration_ms: Date.now() - startTime,
+        });
+        console.error('Error parsing ID document:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        selfClient.trackEvent(PassportEvents.PASSPORT_PARSE_FAILED, {
+          error: errMsg,
+        });
+        actor!.send({ type: 'PARSE_ERROR' });
+      }
     },
 
     startFetchingData: async (selfClient: SelfClient) => {
@@ -1036,6 +1150,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                 console.error('Error marking document as registered:', error);
               }
             })();
+            set({ circuitType: 'register' }); // Update circuit type to 'register' to reflect full registration completion
 
             selfClient.trackEvent(ProofEvents.ALREADY_REGISTERED);
             selfClient.logProofEvent('info', 'Document already registered', context, {

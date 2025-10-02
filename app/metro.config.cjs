@@ -4,6 +4,7 @@
 
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('node:path');
+const fs = require('node:fs');
 const findYarnWorkspaceRoot = require('find-yarn-workspace-root');
 
 const defaultConfig = getDefaultConfig(__dirname);
@@ -112,6 +113,35 @@ const config = {
         'react-native-gesture-handler':
           'react-native-gesture-handler/lib/commonjs/index.js',
       };
+      const sdkAlphaPath = path.resolve(
+        workspaceRoot,
+        'packages/mobile-sdk-alpha',
+      );
+
+      // Custom resolver to handle Node.js modules and dynamic flow imports
+      if (moduleName.startsWith('@selfxyz/mobile-sdk-alpha/')) {
+        const subPath = moduleName.replace('@selfxyz/mobile-sdk-alpha/', '');
+
+        // Check if it's a flow import (onboarding/* or disclosing/*)
+        if (
+          subPath.startsWith('onboarding/') ||
+          subPath.startsWith('disclosing/')
+        ) {
+          const flowPath = path.resolve(
+            sdkAlphaPath,
+            'dist/esm/flows',
+            `${subPath}.js`,
+          );
+
+          // Check if the file exists
+          if (fs.existsSync(flowPath)) {
+            return {
+              type: 'sourceFile',
+              filePath: flowPath,
+            };
+          }
+        }
+      }
 
       if (appLevelModules[moduleName]) {
         try {

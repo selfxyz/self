@@ -152,6 +152,7 @@ export const ProofEvents = {
   FETCH_DATA_STARTED: 'Proof: Fetch Data Started',
   FETCH_DATA_SUCCESS: 'Proof: Fetch Data Succeeded',
   LOAD_SECRET_FAILED: 'Proof: Load Secret Failed',
+  PARSE_ID_DOCUMENT_STARTED: 'Proof: Parse ID Document Started',
   NOTIFICATION_PERMISSION_REQUESTED: 'Proof: Notification Permission Requested',
   PASSPORT_NULLIFIER_ONCHAIN: 'Proof: Passport Nullifier Onchain',
   PAYLOAD_ENCRYPTED: 'Proof: Payload Encrypted',

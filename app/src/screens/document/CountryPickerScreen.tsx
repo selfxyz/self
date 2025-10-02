@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import countries from 'i18n-iso-countries';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import { Spinner, XStack, YStack } from 'tamagui';
@@ -15,9 +16,10 @@ import { RoundFlag } from '@/components/flag/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
 import { BodyText } from '@/components/typography/BodyText';
 import type { RootStackParamList } from '@/navigation';
-import { black, slate100, slate500 } from '@/utils/colors';
-import { advercase } from '@/utils/fonts';
+import { black, slate100, slate300, slate500 } from '@/utils/colors';
+import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
+import { getCountry } from '@/utils/locale';
 
 interface CountryData {
   [countryCode: string]: string[];
@@ -61,6 +63,7 @@ CountryItem.displayName = 'CountryItem';
 const CountryPickerScreen: React.FC = () => {
   const [countryData, setCountryData] = useState<CountryData>({});
   const [loading, setLoading] = useState(true);
+  const [userCountryCode, setUserCountryCode] = useState<string | null>(null);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
@@ -89,9 +92,12 @@ const CountryPickerScreen: React.FC = () => {
           documentTypes: documentTypes,
         });
 
-        navigation.navigate('IDPicker', { countryCode, documentTypes });
+        navigation.navigate('IDPicker', {
+          countryCode,
+          documentTypes,
+        } as never);
       } else {
-        navigation.navigate('ComingSoon', { countryCode });
+        navigation.navigate('ComingSoon', { countryCode } as never);
       }
     },
     [countryData, navigation, selfClient],
@@ -121,14 +127,41 @@ const CountryPickerScreen: React.FC = () => {
     fetchCountryData();
   }, []);
 
-  const countryList = useMemo(
-    () =>
-      Object.keys(countryData).map(countryCode => ({
-        key: countryCode,
-        countryCode,
-      })),
-    [countryData],
-  );
+  useEffect(() => {
+    try {
+      const countryCode2Letter = getCountry(); // Returns 2-letter code like "US"
+      if (countryCode2Letter) {
+        const countryCode3Letter = countries.alpha2ToAlpha3(countryCode2Letter);
+        if (
+          countryCode3Letter &&
+          commonNames[countryCode3Letter as keyof typeof commonNames]
+        ) {
+          setUserCountryCode(countryCode3Letter);
+          if (__DEV__) {
+            console.log('Detected user country:', countryCode3Letter);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error detecting user country:', error);
+    }
+  }, []);
+
+  const countryList = useMemo(() => {
+    const allCountries = Object.keys(countryData).map(countryCode => ({
+      key: countryCode,
+      countryCode,
+    }));
+
+    // Exclude user country from main list since it's shown separately
+    if (userCountryCode && countryData[userCountryCode]) {
+      return allCountries.filter(c => c.countryCode !== userCountryCode);
+    }
+
+    return allCountries;
+  }, [countryData, userCountryCode]);
+
+  const showSuggestion = userCountryCode && countryData[userCountryCode];
 
   const renderItem = useCallback(
     ({ item }: { item: CountryListItem }) => (
@@ -149,10 +182,7 @@ const CountryPickerScreen: React.FC = () => {
   );
 
   const getItemLayout = useCallback(
-    (
-      _data: ReadonlyArray<CountryListItem> | null | undefined,
-      index: number,
-    ) => ({
+    (_data: ArrayLike<CountryListItem> | null | undefined, index: number) => ({
       length: ITEM_HEIGHT,
       offset: ITEM_HEIGHT * index,
       index,
@@ -176,18 +206,46 @@ const CountryPickerScreen: React.FC = () => {
         {loading ? (
           renderLoadingState()
         ) : (
-          <FlatList
-            data={countryList}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            showsVerticalScrollIndicator={false}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={10}
-            windowSize={10}
-            initialNumToRender={10}
-            updateCellsBatchingPeriod={50}
-            getItemLayout={getItemLayout}
-          />
+          <YStack flex={1}>
+            {showSuggestion && (
+              <YStack marginBottom="$2">
+                <BodyText
+                  fontSize={16}
+                  color={black}
+                  fontFamily={dinot}
+                  letterSpacing={0.8}
+                  marginBottom="$1"
+                >
+                  SUGGESTION
+                </BodyText>
+                <CountryItem
+                  countryCode={userCountryCode}
+                  onSelect={onPressCountry}
+                />
+                <BodyText
+                  fontSize={16}
+                  color={black}
+                  fontFamily={dinot}
+                  letterSpacing={0.8}
+                  marginTop="$4"
+                >
+                  SELECT AN ISSUING COUNTRY
+                </BodyText>
+              </YStack>
+            )}
+            <FlatList
+              data={countryList}
+              renderItem={renderItem}
+              keyExtractor={keyExtractor}
+              showsVerticalScrollIndicator={false}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={10}
+              windowSize={10}
+              initialNumToRender={10}
+              updateCellsBatchingPeriod={50}
+              getItemLayout={getItemLayout}
+            />
+          </YStack>
         )}
       </YStack>
     </YStack>

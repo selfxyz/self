@@ -1520,7 +1520,7 @@ PODS:
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-nfc-manager (3.17.1):
+  - react-native-nfc-manager (3.16.3):
     - React-Core
   - react-native-safe-area-context (5.6.1):
     - DoubleConversion
@@ -2520,7 +2520,7 @@ SPEC CHECKSUMS:
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-nfc-manager: e5e91b4e9af0551755cdb6eaec55a8ff820ccdc6
+  react-native-nfc-manager: 66a00e5ddab9704efebe19d605b1b8afb0bb1bd7
   react-native-safe-area-context: 90a89cb349c7f8168a707e6452288c2f665b9fd1
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   React-nativeconfig: 415626a63057638759bcc75e0a96e2e07771a479
