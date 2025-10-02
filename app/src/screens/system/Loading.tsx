@@ -10,7 +10,7 @@ import { Text, YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 
-import { IDDocument } from '@selfxyz/common/utils/types';
+import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import {
   type ProvingStateType,
   useSelfClient,
@@ -19,7 +19,6 @@ import {
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
 import CloseWarningIcon from '@/images/icons/close-warning.svg';
-import { loadPassportDataAndSecret } from '@/providers/passportDataProvider';
 import { black, slate400, white, zinc500, zinc900 } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { advercase, dinot } from '@/utils/fonts';
@@ -27,7 +26,13 @@ import { loadingScreenProgress } from '@/utils/haptic';
 import { setupNotifications } from '@/utils/notifications/notificationService';
 import { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
 
-type LoadingScreenProps = StaticScreenProps<Record<string, never>>;
+type LoadingScreenParams = {
+  documentCategory?: DocumentCategory;
+  signatureAlgorithm?: string;
+  curveOrExponent?: string;
+};
+
+type LoadingScreenProps = StaticScreenProps<LoadingScreenParams>;
 
 // Define all terminal states that should stop animations and haptics
 const terminalStates: ProvingStateType[] = [
@@ -39,15 +44,12 @@ const terminalStates: ProvingStateType[] = [
   'passport_data_not_found',
 ];
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const { useProvingStore } = useSelfClient();
   // Animation states
   const [animationSource, setAnimationSource] = useState<
     LottieView['props']['source']
   >(proveLoadingAnimation);
-
-  // Passport data state
-  const [passportData, setPassportData] = useState<IDDocument | null>(null);
 
   // Loading text state
   const [loadingText, setLoadingText] = useState<{
@@ -57,6 +59,13 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     actionText: '',
     estimatedTime: '',
   });
+
+  // Get document metadata from navigation params
+  const {
+    documentCategory,
+    signatureAlgorithm: paramSignatureAlgorithm,
+    curveOrExponent: paramCurveOrExponent,
+  } = route?.params || {};
 
   // Get current state from proving machine, default to 'idle' if undefined
   const currentState = useProvingStore(state => state.currentState) ?? 'idle';
@@ -68,43 +77,19 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const safeToCloseStates = ['proving', 'post_proving', 'completed'];
   const canCloseApp = safeToCloseStates.includes(currentState);
 
-  // Initialize notifications and load passport data
+  // Initialize notifications
   useEffect(() => {
-    let isMounted = true;
+    if (!isFocused) return;
 
-    const initialize = async () => {
-      if (!isFocused) return;
-
-      // Setup notifications
-      const unsubscribe = setupNotifications();
-
-      // Load passport data if not already loaded
-      if (!passportData) {
-        try {
-          const result = await loadPassportDataAndSecret();
-          if (result && isMounted) {
-            const { passportData: _passportData } = JSON.parse(result);
-            setPassportData(_passportData);
-          }
-        } catch (error: unknown) {
-          console.error('Error loading passport data:', error);
-        }
-      }
-
-      return () => {
-        if (typeof unsubscribe === 'function') {
-          unsubscribe();
-        }
-      };
-    };
-
-    initialize();
+    // Setup notifications
+    const unsubscribe = setupNotifications();
 
     return () => {
-      isMounted = false;
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFocused]); // Only depend on isFocused
+  }, [isFocused]);
 
   // Handle UI updates and haptic feedback based on state changes
   useEffect(() => {
@@ -114,21 +99,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       return;
     }
 
-    let { signatureAlgorithm, curveOrExponent } = {
-      signatureAlgorithm: 'rsa',
-      curveOrExponent: '65537',
-    };
-    switch (passportData?.documentCategory) {
-      case 'passport':
-      case 'id_card':
-        if (passportData?.passportMetadata) {
-          signatureAlgorithm =
-            passportData?.passportMetadata?.cscaSignatureAlgorithm;
-          curveOrExponent = passportData?.passportMetadata?.cscaCurveOrExponent;
-        }
-        break;
-      case 'aadhaar':
-        break; // keep the default values for aadhaar
+    // Use params from navigation or fallback to defaults
+    let signatureAlgorithm = 'rsa';
+    let curveOrExponent = '65537';
+
+    // Use provided params if available (only relevant for passport/id_card)
+    if (paramSignatureAlgorithm && paramCurveOrExponent) {
+      signatureAlgorithm = paramSignatureAlgorithm;
+      curveOrExponent = paramCurveOrExponent;
     }
 
     const { actionText, estimatedTime } = getLoadingScreenText(
@@ -170,7 +148,13 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     return () => {
       loadingScreenProgress(false);
     };
-  }, [currentState, isFocused, fcmToken, passportData]);
+  }, [
+    currentState,
+    isFocused,
+    fcmToken,
+    paramSignatureAlgorithm,
+    paramCurveOrExponent,
+  ]);
 
   // Determine if animation should loop based on terminal states
   const shouldLoopAnimation = !terminalStates.includes(

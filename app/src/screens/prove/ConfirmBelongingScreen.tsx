@@ -34,8 +34,17 @@ type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const selfClient = useSelfClient();
   const { useProvingStore, trackEvent } = selfClient;
+  const [documentMetadata, setDocumentMetadata] = useState<{
+    documentCategory?: string;
+    signatureAlgorithm?: string;
+    curveOrExponent?: string;
+  }>({});
   const navigate = useHapticNavigation('Loading', {
-    params: {},
+    params: {
+      documentCategory: documentMetadata.documentCategory as any,
+      signatureAlgorithm: documentMetadata.signatureAlgorithm,
+      curveOrExponent: documentMetadata.curveOrExponent,
+    },
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);
   const currentState = useProvingStore(state => state.currentState);
@@ -51,12 +60,32 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
         const selectedDocument = await loadSelectedDocument(selfClient);
         if (selectedDocument?.data?.documentCategory === 'aadhaar') {
           init(selfClient, 'register');
+          setDocumentMetadata({
+            documentCategory: 'aadhaar',
+            signatureAlgorithm: 'rsa',
+            curveOrExponent: '65537',
+          });
         } else {
           init(selfClient, 'dsc');
+
+          const passportData = selectedDocument?.data;
+          setDocumentMetadata({
+            documentCategory: passportData?.documentCategory,
+            signatureAlgorithm:
+              passportData?.passportMetadata?.cscaSignatureAlgorithm,
+            curveOrExponent:
+              passportData?.passportMetadata?.cscaCurveOrExponent,
+          });
         }
       } catch (error) {
         console.error('Error loading selected document:', error);
         init(selfClient, 'dsc');
+        // setting defaults on error
+        setDocumentMetadata({
+          documentCategory: 'passport',
+          signatureAlgorithm: 'rsa',
+          curveOrExponent: '65537',
+        });
       }
     };
 
