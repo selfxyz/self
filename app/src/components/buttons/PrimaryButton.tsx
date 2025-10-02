@@ -6,15 +6,15 @@ import React from 'react';
 
 import type { ButtonProps } from '@/components/buttons/AbstractButton';
 import AbstractButton from '@/components/buttons/AbstractButton';
-import { amber50, black, slate300, white } from '@/utils/colors';
+import { amber50, black, slate100, slate300, slate400, slate600, white } from '@/utils/colors';
 import { normalizeBorderWidth } from '@/utils/styleUtils';
 
 export function PrimaryButton({ children, ...props }: ButtonProps) {
   const { borderWidth, ...restProps } = props;
   const isDisabled = restProps.disabled;
-  const bgColor = isDisabled ? white : black;
-  const color = isDisabled ? slate300 : amber50;
-  const borderColor = isDisabled ? slate300 : undefined;
+  const bgColor = isDisabled ? slate100 : black;
+  const color = isDisabled ? slate600 : amber50;
+  const borderColor = isDisabled ? slate400 : undefined;
 
   const numericBorderWidth = normalizeBorderWidth(borderWidth);
 
