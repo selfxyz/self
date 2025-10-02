@@ -20,6 +20,8 @@ interface PersistedSettingsState {
   isDevMode: boolean;
   setDevModeOn: () => void;
   setDevModeOff: () => void;
+  hasCompletedKeychainMigration: boolean;
+  setKeychainMigrationCompleted: () => void;
 }
 
 interface NonPersistedSettingsState {
@@ -68,6 +70,10 @@ export const useSettingStore = create<SettingsState>()(
       isDevMode: false,
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
+
+      hasCompletedKeychainMigration: false,
+      setKeychainMigrationCompleted: () =>
+        set({ hasCompletedKeychainMigration: true }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,
