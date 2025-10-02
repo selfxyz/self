@@ -271,6 +271,11 @@ export async function hasSecretStored() {
   return true;
 }
 
+export async function migrateToSecureKeychain(): Promise<boolean> {
+  console.warn('migrateToSecureKeychain is not implemented for web');
+  return false;
+}
+
 export async function unsafe_clearSecrets() {
   if (__DEV__) {
     console.warn('unsafe_clearSecrets is not implemented for web');
