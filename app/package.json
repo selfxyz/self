@@ -56,6 +56,7 @@
     "tag:release": "node scripts/tag.cjs release",
     "tag:remove": "node scripts/tag.cjs remove",
     "test": "yarn build:deps && jest --passWithNoTests && node --test scripts/tests/*.cjs",
+    "test:ci": "jest --passWithNoTests && node --test scripts/tests/*.cjs",
     "test:build": "yarn build:deps && yarn types && node ./scripts/bundle-analyze-ci.cjs ios && yarn test",
     "test:coverage": "jest --coverage --passWithNoTests",
     "test:coverage:ci": "jest --coverage --passWithNoTests --ci --coverageReporters=lcov --coverageReporters=text --coverageReporters=json",
