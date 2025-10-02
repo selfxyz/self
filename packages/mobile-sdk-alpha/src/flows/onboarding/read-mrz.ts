@@ -5,13 +5,14 @@
 import { RefObject, useCallback } from 'react';
 import { Platform } from 'react-native';
 
-import { useSelfClient } from '../../context';
-import { MRZInfo } from '../../types/public';
 import { PassportEvents } from '../../constants/analytics';
-import { formatDateToYYMMDD, checkScannedInfo } from '../../processing/mrz';
+import { useSelfClient } from '../../context';
+import { checkScannedInfo, formatDateToYYMMDD } from '../../processing/mrz';
 import { SdkEvents } from '../../types/events';
+import { MRZInfo } from '../../types/public';
 
 export { MRZScannerView, MRZScannerViewProps } from '../../components/MRZScannerView';
+
 export function mrzReadInstructions() {
   return 'Lay your document flat and position the machine readable text in the viewfinder';
 }
@@ -20,13 +21,10 @@ const calculateScanDurationSeconds = (scanStartTimeRef: RefObject<number>) => {
   if (!scanStartTimeRef.current) return '0.00';
 
   // Calculate scan duration in seconds with exactly 2 decimal places
-  return (
-    (Date.now() - scanStartTimeRef.current) /
-    1000
-  ).toFixed(2);
-}
+  return ((Date.now() - scanStartTimeRef.current) / 1000).toFixed(2);
+};
 
-export function useDocumentScan(scanStartTimeRef: RefObject<number>) {
+export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
   const selfClient = useSelfClient();
 
   return {
@@ -58,26 +56,12 @@ export function useDocumentScan(scanStartTimeRef: RefObject<number>) {
           return;
         }
 
-        const {
-          documentNumber,
-          dateOfBirth,
-          dateOfExpiry,
-          documentType,
-          issuingCountry,
-        } = result;
+        const { documentNumber, dateOfBirth, dateOfExpiry, documentType, issuingCountry } = result;
 
-        const formattedDateOfBirth =
-          Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfBirth) : dateOfBirth;
-        const formattedDateOfExpiry =
-          Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfExpiry) : dateOfExpiry;
+        const formattedDateOfBirth = Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfBirth) : dateOfBirth;
+        const formattedDateOfExpiry = Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfExpiry) : dateOfExpiry;
 
-        if (
-          !checkScannedInfo(
-            documentNumber,
-            formattedDateOfBirth,
-            formattedDateOfExpiry,
-          )
-        ) {
+        if (!checkScannedInfo(documentNumber, formattedDateOfBirth, formattedDateOfExpiry)) {
           selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
             reason: 'invalid_format',
             passportNumberLength: documentNumber.length,

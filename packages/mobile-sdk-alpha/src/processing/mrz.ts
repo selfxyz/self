@@ -185,6 +185,19 @@ function validateTD3CheckDigits(lines: string[]): Omit<MRZValidation, 'format' |
   };
 }
 
+export function checkScannedInfo(passportNumber: string, dateOfBirth: string, dateOfExpiry: string): boolean {
+  if (passportNumber.length > 9) {
+    return false;
+  }
+  if (dateOfBirth.length !== 6) {
+    return false;
+  }
+  if (dateOfExpiry.length !== 6) {
+    return false;
+  }
+  return true;
+}
+
 /**
  * Extract and validate MRZ information from a machine-readable zone string
  * Supports TD3 format (passports) with comprehensive validation
@@ -351,21 +364,4 @@ export function formatDateToYYMMDD(inputDate: string): string {
   }
 
   throw new MrzParseError(`Invalid date format: ${inputDate}. Expected ISO format (YYYY-MM-DD) or similar.`);
-}
-
-export function checkScannedInfo(
-  passportNumber: string,
-  dateOfBirth: string,
-  dateOfExpiry: string,
-): boolean {
-  if (passportNumber.length > 9) {
-    return false;
-  }
-  if (dateOfBirth.length !== 6) {
-    return false;
-  }
-  if (dateOfExpiry.length !== 6) {
-    return false;
-  }
-  return true;
 }

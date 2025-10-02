@@ -13,6 +13,10 @@ import {
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  mrzReadInstructions,
+  useReadMRZ,
+} from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -25,7 +29,6 @@ import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, slate400, slate800, white } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
-import { mrzReadInstructions, useDocumentScan } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 const DocumentCameraScreen: React.FC = () => {
   const client = useSelfClient();
@@ -33,7 +36,7 @@ const DocumentCameraScreen: React.FC = () => {
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
-  const { onPassportRead } = useDocumentScan(scanStartTimeRef);
+  const { onPassportRead } = useReadMRZ(scanStartTimeRef);
 
   const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
