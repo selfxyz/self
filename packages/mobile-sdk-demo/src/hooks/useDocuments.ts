@@ -26,7 +26,17 @@ export function useDocuments() {
     setError(null);
     try {
       const all = await getAllDocuments(selfClient);
-      setDocuments(Object.values(all));
+      const sortedDocuments = Object.values(all).sort((a, b) => {
+        // Registered documents first
+        if (a.metadata.isRegistered && !b.metadata.isRegistered) {
+          return -1;
+        }
+        if (!a.metadata.isRegistered && b.metadata.isRegistered) {
+          return 1;
+        }
+        return 0;
+      });
+      setDocuments(sortedDocuments);
     } catch (err) {
       setDocuments([]);
       setError(err instanceof Error ? err.message : String(err));
