@@ -66,7 +66,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
             curveOrExponent: '65537',
           });
         } else {
-
           const passportData = selectedDocument?.data;
           setDocumentMetadata({
             documentCategory: passportData?.documentCategory,
