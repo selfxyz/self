@@ -35,7 +35,7 @@ const initialState = {
 
 /*
   Never export outside of the mobile sdk. It can cause multiple instances of the store to be created.
-  Use the functions above to interact with the store.
+ interact with the store thru the self client
 */
 export const useMRZStore = create<MRZState>(set => ({
   ...initialState,
