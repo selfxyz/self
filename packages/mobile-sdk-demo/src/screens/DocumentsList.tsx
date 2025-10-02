@@ -2,80 +2,32 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
-import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types.js';
+// no direct SDK calls here
 
-import SafeAreaScrollView from '../components/SafeAreaScrollView';
-import StandardHeader from '../components/StandardHeader';
+import ScreenLayout from '../components/ScreenLayout';
+import { formatDataPreview, humanizeDocumentType, maskId } from '../utils/document';
+import { useDocuments } from '../hooks/useDocuments';
 
 type Props = {
   onBack: () => void;
   catalog: DocumentCatalog;
 };
 
-type DocumentEntry = {
-  metadata: DocumentMetadata;
-  data: IDDocument;
-};
+// DocumentEntry type lives in hook; not needed here
 
-const humanizeDocumentType = (documentType: string) => {
-  if (documentType.startsWith('mock_')) {
-    const base = documentType.replace('mock_', '');
-    return `Mock ${base.replace('_', ' ')}`.replace(/\b\w/g, char => char.toUpperCase());
-  }
-  return documentType.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-};
-
-const formatDataPreview = (metadata: DocumentMetadata) => {
-  if (!metadata.data) {
-    return 'No preview available';
-  }
-
-  const lines = metadata.data.split(/\r?\n/).filter(Boolean);
-  const preview = lines.slice(0, 2).join('\n');
-
-  return preview.length > 120 ? `${preview.slice(0, 117)}…` : preview;
-};
+// helpers moved to utils/document
 
 export default function DocumentsList({ onBack, catalog }: Props) {
-  const selfClient = useSelfClient();
-  const [documents, setDocuments] = useState<DocumentEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const { documents, loading, error, deleting, deleteDocument, refresh } = useDocuments();
 
-  const loadDocuments = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const allDocuments = await getAllDocuments(selfClient);
-      setDocuments(Object.values(allDocuments));
-    } catch (err) {
-      setDocuments([]);
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Refresh when catalog selection changes (e.g., after generation or external updates)
   useEffect(() => {
-    let active = true;
-
-    const load = async () => {
-      await loadDocuments();
-    };
-
-    if (active) {
-      load();
-    }
-
-    return () => {
-      active = false;
-    };
-  }, [selfClient, catalog]);
+    refresh();
+  }, [catalog.selectedDocumentId, refresh]);
 
   const handleDelete = async (documentId: string, documentType: string) => {
     Alert.alert('Delete Document', `Are you sure you want to delete this ${humanizeDocumentType(documentType)}?`, [
@@ -84,35 +36,10 @@ export default function DocumentsList({ onBack, catalog }: Props) {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          setDeleting(documentId);
           try {
-            // Delete the document
-            await selfClient.deleteDocument(documentId);
-
-            // Update the catalog
-            const currentCatalog = await selfClient.loadDocumentCatalog();
-            const updatedDocuments = currentCatalog.documents.filter(doc => doc.id !== documentId);
-
-            // Clear selectedDocumentId if it's the one being deleted
-            const updatedCatalog = {
-              ...currentCatalog,
-              documents: updatedDocuments,
-              selectedDocumentId:
-                currentCatalog.selectedDocumentId === documentId
-                  ? updatedDocuments.length > 0
-                    ? updatedDocuments[0].id
-                    : undefined
-                  : currentCatalog.selectedDocumentId,
-            };
-
-            await selfClient.saveDocumentCatalog(updatedCatalog);
-
-            // Reload the documents list
-            await loadDocuments();
+            await deleteDocument(documentId);
           } catch (err) {
             Alert.alert('Error', `Failed to delete document: ${err instanceof Error ? err.message : String(err)}`);
-          } finally {
-            setDeleting(null);
           }
         },
       },
@@ -154,7 +81,7 @@ export default function DocumentsList({ onBack, catalog }: Props) {
       const statusLabel = metadata.isRegistered ? 'Registered' : 'Not registered';
       const badgeStyle = metadata.isRegistered ? styles.verified : styles.pending;
       const preview = formatDataPreview(metadata);
-      const documentId = `${metadata.id.slice(0, 8)}…${metadata.id.slice(-6)}`;
+      const documentId = maskId(metadata.id);
       const isDeleting = deleting === metadata.id;
 
       return (
@@ -191,11 +118,9 @@ export default function DocumentsList({ onBack, catalog }: Props) {
   }, [documents, error, loading, deleting]);
 
   return (
-    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="My Documents" onBack={onBack} />
-
-      <View style={styles.content}>{content}</View>
-    </SafeAreaScrollView>
+    <ScreenLayout title="My Documents" onBack={onBack}>
+      {content}
+    </ScreenLayout>
   );
 }
 
