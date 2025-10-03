@@ -61,8 +61,6 @@ const AadhaarUploadScreen: React.FC = () => {
     }
   }, [trackEvent]);
 
-  // TODO move to mobile sdk
-
   const { processAadhaarQRCode } = useAadhaar();
 
   const onPhotoLibraryPress = useCallback(async () => {

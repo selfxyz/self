@@ -27,7 +27,6 @@ export const getErrorMessages = (errorType: 'general' | 'expired') => {
 export function useAadhaar() {
   const selfClient = useSelfClient();
 
-  // TODO move to mobile sdk
   const validateAAdhaarTimestamp = useCallback(
     async (timestamp: string) => {
       //timestamp is in YYYY-MM-DD HH:MM format
