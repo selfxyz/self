@@ -18,11 +18,11 @@ import { pubkeys } from './pubkeys.js';
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
+  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
   'utf8'
 );
 const publicKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../../common/src/utils/aadhaar/assets/testPublicKey.pem'),
+  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPublicKey.pem'),
   'utf8'
 );
 
@@ -35,7 +35,7 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
       {
         verbose: true,
         logOutput: true,
-        include: ['../node_modules'],
+        include: ['node_modules', 'node_modules/circomlib/circuits'],
       }
     );
   });
