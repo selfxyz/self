@@ -12,10 +12,7 @@ import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  getPreRegistrationDescription,
-  usePrepareDocumentProof,
-} from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
+import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';

@@ -103,7 +103,7 @@ export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
 
-export { provingMachineCircuitType } from './proving/provingMachine';
+export type { provingMachineCircuitType } from './proving/provingMachine';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
