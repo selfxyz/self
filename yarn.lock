@@ -6254,16 +6254,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-picker/picker@npm:^2.11.1":
-  version: 2.11.2
-  resolution: "@react-native-picker/picker@npm:2.11.2"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/f9a6449797311367d52c5a0ef692fd76784ff151696db3702b21e8e94ddbd209494c0362281a55f197c43d5da67d5337046f95c4e79fdb63a493ff3565cb689e
-  languageName: node
-  linkType: hard
-
 "@react-native/assets-registry@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/assets-registry@npm:0.76.9"
@@ -23825,7 +23815,6 @@ __metadata:
     "@noble/hashes": "npm:^1.5.0"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@react-native-community/cli": "npm:^16.0.3"
-    "@react-native-picker/picker": "npm:^2.11.1"
     "@react-native/gradle-plugin": "npm:0.76.9"
     "@react-native/metro-config": "npm:0.76.9"
     "@selfxyz/common": "workspace:*"

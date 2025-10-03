@@ -10,13 +10,13 @@ import { calculateContentHash, inferDocumentCategory, isMRZDocument } from '@sel
 import type { DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { generateMockDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { Picker } from '@react-native-picker/picker';
-import Icon from 'react-native-vector-icons/Ionicons';
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
 import StandardHeader from '../components/StandardHeader';
 import { AlgorithmCountryFields } from '../components/AlgorithmCountryFields';
+import { PickerField } from '../components/PickerField';
 
 const documentTypeOptions = ['mock_passport', 'mock_id_card', 'mock_aadhaar'] as const;
+const documentTypePickerItems = documentTypeOptions.map(dt => ({ label: dt, value: dt }));
 
 const defaultAge = '21';
 const defaultExpiryYears = '5';
@@ -177,23 +177,12 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
         country={country}
         setCountry={setCountry}
       />
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Document Type</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={documentType}
-            onValueChange={(itemValue: string) => setDocumentType(itemValue as (typeof documentTypeOptions)[number])}
-            style={styles.picker}
-          >
-            {documentTypeOptions.map(dt => (
-              <Picker.Item label={dt} value={dt} key={dt} />
-            ))}
-          </Picker>
-          {Platform.OS === 'ios' && (
-            <Icon name="chevron-down-outline" size={20} color="#000" style={styles.pickerIcon} />
-          )}
-        </View>
-      </View>
+      <PickerField
+        label="Document Type"
+        selectedValue={documentType}
+        onValueChange={(itemValue: string) => setDocumentType(itemValue as (typeof documentTypeOptions)[number])}
+        items={documentTypePickerItems}
+      />
       <View style={styles.buttonRow}>
         <View style={styles.buttonWrapper}>
           <Button title="Reset" onPress={reset} color={Platform.OS === 'ios' ? '#007AFF' : undefined} />
@@ -249,36 +238,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginVertical: 6,
     paddingHorizontal: 4,
-  },
-  pickerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    backgroundColor: '#fff',
-  },
-  picker: {
-    flex: 1,
-    color: '#000',
-    ...Platform.select({
-      ios: {
-        height: 40,
-      },
-      android: {
-        height: 40,
-      },
-    }),
-  },
-  pickerIcon: {
-    position: 'absolute',
-    right: 12,
-    top: 10,
-    ...Platform.select({
-      ios: {
-        top: 10,
-      },
-    }),
   },
   buttonRow: {
     flexDirection: 'row',
