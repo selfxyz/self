@@ -9,15 +9,19 @@ import Icon from 'react-native-vector-icons/Ionicons';
 type Props = {
   title: string;
   onBack: () => void;
+  rightAction?: React.ReactNode;
 };
 
-export default function StandardHeader({ title, onBack }: Props) {
+export default function StandardHeader({ title, onBack, rightAction }: Props) {
   return (
     <View style={styles.header}>
-      <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <Icon name="chevron-back" size={20} color="#0550ae" />
-        <Text style={styles.backButtonText}>Back</Text>
-      </TouchableOpacity>
+      <View style={styles.topRow}>
+        <TouchableOpacity style={styles.backButton} onPress={onBack}>
+          <Icon name="chevron-back" size={20} color="#0550ae" />
+          <Text style={styles.backButtonText}>Back</Text>
+        </TouchableOpacity>
+        {rightAction}
+      </View>
       <Text style={styles.title}>{title}</Text>
     </View>
   );
@@ -27,13 +31,18 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 16,
   },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     paddingVertical: 6,
     paddingHorizontal: 12,
-    marginBottom: 8,
     marginLeft: -12,
   },
   backButtonText: {

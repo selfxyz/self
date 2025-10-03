@@ -26,7 +26,7 @@ target "SelfDemoApp" do
   )
 
   # Use the custom NFCPassportReader fork
-  pod "NFCPassportReader", :git => "git@github.com:selfxyz/NFCPassportReader.git"
+  pod "NFCPassportReader", :git => "git@github.com:selfxyz/NFCPassportReader.git", :commit => "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202

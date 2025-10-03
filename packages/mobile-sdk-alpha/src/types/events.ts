@@ -108,6 +108,22 @@ export enum SdkEvents {
    * identify any issues that may arise.
    */
   NFC_EVENT = 'NFC_EVENT',
+
+  /**
+   * Emitted when document camera scan is successful and ready for NFC scanning.
+   *
+   * **Required:** Navigate to the DocumentNFCScan screen to continue the verification process.
+   * **Recommended:** This event is triggered after successful MRZ data extraction and validation.
+   */
+  DOCUMENT_MRZ_READ_SUCCESS = 'DOCUMENT_MRZ_READ_SUCCESS',
+
+  /**
+   * Emitted when document camera scan fails due to invalid MRZ data format.
+   *
+   * **Required:** Navigate to the DocumentCameraTrouble screen to show troubleshooting tips.
+   * **Recommended:** This event is triggered when MRZ data validation fails (invalid format, missing fields, etc.).
+   */
+  DOCUMENT_MRZ_READ_FAILURE = 'DOCUMENT_MRZ_READ_FAILURE',
 }
 
 export interface SDKEventMap {
@@ -152,6 +168,8 @@ export interface SDKEventMap {
     event: string;
     details?: Record<string, unknown>;
   };
+  [SdkEvents.DOCUMENT_MRZ_READ_SUCCESS]: undefined;
+  [SdkEvents.DOCUMENT_MRZ_READ_FAILURE]: undefined;
 }
 
 export type SDKEvent = keyof SDKEventMap;

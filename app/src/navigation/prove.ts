@@ -4,7 +4,6 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import ConfirmBelongingScreen from '@/screens/prove/ConfirmBelongingScreen';
 import ProofRequestStatusScreen from '@/screens/prove/ProofRequestStatusScreen';
 import ProveScreen from '@/screens/prove/ProveScreen';
 import QRCodeTroubleScreen from '@/screens/prove/QRCodeTroubleScreen';
@@ -12,12 +11,6 @@ import QRCodeViewFinderScreen from '@/screens/prove/QRCodeViewFinderScreen';
 import { black, white } from '@/utils/colors';
 
 const proveScreens = {
-  ConfirmBelonging: {
-    screen: ConfirmBelongingScreen,
-    options: {
-      headerShown: false,
-    } as NativeStackNavigationOptions,
-  },
   ProofRequestStatus: {
     screen: ProofRequestStatusScreen,
     options: {

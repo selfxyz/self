@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types.js';
-// no direct SDK calls here
+import { extractNameFromDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import ScreenLayout from '../components/ScreenLayout';
 import { formatDataPreview, humanizeDocumentType, maskId } from '../utils/document';
@@ -22,12 +22,62 @@ type Props = {
 // helpers moved to utils/document
 
 export default function DocumentsList({ onBack, catalog }: Props) {
-  const { documents, loading, error, deleting, deleteDocument, refresh } = useDocuments();
+  const selfClient = useSelfClient();
+  const { documents, loading, error, deleting, deleteDocument, refresh, clearing, clearAllDocuments } = useDocuments();
+  const [documentNames, setDocumentNames] = useState<Record<string, { firstName: string; lastName: string }>>({});
 
   // Refresh when catalog selection changes (e.g., after generation or external updates)
   useEffect(() => {
     refresh();
   }, [catalog.selectedDocumentId, refresh]);
+
+  // Load names for all documents
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDocumentNames = async () => {
+      const names: Record<string, { firstName: string; lastName: string }> = {};
+      await Promise.all(
+        documents.map(async doc => {
+          const name = await extractNameFromDocument(selfClient, doc.metadata.id);
+          if (name) {
+            names[doc.metadata.id] = name;
+          }
+        }),
+      );
+      if (!cancelled) {
+        setDocumentNames(names);
+      }
+    };
+
+    if (documents.length === 0) {
+      setDocumentNames({});
+      return;
+    }
+
+    loadDocumentNames();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [documents, selfClient]);
+
+  const handleClearAll = () => {
+    Alert.alert('Clear All Documents', 'Are you sure you want to delete all documents? This action cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear All',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await clearAllDocuments();
+          } catch (err) {
+            Alert.alert('Error', `Failed to clear documents: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        },
+      },
+    ]);
+  };
 
   const handleDelete = async (documentId: string, documentType: string) => {
     Alert.alert('Delete Document', `Are you sure you want to delete this ${humanizeDocumentType(documentType)}?`, [
@@ -68,10 +118,9 @@ export default function DocumentsList({ onBack, catalog }: Props) {
     if (documents.length === 0) {
       return (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No documents yet</Text>
+          <Text style={styles.emptyText}>No documents</Text>
           <Text style={styles.emptySubtext}>
-            Generate a mock document to see it appear here. The demo document store keeps everything locally on your
-            device.
+            Generate a mock document or scan a real document to see it appear here.
           </Text>
         </View>
       );
@@ -83,11 +132,16 @@ export default function DocumentsList({ onBack, catalog }: Props) {
       const preview = formatDataPreview(metadata);
       const documentId = maskId(metadata.id);
       const isDeleting = deleting === metadata.id;
+      const nameData = documentNames[metadata.id];
+      const fullName = nameData ? `${nameData.firstName} ${nameData.lastName}`.trim() : null;
 
       return (
         <View key={metadata.id} style={styles.documentCard}>
           <View style={styles.documentHeader}>
-            <Text style={styles.documentType}>{humanizeDocumentType(metadata.documentType)}</Text>
+            <View style={styles.documentTitleContainer}>
+              <Text style={styles.documentType}>{humanizeDocumentType(metadata.documentType)}</Text>
+              {fullName && <Text style={styles.documentName}>{fullName}</Text>}
+            </View>
             <View style={styles.headerRight}>
               <View style={[styles.statusBadge, badgeStyle]}>
                 <Text style={styles.statusText}>{statusLabel}</Text>
@@ -105,7 +159,6 @@ export default function DocumentsList({ onBack, catalog }: Props) {
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.documentMeta}>{(metadata.documentCategory ?? 'unknown').toUpperCase()}</Text>
           <Text style={styles.documentMeta}>{metadata.mock ? 'Mock data' : 'Live data'}</Text>
           <Text style={styles.documentPreview} selectable>
             {preview}
@@ -115,10 +168,24 @@ export default function DocumentsList({ onBack, catalog }: Props) {
         </View>
       );
     });
-  }, [documents, error, loading, deleting]);
+  }, [documents, error, loading, deleting, documentNames]);
+
+  const clearButton = (
+    <TouchableOpacity
+      style={[styles.clearButton, (clearing || documents.length === 0) && styles.disabledButton]}
+      onPress={handleClearAll}
+      disabled={clearing || documents.length === 0}
+    >
+      {clearing ? (
+        <ActivityIndicator size="small" color="#dc3545" />
+      ) : (
+        <Text style={styles.clearButtonText}>Clear All</Text>
+      )}
+    </TouchableOpacity>
+  );
 
   return (
-    <ScreenLayout title="My Documents" onBack={onBack}>
+    <ScreenLayout title="My Documents" onBack={onBack} rightAction={clearButton}>
       {content}
     </ScreenLayout>
   );
@@ -130,6 +197,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafbfc',
     paddingHorizontal: 24,
     paddingVertical: 20,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+  },
+  clearButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#ffeef0',
+    borderWidth: 1,
+    borderColor: '#dc3545',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 30,
+    minWidth: 80,
+    alignSelf: 'flex-end',
+  },
+  clearButtonText: {
+    color: '#dc3545',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  disabledButton: {
+    backgroundColor: '#f8f9fa',
+    borderColor: '#e1e5e9',
   },
   content: {
     flex: 1,
@@ -153,11 +247,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 8,
   },
+  documentTitleContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
   documentType: {
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
-    flex: 1,
+  },
+  documentName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#0550ae',
+    marginTop: 2,
   },
   headerRight: {
     alignItems: 'flex-end',

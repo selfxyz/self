@@ -3,21 +3,23 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
-import React, { useCallback, useRef } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 
 import {
-  formatDateToYYMMDD,
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  mrzReadInstructions,
+  useReadMRZ,
+} from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import type { PassportCameraProps } from '@/components/native/PassportCamera';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import Additional from '@/components/typography/Additional';
 import Description from '@/components/typography/Description';
@@ -25,99 +27,17 @@ import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import analytics from '@/utils/analytics';
 import { black, slate400, slate800, white } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
-import { checkScannedInfo } from '@/utils/utils';
-
-const { trackEvent } = analytics();
 
 const DocumentCameraScreen: React.FC = () => {
   const client = useSelfClient();
-  const { useMRZStore } = client;
-  const { setMRZForNFC } = useMRZStore();
-  const navigation = useNavigation();
   const isFocused = useIsFocused();
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
+  const { onPassportRead } = useReadMRZ(scanStartTimeRef);
 
-  const onPassportRead = useCallback<PassportCameraProps['onPassportRead']>(
-    (error, result) => {
-      // Calculate scan duration in seconds with exactly 2 decimal places
-      const scanDurationSeconds = (
-        (Date.now() - scanStartTimeRef.current) /
-        1000
-      ).toFixed(2);
-
-      if (error) {
-        console.error(error);
-        trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
-          reason: 'unknown_error',
-          error: error.message || 'Unknown error',
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
-        //TODO: Add error handling here
-        return;
-      }
-
-      if (!result) {
-        console.error('No result from passport scan');
-        trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
-          reason: 'invalid_input',
-          error: 'No result from scan',
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
-        return;
-      }
-
-      const {
-        documentNumber,
-        dateOfBirth,
-        dateOfExpiry,
-        documentType,
-        issuingCountry,
-      } = result;
-
-      const formattedDateOfBirth =
-        Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfBirth) : dateOfBirth;
-      const formattedDateOfExpiry =
-        Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfExpiry) : dateOfExpiry;
-
-      if (
-        !checkScannedInfo(
-          documentNumber,
-          formattedDateOfBirth,
-          formattedDateOfExpiry,
-        )
-      ) {
-        trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
-          reason: 'invalid_format',
-          passportNumberLength: documentNumber.length,
-          dateOfBirthLength: formattedDateOfBirth.length,
-          dateOfExpiryLength: formattedDateOfExpiry.length,
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
-        navigation.navigate('DocumentCameraTrouble');
-        return;
-      }
-
-      setMRZForNFC({
-        passportNumber: documentNumber,
-        dateOfBirth: formattedDateOfBirth,
-        dateOfExpiry: formattedDateOfExpiry,
-        documentType: documentType?.trim() || '',
-        countryCode: issuingCountry?.trim().toUpperCase() || '',
-      });
-
-      trackEvent(PassportEvents.CAMERA_SCAN_SUCCESS, {
-        duration_seconds: parseFloat(scanDurationSeconds),
-      });
-
-      navigation.navigate('DocumentNFCScan');
-    },
-    [setMRZForNFC, navigation],
-  );
   const navigateToLaunch = useHapticNavigation('Launch', {
     action: 'cancel',
   });
@@ -160,8 +80,7 @@ const DocumentCameraScreen: React.FC = () => {
                   Open to the photograph page
                 </Description>
                 <Additional style={styles.description}>
-                  Lay your document flat and position the machine readable text
-                  in the viewfinder
+                  {mrzReadInstructions()}
                 </Additional>
               </View>
             </XStack>

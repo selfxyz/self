@@ -6,9 +6,9 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
-import { extractNameFromMRZ, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { extractNameFromDocument, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PickerField } from '../components/PickerField';
 
-import { Picker } from '@react-native-picker/picker';
 import ScreenLayout from '../components/ScreenLayout';
 import LogsPanel from '../components/LogsPanel';
 import { useRegistration } from '../hooks/useRegistration';
@@ -36,13 +36,12 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
     };
   }, []);
 
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string>(catalog.selectedDocumentId || '');
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string>('');
   const [selectedDocument, setSelectedDocument] = useState<IDDocument | null>(null);
   const [loading, setLoading] = useState(false);
   const registering = regState.registering;
   const statusMessage = regState.statusMessage;
-  const detailedLogs = regState.logs;
-  const showLogs = regState.showLogs;
+  const [documentNames, setDocumentNames] = useState<Record<string, { firstName: string; lastName: string }>>({});
 
   // Refresh catalog helper
   const refreshCatalog = useCallback(async () => {
@@ -58,12 +57,52 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
     }
   }, [selfClient, onSuccess]);
 
-  // Update selected document when catalog changes (e.g., after generating a new mock)
+  // Auto-select first available unregistered document (newest first)
   useEffect(() => {
-    if (catalog.selectedDocumentId && catalog.selectedDocumentId !== selectedDocumentId) {
-      setSelectedDocumentId(catalog.selectedDocumentId);
+    const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+    const firstUnregisteredDocId = availableDocuments[0]?.id;
+
+    if (firstUnregisteredDocId && !selectedDocumentId) {
+      setSelectedDocumentId(firstUnregisteredDocId);
     }
-  }, [catalog.selectedDocumentId, selectedDocumentId]);
+  }, [catalog.documents, selectedDocumentId]);
+
+  // Auto-select when catalog changes and current selection is no longer available
+  useEffect(() => {
+    const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+    const isCurrentSelectionAvailable = availableDocuments.some(doc => doc.id === selectedDocumentId);
+
+    if (!isCurrentSelectionAvailable && availableDocuments.length > 0) {
+      setSelectedDocumentId(availableDocuments[0].id);
+    }
+  }, [catalog.documents, selectedDocumentId]);
+
+  // Load names for all documents in the catalog
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDocumentNames = async () => {
+      const names: Record<string, { firstName: string; lastName: string }> = {};
+      await Promise.all(
+        (catalog.documents || []).map(async doc => {
+          if (doc.isRegistered) return;
+          const name = await extractNameFromDocument(selfClient, doc.id);
+          if (name) {
+            names[doc.id] = name;
+          }
+        }),
+      );
+      if (!cancelled) {
+        setDocumentNames(names);
+      }
+    };
+
+    loadDocumentNames();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [catalog.documents, selfClient]);
 
   useEffect(() => {
     const loadSelectedDocument = async () => {
@@ -87,40 +126,29 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
     loadSelectedDocument();
   }, [selectedDocumentId, selfClient]);
 
-  // Monitor completion and errors for dialogs
+  // One-shot completion handler to avoid repeated alerts
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    if (!registering && regState.statusMessage.startsWith('🎉')) {
-      timeoutId = setTimeout(async () => {
-        // Guard against updates after unmount or during a new registration attempt
-        if (mounted.current && !registering && regState.statusMessage.startsWith('🎉')) {
-          await refreshCatalog();
-          Alert.alert(
-            'Success! 🎉',
-            `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  if (mounted.current) {
-                    setSelectedDocumentId('');
-                  }
-                },
-              },
-            ],
-          );
-        }
-      }, 1000);
-    }
-
-    // Cleanup the timeout if the component unmounts or dependencies change
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [registering, regState.statusMessage, selectedDocument, refreshCatalog]);
+    actions.setOnComplete(async () => {
+      if (!mounted.current) return;
+      await refreshCatalog();
+      Alert.alert(
+        'Success! 🎉',
+        `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              if (mounted.current) {
+                setSelectedDocumentId('');
+                actions.reset();
+              }
+            },
+          },
+        ],
+      );
+    });
+    return () => actions.setOnComplete(null);
+  }, [actions, selectedDocument, refreshCatalog]);
 
   const handleRegister = async () => {
     if (!selectedDocument || !selectedDocumentId) return;
@@ -138,37 +166,37 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
 
   // Filter to only unregistered documents and sort newest first
   const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+  const firstAvailableDocId = availableDocuments[0]?.id || '';
+  const selectedIdForPicker = selectedDocumentId || firstAvailableDocId || '';
 
   return (
-    <ScreenLayout title="Register Document [WiP]" onBack={onBack}>
+    <ScreenLayout title="Register Document" onBack={onBack}>
       <View style={styles.content}>
-        <View style={styles.pickerContainer}>
-          <Text style={styles.label}>Select Document</Text>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              selectedValue={selectedDocumentId}
-              onValueChange={(itemValue: string) => setSelectedDocumentId(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}
-              enabled={!registering}
-            >
-              <Picker.Item label="Select a document..." value="" style={styles.pickerItem} />
-              {availableDocuments.map(doc => {
-                const nameData = extractNameFromMRZ(doc.data || '');
-                const docType = humanizeDocumentType(doc.documentType);
-                const docId = doc.id.slice(0, 8);
+        {availableDocuments.length > 0 && (
+          <PickerField
+            label="Select Document"
+            selectedValue={selectedIdForPicker}
+            onValueChange={setSelectedDocumentId}
+            enabled={!registering}
+            items={
+              !firstAvailableDocId
+                ? [{ label: 'Select a document...', value: '' }]
+                : availableDocuments.map(doc => {
+                    const nameData = documentNames[doc.id];
+                    const docType = humanizeDocumentType(doc.documentType);
+                    const docId = doc.id.slice(0, 8);
 
-                let label = `${docType} - ${docId}...`;
-                if (nameData) {
-                  const fullName = `${nameData.firstName} ${nameData.lastName}`.trim();
-                  label = fullName ? `${fullName} - ${docType} - ${docId}...` : label;
-                }
+                    let label = `${docType} - ${docId}...`;
+                    if (nameData) {
+                      const fullName = `${nameData.firstName} ${nameData.lastName}`.trim();
+                      label = fullName ? `${fullName} - ${docType} - ${docId}...` : label;
+                    }
 
-                return <Picker.Item key={doc.id} label={label} value={doc.id} style={styles.pickerItem} />;
-              })}
-            </Picker>
-          </View>
-        </View>
+                    return { label, value: doc.id };
+                  })
+            }
+          />
+        )}
 
         {loading && (
           <View style={styles.loadingContainer}>
@@ -182,11 +210,11 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
             <Text style={styles.statusText}>{statusMessage}</Text>
             <Text style={styles.statusState}>State: {currentState}</Text>
 
-            <LogsPanel logs={detailedLogs} show={showLogs} onToggle={actions.toggleLogs} />
+            <LogsPanel logs={regState.logs} show={regState.showLogs} onToggle={actions.toggleLogs} />
           </View>
         )}
 
-        {selectedDocument && !loading && (
+        {selectedDocument && !loading && availableDocuments.length > 0 && (
           <>
             <View style={styles.documentSection}>
               <Text style={styles.documentTitle}>Document Data:</Text>
@@ -213,7 +241,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
           </View>
         )}
 
-        {!selectedDocumentId && availableDocuments.length === 0 && (
+        {availableDocuments.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>
               No unregistered documents available. Generate a mock document to get started.
@@ -235,27 +263,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  pickerContainer: {
-    marginBottom: 24,
-  },
   label: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',
-  },
-  pickerWrapper: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    overflow: 'hidden',
-  },
-  picker: {
-    height: 50,
-  },
-  pickerItem: {
-    fontSize: 13,
   },
   loadingContainer: {
     flex: 1,

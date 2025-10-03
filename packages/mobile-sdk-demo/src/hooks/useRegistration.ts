@@ -23,6 +23,7 @@ export function useRegistration() {
   const init = useProvingStore(state => state.init);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
   const autoConfirmTimer = useRef<NodeJS.Timeout>();
+  const onCompleteRef = useRef<null | (() => void)>(null);
 
   const [registering, setRegistering] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
@@ -41,6 +42,24 @@ export function useRegistration() {
       if (!payload) return;
       const { event, level } = payload;
       addLog(event, level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'info');
+    });
+    return () => unsubscribe();
+  }, [selfClient, registering, addLog]);
+
+  // Also listen for explicit SDK success event as a reliable completion signal
+  useEffect(() => {
+    if (!registering) return;
+    const unsubscribe = selfClient.on(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
+      setStatusMessage('🎉 Registration completed successfully!');
+      addLog('Document registered on-chain! (event)', 'info');
+      if (onCompleteRef.current) {
+        try {
+          onCompleteRef.current();
+        } finally {
+          onCompleteRef.current = null;
+        }
+      }
+      setRegistering(false);
     });
     return () => unsubscribe();
   }, [selfClient, registering, addLog]);
@@ -88,6 +107,13 @@ export function useRegistration() {
         setStatusMessage('🎉 Registration completed successfully!');
         addLog('Document registered on-chain!', 'info');
         setRegistering(false);
+        if (onCompleteRef.current) {
+          try {
+            onCompleteRef.current();
+          } finally {
+            onCompleteRef.current = null; // ensure one-shot
+          }
+        }
         break;
       case 'error':
       case 'failure':
@@ -122,12 +148,18 @@ export function useRegistration() {
     state: { registering, statusMessage, currentState, logs, showLogs },
     actions: {
       start,
+      setOnComplete: (cb: (() => void) | null) => {
+        onCompleteRef.current = cb;
+      },
       toggleLogs: () => setShowLogs(s => !s),
       reset: () => {
         setRegistering(false);
         setStatusMessage('');
         setLogs([]);
         setShowLogs(false);
+        onCompleteRef.current = null;
+        // Reset the SDK's proving store state to prevent stale 'completed' state
+        useProvingStore.setState({ currentState: 'idle' });
       },
     },
   } as const;

@@ -90,6 +90,9 @@ export { defaultConfig } from './config/defaults';
 
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
 
+// Document utils
+export { extractNameFromDocument } from './documents/utils';
+
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
 // Core functions

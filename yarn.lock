@@ -6254,16 +6254,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-picker/picker@npm:^2.11.1":
-  version: 2.11.2
-  resolution: "@react-native-picker/picker@npm:2.11.2"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/f9a6449797311367d52c5a0ef692fd76784ff151696db3702b21e8e94ddbd209494c0362281a55f197c43d5da67d5337046f95c4e79fdb63a493ff3565cb689e
-  languageName: node
-  linkType: hard
-
 "@react-native/assets-registry@npm:0.76.9":
   version: 0.76.9
   resolution: "@react-native/assets-registry@npm:0.76.9"
@@ -23825,7 +23815,6 @@ __metadata:
     "@noble/hashes": "npm:^1.5.0"
     "@react-native-async-storage/async-storage": "npm:^2.2.0"
     "@react-native-community/cli": "npm:^16.0.3"
-    "@react-native-picker/picker": "npm:^2.11.1"
     "@react-native/gradle-plugin": "npm:0.76.9"
     "@react-native/metro-config": "npm:0.76.9"
     "@selfxyz/common": "workspace:*"
@@ -23857,7 +23846,7 @@ __metadata:
     react-native-get-random-values: "npm:^1.11.0"
     react-native-keychain: "npm:^10.0.0"
     react-native-safe-area-context: "npm:^5.6.1"
-    react-native-svg: "npm:^15.13.0"
+    react-native-svg: "npm:15.12.1"
     react-native-svg-transformer: "npm:^1.5.1"
     react-native-vector-icons: "npm:^10.3.0"
     stream-browserify: "npm:^3.0.0"
@@ -26561,20 +26550,6 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/ed94b57007125c715283fc760438ac8eac0677ced3201f6e272a7cd4459f3fecb672a8eed2c32664e5b8e6e0367585353b0f83f99b231f603d75094bb052c01f
-  languageName: node
-  linkType: hard
-
-"react-native-svg@npm:^15.13.0":
-  version: 15.13.0
-  resolution: "react-native-svg@npm:15.13.0"
-  dependencies:
-    css-select: "npm:^5.1.0"
-    css-tree: "npm:^1.1.3"
-    warn-once: "npm:0.1.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/89ba2ed640f78e69d44980473530fdb83e24336a1a43936e19f532e772c41e8532ee1d4f3ae003339e817a3e3b055aa2a8ee3c0da31754cd2c83fa1a81130d6a
   languageName: node
   linkType: hard
 
