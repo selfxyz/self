@@ -598,9 +598,11 @@ jobs:
           body: "Automated bump of iOS build number by CI"
           commit-message: "chore: incrementing ios build number for version ${{ env.VERSION }} [github action]"
           branch: ci/bump-ios-build-${{ github.run_id }}
-          base: staging
+          base: dev
           add-paths: |
             app/version.json
+            app/ios/Self.xcodeproj/project.pbxproj
+            app/ios/OpenPassport/Info.plist
 
       - name: Monitor cache usage
         if: always()
@@ -966,9 +968,10 @@ jobs:
           body: "Automated bump of Android build number by CI"
           commit-message: "chore: incrementing android build version for version ${{ env.VERSION }} [github action]"
           branch: ci/bump-android-build-${{ github.run_id }}
-          base: staging
+          base: dev
           add-paths: |
             app/version.json
+            app/android/app/build.gradle
 
       - name: Monitor cache usage
         if: always()
