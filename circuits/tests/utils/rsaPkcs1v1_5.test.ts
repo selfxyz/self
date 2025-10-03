@@ -37,7 +37,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasmTester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: ['node_modules', 'node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
       );
 
@@ -61,7 +61,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasmTester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: ['node_modules', 'node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
       );
 
@@ -83,7 +83,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const circuit = await wasmTester(
         path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
-          include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: ['node_modules', 'node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
       );
 

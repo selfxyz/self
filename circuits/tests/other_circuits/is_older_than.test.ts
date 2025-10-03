@@ -78,7 +78,7 @@ describe('DateIsLessChecker Circuit Test', function () {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/tests/utils/isOlderThan_tester.circom'),
       {
-        include: ['../node_modules'],
+        include: ['node_modules'],
       }
     );
   });

@@ -91,7 +91,7 @@ describe('ecdsa', () => {
           const circuit = await wasmTester(
             path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_${curve}.circom`),
             {
-              include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
+              include: ['node_modules', 'node_modules/@zk-kit/binary-merkle-root.circom/src'],
             }
           );
 
@@ -119,7 +119,7 @@ describe('ecdsa', () => {
       const circuit = await wasmTester(
         path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_${curve}.circom`),
         {
-          include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
+          include: ['node_modules', 'node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
       );
 
@@ -144,7 +144,7 @@ describe('ecdsa', () => {
     const circuit = await wasmTester(
       path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_p256.circom`),
       {
-        include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
+        include: ['node_modules', 'node_modules/@zk-kit/binary-merkle-root.circom/src'],
       }
     );
 
@@ -206,7 +206,7 @@ describe('ecdsa', () => {
     const circuit = await wasmTester(
       path.join(__dirname, `../../circuits/tests/utils/ecdsa/test_p256.circom`),
       {
-        include: ['../node_modules', '../node_modules/@zk-kit/binary-merkle-root.circom/src'],
+        include: ['node_modules', 'node_modules/@zk-kit/binary-merkle-root.circom/src'],
       }
     );
 
