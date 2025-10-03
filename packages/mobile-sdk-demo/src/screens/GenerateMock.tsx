@@ -110,6 +110,10 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       await selfClient.saveDocumentCatalog(catalog);
       await onDocumentStored?.();
 
+      // Refresh first and last name with new random values after successful generation
+      setFirstName(getRandomFirstName());
+      setLastName(getRandomLastName());
+
       // Ensure minimum loading display time (500ms) for better UX
       const elapsed = Date.now() - startTime;
       if (elapsed < 500) {

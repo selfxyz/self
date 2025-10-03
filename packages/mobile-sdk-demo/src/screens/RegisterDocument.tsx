@@ -3,12 +3,12 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, View, Platform } from 'react-native';
+import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { extractNameFromDocument, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PickerField } from '../components/PickerField';
 
-import { Picker } from '@react-native-picker/picker';
 import ScreenLayout from '../components/ScreenLayout';
 import LogsPanel from '../components/LogsPanel';
 import { useRegistration } from '../hooks/useRegistration';
@@ -36,10 +36,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
     };
   }, []);
 
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string>(
-    catalog.selectedDocumentId ||
-      ([...(catalog.documents || [])].filter(doc => !doc.isRegistered).reverse()[0]?.id ?? ''),
-  );
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string>('');
   const [selectedDocument, setSelectedDocument] = useState<IDDocument | null>(null);
   const [loading, setLoading] = useState(false);
   const registering = regState.registering;
@@ -60,21 +57,23 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
     }
   }, [selfClient, onSuccess]);
 
-  // Update selected document when catalog changes (e.g., after generating a new mock)
+  // Auto-select first available unregistered document (newest first)
   useEffect(() => {
-    // Initialize from catalog only if no local selection yet
-    if (!selectedDocumentId && catalog.selectedDocumentId) {
-      setSelectedDocumentId(catalog.selectedDocumentId);
-    }
-  }, [catalog.selectedDocumentId, selectedDocumentId]);
+    const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+    const firstUnregisteredDocId = availableDocuments[0]?.id;
 
-  // Auto-select first available unregistered document (newest first) when nothing is selected
+    if (firstUnregisteredDocId && !selectedDocumentId) {
+      setSelectedDocumentId(firstUnregisteredDocId);
+    }
+  }, [catalog.documents, selectedDocumentId]);
+
+  // Auto-select when catalog changes and current selection is no longer available
   useEffect(() => {
-    if (!selectedDocumentId) {
-      const nextDocId = [...(catalog.documents || [])].filter(doc => !doc.isRegistered).reverse()[0]?.id;
-      if (nextDocId) {
-        setSelectedDocumentId(nextDocId);
-      }
+    const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+    const isCurrentSelectionAvailable = availableDocuments.some(doc => doc.id === selectedDocumentId);
+
+    if (!isCurrentSelectionAvailable && availableDocuments.length > 0) {
+      setSelectedDocumentId(availableDocuments[0].id);
     }
   }, [catalog.documents, selectedDocumentId]);
 
@@ -174,37 +173,29 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
     <ScreenLayout title="Register Document" onBack={onBack}>
       <View style={styles.content}>
         {availableDocuments.length > 0 && (
-          <View style={styles.pickerContainer}>
-            <Text style={styles.label}>Select Document</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={selectedIdForPicker}
-                onValueChange={(itemValue: string) => setSelectedDocumentId(itemValue)}
-                style={styles.picker}
-                itemStyle={styles.pickerItem}
-                enabled={!registering}
-                mode="dialog"
-                dropdownIconColor="#333"
-              >
-                {!firstAvailableDocId && (
-                  <Picker.Item label="Select a document..." value="" style={styles.pickerItem} />
-                )}
-                {availableDocuments.map(doc => {
-                  const nameData = documentNames[doc.id];
-                  const docType = humanizeDocumentType(doc.documentType);
-                  const docId = doc.id.slice(0, 8);
+          <PickerField
+            label="Select Document"
+            selectedValue={selectedIdForPicker}
+            onValueChange={setSelectedDocumentId}
+            enabled={!registering}
+            items={
+              !firstAvailableDocId
+                ? [{ label: 'Select a document...', value: '' }]
+                : availableDocuments.map(doc => {
+                    const nameData = documentNames[doc.id];
+                    const docType = humanizeDocumentType(doc.documentType);
+                    const docId = doc.id.slice(0, 8);
 
-                  let label = `${docType} - ${docId}...`;
-                  if (nameData) {
-                    const fullName = `${nameData.firstName} ${nameData.lastName}`.trim();
-                    label = fullName ? `${fullName} - ${docType} - ${docId}...` : label;
-                  }
+                    let label = `${docType} - ${docId}...`;
+                    if (nameData) {
+                      const fullName = `${nameData.firstName} ${nameData.lastName}`.trim();
+                      label = fullName ? `${fullName} - ${docType} - ${docId}...` : label;
+                    }
 
-                  return <Picker.Item key={doc.id} label={label} value={doc.id} style={styles.pickerItem} />;
-                })}
-              </Picker>
-            </View>
-          </View>
+                    return { label, value: doc.id };
+                  })
+            }
+          />
         )}
 
         {loading && (
@@ -272,27 +263,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  pickerContainer: {
-    marginBottom: 24,
-  },
   label: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',
-  },
-  pickerWrapper: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    overflow: Platform.OS === 'ios' ? 'hidden' : 'visible',
-  },
-  picker: {
-    height: 50,
-  },
-  pickerItem: {
-    fontSize: 13,
   },
   loadingContainer: {
     flex: 1,
