@@ -201,6 +201,18 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       }
     });
 
+    addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('AadhaarUploadSuccess');
+      }
+    });
+    addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
+      if (navigationRef.isReady()) {
+        // @ts-expect-error
+        navigationRef.navigate('AadhaarUploadError', { errorType });
+      }
+    });
+
     return map;
   }, []);
 

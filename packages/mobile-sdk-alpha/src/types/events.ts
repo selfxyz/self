@@ -24,6 +24,20 @@ export enum SdkEvents {
   PROGRESS = 'PROGRESS',
 
   /**
+   * Emitted when Aadhaar QR code upload is successful.
+   *
+   * **Required:** Navigate to the AadhaarUploadSuccess screen to inform users of the successful upload.
+   */
+  PROVING_AADHAAR_UPLOAD_SUCCESS = 'PROVING_AADHAAR_UPLOAD_SUCCESS',
+
+  /**
+   * Emitted when Aadhaar QR code upload fails.
+   *
+   * **Required:** Navigate to the AadhaarUploadError screen to inform users of the failure and provide troubleshooting steps.
+   */
+  PROVING_AADHAAR_UPLOAD_FAILURE = 'PROVING_AADHAAR_UPLOAD_FAILURE',
+
+  /**
    * Emitted when no passport data is found on the device during initialization.
    *
    * **Required:** Navigate users to a document scanning/setup screen to capture their passport data.
@@ -72,7 +86,7 @@ export enum SdkEvents {
   /**
    * Emitted when a user selects a country in the document flow.
    *
-   * **Recommended:** Use this event to track user selection patterns and analytics.
+   * **Required:** Navigate the user to the screen where they will select the document type.
    * The event includes the selected country code and available document types.
    */
   DOCUMENT_COUNTRY_SELECTED = 'DOCUMENT_COUNTRY_SELECTED',
@@ -80,7 +94,7 @@ export enum SdkEvents {
   /**
    * Emitted when a user selects a document type for verification.
    *
-   * **Recommended:** Use this event to track document type preferences and analytics.
+   * **Required:** Navigate the user to the document type screen that was selected.
    * The event includes the selected document type, country code, and document name.
    */
   DOCUMENT_TYPE_SELECTED = 'DOCUMENT_TYPE_SELECTED',
@@ -153,6 +167,8 @@ export interface SDKEventMap {
     isMock: boolean;
     context: ProofContext;
   };
+  [SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS]: undefined;
+  [SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE]: { errorType: 'expired' | 'general' };
 
   [SdkEvents.PROGRESS]: Progress;
   [SdkEvents.ERROR]: Error;

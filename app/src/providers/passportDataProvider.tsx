@@ -754,6 +754,7 @@ async function storeDocumentDirectlyToKeychain(
   });
 }
 
+// Duplicate funciton. prefer one on mobile sdk
 export async function storeDocumentWithDeduplication(
   passportData: PassportData | AadhaarData,
 ): Promise<string> {
@@ -801,7 +802,7 @@ export async function storeDocumentWithDeduplication(
 
   return contentHash;
 }
-
+// Duplicate function. prefer one in mobile sdk
 export async function storePassportData(
   passportData: PassportData | AadhaarData,
 ) {
