@@ -60,24 +60,29 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
     const initializeProving = async () => {
       try {
         const selectedDocument = await loadSelectedDocument(selfClient);
+        let metadata: {
+          documentCategory?: DocumentCategory;
+          signatureAlgorithm?: string;
+          curveOrExponent?: string;
+        };
         if (selectedDocument?.data?.documentCategory === 'aadhaar') {
-          setDocumentMetadata({
+          metadata = {
             documentCategory: 'aadhaar',
             signatureAlgorithm: 'rsa',
             curveOrExponent: '65537',
-          });
+          };
         } else {
           const passportData = selectedDocument?.data;
-          setDocumentMetadata({
+          metadata = {
             documentCategory: passportData?.documentCategory,
             signatureAlgorithm:
               passportData?.passportMetadata?.cscaSignatureAlgorithm,
             curveOrExponent:
               passportData?.passportMetadata?.cscaCurveOrExponent,
-          });
+          };
         }
+        setDocumentMetadata(metadata);
       } catch (error) {
-        console.error('Error loading selected document:', error);
         // setting defaults on error
         setDocumentMetadata({
           documentCategory: 'passport',

@@ -46,7 +46,7 @@ export async function checkBiometricsAvailable(): Promise<boolean> {
     const { available } = await rnBiometrics.isSensorAvailable();
     return available;
   } catch (error) {
-    console.log('Biometrics not available:', error);
+    console.log('Biometrics not available');
     return false;
   }
 }
@@ -65,7 +65,7 @@ export async function checkPasscodeAvailable(): Promise<boolean> {
     await Keychain.resetGenericPassword({ service: testService });
     return true;
   } catch (error) {
-    console.log('Device passcode not available:', error);
+    console.log('Device passcode not available');
     return false;
   }
 }
@@ -84,7 +84,6 @@ export async function createKeychainOptions(
     options.requireAuth,
     capabilities,
   );
-  console.log('config', config);
 
   const setOptions: SetOptions = {
     accessible: config.accessible,
@@ -102,9 +101,6 @@ export async function createKeychainOptions(
       },
     }),
   };
-
-  console.log('setOptions', setOptions);
-  console.log('getOptions', getOptions);
 
   return { setOptions, getOptions };
 }
@@ -192,10 +188,7 @@ export async function getMaxSecurityLevel(): Promise<SECURITY_LEVEL> {
     const securityLevel = await Keychain.getSecurityLevel();
     return securityLevel || Keychain.SECURITY_LEVEL.ANY;
   } catch (error) {
-    console.log(
-      'Could not determine security level, defaulting to ANY:',
-      error,
-    );
+    console.log('Could not determine security level, defaulting to ANY');
     return Keychain.SECURITY_LEVEL.ANY;
   }
 }
