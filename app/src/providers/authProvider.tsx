@@ -22,7 +22,7 @@ import analytics from '@/utils/analytics';
 import {
   createKeychainOptions,
   detectSecurityCapabilities,
-  GetSecurelyOptions,
+  GetSecureOptions,
 } from '@/utils/keychainSecurity';
 
 const { trackEvent } = analytics();
@@ -37,7 +37,7 @@ type KeychainOptions = {
 const _getSecurely = async function <T>(
   fn: (keychainOptions: KeychainOptions) => Promise<string | false>,
   formatter: (dataString: string) => T,
-  options: GetSecurelyOptions,
+  options: GetSecureOptions,
 ): Promise<SignedPayload<T> | null> {
   try {
     const capabilities = await detectSecurityCapabilities();
@@ -69,7 +69,7 @@ const _getSecurely = async function <T>(
 const _getWithBiometrics = async function <T>(
   fn: () => Promise<string | false>,
   formatter: (dataString: string) => T,
-  options: GetSecurelyOptions,
+  options: GetSecureOptions,
 ): Promise<SignedPayload<T> | null> {
   try {
     const simpleCheck = await biometrics.simplePrompt({
@@ -356,7 +356,6 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
       service: SERVICE_NAME,
     });
 
-    console.log('Successfully migrated mnemonic to secure keychain');
     trackEvent(AuthEvents.MNEMONIC_CREATED, { migrated: true });
 
     setKeychainMigrationCompleted();

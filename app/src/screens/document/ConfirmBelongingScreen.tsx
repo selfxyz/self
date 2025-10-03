@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
+import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
@@ -38,14 +39,14 @@ type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const selfClient = useSelfClient();
   const [documentMetadata, setDocumentMetadata] = useState<{
-    documentCategory?: string;
+    documentCategory?: DocumentCategory;
     signatureAlgorithm?: string;
     curveOrExponent?: string;
   }>({});
   const { trackEvent } = selfClient;
   const navigate = useHapticNavigation('Loading', {
     params: {
-      documentCategory: documentMetadata.documentCategory as any,
+      documentCategory: documentMetadata.documentCategory,
       signatureAlgorithm: documentMetadata.signatureAlgorithm,
       curveOrExponent: documentMetadata.curveOrExponent,
     },

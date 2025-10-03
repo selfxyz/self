@@ -19,7 +19,7 @@ export interface AdaptiveSecurityConfig {
   accessControl?: ACCESS_CONTROL;
 }
 
-export interface GetSecurelyOptions {
+export interface GetSecureOptions {
   requireAuth?: boolean;
   promptMessage?: string;
 }
@@ -74,7 +74,7 @@ export async function checkPasscodeAvailable(): Promise<boolean> {
  * Create keychain options with adaptive security
  */
 export async function createKeychainOptions(
-  options: GetSecurelyOptions,
+  options: GetSecureOptions,
   capabilities?: SecurityCapabilities,
 ): Promise<{
   setOptions: SetOptions;
