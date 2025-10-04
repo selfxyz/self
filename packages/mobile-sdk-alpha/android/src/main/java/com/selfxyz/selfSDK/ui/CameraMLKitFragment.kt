@@ -82,7 +82,13 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
         val fragmentBinding = binding ?: return
         val statusTop = fragmentBinding.statusViewTop
         val statusBottom = fragmentBinding.statusViewBottom
+        val initialTopStart = ViewCompat.getPaddingStart(statusTop)
         val initialTopPadding = statusTop.paddingTop
+        val initialTopEnd = ViewCompat.getPaddingEnd(statusTop)
+        val initialTopBottom = statusTop.paddingBottom
+        val initialBottomStart = ViewCompat.getPaddingStart(statusBottom)
+        val initialBottomTop = statusBottom.paddingTop
+        val initialBottomEnd = ViewCompat.getPaddingEnd(statusBottom)
         val initialBottomPadding = statusBottom.paddingBottom
 
         ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { _, insets ->
@@ -91,10 +97,10 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
             )
             ViewCompat.setPaddingRelative(
                 statusTop,
-                ViewCompat.getPaddingStart(statusTop),
+                initialTopStart,
                 initialTopPadding + statusInsets.top,
-                ViewCompat.getPaddingEnd(statusTop),
-                statusTop.paddingBottom
+                initialTopEnd,
+                initialTopBottom
             )
 
             val navAndGesturesInsets = insets.getInsets(
@@ -104,9 +110,9 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
             val bottomInset = maxOf(navAndGesturesInsets.bottom, imeInsets.bottom)
             ViewCompat.setPaddingRelative(
                 statusBottom,
-                ViewCompat.getPaddingStart(statusBottom),
-                statusBottom.paddingTop,
-                ViewCompat.getPaddingEnd(statusBottom),
+                initialBottomStart,
+                initialBottomTop,
+                initialBottomEnd,
                 initialBottomPadding + bottomInset
             )
 
@@ -133,9 +139,11 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
     }
 
     override fun onDestroyView() {
+        binding?.root?.let { ViewCompat.setOnApplyWindowInsetsListener(it, null) }
         if (!disposable.isDisposed()) {
             disposable.dispose();
         }
+        binding = null
         super.onDestroyView()
     }
 
