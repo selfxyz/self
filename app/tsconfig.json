@@ -10,6 +10,7 @@
     "skipDefaultLibCheck": false,
     "paths": {
       "@env": ["./env.ts"],
+      "@/package.json": ["./package.json"],
       "@selfxyz/mobile-sdk-alpha": [
         "../packages/mobile-sdk-alpha/src",
         "../packages/mobile-sdk-alpha/dist"
