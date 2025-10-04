@@ -14,6 +14,10 @@ const PRIVATE_MODULE_PATH = path.join(
   ANDROID_DIR,
   'android-passport-nfc-reader',
 );
+const PASSPORTREADER_MODULE_PATH = path.join(
+  PRIVATE_MODULE_PATH,
+  'app',
+);
 
 const GITHUB_ORG = 'selfxyz';
 const REPO_NAME = 'android-passport-nfc-reader';
@@ -237,9 +241,54 @@ function setupAndroidPassportReader() {
   // Validate the setup
   if (!isDryRun) {
     validateSetup();
+    remind16kAlignmentSteps();
   }
 
   log(`${REPO_NAME} setup complete!`, 'success');
+}
+
+function remind16kAlignmentSteps() {
+  const gradleFile = path.join(PASSPORTREADER_MODULE_PATH, 'build.gradle');
+  const jniLibsDir = path.join(
+    PASSPORTREADER_MODULE_PATH,
+    'src',
+    'main',
+    'jniLibs',
+  );
+
+  if (fs.existsSync(gradleFile)) {
+    log(
+      '✅ passportreader module detected. Root Gradle script now injects 16 KB alignment flags during builds.',
+      'success',
+    );
+    log(
+      'ℹ️ To refresh aligned binaries locally run: ./gradlew :passportreader:clean :passportreader:assembleRelease',
+      'info',
+    );
+  }
+
+  if (fs.existsSync(jniLibsDir)) {
+    const soFiles = fs
+      .readdirSync(jniLibsDir, { withFileTypes: true })
+      .flatMap((entry) => {
+        if (!entry.isDirectory()) {
+          return [];
+        }
+
+        const archDir = path.join(jniLibsDir, entry.name);
+        return fs
+          .readdirSync(archDir, { withFileTypes: true })
+          .filter((file) => file.isFile() && file.name.endsWith('.so'))
+          .map((file) => path.join(entry.name, file.name));
+      });
+
+    if (soFiles.length > 0) {
+      log(
+        `⚠️ Found prebuilt JNI libraries in passportreader: ${soFiles.join(', ')}. Ensure they are rebuilt or replaced with 16 KB aligned versions.`,
+        'warning',
+      );
+    }
+  }
 }
 
 function scrubGitRemoteUrl() {

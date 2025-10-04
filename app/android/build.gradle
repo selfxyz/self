@@ -65,7 +65,7 @@ subprojects {
 
                 if (buildGradleFile.exists()) {
                     def buildGradleText = buildGradleFile.text
-                    def namespaceMatcher = buildGradleText =~ /namespace\s*['"](.+?)['"]/
+                    def namespaceMatcher = buildGradleText =~ /namespace\s*['"](.+?)['"]/ 
                     if (namespaceMatcher.find()) {
                         namespace = namespaceMatcher[0][1]
                         println "Set namespace for ${project.name} to ${namespace} from build.gradle"
@@ -88,6 +88,90 @@ subprojects {
                     namespace = project.group
                     println "AndroidManifest.xml not found. Set namespace for ${project.name} to ${namespace}"
                 }
+            }
+        }
+    }
+}
+
+def SIXTEEN_K_PAGE_FLAG = '-Wl,-z,max-page-size=16384'
+
+subprojects { project ->
+    if (project.name != 'passportreader') {
+        return
+    }
+
+    project.plugins.withId('com.android.library') {
+        def androidExtension = project.extensions.findByName('android')
+        if (androidExtension != null) {
+            try {
+                if (androidExtension.hasProperty('ndkVersion')) {
+                    androidExtension.ndkVersion = rootProject.ext.ndkVersion
+                }
+
+                def packagingOptions = androidExtension.hasProperty('packagingOptions') ? androidExtension.packagingOptions : null
+                if (packagingOptions?.metaClass?.hasProperty(packagingOptions, 'jniLibs')) {
+                    packagingOptions.jniLibs.useLegacyPackaging = false
+                } else if (androidExtension.metaClass.hasProperty(androidExtension, 'packaging')) {
+                    androidExtension.packaging { jniLibs { useLegacyPackaging = false } }
+                }
+            } catch (Exception exception) {
+                println "⚠️ 16 KB alignment: Failed to update packaging for ${project.path}: ${exception.message}"
+            }
+        }
+
+        project.afterEvaluate {
+            def androidExt = project.extensions.findByName('android')
+            if (androidExt != null) {
+                try {
+                    def nativeConfig = androidExt.defaultConfig?.externalNativeBuild
+                    def maybeAddFlag = { nativeBlock ->
+                        if (nativeBlock == null) {
+                            return
+                        }
+
+                        def currentArgs
+                        try {
+                            currentArgs = nativeBlock.arguments
+                        } catch (MissingPropertyException ignore) {
+                            currentArgs = null
+                        }
+
+                        if (currentArgs == null) {
+                            try {
+                                nativeBlock.arguments = [SIXTEEN_K_PAGE_FLAG]
+                                return
+                            } catch (MissingPropertyException ignore) {
+                                try {
+                                    nativeBlock.arguments(SIXTEEN_K_PAGE_FLAG)
+                                } catch (Exception ignored) {
+                                    // Swallow and fall through to logging below
+                                }
+                                return
+                            }
+                        }
+
+                        if (currentArgs instanceof Collection && !currentArgs.contains(SIXTEEN_K_PAGE_FLAG)) {
+                            currentArgs.add(SIXTEEN_K_PAGE_FLAG)
+                        }
+                    }
+
+                    maybeAddFlag(nativeConfig?.cmake)
+                    maybeAddFlag(nativeConfig?.ndkBuild)
+                } catch (Exception exception) {
+                    println "⚠️ 16 KB alignment: Failed to seed native arguments for ${project.path}: ${exception.message}"
+                }
+            }
+
+            try {
+                def externalNativeTaskClass = Class.forName('com.android.build.gradle.tasks.ExternalNativeBuildTask')
+                project.tasks.withType(externalNativeTaskClass).configureEach { task ->
+                    def args = task.hasProperty('buildCommandArguments') ? task.buildCommandArguments : null
+                    if (args instanceof Collection && !args.contains(SIXTEEN_K_PAGE_FLAG)) {
+                        args.add(SIXTEEN_K_PAGE_FLAG)
+                    }
+                }
+            } catch (ClassNotFoundException ignored) {
+                println "⚠️ 16 KB alignment: ExternalNativeBuildTask class not available for ${project.path}"
             }
         }
     }
