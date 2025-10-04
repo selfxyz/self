@@ -194,7 +194,6 @@ export default defineConfig({
 
           // Other screens
           'screens-settings': ['./src/navigation/account.ts'],
-          'screens-recovery': ['./src/navigation/account.ts'],
           'screens-dev': ['./src/navigation/devTools.ts'],
         },
       },
