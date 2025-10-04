@@ -8,7 +8,7 @@ import { AccessibilityInfo, PermissionsAndroid, Platform } from 'react-native';
 import type { MRZInfo } from '@selfxyz/mobile-sdk-alpha';
 import { useReadMRZ } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
-import { normalizeMRZPayload, type NormalizedMRZResult } from './documentCameraUtils';
+import { normalizeMRZPayload, type NormalizedMRZResult } from '../utils/camera';
 
 type PermissionState = 'loading' | 'granted' | 'denied';
 type ScanState = 'idle' | 'scanning' | 'success' | 'error';
@@ -44,7 +44,7 @@ export interface DocumentScannerState {
   handleScanAgain: () => void;
 }
 
-export function useDocumentScanner(copy: DocumentScannerCopy): DocumentScannerState {
+export function useMRZScanner(copy: DocumentScannerCopy): DocumentScannerState {
   const [permissionStatus, setPermissionStatus] = useState<PermissionState>('loading');
   const [scanState, setScanState] = useState<ScanState>('idle');
   const [mrzResult, setMrzResult] = useState<NormalizedMRZResult | null>(null);
@@ -59,16 +59,13 @@ export function useDocumentScanner(copy: DocumentScannerCopy): DocumentScannerSt
 
     if (Platform.OS === 'android') {
       try {
-        const result = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          {
-            title: 'Camera permission',
-            message: 'We need your permission to access the camera for MRZ scanning.',
-            buttonPositive: 'Allow',
-            buttonNegative: 'Cancel',
-            buttonNeutral: 'Ask me later',
-          },
-        );
+        const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA, {
+          title: 'Camera permission',
+          message: 'We need your permission to access the camera for MRZ scanning.',
+          buttonPositive: 'Allow',
+          buttonNegative: 'Cancel',
+          buttonNeutral: 'Ask me later',
+        });
 
         if (result === PermissionsAndroid.RESULTS.GRANTED) {
           setPermissionStatus('granted');

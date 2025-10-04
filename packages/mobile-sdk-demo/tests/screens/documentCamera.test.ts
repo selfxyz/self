@@ -6,12 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { MRZInfo } from '@selfxyz/mobile-sdk-alpha';
 
-import {
-  buildValidationRows,
-  formatMRZDate,
-  humanizeDocumentType,
-  normalizeMRZPayload,
-} from '../../src/screens/documentCameraUtils';
+import { buildValidationRows, formatMRZDate, humanizeDocumentType, normalizeMRZPayload } from '../../src/utils/camera';
 
 describe('formatMRZDate', () => {
   it('formats valid YYMMDD strings into readable dates', () => {
@@ -27,8 +22,7 @@ describe('formatMRZDate', () => {
 
 describe('normalizeMRZPayload', () => {
   it('parses raw MRZ strings and surfaces validation data', () => {
-    const rawMRZ =
-      'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10';
+    const rawMRZ = 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10';
 
     const normalized = normalizeMRZPayload(rawMRZ);
 

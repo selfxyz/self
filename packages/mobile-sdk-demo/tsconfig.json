@@ -3,7 +3,16 @@
   "compilerOptions": {
     "strict": true,
     "allowJs": true,
+    "baseUrl": ".",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "paths": {
+      "@selfxyz/mobile-sdk-alpha": ["../../packages/mobile-sdk-alpha/dist/esm/index"],
+      "@selfxyz/mobile-sdk-alpha/onboarding/*": ["../../packages/mobile-sdk-alpha/dist/esm/flows/onboarding/*"],
+      "@selfxyz/mobile-sdk-alpha/disclosing/*": ["../../packages/mobile-sdk-alpha/dist/esm/flows/disclosing/*"]
+    },
     "types": ["react-native", "vitest/globals"]
   },
-  "include": ["src", "App.tsx", "index.js", "types/**/*", "__tests__/**/*", "tests/**/*"]
+  "include": ["src", "App.tsx", "index.js", "types/**/*", "__tests__/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "../../packages/mobile-sdk-alpha/src"]
 }

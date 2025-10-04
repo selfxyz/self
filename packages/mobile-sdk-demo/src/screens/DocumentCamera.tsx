@@ -5,23 +5,21 @@
 import React, { useCallback } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { MRZScannerView } from '@selfxyz/mobile-sdk-alpha/components';
+import { MRZScannerView } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 import ScreenLayout from '../components/ScreenLayout';
-import DocumentScanResultCard from './DocumentScanResultCard';
-import { useDocumentScanner } from './useDocumentScanner';
+import DocumentScanResultCard from '../components/DocumentScanResultCard';
+import { useMRZScanner } from '../hooks/useMRZScanner';
 
 type Props = {
   onBack: () => void;
 };
 
-const instructionsText =
-  'Align the machine-readable text with the frame and hold steady while we scan.';
+const instructionsText = 'Align the machine-readable text with the frame and hold steady while we scan.';
 
 const successMessage = 'Document scan successful. Review the details below.';
 const errorMessage = 'We could not read your document. Adjust lighting and try again.';
-const permissionDeniedMessage =
-  'Camera access was denied. Enable permissions to scan your document.';
+const permissionDeniedMessage = 'Camera access was denied. Enable permissions to scan your document.';
 
 export default function DocumentCamera({ onBack }: Props) {
   const scannerCopy = {
@@ -41,7 +39,7 @@ export default function DocumentCamera({ onBack }: Props) {
     handleMRZDetected,
     handleScannerError,
     handleScanAgain,
-  } = useDocumentScanner(scannerCopy);
+  } = useMRZScanner(scannerCopy);
 
   const handleSaveDocument = useCallback(() => {
     if (!mrzResult) {
@@ -58,11 +56,7 @@ export default function DocumentCamera({ onBack }: Props) {
   const renderPermissionDenied = () => (
     <View style={styles.centeredState}>
       <Text style={styles.permissionText}>{permissionDeniedMessage}</Text>
-      <TouchableOpacity
-        accessibilityRole="button"
-        style={styles.secondaryButton}
-        onPress={requestPermission}
-      >
+      <TouchableOpacity accessibilityRole="button" style={styles.secondaryButton} onPress={requestPermission}>
         <Text style={styles.secondaryButtonText}>Request Permission</Text>
       </TouchableOpacity>
     </View>
@@ -95,11 +89,7 @@ export default function DocumentCamera({ onBack }: Props) {
         <View style={styles.contentWrapper}>
           <View style={styles.cameraWrapper}>
             <MRZScannerView style={styles.scanner} onMRZDetected={handleMRZDetected} onError={handleScannerError} />
-            <View
-              style={styles.overlay}
-              accessibilityLiveRegion="polite"
-              pointerEvents="none"
-            >
+            <View style={styles.overlay} accessibilityLiveRegion="polite" pointerEvents="none">
               <Text style={styles.overlayTitle}>Position your document</Text>
               <Text style={styles.overlayText}>{instructionsText}</Text>
             </View>
@@ -117,27 +107,17 @@ export default function DocumentCamera({ onBack }: Props) {
               <Text style={[styles.statusText, styles.successText]}>{successMessage}</Text>
             )}
 
-            {scanState === 'error' && error && (
-              <Text style={[styles.statusText, styles.errorText]}>{error}</Text>
-            )}
+            {scanState === 'error' && error && <Text style={[styles.statusText, styles.errorText]}>{error}</Text>}
           </View>
 
           {mrzResult && <DocumentScanResultCard result={mrzResult} />}
 
           <View style={styles.actions}>
-            <TouchableOpacity
-              accessibilityRole="button"
-              onPress={handleScanAgain}
-              style={styles.secondaryButton}
-            >
+            <TouchableOpacity accessibilityRole="button" onPress={handleScanAgain} style={styles.secondaryButton}>
               <Text style={styles.secondaryButtonText}>Scan Again</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              accessibilityRole="button"
-              onPress={handleSaveDocument}
-              style={styles.primaryButton}
-            >
+            <TouchableOpacity accessibilityRole="button" onPress={handleSaveDocument} style={styles.primaryButton}>
               <Text style={styles.primaryButtonText}>Save Document</Text>
             </TouchableOpacity>
           </View>

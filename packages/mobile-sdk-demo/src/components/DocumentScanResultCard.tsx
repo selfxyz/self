@@ -5,11 +5,7 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import {
-  buildValidationRows,
-  humanizeDocumentType,
-  type NormalizedMRZResult,
-} from './documentCameraUtils';
+import { buildValidationRows, humanizeDocumentType, type NormalizedMRZResult } from '../utils/camera';
 
 interface Props {
   result: NormalizedMRZResult;
@@ -54,10 +50,7 @@ export default function DocumentScanResultCard({ result }: Props) {
             <View key={row.label} style={styles.validationRow}>
               <Text style={styles.validationLabel}>{row.label}</Text>
               <Text
-                style={[
-                  styles.validationBadge,
-                  row.value ? styles.validationPass : styles.validationFail,
-                ]}
+                style={[styles.validationBadge, row.value ? styles.validationPass : styles.validationFail]}
                 accessibilityRole="text"
               >
                 {row.value ? '✓ Pass' : '✗ Fail'}
@@ -65,9 +58,7 @@ export default function DocumentScanResultCard({ result }: Props) {
             </View>
           ))
         ) : (
-          <Text style={styles.validationPlaceholder}>
-            Validation details are not available for this scan yet.
-          </Text>
+          <Text style={styles.validationPlaceholder}>Validation details are not available for this scan yet.</Text>
         )}
       </View>
     </View>
