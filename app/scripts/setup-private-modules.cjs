@@ -14,10 +14,7 @@ const PRIVATE_MODULE_PATH = path.join(
   ANDROID_DIR,
   'android-passport-nfc-reader',
 );
-const PASSPORTREADER_MODULE_PATH = path.join(
-  PRIVATE_MODULE_PATH,
-  'app',
-);
+const PASSPORTREADER_MODULE_PATH = path.join(PRIVATE_MODULE_PATH, 'app');
 
 const GITHUB_ORG = 'selfxyz';
 const REPO_NAME = 'android-passport-nfc-reader';
@@ -270,7 +267,7 @@ function remind16kAlignmentSteps() {
   if (fs.existsSync(jniLibsDir)) {
     const soFiles = fs
       .readdirSync(jniLibsDir, { withFileTypes: true })
-      .flatMap((entry) => {
+      .flatMap(entry => {
         if (!entry.isDirectory()) {
           return [];
         }
@@ -278,8 +275,8 @@ function remind16kAlignmentSteps() {
         const archDir = path.join(jniLibsDir, entry.name);
         return fs
           .readdirSync(archDir, { withFileTypes: true })
-          .filter((file) => file.isFile() && file.name.endsWith('.so'))
-          .map((file) => path.join(entry.name, file.name));
+          .filter(file => file.isFile() && file.name.endsWith('.so'))
+          .map(file => path.join(entry.name, file.name));
       });
 
     if (soFiles.length > 0) {
