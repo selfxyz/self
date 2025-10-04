@@ -5,7 +5,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import type { DocumentCatalog, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import { extractNameFromDocument, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PickerField } from '../components/PickerField';
 

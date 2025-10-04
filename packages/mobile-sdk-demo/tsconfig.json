@@ -1,10 +1,12 @@
 {
   "extends": "@tsconfig/react-native/tsconfig.json",
   "compilerOptions": {
+    "module": "ES2020",
     "strict": true,
     "allowJs": true,
     "baseUrl": ".",
     "moduleResolution": "Bundler",
+    "lib": ["ES2020", "DOM"],
     "skipLibCheck": true,
     "paths": {
       "@selfxyz/mobile-sdk-alpha": ["../../packages/mobile-sdk-alpha/dist/esm/index"],

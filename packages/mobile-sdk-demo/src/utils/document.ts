@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentMetadata } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentMetadata } from '@selfxyz/common/utils/types';
 
 export function humanizeDocumentType(documentType: string): string {
   const toTitle = (s: string) => s.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
