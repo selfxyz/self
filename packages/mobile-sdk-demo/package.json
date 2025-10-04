@@ -2,6 +2,7 @@
   "name": "mobile-sdk-demo",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "analyze:bundle:android": "yarn prebuild && node scripts/bundle-analyze-ci.cjs android",

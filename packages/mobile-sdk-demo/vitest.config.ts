@@ -22,6 +22,12 @@ export default defineConfig({
       },
     },
   },
+  esbuild: {
+    target: 'node18',
+  },
+  build: {
+    target: 'node18',
+  },
   resolve: {
     alias: [
       {
