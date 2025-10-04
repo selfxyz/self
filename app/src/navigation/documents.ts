@@ -8,18 +8,18 @@ import { AadhaarNavBar, IdDetailsNavBar } from '@/components/NavBar';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';
-import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
-import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
-import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
-import IDPickerScreen from '@/screens/documents/selection/IDPickerScreen';
+import DocumentDataInfoScreen from '@/screens/documents/management/DocumentDataInfoScreen';
+import IdDetailsScreen from '@/screens/documents/management/IdDetailsScreen';
+import ManageDocumentsScreen from '@/screens/documents/management/ManageDocumentsScreen';
 import DocumentCameraScreen from '@/screens/documents/scanning/DocumentCameraScreen';
 import DocumentCameraTroubleScreen from '@/screens/documents/scanning/DocumentCameraTroubleScreen';
 import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/DocumentNFCMethodSelectionScreen';
 import DocumentNFCScanScreen from '@/screens/documents/scanning/DocumentNFCScanScreen';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
-import DocumentDataInfoScreen from '@/screens/documents/management/DocumentDataInfoScreen';
-import IdDetailsScreen from '@/screens/documents/management/IdDetailsScreen';
-import ManageDocumentsScreen from '@/screens/documents/management/ManageDocumentsScreen';
+import ConfirmBelongingScreen from '@/screens/documents/selection/ConfirmBelongingScreen';
+import CountryPickerScreen from '@/screens/documents/selection/CountryPickerScreen';
+import DocumentOnboardingScreen from '@/screens/documents/selection/DocumentOnboardingScreen';
+import IDPickerScreen from '@/screens/documents/selection/IDPickerScreen';
 import { black, white } from '@/utils/colors';
 
 const documentsScreens = {

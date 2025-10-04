@@ -32,6 +32,7 @@ export default defineConfig({
       '@env': resolve(__dirname, 'env.ts'),
       '/src': resolve(__dirname, 'src'),
       '@': resolve(__dirname, 'src'),
+      '@/package.json': resolve(__dirname, 'package.json'),
       'react-native-svg': 'react-native-svg-web',
       'lottie-react-native': 'lottie-react',
       '@react-native-community/blur': resolve(
