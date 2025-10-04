@@ -16,23 +16,25 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { DefaultNavBar } from '@/components/NavBar';
 import AppLayout from '@/layouts/AppLayout';
+import accountScreens from '@/navigation/account';
+import appScreens from '@/navigation/app';
 import devScreens from '@/navigation/devTools';
-import documentScreens from '@/navigation/document';
+import documentsScreens from '@/navigation/documents';
 import homeScreens from '@/navigation/home';
-import proveScreens from '@/navigation/prove';
-import recoveryScreens from '@/navigation/recovery';
-import settingsScreens from '@/navigation/settings';
-import systemScreens from '@/navigation/system';
+import onboardingScreens from '@/navigation/onboarding';
+import sharedScreens from '@/navigation/shared';
+import verificationScreens from '@/navigation/verification';
 import analytics from '@/utils/analytics';
 import { setupUniversalLinkListenerInNavigation } from '@/utils/deeplinks';
 
 export const navigationScreens = {
-  ...systemScreens,
-  ...documentScreens,
+  ...appScreens,
+  ...onboardingScreens,
   ...homeScreens,
-  ...proveScreens,
-  ...settingsScreens,
-  ...recoveryScreens,
+  ...documentsScreens,
+  ...verificationScreens,
+  ...accountScreens,
+  ...sharedScreens,
   ...devScreens, // allow in production for testing
 };
 const AppNavigation = createNativeStackNavigator({

@@ -4,13 +4,13 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import ProofRequestStatusScreen from '@/screens/prove/ProofRequestStatusScreen';
-import ProveScreen from '@/screens/prove/ProveScreen';
-import QRCodeTroubleScreen from '@/screens/prove/QRCodeTroubleScreen';
-import QRCodeViewFinderScreen from '@/screens/prove/QRCodeViewFinderScreen';
+import ProofRequestStatusScreen from '@/screens/verification/ProofRequestStatusScreen';
+import ProveScreen from '@/screens/verification/ProveScreen';
+import QRCodeTroubleScreen from '@/screens/verification/QRCodeTroubleScreen';
+import QRCodeViewFinderScreen from '@/screens/verification/QRCodeViewFinderScreen';
 import { black, white } from '@/utils/colors';
 
-const proveScreens = {
+const verificationScreens = {
   ProofRequestStatus: {
     screen: ProofRequestStatusScreen,
     options: {
@@ -43,9 +43,8 @@ const proveScreens = {
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
-      // presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
 };
 
-export default proveScreens;
+export default verificationScreens;

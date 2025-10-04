@@ -8,13 +8,13 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
-import DeferredLinkingInfoScreen from '@/screens/system/DeferredLinkingInfoScreen';
-import LaunchScreen from '@/screens/system/LaunchScreen';
-import LoadingScreen from '@/screens/system/Loading';
-import ModalScreen from '@/screens/system/ModalScreen';
-import SplashScreen from '@/screens/system/SplashScreen';
+import DeferredLinkingInfoScreen from '@/screens/app/DeferredLinkingInfoScreen';
+import LaunchScreen from '@/screens/app/LaunchScreen';
+import LoadingScreen from '@/screens/app/LoadingScreen';
+import ModalScreen from '@/screens/app/ModalScreen';
+import SplashScreen from '@/screens/app/SplashScreen';
 
-const systemScreens = {
+const appScreens = {
   Launch: {
     screen: LaunchScreen,
     options: {
@@ -56,4 +56,4 @@ const systemScreens = {
   },
 };
 
-export default systemScreens;
+export default appScreens;

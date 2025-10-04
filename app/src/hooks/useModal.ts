@@ -5,7 +5,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 
-import type { ModalParams } from '@/screens/system/ModalScreen';
+import type { ModalParams } from '@/screens/app/ModalScreen';
 import {
   getModalCallbacks,
   registerModalCallbacks,

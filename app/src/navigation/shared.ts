@@ -4,18 +4,19 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import DocumentDataNotFound from '@/screens/recovery/DocumentDataNotFoundScreen';
+import ComingSoonScreen from '@/screens/shared/ComingSoonScreen';
 
-const recoveryScreens = {
-  DocumentDataNotFound: {
-    screen: DocumentDataNotFound,
+const sharedScreens = {
+  ComingSoon: {
+    screen: ComingSoonScreen,
     options: {
       headerShown: false,
-      gestureEnabled: false,
-      animation: 'slide_from_bottom',
-      // presentation: 'modal',
     } as NativeStackNavigationOptions,
+    initialParams: {
+      countryCode: null,
+      documentCategory: null,
+    },
   },
 };
 
-export default recoveryScreens;
+export default sharedScreens;

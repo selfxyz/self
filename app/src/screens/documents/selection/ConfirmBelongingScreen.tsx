@@ -21,7 +21,7 @@ import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import { styles } from '@/screens/prove/ProofRequestStatusScreen';
+import { styles } from '@/screens/verification/ProofRequestStatusScreen';
 import { useSettingStore } from '@/stores/settingStore';
 import { flushAllAnalytics, trackNfcEvent } from '@/utils/analytics';
 import { black, white } from '@/utils/colors';
