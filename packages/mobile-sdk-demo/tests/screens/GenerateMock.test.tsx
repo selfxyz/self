@@ -2,13 +2,17 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Alert } from 'react-native';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import GenerateMock from '../../src/screens/GenerateMock';
 import type { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types.js';
 import { sdkMocks } from '../mocks/sdk';
 
 describe('GenerateMock screen', () => {
+  beforeEach(() => {
+    sdkMocks.reset();
+  });
+
   it('creates a new mock document and navigates to registration for the first entry', async () => {
     const onNavigate = vi.fn();
     const onDocumentStored = vi.fn();
