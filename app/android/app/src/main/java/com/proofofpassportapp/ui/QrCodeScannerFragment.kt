@@ -27,11 +27,13 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnAttach
 import com.proofofpassportapp.utils.QrCodeDetectorProcessor
 import example.jllarraz.com.passportreader.R
 import example.jllarraz.com.passportreader.databinding.FragmentCameraMrzBinding
@@ -64,6 +66,41 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val fragmentBinding = binding ?: return
+        val statusTop = fragmentBinding.statusViewTop
+        val statusBottom = fragmentBinding.statusViewBottom
+        val initialTopPadding = statusTop.paddingTop
+        val initialBottomPadding = statusBottom.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { _, insets ->
+            val statusInsets = insets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            ViewCompat.setPaddingRelative(
+                statusTop,
+                ViewCompat.getPaddingStart(statusTop),
+                initialTopPadding + statusInsets.top,
+                ViewCompat.getPaddingEnd(statusTop),
+                statusTop.paddingBottom
+            )
+
+            val navAndGesturesInsets = insets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.systemGestures()
+            )
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomInset = maxOf(navAndGesturesInsets.bottom, imeInsets.bottom)
+            ViewCompat.setPaddingRelative(
+                statusBottom,
+                ViewCompat.getPaddingStart(statusBottom),
+                statusBottom.paddingTop,
+                ViewCompat.getPaddingEnd(statusBottom),
+                initialBottomPadding + bottomInset
+            )
+
+            insets
+        }
+
+        fragmentBinding.root.doOnAttach { ViewCompat.requestApplyInsets(it) }
     }
 
 
