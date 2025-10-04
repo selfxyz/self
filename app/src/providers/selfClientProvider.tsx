@@ -105,7 +105,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
     addListener(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND, () => {
       if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentDataNotFound');
+        navigationRef.navigate('ComingSoon');
       }
     });
 

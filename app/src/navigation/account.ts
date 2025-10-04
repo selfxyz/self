@@ -6,7 +6,7 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 
 import AccountRecoveryChoiceScreen from '@/screens/account/recovery/AccountRecoveryChoiceScreen';
 import AccountRecoveryScreen from '@/screens/account/recovery/AccountRecoveryScreen';
-import DocumentDataNotFoundScreen from '@/screens/account/recovery/DocumentDataNotFoundScreen';
+// Removed DocumentDataNotFound route; use ComingSoon instead where needed
 import RecoverWithPhraseScreen from '@/screens/account/recovery/RecoverWithPhraseScreen';
 import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
@@ -26,14 +26,7 @@ const accountScreens = {
       headerShown: false,
     } as NativeStackNavigationOptions,
   },
-  DocumentDataNotFound: {
-    screen: DocumentDataNotFoundScreen,
-    options: {
-      headerShown: false,
-      gestureEnabled: false,
-      animation: 'slide_from_bottom',
-    } as NativeStackNavigationOptions,
-  },
+  // DocumentDataNotFound screen entry removed
   RecoverWithPhrase: {
     screen: RecoverWithPhraseScreen,
     options: {

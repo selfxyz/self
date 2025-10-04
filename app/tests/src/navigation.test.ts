@@ -28,7 +28,7 @@ describe('navigation', () => {
       'DocumentCamera',
       'DocumentCameraTrouble',
       'DocumentDataInfo',
-      'DocumentDataNotFound',
+      // 'DocumentDataNotFound' removed; use ComingSoon instead
       'DocumentNFCMethodSelection',
       'DocumentNFCScan',
       'DocumentNFCTrouble',
