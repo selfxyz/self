@@ -31,8 +31,6 @@ import {
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { initPassportDataParsing } from '@selfxyz/common/utils/passports';
 import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
