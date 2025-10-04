@@ -72,9 +72,7 @@ describe('GenerateMock screen', () => {
     await userEvent.click(screen.getByRole('button', { name: /generate/i }));
     await waitFor(() => expect(sdkMocks.selfClient.saveDocumentCatalog).toHaveBeenCalled());
     expect(onNavigate).not.toHaveBeenCalled();
-    await waitFor(() =>
-      expect(Alert.alert).toHaveBeenCalledWith('Success', 'Mock document generated successfully.'),
-    );
+    await waitFor(() => expect(Alert.alert).toHaveBeenCalledWith('Success', 'Mock document generated successfully.'));
 
     const savedCatalog = sdkMocks.selfClient.saveDocumentCatalog.mock.calls.at(-1)?.[0];
     expect(savedCatalog?.documents?.length).toBe(2);

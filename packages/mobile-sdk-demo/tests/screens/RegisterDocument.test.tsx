@@ -53,7 +53,7 @@ describe('RegisterDocument screen', () => {
     onCompleteHandler = null;
   });
 
-  const createCatalog = (documents: DocumentMetadata[]): DocumentCatalog => ({ documents } as DocumentCatalog);
+  const createCatalog = (documents: DocumentMetadata[]): DocumentCatalog => ({ documents }) as DocumentCatalog;
 
   it('lists unregistered documents and triggers registration flow', async () => {
     const catalog = createCatalog([
@@ -90,7 +90,7 @@ describe('RegisterDocument screen', () => {
     sdkMocks.getAllDocumentsMock.mockResolvedValue({
       'doc-1': { data: documentData },
     });
-    sdkMocks.selfClient.saveDocumentCatalog.mockResolvedValue();
+    sdkMocks.selfClient.saveDocumentCatalog.mockResolvedValue(undefined);
     sdkMocks.selfClient.loadDocumentCatalog.mockResolvedValue(catalog);
 
     const onBack = vi.fn();

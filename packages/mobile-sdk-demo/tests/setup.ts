@@ -150,7 +150,10 @@ const TextInput = forwardRef<any, any>(
       type: secureTextEntry ? 'password' : 'text',
       inputMode: keyboardType === 'numeric' ? 'numeric' : undefined,
       'data-testid': testID,
-      onChange: (event: React.ChangeEvent<HTMLInputElement>) => onChangeText?.(event.target.value),
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+        const target = event.target as any;
+        onChangeText?.(target.value);
+      },
       ...props,
     }),
 );
@@ -168,7 +171,10 @@ const Switch = ({
     type: 'checkbox',
     checked: value,
     'data-testid': testID,
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => onValueChange?.(event.target.checked),
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+      const target = event.target as any;
+      onValueChange?.(target.checked);
+    },
   });
 
 const Button = ({

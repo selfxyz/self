@@ -10,11 +10,7 @@ type SDKMocks = {
     on: ReturnType<typeof vi.fn>;
     useProvingStore: ((selector: (state: ProvingStoreState) => unknown) => unknown) & {
       getState: () => ProvingStoreState;
-      setState: (
-        next:
-          | Partial<ProvingStoreState>
-          | ((state: ProvingStoreState) => Partial<ProvingStoreState>),
-      ) => void;
+      setState: (next: Partial<ProvingStoreState> | ((state: ProvingStoreState) => Partial<ProvingStoreState>)) => void;
     };
   };
   useSelfClientMock: ReturnType<typeof vi.fn>;
