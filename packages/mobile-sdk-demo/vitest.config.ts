@@ -24,9 +24,15 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
-      '@selfxyz/common': resolve(repoRoot, 'common/dist/cjs/index.cjs'),
-      '@selfxyz/mobile-sdk-alpha': resolve(repoRoot, 'packages/mobile-sdk-alpha/src/index.ts'),
-    },
+    alias: [
+      {
+        find: '@selfxyz/mobile-sdk-alpha',
+        replacement: resolve(__dirname, './tests/mocks/mobile-sdk-alpha.ts'),
+      },
+      {
+        find: 'react-native',
+        replacement: resolve(__dirname, './tests/mocks/react-native.ts'),
+      },
+    ],
   },
 });
