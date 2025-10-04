@@ -4,6 +4,7 @@
 
 import {
   type MRZInfo,
+  type MRZValidation,
   extractMRZInfo,
 } from '@selfxyz/mobile-sdk-alpha';
 
@@ -16,6 +17,42 @@ export interface NormalizedMRZResult {
   info: MRZInfo;
   readableBirthDate: string;
   readableExpiryDate: string;
+}
+
+export interface ValidationRow {
+  label: string;
+  value: boolean | undefined | null;
+}
+
+export function humanizeDocumentType(documentType: string): string {
+  if (documentType === 'P') {
+    return 'Passport';
+  }
+
+  if (documentType === 'I') {
+    return 'ID Card';
+  }
+
+  if (!documentType) {
+    return 'Unknown';
+  }
+
+  return documentType.trim().toUpperCase();
+}
+
+export function buildValidationRows(validation?: MRZValidation): ValidationRow[] | null {
+  if (!validation) {
+    return null;
+  }
+
+  return [
+    { label: 'Format', value: validation.format },
+    { label: 'Document number checksum', value: validation.passportNumberChecksum },
+    { label: 'Date of birth checksum', value: validation.dateOfBirthChecksum },
+    { label: 'Expiry date checksum', value: validation.dateOfExpiryChecksum },
+    { label: 'Composite checksum', value: validation.compositeChecksum },
+    { label: 'Overall validation', value: validation.overall },
+  ];
 }
 
 export function formatMRZDate(mrzDate: string, locale: string = 'default'): string {

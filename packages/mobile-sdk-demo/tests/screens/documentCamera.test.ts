@@ -6,7 +6,12 @@ import { describe, expect, it } from 'vitest';
 
 import type { MRZInfo } from '@selfxyz/mobile-sdk-alpha';
 
-import { formatMRZDate, normalizeMRZPayload } from '../../src/screens/documentCameraUtils';
+import {
+  buildValidationRows,
+  formatMRZDate,
+  humanizeDocumentType,
+  normalizeMRZPayload,
+} from '../../src/screens/documentCameraUtils';
 
 describe('formatMRZDate', () => {
   it('formats valid YYMMDD strings into readable dates', () => {
@@ -54,5 +59,43 @@ describe('normalizeMRZPayload', () => {
 
     expect(normalized.info).toEqual(info);
     expect(normalized.readableBirthDate).toBe(formatMRZDate('010101', 'en-US'));
+  });
+});
+
+describe('humanizeDocumentType', () => {
+  it('maps known document codes to friendly labels', () => {
+    expect(humanizeDocumentType('P')).toBe('Passport');
+    expect(humanizeDocumentType('I')).toBe('ID Card');
+  });
+
+  it('falls back to normalized text for unknown values', () => {
+    expect(humanizeDocumentType('  visa ')).toBe('VISA');
+    expect(humanizeDocumentType('')).toBe('Unknown');
+  });
+});
+
+describe('buildValidationRows', () => {
+  it('returns null when validation is unavailable', () => {
+    expect(buildValidationRows(undefined)).toBeNull();
+  });
+
+  it('maps MRZ validation flags into labelled rows', () => {
+    const rows = buildValidationRows({
+      format: true,
+      passportNumberChecksum: true,
+      dateOfBirthChecksum: false,
+      dateOfExpiryChecksum: true,
+      compositeChecksum: true,
+      overall: false,
+    });
+
+    expect(rows).toMatchObject([
+      { label: 'Format', value: true },
+      { label: 'Document number checksum', value: true },
+      { label: 'Date of birth checksum', value: false },
+      { label: 'Expiry date checksum', value: true },
+      { label: 'Composite checksum', value: true },
+      { label: 'Overall validation', value: false },
+    ]);
   });
 });

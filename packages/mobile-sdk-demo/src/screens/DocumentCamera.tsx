@@ -2,35 +2,18 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  AccessibilityInfo,
-  ActivityIndicator,
-  Alert,
-  PermissionsAndroid,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, { useCallback } from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { type MRZInfo, type MRZValidation } from '@selfxyz/mobile-sdk-alpha';
 import { MRZScannerView } from '@selfxyz/mobile-sdk-alpha/components';
-import { useReadMRZ } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 import ScreenLayout from '../components/ScreenLayout';
-import {
-  type NormalizedMRZResult,
-  normalizeMRZPayload,
-} from './documentCameraUtils';
+import DocumentScanResultCard from './DocumentScanResultCard';
+import { useDocumentScanner } from './useDocumentScanner';
 
 type Props = {
   onBack: () => void;
 };
-
-type PermissionState = 'loading' | 'granted' | 'denied';
-type ScanState = 'idle' | 'scanning' | 'success' | 'error';
 
 const instructionsText =
   'Align the machine-readable text with the frame and hold steady while we scan.';
@@ -40,164 +23,25 @@ const errorMessage = 'We could not read your document. Adjust lighting and try a
 const permissionDeniedMessage =
   'Camera access was denied. Enable permissions to scan your document.';
 
-function announceForAccessibility(message: string) {
-  if (!message) {
-    return;
-  }
-
-  try {
-    AccessibilityInfo.announceForAccessibility?.(message);
-  } catch {
-    // Ignore announce errors to avoid crashing accessibility users.
-  }
-}
-
-function humanizeDocumentType(documentType: string): string {
-  if (documentType === 'P') {
-    return 'Passport';
-  }
-
-  if (documentType === 'I') {
-    return 'ID Card';
-  }
-
-  if (!documentType) {
-    return 'Unknown';
-  }
-
-  return documentType.trim().toUpperCase();
-}
-
-function buildValidationRows(validation?: MRZValidation) {
-  if (!validation) {
-    return null;
-  }
-
-  return [
-    { label: 'Format', value: validation.format },
-    { label: 'Document number checksum', value: validation.passportNumberChecksum },
-    { label: 'Date of birth checksum', value: validation.dateOfBirthChecksum },
-    { label: 'Expiry date checksum', value: validation.dateOfExpiryChecksum },
-    { label: 'Composite checksum', value: validation.compositeChecksum },
-    { label: 'Overall validation', value: validation.overall },
-  ];
-}
-
 export default function DocumentCamera({ onBack }: Props) {
-  const [permissionStatus, setPermissionStatus] = useState<PermissionState>('loading');
-  const [scanState, setScanState] = useState<ScanState>('idle');
-  const [mrzResult, setMrzResult] = useState<NormalizedMRZResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const scannerCopy = {
+    instructions: instructionsText,
+    success: successMessage,
+    error: errorMessage,
+    permissionDenied: permissionDeniedMessage,
+    resetAnnouncement: 'Ready to scan again. Align the document in the viewfinder.',
+  } as const;
 
-  const scanStartTimeRef = useRef<number>(Date.now());
-  const { onPassportRead } = useReadMRZ(scanStartTimeRef);
-
-  const requestPermission = useCallback(async () => {
-    setPermissionStatus('loading');
-    setError(null);
-
-    if (Platform.OS === 'android') {
-      try {
-        const result = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          {
-            title: 'Camera permission',
-            message: 'We need your permission to access the camera for MRZ scanning.',
-            buttonPositive: 'Allow',
-            buttonNegative: 'Cancel',
-            buttonNeutral: 'Ask me later',
-          },
-        );
-
-        if (result === PermissionsAndroid.RESULTS.GRANTED) {
-          setPermissionStatus('granted');
-        } else {
-          setPermissionStatus('denied');
-        }
-      } catch {
-        setPermissionStatus('denied');
-        setError('Camera permission request failed. Please try again.');
-      }
-    } else {
-      setPermissionStatus('granted');
-    }
-  }, []);
-
-  useEffect(() => {
-    requestPermission();
-  }, [requestPermission]);
-
-  useEffect(() => {
-    if (permissionStatus === 'granted') {
-      announceForAccessibility(instructionsText);
-      setScanState(current => {
-        if (current === 'success') {
-          return current;
-        }
-        scanStartTimeRef.current = Date.now();
-        return 'scanning';
-      });
-    } else if (permissionStatus === 'denied') {
-      announceForAccessibility(permissionDeniedMessage);
-      setScanState('idle');
-    }
-  }, [permissionStatus]);
-
-  useEffect(() => {
-    if (scanState === 'success') {
-      announceForAccessibility(successMessage);
-    } else if (scanState === 'error') {
-      announceForAccessibility(errorMessage);
-    }
-  }, [scanState]);
-
-  useEffect(() => {
-    if (error) {
-      announceForAccessibility(error);
-    }
-  }, [error]);
-
-  const handleMRZDetected = useCallback(
-    (payload: MRZInfo) => {
-      setError(null);
-
-      setScanState(current => {
-        if (current === 'success') {
-          return current;
-        }
-        return 'scanning';
-      });
-
-      try {
-        const normalized = normalizeMRZPayload(payload);
-        setMrzResult(normalized);
-        setScanState('success');
-        onPassportRead(null, normalized.info);
-      } catch {
-        setScanState('error');
-        setError('Unable to validate the MRZ data from the scan.');
-      }
-    },
-    [onPassportRead],
-  );
-
-  const handleScannerError = useCallback((scannerError: string) => {
-    setScanState('error');
-    setError(scannerError || 'An unexpected camera error occurred.');
-  }, []);
-
-  const handleScanAgain = useCallback(() => {
-    if (permissionStatus === 'denied') {
-      requestPermission();
-      return;
-    }
-
-    scanStartTimeRef.current = Date.now();
-    setMrzResult(null);
-    setError(null);
-    setScanState('scanning');
-    announceForAccessibility('Ready to scan again. Align the document in the viewfinder.');
-  }, [permissionStatus, requestPermission]);
+  const {
+    permissionStatus,
+    scanState,
+    mrzResult,
+    error,
+    requestPermission,
+    handleMRZDetected,
+    handleScannerError,
+    handleScanAgain,
+  } = useDocumentScanner(scannerCopy);
 
   const handleSaveDocument = useCallback(() => {
     if (!mrzResult) {
@@ -210,8 +54,6 @@ export default function DocumentCamera({ onBack }: Props) {
       'Document storage will be available in a future release. Your scan is ready when you need it.',
     );
   }, [mrzResult]);
-
-  const validationRows = useMemo(() => buildValidationRows(mrzResult?.info.validation), [mrzResult]);
 
   const renderPermissionDenied = () => (
     <View style={styles.centeredState}>
@@ -280,60 +122,7 @@ export default function DocumentCamera({ onBack }: Props) {
             )}
           </View>
 
-          {mrzResult && (
-            <View style={styles.resultCard} accessible accessibilityRole="summary">
-              <Text style={styles.resultTitle}>Scan summary</Text>
-
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Document number</Text>
-                <Text style={styles.resultValue}>{mrzResult.info.documentNumber}</Text>
-              </View>
-
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Document type</Text>
-                <Text style={styles.resultValue}>{humanizeDocumentType(mrzResult.info.documentType)}</Text>
-              </View>
-
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Issuing country</Text>
-                <Text style={styles.resultValue}>{mrzResult.info.issuingCountry || 'Unknown'}</Text>
-              </View>
-
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Date of birth</Text>
-                <Text style={styles.resultValue}>{mrzResult.readableBirthDate}</Text>
-              </View>
-
-              <View style={styles.resultRow}>
-                <Text style={styles.resultLabel}>Expiry date</Text>
-                <Text style={styles.resultValue}>{mrzResult.readableExpiryDate}</Text>
-              </View>
-
-              <View style={styles.validationSection}>
-                <Text style={styles.validationTitle}>Validation checks</Text>
-                {validationRows ? (
-                  validationRows.map(row => (
-                    <View key={row.label} style={styles.validationRow}>
-                      <Text style={styles.validationLabel}>{row.label}</Text>
-                      <Text
-                        style={[
-                          styles.validationBadge,
-                          row.value ? styles.validationPass : styles.validationFail,
-                        ]}
-                        accessibilityRole="text"
-                      >
-                        {row.value ? '✓ Pass' : '✗ Fail'}
-                      </Text>
-                    </View>
-                  ))
-                ) : (
-                  <Text style={styles.validationPlaceholder}>
-                    Validation details are not available for this scan yet.
-                  </Text>
-                )}
-              </View>
-            </View>
-          )}
+          {mrzResult && <DocumentScanResultCard result={mrzResult} />}
 
           <View style={styles.actions}>
             <TouchableOpacity
@@ -417,85 +206,6 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#b91c1c',
     fontWeight: '600',
-  },
-  resultCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    marginBottom: 16,
-    shadowColor: '#0f172a',
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  resultTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
-    marginBottom: 12,
-  },
-  resultRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  resultLabel: {
-    color: '#334155',
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  resultValue: {
-    color: '#0f172a',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  validationSection: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-  validationTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#0f172a',
-    marginBottom: 8,
-  },
-  validationRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  validationLabel: {
-    color: '#1f2937',
-    fontSize: 14,
-    flex: 1,
-    marginRight: 12,
-  },
-  validationBadge: {
-    minWidth: 90,
-    textAlign: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 999,
-    fontWeight: '600',
-    fontSize: 12,
-    color: '#ffffff',
-  },
-  validationPass: {
-    backgroundColor: '#16a34a',
-  },
-  validationFail: {
-    backgroundColor: '#b91c1c',
-  },
-  validationPlaceholder: {
-    color: '#475569',
-    fontSize: 13,
-    fontStyle: 'italic',
   },
   actions: {
     flexDirection: 'row',
