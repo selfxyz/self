@@ -159,7 +159,7 @@ module.exports = {
     'no-console': 'off',
     'no-empty-pattern': 'off',
     'prefer-const': 'warn',
-    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/no-require-imports': 'error',
     '@typescript-eslint/no-empty-object-type': 'warn',

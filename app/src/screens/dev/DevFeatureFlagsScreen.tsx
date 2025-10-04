@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Button,
   Input,
@@ -44,6 +44,7 @@ const DevFeatureFlagsScreen: React.FC = () => {
   const [debounceTimers, setDebounceTimers] = useState<
     Record<string, NodeJS.Timeout>
   >({});
+  const debounceTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const loadFeatureFlags = useCallback(async () => {
     try {
@@ -186,17 +187,19 @@ const DevFeatureFlagsScreen: React.FC = () => {
     loadFeatureFlags();
   }, [loadFeatureFlags]);
 
+  useEffect(() => {
+    debounceTimersRef.current = debounceTimers;
+  }, [debounceTimers]);
+
   // Cleanup debounce timers on unmount
   useEffect(() => {
     return () => {
-      Object.values(debounceTimers).forEach(timer => {
+      Object.values(debounceTimersRef.current).forEach(timer => {
         if (timer) {
           clearTimeout(timer);
         }
       });
     };
-    // only clean up on unmount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const hasLocalOverrides = featureFlags.some(

@@ -462,12 +462,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _cancelScanIfRunning = useCallback(async () => {
-    // // TODO: cancel if scanning
-    // setIsNfcSheetOpen(false);
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
       logNFCEvent('info', 'screen_focus', { ...baseContext, stage: 'focus' });

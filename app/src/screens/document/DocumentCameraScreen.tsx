@@ -16,7 +16,7 @@ import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   mrzReadInstructions,
   useReadMRZ,
-} from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
+} from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz.js';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';

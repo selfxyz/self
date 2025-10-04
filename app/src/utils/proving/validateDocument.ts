@@ -46,7 +46,7 @@ export async function checkAndUpdateRegistrationStates(
       const logValidationError = (
         error: string,
         data?: PassportData,
-        additionalContext?: Record<string, any>,
+        additionalContext?: Record<string, unknown>,
       ) => {
         anyFailureReported = true;
         trackEvent(DocumentEvents.VALIDATE_DOCUMENT_FAILED, {
@@ -176,25 +176,33 @@ export async function checkAndUpdateRegistrationStates(
 
 // UNUSED?
 
-interface MigratedPassportData extends Omit<PassportData, 'documentType'> {
-  documentType?: string;
-}
+type MigratedPassportData = Omit<PassportData, 'documentCategory' | 'mock'> & {
+  documentCategory?: PassportData['documentCategory'];
+  mock?: PassportData['mock'];
+};
 
 export function migratePassportData(passportData: PassportData): PassportData {
   const migratedData: MigratedPassportData = { ...passportData };
-  if (!('documentCategory' in migratedData) || !('mock' in migratedData)) {
-    const documentType = (migratedData as any).documentType;
-    if (documentType) {
-      (migratedData as any).mock = documentType.startsWith('mock');
-      (migratedData as any).documentCategory = documentType.includes('passport')
-        ? 'passport'
-        : 'id_card';
-    } else {
-      (migratedData as any).documentType = 'passport';
-      (migratedData as any).documentCategory = 'passport';
-      (migratedData as any).mock = false;
-    }
-    // console.log('Migrated passport data:', migratedData);
-  }
-  return migratedData as PassportData;
+
+  const existingDocumentType = migratedData.documentType;
+  const inferredMock =
+    migratedData.mock ?? existingDocumentType?.startsWith('mock');
+  const inferredCategory =
+    migratedData.documentCategory ??
+    (existingDocumentType?.includes('passport') ? 'passport' : 'id_card');
+
+  const normalizedDocumentType = existingDocumentType ?? 'passport';
+  const normalizedMock = inferredMock ?? false;
+  const normalizedCategory =
+    inferredCategory ??
+    (normalizedDocumentType.includes('passport') ? 'passport' : 'id_card');
+
+  const normalizedData: PassportData = {
+    ...migratedData,
+    documentType: normalizedDocumentType,
+    mock: normalizedMock,
+    documentCategory: normalizedCategory,
+  };
+
+  return normalizedData;
 }

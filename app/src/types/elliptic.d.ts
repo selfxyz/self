@@ -3,6 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 declare module 'elliptic' {
-  const elliptic: any;
+  const elliptic: unknown;
   export = elliptic;
 }

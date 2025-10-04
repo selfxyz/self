@@ -3,14 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Linking } from 'react-native';
+import { type ImageSourcePropType, Linking } from 'react-native';
 import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
+import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar.js';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { BodyText } from '@/components/typography/BodyText';
@@ -25,6 +25,11 @@ import {
   scanQRCodeFromPhotoLibrary,
 } from '@/utils/qrScanner';
 
+type AadhaarErrorParams = Extract<
+  RootStackParamList['AadhaarUploadError'],
+  object
+>;
+
 const AadhaarUploadScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
 
@@ -32,6 +37,7 @@ const AadhaarUploadScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { trackEvent } = useSelfClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  const aadhaarImageSource: ImageSourcePropType = AadhaarImage;
 
   const { showModal: showPermissionModal } = useModal({
     titleText: 'Photo Library Access Required',
@@ -117,16 +123,18 @@ const AadhaarUploadScreen: React.FC = () => {
         errorMessage.includes('Failed to process') ||
         errorMessage.includes('Invalid')
       ) {
-        (navigation.navigate as any)('AadhaarUploadError', {
-          errorType: 'general' as const,
-        });
+        const params: AadhaarErrorParams = {
+          errorType: 'general',
+        };
+        navigation.navigate('AadhaarUploadError', params);
         return;
       }
 
       // Handle any other errors by showing error screen
-      (navigation.navigate as any)('AadhaarUploadError', {
-        errorType: 'general' as const,
-      });
+      const params: AadhaarErrorParams = {
+        errorType: 'general',
+      };
+      navigation.navigate('AadhaarUploadError', params);
     } finally {
       setIsProcessing(false);
     }
@@ -152,7 +160,7 @@ const AadhaarUploadScreen: React.FC = () => {
           paddingVertical={20}
         >
           <Image
-            source={AadhaarImage as any}
+            source={aadhaarImageSource}
             width="100%"
             height="100%"
             objectFit="contain"

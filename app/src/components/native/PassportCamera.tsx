@@ -69,9 +69,13 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
       if (!isMounted) {
         return;
       }
-      /* eslint-disable @typescript-eslint/no-unused-vars */
-      const { error, errorMessage, stackTrace } = event.nativeEvent;
+      const {
+        error: nativeError,
+        errorMessage,
+        stackTrace,
+      } = event.nativeEvent;
       const e = new Error(errorMessage);
+      e.name = nativeError;
       e.stack = stackTrace;
       onPassportRead(e);
     },

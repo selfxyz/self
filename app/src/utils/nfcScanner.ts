@@ -9,27 +9,12 @@ import type { PassportData } from '@selfxyz/common/types';
 import type { NFCScanContext } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent } from '@/Sentry';
-import { configureNfcAnalytics } from '@/utils/analytics';
 import {
+  type AndroidScanResponse,
   PassportReader,
   reset,
   scan as scanDocument,
 } from '@/utils/passportReader';
-
-interface AndroidScanResponse {
-  mrz: string;
-  eContent: string;
-  encryptedDigest: string;
-  _photo: string;
-  _digestAlgorithm: string;
-  _signerInfoDigestAlgorithm: string;
-  _digestEncryptionAlgorithm: string;
-  _LDSVersion: string;
-  _unicodeVersion: string;
-  encapContent: string;
-  documentSigningCertificate: string;
-  dataGroupHashes: string;
-}
 
 interface Inputs {
   passportNumber: string;
@@ -223,7 +208,7 @@ const handleResponseAndroid = (response: AndroidScanResponse): PassportData => {
     '-----END CERTIFICATE-----';
 
   const dgPresents = Object.keys(dgHashesObj)
-    .map(key => parseInt(key)) // eslint-disable-line radix
+    .map(key => parseInt(key, 10))
     .filter(num => !isNaN(num))
     .sort((a, b) => a - b);
 

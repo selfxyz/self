@@ -16,7 +16,7 @@ import {
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
-import { navigationRef } from '@/navigation';
+import { navigationRef, type RootStackParamList } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import { logNFCEvent, logProofEvent } from '@/Sentry';
@@ -24,6 +24,11 @@ import { useSettingStore } from '@/stores/settingStore';
 import analytics from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
+
+type RouteParams<RouteName extends keyof RootStackParamList> = Extract<
+  RootStackParamList[RouteName],
+  object
+>;
 
 /**
  * Provides a configured Self SDK client instance to all descendants.
@@ -33,6 +38,22 @@ type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
  * - `fetch`/`WebSocket` for network communication
  * - Web Crypto hashing with a stub signer
  */
+const navigateIfReady = <RouteName extends keyof RootStackParamList>(
+  route: RouteName,
+  params?: RootStackParamList[RouteName],
+) => {
+  if (!navigationRef.isReady()) {
+    return;
+  }
+
+  if (typeof params === 'undefined') {
+    navigationRef.navigate(route);
+    return;
+  }
+
+  navigationRef.navigate(route, params);
+};
+
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
   const adapters: Adapters = useMemo(
@@ -104,16 +125,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     const { map, addListener } = createListenersMap();
 
     addListener(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentDataNotFound');
-      }
+      navigateIfReady('DocumentDataNotFound');
     });
 
     addListener(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
       setTimeout(() => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('AccountVerifiedSuccess');
-        }
+        navigateIfReady('AccountVerifiedSuccess');
       }, 1000);
     });
 
@@ -121,12 +138,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
       async ({ hasValidDocument }) => {
         setTimeout(() => {
-          if (navigationRef.isReady()) {
-            if (hasValidDocument) {
-              navigationRef.navigate('Home');
-            } else {
-              navigationRef.navigate('Launch');
-            }
+          if (hasValidDocument) {
+            navigateIfReady('Home');
+          } else {
+            navigateIfReady('Launch');
           }
         }, 3000);
       },
@@ -135,19 +150,16 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     addListener(
       SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
       ({ countryCode, documentCategory }) => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('ComingSoon', {
-            countryCode,
-            documentCategory,
-          } as any);
-        }
+        const params: RouteParams<'ComingSoon'> = {
+          countryCode,
+          documentCategory,
+        };
+        navigateIfReady('ComingSoon', params);
       },
     );
 
     addListener(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('AccountRecoveryChoice');
-      }
+      navigateIfReady('AccountRecoveryChoice');
     });
 
     addListener(
@@ -190,27 +202,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentNFCScan');
-      }
+      navigateIfReady('DocumentNFCScan');
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('DocumentCameraTrouble');
-      }
+      navigateIfReady('DocumentCameraTrouble');
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
-      if (navigationRef.isReady()) {
-        navigationRef.navigate('AadhaarUploadSuccess');
-      }
+      navigateIfReady('AadhaarUploadSuccess');
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
-      if (navigationRef.isReady()) {
-        // @ts-expect-error
-        navigationRef.navigate('AadhaarUploadError', { errorType });
-      }
+      const params: RouteParams<'AadhaarUploadError'> = {
+        errorType,
+      };
+      navigateIfReady('AadhaarUploadError', params);
     });
 
     return map;
