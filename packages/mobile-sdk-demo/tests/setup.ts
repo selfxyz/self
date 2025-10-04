@@ -19,9 +19,18 @@ vi.mock('@selfxyz/common', async () => {
     pbkdf2Sync: nodeCrypto.pbkdf2Sync.bind(nodeCrypto) as typeof nodeCrypto.pbkdf2Sync,
   };
 
+  const calculateContentHash = actual.calculateContentHash
+    ? actual.calculateContentHash
+    : (value: unknown) =>
+        nodeCrypto
+          .createHash('sha256')
+          .update(typeof value === 'string' ? value : JSON.stringify(value))
+          .digest('hex');
+
   return {
     ...actual,
     ...polyfill,
+    calculateContentHash,
     cryptoPolyfill: polyfill,
   };
 });
@@ -111,6 +120,112 @@ const ScrollView = forwardRef<any, any>(({ children, style, contentContainerStyl
   ),
 );
 
+const Pressable = forwardRef<any, any>(({ children, onPress, disabled, style, testID, ...props }, ref) =>
+  createElement(
+    'button',
+    {
+      type: 'button',
+      ref,
+      disabled: Boolean(disabled),
+      style: flattenStyle(style),
+      'data-testid': testID,
+      onClick: disabled
+        ? undefined
+        : (event: React.MouseEvent<HTMLButtonElement>) => {
+            event.preventDefault();
+            onPress?.();
+          },
+      ...props,
+    },
+    children,
+  ),
+);
+
+const TextInput = forwardRef<any, any>(
+  ({ onChangeText, value, secureTextEntry, style, testID, keyboardType, ...props }, ref) =>
+    createElement('input', {
+      ref,
+      value,
+      style: flattenStyle(style),
+      type: secureTextEntry ? 'password' : 'text',
+      inputMode: keyboardType === 'numeric' ? 'numeric' : undefined,
+      'data-testid': testID,
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => onChangeText?.(event.target.value),
+      ...props,
+    }),
+);
+
+const Switch = ({
+  value,
+  onValueChange,
+  testID,
+}: {
+  value: boolean;
+  onValueChange?: (next: boolean) => void;
+  testID?: string;
+}) =>
+  createElement('input', {
+    type: 'checkbox',
+    checked: value,
+    'data-testid': testID,
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => onValueChange?.(event.target.checked),
+  });
+
+const Button = ({
+  title,
+  onPress,
+  disabled,
+  testID,
+}: {
+  title: string;
+  onPress?: () => void;
+  disabled?: boolean;
+  testID?: string;
+}) =>
+  createElement(
+    'button',
+    {
+      type: 'button',
+      disabled: Boolean(disabled),
+      onClick: disabled
+        ? undefined
+        : (event: React.MouseEvent<HTMLButtonElement>) => {
+            event.preventDefault();
+            onPress?.();
+          },
+      'data-testid': testID,
+    },
+    title,
+  );
+
+const Modal = ({ visible, children, testID }: { visible: boolean; children: React.ReactNode; testID?: string }) =>
+  visible ? createElement('div', { 'data-testid': testID }, children) : null;
+
+const SafeAreaView = createDomComponent('div');
+
+const FlatList = ({
+  data = [],
+  renderItem,
+  keyExtractor,
+  testID,
+}: {
+  data?: any[];
+  renderItem: ({ item, index }: { item: any; index: number }) => React.ReactNode;
+  keyExtractor?: (item: any, index: number) => string;
+  testID?: string;
+}) =>
+  createElement(
+    'div',
+    { 'data-testid': testID },
+    data.map((item, index) =>
+      createElement(
+        React.Fragment,
+        { key: keyExtractor ? keyExtractor(item, index) : index },
+        renderItem({ item, index }),
+      ),
+    ),
+  );
+
 const ActivityIndicator = ({ testID, accessibilityLabel }: { testID?: string; accessibilityLabel?: string }) =>
   createElement('div', {
     role: 'status',
@@ -178,6 +293,13 @@ vi.mock('react-native', () => ({
   View: createDomComponent('div'),
   Text: createDomComponent('span'),
   ScrollView,
+  TextInput,
+  Pressable,
+  Button,
+  Switch,
+  Modal,
+  SafeAreaView,
+  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Alert: { alert: alertSpy },
