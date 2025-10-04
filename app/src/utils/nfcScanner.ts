@@ -9,7 +9,6 @@ import type { PassportData } from '@selfxyz/common/types';
 import type { NFCScanContext } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent } from '@/Sentry';
-import { configureNfcAnalytics } from '@/utils/analytics';
 import {
   PassportReader,
   reset,

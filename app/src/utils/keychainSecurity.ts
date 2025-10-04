@@ -45,7 +45,7 @@ export async function checkBiometricsAvailable(): Promise<boolean> {
     const rnBiometrics = new ReactNativeBiometrics();
     const { available } = await rnBiometrics.isSensorAvailable();
     return available;
-  } catch (error) {
+  } catch (_error) {
     console.log('Biometrics not available');
     return false;
   }
@@ -64,7 +64,7 @@ export async function checkPasscodeAvailable(): Promise<boolean> {
     // Clean up test entry
     await Keychain.resetGenericPassword({ service: testService });
     return true;
-  } catch (error) {
+  } catch (_error) {
     console.log('Device passcode not available');
     return false;
   }
@@ -187,7 +187,7 @@ export async function getMaxSecurityLevel(): Promise<SECURITY_LEVEL> {
     // Try to get the device's security level
     const securityLevel = await Keychain.getSecurityLevel();
     return securityLevel || Keychain.SECURITY_LEVEL.ANY;
-  } catch (error) {
+  } catch (_error) {
     console.log('Could not determine security level, defaulting to ANY');
     return Keychain.SECURITY_LEVEL.ANY;
   }
