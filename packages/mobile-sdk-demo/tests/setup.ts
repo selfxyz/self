@@ -56,7 +56,7 @@ if (typeof globalThis !== 'undefined') {
   (globalThis as any).sdkMocks = sdkMocks;
 }
 
-const flattenStyle = (style: any) => {
+const flattenStyle = (style: any): Record<string, unknown> | undefined => {
   if (!style) return undefined;
   if (Array.isArray(style)) {
     return style.reduce<Record<string, unknown>>((acc, item) => {
@@ -112,14 +112,11 @@ const ScrollView = forwardRef<any, any>(({ children, style, contentContainerStyl
 );
 
 const ActivityIndicator = ({ testID, accessibilityLabel }: { testID?: string; accessibilityLabel?: string }) =>
-  createElement(
-    'div',
-    {
-      role: 'status',
-      'aria-label': accessibilityLabel ?? 'loading',
-      'data-testid': testID,
-    },
-  );
+  createElement('div', {
+    role: 'status',
+    'aria-label': accessibilityLabel ?? 'loading',
+    'data-testid': testID,
+  });
 
 const alertSpy = vi.fn();
 
@@ -132,8 +129,7 @@ vi.mock('react-native', () => ({
   __esModule: true,
   Platform: {
     OS: 'ios',
-    select: (obj: Record<string, any>) =>
-      Object.prototype.hasOwnProperty.call(obj, 'ios') ? obj.ios : obj.default,
+    select: (obj: Record<string, any>) => (Object.prototype.hasOwnProperty.call(obj, 'ios') ? obj.ios : obj.default),
   },
   Dimensions: {
     get: () => ({ width: 375, height: 812, scale: 2 }),
@@ -236,13 +232,11 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 // Mock react-native-keychain with in-memory storage
 const keychainStore: Record<string, { username: string; password: string }> = {};
 
-const mockSetGenericPassword = vi.fn(
-  async (username: string, password: string, options?: { service?: string }) => {
-    const key = options?.service || 'default';
-    keychainStore[key] = { username, password };
-    return true;
-  },
-);
+const mockSetGenericPassword = vi.fn(async (username: string, password: string, options?: { service?: string }) => {
+  const key = options?.service || 'default';
+  keychainStore[key] = { username, password };
+  return true;
+});
 
 const mockGetGenericPassword = vi.fn(async (options?: { service?: string }) => {
   const key = options?.service || 'default';

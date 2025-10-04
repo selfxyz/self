@@ -49,11 +49,11 @@ export const sdkMocks: SDKMocks = {
 
 vi.mock('@selfxyz/mobile-sdk-alpha', () => ({
   __esModule: true,
-  useSelfClient: (...args: unknown[]) => useSelfClientMock(...args),
-  loadSelectedDocument: (...args: unknown[]) => loadSelectedDocumentMock(...args),
-  extractNameFromDocument: (...args: unknown[]) => extractNameFromDocumentMock(...args),
-  getAllDocuments: (...args: unknown[]) => getAllDocumentsMock(...args),
-  generateMockDocument: (...args: unknown[]) => generateMockDocumentMock(...args),
+  useSelfClient: useSelfClientMock,
+  loadSelectedDocument: loadSelectedDocumentMock,
+  extractNameFromDocument: extractNameFromDocumentMock,
+  getAllDocuments: getAllDocumentsMock,
+  generateMockDocument: generateMockDocumentMock,
   signatureAlgorithmToStrictSignatureAlgorithm: (value: string) => value,
   SdkEvents: {},
   SelfClientProvider: ({ children }: { children: React.ReactNode }) =>

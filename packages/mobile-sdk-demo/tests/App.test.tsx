@@ -58,7 +58,11 @@ function createScreensModule() {
           <section key={section.title}>
             <h2>{section.title}</h2>
             {section.items.map(descriptor => (
-              <button key={descriptor.id} type="button" onClick={() => screenContext.navigate(descriptor.id)}>
+              <button
+                key={descriptor.id}
+                type="button"
+                onClick={() => screenContext.navigate(descriptor.id as import('../src/screens').ScreenRoute)}
+              >
                 {descriptor.title}
               </button>
             ))}
@@ -176,9 +180,7 @@ describe('App integration', () => {
     sdkMocks.selfClient.loadDocumentCatalog
       .mockResolvedValueOnce(catalog)
       .mockRejectedValueOnce(new Error('no catalog'));
-    sdkMocks.loadSelectedDocumentMock
-      .mockResolvedValueOnce(selected)
-      .mockRejectedValueOnce(new Error('no selection'));
+    sdkMocks.loadSelectedDocumentMock.mockResolvedValueOnce(selected).mockRejectedValueOnce(new Error('no selection'));
 
     render(<App />);
 

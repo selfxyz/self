@@ -1,11 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  orderedSectionEntries,
-  screenDescriptors,
-  screenMap,
-  type ScreenContext,
-} from '../../src/screens';
+import { orderedSectionEntries, screenDescriptors, screenMap, type ScreenContext } from '../../src/screens';
 
 describe('screen descriptor index', () => {
   const createContext = (): ScreenContext => ({
@@ -37,18 +32,18 @@ describe('screen descriptor index', () => {
   it('builds props that respect the provided screen context', async () => {
     const context = createContext();
 
-    const generateProps = screenMap.generate.getProps?.(context);
+    const generateProps = screenMap.generate.getProps?.(context) as any;
     expect(generateProps).toMatchObject({ onDocumentStored: context.refreshDocuments });
     await generateProps?.onNavigate?.('documents');
     expect(context.navigate).toHaveBeenCalledWith('documents');
     generateProps?.onBack?.();
     expect(context.navigate).toHaveBeenCalledWith('home');
 
-    const registerProps = screenMap.register.getProps?.(context);
+    const registerProps = screenMap.register.getProps?.(context) as any;
     registerProps?.onSuccess?.();
     expect(context.refreshDocuments).toHaveBeenCalled();
 
-    const documentsProps = screenMap.documents.getProps?.(context);
+    const documentsProps = screenMap.documents.getProps?.(context) as any;
     expect(documentsProps).toMatchObject({ catalog: context.documentCatalog });
     documentsProps?.onBack?.();
     expect(context.navigate).toHaveBeenCalledWith('home');

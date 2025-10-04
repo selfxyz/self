@@ -18,7 +18,7 @@ const exportedPolyfill = cryptoPolyfill ?? {
   createHmac: createHmac ?? nodeCrypto.createHmac.bind(nodeCrypto),
   randomBytes:
     randomBytes ??
-    ((size) => {
+    (size => {
       if (!globalThis.crypto || typeof globalThis.crypto.getRandomValues !== 'function') {
         throw new Error('globalThis.crypto.getRandomValues is not available');
       }
