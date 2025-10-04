@@ -34,12 +34,13 @@ import Telegram from '@/images/icons/telegram.svg';
 import Web from '@/images/icons/webpage.svg';
 import X from '@/images/icons/x.svg';
 import type { RootStackParamList } from '@/navigation';
-import { version } from '@/package.json';
 import { useSettingStore } from '@/stores/settingStore';
 import { amber500, black, neutral700, slate800, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { impactLight } from '@/utils/haptic';
 import { getCountry, getLocales, getTimeZone } from '@/utils/locale';
+
+import { version } from '../../../../package.json';
 
 interface MenuButtonProps extends PropsWithChildren {
   Icon: React.FC<SvgProps>;
