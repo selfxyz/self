@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import countries from 'i18n-iso-countries';
+import { alpha2ToAlpha3 } from 'i18n-iso-countries';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import { Spinner, XStack, YStack } from 'tamagui';
@@ -16,7 +16,7 @@ import { RoundFlag } from '@/components/flag/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
 import { BodyText } from '@/components/typography/BodyText';
 import type { RootStackParamList } from '@/navigation';
-import { black, slate100, slate300, slate500 } from '@/utils/colors';
+import { black, slate100, slate500 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
 import { getCountry } from '@/utils/locale';
@@ -131,7 +131,7 @@ const CountryPickerScreen: React.FC = () => {
     try {
       const countryCode2Letter = getCountry(); // Returns 2-letter code like "US"
       if (countryCode2Letter) {
-        const countryCode3Letter = countries.alpha2ToAlpha3(countryCode2Letter);
+        const countryCode3Letter = alpha2ToAlpha3(countryCode2Letter);
         if (
           countryCode3Letter &&
           commonNames[countryCode3Letter as keyof typeof commonNames]

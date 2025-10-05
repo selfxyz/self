@@ -3,26 +3,20 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, YStack } from 'tamagui';
+import { useCallback, useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
-import { IDDocument } from '@selfxyz/common/utils/types';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
 import LoadingUI from '@/components/loading/LoadingUI';
-import CloseWarningIcon from '@/images/icons/close-warning.svg';
-import { loadPassportDataAndSecret } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
-import { black, slate400, white, zinc500, zinc900 } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
+import { black, slate400, white, zinc900 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 import { loadingScreenProgress } from '@/utils/haptic';
 import { setupNotifications } from '@/utils/notifications/notificationService';
@@ -71,7 +65,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
 
   // Get document metadata from navigation params
   const {
-    documentCategory,
     signatureAlgorithm: paramSignatureAlgorithm,
     curveOrExponent: paramCurveOrExponent,
   } = route?.params || {};
@@ -84,7 +77,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const init = useProvingStore(state => state.init);
   const circuitType = useProvingStore(state => state.circuitType);
   const isFocused = useIsFocused();
-  const { bottom } = useSafeAreaInsets();
 
   // States where it's safe to close the app
   const safeToCloseStates = ['proving', 'post_proving', 'completed'];
@@ -106,7 +98,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
         } else {
           await init(selfClient, 'dsc', true);
         }
-      } catch (error) {
+      } catch (_error) {
         console.error('Error loading selected document:');
         await init(selfClient, 'dsc', true);
       } finally {
@@ -186,11 +178,19 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
         setAnimationSource(proveLoadingAnimation);
         break;
     }
-  }, [currentState, fcmToken, isInitializing]);
+  }, [
+    currentState,
+    fcmToken,
+    isInitializing,
+    circuitType,
+    paramCurveOrExponent,
+    paramSignatureAlgorithm,
+    isFocused,
+  ]);
 
   // Handle haptic feedback using useFocusEffect for immediate response
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       // Start haptic feedback as soon as the screen is focused
       loadingScreenProgress(true);
 
@@ -219,6 +219,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const styles = StyleSheet.create({
   container: {
     flex: 1,

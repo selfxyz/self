@@ -68,7 +68,7 @@ const _getSecurely = async function <T>(
 const _getWithBiometrics = async function <T>(
   fn: () => Promise<string | false>,
   formatter: (dataString: string) => T,
-  options: GetSecureOptions,
+  _options: GetSecureOptions,
 ): Promise<SignedPayload<T> | null> {
   try {
     const simpleCheck = await biometrics.simplePrompt({

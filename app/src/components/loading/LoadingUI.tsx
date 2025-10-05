@@ -11,9 +11,7 @@ import CloseWarningIcon from '@/images/icons/close-warning.svg';
 import Plus from '@/images/icons/plus_slate600.svg';
 import {
   black,
-  blue600,
   cyan300,
-  red500,
   slate400,
   slate600,
   white,

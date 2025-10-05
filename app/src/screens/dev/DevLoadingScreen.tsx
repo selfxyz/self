@@ -99,7 +99,7 @@ const DevLoadingScreen: React.FC = () => {
     }
     setCanCloseApp(safeToCloseStates.includes(currentState));
     setShouldLoopAnimation(!terminalStates.includes(currentState));
-  }, [currentState, documentType]);
+  }, [currentState, documentType, safeToCloseStates, terminalStates]);
 
   const [open, setOpen] = useState(false);
   const [documentTypeOpen, setDocumentTypeOpen] = useState(false);
