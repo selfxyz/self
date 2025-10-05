@@ -120,14 +120,14 @@ const AadhaarUploadScreen: React.FC = () => {
       ) {
         navigation.navigate('AadhaarUploadError', {
           errorType: 'general',
-        } as any);
+        } as never);
         return;
       }
 
       // Handle any other errors by showing error screen
       navigation.navigate('AadhaarUploadError', {
         errorType: 'general',
-      } as any);
+      } as never);
     } finally {
       setIsProcessing(false);
     }

@@ -8,6 +8,7 @@ import { Keyboard, StyleSheet } from 'react-native';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -16,6 +17,7 @@ import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import Description from '@/components/typography/Description';
 import Paste from '@/images/icons/paste.svg';
+import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {
   loadPassportDataAndSecret,
@@ -31,7 +33,8 @@ import {
 } from '@/utils/colors';
 
 const RecoverWithPhraseScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
   const { useProtocolStore } = selfClient;
   const { restoreAccountFromMnemonic } = useAuth();

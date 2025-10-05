@@ -38,20 +38,19 @@ type RouteParams<RouteName extends keyof RootStackParamList> = Extract<
  * - `fetch`/`WebSocket` for network communication
  * - Web Crypto hashing with a stub signer
  */
-const navigateIfReady = <RouteName extends keyof RootStackParamList>(
-  route: RouteName,
-  params?: RootStackParamList[RouteName],
+const navigateIfReady = <
+  RouteName extends keyof RootStackParamList,
+  Params extends RootStackParamList[RouteName],
+>(
+  ...args: undefined extends Params
+    ? [route: RouteName, params?: Params]
+    : [route: RouteName, params: Params]
 ) => {
-  if (!navigationRef.isReady()) {
-    return;
+  if (navigationRef.isReady()) {
+    const [route, params] = args;
+    // @ts-expect-error-next-line
+    navigationRef.navigate(route, params);
   }
-
-  if (typeof params === 'undefined') {
-    navigationRef.navigate({ name: route } as any);
-    return;
-  }
-
-  navigationRef.navigate({ name: route, params } as any);
 };
 
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
@@ -125,12 +124,16 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     const { map, addListener } = createListenersMap();
 
     addListener(SdkEvents.PROVING_PASSPORT_DATA_NOT_FOUND, () => {
-      navigateIfReady('DocumentDataNotFound');
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('DocumentDataNotFound');
+      }
     });
 
     addListener(SdkEvents.PROVING_ACCOUNT_VERIFIED_SUCCESS, () => {
       setTimeout(() => {
-        navigateIfReady('AccountVerifiedSuccess');
+        if (navigationRef.isReady()) {
+          navigationRef.navigate('AccountVerifiedSuccess');
+        }
       }, 1000);
     });
 
@@ -138,10 +141,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       SdkEvents.PROVING_REGISTER_ERROR_OR_FAILURE,
       async ({ hasValidDocument }) => {
         setTimeout(() => {
-          if (hasValidDocument) {
-            navigateIfReady('Home');
-          } else {
-            navigateIfReady('Launch');
+          if (navigationRef.isReady()) {
+            if (hasValidDocument) {
+              navigationRef.navigate('Home');
+            } else {
+              navigationRef.navigate('Launch');
+            }
           }
         }, 3000);
       },
@@ -149,13 +154,24 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
     addListener(
       SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
-      ({ countryCode, documentCategory }) => {
-        navigateIfReady('ComingSoon', { countryCode, documentCategory } as any);
+      ({
+        countryCode,
+        documentCategory,
+      }: {
+        countryCode: string | null;
+        documentCategory: string | null;
+      }) => {
+        navigateIfReady('ComingSoon', {
+          countryCode,
+          documentCategory,
+        } as never);
       },
     );
 
     addListener(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED, () => {
-      navigateIfReady('AccountRecoveryChoice');
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('AccountRecoveryChoice');
+      }
     });
 
     addListener(
@@ -198,15 +214,21 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
-      navigateIfReady('DocumentNFCScan');
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('DocumentNFCScan');
+      }
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {
-      navigateIfReady('DocumentCameraTrouble');
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('DocumentCameraTrouble');
+      }
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
-      navigateIfReady('AadhaarUploadSuccess');
+      if (navigationRef.isReady()) {
+        navigationRef.navigate('AadhaarUploadSuccess');
+      }
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
       const params: RouteParams<'AadhaarUploadError'> = {

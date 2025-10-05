@@ -96,7 +96,20 @@ const scanIOS = async (
 ) => {
   // Narrow type for iOS-specific method availability
   const iosReader = PassportReader as
-    | (typeof PassportReader & { scanPassport?: (...args: any[]) => unknown })
+    | (typeof PassportReader & {
+        scanPassport?: (
+          passportNumber: string,
+          dateOfBirth: string,
+          dateOfExpiry: string,
+          canNumber: string,
+          useCan: boolean,
+          skipPACE: boolean,
+          skipCA: boolean,
+          extendedMode: boolean,
+          usePacePolling: boolean,
+          sessionId: string,
+        ) => unknown;
+      })
     | null;
   if (!iosReader?.scanPassport) {
     console.warn(

@@ -4,14 +4,17 @@
 
 import { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+import type { RootStackParamList } from '@/navigation';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 export const useAppUpdates = (): [boolean, () => void, boolean] => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isModalDismissed, setIsModalDismissed] = useState(false);
   const { trackEvent } = useSelfClient();
   const showAppUpdateModal = () => {

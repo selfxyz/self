@@ -10,6 +10,7 @@ import {
   createNavigationContainerRef,
   createStaticNavigation,
 } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -46,6 +47,8 @@ const AppNavigation = createNativeStackNavigator({
 });
 
 export type RootStackParamList = StaticParamList<typeof AppNavigation>;
+export type RootStackScreenProps<T extends keyof RootStackParamList> =
+  NativeStackScreenProps<RootStackParamList, T>;
 
 // Create a ref that we can use to access the navigation state
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
@@ -54,7 +57,7 @@ declare global {
   namespace ReactNavigation {
     // Allow React Navigation helpers to infer route params from our stack
     // Use interface merging to avoid duplicate identifier errors
-    type RootParamList = RootStackParamList;
+    interface RootParamList extends RootStackParamList {}
   }
 }
 
