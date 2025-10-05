@@ -94,7 +94,11 @@ const scanIOS = async (
   inputs: Inputs,
   context: Omit<NFCScanContext, 'stage'>,
 ) => {
-  if (!PassportReader?.scanPassport) {
+  // Narrow type for iOS-specific method availability
+  const iosReader = PassportReader as
+    | (typeof PassportReader & { scanPassport?: (...args: any[]) => unknown })
+    | null;
+  if (!iosReader?.scanPassport) {
     console.warn(
       'iOS passport scanner is not available - native module failed to load',
     );
@@ -110,7 +114,7 @@ const scanIOS = async (
   }
 
   return await Promise.resolve(
-    PassportReader.scanPassport(
+    iosReader.scanPassport(
       inputs.passportNumber,
       inputs.dateOfBirth,
       inputs.dateOfExpiry,

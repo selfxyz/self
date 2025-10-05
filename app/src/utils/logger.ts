@@ -15,12 +15,12 @@ import { lokiTransport } from '@/utils/logger/lokiTransport';
 import { setupNativeLoggerBridge } from '@/utils/logger/nativeLoggerBridge';
 
 const defaultConfig: configLoggerType<
-  transportFunctionType<LokiTransportOptions>,
+  transportFunctionType<object> | transportFunctionType<object>[],
   defLvlType
 > = {
   enabled: __DEV__ ? false : true,
   severity: __DEV__ ? 'debug' : 'warn', //TODO configure this using remote-config
-  transport: [lokiTransport],
+  transport: [lokiTransport as unknown as transportFunctionType<object>],
   transportOptions: {
     colors: {
       info: 'blueBright',

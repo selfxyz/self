@@ -58,20 +58,22 @@ const DevLoadingScreen: React.FC = () => {
   const [canCloseApp, setCanCloseApp] = useState(false);
   const [shouldLoopAnimation, setShouldLoopAnimation] = useState(true);
 
-  const terminalStates: ProvingStateType[] = [
-    'completed',
-    'error',
-    'failure',
-    'passport_not_supported',
-    'account_recovery_choice',
-    'passport_data_not_found',
-  ];
+  const terminalStates = useMemo<ProvingStateType[]>(
+    () => [
+      'completed',
+      'error',
+      'failure',
+      'passport_not_supported',
+      'account_recovery_choice',
+      'passport_data_not_found',
+    ],
+    [],
+  );
 
-  const safeToCloseStates: ProvingStateType[] = [
-    'proving',
-    'post_proving',
-    'completed',
-  ];
+  const safeToCloseStates = useMemo<ProvingStateType[]>(
+    () => ['proving', 'post_proving', 'completed'],
+    [],
+  );
 
   useEffect(() => {
     const { actionText, actionSubText, estimatedTime, statusBarProgress } =

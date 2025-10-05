@@ -4,7 +4,7 @@
 
 import { Platform } from 'react-native';
 
-import { configureNfcAnalytics } from '@/utils/analytics';
+// configureNfcAnalytics is mocked; direct import not needed
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { PassportReader } from '@/utils/passportReader';
 

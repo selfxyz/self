@@ -79,7 +79,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
           };
         }
         setDocumentMetadata(metadata);
-      } catch (_error) {
+      } catch {
         // setting defaults on error
         setDocumentMetadata({
           documentCategory: 'passport',

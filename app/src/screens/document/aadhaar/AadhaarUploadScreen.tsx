@@ -123,18 +123,16 @@ const AadhaarUploadScreen: React.FC = () => {
         errorMessage.includes('Failed to process') ||
         errorMessage.includes('Invalid')
       ) {
-        const params: AadhaarErrorParams = {
+        navigation.navigate('AadhaarUploadError', {
           errorType: 'general',
-        };
-        navigation.navigate('AadhaarUploadError', params);
+        } as any);
         return;
       }
 
       // Handle any other errors by showing error screen
-      const params: AadhaarErrorParams = {
+      navigation.navigate('AadhaarUploadError', {
         errorType: 'general',
-      };
-      navigation.navigate('AadhaarUploadError', params);
+      } as any);
     } finally {
       setIsProcessing(false);
     }

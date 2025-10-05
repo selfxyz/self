@@ -191,13 +191,14 @@ const flushMixpanelEvents = async () => {
     // Send any queued events before flushing
     while (eventQueue.length > 0) {
       const evt = eventQueue.shift()!;
-      if (PassportReader.trackEvent) {
+      if (PassportReader && PassportReader.trackEvent) {
         await Promise.resolve(
           PassportReader.trackEvent(evt.name, evt.properties),
         );
       }
     }
-    if (PassportReader.flush) await Promise.resolve(PassportReader.flush());
+    if (PassportReader && PassportReader.flush)
+      await Promise.resolve(PassportReader.flush());
     eventCount = 0;
   } catch (err) {
     if (__DEV__) console.warn('Mixpanel flush failed', err);
@@ -277,7 +278,7 @@ export const trackNfcEvent = async (
   }
 
   try {
-    if (PassportReader.trackEvent) {
+    if (PassportReader && PassportReader.trackEvent) {
       await Promise.resolve(PassportReader.trackEvent(name, properties));
     }
     eventCount++;

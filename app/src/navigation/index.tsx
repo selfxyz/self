@@ -53,7 +53,8 @@ export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 declare global {
   namespace ReactNavigation {
     // Allow React Navigation helpers to infer route params from our stack
-    type RootParamList = RootStackParamList;
+    // Use interface merging to avoid duplicate identifier errors
+    interface RootParamList extends RootStackParamList {}
   }
 }
 

@@ -11,6 +11,7 @@ import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import DeferredLinkingInfoScreen from '@/screens/system/DeferredLinkingInfoScreen';
 import LaunchScreen from '@/screens/system/LaunchScreen';
 import LoadingScreen from '@/screens/system/Loading';
+import type { ModalNavigationParams } from '@/screens/system/ModalScreen';
 import ModalScreen from '@/screens/system/ModalScreen';
 import SplashScreen from '@/screens/system/SplashScreen';
 
@@ -40,6 +41,7 @@ const systemScreens = {
       animation: 'fade',
       contentStyle: { backgroundColor: 'transparent' },
     } as NativeStackNavigationOptions,
+    params: {} as ModalNavigationParams,
   },
   DeferredLinkingInfo: {
     screen: DeferredLinkingInfoScreen,

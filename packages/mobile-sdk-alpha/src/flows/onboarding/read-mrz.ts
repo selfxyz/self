@@ -11,7 +11,8 @@ import { checkScannedInfo, formatDateToYYMMDD } from '../../processing/mrz';
 import { SdkEvents } from '../../types/events';
 import { MRZInfo } from '../../types/public';
 
-export { MRZScannerView, MRZScannerViewProps } from '../../components/MRZScannerView';
+export type { MRZScannerViewProps } from '../../components/MRZScannerView';
+export { MRZScannerView } from '../../components/MRZScannerView';
 
 export function mrzReadInstructions() {
   return 'Lay your document flat and position the machine readable text in the viewfinder';

@@ -47,11 +47,11 @@ const navigateIfReady = <RouteName extends keyof RootStackParamList>(
   }
 
   if (typeof params === 'undefined') {
-    navigationRef.navigate(route);
+    navigationRef.navigate({ name: route } as any);
     return;
   }
 
-  navigationRef.navigate(route, params);
+  navigationRef.navigate({ name: route, params } as any);
 };
 
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
@@ -150,11 +150,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     addListener(
       SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
       ({ countryCode, documentCategory }) => {
-        const params: RouteParams<'ComingSoon'> = {
-          countryCode,
-          documentCategory,
-        };
-        navigateIfReady('ComingSoon', params);
+        navigateIfReady('ComingSoon', { countryCode, documentCategory } as any);
       },
     );
 
@@ -215,7 +211,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
       const params: RouteParams<'AadhaarUploadError'> = {
         errorType,
-      };
+      } as RouteParams<'AadhaarUploadError'>;
       navigateIfReady('AadhaarUploadError', params);
     });
 

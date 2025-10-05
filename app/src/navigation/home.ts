@@ -78,6 +78,7 @@ const homeScreens = {
     initialParams: {
       errorType: 'general',
     },
+    params: {} as { errorType: 'general' | 'expired' },
   },
 };
 

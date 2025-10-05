@@ -68,6 +68,10 @@ const documentScreens = {
       countryCode: null,
       documentCategory: null,
     },
+    params: {} as {
+      countryCode: string | null;
+      documentCategory: string | null;
+    },
   },
   DocumentNFCMethodSelection: {
     screen: DocumentNFCMethodSelectionScreen,
