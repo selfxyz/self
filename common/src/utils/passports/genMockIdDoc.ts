@@ -258,9 +258,7 @@ function sign(
     const msgHash = hash(hashAlgorithm, eContent, 'hex');
 
     const signature = keyPair.sign(msgHash, 'hex');
-    // @ts-ignore-error toDer gives number[] what is fine for Buffer.from
-    const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
-
+    const signatureBytes = Array.from(signature.toDER() as number[]);
     return signatureBytes;
   } else {
     const privKey = forge.pki.privateKeyFromPem(privateKeyPem);
