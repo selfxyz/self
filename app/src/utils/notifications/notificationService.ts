@@ -7,10 +7,7 @@ import messaging, {
   FirebaseMessagingTypes,
 } from '@react-native-firebase/messaging';
 
-import type {
-  DeviceTokenRegistration,
-  RemoteMessage,
-} from '@/utils/notifications/notificationService.shared';
+import type { DeviceTokenRegistration } from '@/utils/notifications/notificationService.shared';
 import {
   API_URL,
   API_URL_STAGING,

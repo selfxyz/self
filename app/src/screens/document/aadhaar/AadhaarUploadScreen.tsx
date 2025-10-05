@@ -25,11 +25,6 @@ import {
   scanQRCodeFromPhotoLibrary,
 } from '@/utils/qrScanner';
 
-type AadhaarErrorParams = Extract<
-  RootStackParamList['AadhaarUploadError'],
-  object
->;
-
 const AadhaarUploadScreen: React.FC = () => {
   const { bottom } = useSafeAreaInsets();
 

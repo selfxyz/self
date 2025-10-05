@@ -54,7 +54,7 @@ declare global {
   namespace ReactNavigation {
     // Allow React Navigation helpers to infer route params from our stack
     // Use interface merging to avoid duplicate identifier errors
-    interface RootParamList extends RootStackParamList {}
+    type RootParamList = RootStackParamList;
   }
 }
 

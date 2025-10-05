@@ -10,7 +10,6 @@ import {
 } from 'react-native-logs';
 
 import { interceptConsole } from '@/utils/logger/consoleInterceptor';
-import type { LokiTransportOptions } from '@/utils/logger/lokiTransport';
 import { lokiTransport } from '@/utils/logger/lokiTransport';
 import { setupNativeLoggerBridge } from '@/utils/logger/nativeLoggerBridge';
 
