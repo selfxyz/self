@@ -133,7 +133,8 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
     if (selectedMethod === 'can') {
       params.canNumber = canValue;
     }
-    navigation.navigate('DocumentNFCScan', params as any);
+    // Type assertion needed because static navigation doesn't infer optional params
+    navigation.navigate('DocumentNFCScan', params as never);
   };
 
   return (

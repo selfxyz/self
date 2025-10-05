@@ -57,6 +57,7 @@ declare global {
   namespace ReactNavigation {
     // Allow React Navigation helpers to infer route params from our stack
     // Use interface merging to avoid duplicate identifier errors
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface RootParamList extends RootStackParamList {}
   }
 }

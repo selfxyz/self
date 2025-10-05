@@ -37,11 +37,6 @@ const documentScreens = {
       headerShown: false,
       animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
-    initialParams: {
-      passportNumber: '',
-      dateOfBirth: '',
-      dateOfExpiry: '',
-    },
   },
   DocumentNFCTrouble: {
     screen: DocumentNFCTroubleScreen,
