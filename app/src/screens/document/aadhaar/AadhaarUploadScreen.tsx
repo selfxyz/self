@@ -10,7 +10,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar.js';
+import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { BodyText } from '@/components/typography/BodyText';
