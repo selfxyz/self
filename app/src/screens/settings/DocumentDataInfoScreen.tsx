@@ -84,14 +84,11 @@ const DocumentDataInfoScreen: React.FC = () => {
     }
 
     const result = await getData();
-    console.log('DocumentDataInfoScreen-result', result);
 
     if (!result || !result.data) {
       // maybe handle error instead
       return;
     }
-
-    trackEvent(DocumentEvents.PASSPORT_METADATA_LOADED);
 
     const documentCategory = result.data.documentCategory as
       | 'passport'
@@ -99,16 +96,23 @@ const DocumentDataInfoScreen: React.FC = () => {
       | 'aadhaar';
 
     if (documentCategory === 'aadhaar') {
-      const aadhaarData = result.data as unknown as AadhaarData;
+      const aadhaarData = result.data as AadhaarData;
       const aadhaarMetadata = {
         documentCategory: aadhaarData.documentCategory,
         documentType: aadhaarData.documentType,
         publicKey: aadhaarData.publicKey,
       } as const;
       setMetadata(aadhaarMetadata);
-      trackEvent(DocumentEvents.DOCUMENT_SELECTED, { documentType: 'aadhaar' });
+      trackEvent(DocumentEvents.PASSPORT_METADATA_LOADED, {
+        documentType: 'aadhaar',
+      });
     } else {
-      const passportMetadata = result.data.passportMetadata!;
+      if (!('passportMetadata' in result.data)) {
+        console.warn('DocumentDataInfoScreen: passportMetadata is missing');
+        return;
+      }
+
+      const passportMetadata = result.data.passportMetadata;
       const passportMetadataWithCategory = {
         ...passportMetadata,
         documentCategory,

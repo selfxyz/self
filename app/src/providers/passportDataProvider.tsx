@@ -146,7 +146,10 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const selfClient = useSelfClient();
 
   const getData = useCallback(
-    () => _getSecurely<PassportData>(loadPassportData, str => JSON.parse(str)),
+    () =>
+      _getSecurely<PassportData | AadhaarData>(loadPassportData, str =>
+        JSON.parse(str),
+      ),
     [_getSecurely],
   );
 
@@ -600,7 +603,10 @@ interface PassportProviderProps extends PropsWithChildren {
   authenticationTimeoutinMs?: number;
 }
 interface IPassportContext {
-  getData: () => Promise<{ signature: string; data: PassportData } | null>;
+  getData: () => Promise<{
+    signature: string;
+    data: PassportData | AadhaarData;
+  } | null>;
   getSelectedData: () => Promise<{
     signature: string;
     data: PassportData;
