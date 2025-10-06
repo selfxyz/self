@@ -2,9 +2,32 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { MRZInfo } from '@selfxyz/mobile-sdk-alpha';
+
+// Mock extractMRZInfo directly in this test file
+vi.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  __esModule: true,
+  extractMRZInfo: vi.fn((_mrz: string) => {
+    // Mock implementation that returns basic MRZ info
+    return {
+      documentNumber: 'L898902C3',
+      dateOfBirth: '740812',
+      dateOfExpiry: '120415',
+      issuingCountry: 'UTO',
+      documentType: 'P',
+      validation: {
+        format: true,
+        passportNumberChecksum: true,
+        dateOfBirthChecksum: true,
+        dateOfExpiryChecksum: true,
+        compositeChecksum: true,
+        overall: true,
+      },
+    };
+  }),
+}));
 
 import { buildValidationRows, formatMRZDate, humanizeDocumentType, normalizeMRZPayload } from '../../src/utils/camera';
 
