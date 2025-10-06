@@ -6,6 +6,8 @@ import React from 'react';
 import { SystemBars } from 'react-native-edge-to-edge';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import type { DocumentCategory } from '@selfxyz/common/utils/types';
+
 import DeferredLinkingInfoScreen from '@/screens/system/DeferredLinkingInfoScreen';
 import LaunchScreen from '@/screens/system/LaunchScreen';
 import LoadingScreen from '@/screens/system/Loading';
@@ -24,6 +26,11 @@ const systemScreens = {
     options: {
       headerShown: false,
     } as NativeStackNavigationOptions,
+    params: {} as {
+      documentCategory?: DocumentCategory;
+      signatureAlgorithm?: string;
+      curveOrExponent?: string;
+    },
   },
   Modal: {
     screen: ModalScreen,

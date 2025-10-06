@@ -7,15 +7,13 @@ import React, { useEffect, useState } from 'react';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PassportEvents,
   ProofEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  getPreRegistrationDescription,
-  usePrepareDocumentProof,
-} from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
+import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
@@ -37,16 +35,62 @@ type ConfirmBelongingScreenProps = StaticScreenProps<Record<string, never>>;
 
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const selfClient = useSelfClient();
+  const [documentMetadata, setDocumentMetadata] = useState<{
+    documentCategory?: DocumentCategory;
+    signatureAlgorithm?: string;
+    curveOrExponent?: string;
+  }>({});
   const { trackEvent } = selfClient;
   const navigate = useHapticNavigation('Loading', {
-    params: {},
+    params: {
+      documentCategory: documentMetadata.documentCategory,
+      signatureAlgorithm: documentMetadata.signatureAlgorithm,
+      curveOrExponent: documentMetadata.curveOrExponent,
+    },
   });
   const [_requestingPermission, setRequestingPermission] = useState(false);
   const setFcmToken = useSettingStore(state => state.setFcmToken);
 
   useEffect(() => {
     notificationSuccess();
-  }, []);
+
+    const initializeProving = async () => {
+      try {
+        const selectedDocument = await loadSelectedDocument(selfClient);
+        let metadata: {
+          documentCategory?: DocumentCategory;
+          signatureAlgorithm?: string;
+          curveOrExponent?: string;
+        };
+        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+          metadata = {
+            documentCategory: 'aadhaar',
+            signatureAlgorithm: 'rsa',
+            curveOrExponent: '65537',
+          };
+        } else {
+          const passportData = selectedDocument?.data;
+          metadata = {
+            documentCategory: passportData?.documentCategory,
+            signatureAlgorithm:
+              passportData?.passportMetadata?.cscaSignatureAlgorithm,
+            curveOrExponent:
+              passportData?.passportMetadata?.cscaCurveOrExponent,
+          };
+        }
+        setDocumentMetadata(metadata);
+      } catch (_error) {
+        // setting defaults on error
+        setDocumentMetadata({
+          documentCategory: 'passport',
+          signatureAlgorithm: 'rsa',
+          curveOrExponent: '65537',
+        });
+      }
+    };
+
+    initializeProving();
+  }, [selfClient]);
 
   const onOkPress = async () => {
     try {

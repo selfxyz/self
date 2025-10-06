@@ -81,9 +81,9 @@ describe('OFAC - Passport number and Nationality match', function () {
       path.join(__dirname, '../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
       {
         include: [
-          '../node_modules',
-          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-          '../node_modules/circomlib/circuits',
+          'node_modules',
+          'node_modules/@zk-kit/binary-merkle-root.circom/src',
+          'node_modules/circomlib/circuits',
         ],
       }
     );
@@ -142,9 +142,9 @@ describe('OFAC - Name and DOB match', function () {
       path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_tester.circom'),
       {
         include: [
-          '../node_modules',
-          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-          '../node_modules/circomlib/circuits',
+          'node_modules',
+          'node_modules/@zk-kit/binary-merkle-root.circom/src',
+          'node_modules/circomlib/circuits',
         ],
       }
     );
@@ -210,9 +210,9 @@ describe('OFAC - Name and YOB match', function () {
       path.join(__dirname, '../../circuits/tests/ofac/ofac_name_yob_tester.circom'),
       {
         include: [
-          '../node_modules',
-          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-          '../node_modules/circomlib/circuits',
+          'node_modules',
+          'node_modules/@zk-kit/binary-merkle-root.circom/src',
+          'node_modules/circomlib/circuits',
         ],
       }
     );
@@ -276,9 +276,9 @@ describe('OFAC - SMT Security Tests', function () {
       path.join(__dirname, '../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
       {
         include: [
-          '../node_modules',
-          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-          '../node_modules/circomlib/circuits',
+          'node_modules',
+          'node_modules/@zk-kit/binary-merkle-root.circom/src',
+          'node_modules/circomlib/circuits',
         ],
       }
     );
@@ -380,9 +380,9 @@ describe('OFAC - ID Card - Name and DOB match', function () {
       path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_id_tester.circom'),
       {
         include: [
-          '../node_modules',
-          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-          '../node_modules/circomlib/circuits',
+          'node_modules',
+          'node_modules/@zk-kit/binary-merkle-root.circom/src',
+          'node_modules/circomlib/circuits',
         ],
       }
     );
@@ -439,9 +439,9 @@ describe('OFAC - ID Card - Name and YOB match', function () {
       path.join(__dirname, '../../circuits/tests/ofac/ofac_name_yob_id_tester.circom'),
       {
         include: [
-          '../node_modules',
-          '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-          '../node_modules/circomlib/circuits',
+          'node_modules',
+          'node_modules/@zk-kit/binary-merkle-root.circom/src',
+          'node_modules/circomlib/circuits',
         ],
       }
     );

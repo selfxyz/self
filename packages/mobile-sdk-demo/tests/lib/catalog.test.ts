@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog } from '@selfxyz/common/utils/types';
 
 import { selectDocument, updateAfterDelete } from '../../src/lib/catalog';
 

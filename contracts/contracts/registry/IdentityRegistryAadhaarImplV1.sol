@@ -56,8 +56,8 @@ abstract contract IdentityRegistryAadhaarStorageV1 is ImplRoot {
     /// @notice Mapping from nullifier to a boolean indicating registration.
     mapping(uint256 => bool) internal _nullifiers;
 
-    /// @notice Mapping from UIDAI pubkey to the expirty timestamp.
-    mapping(uint256 => uint256) internal _uidaiPubkeyExpiryTimestamps;
+    /// @notice Mapping from UIDAI pubkey to a boolean indicating registration.
+    mapping(uint256 => bool) internal _uidaiPubkeyCommitments;
 
     /// @notice Current name and date of birth OFAC root.
     uint256 internal _nameAndDobOfacRoot;
@@ -132,8 +132,6 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     error ONLY_HUB_CAN_ACCESS();
     /// @notice Thrown when attempting to register a commitment that has already been registered.
     error REGISTERED_COMMITMENT();
-    /// @notice Thrown when the expiry timestamp is in the past.
-    error EXPIRY_IN_PAST();
     /// @notice Thrown when the hub address is set to the zero address.
     error HUB_ADDRESS_ZERO();
 
@@ -198,15 +196,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @param commitment The UIDAI pubkey commitment to check.
     /// @return True if the commitment is registered, false otherwise.
     function isRegisteredUidaiPubkeyCommitment(uint256 commitment) external view virtual onlyProxy returns (bool) {
-        uint256 expiryTimestamp = _uidaiPubkeyExpiryTimestamps[commitment];
-        return expiryTimestamp > block.timestamp;
-    }
-
-    /// @notice Retrieves the expiry timestamp of a UIDAI pubkey commitment.
-    /// @param commitment The UIDAI pubkey commitment to check.
-    /// @return The expiry timestamp of the commitment.
-    function getUidaiPubkeyExpiryTimestamp(uint256 commitment) external view virtual onlyProxy returns (uint256) {
-        return _uidaiPubkeyExpiryTimestamps[commitment];
+        return _uidaiPubkeyCommitments[commitment];
     }
 
     /// @notice Checks if the identity commitment Merkle tree contains the specified root.
@@ -262,8 +252,7 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @param pubkey The UIDAI pubkey to verify.
     /// @return True if the given pubkey is stored in the registry and also if it's not expired, otherwise false.
     function checkUidaiPubkey(uint256 pubkey) external view virtual onlyProxy returns (bool) {
-        uint256 expiryTimestamp = _uidaiPubkeyExpiryTimestamps[pubkey];
-        return expiryTimestamp > block.timestamp;
+        return _uidaiPubkeyCommitments[pubkey];
     }
 
     // ====================================================
@@ -316,32 +305,25 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     /// @notice Registers a new UIDAI pubkey commitment.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param commitment The UIDAI pubkey commitment to register.
-    /// @param expiryTimestamp The expiry timestamp of the commitment.
-    function registerUidaiPubkeyCommitment(uint256 commitment, uint256 expiryTimestamp) external onlyProxy onlyOwner {
-        if (expiryTimestamp < block.timestamp) revert EXPIRY_IN_PAST();
-        _uidaiPubkeyExpiryTimestamps[commitment] = expiryTimestamp;
-        emit UidaiPubkeyCommitmentRegistered(commitment, expiryTimestamp);
+    function registerUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyOwner {
+        _uidaiPubkeyCommitments[commitment] = true;
+        emit UidaiPubkeyCommitmentRegistered(commitment, block.timestamp);
     }
 
     /// @notice Removes a UIDAI pubkey commitment.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param commitment The UIDAI pubkey commitment to remove.
     function removeUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyOwner {
-        delete _uidaiPubkeyExpiryTimestamps[commitment];
+        delete _uidaiPubkeyCommitments[commitment];
         emit UidaiPubkeyCommitmentRemoved(commitment, block.timestamp);
     }
 
-    /// @notice Updates the expiry timestamp of a UIDAI pubkey commitment.
+    /// @notice Updates a UIDAI pubkey commitment.
     /// @dev Callable only via a proxy and restricted to the contract owner.
     /// @param commitment The UIDAI pubkey commitment to update.
-    /// @param expiryTimestamp The new expiry timestamp of the commitment.
-    function updateUidaiPubkeyCommitmentExpiryTimestamp(
-        uint256 commitment,
-        uint256 expiryTimestamp
-    ) external onlyProxy onlyOwner {
-        if (expiryTimestamp < block.timestamp) revert EXPIRY_IN_PAST();
-        _uidaiPubkeyExpiryTimestamps[commitment] = expiryTimestamp;
-        emit UidaiPubkeyCommitmentUpdated(commitment, expiryTimestamp);
+    function updateUidaiPubkeyCommitment(uint256 commitment) external onlyProxy onlyOwner {
+        _uidaiPubkeyCommitments[commitment] = true;
+        emit UidaiPubkeyCommitmentUpdated(commitment, block.timestamp);
     }
 
     /// @notice (DEV) Force-adds an identity commitment.

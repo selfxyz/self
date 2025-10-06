@@ -15,7 +15,7 @@ import {
 
 import splashAnimation from '@/assets/animations/splash.json';
 import type { RootStackParamList } from '@/navigation';
-import { useAuth } from '@/providers/authProvider';
+import { migrateToSecureKeychain, useAuth } from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
@@ -73,6 +73,13 @@ const SplashScreen: React.FC = ({}) => {
 
           const hasValid = await hasAnyValidRegisteredDocument(selfClient);
           const parentScreen = hasValid ? 'Home' : 'Launch';
+
+          // Migrate keychain to secure storage with biometric protection
+          try {
+            await migrateToSecureKeychain();
+          } catch (error) {
+            console.warn('Keychain migration failed, continuing:', error);
+          }
 
           setDeeplinkParentScreen(parentScreen);
 

@@ -51,6 +51,7 @@ export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
 
 // Screen Components (React Native-based)
+export type { provingMachineCircuitType } from './proving/provingMachine';
 export {
   InitError,
   LivenessError,
@@ -63,15 +64,16 @@ export {
 } from './errors';
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
-export { type ProvingStateType } from './proving/provingMachine';
 
 // Context and Client
-export { QRCodeScreen } from './components/screens/QRCodeScreen';
+export { type ProvingStateType } from './proving/provingMachine';
 
-export { SdkEvents } from './types/events';
+export { QRCodeScreen } from './components/screens/QRCodeScreen';
 // Components
-export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+export { SdkEvents } from './types/events';
 // Documents utils
+export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+
 export { SelfMobileSdk } from './entry';
 
 export {
@@ -83,27 +85,25 @@ export {
   reStorePassportDataWithRightCSCA,
 } from './documents/utils';
 
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { createListenersMap, createSelfClient } from './client';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { defaultConfig } from './config/defaults';
 
+// Document utils
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
 
-// Document utils
 export { extractNameFromDocument } from './documents/utils';
 
+// Core functions
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
-// Core functions
+// Document validation
 export { isPassportDataValid } from './validation/document';
 
-// Document validation
 export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
-
-export { provingMachineCircuitType } from './proving/provingMachine';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog } from '@selfxyz/common/utils/types';
 
 export function updateAfterDelete(catalog: DocumentCatalog, deletedId: string): DocumentCatalog {
   const remaining = (catalog.documents || []).filter(doc => doc.id !== deletedId);

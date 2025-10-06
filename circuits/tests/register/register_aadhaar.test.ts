@@ -6,6 +6,7 @@ import { bufferToHex, Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binar
 import { convertBigIntToByteArray, decompressByteArray, splitToWords } from '@anon-aadhaar/core';
 import assert from 'assert';
 import { customHasher } from '@selfxyz/common/utils/hash';
+import forge from 'node-forge';
 import {
   prepareAadhaarRegisterTestData,
   generateTestData,
@@ -18,11 +19,11 @@ import { pubkeys } from './pubkeys.js';
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
+  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
   'utf8'
 );
 const publicKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../../common/src/utils/aadhaar/assets/testPublicKey.pem'),
+  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPublicKey.pem'),
   'utf8'
 );
 
@@ -35,7 +36,7 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
       {
         verbose: true,
         logOutput: true,
-        include: ['../node_modules'],
+        include: ['node_modules', 'node_modules/circomlib/circuits'],
       }
     );
   });
@@ -184,8 +185,19 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
     const w = await circuit.calculateWitness(inputs);
     await circuit.checkConstraints(w);
 
-    const out = await circuit.getOutput(w, ['nullifier', 'commitment']);
+    const out = await circuit.getOutput(w, ['nullifier', 'commitment', 'pubKeyHash']);
     assert(BigInt(out.nullifier) === BigInt(nullifier));
     assert(BigInt(out.commitment) === BigInt(commitment));
+  });
+
+  it.skip('should log all pubkey commitments', async function () {
+    this.timeout(0);
+    for (const cert of pubkeys) {
+      const certObj = forge.pki.certificateFromPem(cert);
+      const modulusHex = (certObj.publicKey as forge.pki.rsa.PublicKey).n.toString(16);
+      const pubkey = BigInt('0x' + modulusHex);
+      const pubkeyCommitment = customHasher(splitToWords(pubkey, BigInt(121), BigInt(17)));
+      console.log(pubkeyCommitment);
+    }
   });
 });

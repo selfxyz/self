@@ -19,7 +19,7 @@ import fs from 'fs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // const privateKeyPath = path.join(__dirname, '../../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem');
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
+  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
   'utf8'
 );
 
@@ -52,7 +52,7 @@ describe(' VC and Disclose Aadhaar Circuit Tests', function () {
       {
         verbose: true,
         logOutput: true,
-        include: ['../node_modules', '../node_modules/circomlib/circuits'],
+        include: ['node_modules', 'node_modules/circomlib/circuits'],
       }
     );
   });

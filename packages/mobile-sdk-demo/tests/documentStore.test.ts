@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { PassportData } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { PassportData } from '@selfxyz/common/utils/types';
 
 describe('documentStore - BigInt serialization (simplified)', () => {
   it('should demonstrate the BigInt serialization problem with JSON.stringify/parse', () => {

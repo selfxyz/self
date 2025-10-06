@@ -44,6 +44,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     bytes32 private constant IDENTITYVERIFICATIONHUBV2_STORAGE_LOCATION =
         0xf9b5980dcec1a8b0609576a1f453bb2cad4732a0ea02bb89154d44b14a306c00;
 
+    /// @notice The AADHAAR registration window around the current block timestamp.
+    uint256 public AADHAAR_REGISTRATION_WINDOW = 20;
+
     /**
      * @notice Returns the storage struct for the main IdentityVerificationHub.
      * @dev Uses ERC-7201 storage pattern for upgradeable contracts.
@@ -197,7 +200,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     /// @notice Thrown when the timestamp is invalid.
     /// @dev Ensures that the timestamp is within 20 minutes of the current block timestamp.
-    error InvalidUidaiTimestamp();
+    error InvalidUidaiTimestamp(uint256 blockTimestamp, uint256 timestamp);
 
     /// @notice Thrown when the attestationId in the proof doesn't match the header.
     /// @dev Ensures that the attestationId in the proof matches the header.
@@ -225,12 +228,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // ====================================================
 
     /**
-     * @notice Initializes the Identity Verification Hub V2 contract.
+     * @notice Initializes the Identity Verification Hub V2 contract for upgrade.
      * @dev Sets up the contract state including circuit version and emits initialization event.
-     * This function can only be called once due to the initializer modifier.
+     * This function is used when upgrading from V1 to V2, hence uses reinitializer(2).
      * The circuit version is set to 2 for V2 hub compatibility.
      */
-    function initialize() external initializer {
+    function initialize() external reinitializer(11) {
         __ImplRoot_init();
 
         // Initialize circuit version to 2 for V2 hub
@@ -320,6 +323,14 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         $v2._v2VerificationConfigs[configId] = config;
 
         emit VerificationConfigV2Set(configId, config);
+    }
+
+    /**
+     * @notice Updates the AADHAAR registration window.
+     * @param window The new AADHAAR registration window.
+     */
+    function setAadhaarRegistrationWindow(uint256 window) external virtual onlyProxy onlyOwner {
+        AADHAAR_REGISTRATION_WINDOW = window;
     }
 
     /**
@@ -751,12 +762,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             }
         } else if (attestationId == AttestationId.AADHAAR) {
             uint256 timestamp = registerCircuitProof.pubSignals[CircuitConstantsV2.AADHAAR_TIMESTAMP_INDEX];
-            if (timestamp < (block.timestamp - 20 minutes)) {
-                revert InvalidUidaiTimestamp();
+            if (timestamp < (block.timestamp - (AADHAAR_REGISTRATION_WINDOW * 1 minutes))) {
+                revert InvalidUidaiTimestamp(block.timestamp, timestamp);
             }
-
-            if (timestamp > (block.timestamp + 20 minutes)) {
-                revert InvalidUidaiTimestamp();
+            if (timestamp > (block.timestamp + (AADHAAR_REGISTRATION_WINDOW * 1 minutes))) {
+                revert InvalidUidaiTimestamp(block.timestamp, timestamp);
             }
 
             if (
@@ -984,8 +994,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
         uint256 currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         uint256 startOfDay = _getStartOfDayTimestamp();
+        uint256 endOfDay = startOfDay + 1 days - 1;
 
-        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > startOfDay + 1 days - 1) {
+        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > endOfDay + 1 days) {
             revert CurrentDateNotInValidRange();
         }
     }
@@ -1002,8 +1013,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
         uint256 currentTimestamp = Formatter.proofDateToUnixTimestampNumeric(dateNum);
         uint256 startOfDay = _getStartOfDayTimestamp();
+        uint256 endOfDay = startOfDay + 1 days - 1;
 
-        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > startOfDay + 1 days - 1) {
+        if (currentTimestamp < startOfDay - 1 days + 1 || currentTimestamp > endOfDay + 1 days) {
             revert CurrentDateNotInValidRange();
         }
     }
@@ -1231,6 +1243,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
         }
         aadhaarOutput.revealedDataPacked = Formatter.fieldElementsToBytesAadhaar(revealedDataPacked);
+
+        for (uint256 i = 0; i < 4; i++) {
+            aadhaarOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[
+                indices.forbiddenCountriesListPackedIndex + i
+            ];
+        }
 
         return abi.encode(aadhaarOutput);
     }

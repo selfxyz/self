@@ -109,7 +109,6 @@ const _getSecurely = async function <T>(
       data: formatter(dataString),
     };
   } catch (error: unknown) {
-    console.error('Error in _getSecurely:', error);
     const message = error instanceof Error ? error.message : String(error);
     trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
       reason: 'unknown_error',
@@ -269,6 +268,11 @@ export const AuthProvider = ({
 export async function hasSecretStored() {
   // TODO implement a way to check if the private key is stored
   return true;
+}
+
+export async function migrateToSecureKeychain(): Promise<boolean> {
+  console.warn('migrateToSecureKeychain is not implemented for web');
+  return false;
 }
 
 export async function unsafe_clearSecrets() {

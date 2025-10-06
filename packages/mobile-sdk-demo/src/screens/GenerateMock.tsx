@@ -7,7 +7,7 @@ import { ActivityIndicator, Alert, Button, Platform, StyleSheet, Switch, Text, T
 
 import { faker } from '@faker-js/faker';
 import { calculateContentHash, inferDocumentCategory, isMRZDocument } from '@selfxyz/common';
-import type { DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentMetadata, IDDocument } from '@selfxyz/common/utils/types';
 import { generateMockDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import SafeAreaScrollView from '../components/SafeAreaScrollView';

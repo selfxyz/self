@@ -62,7 +62,7 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
   }
 
   let vcAndDiscloseIdVerifierArtifact;
-  // Deploy VC and Disclose ID verifier
+  // // Deploy VC and Disclose ID verifier
   {
     vcAndDiscloseIdVerifierArtifact = VcAndDiscloseIdVerifierArtifactLocal;
     const vcAndDiscloseIdVerifierFactory = await ethers.getContractFactory(
@@ -280,9 +280,9 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
 
   // Initialize roots
   const csca_root = getCscaTreeRoot(serialized_csca_tree);
-  await registryContract.updateCscaRoot(csca_root, { from: owner });
-  await registryIdContract.updateCscaRoot(csca_root, { from: owner });
-  await registryAadhaarContract.registerUidaiPubkeyCommitment(aadhaarPubkeyCommitment, aadhaarExpiryTimestamp, {
+  // await registryContract.updateCscaRoot(csca_root, { from: owner });
+  // await registryIdContract.updateCscaRoot(csca_root, { from: owner });
+  await registryAadhaarContract.registerUidaiPubkeyCommitment(aadhaarPubkeyCommitment, {
     from: owner,
   });
 

@@ -100,7 +100,6 @@ interface IIdentityRegistryAadhaarV1 {
      * @notice Registers a new UIDAI pubkey commitment.
      * @dev Must be called by the identity verification hub. Reverts if the UIDAI pubkey commitment is already registered.
      * @param commitment The UIDAI pubkey commitment to register.
-     * @param expiryTimestamp The expiry timestamp of the commitment.
      */
-    function registerUidaiPubkeyCommitment(uint256 commitment, uint256 expiryTimestamp) external;
+    function registerUidaiPubkeyCommitment(uint256 commitment) external;
 }
