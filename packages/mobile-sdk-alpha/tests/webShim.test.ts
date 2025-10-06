@@ -4,33 +4,19 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { webScannerShim } from '../src/adapters/web/shims';
+import { webNFCScannerShim } from '../src/adapters/web/shims';
 
-describe('webScannerShim', () => {
-  it('returns stub qr data', async () => {
-    await expect(webScannerShim.scan({ mode: 'qr' })).resolves.toEqual({
-      mode: 'qr',
-      data: 'self://stub-qr',
-    });
-  });
-
-  it('rejects MRZ scans', async () => {
-    await expect(webScannerShim.scan({ mode: 'mrz' } as any)).rejects.toMatchObject({
-      code: 'SELF_ERR_SCANNER_UNAVAILABLE',
-      category: 'scanner',
-    });
-  });
-
+describe('webNFCScannerShim', () => {
   it('rejects NFC scans', async () => {
-    await expect(webScannerShim.scan({ mode: 'nfc' } as any)).rejects.toMatchObject({
+    await expect(
+      webNFCScannerShim.scan({
+        passportNumber: '123',
+        dateOfBirth: '900101',
+        dateOfExpiry: '300101',
+        sessionId: 'test',
+      }),
+    ).rejects.toMatchObject({
       code: 'SELF_ERR_NFC_NOT_SUPPORTED',
-      category: 'scanner',
-    });
-  });
-
-  it('rejects unknown scan modes', async () => {
-    await expect(webScannerShim.scan({ mode: 'foo' as any })).rejects.toMatchObject({
-      code: 'SELF_ERR_SCANNER_MODE',
       category: 'scanner',
     });
   });

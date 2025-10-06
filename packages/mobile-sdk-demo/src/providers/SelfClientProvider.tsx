@@ -12,7 +12,7 @@ import {
   type Adapters,
   type TrackEventParams,
   type WsConn,
-  webScannerShim,
+  webNFCScannerShim,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { persistentDocumentsAdapter } from '../utils/documentStore';
@@ -115,7 +115,7 @@ export function SelfClientProvider({ children }: PropsWithChildren) {
 
   const adapters: Adapters = useMemo(
     () => ({
-      scanner: webScannerShim,
+      scanner: webNFCScannerShim,
       network: {
         http: {
           fetch: createFetch(),
