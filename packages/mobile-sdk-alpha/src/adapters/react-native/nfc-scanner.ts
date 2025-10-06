@@ -19,9 +19,9 @@ export const reactNativeScannerAdapter: NFCScannerAdapter = {
 };
 
 async function scanIOS(opts: NFCScanOpts): Promise<NFCScanResult> {
-  const { PassportReader } = NativeModules;
+  const { SelfPassportReader } = NativeModules;
 
-  if (!PassportReader) {
+  if (!SelfPassportReader) {
     throw new Error('PassportReader not found, check if its linked correctly');
   }
 
@@ -42,12 +42,12 @@ async function scanIOS(opts: NFCScanOpts): Promise<NFCScanResult> {
       throw new Error('NFC scanning requires passportNumber, dateOfBirth, and dateOfExpiry');
     }
 
-    const result = await PassportReader.scanPassport(
+    const result = await SelfPassportReader.scanPassport(
       passportNumber,
       dateOfBirth,
       dateOfExpiry,
       canNumber || '',
-      useCan,
+      useCan || false,
       skipPACE || false,
       skipCA || false,
       extendedMode || false,
@@ -118,7 +118,7 @@ async function scanAndroid(opts: NFCScanOpts): Promise<NFCScanResult> {
       dateOfBirth: dateOfBirth,
       dateOfExpiry: dateOfExpiry,
       canNumber: canNumber || '',
-      useCan: useCan,
+      useCan: useCan || false,
     };
 
     const result = await PassportReader.scan(scanOptions);
