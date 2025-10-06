@@ -52,11 +52,6 @@ const config: HardhatUserConfig = {
       url: process.env.CELO_RPC_URL || "https://forno.celo.org",
       accounts: [process.env.PRIVATE_KEY as string],
     },
-    alfajores: {
-      chainId: 44787,
-      url: process.env.CELO_ALFAJORES_RPC_URL || "https://alfajores-forno.celo-testnet.org",
-      accounts: [process.env.PRIVATE_KEY as string],
-    },
     "celo-sepolia": {
       chainId: 11142220,
       url: process.env.CELO_SEPOLIA_RPC_URL || "https://rpc.ankr.com/celo_sepolia",
@@ -75,14 +70,6 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api.etherscan.io/v2/api?chainid=42220",
           browserURL: "https://celoscan.io/",
-        },
-      },
-      {
-        network: "alfajores",
-        chainId: 44787,
-        urls: {
-          apiURL: "https://api.etherscan.io/v2/api?chainid=44787",
-          browserURL: "https://alfajores.celoscan.io",
         },
       },
       {
