@@ -5,7 +5,7 @@ import { Alert } from 'react-native';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import GenerateMock from '../../src/screens/GenerateMock';
-import type { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog } from '@selfxyz/common';
 import { sdkMocks } from '../mocks/sdk';
 
 describe('GenerateMock screen', () => {
