@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
+import type LottieView from 'lottie-react-native';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, XStack, YStack } from 'tamagui';
 
+import { DelayedLottieView } from '@/components/DelayedLottieView';
 import CloseWarningIcon from '@/images/icons/close-warning.svg';
 import Plus from '@/images/icons/plus_slate600.svg';
 import {
@@ -115,7 +116,7 @@ const LoadingUI: React.FC<LoadingUIProps> = ({
           elevation={8}
         >
           <YStack alignItems="center" paddingHorizontal={10} flex={1}>
-            <LottieView
+            <DelayedLottieView
               autoPlay
               loop={shouldLoopAnimation}
               source={animationSource}

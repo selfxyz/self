@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { YStack } from 'tamagui';
@@ -12,6 +11,7 @@ import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import warningAnimation from '@/assets/animations/warning.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { DelayedLottieView } from '@/components/DelayedLottieView';
 import Caution from '@/components/typography/Caution';
 import { SubHeader } from '@/components/typography/SubHeader';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -30,7 +30,7 @@ const DisclaimerScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <LottieView
+        <DelayedLottieView
           autoPlay
           loop={false}
           source={warningAnimation}
