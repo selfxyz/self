@@ -31,10 +31,6 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: '@selfxyz/mobile-sdk-alpha',
-        replacement: resolve(__dirname, './tests/mocks/mobile-sdk-alpha.ts'),
-      },
-      {
         find: 'react-native',
         replacement: resolve(__dirname, './tests/mocks/react-native.ts'),
       },
