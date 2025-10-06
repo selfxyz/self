@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       job_to_run:
-        description: 'Which job to run (staging or production)'
+        description: "Which job to run (staging or production)"
         required: false
         type: choice
         options:
@@ -28,17 +28,17 @@ on:
     branches:
       - dev
     paths:
-      - '.github/workflows/release-calendar.yml'
+      - ".github/workflows/release-calendar.yml"
   schedule:
     # Friday 17:00 UTC (see timezone conversions above) to prepare the weekend staging PR.
-    - cron: '0 17 * * 5'
+    - cron: "0 17 * * 5"
     # Sunday 17:00 UTC (same times as above) to prepare the production release PR.
-    - cron: '0 17 * * 0'
+    - cron: "0 17 * * 0"
 
 permissions:
   contents: read
   pull-requests: write
-  issues: write  # Required for creating labels
+  issues: write # Required for creating labels
 
 jobs:
   release_to_staging:
