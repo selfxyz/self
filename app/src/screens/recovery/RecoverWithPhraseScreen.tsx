@@ -12,7 +12,6 @@ import { useNavigation } from '@react-navigation/native';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useProtocolStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import Description from '@/components/typography/Description';
@@ -33,6 +32,8 @@ import {
 
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation = useNavigation();
+  const selfClient = useSelfClient();
+  const { useProtocolStore } = selfClient;
   const { restoreAccountFromMnemonic } = useAuth();
   const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
@@ -72,8 +73,13 @@ const RecoverWithPhraseScreen: React.FC = () => {
         },
         getAltCSCA(docCategory) {
           if (docCategory === 'aadhaar') {
-            return useProtocolStore.getState()[docCategory].public_keys;
+            const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+            // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+            return publicKeys
+              ? Object.fromEntries(publicKeys.map(key => [key, key]))
+              : {};
           }
+
           return useProtocolStore.getState()[docCategory].alternative_csca;
         },
       },
@@ -91,7 +97,13 @@ const RecoverWithPhraseScreen: React.FC = () => {
     setRestoring(false);
     trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
     navigation.navigate('AccountVerifiedSuccess');
-  }, [mnemonic, navigation, restoreAccountFromMnemonic, trackEvent]);
+  }, [
+    mnemonic,
+    navigation,
+    restoreAccountFromMnemonic,
+    trackEvent,
+    useProtocolStore,
+  ]);
 
   return (
     <YStack

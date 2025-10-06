@@ -7,6 +7,10 @@ import forge from 'node-forge';
 import type { hashAlgosTypes } from '../../constants/constants.js';
 import { API_URL_STAGING } from '../../constants/constants.js';
 import { countries } from '../../constants/countries.js';
+import {
+  AADHAAR_MOCK_PRIVATE_KEY_PEM,
+  AADHAAR_MOCK_PUBLIC_KEY_PEM,
+} from '../../mock_certificates/aadhaar/mockAadhaarCert.js';
 import { convertByteArrayToBigInt, processQRData } from '../aadhaar/mockData.js';
 import { extractQRDataFields } from '../aadhaar/utils.js';
 import { getCurveForElliptic } from '../certificate_parsing/curves.js';
@@ -21,10 +25,6 @@ import { genDG1 } from './dg1.js';
 import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format.js';
 import { getMockDSC } from './getMockDSC.js';
 import { initPassportDataParsing } from './passport.js';
-import {
-  AADHAAR_MOCK_PRIVATE_KEY_PEM,
-  AADHAAR_MOCK_PUBLIC_KEY_PEM,
-} from '../../mock_certificates/aadhaar/mockAadhaarCert.js';
 
 export interface IdDocInput {
   idType: 'mock_passport' | 'mock_id_card' | 'mock_aadhaar';

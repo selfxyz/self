@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -12,7 +19,6 @@ import { AnimationOptions, LottieComponent, provideLottieOptions } from 'ngx-lot
 import { QRCodeComponent } from 'angularx-qrcode';
 import CHECK_ANIMATION from '../animations/check_animation.json';
 import X_ANIMATION from '../animations/x_animation.json';
-
 
 export interface SelfQRcodeProps {
   selfApp: SelfApp;
@@ -28,12 +34,10 @@ export interface SelfQRcodeProps {
   selector: 'lib-self-qrcode',
   standalone: true,
   imports: [CommonModule, LedComponent, QRCodeComponent, LottieComponent],
-  providers: [
-    provideLottieOptions({ player: () => import('lottie-web') })
-  ],
+  providers: [provideLottieOptions({ player: () => import('lottie-web') })],
   templateUrl: './self-qrcode.component.html',
   styleUrls: ['./self-qrcode.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SelfQRcodeComponent implements OnInit, OnDestroy {
   @Input() selfApp!: SelfApp;
@@ -93,7 +97,7 @@ export class SelfQRcodeComponent implements OnInit, OnDestroy {
     // Create selfApp with session ID
     const selfAppWithSession = {
       ...this.selfApp,
-      sessionId: sessionId
+      sessionId: sessionId,
     };
 
     // Initialize WebSocket connection
@@ -122,7 +126,7 @@ export class SelfQRcodeComponent implements OnInit, OnDestroy {
     } else {
       qrValue = getUniversalLink({
         ...this.selfApp,
-        sessionId: sessionId
+        sessionId: sessionId,
       });
     }
 

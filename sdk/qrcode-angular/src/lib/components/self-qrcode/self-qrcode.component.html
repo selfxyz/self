@@ -8,30 +8,36 @@
     <ng-lottie
       *ngIf="proofStep() === QRcodeSteps.PROOF_GENERATION_FAILED"
       [options]="errorOptions"
-      style="width:200px; height:200px"
-      (complete)="resetToWaiting()">
+      style="width: 200px; height: 200px"
+      (complete)="resetToWaiting()"
+    >
     </ng-lottie>
 
     <!-- Success -->
     <ng-lottie
       *ngIf="proofStep() === QRcodeSteps.PROOF_VERIFIED"
       [options]="successOptions"
-      style="width:200px; height:200px"
-      (complete)="resetToWaiting()">
+      style="width: 200px; height: 200px"
+      (complete)="resetToWaiting()"
+    >
     </ng-lottie>
 
     <!-- Default QR -->
     <div
-      [hidden]="(proofStep() === QRcodeSteps.PROOF_GENERATION_STARTED)
-            || (proofStep() === QRcodeSteps.PROOF_GENERATED)
-            || (proofStep() === QRcodeSteps.PROOF_GENERATION_FAILED)
-            || (proofStep() === QRcodeSteps.PROOF_VERIFIED)">
+      [hidden]="
+        proofStep() === QRcodeSteps.PROOF_GENERATION_STARTED ||
+        proofStep() === QRcodeSteps.PROOF_GENERATED ||
+        proofStep() === QRcodeSteps.PROOF_GENERATION_FAILED ||
+        proofStep() === QRcodeSteps.PROOF_VERIFIED
+      "
+    >
       <qrcode
         [qrdata]="qrCodeValue()"
         [width]="size"
         [errorCorrectionLevel]="'M'"
         [colorDark]="darkMode ? '#ffffff' : '#000000'"
-        [colorLight]="darkMode ? '#000000' : '#ffffff'">
+        [colorLight]="darkMode ? '#000000' : '#ffffff'"
+      >
       </qrcode>
     </div>
   </div>

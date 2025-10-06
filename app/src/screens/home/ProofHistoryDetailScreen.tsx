@@ -7,8 +7,8 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
 
-import type { ProofHistory } from '@/stores/proof-types';
-import { ProofStatus } from '@/stores/proof-types';
+import type { ProofHistory } from '@/stores/proofTypes';
+import { ProofStatus } from '@/stores/proofTypes';
 import {
   black,
   blue100,

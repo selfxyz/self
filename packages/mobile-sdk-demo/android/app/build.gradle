@@ -1,0 +1,55 @@
+apply plugin: "com.android.application"
+apply plugin: "com.facebook.react"
+apply plugin: "org.jetbrains.kotlin.android"
+
+react {
+    root = file("../../")
+    reactNativeDir = file("../../../../node_modules/react-native")
+    codegenDir = file("../../../../node_modules/@react-native/codegen")
+    cliFile = file("../../../../node_modules/react-native/cli.js")
+    autolinkLibrariesWithApp()
+}
+
+android {
+    namespace "com.selfxyz.demoapp"
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId "com.selfxyz.demoapp"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
+
+dependencies {
+    implementation("com.facebook.react:react-android:0.76.9")
+    implementation("com.facebook.react:hermes-android:0.76.9")
+    if (project.hasProperty('newArchEnabled') ? newArchEnabled.toBoolean() : false) {
+        implementation("com.facebook.react:react-android-codegen:0.76.9")
+    }
+}

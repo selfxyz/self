@@ -460,14 +460,18 @@ func (s *BackendVerifier) Verify(
 		}
 	}
 
-	isOfacValid := true
-	if configErr == nil && verificationConfig.Ofac {
-		for _, ofacCheck := range genericDiscloseOutput.Ofac {
-			if !ofacCheck {
-				isOfacValid = false
-				break
-			}
+	// Calculate cumulative OFAC: true if any OFAC check is enabled
+	cumulativeOfac := false
+	for _, ofacCheck := range genericDiscloseOutput.Ofac {
+		if ofacCheck {
+			cumulativeOfac = true
+			break
 		}
+	}
+
+	isOfacValid := false
+	if configErr == nil && verificationConfig.Ofac {
+		isOfacValid = cumulativeOfac
 	}
 
 	return &VerificationResult{
@@ -547,28 +551,6 @@ func (s *BackendVerifier) validateWithConfig(
 	}
 
 	s.validateTimestamp(attestationId, publicSignals, discloseIndices, issues)
-
-	if !verificationConfig.Ofac {
-		for i, ofacCheck := range genericDiscloseOutput.Ofac {
-			if ofacCheck {
-				var ofacType string
-				switch i {
-				case 0:
-					ofacType = "Passport number OFAC check"
-				case 1:
-					ofacType = "Name and DOB OFAC check"
-				case 2:
-					ofacType = "Name and YOB OFAC check"
-				default:
-					ofacType = fmt.Sprintf("OFAC check %d", i)
-				}
-				*issues = append(*issues, ConfigIssue{
-					Type:    InvalidOfac,
-					Message: fmt.Sprintf("%s is not allowed", ofacType),
-				})
-			}
-		}
-	}
 
 	return forbiddenCountriesList, genericDiscloseOutput, nil
 }

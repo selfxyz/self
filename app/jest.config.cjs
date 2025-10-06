@@ -19,12 +19,20 @@ module.exports = {
     '^@tests$': '<rootDir>/tests/src',
     '^@selfxyz/mobile-sdk-alpha$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
+    '^@selfxyz/mobile-sdk-alpha/onboarding/(.*)$':
+      '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/flows/onboarding/$1.cjs',
+    '^@selfxyz/mobile-sdk-alpha/disclosing/(.*)$':
+      '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/flows/disclosing/$1.cjs',
     '^@selfxyz/mobile-sdk-alpha/(.*)$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/$1.cjs',
     // Fix snarkjs resolution for @anon-aadhaar/core
-    '^snarkjs$': '<rootDir>/../node_modules/snarkjs/build/main.cjs',
+    '^snarkjs$': '<rootDir>/../circuits/node_modules/snarkjs/build/main.cjs',
     // Fix ffjavascript resolution for snarkjs dependencies
-    '^ffjavascript$': '<rootDir>/../node_modules/ffjavascript/build/main.cjs',
+    '^ffjavascript$':
+      '<rootDir>/../circuits/node_modules/ffjavascript/build/main.cjs',
+    // Fix @anon-aadhaar/core resolution
+    '^@anon-aadhaar/core$':
+      '<rootDir>/../common/node_modules/@anon-aadhaar/core/dist/index.js',
   },
   globals: {
     'ts-jest': {

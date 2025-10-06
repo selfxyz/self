@@ -21,9 +21,9 @@ describe('ProveCountryIsNotInList', function () {
     );
     circuit = await wasm_tester(circuitPath, {
       include: [
-        '../node_modules',
-        '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-        '../node_modules/circomlib/circuits',
+        'node_modules',
+        'node_modules/@zk-kit/binary-merkle-root.circom/src',
+        'node_modules/circomlib/circuits',
       ],
     });
   });

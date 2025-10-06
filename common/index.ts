@@ -2,8 +2,13 @@
 export type {
   AadhaarData,
   CertificateData,
+  DeployedCircuits,
+  DocumentCatalog,
   DocumentCategory,
+  DocumentMetadata,
+  IDDocument,
   IdDocInput,
+  OfacTree,
   PassportData,
   PassportMetadata,
   PublicKeyDetailsECDSA,
@@ -15,6 +20,9 @@ export type {
 
 // Constants exports
 export type { Country3LetterCode } from './src/constants/index.js';
+
+// Additional type exports
+export type { Environment } from './src/utils/types.js';
 
 // Utils exports
 export {
@@ -57,6 +65,7 @@ export {
   bigIntToString,
   brutforceSignatureAlgorithmDsc,
   buildSMT,
+  calculateContentHash,
   calculateUserIdentifierHash,
   findStartPubKeyIndex,
   formatEndpoint,
@@ -64,6 +73,7 @@ export {
   genAndInitMockPassportData,
   genMockIdDoc,
   genMockIdDocAndInitDataParsing,
+  fetchOfacTrees,
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
   generateCircuitInputsRegisterForTests,
@@ -71,6 +81,7 @@ export {
   generateCommitment,
   generateMockDSC,
   generateNullifier,
+  generateTEEInputsDiscloseStateless,
   getCircuitNameFromPassportData,
   getLeafCscaTree,
   getLeafDscTree,
@@ -78,12 +89,22 @@ export {
   getSolidityPackedUserContextData,
   getUniversalLink,
   hashEndpointWithScope,
+  inferDocumentCategory,
   initElliptic,
   initPassportDataParsing,
   parseCertificateSimple,
   parseDscCertificateData,
   stringToBigInt,
 } from './src/utils/index.js';
+
+// Crypto polyfill for cross-platform compatibility
+export {
+  createHash,
+  createHmac,
+  default as cryptoPolyfill,
+  pbkdf2Sync,
+  randomBytes,
+} from './src/polyfills/crypto.js';
 
 export { createSelector } from './src/utils/aadhaar/constants.js';
 

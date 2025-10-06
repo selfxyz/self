@@ -151,7 +151,6 @@ class PassportReader: NSObject {
           skipCA: skipCABool,
           skipPACE: skipPACEBool,
           useExtendedMode: extendedModeBool,
-          usePacePolling: usePacePollingBool,
           customDisplayMessage: customMessageHandler
         )
 

@@ -14,11 +14,14 @@ describe('navigation', () => {
       'AccountRecoveryChoice',
       'AccountVerifiedSuccess',
       'CloudBackupSettings',
+      'ComingSoon',
       'ConfirmBelonging',
+      'CountryPicker',
       'CreateMock',
       'DeferredLinkingInfo',
       'DevFeatureFlags',
       'DevHapticFeedback',
+      'DevLoadingScreen',
       'DevPrivateKey',
       'DevSettings',
       'Disclaimer',
@@ -31,6 +34,7 @@ describe('navigation', () => {
       'DocumentNFCTrouble',
       'DocumentOnboarding',
       'Home',
+      'IDPicker',
       'IdDetails',
       'Launch',
       'Loading',
@@ -48,29 +52,6 @@ describe('navigation', () => {
       'Settings',
       'ShowRecoveryPhrase',
       'Splash',
-      'UnsupportedDocument',
     ]);
-  });
-
-  describe('Aesop design screen overrides', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
-    it('should use regular passport screens when shouldShowAesopRedesign is false', () => {
-      const navigationScreens = require('@/navigation').navigationScreens;
-      expect(
-        navigationScreens.DocumentOnboarding.options.title,
-      ).toBeUndefined();
-    });
-
-    it('should use aesop design passport screens when shouldShowAesopRedesign is true', () => {
-      jest.mock('@/hooks/useAesopRedesign', () => ({
-        shouldShowAesopRedesign: jest.fn().mockReturnValue(true),
-      }));
-
-      const navigationScreens = require('@/navigation').navigationScreens;
-      expect(navigationScreens.DocumentOnboarding.options.title).toBeDefined();
-    });
   });
 });

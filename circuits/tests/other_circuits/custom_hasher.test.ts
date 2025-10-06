@@ -23,16 +23,16 @@ describe('CustomHasher', function () {
     );
     circuitCustomHasher = await wasm_tester(circuitPathCustomHasher, {
       include: [
-        '../node_modules',
-        '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-        '../node_modules/circomlib/circuits',
+        'node_modules',
+        'node_modules/@zk-kit/binary-merkle-root.circom/src',
+        'node_modules/circomlib/circuits',
       ],
     });
     circuitPackBytesAndPoseidon = await wasm_tester(circuitPathPackBytesAndPoseidon, {
       include: [
-        '../node_modules',
-        '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-        '../node_modules/circomlib/circuits',
+        'node_modules',
+        'node_modules/@zk-kit/binary-merkle-root.circom/src',
+        'node_modules/circomlib/circuits',
       ],
     });
   });

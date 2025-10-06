@@ -259,17 +259,10 @@ describe('scan', () => {
         dataGroupHashes: JSON.stringify({}),
       });
 
-      const mockConfigureNfcAnalytics =
-        configureNfcAnalytics as jest.MockedFunction<
-          typeof configureNfcAnalytics
-        >;
-
       (PassportReader as any).scanPassport = mockScanPassport;
 
       await scan(mockInputs);
 
-      // Should configure analytics before scanning
-      expect(mockConfigureNfcAnalytics).toHaveBeenCalled();
       expect(mockScanPassport).toHaveBeenCalled();
     });
   });

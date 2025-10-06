@@ -15,7 +15,7 @@ import {
 
 import splashAnimation from '@/assets/animations/splash.json';
 import type { RootStackParamList } from '@/navigation';
-import { useAuth } from '@/providers/authProvider';
+import { migrateToSecureKeychain, useAuth } from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
@@ -68,11 +68,18 @@ const SplashScreen: React.FC = ({}) => {
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           if (needsMigration) {
-            await checkAndUpdateRegistrationStates();
+            await checkAndUpdateRegistrationStates(selfClient);
           }
 
           const hasValid = await hasAnyValidRegisteredDocument(selfClient);
           const parentScreen = hasValid ? 'Home' : 'Launch';
+
+          // Migrate keychain to secure storage with biometric protection
+          try {
+            await migrateToSecureKeychain();
+          } catch (error) {
+            console.warn('Keychain migration failed, continuing:', error);
+          }
 
           setDeeplinkParentScreen(parentScreen);
 
@@ -105,7 +112,7 @@ const SplashScreen: React.FC = ({}) => {
     if (isAnimationFinished) {
       if (queuedDeepLink) {
         requestAnimationFrame(() => {
-          handleUrl(queuedDeepLink);
+          handleUrl(selfClient, queuedDeepLink);
         });
       } else if (nextScreen) {
         requestAnimationFrame(() => {
@@ -113,7 +120,7 @@ const SplashScreen: React.FC = ({}) => {
         });
       }
     }
-  }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation]);
+  }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation, selfClient]);
 
   return (
     <LottieView

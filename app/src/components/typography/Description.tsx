@@ -7,7 +7,6 @@ import { StyleSheet } from 'react-native';
 import type { TextProps } from 'tamagui';
 import { Text } from 'tamagui';
 
-import { shouldShowAesopRedesign } from '@/hooks/useAesopRedesign';
 import { slate500 } from '@/utils/colors';
 import { dinot } from '@/utils/fonts';
 
@@ -34,9 +33,5 @@ const styles = StyleSheet.create({
     lineHeight: 23,
     textAlign: 'center',
     fontFamily: dinot,
-    ...(shouldShowAesopRedesign() && {
-      textAlign: 'left',
-      fontSize: 16,
-    }),
   },
 });

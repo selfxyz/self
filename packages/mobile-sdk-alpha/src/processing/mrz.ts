@@ -185,6 +185,19 @@ function validateTD3CheckDigits(lines: string[]): Omit<MRZValidation, 'format' |
   };
 }
 
+export function checkScannedInfo(passportNumber: string, dateOfBirth: string, dateOfExpiry: string): boolean {
+  if (passportNumber.length > 9) {
+    return false;
+  }
+  if (dateOfBirth.length !== 6) {
+    return false;
+  }
+  if (dateOfExpiry.length !== 6) {
+    return false;
+  }
+  return true;
+}
+
 /**
  * Extract and validate MRZ information from a machine-readable zone string
  * Supports TD3 format (passports) with comprehensive validation
@@ -236,6 +249,93 @@ export function extractMRZInfo(mrzString: string): MRZInfo {
     ...info,
     validation,
   };
+}
+
+/**
+ * Extract name from MRZ string
+ * Supports TD3 (passport) and TD1 (ID card) formats
+ *
+ * @param mrzString - The MRZ data as a string
+ * @returns Object with firstName and lastName, or null if parsing fails
+ *
+ * @example
+ * ```ts
+ * const name = extractNameFromMRZ("P<USADOE<<JOHN<<<<<<<<<<<<<<<<<<<<<<<<<");
+ * // Returns: { firstName: "JOHN", lastName: "DOE" }
+ * ```
+ */
+export function extractNameFromMRZ(mrzString: string): { firstName: string; lastName: string } | null {
+  if (!mrzString || typeof mrzString !== 'string') {
+    return null;
+  }
+
+  let lines = mrzString
+    .trim()
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+
+  // Handle single-line MRZ strings (common for stored data)
+  if (lines.length === 1) {
+    const mrzLength = lines[0].length;
+
+    // TD1 format (ID card): 90 characters = 3 lines × 30 chars
+    // Detect TD1 by checking if it starts with 'I' (ID card) or 'A' (type A) or 'C' (type C)
+    if (mrzLength === 90 && /^[IAC][<A-Z]/.test(lines[0])) {
+      lines = [lines[0].slice(0, 30), lines[0].slice(30, 60), lines[0].slice(60, 90)];
+    }
+    // TD3 format (passport): 88 chars (2×44) or 90 chars (2×45)
+    else if (mrzLength === 88 || mrzLength === 90) {
+      const lineLength = mrzLength === 88 ? 44 : 45;
+      lines = [lines[0].slice(0, lineLength), lines[0].slice(lineLength)];
+    }
+  }
+
+  if (lines.length === 0) {
+    return null;
+  }
+
+  // TD3 format (passport): Name is in line 1 after country code
+  // Format: P<COUNTRY<<LASTNAME<<FIRSTNAME<<<<<<<<<<
+  // TD3 typically has 2 lines, first line is usually 44 chars but we'll be lenient
+  if (lines.length === 2) {
+    const line1 = lines[0];
+    const nameMatch = line1.match(/^[IPO]<[A-Z]{3}(.+)$/);
+
+    if (nameMatch) {
+      const namePart = nameMatch[1];
+      // Split by << to separate last name and first name
+      const parts = namePart.split('<<').filter(Boolean);
+
+      if (parts.length >= 2) {
+        const lastName = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+        const firstName = parts[1].replace(/<+$/, '').replace(/</g, ' ').trim();
+        return { firstName, lastName };
+      } else if (parts.length === 1) {
+        const name = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+        return { firstName: '', lastName: name };
+      }
+    }
+  }
+
+  // TD1 format (ID card): Name is in line 3
+  // Format: LASTNAME<<FIRSTNAME<<<<<<<<<<
+  // TD1 typically has 3 lines, each 30 chars but we'll be lenient
+  if (lines.length === 3) {
+    const line3 = lines[2];
+    const parts = line3.split('<<').filter(Boolean);
+
+    if (parts.length >= 2) {
+      const lastName = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+      const firstName = parts[1].replace(/<+$/, '').replace(/</g, ' ').trim();
+      return { firstName, lastName };
+    } else if (parts.length === 1) {
+      const name = parts[0].replace(/<+$/, '').replace(/</g, ' ').trim();
+      return { firstName: '', lastName: name };
+    }
+  }
+
+  return null;
 }
 
 /**

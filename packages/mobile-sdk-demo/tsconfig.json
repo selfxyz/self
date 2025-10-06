@@ -1,0 +1,9 @@
+{
+  "extends": "@tsconfig/react-native/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "allowJs": true,
+    "types": ["react-native", "vitest/globals"]
+  },
+  "include": ["src", "App.tsx", "index.js", "types/**/*", "__tests__/**/*", "tests/**/*"]
+}

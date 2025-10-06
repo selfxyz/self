@@ -2,7 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Subject } from 'rxjs';
 import type { SelfApp } from '../common';
 import type { Socket } from 'socket.io-client';
-import {  newSocket, validateWebSocketUrl } from '../utils/websocket';
+import { newSocket, validateWebSocketUrl } from '../utils/websocket';
 import { QRcodeSteps } from '../utils/utils';
 
 @Injectable({
@@ -27,13 +27,7 @@ export class WebSocketService implements OnDestroy {
 
     console.log('[WebSocketService] Initializing new WebSocket connection');
 
-    this.cleanupFunction = this.initWebSocket(
-      websocketUrl,
-      selfApp,
-      type,
-      onSuccess,
-      onError
-    );
+    this.cleanupFunction = this.initWebSocket(websocketUrl, selfApp, type, onSuccess, onError);
   }
 
   initWebSocket(
@@ -60,15 +54,7 @@ export class WebSocketService implements OnDestroy {
 
     socket.on('mobile_status', (data) => {
       console.log('[WebSocket] Raw mobile_status event received:', data);
-      this.handleWebSocketMessage(
-        socket,
-        sessionId,
-        selfApp,
-        type,
-        onSuccess,
-        onError,
-        data
-      );
+      this.handleWebSocketMessage(socket, sessionId, selfApp, type, onSuccess, onError, data);
     });
 
     socket.on('disconnect', (reason: string) => {

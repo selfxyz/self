@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {IPoseidonT3} from "../interfaces/IPoseidonT3.sol";
 import {IIdentityVerificationHubV2} from "../interfaces/IIdentityVerificationHubV2.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {CircuitConstantsV2} from "../constants/CircuitConstantsV2.sol";
 import {AttestationId} from "../constants/AttestationId.sol";
+import {SelfUtils} from "../libraries/SelfUtils.sol";
+import {Formatter} from "../libraries/Formatter.sol";
 
 /**
  * @title SelfVerificationRoot
@@ -49,19 +52,15 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     // Events
     // ====================================================
 
-    /// @notice Emitted when the scope is updated
-    /// @param newScope The new scope value that was set
-    event ScopeUpdated(uint256 indexed newScope);
-
     /**
      * @notice Initializes the SelfVerificationRoot contract
-     * @dev Sets up the immutable reference to the hub contract and initial scope
+     * @dev Sets up the immutable reference to the hub contract and generates scope automatically
      * @param identityVerificationHubV2Address The address of the Identity Verification Hub V2
-     * @param scopeValue The expected proof scope for user registration
+     * @param scopeSeed The scope seed string to be hashed with contract address to generate the scope
      */
-    constructor(address identityVerificationHubV2Address, uint256 scopeValue) {
+    constructor(address identityVerificationHubV2Address, string memory scopeSeed) {
         _identityVerificationHubV2 = IIdentityVerificationHubV2(identityVerificationHubV2Address);
-        _scope = scopeValue;
+        _scope = _calculateScope(address(this), scopeSeed, _getPoseidonAddress());
     }
 
     /**
@@ -71,16 +70,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      */
     function scope() public view returns (uint256) {
         return _scope;
-    }
-
-    /**
-     * @notice Updates the scope value
-     * @dev Protected internal function to change the expected scope for proofs
-     * @param newScope The new scope value to set
-     */
-    function _setScope(uint256 newScope) internal {
-        _scope = newScope;
-        emit ScopeUpdated(newScope);
     }
 
     /**
@@ -183,5 +172,73 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         bytes memory userData
     ) internal virtual {
         // Default implementation is empty - override in derived contracts to add custom logic
+    }
+
+    /**
+     * @notice Gets the PoseidonT3 library address for the current chain
+     * @dev Returns hardcoded addresses of pre-deployed PoseidonT3 library on current chain
+     * @dev For local development networks, should create a setter function to set the scope manually
+     * @return The address of the PoseidonT3 library on this chain
+     */
+    function _getPoseidonAddress() internal view returns (address) {
+        uint256 chainId = block.chainid;
+
+        // Celo Mainnet
+        if (chainId == 42220) {
+            return 0xF134707a4C4a3a76b8410fC0294d620A7c341581;
+        }
+
+        // Celo Sepolia
+        if (chainId == 11142220) {
+            return 0x0a782f7F9f8Aac6E0bacAF3cD4aA292C3275C6f2;
+        }
+
+        // For local/development networks or other chains, return zero address
+        return address(0);
+    }
+
+    /**
+     * @notice Calculates scope from contract address, scope seed, and PoseidonT3 address
+     * @param contractAddress The contract address to hash
+     * @param scopeSeed The scope seed string
+     * @param poseidonT3Address The address of the PoseidonT3 library to use
+     * @return The calculated scope value
+     */
+    function _calculateScope(
+        address contractAddress,
+        string memory scopeSeed,
+        address poseidonT3Address
+    ) internal view returns (uint256) {
+        // Skip calculation if PoseidonT3 address is zero (local development)
+        if (poseidonT3Address == address(0)) {
+            return 0;
+        }
+
+        uint256 addressHash = _calculateAddressHashWithPoseidon(contractAddress, poseidonT3Address);
+        uint256 scopeSeedAsUint = SelfUtils.stringToBigInt(scopeSeed);
+        return IPoseidonT3(poseidonT3Address).hash([addressHash, scopeSeedAsUint]);
+    }
+
+    /**
+     * @notice Calculates hash of contract address using frontend-compatible chunking with specific PoseidonT3
+     * @dev Converts address to hex string, splits into 2 chunks (31+11), and hashes with provided PoseidonT3
+     * @param addr The contract address to hash
+     * @param poseidonT3Address The address of the PoseidonT3 library to use
+     * @return The hash result equivalent to frontend's endpointHash for addresses
+     */
+    function _calculateAddressHashWithPoseidon(
+        address addr,
+        address poseidonT3Address
+    ) internal view returns (uint256) {
+        // Convert address to hex string (42 chars: "0x" + 40 hex digits)
+        string memory addressString = SelfUtils.addressToHexString(addr);
+
+        // Split into exactly 2 chunks: 31 + 11 characters
+        // Chunk 1: characters 0-30 (31 chars)
+        // Chunk 2: characters 31-41 (11 chars)
+        uint256 chunk1BigInt = SelfUtils.stringToBigInt(Formatter.substring(addressString, 0, 31));
+        uint256 chunk2BigInt = SelfUtils.stringToBigInt(Formatter.substring(addressString, 31, 42));
+
+        return IPoseidonT3(poseidonT3Address).hash([chunk1BigInt, chunk2BigInt]);
     }
 }

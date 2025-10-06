@@ -110,7 +110,7 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",
-    "webpack": "^5.0.0"
+    "webpack": "^5.95.0"
   },
   "peerDependencies": {
     "lottie-react": "^2.4.0",

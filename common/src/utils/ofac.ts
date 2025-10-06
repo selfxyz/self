@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { TREE_URL, TREE_URL_STAGING } from '../constants/constants.js';
-import type { OfacTree } from './types.js';
+import type { Environment, OfacTree } from './types.js';
 
 export type OfacVariant = 'passport' | 'id_card';
 
@@ -31,7 +31,7 @@ const fetchTree = async (url: string): Promise<any> => {
 
 // Main public helper that retrieves the three OFAC trees depending on the variant (passport vs id_card).
 export const fetchOfacTrees = async (
-  environment: 'prod' | 'stg',
+  environment: Environment,
   variant: OfacVariant = 'passport'
 ): Promise<OfacTree> => {
   const baseUrl = environment === 'prod' ? TREE_URL : TREE_URL_STAGING;

@@ -7,7 +7,7 @@ import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
-import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
+import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
@@ -95,15 +95,15 @@ export const getAndClearQueuedUrl = (): string | null => {
   return url;
 };
 
-export const handleUrl = (uri: string) => {
+export const handleUrl = (selfClient: SelfClient, uri: string) => {
   const validatedParams = parseAndValidateUrlParams(uri);
   const { sessionId, selfApp: selfAppStr, mock_passport } = validatedParams;
 
   if (selfAppStr) {
     try {
       const selfAppJson = JSON.parse(selfAppStr);
-      useSelfAppStore.getState().setSelfApp(selfAppJson);
-      useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
+      selfClient.getSelfAppState().setSelfApp(selfAppJson);
+      selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
       navigationRef.navigate('Prove' as never);
 
@@ -117,8 +117,8 @@ export const handleUrl = (uri: string) => {
       );
     }
   } else if (sessionId && typeof sessionId === 'string') {
-    useSelfAppStore.getState().cleanSelfApp();
-    useSelfAppStore.getState().startAppListener(sessionId);
+    selfClient.getSelfAppState().cleanSelfApp();
+    selfClient.getSelfAppState().startAppListener(sessionId);
 
     navigationRef.navigate('Prove' as never);
   } else if (mock_passport) {
@@ -211,7 +211,9 @@ export const setDeeplinkParentScreen = (screen: string) => {
   correctParentScreen = screen;
 };
 
-export const setupUniversalLinkListenerInNavigation = () => {
+export const setupUniversalLinkListenerInNavigation = (
+  selfClient: SelfClient,
+) => {
   // Get the initial URL and store it for splash screen handling
   Linking.getInitialURL().then(url => {
     if (url) {
@@ -222,7 +224,7 @@ export const setupUniversalLinkListenerInNavigation = () => {
 
   // Handle subsequent URL events normally (when app is already running)
   const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
-    handleUrl(url);
+    handleUrl(selfClient, url);
   });
 
   return () => {

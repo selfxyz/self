@@ -15,13 +15,11 @@ import {
   wrap,
 } from '@sentry/react-native';
 
-interface BaseContext {
-  sessionId: string;
-  userId?: string;
-  platform: 'ios' | 'android';
-  stage: string;
-}
-
+import type {
+  BaseContext,
+  NFCScanContext,
+  ProofContext,
+} from '@selfxyz/mobile-sdk-alpha';
 // Security: Whitelist of allowed tag keys to prevent XSS
 const ALLOWED_TAG_KEYS = new Set([
   'session_id',
@@ -88,15 +86,6 @@ const sanitizeTagKey = (key: string): string | null => {
 
   return key;
 };
-
-export interface NFCScanContext extends BaseContext, Record<string, unknown> {
-  scanType: 'mrz' | 'can';
-}
-
-export interface ProofContext extends BaseContext, Record<string, unknown> {
-  circuitType: 'register' | 'dsc' | 'disclose' | null;
-  currentState: string;
-}
 
 export const captureException = (
   error: Error,

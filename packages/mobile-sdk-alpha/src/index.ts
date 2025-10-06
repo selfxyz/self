@@ -30,6 +30,9 @@ export type {
   WsConn,
 } from './types/public';
 
+// LogEvent Types
+export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
+
 // MRZ module
 export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
 
@@ -41,10 +44,14 @@ export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
 
 export type { QRProofOptions } from './qr';
+
+export type { SDKEvent, SDKEventMap } from './types/events';
+
 // Error handling
 export type { SdkErrorCategory } from './errors';
 
-// UI Types
+// Screen Components (React Native-based)
+export type { provingMachineCircuitType } from './proving/provingMachine';
 export {
   InitError,
   LivenessError,
@@ -55,23 +62,20 @@ export {
   notImplemented,
   sdkError,
 } from './errors';
-
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
-
-// Screen Components
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
-export { QRCodeScreen } from './components/screens/QRCodeScreen';
-
-export { SdkEvents } from './types/events';
-
 // Context and Client
+export { type ProvingStateType } from './proving/provingMachine';
+
+export { QRCodeScreen } from './components/screens/QRCodeScreen';
+// Components
+export { SdkEvents } from './types/events';
+// Documents utils
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
-// Components
 export { SelfMobileSdk } from './entry';
 
-// Documents utils
 export {
   clearPassportData,
   getAllDocuments,
@@ -81,34 +85,28 @@ export {
   reStorePassportDataWithRightCSCA,
 } from './documents/utils';
 
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
-export { extractMRZInfo } from './mrz';
+// Document utils
+export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
 
-export { formatDateToYYMMDD, scanMRZ } from './mrz';
-
-export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
-
-export { generateTEEInputsDisclose } from './processing/generate-disclosure-inputs';
-
-// Documents utils
+export { extractNameFromDocument } from './documents/utils';
 
 // Core functions
+export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+
+// Document validation
 export { isPassportDataValid } from './validation/document';
 
 export { mergeConfig } from './config/merge';
 
-// Document validation
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 
 export { scanQRProof } from './qr';
 
-export { useProtocolStore, useSelfAppStore } from './stores';
-
-// Error handling
 export { webScannerShim } from './adapters/web/shims';

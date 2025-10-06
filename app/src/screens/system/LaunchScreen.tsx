@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Anchor, Text, YStack } from 'tamagui';
@@ -13,18 +13,23 @@ import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import AbstractButton from '@/components/buttons/AbstractButton';
 import { BodyText } from '@/components/typography/BodyText';
 import { Caption } from '@/components/typography/Caption';
-import { privacyUrl, supportedBiometricIdsUrl, termsUrl } from '@/consts/links';
+import { privacyUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import Logo from '@/images/logo.svg';
-import { black, slate400, white, zinc800, zinc900 } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
+import IDCardPlaceholder from '@/images/icons/id_card_placeholder.svg';
+import {
+  black,
+  red500,
+  slate300,
+  slate400,
+  white,
+  zinc800,
+} from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 
 const LaunchScreen: React.FC = () => {
   useConnectionModal();
-  const onStartPress = useHapticNavigation('DocumentOnboarding');
-  const onAadhaarPress = useHapticNavigation('AadhaarUpload');
+  const onPress = useHapticNavigation('CountryPicker');
   const createMock = useHapticNavigation('CreateMock');
   const { bottom } = useSafeAreaInsets();
 
@@ -35,75 +40,59 @@ const LaunchScreen: React.FC = () => {
     });
 
   return (
-    <YStack
-      backgroundColor={black}
-      flex={1}
-      alignItems="center"
-      paddingHorizontal={20}
-      paddingBottom={bottom + extraYPadding}
-    >
+    <YStack backgroundColor={black} flex={1} alignItems="center">
       <View style={styles.container}>
-        <View style={styles.card}>
+        <YStack flex={1} justifyContent="center" alignItems="center">
           <GestureDetector gesture={devModeTap}>
-            <View style={styles.logoSection}>
-              <Logo style={styles.logo} />
-            </View>
+            <YStack
+              backgroundColor={red500}
+              borderRadius={14}
+              overflow="hidden"
+            >
+              <IDCardPlaceholder width={300} height={180} />
+            </YStack>
           </GestureDetector>
-
-          <Text style={styles.title}>Get started</Text>
-
-          <BodyText style={styles.description}>
-            Register with Self using your passport, biometric ID or Aadhaar card
-            to prove your identity across the web without revealing your
-            personal information.
-          </BodyText>
-        </View>
+        </YStack>
+        <Text
+          color={white}
+          fontSize={38}
+          fontFamily={advercase}
+          fontWeight="500"
+          textAlign="center"
+          marginBottom={16}
+        >
+          Take control of your digital identity
+        </Text>
+        <BodyText
+          color={slate300}
+          fontSize={16}
+          textAlign="center"
+          marginHorizontal={40}
+          marginBottom={40}
+        >
+          Self is the easiest way to verify your identity safely wherever you
+          are.
+        </BodyText>
       </View>
 
       <YStack
         gap="$3"
         width="100%"
         alignItems="center"
-        marginBottom={20}
-        marginTop={24}
+        paddingHorizontal={20}
+        paddingBottom={bottom}
+        paddingTop={30}
+        backgroundColor={zinc800}
       >
-        <YStack gap="$3" width="100%">
-          <AbstractButton
-            bgColor={black}
-            borderColor={zinc800}
-            borderWidth={1}
-            color={white}
-            trackEvent={AppEvents.SUPPORTED_BIOMETRIC_IDS}
-            onPress={async () => {
-              try {
-                await Linking.openURL(supportedBiometricIdsUrl);
-              } catch (error) {
-                console.warn('Failed to open supported IDs URL:', error);
-              }
-            }}
-          >
-            List of Supported Biometric IDs
-          </AbstractButton>
-
-          <AbstractButton
-            trackEvent={AppEvents.GET_STARTED_BIOMETRIC}
-            onPress={onStartPress}
-            bgColor={white}
-            color={black}
-            testID="launch-get-started-button"
-          >
-            I have a Passport or Biometric ID
-          </AbstractButton>
-          <AbstractButton
-            trackEvent={AppEvents.GET_STARTED_AADHAAR}
-            onPress={onAadhaarPress}
-            bgColor={white}
-            color={black}
-            testID="launch-get-started-button"
-          >
-            I have an Aadhaar Card
-          </AbstractButton>
-        </YStack>
+        <AbstractButton
+          trackEvent={AppEvents.GET_STARTED}
+          onPress={onPress}
+          bgColor={white}
+          color={black}
+          testID="launch-get-started-button"
+        >
+          Get Started
+        </AbstractButton>
 
         <Caption style={styles.notice}>
           By continuing, you agree to the&nbsp;
@@ -125,8 +114,8 @@ export default LaunchScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0,
-    justifyContent: 'flex-start',
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     width: '102%',
     paddingTop: '30%',
@@ -138,7 +127,6 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     paddingHorizontal: 20,
     alignItems: 'center',
-    backgroundColor: zinc900,
     shadowColor: black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -157,25 +145,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-  title: {
-    fontFamily: advercase,
-    fontSize: 38,
-    fontWeight: '500',
-    color: white,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  description: {
-    color: white,
-    fontSize: 16,
-    lineHeight: 22,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
+
   notice: {
     fontFamily: dinot,
+    paddingVertical: 10,
     paddingHorizontal: 20,
-    paddingVertical: 16,
     color: slate400,
     textAlign: 'center',
     lineHeight: 18,

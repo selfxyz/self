@@ -98,7 +98,6 @@ const Container: React.FC<NavBarProps> = ({
       <SystemBars style={barStyle} />
       <XStack
         backgroundColor={backgroundColor}
-        flexGrow={1}
         justifyContent="flex-start"
         alignItems="center"
         {...props}

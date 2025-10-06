@@ -43,6 +43,7 @@ export interface DocumentMetadata {
   data: string; // DG1/MRZ data for passports/IDs, relevant data for aadhaar
   mock: boolean; // whether this is a mock document
   isRegistered?: boolean; // whether the document is registered onChain
+  registeredAt?: number; // timestamp (epoch ms) when document was registered
 }
 
 export type DocumentType =
@@ -52,6 +53,8 @@ export type DocumentType =
   | 'mock_passport'
   | 'mock_id_card'
   | 'mock_aadhaar';
+
+export type Environment = 'prod' | 'stg';
 
 export type IDDocument = AadhaarData | PassportData;
 

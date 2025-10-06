@@ -14,7 +14,6 @@ import {
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { useSelfAppStore } from '@selfxyz/mobile-sdk-alpha/stores';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
@@ -30,16 +29,13 @@ import { black, slate800, white } from '@/utils/colors';
 import { parseAndValidateUrlParams } from '@/utils/deeplinks';
 
 const QRCodeViewFinderScreen: React.FC = () => {
-  const { trackEvent } = useSelfClient();
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
   const { visible: connectionModalVisible } = useConnectionModal();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const navigateToProve = useHapticNavigation('Prove');
-  const navigateToHome = useHapticNavigation('Home');
-  const onCancelPress = useCallback(() => {
-    navigateToHome();
-  }, [navigateToHome]);
 
   // This resets to the default state when we navigate back to this screen
   useFocusEffect(
@@ -70,8 +66,12 @@ const QRCodeViewFinderScreen: React.FC = () => {
               scan_type: 'selfApp',
             });
             const selfAppJson = JSON.parse(selfApp);
-            useSelfAppStore.getState().setSelfApp(selfAppJson);
-            useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
+
+            selfClient.getSelfAppState().setSelfApp(selfAppJson);
+            selfClient
+              .getSelfAppState()
+              .startAppListener(selfAppJson.sessionId);
+
             setTimeout(() => {
               navigateToProve();
             }, 100);
@@ -92,8 +92,10 @@ const QRCodeViewFinderScreen: React.FC = () => {
           trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
             scan_type: 'sessionId',
           });
-          useSelfAppStore.getState().cleanSelfApp();
-          useSelfAppStore.getState().startAppListener(sessionId);
+
+          selfClient.getSelfAppState().cleanSelfApp();
+          selfClient.getSelfAppState().startAppListener(sessionId);
+
           setTimeout(() => {
             navigateToProve();
           }, 100);
@@ -109,7 +111,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
         }
       }
     },
-    [doneScanningQR, navigation, navigateToProve, trackEvent],
+    [doneScanningQR, navigation, navigateToProve, trackEvent, selfClient],
   );
 
   const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;

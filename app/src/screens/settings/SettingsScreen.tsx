@@ -51,7 +51,7 @@ interface SocialButtonProps {
   href: string;
 }
 
-const emailFeedback = 'feedback@self.xyz';
+const emailFeedback = 'support@self.xyz';
 type RouteOption =
   | keyof RootStackParamList
   | 'share'

@@ -117,14 +117,14 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @dev Initializes the airdrop parameters, zero-knowledge verification configuration,
      *      and sets the ERC20 token to be distributed. Supports both E-Passport and EUID attestations.
      * @param identityVerificationHubAddress The address of the Identity Verification Hub V2.
-     * @param scopeValue The expected proof scope for user registration.
+     * @param scopeSeed The scope seed string to be hashed with contract address.
      * @param tokenAddress The address of the ERC20 token for airdrop.
      */
     constructor(
         address identityVerificationHubAddress,
-        uint256 scopeValue,
+        string memory scopeSeed,
         address tokenAddress
-    ) SelfVerificationRoot(identityVerificationHubAddress, scopeValue) Ownable(_msgSender()) {
+    ) SelfVerificationRoot(identityVerificationHubAddress, scopeSeed) Ownable(_msgSender()) {
         token = IERC20(tokenAddress);
     }
 
@@ -140,15 +140,6 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     function setMerkleRoot(bytes32 newMerkleRoot) external onlyOwner {
         merkleRoot = newMerkleRoot;
         emit MerkleRootUpdated(newMerkleRoot);
-    }
-
-    /**
-     * @notice Updates the scope used for verification.
-     * @dev Only callable by the contract owner.
-     * @param newScope The new scope to set.
-     */
-    function setScope(uint256 newScope) external onlyOwner {
-        _setScope(newScope);
     }
 
     /**

@@ -2,14 +2,27 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCatalog, PassportData } from '@selfxyz/common/utils/types';
-
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
-import { SDKEvent, SDKEventMap } from './types/events';
-import type { Adapters, Config, ScanOpts, ScanResult, SelfClient, Unsubscribe } from './types/public';
+import { ProofContext } from './proving/internal/logging';
+import { useProvingStore } from './proving/provingMachine';
+import { useMRZStore } from './stores/mrzStore';
+import { useProtocolStore } from './stores/protocolStore';
+import { useSelfAppStore } from './stores/selfAppStore';
+import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
+import type {
+  Adapters,
+  Config,
+  DocumentCatalog,
+  IDDocument,
+  LogLevel,
+  ScanOpts,
+  ScanResult,
+  SelfClient,
+  Unsubscribe,
+} from './types/public';
 import { TrackEventParams } from './types/public';
 /**
  * Optional adapter implementations used when a consumer does not provide their
@@ -24,7 +37,7 @@ const optionalDefaults: Required<Pick<Adapters, 'clock' | 'logger'>> = {
     },
   },
   logger: {
-    log: () => {},
+    log: (...args) => console.log(...args),
   },
 };
 
@@ -106,13 +119,12 @@ export function createSelfClient({
     return _adapters.scanner.scan(opts);
   }
 
-  async function trackEvent(event: string, payload?: TrackEventParams): Promise<void> {
-    if (!adapters.analytics) {
+  function trackEvent(event: string, payload?: TrackEventParams): void {
+    if (!_adapters.analytics) {
       return;
     }
-    return adapters.analytics.trackEvent(event, payload);
+    _adapters.analytics.trackEvent(event, payload);
   }
-
   /**
    * Retrieves the private key via the auth adapter.
    * With great power comes great responsibility
@@ -139,7 +151,9 @@ export function createSelfClient({
     extractMRZInfo: parseMRZInfo,
     on,
     emit,
-
+    logProofEvent: (level: LogLevel, message: string, context: ProofContext, details?: Record<string, any>) => {
+      emit(SdkEvents.PROOF_EVENT, { context, event: message, details, level });
+    },
     // TODO: inline for now
     loadDocumentCatalog: async () => {
       return _adapters.documents.loadDocumentCatalog();
@@ -153,8 +167,28 @@ export function createSelfClient({
     deleteDocument: async (id: string) => {
       return _adapters.documents.deleteDocument(id);
     },
-    saveDocument: async (id: string, passportData: PassportData) => {
+    saveDocument: async (id: string, passportData: IDDocument) => {
       return _adapters.documents.saveDocument(id, passportData);
     },
+
+    // for direct, one off access
+    getProvingState: () => {
+      return useProvingStore.getState();
+    },
+    getSelfAppState: () => {
+      return useSelfAppStore.getState();
+    },
+    getProtocolState: () => {
+      return useProtocolStore.getState();
+    },
+    getMRZState: () => {
+      return useMRZStore.getState();
+    },
+
+    // for reactivity (if needed)
+    useProvingStore,
+    useSelfAppStore,
+    useProtocolStore,
+    useMRZStore,
   };
 }

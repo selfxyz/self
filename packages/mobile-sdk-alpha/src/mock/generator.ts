@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { IdDocInput, PassportData } from '@selfxyz/common/utils';
-import { getSKIPEM } from '@selfxyz/common/utils/csca';
-import { generateMockDSC, genMockIdDoc, initPassportDataParsing } from '@selfxyz/common/utils/passports';
+import type { AadhaarData, IdDocInput, PassportData } from '@selfxyz/common';
+import { generateMockDSC, genMockIdDoc, getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 export interface GenerateMockDocumentOptions {
   age: number;
@@ -13,6 +12,8 @@ export interface GenerateMockDocumentOptions {
   selectedAlgorithm: string;
   selectedCountry: string;
   selectedDocumentType: 'mock_passport' | 'mock_id_card' | 'mock_aadhaar';
+  firstName?: string;
+  lastName?: string;
 }
 
 const formatDateToYYMMDD = (date: Date): string => {
@@ -49,7 +50,10 @@ export async function generateMockDocument({
   selectedAlgorithm,
   selectedCountry,
   selectedDocumentType,
-}: GenerateMockDocumentOptions) {
+  firstName,
+  lastName,
+}: GenerateMockDocumentOptions): Promise<PassportData | AadhaarData> {
+  console.log('generateMockDocument received names:', { firstName, lastName, isInOfacList });
   const randomPassportNumber = Math.random()
     .toString(36)
     .substring(2, 11)
@@ -68,15 +72,19 @@ export async function generateMockDocument({
     signatureType: signatureTypeForGeneration as IdDocInput['signatureType'],
     expiryDate: getExpiryDateFromYears(expiryYears),
     passportNumber: randomPassportNumber,
+    sex: 'M', // Default value
   };
 
   if (selectedDocumentType === 'mock_aadhaar') {
     idDocInput.birthDate = getBirthDateFromAge(age, 'DDMMYYYY');
 
     if (isInOfacList) {
-      idDocInput.lastName = 'HENAO MONTOYA';
-      idDocInput.firstName = 'ARCANGEL DE JESUS';
+      idDocInput.lastName = lastName || 'HENAO MONTOYA';
+      idDocInput.firstName = firstName || 'ARCANGEL DE JESUS';
       idDocInput.birthDate = '07-10-1954';
+    } else {
+      if (firstName) idDocInput.firstName = firstName;
+      if (lastName) idDocInput.lastName = lastName;
     }
 
     const result = genMockIdDoc(idDocInput);
@@ -90,10 +98,12 @@ export async function generateMockDocument({
   let dobForGeneration: string;
   if (isInOfacList) {
     dobForGeneration = '541007';
-    idDocInput.lastName = 'HENAO MONTOYA';
-    idDocInput.firstName = 'ARCANGEL DE JESUS';
+    idDocInput.lastName = lastName || 'HENAO MONTOYA';
+    idDocInput.firstName = firstName || 'ARCANGEL DE JESUS';
   } else {
     dobForGeneration = getBirthDateFromAge(age);
+    if (firstName) idDocInput.firstName = firstName;
+    if (lastName) idDocInput.lastName = lastName;
   }
   idDocInput.birthDate = dobForGeneration;
 

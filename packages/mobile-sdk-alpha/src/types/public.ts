@@ -2,12 +2,19 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common/utils/types';
+import { create } from 'zustand';
 
+import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common';
+
+import type { ProofContext } from '../proving/internal/logging';
+import { ProvingState } from '../proving/provingMachine';
+import { MRZState } from '../stores/mrzStore';
+import { ProtocolState } from '../stores/protocolStore';
+import { SelfAppState } from '../stores/selfAppStore';
 import { SDKEvent, SDKEventMap } from './events';
 
 export type { PassportValidationCallbacks } from '../validation/document';
-export type { DocumentCatalog, PassportData };
+export type { DocumentCatalog, IDDocument, PassportData };
 export interface Config {
   timeouts?: {
     scanMs?: number;
@@ -84,7 +91,7 @@ export interface MRZValidation {
   overall: boolean;
 }
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+export type LogLevel = 'info' | 'warn' | 'error';
 
 export interface Progress {
   step: string;
@@ -167,14 +174,22 @@ export interface SelfClient {
   hasPrivateKey(): Promise<boolean>;
   on<E extends SDKEvent>(event: E, cb: (payload?: SDKEventMap[E]) => void): Unsubscribe;
   emit<E extends SDKEvent>(event: E, payload?: SDKEventMap[E]): void;
-
+  logProofEvent(level: LogLevel, message: string, context: ProofContext, details?: Record<string, any>): void;
   loadDocumentCatalog(): Promise<DocumentCatalog>;
   saveDocumentCatalog(catalog: DocumentCatalog): Promise<void>;
-
   loadDocumentById(id: string): Promise<IDDocument | null>;
   saveDocument(id: string, passportData: IDDocument): Promise<void>;
-
   deleteDocument(id: string): Promise<void>;
+
+  getProvingState: () => ProvingState;
+  getSelfAppState: () => SelfAppState;
+  getProtocolState: () => ProtocolState;
+  getMRZState: () => MRZState;
+
+  useProvingStore: ReturnType<typeof create<ProvingState, []>>;
+  useSelfAppStore: ReturnType<typeof create<SelfAppState, []>>;
+  useProtocolStore: ReturnType<typeof create<ProtocolState, []>>;
+  useMRZStore: ReturnType<typeof create<MRZState, []>>;
 }
 export type Unsubscribe = () => void;
 export interface StorageAdapter {

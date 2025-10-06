@@ -1,8 +1,0 @@
-{
-  "extends": "@tsconfig/react-native/tsconfig.json",
-  "compilerOptions": {
-    "strict": true,
-    "allowJs": true
-  },
-  "include": ["src", "App.tsx", "index.js"]
-}

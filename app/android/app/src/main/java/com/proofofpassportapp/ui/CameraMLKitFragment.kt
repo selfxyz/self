@@ -28,11 +28,13 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnAttach
 import com.google.mlkit.vision.text.Text
 
 
@@ -77,6 +79,47 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val fragmentBinding = binding ?: return
+        val statusTop = fragmentBinding.statusViewTop
+        val statusBottom = fragmentBinding.statusViewBottom
+        val initialTopStart = ViewCompat.getPaddingStart(statusTop)
+        val initialTopPadding = statusTop.paddingTop
+        val initialTopEnd = ViewCompat.getPaddingEnd(statusTop)
+        val initialTopBottom = statusTop.paddingBottom
+        val initialBottomStart = ViewCompat.getPaddingStart(statusBottom)
+        val initialBottomTop = statusBottom.paddingTop
+        val initialBottomEnd = ViewCompat.getPaddingEnd(statusBottom)
+        val initialBottomPadding = statusBottom.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { _, insets ->
+            val statusInsets = insets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            ViewCompat.setPaddingRelative(
+                statusTop,
+                initialTopStart,
+                initialTopPadding + statusInsets.top,
+                initialTopEnd,
+                initialTopBottom
+            )
+
+            val navAndGesturesInsets = insets.getInsets(
+                WindowInsetsCompat.Type.navigationBars() or WindowInsetsCompat.Type.systemGestures()
+            )
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomInset = maxOf(navAndGesturesInsets.bottom, imeInsets.bottom)
+            ViewCompat.setPaddingRelative(
+                statusBottom,
+                initialBottomStart,
+                initialBottomTop,
+                initialBottomEnd,
+                initialBottomPadding + bottomInset
+            )
+
+            insets
+        }
+
+        fragmentBinding.root.doOnAttach { ViewCompat.requestApplyInsets(it) }
     }
 
 
@@ -96,9 +139,11 @@ class CameraMLKitFragment(cameraMLKitCallback: CameraMLKitCallback) : CameraFrag
     }
 
     override fun onDestroyView() {
+        binding?.root?.let { ViewCompat.setOnApplyWindowInsetsListener(it, null) }
         if (!disposable.isDisposed()) {
             disposable.dispose();
         }
+        binding = null
         super.onDestroyView()
 //        customView.onDestroy()
     }

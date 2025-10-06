@@ -5,6 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Self App</title>
+    <script>
+      // Polyfill Buffer for browser compatibility
+      if (typeof global === 'undefined') {
+        var global = globalThis;
+      }
+    </script>
+    <script type="module">
+      // Import Buffer from the bundled dependency (safer than CDN)
+      import { Buffer } from 'buffer';
+      window.Buffer = Buffer;
+      globalThis.Buffer = Buffer;
+      // Create a buffer external mapping for modules that expect it
+      window.__vite_browser_external = {
+        buffer: { Buffer },
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>

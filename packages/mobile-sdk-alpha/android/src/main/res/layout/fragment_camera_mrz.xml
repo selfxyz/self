@@ -27,7 +27,7 @@
     <TextView android:id="@+id/status_view_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/status_view_bottom"
+        android:layout_alignParentTop="true"
         android:layout_margin="14dp"
         android:background="#0000"
         android:text=""

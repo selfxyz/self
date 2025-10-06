@@ -91,7 +91,7 @@ export function num2Bits(n: number, inValue: bigint): bigint[] {
   return out;
 }
 
-export function packBytes(unpacked) {
+export function packBytes(unpacked: number[]) {
   const bytesCount = [31, 31, 31];
   const packed = [0n, 0n, 0n];
 

@@ -1,4 +1,8 @@
 name: Mobile Deploy
+# Runs on:
+# 1. Manual trigger (workflow_dispatch) with configurable options
+# 2. When PRs are merged to staging (auto-deploy to internal track)
+# 3. DISABLED: When called by other workflows (workflow_call)
 
 env:
   # Build environment versions
@@ -68,6 +72,16 @@ on:
           - minor
           - major
 
+  pull_request:
+    types: [closed]
+    branches: [staging]
+    paths:
+      - "app/**"
+      - "!app/**/*.md"
+      - "!app/docs/**"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/mobile-deploy.yml"
+
   workflow_call:
     inputs:
       platform:
@@ -97,14 +111,23 @@ concurrency:
 jobs:
   build-ios:
     runs-on: macos-latest-large
-    if: (inputs.platform == 'ios' || inputs.platform == 'both')
+    if: |
+      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (
+        (inputs.platform == 'ios' || inputs.platform == 'both') ||
+        (github.event_name == 'pull_request')
+      )
     steps:
       - name: Mobile deployment status
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
-          echo "📱 Platform: ${{ inputs.platform }}"
-          echo "🎯 Track: ${{ inputs.deployment_track }}"
-          echo "📦 Version bump: ${{ inputs.version_bump }}"
+          echo "📱 Platform: ${{ inputs.platform || 'both' }}"
+          echo "🎯 Track: ${{ inputs.deployment_track || 'internal' }}"
+          echo "📦 Version bump: ${{ inputs.version_bump || 'build' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "🔀 Triggered by PR merge: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            echo "👤 Merged by: ${{ github.event.pull_request.merged_by.login }}"
+          fi
 
       - uses: actions/checkout@v4
         with:
@@ -177,11 +200,8 @@ jobs:
         uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/ios/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-
+          lock-file: app/Gemfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
 
       - name: Cache CocoaPods
         id: pods-cache
@@ -461,6 +481,10 @@ jobs:
       - name: Build and upload to App Store Connect/TestFlight
         if: inputs.platform != 'android' && !env.ACT
         env:
+          ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
+          GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
+          GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
+          GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
           IOS_CONNECT_API_KEY_BASE64: ${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}
           IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
@@ -473,13 +497,13 @@ jobs:
           IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
           IOS_PROV_PROFILE_PATH: ${{ env.IOS_PROV_PROFILE_PATH }}
           IOS_SIGNING_CERTIFICATE: ${{ secrets.IOS_SIGNING_CERTIFICATE }}
-          IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
+          IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           NODE_OPTIONS: "--max-old-space-size=8192"
-          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-          SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
+          SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
+          SELFXYZ_INTERNAL_REPO_PAT: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         timeout-minutes: 90
         run: |
           cd ${{ env.APP_PATH }}
@@ -567,16 +591,18 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Open PR for iOS build number bump
-        if: ${{ !env.ACT && success() }}
+        if: ${{ !env.ACT && (github.event_name != 'pull_request' || github.event.pull_request.merged == true) && success() }}
         uses: peter-evans/create-pull-request@v6
         with:
           title: "chore: bump iOS build for ${{ env.VERSION }}"
           body: "Automated bump of iOS build number by CI"
           commit-message: "chore: incrementing ios build number for version ${{ env.VERSION }} [github action]"
           branch: ci/bump-ios-build-${{ github.run_id }}
-          base: staging
+          base: dev
           add-paths: |
             app/version.json
+            app/ios/Self.xcodeproj/project.pbxproj
+            app/ios/OpenPassport/Info.plist
 
       - name: Monitor cache usage
         if: always()
@@ -604,14 +630,23 @@ jobs:
 
   build-android:
     runs-on: ubuntu-latest
-    if: (inputs.platform == 'android' || inputs.platform == 'both')
+    if: |
+      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      (
+        (inputs.platform == 'android' || inputs.platform == 'both') ||
+        (github.event_name == 'pull_request')
+      )
     steps:
       - name: Mobile deployment status
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with Android build"
-          echo "📱 Platform: ${{ inputs.platform }}"
-          echo "🎯 Track: ${{ inputs.deployment_track }}"
-          echo "📦 Version bump: ${{ inputs.version_bump }}"
+          echo "📱 Platform: ${{ inputs.platform || 'both' }}"
+          echo "🎯 Track: ${{ inputs.deployment_track || 'internal' }}"
+          echo "📦 Version bump: ${{ inputs.version_bump || 'build' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "🔀 Triggered by PR merge: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
+            echo "👤 Merged by: ${{ github.event.pull_request.merged_by.login }}"
+          fi
 
       - uses: actions/checkout@v4
         if: inputs.platform != 'ios'
@@ -727,11 +762,8 @@ jobs:
         uses: ./.github/actions/cache-bundler
         with:
           path: ${{ env.APP_PATH }}/ios/vendor/bundle
-          key: ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-${{ hashFiles('app/Gemfile.lock') }}-
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-
-            ${{ runner.os }}-ruby${{ env.RUBY_VERSION }}-gems-${{ env.GH_CACHE_VERSION }}-
+          lock-file: app/Gemfile.lock
+          cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.GH_GEMS_CACHE_VERSION }}-ruby${{ env.RUBY_VERSION }}
 
       - name: Cache Gradle dependencies
         id: gradle-cache
@@ -854,9 +886,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
 
-      - name: Clone android-passport-reader
+      - name: Clone android-passport-nfc-reader
         if: inputs.platform != 'ios'
-        uses: ./.github/actions/clone-android-passport-reader
+        uses: ./.github/actions/clone-android-passport-nfc-reader
         with:
           working_directory: ${{ env.APP_PATH }}
           selfxyz_internal_pat: ${{ secrets.SELFXYZ_INTERNAL_REPO_PAT }}
@@ -872,13 +904,20 @@ jobs:
       - name: Build AAB with Fastlane
         if: inputs.platform != 'ios'
         env:
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+          ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
+          GOOGLE_SIGNIN_ANDROID_CLIENT_ID: ${{ secrets.GOOGLE_SIGNIN_ANDROID_CLIENT_ID }}
+          GRAFANA_LOKI_PASSWORD: ${{ secrets.GRAFANA_LOKI_PASSWORD }}
+          GRAFANA_LOKI_URL: ${{ secrets.GRAFANA_LOKI_URL }}
+          GRAFANA_LOKI_USERNAME: ${{ secrets.GRAFANA_LOKI_USERNAME }}
           NODE_OPTIONS: "--max-old-space-size=6144"
+          SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -900,10 +939,7 @@ jobs:
 
       - name: Upload to Google Play Store using WIF
         if: inputs.platform != 'ios' && inputs.test_mode != true
-        env:
-          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
-          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
-          SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
+        timeout-minutes: 10
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -925,16 +961,17 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Open PR for Android build number bump
-        if: ${{ !env.ACT && success() }}
+        if: ${{ !env.ACT && (github.event_name != 'pull_request' || github.event.pull_request.merged == true) && success() }}
         uses: peter-evans/create-pull-request@v6
         with:
           title: "chore: bump Android build for ${{ env.VERSION }}"
           body: "Automated bump of Android build number by CI"
           commit-message: "chore: incrementing android build version for version ${{ env.VERSION }} [github action]"
           branch: ci/bump-android-build-${{ github.run_id }}
-          base: staging
+          base: dev
           add-paths: |
             app/version.json
+            app/android/app/build.gradle
 
       - name: Monitor cache usage
         if: always()
@@ -972,7 +1009,7 @@ jobs:
     needs: [build-ios, build-android]
     if: |
       always() &&
-      inputs.test_mode != true &&
+      (inputs.test_mode != true || github.event_name == 'pull_request') &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
       APP_PATH: ${{ github.workspace }}/app
@@ -981,7 +1018,7 @@ jobs:
         with:
           token: ${{ github.token }}
           fetch-depth: 0
-          ref: staging
+          ref: dev
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -1027,20 +1064,53 @@ jobs:
             echo "ℹ️ Version already up to date or no version field in version.json"
           fi
 
-      - name: Open PR to update version files
-        uses: peter-evans/create-pull-request@v6
-        with:
-          title: "chore: update version files after deployment"
-          body: |
-            Automated update of version files after successful deployment.
-            Includes updates to `app/version.json`, `app/package.json`, and `yarn.lock`.
-          commit-message: "chore: update version files after deployment [skip ci]"
-          branch: ci/update-version-${{ github.run_id }}
-          base: staging
-          add-paths: |
-            app/version.json
-            app/package.json
-            yarn.lock
+      - name: Create PR with version files
+        run: |
+          set -e
+
+          BRANCH_NAME="ci/update-version-${{ github.run_id }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Check if there are any changes to commit
+          git add app/version.json app/package.json yarn.lock
+          if [[ -z $(git status -s) ]]; then
+            echo "No version file changes to commit. Skipping PR creation."
+            exit 0
+          fi
+
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            echo "🧪 Pull request event detected - running in dry-run mode."
+            echo "The following changes would be included in the version bump PR:"
+            git --no-pager diff --cached
+            exit 0
+          fi
+
+          # Commit the changes on a temporary local branch
+          git checkout -b temp-for-version-commit
+          git commit -m "chore: update version files after deployment [skip ci]"
+
+          # Create a new branch from dev
+          git fetch origin dev
+          git checkout -b ${BRANCH_NAME} origin/dev
+
+          # Cherry-pick the commit with the version changes
+          git cherry-pick temp-for-version-commit
+
+          # Clean up temporary branch
+          git branch -D temp-for-version-commit
+
+          # Push the new branch and create the PR
+          git push --set-upstream origin ${BRANCH_NAME}
+
+          gh pr create \
+            --base dev \
+            --head ${BRANCH_NAME} \
+            --title "chore: update version files after deployment" \
+            --body "Automated update of version files after successful deployment."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Create git tags after successful deployment
   create-release-tags:
@@ -1049,7 +1119,7 @@ jobs:
       always() &&
       needs.update-version.result == 'success' &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
-      inputs.deployment_track == 'production'
+      (inputs.deployment_track == 'production')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -48,7 +48,7 @@ const DocumentOnboardingScreen: React.FC = () => {
           onAnimationFinish={() => {
             setTimeout(() => {
               animationRef.current?.play();
-            }, 5000); // Pause 5 seconds before playing again
+            }, 220);
           }}
           source={passportOnboardingAnimation}
           style={styles.animation}

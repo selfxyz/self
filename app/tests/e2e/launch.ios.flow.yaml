@@ -2,5 +2,5 @@ appId: com.warroom.proofofpassport
 ---
 - launchApp
 - extendedWaitUntil:
-    visible: "I have a Passport or Biometric ID"
+    visible: "Get Started"
     timeout: ${LAUNCH_WAIT_MS:60000}
