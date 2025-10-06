@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
@@ -17,6 +16,7 @@ import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboard
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { DelayedLottieView } from '@/components/DelayedLottieView';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
@@ -130,7 +130,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
     <>
       <ExpandableBottomLayout.Layout backgroundColor={black}>
         <ExpandableBottomLayout.TopSection backgroundColor={black}>
-          <LottieView
+          <DelayedLottieView
             autoPlay
             loop={false}
             source={successAnimation}

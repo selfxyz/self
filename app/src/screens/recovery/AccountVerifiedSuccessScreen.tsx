@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
 import React from 'react';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
@@ -11,6 +10,7 @@ import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { DelayedLottieView } from '@/components/DelayedLottieView';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -24,7 +24,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection backgroundColor={black} roundTop>
-        <LottieView
+        <DelayedLottieView
           autoPlay
           loop={false}
           source={proofSuccessAnimation}
