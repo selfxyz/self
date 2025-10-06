@@ -8,9 +8,27 @@ name: Release Calendar
 #   • 12:00 PM EST / 1:00 PM EDT (New York)
 #   • 6:00 PM CET / 7:00 PM CEST (Warsaw)
 # Adjust locally if daylight saving time is in effect.
+#
+# Testing: This workflow automatically runs when merged to dev (when the workflow file itself
+# is modified), allowing you to test changes immediately. You can also manually trigger it via
+# workflow_dispatch and choose which job(s) to run (staging or production).
 
 on:
   workflow_dispatch:
+    inputs:
+      job_to_run:
+        description: 'Which job to run (staging or production)'
+        required: false
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/release-calendar.yml'
   schedule:
     # Friday 17:00 UTC (see timezone conversions above) to prepare the weekend staging PR.
     - cron: '0 17 * * 5'
@@ -20,6 +38,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write  # Required for creating labels
 
 jobs:
   release_to_staging:
@@ -32,11 +51,32 @@ jobs:
         run: |
           set -euo pipefail
 
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "continue=true" >> "$GITHUB_OUTPUT"
+          # Allow push events (when workflow file is modified) to run
+          if [ "${{ github.event_name }}" == "push" ]; then
+            if [ "${{ github.ref_name }}" == "dev" ]; then
+              echo "Triggered by push event on dev. Running staging job."
+              echo "continue=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Triggered by push event on non-dev. Skipping staging job."
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+            fi
             exit 0
           fi
 
+          # Allow workflow_dispatch based on input
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            JOB_TO_RUN="${{ inputs.job_to_run }}"
+            if [ "$JOB_TO_RUN" == "staging" ]; then
+              echo "Manual trigger: running staging job (job_to_run=${JOB_TO_RUN})"
+              echo "continue=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Manual trigger: skipping staging job (job_to_run=${JOB_TO_RUN})"
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # For schedule events, check day of week
           DOW=$(date -u +%u)
           if [ "$DOW" != "5" ]; then
             echo "Not Friday in UTC (current day-of-week: $DOW). Exiting job early."
@@ -87,7 +127,7 @@ jobs:
           set -euo pipefail
 
           for LABEL in release automated staging; do
-            if ! gh label list --limit 100 | grep -q "^${LABEL}\b"; then
+            if ! gh label list --json name --jq '.[].name' | grep -q "^${LABEL}$"; then
               echo "Creating missing label: ${LABEL}"
               gh label create "${LABEL}" --color BFD4F2
             else
@@ -105,30 +145,30 @@ jobs:
           set -euo pipefail
 
           python <<'PY'
-import pathlib
-import textwrap
+          import pathlib
+          import textwrap
 
-pathlib.Path("pr_body.md").write_text(textwrap.dedent("""\
-## 🚀 Weekly Release to Staging
+          pathlib.Path("pr_body.md").write_text(textwrap.dedent("""\
+          ## 🚀 Weekly Release to Staging
 
-This automated PR promotes all changes from `dev` to `staging` for testing.
+          This automated PR promotes all changes from `dev` to `staging` for testing.
 
-### What's Included
-All commits merged to `dev` since the last staging release.
+          ### What's Included
+          All commits merged to `dev` since the last staging release.
 
-### Review Checklist
-- [ ] All CI checks pass
-- [ ] Code review completed
-- [ ] QA team notified
-- [ ] Ready to merge to staging environment
+          ### Review Checklist
+          - [ ] All CI checks pass
+          - [ ] Code review completed
+          - [ ] QA team notified
+          - [ ] Ready to merge to staging environment
 
-### Next Steps
-After merging, the staging environment will be updated. A production release PR will be created on Sunday.
+          ### Next Steps
+          After merging, the staging environment will be updated. A production release PR will be created on Sunday.
 
----
-*This PR was automatically created by the Release Calendar workflow*
-"""))
-PY
+          ---
+          *This PR was automatically created by the Release Calendar workflow*
+          """))
+          PY
 
           TITLE="Release to Staging - ${PR_DATE}"
           echo "Creating PR with title: ${TITLE}"
@@ -152,11 +192,27 @@ PY
         run: |
           set -euo pipefail
 
-          if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "continue=true" >> "$GITHUB_OUTPUT"
+          # Skip production job on push events (we only test on dev)
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "Push event: skipping production job."
+            echo "continue=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
+          # Allow workflow_dispatch based on input
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            JOB_TO_RUN="${{ inputs.job_to_run }}"
+            if [ "$JOB_TO_RUN" == "production" ]; then
+              echo "Manual trigger: running production job (job_to_run=${JOB_TO_RUN})"
+              echo "continue=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Manual trigger: skipping production job (job_to_run=${JOB_TO_RUN})"
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # For schedule events, check day of week
           DOW=$(date -u +%u)
           if [ "$DOW" != "7" ]; then
             echo "Not Sunday in UTC (current day-of-week: $DOW). Exiting job early."
@@ -227,7 +283,7 @@ PY
           set -euo pipefail
 
           for LABEL in release automated production; do
-            if ! gh label list --limit 100 | grep -q "^${LABEL}\b"; then
+            if ! gh label list --json name --jq '.[].name' | grep -q "^${LABEL}$"; then
               echo "Creating missing label: ${LABEL}"
               gh label create "${LABEL}" --color BFD4F2
             else
@@ -246,36 +302,36 @@ PY
           set -euo pipefail
 
           python <<'PY'
-import os
-import pathlib
-import textwrap
+          import os
+          import pathlib
+          import textwrap
 
-commits_ahead = os.environ["COMMITS_AHEAD"]
+          commits_ahead = os.environ["COMMITS_AHEAD"]
 
-pathlib.Path("pr_body.md").write_text(textwrap.dedent(f"""\
-## 🎯 Production Release
+          pathlib.Path("pr_body.md").write_text(textwrap.dedent(f"""\
+          ## 🎯 Production Release
 
-This automated PR promotes tested changes from `staging` to `main` for production deployment.
+          This automated PR promotes tested changes from `staging` to `main` for production deployment.
 
-### What's Included
-All changes that have been verified in the staging environment.
+          ### What's Included
+          All changes that have been verified in the staging environment.
 
-**Commits ahead**: {commits_ahead}
+          **Commits ahead**: {commits_ahead}
 
-### Pre-Deployment Checklist
-- [ ] All staging tests passed
-- [ ] QA sign-off received
-- [ ] Stakeholder approval obtained
-- [ ] Deployment plan reviewed
-- [ ] Rollback plan confirmed
+          ### Pre-Deployment Checklist
+          - [ ] All staging tests passed
+          - [ ] QA sign-off received
+          - [ ] Stakeholder approval obtained
+          - [ ] Deployment plan reviewed
+          - [ ] Rollback plan confirmed
 
-### Deployment Notes
-Merging this PR will trigger production deployment.
+          ### Deployment Notes
+          Merging this PR will trigger production deployment.
 
----
-*This PR was automatically created by the Release Calendar workflow*
-"""))
-PY
+          ---
+          *This PR was automatically created by the Release Calendar workflow*
+          """))
+          PY
 
           TITLE="Release to Production - ${PR_DATE}"
           echo "Creating PR with title: ${TITLE} and ${COMMITS_AHEAD} commits ahead."
