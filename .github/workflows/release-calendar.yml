@@ -1,9 +1,20 @@
 name: Release Calendar
 
+# Goal: automatically create release pull requests when the clock hits 17:00 UTC (5:00 PM).
+# For reference, 17:00 UTC corresponds to:
+#   • 10:30 PM IST (India)
+#   • 10:00 AM PT (San Francisco)
+#   • 6:00 PM CET / 7:00 PM CEST (Paris)
+#   • 12:00 PM EST / 1:00 PM EDT (New York)
+#   • 6:00 PM CET / 7:00 PM CEST (Warsaw)
+# Adjust locally if daylight saving time is in effect.
+
 on:
   workflow_dispatch:
   schedule:
+    # Friday 17:00 UTC (see timezone conversions above) to prepare the weekend staging PR.
     - cron: '0 17 * * 5'
+    # Sunday 17:00 UTC (same times as above) to prepare the production release PR.
     - cron: '0 17 * * 0'
 
 permissions:
