@@ -75,21 +75,21 @@ describe("Aadhaar Registration test", function () {
       registerProof = await generateRegisterAadhaarProof(registerSecret, aadhaarData.inputs);
     });
 
-  it("should successfully register identity commitment", async () => {
-    // Fix the AADHAAR_REGISTRATION_WINDOW that was incorrectly set to 0
-    await deployedActors.hub.setAadhaarRegistrationWindow(20);
+    it("should successfully register identity commitment", async () => {
+      // Fix the AADHAAR_REGISTRATION_WINDOW that was incorrectly set to 0
+      await deployedActors.hub.setAadhaarRegistrationWindow(20);
 
-    await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof)).to.emit(
-      deployedActors.registryAadhaar,
-      "CommitmentRegistered",
-    );
+      await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof)).to.emit(
+        deployedActors.registryAadhaar,
+        "CommitmentRegistered",
+      );
 
-    const isRegistered = await deployedActors.registryAadhaar.nullifiers(registerProof.pubSignals[1]);
-    expect(isRegistered).to.be.true;
-  });
+      const isRegistered = await deployedActors.registryAadhaar.nullifiers(registerProof.pubSignals[1]);
+      expect(isRegistered).to.be.true;
+    });
 
     it("should not register identity commitment if the proof is invalid", async () => {
-    await deployedActors.hub.setAadhaarRegistrationWindow(20);
+      await deployedActors.hub.setAadhaarRegistrationWindow(20);
 
       const newRegisterProof = structuredClone(registerProof);
       newRegisterProof.a[0] = 0n;
@@ -102,7 +102,7 @@ describe("Aadhaar Registration test", function () {
     });
 
     it("should fail with NoVerifierSet when using non-existent register verifier ID", async () => {
-    await deployedActors.hub.setAadhaarRegistrationWindow(20);
+      await deployedActors.hub.setAadhaarRegistrationWindow(20);
 
       const nonExistentVerifierId = 999999; // Non-existent verifier ID
 
@@ -112,7 +112,7 @@ describe("Aadhaar Registration test", function () {
     });
 
     it("should fail with NoVerifierSet when register verifier exists but attestation ID is invalid", async () => {
-    await deployedActors.hub.setAadhaarRegistrationWindow(20);
+      await deployedActors.hub.setAadhaarRegistrationWindow(20);
 
       const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
 
@@ -122,7 +122,7 @@ describe("Aadhaar Registration test", function () {
     });
 
     it("should fail with InvalidAttestationId when register verifier exists but attestation ID is invalid", async () => {
-    await deployedActors.hub.setAadhaarRegistrationWindow(20);
+      await deployedActors.hub.setAadhaarRegistrationWindow(20);
 
       const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
 

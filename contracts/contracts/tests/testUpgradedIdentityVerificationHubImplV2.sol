@@ -16,10 +16,7 @@ abstract contract UpgradedIdentityVerificationHubStorageV2 {
  * @notice Test Implementation contract for the Identity Verification Hub V2 upgrade.
  * @dev Provides functions for testing upgrade functionality.
  */
-contract testUpgradedIdentityVerificationHubImplV2 is
-    ImplRoot,
-    UpgradedIdentityVerificationHubStorageV2
-{
+contract testUpgradedIdentityVerificationHubImplV2 is ImplRoot, UpgradedIdentityVerificationHubStorageV2 {
     // ====================================================
     // Events
     // ====================================================

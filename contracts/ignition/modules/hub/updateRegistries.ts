@@ -7,7 +7,7 @@ import path from "path";
 const AttestationId = {
   E_PASSPORT: "0x0000000000000000000000000000000000000000000000000000000000000001",
   EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002",
-  AADHAAR: "0x0000000000000000000000000000000000000000000000000000000000000003"
+  AADHAAR: "0x0000000000000000000000000000000000000000000000000000000000000003",
 };
 
 // Map registry deployment modules to their attestation IDs
@@ -37,7 +37,7 @@ export function updateHubRegistries(m: IgnitionModuleBuilder, hubAddress: string
 
     if (registryAddress) {
       console.log(`Updating ${registryModule} -> ${registryAddress} (AttestationId: ${attestationId})`);
-      m.call(hubContract, "updateRegistry", [attestationId, registryAddress], {id: ids()});
+      m.call(hubContract, "updateRegistry", [attestationId, registryAddress], { id: ids() });
     } else {
       console.log(`Registry ${registryModule} not found in deployed addresses, skipping`);
     }
@@ -62,6 +62,6 @@ export default buildModule("UpdateHubRegistries", (m) => {
   const hubContract = updateHubRegistries(m, hubAddress, deployedAddresses);
 
   return {
-    hubContract
+    hubContract,
   };
 });

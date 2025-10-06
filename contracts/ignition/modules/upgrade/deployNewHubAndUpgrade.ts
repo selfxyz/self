@@ -34,9 +34,11 @@ export default buildModule("DeployNewHubAndUpgradee", (m) => {
 
   const hubProxy = m.contractAt("IdentityVerificationHubImplV2", hubProxyAddress, { id: "IdentityVerificationHubV2" });
 
-  const a = m.call(hubProxy, "upgradeToAndCall", [identityVerificationHubImplV2, initializeData], { after: [identityVerificationHubImplV2] });
+  const a = m.call(hubProxy, "upgradeToAndCall", [identityVerificationHubImplV2, initializeData], {
+    after: [identityVerificationHubImplV2],
+  });
 
-  m.call(hubProxy, "setAadhaarRegistrationWindow", [120], {after: [a]});
+  m.call(hubProxy, "setAadhaarRegistrationWindow", [120], { after: [a] });
 
   return {
     identityVerificationHubImplV2,

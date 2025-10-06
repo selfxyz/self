@@ -190,7 +190,7 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
     assert(BigInt(out.commitment) === BigInt(commitment));
   });
 
-  it.skip("should log all pubkey commitments", async function () {
+  it.skip('should log all pubkey commitments', async function () {
     this.timeout(0);
     for (const cert of pubkeys) {
       const certObj = forge.pki.certificateFromPem(cert);

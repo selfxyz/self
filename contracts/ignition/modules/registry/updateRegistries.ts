@@ -29,10 +29,10 @@ const registries = {
       "18304035373718681408213540837772113004961405604264885188535510276454415833542",
       "3099763118716361008062312602688327679110629275746483297740895929951765195538",
       "5960616419594750988984019912914733527854225713611991429799390436159340745422",
-      "1312086597361744268424404341813751658452218312204370523713186983060138886330"
-    ]
+      "1312086597361744268424404341813751658452218312204370523713186983060138886330",
+    ],
   },
-}
+};
 
 // Helper function to get implementation contract name from deployment module
 function getImplementationName(registryModule: string): string {
@@ -54,13 +54,19 @@ const ids = (() => {
   };
 })();
 
-export function handleRegistryDeployment(m: IgnitionModuleBuilder, registryModule: string, registryData: any, deployedAddresses: any, lastOperation?: any) {
+export function handleRegistryDeployment(
+  m: IgnitionModuleBuilder,
+  registryModule: string,
+  registryData: any,
+  deployedAddresses: any,
+  lastOperation?: any,
+) {
   const registryAddress = deployedAddresses[registryModule];
   const implName = getImplementationName(registryModule);
   console.log(`Using implementation ${implName} for proxy at ${registryAddress}`);
 
   const deployOptions = lastOperation ? { after: [lastOperation] } : {};
-  const registryContract = m.contractAt(implName, registryAddress, {id: ids(), ...deployOptions});
+  const registryContract = m.contractAt(implName, registryAddress, { id: ids(), ...deployOptions });
 
   let currentOperation: any = registryContract;
 
@@ -78,23 +84,36 @@ export function handleRegistryDeployment(m: IgnitionModuleBuilder, registryModul
 
     if (registryData.passportNoOfac) {
       const callOptions = { after: [currentOperation], id: ids() };
-      currentOperation = m.call(registryContract, "updatePassportNoOfacRoot", [registryData.passportNoOfac], callOptions);
+      currentOperation = m.call(
+        registryContract,
+        "updatePassportNoOfacRoot",
+        [registryData.passportNoOfac],
+        callOptions,
+      );
     }
     if (registryData.nameAndDobOfac) {
       const callOptions = { after: [currentOperation], id: ids() };
-      currentOperation = m.call(registryContract, "updateNameAndDobOfacRoot", [registryData.nameAndDobOfac], callOptions);
+      currentOperation = m.call(
+        registryContract,
+        "updateNameAndDobOfacRoot",
+        [registryData.nameAndDobOfac],
+        callOptions,
+      );
     }
     if (registryData.nameAndYobOfac) {
       const callOptions = { after: [currentOperation], id: ids() };
-      currentOperation = m.call(registryContract, "updateNameAndYobOfacRoot", [registryData.nameAndYobOfac], callOptions);
+      currentOperation = m.call(
+        registryContract,
+        "updateNameAndYobOfacRoot",
+        [registryData.nameAndYobOfac],
+        callOptions,
+      );
     }
 
     if (registryData.pubkeyCommitments && registryData.pubkeyCommitments.length > 0) {
       for (const pubkeyCommitment of registryData.pubkeyCommitments) {
         const callOptions = { after: [currentOperation], id: ids() };
-        currentOperation = m.call(registryContract, "registerUidaiPubkeyCommitment", [
-          pubkeyCommitment,
-        ], callOptions);
+        currentOperation = m.call(registryContract, "registerUidaiPubkeyCommitment", [pubkeyCommitment], callOptions);
       }
     }
   }

@@ -8,31 +8,33 @@ import { circuitIds, CircuitName } from "../verifiers/deployAllVerifiersNew";
 const AttestationId = {
   E_PASSPORT: "0x0000000000000000000000000000000000000000000000000000000000000001",
   EU_ID_CARD: "0x0000000000000000000000000000000000000000000000000000000000000002",
-  AADHAAR: "0x0000000000000000000000000000000000000000000000000000000000000003"
+  AADHAAR: "0x0000000000000000000000000000000000000000000000000000000000000003",
 };
 
 // Circuit type mappings based on circuit names
-const getCircuitType = (circuitName: CircuitName): { attestationId: string; typeId: number; circuitType: 'register' | 'dsc' | 'vc_and_disclose' } => {
-  if (circuitName.startsWith('register_')) {
+const getCircuitType = (
+  circuitName: CircuitName,
+): { attestationId: string; typeId: number; circuitType: "register" | "dsc" | "vc_and_disclose" } => {
+  if (circuitName.startsWith("register_")) {
     const [shouldDeploy, typeId] = circuitIds[circuitName];
-    if (circuitName.startsWith('register_id_')) {
-      return { attestationId: AttestationId.EU_ID_CARD, typeId, circuitType: 'register' };
-    } else if (circuitName === 'register_aadhaar') {
-      return { attestationId: AttestationId.AADHAAR, typeId, circuitType: 'register' };
+    if (circuitName.startsWith("register_id_")) {
+      return { attestationId: AttestationId.EU_ID_CARD, typeId, circuitType: "register" };
+    } else if (circuitName === "register_aadhaar") {
+      return { attestationId: AttestationId.AADHAAR, typeId, circuitType: "register" };
     } else {
-      return { attestationId: AttestationId.E_PASSPORT, typeId, circuitType: 'register' };
+      return { attestationId: AttestationId.E_PASSPORT, typeId, circuitType: "register" };
     }
-  } else if (circuitName.startsWith('dsc_')) {
+  } else if (circuitName.startsWith("dsc_")) {
     const [shouldDeploy, typeId] = circuitIds[circuitName];
     // DSC circuits are used for both passport and ID card
-    return { attestationId: AttestationId.E_PASSPORT, typeId, circuitType: 'dsc' };
-  } else if (circuitName.startsWith('vc_and_disclose')) {
-    if (circuitName === 'vc_and_disclose_id') {
-      return { attestationId: AttestationId.EU_ID_CARD, typeId: 0, circuitType: 'vc_and_disclose' };
-    } else if (circuitName === 'vc_and_disclose_aadhaar') {
-      return { attestationId: AttestationId.AADHAAR, typeId: 0, circuitType: 'vc_and_disclose' };
+    return { attestationId: AttestationId.E_PASSPORT, typeId, circuitType: "dsc" };
+  } else if (circuitName.startsWith("vc_and_disclose")) {
+    if (circuitName === "vc_and_disclose_id") {
+      return { attestationId: AttestationId.EU_ID_CARD, typeId: 0, circuitType: "vc_and_disclose" };
+    } else if (circuitName === "vc_and_disclose_aadhaar") {
+      return { attestationId: AttestationId.AADHAAR, typeId: 0, circuitType: "vc_and_disclose" };
     } else {
-      return { attestationId: AttestationId.E_PASSPORT, typeId: 0, circuitType: 'vc_and_disclose' };
+      return { attestationId: AttestationId.E_PASSPORT, typeId: 0, circuitType: "vc_and_disclose" };
     }
   }
   throw new Error(`Unknown circuit type: ${circuitName}`);
@@ -78,11 +80,11 @@ export function updateHubVerifiers(m: IgnitionModuleBuilder, hubAddress: string,
   for (const [circuitName, verifierAddress] of Object.entries(verifiers)) {
     const { attestationId, typeId, circuitType } = getCircuitType(circuitName as CircuitName);
 
-    if (circuitType === 'register') {
+    if (circuitType === "register") {
       registerAttestationIds.push(attestationId);
       registerTypeIds.push(typeId);
       registerVerifierAddresses.push(verifierAddress);
-    } else if (circuitType === 'dsc') {
+    } else if (circuitType === "dsc") {
       // Add for passport
       dscAttestationIds.push(AttestationId.E_PASSPORT);
       dscTypeIds.push(typeId);
@@ -100,25 +102,21 @@ export function updateHubVerifiers(m: IgnitionModuleBuilder, hubAddress: string,
     m.call(hubContract, "batchUpdateRegisterCircuitVerifiers", [
       registerAttestationIds,
       registerTypeIds,
-      registerVerifierAddresses
+      registerVerifierAddresses,
     ]);
   }
 
   // Batch update DSC circuit verifiers
   if (dscAttestationIds.length > 0) {
-    m.call(hubContract, "batchUpdateDscCircuitVerifiers", [
-      dscAttestationIds,
-      dscTypeIds,
-      dscVerifierAddresses
-    ]);
+    m.call(hubContract, "batchUpdateDscCircuitVerifiers", [dscAttestationIds, dscTypeIds, dscVerifierAddresses]);
   }
 
   // Update VC and Disclose circuit verifiers (no batch function available)
   for (const [circuitName, verifierAddress] of Object.entries(verifiers)) {
     const { attestationId, typeId, circuitType } = getCircuitType(circuitName as CircuitName);
 
-    if (circuitType === 'vc_and_disclose') {
-      m.call(hubContract, "updateVcAndDiscloseCircuit", [attestationId, verifierAddress], {id: ids()});
+    if (circuitType === "vc_and_disclose") {
+      m.call(hubContract, "updateVcAndDiscloseCircuit", [attestationId, verifierAddress], { id: ids() });
     }
   }
 
@@ -142,6 +140,6 @@ export default buildModule("UpdateVerifiers", (m) => {
   const hubContract = updateHubVerifiers(m, hubAddress, deployedAddresses);
 
   return {
-    hubContract
+    hubContract,
   };
 });

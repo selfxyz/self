@@ -63,7 +63,7 @@ const config: HardhatUserConfig = {
       chainId: 11142220,
       url: process.env.CELO_SEPOLIA_RPC_URL || "https://rpc.ankr.com/celo_sepolia",
       accounts: [process.env.PRIVATE_KEY as string],
-    }
+    },
   },
   etherscan: {
     apiKey: process.env.CELOSCAN_API_KEY as string,
