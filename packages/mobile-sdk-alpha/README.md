@@ -13,24 +13,24 @@ Alpha SDK for registering and proving. Adapters-first, React Native-first with w
 ## Minimal API
 
 - `createSelfClient({ config, adapters })`
-- `scanDocument(opts)`, `validateDocument(input)`, `checkRegistration(input)`, `generateProof(req, { signal, onProgress, timeoutMs })`
+- `scanNFC(opts)`, `validateDocument(input)`, `checkRegistration(input)`, `generateProof(req, { signal, onProgress, timeoutMs })`
 - Eventing: `on(event, cb)`, `emit(event, payload)`
-- Web shim: `webScannerShim` (QR stub only)
+- Web shim: `webNFCScannerShim` (throws for unsupported NFC on web)
 
 ## Environment shims
 
-- The `browser` build replaces the scanner with `webScannerShim`, which only stubs QR scanning and throws for unsupported modes.
+- The `browser` build replaces the scanner with `webNFCScannerShim`, which throws for NFC scanning (not supported on web).
 
 ## Quick start (local, monorepo)
 
 Provide `scanner`, `network`, and `crypto` adapters. `storage`, `clock`, and `logger` default to no-ops.
 
 ```ts
-import { createSelfClient, webScannerShim, extractMRZInfo } from '@selfxyz/mobile-sdk-alpha';
+import { createSelfClient, webNFCScannerShim, extractMRZInfo } from '@selfxyz/mobile-sdk-alpha';
 const sdk = createSelfClient({
   config: {},
   adapters: {
-    scanner: webScannerShim,
+    scanner: webNFCScannerShim, // Note: NFC not supported on web
     network: yourNetworkAdapter,
     crypto: yourCryptoAdapter,
   },

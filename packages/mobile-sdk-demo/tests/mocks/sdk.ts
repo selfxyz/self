@@ -107,5 +107,5 @@ vi.mock('@selfxyz/mobile-sdk-alpha', () => ({
   SelfClientProvider: ({ children }: { children: React.ReactNode }) =>
     React.createElement(React.Fragment, null, children),
   createListenersMap: () => ({ map: new Map() }),
-  webScannerShim: {},
+  webNFCScannerShim: {},
 }));
