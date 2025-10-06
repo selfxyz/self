@@ -9,7 +9,7 @@ import { View } from 'tamagui';
 import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 import { useSelfClient } from '../../context';
-import { MRZInfo, ScanResultNFC } from '../../types/public';
+import { MRZInfo, NFCScanResult } from '../../types/public';
 import type { ScreenProps } from '../../types/ui';
 
 //TODO:question - Should we pass mrzData through internal state (from PassportCameraScreen) or take it from the user?
@@ -20,15 +20,15 @@ export const NFCScannerScreen = ({ onSuccess, onFailure, mrzData }: ScreenProps 
     async (_nfcData: any) => {
       try {
         // scan the document
-        const scanResult = await client.scanDocument({
-          mode: 'nfc',
+        const scanResult = await client.scanNFC({
           passportNumber: mrzData.documentNumber,
           dateOfBirth: mrzData.dateOfBirth,
           dateOfExpiry: mrzData.dateOfExpiry,
+          sessionId: '123',
         });
 
         const skiPem = await getSKIPEM('production');
-        const _parsedPassportData = initPassportDataParsing((scanResult as ScanResultNFC).passportData, skiPem);
+        const _parsedPassportData = initPassportDataParsing((scanResult as NFCScanResult).passportData, skiPem);
 
         // register the document
         onSuccess();

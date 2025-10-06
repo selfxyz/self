@@ -33,6 +33,7 @@ import { CircleHelp } from '@tamagui/lucide-icons';
 import type { PassportData } from '@selfxyz/common/types';
 import {
   hasAnyValidRegisteredDocument,
+  scanNFC,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -66,7 +67,7 @@ import {
   feedbackUnsuccessful,
   impactLight,
 } from '@/utils/haptic';
-import { parseScanResponse, scan } from '@/utils/nfcScanner';
+import { parseScanResponse } from '@/utils/nfcScanner';
 import { sanitizeErrorMessage } from '@/utils/utils';
 
 const emitter =
@@ -323,7 +324,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           route.params ?? {};
 
         await configureNfcAnalytics();
-        const scanResponse = await scan({
+        const scanResponse = await scanNFC(selfClient, {
           passportNumber,
           dateOfBirth,
           dateOfExpiry,

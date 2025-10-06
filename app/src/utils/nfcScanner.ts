@@ -50,33 +50,6 @@ export const parseScanResponse = (response: unknown) => {
     : handleResponseIOS(response);
 };
 
-export const scan = async (inputs: Inputs) => {
-  const baseContext = {
-    sessionId: inputs.sessionId,
-    userId: inputs.userId,
-    platform: Platform.OS as 'ios' | 'android',
-    scanType: inputs.useCan ? 'can' : 'mrz',
-  } as const;
-
-  logNFCEvent('info', 'scan_start', { ...baseContext, stage: 'start' });
-
-  try {
-    return Platform.OS === 'android'
-      ? await scanAndroid(inputs, baseContext)
-      : await scanIOS(inputs, baseContext);
-  } catch (error) {
-    logNFCEvent(
-      'error',
-      'scan_failed',
-      { ...baseContext, stage: 'scan' },
-      {
-        error: error instanceof Error ? error.message : String(error),
-      },
-    );
-    throw error;
-  }
-};
-
 const scanAndroid = async (
   inputs: Inputs,
   context: Omit<NFCScanContext, 'stage'>,
