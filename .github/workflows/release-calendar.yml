@@ -20,6 +20,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
   release_to_staging:
@@ -28,6 +29,8 @@ jobs:
     steps:
       - name: Guard Friday schedule
         id: guard_schedule
+        env:
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
         shell: bash
         run: |
           set -euo pipefail
@@ -37,9 +40,8 @@ jobs:
             exit 0
           fi
 
-          DOW=$(date -u +%u)
-          if [ "$DOW" != "5" ]; then
-            echo "Not Friday in UTC (current day-of-week: $DOW). Exiting job early."
+          if [ "${EVENT_SCHEDULE:-}" != '0 17 * * 5' ]; then
+            echo "Triggered by unexpected schedule: ${EVENT_SCHEDULE:-<empty>}. Exiting job early."
             echo "continue=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -86,14 +88,19 @@ jobs:
         run: |
           set -euo pipefail
 
-          for LABEL in release automated staging; do
-            if ! gh label list --limit 100 | grep -q "^${LABEL}\b"; then
-              echo "Creating missing label: ${LABEL}"
-              gh label create "${LABEL}" --color BFD4F2
+          ensure_label() {
+            local label="$1"
+            if gh label view "$label" >/dev/null 2>&1; then
+              echo "Label '${label}' already exists."
             else
-              echo "Label ${LABEL} already exists."
+              echo "Creating label '${label}'."
+              gh label create "$label" --color BFD4F2 >/dev/null
             fi
-          done
+          }
+
+          ensure_label release
+          ensure_label automated
+          ensure_label staging
 
       - name: Create dev to staging release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
@@ -143,6 +150,8 @@ BODY
     steps:
       - name: Guard Sunday schedule
         id: guard_schedule
+        env:
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
         shell: bash
         run: |
           set -euo pipefail
@@ -152,9 +161,8 @@ BODY
             exit 0
           fi
 
-          DOW=$(date -u +%u)
-          if [ "$DOW" != "7" ]; then
-            echo "Not Sunday in UTC (current day-of-week: $DOW). Exiting job early."
+          if [ "${EVENT_SCHEDULE:-}" != '0 17 * * 0' ]; then
+            echo "Triggered by unexpected schedule: ${EVENT_SCHEDULE:-<empty>}. Exiting job early."
             echo "continue=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -221,14 +229,19 @@ BODY
         run: |
           set -euo pipefail
 
-          for LABEL in release automated production; do
-            if ! gh label list --limit 100 | grep -q "^${LABEL}\b"; then
-              echo "Creating missing label: ${LABEL}"
-              gh label create "${LABEL}" --color BFD4F2
+          ensure_label() {
+            local label="$1"
+            if gh label view "$label" >/dev/null 2>&1; then
+              echo "Label '${label}' already exists."
             else
-              echo "Label ${LABEL} already exists."
+              echo "Creating label '${label}'."
+              gh label create "$label" --color BFD4F2 >/dev/null
             fi
-          done
+          }
+
+          ensure_label release
+          ensure_label automated
+          ensure_label production
 
       - name: Create staging to main release PR
         if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
