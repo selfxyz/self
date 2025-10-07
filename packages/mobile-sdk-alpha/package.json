@@ -51,6 +51,12 @@
       "import": "./dist/esm/constants/analytics.js",
       "require": "./dist/cjs/constants/analytics.cjs"
     },
+    "./constants/colors": {
+      "types": "./dist/esm/constants/colors.d.ts",
+      "react-native": "./dist/esm/constants/colors.js",
+      "import": "./dist/esm/constants/colors.js",
+      "require": "./dist/cjs/constants/colors.cjs"
+    },
     "./components": {
       "types": "./dist/esm/components/index.d.ts",
       "react-native": "./dist/esm/components/index.js",
