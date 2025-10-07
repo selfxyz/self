@@ -135,7 +135,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: staging
+          # When triggered by PR merge, use the PR source commit (e.g., from dev)
+          # This ensures we deploy with the version.json from the source branch
+          ref: ${{ github.event.pull_request.head.sha || 'staging' }}
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -160,7 +162,11 @@ jobs:
           echo "Staging HEAD commit: $(git rev-parse origin/staging)"
           echo "Staging HEAD message: $(git log -1 --pretty=format:'%s' origin/staging)"
 
-          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "📌 Building from PR source commit (from merged branch, e.g., dev)"
+            echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
+            echo "Source branch had the latest version.json with bumped build numbers"
+          elif [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
             echo "⚠️ WARNING: Current commit differs from latest staging commit"
             echo "This might indicate we're not building from the latest staging branch"
             git log --oneline HEAD..origin/staging || true
@@ -658,7 +664,9 @@ jobs:
         if: inputs.platform != 'ios'
         with:
           fetch-depth: 0
-          ref: staging
+          # When triggered by PR merge, use the PR source commit (e.g., from dev)
+          # This ensures we deploy with the version.json from the source branch
+          ref: ${{ github.event.pull_request.head.sha || 'staging' }}
       - uses: "google-github-actions/auth@v2"
         with:
           project_id: "plucky-tempo-454713-r0"
@@ -1131,7 +1139,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: staging
+          # When triggered by PR merge, use the PR source commit (e.g., from dev)
+          # This ensures we deploy with the version.json from the source branch
+          ref: ${{ github.event.pull_request.head.sha || 'staging' }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
