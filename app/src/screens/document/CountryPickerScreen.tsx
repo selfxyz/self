@@ -218,9 +218,12 @@ function useCountries() {
   const userCountryCode = useMemo(getUserCountryCode, []);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchCountryData = async () => {
       try {
-        const response = await fetch('https://api.staging.self.xyz/id-picker');
+        const response = await fetch('https://api.staging.self.xyz/id-picker', {
+          signal: controller.signal,
+        });
         const result = await response.json();
 
         if (result.status === 'success') {
@@ -237,8 +240,8 @@ function useCountries() {
         setLoading(false);
       }
     };
-
     fetchCountryData();
+    return () => controller.abort();
   }, []);
 
   const countryList = useMemo(() => {
