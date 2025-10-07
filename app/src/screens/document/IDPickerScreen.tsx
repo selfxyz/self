@@ -13,16 +13,17 @@ import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { RoundFlag } from '@/components/flag/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
 import { BodyText } from '@/components/typography/BodyText';
-import AadhaarLogo from '@/images/icons/aadhaar.svg';
-import EPassportLogoRounded from '@/images/icons/epassport_rounded.svg';
-import PlusIcon from '@/images/icons/plus.svg';
-import SelfLogo from '@/images/logo.svg';
-import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
+import AadhaarLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
+import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport_rounded.svg';
+import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
+import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
+
 import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate300, slate400, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type IDPickerScreenRouteProp = RouteProp<RootStackParamList, 'IDPicker'>;
 
