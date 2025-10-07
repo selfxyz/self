@@ -26,6 +26,8 @@ async function scanIOS(opts: NFCScanOpts): Promise<NFCScanResult> {
   }
 
   try {
+    SelfPassportReader.reset();
+
     const {
       passportNumber,
       dateOfBirth,
@@ -107,6 +109,7 @@ async function scanAndroid(opts: NFCScanOpts): Promise<NFCScanResult> {
   }
 
   try {
+    PassportReader.reset();
     const { passportNumber, dateOfBirth, dateOfExpiry, canNumber, useCan } = opts;
 
     if (!passportNumber || !dateOfBirth || !dateOfExpiry) {
