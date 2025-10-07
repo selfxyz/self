@@ -69,4 +69,5 @@ export { parseNFCResponse, scanNFC } from './nfc';
 export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
 export { scanQRProof } from './qr';
 
+export { useCountries } from './documents/useCountries';
 export { webScannerShim } from './adapters/web/shims';
