@@ -3,27 +3,26 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-
-import { RoundFlag } from '@/components/flag/RoundFlag';
-import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
-import { BodyText } from '@/components/typography/BodyText';
 import AadhaarLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
 import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport_rounded.svg';
 import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
 import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
 
+import { RoundFlag } from '@/components/flag/RoundFlag';
+import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
+import { BodyText } from '@/components/typography/BodyText';
 import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate300, slate400, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type IDPickerScreenRouteProp = RouteProp<RootStackParamList, 'IDPicker'>;
 
