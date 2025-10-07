@@ -135,9 +135,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # When triggered by PR merge, use the PR source commit (e.g., from dev)
-          # This ensures we deploy with the version.json from the source branch
-          ref: ${{ github.event.pull_request.head.sha || 'staging' }}
+          # When triggered by PR merge, use the merge commit on staging
+          # This ensures we deploy exactly what landed on staging (including version.json from source + any conflict resolutions)
+          ref: ${{ github.event.pull_request.merge_commit_sha || 'staging' }}
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -163,9 +163,9 @@ jobs:
           echo "Staging HEAD message: $(git log -1 --pretty=format:'%s' origin/staging)"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "📌 Building from PR source commit (from merged branch, e.g., dev)"
+            echo "📌 Building from merge commit on staging (includes source + conflict resolutions)"
             echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
-            echo "Source branch had the latest version.json with bumped build numbers"
+            echo "Merge commit includes version.json from source branch with bumped build numbers"
           elif [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
             echo "⚠️ WARNING: Current commit differs from latest staging commit"
             echo "This might indicate we're not building from the latest staging branch"
@@ -664,9 +664,9 @@ jobs:
         if: inputs.platform != 'ios'
         with:
           fetch-depth: 0
-          # When triggered by PR merge, use the PR source commit (e.g., from dev)
-          # This ensures we deploy with the version.json from the source branch
-          ref: ${{ github.event.pull_request.head.sha || 'staging' }}
+          # When triggered by PR merge, use the merge commit on staging
+          # This ensures we deploy exactly what landed on staging (including version.json from source + any conflict resolutions)
+          ref: ${{ github.event.pull_request.merge_commit_sha || 'staging' }}
       - uses: "google-github-actions/auth@v2"
         with:
           project_id: "plucky-tempo-454713-r0"
@@ -1139,9 +1139,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # When triggered by PR merge, use the PR source commit (e.g., from dev)
-          # This ensures we deploy with the version.json from the source branch
-          ref: ${{ github.event.pull_request.head.sha || 'staging' }}
+          # When triggered by PR merge, use the merge commit on staging
+          # This ensures we tag exactly what landed on staging (including version.json from source + any conflict resolutions)
+          ref: ${{ github.event.pull_request.merge_commit_sha || 'staging' }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
