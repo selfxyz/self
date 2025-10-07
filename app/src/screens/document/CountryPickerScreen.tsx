@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import { Spinner, XStack, YStack } from 'tamagui';
 
+import { commonNames } from '@selfxyz/common/constants/countries';
 import {
-  alpha2ToAlpha3,
-  commonNames,
-} from '@selfxyz/common/constants/countries';
-import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+  SdkEvents,
+  useCountries,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { RoundFlag } from '@/components/flag/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
@@ -18,11 +19,6 @@ import { BodyText } from '@/components/typography/BodyText';
 import { black, slate100, slate500 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
-import { getCountry } from '@/utils/locale';
-
-interface CountryData {
-  [countryCode: string]: string[];
-}
 
 interface CountryListItem {
   key: string;
@@ -190,75 +186,3 @@ const CountryPickerScreen: React.FC = () => {
 };
 
 export default CountryPickerScreen;
-
-function getUserCountryCode(): string | null {
-  try {
-    const countryCode2Letter = getCountry(); // Returns 2-letter code like "US"
-    if (countryCode2Letter) {
-      const countryCode3Letter = alpha2ToAlpha3(countryCode2Letter);
-      if (
-        countryCode3Letter &&
-        commonNames[countryCode3Letter as keyof typeof commonNames]
-      ) {
-        if (__DEV__) {
-          console.log('Detected user country:', countryCode3Letter);
-        }
-        return countryCode3Letter;
-      }
-    }
-  } catch (error) {
-    console.error('Error detecting user country:', error);
-  }
-  return null;
-}
-
-function useCountries() {
-  const [countryData, setCountryData] = useState<CountryData>({});
-  const [loading, setLoading] = useState(true);
-  const userCountryCode = useMemo(getUserCountryCode, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchCountryData = async () => {
-      try {
-        const response = await fetch('https://api.staging.self.xyz/id-picker', {
-          signal: controller.signal,
-        });
-        const result = await response.json();
-
-        if (result.status === 'success') {
-          setCountryData(result.data);
-          if (__DEV__) {
-            console.log('Set country data:', result.data);
-          }
-        } else {
-          console.error('API returned non-success status:', result.status);
-        }
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCountryData();
-    return () => controller.abort();
-  }, []);
-
-  const countryList = useMemo(() => {
-    const allCountries = Object.keys(countryData).map(countryCode => ({
-      key: countryCode,
-      countryCode,
-    }));
-
-    // Exclude user country from main list since it's shown separately
-    if (userCountryCode && countryData[userCountryCode]) {
-      return allCountries.filter(c => c.countryCode !== userCountryCode);
-    }
-
-    return allCountries;
-  }, [countryData, userCountryCode]);
-
-  const showSuggestion = userCountryCode && countryData[userCountryCode];
-
-  return { countryData, countryList, loading, userCountryCode, showSuggestion };
-}
