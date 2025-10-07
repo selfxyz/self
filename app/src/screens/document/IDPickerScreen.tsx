@@ -5,8 +5,7 @@
 import React from 'react';
 import { View, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useRoute } from '@react-navigation/native';
 
 import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
@@ -83,8 +82,6 @@ const IDPickerScreen: React.FC = () => {
   const { countryCode = '', documentTypes = [] } = route.params || {};
   const bottom = useSafeAreaInsets().bottom;
   const selfClient = useSelfClient();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const onSelectDocumentType = (docType: string) => {
     buttonTap();
@@ -97,27 +94,6 @@ const IDPickerScreen: React.FC = () => {
       countryCode: countryCode,
       countryName: countryName,
     });
-    switch (docType) {
-      case 'p':
-        navigation.navigate('DocumentOnboarding');
-        break;
-      case 'i':
-        navigation.navigate('DocumentOnboarding');
-        break;
-      case 'a':
-        navigation.navigate('AadhaarUpload', { countryCode } as never);
-        break;
-      default:
-        navigation.navigate('ComingSoon', { countryCode } as never);
-        break;
-    }
-
-    // TODO: Navigate to the next screen based on document type
-    if (__DEV__) {
-      console.log(
-        `Selected document type: ${docType} for country: ${countryCode}`,
-      );
-    }
   };
 
   return (

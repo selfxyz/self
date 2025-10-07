@@ -68,7 +68,7 @@ export enum SdkEvents {
    * Emitted when a passport from an unsupported country or document type is detected during validation.
    *
    * **Required:** Inform users that their document is not currently supported.
-   * **Recommended:** Navigate to an unsupported document screen showing the detected country code and
+   * **Recommended:** Navigate to an unsupported document / ComingSoon screen showing the detected country code and
    * document category, and provide guidance on alternative verification methods if available.
    */
   PROVING_PASSPORT_NOT_SUPPORTED = 'PROVING_PASSPORT_NOT_SUPPORTED',
