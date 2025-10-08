@@ -1032,7 +1032,7 @@ jobs:
         with:
           token: ${{ github.token }}
           fetch-depth: 0
-          ref: dev
+          ref: staging
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -1105,9 +1105,9 @@ jobs:
           git checkout -b temp-for-version-commit
           git commit -m "chore: update version files after deployment [skip ci]"
 
-          # Create a new branch from dev
-          git fetch origin dev
-          git checkout -b ${BRANCH_NAME} origin/dev
+          # Create a new branch from staging
+          git fetch origin staging
+          git checkout -b ${BRANCH_NAME} origin/staging
 
           # Cherry-pick the commit with the version changes
           git cherry-pick temp-for-version-commit
