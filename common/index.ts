@@ -50,6 +50,8 @@ export {
   TREE_URL_STAGING,
   WS_DB_RELAYER,
   WS_DB_RELAYER_STAGING,
+  alpha2ToAlpha3,
+  alpha3ToAlpha2,
   attributeToPosition,
   attributeToPosition_ID,
   commonNames,

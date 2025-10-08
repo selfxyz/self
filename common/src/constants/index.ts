@@ -35,4 +35,4 @@ export {
 } from './constants.js';
 
 // Re-export from other constant files
-export { commonNames, countries } from './countries.js';
+export { alpha2ToAlpha3, alpha3ToAlpha2, commonNames, countries } from './countries.js';
