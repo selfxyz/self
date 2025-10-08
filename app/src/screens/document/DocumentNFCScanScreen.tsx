@@ -33,7 +33,6 @@ import { CircleHelp } from '@tamagui/lucide-icons';
 import type { PassportData } from '@selfxyz/common/types';
 import {
   hasAnyValidRegisteredDocument,
-  scanNFC,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -67,6 +66,7 @@ import {
   feedbackUnsuccessful,
   impactLight,
 } from '@/utils/haptic';
+import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { sanitizeErrorMessage } from '@/utils/utils';
 
 const emitter =
@@ -323,7 +323,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           route.params ?? {};
 
         await configureNfcAnalytics();
-        const scanResponse = await scanNFC(selfClient, {
+        const scanResponse = await scan({
           passportNumber,
           dateOfBirth,
           dateOfExpiry,
@@ -362,8 +362,22 @@ const DocumentNFCScanScreen: React.FC = () => {
           },
           { duration_seconds: parseFloat(scanDurationSeconds) },
         );
-
-        const passportData = scanResponse?.passportData;
+        let passportData: PassportData | null = null;
+        try {
+          passportData = parseScanResponse(scanResponse);
+        } catch (e: unknown) {
+          console.error('Parsing NFC Response Unsuccessful');
+          const errMsg = sanitizeErrorMessage(
+            e instanceof Error ? e.message : String(e),
+          );
+          trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
+            error: errMsg,
+          });
+          trackNfcEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
+            error: errMsg,
+          });
+          return;
+        }
         if (passportData) {
           console.log('Storing passport data from NFC scan...');
           await storePassportData(passportData);
@@ -415,18 +429,17 @@ const DocumentNFCScanScreen: React.FC = () => {
       }
     }
   }, [
+    baseContext,
     isNfcEnabled,
     isNfcSupported,
-    baseContext,
-    trackEvent,
-    openErrorModal,
     route.params,
-    selfClient,
     passportNumber,
     dateOfBirth,
     dateOfExpiry,
     isPacePolling,
     navigation,
+    openErrorModal,
+    trackEvent,
   ]);
 
   const navigateToLaunch = useHapticNavigation('Launch', {

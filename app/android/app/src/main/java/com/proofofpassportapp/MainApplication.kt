@@ -26,7 +26,7 @@ class MainApplication : Application(), ReactApplication {
               add(CameraActivityPackage())
               add(QRCodeScannerPackage())
               add(BackupPackage())
-              add(RNSelfPassportReaderPackage())
+              // add(RNSelfPassportReaderPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"
