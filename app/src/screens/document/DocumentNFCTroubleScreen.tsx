@@ -95,13 +95,13 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       >
         <GestureDetector gesture={devModeTap}>
           <View collapsable={false}>
-            <Caption style={{ fontSize: 16, color: slate500 }}>
+            <Caption size="large" style={{ color: slate500 }}>
               Here are some tips to help you successfully scan the RFID chip:
             </Caption>
           </View>
         </GestureDetector>
         <Tips items={tips} />
-        <Caption style={{ fontSize: 16, color: slate500 }}>
+        <Caption size="large" style={{ color: slate500 }}>
           These steps should help improve the success rate of reading the RFID
           chip in your passport. If the issue persists, double-check that your
           device supports NFC and that your passport's RFID is functioning

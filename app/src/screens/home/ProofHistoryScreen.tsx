@@ -241,7 +241,7 @@ const ProofHistoryScreen: React.FC = () => {
                     >
                       {item.appName}
                     </BodyText>
-                    <BodyText style={{ color: slate300, gap: 2, fontSize: 14 }}>
+                    <BodyText style={{ color: slate300, fontSize: 14 }}>
                       {formatDate(item.timestamp)}
                     </BodyText>
                   </YStack>

@@ -56,7 +56,7 @@ const QRCodeTrouble: React.FC = () => {
       title="Having trouble scanning the QR code?"
       onDismiss={go}
     >
-      <Caption style={{ fontSize: 16, color: slate500 }}>
+      <Caption size="large" style={{ color: slate500 }}>
         Here are some tips to help you successfully scan the QR code:
       </Caption>
       <Tips items={tips} />

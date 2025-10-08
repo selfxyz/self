@@ -40,7 +40,7 @@ function Tip({ title, body, icon }: TipProps) {
         </View>
       )}
       <View flex={1}>
-        <Caption style={{ fontSize: 16, color: slate500 }}>
+        <Caption size="large" style={{ color: slate500 }}>
           <Text fontWeight={'bold'}>
             {title}
             {': '}

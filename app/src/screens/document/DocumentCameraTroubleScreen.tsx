@@ -66,7 +66,7 @@ const DocumentCameraTroubleScreen: React.FC = () => {
         </Caption>
       }
       footer={
-        <Caption style={{ fontSize: 16, color: slate500 }}>
+        <Caption size="large" style={{ color: slate500 }}>
           Following these steps should help your phone's camera capture the ID
           page quickly and clearly!
         </Caption>

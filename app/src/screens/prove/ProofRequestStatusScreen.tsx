@@ -190,7 +190,7 @@ const SuccessScreen: React.FC = () => {
         backgroundColor={white}
       >
         <View style={styles.content}>
-          <Title style={{ fontSize: 24 }}>{getTitle(currentState)}</Title>
+          <Title size="large">{getTitle(currentState)}</Title>
           <Info
             currentState={currentState}
             appName={appName ?? 'The app'}
