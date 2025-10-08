@@ -1101,19 +1101,10 @@ jobs:
             exit 0
           fi
 
-          # Commit the changes on a temporary local branch
-          git checkout -b temp-for-version-commit
-          git commit -m "chore: update version files after deployment [skip ci]"
-
-          # Create a new branch from staging
+          # Create a new branch forked from staging and commit the changes
           git fetch origin staging
-          git checkout -b ${BRANCH_NAME} origin/staging
-
-          # Cherry-pick the commit with the version changes
-          git cherry-pick temp-for-version-commit
-
-          # Clean up temporary branch
-          git branch -D temp-for-version-commit
+          git checkout -B ${BRANCH_NAME} origin/staging
+          git commit -m "chore: update version files after deployment [skip ci]"
 
           # Push the new branch and create the PR
           git push --set-upstream origin ${BRANCH_NAME}
