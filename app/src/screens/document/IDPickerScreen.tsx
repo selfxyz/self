@@ -3,20 +3,20 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 
 import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import AadhaarLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
+import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport_rounded.svg';
+import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
+import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
 
 import { RoundFlag } from '@/components/flag/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
 import { BodyText } from '@/components/typography/BodyText';
-import AadhaarLogo from '@/images/icons/aadhaar.svg';
-import EPassportLogoRounded from '@/images/icons/epassport_rounded.svg';
-import PlusIcon from '@/images/icons/plus.svg';
-import SelfLogo from '@/images/logo.svg';
-import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
 import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate300, slate400, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';

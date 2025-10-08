@@ -68,6 +68,16 @@
       "react-native": "./dist/esm/hooks/index.js",
       "import": "./dist/esm/hooks/index.js",
       "require": "./dist/cjs/hooks/index.cjs"
+    },
+    "./svgs/*.svg": {
+      "react-native": "./svgs/*.svg",
+      "import": "./svgs/*.svg",
+      "require": "./svgs/*.svg"
+    },
+    "./svgs/icons/*.svg": {
+      "react-native": "./svgs/icons/*.svg",
+      "import": "./svgs/icons/*.svg",
+      "require": "./svgs/icons/*.svg"
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -78,6 +88,7 @@
     "dist",
     "android",
     "ios",
+    "svgs",
     "mobile-sdk-alpha.podspec",
     "react-native.config.cjs"
   ],
