@@ -14,9 +14,11 @@ import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport
 import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
 import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
 
-import { RoundFlag } from '@/components/flag/RoundFlag';
+import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
-import { BodyText } from '@/components/typography/BodyText';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
 import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate300, slate400, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
@@ -132,10 +134,7 @@ const IDPickerScreen: React.FC = () => {
             </YStack>
           </XStack>
           <BodyText
-            marginTop="$6"
-            fontSize={29}
-            fontFamily={advercase}
-            textAlign="center"
+            style={{ marginTop: 48, fontSize: 29, fontFamily: advercase, textAlign: "center" }}
           >
             Select an ID type
           </BodyText>
@@ -156,10 +155,10 @@ const IDPickerScreen: React.FC = () => {
               <XStack alignItems="center" gap={'$3'} flex={1}>
                 {getDocumentLogo(docType)}
                 <YStack gap={'$1'}>
-                  <BodyText fontSize={24} fontFamily={dinot} color={black}>
+                  <BodyText style={{ fontSize: 24, fontFamily: dinot, color: black }}>
                     {getDocumentName(docType)}
                   </BodyText>
-                  <BodyText fontSize={14} fontFamily={dinot} color="#9193A2">
+                  <BodyText style={{ fontSize: 14, fontFamily: dinot, color: "#9193A2" }}>
                     {getDocumentDescription(docType)}
                   </BodyText>
                 </YStack>
@@ -167,10 +166,7 @@ const IDPickerScreen: React.FC = () => {
             </XStack>
           ))}
           <BodyText
-            fontSize={18}
-            fontFamily={dinot}
-            color={slate400}
-            textAlign="center"
+            style={{ fontSize: 18, fontFamily: dinot, color: slate400, textAlign: "center" }}
           >
             Be sure your document is ready to scan
           </BodyText>

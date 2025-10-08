@@ -7,10 +7,11 @@ import { View, YStack } from 'tamagui';
 
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { Description } from '@selfxyz/mobile-sdk-alpha/components';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import RestoreAccountSvg from '@/images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

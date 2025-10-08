@@ -15,11 +15,13 @@ import type { IdDocInput } from '@selfxyz/common/utils';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
 import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import ButtonsContainer from '@/components/ButtonsContainer';
-import { BodyText } from '@/components/typography/BodyText';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
+import { Description } from '@selfxyz/mobile-sdk-alpha/components';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Title';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
 import { black, borderColor, white } from '@/utils/colors';
@@ -193,7 +195,7 @@ const CreateMockScreenDeepLink: React.FC = () => {
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-              <Description color={black} fontWeight="bold">
+              <Description style={{ color: black, fontWeight: "bold" }}>
                 Onboarding your Developer ID
               </Description>
             </View>

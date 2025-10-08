@@ -26,10 +26,12 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';
-import { HeldPrimaryButtonProveScreen } from '@/components/buttons/HeldPrimaryButtonProveScreen';
+import { HeldPrimaryButtonProveScreen } from '@selfxyz/mobile-sdk-alpha/components';
 import Disclosures from '@/components/Disclosures';
-import { BodyText } from '@/components/typography/BodyText';
-import { Caption } from '@/components/typography/Caption';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Caption';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import {
   setDefaultDocumentTypeIfNeeded,
@@ -235,10 +237,10 @@ const ProveScreen: React.FC = () => {
                   objectFit="contain"
                 />
               )}
-              <BodyText fontSize={12} color={slate300} marginBottom={20}>
+              <BodyText style={{ fontSize: 12, color: slate300, marginBottom: 20 }}>
                 {url}
               </BodyText>
-              <BodyText fontSize={24} color={slate300} textAlign="center">
+              <BodyText style={{ fontSize: 24, color: slate300, textAlign: "center" }}>
                 <Text color={white}>{selectedApp.appName}</Text> is requesting
                 that you prove the following information:
               </BodyText>
@@ -264,10 +266,12 @@ const ProveScreen: React.FC = () => {
           {formattedUserId && (
             <View marginTop={20} paddingHorizontal={20}>
               <BodyText
-                fontSize={16}
-                color={black}
-                fontWeight="600"
-                marginBottom={10}
+                style={{
+                  fontSize: 16,
+                  color: black,
+                  fontWeight: '600',
+                  marginBottom: 10,
+                }}
               >
                 {selectedApp?.userIdType === 'hex'
                   ? 'Connected Wallet'
@@ -291,15 +295,16 @@ const ProveScreen: React.FC = () => {
                       marginRight={selectedApp?.userIdType === 'hex' ? 12 : 0}
                     >
                       <BodyText
-                        fontSize={14}
-                        color={black}
-                        lineHeight={20}
-                        fontFamily={
-                          showFullAddress && selectedApp?.userIdType === 'hex'
-                            ? 'monospace'
-                            : 'normal'
-                        }
-                        flexWrap={showFullAddress ? 'wrap' : 'nowrap'}
+                        style={{
+                          fontSize: 14,
+                          color: black,
+                          lineHeight: 20,
+                          fontFamily:
+                            showFullAddress && selectedApp?.userIdType === 'hex'
+                              ? 'monospace'
+                              : 'normal',
+                          flexWrap: showFullAddress ? 'wrap' : 'nowrap',
+                        }}
                       >
                         {selectedApp?.userIdType === 'hex' && showFullAddress
                           ? selectedApp.userId
@@ -318,10 +323,12 @@ const ProveScreen: React.FC = () => {
                   </XStack>
                   {selectedApp?.userIdType === 'hex' && (
                     <BodyText
-                      fontSize={12}
-                      color={black}
-                      opacity={0.6}
-                      marginTop={4}
+                      style={{
+                        fontSize: 12,
+                        color: black,
+                        opacity: 0.6,
+                        marginTop: 4,
+                      }}
                     >
                       {showFullAddress
                         ? 'Tap to hide address'
@@ -337,10 +344,12 @@ const ProveScreen: React.FC = () => {
           {selectedApp?.userDefinedData && (
             <View marginTop={20} paddingHorizontal={20}>
               <BodyText
-                fontSize={16}
-                color={black}
-                fontWeight="600"
-                marginBottom={10}
+                style={{
+                  fontSize: 16,
+                  color: black,
+                  fontWeight: '600',
+                  marginBottom: 10,
+                }}
               >
                 Additional Information:
               </BodyText>
@@ -350,7 +359,7 @@ const ProveScreen: React.FC = () => {
                 borderRadius={8}
                 marginBottom={10}
               >
-                <BodyText fontSize={14} color={black} lineHeight={20}>
+                <BodyText style={{ fontSize: 14, color: black, lineHeight: 20 }}>
                   {selectedApp.userDefinedData}
                 </BodyText>
               </View>
@@ -359,12 +368,14 @@ const ProveScreen: React.FC = () => {
 
           <View marginTop={20}>
             <Caption
-              textAlign="center"
-              size="small"
-              marginBottom={20}
-              marginTop={10}
-              borderRadius={4}
-              paddingBottom={20}
+              style={{
+                textAlign: 'center',
+                fontSize: 12,
+                marginBottom: 20,
+                marginTop: 10,
+                borderRadius: 4,
+                paddingBottom: 20,
+              }}
             >
               Self will confirm that these details are accurate and none of your
               confidential info will be revealed to {selectedApp?.appName}

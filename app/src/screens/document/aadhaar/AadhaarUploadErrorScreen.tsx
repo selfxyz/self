@@ -11,9 +11,10 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { getErrorMessages } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import { BodyText } from '@/components/typography/BodyText';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
 import WarningIcon from '@/images/warning.svg';
 import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
 import { black, slate100, slate200, slate500, white } from '@/utils/colors';
@@ -58,14 +59,11 @@ const AadhaarUploadErrorScreen: React.FC = () => {
         borderBlockWidth={1}
         borderBlockColor={slate200}
       >
-        <BodyText fontSize={19} textAlign="center" color={black}>
+        <BodyText style={{ fontSize: 19, textAlign: "center", color: black }}>
           {title}
         </BodyText>
         <BodyText
-          marginTop={6}
-          fontSize={17}
-          textAlign="center"
-          color={slate500}
+          style={{ marginTop: 6, fontSize: 17, textAlign: "center", color: slate500 }}
         >
           {description}
         </BodyText>

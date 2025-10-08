@@ -4,14 +4,14 @@
 
 import React, { useEffect, useState } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
-import { Animated, StyleSheet, useAnimatedValue } from 'react-native';
+import { Animated, View } from 'react-native';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import type { HeldPrimaryButtonProps } from '@/components/buttons/PrimaryButtonLongHold.shared';
+import { PrimaryButton } from './PrimaryButton';
+import type { HeldPrimaryButtonProps } from './PrimaryButtonLongHold.shared';
 import {
   ACTION_TIMER,
   COLORS,
-} from '@/components/buttons/PrimaryButtonLongHold.shared';
+} from './PrimaryButtonLongHold.shared';
 
 export function HeldPrimaryButton({
   children,
@@ -20,25 +20,26 @@ export function HeldPrimaryButton({
 }: HeldPrimaryButtonProps) {
   const [hasTriggered, setHasTriggered] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
-
-  // React Native animation setup
-  const animation = useAnimatedValue(0);
+  const [isPressed, setIsPressed] = useState(false);
+  const animationValue = new Animated.Value(0);
 
   const onPressIn = () => {
     setHasTriggered(false);
-    Animated.timing(animation, {
+    setIsPressed(true);
+    Animated.timing(animationValue, {
       toValue: 1,
       duration: ACTION_TIMER,
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start();
   };
 
   const onPressOut = () => {
+    setIsPressed(false);
     if (!hasTriggered) {
-      Animated.timing(animation, {
+      Animated.timing(animationValue, {
         toValue: 0,
-        duration: ACTION_TIMER,
-        useNativeDriver: true,
+        duration: 200,
+        useNativeDriver: false,
       }).start();
     }
   };
@@ -50,40 +51,37 @@ export function HeldPrimaryButton({
   };
 
   useEffect(() => {
-    // Mobile: Use React Native animation listener
-    animation.addListener(({ value }) => {
-      if (value >= 0.95 && !hasTriggered) {
+    // Use animation listener to trigger onLongPress
+    const listener = animationValue.addListener(({ value }) => {
+      if (value >= 0.95 && !hasTriggered && isPressed) {
         setHasTriggered(true);
         onLongPress();
       }
     });
     return () => {
-      animation.removeAllListeners();
+      animationValue.removeListener(listener);
     };
-  }, [animation, hasTriggered, onLongPress]);
+  }, [animationValue, hasTriggered, onLongPress, isPressed]);
 
   const renderAnimatedComponent = () => {
-    // Mobile: Use React Native Animated.View
-    const scaleX = animation.interpolate({
+    // Use React Native Animated.View for consistent behavior
+    const width = animationValue.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 1],
-    });
-    const bgColor = animation.interpolate({
-      inputRange: [0, 1],
-      outputRange: COLORS,
+      outputRange: [0, size.width],
     });
 
     return (
       <Animated.View
-        style={[
-          styles.fill,
-          size,
-          {
-            transform: [{ scaleX }],
-            backgroundColor: bgColor,
-            height: size.height,
-          },
-        ]}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          borderRadius: 4,
+          backgroundColor: COLORS[1],
+          width: width,
+          height: size.height,
+        }}
       />
     );
   };
@@ -93,7 +91,6 @@ export function HeldPrimaryButton({
       {...props}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      // @ts-expect-error actually it is there
       onLayout={getButtonSize}
       animatedComponent={renderAnimatedComponent()}
     >
@@ -101,14 +98,3 @@ export function HeldPrimaryButton({
     </PrimaryButton>
   );
 }
-
-const styles = StyleSheet.create({
-  fill: {
-    transformOrigin: 'left',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    borderRadius: 4,
-  },
-});

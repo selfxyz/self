@@ -10,9 +10,11 @@ import { Anchor, Text, YStack } from 'tamagui';
 
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import AbstractButton from '@/components/buttons/AbstractButton';
-import { BodyText } from '@/components/typography/BodyText';
-import { Caption } from '@/components/typography/Caption';
+import { AbstractButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Caption';
 import { privacyUrl, termsUrl } from '@/consts/links';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
@@ -64,11 +66,13 @@ const LaunchScreen: React.FC = () => {
           Take control of your digital identity
         </Text>
         <BodyText
-          color={slate300}
-          fontSize={16}
-          textAlign="center"
-          marginHorizontal={40}
-          marginBottom={40}
+          style={{
+            color: slate300,
+            fontSize: 16,
+            textAlign: 'center',
+            marginHorizontal: 40,
+            marginBottom: 40,
+          }}
         >
           Self is the easiest way to verify your identity safely wherever you
           are.

@@ -14,11 +14,14 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import { RoundFlag } from '@/components/flag/RoundFlag';
-import { BodyText } from '@/components/typography/BodyText';
-import { Title } from '@/components/typography/Title';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/RoundFlag';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import analytics from '@/utils/analytics';
@@ -135,30 +138,36 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
             )}
           </XStack>
           <Title
-            fontSize={32}
-            textAlign="center"
-            color={black}
-            marginBottom={16}
+            style={{
+              fontSize: 32,
+              textAlign: 'center',
+              color: black,
+              marginBottom: 16,
+            }}
           >
             Coming Soon
           </Title>
           <BodyText
-            fontSize={17}
-            textAlign="center"
-            color={black}
-            marginBottom={10}
-            paddingHorizontal={10}
+            style={{
+              fontSize: 17,
+              textAlign: 'center',
+              color: black,
+              marginBottom: 10,
+              paddingHorizontal: 10,
+            }}
           >
             {documentTypeText
               ? `We're working to roll out support for ${documentTypeText} in ${countryName}.`
               : `We're working to roll out support in ${countryName}.`}
           </BodyText>
           <BodyText
-            fontSize={17}
-            textAlign="center"
-            color={slate500}
-            marginBottom={40}
-            paddingHorizontal={10}
+            style={{
+              fontSize: 17,
+              textAlign: 'center',
+              color: slate500,
+              marginBottom: 40,
+              paddingHorizontal: 10,
+            }}
           >
             Sign up for live updates.
           </BodyText>

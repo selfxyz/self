@@ -6,8 +6,8 @@ import React from 'react';
 import type { TextProps } from 'react-native';
 import { StyleSheet, Text } from 'react-native';
 
-import { slate400 } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
+import { slate400 } from '../../constants/colors';
+import { dinot } from '../../utils/fonts';
 
 type AdditionalProps = TextProps;
 

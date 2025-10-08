@@ -10,11 +10,13 @@ import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passp
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
-import { Caption } from '@/components/typography/Caption';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Caption';
+import { Description } from '@selfxyz/mobile-sdk-alpha/components';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Keyboard from '@/images/icons/keyboard.svg';
 import RestoreAccountSvg from '@/images/icons/restore_account.svg';

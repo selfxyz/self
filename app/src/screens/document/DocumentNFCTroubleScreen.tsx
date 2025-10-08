@@ -7,10 +7,11 @@ import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { YStack } from 'tamagui';
 
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-import { Caption } from '@/components/typography/Caption';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Caption';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
@@ -80,7 +81,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
                 origin: 'passport/nfc-trouble',
               })
             }
-            marginBottom={0}
+            style={{ marginBottom: 0 }}
           >
             Report Issue
           </SecondaryButton>
@@ -95,13 +96,13 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       >
         <GestureDetector gesture={devModeTap}>
           <View collapsable={false}>
-            <Caption size="large" color={slate500}>
+            <Caption style={{ fontSize: 16, color: slate500 }}>
               Here are some tips to help you successfully scan the RFID chip:
             </Caption>
           </View>
         </GestureDetector>
         <Tips items={tips} />
-        <Caption size="large" color={slate500}>
+        <Caption style={{ fontSize: 16, color: slate500 }}>
           These steps should help improve the success rate of reading the RFID
           chip in your passport. If the issue persists, double-check that your
           device supports NFC and that your passport's RFID is functioning

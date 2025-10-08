@@ -15,11 +15,14 @@ import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import loadingAnimation from '@/assets/animations/loading/misc.json';
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { BodyText } from '@/components/typography/BodyText';
-import Description from '@/components/typography/Description';
-import { typography } from '@/components/typography/styles';
-import { Title } from '@/components/typography/Title';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
+import { Description } from '@selfxyz/mobile-sdk-alpha/components';
+import { typography } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/styles';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
@@ -188,7 +191,7 @@ const SuccessScreen: React.FC = () => {
         backgroundColor={white}
       >
         <View style={styles.content}>
-          <Title size="large">{getTitle(currentState)}</Title>
+          <Title style={{ fontSize: 24 }}>{getTitle(currentState)}</Title>
           <Info
             currentState={currentState}
             appName={appName ?? 'The app'}

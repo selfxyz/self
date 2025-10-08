@@ -4,20 +4,22 @@
 
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import type { TextProps } from 'tamagui';
-import { Text } from 'tamagui';
+import type { TextProps } from 'react-native';
+import { Text } from 'react-native';
 
-import { slate500 } from '@/utils/colors';
-import { dinot } from '@/utils/fonts';
+import { slate500 } from '../../constants/colors';
+import { dinot } from '../../utils/fonts';
 
-type DescriptionProps = TextProps;
+type DescriptionProps = TextProps & {
+  color?: string;
+};
 
-const Description = ({ children, style, ...props }: DescriptionProps) => {
+const Description = ({ children, style, color, ...props }: DescriptionProps) => {
   return (
     <Text
       {...props}
       textBreakStrategy="balanced"
-      style={[styles.description, style]}
+      style={[styles.description, color ? { color } : {}, style]}
     >
       {children}
     </Text>

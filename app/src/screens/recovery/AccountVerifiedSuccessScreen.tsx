@@ -9,10 +9,11 @@ import { useNavigation } from '@react-navigation/native';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
-import Description from '@/components/typography/Description';
-import { Title } from '@/components/typography/Title';
+import { Description } from '@selfxyz/mobile-sdk-alpha/components';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
 import { black, white } from '@/utils/colors';
@@ -43,7 +44,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
           marginBottom={20}
           gap={10}
         >
-          <Title size="large">ID Verified</Title>
+          <Title style={{ fontSize: 24 }}>ID Verified</Title>
           <Description>
             Your document's information is now protected by Self ID. Just scan a
             participating partner's QR code to prove your identity.

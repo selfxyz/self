@@ -3,19 +3,18 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import type { GestureResponderEvent, ViewStyle } from 'react-native';
-import { Platform, StyleSheet } from 'react-native';
-import type { ViewProps } from 'tamagui';
-import { Button, Text } from 'tamagui';
+import type { GestureResponderEvent, ViewStyle, PressableProps } from 'react-native';
+import { Platform, StyleSheet, Pressable, Text } from 'react-native';
 
-import { pressedStyle } from '@/components/buttons/pressedStyle';
-import analytics from '@/utils/analytics';
-import { dinot } from '@/utils/fonts';
+import { useSelfClient } from '../../context';
+import { dinot } from '../../utils/fonts';
+import { pressedStyle } from './pressedStyle';
 
-export interface ButtonProps extends ViewProps {
+export interface ButtonProps extends PressableProps {
   children: React.ReactNode;
   animatedComponent?: React.ReactNode;
   trackEvent?: string;
+  borderWidth?: number;
 }
 
 interface AbstractButtonProps extends ButtonProps {
@@ -23,10 +22,7 @@ interface AbstractButtonProps extends ButtonProps {
   borderColor?: string;
   borderWidth?: number;
   color: string;
-  onPress?: ((e: GestureResponderEvent) => void) | null | undefined;
 }
-
-const { trackEvent: analyticsTrackEvent } = analytics();
 
 /*
     Base Button component that can be used to create different types of buttons
@@ -46,6 +42,7 @@ export default function AbstractButton({
   onPress,
   ...props
 }: AbstractButtonProps) {
+  const selfClient = useSelfClient();
   const hasBorder = borderColor ? true : false;
 
   const handlePress = (e: GestureResponderEvent) => {
@@ -55,7 +52,7 @@ export default function AbstractButton({
       if (parsedEvent) {
         trackEvent = parsedEvent;
       }
-      analyticsTrackEvent(`Click: ${trackEvent}`);
+      selfClient.trackEvent(`Click: ${trackEvent}`);
     }
     if (onPress) {
       onPress(e);
@@ -63,11 +60,10 @@ export default function AbstractButton({
   };
 
   return (
-    <Button
-      unstyled
+    <Pressable
       {...props}
       onPress={handlePress}
-      style={[
+      style={({ pressed }) => [
         styles.container,
         { backgroundColor: bgColor },
         hasBorder
@@ -77,13 +73,13 @@ export default function AbstractButton({
               padding: 20 - borderWidth, // Adjust padding to maintain total size
             }
           : Platform.select({ web: { borderWidth: 0 }, default: {} }),
+        !animatedComponent && pressed ? pressedStyle : {},
         style as ViewStyle,
       ]}
-      pressStyle={!animatedComponent ? pressedStyle : {}}
     >
       {animatedComponent}
       <Text style={[styles.text, { color: color }]}>{children}</Text>
-    </Button>
+    </Pressable>
   );
 }
 

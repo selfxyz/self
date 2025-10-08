@@ -12,7 +12,8 @@ import type { AadhaarData } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { Caption } from '@/components/typography/Caption';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Caption';
 import { usePassport } from '@/providers/passportDataProvider';
 import { black, slate200, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
@@ -63,8 +64,8 @@ const InfoRow: React.FC<{
 }> = ({ label, value }) => (
   <YStack>
     <XStack paddingVertical="$4" justifyContent="space-between">
-      <Caption size="large">{label}</Caption>
-      <Caption color={black} size="large">
+      <Caption style={{ fontSize: 16 }}>{label}</Caption>
+      <Caption style={{ color: black, fontSize: 16 }}>
         {value}
       </Caption>
     </XStack>

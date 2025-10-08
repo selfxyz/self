@@ -4,17 +4,17 @@
 
 import React from 'react';
 
-import type { ButtonProps } from '@/components/buttons/AbstractButton';
-import AbstractButton from '@/components/buttons/AbstractButton';
-import { amber50, black, slate300, white } from '@/utils/colors';
-import { normalizeBorderWidth } from '@/utils/styleUtils';
+import type { ButtonProps } from './AbstractButton';
+import AbstractButton from './AbstractButton';
+import { slate200, slate300, slate500, white } from '../../constants/colors';
+import { normalizeBorderWidth } from '../../utils/styleUtils';
 
-export function PrimaryButton({ children, ...props }: ButtonProps) {
+export function SecondaryButton({ children, ...props }: ButtonProps) {
   const { borderWidth, ...restProps } = props;
   const isDisabled = restProps.disabled;
-  const bgColor = isDisabled ? white : black;
-  const color = isDisabled ? slate300 : amber50;
-  const borderColor = isDisabled ? slate300 : undefined;
+  const bgColor = isDisabled ? white : slate200;
+  const color = isDisabled ? slate300 : slate500;
+  const borderColor = isDisabled ? slate200 : undefined;
 
   const numericBorderWidth = normalizeBorderWidth(borderWidth);
 
@@ -22,9 +22,9 @@ export function PrimaryButton({ children, ...props }: ButtonProps) {
     <AbstractButton
       {...restProps}
       borderWidth={numericBorderWidth}
-      borderColor={borderColor}
       bgColor={bgColor}
       color={color}
+      borderColor={borderColor}
     >
       {children}
     </AbstractButton>

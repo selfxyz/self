@@ -10,10 +10,11 @@ import { useNavigation } from '@react-navigation/native';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import warningAnimation from '@/assets/animations/warning.json';
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
-import Caution from '@/components/typography/Caution';
-import { SubHeader } from '@/components/typography/SubHeader';
+import { Caution } from '@selfxyz/mobile-sdk-alpha/components';
+import { SubHeader } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/SubHeader';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useSettingStore } from '@/stores/settingStore';
 import { black, white } from '@/utils/colors';

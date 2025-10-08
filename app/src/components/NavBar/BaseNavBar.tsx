@@ -5,11 +5,13 @@
 import React, { useMemo } from 'react';
 import type { SystemBarStyle } from 'react-native-edge-to-edge';
 import { SystemBars } from 'react-native-edge-to-edge';
-import type { TextProps, ViewProps, XStackProps } from 'tamagui';
+import type { TextProps } from 'react-native';
+import type { ViewProps, XStackProps } from 'tamagui';
 import { Button, View, XStack } from 'tamagui';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
-import { Title } from '@/components/typography/Title';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/Title';
 
 interface NavBarProps extends XStackProps {
   children: React.ReactNode;

@@ -113,6 +113,7 @@
   "dependencies": {
     "@babel/runtime": "^7.28.3",
     "@selfxyz/common": "workspace:^",
+    "@xstate/react": "^5.0.5",
     "node-forge": "^1.3.1",
     "socket.io-client": "^4.8.1",
     "uuid": "^11.1.0",
@@ -120,7 +121,6 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
-    "@tamagui/types": "1.126.14",
     "@testing-library/react": "^14.1.2",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
@@ -141,7 +141,6 @@
     "react-native": "0.76.9",
     "react-native-localize": "^3.5.2",
     "react-native-web": "^0.21.1",
-    "tamagui": "1.126.14",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",
     "vitest": "^2.1.8"
@@ -150,11 +149,11 @@
     "react": "^18.3.1",
     "react-native": "0.76.9",
     "react-native-localize": "*",
-    "tamagui": "1.126.x"
+    "react-native-svg-circle-country-flags": "*"
   },
   "peerDependenciesMeta": {
-    "tamagui": {
-      "optional": false
+    "react-native-svg-circle-country-flags": {
+      "optional": true
     }
   },
   "packageManager": "yarn@4.6.0",

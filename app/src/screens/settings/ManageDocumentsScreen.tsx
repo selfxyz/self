@@ -17,8 +17,8 @@ import type {
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { PrimaryButton } from '@/components/buttons/PrimaryButton';
-import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
