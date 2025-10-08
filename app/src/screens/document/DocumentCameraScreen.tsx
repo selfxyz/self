@@ -11,6 +11,12 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Additional,
+  Description,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   mrzReadInstructions,
@@ -18,12 +24,8 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
 import { PassportCamera } from '@/components/native/PassportCamera';
-import { Additional } from '@selfxyz/mobile-sdk-alpha/components';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Scan from '@/images/icons/passport_camera_scan.svg';

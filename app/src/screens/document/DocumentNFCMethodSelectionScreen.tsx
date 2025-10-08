@@ -8,14 +8,16 @@ import { Input, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  BodyText,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/BodyText';
 import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+
+import ButtonsContainer from '@/components/ButtonsContainer';
 // Old path: @/components/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { white } from '@/utils/colors';
@@ -171,7 +173,9 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
                       maxLength={6}
                     />
                     {error ? (
-                      <Description style={{ color: "red" }}>{error}</Description>
+                      <Description style={{ color: 'red' }}>
+                        {error}
+                      </Description>
                     ) : null}
                   </YStack>
                 )}

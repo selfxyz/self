@@ -12,15 +12,17 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  PrimaryButton,
+  RoundFlag,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/RoundFlag';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/BodyText';
 import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 // Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

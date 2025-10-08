@@ -9,11 +9,10 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/BodyText';
 import { useModal } from '@/hooks/useModal';
 import AadhaarImage from '@/images/512w.png';
@@ -169,14 +168,23 @@ const AadhaarUploadScreen: React.FC = () => {
         borderBlockWidth={1}
         borderBlockColor={slate200}
       >
-        <BodyText style={{ fontWeight: "bold", fontSize: 18, textAlign: "center" }}>
+        <BodyText
+          style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}
+        >
           Generate a QR code from the mAadaar app
         </BodyText>
-        <BodyText style={{ fontSize: 16, textAlign: "center", color: slate500 }}>
+        <BodyText
+          style={{ fontSize: 16, textAlign: 'center', color: slate500 }}
+        >
           Save the QR code to your photo library and upload it here.
         </BodyText>
         <BodyText
-          style={{ fontSize: 12, textAlign: "center", color: slate400, marginTop: 20 }}
+          style={{
+            fontSize: 12,
+            textAlign: 'center',
+            color: slate400,
+            marginTop: 20,
+          }}
         >
           SELF DOES NOT STORE THIS INFORMATION.
         </BodyText>

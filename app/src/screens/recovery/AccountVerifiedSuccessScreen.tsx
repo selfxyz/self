@@ -6,13 +6,15 @@ import React from 'react';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import {
+  Description,
+  PrimaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';

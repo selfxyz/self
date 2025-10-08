@@ -5,8 +5,8 @@
 import React from 'react';
 import type { TextProps } from 'react-native';
 
-import { BodyText } from './BodyText';
 import { slate400 } from '../../constants/colors';
+import { BodyText } from './BodyText';
 
 type CaptionProps = TextProps & {
   size?: 'small' | 'large';
@@ -14,11 +14,6 @@ type CaptionProps = TextProps & {
 
 export const Caption: React.FC<CaptionProps> = ({ size, style, ...props }) => {
   const fontSize = size === 'small' ? 14 : size === 'large' ? 16 : 15;
-  
-  return (
-    <BodyText 
-      style={[{ fontSize, color: slate400 }, style]} 
-      {...props} 
-    />
-  );
+
+  return <BodyText style={[{ fontSize, color: slate400 }, style]} {...props} />;
 };

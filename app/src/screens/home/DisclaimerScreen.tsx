@@ -7,13 +7,15 @@ import { StyleSheet } from 'react-native';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import {
+  Caution,
+  PrimaryButton,
+  SubHeader,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import warningAnimation from '@/assets/animations/warning.json';
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
-import { Caution } from '@selfxyz/mobile-sdk-alpha/components';
-import { SubHeader } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/SubHeader';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useSettingStore } from '@/stores/settingStore';

@@ -3,8 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import type { GestureResponderEvent, ViewStyle, PressableProps } from 'react-native';
-import { Platform, StyleSheet, Pressable, Text } from 'react-native';
+import type { GestureResponderEvent, PressableProps, ViewStyle } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 
 import { useSelfClient } from '../../context';
 import { dinot } from '../../utils/fonts';

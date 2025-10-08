@@ -13,14 +13,16 @@ import {
 } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Additional,
+  Description,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import qrScanAnimation from '@/assets/animations/qr_scan.json';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
-import { Additional } from '@selfxyz/mobile-sdk-alpha/components';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Title';
 import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';

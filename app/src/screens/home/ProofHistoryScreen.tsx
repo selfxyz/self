@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+
 // Old path: @/components/BodyText';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import type { ProofHistory } from '@/stores/proofTypes';
@@ -236,7 +237,9 @@ const ProofHistoryScreen: React.FC = () => {
                     />
                   )}
                   <YStack flex={1}>
-                    <BodyText style={{ fontSize: 20, color: black, fontWeight: "500" }}>
+                    <BodyText
+                      style={{ fontSize: 20, color: black, fontWeight: '500' }}
+                    >
                       {item.appName}
                     </BodyText>
                     <BodyText style={{ color: slate300, gap: 2, fontSize: 14 }}>

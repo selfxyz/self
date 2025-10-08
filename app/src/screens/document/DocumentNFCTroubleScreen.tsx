@@ -7,10 +7,10 @@ import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { YStack } from 'tamagui';
 
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Caption';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';

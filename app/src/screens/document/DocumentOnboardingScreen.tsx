@@ -8,16 +8,18 @@ import { StyleSheet } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useNavigation } from '@react-navigation/native';
 
+import {
+  Additional,
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import TextsContainer from '@/components/TextsContainer';
-import { Additional } from '@selfxyz/mobile-sdk-alpha/components';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

@@ -7,9 +7,12 @@ import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, YStack } from 'tamagui';
 
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+
 // Old path: @/components/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { white } from '@/utils/colors';
@@ -51,7 +54,10 @@ export default function SimpleScrolledTitleLayout({
           </YStack>
         )}
         {secondaryButtonText && onSecondaryButtonPress && (
-          <SecondaryButton onPress={onSecondaryButtonPress} style={{ marginBottom: 12 }}>
+          <SecondaryButton
+            onPress={onSecondaryButtonPress}
+            style={{ marginBottom: 12 }}
+          >
             {secondaryButtonText}
           </SecondaryButton>
         )}

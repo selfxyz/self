@@ -2,12 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
-
-import type { ButtonProps } from './AbstractButton';
-import AbstractButton from './AbstractButton';
 import { amber50, black, slate300, white } from '../../constants/colors';
 import { normalizeBorderWidth } from '../../utils/styleUtils';
+import type { ButtonProps } from './AbstractButton';
+import AbstractButton from './AbstractButton';
 
 export function PrimaryButton({ children, ...props }: ButtonProps) {
   const { borderWidth, ...restProps } = props;

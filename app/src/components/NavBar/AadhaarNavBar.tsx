@@ -64,7 +64,7 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
           style={{
             fontSize: 16,
             color: black,
-            fontWeight: "600",
+            fontWeight: '600',
             fontFamily: dinot,
           }}
         >

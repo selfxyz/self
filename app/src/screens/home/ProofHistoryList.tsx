@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { CheckSquare2, Wallet, XCircle } from '@tamagui/lucide-icons';
 
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+
 // Old path: @/components/BodyText';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import type { ProofHistory } from '@/stores/proofTypes';
@@ -229,11 +230,18 @@ export const ProofHistoryList: React.FC<ProofHistoryListProps> = ({
                     />
                   )}
                   <YStack flex={1}>
-                    <BodyText style={{ fontSize: 20, color: black, fontWeight: "500" }}>
+                    <BodyText
+                      style={{ fontSize: 20, color: black, fontWeight: '500' }}
+                    >
                       {item.appName}
                     </BodyText>
                     <BodyText
-                      style={{ fontFamily: plexMono, color: slate400, gap: 2, fontSize: 14 }}
+                      style={{
+                        fontFamily: plexMono,
+                        color: slate400,
+                        gap: 2,
+                        fontSize: 14,
+                      }}
                     >
                       {formatDate(item.timestamp)}
                     </BodyText>

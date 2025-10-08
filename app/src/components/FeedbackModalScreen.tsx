@@ -6,7 +6,13 @@ import React, { useCallback } from 'react';
 import { Modal, StyleSheet } from 'react-native';
 import { styled, View, XStack, YStack } from 'tamagui';
 
-import { PrimaryButton, SecondaryButton, Description, Title } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+
 import ModalClose from '@/images/icons/modal_close.svg';
 import LogoInversed from '@/images/logo_inversed.svg';
 import { white } from '@/utils/colors';
@@ -109,7 +115,9 @@ const FeedbackModalScreen: React.FC<FeedbackModalScreenProps> = ({
               )}
             </XStack>
             <YStack gap={20}>
-              <Title style={{ textAlign: "left" }}>{modalParams.titleText}</Title>
+              <Title style={{ textAlign: 'left' }}>
+                {modalParams.titleText}
+              </Title>
               <Description style={styles.description}>
                 {modalParams.bodyText}
               </Description>

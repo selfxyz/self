@@ -4,13 +4,16 @@
 
 import React, { useCallback, useState } from 'react';
 
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import Mnemonic from '@/components/Mnemonic';
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  Caption,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Caption';
 import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+
+import Mnemonic from '@/components/Mnemonic';
 // Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import useMnemonic from '@/hooks/useMnemonic';
@@ -44,7 +47,7 @@ const SaveRecoveryPhraseScreen: React.FC = () => {
         justifyContent="space-between"
         gap={10}
       >
-        <Title style={{ paddingTop: 20, textAlign: "center" }}>
+        <Title style={{ paddingTop: 20, textAlign: 'center' }}>
           Save your recovery phrase
         </Title>
         <Description style={{ paddingBottom: 10 }}>

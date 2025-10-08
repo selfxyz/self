@@ -5,13 +5,13 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { assign, createMachine } from 'xstate';
-import { useMachine } from '@xstate/react';
 
 import { ProofEvents } from '../../constants/analytics';
-
-import { HeldPrimaryButton } from './PrimaryButtonLongHold';
-import Description from '../typography/Description';
 import { black } from '../../constants/colors';
+import Description from '../typography/Description';
+import { HeldPrimaryButton } from './PrimaryButtonLongHold';
+
+import { useMachine } from '@xstate/react';
 
 interface HeldPrimaryButtonProveScreenProps {
   onVerify: () => void;
@@ -184,9 +184,7 @@ const buttonMachine = createMachine(
   },
 );
 
-export const HeldPrimaryButtonProveScreen: React.FC<
-  HeldPrimaryButtonProveScreenProps
-> = ({
+export const HeldPrimaryButtonProveScreen: React.FC<HeldPrimaryButtonProveScreenProps> = ({
   onVerify,
   selectedAppSessionId,
   hasScrolledToBottom,

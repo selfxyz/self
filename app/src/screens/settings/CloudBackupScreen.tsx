@@ -8,10 +8,16 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Caption,
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import BackupDocumentationLink from '@/components/BackupDocumentationLink';
-import { PrimaryButton, SecondaryButton, Caption, Description, Title } from '@selfxyz/mobile-sdk-alpha/components';
 import { useModal } from '@/hooks/useModal';
 import Cloud from '@/images/icons/logo_cloud_backup.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

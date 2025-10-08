@@ -13,14 +13,16 @@ import { countryCodes } from '@selfxyz/common/constants';
 import { getCountryISO2 } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/common/utils/passports';
-import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import ButtonsContainer from '@/components/ButtonsContainer';
-import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  BodyText,
+  PrimaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/BodyText';
 import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
+import ButtonsContainer from '@/components/ButtonsContainer';
 // Old path: @/components/Title';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
@@ -195,7 +197,7 @@ const CreateMockScreenDeepLink: React.FC = () => {
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <ActivityIndicator color={black} style={{ marginRight: 8 }} />
-              <Description style={{ color: black, fontWeight: "bold" }}>
+              <Description style={{ color: black, fontWeight: 'bold' }}>
                 Onboarding your Developer ID
               </Description>
             </View>

@@ -8,14 +8,16 @@ import { useNavigation } from '@react-navigation/native';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  Caption,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Caption';
 import { Description } from '@selfxyz/mobile-sdk-alpha/components';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 // Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Keyboard from '@/images/icons/keyboard.svg';

@@ -25,8 +25,7 @@ const findFlagComponent = (CountryFlags: CountryFlagsRecord, formattedCode: stri
   const patterns = [
     formattedCode,
     formattedCode.toLowerCase(),
-    formattedCode.charAt(0).toUpperCase() +
-      formattedCode.charAt(1).toLowerCase(),
+    formattedCode.charAt(0).toUpperCase() + formattedCode.charAt(1).toLowerCase(),
   ];
 
   for (const pattern of patterns) {
@@ -40,7 +39,7 @@ const findFlagComponent = (CountryFlags: CountryFlagsRecord, formattedCode: stri
 
 const getCountryFlag = (CountryFlags: CountryFlagsRecord | null, countryCode: string): CountryFlagComponent | null => {
   if (!CountryFlags) return null;
-  
+
   try {
     const normalizedCountryCode = countryCode === 'D<<' ? 'DEU' : countryCode;
     const iso2 = alpha3ToAlpha2(normalizedCountryCode);
@@ -64,10 +63,11 @@ export const RoundFlag: React.FC<RoundFlagProps> = ({ countryCode, size }) => {
     const loadCountryFlags = async () => {
       try {
         // Try to dynamically import the flags library
-        // @ts-ignore - Dynamic import for optional dependency
+        // @ts-expect-error - Dynamic import for optional dependency
+        // eslint-disable-next-line import/no-unresolved
         const flags = await import('react-native-svg-circle-country-flags');
         setCountryFlags(flags as unknown as CountryFlagsRecord);
-      } catch (error) {
+      } catch {
         // Library not available, that's okay - we'll show fallback
         console.warn('react-native-svg-circle-country-flags not found, showing fallback');
       } finally {

@@ -35,16 +35,18 @@ import {
   hasAnyValidRegisteredDocument,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  BodyText,
+  PrimaryButton,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
+import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
-import { PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import ButtonsContainer from '@/components/ButtonsContainer';
 import TextsContainer from '@/components/TextsContainer';
-import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/BodyText';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Title';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
@@ -551,7 +553,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           <>
             <TextsContainer>
               <Title children="Ready to scan" />
-              <BodyText style={{ textAlign: "center" }}>
+              <BodyText style={{ textAlign: 'center' }}>
                 {nfcMessage && nfcMessage.trim().length > 0 ? (
                   nfcMessage
                 ) : (

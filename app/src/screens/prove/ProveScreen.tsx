@@ -23,14 +23,16 @@ import { Eye, EyeOff } from '@tamagui/lucide-icons';
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
 import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  BodyText,
+  HeldPrimaryButtonProveScreen,
+} from '@selfxyz/mobile-sdk-alpha/components';
+// Old path: @/components/BodyText';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';
-import { HeldPrimaryButtonProveScreen } from '@selfxyz/mobile-sdk-alpha/components';
 import Disclosures from '@/components/Disclosures';
-import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/BodyText';
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Caption';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import {
@@ -237,10 +239,14 @@ const ProveScreen: React.FC = () => {
                   objectFit="contain"
                 />
               )}
-              <BodyText style={{ fontSize: 12, color: slate300, marginBottom: 20 }}>
+              <BodyText
+                style={{ fontSize: 12, color: slate300, marginBottom: 20 }}
+              >
                 {url}
               </BodyText>
-              <BodyText style={{ fontSize: 24, color: slate300, textAlign: "center" }}>
+              <BodyText
+                style={{ fontSize: 24, color: slate300, textAlign: 'center' }}
+              >
                 <Text color={white}>{selectedApp.appName}</Text> is requesting
                 that you prove the following information:
               </BodyText>
@@ -359,7 +365,9 @@ const ProveScreen: React.FC = () => {
                 borderRadius={8}
                 marginBottom={10}
               >
-                <BodyText style={{ fontSize: 14, color: black, lineHeight: 20 }}>
+                <BodyText
+                  style={{ fontSize: 14, color: black, lineHeight: 20 }}
+                >
                   {selectedApp.userDefinedData}
                 </BodyText>
               </View>

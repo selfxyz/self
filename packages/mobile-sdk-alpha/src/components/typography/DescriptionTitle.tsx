@@ -9,12 +9,15 @@ import { Text } from 'react-native';
 import { dinot } from '../../utils/fonts';
 
 export const DescriptionTitle: React.FC<TextProps> = ({ style, ...props }) => (
-  <Text 
-    style={[{
-      fontSize: 18,
-      lineHeight: 35,
-      fontFamily: dinot,
-    }, style]} 
-    {...props} 
+  <Text
+    style={[
+      {
+        fontSize: 18,
+        lineHeight: 35,
+        fontFamily: dinot,
+      },
+      style,
+    ]}
+    {...props}
   />
 );

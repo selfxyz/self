@@ -4,8 +4,9 @@
 
 import React, { useCallback } from 'react';
 
-import Mnemonic from '@/components/Mnemonic';
 import { Description } from '@selfxyz/mobile-sdk-alpha/components';
+
+import Mnemonic from '@/components/Mnemonic';
 import useMnemonic from '@/hooks/useMnemonic';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 

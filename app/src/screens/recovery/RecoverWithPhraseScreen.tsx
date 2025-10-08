@@ -11,10 +11,12 @@ import { useNavigation } from '@react-navigation/native';
 
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  Description,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
 import Paste from '@/images/icons/paste.svg';
 import { useAuth } from '@/providers/authProvider';
 import {

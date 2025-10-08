@@ -9,16 +9,19 @@ import { Text } from 'react-native';
 import { dinot } from '../../utils/fonts';
 
 export const SubHeader: React.FC<TextProps> = ({ style, ...props }) => (
-  <Text 
-    style={[{
-      fontFamily: dinot,
-      lineHeight: 18,
-      fontSize: 15,
-      fontWeight: '500',
-      letterSpacing: 0.6,
-      textTransform: 'uppercase',
-      textAlign: 'center',
-    }, style]} 
-    {...props} 
+  <Text
+    style={[
+      {
+        fontFamily: dinot,
+        lineHeight: 18,
+        fontSize: 15,
+        fontWeight: '500',
+        letterSpacing: 0.6,
+        textTransform: 'uppercase',
+        textAlign: 'center',
+      },
+      style,
+    ]}
+    {...props}
   />
 );

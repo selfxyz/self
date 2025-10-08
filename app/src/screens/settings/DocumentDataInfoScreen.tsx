@@ -10,9 +10,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { PassportMetadata } from '@selfxyz/common/types';
 import type { AadhaarData } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 // Old path: @/components/Caption';
 import { usePassport } from '@/providers/passportDataProvider';
 import { black, slate200, white } from '@/utils/colors';
@@ -65,9 +65,7 @@ const InfoRow: React.FC<{
   <YStack>
     <XStack paddingVertical="$4" justifyContent="space-between">
       <Caption style={{ fontSize: 16 }}>{label}</Caption>
-      <Caption style={{ color: black, fontSize: 16 }}>
-        {value}
-      </Caption>
+      <Caption style={{ color: black, fontSize: 16 }}>{value}</Caption>
     </XStack>
     <Separator borderColor={slate200} />
   </YStack>

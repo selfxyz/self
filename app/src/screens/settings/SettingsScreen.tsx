@@ -263,7 +263,9 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
                 pressStyle={pressedStyle}
                 onPress={goToStore}
               >
-                <BodyText style={{ color: white }}>Leave an app store review</BodyText>
+                <BodyText style={{ color: white }}>
+                  Leave an app store review
+                </BodyText>
               </Button>
               <XStack gap={32}>
                 {social.map(([Icon, href], i) => (
