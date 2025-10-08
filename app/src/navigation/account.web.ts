@@ -4,12 +4,10 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-// Removed DocumentDataNotFound route; use ComingSoon instead where needed
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import { black, white } from '@/utils/colors';
 
 const accountScreens = {
-  // DocumentDataNotFound screen entry removed
   Settings: {
     screen: SettingsScreen,
     options: {
