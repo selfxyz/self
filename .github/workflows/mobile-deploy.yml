@@ -1033,6 +1033,7 @@ jobs:
           ref: ${{ github.event.pull_request.merge_commit_sha || 'staging' }}
 
       - name: Get version from package.json
+        id: get-version
         uses: ./.github/actions/get-version
         with:
           app_path: ${{ env.APP_PATH }}
@@ -1054,7 +1055,7 @@ jobs:
         uses: ./.github/actions/create-version-bump-pr
         with:
           platform: mobile
-          version: ${{ env.VERSION }}
+          version: ${{ steps.get-version.outputs.version }}
           file_paths: |
             app/version.json
             app/package.json
