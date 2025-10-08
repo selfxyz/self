@@ -128,4 +128,3 @@ describe('parseScanResponse', () => {
     expect(() => parseScanResponse(response)).toThrow();
   });
 });
-
