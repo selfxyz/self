@@ -7418,7 +7418,6 @@ __metadata:
     react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:15.12.1"
-    react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-svg-transformer: "npm:^1.5.1"
     react-native-svg-web: "npm:^1.0.9"
     react-native-web: "npm:^0.19.0"
@@ -7466,6 +7465,7 @@ __metadata:
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
     react-native-localize: "npm:^3.5.2"
+    react-native-svg-circle-country-flags: "npm:^0.2.2"
     react-native-web: "npm:^0.21.1"
     socket.io-client: "npm:^4.8.1"
     tsup: "npm:^8.0.1"
@@ -7478,10 +7478,6 @@ __metadata:
     react: ^18.3.1
     react-native: 0.76.9
     react-native-localize: "*"
-    react-native-svg-circle-country-flags: "*"
-  peerDependenciesMeta:
-    react-native-svg-circle-country-flags:
-      optional: true
   languageName: unknown
   linkType: soft
 

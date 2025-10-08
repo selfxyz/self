@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View } from 'react-native';
+import * as CountryFlags from 'react-native-svg-circle-country-flags';
 
 import { alpha3ToAlpha2 } from '@selfxyz/common/constants/countries';
 
@@ -37,9 +38,7 @@ const findFlagComponent = (CountryFlags: CountryFlagsRecord, formattedCode: stri
   return null;
 };
 
-const getCountryFlag = (CountryFlags: CountryFlagsRecord | null, countryCode: string): CountryFlagComponent | null => {
-  if (!CountryFlags) return null;
-
+const getCountryFlag = (countryCode: string): CountryFlagComponent | null => {
   try {
     const normalizedCountryCode = countryCode === 'D<<' ? 'DEU' : countryCode;
     const iso2 = alpha3ToAlpha2(normalizedCountryCode);
@@ -48,7 +47,7 @@ const getCountryFlag = (CountryFlags: CountryFlagsRecord | null, countryCode: st
     }
 
     const formattedCode = iso2.toUpperCase();
-    return findFlagComponent(CountryFlags, formattedCode);
+    return findFlagComponent(CountryFlags as unknown as CountryFlagsRecord, formattedCode);
   } catch (error) {
     console.error('Error getting country flag:', error);
     return null;
@@ -56,42 +55,7 @@ const getCountryFlag = (CountryFlags: CountryFlagsRecord | null, countryCode: st
 };
 
 export const RoundFlag: React.FC<RoundFlagProps> = ({ countryCode, size }) => {
-  const [CountryFlags, setCountryFlags] = useState<CountryFlagsRecord | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadCountryFlags = async () => {
-      try {
-        // Try to dynamically import the flags library
-        // @ts-expect-error - Dynamic import for optional dependency
-        // eslint-disable-next-line import/no-unresolved
-        const flags = await import('react-native-svg-circle-country-flags');
-        setCountryFlags(flags as unknown as CountryFlagsRecord);
-      } catch {
-        // Library not available, that's okay - we'll show fallback
-        console.warn('react-native-svg-circle-country-flags not found, showing fallback');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCountryFlags();
-  }, []);
-
-  // Show loading state briefly
-  if (loading) {
-    return (
-      <View
-        style={{
-          width: size,
-          height: size,
-          backgroundColor: slate300,
-        }}
-      />
-    );
-  }
-
-  const CountryFlagComponent = getCountryFlag(CountryFlags, countryCode);
+  const CountryFlagComponent = getCountryFlag(countryCode);
 
   if (!CountryFlagComponent) {
     return (

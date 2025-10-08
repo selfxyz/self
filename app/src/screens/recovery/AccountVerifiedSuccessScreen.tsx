@@ -45,7 +45,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
           marginBottom={20}
           gap={10}
         >
-          <Title style={{ fontSize: 24 }}>ID Verified</Title>
+          <Title size="large">ID Verified</Title>
           <Description>
             Your document's information is now protected by Self ID. Just scan a
             participating partner's QR code to prove your identity.
