@@ -111,11 +111,17 @@ platform :ios do
       when "build"
         # Build number is handled in prepare_ios_build
         UI.message("📦 Build number will be incremented during build")
+      when "skip"
+        # Version already bumped by CI in bump-version job
+        UI.message("⏭️  Skipping version bump (already handled by CI)")
+        UI.message("📌 Using pre-bumped version from version.json")
+      else
+        UI.user_error!("❌ Invalid version_bump value: #{version_bump}. Expected: major, minor, patch, build, or skip")
       end
     end
 
     # Prepare and build
-    result = prepare_ios_build(prod_release: deployment_track == "production")
+    result = prepare_ios_build(prod_release: deployment_track == "production", version_bump: version_bump)
 
     # Handle deployment based on track
     if test_mode
@@ -146,6 +152,8 @@ platform :ios do
   end
 
   private_lane :prepare_ios_build do |options|
+    version_bump = options[:version_bump] || "build"
+
     if local_development
       # app breaks with Xcode 16.3
       xcode_select "/Applications/Xcode.app"
@@ -183,10 +191,19 @@ platform :ios do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
 
-    # Get build number from version.json and increment it
-    build_number = Fastlane::Helpers.bump_ios_build_number
+    # Handle build number bumping based on version_bump parameter
+    if version_bump == "skip"
+      UI.message("⏭️  Skipping build number bump (already handled by CI)")
+      UI.message("📌 Using pre-bumped build number from version.json")
+      # Read existing build number from version.json without incrementing
+      build_number = Fastlane::Helpers.get_ios_build_number
+    else
+      UI.message("📦 Incrementing iOS build number")
+      # Get build number from version.json and increment it
+      build_number = Fastlane::Helpers.bump_ios_build_number
+    end
 
-    # Update Xcode project with new build number
+    # Update Xcode project with build number
     increment_build_number(
       build_number: build_number,
       xcodeproj: "ios/#{ENV["IOS_PROJECT_NAME"]}.xcodeproj",
@@ -329,6 +346,8 @@ platform :android do
   private_lane :upload_android_build do |options|
     test_mode = options[:test_mode] == true || options[:test_mode] == "true"
     skip_upload = options[:skip_upload] == true || options[:skip_upload] == "true"
+    version_bump = options[:version_bump] || "build"
+
     if local_development
       if ENV["ANDROID_KEYSTORE_PATH"].nil?
         ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.android_create_keystore(android_keystore_path)
@@ -352,10 +371,19 @@ platform :android do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
 
-    # Get version code from version.json and increment it
-    version_code = Fastlane::Helpers.bump_android_build_number
+    # Handle version bumping based on version_bump parameter
+    if version_bump == "skip"
+      UI.message("⏭️  Skipping version bump (already handled by CI)")
+      UI.message("📌 Using pre-bumped version from version.json")
+      # Read existing version code from version.json without incrementing
+      version_code = Fastlane::Helpers.get_android_build_number
+    else
+      UI.message("📦 Incrementing Android build number")
+      # Get version code from version.json and increment it
+      version_code = Fastlane::Helpers.bump_android_build_number
+    end
 
-    # Update build.gradle with new version code
+    # Update build.gradle with version code
     increment_version_code(
       version_code: version_code,
       gradle_file_path: android_gradle_file_path.gsub("../", ""),
