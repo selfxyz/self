@@ -20,6 +20,11 @@ on:
         required: false
         type: string
         default: ''
+      run-id:
+        description: 'Run ID to download artifacts .'
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: circuits-build-${{ github.workflow }}-${{ github.ref }}
@@ -30,6 +35,7 @@ jobs:
     runs-on: ["128ram"]
     permissions:
       contents: read
+      actions: read
     env:
       CIRCOM_VERSION: "2.1.9"
       CIRCOM_SHA256: "e5575829252d763b7818049df9de2ef9304df834697de77fa63ce7babc23c967"
@@ -151,12 +157,12 @@ jobs:
         run: circom --version
 
       - name: Download previous artifacts
-        if: github.event_name == 'workflow_dispatch' && (inputs.circuit-type != '' || inputs.circuit-name != '')
-        uses: actions/download-artifact@v4
+        if: github.event_name == 'workflow_dispatch' && inputs.run-id != ''
+        uses: dawidd6/action-download-artifact@v6
         with:
           name: circuits
           path: output/
-        continue-on-error: true
+          run_id: ${{ inputs.run-id }}
 
       - name: Build cpp circuits
         run: |
