@@ -176,10 +176,10 @@ jobs:
           VERSION_BUMP="${{ steps.determine-bump.outputs.version_bump }}"
           echo "🔄 Bumping version: $VERSION_BUMP"
 
-          # Bump package.json version if major/minor/patch using npm (no git tag)
+          # Bump package.json version if major/minor/patch
           if [ "$VERSION_BUMP" != "build" ]; then
-            echo "📦 Bumping $VERSION_BUMP version in package.json via npm..."
-            npm version "$VERSION_BUMP" --no-git-tag-version
+            echo "📦 Bumping $VERSION_BUMP version in package.json..."
+            node -e "const fs = require('fs'); const pkg = require('./package.json'); const semver = require('semver'); pkg.version = semver.inc(pkg.version, '$VERSION_BUMP'); fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');"
           fi
 
           # Read current version
