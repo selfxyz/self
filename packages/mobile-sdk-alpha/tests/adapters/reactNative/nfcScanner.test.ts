@@ -62,6 +62,7 @@ describe('reactNativeScannerAdapter', () => {
 
       mockNativeModules.SelfPassportReader = {
         scanPassport: mockScanPassport,
+        reset: vi.fn(),
       };
 
       await reactNativeScannerAdapter.scan(mockScanOpts);
@@ -97,6 +98,7 @@ describe('reactNativeScannerAdapter', () => {
 
       mockNativeModules.SelfPassportReader = {
         scanPassport: mockScanPassport,
+        reset: vi.fn(),
       };
 
       const minimalOpts = {
@@ -139,6 +141,7 @@ describe('reactNativeScannerAdapter', () => {
 
       mockNativeModules.SelfPassportReader = {
         scanPassport: mockScanPassport,
+        reset: vi.fn(),
       };
 
       const fullOpts = {
@@ -184,6 +187,7 @@ describe('reactNativeScannerAdapter', () => {
 
       mockNativeModules.SelfPassportReader = {
         scanPassport: mockScanPassport,
+        reset: vi.fn(),
       };
 
       const result = await reactNativeScannerAdapter.scan(mockScanOpts);
@@ -216,6 +220,7 @@ describe('reactNativeScannerAdapter', () => {
 
       mockNativeModules.SelfPassportReader = {
         scan: mockScan,
+        reset: vi.fn(),
       };
 
       await reactNativeScannerAdapter.scan(mockScanOpts);
@@ -242,6 +247,7 @@ describe('reactNativeScannerAdapter', () => {
 
       mockNativeModules.SelfPassportReader = {
         scan: mockScan,
+        reset: vi.fn(),
       };
 
       const result = await reactNativeScannerAdapter.scan(mockScanOpts);
@@ -274,6 +280,7 @@ describe('reactNativeScannerAdapter', () => {
       mockPlatformOS.current = 'ios';
       mockNativeModules.SelfPassportReader = {
         scanPassport: vi.fn(),
+        reset: vi.fn(),
       };
 
       const invalidOpts = {
