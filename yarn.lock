@@ -7180,7 +7180,6 @@ __metadata:
     axios: "npm:^1.7.2"
     buffer: "npm:^6.0.3"
     country-emoji: "npm:^1.5.6"
-    country-iso-3-to-2: "npm:^1.1.1"
     elliptic: "npm:^6.5.5"
     eslint: "npm:^8.57.0"
     eslint-config-prettier: "npm:^9.1.0"
@@ -7369,7 +7368,6 @@ __metadata:
     buffer: "npm:^6.0.3"
     constants-browserify: "npm:^1.0.0"
     country-emoji: "npm:^1.5.6"
-    country-iso-3-to-2: "npm:^1.1.1"
     dompurify: "npm:^3.2.6"
     elliptic: "npm:^6.6.1"
     eslint: "npm:^8.57.0"
@@ -7386,7 +7384,6 @@ __metadata:
     expo-modules-core: "npm:^2.2.1"
     hash.js: "npm:^1.1.7"
     hermes-eslint: "npm:^0.19.1"
-    i18n-iso-countries: "npm:^7.14.0"
     jest: "npm:^29.6.3"
     js-sha1: "npm:^0.7.0"
     js-sha256: "npm:^0.11.1"
@@ -7468,6 +7465,7 @@ __metadata:
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.76.9"
+    react-native-localize: "npm:^3.5.2"
     react-native-web: "npm:^0.21.1"
     socket.io-client: "npm:^4.8.1"
     tamagui: "npm:1.126.14"
@@ -7480,6 +7478,7 @@ __metadata:
   peerDependencies:
     react: ^18.3.1
     react-native: 0.76.9
+    react-native-localize: "*"
     tamagui: 1.126.x
   peerDependenciesMeta:
     tamagui:
@@ -15954,13 +15953,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"country-iso-3-to-2@npm:^1.1.1":
-  version: 1.1.1
-  resolution: "country-iso-3-to-2@npm:1.1.1"
-  checksum: 10c0/ed46398caa51ec1a62a5e8e3dcf9cc6a9afe8ffc7dc9b15177f3ff9d4a241e6a3e8a315d630610e254408d4f15d71446df909811663df1eab928a34be7ee16e0
-  languageName: node
-  linkType: hard
-
 "create-hash@npm:^1.1.0, create-hash@npm:^1.1.2, create-hash@npm:^1.2.0":
   version: 1.2.0
   resolution: "create-hash@npm:1.2.0"
@@ -20388,7 +20380,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18n-iso-countries@npm:^7.13.0, i18n-iso-countries@npm:^7.14.0":
+"i18n-iso-countries@npm:^7.13.0":
   version: 7.14.0
   resolution: "i18n-iso-countries@npm:7.14.0"
   dependencies:

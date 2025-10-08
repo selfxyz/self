@@ -70,8 +70,6 @@ export { SdkEvents } from './types/events';
 // Documents utils
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
-export { SelfMobileSdk } from './entry';
-
 export {
   clearPassportData,
   getAllDocuments,
@@ -102,5 +100,7 @@ export { mergeConfig } from './config/merge';
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
+
+export { useCountries } from './documents/useCountries';
 
 export { webNFCScannerShim } from './adapters/web/shims';

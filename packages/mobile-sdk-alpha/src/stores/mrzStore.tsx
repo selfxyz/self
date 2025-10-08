@@ -4,6 +4,10 @@
 
 import { create } from 'zustand';
 
+import { MRZInfo } from '../types/public';
+
+type MRZNeededForNFC = Pick<MRZInfo, 'documentNumber' | 'dateOfBirth' | 'dateOfExpiry'>;
+
 export interface MRZState {
   // Fields needed for NFC scanning
   passportNumber: string;
@@ -21,6 +25,7 @@ export interface MRZState {
     documentType: string;
   }) => void;
   clearMRZ: () => void;
+  getMRZ: () => MRZNeededForNFC;
   update: (patch: Partial<MRZState>) => void;
 }
 
@@ -37,7 +42,7 @@ const initialState = {
   Never export outside of the mobile sdk. It can cause multiple instances of the store to be created.
  interact with the store thru the self client
 */
-export const useMRZStore = create<MRZState>(set => ({
+export const useMRZStore = create<MRZState>((set, get) => ({
   ...initialState,
 
   setMRZForNFC: data => {
@@ -52,6 +57,15 @@ export const useMRZStore = create<MRZState>(set => ({
 
   clearMRZ: () => {
     set(initialState);
+  },
+
+  getMRZ: (): MRZNeededForNFC => {
+    const state = get();
+    return {
+      documentNumber: state.passportNumber,
+      dateOfBirth: state.dateOfBirth,
+      dateOfExpiry: state.dateOfExpiry,
+    };
   },
 
   update: (patch: Partial<MRZState>) => {

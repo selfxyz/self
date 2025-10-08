@@ -76,23 +76,19 @@ export default function DocumentCamera({ onBack }: Props) {
         onBack();
       }}
       contentStyle={styles.screenContent}
-      rightAction={
-        <TouchableOpacity accessibilityRole="button" onPress={handleSaveDocument}>
-          <Text style={styles.headerAction}>Save Document</Text>
-        </TouchableOpacity>
-      }
     >
       {permissionStatus === 'loading' && renderLoading()}
       {permissionStatus === 'denied' && renderPermissionDenied()}
 
       {permissionStatus === 'granted' && (
         <View style={styles.contentWrapper}>
+          <View style={styles.instructionsContainer}>
+            <Text style={styles.instructionsTitle}>Position your document</Text>
+            <Text style={styles.instructionsText}>{instructionsText}</Text>
+          </View>
+
           <View style={styles.cameraWrapper}>
             <MRZScannerView style={styles.scanner} onMRZDetected={handleMRZDetected} onError={handleScannerError} />
-            <View style={styles.overlay} accessibilityLiveRegion="polite" pointerEvents="none">
-              <Text style={styles.overlayTitle}>Position your document</Text>
-              <Text style={styles.overlayText}>{instructionsText}</Text>
-            </View>
           </View>
 
           <View style={styles.statusContainer}>
@@ -110,9 +106,7 @@ export default function DocumentCamera({ onBack }: Props) {
             {scanState === 'error' && error && <Text style={[styles.statusText, styles.errorText]}>{error}</Text>}
           </View>
 
-          {mrzResult && <DocumentScanResultCard result={mrzResult} />}
-
-          <View style={styles.actions}>
+          <View style={[styles.actions, mrzResult && styles.actionsWithResult]}>
             <TouchableOpacity accessibilityRole="button" onPress={handleScanAgain} style={styles.secondaryButton}>
               <Text style={styles.secondaryButtonText}>Scan Again</Text>
             </TouchableOpacity>
@@ -121,6 +115,8 @@ export default function DocumentCamera({ onBack }: Props) {
               <Text style={styles.primaryButtonText}>Save Document</Text>
             </TouchableOpacity>
           </View>
+
+          {mrzResult && <DocumentScanResultCard result={mrzResult} />}
         </View>
       )}
     </ScreenLayout>
@@ -133,6 +129,20 @@ const styles = StyleSheet.create({
   },
   contentWrapper: {
     flex: 1,
+  },
+  instructionsContainer: {
+    marginBottom: 16,
+  },
+  instructionsTitle: {
+    color: '#0f172a',
+    fontWeight: '600',
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  instructionsText: {
+    color: '#475569',
+    fontSize: 14,
+    lineHeight: 20,
   },
   cameraWrapper: {
     backgroundColor: '#0f172a',
@@ -147,31 +157,14 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#0f172a',
   },
-  overlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  overlayTitle: {
-    color: '#f8fafc',
-    fontWeight: '600',
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  overlayText: {
-    color: '#e2e8f0',
-    fontSize: 14,
-  },
   statusContainer: {
     marginBottom: 16,
+    alignItems: 'center',
   },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
   },
   statusText: {
@@ -190,6 +183,9 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     gap: 12,
+  },
+  actionsWithResult: {
+    marginBottom: 16,
   },
   primaryButton: {
     flex: 1,
@@ -213,10 +209,6 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: '#0f172a',
     fontSize: 15,
-    fontWeight: '600',
-  },
-  headerAction: {
-    color: '#2563eb',
     fontWeight: '600',
   },
   centeredState: {

@@ -42,6 +42,12 @@ android {
     buildFeatures {
         buildConfig true
     }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/versions/9/OSGI-INF/MANIFEST.MF']
+        }
+    }
 }
 
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
@@ -52,4 +58,8 @@ dependencies {
     if (project.hasProperty('newArchEnabled') ? newArchEnabled.toBoolean() : false) {
         implementation("com.facebook.react:react-android-codegen:0.76.9")
     }
+
+    // Manually add mobile-sdk-alpha dependency
+    implementation project(':mobile-sdk-alpha')
+    implementation 'com.google.android.material:material:1.12.0'
 }

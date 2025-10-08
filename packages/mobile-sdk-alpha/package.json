@@ -51,6 +51,12 @@
       "import": "./dist/esm/constants/analytics.js",
       "require": "./dist/cjs/constants/analytics.cjs"
     },
+    "./constants/colors": {
+      "types": "./dist/esm/constants/colors.d.ts",
+      "react-native": "./dist/esm/constants/colors.js",
+      "import": "./dist/esm/constants/colors.js",
+      "require": "./dist/cjs/constants/colors.cjs"
+    },
     "./components": {
       "types": "./dist/esm/components/index.d.ts",
       "react-native": "./dist/esm/components/index.js",
@@ -122,6 +128,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-native": "0.76.9",
+    "react-native-localize": "^3.5.2",
     "react-native-web": "^0.21.1",
     "tamagui": "1.126.14",
     "tsup": "^8.0.1",
@@ -131,6 +138,7 @@
   "peerDependencies": {
     "react": "^18.3.1",
     "react-native": "0.76.9",
+    "react-native-localize": "*",
     "tamagui": "1.126.x"
   },
   "peerDependenciesMeta": {

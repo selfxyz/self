@@ -213,6 +213,37 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       }
     });
 
+    addListener(
+      SdkEvents.DOCUMENT_COUNTRY_SELECTED,
+      ({ countryCode, documentTypes }) => {
+        if (navigationRef.isReady()) {
+          // @ts-expect-error
+          navigationRef.navigate('IDPicker', { countryCode, documentTypes });
+        }
+      },
+    );
+    addListener(
+      SdkEvents.DOCUMENT_TYPE_SELECTED,
+      ({ documentType, countryCode }) => {
+        if (navigationRef.isReady()) {
+          switch (documentType) {
+            case 'p':
+              navigationRef.navigate('DocumentOnboarding');
+              break;
+            case 'i':
+              navigationRef.navigate('DocumentOnboarding');
+              break;
+            case 'a':
+              navigationRef.navigate('AadhaarUpload', { countryCode } as never);
+              break;
+            default:
+              navigationRef.navigate('ComingSoon', { countryCode } as never);
+              break;
+          }
+        }
+      },
+    );
+
     return map;
   }, []);
 
