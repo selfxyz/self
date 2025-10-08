@@ -71,6 +71,16 @@ on:
           - patch
           - minor
           - major
+      dry_run:
+        description: "Do not commit/push or create PR/tags"
+        required: false
+        type: boolean
+        default: false
+      bump_target_branch:
+        description: "Branch to bump and build from (default: staging)"
+        required: false
+        type: string
+        default: "staging"
 
   pull_request:
     types: [closed]
@@ -151,6 +161,13 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      - name: Ensure working on staging branch
+        run: |
+          TARGET_BRANCH="${{ inputs.bump_target_branch || 'staging' }}"
+          git fetch origin "$TARGET_BRANCH"
+          git checkout "$TARGET_BRANCH"
+          git pull origin "$TARGET_BRANCH"
+
       - name: Bump version
         id: bump
         run: |
@@ -159,10 +176,10 @@ jobs:
           VERSION_BUMP="${{ steps.determine-bump.outputs.version_bump }}"
           echo "🔄 Bumping version: $VERSION_BUMP"
 
-          # Bump package.json version if major/minor/patch
+          # Bump package.json version if major/minor/patch using npm (no git tag)
           if [ "$VERSION_BUMP" != "build" ]; then
-            echo "📦 Bumping $VERSION_BUMP version in package.json..."
-            node -e "const fs = require('fs'); const pkg = require('./package.json'); const semver = require('semver'); pkg.version = semver.inc(pkg.version, '$VERSION_BUMP'); fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\n');"
+            echo "📦 Bumping $VERSION_BUMP version in package.json via npm..."
+            npm version "$VERSION_BUMP" --no-git-tag-version
           fi
 
           # Read current version
@@ -199,9 +216,10 @@ jobs:
           echo "📍 Checking current git state..."
           git status
 
-          # Fetch and checkout staging branch
-          git fetch origin staging
-          git checkout staging
+          # Fetch and checkout target branch
+          TARGET_BRANCH="${{ inputs.bump_target_branch || 'staging' }}"
+          git fetch origin "$TARGET_BRANCH"
+          git checkout "$TARGET_BRANCH"
 
           # Pull latest to avoid conflicts
           git pull origin staging
@@ -215,9 +233,13 @@ jobs:
             VERSION="${{ steps.bump.outputs.version }}"
             git commit -m "chore: bump version to $VERSION [skip ci]"
 
-            # Push from staging branch
-            git push origin staging
-            echo "✅ Version bump pushed to staging"
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              echo "⏭️  Dry run: skipping push to $TARGET_BRANCH"
+            else
+              # Push from target branch
+              git push origin "$TARGET_BRANCH"
+              echo "✅ Version bump pushed to $TARGET_BRANCH"
+            fi
           fi
 
   build-ios:
@@ -247,8 +269,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Checkout staging branch to get version bump from bump-version job
-          ref: staging
+          # Checkout target branch to get version bump from bump-version job
+          ref: ${{ inputs.bump_target_branch || 'staging' }}
       - name: Read and sanitize Node.js version
         shell: bash
         run: |
@@ -270,17 +292,18 @@ jobs:
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Current commit message: $(git log -1 --pretty=format:'%s')"
-          echo "Staging HEAD commit: $(git rev-parse origin/staging)"
-          echo "Staging HEAD message: $(git log -1 --pretty=format:'%s' origin/staging)"
+          TARGET_BRANCH="${{ inputs.bump_target_branch || 'staging' }}"
+          echo "Target HEAD commit: $(git rev-parse origin/$TARGET_BRANCH)"
+          echo "Target HEAD message: $(git log -1 --pretty=format:'%s' origin/$TARGET_BRANCH)"
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "📌 Building from merge commit on staging (includes source + conflict resolutions)"
             echo "PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}"
             echo "Merge commit includes version.json from source branch with bumped build numbers"
-          elif [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
+          elif [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/$TARGET_BRANCH)" ]; then
             echo "⚠️ WARNING: Current commit differs from latest staging commit"
             echo "This might indicate we're not building from the latest staging branch"
-            git log --oneline HEAD..origin/staging || true
+            git log --oneline HEAD..origin/$TARGET_BRANCH || true
           else
             echo "✅ Building from latest staging commit"
           fi
@@ -748,8 +771,8 @@ jobs:
             echo "Node modules: $NODE_SIZE"
           fi
 
-          if [ -d "${{ env.APP_PATH }}/ios/vendor/bundle" ]; then
-            GEMS_SIZE=$(du -sh "${{ env.APP_PATH }}/ios/vendor/bundle" | cut -f1)
+          if [ -d "${{ env.APP_PATH }}/vendor/bundle" ]; then
+            GEMS_SIZE=$(du -sh "${{ env.APP_PATH }}/vendor/bundle" | cut -f1)
             echo "Ruby gems: $GEMS_SIZE"
           fi
 
@@ -789,8 +812,8 @@ jobs:
         if: inputs.platform != 'ios'
         with:
           fetch-depth: 0
-          # Checkout staging branch to get version bump from bump-version job
-          ref: staging
+          # Checkout target branch to get version bump from bump-version job
+          ref: ${{ inputs.bump_target_branch || 'staging' }}
       - uses: "google-github-actions/auth@v2"
         with:
           project_id: "plucky-tempo-454713-r0"
@@ -874,13 +897,14 @@ jobs:
           echo "Current branch: $(git branch --show-current || git symbolic-ref --short HEAD 2>/dev/null || echo 'detached')"
           echo "Current commit: $(git rev-parse HEAD)"
           echo "Current commit message: $(git log -1 --pretty=format:'%s')"
-          echo "Staging HEAD commit: $(git rev-parse origin/staging)"
-          echo "Staging HEAD message: $(git log -1 --pretty=format:'%s' origin/staging)"
+          TARGET_BRANCH="${{ inputs.bump_target_branch || 'staging' }}"
+          echo "Target HEAD commit: $(git rev-parse origin/$TARGET_BRANCH)"
+          echo "Target HEAD message: $(git log -1 --pretty=format:'%s' origin/$TARGET_BRANCH)"
 
-          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/staging)" ]; then
+          if [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/$TARGET_BRANCH)" ]; then
             echo "⚠️ WARNING: Current commit differs from latest staging commit"
             echo "This might indicate we're not building from the latest staging branch"
-            git log --oneline HEAD..origin/staging || true
+            git log --oneline HEAD..origin/$TARGET_BRANCH || true
           else
             echo "✅ Building from latest staging commit"
           fi
@@ -1177,8 +1201,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Checkout staging branch to get all version changes
-          ref: staging
+          # Checkout target branch to get all version changes
+          ref: ${{ inputs.bump_target_branch || 'staging' }}
 
       - name: Get version from package.json
         id: get-version
@@ -1200,6 +1224,7 @@ jobs:
           echo "📱 Successful builds: $PLATFORMS"
 
       - name: Create consolidated version bump PR
+        if: inputs.dry_run != true
         uses: ./.github/actions/create-version-bump-pr
         with:
           platform: mobile
@@ -1217,6 +1242,7 @@ jobs:
     needs: [build-ios, build-android, create-version-bump-pr]
     if: |
       always() &&
+      (inputs.dry_run != true) &&
       needs.create-version-bump-pr.result == 'success' &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
       (inputs.deployment_track == 'production')
@@ -1225,8 +1251,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Checkout staging branch to get version bump from bump-version job
-          ref: staging
+          # Checkout target branch to get version bump from bump-version job
+          ref: ${{ inputs.bump_target_branch || 'staging' }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
