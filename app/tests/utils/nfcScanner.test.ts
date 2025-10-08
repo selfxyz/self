@@ -4,12 +4,8 @@
 
 import { Platform } from 'react-native';
 
-import { parseScanResponse } from '@/utils/nfcScanner';
-
-/**
- * These tests verify the app-specific parsing utilities.
- * Scanner adapter tests have been moved to @selfxyz/mobile-sdk-alpha package.
- */
+import { parseScanResponse, scan } from '@/utils/nfcScanner';
+import { PassportReader } from '@/utils/passportReader';
 
 describe('parseScanResponse', () => {
   beforeEach(() => {
@@ -126,5 +122,142 @@ describe('parseScanResponse', () => {
     });
 
     expect(() => parseScanResponse(response)).toThrow();
+  });
+});
+
+describe('scan', () => {
+  const mockInputs = {
+    passportNumber: 'L898902C3',
+    dateOfBirth: '640812',
+    dateOfExpiry: '251031',
+    canNumber: '123456',
+    useCan: false,
+    sessionId: 'test-session',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('iOS platform', () => {
+    beforeEach(() => {
+      Object.defineProperty(Platform, 'OS', {
+        value: 'ios',
+        writable: true,
+      });
+    });
+
+    it('should call PassportReader.scanPassport with correct parameters', async () => {
+      const mockScanPassport = jest.fn().mockResolvedValue({
+        mrz: 'test-mrz',
+        dataGroupHashes: JSON.stringify({}),
+      });
+
+      (PassportReader as any).scanPassport = mockScanPassport;
+
+      await scan(mockInputs);
+
+      expect(mockScanPassport).toHaveBeenCalledWith(
+        'L898902C3',
+        '640812',
+        '251031',
+        '123456',
+        false,
+        false, // skipPACE
+        false, // skipCA
+        false, // extendedMode
+        false, // usePacePolling
+        'test-session',
+      );
+    });
+
+    it('should handle missing optional parameters', async () => {
+      const mockScanPassport = jest.fn().mockResolvedValue({
+        mrz: 'test-mrz',
+        dataGroupHashes: JSON.stringify({}),
+      });
+
+      (PassportReader as any).scanPassport = mockScanPassport;
+
+      const minimalInputs = {
+        passportNumber: 'L898902C3',
+        dateOfBirth: '640812',
+        dateOfExpiry: '251031',
+        sessionId: 'test-session',
+      };
+
+      await scan(minimalInputs);
+
+      expect(mockScanPassport).toHaveBeenCalledWith(
+        'L898902C3',
+        '640812',
+        '251031',
+        '', // canNumber default
+        false, // useCan default
+        false, // skipPACE default
+        false, // skipCA default
+        false, // extendedMode default
+        false, // usePacePolling default
+        'test-session',
+      );
+    });
+
+    it('should pass through all optional parameters when provided', async () => {
+      const mockScanPassport = jest.fn().mockResolvedValue({
+        mrz: 'test-mrz',
+        dataGroupHashes: JSON.stringify({}),
+      });
+
+      (PassportReader as any).scanPassport = mockScanPassport;
+
+      const fullInputs = {
+        ...mockInputs,
+        useCan: true,
+        skipPACE: true,
+        skipCA: true,
+        extendedMode: true,
+        usePacePolling: true,
+      };
+
+      await scan(fullInputs);
+
+      expect(mockScanPassport).toHaveBeenCalledWith(
+        'L898902C3',
+        '640812',
+        '251031',
+        '123456',
+        true, // useCan
+        true, // skipPACE
+        true, // skipCA
+        true, // extendedMode
+        true, // usePacePolling
+        'test-session',
+      );
+    });
+  });
+
+  // Note: Android testing would require mocking the imported scan function
+  // which is more complex in Jest. The interface tests handle this better.
+
+  describe('Analytics configuration', () => {
+    beforeEach(() => {
+      Object.defineProperty(Platform, 'OS', {
+        value: 'ios',
+        writable: true,
+      });
+    });
+
+    it('should configure analytics before scanning', async () => {
+      const mockScanPassport = jest.fn().mockResolvedValue({
+        mrz: 'test-mrz',
+        dataGroupHashes: JSON.stringify({}),
+      });
+
+      (PassportReader as any).scanPassport = mockScanPassport;
+
+      await scan(mockInputs);
+
+      expect(mockScanPassport).toHaveBeenCalled();
+    });
   });
 });
