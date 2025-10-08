@@ -42,6 +42,12 @@ android {
     buildFeatures {
         buildConfig true
     }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/versions/9/OSGI-INF/MANIFEST.MF']
+        }
+    }
 }
 
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")

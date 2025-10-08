@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <font
+        android:fontStyle="normal"
+        android:fontWeight="500"
+        android:font="@font/roboto_medium"
+        app:fontStyle="normal"
+        app:fontWeight="500"
+        app:font="@font/roboto_medium" />
+    <font
+        android:fontStyle="italic"
+        android:fontWeight="500"
+        android:font="@font/roboto_medium_italic"
+        app:fontStyle="italic"
+        app:fontWeight="500"
+        app:font="@font/roboto_medium_italic" />
+</font-family>
