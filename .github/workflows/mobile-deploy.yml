@@ -1021,7 +1021,6 @@ jobs:
     needs: [build-ios, build-android]
     if: |
       always() &&
-      !env.ACT &&
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
     env:
