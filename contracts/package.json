@@ -42,7 +42,6 @@
     "set:hub:v2": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/setHubV2.ts'",
     "set:registry": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/setRegistry.ts'",
     "set:registry:hub:v2": "npx dotenv-cli -- bash -c 'yarn hardhat ignition deploy ignition/modules/scripts/updateRegistryHubV2.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
-    "set:registry:idcard": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK:-staging} npx tsx scripts/setRegistryId.ts'",
     "set:registry:idcard": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/setRegistryId.ts'",
     "set:verifiers:v2": "npx dotenv-cli -- bash -c 'NETWORK=${NETWORK} npx tsx scripts/setVerifiersV2.ts'",
     "show:registry": "npx tsx scripts/showRegistryAddresses.ts",
