@@ -5,7 +5,7 @@ import { Alert } from 'react-native';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DocumentsList from '../../src/screens/DocumentsList';
-import type { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog } from '@selfxyz/common';
 import { sdkMocks } from '../mocks/sdk';
 
 const useDocumentsMock = vi.fn();

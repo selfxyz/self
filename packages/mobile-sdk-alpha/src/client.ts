@@ -18,8 +18,8 @@ import type {
   DocumentCatalog,
   IDDocument,
   LogLevel,
-  ScanOpts,
-  ScanResult,
+  NFCScanOpts,
+  NFCScanResult,
   SelfClient,
   Unsubscribe,
 } from './types/public';
@@ -108,7 +108,7 @@ export function createSelfClient({
     }
   }
 
-  async function scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult> {
+  async function scanNFC(opts: NFCScanOpts & { signal?: AbortSignal }): Promise<NFCScanResult> {
     // Apply scanner timeout from config if no signal provided
     if (!opts.signal && cfg.timeouts.scanMs) {
       const controller = new AbortController();
@@ -144,7 +144,7 @@ export function createSelfClient({
   }
 
   return {
-    scanDocument,
+    scanNFC,
     trackEvent,
     getPrivateKey,
     hasPrivateKey,

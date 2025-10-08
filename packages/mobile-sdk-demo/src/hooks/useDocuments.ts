@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/utils/types';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { updateAfterDelete } from '../lib/catalog';

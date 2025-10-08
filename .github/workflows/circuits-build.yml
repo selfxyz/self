@@ -9,6 +9,22 @@ on:
       - "circuits/circuits/**"
       - ".github/workflows/artifacts.yml"
   workflow_dispatch:
+    inputs:
+      circuit-type:
+        description: 'Circuits to build (comma-separated: register, register_id, register_aadhaar, disclose, dsc). Leave empty to build all.'
+        required: false
+        type: string
+        default: ''
+      circuit-name:
+        description: 'Circuit names to build (comma-separated: register_sha256_sha224_sha224_ecdsa_secp224r1, dsc_sha256_rsa_65537_4096). Cannot be used with circuit-type.'
+        required: false
+        type: string
+        default: ''
+      run-id:
+        description: 'Run ID to download artifacts .'
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: circuits-build-${{ github.workflow }}-${{ github.ref }}
@@ -19,6 +35,7 @@ jobs:
     runs-on: ["128ram"]
     permissions:
       contents: read
+      actions: read
     env:
       CIRCOM_VERSION: "2.1.9"
       CIRCOM_SHA256: "e5575829252d763b7818049df9de2ef9304df834697de77fa63ce7babc23c967"
@@ -139,14 +156,61 @@ jobs:
       - name: Print Circom version
         run: circom --version
 
+      - name: Download previous artifacts
+        if: github.event_name == 'workflow_dispatch' && inputs.run-id != ''
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: circuits
+          path: output/
+          run_id: ${{ inputs.run-id }}
+
       - name: Build cpp circuits
         run: |
-          chmod +x circuits/scripts/build/build_cpp.sh && \
-          ./circuits/scripts/build/build_cpp.sh register &&
-          ./circuits/scripts/build/build_cpp.sh register_id &&
-          ./circuits/scripts/build/build_cpp.sh register_aadhaar &&
-          ./circuits/scripts/build/build_cpp.sh disclose &&
-          ./circuits/scripts/build/build_cpp.sh dsc
+          chmod +x circuits/scripts/build/build_cpp.sh
+          chmod +x circuits/scripts/build/build_single_circuit.sh
+
+          # Validate inputs - only one should be provided
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ inputs.circuit-type }}" != "" && "${{ inputs.circuit-name }}" != "" ]]; then
+              echo " Error: Cannot provide both circuit-type and circuit-name. Use only one."
+              exit 1
+            fi
+          fi
+
+          # Check what type of build to perform
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-name }}" != "" ]]; then
+            # Build circuits by name
+            INPUT_CIRCUITS="${{ inputs.circuit-name }}"
+            INPUT_CIRCUITS=$(echo "$INPUT_CIRCUITS" | tr -d ' ')
+            IFS=',' read -ra CIRCUITS_ARRAY <<< "$INPUT_CIRCUITS"
+
+            echo "Building selected circuits: ${{ inputs.circuit-name }}"
+            for circuit_name in "${CIRCUITS_ARRAY[@]}"; do
+              echo "Building circuit: $circuit_name"
+              ./circuits/scripts/build/build_single_circuit.sh "$circuit_name"
+            done
+
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.circuit-type }}" != "" ]]; then
+            # Build circuits by type
+            INPUT_CIRCUITS="${{ inputs.circuit-type }}"
+            INPUT_CIRCUITS=$(echo "$INPUT_CIRCUITS" | tr -d ' ')
+            IFS=',' read -ra CIRCUITS_ARRAY <<< "$INPUT_CIRCUITS"
+
+            echo "Building selected circuits: ${{ inputs.circuit-type }}"
+            for circuit in "${CIRCUITS_ARRAY[@]}"; do
+              echo "Building circuit: $circuit"
+              ./circuits/scripts/build/build_cpp.sh "$circuit"
+            done
+
+          else
+            # Build all circuits (default behavior)
+            echo "Building all circuits (default behavior)"
+            ./circuits/scripts/build/build_cpp.sh register
+            ./circuits/scripts/build/build_cpp.sh register_id
+            ./circuits/scripts/build/build_cpp.sh register_aadhaar
+            ./circuits/scripts/build/build_cpp.sh disclose
+            ./circuits/scripts/build/build_cpp.sh dsc
+          fi
 
       - name: Upload Artifact
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4

@@ -38,6 +38,7 @@ const entry = {
   index: 'src/index.ts',
   browser: 'src/browser.ts',
   'constants/analytics': 'src/constants/analytics.ts',
+  'constants/colors': 'src/constants/colors.ts',
   stores: 'src/stores/index.ts',
   ...flowEntries,
 };

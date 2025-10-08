@@ -5,7 +5,7 @@ import { Alert } from 'react-native';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import RegisterDocument from '../../src/screens/RegisterDocument';
-import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common';
 import { sdkMocks } from '../mocks/sdk';
 
 let registrationState = {

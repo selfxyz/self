@@ -8,6 +8,64 @@ import { beforeEach, vi } from 'vitest';
 
 import { sdkMocks } from './mocks/sdk';
 
+// Mock @selfxyz/mobile-sdk-alpha
+vi.mock('@selfxyz/mobile-sdk-alpha', () => {
+  const extractMRZInfo = vi.fn((_mrz: string) => {
+    // Mock implementation that returns basic MRZ info
+    return {
+      documentNumber: 'L898902C3',
+      dateOfBirth: '740812',
+      dateOfExpiry: '120415',
+      issuingCountry: 'UTO',
+      documentType: 'P',
+      validation: {
+        format: true,
+        passportNumberChecksum: true,
+        dateOfBirthChecksum: true,
+        dateOfExpiryChecksum: true,
+        compositeChecksum: true,
+        overall: true,
+      },
+    };
+  });
+
+  const formatDateToYYMMDD = vi.fn((date: Date) => {
+    const year = date.getFullYear().toString().slice(-2);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}${month}${day}`;
+  });
+
+  return {
+    __esModule: true,
+    extractMRZInfo,
+    formatDateToYYMMDD,
+  };
+});
+
+// Mock the onboarding/read-mrz module
+vi.mock('@selfxyz/mobile-sdk-alpha/onboarding/read-mrz', () => ({
+  __esModule: true,
+  MRZScannerView: ({ onScan: _onScan, onError: _onError, ...props }: any) => {
+    // Mock component for testing
+    void props; // Explicitly mark as intentionally unused
+    return null;
+  },
+}));
+
+// Mock the DocumentCamera component to avoid import issues
+vi.mock('../src/screens/DocumentCamera', () => ({
+  __esModule: true,
+  default: ({ onBack }: { onBack: () => void }) => {
+    // Mock component for testing that returns the expected content
+    return createElement('div', null, [
+      createElement('h1', { key: 'title' }, 'Document Camera'),
+      createElement('p', { key: 'description' }, 'Camera-based document scanning'),
+      createElement('button', { key: 'back', onClick: onBack }, 'Back'),
+    ]);
+  },
+}));
+
 vi.mock('@selfxyz/common', async () => {
   const actual = await vi.importActual<any>('../../../common/dist/cjs/index.cjs');
   const nodeCrypto = await import('node:crypto');

@@ -38,6 +38,31 @@ class QRCodeScannerView: UIView, AVCaptureMetadataOutputObjectsDelegate {
     super.init(coder: coder)
     initializeScanner()
   }
+  
+  deinit {
+    captureSession?.stopRunning()
+    previewLayer?.removeFromSuperlayer()
+    captureSession = nil
+    previewLayer = nil
+  }
+  
+  private func cleanUp() {
+    DispatchQueue.main.async { [weak self] in
+      guard let self = self else { return }
+      self.captureSession?.stopRunning()
+      self.previewLayer?.removeFromSuperlayer()
+      self.captureSession = nil
+      self.previewLayer = nil
+    }
+  }
+  
+  override func willMove(toSuperview newSuperview: UIView?) {
+    if newSuperview == nil {
+      cleanUp()
+    }
+    
+    super.willMove(toSuperview: newSuperview)
+  }
 
   func initializeScanner() {
     captureSession = AVCaptureSession()
@@ -65,8 +90,8 @@ class QRCodeScannerView: UIView, AVCaptureMetadataOutputObjectsDelegate {
       self.layer.addSublayer(previewLayer)
     }
 
-    DispatchQueue.global(qos: .background).async {
-      self.captureSession!.startRunning()
+    DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+      self?.captureSession?.startRunning()
     }
   }
 
@@ -78,9 +103,11 @@ class QRCodeScannerView: UIView, AVCaptureMetadataOutputObjectsDelegate {
       let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject,
       let stringValue = readableObject.stringValue
     {
-      // Send the scanned QR code data to JS
-      onQRData?(["data": stringValue])
-      captureSession?.stopRunning()
+      DispatchQueue.main.async { [weak self] in
+        // Send the scanned QR code data to JS
+        self?.onQRData?(["data": stringValue])
+        self?.captureSession?.stopRunning()
+      }
     }
   }
 

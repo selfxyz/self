@@ -4,7 +4,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../src';
+import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, NFCScannerAdapter } from '../src';
 import { createListenersMap, createSelfClient, SdkEvents } from '../src/index';
 import { AuthAdapter } from '../src/types/public';
 
@@ -56,17 +56,25 @@ describe('createSelfClient', () => {
   });
 
   it('scans document with provided adapter', async () => {
-    const scanMock = vi.fn().mockResolvedValue({ mode: 'qr', data: 'self://ok' });
+    const scanMock = vi.fn().mockResolvedValue({ passportData: { mock: true } });
     const client = createSelfClient({
       config: {},
       adapters: { scanner: { scan: scanMock }, network, crypto, documents, auth },
       listeners: new Map(),
     });
-    const result = await client.scanDocument({ mode: 'qr' });
-    expect(result).toEqual({ mode: 'qr', data: 'self://ok' });
+    const result = await client.scanNFC({
+      passportNumber: '123',
+      dateOfBirth: '900101',
+      dateOfExpiry: '300101',
+      sessionId: 'test',
+    });
+    expect(result).toEqual({ passportData: { mock: true } });
     expect(scanMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        mode: 'qr',
+        passportNumber: '123',
+        dateOfBirth: '900101',
+        dateOfExpiry: '300101',
+        sessionId: 'test',
         signal: expect.any(AbortSignal),
       }),
     );
@@ -80,7 +88,9 @@ describe('createSelfClient', () => {
       adapters: { scanner: { scan: scanMock }, network, crypto, documents, auth },
       listeners: new Map(),
     });
-    await expect(client.scanDocument({ mode: 'qr' })).rejects.toBe(err);
+    await expect(
+      client.scanNFC({ passportNumber: '123', dateOfBirth: '900101', dateOfExpiry: '300101', sessionId: 'test' }),
+    ).rejects.toBe(err);
   });
 
   it('emits and unsubscribes events', () => {
@@ -179,8 +189,8 @@ describe('createSelfClient', () => {
   });
 });
 
-const scanner: ScannerAdapter = {
-  scan: async () => ({ mode: 'qr', data: 'stub' }),
+const scanner: NFCScannerAdapter = {
+  scan: async () => ({ passportData: { mock: true } as any }),
 };
 
 const network: NetworkAdapter = {

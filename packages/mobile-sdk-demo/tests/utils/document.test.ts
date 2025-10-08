@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { DocumentMetadata } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentMetadata } from '@selfxyz/common/utils/types';
 
 import { formatDataPreview, humanizeDocumentType, maskId } from '../../src/utils/document';
 

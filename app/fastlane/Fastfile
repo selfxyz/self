@@ -101,8 +101,8 @@ platform :ios do
 
       case version_bump
       when "major", "minor", "patch"
-        # VersionManager doesn't handle semantic versions, use npm
-        sh("cd .. && npm version #{version_bump} --no-git-tag-version")
+        # Use Node.js with semver to bump version
+        sh("cd .. && node -e \"const fs = require('fs'); const pkg = require('./package.json'); const semver = require('semver'); pkg.version = semver.inc(pkg.version, '#{version_bump}'); fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\\n');\"")
         UI.success("✅ Bumped #{version_bump} version")
 
         # Sync the new version to iOS project files
@@ -304,8 +304,8 @@ platform :android do
 
       case version_bump
       when "major", "minor", "patch"
-        # For semantic version bumps, we need to use npm version
-        sh("cd .. && npm version #{version_bump} --no-git-tag-version")
+        # Use Node.js with semver to bump version
+        sh("cd .. && node -e \"const fs = require('fs'); const pkg = require('./package.json'); const semver = require('semver'); pkg.version = semver.inc(pkg.version, '#{version_bump}'); fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2) + '\\n');\"")
         UI.success("✅ Bumped #{version_bump} version")
         # Get the new version and sync to build.gradle
         new_version = Fastlane::Helpers::VersionManager.get_current_version

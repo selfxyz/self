@@ -12,7 +12,7 @@ import {
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
-  webScannerShim,
+  webNFCScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
@@ -29,7 +29,7 @@ type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
  * Provides a configured Self SDK client instance to all descendants.
  *
  * Adapters:
- * - `webScannerShim` for basic MRZ/QR scanning stubs
+ * - `webNFCScannerShim` for basic NFC scanning stubs on web
  * - `fetch`/`WebSocket` for network communication
  * - Web Crypto hashing with a stub signer
  */
@@ -38,7 +38,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const adapters: Adapters = useMemo(
     () => ({
       scanner:
-        Platform.OS === 'web' ? webScannerShim : reactNativeScannerAdapter,
+        Platform.OS === 'web' ? webNFCScannerShim : reactNativeScannerAdapter,
       network: {
         http: {
           fetch: (input: RequestInfo, init?: RequestInit) => fetch(input, init),
@@ -212,6 +212,37 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         navigationRef.navigate('AadhaarUploadError', { errorType });
       }
     });
+
+    addListener(
+      SdkEvents.DOCUMENT_COUNTRY_SELECTED,
+      ({ countryCode, documentTypes }) => {
+        if (navigationRef.isReady()) {
+          // @ts-expect-error
+          navigationRef.navigate('IDPicker', { countryCode, documentTypes });
+        }
+      },
+    );
+    addListener(
+      SdkEvents.DOCUMENT_TYPE_SELECTED,
+      ({ documentType, countryCode }) => {
+        if (navigationRef.isReady()) {
+          switch (documentType) {
+            case 'p':
+              navigationRef.navigate('DocumentOnboarding');
+              break;
+            case 'i':
+              navigationRef.navigate('DocumentOnboarding');
+              break;
+            case 'a':
+              navigationRef.navigate('AadhaarUpload', { countryCode } as never);
+              break;
+            default:
+              navigationRef.navigate('ComingSoon', { countryCode } as never);
+              break;
+          }
+        }
+      },
+    );
 
     return map;
   }, []);

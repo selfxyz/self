@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
 import React, { useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
@@ -20,6 +19,7 @@ import {
 
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import { DelayedLottieView } from '@/components/DelayedLottieView';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import Additional from '@/components/typography/Additional';
 import Description from '@/components/typography/Description';
@@ -58,7 +58,7 @@ const DocumentCameraScreen: React.FC = () => {
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
-        <LottieView
+        <DelayedLottieView
           autoPlay
           loop
           source={passportScanAnimation}

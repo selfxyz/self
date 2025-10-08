@@ -15,12 +15,10 @@ export type {
   LoggerAdapter,
   MRZInfo,
   MRZValidation,
+  NFCScanResult,
+  NFCScannerAdapter,
   NetworkAdapter,
   Progress,
-  ScanMode,
-  ScanOpts,
-  ScanResult,
-  ScannerAdapter,
   SelfClient,
   StorageAdapter,
   Unsubscribe,
@@ -28,10 +26,9 @@ export type {
   WsConn,
 } from './types/public';
 
-export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
+export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 export type { MRZScanOptions } from './mrz';
 export type { PassportValidationCallbacks } from './validation/document';
-export type { QRProofOptions } from './qr';
 export type { SDKEvent, SDKEventMap } from './types/events';
 
 export type { SdkErrorCategory } from './errors';
@@ -56,7 +53,7 @@ export { createListenersMap, createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
-export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
+export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 // Core functions
@@ -66,7 +63,7 @@ export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
 
-export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
-export { scanQRProof } from './qr';
+export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 
-export { webScannerShim } from './adapters/web/shims';
+export { useCountries } from './documents/useCountries';
+export { webNFCScannerShim } from './adapters/web/shims';

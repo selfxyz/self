@@ -105,6 +105,7 @@ DSC_CIRCUITS=(
     "dsc_sha512_ecdsa_secp521r1:true"
     "dsc_sha512_rsa_65537_4096:true"
     "dsc_sha512_rsapss_65537_64_4096:true"
+    "dsc_sha384_rsapss_65537_48_3072:true"
 )
 
 if [[ $1 == "register" ]]; then
@@ -163,9 +164,9 @@ for item in "${allowed_circuits[@]}"; do
     circuit_name="${filename%.*}"
     (
         circom $filepath \
-        -l "node_modules" \
-        -l "node_modules/@zk-kit/binary-merkle-root.circom/src" \
-        -l "node_modules/circomlib/circuits" \
+        -l "circuits/node_modules" \
+        -l "circuits/node_modules/@zk-kit/binary-merkle-root.circom/src" \
+        -l "circuits/node_modules/circomlib/circuits" \
         --O1 -c --output $output && \
         cd $output/${circuit_name}_cpp && \
         make

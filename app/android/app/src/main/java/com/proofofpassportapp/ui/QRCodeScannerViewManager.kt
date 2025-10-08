@@ -30,6 +30,14 @@ class QRCodeScannerViewManager(
     override fun createViewInstance(reactContext: ThemedReactContext) =
         FrameLayout(reactContext)
 
+    override fun onDropViewInstance(view: FrameLayout) {
+        android.util.Log.d("QRCodeScanner", "onDropViewInstance - stopping camera")
+        reactNativeViewId?.let { viewId ->
+            destroyFragment(view, viewId)
+        }
+        super.onDropViewInstance(view)
+    }
+
     /**
      * Map the "create" command to an integer
      */
@@ -78,12 +86,12 @@ class QRCodeScannerViewManager(
     }
 
     private fun destroyFragment(root: FrameLayout, reactNativeViewId: Int) {
-        val parentView = root.findViewById<ViewGroup>(reactNativeViewId)
-        setupLayout(parentView)
-
         val activity = reactContext.currentActivity as FragmentActivity
         val qrScannerFragment = activity.supportFragmentManager.findFragmentByTag(reactNativeViewId.toString())
         qrScannerFragment?.let {
+            if (it is QrCodeScannerFragment) {
+                it.forceStopCamera()
+            }
             activity.supportFragmentManager
                 .beginTransaction()
                 .remove(it)

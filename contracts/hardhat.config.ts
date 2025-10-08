@@ -18,9 +18,6 @@ const config: HardhatUserConfig = {
         enabled: true,
         runs: 200,
       },
-      metadata: {
-        bytecodeHash: "none",
-      },
     },
   },
   contractSizer: {
@@ -62,9 +59,17 @@ const config: HardhatUserConfig = {
       url: process.env.CELO_ALFAJORES_RPC_URL || "https://alfajores-forno.celo-testnet.org",
       accounts: [process.env.PRIVATE_KEY as string],
     },
+    "celo-sepolia": {
+      chainId: 11142220,
+      url: process.env.CELO_SEPOLIA_RPC_URL || "https://rpc.ankr.com/celo_sepolia",
+      accounts: [process.env.PRIVATE_KEY as string],
+    },
   },
   etherscan: {
     apiKey: process.env.CELOSCAN_API_KEY as string,
+    // apiKey: {
+    //   "celo-sepolia": process.env.CELOSCAN_API_KEY as string,
+    // },
     customChains: [
       {
         network: "celo",
@@ -80,6 +85,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api.etherscan.io/v2/api?chainid=44787",
           browserURL: "https://alfajores.celoscan.io",
+        },
+      },
+      {
+        network: "celo-sepolia",
+        chainId: 11142220,
+        urls: {
+          apiURL: "https://celo-sepolia.blockscout.com/api",
+          browserURL: "https://celo-sepolia.blockscout.com",
         },
       },
     ],

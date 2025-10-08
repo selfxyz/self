@@ -33,8 +33,13 @@ const DocumentOnboardingScreen: React.FC = () => {
     navigation.goBack();
   };
 
+  // iOS: Delay initial animation start to ensure native Lottie module is initialized
+  // This screen uses custom looping logic, so we manually trigger the first play
   useEffect(() => {
-    animationRef.current?.play();
+    const timer = setTimeout(() => {
+      animationRef.current?.play();
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   return (

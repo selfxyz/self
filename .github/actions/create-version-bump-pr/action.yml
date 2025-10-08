@@ -1,0 +1,65 @@
+name: Create Version Bump PR
+description: Creates a PR from staging changes onto dev branch
+inputs:
+  platform:
+    description: Platform name (ios or android)
+    required: true
+  version:
+    description: Current version string
+    required: true
+  file_paths:
+    description: File paths to include in the PR (newline separated)
+    required: true
+  github_token:
+    description: GitHub token for creating PR
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Create version bump PR
+      shell: bash
+      run: |
+        BRANCH_NAME="ci/bump-${{ inputs.platform }}-build-${{ github.run_id }}"
+
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        # Check if there are changes
+        git add ${{ inputs.file_paths }}
+        if [[ -z $(git status -s) ]]; then
+          echo "No changes to commit. Skipping PR creation."
+          exit 0
+        fi
+
+        # Commit changes on temporary branch
+        git checkout -b temp-version-commit
+        git commit -m "chore: bump ${{ inputs.platform }} version for ${{ inputs.version }} [skip ci]"
+
+        # Create new branch from dev
+        git fetch origin dev
+        git checkout -b ${BRANCH_NAME} origin/dev
+
+        # Cherry-pick only the version changes
+        git cherry-pick temp-version-commit
+
+        # Clean up temporary branch
+        git branch -D temp-version-commit
+
+        # Push and create PR
+        git push --set-upstream origin ${BRANCH_NAME}
+
+        # Determine PR title based on platform
+        if [ "${{ inputs.platform }}" = "mobile" ]; then
+          PR_TITLE="chore: bump mobile app version to ${{ inputs.version }}"
+        else
+          PR_TITLE="chore: bump ${{ inputs.platform }} build for ${{ inputs.version }}"
+        fi
+
+        gh pr create \
+          --base dev \
+          --head ${BRANCH_NAME} \
+          --title "$PR_TITLE" \
+          --body "Automated version bump by CI"
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}

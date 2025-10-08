@@ -6,7 +6,7 @@
 #import <Foundation/Foundation.h>
 #import "React/RCTBridgeModule.h"
 
-@interface RCT_EXTERN_MODULE(PassportReader, NSObject)
+@interface RCT_EXTERN_MODULE(SelfPassportReader, NSObject)
 
 RCT_EXTERN_METHOD(scanPassport:(NSString *)passportNumber
                   dateOfBirth:(NSString *)dateOfBirth

@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { IDDocument } from '@selfxyz/common/utils/types';
 import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 export type RegistrationState = {

@@ -13,10 +13,10 @@ import {
 } from '@selfxyz/common/constants';
 import type { PassportData } from '@selfxyz/common/types/passport';
 import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
+import AadhaarIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
+import EPassport from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport.svg';
 
 import { SvgXml } from '@/components/homeScreen/SvgXmlWrapper';
-import AadhaarIcon from '@/images/icons/aadhaar.svg';
-import EPassport from '@/images/icons/epassport.svg';
 import LogoGray from '@/images/logo_gray.svg';
 import {
   black,

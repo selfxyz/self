@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import getCountryISO2 from 'country-iso-3-to-2';
 import React from 'react';
 import { View } from 'react-native';
 import * as CountryFlags from 'react-native-svg-circle-country-flags';
+
+import { alpha3ToAlpha2 } from '@selfxyz/common/constants/countries';
 
 import { slate300 } from '@/utils/colors';
 
@@ -41,7 +42,7 @@ const findFlagComponent = (formattedCode: string) => {
 const getCountryFlag = (countryCode: string): CountryFlagComponent | null => {
   try {
     const normalizedCountryCode = countryCode === 'D<<' ? 'DEU' : countryCode;
-    const iso2 = getCountryISO2(normalizedCountryCode);
+    const iso2 = alpha3ToAlpha2(normalizedCountryCode);
     if (!iso2) {
       return null;
     }

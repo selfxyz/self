@@ -4,14 +4,8 @@
 
 import { Platform } from 'react-native';
 
-import { configureNfcAnalytics } from '@/utils/analytics';
 import { parseScanResponse, scan } from '@/utils/nfcScanner';
 import { PassportReader } from '@/utils/passportReader';
-
-// Mock the analytics module
-jest.mock('@/utils/analytics', () => ({
-  configureNfcAnalytics: jest.fn().mockResolvedValue(undefined),
-}));
 
 describe('parseScanResponse', () => {
   beforeEach(() => {

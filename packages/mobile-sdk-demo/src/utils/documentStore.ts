@@ -5,7 +5,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { DocumentsAdapter } from '@selfxyz/mobile-sdk-alpha';
-import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common/utils/types';
 import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 const CATALOG_KEY = '@self_demo:document_catalog';
