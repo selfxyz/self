@@ -27,7 +27,7 @@ export const NFCScannerScreen = ({ onSuccess, onFailure }: ScreenProps) => {
           passportNumber: mrzData.documentNumber,
           dateOfBirth: mrzData.dateOfBirth,
           dateOfExpiry: mrzData.dateOfExpiry,
-          sessionId: '123',
+          sessionId: '123', // TODO: generate a unique session id
         });
 
         const skiPem = await getSKIPEM('production');

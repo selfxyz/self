@@ -7,7 +7,7 @@ import type {
   CryptoAdapter,
   DocumentsAdapter,
   NetworkAdapter,
-  ScannerAdapter,
+  NFCScannerAdapter,
 } from '@selfxyz/mobile-sdk-alpha';
 
 export const mockCrypto: CryptoAdapter = {
@@ -19,6 +19,8 @@ export const mockDocuments: DocumentsAdapter = {
   loadDocumentCatalog: async () => ({ documents: [] }),
   loadDocumentById: async () => null,
   saveDocumentCatalog: async () => {},
+  saveDocument: async () => {},
+  deleteDocument: async () => {},
 };
 
 export const mockNetwork: NetworkAdapter = {
@@ -43,12 +45,15 @@ export const mockNetwork: NetworkAdapter = {
   },
 };
 
-export const mockScanner: ScannerAdapter = {
+export const mockScanner: NFCScannerAdapter = {
   scan: async () => ({
     mode: 'mrz',
     passportNumber: '',
     dateOfBirth: '',
     dateOfExpiry: '',
+    passportData: {
+      mock: true,
+    } as any,
   }),
 };
 
