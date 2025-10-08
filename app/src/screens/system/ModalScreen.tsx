@@ -14,7 +14,6 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 
-// Old path: @/components/Title';
 import ModalClose from '@/images/icons/modal_close.svg';
 import LogoInversed from '@/images/logo_inversed.svg';
 import { white } from '@/utils/colors';

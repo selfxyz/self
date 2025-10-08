@@ -25,15 +25,13 @@ import { formatEndpoint } from '@selfxyz/common/utils/scope';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
+  Caption,
   HeldPrimaryButtonProveScreen,
 } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/BodyText';
-import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import miscAnimation from '@/assets/animations/loading/misc.json';
 import Disclosures from '@/components/Disclosures';
-// Old path: @/components/Caption';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import {
   setDefaultDocumentTypeIfNeeded,

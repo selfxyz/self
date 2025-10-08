@@ -26,7 +26,6 @@ import {
 import passportScanAnimation from '@/assets/animations/passport_scan.json';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
 import { PassportCamera } from '@/components/native/PassportCamera';
-// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Scan from '@/images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

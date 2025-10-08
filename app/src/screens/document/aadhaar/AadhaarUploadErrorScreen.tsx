@@ -16,7 +16,6 @@ import {
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { getErrorMessages } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
-// Old path: @/components/BodyText';
 import WarningIcon from '@/images/warning.svg';
 import { useSafeAreaInsets } from '@/mocks/react-native-safe-area-context';
 import { black, slate100, slate200, slate500, white } from '@/utils/colors';

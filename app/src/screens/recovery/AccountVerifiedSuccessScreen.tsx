@@ -15,7 +15,6 @@ import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import proofSuccessAnimation from '@/assets/animations/proof_success.json';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
-// Old path: @/components/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';
 import { black, white } from '@/utils/colors';

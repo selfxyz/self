@@ -10,15 +10,13 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
+  Description,
   PrimaryButton,
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/BodyText';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
 
 import ButtonsContainer from '@/components/ButtonsContainer';
-// Old path: @/components/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { white } from '@/utils/colors';
 

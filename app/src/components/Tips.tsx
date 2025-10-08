@@ -7,7 +7,6 @@ import { Text, View } from 'tamagui';
 
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 
-// Old path: @/components/Caption';
 import { slate500 } from '@/utils/colors';
 
 export interface TipProps {

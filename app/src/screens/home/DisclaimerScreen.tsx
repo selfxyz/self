@@ -16,7 +16,6 @@ import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import warningAnimation from '@/assets/animations/warning.json';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
-// Old path: @/components/SubHeader';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { useSettingStore } from '@/stores/settingStore';
 import { black, white } from '@/utils/colors';

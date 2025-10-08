@@ -10,15 +10,13 @@ import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passp
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   Caption,
+  Description,
   PrimaryButton,
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/Caption';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Keyboard from '@/images/icons/keyboard.svg';
 import RestoreAccountSvg from '@/images/icons/restore_account.svg';

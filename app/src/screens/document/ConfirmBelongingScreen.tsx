@@ -21,7 +21,6 @@ import { getPreRegistrationDescription } from '@selfxyz/mobile-sdk-alpha/onboard
 
 import successAnimation from '@/assets/animations/loading/success.json';
 import { DelayedLottieView } from '@/components/DelayedLottieView';
-// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { styles } from '@/screens/prove/ProofRequestStatusScreen';

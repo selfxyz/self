@@ -11,7 +11,6 @@ import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-// Old path: @/components/Caption';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';

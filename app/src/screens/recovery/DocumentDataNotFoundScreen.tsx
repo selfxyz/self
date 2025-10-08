@@ -14,7 +14,6 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 
-// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import analytics from '@/utils/analytics';

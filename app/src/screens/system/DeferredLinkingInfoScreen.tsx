@@ -12,7 +12,6 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 
-// Old path: @/components/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { black, white } from '@/utils/colors';
 import { confirmTap } from '@/utils/haptic';

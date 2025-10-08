@@ -12,14 +12,12 @@ import {
 import {
   BodyText,
   SecondaryButton,
+  Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/BodyText';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import ButtonsContainer from '@/components/ButtonsContainer';
 import TextsContainer from '@/components/TextsContainer';
-// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

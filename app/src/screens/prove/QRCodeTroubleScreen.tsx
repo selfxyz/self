@@ -8,7 +8,6 @@ import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-// Old path: @/components/Caption';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/utils/analytics';

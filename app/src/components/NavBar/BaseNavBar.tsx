@@ -11,7 +11,6 @@ import { Button, View, XStack } from 'tamagui';
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
 import { Title } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/Title';
 
 interface NavBarProps extends XStackProps {
   children: React.ReactNode;

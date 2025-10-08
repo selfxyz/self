@@ -13,17 +13,14 @@ import {
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
+  BodyText,
   PrimaryButton,
   RoundFlag,
   SecondaryButton,
+  Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/RoundFlag';
-import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/BodyText';
-import { Title } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import analytics from '@/utils/analytics';

@@ -6,15 +6,13 @@ import React, { useCallback, useState } from 'react';
 
 import {
   Caption,
+  Description,
   PrimaryButton,
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-// Old path: @/components/Caption';
-import { Description } from '@selfxyz/mobile-sdk-alpha/components';
 
 import Mnemonic from '@/components/Mnemonic';
-// Old path: @/components/Title';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import useMnemonic from '@/hooks/useMnemonic';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';

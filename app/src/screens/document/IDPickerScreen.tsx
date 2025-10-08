@@ -15,9 +15,7 @@ import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport
 import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
 import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
 
-// Old path: @/components/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
-// Old path: @/components/BodyText';
 import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate300, slate400, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';

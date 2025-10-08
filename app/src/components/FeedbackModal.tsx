@@ -8,7 +8,6 @@ import { Button, XStack, YStack } from 'tamagui';
 
 import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 
-// Old path: @/components/Caption';
 import { black, slate400, white, zinc800, zinc900 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 

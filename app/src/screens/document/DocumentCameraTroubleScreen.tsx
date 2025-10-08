@@ -8,7 +8,6 @@ import { Caption } from '@selfxyz/mobile-sdk-alpha/components';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-// Old path: @/components/Caption';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import Activity from '@/images/icons/activity.svg';
 import PassportCameraBulb from '@/images/icons/passport_camera_bulb.svg';

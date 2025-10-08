@@ -15,7 +15,6 @@ import { Bug, FileText } from '@tamagui/lucide-icons';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 
-// Old path: @/components/BodyText';
 import {
   appStoreUrl,
   gitHubUrl,
