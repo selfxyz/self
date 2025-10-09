@@ -72,9 +72,10 @@ build_circuit() {
 
     # Compile circuit
     circom ${CIRCUIT_PATH} \
-        -l ../node_modules \
-        -l ../node_modules/@zk-kit/binary-merkle-root.circom/src \
-        -l ../node_modules/circomlib/circuits \
+        -l node_modules \
+        -l node_modules/@zk-kit/binary-merkle-root.circom/src \
+        -l node_modules/circomlib/circuits \
+        -l node_modules \
         --r1cs --O1 --wasm -c \
         --output ${OUTPUT_DIR}/${CIRCUIT_NAME}/
 
