@@ -78,6 +78,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.security.KeyStore
 import java.security.MessageDigest
+import java.security.Security
 import java.security.Signature
 import java.security.cert.CertPathValidator
 import java.security.cert.CertificateFactory
@@ -919,6 +920,10 @@ class RNSelfPassportReaderModule(private val reactContext: ReactApplicationConte
     }
 
     companion object {
+        init {
+            Security.insertProviderAt(org.bouncycastle.jce.provider.BouncyCastleProvider(), 1)
+        }
+
         private val TAG = RNSelfPassportReaderModule::class.java.simpleName
         private const val PARAM_DOC_NUM = "documentNumber";
         private const val PARAM_DOB = "dateOfBirth";
