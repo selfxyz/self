@@ -16,6 +16,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { DefaultNavBar } from '@/components/NavBar';
+import { RECOVERY_PROMPT_ALLOWED_ROUTES } from '@/consts/recoveryPrompts';
+import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
 import AppLayout from '@/layouts/AppLayout';
 import accountScreens from '@/navigation/account';
 import appScreens from '@/navigation/app';
@@ -90,6 +92,7 @@ const { trackScreenView } = analytics();
 const Navigation = createStaticNavigation(AppNavigation);
 
 const NavigationWithTracking = () => {
+  useRecoveryPrompts({ allowedRoutes: RECOVERY_PROMPT_ALLOWED_ROUTES });
   const selfClient = useSelfClient();
   const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
