@@ -7,7 +7,7 @@ import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';

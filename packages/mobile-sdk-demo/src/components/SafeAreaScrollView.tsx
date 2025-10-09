@@ -3,7 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { ScrollView, ScrollViewProps, StyleSheet } from 'react-native';
+import type { ScrollViewProps } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = ScrollViewProps & {

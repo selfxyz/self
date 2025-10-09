@@ -8,6 +8,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { countryCodes } from '@selfxyz/common/constants';
 import { getCountryISO2 } from '@selfxyz/common/constants/countries';
@@ -20,13 +21,15 @@ import ButtonsContainer from '@/components/ButtonsContainer';
 import { BodyText } from '@/components/typography/BodyText';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
+import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
 import { black, borderColor, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 
 const CreateMockScreenDeepLink: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [selectedCountry, setSelectedCountry] = useState('USA');
 

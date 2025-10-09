@@ -90,9 +90,9 @@ export const useSettingStore = create<SettingsState>()(
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => undefined,
       partialize: state => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { hideNetworkModal, setHideNetworkModal, ...persistedState } =
-          state;
+        const persistedState = { ...state };
+        delete (persistedState as Partial<SettingsState>).hideNetworkModal;
+        delete (persistedState as Partial<SettingsState>).setHideNetworkModal;
         return persistedState;
       },
     },

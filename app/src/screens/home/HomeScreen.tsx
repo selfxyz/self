@@ -11,14 +11,17 @@ import {
   useNavigation,
   usePreventRemove,
 } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
-import { DocumentMetadata, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
+import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import IdCardLayout from '@/components/homeScreen/idCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
+import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import useUserStore from '@/stores/userStore';
 import { slate50 } from '@/utils/colors';
@@ -27,7 +30,8 @@ import { extraYPadding } from '@/utils/constants';
 const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
   useConnectionModal();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { setIdDetailsDocumentId } = useUserStore();
   const { getAllDocuments, loadDocumentCatalog } = usePassport();
   const [isNewVersionAvailable, showAppUpdateModal, isModalDismissed] =

@@ -13,13 +13,7 @@
   ],
   "allowedNonPeerDependencies": [
     "angularx-qrcode",
-    "ethers",
-    "js-sha1",
-    "js-sha256",
-    "js-sha512",
     "lottie-web",
-    "node-forge",
-    "poseidon-lite",
     "socket.io-client",
     "uuid"
   ]

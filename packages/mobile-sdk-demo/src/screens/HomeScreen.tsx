@@ -8,7 +8,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import Logo from '../assets/images/logo.svg';
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
 import MenuButton from '../components/MenuButton';
-import { orderedSectionEntries, type ScreenContext } from './index';
+import type { ScreenContext } from './index';
+import { orderedSectionEntries } from './index';
 
 type Props = {
   screenContext: ScreenContext;
