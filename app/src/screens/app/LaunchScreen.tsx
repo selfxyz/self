@@ -96,11 +96,11 @@ const LaunchScreen: React.FC = () => {
 
         <Caption style={styles.notice}>
           By continuing, you agree to the&nbsp;
-          <Anchor style={styles.link} href={termsUrl}>
+          <Anchor unstyled style={styles.link} href={termsUrl}>
             User Terms and Conditions
           </Anchor>
           &nbsp;and acknowledge the&nbsp;
-          <Anchor style={styles.link} href={privacyUrl}>
+          <Anchor unstyled style={styles.link} href={privacyUrl}>
             Privacy notice
           </Anchor>
           &nbsp;of Self provided by Self Inc.
