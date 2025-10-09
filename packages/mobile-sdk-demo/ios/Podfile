@@ -6,12 +6,16 @@ require Pod::Executable.execute_command("node", ["-p",
   )', __dir__]).strip
 
 def using_https_git_auth?
+  # Check if gh binary exists before attempting to use it
+  return false unless system("which gh > /dev/null 2>&1")
+
   begin
     auth_data = `gh auth status 2>&1`
     auth_data.include?("Logged in to github.com account") &&
       auth_data.include?("Git operations protocol: https")
-  rescue
+  rescue Errno::ENOENT, Errno::EACCES => e
     puts "gh auth status failed, assuming no HTTPS auth -- will try SSH"
+    puts "  Reason: #{e.message}"
     false
   end
 end

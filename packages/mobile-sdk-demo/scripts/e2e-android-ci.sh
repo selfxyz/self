@@ -68,13 +68,19 @@ if [ -z "$serial" ]; then
     log "Emulator did not appear in adb within timeout"; exit 1
   fi
   log "Emulator detected: $serial; waiting for boot completion"
+  boot_success=false
   for i in {1..120}; do
     if $ADB -s "$serial" shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
       log "Emulator boot completed"
+      boot_success=true
       break
     fi
     sleep 2
   done
+
+  if [ "$boot_success" != "true" ]; then
+    log "ERROR: Emulator failed to complete boot after 240 seconds"; exit 1
+  fi
 fi
 
 log "Building Release APK"
