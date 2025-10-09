@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode-angular",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Angular QR code wrapper SDK for Self passport verification",
   "keywords": [
     "angular",
