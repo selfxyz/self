@@ -65,6 +65,16 @@ function transformProjectToAliasImports(project, appRootPath) {
         declaration.setModuleSpecifier(newSpec);
       } catch (error) {
         // Skip declarations that can't be processed (e.g., type-only imports with issues)
+        const msg = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `Skipping import declaration in ${sourceFile.getFilePath()}: ${msg}`,
+        );
+        try {
+          console.debug('Import declaration text:', declaration.getText());
+        } catch {}
+        if (error && typeof error === 'object' && 'stack' in error) {
+          console.debug('Error stack:', error.stack);
+        }
         continue;
       }
     }
@@ -116,6 +126,16 @@ function transformProjectToAliasImports(project, appRootPath) {
         declaration.setModuleSpecifier(newSpec);
       } catch (error) {
         // Skip declarations that can't be processed
+        const msg = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `Skipping export declaration in ${sourceFile.getFilePath()}: ${msg}`,
+        );
+        try {
+          console.debug('Export declaration text:', declaration.getText());
+        } catch {}
+        if (error && typeof error === 'object' && 'stack' in error) {
+          console.debug('Error stack:', error.stack);
+        }
         continue;
       }
     }

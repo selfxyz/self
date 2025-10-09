@@ -56,7 +56,7 @@ export type RootStackParamList = Omit<
   'ComingSoon' | 'IDPicker' | 'AadhaarUpload' | 'AadhaarUploadError'
 > & {
   ComingSoon: {
-    countryCode: string;
+    countryCode?: string;
     documentCategory?: string;
   };
   IDPicker: {

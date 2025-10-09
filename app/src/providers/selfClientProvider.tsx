@@ -163,13 +163,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         countryCode: string | null;
         documentCategory: string | null;
       }) => {
-        // Only navigate if we have a valid country code
-        if (countryCode) {
-          navigateIfReady('ComingSoon', {
-            countryCode,
-            documentCategory: documentCategory ?? undefined,
-          });
-        }
+        navigateIfReady('ComingSoon', {
+          countryCode: countryCode ?? undefined,
+          documentCategory: documentCategory ?? undefined,
+        });
       },
     );
 
