@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { orderedSectionEntries, screenDescriptors, screenMap, type ScreenContext } from '../../src/screens';
+import type { ScreenContext } from '../../src/screens';
+import { orderedSectionEntries, screenDescriptors, screenMap } from '../../src/screens';
 
 describe('screen descriptor index', () => {
   const createContext = (): ScreenContext => ({

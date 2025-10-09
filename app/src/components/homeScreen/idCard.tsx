@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { FC } from 'react';
+import React from 'react';
 import { Dimensions } from 'react-native';
 import { Separator, Text, XStack, YStack } from 'tamagui';
 

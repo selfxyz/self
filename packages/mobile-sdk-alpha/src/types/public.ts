@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { create } from 'zustand';
+import type { create } from 'zustand';
 
 import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common';
 
 import type { ProofContext } from '../proving/internal/logging';
-import { ProvingState } from '../proving/provingMachine';
-import { MRZState } from '../stores/mrzStore';
-import { ProtocolState } from '../stores/protocolStore';
-import { SelfAppState } from '../stores/selfAppStore';
-import { SDKEvent, SDKEventMap } from './events';
+import type { ProvingState } from '../proving/provingMachine';
+import type { MRZState } from '../stores/mrzStore';
+import type { ProtocolState } from '../stores/protocolStore';
+import type { SelfAppState } from '../stores/selfAppStore';
+import type { SDKEvent, SDKEventMap } from './events';
 
 export type { PassportValidationCallbacks } from '../validation/document';
 export type { DocumentCatalog, IDDocument, PassportData };

@@ -4,6 +4,8 @@
 
 import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
+import type { LoggerExtension, RootLogger } from '@/utils/logger';
+
 // Remove direct imports to avoid module cycle
 // Dependencies will be injected via setupNativeLoggerBridge
 
@@ -11,21 +13,21 @@ interface NativeLogEvent {
   level: 'debug' | 'info' | 'warn' | 'error';
   category: string;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 let eventEmitter: NativeEventEmitter | null = null;
 let isInitialized = false;
 let injectedLoggers: {
-  AppLogger: any;
-  NfcLogger: any;
-  Logger: any;
+  AppLogger: LoggerExtension;
+  NfcLogger: LoggerExtension;
+  Logger: RootLogger;
 } | null = null;
 
 const setupNativeLoggerBridge = (loggers: {
-  AppLogger: any;
-  NfcLogger: any;
-  Logger: any;
+  AppLogger: LoggerExtension;
+  NfcLogger: LoggerExtension;
+  Logger: RootLogger;
 }) => {
   if (isInitialized) return;
 
@@ -71,7 +73,7 @@ const handleNativeLogEvent = (event: NativeLogEvent) => {
   const { level, category, message, data } = event;
 
   // Route to appropriate logger based on category
-  let logger: any;
+  let logger: LoggerExtension;
   switch (category.toLowerCase()) {
     case 'nfc':
       logger = injectedLoggers.NfcLogger;

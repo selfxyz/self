@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import Keychain, {
-  type ACCESS_CONTROL,
-  type ACCESSIBLE,
+import type {
+  ACCESS_CONTROL,
+  ACCESSIBLE,
   GetOptions,
-  type SECURITY_LEVEL,
+  SECURITY_LEVEL,
   SetOptions,
 } from 'react-native-keychain';
+import Keychain from 'react-native-keychain';
 
 /**
  * Security configuration for keychain operations
@@ -45,7 +46,7 @@ export async function checkBiometricsAvailable(): Promise<boolean> {
     const rnBiometrics = new ReactNativeBiometrics();
     const { available } = await rnBiometrics.isSensorAvailable();
     return available;
-  } catch (_error) {
+  } catch {
     console.log('Biometrics not available');
     return false;
   }
@@ -64,7 +65,7 @@ export async function checkPasscodeAvailable(): Promise<boolean> {
     // Clean up test entry
     await Keychain.resetGenericPassword({ service: testService });
     return true;
-  } catch (_error) {
+  } catch {
     console.log('Device passcode not available');
     return false;
   }
@@ -187,7 +188,7 @@ export async function getMaxSecurityLevel(): Promise<SECURITY_LEVEL> {
     // Try to get the device's security level
     const securityLevel = await Keychain.getSecurityLevel();
     return securityLevel || Keychain.SECURITY_LEVEL.ANY;
-  } catch (_error) {
+  } catch {
     console.log('Could not determine security level, defaulting to ANY');
     return Keychain.SECURITY_LEVEL.ANY;
   }

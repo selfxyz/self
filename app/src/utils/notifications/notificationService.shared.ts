@@ -15,7 +15,7 @@ export interface RemoteMessage {
     title?: string;
     body?: string;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const API_URL = 'https://notification.self.xyz';

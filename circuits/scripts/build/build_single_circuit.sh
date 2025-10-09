@@ -141,6 +141,7 @@ DSC_CIRCUITS=(
     "dsc_sha512_ecdsa_secp521r1"
     "dsc_sha512_rsa_65537_4096"
     "dsc_sha512_rsapss_65537_64_4096"
+    "dsc_sha384_rsapss_65537_48_3072"
 )
 
 # Extract circuit type
@@ -226,9 +227,9 @@ fi
 
 # Compile circuit and C++ code
 circom "$filepath" \
-    -l "node_modules" \
-    -l "node_modules/@zk-kit/binary-merkle-root.circom/src" \
-    -l "node_modules/circomlib/circuits" \
+    -l "circuits/node_modules" \
+    -l "circuits/node_modules/@zk-kit/binary-merkle-root.circom/src" \
+    -l "circuits/node_modules/circomlib/circuits" \
     --O1 -c --output "$output" && \
     cd "$output/${CIRCUIT_NAME}_cpp" && \
     make

@@ -1,0 +1,179 @@
+// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import { ethers } from 'ethers';
+import React, { useCallback, useState } from 'react';
+import { Keyboard, StyleSheet } from 'react-native';
+import { Text, TextArea, View, XStack, YStack } from 'tamagui';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
+import { SecondaryButton } from '@/components/buttons/SecondaryButton';
+import Description from '@/components/typography/Description';
+import Paste from '@/images/icons/paste.svg';
+import type { RootStackParamList } from '@/navigation';
+import { useAuth } from '@/providers/authProvider';
+import {
+  loadPassportDataAndSecret,
+  reStorePassportDataWithRightCSCA,
+} from '@/providers/passportDataProvider';
+import {
+  black,
+  slate300,
+  slate400,
+  slate600,
+  slate700,
+  white,
+} from '@/utils/colors';
+
+const RecoverWithPhraseScreen: React.FC = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const selfClient = useSelfClient();
+  const { useProtocolStore } = selfClient;
+  const { restoreAccountFromMnemonic } = useAuth();
+  const { trackEvent } = useSelfClient();
+  const [mnemonic, setMnemonic] = useState<string>();
+  const [restoring, setRestoring] = useState(false);
+  const onPaste = useCallback(async () => {
+    const clipboard = (await Clipboard.getString()).trim();
+    if (ethers.Mnemonic.isValidMnemonic(clipboard)) {
+      setMnemonic(clipboard);
+      Keyboard.dismiss();
+    }
+  }, []);
+
+  const restoreAccount = useCallback(async () => {
+    setRestoring(true);
+    const slimMnemonic = mnemonic?.trim();
+    if (!slimMnemonic || !ethers.Mnemonic.isValidMnemonic(slimMnemonic)) {
+      setRestoring(false);
+      return;
+    }
+    const result = await restoreAccountFromMnemonic(slimMnemonic);
+
+    if (!result) {
+      console.warn('Failed to restore account');
+      navigation.navigate('Launch');
+      setRestoring(false);
+      return;
+    }
+
+    const passportDataAndSecret = (await loadPassportDataAndSecret()) as string;
+    const { passportData, secret } = JSON.parse(passportDataAndSecret);
+    const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
+      passportData,
+      secret as string,
+      {
+        getCommitmentTree(docCategory) {
+          return useProtocolStore.getState()[docCategory].commitment_tree;
+        },
+        getAltCSCA(docCategory) {
+          if (docCategory === 'aadhaar') {
+            const publicKeys = useProtocolStore.getState().aadhaar.public_keys;
+            // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+            return publicKeys
+              ? Object.fromEntries(publicKeys.map(key => [key, key]))
+              : {};
+          }
+
+          return useProtocolStore.getState()[docCategory].alternative_csca;
+        },
+      },
+    );
+    if (!isRegistered) {
+      console.warn(
+        'Secret provided did not match a registered passport. Please try again.',
+      );
+      reStorePassportDataWithRightCSCA(passportData, csca as string);
+      navigation.navigate('Launch');
+      setRestoring(false);
+      return;
+    }
+
+    setRestoring(false);
+    trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
+    navigation.navigate('AccountVerifiedSuccess');
+  }, [
+    mnemonic,
+    navigation,
+    restoreAccountFromMnemonic,
+    trackEvent,
+    useProtocolStore,
+  ]);
+
+  return (
+    <YStack
+      alignItems="center"
+      gap="$6"
+      paddingBottom="$2.5"
+      style={styles.layout}
+    >
+      <Description color={slate300}>
+        Your recovery phrase has 24 words. Enter the words in the correct order,
+        separated by spaces.
+      </Description>
+      <View width="100%" position="relative">
+        <TextArea
+          borderColor={slate600}
+          backgroundColor={slate700}
+          color={slate400}
+          borderWidth="$1"
+          borderRadius="$5"
+          placeholder="Enter or paste your recovery phrase"
+          width="100%"
+          minHeight={230}
+          verticalAlign="top"
+          value={mnemonic}
+          onKeyPress={key =>
+            key.nativeEvent.key === 'Enter' && mnemonic && Keyboard.dismiss()
+          }
+          onChangeText={setMnemonic}
+        />
+        <XStack
+          gap="$2"
+          position="absolute"
+          bottom={0}
+          width="100%"
+          alignItems="flex-end"
+          justifyContent="center"
+          paddingBottom="$4"
+          onPress={onPaste}
+        >
+          <Paste color={white} height={20} width={20} />
+          <Text style={styles.pasteText}>PASTE</Text>
+        </XStack>
+      </View>
+
+      <SecondaryButton
+        disabled={!mnemonic || restoring}
+        onPress={restoreAccount}
+      >
+        Continue
+      </SecondaryButton>
+    </YStack>
+  );
+};
+
+export default RecoverWithPhraseScreen;
+
+const styles = StyleSheet.create({
+  layout: {
+    paddingTop: 30,
+    paddingLeft: 20,
+    paddingRight: 20,
+    backgroundColor: black,
+    height: '100%',
+  },
+  pasteText: {
+    lineHeight: 20,
+    fontSize: 15,
+    color: white,
+  },
+});

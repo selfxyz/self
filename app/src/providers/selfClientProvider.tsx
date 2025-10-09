@@ -2,20 +2,24 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { type PropsWithChildren, useMemo } from 'react';
+import type { PropsWithChildren } from 'react';
+import { useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import {
+import type {
   Adapters,
+  TrackEventParams,
+  WsConn,
+} from '@selfxyz/mobile-sdk-alpha';
+import {
   createListenersMap,
   reactNativeScannerAdapter,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
-  type TrackEventParams,
   webNFCScannerShim,
-  type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
+import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
@@ -24,7 +28,6 @@ import { useSettingStore } from '@/stores/settingStore';
 import analytics from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
-
 /**
  * Provides a configured Self SDK client instance to all descendants.
  *
@@ -33,6 +36,25 @@ type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
  * - `fetch`/`WebSocket` for network communication
  * - Web Crypto hashing with a stub signer
  */
+function navigateIfReady<RouteName extends keyof RootStackParamList>(
+  route: RouteName,
+  ...args: undefined extends RootStackParamList[RouteName]
+    ? [params?: RootStackParamList[RouteName]]
+    : [params: RootStackParamList[RouteName]]
+): void {
+  if (navigationRef.isReady()) {
+    const params = args[0];
+    if (params !== undefined) {
+      (navigationRef.navigate as (r: RouteName, p: typeof params) => void)(
+        route,
+        params,
+      );
+    } else {
+      navigationRef.navigate(route as never);
+    }
+  }
+}
+
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
   const adapters: Adapters = useMemo(
@@ -134,13 +156,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
 
     addListener(
       SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED,
-      ({ countryCode, documentCategory }) => {
-        if (navigationRef.isReady()) {
-          navigationRef.navigate('ComingSoon', {
-            countryCode,
-            documentCategory,
-          } as any);
-        }
+      ({
+        countryCode,
+        documentCategory,
+      }: {
+        countryCode: string | null;
+        documentCategory: string | null;
+      }) => {
+        navigateIfReady('ComingSoon', {
+          countryCode: countryCode ?? undefined,
+          documentCategory: documentCategory ?? undefined,
+        });
       },
     );
 
@@ -207,17 +233,19 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       }
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
-      if (navigationRef.isReady()) {
-        // @ts-expect-error
-        navigationRef.navigate('AadhaarUploadError', { errorType });
-      }
+      navigateIfReady('AadhaarUploadError', { errorType });
     });
 
     addListener(
       SdkEvents.DOCUMENT_COUNTRY_SELECTED,
-      ({ countryCode, documentTypes }) => {
+      ({
+        countryCode,
+        documentTypes,
+      }: {
+        countryCode: string;
+        documentTypes: string[];
+      }) => {
         if (navigationRef.isReady()) {
-          // @ts-expect-error
           navigationRef.navigate('IDPicker', { countryCode, documentTypes });
         }
       },
@@ -234,10 +262,14 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               navigationRef.navigate('DocumentOnboarding');
               break;
             case 'a':
-              navigationRef.navigate('AadhaarUpload', { countryCode } as never);
+              if (countryCode) {
+                navigationRef.navigate('AadhaarUpload', { countryCode });
+              }
               break;
             default:
-              navigationRef.navigate('ComingSoon', { countryCode } as never);
+              if (countryCode) {
+                navigationRef.navigate('ComingSoon', { countryCode });
+              }
               break;
           }
         }
