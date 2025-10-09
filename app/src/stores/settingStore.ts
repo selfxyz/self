@@ -20,6 +20,8 @@ interface PersistedSettingsState {
   isDevMode: boolean;
   setDevModeOn: () => void;
   setDevModeOff: () => void;
+  hasCompletedKeychainMigration: boolean;
+  setKeychainMigrationCompleted: () => void;
   fcmToken: string | null;
   setFcmToken: (token: string | null) => void;
 }
@@ -71,6 +73,9 @@ export const useSettingStore = create<SettingsState>()(
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
 
+      hasCompletedKeychainMigration: false,
+      setKeychainMigrationCompleted: () =>
+        set({ hasCompletedKeychainMigration: true }),
       fcmToken: null,
       setFcmToken: (token: string | null) => set({ fcmToken: token }),
 

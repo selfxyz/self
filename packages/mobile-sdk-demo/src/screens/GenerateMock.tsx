@@ -3,25 +3,20 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useState } from 'react';
-import { ActivityIndicator, Button, Platform, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Button, Platform, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { faker } from '@faker-js/faker';
-import { calculateContentHash, countryCodes, inferDocumentCategory, isMRZDocument } from '@selfxyz/common';
-import type { DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
-import {
-  generateMockDocument,
-  signatureAlgorithmToStrictSignatureAlgorithm,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { calculateContentHash, inferDocumentCategory, isMRZDocument } from '@selfxyz/common';
+import type { DocumentMetadata, IDDocument } from '@selfxyz/common/utils/types';
+import { generateMockDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { Picker } from '@react-native-picker/picker';
-import Icon from 'react-native-vector-icons/Ionicons';
 import SafeAreaScrollView from '../components/SafeAreaScrollView';
 import StandardHeader from '../components/StandardHeader';
+import { AlgorithmCountryFields } from '../components/AlgorithmCountryFields';
+import { PickerField } from '../components/PickerField';
 
-const algorithmOptions = Object.keys(signatureAlgorithmToStrictSignatureAlgorithm);
 const documentTypeOptions = ['mock_passport', 'mock_id_card', 'mock_aadhaar'] as const;
-const countryOptions = Object.keys(countryCodes);
+const documentTypePickerItems = documentTypeOptions.map(dt => ({ label: dt, value: dt }));
 
 const defaultAge = '21';
 const defaultExpiryYears = '5';
@@ -68,6 +63,9 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
   const handleGenerate = async () => {
     setLoading(true);
     setError(null);
+    // Force React to render the loading state before starting async work
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const startTime = Date.now();
     try {
       const ageNum = Number(age);
       const expiryNum = Number(expiryYears);
@@ -111,8 +109,23 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
       catalog.selectedDocumentId = documentId;
       await selfClient.saveDocumentCatalog(catalog);
       await onDocumentStored?.();
-      // Auto-navigate to register screen after successful generation
-      onNavigate('register');
+
+      // Refresh first and last name with new random values after successful generation
+      setFirstName(getRandomFirstName());
+      setLastName(getRandomLastName());
+
+      // Ensure minimum loading display time (500ms) for better UX
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 500) {
+        await new Promise(resolve => setTimeout(resolve, 500 - elapsed));
+      }
+
+      // Auto-navigate to register screen only if it's the first document
+      if (catalog.documents.length === 1) {
+        onNavigate('register');
+      } else {
+        Alert.alert('Success', 'Mock document generated successfully.');
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -161,65 +174,19 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
           ios_backgroundColor="#d1d5db"
         />
       </View>
-      {documentType !== 'mock_aadhaar' && (
-        <>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Algorithm</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={algorithm}
-                onValueChange={(itemValue: string) => setAlgorithm(itemValue)}
-                style={styles.picker}
-              >
-                {algorithmOptions.map(alg => (
-                  <Picker.Item label={alg} value={alg} key={alg} />
-                ))}
-              </Picker>
-              {Platform.OS === 'ios' && (
-                <Icon name="chevron-down-outline" size={20} color="#000" style={styles.pickerIcon} />
-              )}
-            </View>
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Country</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={country}
-                onValueChange={(itemValue: string) => setCountry(itemValue)}
-                style={styles.picker}
-              >
-                {countryOptions.map(code => (
-                  <Picker.Item
-                    label={`${code} - ${countryCodes[code as keyof typeof countryCodes]}`}
-                    value={code}
-                    key={code}
-                  />
-                ))}
-              </Picker>
-              {Platform.OS === 'ios' && (
-                <Icon name="chevron-down-outline" size={20} color="#000" style={styles.pickerIcon} />
-              )}
-            </View>
-          </View>
-        </>
-      )}
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Document Type</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={documentType}
-            onValueChange={(itemValue: string) => setDocumentType(itemValue as (typeof documentTypeOptions)[number])}
-            style={styles.picker}
-          >
-            {documentTypeOptions.map(dt => (
-              <Picker.Item label={dt} value={dt} key={dt} />
-            ))}
-          </Picker>
-          {Platform.OS === 'ios' && (
-            <Icon name="chevron-down-outline" size={20} color="#000" style={styles.pickerIcon} />
-          )}
-        </View>
-      </View>
+      <AlgorithmCountryFields
+        show={documentType !== 'mock_aadhaar'}
+        algorithm={algorithm}
+        setAlgorithm={setAlgorithm}
+        country={country}
+        setCountry={setCountry}
+      />
+      <PickerField
+        label="Document Type"
+        selectedValue={documentType}
+        onValueChange={(itemValue: string) => setDocumentType(itemValue as (typeof documentTypeOptions)[number])}
+        items={documentTypePickerItems}
+      />
       <View style={styles.buttonRow}>
         <View style={styles.buttonWrapper}>
           <Button title="Reset" onPress={reset} color={Platform.OS === 'ios' ? '#007AFF' : undefined} />
@@ -233,7 +200,11 @@ export default function GenerateMock({ onDocumentStored, onNavigate, onBack }: P
           />
         </View>
       </View>
-      {loading && <ActivityIndicator style={styles.spinner} size="large" color="#0000ff" />}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0550ae" />
+        </View>
+      )}
       {error && <Text style={styles.error}>{error}</Text>}
     </SafeAreaScrollView>
   );
@@ -272,36 +243,6 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     paddingHorizontal: 4,
   },
-  pickerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    backgroundColor: '#fff',
-  },
-  picker: {
-    flex: 1,
-    color: '#000',
-    ...Platform.select({
-      ios: {
-        height: 40,
-      },
-      android: {
-        height: 40,
-      },
-    }),
-  },
-  pickerIcon: {
-    position: 'absolute',
-    right: 12,
-    top: 10,
-    ...Platform.select({
-      ios: {
-        top: 10,
-      },
-    }),
-  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -311,6 +252,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 6,
   },
-  spinner: { marginVertical: 16 },
+  loadingContainer: {
+    marginVertical: 20,
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#0550ae',
+    fontWeight: '500',
+  },
   error: { color: 'red', marginTop: 12, textAlign: 'center', fontSize: 14 },
 });

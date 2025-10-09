@@ -2,15 +2,45 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
 import { defineConfig } from 'tsup';
 
 const banner = `// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11`;
+
+// Dynamically find all flow files
+function findFlowFiles(dir: string, basePath = ''): Record<string, string> {
+  const entries: Record<string, string> = {};
+
+  if (!fs.existsSync(dir)) return entries;
+
+  const items = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const item of items) {
+    const itemPath = path.join(dir, item.name);
+    const relativePath = basePath ? path.join(basePath, item.name) : item.name;
+
+    if (item.isDirectory()) {
+      Object.assign(entries, findFlowFiles(itemPath, relativePath));
+    } else if (item.isFile() && item.name.endsWith('.ts')) {
+      const key = path.join('flows', relativePath).replace(/\.ts$/, '');
+      entries[key] = path.join('src', 'flows', relativePath);
+    }
+  }
+
+  return entries;
+}
+
+const flowEntries = findFlowFiles('src/flows');
 
 const entry = {
   index: 'src/index.ts',
   browser: 'src/browser.ts',
   'constants/analytics': 'src/constants/analytics.ts',
+  'constants/colors': 'src/constants/colors.ts',
   stores: 'src/stores/index.ts',
+  ...flowEntries,
 };
 
 export default defineConfig([

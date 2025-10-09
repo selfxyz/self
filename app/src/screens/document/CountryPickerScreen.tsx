@@ -2,26 +2,23 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback } from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
 import { Spinner, XStack, YStack } from 'tamagui';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { commonNames } from '@selfxyz/common/constants/countries';
-import { SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  SdkEvents,
+  useCountries,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
 import { RoundFlag } from '@/components/flag/RoundFlag';
 import { DocumentFlowNavBar } from '@/components/NavBar/DocumentFlowNavBar';
 import { BodyText } from '@/components/typography/BodyText';
-import type { RootStackParamList } from '@/navigation';
 import { black, slate100, slate500 } from '@/utils/colors';
-import { advercase } from '@/utils/fonts';
+import { advercase, dinot } from '@/utils/fonts';
 import { buttonTap } from '@/utils/haptic';
-
-interface CountryData {
-  [countryCode: string]: string[];
-}
 
 interface CountryListItem {
   key: string;
@@ -59,11 +56,10 @@ const CountryItem = memo<{
 CountryItem.displayName = 'CountryItem';
 
 const CountryPickerScreen: React.FC = () => {
-  const [countryData, setCountryData] = useState<CountryData>({});
-  const [loading, setLoading] = useState(true);
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
+
+  const { countryData, countryList, loading, userCountryCode, showSuggestion } =
+    useCountries();
 
   const onPressCountry = useCallback(
     (countryCode: string) => {
@@ -88,46 +84,14 @@ const CountryPickerScreen: React.FC = () => {
           countryName: countryName,
           documentTypes: documentTypes,
         });
-
-        navigation.navigate('IDPicker', { countryCode, documentTypes });
       } else {
-        navigation.navigate('ComingSoon', { countryCode });
+        selfClient.emit(SdkEvents.PROVING_PASSPORT_NOT_SUPPORTED, {
+          countryCode: countryCode,
+          documentCategory: null,
+        });
       }
     },
-    [countryData, navigation, selfClient],
-  );
-
-  useEffect(() => {
-    const fetchCountryData = async () => {
-      try {
-        const response = await fetch('https://api.staging.self.xyz/id-picker');
-        const result = await response.json();
-
-        if (result.status === 'success') {
-          setCountryData(result.data);
-          if (__DEV__) {
-            console.log('Set country data:', result.data);
-          }
-        } else {
-          console.error('API returned non-success status:', result.status);
-        }
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCountryData();
-  }, []);
-
-  const countryList = useMemo(
-    () =>
-      Object.keys(countryData).map(countryCode => ({
-        key: countryCode,
-        countryCode,
-      })),
-    [countryData],
+    [countryData, selfClient],
   );
 
   const renderItem = useCallback(
@@ -149,10 +113,7 @@ const CountryPickerScreen: React.FC = () => {
   );
 
   const getItemLayout = useCallback(
-    (
-      _data: ReadonlyArray<CountryListItem> | null | undefined,
-      index: number,
-    ) => ({
+    (_data: ArrayLike<CountryListItem> | null | undefined, index: number) => ({
       length: ITEM_HEIGHT,
       offset: ITEM_HEIGHT * index,
       index,
@@ -176,18 +137,48 @@ const CountryPickerScreen: React.FC = () => {
         {loading ? (
           renderLoadingState()
         ) : (
-          <FlatList
-            data={countryList}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            showsVerticalScrollIndicator={false}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={10}
-            windowSize={10}
-            initialNumToRender={10}
-            updateCellsBatchingPeriod={50}
-            getItemLayout={getItemLayout}
-          />
+          <YStack flex={1}>
+            {showSuggestion && (
+              <YStack marginBottom="$2">
+                <BodyText
+                  fontSize={16}
+                  color={black}
+                  fontFamily={dinot}
+                  letterSpacing={0.8}
+                  marginBottom="$1"
+                >
+                  SUGGESTION
+                </BodyText>
+                <CountryItem
+                  countryCode={
+                    userCountryCode as string /*safe due to showSuggestion*/
+                  }
+                  onSelect={onPressCountry}
+                />
+                <BodyText
+                  fontSize={16}
+                  color={black}
+                  fontFamily={dinot}
+                  letterSpacing={0.8}
+                  marginTop="$4"
+                >
+                  SELECT AN ISSUING COUNTRY
+                </BodyText>
+              </YStack>
+            )}
+            <FlatList
+              data={countryList}
+              renderItem={renderItem}
+              keyExtractor={keyExtractor}
+              showsVerticalScrollIndicator={false}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={10}
+              windowSize={10}
+              initialNumToRender={10}
+              updateCellsBatchingPeriod={50}
+              getItemLayout={getItemLayout}
+            />
+          </YStack>
         )}
       </YStack>
     </YStack>

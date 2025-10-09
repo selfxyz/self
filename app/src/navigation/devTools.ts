@@ -8,6 +8,7 @@ import CreateMockScreen from '@/screens/dev/CreateMockScreen';
 import CreateMockScreenDeepLink from '@/screens/dev/CreateMockScreenDeepLink';
 import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
+import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import { black, white } from '@/utils/colors';
@@ -69,6 +70,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Private Key',
+    } as NativeStackNavigationOptions,
+  },
+  DevLoadingScreen: {
+    screen: DevLoadingScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Dev Loading Screen',
     } as NativeStackNavigationOptions,
   },
 };

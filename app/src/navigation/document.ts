@@ -5,6 +5,7 @@
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import ComingSoonScreen from '@/screens/document/ComingSoonScreen';
+import ConfirmBelongingScreen from '@/screens/document/ConfirmBelongingScreen';
 import CountryPickerScreen from '@/screens/document/CountryPickerScreen';
 import DocumentCameraScreen from '@/screens/document/DocumentCameraScreen';
 import DocumentCameraTroubleScreen from '@/screens/document/DocumentCameraTroubleScreen';
@@ -90,6 +91,12 @@ const documentScreens = {
       countryCode: '',
       documentTypes: [],
     },
+  },
+  ConfirmBelonging: {
+    screen: ConfirmBelongingScreen,
+    options: {
+      headerShown: false,
+    } as NativeStackNavigationOptions,
   },
 };
 

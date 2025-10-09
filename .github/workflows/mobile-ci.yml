@@ -86,6 +86,9 @@ jobs:
       - name: Run prettier
         run: yarn fmt
         working-directory: ./app
+      - name: Check App Types
+        run: yarn types
+        working-directory: ./app
       - name: Check license headers
         run: node scripts/check-license-headers.mjs --check
         working-directory: ./
@@ -178,7 +181,7 @@ jobs:
           else
             echo "✅ All required dependency files exist"
           fi
-      - name: Test
+      - name: App Tests
         run: |
           # Final verification from app directory perspective
           echo "Final verification before running tests (from app directory)..."
@@ -190,7 +193,7 @@ jobs:
           fi
           echo "✅ All dependencies verified, running tests..."
           # Run jest through yarn to avoid the build:deps step since CI already built dependencies
-          yarn jest --passWithNoTests && node --test scripts/tests/*.cjs
+          yarn test:ci
         working-directory: ./app
   build-ios:
     runs-on: macos-latest-large

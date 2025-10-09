@@ -24,6 +24,16 @@
       "import": "./dist/esm/browser.js",
       "require": "./dist/cjs/browser.cjs"
     },
+    "./onboarding/*": {
+      "types": "./dist/esm/flows/onboarding/*.d.ts",
+      "import": "./dist/esm/flows/onboarding/*.js",
+      "require": "./dist/cjs/flows/onboarding/*.cjs"
+    },
+    "./disclosing/*": {
+      "types": "./dist/esm/flows/disclosing/*.d.ts",
+      "import": "./dist/esm/flows/disclosing/*.js",
+      "require": "./dist/cjs/flows/disclosing/*.cjs"
+    },
     "./constants": {
       "types": "./dist/esm/constants/index.d.ts",
       "react-native": "./dist/esm/constants/index.js",
@@ -41,6 +51,12 @@
       "import": "./dist/esm/constants/analytics.js",
       "require": "./dist/cjs/constants/analytics.cjs"
     },
+    "./constants/colors": {
+      "types": "./dist/esm/constants/colors.d.ts",
+      "react-native": "./dist/esm/constants/colors.js",
+      "import": "./dist/esm/constants/colors.js",
+      "require": "./dist/cjs/constants/colors.cjs"
+    },
     "./components": {
       "types": "./dist/esm/components/index.d.ts",
       "react-native": "./dist/esm/components/index.js",
@@ -52,6 +68,16 @@
       "react-native": "./dist/esm/hooks/index.js",
       "import": "./dist/esm/hooks/index.js",
       "require": "./dist/cjs/hooks/index.cjs"
+    },
+    "./svgs/*.svg": {
+      "react-native": "./svgs/*.svg",
+      "import": "./svgs/*.svg",
+      "require": "./svgs/*.svg"
+    },
+    "./svgs/icons/*.svg": {
+      "react-native": "./svgs/icons/*.svg",
+      "import": "./svgs/icons/*.svg",
+      "require": "./svgs/icons/*.svg"
     }
   },
   "main": "./dist/cjs/index.cjs",
@@ -62,6 +88,7 @@
     "dist",
     "android",
     "ios",
+    "svgs",
     "mobile-sdk-alpha.podspec",
     "react-native.config.cjs"
   ],
@@ -72,7 +99,7 @@
     "fmt:fix": "prettier --write .",
     "format": "sh -c 'if [ -z \"$SKIP_BUILD_DEPS\" ]; then yarn nice; else yarn fmt:fix; fi'",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "lint:fix": "eslint . --fix",
     "nice": "yarn lint:fix && yarn fmt:fix",
     "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
     "report:exports": "node ./scripts/report-exports.mjs",
@@ -107,20 +134,22 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
-    "jsdom": "^24.0.0",
+    "jsdom": "^25.0.1",
     "prettier": "^3.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-native": "0.76.9",
+    "react-native-localize": "^3.5.2",
     "react-native-web": "^0.21.1",
     "tamagui": "1.126.14",
     "tsup": "^8.0.1",
     "typescript": "^5.9.2",
-    "vitest": "^1.6.0"
+    "vitest": "^2.1.8"
   },
   "peerDependencies": {
     "react": "^18.3.1",
     "react-native": "0.76.9",
+    "react-native-localize": "*",
     "tamagui": "1.126.x"
   },
   "peerDependenciesMeta": {

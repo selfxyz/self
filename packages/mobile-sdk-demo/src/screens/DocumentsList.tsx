@@ -5,77 +5,79 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
-import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentCatalog } from '@selfxyz/common/utils/types';
+import { extractNameFromDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import SafeAreaScrollView from '../components/SafeAreaScrollView';
-import StandardHeader from '../components/StandardHeader';
+import ScreenLayout from '../components/ScreenLayout';
+import { formatDataPreview, humanizeDocumentType, maskId } from '../utils/document';
+import { useDocuments } from '../hooks/useDocuments';
 
 type Props = {
   onBack: () => void;
   catalog: DocumentCatalog;
 };
 
-type DocumentEntry = {
-  metadata: DocumentMetadata;
-  data: IDDocument;
-};
+// DocumentEntry type lives in hook; not needed here
 
-const humanizeDocumentType = (documentType: string) => {
-  if (documentType.startsWith('mock_')) {
-    const base = documentType.replace('mock_', '');
-    return `Mock ${base.replace('_', ' ')}`.replace(/\b\w/g, char => char.toUpperCase());
-  }
-  return documentType.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-};
-
-const formatDataPreview = (metadata: DocumentMetadata) => {
-  if (!metadata.data) {
-    return 'No preview available';
-  }
-
-  const lines = metadata.data.split(/\r?\n/).filter(Boolean);
-  const preview = lines.slice(0, 2).join('\n');
-
-  return preview.length > 120 ? `${preview.slice(0, 117)}…` : preview;
-};
+// helpers moved to utils/document
 
 export default function DocumentsList({ onBack, catalog }: Props) {
   const selfClient = useSelfClient();
-  const [documents, setDocuments] = useState<DocumentEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const { documents, loading, error, deleting, deleteDocument, refresh, clearing, clearAllDocuments } = useDocuments();
+  const [documentNames, setDocumentNames] = useState<Record<string, { firstName: string; lastName: string }>>({});
 
-  const loadDocuments = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const allDocuments = await getAllDocuments(selfClient);
-      setDocuments(Object.values(allDocuments));
-    } catch (err) {
-      setDocuments([]);
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Refresh when catalog selection changes (e.g., after generation or external updates)
   useEffect(() => {
-    let active = true;
+    refresh();
+  }, [catalog.selectedDocumentId, refresh]);
 
-    const load = async () => {
-      await loadDocuments();
+  // Load names for all documents
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDocumentNames = async () => {
+      const names: Record<string, { firstName: string; lastName: string }> = {};
+      await Promise.all(
+        documents.map(async doc => {
+          const name = await extractNameFromDocument(selfClient, doc.metadata.id);
+          if (name) {
+            names[doc.metadata.id] = name;
+          }
+        }),
+      );
+      if (!cancelled) {
+        setDocumentNames(names);
+      }
     };
 
-    if (active) {
-      load();
+    if (documents.length === 0) {
+      setDocumentNames({});
+      return;
     }
+
+    loadDocumentNames();
 
     return () => {
-      active = false;
+      cancelled = true;
     };
-  }, [selfClient, catalog]);
+  }, [documents, selfClient]);
+
+  const handleClearAll = () => {
+    Alert.alert('Clear All Documents', 'Are you sure you want to delete all documents? This action cannot be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear All',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await clearAllDocuments();
+          } catch (err) {
+            Alert.alert('Error', `Failed to clear documents: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        },
+      },
+    ]);
+  };
 
   const handleDelete = async (documentId: string, documentType: string) => {
     Alert.alert('Delete Document', `Are you sure you want to delete this ${humanizeDocumentType(documentType)}?`, [
@@ -84,35 +86,10 @@ export default function DocumentsList({ onBack, catalog }: Props) {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          setDeleting(documentId);
           try {
-            // Delete the document
-            await selfClient.deleteDocument(documentId);
-
-            // Update the catalog
-            const currentCatalog = await selfClient.loadDocumentCatalog();
-            const updatedDocuments = currentCatalog.documents.filter(doc => doc.id !== documentId);
-
-            // Clear selectedDocumentId if it's the one being deleted
-            const updatedCatalog = {
-              ...currentCatalog,
-              documents: updatedDocuments,
-              selectedDocumentId:
-                currentCatalog.selectedDocumentId === documentId
-                  ? updatedDocuments.length > 0
-                    ? updatedDocuments[0].id
-                    : undefined
-                  : currentCatalog.selectedDocumentId,
-            };
-
-            await selfClient.saveDocumentCatalog(updatedCatalog);
-
-            // Reload the documents list
-            await loadDocuments();
+            await deleteDocument(documentId);
           } catch (err) {
             Alert.alert('Error', `Failed to delete document: ${err instanceof Error ? err.message : String(err)}`);
-          } finally {
-            setDeleting(null);
           }
         },
       },
@@ -141,10 +118,9 @@ export default function DocumentsList({ onBack, catalog }: Props) {
     if (documents.length === 0) {
       return (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No documents yet</Text>
+          <Text style={styles.emptyText}>No documents</Text>
           <Text style={styles.emptySubtext}>
-            Generate a mock document to see it appear here. The demo document store keeps everything locally on your
-            device.
+            Generate a mock document or scan a real document to see it appear here.
           </Text>
         </View>
       );
@@ -154,13 +130,18 @@ export default function DocumentsList({ onBack, catalog }: Props) {
       const statusLabel = metadata.isRegistered ? 'Registered' : 'Not registered';
       const badgeStyle = metadata.isRegistered ? styles.verified : styles.pending;
       const preview = formatDataPreview(metadata);
-      const documentId = `${metadata.id.slice(0, 8)}…${metadata.id.slice(-6)}`;
+      const documentId = maskId(metadata.id);
       const isDeleting = deleting === metadata.id;
+      const nameData = documentNames[metadata.id];
+      const fullName = nameData ? `${nameData.firstName} ${nameData.lastName}`.trim() : null;
 
       return (
         <View key={metadata.id} style={styles.documentCard}>
           <View style={styles.documentHeader}>
-            <Text style={styles.documentType}>{humanizeDocumentType(metadata.documentType)}</Text>
+            <View style={styles.documentTitleContainer}>
+              <Text style={styles.documentType}>{humanizeDocumentType(metadata.documentType)}</Text>
+              {fullName && <Text style={styles.documentName}>{fullName}</Text>}
+            </View>
             <View style={styles.headerRight}>
               <View style={[styles.statusBadge, badgeStyle]}>
                 <Text style={styles.statusText}>{statusLabel}</Text>
@@ -178,7 +159,6 @@ export default function DocumentsList({ onBack, catalog }: Props) {
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.documentMeta}>{(metadata.documentCategory ?? 'unknown').toUpperCase()}</Text>
           <Text style={styles.documentMeta}>{metadata.mock ? 'Mock data' : 'Live data'}</Text>
           <Text style={styles.documentPreview} selectable>
             {preview}
@@ -188,14 +168,26 @@ export default function DocumentsList({ onBack, catalog }: Props) {
         </View>
       );
     });
-  }, [documents, error, loading, deleting]);
+  }, [documents, error, loading, deleting, documentNames]);
+
+  const clearButton = (
+    <TouchableOpacity
+      style={[styles.clearButton, (clearing || documents.length === 0) && styles.disabledButton]}
+      onPress={handleClearAll}
+      disabled={clearing || documents.length === 0}
+    >
+      {clearing ? (
+        <ActivityIndicator size="small" color="#dc3545" />
+      ) : (
+        <Text style={styles.clearButtonText}>Clear All</Text>
+      )}
+    </TouchableOpacity>
+  );
 
   return (
-    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="My Documents" onBack={onBack} />
-
-      <View style={styles.content}>{content}</View>
-    </SafeAreaScrollView>
+    <ScreenLayout title="My Documents" onBack={onBack} rightAction={clearButton}>
+      {content}
+    </ScreenLayout>
   );
 }
 
@@ -205,6 +197,33 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafbfc',
     paddingHorizontal: 24,
     paddingVertical: 20,
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 10,
+  },
+  clearButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#ffeef0',
+    borderWidth: 1,
+    borderColor: '#dc3545',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 30,
+    minWidth: 80,
+    alignSelf: 'flex-end',
+  },
+  clearButtonText: {
+    color: '#dc3545',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  disabledButton: {
+    backgroundColor: '#f8f9fa',
+    borderColor: '#e1e5e9',
   },
   content: {
     flex: 1,
@@ -228,11 +247,20 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 8,
   },
+  documentTitleContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
   documentType: {
     fontSize: 18,
     fontWeight: '600',
     color: '#333',
-    flex: 1,
+  },
+  documentName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#0550ae',
+    marginTop: 2,
   },
   headerRight: {
     alignItems: 'flex-end',

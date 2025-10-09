@@ -13,10 +13,12 @@ import {
   brutforceSignatureAlgorithmDsc,
   calculateContentHash,
   inferDocumentCategory,
+  isAadhaarDocument,
   isMRZDocument,
   parseCertificateSimple,
 } from '@selfxyz/common';
 
+import { extractNameFromMRZ } from '../processing/mrz';
 import { SelfClient } from '../types/public';
 
 export async function clearPassportData(selfClient: SelfClient) {
@@ -33,6 +35,53 @@ export async function clearPassportData(selfClient: SelfClient) {
 
   // Clear catalog
   await selfClient.saveDocumentCatalog({ documents: [] });
+}
+
+/**
+ * Extract name from a document by loading its full data.
+ * Works for both MRZ documents (passport/ID card) and Aadhaar documents.
+ *
+ * @param selfClient - The SelfClient instance
+ * @param documentId - The document ID to extract name from
+ * @returns Object with firstName and lastName, or null if extraction fails
+ */
+export async function extractNameFromDocument(
+  selfClient: SelfClient,
+  documentId: string,
+): Promise<{ firstName: string; lastName: string } | null> {
+  try {
+    const document = await selfClient.loadDocumentById(documentId);
+    if (!document) {
+      return null;
+    }
+
+    // For Aadhaar documents, extract name from extractedFields
+    if (isAadhaarDocument(document)) {
+      const name = document.extractedFields?.name;
+      if (name && typeof name === 'string') {
+        // Aadhaar name is typically "FIRSTNAME LASTNAME" format
+        const parts = name.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          const firstName = parts[0];
+          const lastName = parts.slice(1).join(' ');
+          return { firstName, lastName };
+        } else if (parts.length === 1) {
+          return { firstName: parts[0], lastName: '' };
+        }
+      }
+      return null;
+    }
+
+    // For MRZ documents (passport/ID card), extract from MRZ string
+    if (isMRZDocument(document)) {
+      return extractNameFromMRZ(document.mrz);
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error extracting name from document:', error);
+    return null;
+  }
 }
 
 /**
@@ -218,6 +267,14 @@ export async function updateDocumentRegistrationState(
 
   if (documentIndex !== -1) {
     catalog.documents[documentIndex].isRegistered = isRegistered;
+
+    // Set registration timestamp when marking as registered
+    if (isRegistered) {
+      catalog.documents[documentIndex].registeredAt = Date.now();
+    } else {
+      // Clear timestamp when unregistering
+      catalog.documents[documentIndex].registeredAt = undefined;
+    }
 
     await selfClient.saveDocumentCatalog(catalog);
 

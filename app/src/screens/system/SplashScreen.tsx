@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -14,8 +13,9 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import splashAnimation from '@/assets/animations/splash.json';
+import { DelayedLottieView } from '@/components/DelayedLottieView';
 import type { RootStackParamList } from '@/navigation';
-import { useAuth } from '@/providers/authProvider';
+import { migrateToSecureKeychain, useAuth } from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
@@ -74,6 +74,13 @@ const SplashScreen: React.FC = ({}) => {
           const hasValid = await hasAnyValidRegisteredDocument(selfClient);
           const parentScreen = hasValid ? 'Home' : 'Launch';
 
+          // Migrate keychain to secure storage with biometric protection
+          try {
+            await migrateToSecureKeychain();
+          } catch (error) {
+            console.warn('Keychain migration failed, continuing:', error);
+          }
+
           setDeeplinkParentScreen(parentScreen);
 
           const queuedUrl = getAndClearQueuedUrl();
@@ -116,7 +123,7 @@ const SplashScreen: React.FC = ({}) => {
   }, [isAnimationFinished, nextScreen, queuedDeepLink, navigation, selfClient]);
 
   return (
-    <LottieView
+    <DelayedLottieView
       autoPlay
       loop={false}
       source={splashAnimation}

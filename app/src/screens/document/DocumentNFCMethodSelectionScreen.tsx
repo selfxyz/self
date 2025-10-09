@@ -7,6 +7,8 @@ import { Platform, ScrollView } from 'react-native';
 import { Input, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
 import ButtonsContainer from '@/components/ButtonsContainer';
@@ -14,7 +16,6 @@ import { BodyText } from '@/components/typography/BodyText';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
-import useUserStore from '@/stores/userStore';
 import { white } from '@/utils/colors';
 
 type NFCParams = {
@@ -93,10 +94,10 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
   const [error, setError] = useState('');
-  const updatePassport = useUserStore(state => state.update);
-  const passportNumber = useUserStore(state => state.passportNumber);
-  const dateOfBirth = useUserStore(state => state.dateOfBirth);
-  const dateOfExpiry = useUserStore(state => state.dateOfExpiry);
+
+  const selfClient = useSelfClient();
+  const { useMRZStore } = selfClient;
+  const { update, passportNumber, dateOfBirth, dateOfExpiry } = useMRZStore();
 
   const handleSelect = (key: string) => {
     setSelectedMethod(key);
@@ -104,15 +105,15 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
   };
 
   const onPassportNumberChange = (text: string) => {
-    updatePassport({ passportNumber: text });
+    update({ passportNumber: text });
   };
 
   const onDateOfBirthChange = (text: string) => {
-    updatePassport({ dateOfBirth: text });
+    update({ dateOfBirth: text });
   };
 
   const onDateOfExpiryChange = (text: string) => {
-    updatePassport({ dateOfExpiry: text });
+    update({ dateOfExpiry: text });
   };
 
   const handleProceed = () => {

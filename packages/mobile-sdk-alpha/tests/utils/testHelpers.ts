@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /* eslint-disable sort-exports/sort-exports */
-import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, ScannerAdapter } from '../../src';
+import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, NFCScannerAdapter } from '../../src';
 
 // Shared test data
 export const sampleMRZ = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<\nL898902C36UTO7408122F1204159ZE184226B<<<<<10`;
@@ -12,16 +12,11 @@ export const invalidMRZ = 'NOT_A_VALID_MRZ';
 export const badCheckDigitsMRZ = sampleMRZ.slice(0, -1) + '1';
 
 // Shared mock adapters
-export const mockScanner: ScannerAdapter = {
+export const mockScanner: NFCScannerAdapter = {
   scan: async () => ({
-    mode: 'mrz',
-    mrzInfo: {
-      documentNumber: '',
-      dateOfBirth: '',
-      dateOfExpiry: '',
-      issuingCountry: '',
-      documentType: 'passport',
-    },
+    passportData: {
+      mock: true,
+    } as any,
   }),
 };
 

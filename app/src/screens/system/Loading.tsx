@@ -3,31 +3,32 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Text, YStack } from 'tamagui';
+import { useCallback, useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
-import { IDDocument } from '@selfxyz/common/utils/types';
-import {
-  type ProvingStateType,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
-import CloseWarningIcon from '@/images/icons/close-warning.svg';
-import { loadPassportDataAndSecret } from '@/providers/passportDataProvider';
-import { black, slate400, white, zinc500, zinc900 } from '@/utils/colors';
-import { extraYPadding } from '@/utils/constants';
+import LoadingUI from '@/components/loading/LoadingUI';
+import { useSettingStore } from '@/stores/settingStore';
+import { black, slate400, white, zinc900 } from '@/utils/colors';
 import { advercase, dinot } from '@/utils/fonts';
 import { loadingScreenProgress } from '@/utils/haptic';
 import { setupNotifications } from '@/utils/notifications/notificationService';
 import { getLoadingScreenText } from '@/utils/proving/loadingScreenStateText';
 
-type LoadingScreenProps = StaticScreenProps<Record<string, never>>;
+type LoadingScreenParams = {
+  documentCategory?: DocumentCategory;
+  signatureAlgorithm?: string;
+  curveOrExponent?: string;
+};
+
+type LoadingScreenProps = StaticScreenProps<LoadingScreenParams>;
 
 // Define all terminal states that should stop animations and haptics
 const terminalStates: ProvingStateType[] = [
@@ -39,74 +40,90 @@ const terminalStates: ProvingStateType[] = [
   'passport_data_not_found',
 ];
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const { useProvingStore } = useSelfClient();
+  // Track if we're initializing to show clean state
+  const [isInitializing, setIsInitializing] = useState(false);
+
   // Animation states
   const [animationSource, setAnimationSource] = useState<
     LottieView['props']['source']
   >(proveLoadingAnimation);
 
-  // Passport data state
-  const [passportData, setPassportData] = useState<IDDocument | null>(null);
-
   // Loading text state
   const [loadingText, setLoadingText] = useState<{
     actionText: string;
+    actionSubText: string;
     estimatedTime: string;
+    statusBarProgress: number;
   }>({
     actionText: '',
+    actionSubText: '',
     estimatedTime: '',
+    statusBarProgress: 0,
   });
 
+  // Get document metadata from navigation params
+  const {
+    signatureAlgorithm: paramSignatureAlgorithm,
+    curveOrExponent: paramCurveOrExponent,
+  } = route?.params || {};
+
   // Get current state from proving machine, default to 'idle' if undefined
+  // Get proving store and self client
+  const selfClient = useSelfClient();
   const currentState = useProvingStore(state => state.currentState) ?? 'idle';
-  const fcmToken = useProvingStore(state => state.fcmToken);
+  const fcmToken = useSettingStore(state => state.fcmToken);
+  const init = useProvingStore(state => state.init);
+  const circuitType = useProvingStore(state => state.circuitType);
   const isFocused = useIsFocused();
-  const { bottom } = useSafeAreaInsets();
 
   // States where it's safe to close the app
   const safeToCloseStates = ['proving', 'post_proving', 'completed'];
   const canCloseApp = safeToCloseStates.includes(currentState);
 
+  // Initialize proving process
+  useEffect(() => {
+    if (!isFocused) return;
+
+    setIsInitializing(true);
+
+    // Always initialize when screen becomes focused, regardless of current state
+    // This ensures proper reset between proving sessions
+    const initializeProving = async () => {
+      try {
+        const selectedDocument = await loadSelectedDocument(selfClient);
+        if (selectedDocument?.data?.documentCategory === 'aadhaar') {
+          await init(selfClient, 'register', true);
+        } else {
+          await init(selfClient, 'dsc', true);
+        }
+      } catch (_error) {
+        console.error('Error loading selected document:');
+        await init(selfClient, 'dsc', true);
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    initializeProving();
+  }, [isFocused, init, selfClient]);
+
   // Initialize notifications and load passport data
   useEffect(() => {
-    let isMounted = true;
+    if (!isFocused) return;
 
-    const initialize = async () => {
-      if (!isFocused) return;
-
-      // Setup notifications
-      const unsubscribe = setupNotifications();
-
-      // Load passport data if not already loaded
-      if (!passportData) {
-        try {
-          const result = await loadPassportDataAndSecret();
-          if (result && isMounted) {
-            const { passportData: _passportData } = JSON.parse(result);
-            setPassportData(_passportData);
-          }
-        } catch (error: unknown) {
-          console.error('Error loading passport data:', error);
-        }
-      }
-
-      return () => {
-        if (typeof unsubscribe === 'function') {
-          unsubscribe();
-        }
-      };
-    };
-
-    initialize();
+    // Setup notifications
+    const unsubscribe = setupNotifications();
 
     return () => {
-      isMounted = false;
+      if (typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFocused]); // Only depend on isFocused
+  }, [isFocused]);
 
-  // Handle UI updates and haptic feedback based on state changes
+  // Handle UI updates based on state changes
   useEffect(() => {
     // Stop haptics if screen is not focused
     if (!isFocused) {
@@ -114,32 +131,37 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       return;
     }
 
-    let { signatureAlgorithm, curveOrExponent } = {
-      signatureAlgorithm: 'rsa',
-      curveOrExponent: '65537',
-    };
-    switch (passportData?.documentCategory) {
-      case 'passport':
-      case 'id_card':
-        if (passportData?.passportMetadata) {
-          signatureAlgorithm =
-            passportData?.passportMetadata?.cscaSignatureAlgorithm;
-          curveOrExponent = passportData?.passportMetadata?.cscaCurveOrExponent;
-        }
-        break;
-      case 'aadhaar':
-        break; // keep the default values for aadhaar
+    // Use params from navigation or fallback to defaults
+    let signatureAlgorithm = 'rsa';
+    let curveOrExponent = '65537';
+
+    // Use provided params if available (only relevant for passport/id_card)
+    if (paramSignatureAlgorithm && paramCurveOrExponent) {
+      signatureAlgorithm = paramSignatureAlgorithm;
+      curveOrExponent = paramCurveOrExponent;
     }
 
-    const { actionText, estimatedTime } = getLoadingScreenText(
-      currentState as ProvingStateType,
-      signatureAlgorithm,
-      curveOrExponent,
-    );
-    setLoadingText({ actionText, estimatedTime });
+    // Use clean initial state if we're initializing, otherwise use current state
+    const displayState = isInitializing ? 'idle' : currentState;
+    const displayCircuitType = isInitializing ? 'dsc' : circuitType || 'dsc';
 
-    // Update animation based on state
-    switch (currentState) {
+    const { actionText, actionSubText, estimatedTime, statusBarProgress } =
+      getLoadingScreenText(
+        displayState as ProvingStateType,
+        signatureAlgorithm,
+        curveOrExponent,
+        displayCircuitType,
+      );
+    setLoadingText({
+      actionText,
+      actionSubText,
+      estimatedTime,
+      statusBarProgress,
+    });
+
+    // Update animation based on state (use clean state if initializing)
+    const animationState = isInitializing ? 'idle' : currentState;
+    switch (animationState) {
       case 'completed':
         // setAnimationSource(successAnimation);
         break;
@@ -156,21 +178,28 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
         setAnimationSource(proveLoadingAnimation);
         break;
     }
+  }, [
+    currentState,
+    fcmToken,
+    isInitializing,
+    circuitType,
+    paramCurveOrExponent,
+    paramSignatureAlgorithm,
+    isFocused,
+  ]);
 
-    // Stop haptics if we're in a terminal state
-    if (terminalStates.includes(currentState as ProvingStateType)) {
-      loadingScreenProgress(false);
-      return;
-    }
+  // Handle haptic feedback using useFocusEffect for immediate response
+  useFocusEffect(
+    useCallback(() => {
+      // Start haptic feedback as soon as the screen is focused
+      loadingScreenProgress(true);
 
-    // Start haptic feedback for non-terminal states
-    loadingScreenProgress(true);
-
-    // Cleanup on unmount or state change
-    return () => {
-      loadingScreenProgress(false);
-    };
-  }, [currentState, isFocused, fcmToken, passportData]);
+      // Cleanup function to stop haptics when the screen is unfocused
+      return () => {
+        loadingScreenProgress(false);
+      };
+    }, []),
+  );
 
   // Determine if animation should loop based on terminal states
   const shouldLoopAnimation = !terminalStates.includes(
@@ -178,50 +207,19 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   );
 
   return (
-    <YStack
-      backgroundColor={black}
-      gap={20}
-      justifyContent="space-between"
-      flex={1}
-      paddingHorizontal={20}
-      paddingBottom={bottom + extraYPadding}
-    >
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <View style={styles.animationAndTitleGroup}>
-            <LottieView
-              autoPlay
-              loop={shouldLoopAnimation}
-              source={animationSource}
-              style={styles.animation}
-              resizeMode="cover"
-              renderMode="HARDWARE"
-            />
-            <Text style={styles.title}>{loadingText.actionText}</Text>
-          </View>
-          <View style={styles.estimatedTimeSection}>
-            <View style={styles.estimatedTimeBorder} />
-            <View style={styles.estimatedTimeRow}>
-              <Text style={styles.estimatedTimeLabel}>ESTIMATED TIME:</Text>
-              <Text style={styles.estimatedTimeValue}>
-                {loadingText.estimatedTime}
-              </Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.warningSection}>
-          <CloseWarningIcon color={zinc500} height={40} />
-          <Text style={styles.warningText}>
-            {canCloseApp
-              ? 'You can now safely close the app'
-              : 'Closing the app will cancel this process'}
-          </Text>
-        </View>
-      </View>
-    </YStack>
+    <LoadingUI
+      animationSource={animationSource}
+      shouldLoopAnimation={shouldLoopAnimation}
+      actionText={loadingText.actionText}
+      actionSubText={loadingText.actionSubText}
+      estimatedTime={loadingText.estimatedTime}
+      canCloseApp={canCloseApp}
+      statusBarProgress={loadingText.statusBarProgress}
+    />
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -21,6 +21,7 @@ describe('navigation', () => {
       'DeferredLinkingInfo',
       'DevFeatureFlags',
       'DevHapticFeedback',
+      'DevLoadingScreen',
       'DevPrivateKey',
       'DevSettings',
       'Disclaimer',

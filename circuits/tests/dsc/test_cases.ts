@@ -41,6 +41,13 @@ export const fullSigAlgs = [
     domainParameter: '3',
     keyLength: '3072',
   },
+  {
+    sigAlg: 'rsapss',
+    hashFunction: 'sha384',
+    saltLen: '48',
+    domainParameter: '65537',
+    keyLength: '3072',
+  },
   //ECDSA
   //brainpool
   { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'brainpoolP256r1', keyLength: '256' },

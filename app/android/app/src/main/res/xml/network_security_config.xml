@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Base configuration: Disallow cleartext traffic by default (production security) -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust only system certificates -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

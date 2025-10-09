@@ -9,6 +9,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { getErrorMessages } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
 import { PrimaryButton } from '@/components/buttons/PrimaryButton';
 import { SecondaryButton } from '@/components/buttons/SecondaryButton';
@@ -34,24 +35,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();
   const errorType = route.params?.errorType || 'general';
 
-  // Define error messages based on error type
-  const getErrorMessages = () => {
-    if (errorType === 'expired') {
-      return {
-        title: 'QR Code Has Expired',
-        description:
-          'You uploaded a valid Aadhaar QR code, but unfortunately it has expired. Please generate a new QR code from the mAadhaar app and try again.',
-      };
-    }
-
-    return {
-      title: 'There was a problem reading the code',
-      description:
-        'Please ensure the QR code is clear and well-lit, then try again. For best results, take a screenshot of the QR code instead of photographing it.',
-    };
-  };
-
-  const { title, description } = getErrorMessages();
+  const { title, description } = getErrorMessages(errorType);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>

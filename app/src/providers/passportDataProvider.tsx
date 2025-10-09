@@ -66,6 +66,7 @@ import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
+import { createKeychainOptions } from '@/utils/keychainSecurity';
 
 // Create safe wrapper functions to prevent undefined errors during early initialization
 // These need to be declared early to avoid dependency issues
@@ -142,18 +143,28 @@ export const PassportContext = createContext<IPassportContext>({
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
-  const { _getSecurely } = useAuth();
+  const { _getSecurely, _getWithBiometrics } = useAuth();
   const selfClient = useSelfClient();
 
   const getData = useCallback(
-    () => _getSecurely<PassportData>(loadPassportData, str => JSON.parse(str)),
-    [_getSecurely],
+    () =>
+      _getWithBiometrics<PassportData | AadhaarData>(
+        loadPassportData,
+        str => JSON.parse(str),
+        {
+          requireAuth: true,
+        },
+      ),
+    [_getWithBiometrics],
   );
 
   const getSelectedData = useCallback(() => {
     return _getSecurely<PassportData>(
       () => loadSelectedPassportData(),
       str => JSON.parse(str),
+      {
+        requireAuth: true,
+      },
     );
   }, [_getSecurely]);
 
@@ -169,6 +180,9 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       _getSecurely<{ passportData: PassportData; secret: string }>(
         loadPassportDataAndSecret,
         str => JSON.parse(str),
+        {
+          requireAuth: true,
+        },
       ),
     [_getSecurely],
   );
@@ -177,6 +191,9 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     return _getSecurely<{ passportData: PassportData; secret: string }>(
       () => loadSelectedPassportDataAndSecret(),
       str => JSON.parse(str),
+      {
+        requireAuth: true,
+      },
     );
   }, [_getSecurely]);
 
@@ -600,7 +617,10 @@ interface PassportProviderProps extends PropsWithChildren {
   authenticationTimeoutinMs?: number;
 }
 interface IPassportContext {
-  getData: () => Promise<{ signature: string; data: PassportData } | null>;
+  getData: () => Promise<{
+    signature: string;
+    data: PassportData | AadhaarData;
+  } | null>;
   getSelectedData: () => Promise<{
     signature: string;
     data: PassportData;
@@ -720,8 +740,11 @@ export async function reStorePassportDataWithRightCSCA(
 export async function saveDocumentCatalogDirectlyToKeychain(
   catalog: DocumentCatalog,
 ): Promise<void> {
+  const { setOptions } = await createKeychainOptions({ requireAuth: false });
   await Keychain.setGenericPassword('catalog', JSON.stringify(catalog), {
     service: 'documentCatalog',
+    ...setOptions,
+    // securityLevel: Keychain.SECURITY_LEVEL.SECURE_HARDWARE,
   });
 }
 
@@ -749,11 +772,15 @@ async function storeDocumentDirectlyToKeychain(
   contentHash: string,
   passportData: PassportData | AadhaarData,
 ): Promise<void> {
+  const { setOptions } = await createKeychainOptions({ requireAuth: false });
   await Keychain.setGenericPassword(contentHash, JSON.stringify(passportData), {
     service: `document-${contentHash}`,
+    ...setOptions,
+    // securityLevel: Keychain.SECURITY_LEVEL.SECURE_HARDWARE,
   });
 }
 
+// Duplicate funciton. prefer one on mobile sdk
 export async function storeDocumentWithDeduplication(
   passportData: PassportData | AadhaarData,
 ): Promise<string> {
@@ -801,7 +828,7 @@ export async function storeDocumentWithDeduplication(
 
   return contentHash;
 }
-
+// Duplicate function. prefer one in mobile sdk
 export async function storePassportData(
   passportData: PassportData | AadhaarData,
 ) {

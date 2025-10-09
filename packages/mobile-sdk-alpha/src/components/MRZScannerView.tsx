@@ -42,7 +42,7 @@ const NativeMRZScannerView = requireNativeComponent<SelfMRZScannerViewProps>(
   })!,
 );
 
-interface MRZScannerViewProps {
+export interface MRZScannerViewProps {
   style?: ViewStyle;
   height?: DimensionValue;
   width?: DimensionValue;
@@ -125,7 +125,7 @@ export const MRZScannerView: React.FC<MRZScannerViewProps> = ({
       <View style={containerStyle}>
         <RCTFragment
           RCTFragmentViewManager={NativeMRZScannerView as any}
-          fragmentComponentName="PassportOCRViewManager"
+          fragmentComponentName="SelfOCRViewManager"
           isMounted={true}
           style={{
             height: PixelRatio.getPixelSizeForLayoutSize(800),

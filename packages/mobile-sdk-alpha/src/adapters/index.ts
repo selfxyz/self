@@ -9,8 +9,8 @@ export type {
   DocumentsAdapter,
   HttpAdapter,
   LoggerAdapter,
+  NFCScannerAdapter,
   NetworkAdapter,
-  ScannerAdapter,
   StorageAdapter,
   WsAdapter,
 } from '../types/public';

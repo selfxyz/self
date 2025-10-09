@@ -4,7 +4,7 @@
 
 import type { ComponentType } from 'react';
 
-import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog, DocumentMetadata, IDDocument } from '@selfxyz/common/utils/types';
 
 export type ScreenId = 'generate' | 'register' | 'prove' | 'camera' | 'nfc' | 'documents';
 
@@ -53,9 +53,10 @@ export const screenDescriptors: ScreenDescriptor[] = [
     sectionTitle: '⭐ Mock Documents',
     status: 'working',
     load: () => require('./RegisterDocument').default,
-    getProps: ({ navigate, documentCatalog }) => ({
+    getProps: ({ navigate, documentCatalog, refreshDocuments }) => ({
       catalog: documentCatalog,
       onBack: () => navigate('home'),
+      onSuccess: refreshDocuments,
     }),
   },
   {

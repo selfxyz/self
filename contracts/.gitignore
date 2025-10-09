@@ -12,9 +12,16 @@ ignition/deployed_addresses.json
 ignition/parameters.json
 
 # Ignore all deployment folders except important ones
-ignition/deployments/*
 !ignition/deployments/prod/
 !ignition/deployments/staging/
+
+# For chain-11142220, keep only essential files
+ignition/deployments/chain-11142220/*
+!ignition/deployments/chain-11142220/deployed_addresses.json
+
+# For chain-42220, keep only essential files
+ignition/deployments/chain-42220/*
+!ignition/deployments/chain-42220/deployed_addresses.json
 
 # For important environments, keep only essential files
 ignition/deployments/{prod,staging}/*

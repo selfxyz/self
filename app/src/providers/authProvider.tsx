@@ -12,28 +12,64 @@ import React, {
   useState,
 } from 'react';
 import ReactNativeBiometrics from 'react-native-biometrics';
-import Keychain from 'react-native-keychain';
+import Keychain, { GetOptions, SetOptions } from 'react-native-keychain';
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
 import analytics from '@/utils/analytics';
+import {
+  createKeychainOptions,
+  detectSecurityCapabilities,
+  GetSecureOptions,
+} from '@/utils/keychainSecurity';
 
 const { trackEvent } = analytics();
 
 const SERVICE_NAME = 'secret';
 
 type SignedPayload<T> = { signature: string; data: T };
+type KeychainOptions = {
+  getOptions: GetOptions;
+  setOptions: SetOptions;
+};
 const _getSecurely = async function <T>(
+  fn: (keychainOptions: KeychainOptions) => Promise<string | false>,
+  formatter: (dataString: string) => T,
+  options: GetSecureOptions,
+): Promise<SignedPayload<T> | null> {
+  try {
+    const capabilities = await detectSecurityCapabilities();
+    const { getOptions, setOptions } = await createKeychainOptions(
+      options,
+      capabilities,
+    );
+    const dataString = await fn({ getOptions, setOptions });
+    if (dataString === false) {
+      return null;
+    }
+
+    trackEvent(AuthEvents.BIOMETRIC_AUTH_SUCCESS);
+    return {
+      signature: 'authenticated',
+      data: formatter(dataString),
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
+      reason: 'unknown_error',
+      error: message,
+    });
+    throw error;
+  }
+};
+
+const _getWithBiometrics = async function <T>(
   fn: () => Promise<string | false>,
   formatter: (dataString: string) => T,
+  _options: GetSecureOptions,
 ): Promise<SignedPayload<T> | null> {
-  const dataString = await fn();
-  if (dataString === false) {
-    return null;
-  }
-
   try {
     const simpleCheck = await biometrics.simplePrompt({
       promptMessage: 'Allow access to identity',
@@ -47,13 +83,16 @@ const _getSecurely = async function <T>(
       throw new Error('Authentication failed');
     }
 
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_SUCCESS);
+    const dataString = await fn();
+    if (dataString === false) {
+      return null;
+    }
+
     return {
       signature: 'authenticated',
       data: formatter(dataString),
     };
   } catch (error: unknown) {
-    console.error('Error in _getSecurely:', error);
     const message = error instanceof Error ? error.message : String(error);
     trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
       reason: 'unknown_error',
@@ -79,7 +118,10 @@ async function checkBiometricsAvailable(): Promise<boolean> {
   }
 }
 
-async function restoreFromMnemonic(mnemonic: string): Promise<string | false> {
+async function restoreFromMnemonic(
+  mnemonic: string,
+  options: KeychainOptions,
+): Promise<string | false> {
   if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
     trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
       reason: 'invalid_mnemonic',
@@ -91,6 +133,7 @@ async function restoreFromMnemonic(mnemonic: string): Promise<string | false> {
     const restoredWallet = ethers.Wallet.fromPhrase(mnemonic);
     const data = JSON.stringify(restoredWallet.mnemonic);
     await Keychain.setGenericPassword('secret', data, {
+      ...options.setOptions,
       service: SERVICE_NAME,
     });
     trackEvent(AuthEvents.MNEMONIC_RESTORE_SUCCESS);
@@ -104,8 +147,14 @@ async function restoreFromMnemonic(mnemonic: string): Promise<string | false> {
   }
 }
 
-async function loadOrCreateMnemonic(): Promise<string | false> {
+async function loadOrCreateMnemonic(
+  keychainOptions: KeychainOptions,
+): Promise<string | false> {
+  // Get adaptive security configuration
+  const { setOptions, getOptions } = keychainOptions;
+
   const storedMnemonic = await Keychain.getGenericPassword({
+    ...getOptions,
     service: SERVICE_NAME,
   });
   if (storedMnemonic) {
@@ -129,7 +178,9 @@ async function loadOrCreateMnemonic(): Promise<string | false> {
       ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),
     );
     const data = JSON.stringify(mnemonic);
+
     await Keychain.setGenericPassword('secret', data, {
+      ...setOptions,
       service: SERVICE_NAME,
     });
     trackEvent(AuthEvents.MNEMONIC_CREATED);
@@ -154,6 +205,7 @@ interface IAuthContext {
   isAuthenticating: boolean;
   loginWithBiometrics: () => Promise<void>;
   _getSecurely: typeof _getSecurely;
+  _getWithBiometrics: typeof _getWithBiometrics;
   getOrCreateMnemonic: () => Promise<SignedPayload<Mnemonic> | null>;
   restoreAccountFromMnemonic: (
     mnemonic: string,
@@ -165,6 +217,7 @@ export const AuthContext = createContext<IAuthContext>({
   isAuthenticating: false,
   loginWithBiometrics: () => Promise.resolve(),
   _getSecurely,
+  _getWithBiometrics,
   getOrCreateMnemonic: () => Promise.resolve(null),
   restoreAccountFromMnemonic: () => Promise.resolve(null),
   checkBiometricsAvailable: () => Promise.resolve(false),
@@ -219,15 +272,25 @@ export const AuthProvider = ({
   }, [authenticationTimeoutinMs, isAuthenticatingPromise]);
 
   const getOrCreateMnemonic = useCallback(
-    () => _getSecurely<Mnemonic>(loadOrCreateMnemonic, str => JSON.parse(str)),
+    () =>
+      _getSecurely<Mnemonic>(
+        keychainOptions => loadOrCreateMnemonic(keychainOptions),
+        str => JSON.parse(str),
+        {
+          requireAuth: false,
+        },
+      ),
     [],
   );
 
   const restoreAccountFromMnemonic = useCallback(
     (mnemonic: string) =>
       _getSecurely<boolean>(
-        () => restoreFromMnemonic(mnemonic),
+        keychainOptions => restoreFromMnemonic(mnemonic, keychainOptions),
         str => !!str,
+        {
+          requireAuth: true,
+        },
       ),
     [],
   );
@@ -241,6 +304,7 @@ export const AuthProvider = ({
       restoreAccountFromMnemonic,
       checkBiometricsAvailable,
       _getSecurely,
+      _getWithBiometrics,
     }),
     [
       getOrCreateMnemonic,
@@ -259,6 +323,54 @@ export async function hasSecretStored() {
   return !!seed;
 }
 
+// Migrates existing mnemonic to use new security settings with accessControl.
+export async function migrateToSecureKeychain(): Promise<boolean> {
+  try {
+    const { hasCompletedKeychainMigration, setKeychainMigrationCompleted } =
+      useSettingStore.getState();
+
+    if (hasCompletedKeychainMigration) {
+      return false;
+    }
+
+    // we try to get with old settings (no accessControl)
+    const existingMnemonic = await Keychain.getGenericPassword({
+      service: SERVICE_NAME,
+    });
+
+    if (!existingMnemonic) {
+      setKeychainMigrationCompleted();
+      return false;
+    }
+
+    const capabilities = await detectSecurityCapabilities();
+    const { setOptions } = await createKeychainOptions(
+      { requireAuth: true },
+      capabilities,
+    );
+
+    await Keychain.setGenericPassword(SERVICE_NAME, existingMnemonic.password, {
+      ...setOptions,
+      service: SERVICE_NAME,
+    });
+
+    trackEvent(AuthEvents.MNEMONIC_CREATED, { migrated: true });
+
+    setKeychainMigrationCompleted();
+
+    return true;
+  } catch (error: unknown) {
+    console.error('Error during keychain migration:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
+      reason: 'migration_failed',
+      error: message,
+    });
+
+    return false;
+  }
+}
+
 export async function unsafe_clearSecrets() {
   if (__DEV__) {
     await Keychain.resetGenericPassword({ service: SERVICE_NAME });
@@ -269,8 +381,14 @@ export async function unsafe_clearSecrets() {
  * The only reason this is exported without being locked behind user biometrics is to allow `loadPassportDataAndSecret`
  * to access both the privatekey and the passport data with the user only authenticating once
  */
-export async function unsafe_getPrivateKey() {
-  const foundMnemonic = await loadOrCreateMnemonic();
+export async function unsafe_getPrivateKey(keychainOptions?: KeychainOptions) {
+  const options =
+    keychainOptions ||
+    (await createKeychainOptions({
+      requireAuth: true,
+    }));
+
+  const foundMnemonic = await loadOrCreateMnemonic(options);
   if (!foundMnemonic) {
     return null;
   }

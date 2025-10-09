@@ -16,12 +16,10 @@ export type {
   LoggerAdapter,
   MRZInfo,
   MRZValidation,
+  NFCScanResult,
+  NFCScannerAdapter,
   NetworkAdapter,
   Progress,
-  ScanMode,
-  ScanOpts,
-  ScanResult,
-  ScannerAdapter,
   SelfClient,
   StorageAdapter,
   TrackEventParams,
@@ -34,7 +32,7 @@ export type {
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 
 // MRZ module
-export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
+export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
@@ -43,14 +41,13 @@ export type { MRZScanOptions } from './mrz';
 // QR module
 export type { PassportValidationCallbacks } from './validation/document';
 
-export type { QRProofOptions } from './qr';
-
 export type { SDKEvent, SDKEventMap } from './types/events';
 
 // Error handling
 export type { SdkErrorCategory } from './errors';
 
 // Screen Components (React Native-based)
+export type { provingMachineCircuitType } from './proving/provingMachine';
 export {
   InitError,
   LivenessError,
@@ -65,14 +62,13 @@ export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 export { PassportCameraScreen } from './components/screens/PassportCameraScreen';
 
 // Context and Client
+export { type ProvingStateType } from './proving/provingMachine';
+
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
-export { SdkEvents } from './types/events';
-
 // Components
-export { SelfClientContext, SelfClientProvider, usePrepareDocumentProof, useSelfClient } from './context';
-
+export { SdkEvents } from './types/events';
 // Documents utils
-export { SelfMobileSdk } from './entry';
+export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
 export {
   clearPassportData,
@@ -83,25 +79,28 @@ export {
   reStorePassportDataWithRightCSCA,
 } from './documents/utils';
 
+/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { createListenersMap, createSelfClient } from './client';
 
-/** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { defaultConfig } from './config/defaults';
 
-export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
+// Document utils
+export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
-export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+export { extractNameFromDocument } from './documents/utils';
 
 // Core functions
-export { isPassportDataValid } from './validation/document';
+export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
 // Document validation
+export { isPassportDataValid } from './validation/document';
+
 export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
 
-export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
+export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 
-export { scanQRProof } from './qr';
+export { useCountries } from './documents/useCountries';
 
-export { webScannerShim } from './adapters/web/shims';
+export { webNFCScannerShim } from './adapters/web/shims';

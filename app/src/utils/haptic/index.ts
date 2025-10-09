@@ -125,40 +125,11 @@ export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
     return;
   }
 
-  // Function to trigger the haptic feedback
-  const triggerHaptic = () => {
-    if (Platform.OS === 'android') {
-      // Pattern: [delay, duration, delay, duration, ...]
-      // First heavy impact at 500ms
-      // Then three light impacts at 750ms intervals
-      triggerFeedback('custom', {
-        pattern: [
-          500,
-          100, // Heavy impact
-          750,
-          50, // First light impact
-          750,
-          50, // Second light impact
-          750,
-          50, // Third light impact
-        ],
-      });
-    } else {
-      setTimeout(() => {
-        triggerFeedback('impactHeavy');
-      }, 750);
-      setTimeout(() => {
-        feedbackProgress();
-      }, 750);
-    }
-  };
+  triggerFeedback('impactHeavy');
 
-  // Trigger immediately
-  triggerHaptic();
-
-  // Set up interval for continuous feedback
-  // Total pattern duration (2950ms) + 1 second pause (1000ms) = 3950ms
-  loadingScreenInterval = setInterval(triggerHaptic, 4000);
+  loadingScreenInterval = setInterval(() => {
+    triggerFeedback('impactHeavy');
+  }, 1000);
 };
 
 export const notificationError = () => triggerFeedback('notificationError');

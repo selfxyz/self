@@ -8,6 +8,7 @@ import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 import { useFocusEffect } from '@react-navigation/native';
 
 import type { PassportMetadata } from '@selfxyz/common/types';
+import type { AadhaarData } from '@selfxyz/common/utils/types';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -16,8 +17,15 @@ import { usePassport } from '@/providers/passportDataProvider';
 import { black, slate200, white } from '@/utils/colors';
 import { extraYPadding } from '@/utils/constants';
 
+type DocumentMetadata =
+  | (PassportMetadata & { documentCategory: 'passport' | 'id_card' })
+  | {
+      documentCategory: 'aadhaar';
+      documentType: string;
+    };
+
 // TODO clarify if we need more/less keys to be displayed
-const dataKeysToLabels: Record<
+const passportDataKeysToLabels: Record<
   keyof Omit<PassportMetadata, 'countryCode' | 'dsc' | 'csca'>,
   string
 > = {
@@ -44,6 +52,11 @@ const dataKeysToLabels: Record<
   cscaSignatureAlgorithmBits: 'CSCA Signature Algorithm Bits',
 };
 
+const aadhaarDataKeysToLabels: Record<string, string> = {
+  documentType: 'Document Type',
+  documentCategory: 'Document Category',
+};
+
 const InfoRow: React.FC<{
   label: string;
   value: string | number;
@@ -62,7 +75,7 @@ const InfoRow: React.FC<{
 const DocumentDataInfoScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();
   const { getData } = usePassport();
-  const [metadata, setMetadata] = useState<PassportMetadata | null>(null);
+  const [metadata, setMetadata] = useState<DocumentMetadata | null>(null);
   const { bottom } = useSafeAreaInsets();
 
   const loadData = useCallback(async () => {
@@ -77,14 +90,47 @@ const DocumentDataInfoScreen: React.FC = () => {
       return;
     }
 
-    setMetadata(result.data.passportMetadata!);
-    trackEvent(DocumentEvents.PASSPORT_METADATA_LOADED);
+    const documentCategory = result.data.documentCategory as
+      | 'passport'
+      | 'id_card'
+      | 'aadhaar';
+
+    if (documentCategory === 'aadhaar') {
+      const aadhaarData = result.data as AadhaarData;
+      const aadhaarMetadata = {
+        documentCategory: aadhaarData.documentCategory,
+        documentType: aadhaarData.documentType,
+        publicKey: aadhaarData.publicKey,
+      } as const;
+      setMetadata(aadhaarMetadata);
+      trackEvent(DocumentEvents.PASSPORT_METADATA_LOADED, {
+        documentType: 'aadhaar',
+      });
+    } else {
+      if (!('passportMetadata' in result.data)) {
+        console.warn('DocumentDataInfoScreen: passportMetadata is missing');
+        return;
+      }
+
+      const passportMetadata = result.data.passportMetadata;
+      const passportMetadataWithCategory = {
+        ...passportMetadata,
+        documentCategory,
+      } as PassportMetadata & { documentCategory: 'passport' | 'id_card' };
+      setMetadata(passportMetadataWithCategory);
+      trackEvent(DocumentEvents.PASSPORT_METADATA_LOADED);
+    }
   }, [metadata, getData, trackEvent]);
 
   useFocusEffect(() => {
     trackEvent(DocumentEvents.PASSPORT_INFO_OPENED);
     loadData();
   });
+
+  const isAadhaarDocument = metadata?.documentCategory === 'aadhaar';
+  const dataKeysToLabels = isAadhaarDocument
+    ? aadhaarDataKeysToLabels
+    : passportDataKeysToLabels;
 
   return (
     <YStack
@@ -102,13 +148,17 @@ const DocumentDataInfoScreen: React.FC = () => {
             value={
               !metadata
                 ? ''
-                : key === 'cscaFound'
-                  ? metadata?.cscaFound === true
-                    ? 'Yes'
-                    : 'No'
-                  : (metadata?.[key as keyof PassportMetadata] as
+                : isAadhaarDocument
+                  ? (metadata?.[key as keyof DocumentMetadata] as
                       | string
                       | number) || 'None'
+                  : key === 'cscaFound'
+                    ? (metadata as PassportMetadata)?.cscaFound === true
+                      ? 'Yes'
+                      : 'No'
+                    : (metadata?.[key as keyof DocumentMetadata] as
+                        | string
+                        | number) || 'None'
             }
           />
         ))}

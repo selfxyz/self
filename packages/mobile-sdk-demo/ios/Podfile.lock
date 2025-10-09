@@ -1659,7 +1659,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNCPicker (2.11.2):
+  - RNKeychain (10.0.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1681,6 +1681,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - RNKeychain (10.0.0):
+  - RNSVG (15.12.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1721,6 +1722,8 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+    - RNSVG/common (= 15.12.1)
+    - Yoga
     - RNSVG/common (= 15.12.1)
     - Yoga
   - RNSVG/common (15.12.1):
@@ -1778,6 +1781,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "mobile-sdk-alpha (from `../node_modules/@selfxyz/mobile-sdk-alpha`)"
   - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `04ede227cbfd377e2b4bc9b38f9a89eebdcab52f`)"
+  - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -1872,6 +1876,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@selfxyz/mobile-sdk-alpha"
   NFCPassportReader:
     :commit: 04ede227cbfd377e2b4bc9b38f9a89eebdcab52f
+    :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
@@ -2004,7 +2009,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   NFCPassportReader:
-    :commit: 04ede227cbfd377e2b4bc9b38f9a89eebdcab52f
+    :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
 
 SPEC CHECKSUMS:
@@ -2087,5 +2092,6 @@ SPEC CHECKSUMS:
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 
 PODFILE CHECKSUM: 6be9f12913607c14e8d1cd2ccd9db3b512f53a9b
+PODFILE CHECKSUM: 7bafdc4607a2a09088e9b68be33648f72b535141
 
 COCOAPODS: 1.16.2

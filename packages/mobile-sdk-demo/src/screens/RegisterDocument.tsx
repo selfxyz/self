@@ -2,15 +2,17 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import type { DocumentCatalog, IDDocument } from '@selfxyz/common/dist/esm/src/utils/types.js';
-import { extractNameFromMRZ, getAllDocuments, SdkEvents, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
+import { extractNameFromDocument, getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { PickerField } from '../components/PickerField';
 
-import { Picker } from '@react-native-picker/picker';
-import SafeAreaScrollView from '../components/SafeAreaScrollView';
-import StandardHeader from '../components/StandardHeader';
+import ScreenLayout from '../components/ScreenLayout';
+import LogsPanel from '../components/LogsPanel';
+import { useRegistration } from '../hooks/useRegistration';
+import { humanizeDocumentType } from '../utils/document';
 
 type Props = {
   catalog: DocumentCatalog;
@@ -18,58 +20,89 @@ type Props = {
   onSuccess?: () => void; // Callback to refresh parent catalog
 };
 
-const humanizeDocumentType = (documentType: string) => {
-  if (documentType.startsWith('mock_')) {
-    const base = documentType.replace('mock_', '');
-    return `Mock ${base.replace('_', ' ')}`.replace(/\b\w/g, char => char.toUpperCase());
-  }
-  return documentType.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-};
+// display helpers moved to utils/document
 
 export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) {
   const selfClient = useSelfClient();
   const { useProvingStore } = selfClient;
   const currentState = useProvingStore(state => state.currentState);
-  const circuitType = useProvingStore(state => state.circuitType);
-  const init = useProvingStore(state => state.init);
-  const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
+  // circuitType managed inside useRegistration
+  const { state: regState, actions } = useRegistration();
 
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string>(catalog.selectedDocumentId || '');
+  const mounted = useRef(true);
+  useEffect(() => {
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string>('');
   const [selectedDocument, setSelectedDocument] = useState<IDDocument | null>(null);
   const [loading, setLoading] = useState(false);
-  const [registering, setRegistering] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string>('');
-  const [detailedLogs, setDetailedLogs] = useState<string[]>([]);
-  const [showLogs, setShowLogs] = useState(false);
-
-  // Add log entry
-  const addLog = useCallback((message: string, level: 'info' | 'warn' | 'error' = 'info') => {
-    const timestamp = new Date().toLocaleTimeString();
-    const emoji = level === 'error' ? '❌' : level === 'warn' ? '⚠️' : '✅';
-    setDetailedLogs(prev => [`${emoji} [${timestamp}] ${message}`, ...prev].slice(0, 50)); // Keep last 50 logs
-  }, []);
+  const registering = regState.registering;
+  const statusMessage = regState.statusMessage;
+  const [documentNames, setDocumentNames] = useState<Record<string, { firstName: string; lastName: string }>>({});
 
   // Refresh catalog helper
   const refreshCatalog = useCallback(async () => {
     try {
       const updatedCatalog = await selfClient.loadDocumentCatalog();
-      addLog('Catalog refreshed successfully');
+      // log via registration panel
       if (onSuccess) {
         onSuccess();
       }
       return updatedCatalog;
     } catch (error) {
       console.error('Error refreshing catalog:', error);
-      addLog(`Failed to refresh catalog: ${error instanceof Error ? error.message : String(error)}`, 'error');
     }
-  }, [selfClient, onSuccess, addLog]);
+  }, [selfClient, onSuccess]);
 
-  // Update selected document when catalog changes (e.g., after generating a new mock)
+  // Auto-select first available unregistered document (newest first)
   useEffect(() => {
-    if (catalog.selectedDocumentId && catalog.selectedDocumentId !== selectedDocumentId) {
-      setSelectedDocumentId(catalog.selectedDocumentId);
+    const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+    const firstUnregisteredDocId = availableDocuments[0]?.id;
+
+    if (firstUnregisteredDocId && !selectedDocumentId) {
+      setSelectedDocumentId(firstUnregisteredDocId);
     }
-  }, [catalog.selectedDocumentId, selectedDocumentId]);
+  }, [catalog.documents, selectedDocumentId]);
+
+  // Auto-select when catalog changes and current selection is no longer available
+  useEffect(() => {
+    const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+    const isCurrentSelectionAvailable = availableDocuments.some(doc => doc.id === selectedDocumentId);
+
+    if (!isCurrentSelectionAvailable && availableDocuments.length > 0) {
+      setSelectedDocumentId(availableDocuments[0].id);
+    }
+  }, [catalog.documents, selectedDocumentId]);
+
+  // Load names for all documents in the catalog
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDocumentNames = async () => {
+      const names: Record<string, { firstName: string; lastName: string }> = {};
+      await Promise.all(
+        (catalog.documents || []).map(async doc => {
+          if (doc.isRegistered) return;
+          const name = await extractNameFromDocument(selfClient, doc.id);
+          if (name) {
+            names[doc.id] = name;
+          }
+        }),
+      );
+      if (!cancelled) {
+        setDocumentNames(names);
+      }
+    };
+
+    loadDocumentNames();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [catalog.documents, selfClient]);
 
   useEffect(() => {
     const loadSelectedDocument = async () => {
@@ -93,181 +126,77 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
     loadSelectedDocument();
   }, [selectedDocumentId, selfClient]);
 
-  // Listen to SDK proof events for detailed feedback
+  // One-shot completion handler to avoid repeated alerts
   useEffect(() => {
-    if (!registering) return;
-
-    const unsubscribe = selfClient.on(SdkEvents.PROOF_EVENT, payload => {
-      if (!payload) return;
-      const { event, level, details } = payload;
-      console.log('Proof event:', event, level, details);
-      addLog(event, level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'info');
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [selfClient, registering, addLog]);
-
-  // Monitor proving state changes
-  useEffect(() => {
-    if (!registering) return;
-
-    console.log('Registration state:', currentState, 'circuit:', circuitType);
-
-    switch (currentState) {
-      case 'fetching_data':
-        setStatusMessage('📡 Fetching protocol data from network...');
-        addLog('Fetching DSC/CSCA trees and circuits');
-        break;
-      case 'validating_document':
-        setStatusMessage('🔍 Validating document authenticity...');
-        addLog('Validating document signatures and checking registration status');
-        break;
-      case 'init_tee_connexion':
-        setStatusMessage('🔐 Establishing secure TEE connection...');
-        addLog('Connecting to Trusted Execution Environment');
-        break;
-      case 'ready_to_prove':
-        setStatusMessage('⚡ Ready to generate proof...');
-        addLog('TEE connection established, auto-confirming proof generation');
-        // Auto-confirm for demo purposes
-        setTimeout(() => {
-          setUserConfirmed(selfClient);
-          addLog('User confirmation sent, starting proof generation');
-        }, 500);
-        break;
-      case 'proving':
-        setStatusMessage('🔄 Generating zero-knowledge proof...');
-        addLog('TEE is generating the attestation proof');
-        break;
-      case 'post_proving':
-        if (circuitType === 'dsc') {
-          setStatusMessage('📝 DSC verified, proceeding to registration...');
-          addLog('DSC proof completed, chaining to registration proof');
-        } else {
-          setStatusMessage('✨ Finalizing registration...');
-          addLog('Registration proof completed, updating state');
-        }
-        break;
-      case 'completed':
-        setStatusMessage('🎉 Registration completed successfully!');
-        addLog('Document registered on-chain!', 'info');
-        setRegistering(false);
-
-        // Refresh catalog and show success
-        setTimeout(async () => {
-          await refreshCatalog();
-          Alert.alert(
-            'Success! 🎉',
-            `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  setStatusMessage('');
-                  setDetailedLogs([]);
-                  // Reset selected document
-                  setSelectedDocumentId('');
-                },
-              },
-            ],
-          );
-        }, 1000);
-        break;
-      case 'error':
-      case 'failure':
-        setStatusMessage('❌ Registration failed');
-        addLog('Registration failed - check logs for details', 'error');
-        setRegistering(false);
-        Alert.alert('Registration Failed', 'The registration process failed. Please check the logs for details.', [
+    actions.setOnComplete(async () => {
+      if (!mounted.current) return;
+      await refreshCatalog();
+      Alert.alert(
+        'Success! 🎉',
+        `Your ${selectedDocument?.mock ? 'mock ' : ''}document has been registered on-chain!`,
+        [
           {
-            text: 'View Logs',
-            onPress: () => setShowLogs(true),
-          },
-          {
-            text: 'Close',
+            text: 'OK',
             onPress: () => {
-              setStatusMessage('');
-              setShowLogs(false);
+              if (mounted.current) {
+                setSelectedDocumentId('');
+                actions.reset();
+              }
             },
           },
-        ]);
-        break;
-    }
-  }, [currentState, circuitType, registering, selfClient, setUserConfirmed, selectedDocument, refreshCatalog, addLog]);
+        ],
+      );
+    });
+    return () => actions.setOnComplete(null);
+  }, [actions, selectedDocument, refreshCatalog]);
 
   const handleRegister = async () => {
     if (!selectedDocument || !selectedDocumentId) return;
 
     try {
-      setRegistering(true);
-      setDetailedLogs([]);
-      setStatusMessage('🚀 Initializing registration...');
-      addLog(`Starting registration for document ${selectedDocumentId.slice(0, 8)}...`);
-
       // Set the selected document in the catalog
       const updatedCatalog = { ...catalog, selectedDocumentId };
       await selfClient.saveDocumentCatalog(updatedCatalog);
-      addLog('Document selected in catalog');
-
-      // Determine circuit type based on document
-      // For mock documents, use 'register' directly
-      // For real documents (aadhaar), use 'register'
-      // For real passports/IDs, use 'dsc' which will chain to 'register'
-      const chosenCircuitType =
-        selectedDocument.mock || selectedDocument.documentCategory === 'aadhaar' ? 'register' : 'dsc';
-
-      addLog(`Using circuit type: ${chosenCircuitType}`);
-      console.log('Starting registration with circuit type:', chosenCircuitType);
-
-      // Initialize the proving state machine
-      init(selfClient, chosenCircuitType);
-      addLog('Proving state machine initialized');
+      actions.start(selectedDocumentId, selectedDocument);
     } catch (err) {
       console.error('Registration error:', err);
-      setRegistering(false);
-      setStatusMessage('');
-      addLog(`Registration initialization failed: ${err instanceof Error ? err.message : String(err)}`, 'error');
       Alert.alert('Error', `Registration failed: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
   // Filter to only unregistered documents and sort newest first
   const availableDocuments = (catalog.documents || []).filter(doc => !doc.isRegistered).reverse();
+  const firstAvailableDocId = availableDocuments[0]?.id || '';
+  const selectedIdForPicker = selectedDocumentId || firstAvailableDocId || '';
 
   return (
-    <SafeAreaScrollView contentContainerStyle={styles.container} backgroundColor="#fafbfc">
-      <StandardHeader title="Register Document [WiP]" onBack={onBack} />
-
+    <ScreenLayout title="Register Document" onBack={onBack}>
       <View style={styles.content}>
-        <View style={styles.pickerContainer}>
-          <Text style={styles.label}>Select Document</Text>
-          <View style={styles.pickerWrapper}>
-            <Picker
-              selectedValue={selectedDocumentId}
-              onValueChange={(itemValue: string) => setSelectedDocumentId(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}
-              enabled={!registering}
-            >
-              <Picker.Item label="Select a document..." value="" style={styles.pickerItem} />
-              {availableDocuments.map(doc => {
-                const nameData = extractNameFromMRZ(doc.data || '');
-                const docType = humanizeDocumentType(doc.documentType);
-                const docId = doc.id.slice(0, 8);
+        {availableDocuments.length > 0 && (
+          <PickerField
+            label="Select Document"
+            selectedValue={selectedIdForPicker}
+            onValueChange={setSelectedDocumentId}
+            enabled={!registering}
+            items={
+              !firstAvailableDocId
+                ? [{ label: 'Select a document...', value: '' }]
+                : availableDocuments.map(doc => {
+                    const nameData = documentNames[doc.id];
+                    const docType = humanizeDocumentType(doc.documentType);
+                    const docId = doc.id.slice(0, 8);
 
-                let label = `${docType} - ${docId}...`;
-                if (nameData) {
-                  const fullName = `${nameData.firstName} ${nameData.lastName}`.trim();
-                  label = fullName ? `${fullName} - ${docType} - ${docId}...` : label;
-                }
+                    let label = `${docType} - ${docId}...`;
+                    if (nameData) {
+                      const fullName = `${nameData.firstName} ${nameData.lastName}`.trim();
+                      label = fullName ? `${fullName} - ${docType} - ${docId}...` : label;
+                    }
 
-                return <Picker.Item key={doc.id} label={label} value={doc.id} style={styles.pickerItem} />;
-              })}
-            </Picker>
-          </View>
-        </View>
+                    return { label, value: doc.id };
+                  })
+            }
+          />
+        )}
 
         {loading && (
           <View style={styles.loadingContainer}>
@@ -281,27 +210,11 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
             <Text style={styles.statusText}>{statusMessage}</Text>
             <Text style={styles.statusState}>State: {currentState}</Text>
 
-            {detailedLogs.length > 0 && (
-              <TouchableOpacity onPress={() => setShowLogs(!showLogs)} style={styles.logsToggle}>
-                <Text style={styles.logsToggleText}>
-                  {showLogs ? '▼ Hide Logs' : '▶ Show Logs'} ({detailedLogs.length})
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {showLogs && detailedLogs.length > 0 && (
-              <ScrollView style={styles.logsContainer} nestedScrollEnabled>
-                {detailedLogs.map((log, index) => (
-                  <Text key={index} style={styles.logEntry}>
-                    {log}
-                  </Text>
-                ))}
-              </ScrollView>
-            )}
+            <LogsPanel logs={regState.logs} show={regState.showLogs} onToggle={actions.toggleLogs} />
           </View>
         )}
 
-        {selectedDocument && !loading && (
+        {selectedDocument && !loading && availableDocuments.length > 0 && (
           <>
             <View style={styles.documentSection}>
               <Text style={styles.documentTitle}>Document Data:</Text>
@@ -328,7 +241,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
           </View>
         )}
 
-        {!selectedDocumentId && availableDocuments.length === 0 && (
+        {availableDocuments.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>
               No unregistered documents available. Generate a mock document to get started.
@@ -336,7 +249,7 @@ export default function RegisterDocument({ catalog, onBack, onSuccess }: Props) 
           </View>
         )}
       </View>
-    </SafeAreaScrollView>
+    </ScreenLayout>
   );
 }
 
@@ -350,27 +263,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  pickerContainer: {
-    marginBottom: 24,
-  },
   label: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 8,
     color: '#333',
-  },
-  pickerWrapper: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    overflow: 'hidden',
-  },
-  picker: {
-    height: 50,
-  },
-  pickerItem: {
-    fontSize: 13,
   },
   loadingContainer: {
     flex: 1,
