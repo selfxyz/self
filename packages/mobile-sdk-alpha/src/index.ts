@@ -16,12 +16,10 @@ export type {
   LoggerAdapter,
   MRZInfo,
   MRZValidation,
+  NFCScanResult,
+  NFCScannerAdapter,
   NetworkAdapter,
   Progress,
-  ScanMode,
-  ScanOpts,
-  ScanResult,
-  ScannerAdapter,
   SelfClient,
   StorageAdapter,
   TrackEventParams,
@@ -34,7 +32,7 @@ export type {
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 
 // MRZ module
-export type { DG1, DG2, NFCScanOptions, ParsedNFCResponse } from './nfc';
+export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 
 export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps } from './types/ui';
 
@@ -42,8 +40,6 @@ export type { MRZScanOptions } from './mrz';
 
 // QR module
 export type { PassportValidationCallbacks } from './validation/document';
-
-export type { QRProofOptions } from './qr';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
 
@@ -74,8 +70,6 @@ export { SdkEvents } from './types/events';
 // Documents utils
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
-export { SelfMobileSdk } from './entry';
-
 export {
   clearPassportData,
   getAllDocuments,
@@ -91,7 +85,7 @@ export { createListenersMap, createSelfClient } from './client';
 export { defaultConfig } from './config/defaults';
 
 // Document utils
-export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD, scanMRZ } from './mrz';
+export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
 export { extractNameFromDocument } from './documents/utils';
 
@@ -105,8 +99,8 @@ export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
 
-export { reactNativeScannerAdapter } from './adapters/react-native/scanner';
+export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 
-export { scanQRProof } from './qr';
+export { useCountries } from './documents/useCountries';
 
-export { webScannerShim } from './adapters/web/shims';
+export { webNFCScannerShim } from './adapters/web/shims';

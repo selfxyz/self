@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '@/navigation';
-import type { ModalParams } from '@/screens/system/ModalScreen';
+import type { ModalParams } from '@/screens/app/ModalScreen';
 import {
   getModalCallbacks,
   registerModalCallbacks,

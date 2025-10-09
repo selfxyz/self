@@ -2,27 +2,56 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { notImplemented } from '../errors';
-import type { ScanResult } from '../types/public';
+import { Platform } from 'react-native';
+
+import { SdkEvents } from '../types/events';
+import type { NFCScanOpts, NFCScanResult, SelfClient } from '../types/public';
 
 // Re-export types from processing
 export type { DG1, DG2, ParsedNFCResponse } from '../processing/nfc';
-
-/**
- * Options for NFC scanning.
- * Reserved for future use; currently no options are accepted.
- */
-export type NFCScanOptions = Record<string, never>;
 
 // Re-export processing functions
 export { parseNFCResponse } from '../processing/nfc';
 
 /**
  * Scan NFC chip on a passport or ID card.
- * @param _opts NFC scanning options (currently unused)
+ *
+ * @param selfClient SelfClient instance
+ * @param opts NFC scanning options
  * @returns Promise resolving to scan result
  */
-export async function scanNFC(_opts: NFCScanOptions): Promise<ScanResult> {
-  // Surface a consistent, typed error for unimplemented features
-  throw notImplemented('scanNFC');
+export async function scanNFC(selfClient: SelfClient, opts: NFCScanOpts): Promise<NFCScanResult> {
+  const baseContext = {
+    sessionId: opts.sessionId,
+    userId: opts.userId,
+    platform: Platform.OS as 'ios' | 'android',
+    scanType: opts.useCan ? 'can' : 'mrz',
+  } as const;
+
+  selfClient.emit(SdkEvents.NFC_EVENT, {
+    level: 'info',
+    context: {
+      ...baseContext,
+      stage: 'start',
+    },
+    event: 'scan_start',
+  });
+
+  try {
+    return await selfClient.scanNFC(opts);
+  } catch (error) {
+    selfClient.emit(SdkEvents.NFC_EVENT, {
+      level: 'error',
+      context: {
+        ...baseContext,
+        stage: 'scan',
+      },
+      event: 'scan_failed',
+      details: {
+        error: error instanceof Error ? error.message : String(error),
+      },
+    });
+
+    throw error;
+  }
 }

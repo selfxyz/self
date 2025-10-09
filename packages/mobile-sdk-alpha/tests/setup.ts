@@ -169,3 +169,26 @@ if (typeof window !== 'undefined') {
     })),
   });
 }
+
+// Mock react-native-localize
+vi.mock('react-native-localize', () => ({
+  getLocales: vi.fn().mockReturnValue([
+    {
+      countryCode: 'US',
+      languageTag: 'en-US',
+      languageCode: 'en',
+      isRTL: false,
+    },
+  ]),
+  getCountry: vi.fn().mockReturnValue('US'),
+  getTimeZone: vi.fn().mockReturnValue('America/New_York'),
+  getCurrencies: vi.fn().mockReturnValue(['USD']),
+  getTemperatureUnit: vi.fn().mockReturnValue('celsius'),
+  getFirstWeekDay: vi.fn().mockReturnValue(0),
+  uses24HourClock: vi.fn().mockReturnValue(false),
+  usesMetricSystem: vi.fn().mockReturnValue(false),
+  findBestAvailableLanguage: vi.fn().mockReturnValue({
+    languageTag: 'en-US',
+    isRTL: false,
+  }),
+}));

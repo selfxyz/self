@@ -36,14 +36,9 @@ const createMockSelfClientWithDocumentsAdapter = (documentsAdapter: DocumentsAda
       },
       scanner: {
         scan: async () => ({
-          mode: 'mrz',
-          mrzInfo: {
-            documentNumber: '',
-            dateOfBirth: '',
-            dateOfExpiry: '',
-            issuingCountry: '',
-            documentType: 'passport',
-          },
+          passportData: {
+            mock: true,
+          } as any,
         }),
       },
       storage: {

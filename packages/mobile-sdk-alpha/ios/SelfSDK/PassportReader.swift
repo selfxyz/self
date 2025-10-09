@@ -40,7 +40,7 @@ extension Dictionary {
 
 #if !E2E_TESTING
 @available(iOS 15, *)
-@objc(PassportReader)
+@objc(SelfPassportReader)
 class PassportReader: NSObject {
     private var passportReader: NFCPassportReader.PassportReader
 

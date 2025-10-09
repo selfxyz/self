@@ -1,0 +1,346 @@
+name: Release Calendar
+
+# Goal: automatically create release pull requests when the clock hits 17:00 UTC (5:00 PM).
+# For reference, 17:00 UTC corresponds to:
+#   • 10:30 PM IST (India)
+#   • 10:00 AM PT (San Francisco)
+#   • 6:00 PM CET / 7:00 PM CEST (Paris)
+#   • 12:00 PM EST / 1:00 PM EDT (New York)
+#   • 6:00 PM CET / 7:00 PM CEST (Warsaw)
+# Adjust locally if daylight saving time is in effect.
+#
+# Testing: This workflow automatically runs when merged to dev (when the workflow file itself
+# is modified), allowing you to test changes immediately. You can also manually trigger it via
+# workflow_dispatch and choose which job(s) to run (staging or production).
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_to_run:
+        description: "Which job to run (staging or production)"
+        required: false
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+  push:
+    branches:
+      - dev
+    paths:
+      - ".github/workflows/release-calendar.yml"
+  schedule:
+    # Friday 17:00 UTC (see timezone conversions above) to prepare the weekend staging PR.
+    - cron: "0 17 * * 5"
+    # Sunday 17:00 UTC (same times as above) to prepare the production release PR.
+    - cron: "0 17 * * 0"
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write # Required for creating labels
+
+jobs:
+  release_to_staging:
+    name: Create dev to staging release PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard Friday schedule
+        id: guard_schedule
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Allow push events (when workflow file is modified) to run
+          if [ "${{ github.event_name }}" == "push" ]; then
+            if [ "${{ github.ref_name }}" == "dev" ]; then
+              echo "Triggered by push event on dev. Running staging job."
+              echo "continue=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Triggered by push event on non-dev. Skipping staging job."
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # Allow workflow_dispatch based on input
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            JOB_TO_RUN="${{ inputs.job_to_run }}"
+            if [ "$JOB_TO_RUN" == "staging" ]; then
+              echo "Manual trigger: running staging job (job_to_run=${JOB_TO_RUN})"
+              echo "continue=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Manual trigger: skipping staging job (job_to_run=${JOB_TO_RUN})"
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # For schedule events, check day of week
+          DOW=$(date -u +%u)
+          if [ "$DOW" != "5" ]; then
+            echo "Not Friday in UTC (current day-of-week: $DOW). Exiting job early."
+            echo "continue=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "continue=true" >> "$GITHUB_OUTPUT"
+
+      - name: Check out repository
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for existing dev to staging PR
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
+        id: check_dev_staging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          PR_DATE=$(date +%Y-%m-%d)
+          echo "date=${PR_DATE}" >> "$GITHUB_OUTPUT"
+
+          echo "Checking for existing pull requests from dev to staging..."
+          EXISTING_PR=$(gh pr list --base staging --head dev --state open --limit 1 --json number --jq '.[0].number // ""')
+          echo "existing_pr=${EXISTING_PR}" >> "$GITHUB_OUTPUT"
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Found existing release PR: #${EXISTING_PR}. Skipping creation."
+          else
+            echo "No existing release PR found. Proceeding to create a new one."
+          fi
+
+      - name: Log existing PR
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr != '' }}
+        run: |
+          echo "Release PR already exists: #${{ steps.check_dev_staging.outputs.existing_pr }}"
+
+      - name: Ensure release labels exist
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for LABEL in release automated staging; do
+            if ! gh label list --json name --jq '.[].name' | grep -q "^${LABEL}$"; then
+              echo "Creating missing label: ${LABEL}"
+              gh label create "${LABEL}" --color BFD4F2
+            else
+              echo "Label ${LABEL} already exists."
+            fi
+          done
+
+      - name: Create dev to staging release PR
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.check_dev_staging.outputs.existing_pr == '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_DATE: ${{ steps.check_dev_staging.outputs.date }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python <<'PY'
+          import pathlib
+          import textwrap
+
+          pathlib.Path("pr_body.md").write_text(textwrap.dedent("""\
+          ## 🚀 Weekly Release to Staging
+
+          This automated PR promotes all changes from `dev` to `staging` for testing.
+
+          ### What's Included
+          All commits merged to `dev` since the last staging release.
+
+          ### Review Checklist
+          - [ ] All CI checks pass
+          - [ ] Code review completed
+          - [ ] QA team notified
+          - [ ] Ready to merge to staging environment
+
+          ### Next Steps
+          After merging, the staging environment will be updated. A production release PR will be created on Sunday.
+
+          ---
+          *This PR was automatically created by the Release Calendar workflow*
+          """))
+          PY
+
+          TITLE="Release to Staging - ${PR_DATE}"
+          echo "Creating PR with title: ${TITLE}"
+
+          gh pr create \
+            --base staging \
+            --head dev \
+            --title "${TITLE}" \
+            --label release \
+            --label automated \
+            --label staging \
+            --body-file pr_body.md
+
+  release_to_production:
+    name: Create staging to main release PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard Sunday schedule
+        id: guard_schedule
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Skip production job on push events (we only test on dev)
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "Push event: skipping production job."
+            echo "continue=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Allow workflow_dispatch based on input
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            JOB_TO_RUN="${{ inputs.job_to_run }}"
+            if [ "$JOB_TO_RUN" == "production" ]; then
+              echo "Manual trigger: running production job (job_to_run=${JOB_TO_RUN})"
+              echo "continue=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Manual trigger: skipping production job (job_to_run=${JOB_TO_RUN})"
+              echo "continue=false" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # For schedule events, check day of week
+          DOW=$(date -u +%u)
+          if [ "$DOW" != "7" ]; then
+            echo "Not Sunday in UTC (current day-of-week: $DOW). Exiting job early."
+            echo "continue=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "continue=true" >> "$GITHUB_OUTPUT"
+
+      - name: Check out repository
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine release readiness
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' }}
+        id: production_status
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Fetching latest branches..."
+          git fetch origin main staging
+
+          COMMITS_AHEAD=$(git rev-list --count origin/main..origin/staging)
+          echo "commits=${COMMITS_AHEAD}" >> "$GITHUB_OUTPUT"
+
+          if [ "$COMMITS_AHEAD" -eq 0 ]; then
+            echo "staging_not_ahead=true" >> "$GITHUB_OUTPUT"
+            echo "Staging is up to date with main. No release PR needed."
+            exit 0
+          fi
+
+          echo "staging_not_ahead=false" >> "$GITHUB_OUTPUT"
+
+          echo "Checking for existing pull requests from staging to main..."
+          EXISTING_PR=$(gh pr list --base main --head staging --state open --limit 1 --json number --jq '.[0].number // ""')
+          echo "existing_pr=${EXISTING_PR}" >> "$GITHUB_OUTPUT"
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Found existing production release PR: #${EXISTING_PR}. Skipping creation."
+          else
+            echo "No existing production release PR found. Ready to create a new one."
+          fi
+
+          PR_DATE=$(date +%Y-%m-%d)
+          echo "date=${PR_DATE}" >> "$GITHUB_OUTPUT"
+
+      - name: Log staging up to date
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead == 'true' }}
+        run: |
+          echo "Staging branch is up to date with main. Skipping production release PR creation."
+
+      - name: Log existing PR
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.existing_pr != '' }}
+        run: |
+          echo "Production release PR already exists: #${{ steps.production_status.outputs.existing_pr }}"
+
+      - name: Ensure release labels exist
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for LABEL in release automated production; do
+            if ! gh label list --json name --jq '.[].name' | grep -q "^${LABEL}$"; then
+              echo "Creating missing label: ${LABEL}"
+              gh label create "${LABEL}" --color BFD4F2
+            else
+              echo "Label ${LABEL} already exists."
+            fi
+          done
+
+      - name: Create staging to main release PR
+        if: ${{ steps.guard_schedule.outputs.continue == 'true' && steps.production_status.outputs.staging_not_ahead != 'true' && steps.production_status.outputs.existing_pr == '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_DATE: ${{ steps.production_status.outputs.date }}
+          COMMITS_AHEAD: ${{ steps.production_status.outputs.commits }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python <<'PY'
+          import os
+          import pathlib
+          import textwrap
+
+          commits_ahead = os.environ["COMMITS_AHEAD"]
+
+          pathlib.Path("pr_body.md").write_text(textwrap.dedent(f"""\
+          ## 🎯 Production Release
+
+          This automated PR promotes tested changes from `staging` to `main` for production deployment.
+
+          ### What's Included
+          All changes that have been verified in the staging environment.
+
+          **Commits ahead**: {commits_ahead}
+
+          ### Pre-Deployment Checklist
+          - [ ] All staging tests passed
+          - [ ] QA sign-off received
+          - [ ] Stakeholder approval obtained
+          - [ ] Deployment plan reviewed
+          - [ ] Rollback plan confirmed
+
+          ### Deployment Notes
+          Merging this PR will trigger production deployment.
+
+          ---
+          *This PR was automatically created by the Release Calendar workflow*
+          """))
+          PY
+
+          TITLE="Release to Production - ${PR_DATE}"
+          echo "Creating PR with title: ${TITLE} and ${COMMITS_AHEAD} commits ahead."
+
+          gh pr create \
+            --base main \
+            --head staging \
+            --title "${TITLE}" \
+            --label release \
+            --label automated \
+            --label production \
+            --body-file pr_body.md

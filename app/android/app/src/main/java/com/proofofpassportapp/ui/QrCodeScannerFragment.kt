@@ -121,6 +121,7 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     override fun onPause() {
         frameProcessor?.stop()
         frameProcessor = null
+        fotoapparat?.stop()
 
         super.onPause()
     }
@@ -130,6 +131,8 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
         if (!disposable.isDisposed) {
             disposable.dispose();
         }
+        frameProcessor?.stop()
+        fotoapparat?.stop()
         binding = null
         super.onDestroyView()
     }
@@ -137,7 +140,11 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     override fun onDetach() {
         callback = null
         super.onDetach()
+    }
 
+    fun forceStopCamera() {
+        frameProcessor?.stop()
+        fotoapparat?.stop()
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -227,6 +234,7 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
                     binding?.statusViewBottom?.setTextColor(resources.getColor(R.color.status_text))
                     callback.onQRData(results)
                     frameProcessor?.stop()
+                    fotoapparat?.stop()
 
                 } catch (e: IllegalStateException) {
                     //The fragment is destroyed

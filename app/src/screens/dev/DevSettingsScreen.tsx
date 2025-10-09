@@ -212,7 +212,7 @@ const ScreenSelector = ({}) => {
           <Select.Group>
             {useMemo(
               () =>
-                items.map((item, i) => {
+                items.sort().map((item, i) => {
                   return (
                     <Select.Item index={i} key={item} value={item}>
                       <Select.ItemText>{item}</Select.ItemText>

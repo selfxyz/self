@@ -148,7 +148,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
 
   const getData = useCallback(
     () =>
-      _getWithBiometrics<PassportData>(
+      _getWithBiometrics<PassportData | AadhaarData>(
         loadPassportData,
         str => JSON.parse(str),
         {
@@ -617,7 +617,10 @@ interface PassportProviderProps extends PropsWithChildren {
   authenticationTimeoutinMs?: number;
 }
 interface IPassportContext {
-  getData: () => Promise<{ signature: string; data: PassportData } | null>;
+  getData: () => Promise<{
+    signature: string;
+    data: PassportData | AadhaarData;
+  } | null>;
   getSelectedData: () => Promise<{
     signature: string;
     data: PassportData;

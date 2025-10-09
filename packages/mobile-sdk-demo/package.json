@@ -2,6 +2,7 @@
   "name": "mobile-sdk-demo",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "analyze:bundle:android": "yarn prebuild && node scripts/bundle-analyze-ci.cjs android",
@@ -9,7 +10,7 @@
     "preandroid": "yarn prebuild",
     "android": "react-native run-android --verbose",
     "prebuild": "yarn workspace @selfxyz/mobile-sdk-alpha build",
-    "build": "tsc -p tsconfig.json --noEmit --pretty false",
+    "build": "yarn prebuild && tsc -p tsconfig.json --noEmit --pretty false",
     "clean": "rm -rf ios/build android/app/build android/build && cd android && ./gradlew clean && cd ..",
     "format": "prettier --write .",
     "ia": "yarn install-app",
@@ -23,7 +24,7 @@
     "start": "react-native start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "types": "tsc --noEmit"
+    "types": "yarn prebuild && tsc --noEmit"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.3",

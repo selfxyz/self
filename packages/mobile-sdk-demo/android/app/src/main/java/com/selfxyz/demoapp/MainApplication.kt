@@ -9,14 +9,16 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
+import com.selfxyz.selfSDK.RNSelfPassportReaderPackage
 
 class MainApplication : Application(), ReactApplication {
 
     private val mReactNativeHost: ReactNativeHost = object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> {
-            // Packages that cannot be autolinked yet can be added manually here, for example:
-            // packages.add(new MyReactNativePackage());
-            return PackageList(this).packages
+            val packages = PackageList(this).packages.toMutableList()
+            // Manually add the SelfSDK package
+            packages.add(RNSelfPassportReaderPackage())
+            return packages
         }
 
         override fun getJSMainModuleName(): String {

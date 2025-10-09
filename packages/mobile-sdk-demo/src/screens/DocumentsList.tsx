@@ -5,7 +5,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import type { DocumentCatalog } from '@selfxyz/common/dist/esm/src/utils/types.js';
+import type { DocumentCatalog } from '@selfxyz/common/utils/types';
 import { extractNameFromDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import ScreenLayout from '../components/ScreenLayout';

@@ -99,7 +99,7 @@ export interface Progress {
 }
 export interface Adapters {
   storage?: StorageAdapter;
-  scanner: ScannerAdapter;
+  scanner: NFCScannerAdapter;
   crypto: CryptoAdapter;
   network: NetworkAdapter;
   clock?: ClockAdapter;
@@ -118,42 +118,25 @@ export interface NetworkAdapter {
   ws: WsAdapter;
 }
 
-export type ScanMode = 'mrz' | 'nfc' | 'qr';
+export type NFCScanOpts = {
+  passportNumber: string;
+  dateOfBirth: string;
+  dateOfExpiry: string;
+  canNumber?: string;
+  skipPACE?: boolean;
+  skipCA?: boolean;
+  extendedMode?: boolean;
+  usePacePolling?: boolean;
+  sessionId: string;
+  useCan?: boolean;
+  userId?: string;
+};
 
-export type ScanOpts =
-  | { mode: 'mrz' }
-  | {
-      mode: 'nfc';
-      passportNumber: string;
-      dateOfBirth: string;
-      dateOfExpiry: string;
-      canNumber?: string;
-      skipPACE?: boolean;
-      skipCA?: boolean;
-      extendedMode?: boolean;
-      usePacePolling?: boolean;
-    }
-  | { mode: 'qr' };
-
-export type ScanResultNFC = {
-  mode: 'nfc';
+export type NFCScanResult = {
   passportData: PassportData;
 };
-
-export type ScanResultMRZ = {
-  mode: 'mrz';
-  mrzInfo: MRZInfo;
-};
-
-export type ScanResultQR = {
-  mode: 'qr';
-  data: string;
-};
-
-export type ScanResult = ScanResultMRZ | ScanResultNFC | ScanResultQR;
-
-export interface ScannerAdapter {
-  scan(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
+export interface NFCScannerAdapter {
+  scan(opts: NFCScanOpts & { signal?: AbortSignal }): Promise<NFCScanResult>;
 }
 
 export interface DocumentsAdapter {
@@ -167,7 +150,7 @@ export interface DocumentsAdapter {
 }
 
 export interface SelfClient {
-  scanDocument(opts: ScanOpts & { signal?: AbortSignal }): Promise<ScanResult>;
+  scanNFC(opts: NFCScanOpts & { signal?: AbortSignal }): Promise<NFCScanResult>;
   extractMRZInfo(mrz: string): MRZInfo;
   trackEvent(event: string, payload?: TrackEventParams): void;
   getPrivateKey(): Promise<string | null>;
