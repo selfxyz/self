@@ -4,29 +4,78 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
+const navigationStateListeners: Array<() => void> = [];
+let isNavigationReady = true;
+const navigationRef = {
+  isReady: jest.fn(() => isNavigationReady),
+  navigate: jest.fn(),
+  addListener: jest.fn((_: string, callback: () => void) => {
+    navigationStateListeners.push(callback);
+    return () => {
+      const index = navigationStateListeners.indexOf(callback);
+      if (index >= 0) {
+        navigationStateListeners.splice(index, 1);
+      }
+    };
+  }),
+  getCurrentRoute: jest.fn(() => ({ name: 'Home' })),
+} as any;
+
+const appStateListeners: Array<(state: string) => void> = [];
+
+jest.mock('@/hooks/useModal');
+jest.mock('@/providers/passportDataProvider');
+jest.mock('@/navigation', () => ({
+  navigationRef,
+}));
+jest.mock('react-native', () => {
+  const actual = jest.requireActual('react-native');
+  return {
+    ...actual,
+    AppState: {
+      currentState: 'active',
+      addEventListener: jest.fn((_: string, handler: (state: string) => void) => {
+        appStateListeners.push(handler);
+        return {
+          remove: () => {
+            const index = appStateListeners.indexOf(handler);
+            if (index >= 0) {
+              appStateListeners.splice(index, 1);
+            }
+          },
+        };
+      }),
+    },
+  };
+});
+
 import { useModal } from '@/hooks/useModal';
 import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 
-jest.mock('@/hooks/useModal');
-jest.mock('@/providers/passportDataProvider');
-jest.mock('@/navigation', () => ({
-  navigationRef: {
-    isReady: jest.fn(() => true),
-    navigate: jest.fn(),
-  },
-}));
-
 const showModal = jest.fn();
 const getAllDocuments = jest.fn();
 (usePassport as jest.Mock).mockReturnValue({ getAllDocuments });
 
+const getAppState = () =>
+  require('react-native').AppState as unknown as {
+    currentState: string;
+    addEventListener: jest.Mock;
+  };
+
 describe('useRecoveryPrompts', () => {
   beforeEach(() => {
-    showModal.mockClear();
+    jest.clearAllMocks();
+    navigationStateListeners.length = 0;
+    appStateListeners.length = 0;
+    isNavigationReady = true;
+    navigationRef.isReady.mockImplementation(() => isNavigationReady);
+    navigationRef.getCurrentRoute.mockReturnValue({ name: 'Home' });
     (useModal as jest.Mock).mockReturnValue({ showModal, visible: false });
     getAllDocuments.mockResolvedValue({ doc1: {} as any });
+    const AppState = getAppState();
+    AppState.currentState = 'active';
     act(() => {
       useSettingStore.setState({
         loginCount: 0,
@@ -36,11 +85,58 @@ describe('useRecoveryPrompts', () => {
     });
   });
 
-  it('shows modal on first login', async () => {
+  it('shows modal on first login for eligible route', async () => {
     act(() => {
       useSettingStore.setState({ loginCount: 1 });
     });
     renderHook(() => useRecoveryPrompts());
+    await waitFor(() => {
+      expect(showModal).toHaveBeenCalled();
+    });
+  });
+
+  it('waits for navigation readiness before prompting', async () => {
+    isNavigationReady = false;
+    navigationRef.isReady.mockImplementation(() => isNavigationReady);
+    act(() => {
+      useSettingStore.setState({ loginCount: 1 });
+    });
+    renderHook(() => useRecoveryPrompts());
+    await waitFor(() => {
+      expect(showModal).not.toHaveBeenCalled();
+    });
+
+    isNavigationReady = true;
+    navigationStateListeners.forEach((listener) => listener());
+
+    await waitFor(() => {
+      expect(showModal).toHaveBeenCalled();
+    });
+  });
+
+  it('does not show modal when route is disallowed', async () => {
+    navigationRef.getCurrentRoute.mockReturnValue({ name: 'DocumentCamera' });
+    act(() => {
+      useSettingStore.setState({ loginCount: 1 });
+    });
+    renderHook(() => useRecoveryPrompts());
+    navigationStateListeners.forEach((listener) => listener());
+    await waitFor(() => {
+      expect(showModal).not.toHaveBeenCalled();
+    });
+  });
+
+  it('prompts when returning from background on eligible route', async () => {
+    const AppState = getAppState();
+    AppState.currentState = 'background';
+    act(() => {
+      useSettingStore.setState({ loginCount: 1 });
+    });
+    renderHook(() => useRecoveryPrompts());
+    expect(showModal).not.toHaveBeenCalled();
+
+    appStateListeners.forEach((listener) => listener('active'));
+
     await waitFor(() => {
       expect(showModal).toHaveBeenCalled();
     });
@@ -69,18 +165,6 @@ describe('useRecoveryPrompts', () => {
   it('does not show modal if backup already enabled', async () => {
     act(() => {
       useSettingStore.setState({ loginCount: 1, cloudBackupEnabled: true });
-    });
-    renderHook(() => useRecoveryPrompts());
-    await waitFor(() => {
-      expect(showModal).not.toHaveBeenCalled();
-    });
-  });
-
-  it('does not show modal when navigation is not ready', async () => {
-    const navigationRef = require('@/navigation').navigationRef;
-    navigationRef.isReady.mockReturnValueOnce(false);
-    act(() => {
-      useSettingStore.setState({ loginCount: 1 });
     });
     renderHook(() => useRecoveryPrompts());
     await waitFor(() => {
