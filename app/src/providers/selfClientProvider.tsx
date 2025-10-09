@@ -28,12 +28,6 @@ import { useSettingStore } from '@/stores/settingStore';
 import analytics from '@/utils/analytics';
 
 type GlobalCrypto = { crypto?: { subtle?: Crypto['subtle'] } };
-
-type RouteParams<RouteName extends keyof RootStackParamList> = Extract<
-  RootStackParamList[RouteName],
-  object
->;
-
 /**
  * Provides a configured Self SDK client instance to all descendants.
  *
@@ -42,20 +36,24 @@ type RouteParams<RouteName extends keyof RootStackParamList> = Extract<
  * - `fetch`/`WebSocket` for network communication
  * - Web Crypto hashing with a stub signer
  */
-const navigateIfReady = <
-  RouteName extends keyof RootStackParamList,
-  Params extends RootStackParamList[RouteName],
->(
-  ...args: undefined extends Params
-    ? [route: RouteName, params?: Params]
-    : [route: RouteName, params: Params]
-) => {
+function navigateIfReady<RouteName extends keyof RootStackParamList>(
+  route: RouteName,
+  ...args: undefined extends RootStackParamList[RouteName]
+    ? [params?: RootStackParamList[RouteName]]
+    : [params: RootStackParamList[RouteName]]
+): void {
   if (navigationRef.isReady()) {
-    const [route, params] = args;
-    // @ts-expect-error-next-line
-    navigationRef.navigate(route, params);
+    const params = args[0];
+    if (params !== undefined) {
+      (navigationRef.navigate as (r: RouteName, p: typeof params) => void)(
+        route,
+        params,
+      );
+    } else {
+      navigationRef.navigate(route as never);
+    }
   }
-};
+}
 
 export const SelfClientProvider = ({ children }: PropsWithChildren) => {
   const config = useMemo(() => ({}), []);
@@ -165,10 +163,13 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         countryCode: string | null;
         documentCategory: string | null;
       }) => {
-        navigateIfReady('ComingSoon', {
-          countryCode,
-          documentCategory,
-        } as never);
+        // Only navigate if we have a valid country code
+        if (countryCode) {
+          navigateIfReady('ComingSoon', {
+            countryCode,
+            documentCategory: documentCategory ?? undefined,
+          });
+        }
       },
     );
 
@@ -235,17 +236,19 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
       }
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
-      const params: RouteParams<'AadhaarUploadError'> = {
-        errorType,
-      } as RouteParams<'AadhaarUploadError'>;
-      navigateIfReady('AadhaarUploadError', params);
+      navigateIfReady('AadhaarUploadError', { errorType });
     });
 
     addListener(
       SdkEvents.DOCUMENT_COUNTRY_SELECTED,
-      ({ countryCode, documentTypes }) => {
+      ({
+        countryCode,
+        documentTypes,
+      }: {
+        countryCode: string;
+        documentTypes: string[];
+      }) => {
         if (navigationRef.isReady()) {
-          // @ts-expect-error
           navigationRef.navigate('IDPicker', { countryCode, documentTypes });
         }
       },
@@ -262,10 +265,14 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               navigationRef.navigate('DocumentOnboarding');
               break;
             case 'a':
-              navigationRef.navigate('AadhaarUpload', { countryCode } as never);
+              if (countryCode) {
+                navigationRef.navigate('AadhaarUpload', { countryCode });
+              }
               break;
             default:
-              navigationRef.navigate('ComingSoon', { countryCode } as never);
+              if (countryCode) {
+                navigationRef.navigate('ComingSoon', { countryCode });
+              }
               break;
           }
         }

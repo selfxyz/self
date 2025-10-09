@@ -11,7 +11,6 @@ import type { NFCScanContext } from '@selfxyz/mobile-sdk-alpha';
 import { logNFCEvent } from '@/Sentry';
 import {
   type AndroidScanResponse,
-  PassportReader,
   reset,
   scan as scanDocument,
 } from '@/utils/passportReader';
@@ -94,24 +93,8 @@ const scanIOS = async (
   inputs: Inputs,
   context: Omit<NFCScanContext, 'stage'>,
 ) => {
-  // Narrow type for iOS-specific method availability
-  const iosReader = PassportReader as
-    | (typeof PassportReader & {
-        scanPassport?: (
-          passportNumber: string,
-          dateOfBirth: string,
-          dateOfExpiry: string,
-          canNumber: string,
-          useCan: boolean,
-          skipPACE: boolean,
-          skipCA: boolean,
-          extendedMode: boolean,
-          usePacePolling: boolean,
-          sessionId: string,
-        ) => unknown;
-      })
-    | null;
-  if (!iosReader?.scanPassport) {
+  // Use normalized cross-platform scan to avoid duplicated iOS code paths
+  if (!scanDocument) {
     console.warn(
       'iOS passport scanner is not available - native module failed to load',
     );
@@ -126,25 +109,24 @@ const scanIOS = async (
     );
   }
 
-  return await Promise.resolve(
-    iosReader.scanPassport(
-      inputs.passportNumber,
-      inputs.dateOfBirth,
-      inputs.dateOfExpiry,
-      inputs.canNumber ?? '',
-      inputs.useCan ?? false,
-      inputs.skipPACE ?? false,
-      inputs.skipCA ?? false,
-      inputs.extendedMode ?? false,
-      inputs.usePacePolling ?? false,
-      inputs.sessionId,
-    ),
-  );
+  return await scanDocument({
+    documentNumber: inputs.passportNumber,
+    dateOfBirth: inputs.dateOfBirth,
+    dateOfExpiry: inputs.dateOfExpiry,
+    canNumber: inputs.canNumber ?? '',
+    useCan: inputs.useCan ?? false,
+    skipPACE: inputs.skipPACE ?? false,
+    skipCA: inputs.skipCA ?? false,
+    extendedMode: inputs.extendedMode ?? false,
+    usePacePolling: inputs.usePacePolling ?? false,
+    sessionId: inputs.sessionId,
+  });
 };
 
 const handleResponseIOS = (response: unknown) => {
-  const parsed = JSON.parse(String(response));
-  const dgHashesObj = JSON.parse(parsed?.dataGroupHashes);
+  // Response is already parsed as an object by the normalized scan function
+  const parsed = response as Record<string, unknown>;
+  const dgHashesObj = JSON.parse(String(parsed?.dataGroupHashes ?? '{}'));
   const dg1HashString = dgHashesObj?.DG1?.sodHash;
   const dg1Hash = Array.from(Buffer.from(dg1HashString, 'hex'));
   const dg2HashString = dgHashesObj?.DG2?.sodHash;
@@ -164,24 +146,29 @@ const handleResponseIOS = (response: unknown) => {
   // const _encapsulatedContentDigestAlgorithm =
   //   parsed?.encapsulatedContentDigestAlgorithm;
   const documentSigningCertificate = parsed?.documentSigningCertificate;
-  const pem = JSON.parse(documentSigningCertificate).PEM.replace(/\n/g, '');
-  const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
+  const pem = JSON.parse(String(documentSigningCertificate)).PEM.replace(
+    /\n/g,
+    '',
+  );
+  const eContentArray = Array.from(
+    Buffer.from(String(signedAttributes), 'base64'),
+  );
   const signedEContentArray = eContentArray.map(byte =>
     byte > 127 ? byte - 256 : byte,
   );
 
   const concatenatedDataHashesArray = Array.from(
-    Buffer.from(eContentBase64, 'base64'),
+    Buffer.from(String(eContentBase64), 'base64'),
   );
   const concatenatedDataHashesArraySigned = concatenatedDataHashesArray.map(
     byte => (byte > 127 ? byte - 256 : byte),
   );
 
   const encryptedDigestArray = Array.from(
-    Buffer.from(signatureBase64, 'base64'),
+    Buffer.from(String(signatureBase64), 'base64'),
   ).map(byte => (byte > 127 ? byte - 256 : byte));
 
-  const document_type = mrz.length === 88 ? 'passport' : 'id_card';
+  const document_type = String(mrz).length === 88 ? 'passport' : 'id_card';
 
   return {
     mrz,

@@ -48,7 +48,29 @@ const AppNavigation = createNativeStackNavigator({
   screens: navigationScreens,
 });
 
-export type RootStackParamList = StaticParamList<typeof AppNavigation>;
+type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
+
+// Explicitly declare route params that are not inferred from initialParams
+export type RootStackParamList = Omit<
+  BaseRootStackParamList,
+  'ComingSoon' | 'IDPicker' | 'AadhaarUpload' | 'AadhaarUploadError'
+> & {
+  ComingSoon: {
+    countryCode: string;
+    documentCategory?: string;
+  };
+  IDPicker: {
+    countryCode: string;
+    documentTypes: string[];
+  };
+  AadhaarUpload: {
+    countryCode: string;
+  };
+  AadhaarUploadError: {
+    errorType: string;
+  };
+};
+
 export type RootStackScreenProps<T extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, T>;
 
