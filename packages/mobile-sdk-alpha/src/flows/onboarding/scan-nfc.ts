@@ -2,17 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { getSKIPEM, initPassportDataParsing } from "@selfxyz/common";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { NativeEventEmitter, NativeModules, Platform } from "react-native";
-import { useSelfClient } from "src/context";
-import { storePassportData } from "src/documents/utils";
-import { scanNFC } from "src/nfc";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
+import { useSelfClient } from 'src/context';
+import { storePassportData } from 'src/documents/utils';
+import { scanNFC } from 'src/nfc';
+
+import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 const getEmitter = () => {
-    return Platform.OS === 'android'
-      ? new NativeEventEmitter(NativeModules.nativeModule)
-      : null;
+  return Platform.OS === 'android' ? new NativeEventEmitter(NativeModules.nativeModule) : null;
 };
 
 type useScanNFCProps = {
@@ -70,38 +69,31 @@ export const useScanNFC = ({
 
   useEffect(() => {
     if (emitter !== null) {
-      const subscription = emitter.addListener(
-        'NativeEvent',
-        (event: string) => {
-          setDetailsMessage(event);
+      const subscription = emitter.addListener('NativeEvent', (event: string) => {
+        setDetailsMessage(event);
 
-          // Haptic feedback mapping for completion/error only
-          if (
-            event === 'PACE succeeded' ||
-            event === 'BAC succeeded' ||
-            event === 'Chip authentication succeeded'
-          ) {
-            onNFCMajorSuccess?.(); // Major success
-          } else if (
-            event === 'Reading DG1 succeeded' ||
-            event === 'Reading DG2 succeeded' ||
-            event === 'Reading SOD succeeded' ||
-            event === 'Reading COM succeeded'
-          ) {
-            onNFCMinorSuccess?.(); // Minor DG step
-          } else if (
-            event === 'BAC failed' ||
-            event === 'PACE failed' ||
-            event.toLowerCase().includes('failed') ||
-            event.toLowerCase().includes('error')
-          ) {
-            clearTimeoutRef();
-            setStatus(NFCScanStatus.IDLE);
-            setError(event);
-            onNFCError?.(event);
-          }
-        },
-      );
+        // Haptic feedback mapping for completion/error only
+        if (event === 'PACE succeeded' || event === 'BAC succeeded' || event === 'Chip authentication succeeded') {
+          onNFCMajorSuccess?.(); // Major success
+        } else if (
+          event === 'Reading DG1 succeeded' ||
+          event === 'Reading DG2 succeeded' ||
+          event === 'Reading SOD succeeded' ||
+          event === 'Reading COM succeeded'
+        ) {
+          onNFCMinorSuccess?.(); // Minor DG step
+        } else if (
+          event === 'BAC failed' ||
+          event === 'PACE failed' ||
+          event.toLowerCase().includes('failed') ||
+          event.toLowerCase().includes('error')
+        ) {
+          clearTimeoutRef();
+          setStatus(NFCScanStatus.IDLE);
+          setError(event);
+          onNFCError?.(event);
+        }
+      });
 
       return () => {
         subscription.remove();
@@ -173,8 +165,6 @@ export const useScanNFC = ({
 
       // Navigate to success screen with the document data
       onSuccess?.();
-
-
     } catch (error) {
       if (scanCancelledRef.current) {
         return;
