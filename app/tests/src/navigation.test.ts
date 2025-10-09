@@ -5,6 +5,8 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 
+import { CRITICAL_RECOVERY_PROMPT_ROUTES } from '@/consts/recoveryPrompts';
+
 const mockNavigationRef = {
   isReady: jest.fn(() => true),
   navigate: jest.fn(),
@@ -105,6 +107,8 @@ describe('navigation', () => {
       const NavigationWithTracking = require('@/navigation').default;
       render(<NavigationWithTracking />);
     });
-    expect(useRecoveryPrompts).toHaveBeenCalled();
+    expect(useRecoveryPrompts).toHaveBeenCalledWith({
+      disallowedRoutes: CRITICAL_RECOVERY_PROMPT_ROUTES,
+    });
   });
 });

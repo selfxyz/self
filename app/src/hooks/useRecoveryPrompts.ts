@@ -6,27 +6,19 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { AppStateStatus } from 'react-native';
 import { AppState } from 'react-native';
 
+import { CRITICAL_RECOVERY_PROMPT_ROUTES } from '@/consts/recoveryPrompts';
 import { useModal } from '@/hooks/useModal';
 import { navigationRef } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 
-const DEFAULT_DISALLOWED_ROUTES = [
-  'DocumentCamera',
-  'DocumentCameraTrouble',
-  'DocumentNFCMethodSelection',
-  'DocumentNFCScan',
-  'DocumentNFCTrouble',
-  'QRCodeViewFinder',
-  'QRCodeTrouble',
-] as const;
+const DEFAULT_DISALLOWED_ROUTES = CRITICAL_RECOVERY_PROMPT_ROUTES;
 
 type UseRecoveryPromptsOptions = {
   allowedRoutes?: string[];
   disallowedRoutes?: string[];
 };
 
-// TODO: need to debug and test the logic. it pops up too often.
 export default function useRecoveryPrompts({
   allowedRoutes,
   disallowedRoutes = DEFAULT_DISALLOWED_ROUTES,

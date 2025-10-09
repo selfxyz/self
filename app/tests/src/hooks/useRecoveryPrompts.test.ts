@@ -49,6 +49,7 @@ jest.mock('react-native', () => {
   };
 });
 
+import { CRITICAL_RECOVERY_PROMPT_ROUTES } from '@/consts/recoveryPrompts';
 import { useModal } from '@/hooks/useModal';
 import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -114,17 +115,20 @@ describe('useRecoveryPrompts', () => {
     });
   });
 
-  it('does not show modal when route is disallowed', async () => {
-    navigationRef.getCurrentRoute.mockReturnValue({ name: 'DocumentCamera' });
-    act(() => {
-      useSettingStore.setState({ loginCount: 1 });
-    });
-    renderHook(() => useRecoveryPrompts());
-    navigationStateListeners.forEach((listener) => listener());
-    await waitFor(() => {
-      expect(showModal).not.toHaveBeenCalled();
-    });
-  });
+  it.each([...CRITICAL_RECOVERY_PROMPT_ROUTES])(
+    'does not show modal when route %s is disallowed',
+    async (routeName) => {
+      navigationRef.getCurrentRoute.mockReturnValue({ name: routeName });
+      act(() => {
+        useSettingStore.setState({ loginCount: 1 });
+      });
+      const { unmount } = renderHook(() => useRecoveryPrompts());
+      await waitFor(() => {
+        expect(showModal).not.toHaveBeenCalled();
+      });
+      unmount();
+    },
+  );
 
   it('prompts when returning from background on eligible route', async () => {
     const AppState = getAppState();
