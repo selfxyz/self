@@ -11,7 +11,6 @@ import { countries } from "@selfxyz/common/constants/countries";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
 import { Country3LetterCode } from "@selfxyz/common/constants/countries";
-import { hashEndpointWithScope } from "@selfxyz/common/utils/scope";
 import { createHash } from "crypto";
 
 // Helper function to format date for passport (YYMMDD format)
@@ -36,6 +35,7 @@ describe("Self Verification Flow V2", () => {
   let forbiddenCountriesList: Country3LetterCode[];
   let forbiddenCountriesListPacked: string[];
   let verificationConfigV2: any;
+  let scopeAsBigIntString: string;
 
   function calculateUserIdentifierHash(userContextData: string): string {
     const sha256Hash = createHash("sha256")
@@ -98,9 +98,8 @@ describe("Self Verification Flow V2", () => {
     const userIdentifierHash = calculateUserIdentifierHash(tempUserContextData);
     const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-    const expectedScopeFromHash = hashEndpointWithScope("example.com", "test-scope");
-    const scopeAsBigInt = BigInt(expectedScopeFromHash);
-    const scopeAsBigIntString = scopeAsBigInt.toString();
+    const actualScope = await deployedActors.testSelfVerificationRoot.scope();
+    scopeAsBigIntString = actualScope.toString();
 
     baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
       registerSecret,
@@ -283,10 +282,17 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-      // Generate proof with a different scope (this will create a valid proof but with wrong scope)
-      const differentScopeFromHash = hashEndpointWithScope("different.com", "different-scope");
-      const differentScopeAsBigInt = BigInt(differentScopeFromHash);
-      const differentScopeAsBigIntString = differentScopeAsBigInt.toString();
+      // Deploy a new TestSelfVerificationRoot contract with a different scopeSeed
+      const TestSelfVerificationRootFactory = await ethers.getContractFactory("TestSelfVerificationRoot");
+      const differentScopeContract = await TestSelfVerificationRootFactory.deploy(
+        deployedActors.hub.target,
+        "different-test-scope" // Different scopeSeed
+      );
+      await differentScopeContract.waitForDeployment();
+
+      // Get the actual different scope from the deployed contract
+      const differentActualScope = await differentScopeContract.scope();
+      const differentScopeAsBigIntString = differentActualScope.toString();
 
       const differentScopeProof = await generateVcAndDiscloseProof(
         scopeRegisterSecret,
@@ -386,9 +392,6 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-      const expectedScopeFromHash = hashEndpointWithScope("example.com", "test-scope");
-      const scopeAsBigInt = BigInt(expectedScopeFromHash);
-      const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
@@ -674,9 +677,6 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-      const expectedScopeFromHash = hashEndpointWithScope("example.com", "test-scope");
-      const scopeAsBigInt = BigInt(expectedScopeFromHash);
-      const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
@@ -751,9 +751,6 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-      const expectedScopeFromHash = hashEndpointWithScope("example.com", "test-scope");
-      const scopeAsBigInt = BigInt(expectedScopeFromHash);
-      const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
@@ -812,9 +809,6 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-      const expectedScopeFromHash = hashEndpointWithScope("example.com", "test-scope");
-      const scopeAsBigInt = BigInt(expectedScopeFromHash);
-      const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 
@@ -873,9 +867,6 @@ describe("Self Verification Flow V2", () => {
       const userIdentifierHash = calculateUserIdentifierHash(userContextData);
       const userIdentifierBigInt = BigInt(userIdentifierHash);
 
-      const expectedScopeFromHash = hashEndpointWithScope("example.com", "test-scope");
-      const scopeAsBigInt = BigInt(expectedScopeFromHash);
-      const scopeAsBigIntString = scopeAsBigInt.toString();
 
       const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(ATTESTATION_ID.E_PASSPORT)), 32);
 

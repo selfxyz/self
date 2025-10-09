@@ -78,7 +78,7 @@ describe("CustomVerifier", function () {
               [samplePassportOutput],
             ),
           ),
-      ).to.be.revertedWithCustomError(customVerifier, "INVALID_OFAC");
+      ).to.be.revertedWithCustomError(customVerifier, "InvalidOfacCheck");
     });
 
     it("should return proper OFAC results", async function () {
@@ -145,7 +145,7 @@ describe("CustomVerifier", function () {
               [samplePassportOutput],
             ),
           ),
-      ).to.be.revertedWithCustomError(customVerifier, "INVALID_OLDER_THAN");
+      ).to.be.revertedWithCustomError(customVerifier, "InvalidOlderThan");
     });
 
     it("should not throw an error if older than is not enabled", async function () {
@@ -243,7 +243,7 @@ describe("CustomVerifier", function () {
               [sampleIdCardOutput],
             ),
           ),
-      ).to.be.revertedWithCustomError(customVerifier, "INVALID_OFAC");
+      ).to.be.revertedWithCustomError(customVerifier, "InvalidOfacCheck");
     });
 
     it("should return proper OFAC results", async function () {
@@ -331,7 +331,7 @@ describe("CustomVerifier", function () {
               [sampleIdCardOutput],
             ),
           ),
-      ).to.be.revertedWithCustomError(customVerifier, "INVALID_OLDER_THAN");
+      ).to.be.revertedWithCustomError(customVerifier, "InvalidOlderThan");
     });
 
     it("should not throw an error if older than is not enabled", async function () {
@@ -406,6 +406,6 @@ describe("CustomVerifier", function () {
           ],
         ),
       ),
-    ).to.be.revertedWithCustomError(customVerifier, "INVALID_ATTESTATION_ID");
+    ).to.be.revertedWithCustomError(customVerifier, "InvalidAttestationId");
   });
 });

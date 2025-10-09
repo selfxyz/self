@@ -10,7 +10,7 @@ import { generateRegisterAadhaarProof } from "../utils/generateProof";
 import fs from "fs";
 
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, "../../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem"),
+  path.join(__dirname, "../../../circuits/node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem"),
   "utf8",
 );
 const pubkeyPem = fs.readFileSync(
