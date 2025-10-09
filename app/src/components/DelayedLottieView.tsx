@@ -4,7 +4,7 @@
 
 import type { LottieViewProps } from 'lottie-react-native';
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 
 /**
  * Wrapper around LottieView that fixes iOS native module initialization timing.
@@ -20,7 +20,7 @@ import React, { useEffect, useRef } from 'react';
  * @example
  * <DelayedLottieView autoPlay loop source={animation} style={styles.animation} />
  */
-export const DelayedLottieView = React.forwardRef<LottieView, LottieViewProps>(
+export const DelayedLottieView = forwardRef<LottieView, LottieViewProps>(
   (props, forwardedRef) => {
     const internalRef = useRef<LottieView>(null);
     const ref = (forwardedRef as React.RefObject<LottieView>) || internalRef;
