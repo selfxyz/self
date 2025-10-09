@@ -83,7 +83,6 @@ export function HeldPrimaryButton({
       {...props}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
-      // @ts-expect-error actually it is there
       onLayout={getButtonSize}
       animatedComponent={renderAnimatedComponent()}
     >

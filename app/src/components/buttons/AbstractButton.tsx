@@ -3,7 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import type { GestureResponderEvent, ViewStyle } from 'react-native';
+import type {
+  GestureResponderEvent,
+  LayoutChangeEvent,
+  ViewStyle,
+} from 'react-native';
 import { Platform, StyleSheet } from 'react-native';
 import type { ViewProps } from 'tamagui';
 import { Button, Text } from 'tamagui';
@@ -16,6 +20,7 @@ export interface ButtonProps extends ViewProps {
   children: React.ReactNode;
   animatedComponent?: React.ReactNode;
   trackEvent?: string;
+  onLayout?: (event: LayoutChangeEvent) => void;
 }
 
 interface AbstractButtonProps extends ButtonProps {

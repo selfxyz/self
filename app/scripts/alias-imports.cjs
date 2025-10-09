@@ -20,70 +20,124 @@ function transformProjectToAliasImports(project, appRootPath) {
 
     // Handle import declarations
     for (const declaration of sourceFile.getImportDeclarations()) {
-      const spec = declaration.getModuleSpecifierValue();
-
-      // Skip existing alias imports
-      if (spec.startsWith('@/') || spec.startsWith('@tests/')) {
-        continue;
-      }
-
-      // Handle relative imports
-      if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
-      const abs = path.resolve(dir, spec);
-      let baseDir = null;
-      let baseAlias = null;
-
-      // Determine containment safely using path.relative to avoid startsWith false positives
-      const relFromSrc = path.relative(srcDir, abs);
-      if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
-        baseDir = srcDir;
-        baseAlias = '@';
-      } else {
-        const relFromTests = path.relative(testsDir, abs);
-        if (!relFromTests.startsWith('..') && !path.isAbsolute(relFromTests)) {
-          baseDir = testsDir;
-          baseAlias = '@tests';
-        } else {
+      try {
+        // Skip if no module specifier or not a string literal
+        const moduleSpecifier = declaration.getModuleSpecifier();
+        if (
+          !moduleSpecifier ||
+          moduleSpecifier.getKind() !== SyntaxKind.StringLiteral
+        ) {
           continue;
         }
-      }
 
-      const newSpec = determineAliasStrategy(dir, abs, baseDir, baseAlias);
-      declaration.setModuleSpecifier(newSpec);
+        const spec = declaration.getModuleSpecifierValue();
+
+        // Skip existing alias imports
+        if (spec.startsWith('@/') || spec.startsWith('@tests/')) {
+          continue;
+        }
+
+        // Handle relative imports
+        if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
+        const abs = path.resolve(dir, spec);
+        let baseDir = null;
+        let baseAlias = null;
+
+        // Determine containment safely using path.relative to avoid startsWith false positives
+        const relFromSrc = path.relative(srcDir, abs);
+        if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
+          baseDir = srcDir;
+          baseAlias = '@';
+        } else {
+          const relFromTests = path.relative(testsDir, abs);
+          if (
+            !relFromTests.startsWith('..') &&
+            !path.isAbsolute(relFromTests)
+          ) {
+            baseDir = testsDir;
+            baseAlias = '@tests';
+          } else {
+            continue;
+          }
+        }
+
+        const newSpec = determineAliasStrategy(dir, abs, baseDir, baseAlias);
+        declaration.setModuleSpecifier(newSpec);
+      } catch (error) {
+        // Skip declarations that can't be processed (e.g., type-only imports with issues)
+        const msg = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `Skipping import declaration in ${sourceFile.getFilePath()}: ${msg}`,
+        );
+        try {
+          console.debug('Import declaration text:', declaration.getText());
+        } catch {}
+        if (error && typeof error === 'object' && 'stack' in error) {
+          console.debug('Error stack:', error.stack);
+        }
+        continue;
+      }
     }
 
     // Handle export declarations like: export * from '../x' or export {A} from '../x'
     for (const declaration of sourceFile.getExportDeclarations()) {
-      const spec = declaration.getModuleSpecifierValue();
-      if (!spec) continue;
-
-      // Skip existing alias exports
-      if (spec.startsWith('@/') || spec.startsWith('@tests/')) {
-        continue;
-      }
-
-      // Handle relative exports
-      if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
-      const abs = path.resolve(dir, spec);
-      let baseDir = null;
-      let baseAlias = null;
-
-      const relFromSrc = path.relative(srcDir, abs);
-      if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
-        baseDir = srcDir;
-        baseAlias = '@';
-      } else {
-        const relFromTests = path.relative(testsDir, abs);
-        if (!relFromTests.startsWith('..') && !path.isAbsolute(relFromTests)) {
-          baseDir = testsDir;
-          baseAlias = '@tests';
-        } else {
+      try {
+        // Skip if no module specifier or not a string literal
+        const moduleSpecifier = declaration.getModuleSpecifier();
+        if (
+          !moduleSpecifier ||
+          moduleSpecifier.getKind() !== SyntaxKind.StringLiteral
+        ) {
           continue;
         }
-      }
 
-      const newSpec = determineAliasStrategy(dir, abs, baseDir, baseAlias);
-      declaration.setModuleSpecifier(newSpec);
+        const spec = declaration.getModuleSpecifierValue();
+        if (!spec) continue;
+
+        // Skip existing alias exports
+        if (spec.startsWith('@/') || spec.startsWith('@tests/')) {
+          continue;
+        }
+
+        // Handle relative exports
+        if (!spec.startsWith('./') && !spec.startsWith('../')) continue;
+        const abs = path.resolve(dir, spec);
+        let baseDir = null;
+        let baseAlias = null;
+
+        const relFromSrc = path.relative(srcDir, abs);
+        if (!relFromSrc.startsWith('..') && !path.isAbsolute(relFromSrc)) {
+          baseDir = srcDir;
+          baseAlias = '@';
+        } else {
+          const relFromTests = path.relative(testsDir, abs);
+          if (
+            !relFromTests.startsWith('..') &&
+            !path.isAbsolute(relFromTests)
+          ) {
+            baseDir = testsDir;
+            baseAlias = '@tests';
+          } else {
+            continue;
+          }
+        }
+
+        const newSpec = determineAliasStrategy(dir, abs, baseDir, baseAlias);
+        declaration.setModuleSpecifier(newSpec);
+      } catch (error) {
+        // Skip declarations that can't be processed
+        const msg = error instanceof Error ? error.message : String(error);
+        console.warn(
+          `Skipping export declaration in ${sourceFile.getFilePath()}: ${msg}`,
+        );
+        try {
+          console.debug('Export declaration text:', declaration.getText());
+        } catch {}
+        if (error && typeof error === 'object' && 'stack' in error) {
+          console.debug('Error stack:', error.stack);
+        }
+        continue;
+      }
     }
 
     // Handle require() calls

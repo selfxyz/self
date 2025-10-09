@@ -9,7 +9,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { handleStatusCode, parseStatusMessage, type StatusMessage } from '../../../src/proving/internal/statusHandlers';
+import type { StatusMessage } from '../../../src/proving/internal/statusHandlers';
+import { handleStatusCode, parseStatusMessage } from '../../../src/proving/internal/statusHandlers';
 
 describe('parseStatusMessage', () => {
   it('parses valid JSON string', () => {

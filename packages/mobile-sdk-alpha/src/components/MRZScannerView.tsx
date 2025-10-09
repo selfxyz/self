@@ -7,7 +7,7 @@ import type { DimensionValue, NativeSyntheticEvent, ViewProps, ViewStyle } from 
 import { NativeModules, PixelRatio, Platform, requireNativeComponent, StyleSheet, View } from 'react-native';
 
 import { extractMRZInfo, formatDateToYYMMDD } from '../mrz';
-import { MRZInfo } from '../types/public';
+import type { MRZInfo } from '../types/public';
 import { RCTFragment } from './RCTFragment';
 
 interface SelfMRZScannerViewProps extends ViewProps {

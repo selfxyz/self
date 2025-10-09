@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+export { AadhaarNavBar } from '@/components/NavBar/AadhaarNavBar';
 export { DefaultNavBar } from '@/components/NavBar/DefaultNavBar';
 export { HomeNavBar } from '@/components/NavBar/HomeNavBar';
 export { IdDetailsNavBar } from '@/components/NavBar/IdDetailsNavBar';
-export { ProgressNavBar } from '@/components/NavBar/ProgressNavBar';

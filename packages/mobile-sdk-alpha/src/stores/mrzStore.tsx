@@ -4,7 +4,7 @@
 
 import { create } from 'zustand';
 
-import { MRZInfo } from '../types/public';
+import type { MRZInfo } from '../types/public';
 
 type MRZNeededForNFC = Pick<MRZInfo, 'documentNumber' | 'dateOfBirth' | 'dateOfExpiry'>;
 

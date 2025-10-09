@@ -1,0 +1,6 @@
+appId: com.selfxyz.demoapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Self Demo App"
+    timeout: ${LAUNCH_WAIT_MS:60000}

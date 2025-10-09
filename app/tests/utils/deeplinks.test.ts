@@ -4,7 +4,7 @@
 
 import { Linking } from 'react-native';
 
-import { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 jest.mock('@/navigation', () => ({
   navigationRef: {

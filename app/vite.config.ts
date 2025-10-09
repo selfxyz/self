@@ -32,6 +32,7 @@ export default defineConfig({
       '@env': resolve(__dirname, 'env.ts'),
       '/src': resolve(__dirname, 'src'),
       '@': resolve(__dirname, 'src'),
+      '@/package.json': resolve(__dirname, 'package.json'),
       'react-native-svg': 'react-native-svg-web',
       'lottie-react-native': 'lottie-react',
       '@react-native-community/blur': resolve(
@@ -173,11 +174,11 @@ export default defineConfig({
           'vendor-state-zustand': ['zustand'],
 
           // Screen-specific chunks - more granular
-          'screens-document-core': ['./src/navigation/document.ts'],
+          'screens-document-core': ['./src/navigation/documents.ts'],
           'screens-passport-nfc': ['./src/utils/nfcScanner.ts'],
 
           // Proving - split into even smaller chunks
-          'screens-prove-core': ['./src/navigation/prove.ts'],
+          'screens-prove-core': ['./src/navigation/verification.ts'],
           'screens-prove-validation-core': [
             './src/utils/proving/validateDocument.ts',
           ],
@@ -192,8 +193,7 @@ export default defineConfig({
           ],
 
           // Other screens
-          'screens-settings': ['./src/navigation/settings.ts'],
-          'screens-recovery': ['./src/navigation/recovery.ts'],
+          'screens-settings': ['./src/navigation/account.ts'],
           'screens-dev': ['./src/navigation/devTools.ts'],
         },
       },

@@ -1756,7 +1756,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - "mobile-sdk-alpha (from `../node_modules/@selfxyz/mobile-sdk-alpha`)"
-  - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b`)"
+  - "NFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `04ede227cbfd377e2b4bc9b38f9a89eebdcab52f`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -1849,7 +1849,7 @@ EXTERNAL SOURCES:
   mobile-sdk-alpha:
     :path: "../node_modules/@selfxyz/mobile-sdk-alpha"
   NFCPassportReader:
-    :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
+    :commit: 04ede227cbfd377e2b4bc9b38f9a89eebdcab52f
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
@@ -1980,7 +1980,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   NFCPassportReader:
-    :commit: 9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b
+    :commit: 04ede227cbfd377e2b4bc9b38f9a89eebdcab52f
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
 
 SPEC CHECKSUMS:
@@ -2061,6 +2061,6 @@ SPEC CHECKSUMS:
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 
-PODFILE CHECKSUM: 7bafdc4607a2a09088e9b68be33648f72b535141
+PODFILE CHECKSUM: fdd4646d0ec2813c3447acfca4303578e4346210
 
 COCOAPODS: 1.16.2

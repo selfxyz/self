@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import DOMPurify from 'dompurify';
+import createDOMPurify from 'dompurify';
 import {
   createElement,
   type CSSProperties,
@@ -20,7 +20,7 @@ type Props = {
 export const SvgXml = forwardRef<HTMLDivElement, Props>(
   ({ xml, width, height, style, ...props }, ref) => {
     // Initialize DOMPurify for web browser environment
-    const purify = DOMPurify(window);
+    const purify = createDOMPurify(window);
     const safe = purify.sanitize(xml, {
       USE_PROFILES: { svg: true, svgFilters: true },
     });

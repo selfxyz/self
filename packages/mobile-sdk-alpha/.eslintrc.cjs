@@ -70,6 +70,14 @@ module.exports = {
     '@typescript-eslint/no-require-imports': 'error',
     '@typescript-eslint/no-empty-object-type': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    // TypeScript Import Rules
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      {
+        prefer: 'type-imports',
+        disallowTypeAnnotations: false,
+      },
+    ],
     // Add prettier rule to show prettier errors as ESLint errors
     'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
     // Disable prop-types for TypeScript files since we use TypeScript types

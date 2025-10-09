@@ -5,7 +5,8 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { buildValidationRows, humanizeDocumentType, type NormalizedMRZResult } from '../utils/camera';
+import type { NormalizedMRZResult } from '../utils/camera';
+import { buildValidationRows, humanizeDocumentType } from '../utils/camera';
 
 interface Props {
   result: NormalizedMRZResult;

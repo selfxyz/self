@@ -17,13 +17,18 @@ type Locale = {
 
 export function getLocales(): Locale[] {
   return navigator.languages.map(lang => {
-    const locale = new Intl.Locale(lang);
+    type LocaleWithTextInfo = Intl.Locale & {
+      textInfo?: {
+        direction?: string;
+      };
+    };
+
+    const locale = new Intl.Locale(lang) as LocaleWithTextInfo;
     return {
       languageCode: locale.language,
       countryCode: locale.region ?? '',
       scriptCode: locale.script,
       languageTag: lang,
-      // @ts-expect-error this not in type but appears to be in browsers
       isRTL: locale.textInfo?.direction === 'rtl',
     };
   });
