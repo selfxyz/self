@@ -3,9 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { PermissionsAndroid, Platform } from 'react-native';
-import messaging, {
-  FirebaseMessagingTypes,
-} from '@react-native-firebase/messaging';
+import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import messaging from '@react-native-firebase/messaging';
 
 import type { DeviceTokenRegistration } from '@/utils/notifications/notificationService.shared';
 import {

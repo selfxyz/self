@@ -4,7 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import HomeScreen from '../../src/screens/HomeScreen';
-import { orderedSectionEntries, type ScreenContext } from '../../src/screens';
+import type { ScreenContext } from '../../src/screens';
+import { orderedSectionEntries } from '../../src/screens';
 
 describe('HomeScreen', () => {
   const createContext = (): ScreenContext => ({

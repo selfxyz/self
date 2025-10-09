@@ -2,21 +2,25 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { type PropsWithChildren, useMemo } from 'react';
+import type { PropsWithChildren } from 'react';
+import { useMemo } from 'react';
 import { Platform } from 'react-native';
 
-import {
+import type {
   Adapters,
+  TrackEventParams,
+  WsConn,
+} from '@selfxyz/mobile-sdk-alpha';
+import {
   createListenersMap,
   reactNativeScannerAdapter,
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
-  type TrackEventParams,
   webNFCScannerShim,
-  type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 
-import { navigationRef, type RootStackParamList } from '@/navigation';
+import type { RootStackParamList } from '@/navigation';
+import { navigationRef } from '@/navigation';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import { logNFCEvent, logProofEvent } from '@/Sentry';

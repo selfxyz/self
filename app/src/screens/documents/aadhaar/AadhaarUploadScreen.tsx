@@ -3,7 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { type ImageSourcePropType, Linking } from 'react-native';
+import type { ImageSourcePropType } from 'react-native';
+import { Linking } from 'react-native';
 import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';

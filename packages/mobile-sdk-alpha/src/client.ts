@@ -6,12 +6,13 @@ import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
-import { ProofContext } from './proving/internal/logging';
+import type { ProofContext } from './proving/internal/logging';
 import { useProvingStore } from './proving/provingMachine';
 import { useMRZStore } from './stores/mrzStore';
 import { useProtocolStore } from './stores/protocolStore';
 import { useSelfAppStore } from './stores/selfAppStore';
-import { SDKEvent, SDKEventMap, SdkEvents } from './types/events';
+import type { SDKEvent, SDKEventMap } from './types/events';
+import { SdkEvents } from './types/events';
 import type {
   Adapters,
   Config,
@@ -21,9 +22,9 @@ import type {
   NFCScanOpts,
   NFCScanResult,
   SelfClient,
+  TrackEventParams,
   Unsubscribe,
 } from './types/public';
-import { TrackEventParams } from './types/public';
 /**
  * Optional adapter implementations used when a consumer does not provide their
  * own. These defaults are intentionally minimal no-ops suitable for tests and

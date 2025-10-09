@@ -13,8 +13,9 @@ import {
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
-import { DocumentMetadata, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
+import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import IdCardLayout from '@/components/homeScreen/idCard';

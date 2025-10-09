@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { AppState, type AppStateStatus } from 'react-native';
+import type { AppStateStatus } from 'react-native';
+import { AppState } from 'react-native';
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 
-import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
+import type { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
 import { createSegmentClient } from '@/Segment';
 import { PassportReader } from '@/utils/passportReader';

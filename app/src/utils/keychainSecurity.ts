@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import Keychain, {
-  type ACCESS_CONTROL,
-  type ACCESSIBLE,
+import type {
+  ACCESS_CONTROL,
+  ACCESSIBLE,
   GetOptions,
-  type SECURITY_LEVEL,
+  SECURITY_LEVEL,
   SetOptions,
 } from 'react-native-keychain';
+import Keychain from 'react-native-keychain';
 
 /**
  * Security configuration for keychain operations

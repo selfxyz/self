@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { type MRZInfo, type MRZValidation, extractMRZInfo } from '@selfxyz/mobile-sdk-alpha';
+import type { MRZInfo, MRZValidation } from '@selfxyz/mobile-sdk-alpha';
+import { extractMRZInfo } from '@selfxyz/mobile-sdk-alpha';
 
 export type MRZPayload = MRZInfo | (MRZInfo & { rawMRZ?: string; raw?: string; mrzString?: string }) | string;
 

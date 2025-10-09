@@ -9,7 +9,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PassportEvents } from '../../../src/constants/analytics';
 import { useReadMRZ } from '../../../src/flows/onboarding/read-mrz';
 import { SdkEvents } from '../../../src/types/events';
-import { MRZInfo } from '../../../src/types/public';
+import type { MRZInfo } from '../../../src/types/public';
 
 import { renderHook } from '@testing-library/react';
 

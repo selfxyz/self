@@ -2,14 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { RefObject, useCallback } from 'react';
+import type { RefObject } from 'react';
+import { useCallback } from 'react';
 import { Platform } from 'react-native';
 
 import { PassportEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../processing/mrz';
 import { SdkEvents } from '../../types/events';
-import { MRZInfo } from '../../types/public';
+import type { MRZInfo } from '../../types/public';
 
 export type { MRZScannerViewProps } from '../../components/MRZScannerView';
 export { MRZScannerView } from '../../components/MRZScannerView';

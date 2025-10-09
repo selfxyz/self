@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { createContext, type PropsWithChildren, useContext, useMemo } from 'react';
+import type { PropsWithChildren } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
 import { createSelfClient } from './client';
-import { SdkEvents } from './types/events';
+import type { SdkEvents } from './types/events';
 import type { Adapters, Config, SelfClient } from './types/public';
 
 /**

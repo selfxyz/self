@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
+import type LottieView from 'lottie-react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
 
-import {
+import type {
   provingMachineCircuitType,
   ProvingStateType,
 } from '@selfxyz/mobile-sdk-alpha';

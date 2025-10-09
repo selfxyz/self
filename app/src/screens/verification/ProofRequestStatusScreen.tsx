@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView, { type LottieViewProps } from 'lottie-react-native';
+import type { LottieViewProps } from 'lottie-react-native';
+import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
