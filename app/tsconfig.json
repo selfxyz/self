@@ -16,9 +16,11 @@
         "../packages/mobile-sdk-alpha/dist"
       ],
       "@selfxyz/mobile-sdk-alpha/onboarding/*": [
+        "../packages/mobile-sdk-alpha/src/flows/onboarding/*",
         "../packages/mobile-sdk-alpha/dist/esm/flows/onboarding/*"
       ],
       "@selfxyz/mobile-sdk-alpha/disclosing/*": [
+        "../packages/mobile-sdk-alpha/src/flows/disclosing/*",
         "../packages/mobile-sdk-alpha/dist/esm/flows/disclosing/*"
       ],
       "@/*": ["./src/*"]

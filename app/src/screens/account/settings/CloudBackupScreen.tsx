@@ -6,6 +6,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { YStack } from 'tamagui';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -181,7 +182,8 @@ function BottomButton({
   nextScreen?: NextScreen;
 }) {
   const { trackEvent } = useSelfClient();
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const goBack = () => {
     confirmTap();

@@ -7,7 +7,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { PassportData } from '@selfxyz/common/types';
 
-import { SdkEvents, SelfClient } from '../../src';
+import type { SelfClient } from '../../src';
+import { SdkEvents } from '../../src';
 import * as documentsUtils from '../../src/documents/utils';
 import { useProvingStore } from '../../src/proving/provingMachine';
 

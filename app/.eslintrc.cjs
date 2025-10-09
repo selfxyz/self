@@ -173,6 +173,16 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 'off',
     'no-empty': 'off',
 
+    // TypeScript Import Rules
+
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      {
+        prefer: 'type-imports',
+        disallowTypeAnnotations: false,
+      },
+    ],
+
     // Override rules conflicting with TypeScript union formatting
 
     '@typescript-eslint/indent': 'off',

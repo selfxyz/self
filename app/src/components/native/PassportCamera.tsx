@@ -6,7 +6,8 @@ import React, { useCallback } from 'react';
 import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native';
 import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
 
-import { type SelfClient, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import { RCTFragment } from '@/components/native/RCTFragment';
 
@@ -69,9 +70,13 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
       if (!isMounted) {
         return;
       }
-      /* eslint-disable @typescript-eslint/no-unused-vars */
-      const { error, errorMessage, stackTrace } = event.nativeEvent;
+      const {
+        error: nativeError,
+        errorMessage,
+        stackTrace,
+      } = event.nativeEvent;
       const e = new Error(errorMessage);
+      e.name = nativeError;
       e.stack = stackTrace;
       onPassportRead(e);
     },

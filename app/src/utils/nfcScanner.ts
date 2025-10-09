@@ -10,25 +10,11 @@ import type { NFCScanContext } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent } from '@/Sentry';
 import {
-  PassportReader,
+  type AndroidScanResponse,
   reset,
   scan as scanDocument,
 } from '@/utils/passportReader';
-
-interface AndroidScanResponse {
-  mrz: string;
-  eContent: string;
-  encryptedDigest: string;
-  _photo: string;
-  _digestAlgorithm: string;
-  _signerInfoDigestAlgorithm: string;
-  _digestEncryptionAlgorithm: string;
-  _LDSVersion: string;
-  _unicodeVersion: string;
-  encapContent: string;
-  documentSigningCertificate: string;
-  dataGroupHashes: string;
-}
+import { PassportReader } from '@/utils/passportReader';
 
 interface Inputs {
   passportNumber: string;
@@ -42,6 +28,11 @@ interface Inputs {
   usePacePolling?: boolean;
   sessionId: string;
   userId?: string;
+}
+
+interface DataGroupHash {
+  sodHash?: string;
+  [key: string]: unknown;
 }
 
 export const parseScanResponse = (response: unknown) => {
@@ -108,7 +99,39 @@ const scanIOS = async (
   inputs: Inputs,
   context: Omit<NFCScanContext, 'stage'>,
 ) => {
-  if (!PassportReader?.scanPassport) {
+  // Prefer direct native scanPassport when available (tests stub this directly)
+  const iosReader = PassportReader as unknown as {
+    scanPassport?: (
+      passportNumber: string,
+      dateOfBirth: string,
+      dateOfExpiry: string,
+      canNumber: string,
+      useCan: boolean,
+      skipPACE: boolean,
+      skipCA: boolean,
+      extendedMode: boolean,
+      usePacePolling: boolean,
+      sessionId: string,
+    ) => Promise<unknown>;
+  } | null;
+
+  if (iosReader?.scanPassport) {
+    return await iosReader.scanPassport(
+      inputs.passportNumber,
+      inputs.dateOfBirth,
+      inputs.dateOfExpiry,
+      inputs.canNumber ?? '',
+      inputs.useCan ?? false,
+      inputs.skipPACE ?? false,
+      inputs.skipCA ?? false,
+      inputs.extendedMode ?? false,
+      inputs.usePacePolling ?? false,
+      inputs.sessionId,
+    );
+  }
+
+  // Fallback to normalized cross-platform scan
+  if (!scanDocument) {
     console.warn(
       'iOS passport scanner is not available - native module failed to load',
     );
@@ -123,34 +146,56 @@ const scanIOS = async (
     );
   }
 
-  return await Promise.resolve(
-    PassportReader.scanPassport(
-      inputs.passportNumber,
-      inputs.dateOfBirth,
-      inputs.dateOfExpiry,
-      inputs.canNumber ?? '',
-      inputs.useCan ?? false,
-      inputs.skipPACE ?? false,
-      inputs.skipCA ?? false,
-      inputs.extendedMode ?? false,
-      inputs.usePacePolling ?? false,
-      inputs.sessionId,
-    ),
-  );
+  return await scanDocument({
+    documentNumber: inputs.passportNumber,
+    dateOfBirth: inputs.dateOfBirth,
+    dateOfExpiry: inputs.dateOfExpiry,
+    canNumber: inputs.canNumber ?? '',
+    useCan: inputs.useCan ?? false,
+    skipPACE: inputs.skipPACE ?? false,
+    skipCA: inputs.skipCA ?? false,
+    extendedMode: inputs.extendedMode ?? false,
+    usePacePolling: inputs.usePacePolling ?? false,
+    sessionId: inputs.sessionId,
+  });
 };
 
 const handleResponseIOS = (response: unknown) => {
-  const parsed = JSON.parse(String(response));
-  const dgHashesObj = JSON.parse(parsed?.dataGroupHashes);
-  const dg1HashString = dgHashesObj?.DG1?.sodHash;
-  const dg1Hash = Array.from(Buffer.from(dg1HashString, 'hex'));
-  const dg2HashString = dgHashesObj?.DG2?.sodHash;
-  const dg2Hash = Array.from(Buffer.from(dg2HashString, 'hex'));
+  // Support string or object response
+  const parsed: Record<string, unknown> =
+    typeof response === 'string'
+      ? (JSON.parse(response) as Record<string, unknown>)
+      : ((response as Record<string, unknown>) ?? {});
 
-  const eContentBase64 = parsed?.eContentBase64;
-  const signedAttributes = parsed?.signedAttributes;
-  const mrz = parsed?.passportMRZ;
-  const signatureBase64 = parsed?.signatureBase64;
+  const dgHashesObj = JSON.parse(
+    String(parsed?.dataGroupHashes ?? '{}'),
+  ) as Record<string, DataGroupHash>;
+  const dg1HashString = dgHashesObj?.DG1?.sodHash as string | undefined;
+  const dg2HashString = dgHashesObj?.DG2?.sodHash as string | undefined;
+
+  const mrz = parsed?.passportMRZ as string | undefined;
+  if (!mrz || typeof mrz !== 'string') {
+    throw new Error('Invalid iOS NFC response: missing passportMRZ');
+  }
+
+  const isHex = (s: string) => /^[0-9a-fA-F]*$/.test(s);
+  if (dg1HashString !== undefined && !isHex(dg1HashString)) {
+    throw new Error('Invalid DG1 sodHash hex string');
+  }
+  if (dg2HashString !== undefined && !isHex(String(dg2HashString))) {
+    throw new Error('Invalid DG2 sodHash hex string');
+  }
+
+  const dg1Hash = dg1HashString
+    ? Array.from(Buffer.from(dg1HashString, 'hex'))
+    : [];
+  const dg2Hash = dg2HashString
+    ? Array.from(Buffer.from(String(dg2HashString), 'hex'))
+    : [];
+
+  const eContentBase64 = parsed?.eContentBase64 as string | undefined;
+  const signedAttributes = parsed?.signedAttributes as string | undefined;
+  const signatureBase64 = parsed?.signatureBase64 as string | undefined;
   // const _dataGroupsPresent = parsed?.dataGroupsPresent;
   // const _placeOfBirth = parsed?.placeOfBirth;
   // const _activeAuthenticationPassed = parsed?.activeAuthenticationPassed;
@@ -160,25 +205,32 @@ const handleResponseIOS = (response: unknown) => {
   // const passportPhoto = parsed?.passportPhoto;
   // const _encapsulatedContentDigestAlgorithm =
   //   parsed?.encapsulatedContentDigestAlgorithm;
-  const documentSigningCertificate = parsed?.documentSigningCertificate;
-  const pem = JSON.parse(documentSigningCertificate).PEM.replace(/\n/g, '');
-  const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
+  const documentSigningCertificate = parsed?.documentSigningCertificate as
+    | string
+    | undefined;
+  const pem = JSON.parse(String(documentSigningCertificate)).PEM.replace(
+    /\n/g,
+    '',
+  );
+  const eContentArray = Array.from(
+    Buffer.from(String(signedAttributes ?? ''), 'base64'),
+  );
   const signedEContentArray = eContentArray.map(byte =>
     byte > 127 ? byte - 256 : byte,
   );
 
   const concatenatedDataHashesArray = Array.from(
-    Buffer.from(eContentBase64, 'base64'),
+    Buffer.from(String(eContentBase64 ?? ''), 'base64'),
   );
   const concatenatedDataHashesArraySigned = concatenatedDataHashesArray.map(
     byte => (byte > 127 ? byte - 256 : byte),
   );
 
   const encryptedDigestArray = Array.from(
-    Buffer.from(signatureBase64, 'base64'),
+    Buffer.from(String(signatureBase64 ?? ''), 'base64'),
   ).map(byte => (byte > 127 ? byte - 256 : byte));
 
-  const document_type = mrz.length === 88 ? 'passport' : 'id_card';
+  const document_type = String(mrz).length === 88 ? 'passport' : 'id_card';
 
   return {
     mrz,
@@ -222,7 +274,7 @@ const handleResponseAndroid = (response: AndroidScanResponse): PassportData => {
     '-----END CERTIFICATE-----';
 
   const dgPresents = Object.keys(dgHashesObj)
-    .map(key => parseInt(key)) // eslint-disable-line radix
+    .map(key => parseInt(key, 10))
     .filter(num => !isNaN(num))
     .sort((a, b) => a - b);
 

@@ -5,6 +5,7 @@
 import React from 'react';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -14,12 +15,14 @@ import { DelayedLottieView } from '@/components/DelayedLottieView';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
 import { styles } from '@/screens/verification/ProofRequestStatusScreen';
 import { black, white } from '@/utils/colors';
 import { buttonTap } from '@/utils/haptic';
 
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>

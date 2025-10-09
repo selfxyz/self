@@ -10,6 +10,7 @@ import {
   createNavigationContainerRef,
   createStaticNavigation,
 } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -47,13 +48,39 @@ const AppNavigation = createNativeStackNavigator({
   screens: navigationScreens,
 });
 
-export type RootStackParamList = StaticParamList<typeof AppNavigation>;
+type BaseRootStackParamList = StaticParamList<typeof AppNavigation>;
+
+// Explicitly declare route params that are not inferred from initialParams
+export type RootStackParamList = Omit<
+  BaseRootStackParamList,
+  'ComingSoon' | 'IDPicker' | 'AadhaarUpload' | 'AadhaarUploadError'
+> & {
+  ComingSoon: {
+    countryCode?: string;
+    documentCategory?: string;
+  };
+  IDPicker: {
+    countryCode: string;
+    documentTypes: string[];
+  };
+  AadhaarUpload: {
+    countryCode: string;
+  };
+  AadhaarUploadError: {
+    errorType: string;
+  };
+};
+
+export type RootStackScreenProps<T extends keyof RootStackParamList> =
+  NativeStackScreenProps<RootStackParamList, T>;
 
 // Create a ref that we can use to access the navigation state
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 declare global {
   namespace ReactNavigation {
+    // Allow React Navigation helpers to infer route params from our stack
+    // Use interface merging to avoid duplicate identifier errors
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     interface RootParamList extends RootStackParamList {}
   }

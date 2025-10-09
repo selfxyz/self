@@ -8,7 +8,8 @@ import { AccessibilityInfo, PermissionsAndroid, Platform } from 'react-native';
 import type { MRZInfo } from '@selfxyz/mobile-sdk-alpha';
 import { useReadMRZ } from '@selfxyz/mobile-sdk-alpha/onboarding/read-mrz';
 
-import { normalizeMRZPayload, type NormalizedMRZResult } from '../utils/camera';
+import type { NormalizedMRZResult } from '../utils/camera';
+import { normalizeMRZPayload } from '../utils/camera';
 
 type PermissionState = 'loading' | 'granted' | 'denied';
 type ScanState = 'idle' | 'scanning' | 'success' | 'error';

@@ -6,6 +6,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { AppEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
@@ -15,12 +16,14 @@ import { DelayedLottieView } from '@/components/DelayedLottieView';
 import Caution from '@/components/typography/Caution';
 import { SubHeader } from '@/components/typography/SubHeader';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
 import { useSettingStore } from '@/stores/settingStore';
 import { black, white } from '@/utils/colors';
 import { confirmTap, notificationWarning } from '@/utils/haptic';
 
 const DisclaimerScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { dismissPrivacyNote } = useSettingStore();
 
   useEffect(() => {

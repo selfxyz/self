@@ -12,17 +12,18 @@ import React, {
   useState,
 } from 'react';
 import ReactNativeBiometrics from 'react-native-biometrics';
-import Keychain, { GetOptions, SetOptions } from 'react-native-keychain';
+import type { GetOptions, SetOptions } from 'react-native-keychain';
+import Keychain from 'react-native-keychain';
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
 import analytics from '@/utils/analytics';
+import type { GetSecureOptions } from '@/utils/keychainSecurity';
 import {
   createKeychainOptions,
   detectSecurityCapabilities,
-  GetSecureOptions,
 } from '@/utils/keychainSecurity';
 
 const { trackEvent } = analytics();

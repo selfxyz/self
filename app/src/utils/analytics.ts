@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { AppState, type AppStateStatus } from 'react-native';
+import type { AppStateStatus } from 'react-native';
+import { AppState } from 'react-native';
 import { ENABLE_DEBUG_LOGS, MIXPANEL_NFC_PROJECT_TOKEN } from '@env';
 import NetInfo from '@react-native-community/netinfo';
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 
-import { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
+import type { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
 
 import { createSegmentClient } from '@/Segment';
 import { PassportReader } from '@/utils/passportReader';
@@ -186,25 +187,37 @@ const flushMixpanelEvents = async () => {
     if (__DEV__) console.log('[Mixpanel] flush skipped - NFC scanning active');
     return;
   }
+
+  // Ensure we don't drop events if the native reader isn't available
+  if (!PassportReader?.trackEvent) {
+    if (__DEV__)
+      console.warn('[Mixpanel] flush skipped - NFC module unavailable');
+    return;
+  }
+
   try {
     if (__DEV__) console.log('[Mixpanel] flush');
     // Send any queued events before flushing
     while (eventQueue.length > 0) {
       const evt = eventQueue.shift()!;
-      if (PassportReader.trackEvent) {
+      try {
         await Promise.resolve(
           PassportReader.trackEvent(evt.name, evt.properties),
         );
+      } catch (trackErr) {
+        // Put the event back and abort; we'll retry on the next flush
+        eventQueue.unshift(evt);
+        throw trackErr;
       }
     }
-    if (PassportReader.flush) await Promise.resolve(PassportReader.flush());
+    if (PassportReader.flush) {
+      await Promise.resolve(PassportReader.flush());
+    }
+    // Only reset event count after successful send/flush
     eventCount = 0;
   } catch (err) {
     if (__DEV__) console.warn('Mixpanel flush failed', err);
-    // re-queue on failure
-    if (typeof err !== 'undefined') {
-      // no-op, events are already queued if failure happened before flush
-    }
+    // Events have been re-queued on failure, so they're not lost
   }
 };
 
@@ -277,7 +290,7 @@ export const trackNfcEvent = async (
   }
 
   try {
-    if (PassportReader.trackEvent) {
+    if (PassportReader && PassportReader.trackEvent) {
       await Promise.resolve(PassportReader.trackEvent(name, properties));
     }
     eventCount++;

@@ -19,7 +19,7 @@ import {
 } from '@selfxyz/common';
 
 import { extractNameFromMRZ } from '../processing/mrz';
-import { SelfClient } from '../types/public';
+import type { SelfClient } from '../types/public';
 
 export async function clearPassportData(selfClient: SelfClient) {
   const catalog = await selfClient.loadDocumentCatalog();

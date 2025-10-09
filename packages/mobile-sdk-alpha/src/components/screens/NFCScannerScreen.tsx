@@ -9,7 +9,7 @@ import { View } from 'tamagui';
 import { getSKIPEM, initPassportDataParsing } from '@selfxyz/common';
 
 import { useSelfClient } from '../../context';
-import { NFCScanResult } from '../../types/public';
+import type { NFCScanResult } from '../../types/public';
 import type { ScreenProps } from '../../types/ui';
 
 export const NFCScannerScreen = ({ onSuccess, onFailure }: ScreenProps) => {

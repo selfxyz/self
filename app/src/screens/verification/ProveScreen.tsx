@@ -18,6 +18,7 @@ import type {
 import { ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image, Text, View, XStack, YStack } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Eye, EyeOff } from '@tamagui/lucide-icons';
 
 import type { SelfAppDisclosureConfig } from '@selfxyz/common/utils/appType';
@@ -31,6 +32,7 @@ import Disclosures from '@/components/Disclosures';
 import { BodyText } from '@/components/typography/BodyText';
 import { Caption } from '@/components/typography/Caption';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
 import {
   setDefaultDocumentTypeIfNeeded,
   usePassport,
@@ -44,7 +46,8 @@ import { buttonTap } from '@/utils/haptic';
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
-  const { navigate } = useNavigation();
+  const { navigate } =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
   const { useProvingStore, useSelfAppStore } = selfClient;
   const selectedApp = useSelfAppStore(state => state.selfApp);

@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Platform, ScrollView } from 'react-native';
 import { Input, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
@@ -16,6 +17,7 @@ import { BodyText } from '@/components/typography/BodyText';
 import Description from '@/components/typography/Description';
 import { Title } from '@/components/typography/Title';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
 import { white } from '@/utils/colors';
 
 type NFCParams = {
@@ -90,7 +92,8 @@ const NFC_METHODS = [
 ];
 
 const DocumentNFCMethodSelectionScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedMethod, setSelectedMethod] = useState('standard');
   const [canValue, setCanValue] = useState('');
   const [error, setError] = useState('');
@@ -130,6 +133,7 @@ const DocumentNFCMethodSelectionScreen: React.FC = () => {
     if (selectedMethod === 'can') {
       params.canNumber = canValue;
     }
+    // Type assertion needed because static navigation doesn't infer optional params
     navigation.navigate('DocumentNFCScan', params as never);
   };
 

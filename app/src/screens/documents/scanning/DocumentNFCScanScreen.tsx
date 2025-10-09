@@ -28,6 +28,7 @@ import {
   useNavigation,
   useRoute,
 } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
@@ -48,6 +49,7 @@ import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import NFC_IMAGE from '@/images/nfc.png';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import { logNFCEvent } from '@/Sentry';
@@ -92,7 +94,8 @@ const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent, useMRZStore } = selfClient;
 
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<DocumentNFCScanRoute>();
   const { showModal } = useFeedback();
   useFeedbackAutoHide();
@@ -459,12 +462,6 @@ const DocumentNFCScanScreen: React.FC = () => {
       navigateToLaunch();
     }
   };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _cancelScanIfRunning = useCallback(async () => {
-    // // TODO: cancel if scanning
-    // setIsNfcSheetOpen(false);
-  }, []);
 
   useFocusEffect(
     useCallback(() => {

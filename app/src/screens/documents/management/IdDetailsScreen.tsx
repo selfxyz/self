@@ -8,7 +8,7 @@ import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
 import { BlurView } from '@react-native-community/blur';
 import { useNavigation } from '@react-navigation/native';
 
-import { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 
 import IdCardLayout from '@/components/homeScreen/idCard';
 import { usePassport } from '@/providers/passportDataProvider';

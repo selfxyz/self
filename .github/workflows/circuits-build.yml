@@ -11,20 +11,20 @@ on:
   workflow_dispatch:
     inputs:
       circuit-type:
-        description: 'Circuits to build (comma-separated: register, register_id, register_aadhaar, disclose, dsc). Leave empty to build all.'
+        description: "Circuits to build (comma-separated: register, register_id, register_aadhaar, disclose, dsc). Leave empty to build all."
         required: false
         type: string
-        default: ''
+        default: ""
       circuit-name:
-        description: 'Circuit names to build (comma-separated: register_sha256_sha224_sha224_ecdsa_secp224r1, dsc_sha256_rsa_65537_4096). Cannot be used with circuit-type.'
+        description: "Circuit names to build (comma-separated: register_sha256_sha224_sha224_ecdsa_secp224r1, dsc_sha256_rsa_65537_4096). Cannot be used with circuit-type."
         required: false
         type: string
-        default: ''
+        default: ""
       run-id:
-        description: 'Run ID to download artifacts .'
+        description: "Run ID to download artifacts ."
         required: false
         type: string
-        default: ''
+        default: ""
 
 concurrency:
   group: circuits-build-${{ github.workflow }}-${{ github.ref }}

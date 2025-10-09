@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import LottieView from 'lottie-react-native';
+import type LottieView from 'lottie-react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
@@ -10,7 +10,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
+import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import failAnimation from '@/assets/animations/loading/fail.json';
 import proveLoadingAnimation from '@/assets/animations/loading/prove.json';
@@ -98,7 +98,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
         } else {
           await init(selfClient, 'dsc', true);
         }
-      } catch (_error) {
+      } catch {
         console.error('Error loading selected document:');
         await init(selfClient, 'dsc', true);
       } finally {
