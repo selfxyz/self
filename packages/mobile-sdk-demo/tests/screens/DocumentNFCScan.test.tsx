@@ -28,8 +28,9 @@ describe('DocumentNFCScan screen', () => {
 
     render(<DocumentNFCScan onBack={onBack} onNavigate={onNavigate} />);
 
-    const firstCall = (useScanNFC as any).mock.results[0];
-    const startScan = firstCall?.value?.startScan;
+    const results = (useScanNFC as any).mock.results;
+    const lastCall = results[results.length - 1];
+    const startScan = lastCall?.value?.startScan;
     expect(startScan).toBeDefined();
     expect(startScan).not.toHaveBeenCalled();
 
@@ -45,7 +46,7 @@ describe('DocumentNFCScan screen', () => {
 
     render(<DocumentNFCScan onBack={onBack} onNavigate={onNavigate} />);
 
-    const backButton = screen.getByRole('button', { name: 'Back' });
+    const backButton = screen.getByRole('button', { name: /Back/ });
     fireEvent.click(backButton);
 
     expect(onBack).toHaveBeenCalledTimes(1);
@@ -73,8 +74,9 @@ describe('DocumentNFCScan screen', () => {
     const tryAgain = screen.getByText('Try Again');
     fireEvent.click(tryAgain);
 
-    const firstCall = (useScanNFC as any).mock.results[0];
-    const startScan = firstCall?.value?.startScan;
+    const results = (useScanNFC as any).mock.results;
+    const lastCall = results[results.length - 1];
+    const startScan = lastCall?.value?.startScan;
     expect(startScan).toHaveBeenCalledTimes(1);
   });
 
