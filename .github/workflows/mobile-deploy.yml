@@ -5,9 +5,9 @@ name: Mobile Deploy
 # 3. DISABLED: When called by other workflows (workflow_call)
 #
 # === PR LABELS ===
-# - skip-deploy: Skip deployment entirely (no version bump, no builds)
+# - deploy:skip: Skip deployment entirely (no version bump, no builds)
 # - version:major/minor/patch: Control version bump type
-# - ios-only/android-only: Build only one platform
+# - deploy:ios/deploy:android: Build only one platform
 #
 # === WORKFLOW LOGIC ===
 # Build Branch: Always builds from the branch that triggered the workflow
@@ -152,7 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
-      !contains(github.event.pull_request.labels.*.name, 'skip-deploy')
+      !contains(github.event.pull_request.labels.*.name, 'deploy:skip')
     outputs:
       version: ${{ steps.bump.outputs.version }}
       ios_build: ${{ steps.bump.outputs.ios_build }}
@@ -205,9 +205,9 @@ jobs:
           # Override with PR labels if present
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             LABELS='${{ toJSON(github.event.pull_request.labels.*.name) }}'
-            if echo "$LABELS" | grep -q "ios-only"; then
+            if echo "$LABELS" | grep -q "deploy:ios"; then
               PLATFORM="ios"
-            elif echo "$LABELS" | grep -q "android-only"; then
+            elif echo "$LABELS" | grep -q "deploy:android"; then
               PLATFORM="android"
             fi
           fi
@@ -248,7 +248,7 @@ jobs:
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (
         (inputs.platform == 'ios' || inputs.platform == 'both') ||
-        (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'android-only'))
+        (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'deploy:android'))
       )
     steps:
       - name: Mobile deployment status
@@ -260,8 +260,8 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "🔀 Triggered by PR merge: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
             echo "👤 Merged by: ${{ github.event.pull_request.merged_by.login }}"
-            if ${{ contains(github.event.pull_request.labels.*.name, 'ios-only') }}; then
-              echo "🏷️  Label: ios-only (skipping Android)"
+            if ${{ contains(github.event.pull_request.labels.*.name, 'deploy:ios') }}; then
+              echo "🏷️  Label: deploy:ios (skipping Android)"
             fi
           fi
 
@@ -808,7 +808,7 @@ jobs:
       (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
       (
         (inputs.platform == 'android' || inputs.platform == 'both') ||
-        (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'ios-only'))
+        (github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'deploy:ios'))
       )
     steps:
       - name: Mobile deployment status
@@ -820,8 +820,8 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "🔀 Triggered by PR merge: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
             echo "👤 Merged by: ${{ github.event.pull_request.merged_by.login }}"
-            if ${{ contains(github.event.pull_request.labels.*.name, 'android-only') }}; then
-              echo "🏷️  Label: android-only (skipping iOS)"
+            if ${{ contains(github.event.pull_request.labels.*.name, 'deploy:android') }}; then
+              echo "🏷️  Label: deploy:android (skipping iOS)"
             fi
           fi
 
