@@ -1,4 +1,4 @@
-name: Block non-dev PRs to main
+name: Block non-staging PRs to main
 
 on:
   pull_request:
@@ -8,9 +8,9 @@ jobs:
   check-source:
     runs-on: ubuntu-latest
     steps:
-      - name: Block PRs not from dev
+      - name: Block PRs not from staging
         run: |
-          if [[ "${{ github.head_ref }}" != "dev" ]]; then
-            echo "You can only merge from dev to main."
+          if [[ "${{ github.head_ref }}" != "staging" ]]; then
+            echo "You can only merge from staging to main."
             exit 1
           fi

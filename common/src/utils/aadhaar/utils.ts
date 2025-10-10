@@ -67,9 +67,9 @@ export function calculateAge(
   yob: string
 ): { age: number; currentYear: number; currentMonth: number; currentDay: number } {
   const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11
-  const currentDay = currentDate.getDate();
+  const currentYear = currentDate.getUTCFullYear();
+  const currentMonth = currentDate.getUTCMonth() + 1; // getMonth() returns 0-11
+  const currentDay = currentDate.getUTCDate();
 
   const birthYear = parseInt(yob);
   const birthMonth = parseInt(mob);

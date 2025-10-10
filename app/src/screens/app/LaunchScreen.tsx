@@ -148,17 +148,17 @@ const styles = StyleSheet.create({
 
   notice: {
     fontFamily: dinot,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    marginVertical: 10,
+    paddingBottom: 10,
     color: slate400,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 22,
     fontSize: 14,
   },
   link: {
     fontFamily: dinot,
     color: slate400,
-    lineHeight: 18,
+    lineHeight: 22,
     textDecorationLine: 'underline',
   },
 });
