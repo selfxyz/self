@@ -4,6 +4,11 @@ name: Mobile Deploy
 # 2. When PRs are merged to staging (auto-deploy to internal track)
 # 3. DISABLED: When called by other workflows (workflow_call)
 #
+# === PR LABELS ===
+# - skip-deploy: Skip deployment entirely (no version bump, no builds)
+# - version:major/minor/patch: Control version bump type
+# - ios-only/android-only: Build only one platform
+#
 # === WORKFLOW LOGIC ===
 # Build Branch: Always builds from the branch that triggered the workflow
 #   - PR merges: Builds from 'staging' branch (the branch being merged into)
@@ -146,7 +151,8 @@ jobs:
   bump-version:
     runs-on: ubuntu-latest
     if: |
-      (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
+      (github.event_name != 'pull_request' || github.event.pull_request.merged == true) &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-deploy')
     outputs:
       version: ${{ steps.bump.outputs.version }}
       ios_build: ${{ steps.bump.outputs.ios_build }}
