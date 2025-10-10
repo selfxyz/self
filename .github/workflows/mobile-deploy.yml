@@ -1251,8 +1251,26 @@ jobs:
 
           echo "📝 Applying version bump: $VERSION (iOS: $IOS_BUILD, Android: $ANDROID_BUILD)"
 
-          # Use version-manager script to apply versions
-          node scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
+          # Update package.json version
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            console.log('✅ Updated package.json');
+          "
+
+          # Update version.json build numbers
+          node -e "
+            const fs = require('fs');
+            const version = JSON.parse(fs.readFileSync('version.json', 'utf8'));
+            version.ios.build = $IOS_BUILD;
+            version.android.build = $ANDROID_BUILD;
+            fs.writeFileSync('version.json', JSON.stringify(version, null, 2) + '\n');
+            console.log('✅ Updated version.json');
+          "
+
+          echo "✅ Versions applied successfully"
 
       - name: Determine platforms that succeeded and PR title
         id: platforms
